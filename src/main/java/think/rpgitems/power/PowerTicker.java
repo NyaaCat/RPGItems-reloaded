@@ -12,8 +12,7 @@ public class PowerTicker extends BukkitRunnable {
 
     @Override
     public void run() {
-        Player[] players = Bukkit.getOnlinePlayers();
-        for (Player player : players) {
+        for (Player player : Bukkit.getOnlinePlayers()) {
             ItemStack[] armour = player.getInventory().getArmorContents();
             for (ItemStack part : armour) {
                 RPGItem item = ItemManager.toRPGItem(part);
