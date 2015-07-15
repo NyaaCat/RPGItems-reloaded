@@ -4,9 +4,8 @@ repositories {
     mavenCentral()
 
     maven {
-        name 'Bukkit'
-        url 'http://repo.bukkit.org/content/groups/public/'
-        // url 'https://hub.spigotmc.org/nexus/content/groups/public/'
+        name 'Spigot'
+        url 'https://hub.spigotmc.org/nexus/content/groups/public/'
     }
 
     maven {
@@ -16,6 +15,6 @@ repositories {
 }
 
 dependencies {
-    compile 'org.bukkit:bukkit:1.7.9-R0.2'
-    compile 'com.sk89q:worldguard:5.8'
+    compile 'org.bukkit:bukkit:1.8.7-R0.1-SNAPSHOT'
+    compile 'com.sk89q:worldguard:6.1'
 }

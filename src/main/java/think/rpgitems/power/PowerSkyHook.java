@@ -15,6 +15,8 @@ import think.rpgitems.data.Locale;
 import think.rpgitems.data.RPGValue;
 import think.rpgitems.power.types.PowerRightClick;
 
+import java.util.Set;
+
 public class PowerSkyHook extends Power implements PowerRightClick {
     
     public Material railMaterial = Material.GLASS;
@@ -33,7 +35,7 @@ public class PowerSkyHook extends Power implements PowerRightClick {
             isHooking.set(false);
             return;
         }
-        Block block = player.getTargetBlock(null, hookDistance);
+        Block block = player.getTargetBlock((Set)null, hookDistance);
         if (block.getType() != railMaterial) {
             player.sendMessage(ChatColor.AQUA + Locale.get("message.skyhook.fail", Locale.getPlayerLocale(player)));
             return;
