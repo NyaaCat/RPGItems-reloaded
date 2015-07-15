@@ -1,0 +1,21 @@
+apply plugin: 'java'
+
+repositories {
+    mavenCentral()
+
+    maven {
+        name 'Bukkit'
+        url 'http://repo.bukkit.org/content/groups/public/'
+        // url 'https://hub.spigotmc.org/nexus/content/groups/public/'
+    }
+
+    maven {
+        name 'sk89q'
+        url 'http://maven.sk89q.com/artifactory/repo/'
+    }
+}
+
+dependencies {
+    compile 'org.bukkit:bukkit:1.7.9-R0.2'
+    compile 'com.sk89q:worldguard:5.8'
+}
