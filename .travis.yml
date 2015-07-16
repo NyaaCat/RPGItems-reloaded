@@ -5,7 +5,7 @@ before_deploy:
 - git config --global user.name "Travis CI"
 - export GIT_TAG=$TRAVIS_BRANCH-v3.5.$TRAVIS_BUILD_NUMBER
 - git tag $GIT_TAG -a -m "Generated tag from TravisCI for build $TRAVIS_BUILD_NUMBER"
-- git push -q https://$GITHUB_KEY@github.com/felixonmars/RPGitems-reloaded --tags
+- git push -q https://$GITHUB_KEY@github.com/felixonmars/RPGitems-reloaded --follow-tags
 
 deploy:
   skip_cleanup: true
