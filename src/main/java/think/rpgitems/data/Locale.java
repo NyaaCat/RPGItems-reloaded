@@ -66,6 +66,10 @@ public class Locale extends BukkitRunnable {
             plugin.getConfig().set("localeDownload", true);
             plugin.saveConfig();
         }
+        if (!plugin.getConfig().contains("language")) {
+        	plugin.getConfig().set("language", "en_GB");
+        	plugin.saveConfig();
+        }
     }
     
     private final static String localeUpdateURL = "http://198.199.127.128/rpgitems/index.php?page=localeget&lastupdate=";

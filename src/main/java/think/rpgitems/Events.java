@@ -44,6 +44,8 @@ import org.bukkit.event.entity.EntityDamageByEntityEvent;
 import org.bukkit.event.entity.EntityDeathEvent;
 import org.bukkit.event.entity.ProjectileHitEvent;
 import org.bukkit.event.entity.ProjectileLaunchEvent;
+import org.bukkit.event.hanging.HangingBreakEvent;
+import org.bukkit.event.hanging.HangingBreakEvent.RemoveCause;
 import org.bukkit.event.inventory.InventoryClickEvent;
 import org.bukkit.event.inventory.InventoryCloseEvent;
 import org.bukkit.event.inventory.InventoryOpenEvent;
@@ -73,6 +75,15 @@ public class Events implements Listener {
     public static TObjectIntHashMap<String> recipeWindows = new TObjectIntHashMap<String>();
     public static HashMap<String, Set<Integer>> drops = new HashMap<String, Set<Integer>>();
     public static boolean useLocaleInv = false;
+    
+    @EventHandler
+    public void onHangingBreak(HangingBreakEvent e) {
+    	if(e.getCause().equals(RemoveCause.EXPLOSION))
+    		if(e.getEntity().hasMetadata("Rumble")) {
+    			e.getEntity().removeMetadata("Rumble", Plugin.plugin); //Allow the entity to be broken again
+        		e.setCancelled(true);
+    		}
+    }
 
     @SuppressWarnings("deprecation")
 	@EventHandler(ignoreCancelled = true)

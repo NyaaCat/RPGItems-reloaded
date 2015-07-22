@@ -18,13 +18,18 @@ package think.rpgitems.power;
 
 import java.util.Random;
 
+import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
 import org.bukkit.Effect;
 import org.bukkit.Location;
 import org.bukkit.block.Block;
 import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.entity.Entity;
+import org.bukkit.entity.EntityType;
+import org.bukkit.entity.ItemFrame;
+import org.bukkit.entity.Painting;
 import org.bukkit.entity.Player;
+import org.bukkit.metadata.FixedMetadataValue;
 import org.bukkit.scheduler.BukkitRunnable;
 import org.bukkit.util.Vector;
 
@@ -101,12 +106,17 @@ public class PowerRumble extends Power implements PowerRightClick {
                         }
                     }
                     if (hit) {
-                        location.getWorld().createExplosion(location.getX(), location.getY(), location.getZ(), power, false, false);
                         near = getNearbyEntities(location, 2.5);
                         for (Entity e : near) {
-                            if (e != player)
+                            if (e != player) {
+                            	if(e instanceof ItemFrame || e instanceof Painting) {
+                            		e.setMetadata("Rumble", new FixedMetadataValue(Plugin.plugin, null)); //Add metadata to protect hanging entities from the explosion
+                            		continue;
+                            	}
                                 e.setVelocity(new Vector(random.nextGaussian() / 4d, 1d + random.nextDouble() * (double) power, random.nextGaussian() / 4d));
+                            }
                         }
+                        location.getWorld().createExplosion(location.getX(), location.getY(), location.getZ(), power, false, false); //Trigger the explosion after all hanging entities have been protected
                         cancel();
                         return;
                     }
