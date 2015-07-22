@@ -180,6 +180,7 @@ public class Plugin extends JavaPlugin {
 
     @Override
     public void onDisable() {
+    	this.getServer().getScheduler().cancelAllTasks();
     }
 
     @Override

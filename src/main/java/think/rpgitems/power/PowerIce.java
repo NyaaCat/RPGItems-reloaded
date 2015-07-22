@@ -21,6 +21,7 @@ import gnu.trove.map.hash.TObjectLongHashMap;
 import java.util.List;
 import java.util.Random;
 
+import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
 import org.bukkit.Effect;
 import org.bukkit.Location;
@@ -95,7 +96,8 @@ public class PowerIce extends Power implements PowerRightClick {
                     }
                     if (block.isDead() || hit) {
                         block.remove();
-                        block.getLocation().getBlock().setType(Material.AIR);
+                        if ( !block.getLocation().getBlock().getType().isSolid() && !block.getLocation().getBlock().getType().toString().contains("SIGN"))
+                        	block.getLocation().getBlock().setType(Material.AIR);
                         cancel();
                         final TObjectLongHashMap<Location> changedBlocks = new gnu.trove.map.hash.TObjectLongHashMap<Location>();
                         for (int x = -1; x < 2; x++) {
@@ -103,7 +105,7 @@ public class PowerIce extends Power implements PowerRightClick {
                                 for (int z = -1; z < 2; z++) {
                                     Location loc = block.getLocation().add(x, y, z);
                                     Block b = world.getBlockAt(loc);
-                                    if (!b.getType().isSolid()) {
+                                    if (!b.getType().isSolid() && !b.getType().toString().contains("SIGN")) {
                                         changedBlocks.put(b.getLocation(), b.getTypeId() | (b.getData() << 16));
                                         b.setType(Material.ICE);
                                     }

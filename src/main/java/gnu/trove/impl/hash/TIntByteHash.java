@@ -216,7 +216,7 @@ abstract public class TIntByteHash extends TPrimitiveHash {
      * @return the index of <tt>val</tt> or -1 if it isn't in the set.
      */
     protected int index( int key ) {
-        int hash, probe, index, length;
+        int hash, index, length;
 
         final byte[] states = _states;
         final int[] set = _set;

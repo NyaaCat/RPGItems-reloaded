@@ -29,7 +29,6 @@ import gnu.trove.procedure.TCharProcedure;
 import gnu.trove.procedure.TObjectProcedure;
 import gnu.trove.iterator.TCharIterator;
 import gnu.trove.iterator.TCharObjectIterator;
-import gnu.trove.iterator.TPrimitiveIterator;
 import gnu.trove.function.TObjectFunction;
 import gnu.trove.set.TCharSet;
 import gnu.trove.TCharCollection;

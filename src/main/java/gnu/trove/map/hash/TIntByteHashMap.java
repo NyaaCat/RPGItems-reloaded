@@ -30,7 +30,6 @@ import gnu.trove.function.TByteFunction;
 import gnu.trove.procedure.*;
 import gnu.trove.set.*;
 import gnu.trove.iterator.*;
-import gnu.trove.iterator.hash.*;
 import gnu.trove.impl.hash.*;
 import gnu.trove.impl.HashFunctions;
 import gnu.trove.*;
@@ -496,8 +495,6 @@ public class TIntByteHashMap extends TIntByteHash implements TIntByteMap, Extern
             newValue = ( _values[index] = put_amount );
             isNewMapping = true;
         }
-
-        byte previousState = _states[index];
 
         if ( isNewMapping ) {
             postInsertHook(consumeFreeSlot);
