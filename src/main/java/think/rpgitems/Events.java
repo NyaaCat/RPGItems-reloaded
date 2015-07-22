@@ -85,7 +85,6 @@ public class Events implements Listener {
     		}
     }
 
-    @SuppressWarnings("deprecation")
 	@EventHandler(ignoreCancelled = true)
     public void onBlockBreak(BlockBreakEvent e) {
         Player player = e.getPlayer();
@@ -150,7 +149,6 @@ public class Events implements Listener {
         }
     }
 
-    @SuppressWarnings("deprecation")
     @EventHandler
     public void onProjectileFire(ProjectileLaunchEvent e) {
         ProjectileSource shooter = e.getEntity().getShooter();
@@ -197,7 +195,7 @@ public class Events implements Listener {
             	e.setCancelled(true);
       	        player.sendMessage(ChatColor.RED + String.format(Locale.get("message.error.permission", Locale.getPlayerLocale(player))));}    
             rItem.rightClick(player);
-            if (player.getItemInHand().getTypeId() != 0){
+            if (!player.getItemInHand().getType().equals(Material.AIR)){
                 RPGItem.updateItem(item, Locale.getPlayerLocale(player));
             }else 
                 player.setItemInHand(null);
@@ -291,7 +289,7 @@ public class Events implements Listener {
     public void onInventoryClick(InventoryClickEvent e) {
         if (useLocaleInv && e.getView() instanceof LocaleInventory) {
             LocaleInventory inv = (LocaleInventory) e.getView();
-            InventoryClickEvent clickEvent = new InventoryClickEvent(inv.getView(), e.getSlotType(), e.getRawSlot(), e.isRightClick(), e.isShiftClick());
+            InventoryClickEvent clickEvent = new InventoryClickEvent(inv.getView(), e.getSlotType(), e.getSlot(), e.getClick(), e.getAction());
             Bukkit.getServer().getPluginManager().callEvent(clickEvent);
             if (clickEvent.isCancelled()) {
                 e.setCancelled(true);
@@ -342,7 +340,6 @@ public class Events implements Listener {
 
     private Random random = new Random();
 
-    @SuppressWarnings("deprecation")
     private double playerDamager(EntityDamageByEntityEvent e, double damage) {
         Player player = (Player) e.getDamager();
         ItemStack item = player.getItemInHand();

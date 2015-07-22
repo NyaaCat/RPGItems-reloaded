@@ -339,7 +339,8 @@ public class Handler implements CommandHandler {
         ItemManager.save(Plugin.plugin);
     }
 
-    @CommandString("rpgitem $n[] item $itemid:i[]")
+    @SuppressWarnings("deprecation")
+	@CommandString("rpgitem $n[] item $itemid:i[]")
     @CommandDocumentation("$command.rpgitem.item.set.id")
     @CommandGroup("item_item")
     public void setItemItem(CommandSender sender, RPGItem item, int id) {
@@ -354,7 +355,8 @@ public class Handler implements CommandHandler {
         ItemManager.save(Plugin.plugin);
     }
 
-    @CommandString("rpgitem $n[] item $itemid:i[] $data:i[]")
+    @SuppressWarnings("deprecation")
+	@CommandString("rpgitem $n[] item $itemid:i[] $data:i[]")
     @CommandDocumentation("$command.rpgitem.item.set.id.data")
     @CommandGroup("item_item")
     public void setItemItem(CommandSender sender, RPGItem item, int id, int data) {

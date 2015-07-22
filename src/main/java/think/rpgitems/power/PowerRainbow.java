@@ -43,7 +43,8 @@ public class PowerRainbow extends Power implements PowerRightClick {
     public int count = 5;
     private Random random = new Random();
 
-    @Override
+    @SuppressWarnings("deprecation")
+	@Override
     public void rightClick(Player player) {
         long cooldown;
         if (item.getHasPermission() == true && player.hasPermission(item.getPermission()) == false){
@@ -78,7 +79,7 @@ public class PowerRainbow extends Power implements PowerRightClick {
                         if (random.nextBoolean()) {
                             Block b = loc.getBlock();
                             if (b.getType() == Material.WOOL) {
-                                loc.getWorld().playEffect(loc, Effect.STEP_SOUND, Material.WOOL.getId(), b.getData());
+                                loc.getWorld().playEffect(loc, Effect.STEP_SOUND, Material.WOOL, b.getData());
                                 b.setType(Material.AIR);
                             }
                             l.remove();

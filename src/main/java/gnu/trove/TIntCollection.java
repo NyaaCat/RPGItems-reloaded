@@ -29,7 +29,6 @@ import gnu.trove.iterator.TIntIterator;
 import gnu.trove.procedure.TIntProcedure;
 
 import java.util.Collection;
-import java.io.Serializable;
 
 /**
  * An interface that mimics the <tt>Collection</tt> interface.

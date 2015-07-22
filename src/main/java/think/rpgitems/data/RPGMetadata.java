@@ -186,8 +186,9 @@ public class RPGMetadata extends TIntObjectHashMap<Object> {
         insertByte(out, offset + 4, s & 0xFF);
     }
 
-    private void insertInt(StringBuilder out, int offset, int s) {
-        insertShort(out, offset, s >> 16);
-        insertShort(out, offset + 8, s & 0xFFFF);
-    }
+    //Unused
+//    private void insertInt(StringBuilder out, int offset, int s) {
+//        insertShort(out, offset, s >> 16);
+//        insertShort(out, offset + 8, s & 0xFFFF);
+//    }
 }

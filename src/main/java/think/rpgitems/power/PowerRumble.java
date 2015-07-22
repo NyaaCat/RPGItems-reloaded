@@ -91,7 +91,7 @@ public class PowerRumble extends Power implements PowerRightClick {
                             temp.setX(x + location.getBlockX());
                             temp.setZ(z + location.getBlockZ());
                             Block block = temp.getBlock();
-                            temp.getWorld().playEffect(temp, Effect.STEP_SOUND, block.getTypeId());
+                            temp.getWorld().playEffect(temp, Effect.STEP_SOUND, block.getType());
                         }
                     }
                     Entity[] near = getNearbyEntities(location, 1.5);

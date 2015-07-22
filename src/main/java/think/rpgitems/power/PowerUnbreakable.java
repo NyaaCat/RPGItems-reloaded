@@ -26,7 +26,6 @@ import think.rpgitems.power.types.PowerHit;
 
 public class PowerUnbreakable extends Power implements PowerHit {
 
-    @SuppressWarnings("deprecation")
     @Override
     public void hit(Player player, LivingEntity e, double damage) {
         player.getItemInHand().setDurability((short) 0);

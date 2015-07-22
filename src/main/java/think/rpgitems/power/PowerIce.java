@@ -21,7 +21,6 @@ import gnu.trove.map.hash.TObjectLongHashMap;
 import java.util.List;
 import java.util.Random;
 
-import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
 import org.bukkit.Effect;
 import org.bukkit.Location;
@@ -44,7 +43,8 @@ public class PowerIce extends Power implements PowerRightClick {
 
     public long cooldownTime = 20;
 
-    @Override
+    @SuppressWarnings("deprecation")
+	@Override
     public void rightClick(final Player player) {
         long cooldown;
         if (item.getHasPermission() == true && player.hasPermission(item.getPermission()) == false){
@@ -64,7 +64,6 @@ public class PowerIce extends Power implements PowerRightClick {
             block.setDropItem(false);
             BukkitRunnable run = new BukkitRunnable() {
 
-                @SuppressWarnings("deprecation")
 				public void run() {
                     boolean hit = false;
                     World world = block.getWorld();
@@ -73,7 +72,7 @@ public class PowerIce extends Power implements PowerRightClick {
                         for (int y = -1; y < 2; y++) {
                             for (int z = -1; z < 2; z++) {
                                 Location loc = block.getLocation().add(x, y, z);
-                                if (world.getBlockTypeIdAt(loc) != Material.AIR.getId()) {
+                                if (world.getBlockAt(loc).getType() != Material.AIR) {
                                     Block b = world.getBlockAt(loc);
                                     if (b.getType().isSolid()) {
                                         if (checkBlock(loc.getBlockX(), loc.getBlockY(), loc.getBlockZ(), 1, 1, 1, bLoc.getX() - 0.5d, bLoc.getY() - 0.5d, bLoc.getZ() - 0.5d, 1, 1, 1)) {
@@ -114,8 +113,8 @@ public class PowerIce extends Power implements PowerRightClick {
                         }
                         (new BukkitRunnable() {
                             Random random = new Random();
-
-                            @SuppressWarnings("deprecation")
+                            
+                            @Override
 							public void run() {
                                 for (int i = 0; i < 4; i++) {
                                     if (changedBlocks.isEmpty()) {

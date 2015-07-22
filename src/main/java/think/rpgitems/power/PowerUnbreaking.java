@@ -31,7 +31,6 @@ public class PowerUnbreaking extends Power implements PowerHit {
     public int level = 1;
     private Random random = new Random();
 
-    @SuppressWarnings("deprecation")
     @Override
     public void hit(Player player, LivingEntity e, double damage) {
         if (random.nextDouble() < ((double) level) / 100d) {

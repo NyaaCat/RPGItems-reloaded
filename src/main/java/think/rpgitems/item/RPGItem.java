@@ -16,8 +16,6 @@
  */
 package think.rpgitems.item;
 
-import gnu.trove.map.hash.TObjectDoubleHashMap;
-
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -35,7 +33,6 @@ import org.bukkit.Material;
 import org.bukkit.command.CommandSender;
 import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.configuration.MemoryConfiguration;
-import org.bukkit.enchantments.Enchantment;
 import org.bukkit.entity.LivingEntity;
 import org.bukkit.entity.Player;
 import org.bukkit.entity.Projectile;
@@ -45,6 +42,7 @@ import org.bukkit.inventory.ShapedRecipe;
 import org.bukkit.inventory.meta.ItemMeta;
 import org.bukkit.inventory.meta.LeatherArmorMeta;
 
+import gnu.trove.map.hash.TObjectDoubleHashMap;
 import think.rpgitems.Events;
 import think.rpgitems.Plugin;
 import think.rpgitems.data.Font;
@@ -301,7 +299,7 @@ public class RPGItem {
             shapedRecipe.shape(new String[] { shape.substring(0, 3), shape.substring(3, 6), shape.substring(6, 9) });
             for (Entry<ItemStack, Character> e : iMap.entrySet()) {
                 if (e.getKey() != null) {
-                    shapedRecipe.setIngredient(e.getValue(), e.getKey().getType(), e.getKey().getDurability());
+                    shapedRecipe.setIngredient(e.getValue(), e.getKey().getData());
                 }
             }
             Bukkit.addRecipe(shapedRecipe);

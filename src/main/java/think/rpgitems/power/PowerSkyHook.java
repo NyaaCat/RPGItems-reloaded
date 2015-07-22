@@ -35,7 +35,7 @@ public class PowerSkyHook extends Power implements PowerRightClick {
             isHooking.set(false);
             return;
         }
-        Block block = player.getTargetBlock((Set)null, hookDistance);
+        Block block = player.getTargetBlock((Set<Material>)null, hookDistance);
         if (block.getType() != railMaterial) {
             player.sendMessage(ChatColor.AQUA + Locale.get("message.skyhook.fail", Locale.getPlayerLocale(player)));
             return;
