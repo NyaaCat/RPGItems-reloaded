@@ -16,48 +16,47 @@
  */
 package think.rpgitems.power;
 
-import java.util.Random;
-
 import org.bukkit.ChatColor;
 import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.entity.LivingEntity;
 import org.bukkit.entity.Player;
-
 import think.rpgitems.data.Locale;
 import think.rpgitems.power.types.PowerHit;
 
+import java.util.Random;
+
 public class PowerUnbreaking extends Power implements PowerHit {
 
-	public int level = 1;
-	private Random random = new Random();
+    public int level = 1;
+    private Random random = new Random();
 
-	@Override
-	public void hit(Player player, LivingEntity e, double damage) {
-		if (random.nextDouble() < ((double) level) / 100d) {
-			System.out.println(player.getItemInHand().getDurability());
-			player.getItemInHand().setDurability((short) (player.getItemInHand().getDurability() - 1));
-			System.out.println(player.getItemInHand().getDurability());
-			player.updateInventory();
-		}
-	}
+    @Override
+    public void hit(Player player, LivingEntity e, double damage) {
+        if (random.nextDouble() < ((double) level) / 100d) {
+            System.out.println(player.getItemInHand().getDurability());
+            player.getItemInHand().setDurability((short) (player.getItemInHand().getDurability() - 1));
+            System.out.println(player.getItemInHand().getDurability());
+            player.updateInventory();
+        }
+    }
 
-	@Override
-	public void init(ConfigurationSection s) {
-		level = s.getInt("level", 1);
-	}
+    @Override
+    public void init(ConfigurationSection s) {
+        level = s.getInt("level", 1);
+    }
 
-	@Override
-	public void save(ConfigurationSection s) {
-		s.set("level", level);
-	}
+    @Override
+    public void save(ConfigurationSection s) {
+        s.set("level", level);
+    }
 
-	@Override
-	public String getName() {
-		return "unbreaking";
-	}
+    @Override
+    public String getName() {
+        return "unbreaking";
+    }
 
-	@Override
-	public String displayText(String locale) {
-		return String.format(ChatColor.GREEN + Locale.get("power.unbreaking", locale), level);
-	}
+    @Override
+    public String displayText(String locale) {
+        return String.format(ChatColor.GREEN + Locale.get("power.unbreaking", locale), level);
+    }
 }
