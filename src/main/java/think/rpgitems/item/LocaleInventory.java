@@ -15,69 +15,69 @@ import org.bukkit.inventory.meta.LeatherArmorMeta;
 import think.rpgitems.data.Locale;
 
 public class LocaleInventory extends InventoryView {
-    
-    private Player player;
-    private InventoryView view;
-    private Inventory real;
-    private Inventory fake;
-    private String locale;
-    
-    public LocaleInventory(Player player, InventoryView inventoryView) {
-        locale = Locale.getPlayerLocale(player);
-        this.player = player;
-        real = inventoryView.getTopInventory();
-        view = inventoryView;
-        fake = Bukkit.createInventory(real.getHolder(), real.getSize(), real.getTitle());
-        reload();
-    }
-    
-    public InventoryView getView() {
-        return view;
-    }
-    
-    public void reload() {
-        fake.setContents(real.getContents());
-        Iterator<ItemStack> it = fake.iterator();
-        while (it.hasNext()) {
-            ItemStack item = it.next();
-            RPGItem rItem = ItemManager.toRPGItem(item);
-            if (rItem == null)
-                continue;
-            item.setType(rItem.getItem());
-            ItemMeta meta = rItem.getLocaleMeta(locale);
-            if (!(meta instanceof LeatherArmorMeta) && rItem.getItem().isBlock())
-                item.setDurability(rItem.getDataValue());
-            item.setItemMeta(meta);
-        }
-        fake.setContents(fake.getContents());
-    }
-    
-    public Inventory getReal() {
-        return real;
-    }
 
-    @Override
-    public Inventory getBottomInventory() {
-        return player.getInventory();
-    }
+	private Player player;
+	private InventoryView view;
+	private Inventory real;
+	private Inventory fake;
+	private String locale;
 
-    @Override
-    public HumanEntity getPlayer() {
-        return player;
-    }
+	public LocaleInventory(Player player, InventoryView inventoryView) {
+		locale = Locale.getPlayerLocale(player);
+		this.player = player;
+		real = inventoryView.getTopInventory();
+		view = inventoryView;
+		fake = Bukkit.createInventory(real.getHolder(), real.getSize(), real.getTitle());
+		reload();
+	}
 
-    @Override
-    public Inventory getTopInventory() {
-        return fake;
-    }
+	public InventoryView getView() {
+		return view;
+	}
 
-    @Override
-    public InventoryType getType() {
-        return InventoryType.CHEST;
-    }
+	public void reload() {
+		fake.setContents(real.getContents());
+		Iterator<ItemStack> it = fake.iterator();
+		while (it.hasNext()) {
+			ItemStack item = it.next();
+			RPGItem rItem = ItemManager.toRPGItem(item);
+			if (rItem == null)
+				continue;
+			item.setType(rItem.getItem());
+			ItemMeta meta = rItem.getLocaleMeta(locale);
+			if (!(meta instanceof LeatherArmorMeta) && rItem.getItem().isBlock())
+				item.setDurability(rItem.getDataValue());
+			item.setItemMeta(meta);
+		}
+		fake.setContents(fake.getContents());
+	}
 
-    public void sumbitChanges() {
-        real.setContents(fake.getContents());
-    }
+	public Inventory getReal() {
+		return real;
+	}
+
+	@Override
+	public Inventory getBottomInventory() {
+		return player.getInventory();
+	}
+
+	@Override
+	public HumanEntity getPlayer() {
+		return player;
+	}
+
+	@Override
+	public Inventory getTopInventory() {
+		return fake;
+	}
+
+	@Override
+	public InventoryType getType() {
+		return InventoryType.CHEST;
+	}
+
+	public void sumbitChanges() {
+		real.setContents(fake.getContents());
+	}
 
 }

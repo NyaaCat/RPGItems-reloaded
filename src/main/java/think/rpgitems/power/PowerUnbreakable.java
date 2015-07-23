@@ -26,29 +26,29 @@ import think.rpgitems.power.types.PowerHit;
 
 public class PowerUnbreakable extends Power implements PowerHit {
 
-    @Override
-    public void hit(Player player, LivingEntity e, double damage) {
-        player.getItemInHand().setDurability((short) 0);
-        player.updateInventory();
-    }
+	@Override
+	public void hit(Player player, LivingEntity e, double damage) {
+		player.getItemInHand().setDurability((short) 0);
+		player.updateInventory();
+	}
 
-    @Override
-    public void init(ConfigurationSection s) {
+	@Override
+	public void init(ConfigurationSection s) {
 
-    }
+	}
 
-    @Override
-    public void save(ConfigurationSection s) {
+	@Override
+	public void save(ConfigurationSection s) {
 
-    }
+	}
 
-    @Override
-    public String getName() {
-        return "unbreakable";
-    }
+	@Override
+	public String getName() {
+		return "unbreakable";
+	}
 
-    @Override
-    public String displayText(String locale) {
-        return ChatColor.GREEN + Locale.get("power.unbreakable", locale);
-    }
+	@Override
+	public String displayText(String locale) {
+		return ChatColor.GREEN + Locale.get("power.unbreakable", locale);
+	}
 }

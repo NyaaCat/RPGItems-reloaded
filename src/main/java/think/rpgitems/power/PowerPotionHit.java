@@ -30,42 +30,42 @@ import think.rpgitems.power.types.PowerHit;
 
 public class PowerPotionHit extends Power implements PowerHit {
 
-    public int chance = 20;
-    private Random random = new Random();
-    public PotionEffectType type = PotionEffectType.HARM;
-    public int duration = 20;
-    public int amplifier = 1;
+	public int chance = 20;
+	private Random random = new Random();
+	public PotionEffectType type = PotionEffectType.HARM;
+	public int duration = 20;
+	public int amplifier = 1;
 
-    @Override
-    public void hit(Player player, LivingEntity e, double damage) {
-        if (item.getHasPermission() == true && player.hasPermission(item.getPermission()) == false){
-        }else if (random.nextInt(chance) == 0)
-            e.addPotionEffect(new PotionEffect(type, duration, amplifier));
-    }
+	@Override
+	public void hit(Player player, LivingEntity e, double damage) {
+		if (item.getHasPermission() == true && player.hasPermission(item.getPermission()) == false) {
+		} else if (random.nextInt(chance) == 0)
+			e.addPotionEffect(new PotionEffect(type, duration, amplifier));
+	}
 
-    @Override
-    public String displayText(String locale) {
-        return ChatColor.GREEN + String.format(Locale.get("power.potionhit", locale), (int) ((1d / (double) chance) * 100d), type.getName().toLowerCase().replace('_', ' '));
-    }
+	@Override
+	public String displayText(String locale) {
+		return ChatColor.GREEN + String.format(Locale.get("power.potionhit", locale), (int) ((1d / (double) chance) * 100d), type.getName().toLowerCase().replace('_', ' '));
+	}
 
-    @Override
-    public String getName() {
-        return "potionhit";
-    }
+	@Override
+	public String getName() {
+		return "potionhit";
+	}
 
-    @Override
-    public void init(ConfigurationSection s) {
-        chance = s.getInt("chance", 20);
-        duration = s.getInt("duration", 20);
-        amplifier = s.getInt("amplifier", 1);
-        type = PotionEffectType.getByName(s.getString("type", PotionEffectType.HARM.getName()));
-    }
+	@Override
+	public void init(ConfigurationSection s) {
+		chance = s.getInt("chance", 20);
+		duration = s.getInt("duration", 20);
+		amplifier = s.getInt("amplifier", 1);
+		type = PotionEffectType.getByName(s.getString("type", PotionEffectType.HARM.getName()));
+	}
 
-    @Override
-    public void save(ConfigurationSection s) {
-        s.set("chance", chance);
-        s.set("duration", duration);
-        s.set("amplifier", amplifier);
-        s.set("type", type.getName());
-    }
+	@Override
+	public void save(ConfigurationSection s) {
+		s.set("chance", chance);
+		s.set("duration", duration);
+		s.set("amplifier", amplifier);
+		s.set("type", type.getName());
+	}
 }

@@ -8,6 +8,7 @@ import java.lang.annotation.Target;
 @Retention(RetentionPolicy.RUNTIME)
 @Target(ElementType.METHOD)
 public @interface CommandString {
-    String value();
-    boolean handlePermissions() default false;
+	String value();
+
+	boolean handlePermissions() default false;
 }

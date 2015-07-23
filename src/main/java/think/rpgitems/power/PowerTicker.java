@@ -10,22 +10,22 @@ import think.rpgitems.item.RPGItem;
 
 public class PowerTicker extends BukkitRunnable {
 
-    @Override
-    public void run() {
-        for (Player player : Bukkit.getOnlinePlayers()) {
-            ItemStack[] armour = player.getInventory().getArmorContents();
-            for (ItemStack part : armour) {
-                RPGItem item = ItemManager.toRPGItem(part);
-                if (item == null)
-                    continue;
-                item.tick(player);
-            }
-            ItemStack part = player.getItemInHand();
-            RPGItem item = ItemManager.toRPGItem(part);
-            if (item == null)
-                continue;
-            item.tick(player);
-        }
-    }
+	@Override
+	public void run() {
+		for (Player player : Bukkit.getOnlinePlayers()) {
+			ItemStack[] armour = player.getInventory().getArmorContents();
+			for (ItemStack part : armour) {
+				RPGItem item = ItemManager.toRPGItem(part);
+				if (item == null)
+					continue;
+				item.tick(player);
+			}
+			ItemStack part = player.getItemInHand();
+			RPGItem item = ItemManager.toRPGItem(part);
+			if (item == null)
+				continue;
+			item.tick(player);
+		}
+	}
 
 }

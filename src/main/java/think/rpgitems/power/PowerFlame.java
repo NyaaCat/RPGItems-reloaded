@@ -26,33 +26,33 @@ import think.rpgitems.power.types.PowerHit;
 
 public class PowerFlame extends Power implements PowerHit {
 
-    public int burnTime = 20;
+	public int burnTime = 20;
 
-    @Override
-    public void hit(Player player, LivingEntity e, double damage) {
-        if (item.getHasPermission() == true && player.hasPermission(item.getPermission()) == false){
-        }else{  
-    	e.setFireTicks(burnTime);
-    }
-    }
+	@Override
+	public void hit(Player player, LivingEntity e, double damage) {
+		if (item.getHasPermission() == true && player.hasPermission(item.getPermission()) == false) {
+		} else {
+			e.setFireTicks(burnTime);
+		}
+	}
 
-    @Override
-    public String displayText(String locale) {
-        return ChatColor.GREEN + String.format(Locale.get("power.flame", locale), (double) burnTime / 20d);
-    }
+	@Override
+	public String displayText(String locale) {
+		return ChatColor.GREEN + String.format(Locale.get("power.flame", locale), (double) burnTime / 20d);
+	}
 
-    @Override
-    public String getName() {
-        return "flame";
-    }
+	@Override
+	public String getName() {
+		return "flame";
+	}
 
-    @Override
-    public void init(ConfigurationSection s) {
-        burnTime = s.getInt("burntime");
-    }
+	@Override
+	public void init(ConfigurationSection s) {
+		burnTime = s.getInt("burntime");
+	}
 
-    @Override
-    public void save(ConfigurationSection s) {
-        s.set("burntime", burnTime);
-    }
+	@Override
+	public void save(ConfigurationSection s) {
+		s.set("burntime", burnTime);
+	}
 }
