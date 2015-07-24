@@ -37,7 +37,7 @@ public class PowerSkyHook extends Power implements PowerRightClick {
 			}
 			Block block = player.getTargetBlock((Set<Material>) null, hookDistance);
 			if (block.getType() != railMaterial) {
-				player.sendMessage(ChatColor.AQUA + Locale.get("message.skyhook.fail", Locale.getPlayerLocale(player)));
+				player.sendMessage(ChatColor.AQUA + Locale.get("message.skyhook.fail"));
 				return;
 			}
 			isHooking.set(true);
@@ -108,8 +108,8 @@ public class PowerSkyHook extends Power implements PowerRightClick {
 	}
 
 	@Override
-	public String displayText(String locale) {
-		return ChatColor.GREEN + Locale.get("power.skyhook", locale);
+	public String displayText() {
+		return ChatColor.GREEN + Locale.get("power.skyhook");
 	}
 
 }

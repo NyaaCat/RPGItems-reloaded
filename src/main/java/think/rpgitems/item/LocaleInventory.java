@@ -12,18 +12,14 @@ import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.ItemMeta;
 import org.bukkit.inventory.meta.LeatherArmorMeta;
 
-import think.rpgitems.data.Locale;
-
 public class LocaleInventory extends InventoryView {
 
 	private Player player;
 	private InventoryView view;
 	private Inventory real;
 	private Inventory fake;
-	private String locale;
 
 	public LocaleInventory(Player player, InventoryView inventoryView) {
-		locale = Locale.getPlayerLocale(player);
 		this.player = player;
 		real = inventoryView.getTopInventory();
 		view = inventoryView;
@@ -44,7 +40,7 @@ public class LocaleInventory extends InventoryView {
 			if (rItem == null)
 				continue;
 			item.setType(rItem.getItem());
-			ItemMeta meta = rItem.getLocaleMeta(locale);
+			ItemMeta meta = rItem.getLocaleMeta();
 			if (!(meta instanceof LeatherArmorMeta) && rItem.getItem().isBlock())
 				item.setDurability(rItem.getDataValue());
 			item.setItemMeta(meta);

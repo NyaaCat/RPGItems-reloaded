@@ -47,14 +47,14 @@ public class PowerFireball extends Power implements PowerRightClick {
 				player.playSound(player.getLocation(), Sound.GHAST_FIREBALL, 1.0f, 1.0f);
 				player.launchProjectile(SmallFireball.class);
 			} else {
-				player.sendMessage(ChatColor.AQUA + String.format(Locale.get("message.cooldown", Locale.getPlayerLocale(player)), ((double) (cooldown - System.currentTimeMillis() / 50)) / 20d));
+				player.sendMessage(ChatColor.AQUA + String.format(Locale.get("message.cooldown"), ((double) (cooldown - System.currentTimeMillis() / 50)) / 20d));
 			}
 		}
 	}
 
 	@Override
-	public String displayText(String locale) {
-		return ChatColor.GREEN + String.format(Locale.get("power.fireball", locale), (double) cooldownTime / 20d);
+	public String displayText() {
+		return ChatColor.GREEN + String.format(Locale.get("power.fireball"), (double) cooldownTime / 20d);
 	}
 
 	@Override

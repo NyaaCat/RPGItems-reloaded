@@ -128,7 +128,7 @@ public class PowerRumble extends Power implements PowerRightClick {
 				};
 				task.runTaskTimer(Plugin.plugin, 0, 3);
 			} else {
-				player.sendMessage(ChatColor.AQUA + String.format(Locale.get("message.cooldown", Locale.getPlayerLocale(player)), ((double) (cooldown - System.currentTimeMillis() / 50)) / 20d));
+				player.sendMessage(ChatColor.AQUA + String.format(Locale.get("message.cooldown"), ((double) (cooldown - System.currentTimeMillis() / 50)) / 20d));
 			}
 		}
 	}
@@ -139,7 +139,7 @@ public class PowerRumble extends Power implements PowerRightClick {
 	}
 
 	@Override
-	public String displayText(String locale) {
-		return ChatColor.GREEN + String.format(Locale.get("power.rumble", locale), (double) cooldownTime / 20d);
+	public String displayText() {
+		return ChatColor.GREEN + String.format(Locale.get("power.rumble"), (double) cooldownTime / 20d);
 	}
 }

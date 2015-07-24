@@ -100,7 +100,7 @@ public class Events implements Listener {
 				}
 				meta.put(RPGMetadata.DURABILITY, Integer.valueOf(durability));
 			}
-			RPGItem.updateItem(item, Locale.getPlayerLocale(player), meta);
+			RPGItem.updateItem(item, meta);
 			player.updateInventory();
 		}
 
@@ -122,7 +122,7 @@ public class Events implements Listener {
 				}
 				double chance = item.dropChances.get(type);
 				if (random.nextDouble() < chance / 100d) {
-					e.getDrops().add(item.toItemStack("en_GB"));
+					e.getDrops().add(item.toItemStack());
 				}
 			}
 		}
@@ -161,7 +161,7 @@ public class Events implements Listener {
 				return;
 			if (rItem.getHasPermission() == true && player.hasPermission(rItem.getPermission()) == false) {
 				e.setCancelled(true);
-				player.sendMessage(ChatColor.RED + String.format(Locale.get("message.error.permission", Locale.getPlayerLocale(player))));
+				player.sendMessage(ChatColor.RED + String.format(Locale.get("message.error.permission")));
 			}
 			RPGMetadata meta = RPGItem.getMetadata(item);
 			if (rItem.getMaxDurability() != -1) {
@@ -172,7 +172,7 @@ public class Events implements Listener {
 				}
 				meta.put(RPGMetadata.DURABILITY, Integer.valueOf(durability));
 			}
-			RPGItem.updateItem(item, Locale.getPlayerLocale(player), meta);
+			RPGItem.updateItem(item, meta);
 			player.updateInventory();
 			rpgProjectiles.put(e.getEntity().getEntityId(), rItem.getID());
 		}
@@ -194,11 +194,11 @@ public class Events implements Listener {
 				return;
 			if (rItem.getHasPermission() == true && player.hasPermission(rItem.getPermission()) == false) {
 				e.setCancelled(true);
-				player.sendMessage(ChatColor.RED + String.format(Locale.get("message.error.permission", Locale.getPlayerLocale(player))));
+				player.sendMessage(ChatColor.RED + String.format(Locale.get("message.error.permission")));
 			}
 			rItem.rightClick(player);
 			if (!player.getItemInHand().getType().equals(Material.AIR))
-				RPGItem.updateItem(item, Locale.getPlayerLocale(player));
+				RPGItem.updateItem(item);
 			else
 				player.setItemInHand(null);
 			player.updateInventory();
@@ -214,10 +214,10 @@ public class Events implements Listener {
 				return;
 			if (rItem.getHasPermission() == true && player.hasPermission(rItem.getPermission()) == false) {
 				e.setCancelled(true);
-				player.sendMessage(ChatColor.RED + String.format(Locale.get("message.error.permission", Locale.getPlayerLocale(player))));
+				player.sendMessage(ChatColor.RED + String.format(Locale.get("message.error.permission")));
 			}
 			rItem.leftClick(player);
-			RPGItem.updateItem(item, Locale.getPlayerLocale(player));
+			RPGItem.updateItem(item);
 		}
 
 	}
@@ -238,24 +238,22 @@ public class Events implements Listener {
 	public void onPlayerJoin(PlayerJoinEvent e) {
 		Player player = e.getPlayer();
 		PlayerInventory in = player.getInventory();
-		String locale = Locale.getPlayerLocale(player);
 		for (int i = 0; i < in.getSize(); i++) {
 			ItemStack item = in.getItem(i);
 			if (ItemManager.toRPGItem(item) != null)
-				RPGItem.updateItem(item, locale);
+				RPGItem.updateItem(item);
 		}
 		for (ItemStack item : player.getInventory().getArmorContents()) {
 			if (ItemManager.toRPGItem(item) != null)
-				RPGItem.updateItem(item, locale);
+				RPGItem.updateItem(item);
 		}
 	}
 
 	@EventHandler
 	public void onPlayerPickup(PlayerPickupItemEvent e) {
 		ItemStack item = e.getItem().getItemStack();
-		String locale = Locale.getPlayerLocale(e.getPlayer());
 		if (ItemManager.toRPGItem(item) != null) {
-			RPGItem.updateItem(item, locale);
+			RPGItem.updateItem(item);
 			e.getItem().setItemStack(item);
 		}
 	}
@@ -323,12 +321,11 @@ public class Events implements Listener {
 		if (e.getInventory().getType() != InventoryType.CHEST || !useLocaleInv) {
 			Inventory in = e.getInventory();
 			Iterator<ItemStack> it = in.iterator();
-			String locale = Locale.getPlayerLocale((Player) e.getPlayer());
 			try {
 				while (it.hasNext()) {
 					ItemStack item = it.next();
 					if (ItemManager.toRPGItem(item) != null)
-						RPGItem.updateItem(item, locale);
+						RPGItem.updateItem(item);
 				}
 			} catch (ArrayIndexOutOfBoundsException ex) {
 				// Fix for the bug with anvils in craftbukkit
@@ -357,7 +354,7 @@ public class Events implements Listener {
 		if (rItem.getHasPermission() == true && player.hasPermission(rItem.getPermission()) == false) {
 			damage = 0;
 			e.setCancelled(true);
-			player.sendMessage(ChatColor.RED + String.format(Locale.get("message.error.permission", Locale.getPlayerLocale(player))));
+			player.sendMessage(ChatColor.RED + String.format(Locale.get("message.error.permission")));
 		}
 		damage = rItem.getDamageMin() != rItem.getDamageMax() ? (rItem.getDamageMin() + random.nextInt(rItem.getDamageMax() - rItem.getDamageMin())) : rItem.getDamageMin();
 		if (e.getEntity() instanceof LivingEntity) {
@@ -373,7 +370,7 @@ public class Events implements Listener {
 			}
 			meta.put(RPGMetadata.DURABILITY, Integer.valueOf(durability));
 		}
-		RPGItem.updateItem(item, Locale.getPlayerLocale(player), meta);
+		RPGItem.updateItem(item, meta);
 		player.updateInventory();
 		return damage;
 	}
@@ -397,7 +394,6 @@ public class Events implements Listener {
 		Player p = (Player) e.getEntity();
 		if (e.isCancelled() || !WorldGuard.canPvP(p.getLocation()))
 			return damage;
-		String locale = Locale.getPlayerLocale(p);
 		ItemStack[] armour = p.getInventory().getArmorContents();
 		for (int i = 0; i < armour.length; i++) {
 			ItemStack pArmour = armour[i];
@@ -409,7 +405,7 @@ public class Events implements Listener {
 			if (pRItem.getHasPermission() == true && p.hasPermission(pRItem.getPermission()) == false) {
 				damage = 0;
 				e.setCancelled(true);
-				p.sendMessage(ChatColor.RED + String.format(Locale.get("message.error.permission", Locale.getPlayerLocale(p))));
+				p.sendMessage(ChatColor.RED + String.format(Locale.get("message.error.permission")));
 			}
 			if (pRItem.getArmour() > 0) {
 				damage -= Math.round(((double) damage) * (((double) pRItem.getArmour()) / 100d));
@@ -423,7 +419,7 @@ public class Events implements Listener {
 				}
 				meta.put(RPGMetadata.DURABILITY, Integer.valueOf(durability));
 			}
-			RPGItem.updateItem(pArmour, locale, meta);
+			RPGItem.updateItem(pArmour, meta);
 		}
 		p.getInventory().setArmorContents(armour);
 		p.updateInventory();

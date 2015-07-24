@@ -1,4 +1,4 @@
-name: RPG Items
+name: RPGItems
 main: think.rpgitems.Plugin
 version: 3.5
 dev-url: http://rpgitems2.webs.com/

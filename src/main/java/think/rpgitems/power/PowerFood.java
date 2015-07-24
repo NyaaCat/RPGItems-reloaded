@@ -62,7 +62,7 @@ public class PowerFood extends Power implements PowerRightClick {
 	}
 
 	@Override
-	public String displayText(String locale) {
-		return ChatColor.GREEN + String.format(Locale.get("power.food", locale), foodpoints);
+	public String displayText() {
+		return ChatColor.GREEN + String.format(Locale.get("power.food"), foodpoints);
 	}
 }

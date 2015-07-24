@@ -100,7 +100,7 @@ public class Plugin extends JavaPlugin {
 
 	@Override
 	public void onEnable() {
-		Locale.init(this);
+		new Locale(this);
 		updateConfig();
 		WorldGuard.init(this);
 		ConfigurationSection conf = getConfig();

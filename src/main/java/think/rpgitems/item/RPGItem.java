@@ -58,7 +58,7 @@ import think.rpgitems.power.types.PowerTick;
 public class RPGItem {
 	private ItemStack item;
 
-	private HashMap<String, ItemMeta> localeMeta = new HashMap<String, ItemMeta>();
+	private static ItemMeta localeMeta;
 
 	private int id;
 	private String name;
@@ -107,7 +107,7 @@ public class RPGItem {
 
 		displayName = item.getType().toString();
 
-		localeMeta.put("en_GB", item.getItemMeta());
+		localeMeta = item.getItemMeta();
 
 		rebuild();
 	}
@@ -136,9 +136,7 @@ public class RPGItem {
 		} else {
 			item.setDurability((short) s.getInt("item_data", 0));
 		}
-		for (String locale : Locale.getLocales()) {
-			localeMeta.put(locale, meta.clone());
-		}
+		localeMeta = meta.clone();
 		ignoreWorldGuard = s.getBoolean("ignoreWorldGuard", false);
 
 		// Powers
@@ -229,7 +227,7 @@ public class RPGItem {
 		s.set("item", item.getType().toString());
 		s.set("ignoreWorldGuard", ignoreWorldGuard);
 
-		ItemMeta meta = localeMeta.get("en_GB");
+		ItemMeta meta = localeMeta;
 		if (meta instanceof LeatherArmorMeta) {
 			s.set("item_colour", ((LeatherArmorMeta) meta).getColor().asRGB());
 		} else {
@@ -280,7 +278,7 @@ public class RPGItem {
 				iSet.add(m);
 			}
 			ItemStack[] iList = iSet.toArray(new ItemStack[iSet.size()]);
-			item.setItemMeta(getLocaleMeta("en_GB"));
+			item.setItemMeta(localeMeta);
 			ShapedRecipe shapedRecipe = new ShapedRecipe(item);
 			int i = 0;
 			Map<ItemStack, Character> iMap = new HashMap<ItemStack, Character>();
@@ -335,35 +333,30 @@ public class RPGItem {
 	}
 
 	public void rebuild() {
-		for (String locale : Locale.getLocales()) {
-			if (!localeMeta.containsKey(locale))
-				localeMeta.put(locale, getLocaleMeta("en_GB"));
-		}
-		for (String locale : Locale.getLocales()) {
-			List<String> lines = getTooltipLines(locale);
-			ItemMeta meta = getLocaleMeta(locale);
-			meta.setDisplayName(lines.get(0));
-			lines.remove(0);
-			meta.setLore(lines);
-			setLocaleMeta(locale, meta);
-			// item.setItemMeta(meta);
-		}
+		List<String> lines = getTooltipLines();
+		localeMeta.setDisplayName(lines.get(0));
+		lines.remove(0);
+		localeMeta.setLore(lines);
+		item.setItemMeta(localeMeta);
 
 		for (Player player : Bukkit.getOnlinePlayers()) {
 			Iterator<ItemStack> it = player.getInventory().iterator();
-			String locale = Locale.getPlayerLocale(player);
 			while (it.hasNext()) {
 				ItemStack item = it.next();
 				if (ItemManager.toRPGItem(item) != null)
-					updateItem(item, locale, false);
+					updateItem(item, false);
 			}
 			for (ItemStack item : player.getInventory().getArmorContents()) {
 				if (ItemManager.toRPGItem(item) != null)
-					updateItem(item, locale, false);
+					updateItem(item, false);
 
 			}
 		}
 		resetRecipe(true);
+	}
+	
+	public ItemMeta getLocaleMeta() {
+		return localeMeta;
 	}
 
 	public static RPGMetadata getMetadata(ItemStack item) {
@@ -375,24 +368,24 @@ public class RPGItem {
 		return RPGMetadata.parseLoreline(item.getItemMeta().getLore().get(0));
 	}
 
-	public static void updateItem(ItemStack item, String locale) {
-		updateItem(item, locale, getMetadata(item));
+	public static void updateItem(ItemStack item) {
+		updateItem(item, getMetadata(item));
 	}
 
-	public static void updateItem(ItemStack item, String locale, RPGMetadata rpgMeta) {
-		updateItem(item, locale, rpgMeta, false);
+	public static void updateItem(ItemStack item, RPGMetadata rpgMeta) {
+		updateItem(item, rpgMeta, false);
 	}
 
-	public static void updateItem(ItemStack item, String locale, boolean updateDurability) {
-		updateItem(item, locale, getMetadata(item), false);
+	public static void updateItem(ItemStack item, boolean updateDurability) {
+		updateItem(item, getMetadata(item), false);
 	}
 
-	public static void updateItem(ItemStack item, String locale, RPGMetadata rpgMeta, boolean updateDurability) {
+	public static void updateItem(ItemStack item, RPGMetadata rpgMeta, boolean updateDurability) {
 		RPGItem rItem = ItemManager.toRPGItem(item);
 		if (rItem == null)
 			return;
 		item.setType(rItem.item.getType());
-		ItemMeta meta = rItem.getLocaleMeta(locale);
+		ItemMeta meta = localeMeta;
 		if (!(meta instanceof LeatherArmorMeta) && updateDurability) {
 			item.setDurability(rItem.item.getDurability());
 		}
@@ -429,7 +422,7 @@ public class RPGItem {
 		}
 	}
 
-	public List<String> getTooltipLines(String locale) {
+	public List<String> getTooltipLines() {
 		ArrayList<String> output = new ArrayList<String>();
 		int width = 150;
 		output.add(encodedID + quality.colour + ChatColor.BOLD + displayName);
@@ -457,7 +450,7 @@ public class RPGItem {
 		}
 
 		for (Power p : powers) {
-			dWidth = getStringWidth(ChatColor.stripColor(p.displayText(locale)));
+			dWidth = getStringWidth(ChatColor.stripColor(p.displayText()));
 			if (dWidth > width)
 				width = dWidth;
 		}
@@ -476,7 +469,7 @@ public class RPGItem {
 		}
 
 		for (Power p : powers) {
-			output.add(p.displayText(locale));
+			output.add(p.displayText());
 		}
 		if (loreText.length() != 0) {
 			int cWidth = 0;
@@ -529,27 +522,16 @@ public class RPGItem {
 		return output;
 	}
 
-	public ItemStack toItemStack(String locale) {
+	public ItemStack toItemStack() {
 		ItemStack rStack = item.clone();
 		RPGMetadata rpgMeta = new RPGMetadata();
-		ItemMeta meta = getLocaleMeta(locale);
+		ItemMeta meta = localeMeta;
 		List<String> lore = meta.getLore();
 		lore.set(0, meta.getLore().get(0) + rpgMeta.toMCString());
 		addExtra(rpgMeta, rStack, lore);
 		meta.setLore(lore);
 		rStack.setItemMeta(meta);
 		return rStack;
-	}
-
-	public ItemMeta getLocaleMeta(String locale) {
-		ItemMeta meta = localeMeta.get(locale);
-		if (meta == null)
-			meta = localeMeta.get("en_GB");
-		return meta.clone();
-	}
-
-	public void setLocaleMeta(String locale, ItemMeta meta) {
-		localeMeta.put(locale, meta);
 	}
 
 	public String getName() {
@@ -593,12 +575,11 @@ public class RPGItem {
 	}
 
 	public void print(CommandSender sender) {
-		String locale = sender instanceof Player ? Locale.getPlayerLocale((Player) sender) : "en_GB";
-		List<String> lines = getTooltipLines(locale);
+		List<String> lines = getTooltipLines();
 		for (String s : lines) {
 			sender.sendMessage(s);
 		}
-		sender.sendMessage(String.format(Locale.get("message.print.durability", locale), maxDurability));
+		sender.sendMessage(String.format(Locale.get("message.print.durability"), maxDurability));
 	}
 
 	public void setDisplay(String str) {
@@ -794,7 +775,7 @@ public class RPGItem {
 	}
 
 	public void give(Player player) {
-		player.getInventory().addItem(toItemStack(Locale.getPlayerLocale(player)));
+		player.getInventory().addItem(toItemStack());
 	}
 
 	public void addPower(Power power) {

@@ -37,8 +37,8 @@ public class PowerFlame extends Power implements PowerHit {
 	}
 
 	@Override
-	public String displayText(String locale) {
-		return ChatColor.GREEN + String.format(Locale.get("power.flame", locale), (double) burnTime / 20d);
+	public String displayText() {
+		return ChatColor.GREEN + String.format(Locale.get("power.flame"), (double) burnTime / 20d);
 	}
 
 	@Override

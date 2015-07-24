@@ -48,14 +48,14 @@ public class PowerTNTCannon extends Power implements PowerRightClick {
 				TNTPrimed tnt = player.getWorld().spawn(player.getLocation().add(0, 1.8, 0), TNTPrimed.class);
 				tnt.setVelocity(player.getLocation().getDirection().multiply(2d));
 			} else {
-				player.sendMessage(ChatColor.AQUA + String.format(Locale.get("message.cooldown", Locale.getPlayerLocale(player)), ((double) (cooldown - System.currentTimeMillis() / 50)) / 20d));
+				player.sendMessage(ChatColor.AQUA + String.format(Locale.get("message.cooldown"), ((double) (cooldown - System.currentTimeMillis() / 50)) / 20d));
 			}
 		}
 	}
 
 	@Override
-	public String displayText(String locale) {
-		return ChatColor.GREEN + String.format(Locale.get("power.tntcannon", locale), (double) cooldownTime / 20d);
+	public String displayText() {
+		return ChatColor.GREEN + String.format(Locale.get("power.tntcannon"), (double) cooldownTime / 20d);
 	}
 
 	@Override

@@ -105,14 +105,14 @@ public class PowerRainbow extends Power implements PowerRightClick {
 					}
 				}).runTaskTimer(Plugin.plugin, 0, 5);
 			} else {
-				player.sendMessage(ChatColor.AQUA + String.format(Locale.get("message.cooldown", Locale.getPlayerLocale(player)), ((double) (cooldown - System.currentTimeMillis() / 50)) / 20d));
+				player.sendMessage(ChatColor.AQUA + String.format(Locale.get("message.cooldown"), ((double) (cooldown - System.currentTimeMillis() / 50)) / 20d));
 			}
 		}
 	}
 
 	@Override
-	public String displayText(String locale) {
-		return ChatColor.GREEN + String.format(Locale.get("power.rainbow", locale), count, (double) cooldownTime / 20d);
+	public String displayText() {
+		return ChatColor.GREEN + String.format(Locale.get("power.rainbow"), count, (double) cooldownTime / 20d);
 	}
 
 	@Override

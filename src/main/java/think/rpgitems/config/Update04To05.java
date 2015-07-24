@@ -18,7 +18,6 @@ import org.bukkit.inventory.meta.ItemMeta;
 import org.bukkit.inventory.meta.LeatherArmorMeta;
 
 import think.rpgitems.Plugin;
-import think.rpgitems.data.Locale;
 import think.rpgitems.item.ItemManager;
 import think.rpgitems.item.Quality;
 import think.rpgitems.item.RPGItem;
@@ -160,9 +159,6 @@ public class Update04To05 implements Updater {
 					newItem.setHand(hand, false);
 					newItem.setLore(lore, false);
 					newItem.setItem(item.getType());
-					for (String locales : Locale.getLocales()) {
-						newItem.setLocaleMeta(locales, meta);
-					}
 					newItem.setItem(item.getType(), false);
 					newItem.setDataValue(item.getDurability(), false);
 					newItem.setArmour(armour, false);

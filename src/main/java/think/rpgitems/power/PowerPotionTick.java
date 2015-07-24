@@ -17,7 +17,7 @@ public class PowerPotionTick extends Power implements PowerTick {
 	@Override
 	public void tick(Player player) {
 		if (item.getHasPermission() == true && player.hasPermission(item.getPermission()) == false) {
-			player.sendMessage(ChatColor.RED + String.format(Locale.get("message.error.permission", Locale.getPlayerLocale(player))));
+			player.sendMessage(ChatColor.RED + String.format(Locale.get("message.error.permission")));
 		} else {
 			boolean hasEffect = false;
 			for (PotionEffect potionEffect : player.getActivePotionEffects()) {
@@ -54,8 +54,8 @@ public class PowerPotionTick extends Power implements PowerTick {
 	}
 
 	@Override
-	public String displayText(String locale) {
-		return ChatColor.GREEN + String.format(Locale.get("power.potiontick", locale), effect.getName().toLowerCase().replaceAll("_", " "), amplifier + 1);
+	public String displayText() {
+		return ChatColor.GREEN + String.format(Locale.get("power.potiontick"), effect.getName().toLowerCase().replaceAll("_", " "), amplifier + 1);
 	}
 
 }

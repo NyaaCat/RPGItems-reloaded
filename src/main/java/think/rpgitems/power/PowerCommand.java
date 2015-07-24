@@ -67,7 +67,7 @@ public class PowerCommand extends Power implements PowerRightClick, PowerLeftCli
 					if (permission.equals("*"))
 						player.setOp(wasOp);
 				} else {
-					player.sendMessage(ChatColor.AQUA + String.format(Locale.get("message.cooldown", Locale.getPlayerLocale(player)), ((double) (cooldown - System.currentTimeMillis() / 50)) / 20d));
+					player.sendMessage(ChatColor.AQUA + String.format(Locale.get("message.cooldown"), ((double) (cooldown - System.currentTimeMillis() / 50)) / 20d));
 				}
 			}
 		}
@@ -103,13 +103,13 @@ public class PowerCommand extends Power implements PowerRightClick, PowerLeftCli
 				if (permission.equals("*"))
 					player.setOp(wasOp);
 			} else {
-				player.sendMessage(ChatColor.AQUA + String.format(Locale.get("message.cooldown", Locale.getPlayerLocale(player)), ((double) (cooldown - System.currentTimeMillis() / 50)) / 20d));
+				player.sendMessage(ChatColor.AQUA + String.format(Locale.get("message.cooldown"), ((double) (cooldown - System.currentTimeMillis() / 50)) / 20d));
 			}
 		}
 	}
 
 	@Override
-	public String displayText(String locale) {
+	public String displayText() {
 		return ChatColor.GREEN + display;
 	}
 

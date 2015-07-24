@@ -48,7 +48,7 @@ public class PowerUnbreakable extends Power implements PowerHit {
 	}
 
 	@Override
-	public String displayText(String locale) {
-		return ChatColor.GREEN + Locale.get("power.unbreakable", locale);
+	public String displayText() {
+		return ChatColor.GREEN + Locale.get("power.unbreakable");
 	}
 }
