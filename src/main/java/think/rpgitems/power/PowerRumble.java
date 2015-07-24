@@ -103,7 +103,7 @@ public class PowerRumble extends Power implements PowerRightClick {
                             }
                         }
                         if (hit) {
-                            near = getNearbyEntities(location, power + 1);
+                            near = getNearbyEntities(location, power * 2 + 1);
                             for (Entity e : near) {
                                 if (e != player) {
                                     if (e instanceof ItemFrame || e instanceof Painting) {
