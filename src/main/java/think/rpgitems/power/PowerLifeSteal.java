@@ -28,37 +28,37 @@ import think.rpgitems.power.types.PowerHit;
 
 public class PowerLifeSteal extends Power implements PowerHit {
 
-	public int chance = 20;
-	private Random random = new Random();
+    public int chance = 20;
+    private Random random = new Random();
 
-	@Override
-	public void hit(Player player, LivingEntity e, double damage) {
-		if (item.getHasPermission() == true && player.hasPermission(item.getPermission()) == false) {
-		} else if (random.nextInt(chance) == 0) {
-			if ((player.getHealth() + damage) >= player.getMaxHealth()) {
-				player.setHealth(player.getMaxHealth());
-			} else
-				player.setHealth(player.getHealth() + damage);
-		}
-	}
+    @Override
+    public void hit(Player player, LivingEntity e, double damage) {
+        if (item.getHasPermission() == true && player.hasPermission(item.getPermission()) == false) {
+        } else if (random.nextInt(chance) == 0) {
+            if ((player.getHealth() + damage) >= player.getMaxHealth()) {
+                player.setHealth(player.getMaxHealth());
+            } else
+                player.setHealth(player.getHealth() + damage);
+        }
+    }
 
-	@Override
-	public String displayText() {
-		return ChatColor.GREEN + String.format(Locale.get("power.lifesteal"), (double) chance);
-	}
+    @Override
+    public String displayText() {
+        return ChatColor.GREEN + String.format(Locale.get("power.lifesteal"), (double) chance);
+    }
 
-	@Override
-	public String getName() {
-		return "lifesteal";
-	}
+    @Override
+    public String getName() {
+        return "lifesteal";
+    }
 
-	@Override
-	public void init(ConfigurationSection s) {
-		chance = s.getInt("chance");
-	}
+    @Override
+    public void init(ConfigurationSection s) {
+        chance = s.getInt("chance");
+    }
 
-	@Override
-	public void save(ConfigurationSection s) {
-		s.set("chance", chance);
-	}
+    @Override
+    public void save(ConfigurationSection s) {
+        s.set("chance", chance);
+    }
 }

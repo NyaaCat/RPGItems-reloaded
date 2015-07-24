@@ -16,16 +16,7 @@
  */
 package think.rpgitems.data;
 
-import java.io.BufferedReader;
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileNotFoundException;
-import java.io.FileOutputStream;
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.InputStreamReader;
-import java.io.OutputStream;
-import java.io.UnsupportedEncodingException;
+import java.io.*;
 import java.util.Enumeration;
 import java.util.HashMap;
 import java.util.jar.JarEntry;
@@ -73,7 +64,7 @@ public class Locale {
                 if (usedLocale.equalsIgnoreCase(loc.getName().replace(".lang", "")))
                     return;
         InputStream localeSource = Plugin.plugin.getResource("locale/" + usedLocale + ".lang");
-        if(localeSource != null) {
+        if (localeSource != null) {
             OutputStream localeDest = null;
             try {
                 localeDest = new FileOutputStream(new File(localeFolder, usedLocale + ".lang"));
@@ -158,6 +149,7 @@ public class Locale {
                     e.printStackTrace();
                 }
         }
+
     }
 
     public static void reloadLocales(Plugin plugin) {
