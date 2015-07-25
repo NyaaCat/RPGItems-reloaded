@@ -44,7 +44,7 @@ public class Plugin extends JavaPlugin {
     @Override
     public void onLoad() {
         plugin = this;
-        reloadConfig();
+        saveDefaultConfig();
         Font.load();
         Power.powers.put("arrow", PowerArrow.class);
         Power.powers.put("tntcannon", PowerTNTCannon.class);
@@ -71,7 +71,7 @@ public class Plugin extends JavaPlugin {
 
     @Override
     public void onEnable() {
-        new Locale(this);
+        Locale.init(this);
         updateConfig();
         WorldGuard.init(this);
         ConfigurationSection conf = getConfig();
@@ -86,62 +86,6 @@ public class Plugin extends JavaPlugin {
         Commands.register(new Handler());
         Commands.register(new PowerHandler());
         new PowerTicker().runTaskTimer(this, 0, 1);
-    }
-
-    @Override
-    public void saveConfig() {
-        FileConfiguration config = getConfig();
-        FileOutputStream out = null;
-        try {
-            File f = new File(getDataFolder(), "config.yml");
-            if (!f.exists())
-                f.createNewFile();
-            out = new FileOutputStream(f);
-            out.write(config.saveToString().getBytes("UTF-8"));
-        } catch (FileNotFoundException e) {
-        } catch (UnsupportedEncodingException e) {
-        } catch (IOException e) {
-        } finally {
-            try {
-                if (out != null)
-                    out.close();
-            } catch (IOException e) {
-                // TODO Auto-generated catch block
-                e.printStackTrace();
-            }
-        }
-    }
-
-    public static FileConfiguration config;
-
-    @Override
-    public void reloadConfig() {
-        FileInputStream in = null;
-        config = new YamlConfiguration();
-        try {
-            File f = new File(getDataFolder(), "config.yml");
-            in = new FileInputStream(f);
-            byte[] data = new byte[(int) f.length()];
-            in.read(data);
-            String str = new String(data, "UTF-8");
-            config.loadFromString(str);
-        } catch (FileNotFoundException e) {
-        } catch (IOException e) {
-        } catch (InvalidConfigurationException e) {
-        } finally {
-            try {
-                if (in != null)
-                    in.close();
-            } catch (IOException e) {
-                // TODO Auto-generated catch block
-                e.printStackTrace();
-            }
-        }
-
-    }
-
-    public FileConfiguration getConfig() {
-        return config;
     }
 
     public void updateConfig() {
