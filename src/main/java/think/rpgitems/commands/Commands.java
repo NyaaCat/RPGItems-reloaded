@@ -75,7 +75,7 @@ abstract public class Commands {
             for (CommandDef c : command) {
                 if (c.arguments.length == 0) {
                     try {
-                        if (c.handlePermissions || sender.hasPermission("rpgitem"))
+                        if (c.handlePermissions || sender.hasPermission("rpgitem") || sender.hasPermission("rpgitem.command") || sender.hasPermission("rpgitem.command." + comName))
                             c.method.invoke(c.handler, sender);
                         else
                             sender.sendMessage(ChatColor.RED + Locale.get("message.error.permission"));
@@ -93,7 +93,7 @@ abstract public class Commands {
                 }
             }
             // Print usage
-            if (sender.hasPermission("rpgitem")) {
+            if (sender.hasPermission("rpgitem") || sender.hasPermission("rpgitem.command") || sender.hasPermission("rpgitem.command." + comName)) {
                 sender.sendMessage(String.format(ChatColor.GREEN + Locale.get("message.command.usage"), comName, Plugin.plugin.getDescription().getVersion()));
                 for (CommandDef c : command) {
                     StringBuilder buf = new StringBuilder();
@@ -182,7 +182,7 @@ abstract public class Commands {
                 }
             }
             try {
-                if (c.handlePermissions || sender.hasPermission("rpgitem"))
+                if (c.handlePermissions || sender.hasPermission("rpgitem") || sender.hasPermission("rpgitem.command") || sender.hasPermission("rpgitem.command." + comName))
                     c.method.invoke(c.handler, outArgs.toArray());
                 else
                     sender.sendMessage(ChatColor.RED + Locale.get("message.error.permission"));
@@ -198,7 +198,7 @@ abstract public class Commands {
             }
             return;
         }
-        if (sender.hasPermission("rpgitem")) {
+        if (sender.hasPermission("rpgitem") || sender.hasPermission("rpgitem.command") || sender.hasPermission("rpgitem.command." + comName)) {
             if (lastError != null) {
                 sender.sendMessage(ChatColor.RED + String.format(Locale.get("message.error.command"), lastError.error));
             } else {

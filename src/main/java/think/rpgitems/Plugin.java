@@ -16,13 +16,14 @@
  */
 package think.rpgitems;
 
+import java.util.List;
+import java.util.logging.Logger;
+
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandSender;
 import org.bukkit.configuration.ConfigurationSection;
-import org.bukkit.configuration.InvalidConfigurationException;
-import org.bukkit.configuration.file.FileConfiguration;
-import org.bukkit.configuration.file.YamlConfiguration;
 import org.bukkit.plugin.java.JavaPlugin;
+
 import think.rpgitems.commands.Commands;
 import think.rpgitems.config.ConfigUpdater;
 import think.rpgitems.data.Font;
@@ -30,10 +31,6 @@ import think.rpgitems.data.Locale;
 import think.rpgitems.item.ItemManager;
 import think.rpgitems.power.*;
 import think.rpgitems.support.WorldGuard;
-
-import java.io.*;
-import java.util.List;
-import java.util.logging.Logger;
 
 @SuppressWarnings("deprecation")
 public class Plugin extends JavaPlugin {
