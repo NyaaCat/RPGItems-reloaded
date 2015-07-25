@@ -170,6 +170,7 @@ power.teleport=传送 %d 格 (%.1f 秒冷却)
 power.tntcannon=发射 TNT (%.1f 秒冷却时间)
 power.unbreakable=不毁
 power.unbreaking=耐久 %d
+
 #2.7
 command.rpgitem.removerecipe=已删除 @[物品]# 的合成表
 command.rpgitem.recipe=已设置 @[物品]# 的合成表
@@ -187,3 +188,28 @@ power.skyhook=钩到指定方块
 power.potiontick=持有/穿戴时给予效果 %s %d
 command.rpgitem.skyhook=给 @[物品]#添加天钩技能. 天钩技能允许使用者钩到指定 @[材质]# 并上升一定 @[距离]#
 command.rpgitem.potiontick=给 @[物品]# 添加被动效果加成. 当玩家手持或穿戴该 @[物品]# 时, 给予玩家指定 @[等级]# 的 @[药水效果]#
+
+#2.8~3.5
+command.info.haspermission=启用
+command.info.foodpoints=饥饿值
+command.rpgitem.food=给 @[物品]# 添加可食用功能, 吃掉时回复一定 @[饥饿值]#.
+command.rpgitem.lifesteal=给 @[物品]# 添加生命偷取技能, 偷取几率为 1/@[设定数值]#
+command.rpgitem.permission=对 @[物品]# 启用/禁用权限限制. 无 @[权限]# 玩家将无法使用该物品. 权限限制可通过设定 @[TRUE或FALSE]# 切换.
+message.permission.booleanerror=启用值必须为布尔值 ! (true 或 false)
+message.permission.success=权限限制设定成功 !
+power.food=回复 %d 点饥饿值
+power.lifesteal=%d 的几率偷取敌人生命值
+command.info.durability=耐久度
+command.rpgitem.durability=为物品设定耐久度. 耐久度数值为为物品的使用次数, 如攻击/吸收伤害(护甲类)/挖掘.
+command.rpgitem.durability.infinite=设定耐久度为无限. 物品不会被用坏
+command.rpgitem.durability.togglebar=切换工具栏提示显示
+message.durability.change=耐久度已变更
+message.durability.toggle=耐久条已切换
+command.rpgitem.giveperms=给予所需权限
+message.giveperms.true=给予现在需要权限
+message.giveperms.false=给予现在不需要权限
+message.give.ok=你被赠予 %s
+message.give.to=把 %s 给 %s
+message.drop.get=从 '%s' 掉落 '%s' 的几率为 %.2f%%
+message.drop.set=从 '%s' 掉落 '%s' 的几率设置为 %.2f%%
+message.print.durability=最大耐久度: %d
