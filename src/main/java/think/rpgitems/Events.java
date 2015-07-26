@@ -16,54 +16,25 @@
  */
 package think.rpgitems;
 
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.Iterator;
-import java.util.Random;
-import java.util.Set;
+import java.util.*;
 
-import org.bukkit.Bukkit;
-import org.bukkit.ChatColor;
-import org.bukkit.Material;
-import org.bukkit.entity.Entity;
-import org.bukkit.entity.LivingEntity;
-import org.bukkit.entity.Player;
-import org.bukkit.entity.Projectile;
-import org.bukkit.event.EventHandler;
-import org.bukkit.event.EventPriority;
-import org.bukkit.event.Listener;
-import org.bukkit.event.block.Action;
-import org.bukkit.event.block.BlockBreakEvent;
-import org.bukkit.event.block.BlockPlaceEvent;
-import org.bukkit.event.entity.EntityDamageByEntityEvent;
-import org.bukkit.event.entity.EntityDeathEvent;
-import org.bukkit.event.entity.ProjectileHitEvent;
-import org.bukkit.event.entity.ProjectileLaunchEvent;
+import org.bukkit.*;
+import org.bukkit.entity.*;
+import org.bukkit.event.*;
+import org.bukkit.event.block.*;
+import org.bukkit.event.entity.*;
 import org.bukkit.event.hanging.HangingBreakEvent;
 import org.bukkit.event.hanging.HangingBreakEvent.RemoveCause;
-import org.bukkit.event.inventory.InventoryClickEvent;
-import org.bukkit.event.inventory.InventoryCloseEvent;
-import org.bukkit.event.inventory.InventoryOpenEvent;
-import org.bukkit.event.inventory.InventoryType;
-import org.bukkit.event.inventory.PrepareItemCraftEvent;
-import org.bukkit.event.player.PlayerInteractEvent;
-import org.bukkit.event.player.PlayerJoinEvent;
-import org.bukkit.event.player.PlayerPickupItemEvent;
-import org.bukkit.inventory.Inventory;
-import org.bukkit.inventory.ItemStack;
-import org.bukkit.inventory.PlayerInventory;
+import org.bukkit.event.inventory.*;
+import org.bukkit.event.player.*;
+import org.bukkit.inventory.*;
 import org.bukkit.projectiles.ProjectileSource;
 import org.bukkit.scheduler.BukkitRunnable;
 
-import gnu.trove.map.hash.TIntByteHashMap;
-import gnu.trove.map.hash.TIntIntHashMap;
-import gnu.trove.map.hash.TObjectIntHashMap;
+import gnu.trove.map.hash.*;
 import think.rpgitems.data.Locale;
 import think.rpgitems.data.RPGMetadata;
-import think.rpgitems.item.ItemManager;
-import think.rpgitems.item.LocaleInventory;
-import think.rpgitems.item.RPGItem;
+import think.rpgitems.item.*;
 import think.rpgitems.support.WorldGuard;
 
 public class Events implements Listener {
@@ -73,18 +44,32 @@ public class Events implements Listener {
     public static TObjectIntHashMap<String> recipeWindows = new TObjectIntHashMap<String>();
     public static HashMap<String, Set<Integer>> drops = new HashMap<String, Set<Integer>>();
     public static boolean useLocaleInv = false;
-
+    
     @EventHandler
     public void onHangingBreak(HangingBreakEvent e) {
         if (e.getCause().equals(RemoveCause.EXPLOSION))
-            if (e.getEntity().hasMetadata("Rumble")) {
-                e.getEntity().removeMetadata("Rumble", Plugin.plugin); // Allow the entity to be broken again
+            if (e.getEntity().hasMetadata("RPGItems.Rumble")) {
+                e.getEntity().removeMetadata("RPGItems.Rumble", Plugin.plugin); // Allow the entity to be broken again
                 e.setCancelled(true);
+            }
+    }
+    
+    @EventHandler
+    public void onBreak(BlockPhysicsEvent e) { //Is not triggered when the block a torch is attached to is removed
+        if(e.getChangedType().equals(Material.TORCH))
+            if(e.getBlock().hasMetadata("RPGItems.Torch")) {
+                e.setCancelled(true); //Cancelling this does not work
+                e.getBlock().removeMetadata("RPGItems.Torch", Plugin.plugin);
+                e.getBlock().setType(Material.AIR);
             }
     }
 
     @EventHandler(ignoreCancelled = true)
     public void onBlockBreak(BlockBreakEvent e) {
+        if(e.getBlock().getType().equals(Material.TORCH))
+            if(e.getBlock().hasMetadata("RPGItems.Torch"))
+                e.setCancelled(true);
+        
         Player player = e.getPlayer();
         ItemStack item = player.getItemInHand();
         RPGItem rItem;

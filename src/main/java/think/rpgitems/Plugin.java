@@ -64,6 +64,7 @@ public class Plugin extends JavaPlugin {
         Power.powers.put("potiontick", PowerPotionTick.class);
         Power.powers.put("food", PowerFood.class);
         Power.powers.put("lifesteal", PowerLifeSteal.class);
+        Power.powers.put("torch", PowerTorch.class);
     }
 
     @Override
