@@ -140,7 +140,7 @@ public class Events implements Listener {
             RPGItem rItem = ItemManager.toRPGItem(item);
             if (rItem == null)
                 return;
-            if (!WorldGuard.canPvP(player.getLocation()) && !rItem.ignoreWorldGuard)
+            if (!WorldGuard.canPvP(player) && !rItem.ignoreWorldGuard)
                 return;
             if (rItem.getHasPermission() == true && player.hasPermission(rItem.getPermission()) == false) {
                 e.setCancelled(true);
@@ -173,7 +173,7 @@ public class Events implements Listener {
             RPGItem rItem = ItemManager.toRPGItem(item);
             if (rItem == null)
                 return;
-            if (!WorldGuard.canPvP(player.getLocation()) && !rItem.ignoreWorldGuard)
+            if (!WorldGuard.canPvP(player) && !rItem.ignoreWorldGuard)
                 return;
             if (rItem.getHasPermission() == true && player.hasPermission(rItem.getPermission()) == false) {
                 e.setCancelled(true);
@@ -193,7 +193,7 @@ public class Events implements Listener {
             RPGItem rItem = ItemManager.toRPGItem(item);
             if (rItem == null)
                 return;
-            if (!WorldGuard.canPvP(player.getLocation()) && !rItem.ignoreWorldGuard)
+            if (!WorldGuard.canPvP(player) && !rItem.ignoreWorldGuard)
                 return;
             if (rItem.getHasPermission() == true && player.hasPermission(rItem.getPermission()) == false) {
                 e.setCancelled(true);
@@ -332,7 +332,7 @@ public class Events implements Listener {
         RPGItem rItem = ItemManager.toRPGItem(item);
         if (rItem == null)
             return damage;
-        if (!WorldGuard.canPvP(player.getLocation()) && !rItem.ignoreWorldGuard)
+        if (!WorldGuard.canPvP(player) && !rItem.ignoreWorldGuard)
             return damage;
         if (rItem.getHasPermission() == true && player.hasPermission(rItem.getPermission()) == false) {
             damage = 0;
@@ -375,7 +375,7 @@ public class Events implements Listener {
 
     private double playerHit(EntityDamageByEntityEvent e, double damage) {
         Player p = (Player) e.getEntity();
-        if (e.isCancelled() || !WorldGuard.canPvP(p.getLocation()))
+        if (e.isCancelled() || !WorldGuard.canPvP(p))
             return damage;
         ItemStack[] armour = p.getInventory().getArmorContents();
         for (int i = 0; i < armour.length; i++) {
@@ -383,7 +383,7 @@ public class Events implements Listener {
             RPGItem pRItem = ItemManager.toRPGItem(pArmour);
             if (pRItem == null)
                 continue;
-            if (!WorldGuard.canPvP(p.getLocation()) && !pRItem.ignoreWorldGuard)
+            if (!WorldGuard.canPvP(p) && !pRItem.ignoreWorldGuard)
                 return damage;
             if (pRItem.getHasPermission() == true && p.hasPermission(pRItem.getPermission()) == false) {
                 damage = 0;
