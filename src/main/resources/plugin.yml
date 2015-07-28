@@ -1,7 +1,7 @@
 name: RPGItems
 main: think.rpgitems.Plugin
 version: 3.5
-dev-url: http://rpgitems2.webs.com/
+dev-url: https://github.com/NyaaCat/RPGitems-reloaded
 softdepend: [WorldGuard]
 commands:
     rpgitem:
