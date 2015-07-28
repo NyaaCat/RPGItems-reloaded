@@ -47,7 +47,7 @@ import java.util.Map.Entry;
 public class RPGItem {
     private ItemStack item;
 
-    private static ItemMeta localeMeta;
+    private ItemMeta localeMeta;
 
     private int id;
     private String name;
@@ -374,7 +374,7 @@ public class RPGItem {
         if (rItem == null)
             return;
         item.setType(rItem.item.getType());
-        ItemMeta meta = localeMeta;
+        ItemMeta meta = item.getItemMeta();
         if (!(meta instanceof LeatherArmorMeta) && updateDurability) {
             item.setDurability(rItem.item.getDurability());
         }
