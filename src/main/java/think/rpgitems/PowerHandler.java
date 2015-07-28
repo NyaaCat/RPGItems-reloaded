@@ -122,6 +122,20 @@ public class PowerHandler implements CommandHandler {
         ItemManager.save(Plugin.plugin);
         sender.sendMessage(ChatColor.AQUA + Locale.get("message.power.ok"));
     }
+    
+    @CommandString("rpgitem $n[] power fire $cooldown:i[] $distance:i[] $burnduration:i[]")
+    @CommandDocumentation("$command.rpgitem.fire")
+    @CommandGroup("item_power_fire")
+    public void fire(CommandSender sender, RPGItem item, int cooldown, int distance, int burnduration) {
+        PowerFire pow = new PowerFire();
+        pow.cooldownTime = 20;
+        pow.distance = distance;
+        pow.burnduration = burnduration;
+        pow.item = item;
+        item.addPower(pow);
+        ItemManager.save(Plugin.plugin);
+        sender.sendMessage(ChatColor.AQUA + Locale.get("message.power.ok"));
+    }
 
     @CommandString("rpgitem $n[] power fireball")
     @CommandDocumentation("$command.rpgitem.fireball")
