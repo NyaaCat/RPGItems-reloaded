@@ -399,14 +399,13 @@ public class PowerHandler implements CommandHandler {
         sender.sendMessage(ChatColor.AQUA + Locale.get("message.power.ok"));
     }
     
-    @CommandString("rpgitem $n[] power torch $cooldown:i[] $torches:i[]")
+    @CommandString("rpgitem $n[] power torch $cooldown:i[]")
     @CommandDocumentation("$command.rpgitem.torch")
     @CommandGroup("item_power_torch")
-    public void torch(CommandSender sender, RPGItem item, int cooldown, int torches) {
+    public void torch(CommandSender sender, RPGItem item, int cooldown) {
         PowerTorch pow = new PowerTorch();
         pow.item = item;
         pow.cooldownTime = cooldown;
-        pow.torches = torches;
         item.addPower(pow);
         ItemManager.save(Plugin.plugin);
         sender.sendMessage(ChatColor.AQUA + Locale.get("message.power.ok"));

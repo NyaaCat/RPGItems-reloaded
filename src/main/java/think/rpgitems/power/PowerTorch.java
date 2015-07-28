@@ -35,7 +35,6 @@ import think.rpgitems.power.types.PowerRightClick;
 public class PowerTorch extends Power implements PowerRightClick {
 
     public long cooldownTime = 20;
-    public int torches = 1;
 
     @SuppressWarnings("deprecation")
     @Override
@@ -131,13 +130,11 @@ public class PowerTorch extends Power implements PowerRightClick {
     @Override
     public void init(ConfigurationSection s) {
         cooldownTime = s.getLong("cooldown", 20);
-        torches = s.getInt("torches");
     }
 
     @Override
     public void save(ConfigurationSection s) {
         s.set("cooldown", cooldownTime);
-        s.set("torches", torches);
     }
 
     private List<Byte> getPossibleOrientations(Location loc) {
@@ -148,7 +145,7 @@ public class PowerTorch extends Power implements PowerRightClick {
             for (int z = -1; z <= 1; z++)
                 if (Math.abs(x) != Math.abs(z)) {
                     Material materialToCheck = loc.add(x, 0, z).getBlock().getType();
-                    if (materialToCheck.isSolid() && !materialToCheck.toString().contains("GRASS")) { // Grass somehow counts as solid block
+                    if (materialToCheck.isSolid() && !materialToCheck.toString().contains("GRASS")) { // Tall grass somehow counts as solid block
                         if (x > 0)
                             orientations.add((byte) 2);
                         else if (x < 0)
