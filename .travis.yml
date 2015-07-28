@@ -1,5 +1,7 @@
 language: java
 
+before_install: "sed -i \"s/^\\(version:.*\\)/\\1.$TRAVIS_BUILD_NUMBER/\" src/main/resources/plugin.yml"
+
 before_deploy:
 - git config --global user.email "builds@travis-ci.com"
 - git config --global user.name "Travis CI"
@@ -12,8 +14,7 @@ deploy:
   provider: releases
   api_key:
     secure: "YP55s7eknSfGBjpP7yPLSYHRORRN0AXr2jOjK2Oq9IGCnNankBvzgGIhsNfT8ePRfMbiOtk4D/ZhBn90ct83Dp7Il1OVkHsfAhvvE6bZ3iZI8x9zc1n/SSxneNKdWrHTGM+WuBoS9mr4J/YdWwvaLaYr9E0iwHWdqTJlTiPfKhtp5MZ89h1Yj7u94dXmkwv6e0oLUKexfkiLINOsuj+cpk81SVO9RHlBEZDFlg/KhwOe6r1XPUgKvJVUgrQHjdZ7aAiYclb3O2UiTHZdqPow00vNdXlk/sIM63dAdw8CTfPxXKHVAnGE+9OAADC4Ml+74I1rfOJaSUz6bWXa9zkgRk5VpoFGEr4i45j42ZxSgsq4Xh721lsCip31dT/QyiJ8YeCn6QK8XtS5KhV6ao22QoCVq6+UmmrHGW/Yl2wiqt6Xos1gDgW1iZHXXP4byQnZ5sDX95Ic0Sq3nSneCnCiHYkjC93HvoM/J5ZRA4Kz2/BdgMPNuWGOsDaOPsEoG4N/GBZKvAdxf0779BewuFuVPPdPDtS0iJCZ/jJZonVitFFGkG4RnIyH5npI0siWpxPY3lMiPiFwJBaYOHTq6WvYEGCazfl1kqVccXs1wEgxyovwTJryhBtz387TVXiQ/lo7AsKitNOigl5DDMQFVhD4xYcvABKmC6M1JrPlMxzy4Mk="
-  file:
-  - build/libs/RPGitems-reloaded.jar
+  file: build/libs/RPGitems-reloaded.jar
   on:
     tags: false
     all_branches: true
