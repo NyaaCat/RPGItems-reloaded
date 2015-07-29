@@ -235,8 +235,12 @@ abstract public class Commands {
                     }
                 }
                 StringBuilder search = new StringBuilder();
+                Set<String> termSet = new HashSet<>();
                 for (String term : consts) {
-                    search.append(term).append(' ');
+                    if (!termSet.contains(term)) {
+                        search.append(term).append(' ');
+                        termSet.add(term);
+                    }
                 }
                 searchHelp(sender, search.toString());
             }
@@ -460,7 +464,7 @@ abstract public class Commands {
             return;
         }
         String locale = Locale.getServerLocale();
-        sender.sendMessage(ChatColor.GREEN + String.format(Locale.get("message.help.for"), terms));
+        sender.sendMessage(ChatColor.GREEN + String.format(Locale.get("message.help.for"), terms.trim()));
         String[] term = terms.toLowerCase().split(" ");
         for (Entry<String, ArrayList<CommandDef>> command : commands.entrySet()) {
             for (CommandDef c : command.getValue()) {
