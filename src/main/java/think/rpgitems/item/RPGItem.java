@@ -401,7 +401,10 @@ public class RPGItem {
                     out.append(i < mid ? ChatColor.GREEN : i == mid ? ChatColor.YELLOW : ChatColor.RED);
                     out.append(boxChar);
                 }
-                lore.add(out.toString());
+                if(!lore.get(lore.size()-1).contains(boxChar + ""))
+                    lore.add(out.toString());
+                else
+                    lore.set(lore.size()-1, out.toString());
             }
             if (hasBar) {
                 item.setDurability((short) (item.getType().getMaxDurability() - ((short) ((double) item.getType().getMaxDurability() * ((double) durability / (double) maxDurability)))));
