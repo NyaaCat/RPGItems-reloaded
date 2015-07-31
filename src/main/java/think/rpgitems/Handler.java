@@ -279,6 +279,7 @@ public class Handler implements CommandHandler {
         } else {
             item.setDataValue((short) data);
         }
+        item.updateLocaleMeta(meta);
         item.rebuild();
         sender.sendMessage(ChatColor.AQUA + String.format(Locale.get("message.item.set"), item.getName(), item.getItem(), item.getDataValue()));
         ItemManager.save(Plugin.plugin);
@@ -302,6 +303,7 @@ public class Handler implements CommandHandler {
         } else {
             item.setDataValue((short) dam);
         }
+        item.updateLocaleMeta(meta);
         item.rebuild();
         sender.sendMessage(ChatColor.AQUA + String.format(Locale.get("message.item.set"), item.getName(), item.getItem(), item.getDataValue()));
         ItemManager.save(Plugin.plugin);
@@ -339,6 +341,7 @@ public class Handler implements CommandHandler {
         } else {
             item.setDataValue((short) data);
         }
+        item.updateLocaleMeta(meta);
         item.rebuild();
         sender.sendMessage(ChatColor.AQUA + String.format(Locale.get("message.item.set"), item.getName(), item.getItem(), item.getDataValue()));
         ItemManager.save(Plugin.plugin);

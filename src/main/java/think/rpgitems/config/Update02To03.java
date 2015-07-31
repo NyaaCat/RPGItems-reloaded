@@ -141,6 +141,7 @@ public class Update02To03 implements Updater {
                     newItem.setHand(hand, false);
                     newItem.setLore(lore, false);
                     newItem.setItem(item.getType());
+                    newItem.updateLocaleMeta(meta);
                     newItem.setItem(item.getType(), false);
                     newItem.setDataValue(item.getDurability(), false);
                     newItem.setArmour(armour, false);

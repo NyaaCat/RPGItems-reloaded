@@ -323,10 +323,11 @@ public class RPGItem {
 
     public void rebuild() {
         List<String> lines = getTooltipLines();
-        localeMeta.setDisplayName(lines.get(0));
+        ItemMeta meta = getLocaleMeta();
+        meta.setDisplayName(lines.get(0));
         lines.remove(0);
-        localeMeta.setLore(lines);
-        item.setItemMeta(localeMeta);
+        meta.setLore(lines);
+        updateLocaleMeta(meta);
 
         for (Player player : Bukkit.getOnlinePlayers()) {
             Iterator<ItemStack> it = player.getInventory().iterator();
@@ -345,7 +346,7 @@ public class RPGItem {
     }
 
     public ItemMeta getLocaleMeta() {
-        return localeMeta;
+        return localeMeta.clone();
     }
 
     public static RPGMetadata getMetadata(ItemStack item) {
@@ -374,7 +375,7 @@ public class RPGItem {
         if (rItem == null)
             return;
         item.setType(rItem.item.getType());
-        ItemMeta meta = item.getItemMeta();
+        ItemMeta meta = rItem.getLocaleMeta();
         if (!(meta instanceof LeatherArmorMeta) && updateDurability) {
             item.setDurability(rItem.item.getDurability());
         }
@@ -517,7 +518,7 @@ public class RPGItem {
     public ItemStack toItemStack() {
         ItemStack rStack = item.clone();
         RPGMetadata rpgMeta = new RPGMetadata();
-        ItemMeta meta = localeMeta;
+        ItemMeta meta = getLocaleMeta();
         List<String> lore = meta.getLore();
         lore.set(0, meta.getLore().get(0) + rpgMeta.toMCString());
         addExtra(rpgMeta, rStack, lore);
@@ -841,5 +842,9 @@ public class RPGItem {
     public void toggleBar() {
         forceBar = !forceBar;
         rebuild();
+    }
+
+    public void updateLocaleMeta(ItemMeta meta) {
+        this.localeMeta = meta;
     }
 }
