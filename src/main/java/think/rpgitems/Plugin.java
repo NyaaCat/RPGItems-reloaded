@@ -35,7 +35,7 @@ import think.rpgitems.support.WorldGuard;
 @SuppressWarnings("deprecation")
 public class Plugin extends JavaPlugin {
 
-    public static Logger logger = Logger.getLogger("RPGItems");
+    public static Logger logger = this.getLogger();
     public static Plugin plugin;
 
     @Override
