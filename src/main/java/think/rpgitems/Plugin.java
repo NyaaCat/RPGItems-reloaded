@@ -19,6 +19,7 @@ package think.rpgitems;
 import java.util.List;
 import java.util.logging.Logger;
 
+import org.bukkit.ChatColor;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandSender;
 import org.bukkit.configuration.ConfigurationSection;
@@ -90,10 +91,12 @@ public class Plugin extends JavaPlugin {
     }
     
     public void startUpdater() {
+        getLogger().info("The updater is currently under maintenance,");
+        getServer().getConsoleSender().sendMessage("[RPGItems] Please check " + ChatColor.DARK_GRAY + ChatColor.ITALIC + ChatColor.BOLD + "www.github.com/NyaaCat/RPGitems-reloaded" + ChatColor.RESET + " for updates.");
+        
         if(updater != null)
             return;
-        updater = new Updater(this, 70226, this.getFile(), Updater.UpdateType.DEFAULT, false);
-
+        //updater = new Updater(this, 70226, this.getFile(), Updater.UpdateType.DEFAULT, false);
     }
 
     public void updateConfig() {
