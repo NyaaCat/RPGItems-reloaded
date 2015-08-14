@@ -37,12 +37,14 @@ public class Plugin extends JavaPlugin {
 
     public static Logger logger = Logger.getLogger("RPGItems");
     public static Plugin plugin;
+    public static Updater updater;
 
     @Override
     public void onLoad() {
         plugin = this;
         saveDefaultConfig();
         Font.load();
+        Power.powers.put("aoe", PowerAOE.class);
         Power.powers.put("arrow", PowerArrow.class);
         Power.powers.put("tntcannon", PowerTNTCannon.class);
         Power.powers.put("rainbow", PowerRainbow.class);
@@ -75,7 +77,7 @@ public class Plugin extends JavaPlugin {
         WorldGuard.init(this);
         ConfigurationSection conf = getConfig();
         if (conf.getBoolean("autoupdate", true)) {
-            new Updater(this, 70226, this.getFile(), Updater.UpdateType.DEFAULT, false);
+            startUpdater();
         }
         if (conf.getBoolean("localeInv", false)) {
             Events.useLocaleInv = true;
@@ -85,6 +87,13 @@ public class Plugin extends JavaPlugin {
         Commands.register(new Handler());
         Commands.register(new PowerHandler());
         new PowerTicker().runTaskTimer(this, 0, 1);
+    }
+    
+    public void startUpdater() {
+        if(updater != null)
+            return;
+        updater = new Updater(this, 70226, this.getFile(), Updater.UpdateType.DEFAULT, false);
+
     }
 
     public void updateConfig() {

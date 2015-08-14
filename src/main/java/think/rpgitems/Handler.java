@@ -28,6 +28,24 @@ import java.util.Set;
 
 public class Handler implements CommandHandler {
 
+    
+    @CommandString("rpgitem reload")
+    @CommandDocumentation("$command.rpgitem.reload")
+    @CommandGroup("reload")
+    public void reload(CommandSender sender) {
+        Plugin.plugin.updateConfig();
+        Locale.reload();
+        WorldGuard.reload();
+        ItemManager.reload();
+        if (Plugin.plugin.getConfig().getBoolean("autoupdate", true)) {
+            Plugin.plugin.startUpdater();
+        }
+        if (Plugin.plugin.getConfig().getBoolean("localeInv", false)) {
+            Events.useLocaleInv = true;
+        }
+        sender.sendMessage(ChatColor.GREEN + "[RPGItems] Reloaded RPGItems.");
+    }
+    
     @CommandString("rpgitem list")
     @CommandDocumentation("$command.rpgitem.list")
     @CommandGroup("list")

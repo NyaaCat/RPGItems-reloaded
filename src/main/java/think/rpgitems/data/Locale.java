@@ -37,17 +37,23 @@ public class Locale {
     private static final String DEFAULT_LANGUAGE = "en_GB";
 
     private static Locale instance = null;
+    private static Plugin plugin;
     private Map<String, String> languageList = new HashMap<>();
 
     private static HashMap<String, String> localeStrings = new HashMap<>();
     private String usedLocale;
 
-    public static void init(Plugin plugin) {
+    public static void init(Plugin pl) {
         if (instance == null) {
-            instance = new Locale(plugin);
+            instance = new Locale(pl);
+            plugin = pl;
         } else {
             Plugin.logger.warning("Duplicated init of Locale");
         }
+    }
+    
+    public static void reload() {
+        instance = new Locale(plugin);
     }
 
     private static Locale getInstance() {
@@ -68,7 +74,8 @@ public class Locale {
 
         // load files
         plugin.saveResource("locale/" + DEFAULT_LANGUAGE + ".lang", true);
-        plugin.saveResource("locale/" + usedLocale + ".lang", true);
+        if(plugin.getResource("locale/" + usedLocale + ".lang") == null)
+            plugin.saveResource("locale/" + usedLocale + ".lang", false);
 
         try {
             File localeFolder = new File(plugin.getDataFolder().getAbsolutePath() + File.separatorChar + "locale");

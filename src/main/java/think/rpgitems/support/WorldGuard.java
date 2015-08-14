@@ -26,21 +26,34 @@ import com.sk89q.worldguard.protection.flags.StateFlag.State;
 
 public class WorldGuard {
 
-    private static WorldGuardPlugin plugin;
+    private static Plugin plugin;
+    private static WorldGuardPlugin wgPlugin;
     private static boolean hasSupport = false;
     private static int majorVersion;
     public static boolean useWorldGuard = true;
 
-    public static void init(think.rpgitems.Plugin plugin2) {
-        Plugin plugin = plugin2.getServer().getPluginManager().getPlugin("WorldGuard");
-        useWorldGuard = plugin2.getConfig().getBoolean("support.worldguard", false);
-        if (plugin == null || !(plugin instanceof WorldGuardPlugin)) {
+    public static void init(think.rpgitems.Plugin pl) {
+        plugin = pl;
+        Plugin wgPlugin = plugin.getServer().getPluginManager().getPlugin("WorldGuard");
+        useWorldGuard = plugin.getConfig().getBoolean("support.worldguard", false);
+        if (wgPlugin == null || !(wgPlugin instanceof WorldGuardPlugin)) {
             return;
         }
         hasSupport = true;
-        WorldGuard.plugin = (WorldGuardPlugin) plugin;
-        majorVersion = Character.digit(plugin.getDescription().getVersion().charAt(0), 9);
-        think.rpgitems.Plugin.logger.info("[RPGItems] World Guard version " + majorVersion + " found");
+        WorldGuard.wgPlugin = (WorldGuardPlugin) wgPlugin;
+        majorVersion = Character.digit(wgPlugin.getDescription().getVersion().charAt(0), 9);
+        think.rpgitems.Plugin.logger.info("[RPGItems] WorldGuard version " + majorVersion + " found");
+    }
+    
+    public static void reload() {
+        useWorldGuard = plugin.getConfig().getBoolean("support.worldguard", false);
+        if (wgPlugin == null || !(wgPlugin instanceof WorldGuardPlugin)) {
+            return;
+        }
+        hasSupport = true;
+        WorldGuard.wgPlugin = (WorldGuardPlugin) wgPlugin;
+        majorVersion = Character.digit(wgPlugin.getDescription().getVersion().charAt(0), 9);
+        think.rpgitems.Plugin.logger.info("[RPGItems] WorldGuard version " + majorVersion + " found");
     }
 
     public static boolean isEnabled() {
@@ -50,7 +63,7 @@ public class WorldGuard {
     public static boolean canBuild(Player player, Location location) {
         if (!hasSupport || !useWorldGuard)
             return true;
-        return plugin.canBuild(player, location);
+        return wgPlugin.canBuild(player, location);
     }
 
     @SuppressWarnings("deprecation")
@@ -59,8 +72,8 @@ public class WorldGuard {
             return true;
         
         if(majorVersion >= 6)
-            return plugin.getRegionContainer().createQuery().queryState(player.getLocation(), player, DefaultFlag.PVP).equals(State.ALLOW);
+            return wgPlugin.getRegionContainer().createQuery().queryState(player.getLocation(), player, DefaultFlag.PVP).equals(State.ALLOW);
         else
-            return plugin.getGlobalRegionManager().allows(DefaultFlag.PVP, player.getLocation(), plugin.wrapPlayer(player));
+            return wgPlugin.getGlobalRegionManager().allows(DefaultFlag.PVP, player.getLocation(), wgPlugin.wrapPlayer(player));
     }
 }

@@ -36,9 +36,19 @@ public class ItemManager {
     public static HashMap<String, RPGItem> itemByName = new HashMap<String, RPGItem>();
     public static HashMap<String, ItemGroup> groups = new HashMap<String, ItemGroup>();
     public static int currentPos = 0;
+    private static Plugin plugin;
+    
+    public static void reload() {
+        itemById = new TIntObjectHashMap<RPGItem>();
+        itemByName = new HashMap<String, RPGItem>();
+        groups = new HashMap<String, ItemGroup>();
+        currentPos = 0;
+        load(plugin);
+    }
 
-    public static void load(Plugin plugin) {
+    public static void load(Plugin pl) {
         try {
+            plugin = pl;
             FileInputStream in = null;
             YamlConfiguration itemStorage = null;
             try {

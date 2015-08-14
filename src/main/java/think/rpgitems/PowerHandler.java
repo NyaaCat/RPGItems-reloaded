@@ -14,6 +14,48 @@ import think.rpgitems.item.RPGItem;
 import think.rpgitems.power.*;
 
 public class PowerHandler implements CommandHandler {
+    
+    @CommandString("rpgitem $n[] power aoe $cooldown:i[] $range:i[] $effect:s[] $duration:i[] $amplifier:i[]")
+    @CommandDocumentation("$command.rpgitem.aoe+PotionEffectType")
+    @CommandGroup("item_power_aoe")
+    public void potionaoe(CommandSender sender, RPGItem item, int cooldown, int range, String effect, int duration, int amplifier) {
+        PowerAOE pow = new PowerAOE();
+        pow.item = item;
+        pow.cooldownTime = cooldown;
+        pow.range = range;
+        pow.duration = duration;
+        pow.amplifier = amplifier;
+        pow.selfapplication = true;
+        pow.type = PotionEffectType.getByName(effect);
+        if (pow.type == null) {
+            sender.sendMessage(ChatColor.RED + String.format(Locale.get("message.error.effect"), effect));
+            return;
+        }
+        item.addPower(pow);
+        ItemManager.save(Plugin.plugin);
+        sender.sendMessage(ChatColor.AQUA + Locale.get("message.power.ok"));
+    }
+    
+    @CommandString("rpgitem $n[] power aoe $cooldown:i[] $range:i[] $effect:s[] $duration:i[] $amplifier:i[] $selfapplication:s[]")
+    @CommandDocumentation("$command.rpgitem.aoe+PotionEffectType")
+    @CommandGroup("item_power_aoe")
+    public void potionaoe(CommandSender sender, RPGItem item, int cooldown, int range, String effect, int duration, int amplifier, String selfapplication) {
+        PowerAOE pow = new PowerAOE();
+        pow.item = item;
+        pow.cooldownTime = cooldown;
+        pow.range = range;
+        pow.duration = duration;
+        pow.amplifier = amplifier;
+        pow.selfapplication = Boolean.parseBoolean(selfapplication);
+        pow.type = PotionEffectType.getByName(effect);
+        if (pow.type == null) {
+            sender.sendMessage(ChatColor.RED + String.format(Locale.get("message.error.effect"), effect));
+            return;
+        }
+        item.addPower(pow);
+        ItemManager.save(Plugin.plugin);
+        sender.sendMessage(ChatColor.AQUA + Locale.get("message.power.ok"));
+    }
 
     @CommandString("rpgitem $n[] power arrow")
     @CommandDocumentation("$command.rpgitem.arrow")
