@@ -33,6 +33,7 @@ command.info.permission=Permission
 command.info.player=[Player]
 command.info.power=Power
 command.info.quality=Quality
+command.info.range=Range
 command.info.string=[String]
 command.info.string.limit=[String(Max:%d)]
 command.info.terms=Terms
