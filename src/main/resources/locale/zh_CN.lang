@@ -168,7 +168,7 @@ power.rainbow=发射 %d 彩色羊毛 (%.1f 秒冷却)
 power.rumble=发出冲击波 (%.1f 秒冷却时间)
 power.teleport=传送 %d 格 (%.1f 秒冷却)
 power.tntcannon=发射 TNT (%.1f 秒冷却时间)
-power.unbreakable=不毁
+power.unbreakable=不可摧毁
 power.unbreaking=耐久 %d
 
 #2.7
