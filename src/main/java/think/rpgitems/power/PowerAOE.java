@@ -35,6 +35,7 @@ public class PowerAOE extends Power implements PowerRightClick {
     public int range = 5;
     public boolean selfapplication = true;
     public PotionEffectType type;
+    public String name = null;
 
     @Override
     public void init(ConfigurationSection s) {
@@ -44,6 +45,7 @@ public class PowerAOE extends Power implements PowerRightClick {
         range = s.getInt("range", 5);
         selfapplication = s.getBoolean("selfapplication", true);
         type = PotionEffectType.getByName(s.getString("type", "HARM"));
+        name = s.getString("name");
     }
 
     @Override
@@ -54,6 +56,7 @@ public class PowerAOE extends Power implements PowerRightClick {
         s.set("amplifier", amplifier);
         s.set("selfapplication", selfapplication);
         s.set("type", type.getName());
+        s.set("name", name);
     }
 
     @Override
@@ -90,6 +93,6 @@ public class PowerAOE extends Power implements PowerRightClick {
 
     @Override
     public String displayText() {
-        return ChatColor.GREEN + String.format(Locale.get("power.aoe"), type.getName(), amplifier, duration, selfapplication ? Locale.get("power.aoe.selfapplication.true"):Locale.get("power.aoe.selfapplication.false"), range, (double) cooldownTime / 20d);
+        return name!=null?name:ChatColor.GREEN + String.format(Locale.get("power.aoe"), type.getName(), amplifier, duration, selfapplication ? Locale.get("power.aoe.selfapplication.true"):Locale.get("power.aoe.selfapplication.false"), range, (double) cooldownTime / 20d);
     }
 }
