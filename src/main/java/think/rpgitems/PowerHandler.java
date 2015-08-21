@@ -399,6 +399,20 @@ public class PowerHandler implements CommandHandler {
         sender.sendMessage(ChatColor.AQUA + Locale.get("message.power.ok"));
     }
 
+    @CommandString("rpgitem $n[] power rainbow $cooldown:i[] $count:i[] $isFire:s[]")
+    @CommandDocumentation("$command.rpgitem.rainbow.full")
+    @CommandGroup("item_power_rainbow")
+    public void rainbow(CommandSender sender, RPGItem item, int cooldown, int count, String isFire) {
+        PowerRainbow pow = new PowerRainbow();
+        pow.cooldownTime = cooldown;
+        pow.count = count;
+        pow.item = item;
+        pow.isFire = "true".equalsIgnoreCase(isFire);
+        item.addPower(pow);
+        ItemManager.save(Plugin.plugin);
+        sender.sendMessage(ChatColor.AQUA + Locale.get("message.power.ok"));
+    }
+
     @CommandString("rpgitem $n[] power rumble $cooldown:i[] $power:i[] $distance:i[]")
     @CommandDocumentation("$command.rpgitem.rumble")
     @CommandGroup("item_power_rumble")

@@ -41,6 +41,7 @@ public class PowerRainbow extends Power implements PowerRightClick {
 
     public long cooldownTime = 20;
     public int count = 5;
+    public boolean isFire = false;
     private Random random = new Random();
 
     @SuppressWarnings("deprecation")
@@ -61,7 +62,12 @@ public class PowerRainbow extends Power implements PowerRightClick {
                 player.playSound(player.getLocation(), Sound.SHOOT_ARROW, 1.0f, 1.0f);
                 final ArrayList<FallingBlock> blocks = new ArrayList<FallingBlock>();
                 for (int i = 0; i < count; i++) {
-                    FallingBlock block = player.getWorld().spawnFallingBlock(player.getLocation().add(0, 1.8, 0), Material.WOOL, (byte) random.nextInt(16));
+                    FallingBlock block;
+                    if (!isFire) {
+                        block = player.getWorld().spawnFallingBlock(player.getLocation().add(0, 1.8, 0), Material.WOOL, (byte) random.nextInt(16));
+                    } else {
+                        block = player.getWorld().spawnFallingBlock(player.getLocation().add(0, 1.8, 0), Material.FIRE, (byte) 0);
+                    }
                     block.setVelocity(player.getLocation().getDirection().multiply(new Vector(random.nextDouble() * 2d + 0.5, random.nextDouble() * 2d + 0.5, random.nextDouble() * 2d + 0.5)));
                     block.setDropItem(false);
                     blocks.add(block);
@@ -78,8 +84,8 @@ public class PowerRainbow extends Power implements PowerRightClick {
                             Location loc = l.next();
                             if (random.nextBoolean()) {
                                 Block b = loc.getBlock();
-                                if (b.getType() == Material.WOOL) {
-                                    loc.getWorld().playEffect(loc, Effect.STEP_SOUND, Material.WOOL, b.getData());
+                                if (b.getType() == (isFire ? Material.FIRE : Material.WOOL)) {
+                                    loc.getWorld().playEffect(loc, Effect.STEP_SOUND, isFire ? Material.FIRE : Material.WOOL, b.getData());
                                     b.setType(Material.AIR);
                                 }
                                 l.remove();
@@ -124,11 +130,13 @@ public class PowerRainbow extends Power implements PowerRightClick {
     public void init(ConfigurationSection s) {
         cooldownTime = s.getLong("cooldown", 20);
         count = s.getInt("count", 5);
+        isFire = s.getBoolean("isFire");
     }
 
     @Override
     public void save(ConfigurationSection s) {
         s.set("cooldown", cooldownTime);
         s.set("count", count);
+        s.set("isFire", isFire);
     }
 }
