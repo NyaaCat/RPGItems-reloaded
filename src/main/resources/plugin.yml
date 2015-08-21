@@ -1,9 +1,33 @@
 name: RPGItems
 main: think.rpgitems.Plugin
 version: 3.5
-dev-url: https://github.com/NyaaCat/RPGitems-reloaded
+description: Add powers to your tools and weapons.
+website: https://github.com/NyaaCat/RPGitems-reloaded
 softdepend: [WorldGuard]
+prefix: RPGItems-Reloaded
 commands:
-    rpgitem:
-        description: RPG Items
-        usage: RPG Items
+  rpgitem:
+    description: Main command for RPGItem-Reloaded
+    aliases: rir
+    permission: rpgitem.command
+    permission-message: You do not have permission node <permission>
+    usage: "/<command> <reload|list>\n/<command> <item-name> [create|delete|power|delpower|recipe|delrecipe]"
+    
+permissions:
+  rpgitem.*:
+    description: All permissions for RPGItem
+    default: false
+    children:
+      rpgitem.command.*: true
+      rpgitem.itemuse.*: true
+  rpgitem.command.*:
+    description: Allowing the use of all commands
+    default: op
+    children:
+      rpgitem.command.give: true
+  rpgitem.command.give:
+    description: Allowing giving players items
+    default: op
+  rpgitem.itemuse.*:
+    description: Allowing the use of specified item
+    default: true
