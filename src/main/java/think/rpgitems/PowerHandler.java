@@ -57,10 +57,10 @@ public class PowerHandler implements CommandHandler {
         sender.sendMessage(ChatColor.AQUA + Locale.get("message.power.ok"));
     }
 
-    @CommandString("rpgitem $n[] power aoe $cooldown:i[] $range:i[] $effect:s[] $duration:i[] $amplifier:i[] $selfapplication:s[] $displayName:s[]")
+    @CommandString("rpgitem $n[] power aoe $displayName:s[] $cooldown:i[] $range:i[] $effect:s[] $duration:i[] $amplifier:i[] $selfapplication:s[]")
     @CommandDocumentation("$command.rpgitem.aoe+PotionEffectType")
     @CommandGroup("item_power_aoe")
-    public void potionaoe(CommandSender sender, RPGItem item, int cooldown, int range, String effect, int duration, int amplifier, String selfapplication, String displayName) {
+    public void potionaoe(CommandSender sender, RPGItem item, String displayName, int cooldown, int range, String effect, int duration, int amplifier, String selfapplication) {
         PowerAOE pow = new PowerAOE();
         pow.item = item;
         pow.cooldownTime = cooldown;
@@ -69,7 +69,7 @@ public class PowerHandler implements CommandHandler {
         pow.amplifier = amplifier;
         pow.selfapplication = Boolean.parseBoolean(selfapplication);
         pow.type = PotionEffectType.getByName(effect);
-        pow.name = displayName;
+        pow.name = displayName.replace("&", "§");
         if (pow.type == null) {
             sender.sendMessage(ChatColor.RED + String.format(Locale.get("message.error.effect"), effect));
             return;
