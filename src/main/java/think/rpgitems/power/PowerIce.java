@@ -52,7 +52,7 @@ public class PowerIce extends Power implements PowerRightClick {
             if (cooldown <= System.currentTimeMillis() / 50) {
                 value.set(System.currentTimeMillis() / 50 + cooldownTime);
                 player.playSound(player.getLocation(), Sound.FIZZ, 1.0f, 0.1f);
-                final FallingBlock block = player.getWorld().spawnFallingBlock(player.getLocation().add(0, 1.8, 0), Material.ICE, (byte) 0);
+                final FallingBlock block = player.getWorld().spawnFallingBlock(player.getLocation().add(0, 1.8, 0), Material.PACKED_ICE, (byte) 0);
                 block.setVelocity(player.getLocation().getDirection().multiply(2d));
                 block.setDropItem(false);
                 BukkitRunnable run = new BukkitRunnable() {
@@ -99,7 +99,7 @@ public class PowerIce extends Power implements PowerRightClick {
                                         Block b = world.getBlockAt(loc);
                                         if (!b.getType().isSolid() && !b.getType().toString().contains("SIGN")) {
                                             changedBlocks.put(b.getLocation(), b.getTypeId() | (b.getData() << 16));
-                                            b.setType(Material.ICE);
+                                            b.setType(Material.PACKED_ICE);
                                         }
                                     }
                                 }
