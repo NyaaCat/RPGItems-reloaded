@@ -25,6 +25,7 @@ import org.bukkit.Material;
 import org.bukkit.command.CommandSender;
 import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.configuration.MemoryConfiguration;
+import org.bukkit.enchantments.Enchantment;
 import org.bukkit.entity.LivingEntity;
 import org.bukkit.entity.Player;
 import org.bukkit.entity.Projectile;
@@ -383,6 +384,10 @@ public class RPGItem {
         rItem.addExtra(rpgMeta, item, lore);
         lore.set(0, meta.getLore().get(0) + rpgMeta.toMCString());
         meta.setLore(lore);
+        Map<Enchantment, Integer> enchs = item.getEnchantments();
+        if(enchs.size() > 0)
+            for(Enchantment ench : enchs.keySet())
+                meta.addEnchant(ench, enchs.get(ench), true);
         item.setItemMeta(meta);
     }
 

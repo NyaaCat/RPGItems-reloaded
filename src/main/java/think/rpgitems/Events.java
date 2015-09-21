@@ -22,6 +22,7 @@ import org.bukkit.*;
 import org.bukkit.entity.*;
 import org.bukkit.event.*;
 import org.bukkit.event.block.*;
+import org.bukkit.event.enchantment.EnchantItemEvent;
 import org.bukkit.event.entity.*;
 import org.bukkit.event.hanging.HangingBreakEvent;
 import org.bukkit.event.hanging.HangingBreakEvent.RemoveCause;
@@ -44,7 +45,13 @@ public class Events implements Listener {
     public static TObjectIntHashMap<String> recipeWindows = new TObjectIntHashMap<String>();
     public static HashMap<String, Set<Integer>> drops = new HashMap<String, Set<Integer>>();
     public static boolean useLocaleInv = false;
-    
+
+    @EventHandler
+    public void onItemEnchant(EnchantItemEvent e) {
+        if (ItemManager.toRPGItem(e.getItem()) != null)
+              e.setCancelled(true);
+    }
+
     @EventHandler
     public void onHangingBreak(HangingBreakEvent e) {
         if (e.getCause().equals(RemoveCause.EXPLOSION))
@@ -53,12 +60,12 @@ public class Events implements Listener {
                 e.setCancelled(true);
             }
     }
-    
+
     @EventHandler
-    public void onBreak(BlockPhysicsEvent e) { //Is not triggered when the block a torch is attached to is removed
-        if(e.getChangedType().equals(Material.TORCH))
-            if(e.getBlock().hasMetadata("RPGItems.Torch")) {
-                e.setCancelled(true); //Cancelling this does not work
+    public void onBreak(BlockPhysicsEvent e) { // Is not triggered when the block a torch is attached to is removed
+        if (e.getChangedType().equals(Material.TORCH))
+            if (e.getBlock().hasMetadata("RPGItems.Torch")) {
+                e.setCancelled(true); // Cancelling this does not work
                 e.getBlock().removeMetadata("RPGItems.Torch", Plugin.plugin);
                 e.getBlock().setType(Material.AIR);
             }
@@ -66,10 +73,10 @@ public class Events implements Listener {
 
     @EventHandler(ignoreCancelled = true)
     public void onBlockBreak(BlockBreakEvent e) {
-        if(e.getBlock().getType().equals(Material.TORCH))
-            if(e.getBlock().hasMetadata("RPGItems.Torch"))
+        if (e.getBlock().getType().equals(Material.TORCH))
+            if (e.getBlock().hasMetadata("RPGItems.Torch"))
                 e.setCancelled(true);
-        
+
         Player player = e.getPlayer();
         ItemStack item = player.getItemInHand();
         RPGItem rItem;
