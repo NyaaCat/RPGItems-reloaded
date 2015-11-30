@@ -28,8 +28,11 @@ import think.rpgitems.Plugin;
 import think.rpgitems.power.Power;
 
 import java.io.*;
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.Map.Entry;
+import java.util.Objects;
+import java.util.Set;
 
 public class ItemManager {
     public static TIntObjectHashMap<RPGItem> itemById = new TIntObjectHashMap<RPGItem>();
@@ -76,8 +79,9 @@ public class ItemManager {
             ConfigurationSection section = itemStorage.getConfigurationSection("items");
             if (section == null)
                 return;
-            for (String key : section.getKeys(false)) {
-                RPGItem item = new RPGItem(section.getConfigurationSection(key));
+            for (Object obj : section.getValues(false).values()){
+                ConfigurationSection sec = (ConfigurationSection)obj;
+                RPGItem item = new RPGItem(sec);
                 itemById.put(item.getID(), item);
                 itemByName.put(item.getName(), item);
                 for (Power power : item.powers) {
@@ -121,9 +125,9 @@ public class ItemManager {
         itemStorage.set("pos", currentPos);
         ConfigurationSection newSection = itemStorage.createSection("items");
         for (RPGItem item : itemById.valueCollection()) {
-            ConfigurationSection itemSection = newSection.getConfigurationSection(item.getName());
+            ConfigurationSection itemSection = newSection.getConfigurationSection(item.getName().replace(".","_"));
             if (itemSection == null) {
-                itemSection = newSection.createSection(item.getName());
+                itemSection = newSection.createSection(item.getName().replace(".","_"));
             }
             item.save(itemSection);
         }
