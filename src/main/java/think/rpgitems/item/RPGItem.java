@@ -327,6 +327,12 @@ public class RPGItem {
         ItemMeta meta = getLocaleMeta();
         meta.setDisplayName(lines.get(0));
         lines.remove(0);
+        //if (!Plugin.plugin.getConfig().contains("bypassLoreMark") || !Plugin.plugin.getConfig().getBoolean("bypassLoreMark")) {
+            if (lines.size() > 0)
+                lines.set(0, ItemManager.LORE_MARK + lines.get(0));
+            else
+                lines.add(ItemManager.LORE_MARK);
+        //}
         meta.setLore(lines);
         updateLocaleMeta(meta);
 

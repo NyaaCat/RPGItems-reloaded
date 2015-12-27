@@ -28,13 +28,11 @@ import think.rpgitems.Plugin;
 import think.rpgitems.power.Power;
 
 import java.io.*;
-import java.util.Collection;
 import java.util.HashMap;
 import java.util.Map.Entry;
-import java.util.Objects;
-import java.util.Set;
 
 public class ItemManager {
+    public static final String LORE_MARK = ChatColor.COLOR_CHAR + "c" + ChatColor.COLOR_CHAR + "a" + ChatColor.COLOR_CHAR + "r";
     public static TIntObjectHashMap<RPGItem> itemById = new TIntObjectHashMap<RPGItem>();
     public static HashMap<String, RPGItem> itemByName = new HashMap<String, RPGItem>();
     public static HashMap<String, ItemGroup> groups = new HashMap<String, ItemGroup>();
@@ -168,6 +166,9 @@ public class ItemManager {
         ItemMeta meta = item.getItemMeta();
         if (!meta.hasDisplayName())
             return null;
+        if (!plugin.getConfig().contains("bypassLoreMark") || !plugin.getConfig().getBoolean("bypassLoreMark"))
+            if (!meta.hasLore() || meta.getLore().size() <= 0 || !meta.getLore().get(0).startsWith(LORE_MARK))
+                return null;
         try {
             int id = ItemManager.decodeId(meta.getDisplayName());
             RPGItem rItem = ItemManager.getItemById(id);
