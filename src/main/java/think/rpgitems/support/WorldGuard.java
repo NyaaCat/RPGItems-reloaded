@@ -70,10 +70,6 @@ public class WorldGuard {
     public static boolean canPvP(Player player) {
         if (!hasSupport || !useWorldGuard)
             return true;
-        
-        if(majorVersion >= 6)
-            return wgPlugin.getRegionContainer().createQuery().queryState(player.getLocation(), player, DefaultFlag.PVP).equals(State.ALLOW);
-        else
-            return wgPlugin.getGlobalRegionManager().allows(DefaultFlag.PVP, player.getLocation(), wgPlugin.wrapPlayer(player));
+        return wgPlugin.getGlobalRegionManager().allows(DefaultFlag.PVP, player.getLocation(), wgPlugin.wrapPlayer(player));
     }
 }
