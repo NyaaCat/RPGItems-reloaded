@@ -62,6 +62,7 @@ public class Plugin extends JavaPlugin {
         Power.powers.put("consume", PowerConsume.class);
         Power.powers.put("unbreakable", PowerUnbreakable.class);
         Power.powers.put("unbreaking", PowerUnbreaking.class);
+        Power.powers.put("rescue", PowerRescue.class);
         Power.powers.put("rumble", PowerRumble.class);
         Power.powers.put("skyhook", PowerSkyHook.class);
         Power.powers.put("potiontick", PowerPotionTick.class);

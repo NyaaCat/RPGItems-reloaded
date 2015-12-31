@@ -72,6 +72,7 @@ public class RPGItem {
     private ArrayList<PowerRightClick> powerRightClick = new ArrayList<PowerRightClick>();
     private ArrayList<PowerProjectileHit> powerProjectileHit = new ArrayList<PowerProjectileHit>();
     private ArrayList<PowerHit> powerHit = new ArrayList<PowerHit>();
+    private ArrayList<PowerHitTaken> powerHitTaken = new ArrayList<PowerHitTaken>();
     private ArrayList<PowerTick> powerTick = new ArrayList<PowerTick>();
 
     // Recipes
@@ -310,9 +311,15 @@ public class RPGItem {
         }
     }
 
-    public void hit(Player player, LivingEntity e, double d) {
+    public void hit(Player damager, LivingEntity target, double damage) {
         for (PowerHit power : powerHit) {
-            power.hit(player, e, d);
+            power.hit(damager, target, damage);
+        }
+    }
+    
+    public void takeHit(Player target, LivingEntity damager, double damage) {
+        for (PowerHitTaken power : powerHitTaken) {
+            power.takeHit(target, damager, damage);
         }
     }
 
@@ -792,6 +799,9 @@ public class RPGItem {
         if (power instanceof PowerHit) {
             powerHit.add((PowerHit) power);
         }
+        if (power instanceof PowerHitTaken) {
+            powerHitTaken.add((PowerHitTaken) power);
+        }
         if (power instanceof PowerLeftClick) {
             powerLeftClick.add((PowerLeftClick) power);
         }
@@ -823,6 +833,9 @@ public class RPGItem {
         if (power != null) {
             if (power instanceof PowerHit) {
                 powerHit.remove((PowerHit) power);
+            }
+            if (power instanceof PowerHitTaken) {
+                powerHitTaken.remove((PowerHitTaken) power);
             }
             if (power instanceof PowerLeftClick) {
                 powerLeftClick.remove(power);

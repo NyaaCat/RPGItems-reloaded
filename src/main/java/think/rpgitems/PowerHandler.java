@@ -252,7 +252,7 @@ public class PowerHandler implements CommandHandler {
     @CommandString("rpgitem $n[] power lifesteal $chance:i[]")
     @CommandDocumentation("$command.rpgitem.lifesteal")
     @CommandGroup("item_power_lifesteal")
-    public void lifsteal(CommandSender sender, RPGItem item, int chance) {
+    public void lifesteal(CommandSender sender, RPGItem item, int chance) {
         PowerLifeSteal pow = new PowerLifeSteal();
         pow.item = item;
         pow.chance = chance;
@@ -408,6 +408,20 @@ public class PowerHandler implements CommandHandler {
         pow.count = count;
         pow.item = item;
         pow.isFire = "true".equalsIgnoreCase(isFire);
+        item.addPower(pow);
+        ItemManager.save(Plugin.plugin);
+        sender.sendMessage(ChatColor.AQUA + Locale.get("message.power.ok"));
+    }
+    
+    @CommandString("rpgitem $n[] power rescue $cooldown:i[] $healthtrigger:i[] $usebed:s[]")
+    @CommandDocumentation("$command.rpgitem.rescue")
+    @CommandGroup("item_power_rescue")
+    public void rescue(CommandSender sender, RPGItem item, int cooldown, int healthTrigger, boolean useBed) {
+        PowerRescue pow = new PowerRescue();
+        pow.item = item;
+        pow.cooldownTime = cooldown;
+        pow.healthTrigger = healthTrigger;
+        pow.useBed = useBed;
         item.addPower(pow);
         ItemManager.save(Plugin.plugin);
         sender.sendMessage(ChatColor.AQUA + Locale.get("message.power.ok"));

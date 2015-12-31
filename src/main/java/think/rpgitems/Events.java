@@ -348,8 +348,7 @@ public class Events implements Listener {
         }
         damage = rItem.getDamageMin() != rItem.getDamageMax() ? (rItem.getDamageMin() + random.nextInt(rItem.getDamageMax() - rItem.getDamageMin())) : rItem.getDamageMin();
         if (e.getEntity() instanceof LivingEntity) {
-            LivingEntity le = (LivingEntity) e.getEntity();
-            rItem.hit(player, le, e.getDamage());
+            rItem.hit(player, (LivingEntity) e.getEntity(), e.getDamage());
         }
         RPGMetadata meta = RPGItem.getMetadata(item);
         if (rItem.getMaxDurability() != -1) {
@@ -399,6 +398,9 @@ public class Events implements Listener {
             }
             if (pRItem.getArmour() > 0) {
                 damage -= Math.round(((double) damage) * (((double) pRItem.getArmour()) / 100d));
+            }
+            if(e.getDamager() instanceof LivingEntity) {
+                pRItem.takeHit(p, (LivingEntity) e.getDamager(), e.getDamage());
             }
             RPGMetadata meta = RPGItem.getMetadata(pArmour);
             if (pRItem.getMaxDurability() != -1) {
