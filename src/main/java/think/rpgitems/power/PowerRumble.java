@@ -56,7 +56,7 @@ public class PowerRumble extends Power implements PowerRightClick {
     }
 
     @Override
-    public void rightClick(final Player player) {
+    public void rightClick(final Player player, Block block) {
         long cooldown;
         if (item.getHasPermission() == true && player.hasPermission(item.getPermission()) == false) {
         } else {

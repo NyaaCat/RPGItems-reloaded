@@ -186,7 +186,7 @@ public class Events implements Listener {
                 e.setCancelled(true);
                 player.sendMessage(ChatColor.RED + String.format(Locale.get("message.error.permission")));
             }
-            rItem.rightClick(player);
+            rItem.rightClick(player, e.getClickedBlock());
             if (!player.getItemInHand().getType().equals(Material.AIR))
                 RPGItem.updateItem(item);
             else
@@ -206,7 +206,7 @@ public class Events implements Listener {
                 e.setCancelled(true);
                 player.sendMessage(ChatColor.RED + String.format(Locale.get("message.error.permission")));
             }
-            rItem.leftClick(player);
+            rItem.leftClick(player, e.getClickedBlock());
             RPGItem.updateItem(item);
         }
 

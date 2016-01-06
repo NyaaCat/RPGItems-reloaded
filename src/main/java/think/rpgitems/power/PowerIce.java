@@ -38,7 +38,7 @@ public class PowerIce extends Power implements PowerRightClick {
 
     @SuppressWarnings("deprecation")
     @Override
-    public void rightClick(final Player player) {
+    public void rightClick(final Player player, Block clicked) {
         long cooldown;
         if (item.getHasPermission() == true && player.hasPermission(item.getPermission()) == false) {
         } else {

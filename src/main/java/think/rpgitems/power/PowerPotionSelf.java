@@ -17,10 +17,12 @@
 package think.rpgitems.power;
 
 import org.bukkit.ChatColor;
+import org.bukkit.block.Block;
 import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.entity.Player;
 import org.bukkit.potion.PotionEffect;
 import org.bukkit.potion.PotionEffectType;
+
 import think.rpgitems.data.Locale;
 import think.rpgitems.data.RPGValue;
 import think.rpgitems.power.types.PowerRightClick;
@@ -33,7 +35,7 @@ public class PowerPotionSelf extends Power implements PowerRightClick {
     public PotionEffectType type = PotionEffectType.HEAL;
 
     @Override
-    public void rightClick(Player player) {
+    public void rightClick(Player player, Block clicked) {
         long cooldown;
         if (item.getHasPermission() == true && player.hasPermission(item.getPermission()) == false) {
         } else {

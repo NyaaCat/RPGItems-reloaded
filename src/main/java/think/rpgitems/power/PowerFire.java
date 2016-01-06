@@ -38,7 +38,7 @@ public class PowerFire extends Power implements PowerRightClick {
 
     @SuppressWarnings("deprecation")
     @Override
-    public void rightClick(final Player player) {
+    public void rightClick(final Player player, Block clicked) {
         long cooldown;
         RPGValue value = RPGValue.get(player, item, "fire.cooldown");
         if (value == null) {

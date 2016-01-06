@@ -102,7 +102,37 @@ public class PowerHandler implements CommandHandler {
         ItemManager.save(Plugin.plugin);
         sender.sendMessage(ChatColor.AQUA + Locale.get("message.power.ok"));
     }
-
+    
+    @CommandString("rpgitem $n[] power color")
+    @CommandDocumentation("$command.rpgitem.color")
+    @CommandGroup("item_power_color")
+    public void color(CommandSender sender, RPGItem item) {
+        PowerColor color = new PowerColor();
+        color.cooldownTime = 0;
+        color.glass = true;
+        color.clay = true;
+        color.wool = true;
+        color.item = item;
+        item.addPower(color);
+        ItemManager.save(Plugin.plugin);
+        sender.sendMessage(ChatColor.AQUA + Locale.get("message.power.ok"));
+    }
+    
+    @CommandString("rpgitem $n[] power color $cooldown:i[] $glass:s[] $clay:s[] $wool:s[]")
+    @CommandDocumentation("$command.rpgitem.color.full")
+    @CommandGroup("item_power_color")
+    public void color(CommandSender sender, RPGItem item, int cooldown, String glass,  String clay,  String wool) {
+        PowerColor color = new PowerColor();
+        color.cooldownTime = cooldown;
+        color.glass = glass.equalsIgnoreCase("true");
+        color.clay = clay.equalsIgnoreCase("true");
+        color.wool = wool.equalsIgnoreCase("true");
+        color.item = item;
+        item.addPower(color);
+        ItemManager.save(Plugin.plugin);
+        sender.sendMessage(ChatColor.AQUA + Locale.get("message.power.ok"));
+    }
+    
     @CommandString("rpgitem $n[] power command $cooldown:i[] $o[left,right] $display:s[] $command:s[]")
     @CommandDocumentation("$command.rpgitem.command")
     @CommandGroup("item_power_command_b")

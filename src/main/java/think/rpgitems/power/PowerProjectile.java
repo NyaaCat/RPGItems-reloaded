@@ -1,8 +1,10 @@
 package think.rpgitems.power;
 
 import org.bukkit.ChatColor;
+import org.bukkit.block.Block;
 import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.entity.*;
+
 import think.rpgitems.data.Locale;
 import think.rpgitems.data.RPGValue;
 import think.rpgitems.power.types.PowerRightClick;
@@ -56,7 +58,7 @@ public class PowerProjectile extends Power implements PowerRightClick{
     }
 
     @Override
-    public void rightClick(Player player) {
+    public void rightClick(Player player, Block clicked) {
         long cooldown;
         if (item.getHasPermission() == true && player.hasPermission(item.getPermission()) == false) {
         } else {

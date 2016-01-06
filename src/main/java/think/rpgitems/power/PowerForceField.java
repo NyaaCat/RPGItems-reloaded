@@ -1,17 +1,17 @@
 package think.rpgitems.power;
 
+import java.util.HashSet;
+import java.util.Set;
+
 import org.bukkit.*;
+import org.bukkit.block.Block;
 import org.bukkit.configuration.ConfigurationSection;
-import org.bukkit.entity.Entity;
-import org.bukkit.entity.ItemFrame;
-import org.bukkit.entity.Painting;
-import org.bukkit.entity.Player;
+import org.bukkit.entity.*;
+
 import think.rpgitems.Plugin;
 import think.rpgitems.data.Locale;
 import think.rpgitems.data.RPGValue;
 import think.rpgitems.power.types.PowerRightClick;
-
-import java.util.*;
 
 public class PowerForceField extends Power implements PowerRightClick {
     public static final String name = "forcefield";
@@ -50,7 +50,7 @@ public class PowerForceField extends Power implements PowerRightClick {
     }
 
     @Override
-    public void rightClick(Player player) {
+    public void rightClick(Player player, Block clicked) {
         if (item.getHasPermission() && !player.hasPermission(item.getPermission())) return;
         RPGValue value = RPGValue.get(player, item, "projectile.cooldown");
         long cd;

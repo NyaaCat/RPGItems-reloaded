@@ -16,24 +16,22 @@
  */
 package think.rpgitems.item;
 
-import gnu.trove.map.hash.TObjectDoubleHashMap;
+import java.util.*;
+import java.util.Map.Entry;
+
 import org.apache.commons.lang.StringUtils;
-import org.bukkit.Bukkit;
-import org.bukkit.ChatColor;
-import org.bukkit.Color;
-import org.bukkit.Material;
+import org.bukkit.*;
+import org.bukkit.block.Block;
 import org.bukkit.command.CommandSender;
 import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.configuration.MemoryConfiguration;
 import org.bukkit.enchantments.Enchantment;
-import org.bukkit.entity.LivingEntity;
-import org.bukkit.entity.Player;
-import org.bukkit.entity.Projectile;
-import org.bukkit.inventory.ItemStack;
-import org.bukkit.inventory.Recipe;
-import org.bukkit.inventory.ShapedRecipe;
+import org.bukkit.entity.*;
+import org.bukkit.inventory.*;
 import org.bukkit.inventory.meta.ItemMeta;
 import org.bukkit.inventory.meta.LeatherArmorMeta;
+
+import gnu.trove.map.hash.TObjectDoubleHashMap;
 import think.rpgitems.Events;
 import think.rpgitems.Plugin;
 import think.rpgitems.data.Font;
@@ -41,9 +39,6 @@ import think.rpgitems.data.Locale;
 import think.rpgitems.data.RPGMetadata;
 import think.rpgitems.power.Power;
 import think.rpgitems.power.types.*;
-
-import java.util.*;
-import java.util.Map.Entry;
 
 public class RPGItem {
     private ItemStack item;
@@ -293,15 +288,15 @@ public class RPGItem {
         }
     }
 
-    public void leftClick(Player player) {
+    public void leftClick(Player player, Block block) {
         for (PowerLeftClick power : powerLeftClick) {
-            power.leftClick(player);
+            power.leftClick(player, block);
         }
     }
 
-    public void rightClick(Player player) {
+    public void rightClick(Player player, Block block) {
         for (PowerRightClick power : powerRightClick) {
-            power.rightClick(player);
+            power.rightClick(player, block);
         }
     }
 
