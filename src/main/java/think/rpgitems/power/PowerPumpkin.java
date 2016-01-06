@@ -13,8 +13,8 @@ import think.rpgitems.power.types.PowerHit;
 
 import java.util.Random;
 
-public class PowerLantern extends Power implements PowerHit {
-    public static final String name ="lantern";
+public class PowerPumpkin extends Power implements PowerHit {
+    public static final String name ="pumpkin";
     public int chance = 20;
     public double drop = 0;
     private static final Random rand = new Random();
@@ -38,7 +38,7 @@ public class PowerLantern extends Power implements PowerHit {
 
     @Override
     public String displayText() {
-        return ChatColor.GREEN + String.format(Locale.get("power.lantern"), chance);
+        return ChatColor.GREEN + String.format(Locale.get("power.pumpkin"), chance);
     }
 
     @Override
