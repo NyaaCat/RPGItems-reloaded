@@ -71,6 +71,7 @@ public class Plugin extends JavaPlugin {
         Power.powers.put("fire", PowerFire.class);
         Power.powers.put("projectile", PowerProjectile.class);
         Power.powers.put("deathcommand", PowerDeathCommand.class);
+        Power.powers.put("forcefield", PowerForceField.class);
     }
 
     @Override

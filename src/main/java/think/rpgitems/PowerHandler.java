@@ -605,4 +605,20 @@ public class PowerHandler implements CommandHandler {
         ItemManager.save(Plugin.plugin);
         sender.sendMessage(ChatColor.AQUA + Locale.get("message.power.ok"));
     }
+
+    @CommandString("rpgitem $n[] power forcefield $cooldown:i[] $radius:i[] $height:i[] $base:i[] $duration:i[]")
+    @CommandDocumentation("$command.rpgitem.forcefield")
+    @CommandGroup("item_power_forcefield")
+    public void forcefield(CommandSender sender, RPGItem item, int cooldown, int radius, int height, int base, int duration) {
+        PowerForceField p = new PowerForceField();
+        p.item = item;
+        p.cooldown = cooldown;
+        p.radius = radius;
+        p.height = height;
+        p.base = base;
+        p.ttl = duration;
+        item.addPower(p);
+        ItemManager.save(Plugin.plugin);
+        sender.sendMessage(ChatColor.AQUA + Locale.get("message.power.ok"));
+    }
 }
