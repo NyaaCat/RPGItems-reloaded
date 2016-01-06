@@ -70,6 +70,7 @@ public class Plugin extends JavaPlugin {
         Power.powers.put("torch", PowerTorch.class);
         Power.powers.put("fire", PowerFire.class);
         Power.powers.put("projectile", PowerProjectile.class);
+        Power.powers.put("deathcommand", PowerDeathCommand.class);
     }
 
     @Override
@@ -90,12 +91,12 @@ public class Plugin extends JavaPlugin {
         Commands.register(new PowerHandler());
         new PowerTicker().runTaskTimer(this, 0, 1);
     }
-    
+
     public void startUpdater() {
         getLogger().info("The updater is currently under maintenance,");
         getServer().getConsoleSender().sendMessage("[RPGItems] Please check " + ChatColor.DARK_GRAY + ChatColor.ITALIC + ChatColor.BOLD + "www.github.com/NyaaCat/RPGitems-reloaded" + ChatColor.RESET + " for updates.");
-        
-        if(updater != null)
+
+        if (updater != null)
             return;
         //updater = new Updater(this, 70226, this.getFile(), Updater.UpdateType.DEFAULT, false);
     }

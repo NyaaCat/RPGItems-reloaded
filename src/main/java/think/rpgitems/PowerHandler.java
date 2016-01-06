@@ -14,7 +14,7 @@ import think.rpgitems.item.RPGItem;
 import think.rpgitems.power.*;
 
 public class PowerHandler implements CommandHandler {
-    
+
     @CommandString("rpgitem $n[] power aoe $cooldown:i[] $range:i[] $effect:s[] $duration:i[] $amplifier:i[]")
     @CommandDocumentation("$command.rpgitem.aoe+PotionEffectType")
     @CommandGroup("item_power_aoe")
@@ -35,7 +35,7 @@ public class PowerHandler implements CommandHandler {
         ItemManager.save(Plugin.plugin);
         sender.sendMessage(ChatColor.AQUA + Locale.get("message.power.ok"));
     }
-    
+
     @CommandString("rpgitem $n[] power aoe $cooldown:i[] $range:i[] $effect:s[] $duration:i[] $amplifier:i[] $selfapplication:s[]")
     @CommandDocumentation("$command.rpgitem.aoe+PotionEffectType")
     @CommandGroup("item_power_aoe")
@@ -186,7 +186,7 @@ public class PowerHandler implements CommandHandler {
         ItemManager.save(Plugin.plugin);
         sender.sendMessage(ChatColor.AQUA + Locale.get("message.power.ok"));
     }
-    
+
     @CommandString("rpgitem $n[] power fire $cooldown:i[] $distance:i[] $burnduration:i[]")
     @CommandDocumentation("$command.rpgitem.fire")
     @CommandGroup("item_power_fire")
@@ -412,7 +412,7 @@ public class PowerHandler implements CommandHandler {
         ItemManager.save(Plugin.plugin);
         sender.sendMessage(ChatColor.AQUA + Locale.get("message.power.ok"));
     }
-    
+
     @CommandString("rpgitem $n[] power rescue $cooldown:i[] $healthtrigger:i[] $usebed:s[]")
     @CommandDocumentation("$command.rpgitem.rescue")
     @CommandGroup("item_power_rescue")
@@ -490,7 +490,7 @@ public class PowerHandler implements CommandHandler {
         ItemManager.save(Plugin.plugin);
         sender.sendMessage(ChatColor.AQUA + Locale.get("message.power.ok"));
     }
-    
+
     @CommandString("rpgitem $n[] power torch $cooldown:i[]")
     @CommandDocumentation("$command.rpgitem.torch")
     @CommandGroup("item_power_torch")
@@ -573,6 +573,34 @@ public class PowerHandler implements CommandHandler {
         }
         power.setType(projectileType);
         power.item = item;
+        item.addPower(power);
+        ItemManager.save(Plugin.plugin);
+        sender.sendMessage(ChatColor.AQUA + Locale.get("message.power.ok"));
+    }
+
+    @CommandString("rpgitem $n[] power deathcommand $chance:i[] $command:s[]")
+    @CommandDocumentation("$command.rpgitem.deathcommand")
+    @CommandGroup("item_power_deathcommand")
+    public void deathcommand(CommandSender sender, RPGItem item, int chance, String command) {
+        PowerDeathCommand power = new PowerDeathCommand();
+        power.item = item;
+        power.chance = chance;
+        power.command = command;
+        item.addPower(power);
+        ItemManager.save(Plugin.plugin);
+        sender.sendMessage(ChatColor.AQUA + Locale.get("message.power.ok"));
+    }
+
+    @CommandString("rpgitem $n[] power deathcommand $chance:i[] $count:i[] $command:s[] $descriptionline:s[]")
+    @CommandDocumentation("$command.rpgitem.deathcommand.full")
+    @CommandGroup("item_power_deathcommand")
+    public void deathcommand(CommandSender sender, RPGItem item, int chance, int count, String command, String description) {
+        PowerDeathCommand power = new PowerDeathCommand();
+        power.item = item;
+        power.chance = chance;
+        power.command = command;
+        power.desc = description;
+        power.count = count;
         item.addPower(power);
         ItemManager.save(Plugin.plugin);
         sender.sendMessage(ChatColor.AQUA + Locale.get("message.power.ok"));
