@@ -621,4 +621,28 @@ public class PowerHandler implements CommandHandler {
         ItemManager.save(Plugin.plugin);
         sender.sendMessage(ChatColor.AQUA + Locale.get("message.power.ok"));
     }
+
+    @CommandString("rpgitem $n[] power attract")
+    @CommandDocumentation("$command.rpgitem.attract")
+    @CommandGroup("item_power_attract")
+    public void attract(CommandSender sender, RPGItem item) {
+        PowerAttract p =new PowerAttract();
+        p.item = item;
+        item.addPower(p);
+        ItemManager.save(Plugin.plugin);
+        sender.sendMessage(ChatColor.AQUA + Locale.get("message.power.ok"));
+    }
+
+    @CommandString("rpgitem $n[] power attract $radius:i[] $maxSpeed:f[]")
+    @CommandDocumentation("$command.rpgitem.attract.full")
+    @CommandGroup("item_power_attract")
+    public void attract(CommandSender sender, RPGItem item, int radius, double speed) {
+        PowerAttract p =new PowerAttract();
+        p.item = item;
+        p.radius = radius;
+        p.maxSpeed = speed;
+        item.addPower(p);
+        ItemManager.save(Plugin.plugin);
+        sender.sendMessage(ChatColor.AQUA + Locale.get("message.power.ok"));
+    }
 }
