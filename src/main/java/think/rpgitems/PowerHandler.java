@@ -416,12 +416,12 @@ public class PowerHandler implements CommandHandler {
     @CommandString("rpgitem $n[] power rescue $cooldown:i[] $healthtrigger:i[] $usebed:s[]")
     @CommandDocumentation("$command.rpgitem.rescue")
     @CommandGroup("item_power_rescue")
-    public void rescue(CommandSender sender, RPGItem item, int cooldown, int healthTrigger, boolean useBed) {
+    public void rescue(CommandSender sender, RPGItem item, int cooldown, int healthTrigger, String useBed) {
         PowerRescue pow = new PowerRescue();
         pow.item = item;
         pow.cooldownTime = cooldown;
         pow.healthTrigger = healthTrigger;
-        pow.useBed = useBed;
+        pow.useBed = Boolean.parseBoolean(useBed);
         item.addPower(pow);
         ItemManager.save(Plugin.plugin);
         sender.sendMessage(ChatColor.AQUA + Locale.get("message.power.ok"));
@@ -541,6 +541,39 @@ public class PowerHandler implements CommandHandler {
         pow.item = item;
         pow.foodpoints = foodpoints;
         item.addPower(pow);
+        ItemManager.save(Plugin.plugin);
+        sender.sendMessage(ChatColor.AQUA + Locale.get("message.power.ok"));
+    }
+
+    @CommandString("rpgitem $n[] power projectile $projectileType:s[] $cooldown:i[]")
+    @CommandDocumentation("$command.rpgitem.projectile.full")
+    @CommandGroup("item_power_projectile")
+    public void projectile(CommandSender sender, RPGItem item, String projectileType, int cooldown) {
+        PowerProjectile power = new PowerProjectile();
+        power.cooldownTime = cooldown;
+        if (!power.acceptableType(projectileType)) {
+            sender.sendMessage(ChatColor.RED + Locale.get("power.projectile.badType"));
+            return;
+        }
+        power.setType(projectileType);
+        power.item = item;
+        item.addPower(power);
+        ItemManager.save(Plugin.plugin);
+        sender.sendMessage(ChatColor.AQUA + Locale.get("message.power.ok"));
+    }
+
+    @CommandString("rpgitem $n[] power projectile $projectileType:s[]")
+    @CommandDocumentation("$command.rpgitem.projectile")
+    @CommandGroup("item_power_projectile")
+    public void projectile(CommandSender sender, RPGItem item, String projectileType) {
+        PowerProjectile power = new PowerProjectile();
+        if (!power.acceptableType(projectileType)) {
+            sender.sendMessage(ChatColor.RED + Locale.get("power.projectile.badType"));
+            return;
+        }
+        power.setType(projectileType);
+        power.item = item;
+        item.addPower(power);
         ItemManager.save(Plugin.plugin);
         sender.sendMessage(ChatColor.AQUA + Locale.get("message.power.ok"));
     }

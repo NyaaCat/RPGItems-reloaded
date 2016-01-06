@@ -16,15 +16,11 @@
  */
 package think.rpgitems;
 
-import java.util.List;
-import java.util.logging.Logger;
-
 import org.bukkit.ChatColor;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandSender;
 import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.plugin.java.JavaPlugin;
-
 import think.rpgitems.commands.Commands;
 import think.rpgitems.config.ConfigUpdater;
 import think.rpgitems.data.Font;
@@ -32,6 +28,9 @@ import think.rpgitems.data.Locale;
 import think.rpgitems.item.ItemManager;
 import think.rpgitems.power.*;
 import think.rpgitems.support.WorldGuard;
+
+import java.util.List;
+import java.util.logging.Logger;
 
 @SuppressWarnings("deprecation")
 public class Plugin extends JavaPlugin {
@@ -70,6 +69,7 @@ public class Plugin extends JavaPlugin {
         Power.powers.put("lifesteal", PowerLifeSteal.class);
         Power.powers.put("torch", PowerTorch.class);
         Power.powers.put("fire", PowerFire.class);
+        Power.powers.put("projectile", PowerProjectile.class);
     }
 
     @Override
