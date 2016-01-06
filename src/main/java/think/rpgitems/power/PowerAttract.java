@@ -38,6 +38,7 @@ public class PowerAttract extends Power implements PowerTick {
 
     @Override
     public void tick(Player player) {
+        if (item.getHasPermission() && !player.hasPermission(item.getPermission())) return;
         for (Entity e : player.getNearbyEntities(radius, radius, radius)) {
             if (e instanceof LivingEntity && !(e instanceof Player)) {
                 Location locTarget = e.getLocation();

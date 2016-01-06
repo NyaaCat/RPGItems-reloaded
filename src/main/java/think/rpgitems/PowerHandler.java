@@ -675,4 +675,17 @@ public class PowerHandler implements CommandHandler {
         ItemManager.save(Plugin.plugin);
         sender.sendMessage(ChatColor.AQUA + Locale.get("message.power.ok"));
     }
+
+    @CommandString("rpgitem $n[] power pumpkin $chance:i[] $dropChance:f[]")
+    @CommandDocumentation("$command.rpgitem.pumpkin")
+    @CommandGroup("item_power_pumpkin")
+    public void lantern(CommandSender sender, RPGItem item, int chance, double dropChance) {
+        PowerPumpkin p = new PowerPumpkin();
+        p.item = item;
+        p.chance = chance;
+        p.drop = dropChance;
+        item.addPower(p);
+        ItemManager.save(Plugin.plugin);
+        sender.sendMessage(ChatColor.AQUA + Locale.get("message.power.ok"));
+    }
 }

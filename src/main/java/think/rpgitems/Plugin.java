@@ -74,6 +74,7 @@ public class Plugin extends JavaPlugin {
         Power.powers.put("forcefield", PowerForceField.class);
         Power.powers.put("attract", PowerAttract.class);
         Power.powers.put("color", PowerColor.class);
+        Power.powers.put("pumpkin", PowerPumpkin.class);
     }
 
     @Override
