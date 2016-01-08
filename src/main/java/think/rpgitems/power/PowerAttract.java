@@ -39,13 +39,13 @@ public class PowerAttract extends Power implements PowerTick {
     @Override
     public void tick(Player player) {
         if (item.getHasPermission() && !player.hasPermission(item.getPermission())) return;
+        double factor = Math.sqrt(radius-1)/maxSpeed;
         for (Entity e : player.getNearbyEntities(radius, radius, radius)) {
             if (e instanceof LivingEntity && !(e instanceof Player)) {
                 Location locTarget = e.getLocation();
                 Location locPlayer = player.getLocation();
                 double d = locTarget.distance(locPlayer);
                 if (d < 1 || d > radius) continue;
-                double factor = Math.sqrt(radius-1)/maxSpeed;
                 double newVelocity = Math.sqrt(d-1)/factor;
                 Vector direction = locPlayer.subtract(locTarget).toVector().normalize();
                 e.setVelocity(direction.multiply(newVelocity));

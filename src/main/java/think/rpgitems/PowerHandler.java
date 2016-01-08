@@ -608,6 +608,30 @@ public class PowerHandler implements CommandHandler {
         sender.sendMessage(ChatColor.AQUA + Locale.get("message.power.ok"));
     }
 
+    @CommandString("rpgitem $n[] power projectile $projectileType:s[] $cooldown:i[] $range:i[] $amount:i[]")
+    @CommandDocumentation("$command.rpgitem.projectile.cone")
+    @CommandGroup("item_power_projectile")
+    public void projectile(CommandSender sender, RPGItem item, String projectileType, int cooldown, int range, int amount) {
+        PowerProjectile power = new PowerProjectile();
+        if (projectileType.equalsIgnoreCase("fireball")) {
+            sender.sendMessage(ChatColor.RED + Locale.get("power.projectile.noFireball"));
+            return;
+        }
+        if (!power.acceptableType(projectileType)) {
+            sender.sendMessage(ChatColor.RED + Locale.get("power.projectile.badType"));
+            return;
+        }
+        power.setType(projectileType);
+        power.range = range;
+        power.amount = amount;
+        power.cooldownTime = cooldown;
+        power.item = item;
+        power.cone=true;
+        item.addPower(power);
+        ItemManager.save(Plugin.plugin);
+        sender.sendMessage(ChatColor.AQUA + Locale.get("message.power.ok"));
+    }
+
     @CommandString("rpgitem $n[] power deathcommand $chance:i[] $command:s[]")
     @CommandDocumentation("$command.rpgitem.deathcommand")
     @CommandGroup("item_power_deathcommand")

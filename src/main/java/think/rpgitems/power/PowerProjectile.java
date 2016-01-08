@@ -1,29 +1,43 @@
 package think.rpgitems.power;
 
 import org.bukkit.ChatColor;
+import org.bukkit.Location;
 import org.bukkit.block.Block;
 import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.entity.*;
 
+import org.bukkit.util.Vector;
 import think.rpgitems.data.Locale;
 import think.rpgitems.data.RPGValue;
 import think.rpgitems.power.types.PowerRightClick;
+
+import java.util.Random;
 
 public class PowerProjectile extends Power implements PowerRightClick{
     public static final String name = "projectile";
     public long cooldownTime = 20;
     private Class<? extends Projectile> projectileType = Snowball.class;
+    public boolean cone = false;
+    public int range = 15;
+    public int amount = 5;
+    private Random rand = new Random();
 
     @Override
     public void init(ConfigurationSection s) {
         cooldownTime = s.getLong("cooldownTime");
         setType(s.getString("projectileType"));
+        cone = s.getBoolean("isCone");
+        range = s.getInt("range");
+        amount = s.getInt("amount");
     }
 
     @Override
     public void save(ConfigurationSection s) {
         s.set("cooldownTime", cooldownTime);
         s.set("projectileType", getType());
+        s.set("isCone", cone);
+        s.set("range", range);
+        s.set("amount", amount);
     }
 
     public void setType(String type) {
@@ -54,7 +68,7 @@ public class PowerProjectile extends Power implements PowerRightClick{
 
     @Override
     public String displayText() {
-        return ChatColor.GREEN + String.format(Locale.get("power.projectile"), getType(), (double) cooldownTime / 20d);
+        return ChatColor.GREEN + String.format(Locale.get(cone?"power.projectile.cone":"power.projectile"), getType(), (double) cooldownTime / 20d);
     }
 
     @Override
@@ -71,7 +85,17 @@ public class PowerProjectile extends Power implements PowerRightClick{
             }
             if (cooldown <= System.currentTimeMillis() / 50) {
                 value.set(System.currentTimeMillis() / 50 + cooldownTime);
-                player.launchProjectile(projectileType);
+                if(!cone) {
+                    player.launchProjectile(projectileType);
+                } else {
+                    double PHI = -player.getLocation().getPitch();
+                    double THETA = -player.getLocation().getYaw();
+                    for (int i = 0; i < amount; i++) {
+                        double phi = (PHI + (rand.nextDouble() - 0.5) * 2 * range) / 180 * Math.PI;
+                        double theta = (THETA + (rand.nextDouble() - 0.5) * 2 * range) / 180 * Math.PI;
+                        player.launchProjectile(projectileType, new Vector(Math.cos(phi) * Math.sin(theta), Math.sin(phi), Math.cos(phi) * Math.cos(theta)));
+                    }
+                }
             } else {
                 player.sendMessage(ChatColor.AQUA + String.format(Locale.get("message.cooldown"), ((double) (cooldown - System.currentTimeMillis() / 50)) / 20d));
             }
