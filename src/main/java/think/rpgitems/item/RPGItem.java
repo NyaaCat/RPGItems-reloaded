@@ -312,10 +312,14 @@ public class RPGItem {
         }
     }
     
-    public void takeHit(Player target, LivingEntity damager, double damage) {
+    public double takeHit(Player target, Entity damager, double damage) {
+        double ret = Double.MAX_VALUE;
         for (PowerHitTaken power : powerHitTaken) {
-            power.takeHit(target, damager, damage);
+            double d = power.takeHit(target, damager, damage);
+            if (d < 0) continue;
+            ret = d < ret ? d : ret;
         }
+        return ret == Double.MAX_VALUE? -1 : ret;
     }
 
     public void tick(Player player) {

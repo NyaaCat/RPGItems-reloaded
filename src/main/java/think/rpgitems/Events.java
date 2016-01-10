@@ -399,9 +399,6 @@ public class Events implements Listener {
             if (pRItem.getArmour() > 0) {
                 damage -= Math.round(((double) damage) * (((double) pRItem.getArmour()) / 100d));
             }
-            if(e.getDamager() instanceof LivingEntity) {
-                pRItem.takeHit(p, (LivingEntity) e.getDamager(), e.getDamage());
-            }
             RPGMetadata meta = RPGItem.getMetadata(pArmour);
             if (pRItem.getMaxDurability() != -1) {
                 int durability = meta.containsKey(RPGMetadata.DURABILITY) ? ((Number) meta.get(RPGMetadata.DURABILITY)).intValue() : pRItem.getMaxDurability();
@@ -418,18 +415,43 @@ public class Events implements Listener {
         return damage;
     }
 
+    private double playerHurt(Player e, double damage) {
+        double ret = Double.MAX_VALUE;
+        for (ItemStack item : e.getInventory().getArmorContents()) {
+            RPGItem ri = ItemManager.toRPGItem(item);
+            if (ri == null) continue;
+            double d = ri.takeHit(e, null, damage);
+            if (d < 0) continue;
+            if (d < ret) ret = d;
+        }
+        for (ItemStack item : e.getInventory().getContents()) {
+            RPGItem ri = ItemManager.toRPGItem(item);
+            if (ri == null) continue;
+            double d = ri.takeHit(e, null, damage);
+            if (d < 0) continue;
+            if (d < ret) ret = d;
+        }
+        return ret == Double.MAX_VALUE? damage : ret;
+    }
+
     @EventHandler(priority = EventPriority.LOWEST, ignoreCancelled = true)
-    public void onDamage(EntityDamageByEntityEvent e) {
-        double damage = e.getDamage();
-        if (e.getDamager() instanceof Player) {
-            damage = playerDamager(e, damage);
-        } else if (e.getDamager() instanceof Projectile) {
-            damage = projectileDamager(e, damage);
+    public void onDamage(EntityDamageEvent ev) {
+        if (ev instanceof EntityDamageByEntityEvent) {
+            EntityDamageByEntityEvent e = (EntityDamageByEntityEvent) ev;
+            double damage = e.getDamage();
+            if (e.getDamager() instanceof Player) {
+                damage = playerDamager(e, damage);
+            } else if (e.getDamager() instanceof Projectile) {
+                damage = projectileDamager(e, damage);
+            }
+            if (e.getEntity() instanceof Player) {
+                damage = playerHit(e, damage);
+            }
+            e.setDamage(damage);
         }
-        if (e.getEntity() instanceof Player) {
-            damage = playerHit(e, damage);
+        if (ev.getEntity() instanceof Player) {
+            ev.setDamage(playerHurt((Player)ev.getEntity(), ev.getDamage()));
         }
-        e.setDamage(damage);
     }
 
     @EventHandler(ignoreCancelled = true, priority = EventPriority.HIGHEST)

@@ -18,6 +18,7 @@ package think.rpgitems.power;
 
 import org.bukkit.ChatColor;
 import org.bukkit.configuration.ConfigurationSection;
+import org.bukkit.entity.Entity;
 import org.bukkit.entity.LivingEntity;
 import org.bukkit.entity.Player;
 
@@ -59,11 +60,12 @@ public class PowerRescue extends Power implements PowerHitTaken {
     }
 
     @Override
-    public void takeHit(Player target, LivingEntity damager, double damage) {
+    public double takeHit(Player target, Entity damager, double damage) {
         if (item.getHasPermission() == true && target.hasPermission(item.getPermission()) == false) {
+            return -1;
         } else {
-            if(target.getHealth() > healthTrigger)
-                return;
+            double health = target.getHealth() - damage;
+            if(health > healthTrigger) return -1;
             long cooldown;
             RPGValue value = RPGValue.get(target, item, "rescue.cooldown");
             if (value == null) {
@@ -74,12 +76,19 @@ public class PowerRescue extends Power implements PowerHitTaken {
             }
             if (cooldown <= System.currentTimeMillis() / 50) {
                 value.set(System.currentTimeMillis() / 50 + cooldownTime);
+                target.sendMessage(ChatColor.AQUA + Locale.get("power.rescue.info"));
                 if(target.getBedSpawnLocation() != null)
                     target.teleport(target.getBedSpawnLocation());
                 else
                     target.teleport(target.getWorld().getSpawnLocation());
+                if (health < 0.1D) {
+                    return target.getHealth() - 0.1;
+                } else {
+                    return damage;
+                }
             } else {
                 target.sendMessage(ChatColor.AQUA + String.format(Locale.get("message.cooldown"), ((double) (cooldown - System.currentTimeMillis() / 50)) / 20d));
+                return -1;
             }
         }
     }
