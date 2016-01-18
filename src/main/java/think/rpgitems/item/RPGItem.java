@@ -19,6 +19,7 @@ package think.rpgitems.item;
 import java.util.*;
 import java.util.Map.Entry;
 
+import de_tr7zw_itemnbtapi.NBTItem;
 import org.apache.commons.lang.StringUtils;
 import org.bukkit.*;
 import org.bukkit.block.Block;
@@ -213,7 +214,7 @@ public class RPGItem {
         s.set("item", item.getType().toString());
         s.set("ignoreWorldGuard", ignoreWorldGuard);
 
-        ItemMeta meta = localeMeta;
+        ItemMeta meta = getLocaleMeta();
         if (meta instanceof LeatherArmorMeta) {
             s.set("item_colour", ((LeatherArmorMeta) meta).getColor().asRGB());
         } else {
@@ -264,7 +265,7 @@ public class RPGItem {
                 iSet.add(m);
             }
             ItemStack[] iList = iSet.toArray(new ItemStack[iSet.size()]);
-            item.setItemMeta(localeMeta);
+            item.setItemMeta(getLocaleMeta());
             ShapedRecipe shapedRecipe = new ShapedRecipe(item);
             int i = 0;
             Map<ItemStack, Character> iMap = new HashMap<ItemStack, Character>();
@@ -333,12 +334,6 @@ public class RPGItem {
         ItemMeta meta = getLocaleMeta();
         meta.setDisplayName(lines.get(0));
         lines.remove(0);
-        //if (!Plugin.plugin.getConfig().contains("bypassLoreMark") || !Plugin.plugin.getConfig().getBoolean("bypassLoreMark")) {
-            if (lines.size() > 0)
-                lines.set(0, ItemManager.LORE_MARK + lines.get(0));
-            else
-                lines.add(ItemManager.LORE_MARK);
-        //}
         meta.setLore(lines);
         updateLocaleMeta(meta);
 
@@ -356,6 +351,7 @@ public class RPGItem {
             }
         }
         resetRecipe(true);
+        addMCEncodedIdIntoLocalMeta();
     }
 
     public ItemMeta getLocaleMeta() {
@@ -435,7 +431,7 @@ public class RPGItem {
     public List<String> getTooltipLines() {
         ArrayList<String> output = new ArrayList<String>();
         int width = 150;
-        output.add(encodedID + quality.colour + ChatColor.BOLD + displayName);
+        output.add(quality.colour + ChatColor.BOLD + displayName);
         int dWidth = getStringWidthBold(ChatColor.stripColor(displayName));
         if (dWidth > width)
             width = dWidth;
@@ -541,6 +537,11 @@ public class RPGItem {
         addExtra(rpgMeta, rStack, lore);
         meta.setLore(lore);
         rStack.setItemMeta(meta);
+        if (rStack != null && rStack.getType() != Material.AIR) {
+            NBTItem i = new NBTItem(rStack);
+            i.setString(ItemManager.NBT_KEY_ID, getMCEncodedID());
+            rStack = i.getItem();
+        }
         return rStack;
     }
 
@@ -869,5 +870,9 @@ public class RPGItem {
 
     public void updateLocaleMeta(ItemMeta meta) {
         this.localeMeta = meta;
+    }
+
+    public void addMCEncodedIdIntoLocalMeta() {
+        localeMeta = toItemStack().getItemMeta();
     }
 }
