@@ -1,5 +1,6 @@
 package think.rpgitems;
 
+import de_tr7zw_itemnbtapi.NBTException;
 import de_tr7zw_itemnbtapi.NBTItem;
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
@@ -581,30 +582,36 @@ public class Handler implements CommandHandler {
             return;
         }
         p.sendMessage(ChatColor.LIGHT_PURPLE + ChatColor.BOLD.toString() + ">>> Updating RPGItem <<<");
-        String nbt = new NBTItem(item).getString(ItemManager.NBT_KEY_ID);
-        if (nbt == null || nbt.length() == 0) {
-            RPGItem rItem = _toRPGItem_Old(item);
-            if (rItem == null) {
-                p.sendMessage(ChatColor.RED + "Not a valid legacy RPGItem");
-                p.sendMessage(ChatColor.RED.toString() + ChatColor.BOLD + ">>> FAILED <<<");
+        try {
+            String nbt = new NBTItem(item).getString(ItemManager.NBT_KEY_ID);
+            if (nbt == null || nbt.length() == 0) {
+                RPGItem rItem = _toRPGItem_Old(item);
+                if (rItem == null) {
+                    p.sendMessage(ChatColor.RED + "Not a valid legacy RPGItem");
+                    p.sendMessage(ChatColor.RED.toString() + ChatColor.BOLD + ">>> FAILED <<<");
+                } else {
+                    p.sendMessage(ChatColor.GREEN + "Valid legacy RPGItem detected. Updating ...");
+                    NBTItem nbtItem = new NBTItem(item);
+                    nbtItem.setString(ItemManager.NBT_KEY_ID, rItem.getMCEncodedID());
+                    ItemMeta meta = nbtItem.getItem().getItemMeta();
+                    meta.setDisplayName(rItem.getDisplay());
+                    item.setItemMeta(meta);
+                    p.sendMessage(ChatColor.GREEN.toString() + ChatColor.BOLD + ">>> SUCCESS <<<");
+                }
             } else {
-                p.sendMessage(ChatColor.GREEN + "Valid legacy RPGItem detected. Updating ...");
-                NBTItem nbtItem = new NBTItem(item);
-                nbtItem.setString(ItemManager.NBT_KEY_ID, rItem.getMCEncodedID());
-                ItemMeta meta = nbtItem.getItem().getItemMeta();
-                meta.setDisplayName(rItem.getDisplay());
-                item.setItemMeta(meta);
-                p.sendMessage(ChatColor.GREEN.toString() + ChatColor.BOLD + ">>> SUCCESS <<<");
+                RPGItem rItem = ItemManager.toRPGItem(item);
+                if (rItem != null) {
+                    p.sendMessage(ChatColor.GREEN + "New RPGItem detected, already updated");
+                    p.sendMessage(ChatColor.GREEN.toString() + ChatColor.BOLD + ">>> SUCCESS <<<");
+                } else {
+                    p.sendMessage(ChatColor.RED + "NBT detected, But not a valid RPGItem. Please contact the operator.");
+                    p.sendMessage(ChatColor.RED.toString() + ChatColor.BOLD + ">>> FAILED <<<");
+                }
             }
-        } else {
-            RPGItem rItem = ItemManager.toRPGItem(item);
-            if (rItem != null) {
-                p.sendMessage(ChatColor.GREEN + "New RPGItem detected, already updated");
-                p.sendMessage(ChatColor.GREEN.toString() + ChatColor.BOLD + ">>> SUCCESS <<<");
-            } else {
-                p.sendMessage(ChatColor.RED + "NBT detected, But not a valid RPGItem. Please contact the operator.");
-                p.sendMessage(ChatColor.RED.toString() + ChatColor.BOLD + ">>> FAILED <<<");
-            }
+        } catch (NBTException ex) {
+            ex.printStackTrace();
+            p.sendMessage(ChatColor.RED + "Exception occurred, please contact the operator");
+            p.sendMessage(ChatColor.RED.toString() + ChatColor.BOLD + ">>> FAILED <<<");
         }
     }
 
@@ -623,7 +630,14 @@ public class Handler implements CommandHandler {
             p.sendMessage("You must take item in hand");
             return;
         }
-        String nbt = new NBTItem(item).getString(ItemManager.NBT_KEY_ID);
+        String nbt;
+        try {
+            nbt = new NBTItem(item).getString(ItemManager.NBT_KEY_ID);
+        } catch (NBTException ex) {
+            ex.printStackTrace();
+            sender.sendMessage("[ERROR] NBTException thrown");
+            nbt = "";
+        }
         if (nbt == null || nbt.length() == 0) {
             p.sendMessage("No NBT found");
         } else {
@@ -663,8 +677,13 @@ public class Handler implements CommandHandler {
             item.setItemMeta(meta);
             if (item != null && item.getType() != Material.AIR) {
                 NBTItem i = new NBTItem(item);
-                i.setString(ItemManager.NBT_KEY_ID, rItem.getMCEncodedID());
-                p.setItemInHand(i.getItem());
+                try {
+                    i.setString(ItemManager.NBT_KEY_ID, rItem.getMCEncodedID());
+                    p.setItemInHand(i.getItem());
+                } catch (NBTException ex) {
+                    ex.printStackTrace();
+                    sender.sendMessage("[ERROR] NBTException thrown");
+                }
             }
         }
     }
@@ -684,19 +703,24 @@ public class Handler implements CommandHandler {
             p.sendMessage("You must take item in hand");
             return;
         }
-        String nbt = new NBTItem(item).getString(ItemManager.NBT_KEY_ID);
-        if (nbt == null || nbt.length() == 0) {
-            p.sendMessage("NBT not Found.");
-        } else {
-            p.sendMessage("NBT Found: " + nbt.replace(Character.toString(ChatColor.COLOR_CHAR), "&"));
-            RPGItem rItem = ItemManager.toRPGItem(item);
-            NBTItem i = new NBTItem(item);
-            i.setString(ItemManager.NBT_KEY_ID, "");
-            ItemStack ii = i.getItem();
-            ItemMeta meta = ii.getItemMeta();
-            meta.setDisplayName(ChatColor.translateAlternateColorCodes('&',nbt) + rItem.getDisplay());
-            ii.setItemMeta(meta);
-            p.setItemInHand(ii);
+        try {
+            String nbt = new NBTItem(item).getString(ItemManager.NBT_KEY_ID);
+            if (nbt == null || nbt.length() == 0) {
+                p.sendMessage("NBT not Found.");
+            } else {
+                p.sendMessage("NBT Found: " + nbt.replace(Character.toString(ChatColor.COLOR_CHAR), "&"));
+                RPGItem rItem = ItemManager.toRPGItem(item);
+                NBTItem i = new NBTItem(item);
+                i.setString(ItemManager.NBT_KEY_ID, "");
+                ItemStack ii = i.getItem();
+                ItemMeta meta = ii.getItemMeta();
+                meta.setDisplayName(ChatColor.translateAlternateColorCodes('&', nbt) + rItem.getDisplay());
+                ii.setItemMeta(meta);
+                p.setItemInHand(ii);
+            }
+        } catch (NBTException ex) {
+            ex.printStackTrace();
+            sender.sendMessage("[ERROR] NBTException thrown");
         }
     }
 

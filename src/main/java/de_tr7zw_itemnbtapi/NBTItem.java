@@ -18,39 +18,11 @@ public class NBTItem {
         return bukkititem;
     }
 
-    public void setString(String Key, String Text) {
+    public void setString(String Key, String Text)throws NBTException {
         bukkititem = NBTReflectionutil.setString(bukkititem, Key, Text);
     }
 
-    public String getString(String Key) {
+    public String getString(String Key)throws NBTException {
         return NBTReflectionutil.getString(bukkititem, Key);
-    }
-
-    public void setInteger(String key, Integer Int) {
-        bukkititem = NBTReflectionutil.setInt(bukkititem, key, Int);
-    }
-
-    public Integer getInteger(String key) {
-        return NBTReflectionutil.getInt(bukkititem, key);
-    }
-
-    public void setDouble(String key, Double d) {
-        bukkititem = NBTReflectionutil.setDouble(bukkititem, key, d);
-    }
-
-    public Double getDouble(String key) {
-        return NBTReflectionutil.getDouble(bukkititem, key);
-    }
-
-    public void setBoolean(String key, Boolean b) {
-        bukkititem = NBTReflectionutil.setBoolean(bukkititem, key, b);
-    }
-
-    public Boolean getBoolean(String key) {
-        return NBTReflectionutil.getBoolean(bukkititem, key);
-    }
-
-    public Boolean hasKey(String key) {
-        return NBTReflectionutil.hasKey(bukkititem, key);
     }
 }

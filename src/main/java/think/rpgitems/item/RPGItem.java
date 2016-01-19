@@ -19,6 +19,7 @@ package think.rpgitems.item;
 import java.util.*;
 import java.util.Map.Entry;
 
+import de_tr7zw_itemnbtapi.NBTException;
 import de_tr7zw_itemnbtapi.NBTItem;
 import org.apache.commons.lang.StringUtils;
 import org.bukkit.*;
@@ -537,11 +538,17 @@ public class RPGItem {
         addExtra(rpgMeta, rStack, lore);
         meta.setLore(lore);
         rStack.setItemMeta(meta);
-        if (rStack != null && rStack.getType() != Material.AIR) {
-            NBTItem i = new NBTItem(rStack);
-            i.setString(ItemManager.NBT_KEY_ID, getMCEncodedID());
-            rStack = i.getItem();
+        NBTItem i = new NBTItem(rStack);
+        try {
+            if (rStack != null && rStack.getType() != Material.AIR) {
+                i.setString(ItemManager.NBT_KEY_ID, getMCEncodedID());
+            }
+        } catch (NBTException ex) {
+            Plugin.logger.severe("Failed to append nbt data on to item");
+            ex.printStackTrace();
+            return rStack;
         }
+        rStack = i.getItem();
         return rStack;
     }
 
