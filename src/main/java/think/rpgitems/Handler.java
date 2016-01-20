@@ -609,7 +609,12 @@ public class Handler implements CommandHandler {
         }
         p.sendMessage(ChatColor.GREEN + "Valid legacy RPGItem detected. Updating ...");
         ItemMeta meta = item.getItemMeta();
-        List<String> lore = meta.hasLore()? meta.getLore() : new ArrayList<>();
+        List<String> lore;
+        if (meta.hasLore()) {
+            lore = meta.getLore();
+        }else{
+            lore = new ArrayList<>();
+        }
         if (lore.size() <= 0) lore.add("");
         lore.set(0, ritem.getMCEncodedID() + lore.get(0));
         meta.setLore(lore);
@@ -685,7 +690,12 @@ public class Handler implements CommandHandler {
                     int id = ItemManager.decodeId(meta.getDisplayName());
                     p.sendMessage("DisplayName ID: " + id);
                     RPGItem ritem = ItemManager.getItemById(id);
-                    List<String> lore = meta.hasLore()? meta.getLore() : new ArrayList<>();
+                    List<String> lore;
+                    if (meta.hasLore()) {
+                        lore = meta.getLore();
+                    }else{
+                        lore = new ArrayList<>();
+                    }
                     if (lore.size() <= 0) lore.add("");
                     lore.set(0, ritem.getMCEncodedID() + lore.get(0));
                     meta.setLore(lore);
