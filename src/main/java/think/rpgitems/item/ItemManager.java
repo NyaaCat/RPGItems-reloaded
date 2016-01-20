@@ -16,14 +16,13 @@
  */
 package think.rpgitems.item;
 
-import de_tr7zw_itemnbtapi.NBTItem;
 import gnu.trove.map.hash.TIntObjectHashMap;
 import org.bukkit.ChatColor;
-import org.bukkit.Material;
 import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.configuration.InvalidConfigurationException;
 import org.bukkit.configuration.file.YamlConfiguration;
 import org.bukkit.inventory.ItemStack;
+import org.bukkit.inventory.meta.ItemMeta;
 import org.bukkit.util.FileUtil;
 import think.rpgitems.Plugin;
 import think.rpgitems.power.Power;
@@ -33,7 +32,7 @@ import java.util.HashMap;
 import java.util.Map.Entry;
 
 public class ItemManager {
-    public static final String NBT_KEY_ID = "rpgitem-id";
+    public static final String LORE_MARK = ChatColor.COLOR_CHAR + "c" + ChatColor.COLOR_CHAR + "a" + ChatColor.COLOR_CHAR + "r";
     public static TIntObjectHashMap<RPGItem> itemById = new TIntObjectHashMap<RPGItem>();
     public static HashMap<String, RPGItem> itemByName = new HashMap<String, RPGItem>();
     public static HashMap<String, ItemGroup> groups = new HashMap<String, ItemGroup>();
@@ -162,13 +161,16 @@ public class ItemManager {
     public static RPGItem toRPGItem(ItemStack item) {
         if (item == null)
             return null;
-        //if (!item.hasItemMeta())
-        //    return null;
-        //ItemMeta meta = item.getItemMeta();
-        //if (!meta.hasDisplayName())
-        //    return null;
+        if (!item.hasItemMeta())
+            return null;
+        ItemMeta meta = item.getItemMeta();
+        if (!meta.hasDisplayName())
+            return null;
+        if (!plugin.getConfig().contains("bypassLoreMark") || !plugin.getConfig().getBoolean("bypassLoreMark"))
+            if (!meta.hasLore() || meta.getLore().size() <= 0 || !meta.getLore().get(0).startsWith(LORE_MARK))
+                return null;
         try {
-            int id = ItemManager.decodeId(item);
+            int id = ItemManager.decodeId(meta.getDisplayName());
             RPGItem rItem = ItemManager.getItemById(id);
             return rItem;
         } catch (Exception e) {
@@ -211,13 +213,6 @@ public class ItemManager {
             out.append(str.charAt(i));
         }
         return Integer.parseInt(out.toString(), 16);
-    }
-
-    public static int decodeId(ItemStack item) throws Exception {
-        if (item == null || item.getType() == Material.AIR) throw new Exception();
-        String str = new NBTItem(item).getString(NBT_KEY_ID);
-        if (str == null || str.length() == 0) throw new Exception();
-        return decodeId(str);
     }
 
     public static void remove(RPGItem item) {
