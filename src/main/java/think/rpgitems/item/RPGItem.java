@@ -333,12 +333,6 @@ public class RPGItem {
         ItemMeta meta = getLocaleMeta();
         meta.setDisplayName(lines.get(0));
         lines.remove(0);
-        //if (!Plugin.plugin.getConfig().contains("bypassLoreMark") || !Plugin.plugin.getConfig().getBoolean("bypassLoreMark")) {
-            if (lines.size() > 0)
-                lines.set(0, ItemManager.LORE_MARK + lines.get(0));
-            else
-                lines.add(ItemManager.LORE_MARK);
-        //}
         meta.setLore(lines);
         updateLocaleMeta(meta);
 
@@ -394,7 +388,7 @@ public class RPGItem {
         }
         List<String> lore = meta.getLore();
         rItem.addExtra(rpgMeta, item, lore);
-        lore.set(0, meta.getLore().get(0) + rpgMeta.toMCString());
+        lore.set(0, rItem.getMCEncodedID() + meta.getLore().get(0) + rpgMeta.toMCString());
         meta.setLore(lore);
         Map<Enchantment, Integer> enchs = item.getEnchantments();
         if(enchs.size() > 0)
@@ -537,7 +531,7 @@ public class RPGItem {
         RPGMetadata rpgMeta = new RPGMetadata();
         ItemMeta meta = getLocaleMeta();
         List<String> lore = meta.getLore();
-        lore.set(0, meta.getLore().get(0) + rpgMeta.toMCString());
+        lore.set(0, getMCEncodedID() + meta.getLore().get(0) + rpgMeta.toMCString());
         addExtra(rpgMeta, rStack, lore);
         meta.setLore(lore);
         rStack.setItemMeta(meta);
@@ -556,6 +550,7 @@ public class RPGItem {
         return encodedID;
     }
 
+    public static final int MC_ENCODED_ID_LENGTH = 16;
     public static String getMCEncodedID(int id) {
         String hex = String.format("%08x", id);
         StringBuilder out = new StringBuilder();
@@ -563,6 +558,9 @@ public class RPGItem {
             out.append(ChatColor.COLOR_CHAR);
             out.append(h);
         }
+        String str = out.toString();
+        if (str.length() != MC_ENCODED_ID_LENGTH)
+            throw new RuntimeException("Bad RPGItem ID: " + str + " (" + id + ")");
         return out.toString();
     }
 
