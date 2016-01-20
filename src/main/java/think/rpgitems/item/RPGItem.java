@@ -333,6 +333,11 @@ public class RPGItem {
         ItemMeta meta = getLocaleMeta();
         meta.setDisplayName(lines.get(0));
         lines.remove(0);
+        if (lines.size() > 0) {
+            lines.set(0, getMCEncodedID() + lines.get(0));
+        } else {
+            lines.set(0, getMCEncodedID());
+        }
         meta.setLore(lines);
         updateLocaleMeta(meta);
 
@@ -388,7 +393,7 @@ public class RPGItem {
         }
         List<String> lore = meta.getLore();
         rItem.addExtra(rpgMeta, item, lore);
-        lore.set(0, rItem.getMCEncodedID() + meta.getLore().get(0) + rpgMeta.toMCString());
+        lore.set(0, meta.getLore().get(0) + rpgMeta.toMCString());
         meta.setLore(lore);
         Map<Enchantment, Integer> enchs = item.getEnchantments();
         if(enchs.size() > 0)
@@ -531,7 +536,7 @@ public class RPGItem {
         RPGMetadata rpgMeta = new RPGMetadata();
         ItemMeta meta = getLocaleMeta();
         List<String> lore = meta.getLore();
-        lore.set(0, getMCEncodedID() + meta.getLore().get(0) + rpgMeta.toMCString());
+        lore.set(0, meta.getLore().get(0) + rpgMeta.toMCString());
         addExtra(rpgMeta, rStack, lore);
         meta.setLore(lore);
         rStack.setItemMeta(meta);
