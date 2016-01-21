@@ -22,6 +22,7 @@ import org.bukkit.command.CommandSender;
 import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.plugin.java.JavaPlugin;
 import think.rpgitems.commands.Commands;
+import think.rpgitems.commands.RPGItemUpdateCommandHandler;
 import think.rpgitems.config.ConfigUpdater;
 import think.rpgitems.data.Font;
 import think.rpgitems.data.Locale;
@@ -90,6 +91,7 @@ public class Plugin extends JavaPlugin {
             Events.useLocaleInv = true;
         }
         getServer().getPluginManager().registerEvents(new Events(), this);
+        getServer().getPluginCommand("rpgitemupdate").setExecutor(new RPGItemUpdateCommandHandler());
         ItemManager.load(this);
         Commands.register(new Handler());
         Commands.register(new PowerHandler());

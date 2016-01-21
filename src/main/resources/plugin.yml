@@ -12,3 +12,7 @@ commands:
         usage: /<command>
         permission: rpgitemupdate.command
         permission-message: You do not have permission node <permission>
+
+permissions:
+    rpgitemupdate.command:
+        default: op
