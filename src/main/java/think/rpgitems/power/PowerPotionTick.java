@@ -20,9 +20,10 @@ public class PowerPotionTick extends Power implements PowerTick {
         } else {
             boolean hasEffect = false;
             for (PotionEffect potionEffect : player.getActivePotionEffects()) {
-                if (potionEffect.getType().equals(effect) && potionEffect.getDuration() == 25) {
-                    player.addPotionEffect(new PotionEffect(effect, 30, amplifier, true), true);
+                if (potionEffect.getType().equals(effect)) {
                     hasEffect = true;
+                    if (potionEffect.getDuration() <= 10)
+                        player.addPotionEffect(new PotionEffect(effect, 30, amplifier, true), true);
                     break;
                 }
             }
