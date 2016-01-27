@@ -74,7 +74,7 @@ public class Locale {
 
         // load files
         plugin.saveResource("locale/" + DEFAULT_LANGUAGE + ".lang", true);
-        if(plugin.getResource("locale/" + usedLocale + ".lang") == null)
+        if(plugin.getResource("locale/" + usedLocale + ".lang") != null)
             plugin.saveResource("locale/" + usedLocale + ".lang", false);
 
         try {
