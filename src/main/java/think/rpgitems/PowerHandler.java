@@ -575,12 +575,11 @@ public class PowerHandler implements CommandHandler {
         sender.sendMessage(ChatColor.AQUA + Locale.get("message.power.ok"));
     }
 
-    @CommandString("rpgitem $n[] power projectile $projectileType:s[] $cooldown:i[]")
-    @CommandDocumentation("$command.rpgitem.projectile.full")
+    @CommandString("rpgitem $n[] power projectile $projectileType:s[]")
+    @CommandDocumentation("$command.rpgitem.projectile")
     @CommandGroup("item_power_projectile")
-    public void projectile(CommandSender sender, RPGItem item, String projectileType, int cooldown) {
+    public void projectile(CommandSender sender, RPGItem item, String projectileType) {
         PowerProjectile power = new PowerProjectile();
-        power.cooldownTime = cooldown;
         if (!power.acceptableType(projectileType)) {
             sender.sendMessage(ChatColor.RED + Locale.get("power.projectile.badType"));
             return;
@@ -592,11 +591,12 @@ public class PowerHandler implements CommandHandler {
         sender.sendMessage(ChatColor.AQUA + Locale.get("message.power.ok"));
     }
 
-    @CommandString("rpgitem $n[] power projectile $projectileType:s[]")
-    @CommandDocumentation("$command.rpgitem.projectile")
+    @CommandString("rpgitem $n[] power projectile $projectileType:s[] $cooldown:i[]")
+    @CommandDocumentation("$command.rpgitem.projectile.full")
     @CommandGroup("item_power_projectile")
-    public void projectile(CommandSender sender, RPGItem item, String projectileType) {
+    public void projectile(CommandSender sender, RPGItem item, String projectileType, int cooldown) {
         PowerProjectile power = new PowerProjectile();
+        power.cooldownTime = cooldown;
         if (!power.acceptableType(projectileType)) {
             sender.sendMessage(ChatColor.RED + Locale.get("power.projectile.badType"));
             return;
