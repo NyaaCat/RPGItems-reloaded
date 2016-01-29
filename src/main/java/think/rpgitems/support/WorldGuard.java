@@ -71,9 +71,11 @@ public class WorldGuard {
         if (!hasSupport || !useWorldGuard)
             return true;
         
-        if(majorVersion >= 6)
-            return wgPlugin.getRegionContainer().createQuery().queryState(player.getLocation(), player, DefaultFlag.PVP).equals(State.ALLOW);
-        else
+        if(majorVersion >= 6) {
+            State stat = wgPlugin.getRegionContainer().createQuery().queryState(player.getLocation(), player, DefaultFlag.PVP);
+            return stat == null || stat.equals(State.ALLOW);
+        } else {
             return wgPlugin.getGlobalRegionManager().allows(DefaultFlag.PVP, player.getLocation(), wgPlugin.wrapPlayer(player));
+        }
     }
 }
