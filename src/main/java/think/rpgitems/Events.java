@@ -185,6 +185,7 @@ public class Events implements Listener {
             if (rItem.getHasPermission() == true && player.hasPermission(rItem.getPermission()) == false) {
                 e.setCancelled(true);
                 player.sendMessage(ChatColor.RED + String.format(Locale.get("message.error.permission")));
+                return;
             }
             rItem.rightClick(player, e.getClickedBlock());
             if (!player.getItemInHand().getType().equals(Material.AIR))
