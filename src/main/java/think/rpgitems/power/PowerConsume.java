@@ -32,7 +32,7 @@ import think.rpgitems.power.types.PowerRightClick;
 public class PowerConsume extends Power implements PowerRightClick {
 
     @Override
-    public void rightClick(Player player, Block clicked) {
+    public void rightClick(final Player player, Block clicked) {
         if (item.getHasPermission() == true && player.hasPermission(item.getPermission()) == false) {
         } else {
             ItemStack item = player.getInventory().getItemInHand();
