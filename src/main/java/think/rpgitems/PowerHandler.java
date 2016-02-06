@@ -222,7 +222,7 @@ public class PowerHandler implements CommandHandler {
     @CommandGroup("item_power_fire")
     public void fire(CommandSender sender, RPGItem item, int cooldown, int distance, int burnduration) {
         PowerFire pow = new PowerFire();
-        pow.cooldownTime = 20;
+        pow.cooldownTime = cooldown;
         pow.distance = distance;
         pow.burnduration = burnduration;
         pow.item = item;
