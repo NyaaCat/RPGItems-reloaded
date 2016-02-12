@@ -8,6 +8,7 @@ import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.ItemMeta;
+import think.rpgitems.data.Locale;
 import think.rpgitems.item.ItemManager;
 import think.rpgitems.item.RPGItem;
 
@@ -41,22 +42,22 @@ public class RPGItemUpdateCommandHandler implements CommandExecutor {
             return;
         }
         Player p = (Player) sender;
-        p.sendMessage(ChatColor.LIGHT_PURPLE + ChatColor.BOLD.toString() + ">>> Update RPGItem <<<");
+        p.sendMessage(ChatColor.LIGHT_PURPLE + ChatColor.BOLD.toString() + Locale.get("message.update.head"));
         ItemStack item = p.getItemInHand();
         if (item == null || item.getType() == Material.AIR) {
-            p.sendMessage(ChatColor.RED + "You must take item in hand");
-            p.sendMessage(ChatColor.RED + ChatColor.BOLD.toString() + ">>> FAIL <<");
+            p.sendMessage(ChatColor.RED + Locale.get("message.update.noitem"));
+            p.sendMessage(ChatColor.RED + ChatColor.BOLD.toString() + Locale.get("message.update.fail"));
             return;
         }
         if (ItemManager.toRPGItem(item) != null) {
-            p.sendMessage(ChatColor.GREEN + "Valid new RPGItem detected, no need to update");
-            p.sendMessage(ChatColor.GREEN + ChatColor.BOLD.toString() + ">>> SUCCESS <<");
+            p.sendMessage(ChatColor.GREEN + Locale.get("message.update.noneed"));
+            p.sendMessage(ChatColor.GREEN + ChatColor.BOLD.toString() + Locale.get("message.update.success"));
             return;
         }
 
         if (!item.hasItemMeta() || !item.getItemMeta().hasDisplayName()) {
             p.sendMessage(ChatColor.RED + "Not a valid RPGItem");
-            p.sendMessage(ChatColor.RED + ChatColor.BOLD.toString() + ">>> FAIL <<");
+            p.sendMessage(ChatColor.RED + ChatColor.BOLD.toString() + Locale.get("message.update.fail"));
             return;
         }
         String name = item.getItemMeta().getDisplayName();
@@ -65,16 +66,16 @@ public class RPGItemUpdateCommandHandler implements CommandExecutor {
             id = ItemManager.decodeId(name);
             ritem = ItemManager.getItemById(id);
         } catch (Exception ex) {
-            p.sendMessage(ChatColor.RED + "Not a valid RPGItem");
-            p.sendMessage(ChatColor.RED + ChatColor.BOLD.toString() + ">>> FAIL <<");
+            p.sendMessage(ChatColor.RED + Locale.get("message.update.notvalid"));
+            p.sendMessage(ChatColor.RED + ChatColor.BOLD.toString() + Locale.get("message.update.fail"));
             return;
         }
         if (ritem == null) {
-            p.sendMessage(ChatColor.RED + "Not a valid RPGItem");
-            p.sendMessage(ChatColor.RED + ChatColor.BOLD.toString() + ">>> FAIL <<");
+            p.sendMessage(ChatColor.RED + Locale.get("message.update.notvalid"));
+            p.sendMessage(ChatColor.RED + ChatColor.BOLD.toString() + Locale.get("message.update.fail"));
             return;
         }
-        p.sendMessage(ChatColor.GREEN + "Valid legacy RPGItem detected. Updating ...");
+        p.sendMessage(ChatColor.GREEN + Locale.get("message.update.updating"));
         ItemMeta meta = item.getItemMeta();
         List<String> lore;
         if (meta.hasLore()) {
@@ -87,7 +88,7 @@ public class RPGItemUpdateCommandHandler implements CommandExecutor {
         meta.setLore(lore);
         item.setItemMeta(meta);
         RPGItem.updateItem(item);
-        p.sendMessage(ChatColor.GREEN + ChatColor.BOLD.toString() + ">>> SUCCESS <<");
+        p.sendMessage(ChatColor.GREEN + ChatColor.BOLD.toString() + Locale.get("message.update.success"));
     }
 
     public void inspectItemInHand(CommandSender sender) {
