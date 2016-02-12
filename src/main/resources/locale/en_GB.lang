@@ -172,6 +172,7 @@ message.error.permission=You do not have permission
 message.error.player=Cannot find player %s
 message.error.string.length='%s' in longer than max length %d
 message.error.unknown.command=Error: Unknown command %s
+message.error.damagetolarge=Damage TOO large. MAX: 32767
 message.give.console=Cannot give console items
 message.hand.get=Item '%s' hand is '%s'
 message.hand.set=Item '%s' hand set to '%s'
