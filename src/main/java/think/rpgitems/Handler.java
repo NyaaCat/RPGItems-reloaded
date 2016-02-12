@@ -568,4 +568,11 @@ public class Handler implements CommandHandler {
         ItemManager.save(Plugin.plugin);
         sender.sendMessage(Locale.get("message.permission.success"));
     }
+
+    @CommandString("rpgitem version")
+    @CommandDocumentation("$command.rpgitem.version")
+    @CommandGroup("version")
+    public void printVersion(CommandSender sender) {
+        sender.sendMessage(String.format(Locale.get("message.version").replace("\\n","\n"), Plugin.plugin.getDescription().getVersion()));
+    }
 }
