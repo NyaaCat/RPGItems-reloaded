@@ -172,6 +172,7 @@ message.error.permission=你没有权限那样做
 message.error.player=没有找到玩家 %s
 message.error.string.length='%s' 长度超过最大值 %d
 message.error.unknown.command=错误: 未知指令 %s
+message.error.damagetolarge=伤害值设置过大 最大值: 32767
 message.give.console=无法在控制台使用此指令
 message.hand.get=物品 '%s' 手持状态为 '%s'
 message.hand.set=设置物品 '%s' 手持状态为 '%s'
