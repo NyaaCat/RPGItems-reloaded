@@ -52,32 +52,20 @@ public class PowerIce extends Power implements PowerRightClick {
             if (cooldown <= System.currentTimeMillis() / 50) {
                 value.set(System.currentTimeMillis() / 50 + cooldownTime);
                 player.playSound(player.getLocation(), Sound.FIZZ, 1.0f, 0.1f);
+
+                // launch an ice block
                 final FallingBlock block = player.getWorld().spawnFallingBlock(player.getLocation().add(0, 1.8, 0), Material.PACKED_ICE, (byte) 0);
                 block.setVelocity(player.getLocation().getDirection().multiply(2d));
                 block.setDropItem(false);
+
+
                 BukkitRunnable run = new BukkitRunnable() {
 
                     public void run() {
                         boolean hit = false;
                         World world = block.getWorld();
                         Location bLoc = block.getLocation();
-                        loop: for (int x = -1; x < 2; x++) {
-                            for (int y = -1; y < 2; y++) {
-                                for (int z = -1; z < 2; z++) {
-                                    Location loc = block.getLocation().add(x, y, z);
-                                    if (world.getBlockAt(loc).getType() != Material.AIR) {
-                                        Block b = world.getBlockAt(loc);
-                                        if (b.getType().isSolid()) {
-                                            if (checkBlock(loc.getBlockX(), loc.getBlockY(), loc.getBlockZ(), 1, 1, 1, bLoc.getX() - 0.5d, bLoc.getY() - 0.5d, bLoc.getZ() - 0.5d, 1, 1, 1)) {
-                                                hit = true;
-                                                break loop;
-                                            }
-                                        }
-                                    }
-                                }
-                            }
-                        }
-                        if (!hit) {
+                        if (!hit) { // check if hit nearby entities
                             List<Entity> entities = block.getNearbyEntities(1, 1, 1);
                             for (Entity e : entities) {
                                 if (e != player) {
@@ -87,15 +75,21 @@ public class PowerIce extends Power implements PowerRightClick {
                             }
                         }
                         if (block.isDead() || hit) {
+                            Location landingLoc = block.getLocation();
+                            boolean hitBlock = block.isDead();
+                            // remove entity and (potential) placed block.
                             block.remove();
-                            if (!block.getLocation().getBlock().getType().isSolid() && !block.getLocation().getBlock().getType().toString().contains("SIGN"))
-                                block.getLocation().getBlock().setType(Material.AIR);
+                            if (hitBlock) {
+                                if (landingLoc.getBlock().getType().equals(Material.PACKED_ICE)) {
+                                    landingLoc.getBlock().setType(Material.AIR);
+                                }
+                            }
                             cancel();
                             final TObjectLongHashMap<Location> changedBlocks = new gnu.trove.map.hash.TObjectLongHashMap<Location>();
                             for (int x = -1; x < 2; x++) {
                                 for (int y = -1; y < 3; y++) {
                                     for (int z = -1; z < 2; z++) {
-                                        Location loc = block.getLocation().add(x, y, z);
+                                        Location loc = landingLoc.clone().add(x, y, z);
                                         Block b = world.getBlockAt(loc);
                                         if (!b.getType().isSolid() && !b.getType().toString().contains("SIGN")) {
                                             changedBlocks.put(b.getLocation(), b.getTypeId() | (b.getData() << 16));
@@ -104,6 +98,8 @@ public class PowerIce extends Power implements PowerRightClick {
                                     }
                                 }
                             }
+
+                            // ice block remove timer
                             (new BukkitRunnable() {
                                 Random random = new Random();
 
@@ -136,23 +132,6 @@ public class PowerIce extends Power implements PowerRightClick {
                 player.sendMessage(ChatColor.AQUA + String.format(Locale.get("message.cooldown"), ((double) (cooldown - System.currentTimeMillis() / 50)) / 20d));
             }
         }
-    }
-
-    private boolean checkBlock(double x1, double y1, double z1, double w1, double h1, double d1, double x2, double y2, double z2, double w2, double h2, double d2) {
-        if (x1 + w1 < x2)
-            return false;
-        if (x2 + w2 < x1)
-            return false;
-        if (y1 + h1 < y2)
-            return false;
-        if (y2 + h2 < y1)
-            return false;
-        if (z1 + d1 < z2)
-            return false;
-        if (z2 + d2 < z1)
-            return false;
-
-        return true;
     }
 
     @Override
