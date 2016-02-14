@@ -55,17 +55,18 @@ public class PowerFire extends Power implements PowerRightClick {
             block.setVelocity(player.getLocation().getDirection().multiply(2d));
             block.setDropItem(false);
             
-            final Location location = player.getLocation();
+            final Location location = player.getLocation().add(0,0.5,0).getBlock().getLocation();
             final Vector direction = player.getLocation().getDirection();
             direction.setY(0);
             direction.normalize();
             location.add(direction.multiply(4));
             
             BukkitRunnable run = new BukkitRunnable() {
-                private boolean finishedFire = false;
+                private boolean finishedFire = false, blockDead = false;
                 private int count = 0;
                 
                 public void run() {
+                    if (!finishedFire) {
                         if (!location.getBlock().getType().equals(Material.AIR)) {
                             finishedFire = true;
                         }
@@ -76,7 +77,7 @@ public class PowerFire extends Power implements PowerRightClick {
                                 temp.setX(x + location.getBlockX());
                                 temp.setZ(z + location.getBlockZ());
                                 Block block = temp.getBlock();
-                                if(block.getType().equals(Material.AIR) && !block.getRelative(0,-1,0).getType().isBurnable()) {
+                                if (block.getType().equals(Material.AIR) && !block.getRelative(0, -1, 0).getType().isBurnable()) {
                                     block.setType(Material.FIRE);
                                     fireblocks.add(block);
                                 }
@@ -87,14 +88,8 @@ public class PowerFire extends Power implements PowerRightClick {
                             finishedFire = true;
                         }
                         count++;
-                        
-                        
-                        if (block.isDead()) {
-                            block.remove();
-                            if (block.getLocation().getBlock().getType().equals(Material.FIRE))
-                                fireblocks.add(block.getLocation().getBlock());
-                            if(finishedFire) {
-                            cancel();
+
+                        if(finishedFire) {
                             (new BukkitRunnable() {
                                 @Override
                                 public void run() {
@@ -108,13 +103,25 @@ public class PowerFire extends Power implements PowerRightClick {
                                     fireblocks.remove(fb);
                                 }
                             }).runTaskTimer(Plugin.plugin, 4 * 20 + new Random().nextInt(40), 3);
-                            }
-                        } else {
-                            List<Entity> ents = block.getNearbyEntities(0, 1, 0);
-                            for(Entity ent : ents)
-                                if(ent instanceof Damageable)
-                                    ent.setFireTicks(burnduration);
                         }
+                    }
+
+                    if (!blockDead) {
+                        if (block.isDead()) {
+                            block.remove();
+                            if (block.getLocation().getBlock().getType().equals(Material.FIRE))
+                                block.getLocation().getBlock().setType(Material.AIR);
+                            blockDead = true;
+                        }
+                    } else {
+                        List<Entity> ents = block.getNearbyEntities(0, 1, 0);
+                        for(Entity ent : ents)
+                            if(ent instanceof Damageable)
+                                ent.setFireTicks(burnduration);
+                    }
+
+                    if (finishedFire && blockDead)
+                        cancel();
                 }
             };
             run.runTaskTimer(Plugin.plugin, 0, 1);
