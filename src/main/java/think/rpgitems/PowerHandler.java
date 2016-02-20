@@ -730,4 +730,21 @@ public class PowerHandler implements CommandHandler {
         ItemManager.save(Plugin.plugin);
         sender.sendMessage(ChatColor.AQUA + Locale.get("message.power.ok"));
     }
+
+    @CommandString("rpgitem $n[] power particletick $visualeffect:s[] $interval:i[]")
+    @CommandDocumentation("$command.rpgitem.particletick")
+    @CommandGroup("item_power_particletick")
+    public void particle(CommandSender sender, RPGItem item, String effect, int interval) {
+        if (!PowerParticle.acceptableEffect(effect)) {
+            sender.sendMessage(ChatColor.RED + String.format(Locale.get("message.error.visualeffect"), effect));
+            return;
+        }
+        PowerParticleTick p = new PowerParticleTick();
+        p.item = item;
+        p.effect = effect.toUpperCase();
+        p.interval = interval;
+        item.addPower(p);
+        ItemManager.save(Plugin.plugin);
+        sender.sendMessage(ChatColor.AQUA + Locale.get("message.power.ok"));
+    }
 }

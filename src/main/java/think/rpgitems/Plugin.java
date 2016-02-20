@@ -77,6 +77,7 @@ public class Plugin extends JavaPlugin {
         Power.powers.put("color", PowerColor.class);
         Power.powers.put("pumpkin", PowerPumpkin.class);
         Power.powers.put("particle", PowerParticle.class);
+        Power.powers.put("particletick", PowerParticleTick.class);
     }
 
     @Override
