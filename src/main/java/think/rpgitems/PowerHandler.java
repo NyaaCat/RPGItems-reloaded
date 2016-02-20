@@ -1,6 +1,8 @@
 package think.rpgitems;
 
+import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
+import org.bukkit.Location;
 import org.bukkit.Material;
 import org.bukkit.command.CommandSender;
 import org.bukkit.potion.PotionEffectType;
@@ -708,6 +710,22 @@ public class PowerHandler implements CommandHandler {
         p.item = item;
         p.chance = chance;
         p.drop = dropChance;
+        item.addPower(p);
+        ItemManager.save(Plugin.plugin);
+        sender.sendMessage(ChatColor.AQUA + Locale.get("message.power.ok"));
+    }
+
+    @CommandString("rpgitem $n[] power particle $visualeffect:s[]")
+    @CommandDocumentation("$command.rpgitem.particle")
+    @CommandGroup("item_power_particle")
+    public void particle(CommandSender sender, RPGItem item, String effect) {
+        if (!PowerParticle.acceptableEffect(effect)) {
+            sender.sendMessage(ChatColor.RED + String.format(Locale.get("message.error.visualeffect"), effect));
+            return;
+        }
+        PowerParticle p = new PowerParticle();
+        p.item = item;
+        p.effect = effect.toUpperCase();
         item.addPower(p);
         ItemManager.save(Plugin.plugin);
         sender.sendMessage(ChatColor.AQUA + Locale.get("message.power.ok"));
