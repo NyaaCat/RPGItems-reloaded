@@ -48,7 +48,7 @@ public class PowerPotionSelf extends Power implements PowerRightClick {
             }
             if (cooldown <= System.currentTimeMillis() / 50) {
                 value.set(System.currentTimeMillis() / 50 + cooldownTime);
-                player.addPotionEffect(new PotionEffect(type, time, amplifier));
+                player.addPotionEffect(new PotionEffect(type, time, amplifier), true);
             } else {
                 player.sendMessage(ChatColor.AQUA + String.format(Locale.get("message.cooldown"), ((double) (cooldown - System.currentTimeMillis() / 50)) / 20d));
             }
