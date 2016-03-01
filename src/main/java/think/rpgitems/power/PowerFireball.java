@@ -45,7 +45,7 @@ public class PowerFireball extends Power implements PowerRightClick {
             }
             if (cooldown <= System.currentTimeMillis() / 50) {
                 value.set(System.currentTimeMillis() / 50 + cooldownTime);
-                player.playSound(player.getLocation(), Sound.GHAST_FIREBALL, 1.0f, 1.0f);
+                player.playSound(player.getLocation(), Sound.ENTITY_GHAST_SHOOT, 1.0f, 1.0f);
                 player.launchProjectile(SmallFireball.class);
             } else {
                 player.sendMessage(ChatColor.AQUA + String.format(Locale.get("message.cooldown"), ((double) (cooldown - System.currentTimeMillis() / 50)) / 20d));

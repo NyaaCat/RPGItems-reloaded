@@ -45,7 +45,7 @@ public class PowerTNTCannon extends Power implements PowerRightClick {
             }
             if (cooldown <= System.currentTimeMillis() / 50) {
                 value.set(System.currentTimeMillis() / 50 + cooldownTime);
-                player.playSound(player.getLocation(), Sound.SHOOT_ARROW, 1.0f, 1.0f);
+                player.playSound(player.getLocation(), Sound.ENTITY_ARROW_SHOOT, 1.0f, 1.0f);
                 TNTPrimed tnt = player.getWorld().spawn(player.getLocation().add(0, 1.8, 0), TNTPrimed.class);
                 tnt.setVelocity(player.getLocation().getDirection().multiply(2d));
             } else {

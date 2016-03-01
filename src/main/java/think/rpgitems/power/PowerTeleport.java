@@ -83,7 +83,7 @@ public class PowerTeleport extends Power implements PowerRightClick, PowerProjec
                 newLoc.setYaw(start.getYaw());
                 player.teleport(newLoc);
                 world.playEffect(newLoc, Effect.ENDER_SIGNAL, 0);
-                world.playSound(newLoc, Sound.ENDERMAN_TELEPORT, 1.0f, 0.3f);
+                world.playSound(newLoc, Sound.ENTITY_ENDERMEN_TELEPORT, 1.0f, 0.3f);
             } else {
                 player.sendMessage(ChatColor.AQUA + String.format(Locale.get("message.cooldown"), ((double) (cooldown - System.currentTimeMillis() / 50)) / 20d));
             }
@@ -114,7 +114,7 @@ public class PowerTeleport extends Power implements PowerRightClick, PowerProjec
             newLoc.setYaw(start.getYaw());
             player.teleport(newLoc);
             world.playEffect(newLoc, Effect.ENDER_SIGNAL, 0);
-            world.playSound(newLoc, Sound.ENDERMAN_TELEPORT, 1.0f, 0.3f);
+            world.playSound(newLoc, Sound.ENTITY_ENDERMEN_TELEPORT, 1.0f, 0.3f);
         } else {
             player.sendMessage(ChatColor.AQUA + String.format(Locale.get("message.cooldown"), ((double) (cooldown - System.currentTimeMillis() / 50)) / 20d));
         }

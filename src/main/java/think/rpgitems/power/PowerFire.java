@@ -49,7 +49,7 @@ public class PowerFire extends Power implements PowerRightClick {
         }
         if (cooldown <= System.currentTimeMillis() / 50) {
             value.set(System.currentTimeMillis() / 50 + cooldownTime);
-            player.playSound(player.getLocation(), Sound.FIRE_IGNITE, 1.0f, 1.2f);
+            player.playSound(player.getLocation(), Sound.ITEM_FLINTANDSTEEL_USE, 1.0f, 1.2f);
             final List<Block> fireblocks = new ArrayList<Block>();
             final FallingBlock block = player.getWorld().spawnFallingBlock(player.getLocation().add(0, 1.8, 0), Material.FIRE, (byte) 0);
             block.setVelocity(player.getLocation().getDirection().multiply(2d));

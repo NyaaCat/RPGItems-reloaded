@@ -15,6 +15,6 @@ repositories {
 }
 
 dependencies {
-    compile 'org.bukkit:bukkit:1.8.7-R0.1-SNAPSHOT'
+    compile 'org.bukkit:bukkit:1.9-SNAPSHOT'
     compile 'com.sk89q:worldguard:6.1'
 }

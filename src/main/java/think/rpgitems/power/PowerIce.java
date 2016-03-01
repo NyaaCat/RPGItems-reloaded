@@ -51,7 +51,7 @@ public class PowerIce extends Power implements PowerRightClick {
             }
             if (cooldown <= System.currentTimeMillis() / 50) {
                 value.set(System.currentTimeMillis() / 50 + cooldownTime);
-                player.playSound(player.getLocation(), Sound.FIZZ, 1.0f, 0.1f);
+                player.playSound(player.getLocation(), Sound.ENTITY_EGG_THROW, 1.0f, 0.1f);
 
                 // launch an ice block
                 final FallingBlock block = player.getWorld().spawnFallingBlock(player.getLocation().add(0, 1.8, 0), Material.PACKED_ICE, (byte) 0);
