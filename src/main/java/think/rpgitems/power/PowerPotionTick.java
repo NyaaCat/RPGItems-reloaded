@@ -22,7 +22,7 @@ public class PowerPotionTick extends Power implements PowerTick {
             for (PotionEffect potionEffect : player.getActivePotionEffects()) {
                 if (potionEffect.getType().equals(effect)) {
                     hasEffect = true;
-                    if (potionEffect.getDuration() <= 10)
+                    if (potionEffect.getDuration() <= 10 || potionEffect.getAmplifier() < amplifier)
                         player.addPotionEffect(new PotionEffect(effect, 30, amplifier, true), true);
                     break;
                 }
