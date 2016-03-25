@@ -478,7 +478,10 @@ public class RPGItem {
         }
 
         for (Power p : powers) {
-            output.add(p.displayText());
+            String txt = p.displayText();
+            if (txt != null && txt.length() > 0) {
+                output.add(txt);
+            }
         }
         if (loreText.length() != 0) {
             int cWidth = 0;
