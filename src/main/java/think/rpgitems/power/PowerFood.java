@@ -38,7 +38,9 @@ public class PowerFood extends Power implements PowerRightClick {
             ItemStack item = player.getInventory().getItemInHand();
             int count = item.getAmount() - 1;
             if (count == 0) {
-                player.setFoodLevel(player.getFoodLevel() + foodpoints);
+                int newFoodPoint = player.getFoodLevel() + foodpoints;
+                if (newFoodPoint > 20) newFoodPoint = 20;
+                player.setFoodLevel(newFoodPoint);
                 Bukkit.getScheduler().scheduleSyncDelayedTask(Plugin.plugin, new Runnable() {
                     @Override
                     public void run() {
