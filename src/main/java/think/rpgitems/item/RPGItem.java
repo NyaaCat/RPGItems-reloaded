@@ -549,6 +549,11 @@ public class RPGItem {
         return output;
     }
 
+    @Deprecated
+    public ItemStack toItemStack(String locale) {
+        return toItemStack();
+    }
+
     public ItemStack toItemStack() {
         ItemStack rStack = item.clone();
         RPGMetadata rpgMeta = new RPGMetadata();
