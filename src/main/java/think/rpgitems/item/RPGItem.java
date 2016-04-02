@@ -69,6 +69,8 @@ public class RPGItem {
     public boolean ignoreWorldGuard = false;
     public List<String> description = new ArrayList<String>();
 
+    public boolean showPowerText = true;
+
     // Powers
     public ArrayList<Power> powers = new ArrayList<Power>();
     private ArrayList<PowerLeftClick> powerLeftClick = new ArrayList<PowerLeftClick>();
@@ -196,7 +198,7 @@ public class RPGItem {
         if (maxDurability == 0) {
             maxDurability = -1;
         }
-
+        showPowerText = s.getBoolean("showPowerText", true);
         rebuild();
     }
 
@@ -251,6 +253,7 @@ public class RPGItem {
 
         s.set("maxDurability", maxDurability);
         s.set("forceBar", forceBar);
+        s.set("showPowerText", showPowerText);
     }
 
     public void resetRecipe(boolean removeOld) {
@@ -344,7 +347,7 @@ public class RPGItem {
         if (lines.size() > 0) {
             lines.set(0, getMCEncodedID() + lines.get(0));
         } else {
-            lines.set(0, getMCEncodedID());
+            lines.add(0, getMCEncodedID());
         }
         meta.setLore(lines);
         meta.spigot().setUnbreakable(false);
@@ -487,15 +490,17 @@ public class RPGItem {
 
         tooltipWidth = width;
 
-        output.add(ChatColor.WHITE + hand + StringUtils.repeat(" ", (width - getStringWidth(ChatColor.stripColor(hand + type))) / 4) + type);
-        if (damageStr != null) {
-            output.add(ChatColor.WHITE + damageStr);
-        }
+        if (showPowerText) {
+            output.add(ChatColor.WHITE + hand + StringUtils.repeat(" ", (width - getStringWidth(ChatColor.stripColor(hand + type))) / 4) + type);
+            if (damageStr != null) {
+                output.add(ChatColor.WHITE + damageStr);
+            }
 
-        for (Power p : powers) {
-            String txt = p.displayText();
-            if (txt != null && txt.length() > 0) {
-                output.add(txt);
+            for (Power p : powers) {
+                String txt = p.displayText();
+                if (txt != null && txt.length() > 0) {
+                    output.add(txt);
+                }
             }
         }
         if (loreText.length() != 0) {

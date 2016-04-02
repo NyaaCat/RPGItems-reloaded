@@ -401,7 +401,7 @@ public class Handler implements CommandHandler {
     @CommandGroup("item_description")
     public void itemSetDescription(CommandSender sender, RPGItem item, int lineNo, String line) {
         if (lineNo < 0 || lineNo >= item.description.size()) {
-            sender.sendMessage(ChatColor.RED + String.format(Locale.get("message.description.out.of.range"), line));
+            sender.sendMessage(ChatColor.RED + String.format(Locale.get("message.description.out.of.range"), lineNo));
             return;
         }
         item.description.set(lineNo, ChatColor.translateAlternateColorCodes('&', ChatColor.WHITE + line));
@@ -567,6 +567,17 @@ public class Handler implements CommandHandler {
         item.setHaspermission(enabled);
         ItemManager.save(Plugin.plugin);
         sender.sendMessage(Locale.get("message.permission.success"));
+    }
+
+    @CommandString("rpgitem $n[] switchpowertext $bool:s[]")
+    @CommandDocumentation("$command.rpgitem.switchpowertext")
+    @CommandGroup("item_switchpowertext")
+    public void switchDescriptionText(CommandSender sender, RPGItem item, String arg) {
+        boolean needshow = Boolean.parseBoolean(arg);
+        item.showPowerText = needshow;
+        item.rebuild();
+        ItemManager.save(Plugin.plugin);
+        sender.sendMessage(Locale.get("message.powertext."+(needshow?"on":"off")));
     }
 
     @CommandString("rpgitem version")
