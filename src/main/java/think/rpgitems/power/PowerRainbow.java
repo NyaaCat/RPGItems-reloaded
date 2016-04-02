@@ -46,7 +46,7 @@ public class PowerRainbow extends Power implements PowerRightClick {
 
     @SuppressWarnings("deprecation")
     @Override
-    public void rightClick(Player player) {
+    public void rightClick(Player player, Block clicked) {
         long cooldown;
         if (item.getHasPermission() == true && player.hasPermission(item.getPermission()) == false) {
         } else {

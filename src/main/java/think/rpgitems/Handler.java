@@ -24,6 +24,7 @@ import think.rpgitems.support.WorldGuard;
 
 import java.util.ArrayList;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Set;
 
 public class Handler implements CommandHandler {
@@ -192,6 +193,10 @@ public class Handler implements CommandHandler {
     @CommandDocumentation("$command.rpgitem.damage.set")
     @CommandGroup("item_damage")
     public void setItemDamage(CommandSender sender, RPGItem item, int damage) {
+        if (damage > 32767) {
+            sender.sendMessage(ChatColor.RED + Locale.get("message.error.damagetolarge"));
+            return;
+        }
         item.setDamage(damage, damage);
         sender.sendMessage(ChatColor.AQUA + String.format(Locale.get("message.damage.set"), item.getName(), item.getDamageMin()));
         ItemManager.save(Plugin.plugin);
@@ -201,6 +206,10 @@ public class Handler implements CommandHandler {
     @CommandDocumentation("$command.rpgitem.damage.set.range")
     @CommandGroup("item_damage")
     public void setItemDamage(CommandSender sender, RPGItem item, int min, int max) {
+        if (min > 32767 || max > 32767) {
+            sender.sendMessage(ChatColor.RED + Locale.get("message.error.damagetolarge"));
+            return;
+        }
         item.setDamage(min, max);
         sender.sendMessage(ChatColor.AQUA + String.format(Locale.get("message.damage.set.range"), item.getName(), item.getDamageMin(), item.getDamageMax()));
         ItemManager.save(Plugin.plugin);
@@ -558,5 +567,12 @@ public class Handler implements CommandHandler {
         item.setHaspermission(enabled);
         ItemManager.save(Plugin.plugin);
         sender.sendMessage(Locale.get("message.permission.success"));
+    }
+
+    @CommandString("rpgitem version")
+    @CommandDocumentation("$command.rpgitem.version")
+    @CommandGroup("version")
+    public void printVersion(CommandSender sender) {
+        sender.sendMessage(String.format(Locale.get("message.version").replace("\\n","\n"), Plugin.plugin.getDescription().getVersion()));
     }
 }

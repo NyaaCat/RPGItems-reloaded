@@ -5,6 +5,7 @@ import gnu.trove.map.hash.TIntObjectHashMap;
 import org.bukkit.ChatColor;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.ItemMeta;
+import think.rpgitems.item.RPGItem;
 
 import java.io.UnsupportedEncodingException;
 import java.util.List;
@@ -33,6 +34,9 @@ public class RPGMetadata extends TIntObjectHashMap<Object> {
 
     public static RPGMetadata parseLoreline(String lore) {
         RPGMetadata meta = new RPGMetadata();
+        if (lore.length() <= RPGItem.MC_ENCODED_ID_LENGTH)
+            return meta;
+        lore = lore.substring(RPGItem.MC_ENCODED_ID_LENGTH);
         int pos = lore.indexOf(METADATA_PREFIX);
         if (pos == -1) {
             return meta;

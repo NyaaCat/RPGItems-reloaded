@@ -32,7 +32,6 @@ import java.util.HashMap;
 import java.util.Map.Entry;
 
 public class ItemManager {
-    public static final String LORE_MARK = ChatColor.COLOR_CHAR + "c" + ChatColor.COLOR_CHAR + "a" + ChatColor.COLOR_CHAR + "r";
     public static TIntObjectHashMap<RPGItem> itemById = new TIntObjectHashMap<RPGItem>();
     public static HashMap<String, RPGItem> itemByName = new HashMap<String, RPGItem>();
     public static HashMap<String, ItemGroup> groups = new HashMap<String, ItemGroup>();
@@ -164,13 +163,10 @@ public class ItemManager {
         if (!item.hasItemMeta())
             return null;
         ItemMeta meta = item.getItemMeta();
-        if (!meta.hasDisplayName())
+        if (!meta.hasLore() || meta.getLore().size() <= 0)
             return null;
-        if (!plugin.getConfig().contains("bypassLoreMark") || !plugin.getConfig().getBoolean("bypassLoreMark"))
-            if (!meta.hasLore() || meta.getLore().size() <= 0 || !meta.getLore().get(0).startsWith(LORE_MARK))
-                return null;
         try {
-            int id = ItemManager.decodeId(meta.getDisplayName());
+            int id = ItemManager.decodeId(meta.getLore().get(0));
             RPGItem rItem = ItemManager.getItemById(id);
             return rItem;
         } catch (Exception e) {

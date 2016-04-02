@@ -22,10 +22,12 @@ import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
 import org.bukkit.Color;
 import org.bukkit.Material;
+import org.bukkit.block.Block;
 import org.bukkit.command.CommandSender;
 import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.configuration.MemoryConfiguration;
 import org.bukkit.enchantments.Enchantment;
+import org.bukkit.entity.Entity;
 import org.bukkit.entity.LivingEntity;
 import org.bukkit.entity.Player;
 import org.bukkit.entity.Projectile;
@@ -40,6 +42,7 @@ import think.rpgitems.data.Font;
 import think.rpgitems.data.Locale;
 import think.rpgitems.data.RPGMetadata;
 import think.rpgitems.power.Power;
+import think.rpgitems.power.PowerUnbreakable;
 import think.rpgitems.power.types.*;
 
 import java.util.*;
@@ -72,6 +75,7 @@ public class RPGItem {
     private ArrayList<PowerRightClick> powerRightClick = new ArrayList<PowerRightClick>();
     private ArrayList<PowerProjectileHit> powerProjectileHit = new ArrayList<PowerProjectileHit>();
     private ArrayList<PowerHit> powerHit = new ArrayList<PowerHit>();
+    private ArrayList<PowerHitTaken> powerHitTaken = new ArrayList<PowerHitTaken>();
     private ArrayList<PowerTick> powerTick = new ArrayList<PowerTick>();
 
     // Recipes
@@ -292,15 +296,15 @@ public class RPGItem {
         }
     }
 
-    public void leftClick(Player player) {
+    public void leftClick(Player player, Block block) {
         for (PowerLeftClick power : powerLeftClick) {
-            power.leftClick(player);
+            power.leftClick(player, block);
         }
     }
 
-    public void rightClick(Player player) {
+    public void rightClick(Player player, Block block) {
         for (PowerRightClick power : powerRightClick) {
-            power.rightClick(player);
+            power.rightClick(player, block);
         }
     }
 
@@ -310,10 +314,20 @@ public class RPGItem {
         }
     }
 
-    public void hit(Player player, LivingEntity e, double d) {
+    public void hit(Player damager, LivingEntity target, double damage) {
         for (PowerHit power : powerHit) {
-            power.hit(player, e, d);
+            power.hit(damager, target, damage);
         }
+    }
+    
+    public double takeHit(Player target, Entity damager, double damage) {
+        double ret = Double.MAX_VALUE;
+        for (PowerHitTaken power : powerHitTaken) {
+            double d = power.takeHit(target, damager, damage);
+            if (d < 0) continue;
+            ret = d < ret ? d : ret;
+        }
+        return ret == Double.MAX_VALUE? -1 : ret;
     }
 
     public void tick(Player player) {
@@ -327,13 +341,19 @@ public class RPGItem {
         ItemMeta meta = getLocaleMeta();
         meta.setDisplayName(lines.get(0));
         lines.remove(0);
-        //if (!Plugin.plugin.getConfig().contains("bypassLoreMark") || !Plugin.plugin.getConfig().getBoolean("bypassLoreMark")) {
-            if (lines.size() > 0)
-                lines.set(0, ItemManager.LORE_MARK + lines.get(0));
-            else
-                lines.add(ItemManager.LORE_MARK);
-        //}
+        if (lines.size() > 0) {
+            lines.set(0, getMCEncodedID() + lines.get(0));
+        } else {
+            lines.set(0, getMCEncodedID());
+        }
         meta.setLore(lines);
+        meta.spigot().setUnbreakable(false);
+        for (Power p : powers) {
+            if (p instanceof PowerUnbreakable) {
+                meta.spigot().setUnbreakable(true);
+                break;
+            }
+        }
         updateLocaleMeta(meta);
 
         for (Player player : Bukkit.getOnlinePlayers()) {
@@ -473,7 +493,10 @@ public class RPGItem {
         }
 
         for (Power p : powers) {
-            output.add(p.displayText());
+            String txt = p.displayText();
+            if (txt != null && txt.length() > 0) {
+                output.add(txt);
+            }
         }
         if (loreText.length() != 0) {
             int cWidth = 0;
@@ -550,6 +573,7 @@ public class RPGItem {
         return encodedID;
     }
 
+    public static final int MC_ENCODED_ID_LENGTH = 16;
     public static String getMCEncodedID(int id) {
         String hex = String.format("%08x", id);
         StringBuilder out = new StringBuilder();
@@ -557,6 +581,9 @@ public class RPGItem {
             out.append(ChatColor.COLOR_CHAR);
             out.append(h);
         }
+        String str = out.toString();
+        if (str.length() != MC_ENCODED_ID_LENGTH)
+            throw new RuntimeException("Bad RPGItem ID: " + str + " (" + id + ")");
         return out.toString();
     }
 
@@ -792,6 +819,9 @@ public class RPGItem {
         if (power instanceof PowerHit) {
             powerHit.add((PowerHit) power);
         }
+        if (power instanceof PowerHitTaken) {
+            powerHitTaken.add((PowerHitTaken) power);
+        }
         if (power instanceof PowerLeftClick) {
             powerLeftClick.add((PowerLeftClick) power);
         }
@@ -823,6 +853,9 @@ public class RPGItem {
         if (power != null) {
             if (power instanceof PowerHit) {
                 powerHit.remove((PowerHit) power);
+            }
+            if (power instanceof PowerHitTaken) {
+                powerHitTaken.remove((PowerHitTaken) power);
             }
             if (power instanceof PowerLeftClick) {
                 powerLeftClick.remove(power);

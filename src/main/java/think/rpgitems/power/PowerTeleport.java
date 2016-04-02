@@ -22,6 +22,8 @@ import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.entity.Player;
 import org.bukkit.entity.Projectile;
 import org.bukkit.util.BlockIterator;
+
+import think.rpgitems.Plugin;
 import think.rpgitems.data.Locale;
 import think.rpgitems.data.RPGValue;
 import think.rpgitems.power.types.PowerProjectileHit;
@@ -33,7 +35,7 @@ public class PowerTeleport extends Power implements PowerRightClick, PowerProjec
     public long cooldownTime = 20;
 
     @Override
-    public void rightClick(Player player) {
+    public void rightClick(Player player, Block clicked) {
         long cooldown;
         if (item.getHasPermission() == true && player.hasPermission(item.getPermission()) == false) {
         } else {
@@ -55,21 +57,26 @@ public class PowerTeleport extends Power implements PowerRightClick, PowerProjec
                 // Keeping the old method because BlockIterator could get removed (irc)
                 // double dir = Math.toRadians(start.getYaw()) + (Math.PI / 2d);
                 // double dirY = Math.toRadians(start.getPitch()) + (Math.PI / 2d);
-                BlockIterator bi = new BlockIterator(player, distance);
-                // while (dist < distance) {
-                while (bi.hasNext()) {
-                    // current.setX(start.getX() + dist * Math.cos(dir) *
-                    // Math.sin(dirY));
-                    // current.setY(start.getY() + dist * Math.cos(dirY));
-                    // current.setZ(start.getZ() + dist * Math.sin(dir) *
-                    // Math.sin(dirY));
-                    Block block = bi.next();// world.getBlockAt(current);
-                    if (!block.getType().isSolid() || (block.getType() == Material.AIR)) {
-                        lastSafe = block;
-                    } else {
-                        break;
+                try {
+                    BlockIterator bi = new BlockIterator(player, distance);
+                    // while (dist < distance) {
+                    while (bi.hasNext()) {
+                        // current.setX(start.getX() + dist * Math.cos(dir) *
+                        // Math.sin(dirY));
+                        // current.setY(start.getY() + dist * Math.cos(dirY));
+                        // current.setZ(start.getZ() + dist * Math.sin(dir) *
+                        // Math.sin(dirY));
+                        Block block = bi.next();// world.getBlockAt(current);
+                        if (!block.getType().isSolid() || (block.getType() == Material.AIR)) {
+                            lastSafe = block;
+                        } else {
+                            break;
+                        }
+                        // dist+= 0.5;
                     }
-                    // dist+= 0.5;
+                } catch (IllegalStateException ex) {
+                    ex.printStackTrace();
+                    Plugin.logger.info("This exception may be harmless");
                 }
                 Location newLoc = lastSafe.getLocation();
                 newLoc.setPitch(start.getPitch());

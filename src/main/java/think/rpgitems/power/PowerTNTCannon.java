@@ -18,9 +18,11 @@ package think.rpgitems.power;
 
 import org.bukkit.ChatColor;
 import org.bukkit.Sound;
+import org.bukkit.block.Block;
 import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.entity.Player;
 import org.bukkit.entity.TNTPrimed;
+
 import think.rpgitems.data.Locale;
 import think.rpgitems.data.RPGValue;
 import think.rpgitems.power.types.PowerRightClick;
@@ -30,7 +32,7 @@ public class PowerTNTCannon extends Power implements PowerRightClick {
     public long cooldownTime = 20;
 
     @Override
-    public void rightClick(Player player) {
+    public void rightClick(Player player, Block block) {
         long cooldown;
         if (item.getHasPermission() == true && player.hasPermission(item.getPermission()) == false) {
         } else {

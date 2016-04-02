@@ -185,8 +185,9 @@ public class Events implements Listener {
             if (rItem.getHasPermission() == true && player.hasPermission(rItem.getPermission()) == false) {
                 e.setCancelled(true);
                 player.sendMessage(ChatColor.RED + String.format(Locale.get("message.error.permission")));
+                return;
             }
-            rItem.rightClick(player);
+            rItem.rightClick(player, e.getClickedBlock());
             if (!player.getItemInHand().getType().equals(Material.AIR))
                 RPGItem.updateItem(item);
             else
@@ -206,7 +207,7 @@ public class Events implements Listener {
                 e.setCancelled(true);
                 player.sendMessage(ChatColor.RED + String.format(Locale.get("message.error.permission")));
             }
-            rItem.leftClick(player);
+            rItem.leftClick(player, e.getClickedBlock());
             RPGItem.updateItem(item);
         }
 
@@ -348,8 +349,7 @@ public class Events implements Listener {
         }
         damage = rItem.getDamageMin() != rItem.getDamageMax() ? (rItem.getDamageMin() + random.nextInt(rItem.getDamageMax() - rItem.getDamageMin())) : rItem.getDamageMin();
         if (e.getEntity() instanceof LivingEntity) {
-            LivingEntity le = (LivingEntity) e.getEntity();
-            rItem.hit(player, le, e.getDamage());
+            rItem.hit(player, (LivingEntity) e.getEntity(), e.getDamage());
         }
         RPGMetadata meta = RPGItem.getMetadata(item);
         if (rItem.getMaxDurability() != -1) {
@@ -416,18 +416,43 @@ public class Events implements Listener {
         return damage;
     }
 
+    private double playerHurt(Player e, double damage) {
+        double ret = Double.MAX_VALUE;
+        for (ItemStack item : e.getInventory().getArmorContents()) {
+            RPGItem ri = ItemManager.toRPGItem(item);
+            if (ri == null) continue;
+            double d = ri.takeHit(e, null, damage);
+            if (d < 0) continue;
+            if (d < ret) ret = d;
+        }
+        for (ItemStack item : e.getInventory().getContents()) {
+            RPGItem ri = ItemManager.toRPGItem(item);
+            if (ri == null) continue;
+            double d = ri.takeHit(e, null, damage);
+            if (d < 0) continue;
+            if (d < ret) ret = d;
+        }
+        return ret == Double.MAX_VALUE? damage : ret;
+    }
+
     @EventHandler(priority = EventPriority.LOWEST, ignoreCancelled = true)
-    public void onDamage(EntityDamageByEntityEvent e) {
-        double damage = e.getDamage();
-        if (e.getDamager() instanceof Player) {
-            damage = playerDamager(e, damage);
-        } else if (e.getDamager() instanceof Projectile) {
-            damage = projectileDamager(e, damage);
+    public void onDamage(EntityDamageEvent ev) {
+        if (ev instanceof EntityDamageByEntityEvent) {
+            EntityDamageByEntityEvent e = (EntityDamageByEntityEvent) ev;
+            double damage = e.getDamage();
+            if (e.getDamager() instanceof Player) {
+                damage = playerDamager(e, damage);
+            } else if (e.getDamager() instanceof Projectile) {
+                damage = projectileDamager(e, damage);
+            }
+            if (e.getEntity() instanceof Player) {
+                damage = playerHit(e, damage);
+            }
+            e.setDamage(damage);
         }
-        if (e.getEntity() instanceof Player) {
-            damage = playerHit(e, damage);
+        if (ev.getEntity() instanceof Player) {
+            ev.setDamage(playerHurt((Player)ev.getEntity(), ev.getDamage()));
         }
-        e.setDamage(damage);
     }
 
     @EventHandler(ignoreCancelled = true, priority = EventPriority.HIGHEST)

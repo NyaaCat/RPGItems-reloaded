@@ -18,6 +18,7 @@ package think.rpgitems.power;
 
 import org.bukkit.ChatColor;
 import org.bukkit.Effect;
+import org.bukkit.block.Block;
 import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.entity.*;
 import org.bukkit.potion.PotionEffect;
@@ -60,7 +61,7 @@ public class PowerAOE extends Power implements PowerRightClick {
     }
 
     @Override
-    public void rightClick(final Player player) {
+    public void rightClick(final Player player, Block clicked) {
         long cooldown;
         if (item.getHasPermission() == true && player.hasPermission(item.getPermission()) == false) {
         } else {

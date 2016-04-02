@@ -14,7 +14,7 @@ import think.rpgitems.item.RPGItem;
 import think.rpgitems.power.*;
 
 public class PowerHandler implements CommandHandler {
-    
+
     @CommandString("rpgitem $n[] power aoe $cooldown:i[] $range:i[] $effect:s[] $duration:i[] $amplifier:i[]")
     @CommandDocumentation("$command.rpgitem.aoe+PotionEffectType")
     @CommandGroup("item_power_aoe")
@@ -35,7 +35,7 @@ public class PowerHandler implements CommandHandler {
         ItemManager.save(Plugin.plugin);
         sender.sendMessage(ChatColor.AQUA + Locale.get("message.power.ok"));
     }
-    
+
     @CommandString("rpgitem $n[] power aoe $cooldown:i[] $range:i[] $effect:s[] $duration:i[] $amplifier:i[] $selfapplication:s[]")
     @CommandDocumentation("$command.rpgitem.aoe+PotionEffectType")
     @CommandGroup("item_power_aoe")
@@ -102,7 +102,37 @@ public class PowerHandler implements CommandHandler {
         ItemManager.save(Plugin.plugin);
         sender.sendMessage(ChatColor.AQUA + Locale.get("message.power.ok"));
     }
-
+    
+    @CommandString("rpgitem $n[] power color")
+    @CommandDocumentation("$command.rpgitem.color")
+    @CommandGroup("item_power_color")
+    public void color(CommandSender sender, RPGItem item) {
+        PowerColor color = new PowerColor();
+        color.cooldownTime = 0;
+        color.glass = true;
+        color.clay = true;
+        color.wool = true;
+        color.item = item;
+        item.addPower(color);
+        ItemManager.save(Plugin.plugin);
+        sender.sendMessage(ChatColor.AQUA + Locale.get("message.power.ok"));
+    }
+    
+    @CommandString("rpgitem $n[] power color $cooldown:i[] $glass:s[] $clay:s[] $wool:s[]")
+    @CommandDocumentation("$command.rpgitem.color.full")
+    @CommandGroup("item_power_color")
+    public void color(CommandSender sender, RPGItem item, int cooldown, String glass,  String clay,  String wool) {
+        PowerColor color = new PowerColor();
+        color.cooldownTime = cooldown;
+        color.glass = glass.equalsIgnoreCase("true");
+        color.clay = clay.equalsIgnoreCase("true");
+        color.wool = wool.equalsIgnoreCase("true");
+        color.item = item;
+        item.addPower(color);
+        ItemManager.save(Plugin.plugin);
+        sender.sendMessage(ChatColor.AQUA + Locale.get("message.power.ok"));
+    }
+    
     @CommandString("rpgitem $n[] power command $cooldown:i[] $o[left,right] $display:s[] $command:s[]")
     @CommandDocumentation("$command.rpgitem.command")
     @CommandGroup("item_power_command_b")
@@ -186,13 +216,13 @@ public class PowerHandler implements CommandHandler {
         ItemManager.save(Plugin.plugin);
         sender.sendMessage(ChatColor.AQUA + Locale.get("message.power.ok"));
     }
-    
+
     @CommandString("rpgitem $n[] power fire $cooldown:i[] $distance:i[] $burnduration:i[]")
     @CommandDocumentation("$command.rpgitem.fire")
     @CommandGroup("item_power_fire")
     public void fire(CommandSender sender, RPGItem item, int cooldown, int distance, int burnduration) {
         PowerFire pow = new PowerFire();
-        pow.cooldownTime = 20;
+        pow.cooldownTime = cooldown;
         pow.distance = distance;
         pow.burnduration = burnduration;
         pow.item = item;
@@ -252,7 +282,7 @@ public class PowerHandler implements CommandHandler {
     @CommandString("rpgitem $n[] power lifesteal $chance:i[]")
     @CommandDocumentation("$command.rpgitem.lifesteal")
     @CommandGroup("item_power_lifesteal")
-    public void lifsteal(CommandSender sender, RPGItem item, int chance) {
+    public void lifesteal(CommandSender sender, RPGItem item, int chance) {
         PowerLifeSteal pow = new PowerLifeSteal();
         pow.item = item;
         pow.chance = chance;
@@ -413,6 +443,20 @@ public class PowerHandler implements CommandHandler {
         sender.sendMessage(ChatColor.AQUA + Locale.get("message.power.ok"));
     }
 
+    @CommandString("rpgitem $n[] power rescue $cooldown:i[] $healthtrigger:i[] $usebed:s[]")
+    @CommandDocumentation("$command.rpgitem.rescue")
+    @CommandGroup("item_power_rescue")
+    public void rescue(CommandSender sender, RPGItem item, int cooldown, int healthTrigger, String useBed) {
+        PowerRescue pow = new PowerRescue();
+        pow.item = item;
+        pow.cooldownTime = cooldown;
+        pow.healthTrigger = healthTrigger;
+        pow.useBed = Boolean.parseBoolean(useBed);
+        item.addPower(pow);
+        ItemManager.save(Plugin.plugin);
+        sender.sendMessage(ChatColor.AQUA + Locale.get("message.power.ok"));
+    }
+
     @CommandString("rpgitem $n[] power rumble $cooldown:i[] $power:i[] $distance:i[]")
     @CommandDocumentation("$command.rpgitem.rumble")
     @CommandGroup("item_power_rumble")
@@ -476,7 +520,7 @@ public class PowerHandler implements CommandHandler {
         ItemManager.save(Plugin.plugin);
         sender.sendMessage(ChatColor.AQUA + Locale.get("message.power.ok"));
     }
-    
+
     @CommandString("rpgitem $n[] power torch $cooldown:i[]")
     @CommandDocumentation("$command.rpgitem.torch")
     @CommandGroup("item_power_torch")
@@ -527,6 +571,188 @@ public class PowerHandler implements CommandHandler {
         pow.item = item;
         pow.foodpoints = foodpoints;
         item.addPower(pow);
+        ItemManager.save(Plugin.plugin);
+        sender.sendMessage(ChatColor.AQUA + Locale.get("message.power.ok"));
+    }
+
+    @CommandString("rpgitem $n[] power projectile $projectileType:s[]")
+    @CommandDocumentation("$command.rpgitem.projectile")
+    @CommandGroup("item_power_projectile")
+    public void projectile(CommandSender sender, RPGItem item, String projectileType) {
+        PowerProjectile power = new PowerProjectile();
+        if (!power.acceptableType(projectileType)) {
+            sender.sendMessage(ChatColor.RED + Locale.get("power.projectile.badType"));
+            return;
+        }
+        power.setType(projectileType);
+        power.item = item;
+        item.addPower(power);
+        ItemManager.save(Plugin.plugin);
+        sender.sendMessage(ChatColor.AQUA + Locale.get("message.power.ok"));
+    }
+
+    @CommandString("rpgitem $n[] power projectile $projectileType:s[] $cooldown:i[]")
+    @CommandDocumentation("$command.rpgitem.projectile.full")
+    @CommandGroup("item_power_projectile")
+    public void projectile(CommandSender sender, RPGItem item, String projectileType, int cooldown) {
+        PowerProjectile power = new PowerProjectile();
+        power.cooldownTime = cooldown;
+        if (!power.acceptableType(projectileType)) {
+            sender.sendMessage(ChatColor.RED + Locale.get("power.projectile.badType"));
+            return;
+        }
+        power.setType(projectileType);
+        power.item = item;
+        item.addPower(power);
+        ItemManager.save(Plugin.plugin);
+        sender.sendMessage(ChatColor.AQUA + Locale.get("message.power.ok"));
+    }
+
+    @CommandString("rpgitem $n[] power projectile $projectileType:s[] $cooldown:i[] $range:i[] $amount:i[]")
+    @CommandDocumentation("$command.rpgitem.projectile.cone")
+    @CommandGroup("item_power_projectile")
+    public void projectile(CommandSender sender, RPGItem item, String projectileType, int cooldown, int range, int amount) {
+        PowerProjectile power = new PowerProjectile();
+        if (projectileType.equalsIgnoreCase("fireball")) {
+            sender.sendMessage(ChatColor.RED + Locale.get("power.projectile.noFireball"));
+            return;
+        }
+        if (!power.acceptableType(projectileType)) {
+            sender.sendMessage(ChatColor.RED + Locale.get("power.projectile.badType"));
+            return;
+        }
+        power.setType(projectileType);
+        power.range = range;
+        power.amount = amount;
+        power.cooldownTime = cooldown;
+        power.item = item;
+        power.cone=true;
+        item.addPower(power);
+        ItemManager.save(Plugin.plugin);
+        sender.sendMessage(ChatColor.AQUA + Locale.get("message.power.ok"));
+    }
+
+    @CommandString("rpgitem $n[] power deathcommand $chance:i[] $command:s[]")
+    @CommandDocumentation("$command.rpgitem.deathcommand")
+    @CommandGroup("item_power_deathcommand")
+    public void deathcommand(CommandSender sender, RPGItem item, int chance, String command) {
+        PowerDeathCommand power = new PowerDeathCommand();
+        power.item = item;
+        power.chance = chance;
+        power.command = command;
+        item.addPower(power);
+        ItemManager.save(Plugin.plugin);
+        sender.sendMessage(ChatColor.AQUA + Locale.get("message.power.ok"));
+    }
+
+    @CommandString("rpgitem $n[] power deathcommand $chance:i[] $count:i[] $command:s[] $descriptionline:s[]")
+    @CommandDocumentation("$command.rpgitem.deathcommand.full")
+    @CommandGroup("item_power_deathcommand")
+    public void deathcommand(CommandSender sender, RPGItem item, int chance, int count, String command, String description) {
+        PowerDeathCommand power = new PowerDeathCommand();
+        power.item = item;
+        power.chance = chance;
+        power.command = command;
+        power.desc = description;
+        power.count = count;
+        item.addPower(power);
+        ItemManager.save(Plugin.plugin);
+        sender.sendMessage(ChatColor.AQUA + Locale.get("message.power.ok"));
+    }
+
+    @CommandString("rpgitem $n[] power forcefield $cooldown:i[] $radius:i[] $height:i[] $base:i[] $duration:i[]")
+    @CommandDocumentation("$command.rpgitem.forcefield")
+    @CommandGroup("item_power_forcefield")
+    public void forcefield(CommandSender sender, RPGItem item, int cooldown, int radius, int height, int base, int duration) {
+        PowerForceField p = new PowerForceField();
+        p.item = item;
+        p.cooldown = cooldown;
+        p.radius = radius;
+        p.height = height;
+        p.base = base;
+        p.ttl = duration;
+        item.addPower(p);
+        ItemManager.save(Plugin.plugin);
+        sender.sendMessage(ChatColor.AQUA + Locale.get("message.power.ok"));
+    }
+
+    @CommandString("rpgitem $n[] power attract")
+    @CommandDocumentation("$command.rpgitem.attract")
+    @CommandGroup("item_power_attract")
+    public void attract(CommandSender sender, RPGItem item) {
+        PowerAttract p =new PowerAttract();
+        p.item = item;
+        item.addPower(p);
+        ItemManager.save(Plugin.plugin);
+        sender.sendMessage(ChatColor.AQUA + Locale.get("message.power.ok"));
+    }
+
+    @CommandString("rpgitem $n[] power attract $radius:i[] $maxSpeed:f[]")
+    @CommandDocumentation("$command.rpgitem.attract.full")
+    @CommandGroup("item_power_attract")
+    public void attract(CommandSender sender, RPGItem item, int radius, double speed) {
+        PowerAttract p =new PowerAttract();
+        p.item = item;
+        p.radius = radius;
+        p.maxSpeed = speed;
+        item.addPower(p);
+        ItemManager.save(Plugin.plugin);
+        sender.sendMessage(ChatColor.AQUA + Locale.get("message.power.ok"));
+    }
+
+    @CommandString("rpgitem $n[] power pumpkin $chance:i[] $dropChance:f[]")
+    @CommandDocumentation("$command.rpgitem.pumpkin")
+    @CommandGroup("item_power_pumpkin")
+    public void lantern(CommandSender sender, RPGItem item, int chance, double dropChance) {
+        PowerPumpkin p = new PowerPumpkin();
+        p.item = item;
+        p.chance = chance;
+        p.drop = dropChance;
+        item.addPower(p);
+        ItemManager.save(Plugin.plugin);
+        sender.sendMessage(ChatColor.AQUA + Locale.get("message.power.ok"));
+    }
+
+    @CommandString("rpgitem $n[] power particle $visualeffect:s[]")
+    @CommandDocumentation("$command.rpgitem.particle")
+    @CommandGroup("item_power_particle")
+    public void particle(CommandSender sender, RPGItem item, String effect) {
+        if (!PowerParticle.acceptableEffect(effect)) {
+            sender.sendMessage(ChatColor.RED + String.format(Locale.get("message.error.visualeffect"), effect));
+            return;
+        }
+        PowerParticle p = new PowerParticle();
+        p.item = item;
+        p.effect = effect.toUpperCase();
+        item.addPower(p);
+        ItemManager.save(Plugin.plugin);
+        sender.sendMessage(ChatColor.AQUA + Locale.get("message.power.ok"));
+    }
+
+    @CommandString("rpgitem $n[] power particletick $visualeffect:s[] $interval:i[]")
+    @CommandDocumentation("$command.rpgitem.particletick")
+    @CommandGroup("item_power_particletick")
+    public void particle(CommandSender sender, RPGItem item, String effect, int interval) {
+        if (!PowerParticle.acceptableEffect(effect)) {
+            sender.sendMessage(ChatColor.RED + String.format(Locale.get("message.error.visualeffect"), effect));
+            return;
+        }
+        PowerParticleTick p = new PowerParticleTick();
+        p.item = item;
+        p.effect = effect.toUpperCase();
+        p.interval = interval;
+        item.addPower(p);
+        ItemManager.save(Plugin.plugin);
+        sender.sendMessage(ChatColor.AQUA + Locale.get("message.power.ok"));
+    }
+
+    @CommandString("rpgitem $n[] power unbreakable")
+    @CommandDocumentation("$command.rpgitem.unbreakable")
+    @CommandGroup("item_power_unbreakable")
+    public void particle(CommandSender sender, RPGItem item) {
+        PowerUnbreakable p = new PowerUnbreakable();
+        p.item = item;
+        item.addPower(p);
         ItemManager.save(Plugin.plugin);
         sender.sendMessage(ChatColor.AQUA + Locale.get("message.power.ok"));
     }

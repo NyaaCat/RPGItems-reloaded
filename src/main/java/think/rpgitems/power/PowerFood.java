@@ -16,11 +16,15 @@
  */
 package think.rpgitems.power;
 
+import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
 import org.bukkit.Material;
+import org.bukkit.block.Block;
 import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
+
+import think.rpgitems.Plugin;
 import think.rpgitems.data.Locale;
 import think.rpgitems.power.types.PowerRightClick;
 
@@ -28,16 +32,21 @@ public class PowerFood extends Power implements PowerRightClick {
     public int foodpoints;
 
     @Override
-    public void rightClick(Player player) {
+    public void rightClick(final Player player, Block clicked) {
         if (item.getHasPermission() == true && player.hasPermission(item.getPermission()) == false) {
         } else {
             ItemStack item = player.getInventory().getItemInHand();
             int count = item.getAmount() - 1;
             if (count == 0) {
-                player.setFoodLevel(player.getFoodLevel() + foodpoints);
-                item.setAmount(0);
-                item.setType(Material.AIR);
-                player.setItemInHand(item);
+                int newFoodPoint = player.getFoodLevel() + foodpoints;
+                if (newFoodPoint > 20) newFoodPoint = 20;
+                player.setFoodLevel(newFoodPoint);
+                Bukkit.getScheduler().scheduleSyncDelayedTask(Plugin.plugin, new Runnable() {
+                    @Override
+                    public void run() {
+                        player.getInventory().setItemInHand(new ItemStack(Material.AIR));
+                    }
+                }, 1L);
             } else {
                 player.setFoodLevel(player.getFoodLevel() + foodpoints);
                 item.setAmount(count);

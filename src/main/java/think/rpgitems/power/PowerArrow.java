@@ -18,9 +18,11 @@ package think.rpgitems.power;
 
 import org.bukkit.ChatColor;
 import org.bukkit.Sound;
+import org.bukkit.block.Block;
 import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.entity.Arrow;
 import org.bukkit.entity.Player;
+
 import think.rpgitems.Events;
 import think.rpgitems.data.Locale;
 import think.rpgitems.data.RPGValue;
@@ -31,7 +33,7 @@ public class PowerArrow extends Power implements PowerRightClick {
     public long cooldownTime = 20;
 
     @Override
-    public void rightClick(Player player) {
+    public void rightClick(Player player, Block clicked) {
         long cooldown;
         if (item.getHasPermission() == true && player.hasPermission(item.getPermission()) == false) {
         } else {

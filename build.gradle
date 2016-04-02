@@ -9,6 +9,11 @@ repositories {
     }
 
     maven {
+        name 'Sonatype'
+        url 'https://oss.sonatype.org/content/groups/public'
+    }
+
+    maven {
         name 'sk89q'
         url 'http://maven.sk89q.com/artifactory/repo/'
     }

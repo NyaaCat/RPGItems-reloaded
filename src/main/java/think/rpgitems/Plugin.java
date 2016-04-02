@@ -16,22 +16,22 @@
  */
 package think.rpgitems;
 
-import java.util.List;
-import java.util.logging.Logger;
-
 import org.bukkit.ChatColor;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandSender;
 import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.plugin.java.JavaPlugin;
-
 import think.rpgitems.commands.Commands;
+import think.rpgitems.commands.RPGItemUpdateCommandHandler;
 import think.rpgitems.config.ConfigUpdater;
 import think.rpgitems.data.Font;
 import think.rpgitems.data.Locale;
 import think.rpgitems.item.ItemManager;
 import think.rpgitems.power.*;
 import think.rpgitems.support.WorldGuard;
+
+import java.util.List;
+import java.util.logging.Logger;
 
 @SuppressWarnings("deprecation")
 public class Plugin extends JavaPlugin {
@@ -62,6 +62,7 @@ public class Plugin extends JavaPlugin {
         Power.powers.put("consume", PowerConsume.class);
         Power.powers.put("unbreakable", PowerUnbreakable.class);
         Power.powers.put("unbreaking", PowerUnbreaking.class);
+        Power.powers.put("rescue", PowerRescue.class);
         Power.powers.put("rumble", PowerRumble.class);
         Power.powers.put("skyhook", PowerSkyHook.class);
         Power.powers.put("potiontick", PowerPotionTick.class);
@@ -69,6 +70,14 @@ public class Plugin extends JavaPlugin {
         Power.powers.put("lifesteal", PowerLifeSteal.class);
         Power.powers.put("torch", PowerTorch.class);
         Power.powers.put("fire", PowerFire.class);
+        Power.powers.put("projectile", PowerProjectile.class);
+        Power.powers.put("deathcommand", PowerDeathCommand.class);
+        Power.powers.put("forcefield", PowerForceField.class);
+        Power.powers.put("attract", PowerAttract.class);
+        Power.powers.put("color", PowerColor.class);
+        Power.powers.put("pumpkin", PowerPumpkin.class);
+        Power.powers.put("particle", PowerParticle.class);
+        Power.powers.put("particletick", PowerParticleTick.class);
     }
 
     @Override
@@ -84,17 +93,18 @@ public class Plugin extends JavaPlugin {
             Events.useLocaleInv = true;
         }
         getServer().getPluginManager().registerEvents(new Events(), this);
+        getServer().getPluginCommand("rpgitemupdate").setExecutor(new RPGItemUpdateCommandHandler());
         ItemManager.load(this);
         Commands.register(new Handler());
         Commands.register(new PowerHandler());
         new PowerTicker().runTaskTimer(this, 0, 1);
     }
-    
+
     public void startUpdater() {
         getLogger().info("The updater is currently under maintenance,");
         getServer().getConsoleSender().sendMessage("[RPGItems] Please check " + ChatColor.DARK_GRAY + ChatColor.ITALIC + ChatColor.BOLD + "www.github.com/NyaaCat/RPGitems-reloaded" + ChatColor.RESET + " for updates.");
-        
-        if(updater != null)
+
+        if (updater != null)
             return;
         //updater = new Updater(this, 70226, this.getFile(), Updater.UpdateType.DEFAULT, false);
     }

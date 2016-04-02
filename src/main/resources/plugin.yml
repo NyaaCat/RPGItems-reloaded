@@ -7,3 +7,12 @@ commands:
     rpgitem:
         description: RPG Items
         usage: RPG Items
+    rpgitemupdate:
+        description: update the rpgitem in hand
+        usage: /<command>
+        permission: rpgitemupdate.command
+        permission-message: You do not have permission node <permission>
+
+permissions:
+    rpgitemupdate.command:
+        default: op

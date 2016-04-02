@@ -4,4 +4,4 @@
 
 The RPGitems2 plugin continued from [TheCreeperOfRedstone/RPG-Items-2](https://github.com/TheCreeperOfRedstone/RPG-Items-2)
 
-Documents can be found at the [repository wiki](https://github.com/NyaaCat/RPGitems-reloaded/wiki).
+[Wiki](https://github.com/NyaaCat/RPGitems-reloaded/wiki) | [Spigot page](https://www.spigotmc.org/resources/rpgitems.17549/) | [Translation](https://www.transifex.com/phoenixlzx/rpgitems/)

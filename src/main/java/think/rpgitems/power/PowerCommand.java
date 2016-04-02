@@ -17,9 +17,11 @@
 package think.rpgitems.power;
 
 import org.bukkit.ChatColor;
+import org.bukkit.block.Block;
 import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.entity.Player;
 import org.bukkit.permissions.PermissionAttachment;
+
 import think.rpgitems.Plugin;
 import think.rpgitems.data.Locale;
 import think.rpgitems.data.RPGValue;
@@ -35,7 +37,7 @@ public class PowerCommand extends Power implements PowerRightClick, PowerLeftCli
     public long cooldownTime = 20;
 
     @Override
-    public void rightClick(Player player) {
+    public void rightClick(Player player, Block clicked) {
         if (item.getHasPermission() == true && player.hasPermission(item.getPermission()) == false) {
         } else {
             if (isRight) {
@@ -73,7 +75,7 @@ public class PowerCommand extends Power implements PowerRightClick, PowerLeftCli
     }
 
     @Override
-    public void leftClick(Player player) {
+    public void leftClick(Player player, Block clicked) {
         if (!isRight) {
             long cooldown;
             RPGValue value = RPGValue.get(player, item, "command." + command + ".cooldown");
