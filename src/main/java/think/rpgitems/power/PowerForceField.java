@@ -107,13 +107,13 @@ public class PowerForceField extends Power implements PowerRightClick {
                         l.add(0,1,0);
                         continue;
                     }
-                    if (w.getBlockAt(l).getType() == Material.BARRIER) {
+                    if (w.getBlockAt(l).getType() == Material.GLASS) {
                         wasBarrier.add(l.clone());
                         l.add(0,1,0);
                         continue;
                     }
                     if (w.getBlockAt(l).getType() == Material.WOOL)
-                        w.getBlockAt(l).setType(Material.BARRIER);
+                        w.getBlockAt(l).setType(Material.GLASS);
                     l.add(0,1,0);
                 }
             }
@@ -129,7 +129,7 @@ public class PowerForceField extends Power implements PowerRightClick {
                         continue;
                     }
                     if (w.getBlockAt(l).getType() == Material.AIR) {
-                        for (Entity e : w.getNearbyEntities(l,2,2,2)) {
+                        for (Entity e : getNearbyEntities(l,2)) {
                             if (e instanceof ItemFrame || e instanceof Painting) {
                                 if (e.getLocation().distance(l)<1.5) continue loop;
                             }
@@ -145,7 +145,7 @@ public class PowerForceField extends Power implements PowerRightClick {
                         for (int i = h; i >= l; i--) {
                             for (Location l : circlePoints) {
                                 l.subtract(0,1,0);
-                                if (!wasBarrier.contains(l) && w.getBlockAt(l).getType() == Material.BARRIER) {
+                                if (!wasBarrier.contains(l) && w.getBlockAt(l).getType() == Material.GLASS) {
                                     w.getBlockAt(l).setType(Material.AIR);
                                 }
                             }

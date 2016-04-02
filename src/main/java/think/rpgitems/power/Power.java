@@ -45,7 +45,7 @@ public abstract class Power {
 
     public static Entity[] getNearbyEntities(Location l, double radius) {
         List<Entity> entities = new ArrayList<>();
-        for (Entity e : l.getWorld().getNearbyEntities(l, radius, radius, radius)) {
+        for (Entity e : l.getWorld().getEntities()) {
             try {
                 if (l.distance(e.getLocation()) <= radius) {
                     entities.add(e);

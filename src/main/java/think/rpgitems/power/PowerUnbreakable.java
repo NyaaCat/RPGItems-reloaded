@@ -18,9 +18,36 @@ package think.rpgitems.power;
 
 import org.bukkit.ChatColor;
 import org.bukkit.configuration.ConfigurationSection;
+import org.bukkit.entity.Entity;
+import org.bukkit.entity.LivingEntity;
+import org.bukkit.entity.Player;
+import org.bukkit.inventory.ItemStack;
 import think.rpgitems.data.Locale;
+import think.rpgitems.power.types.PowerHit;
+import think.rpgitems.power.types.PowerHitTaken;
 
-public class PowerUnbreakable extends Power {
+public class PowerUnbreakable extends Power implements PowerHit, PowerHitTaken{
+
+    @Override
+    public double takeHit(Player target, Entity damager, double damage) {
+        if (target != null && target.getInventory() != null && target.getInventory().getArmorContents() != null) {
+            for (ItemStack s : target.getInventory().getArmorContents()) {
+                if (s!=null) {
+                    s.setDurability((short)0);
+                }
+            }
+        }
+        return damage;
+    }
+
+    @Override
+    public void hit(Player player, LivingEntity e, double damage) {
+        if (player != null && player.getItemInHand() != null) {
+            player.getItemInHand().setDurability((short) 0);
+            player.updateInventory();
+        }
+    }
+
     @Override
     public void init(ConfigurationSection s) {
 

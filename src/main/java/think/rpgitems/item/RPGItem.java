@@ -347,13 +347,6 @@ public class RPGItem {
             lines.set(0, getMCEncodedID());
         }
         meta.setLore(lines);
-        meta.spigot().setUnbreakable(false);
-        for (Power p : powers) {
-            if (p instanceof PowerUnbreakable) {
-                meta.spigot().setUnbreakable(true);
-                break;
-            }
-        }
         updateLocaleMeta(meta);
 
         for (Player player : Bukkit.getOnlinePlayers()) {
