@@ -1,8 +1,6 @@
 package think.rpgitems;
 
-import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
-import org.bukkit.Location;
 import org.bukkit.Material;
 import org.bukkit.command.CommandSender;
 import org.bukkit.potion.PotionEffectType;
@@ -743,6 +741,17 @@ public class PowerHandler implements CommandHandler {
         p.item = item;
         p.effect = effect.toUpperCase();
         p.interval = interval;
+        item.addPower(p);
+        ItemManager.save(Plugin.plugin);
+        sender.sendMessage(ChatColor.AQUA + Locale.get("message.power.ok"));
+    }
+
+    @CommandString("rpgitem $n[] power unbreakable")
+    @CommandDocumentation("$command.rpgitem.unbreakable")
+    @CommandGroup("item_power_unbreakable")
+    public void particle(CommandSender sender, RPGItem item) {
+        PowerUnbreakable p = new PowerUnbreakable();
+        p.item = item;
         item.addPower(p);
         ItemManager.save(Plugin.plugin);
         sender.sendMessage(ChatColor.AQUA + Locale.get("message.power.ok"));

@@ -16,29 +16,37 @@
  */
 package think.rpgitems.item;
 
-import java.util.*;
-import java.util.Map.Entry;
-
+import gnu.trove.map.hash.TObjectDoubleHashMap;
 import org.apache.commons.lang.StringUtils;
-import org.bukkit.*;
+import org.bukkit.Bukkit;
+import org.bukkit.ChatColor;
+import org.bukkit.Color;
+import org.bukkit.Material;
 import org.bukkit.block.Block;
 import org.bukkit.command.CommandSender;
 import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.configuration.MemoryConfiguration;
 import org.bukkit.enchantments.Enchantment;
-import org.bukkit.entity.*;
-import org.bukkit.inventory.*;
+import org.bukkit.entity.Entity;
+import org.bukkit.entity.LivingEntity;
+import org.bukkit.entity.Player;
+import org.bukkit.entity.Projectile;
+import org.bukkit.inventory.ItemStack;
+import org.bukkit.inventory.Recipe;
+import org.bukkit.inventory.ShapedRecipe;
 import org.bukkit.inventory.meta.ItemMeta;
 import org.bukkit.inventory.meta.LeatherArmorMeta;
-
-import gnu.trove.map.hash.TObjectDoubleHashMap;
 import think.rpgitems.Events;
 import think.rpgitems.Plugin;
 import think.rpgitems.data.Font;
 import think.rpgitems.data.Locale;
 import think.rpgitems.data.RPGMetadata;
 import think.rpgitems.power.Power;
+import think.rpgitems.power.PowerUnbreakable;
 import think.rpgitems.power.types.*;
+
+import java.util.*;
+import java.util.Map.Entry;
 
 public class RPGItem {
     private ItemStack item;
@@ -339,6 +347,13 @@ public class RPGItem {
             lines.set(0, getMCEncodedID());
         }
         meta.setLore(lines);
+        meta.spigot().setUnbreakable(false);
+        for (Power p : powers) {
+            if (p instanceof PowerUnbreakable) {
+                meta.spigot().setUnbreakable(true);
+                break;
+            }
+        }
         updateLocaleMeta(meta);
 
         for (Player player : Bukkit.getOnlinePlayers()) {
@@ -478,7 +493,10 @@ public class RPGItem {
         }
 
         for (Power p : powers) {
-            output.add(p.displayText());
+            String txt = p.displayText();
+            if (txt != null && txt.length() > 0) {
+                output.add(txt);
+            }
         }
         if (loreText.length() != 0) {
             int cWidth = 0;
@@ -529,6 +547,11 @@ public class RPGItem {
             output.add(s);
         }
         return output;
+    }
+
+    @Deprecated
+    public ItemStack toItemStack(String locale) {
+        return toItemStack();
     }
 
     public ItemStack toItemStack() {

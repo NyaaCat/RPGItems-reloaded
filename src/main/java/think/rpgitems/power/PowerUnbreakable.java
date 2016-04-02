@@ -18,19 +18,9 @@ package think.rpgitems.power;
 
 import org.bukkit.ChatColor;
 import org.bukkit.configuration.ConfigurationSection;
-import org.bukkit.entity.LivingEntity;
-import org.bukkit.entity.Player;
 import think.rpgitems.data.Locale;
-import think.rpgitems.power.types.PowerHit;
 
-public class PowerUnbreakable extends Power implements PowerHit {
-
-    @Override
-    public void hit(Player player, LivingEntity e, double damage) {
-        player.getItemInHand().setDurability((short) 0);
-        player.updateInventory();
-    }
-
+public class PowerUnbreakable extends Power {
     @Override
     public void init(ConfigurationSection s) {
 

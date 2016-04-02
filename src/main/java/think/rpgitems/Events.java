@@ -29,6 +29,8 @@ import org.bukkit.event.hanging.HangingBreakEvent.RemoveCause;
 import org.bukkit.event.inventory.*;
 import org.bukkit.event.player.*;
 import org.bukkit.inventory.*;
+import org.bukkit.potion.PotionEffect;
+import org.bukkit.potion.PotionEffectType;
 import org.bukkit.projectiles.ProjectileSource;
 import org.bukkit.scheduler.BukkitRunnable;
 
@@ -348,6 +350,13 @@ public class Events implements Listener {
             player.sendMessage(ChatColor.RED + String.format(Locale.get("message.error.permission")));
         }
         damage = rItem.getDamageMin() != rItem.getDamageMax() ? (rItem.getDamageMin() + random.nextInt(rItem.getDamageMax() - rItem.getDamageMin())) : rItem.getDamageMin();
+        Collection<PotionEffect> potionEffects = player.getActivePotionEffects();
+        double strength = 1, weak = 0;
+        for (PotionEffect pe : potionEffects) {
+            if (pe.getType() == PotionEffectType.INCREASE_DAMAGE) strength = 1+1.3*(pe.getAmplifier()+1);
+            if (pe.getType() == PotionEffectType.WEAKNESS) weak = 0.5*(pe.getAmplifier()+1);
+        }
+        damage = damage * strength - weak;
         if (e.getEntity() instanceof LivingEntity) {
             rItem.hit(player, (LivingEntity) e.getEntity(), e.getDamage());
         }

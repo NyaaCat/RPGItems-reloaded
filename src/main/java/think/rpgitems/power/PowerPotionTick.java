@@ -22,13 +22,13 @@ public class PowerPotionTick extends Power implements PowerTick {
             for (PotionEffect potionEffect : player.getActivePotionEffects()) {
                 if (potionEffect.getType().equals(effect)) {
                     hasEffect = true;
-                    if (potionEffect.getDuration() <= 10)
-                        player.addPotionEffect(new PotionEffect(effect, 30, amplifier, true), true);
+                    if (potionEffect.getDuration() <= 5 || potionEffect.getAmplifier() < amplifier)
+                        player.addPotionEffect(new PotionEffect(effect, 60, amplifier, true), true);
                     break;
                 }
             }
             if (!hasEffect) {
-                player.addPotionEffect(new PotionEffect(effect, 30, amplifier, true), true);
+                player.addPotionEffect(new PotionEffect(effect, 60, amplifier, true), true);
             }
         }
 
