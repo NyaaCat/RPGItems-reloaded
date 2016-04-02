@@ -1,7 +1,7 @@
 apply plugin: 'java'
 
 repositories {
-    mavenCentral()
+    jcenter()
 
     maven {
         name 'Spigot'
@@ -20,6 +20,6 @@ repositories {
 }
 
 dependencies {
-    compile 'org.bukkit:bukkit:1.9-SNAPSHOT'
+    compile 'org.spigotmc:spigot-api:1.9.2-R0.1-SNAPSHOT'
     compile 'com.sk89q:worldguard:6.1'
 }
