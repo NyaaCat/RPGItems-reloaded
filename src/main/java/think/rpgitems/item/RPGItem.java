@@ -412,6 +412,9 @@ public class RPGItem {
         List<String> lore = meta.getLore();
         rItem.addExtra(rpgMeta, item, lore);
         lore.set(0, meta.getLore().get(0) + rpgMeta.toMCString());
+        // Patch for mcMMO buff. See SkillUtils.java#removeAbilityBuff in mcMMO
+        if (item.hasItemMeta() && item.getItemMeta().hasLore() && item.getItemMeta().getLore().contains("mcMMO Ability Tool"))
+            lore.add("mcMMO Ability Tool");
         meta.setLore(lore);
         Map<Enchantment, Integer> enchs = item.getEnchantments();
         if(enchs.size() > 0)
