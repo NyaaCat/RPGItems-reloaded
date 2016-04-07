@@ -208,6 +208,7 @@ message.worldguard.enable=Worldguard support enabled
 message.worldguard.error=No Worldguard plugin found
 message.worldguard.override.active=Worldguard override active
 message.worldguard.override.disabled=Worldguard override disabled
+message.deprecation.lore=[NOTICE] "lore" is a deprecated feature. Please try "description" instead.
 power.aoe.selfapplication.true=including yourself
 power.aoe.selfapplication.false=excluding yourself
 power.aoe=Applies %s level %d for %d ticks to everything %s within %d blocks. (%.1fs cooldown)

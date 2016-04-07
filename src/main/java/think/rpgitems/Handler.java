@@ -266,6 +266,7 @@ public class Handler implements CommandHandler {
     @CommandDocumentation("$command.rpgitem.lore")
     @CommandGroup("item_lore")
     public void getItemLore(CommandSender sender, RPGItem item) {
+        sender.sendMessage(ChatColor.RED + Locale.get("message.deprecation.lore"));
         sender.sendMessage(ChatColor.AQUA + String.format(Locale.get("message.lore.get"), item.getName(), item.getLore()));
     }
 
@@ -273,6 +274,7 @@ public class Handler implements CommandHandler {
     @CommandDocumentation("$command.rpgitem.lore.set")
     @CommandGroup("item_lore")
     public void setItemLore(CommandSender sender, RPGItem item, String lore) {
+        sender.sendMessage(ChatColor.RED + Locale.get("message.deprecation.lore"));
         item.setLore(lore);
         sender.sendMessage(ChatColor.AQUA + String.format(Locale.get("message.lore.set"), item.getName(), item.getLore()));
         ItemManager.save(Plugin.plugin);
