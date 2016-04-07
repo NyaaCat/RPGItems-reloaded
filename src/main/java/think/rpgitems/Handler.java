@@ -24,7 +24,6 @@ import think.rpgitems.support.WorldGuard;
 
 import java.util.ArrayList;
 import java.util.HashSet;
-import java.util.List;
 import java.util.Set;
 
 public class Handler implements CommandHandler {
@@ -569,15 +568,24 @@ public class Handler implements CommandHandler {
         sender.sendMessage(Locale.get("message.permission.success"));
     }
 
-    @CommandString("rpgitem $n[] switchpowertext $bool:s[]")
-    @CommandDocumentation("$command.rpgitem.switchpowertext")
-    @CommandGroup("item_switchpowertext")
-    public void switchDescriptionText(CommandSender sender, RPGItem item, String arg) {
-        boolean needshow = Boolean.parseBoolean(arg);
-        item.showPowerText = needshow;
+    @CommandString("rpgitem $n[] togglePowerLore")
+    @CommandDocumentation("$command.rpgitem.togglePowerLore")
+    @CommandGroup("item_togglePowerLore")
+    public void togglePowerLore(CommandSender sender, RPGItem item) {
+        item.showPowerLore = !item.showPowerLore;
         item.rebuild();
         ItemManager.save(Plugin.plugin);
-        sender.sendMessage(Locale.get("message.powertext."+(needshow?"on":"off")));
+        sender.sendMessage(Locale.get("message.toggleLore."+(item.showPowerLore?"show":"hide")));
+    }
+
+    @CommandString("rpgitem $n[] toggleArmorLore")
+    @CommandDocumentation("$command.rpgitem.toggleArmorLore")
+    @CommandGroup("item_toggleArmorLore")
+    public void toggleArmorLore(CommandSender sender, RPGItem item) {
+        item.showArmourLore = !item.showArmourLore;
+        item.rebuild();
+        ItemManager.save(Plugin.plugin);
+        sender.sendMessage(Locale.get("message.toggleLore."+(item.showArmourLore?"show":"hide")));
     }
 
     @CommandString("rpgitem version")
