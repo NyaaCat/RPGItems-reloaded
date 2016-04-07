@@ -460,7 +460,12 @@ public class RPGItem {
         // add powerLores
         if (showPowerLore) {
             for (Power p : powers) {
-                String txt = p.displayText();
+                String txt;
+                try {
+                    txt = p.displayText();
+                } catch (IllegalFormatConversionException ex) {
+                    txt = "Power " + p.getName() + ": bad description";
+                }
                 if (txt != null && txt.length() > 0) {
                     output.add(txt);
                 }
