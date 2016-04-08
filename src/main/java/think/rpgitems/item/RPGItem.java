@@ -200,6 +200,7 @@ public class RPGItem {
             maxDurability = -1;
         }
         showPowerLore = s.getBoolean("showPowerText", true);
+        showArmourLore = s.getBoolean("showArmourLore", true);
         rebuild();
     }
 
@@ -255,6 +256,7 @@ public class RPGItem {
         s.set("maxDurability", maxDurability);
         s.set("forceBar", forceBar);
         s.set("showPowerText", showPowerLore);
+        s.set("showArmourLore", showArmourLore);
     }
 
     public void resetRecipe(boolean removeOld) {
