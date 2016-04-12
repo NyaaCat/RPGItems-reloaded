@@ -29,6 +29,7 @@ import org.bukkit.event.hanging.HangingBreakEvent.RemoveCause;
 import org.bukkit.event.inventory.*;
 import org.bukkit.event.player.*;
 import org.bukkit.inventory.*;
+import org.bukkit.metadata.FixedMetadataValue;
 import org.bukkit.potion.PotionEffect;
 import org.bukkit.potion.PotionEffectType;
 import org.bukkit.projectiles.ProjectileSource;
@@ -138,6 +139,11 @@ public class Events implements Listener {
                 return;
             item.projectileHit((Player) ((Projectile) entity).getShooter(), (Projectile) entity);
         }
+    }
+    
+    @EventHandler
+    public void onBowShoot(EntityShootBowEvent e) {
+        e.getProjectile().setMetadata("rpgitems.force", new FixedMetadataValue(Plugin.plugin, e.getForce()));
     }
 
     @EventHandler
@@ -381,6 +387,12 @@ public class Events implements Listener {
             if (rItem == null)
                 return damage;
             damage = rItem.getDamageMin() != rItem.getDamageMax() ? (rItem.getDamageMin() + random.nextInt(rItem.getDamageMax() - rItem.getDamageMin())) : rItem.getDamageMin();
+            
+            //Apply force adjustments
+            if(e.getDamager().hasMetadata("rpgitems.force")) {
+                damage *= e.getDamager().getMetadata("rpgitems.force").get(0).asFloat();
+            }
+            
             if (e.getEntity() instanceof LivingEntity) {
                 LivingEntity le = (LivingEntity) e.getEntity();
                 rItem.hit((Player) entity.getShooter(), le, e.getDamage());
