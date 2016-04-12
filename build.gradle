@@ -23,3 +23,5 @@ dependencies {
     compile 'org.spigotmc:spigot-api:1.8.8-R0.1-SNAPSHOT'
     compile 'com.sk89q:worldguard:6.1'
 }
+
+// CI fail counter: 1
