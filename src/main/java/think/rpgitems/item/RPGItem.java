@@ -545,9 +545,6 @@ public class RPGItem {
             if (word.length() > 0)
                 words.add(word);
         }
-        for (int i = 1; i < words.size(); i++) {
-            words.set(i, getLastFormat(words.get(i-1)) + words.get(i));
-        }
 
         for (String str : words) {
             int len = getStringWidth(ChatColor.stripColor(str));
@@ -568,6 +565,9 @@ public class RPGItem {
                 currlen = word_len;
                 ans.add(tmp); idx++;
             }
+        }
+        for (int i = 1; i < ans.size(); i++) {
+            ans.set(i, getLastFormat(ans.get(i-1)) + ans.get(i));
         }
         return ans;
     }
