@@ -481,8 +481,8 @@ public class RPGItem {
         // compute loreMinLen
         int loreIndex = output.size();
         if (loreText.length() > 0) {
-            wrapLines(String.format("%s\"%s\"",
-                    ChatColor.YELLOW,
+            wrapLines(String.format("%s%s\"%s\"",
+                    ChatColor.YELLOW, ChatColor.ITALIC,
                     ChatColor.translateAlternateColorCodes('&', loreText)),0);
         } else {
             _loreMinLen = 0;
@@ -521,7 +521,7 @@ public class RPGItem {
         tooltipWidth = width = Math.max(width, Math.max(_loreMinLen, armorMinLen));
 
         if (loreText.length() > 0) {
-            for (String str : wrapLines(String.format("%s\"%s\"", ChatColor.YELLOW,
+            for (String str : wrapLines(String.format("%s%s\"%s\"", ChatColor.YELLOW, ChatColor.ITALIC,
                     ChatColor.translateAlternateColorCodes('&', loreText)), tooltipWidth)) {
                 output.add(loreIndex++, str);
             }
@@ -545,6 +545,7 @@ public class RPGItem {
             if (word.length() > 0)
                 words.add(word);
         }
+        if (words.size() <= 0) return Collections.emptyList();
 
         for (String str : words) {
             int len = getStringWidth(ChatColor.stripColor(str));
@@ -553,8 +554,8 @@ public class RPGItem {
         }
 
         List<String> ans = new ArrayList<>();
-        int idx = 0, currlen = 0;
-        ans.add("");
+        int idx = 0, currlen = getStringWidth(ChatColor.stripColor(words.get(0)));
+        ans.add(words.remove(0));
         while (words.size() > 0) {
             String tmp = words.remove(0);
             int word_len = getStringWidth(ChatColor.stripColor(tmp));
@@ -582,7 +583,7 @@ public class RPGItem {
                 char c = str.charAt(index + 1);
                 ChatColor style = getByChar(c);
                 if (style == null) continue;
-                if (style.isColor()) return (format == null? "": format) + style.toString();
+                if (style.isColor()) return style.toString() + (format == null? "": format);
                 if (style.isFormat() && format == null) format = style.toString();
             }
         }
