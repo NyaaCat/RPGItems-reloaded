@@ -78,6 +78,7 @@ public class Plugin extends JavaPlugin {
         Power.powers.put("pumpkin", PowerPumpkin.class);
         Power.powers.put("particle", PowerParticle.class);
         Power.powers.put("particletick", PowerParticleTick.class);
+        Power.powers.put("delayedcommand", PowerDelayedCommand.class);
     }
 
     @Override

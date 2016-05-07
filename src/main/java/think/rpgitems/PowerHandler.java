@@ -206,6 +206,27 @@ public class PowerHandler implements CommandHandler {
         sender.sendMessage(ChatColor.AQUA + Locale.get("message.power.ok"));
     }
 
+    @CommandString("rpgitem $n[] power delayedcommand $delay:i[] $cooldown:i[] $o[left,right] $display:s[] $command:s[] $permission:s[]")
+    @CommandDocumentation("$command.rpgitem.delayedcommand.full")
+    @CommandGroup("item_power_delayedcommand")
+    public void delayedCommand(CommandSender sender, RPGItem item, int delay, int cooldown, String mouse, String displayText, String command, String permission) {
+        PowerDelayedCommand com = new PowerDelayedCommand();
+        com.cooldownTime = cooldown;
+        command = command.trim();
+        if (command.charAt(0) == '/') {
+            command = command.substring(1);
+        }
+        com.isRight = mouse.equals("right");
+        com.display = displayText;
+        com.command = command;
+        com.permission = permission;
+        com.item = item;
+        com.delay = delay;
+        item.addPower(com);
+        ItemManager.save(Plugin.plugin);
+        sender.sendMessage(ChatColor.AQUA + Locale.get("message.power.ok"));
+    }
+
     @CommandString("rpgitem $n[] power consume")
     @CommandDocumentation("$command.rpgitem.consume")
     @CommandGroup("item_power_consume")

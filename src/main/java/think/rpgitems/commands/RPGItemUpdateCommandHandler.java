@@ -210,4 +210,16 @@ public class RPGItemUpdateCommandHandler implements CommandExecutor {
         }
         p.sendMessage(">>> Downgrade Finish <<<");
     }
+
+    public static boolean isOldRPGItem(ItemStack item) {
+        if (item == null) return false;
+        if (!item.hasItemMeta()) return false;
+        String name = item.getItemMeta().getDisplayName();
+        try {
+            ItemManager.decodeId(name);
+            return true;
+        } catch (Exception ex) {
+            return false;
+        }
+    }
 }

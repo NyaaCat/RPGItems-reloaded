@@ -1,5 +1,8 @@
 apply plugin: 'java'
 
+sourceCompatibility = 1.7
+targetCompatibility = 1.7
+
 repositories {
     mavenCentral()
 
@@ -23,3 +26,5 @@ dependencies {
     compile 'org.bukkit:bukkit:1.7.2-R0.3'
     compile 'com.sk89q:worldguard:5.9'
 }
+
+// CI fail counter: 1

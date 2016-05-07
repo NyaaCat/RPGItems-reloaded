@@ -16,3 +16,5 @@ commands:
 permissions:
     rpgitemupdate.command:
         default: op
+    rpgitemupdate.enchantolditems:
+        default: op

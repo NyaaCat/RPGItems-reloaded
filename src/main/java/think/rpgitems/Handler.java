@@ -5,12 +5,14 @@ import org.bukkit.ChatColor;
 import org.bukkit.Color;
 import org.bukkit.Material;
 import org.bukkit.command.CommandSender;
+import org.bukkit.entity.Entity;
 import org.bukkit.entity.EntityType;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.Inventory;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.ItemMeta;
 import org.bukkit.inventory.meta.LeatherArmorMeta;
+import org.bukkit.scheduler.BukkitRunnable;
 import think.rpgitems.commands.CommandDocumentation;
 import think.rpgitems.commands.CommandGroup;
 import think.rpgitems.commands.CommandHandler;
@@ -24,7 +26,6 @@ import think.rpgitems.support.WorldGuard;
 
 import java.util.ArrayList;
 import java.util.HashSet;
-import java.util.List;
 import java.util.Set;
 
 public class Handler implements CommandHandler {
@@ -267,6 +268,7 @@ public class Handler implements CommandHandler {
     @CommandDocumentation("$command.rpgitem.lore")
     @CommandGroup("item_lore")
     public void getItemLore(CommandSender sender, RPGItem item) {
+        sender.sendMessage(ChatColor.RED + Locale.get("message.deprecation.lore"));
         sender.sendMessage(ChatColor.AQUA + String.format(Locale.get("message.lore.get"), item.getName(), item.getLore()));
     }
 
@@ -274,6 +276,7 @@ public class Handler implements CommandHandler {
     @CommandDocumentation("$command.rpgitem.lore.set")
     @CommandGroup("item_lore")
     public void setItemLore(CommandSender sender, RPGItem item, String lore) {
+        sender.sendMessage(ChatColor.RED + Locale.get("message.deprecation.lore"));
         item.setLore(lore);
         sender.sendMessage(ChatColor.AQUA + String.format(Locale.get("message.lore.set"), item.getName(), item.getLore()));
         ItemManager.save(Plugin.plugin);
@@ -401,7 +404,7 @@ public class Handler implements CommandHandler {
     @CommandGroup("item_description")
     public void itemSetDescription(CommandSender sender, RPGItem item, int lineNo, String line) {
         if (lineNo < 0 || lineNo >= item.description.size()) {
-            sender.sendMessage(ChatColor.RED + String.format(Locale.get("message.description.out.of.range"), line));
+            sender.sendMessage(ChatColor.RED + String.format(Locale.get("message.description.out.of.range"), lineNo));
             return;
         }
         item.description.set(lineNo, ChatColor.translateAlternateColorCodes('&', ChatColor.WHITE + line));
@@ -569,10 +572,37 @@ public class Handler implements CommandHandler {
         sender.sendMessage(Locale.get("message.permission.success"));
     }
 
+    @CommandString("rpgitem $n[] togglePowerLore")
+    @CommandDocumentation("$command.rpgitem.togglePowerLore")
+    @CommandGroup("item_togglePowerLore")
+    public void togglePowerLore(CommandSender sender, RPGItem item) {
+        item.showPowerLore = !item.showPowerLore;
+        item.rebuild();
+        ItemManager.save(Plugin.plugin);
+        sender.sendMessage(Locale.get("message.toggleLore."+(item.showPowerLore?"show":"hide")));
+    }
+
+    @CommandString("rpgitem $n[] toggleArmorLore")
+    @CommandDocumentation("$command.rpgitem.toggleArmorLore")
+    @CommandGroup("item_toggleArmorLore")
+    public void toggleArmorLore(CommandSender sender, RPGItem item) {
+        item.showArmourLore = !item.showArmourLore;
+        item.rebuild();
+        ItemManager.save(Plugin.plugin);
+        sender.sendMessage(Locale.get("message.toggleLore."+(item.showArmourLore?"show":"hide")));
+    }
+
     @CommandString("rpgitem version")
     @CommandDocumentation("$command.rpgitem.version")
     @CommandGroup("version")
     public void printVersion(CommandSender sender) {
         sender.sendMessage(String.format(Locale.get("message.version").replace("\\n","\n"), Plugin.plugin.getDescription().getVersion()));
+    }
+
+    @CommandString("rpgitem debug")
+    @CommandDocumentation("$command.rpgitem.debug")
+    @CommandGroup("debug")
+    public void debug(CommandSender sender) {
+        sender.sendMessage("Not available in releases");
     }
 }
