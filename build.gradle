@@ -25,6 +25,7 @@ repositories {
 dependencies {
     compile 'org.bukkit:bukkit:1.7.2-R0.3'
     compile 'com.sk89q:worldguard:5.9'
+    compile 'com.sk89q:worldedit:5.6'
 }
 
 // CI fail counter: 1

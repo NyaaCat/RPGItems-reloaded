@@ -17,11 +17,9 @@
 package think.rpgitems.support;
 
 import com.sk89q.worldguard.bukkit.BukkitUtil;
-import com.sk89q.worldguard.bukkit.RegionContainer;
 import com.sk89q.worldguard.bukkit.WorldGuardPlugin;
 import com.sk89q.worldguard.protection.ApplicableRegionSet;
 import com.sk89q.worldguard.protection.flags.DefaultFlag;
-import com.sk89q.worldguard.protection.flags.StateFlag.State;
 import com.sk89q.worldguard.protection.managers.RegionManager;
 import com.sk89q.worldguard.protection.regions.ProtectedRegion;
 import org.bukkit.Location;
@@ -95,15 +93,12 @@ public class WorldGuard {
             return true;
         }
         String worldName = loc.getWorld().getName();
-        RegionContainer container = wgPlugin.getRegionContainer();
-        RegionManager regions = container.get(loc.getWorld());
+        RegionManager regions = wgPlugin.getGlobalRegionManager().get(loc.getWorld());
         ApplicableRegionSet set = regions.getApplicableRegions(BukkitUtil.toVector(loc));
-        if (!set.isVirtual()) {
-            for (ProtectedRegion region : set) {
-                String regionName = region.getId();
-                if (hasRPGItemFlag(worldName, regionName)) {
-                    return getRPGItemFlag(worldName, regionName);
-                }
+        for (ProtectedRegion region : set) {
+            String regionName = region.getId();
+            if (hasRPGItemFlag(worldName, regionName)) {
+                return getRPGItemFlag(worldName, regionName);
             }
         }
         if (hasRPGItemFlag(worldName, "__global__")) {
