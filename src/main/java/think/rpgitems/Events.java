@@ -36,6 +36,7 @@ import org.bukkit.projectiles.ProjectileSource;
 import org.bukkit.scheduler.BukkitRunnable;
 
 import gnu.trove.map.hash.*;
+import think.rpgitems.commands.RPGItemUpdateCommandHandler;
 import think.rpgitems.data.Locale;
 import think.rpgitems.data.RPGMetadata;
 import think.rpgitems.item.*;
@@ -53,6 +54,10 @@ public class Events implements Listener {
     public void onItemEnchant(EnchantItemEvent e) {
         if (ItemManager.toRPGItem(e.getItem()) != null)
               e.setCancelled(true);
+        if (!e.getEnchanter().hasPermission("rpgitemupdate.enchantolditems") &&
+                RPGItemUpdateCommandHandler.isOldRPGItem(e.getItem())) {
+            e.setCancelled(true);
+        }
     }
 
     @EventHandler
