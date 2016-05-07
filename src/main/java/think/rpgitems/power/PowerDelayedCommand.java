@@ -31,7 +31,7 @@ public class PowerDelayedCommand extends PowerCommand {
     }
 
     @Override
-    public void rightClick(Player player, Block clicked) {
+    public void rightClick(final Player player, Block clicked) {
         if (item.getHasPermission() && !player.hasPermission(item.getPermission())) return;
         if (!isRight || !updateCooldown(player)) return;
         (new BukkitRunnable() {
@@ -43,7 +43,7 @@ public class PowerDelayedCommand extends PowerCommand {
     }
 
     @Override
-    public void leftClick(Player player, Block clicked) {
+    public void leftClick(final Player player, Block clicked) {
         if (item.getHasPermission() && !player.hasPermission(item.getPermission())) return;
         if (isRight || !updateCooldown(player)) return;
         (new BukkitRunnable() {
