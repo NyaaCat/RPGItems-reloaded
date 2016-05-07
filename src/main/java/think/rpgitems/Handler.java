@@ -5,12 +5,14 @@ import org.bukkit.ChatColor;
 import org.bukkit.Color;
 import org.bukkit.Material;
 import org.bukkit.command.CommandSender;
+import org.bukkit.entity.Entity;
 import org.bukkit.entity.EntityType;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.Inventory;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.ItemMeta;
 import org.bukkit.inventory.meta.LeatherArmorMeta;
+import org.bukkit.scheduler.BukkitRunnable;
 import think.rpgitems.commands.CommandDocumentation;
 import think.rpgitems.commands.CommandGroup;
 import think.rpgitems.commands.CommandHandler;
@@ -595,5 +597,12 @@ public class Handler implements CommandHandler {
     @CommandGroup("version")
     public void printVersion(CommandSender sender) {
         sender.sendMessage(String.format(Locale.get("message.version").replace("\\n","\n"), Plugin.plugin.getDescription().getVersion()));
+    }
+
+    @CommandString("rpgitem debug")
+    @CommandDocumentation("$command.rpgitem.debug")
+    @CommandGroup("debug")
+    public void debug(CommandSender sender) {
+        sender.sendMessage("Not available in releases");
     }
 }
