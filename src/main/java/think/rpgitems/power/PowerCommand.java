@@ -16,8 +16,10 @@
  */
 package think.rpgitems.power;
 
+import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
 import org.bukkit.block.Block;
+import org.bukkit.command.defaults.BukkitCommand;
 import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.entity.Player;
 import org.bukkit.permissions.PermissionAttachment;
@@ -36,77 +38,57 @@ public class PowerCommand extends Power implements PowerRightClick, PowerLeftCli
     public boolean isRight = true;
     public long cooldownTime = 20;
 
-    @Override
-    public void rightClick(Player player, Block clicked) {
-        if (item.getHasPermission() == true && player.hasPermission(item.getPermission()) == false) {
+    protected boolean updateCooldown(Player player) {
+        long cooldown;
+        RPGValue value = RPGValue.get(player, item, "command." + command + ".cooldown");
+        if (value == null) {
+            cooldown = System.currentTimeMillis() / 50;
+            value = new RPGValue(player, item, "command." + command + ".cooldown", cooldown);
         } else {
-            if (isRight) {
-                long cooldown;
-                RPGValue value = RPGValue.get(player, item, "command." + command + ".cooldown");
-                if (value == null) {
-                    cooldown = System.currentTimeMillis() / 50;
-                    value = new RPGValue(player, item, "command." + command + ".cooldown", cooldown);
-                } else {
-                    cooldown = value.asLong();
-                }
-                if (cooldown <= System.currentTimeMillis() / 50) {
-                    value.set(System.currentTimeMillis() / 50 + cooldownTime);
-                    if (permission.length() != 0 && !permission.equals("*")) {
-                        PermissionAttachment attachment = player.addAttachment(Plugin.plugin, 1);
-                        String[] perms = permission.split("\\.");
-                        StringBuilder p = new StringBuilder();
-                        for (int i = 0; i < perms.length; i++) {
-                            p.append(perms[i]);
-                            attachment.setPermission(p.toString(), true);
-                            p.append('.');
-                        }
-                    }
-                    boolean wasOp = player.isOp();
-                    if (permission.equals("*"))
-                        player.setOp(true);
-                    player.chat("/" + command.replaceAll("\\{player\\}", player.getName()));
-                    if (permission.equals("*"))
-                        player.setOp(wasOp);
-                } else {
-                    player.sendMessage(ChatColor.AQUA + String.format(Locale.get("message.cooldown"), ((double) (cooldown - System.currentTimeMillis() / 50)) / 20d));
-                }
+            cooldown = value.asLong();
+        }
+        if (cooldown <= System.currentTimeMillis() / 50) {
+            value.set(System.currentTimeMillis() / 50 + cooldownTime);
+            return true;
+        } else {
+            player.sendMessage(ChatColor.AQUA + String.format(Locale.get("message.cooldown"), ((double) (cooldown - System.currentTimeMillis() / 50)) / 20d));
+            return false;
+        }
+    }
+
+    protected void executeCommand(Player player) {
+        if (!player.isOnline()) return;
+
+        if (permission.length() != 0 && !permission.equals("*")) {
+            PermissionAttachment attachment = player.addAttachment(Plugin.plugin, 1);
+            String[] perms = permission.split("\\.");
+            StringBuilder p = new StringBuilder();
+            for (int i = 0; i < perms.length; i++) {
+                p.append(perms[i]);
+                attachment.setPermission(p.toString(), true);
+                p.append('.');
             }
         }
+        boolean wasOp = player.isOp();
+        if (permission.equals("*"))
+            player.setOp(true);
+        player.chat("/" + command.replaceAll("\\{player\\}", player.getName()));
+        if (permission.equals("*"))
+            player.setOp(wasOp);
+    }
+
+    @Override
+    public void rightClick(Player player, Block clicked) {
+        if (item.getHasPermission() && !player.hasPermission(item.getPermission())) return;
+        if (!isRight || !updateCooldown(player)) return;
+        executeCommand(player);
     }
 
     @Override
     public void leftClick(Player player, Block clicked) {
-        if (!isRight) {
-            long cooldown;
-            RPGValue value = RPGValue.get(player, item, "command." + command + ".cooldown");
-            if (value == null) {
-                cooldown = System.currentTimeMillis() / 50;
-                value = new RPGValue(player, item, "command." + command + ".cooldown", cooldown);
-            } else {
-                cooldown = value.asLong();
-            }
-            if (cooldown <= System.currentTimeMillis() / 50) {
-                value.set(System.currentTimeMillis() / 50 + cooldownTime);
-                if (permission.length() != 0 && !permission.equals("*")) {
-                    PermissionAttachment attachment = player.addAttachment(Plugin.plugin, 1);
-                    String[] perms = permission.split("\\.");
-                    StringBuilder p = new StringBuilder();
-                    for (int i = 0; i < perms.length; i++) {
-                        p.append(perms[i]);
-                        attachment.setPermission(p.toString(), true);
-                        p.append('.');
-                    }
-                }
-                boolean wasOp = player.isOp();
-                if (permission.equals("*"))
-                    player.setOp(true);
-                player.chat("/" + command.replaceAll("\\{player\\}", player.getName()));
-                if (permission.equals("*"))
-                    player.setOp(wasOp);
-            } else {
-                player.sendMessage(ChatColor.AQUA + String.format(Locale.get("message.cooldown"), ((double) (cooldown - System.currentTimeMillis() / 50)) / 20d));
-            }
-        }
+        if (item.getHasPermission() && !player.hasPermission(item.getPermission())) return;
+        if (isRight || !updateCooldown(player)) return;
+        executeCommand(player);
     }
 
     @Override

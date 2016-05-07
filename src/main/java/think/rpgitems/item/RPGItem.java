@@ -48,6 +48,10 @@ import think.rpgitems.power.types.*;
 import java.util.*;
 import java.util.Map.Entry;
 
+import static org.bukkit.ChatColor.COLOR_CHAR;
+import static org.bukkit.ChatColor.RESET;
+import static org.bukkit.ChatColor.getByChar;
+
 public class RPGItem {
     private ItemStack item;
 
@@ -68,6 +72,9 @@ public class RPGItem {
     private String hand = Plugin.plugin.getConfig().getString("defaults.hand", "One handed");
     public boolean ignoreWorldGuard = false;
     public List<String> description = new ArrayList<String>();
+
+    public boolean showPowerLore = true;
+    public boolean showArmourLore = true;
 
     // Powers
     public ArrayList<Power> powers = new ArrayList<Power>();
@@ -196,7 +203,8 @@ public class RPGItem {
         if (maxDurability == 0) {
             maxDurability = -1;
         }
-
+        showPowerLore = s.getBoolean("showPowerText", true);
+        showArmourLore = s.getBoolean("showArmourLore", true);
         rebuild();
     }
 
@@ -205,17 +213,17 @@ public class RPGItem {
         s.set("id", id);
         s.set("haspermission", haspermission);
         s.set("permission", permission);
-        s.set("display", displayName.replaceAll("" + ChatColor.COLOR_CHAR, "&"));
+        s.set("display", displayName.replaceAll("" + COLOR_CHAR, "&"));
         s.set("quality", quality.toString());
         s.set("damageMin", damageMin);
         s.set("damageMax", damageMax);
         s.set("armour", armour);
-        s.set("type", type.replaceAll("" + ChatColor.COLOR_CHAR, "&"));
-        s.set("hand", hand.replaceAll("" + ChatColor.COLOR_CHAR, "&"));
-        s.set("lore", loreText.replaceAll("" + ChatColor.COLOR_CHAR, "&"));
+        s.set("type", type.replaceAll("" + COLOR_CHAR, "&"));
+        s.set("hand", hand.replaceAll("" + COLOR_CHAR, "&"));
+        s.set("lore", loreText.replaceAll("" + COLOR_CHAR, "&"));
         ArrayList<String> descriptionConv = new ArrayList<String>(description);
         for (int i = 0; i < descriptionConv.size(); i++) {
-            descriptionConv.set(i, descriptionConv.get(i).replaceAll("" + ChatColor.COLOR_CHAR, "&"));
+            descriptionConv.set(i, descriptionConv.get(i).replaceAll("" + COLOR_CHAR, "&"));
         }
         s.set("description", descriptionConv);
         s.set("item", item.getType().toString());
@@ -251,6 +259,8 @@ public class RPGItem {
 
         s.set("maxDurability", maxDurability);
         s.set("forceBar", forceBar);
+        s.set("showPowerText", showPowerLore);
+        s.set("showArmourLore", showArmourLore);
     }
 
     public void resetRecipe(boolean removeOld) {
@@ -344,7 +354,7 @@ public class RPGItem {
         if (lines.size() > 0) {
             lines.set(0, getMCEncodedID() + lines.get(0));
         } else {
-            lines.set(0, getMCEncodedID());
+            lines.add(0, getMCEncodedID());
         }
         meta.setLore(lines);
         meta.spigot().setUnbreakable(false);
@@ -409,6 +419,9 @@ public class RPGItem {
         List<String> lore = meta.getLore();
         rItem.addExtra(rpgMeta, item, lore);
         lore.set(0, meta.getLore().get(0) + rpgMeta.toMCString());
+        // Patch for mcMMO buff. See SkillUtils.java#removeAbilityBuff in mcMMO
+        if (item.hasItemMeta() && item.getItemMeta().hasLore() && item.getItemMeta().getLore().contains("mcMMO Ability Tool"))
+            lore.add("mcMMO Ability Tool");
         meta.setLore(lore);
         Map<Enchantment, Integer> enchs = item.getEnchantments();
         if(enchs.size() > 0)
@@ -448,105 +461,134 @@ public class RPGItem {
 
     public List<String> getTooltipLines() {
         ArrayList<String> output = new ArrayList<String>();
-        int width = 150;
         output.add(encodedID + quality.colour + ChatColor.BOLD + displayName);
-        int dWidth = getStringWidthBold(ChatColor.stripColor(displayName));
-        if (dWidth > width)
-            width = dWidth;
 
-        dWidth = getStringWidth(ChatColor.stripColor(hand + "     " + type));
-        if (dWidth > width)
-            width = dWidth;
-        String damageStr = null;
-        if (damageMin == 0 && damageMax == 0 && armour != 0) {
-            damageStr = armour + "% " + Plugin.plugin.getConfig().getString("defaults.armour", "Armour");
-        } else if (armour == 0 && damageMin == 0 && damageMax == 0) {
-            damageStr = null;
-        } else if (damageMin == damageMax) {
-            damageStr = damageMin + " " + Plugin.plugin.getConfig().getString("defaults.damage", "Damage");
+        // add powerLores
+        if (showPowerLore) {
+            for (Power p : powers) {
+                String txt;
+                try {
+                    txt = p.displayText();
+                } catch (IllegalFormatConversionException ex) {
+                    txt = "Power " + p.getName() + ": bad description";
+                }
+                if (txt != null && txt.length() > 0) {
+                    output.add(txt);
+                }
+            }
+        }
+
+        // compute loreMinLen
+        int loreIndex = output.size();
+        if (loreText.length() > 0) {
+            wrapLines(String.format("%s%s\"%s\"",
+                    ChatColor.YELLOW, ChatColor.ITALIC,
+                    ChatColor.translateAlternateColorCodes('&', loreText)),0);
         } else {
-            damageStr = damageMin + "-" + damageMax + " " + Plugin.plugin.getConfig().getString("defaults.damage", "Damage");
-        }
-        if (damageMin != 0 || damageMax != 0 || armour != 0) {
-            dWidth = getStringWidth(damageStr);
-            if (dWidth > width)
-                width = dWidth;
+            _loreMinLen = 0;
         }
 
-        for (Power p : powers) {
-            dWidth = getStringWidth(ChatColor.stripColor(p.displayText()));
-            if (dWidth > width)
-                width = dWidth;
-        }
-
-        for (String s : description) {
-            dWidth = getStringWidth(ChatColor.stripColor(s));
-            if (dWidth > width)
-                width = dWidth;
-        }
-
-        tooltipWidth = width;
-
-        output.add(ChatColor.WHITE + hand + StringUtils.repeat(" ", (width - getStringWidth(ChatColor.stripColor(hand + type))) / 4) + type);
-        if (damageStr != null) {
-            output.add(ChatColor.WHITE + damageStr);
-        }
-
-        for (Power p : powers) {
-            String txt = p.displayText();
-            if (txt != null && txt.length() > 0) {
-                output.add(txt);
-            }
-        }
-        if (loreText.length() != 0) {
-            int cWidth = 0;
-            int tWidth = 0;
-            StringBuilder out = new StringBuilder();
-            StringBuilder temp = new StringBuilder();
-            out.append(ChatColor.YELLOW);
-            out.append(ChatColor.ITALIC);
-            String currentColour = ChatColor.YELLOW.toString();
-            String dMsg = "\"" + loreText + "\"";
-            for (int i = 0; i < dMsg.length(); i++) {
-                char c = dMsg.charAt(i);
-                temp.append(c);
-                if (c == ChatColor.COLOR_CHAR || c == '&') {
-                    i += 1;
-                    temp.append(dMsg.charAt(i));
-                    currentColour = ChatColor.COLOR_CHAR + "" + dMsg.charAt(i);
-                    continue;
-                }
-                if (c == ' ')
-                    tWidth += 4;
-                else
-                    tWidth += Font.widths[c] + 1;
-                if (c == ' ' || i == dMsg.length() - 1) {
-                    if (cWidth + tWidth > width) {
-                        cWidth = 0;
-                        cWidth += tWidth;
-                        tWidth = 0;
-                        output.add(out.toString());
-                        out = new StringBuilder();
-                        out.append(currentColour);
-                        out.append(ChatColor.ITALIC);
-                        out.append(temp);
-                        temp = new StringBuilder();
-                    } else {
-                        out.append(temp);
-                        temp = new StringBuilder();
-                        cWidth += tWidth;
-                        tWidth = 0;
-                    }
-                }
-            }
-            out.append(temp);
-            output.add(out.toString());
-        }
-
+        // add descriptions
         for (String s : description) {
             output.add(s);
         }
+
+        // compute width
+        int width = 0;
+        for (String str : output) {
+            width = Math.max(width, getStringWidth(ChatColor.stripColor(str)));
+        }
+
+        // compute armorMinLen
+        int armorMinLen = 0;
+        String damageStr = null;
+        if (showArmourLore) {
+            armorMinLen = getStringWidth(ChatColor.stripColor(hand + "     " + type));
+
+            if (damageMin == 0 && damageMax == 0 && armour != 0) {
+                damageStr = armour + "% " + Plugin.plugin.getConfig().getString("defaults.armour", "Armour");
+            } else if (armour == 0 && damageMin == 0 && damageMax == 0) {
+                damageStr = null;
+            } else if (damageMin == damageMax) {
+                damageStr = damageMin + " " + Plugin.plugin.getConfig().getString("defaults.damage", "Damage");
+            } else {
+                damageStr = damageMin + "-" + damageMax + " " + Plugin.plugin.getConfig().getString("defaults.damage", "Damage");
+            }
+            if (damageStr != null) {
+                armorMinLen = Math.max(armorMinLen, getStringWidth(ChatColor.stripColor(damageStr)));
+            }
+        }
+        tooltipWidth = width = Math.max(width, Math.max(_loreMinLen, armorMinLen));
+
+        if (loreText.length() > 0) {
+            for (String str : wrapLines(String.format("%s%s\"%s\"", ChatColor.YELLOW, ChatColor.ITALIC,
+                    ChatColor.translateAlternateColorCodes('&', loreText)), tooltipWidth)) {
+                output.add(loreIndex++, str);
+            }
+        }
+
+        if (showArmourLore) {
+            if (damageStr != null) {
+                output.add(1, ChatColor.WHITE + damageStr);
+            }
+            output.add(1, ChatColor.WHITE + hand + StringUtils.repeat(" ", (width - getStringWidth(ChatColor.stripColor(hand + type))) / 4) + type);
+        }
+
         return output;
+    }
+
+    private int _loreMinLen = 0;
+
+    private List<String> wrapLines(String txt, int maxwidth) {
+        List<String> words = new ArrayList<>();
+        for (String word : txt.split(" ")) {
+            if (word.length() > 0)
+                words.add(word);
+        }
+        if (words.size() <= 0) return Collections.emptyList();
+
+        for (String str : words) {
+            int len = getStringWidth(ChatColor.stripColor(str));
+            _loreMinLen = len;
+            if (len > maxwidth) maxwidth = len;
+        }
+
+        List<String> ans = new ArrayList<>();
+        int idx = 0, currlen = getStringWidth(ChatColor.stripColor(words.get(0)));
+        ans.add(words.remove(0));
+        while (words.size() > 0) {
+            String tmp = words.remove(0);
+            int word_len = getStringWidth(ChatColor.stripColor(tmp));
+            if (currlen + 4 + word_len <= maxwidth) {
+                currlen += 4 + word_len;
+                ans.set(idx, ans.get(idx) + " " + tmp);
+            } else {
+                currlen = word_len;
+                ans.add(tmp); idx++;
+            }
+        }
+        for (int i = 1; i < ans.size(); i++) {
+            ans.set(i, getLastFormat(ans.get(i-1)) + ans.get(i));
+        }
+        return ans;
+    }
+
+    private String getLastFormat(String str) {
+        String format = null;
+        int length = str.length();
+
+        for (int index = length - 2; index > -1; index--) {
+            char chr = str.charAt(index);
+            if (chr == COLOR_CHAR) {
+                char c = str.charAt(index + 1);
+                ChatColor style = getByChar(c);
+                if (style == null) continue;
+                if (style.isColor()) return style.toString() + (format == null? "": format);
+                if (style.isFormat() && format == null) format = style.toString();
+            }
+        }
+
+        return (format == null? "": format);
     }
 
     @Deprecated
@@ -583,7 +625,7 @@ public class RPGItem {
         String hex = String.format("%08x", id);
         StringBuilder out = new StringBuilder();
         for (char h : hex.toCharArray()) {
-            out.append(ChatColor.COLOR_CHAR);
+            out.append(COLOR_CHAR);
             out.append(h);
         }
         String str = out.toString();
