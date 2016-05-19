@@ -24,8 +24,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.UnsupportedEncodingException;
-import java.util.HashMap;
-import java.util.Map;
+import java.util.*;
 
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
@@ -38,7 +37,6 @@ public class Locale {
 
     private static Locale instance = null;
     private static Plugin plugin;
-    private Map<String, String> languageList = new HashMap<>();
 
     private static HashMap<String, String> localeStrings = new HashMap<>();
     private String usedLocale;
@@ -62,26 +60,28 @@ public class Locale {
 
     private Locale(Plugin plugin) {
         // load configures
-        final InputStream langStream = plugin.getResource("languages.txt");
-        languageList = loadLocaleStream(langStream);
-
         usedLocale = plugin.getConfig().getString("language");
-        if (!plugin.getConfig().contains("language") || !languageList.containsKey(usedLocale)) {
+        if (!plugin.getConfig().contains("language")) {
             plugin.getConfig().set("language", DEFAULT_LANGUAGE);
             plugin.saveConfig();
             usedLocale = DEFAULT_LANGUAGE;
         }
 
         // load files
-        plugin.saveResource("locale/" + DEFAULT_LANGUAGE + ".lang", true);
-        if(plugin.getResource("locale/" + usedLocale + ".lang") != null)
+        if(plugin.getResource("locale/" + usedLocale + ".lang") != null) {
             plugin.saveResource("locale/" + usedLocale + ".lang", false);
+        } else {
+            plugin.getLogger().warning("Language: " + usedLocale + "not found. Resetting to:" + DEFAULT_LANGUAGE);
+            plugin.getConfig().set("language", DEFAULT_LANGUAGE);
+            plugin.saveConfig();
+            usedLocale = DEFAULT_LANGUAGE;
+        }
 
         try {
             File localeFolder = new File(plugin.getDataFolder().getAbsolutePath() + File.separatorChar + "locale");
             localeStrings.clear();
             // use English as fallback
-            localeStrings.putAll(loadLocaleStream(new FileInputStream(new File(localeFolder.getAbsolutePath() + File.separatorChar + DEFAULT_LANGUAGE + ".lang"))));
+            localeStrings.putAll(loadLocaleStream(plugin.getResource("locale/" + DEFAULT_LANGUAGE + ".lang")));
             localeStrings.putAll(loadLocaleStream(new FileInputStream(new File(localeFolder.getAbsolutePath() + File.separatorChar + usedLocale + ".lang"))));
         } catch (FileNotFoundException ex) {
             ex.printStackTrace();
@@ -89,33 +89,19 @@ public class Locale {
         }
     }
 
-    private HashMap<String, String> loadLocaleStream(InputStream in, HashMap<String, String> map) {
+    private Map<String, String> loadLocaleStream(InputStream in) {
+        Map <String, String> map = new HashMap<>();
+        Properties prop = new Properties();
         try {
-            BufferedReader reader = new BufferedReader(new InputStreamReader(in, "UTF-8"));
-            String line;
-            for (line = reader.readLine(); line != null; line = reader.readLine()) {
-                line = line.trim();
-                if (line.startsWith("#") || line.length() == 0) {
-                    continue;
-                }
-                String[] args = line.split("=", 2);
-                if (args.length == 2) {
-                    map.put(args[0].trim(), args[1].trim());
-                } else {
-                    Plugin.logger.warning("Unknown lang line: " + line);
-                }
-            }
-            return map;
-        } catch (UnsupportedEncodingException e) {
-            e.printStackTrace();
-        } catch (IOException e) {
-            e.printStackTrace();
+            prop.load(new InputStreamReader(in, "UTF-8"));
+        } catch (IOException ex) {
+            plugin.getLogger().warning("Failed to load language properties");
+            return Collections.emptyMap();
         }
-        return null;
-    }
-
-    private HashMap<String, String> loadLocaleStream(InputStream in) {
-        return loadLocaleStream(in, new HashMap<String, String>());
+        for (String key : prop.stringPropertyNames()) {
+            map.put(key, prop.getProperty(key));
+        }
+        return map;
     }
 
     public static String getServerLocale() {
