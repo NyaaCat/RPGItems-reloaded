@@ -117,7 +117,7 @@ public class RPGItemUpdateCommandHandler implements CommandExecutor {
             } else {
                 p.sendMessage("Item has no displayName");
             }
-            if (meta.hasLore() || meta.getLore().size() <= 0) {
+            if (meta.hasLore() && meta.getLore().size() > 0) {
                 try {
                     p.sendMessage("Lore ID: " + ItemManager.decodeId(meta.getLore().get(0)));
                 } catch (Exception ex) {

@@ -52,11 +52,12 @@ public class Events implements Listener {
 
     @EventHandler
     public void onItemEnchant(EnchantItemEvent e) {
-        if (ItemManager.toRPGItem(e.getItem()) != null)
-              e.setCancelled(true);
-        if (!e.getEnchanter().hasPermission("rpgitemupdate.enchantolditems") &&
-                RPGItemUpdateCommandHandler.isOldRPGItem(e.getItem())) {
-            e.setCancelled(true);
+        if (ItemManager.toRPGItem(e.getItem()) != null) {
+            if (!e.getEnchanter().hasPermission("rpgitem.allowenchant.new"))
+                e.setCancelled(true);
+        } else if (RPGItemUpdateCommandHandler.isOldRPGItem(e.getItem())) {
+            if (!e.getEnchanter().hasPermission("rpgitem.allowenchant.old"))
+                e.setCancelled(true);
         }
     }
 
@@ -314,6 +315,20 @@ public class Events implements Listener {
             for (LocaleInventory localeInv : localeInventories) {
                 if (localeInv != inv)
                     localeInv.reload();
+            }
+        }
+        if (!e.isCancelled() && e.getClickedInventory() instanceof AnvilInventory) {
+            if (e.getRawSlot() == 2) {
+                HumanEntity p = e.getWhoClicked();
+                ItemStack ind1 = e.getView().getItem(0);
+                ItemStack ind2 = e.getView().getItem(1);
+                if (ItemManager.toRPGItem(ind1) != null || ItemManager.toRPGItem(ind2) != null) {
+                    if (!p.hasPermission("rpgitem.allowenchant.new"))
+                        e.setCancelled(true);
+                } else if (RPGItemUpdateCommandHandler.isOldRPGItem(ind1) || RPGItemUpdateCommandHandler.isOldRPGItem(ind2)) {
+                    if (!p.hasPermission("rpgitem.allowenchant.old"))
+                        e.setCancelled(true);
+                }
             }
         }
     }
