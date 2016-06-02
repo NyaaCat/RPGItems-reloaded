@@ -23,25 +23,24 @@ import org.bukkit.block.Block;
 import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
-
-import org.bukkit.scheduler.BukkitRunnable;
 import think.rpgitems.Plugin;
 import think.rpgitems.data.Locale;
 import think.rpgitems.power.types.PowerRightClick;
 
 public class PowerConsume extends Power implements PowerRightClick {
+    public int cdTicks = 0;
 
     @Override
     public void rightClick(final Player player, Block clicked) {
-        if (item.getHasPermission() == true && player.hasPermission(item.getPermission()) == false) {
-        } else {
-            ItemStack item = player.getInventory().getItemInHand();
+        if (checkCooldown(player, cdTicks)) {
+            if (item.getHasPermission() && !player.hasPermission(item.getPermission())) return;
+            ItemStack item = player.getInventory().getItemInMainHand();
             int count = item.getAmount() - 1;
             if (count == 0) {
                 Bukkit.getScheduler().scheduleSyncDelayedTask(Plugin.plugin, new Runnable() {
                     @Override
                     public void run() {
-                        player.getInventory().setItemInHand(new ItemStack(Material.AIR));
+                        player.getInventory().setItemInMainHand(new ItemStack(Material.AIR));
                     }
                 }, 1L);
             } else {
@@ -52,12 +51,12 @@ public class PowerConsume extends Power implements PowerRightClick {
 
     @Override
     public void init(ConfigurationSection s) {
-
+        cdTicks = s.getInt("cooldown", 0);
     }
 
     @Override
     public void save(ConfigurationSection s) {
-
+        s.set("cooldown", cdTicks);
     }
 
     @Override

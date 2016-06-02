@@ -20,9 +20,13 @@ import gnu.trove.map.hash.TObjectIntHashMap;
 import org.bukkit.Location;
 import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.entity.Entity;
+import org.bukkit.entity.Player;
+import think.rpgitems.data.RPGValue;
 import think.rpgitems.item.RPGItem;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
 
 public abstract class Power {
 
@@ -55,5 +59,22 @@ public abstract class Power {
             }
         }
         return entities.toArray(new Entity[entities.size()]);
+    }
+
+    protected final boolean checkCooldown(Player p, int cdTicks) {
+        long cooldown;
+        RPGValue value = RPGValue.get(p, item, getName() + ".cooldown");
+        if (value == null) {
+            cooldown = System.currentTimeMillis() / 50;
+            value = new RPGValue(p, item, getName() + ".cooldown", cooldown);
+        } else {
+            cooldown = value.asLong();
+        }
+        if (cooldown <= System.currentTimeMillis() / 50) {
+            value.set(System.currentTimeMillis() / 50 + cdTicks);
+            return true;
+        } else {
+            return false;
+        }
     }
 }
