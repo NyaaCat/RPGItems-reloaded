@@ -16,31 +16,43 @@
  */
 package think.rpgitems;
 
-import java.util.*;
-
-import org.bukkit.*;
+import gnu.trove.map.hash.TIntByteHashMap;
+import gnu.trove.map.hash.TIntIntHashMap;
+import gnu.trove.map.hash.TObjectIntHashMap;
+import org.bukkit.Bukkit;
+import org.bukkit.ChatColor;
+import org.bukkit.Material;
 import org.bukkit.entity.*;
-import org.bukkit.event.*;
-import org.bukkit.event.block.*;
+import org.bukkit.event.EventHandler;
+import org.bukkit.event.EventPriority;
+import org.bukkit.event.Listener;
+import org.bukkit.event.block.Action;
+import org.bukkit.event.block.BlockBreakEvent;
+import org.bukkit.event.block.BlockPhysicsEvent;
+import org.bukkit.event.block.BlockPlaceEvent;
 import org.bukkit.event.enchantment.EnchantItemEvent;
 import org.bukkit.event.entity.*;
 import org.bukkit.event.hanging.HangingBreakEvent;
 import org.bukkit.event.hanging.HangingBreakEvent.RemoveCause;
 import org.bukkit.event.inventory.*;
-import org.bukkit.event.player.*;
+import org.bukkit.event.player.PlayerInteractEvent;
+import org.bukkit.event.player.PlayerJoinEvent;
+import org.bukkit.event.player.PlayerPickupItemEvent;
 import org.bukkit.inventory.*;
 import org.bukkit.metadata.FixedMetadataValue;
 import org.bukkit.potion.PotionEffect;
 import org.bukkit.potion.PotionEffectType;
 import org.bukkit.projectiles.ProjectileSource;
 import org.bukkit.scheduler.BukkitRunnable;
-
-import gnu.trove.map.hash.*;
 import think.rpgitems.commands.RPGItemUpdateCommandHandler;
 import think.rpgitems.data.Locale;
 import think.rpgitems.data.RPGMetadata;
-import think.rpgitems.item.*;
+import think.rpgitems.item.ItemManager;
+import think.rpgitems.item.LocaleInventory;
+import think.rpgitems.item.RPGItem;
 import think.rpgitems.support.WorldGuard;
+
+import java.util.*;
 
 public class Events implements Listener {
 
@@ -202,6 +214,7 @@ public class Events implements Listener {
     public void onPlayerAction(PlayerInteractEvent e) {
         Player p = e.getPlayer();
         if (e.getAction() == Action.PHYSICAL) return;
+        if (e.getHand() == EquipmentSlot.OFF_HAND) return;
         RPGItem rItem = ItemManager.toRPGItem(e.getItem());
         if (rItem == null) return;
         Material im = e.getMaterial();
