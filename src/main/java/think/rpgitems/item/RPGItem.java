@@ -42,11 +42,13 @@ import think.rpgitems.data.Font;
 import think.rpgitems.data.Locale;
 import think.rpgitems.data.RPGMetadata;
 import think.rpgitems.power.Power;
+import think.rpgitems.power.PowerLoreFilter;
 import think.rpgitems.power.PowerUnbreakable;
 import think.rpgitems.power.types.*;
 
 import java.util.*;
 import java.util.Map.Entry;
+import java.util.regex.Pattern;
 
 import static org.bukkit.ChatColor.COLOR_CHAR;
 import static org.bukkit.ChatColor.RESET;
@@ -382,6 +384,7 @@ public class RPGItem {
         resetRecipe(true);
     }
 
+
     public ItemMeta getLocaleMeta() {
         return localeMeta.clone();
     }
@@ -411,6 +414,7 @@ public class RPGItem {
         RPGItem rItem = ItemManager.toRPGItem(item);
         if (rItem == null)
             return;
+        List<String> reservedLores = filterLores(rItem, item);
         item.setType(rItem.item.getType());
         ItemMeta meta = rItem.getLocaleMeta();
         if (!(meta instanceof LeatherArmorMeta) && updateDurability) {
@@ -422,12 +426,34 @@ public class RPGItem {
         // Patch for mcMMO buff. See SkillUtils.java#removeAbilityBuff in mcMMO
         if (item.hasItemMeta() && item.getItemMeta().hasLore() && item.getItemMeta().getLore().contains("mcMMO Ability Tool"))
             lore.add("mcMMO Ability Tool");
+        lore.addAll(reservedLores);
         meta.setLore(lore);
         Map<Enchantment, Integer> enchs = item.getEnchantments();
         if(enchs.size() > 0)
             for(Enchantment ench : enchs.keySet())
                 meta.addEnchant(ench, enchs.get(ench), true);
         item.setItemMeta(meta);
+    }
+
+    private static List<String> filterLores(RPGItem r, ItemStack i) {
+        List<String> ret = new ArrayList<>();
+        List<Pattern> patterns = new ArrayList<>();
+        for (Power p : r.powers) {
+            if (p instanceof PowerLoreFilter && ((PowerLoreFilter) p).regex!=null) {
+                patterns.add(Pattern.compile(((PowerLoreFilter) p).regex));
+            }
+        }
+        if (patterns.size() <= 0) return Collections.emptyList();
+        if (!i.hasItemMeta() || !i.getItemMeta().hasLore()) return Collections.emptyList();
+        for (String str : i.getItemMeta().getLore()) {
+            for (Pattern p: patterns) {
+                if (p.matcher(ChatColor.stripColor(str)).matches()) {
+                    ret.add(str);
+                    break;
+                }
+            }
+        }
+        return ret;
     }
 
     public void addExtra(RPGMetadata rpgMeta, ItemStack item, List<String> lore) {

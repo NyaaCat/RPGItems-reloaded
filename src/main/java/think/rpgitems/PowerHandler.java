@@ -789,4 +789,17 @@ public class PowerHandler implements CommandHandler {
         ItemManager.save(Plugin.plugin);
         sender.sendMessage(ChatColor.AQUA + Locale.get("message.power.ok"));
     }
+
+    @CommandString("rpgitem $n[] power lorefilter $regex:s[] $descriptionline:s[]")
+    @CommandDocumentation("$command.rpgitem.lorefilter")
+    @CommandGroup("item_power_lorefilter")
+    public void lorefilter(CommandSender sender, RPGItem item, String regex, String description) {
+        PowerLoreFilter p = new PowerLoreFilter();
+        p.item = item;
+        p.regex = regex;
+        p.desc = description;
+        item.addPower(p);
+        ItemManager.save(Plugin.plugin);
+        sender.sendMessage(ChatColor.AQUA + Locale.get("message.power.ok"));
+    }
 }
