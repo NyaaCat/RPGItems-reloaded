@@ -129,7 +129,7 @@ public class PowerForceField extends Power implements PowerRightClick {
                         continue;
                     }
                     if (w.getBlockAt(l).getType() == Material.AIR) {
-                        for (Entity e : w.getNearbyEntities(l,2,2,2)) {
+                        for (Entity e : getNearbyEntities(l,3)) {
                             if (e instanceof ItemFrame || e instanceof Painting) {
                                 if (e.getLocation().distance(l)<1.5) continue loop;
                             }

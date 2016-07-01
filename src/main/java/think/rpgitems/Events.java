@@ -16,31 +16,43 @@
  */
 package think.rpgitems;
 
-import java.util.*;
-
-import org.bukkit.*;
+import gnu.trove.map.hash.TIntByteHashMap;
+import gnu.trove.map.hash.TIntIntHashMap;
+import gnu.trove.map.hash.TObjectIntHashMap;
+import org.bukkit.Bukkit;
+import org.bukkit.ChatColor;
+import org.bukkit.Material;
 import org.bukkit.entity.*;
-import org.bukkit.event.*;
-import org.bukkit.event.block.*;
+import org.bukkit.event.EventHandler;
+import org.bukkit.event.EventPriority;
+import org.bukkit.event.Listener;
+import org.bukkit.event.block.Action;
+import org.bukkit.event.block.BlockBreakEvent;
+import org.bukkit.event.block.BlockPhysicsEvent;
+import org.bukkit.event.block.BlockPlaceEvent;
 import org.bukkit.event.enchantment.EnchantItemEvent;
 import org.bukkit.event.entity.*;
 import org.bukkit.event.hanging.HangingBreakEvent;
 import org.bukkit.event.hanging.HangingBreakEvent.RemoveCause;
 import org.bukkit.event.inventory.*;
-import org.bukkit.event.player.*;
+import org.bukkit.event.player.PlayerInteractEvent;
+import org.bukkit.event.player.PlayerJoinEvent;
+import org.bukkit.event.player.PlayerPickupItemEvent;
 import org.bukkit.inventory.*;
 import org.bukkit.metadata.FixedMetadataValue;
 import org.bukkit.potion.PotionEffect;
 import org.bukkit.potion.PotionEffectType;
 import org.bukkit.projectiles.ProjectileSource;
 import org.bukkit.scheduler.BukkitRunnable;
-
-import gnu.trove.map.hash.*;
 import think.rpgitems.commands.RPGItemUpdateCommandHandler;
 import think.rpgitems.data.Locale;
 import think.rpgitems.data.RPGMetadata;
-import think.rpgitems.item.*;
+import think.rpgitems.item.ItemManager;
+import think.rpgitems.item.LocaleInventory;
+import think.rpgitems.item.RPGItem;
 import think.rpgitems.support.WorldGuard;
+
+import java.util.*;
 
 public class Events implements Listener {
 
@@ -182,54 +194,52 @@ public class Events implements Listener {
         }
     }
 
+    private Set<Material> BYPASS_BLOCK = new HashSet<Material>(){{
+        add(Material.ACACIA_DOOR);
+        add(Material.BIRCH_DOOR);
+        add(Material.DARK_OAK_DOOR);
+        add(Material.IRON_DOOR);
+        add(Material.JUNGLE_DOOR);
+        add(Material.SPRUCE_DOOR);
+        add(Material.TRAP_DOOR);
+        add(Material.WOOD_DOOR);
+        add(Material.WOODEN_DOOR);
+        add(Material.CHEST);
+        add(Material.TRAPPED_CHEST);
+        add(Material.CHEST);
+        add(Material.CHEST);
+        add(Material.CHEST);
+    }};
     @EventHandler
     public void onPlayerAction(PlayerInteractEvent e) {
-        Player player = e.getPlayer();
-        if ((e.getAction() == Action.RIGHT_CLICK_AIR || (e.getAction() == Action.RIGHT_CLICK_BLOCK) && !e.isCancelled())) {
-            ItemStack item = player.getItemInHand();
-
-            if (item.getType() == Material.BOW || item.getType() == Material.SNOW_BALL || item.getType() == Material.EGG || item.getType() == Material.POTION)
-                return;
-
-            RPGItem rItem = ItemManager.toRPGItem(item);
-            if (rItem == null)
-                return;
-            if (!WorldGuard.canPvP(player) && !rItem.ignoreWorldGuard)
-                return;
-            if (rItem.getHasPermission() == true && player.hasPermission(rItem.getPermission()) == false) {
-                e.setCancelled(true);
-                player.sendMessage(ChatColor.RED + String.format(Locale.get("message.error.permission")));
-                return;
-            }
-            rItem.rightClick(player, e.getClickedBlock());
-            if (!player.getItemInHand().getType().equals(Material.AIR))
-                RPGItem.updateItem(item);
-            else
-                player.setItemInHand(null);
-            player.updateInventory();
-        } else if (e.getAction() == Action.LEFT_CLICK_AIR || e.getAction() == Action.LEFT_CLICK_BLOCK) {
-            ItemStack item = player.getItemInHand();
-            if (item.getType() == Material.BOW || item.getType() == Material.SNOW_BALL || item.getType() == Material.EGG || item.getType() == Material.POTION)
-                return;
-
-            RPGItem rItem = ItemManager.toRPGItem(item);
-            if (rItem == null)
-                return;
-            if (!WorldGuard.canPvP(player) && !rItem.ignoreWorldGuard)
-                return;
-            if (rItem.getHasPermission() == true && player.hasPermission(rItem.getPermission()) == false) {
-                e.setCancelled(true);
-                player.sendMessage(ChatColor.RED + String.format(Locale.get("message.error.permission")));
-            }
-            rItem.leftClick(player, e.getClickedBlock());
-            RPGItem.updateItem(item);
+        Player p = e.getPlayer();
+        if (e.getAction() == Action.PHYSICAL) return;
+        RPGItem rItem = ItemManager.toRPGItem(e.getItem());
+        if (rItem == null) return;
+        Material im = e.getMaterial();
+        if (im == Material.BOW || im == Material.SNOW_BALL || im == Material.EGG || im == Material.POTION || im == Material.AIR)
+            return;
+        if (!WorldGuard.canPvP(p) && !rItem.ignoreWorldGuard)
+            return;
+        if (rItem.getHasPermission() && !p.hasPermission(rItem.getPermission())) {
+            p.sendMessage(ChatColor.RED + Locale.get("message.error.permission"));
+            return;
         }
 
+        Action action = e.getAction();
+        if (action == Action.RIGHT_CLICK_AIR) {
+            rItem.rightClick(p, e.getClickedBlock());
+        } else if (action == Action.RIGHT_CLICK_BLOCK && !BYPASS_BLOCK.contains(e.getMaterial())) {
+            rItem.rightClick(p, e.getClickedBlock());
+        } else if (action == Action.LEFT_CLICK_AIR || action == Action.LEFT_CLICK_BLOCK) {
+            rItem.leftClick(p, e.getClickedBlock());
+        }
+        RPGItem.updateItem(e.getItem());
     }
 
     @EventHandler
     public void onBlockPlace(BlockPlaceEvent e) {
-        ItemStack item = e.getPlayer().getItemInHand();
+        ItemStack item = e.getItemInHand();
         if (item == null)
             return;
 

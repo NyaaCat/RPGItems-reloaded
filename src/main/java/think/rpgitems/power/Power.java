@@ -20,9 +20,14 @@ import gnu.trove.map.hash.TObjectIntHashMap;
 import org.bukkit.Location;
 import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.entity.Entity;
+import org.bukkit.entity.Player;
+import think.rpgitems.data.RPGValue;
 import think.rpgitems.item.RPGItem;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.List;
 
 public abstract class Power {
 
@@ -44,16 +49,35 @@ public abstract class Power {
     public abstract String displayText();
 
     public static Entity[] getNearbyEntities(Location l, double radius) {
-        List<Entity> entities = new ArrayList<>();
-        for (Entity e : l.getWorld().getNearbyEntities(l, radius, radius, radius)) {
-            try {
-                if (l.distance(e.getLocation()) <= radius) {
-                    entities.add(e);
+        int iRadius = (int) radius;
+        int chunkRadius = iRadius < 16 ? 1 : (iRadius - (iRadius % 16)) / 16;
+        HashSet<Entity> radiusEntities = new HashSet<Entity>();
+        for (int chX = 0 - chunkRadius; chX <= chunkRadius; chX++) {
+            for (int chZ = 0 - chunkRadius; chZ <= chunkRadius; chZ++) {
+                int x = (int) l.getX(), y = (int) l.getY(), z = (int) l.getZ();
+                for (Entity e : new Location(l.getWorld(), x + (chX * 16), y, z + (chZ * 16)).getChunk().getEntities()) {
+                    if (e.getLocation().distance(l) <= radius && e.getLocation().getBlock() != l.getBlock())
+                        radiusEntities.add(e);
                 }
-            } catch(RuntimeException ex) {
-                ex.printStackTrace();
             }
         }
-        return entities.toArray(new Entity[entities.size()]);
+        return radiusEntities.toArray(new Entity[radiusEntities.size()]);
+    }
+
+    protected final boolean checkCooldown(Player p, int cdTicks) {
+        long cooldown;
+        RPGValue value = RPGValue.get(p, item, getName() + ".cooldown");
+        if (value == null) {
+            cooldown = System.currentTimeMillis() / 50;
+            value = new RPGValue(p, item, getName() + ".cooldown", cooldown);
+        } else {
+            cooldown = value.asLong();
+        }
+        if (cooldown <= System.currentTimeMillis() / 50) {
+            value.set(System.currentTimeMillis() / 50 + cdTicks);
+            return true;
+        } else {
+            return false;
+        }
     }
 }
