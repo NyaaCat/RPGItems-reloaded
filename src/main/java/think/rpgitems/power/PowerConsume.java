@@ -23,18 +23,17 @@ import org.bukkit.block.Block;
 import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
-
-import org.bukkit.scheduler.BukkitRunnable;
 import think.rpgitems.Plugin;
 import think.rpgitems.data.Locale;
 import think.rpgitems.power.types.PowerRightClick;
 
 public class PowerConsume extends Power implements PowerRightClick {
+    public int cdTicks = 0;
 
     @Override
     public void rightClick(final Player player, Block clicked) {
-        if (item.getHasPermission() == true && player.hasPermission(item.getPermission()) == false) {
-        } else {
+        if (checkCooldown(player, cdTicks)) {
+            if (item.getHasPermission() && !player.hasPermission(item.getPermission())) return;
             ItemStack item = player.getInventory().getItemInHand();
             int count = item.getAmount() - 1;
             if (count == 0) {
@@ -52,12 +51,12 @@ public class PowerConsume extends Power implements PowerRightClick {
 
     @Override
     public void init(ConfigurationSection s) {
-
+        cdTicks = s.getInt("cooldown", 0);
     }
 
     @Override
     public void save(ConfigurationSection s) {
-
+        s.set("cooldown", cdTicks);
     }
 
     @Override

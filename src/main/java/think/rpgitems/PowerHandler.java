@@ -238,6 +238,18 @@ public class PowerHandler implements CommandHandler {
         sender.sendMessage(ChatColor.AQUA + Locale.get("message.power.ok"));
     }
 
+    @CommandString("rpgitem $n[] power consume $cooldown:i[]")
+    @CommandDocumentation("$command.rpgitem.consume.cd")
+    @CommandGroup("item_power_consume")
+    public void consume(CommandSender sender, RPGItem item, int cooldown) {
+        PowerConsume pow = new PowerConsume();
+        pow.item = item;
+        pow.cdTicks = cooldown;
+        item.addPower(pow);
+        ItemManager.save(Plugin.plugin);
+        sender.sendMessage(ChatColor.AQUA + Locale.get("message.power.ok"));
+    }
+
     @CommandString("rpgitem $n[] power fire $cooldown:i[] $distance:i[] $burnduration:i[]")
     @CommandDocumentation("$command.rpgitem.fire")
     @CommandGroup("item_power_fire")
@@ -773,6 +785,19 @@ public class PowerHandler implements CommandHandler {
     public void particle(CommandSender sender, RPGItem item) {
         PowerUnbreakable p = new PowerUnbreakable();
         p.item = item;
+        item.addPower(p);
+        ItemManager.save(Plugin.plugin);
+        sender.sendMessage(ChatColor.AQUA + Locale.get("message.power.ok"));
+    }
+
+    @CommandString("rpgitem $n[] power lorefilter $regex:s[] $descriptionline:s[]")
+    @CommandDocumentation("$command.rpgitem.lorefilter")
+    @CommandGroup("item_power_lorefilter")
+    public void lorefilter(CommandSender sender, RPGItem item, String regex, String description) {
+        PowerLoreFilter p = new PowerLoreFilter();
+        p.item = item;
+        p.regex = regex;
+        p.desc = description;
         item.addPower(p);
         ItemManager.save(Plugin.plugin);
         sender.sendMessage(ChatColor.AQUA + Locale.get("message.power.ok"));
