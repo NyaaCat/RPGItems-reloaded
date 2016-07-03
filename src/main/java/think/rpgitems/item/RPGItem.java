@@ -51,7 +51,6 @@ import java.util.Map.Entry;
 import java.util.regex.Pattern;
 
 import static org.bukkit.ChatColor.COLOR_CHAR;
-import static org.bukkit.ChatColor.RESET;
 import static org.bukkit.ChatColor.getByChar;
 
 public class RPGItem {
@@ -77,6 +76,7 @@ public class RPGItem {
 
     public boolean showPowerLore = true;
     public boolean showArmourLore = true;
+    public Map<Enchantment, Integer> enchantMap = null;
 
     // Powers
     public ArrayList<Power> powers = new ArrayList<Power>();
@@ -207,6 +207,17 @@ public class RPGItem {
         }
         showPowerLore = s.getBoolean("showPowerText", true);
         showArmourLore = s.getBoolean("showArmourLore", true);
+
+        if (s.isConfigurationSection("enchantments")) {
+            ConfigurationSection ench = s.getConfigurationSection("enchantments");
+            enchantMap = new HashMap<>();
+            for (String enchName : ench.getKeys(false)) {
+                Enchantment tmp = Enchantment.getByName(enchName);
+                if (tmp != null) {
+                    enchantMap.put(tmp, ench.getInt(enchName));
+                }
+            }
+        }
         rebuild();
     }
 
@@ -263,6 +274,15 @@ public class RPGItem {
         s.set("forceBar", forceBar);
         s.set("showPowerText", showPowerLore);
         s.set("showArmourLore", showArmourLore);
+
+        if (enchantMap != null) {
+            ConfigurationSection ench = s.createSection("enchantments");
+            for (Enchantment e : enchantMap.keySet()) {
+                ench.set(e.getName(), enchantMap.get(e));
+            }
+        } else {
+            s.set("enchantments", null);
+        }
     }
 
     public void resetRecipe(boolean removeOld) {
@@ -364,6 +384,16 @@ public class RPGItem {
             if (p instanceof PowerUnbreakable) {
                 meta.spigot().setUnbreakable(true);
                 break;
+            }
+        }
+
+        Set<Enchantment> enchs = meta.getEnchants().keySet();
+        for (Enchantment e : enchs) {
+            meta.removeEnchant(e);
+        }
+        if (enchantMap != null) {
+            for (Enchantment e : enchantMap.keySet()) {
+                meta.addEnchant(e, enchantMap.get(e), false);
             }
         }
         updateLocaleMeta(meta);

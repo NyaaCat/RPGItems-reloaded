@@ -5,14 +5,13 @@ import org.bukkit.ChatColor;
 import org.bukkit.Color;
 import org.bukkit.Material;
 import org.bukkit.command.CommandSender;
-import org.bukkit.entity.Entity;
+import org.bukkit.enchantments.Enchantment;
 import org.bukkit.entity.EntityType;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.Inventory;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.ItemMeta;
 import org.bukkit.inventory.meta.LeatherArmorMeta;
-import org.bukkit.scheduler.BukkitRunnable;
 import think.rpgitems.commands.CommandDocumentation;
 import think.rpgitems.commands.CommandGroup;
 import think.rpgitems.commands.CommandHandler;
@@ -24,9 +23,7 @@ import think.rpgitems.item.RPGItem;
 import think.rpgitems.power.Power;
 import think.rpgitems.support.WorldGuard;
 
-import java.util.ArrayList;
-import java.util.HashSet;
-import java.util.Set;
+import java.util.*;
 
 public class Handler implements CommandHandler {
 
@@ -375,6 +372,58 @@ public class Handler implements CommandHandler {
         item.rebuild();
         sender.sendMessage(ChatColor.AQUA + String.format(Locale.get("message.item.set"), item.getName(), item.getItem(), item.getDataValue()));
         ItemManager.save(Plugin.plugin);
+    }
+
+    @CommandString("rpgitem $n[] enchantment")
+    @CommandDocumentation("$command.rpgitem.enchentment.list")
+    @CommandGroup("item_enchantment")
+    public void itemListEnchant(CommandSender sender, RPGItem item) {
+        if (item.enchantMap != null) {
+            sender.sendMessage(ChatColor.GREEN + String.format(Locale.get("message.enchantment.listing"), item.getName()));
+            if (item.enchantMap.size() == 0) {
+                sender.sendMessage(ChatColor.GREEN + Locale.get("message.enchantment.empty_ench"));
+            } else {
+                for (Enchantment ench : item.enchantMap.keySet()) {
+                    sender.sendMessage(ChatColor.GREEN + String.format(Locale.get("message.enchantment.item"),
+                            ench.getName(), item.enchantMap.get(ench)));
+                }
+            }
+        } else {
+            sender.sendMessage(ChatColor.RED + Locale.get("message.enchantment.no_ench"));
+        }
+    }
+
+    @CommandString("rpgitem $n[] enchantment clone")
+    @CommandDocumentation("$command.rpgitem.enchentment.clone")
+    @CommandGroup("item_enchantment")
+    public void itemCloneEnchant(CommandSender sender, RPGItem item) {
+        if (sender instanceof Player) {
+            ItemStack hand = ((Player) sender).getInventory().getItemInMainHand();
+            if (hand == null || hand.getType() == Material.AIR) {
+                sender.sendMessage(ChatColor.RED + Locale.get("message.enchantment.fail"));
+            } else {
+                if (hand.hasItemMeta()) {
+                    item.enchantMap = new HashMap<>(hand.getItemMeta().getEnchants());
+                } else {
+                    item.enchantMap = Collections.emptyMap();
+                }
+                item.rebuild();
+                ItemManager.save(Plugin.plugin);
+                sender.sendMessage(ChatColor.GREEN + Locale.get("message.enchantment.success"));
+            }
+        } else {
+            sender.sendMessage(ChatColor.RED + Locale.get("message.enchantment.fail"));
+        }
+    }
+
+    @CommandString("rpgitem $n[] enchantment clear")
+    @CommandDocumentation("$command.rpgitem.enchentment.clear")
+    @CommandGroup("item_enchantment")
+    public void itemClearEnchant(CommandSender sender, RPGItem item) {
+        item.enchantMap = null;
+        item.rebuild();
+        ItemManager.save(Plugin.plugin);
+        sender.sendMessage(ChatColor.GREEN + Locale.get("message.enchantment.removed"));
     }
 
     @CommandString("rpgitem $n[] removepower $power:s[]")
