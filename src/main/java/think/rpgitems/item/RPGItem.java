@@ -279,27 +279,24 @@ public class RPGItem {
             }
         }
         if (hasRecipe) {
-            Set<ItemStack> iSet = new HashSet<ItemStack>();
-            for (ItemStack m : recipe) {
-                iSet.add(m);
-            }
-            ItemStack[] iList = iSet.toArray(new ItemStack[iSet.size()]);
             item.setItemMeta(localeMeta);
             ShapedRecipe shapedRecipe = new ShapedRecipe(item);
+
+            Map<ItemStack, Character> charMap = new HashMap<>();
             int i = 0;
-            Map<ItemStack, Character> iMap = new HashMap<ItemStack, Character>();
-            for (ItemStack m : iList) {
-                iMap.put(m, (char) (65 + i));
-                i++;
+            for (ItemStack s : recipe) {
+                if (!charMap.containsKey(s)) {
+                    charMap.put(s, (char)(65+(i++)));
+                }
             }
-            iMap.put(null, ' ');
-            StringBuilder out = new StringBuilder();
+
+            String shape = "";
             for (ItemStack m : recipe) {
-                out.append(iMap.get(m));
+                shape += charMap.get(m);
             }
-            String shape = out.toString();
-            shapedRecipe.shape(new String[] { shape.substring(0, 3), shape.substring(3, 6), shape.substring(6, 9) });
-            for (Entry<ItemStack, Character> e : iMap.entrySet()) {
+            shapedRecipe.shape(shape.substring(0, 3), shape.substring(3, 6), shape.substring(6, 9));
+
+            for (Entry<ItemStack, Character> e : charMap.entrySet()) {
                 if (e.getKey() != null) {
                     shapedRecipe.setIngredient(e.getValue(), e.getKey().getData());
                 }
