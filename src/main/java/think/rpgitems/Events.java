@@ -509,12 +509,44 @@ public class Events implements Listener {
 
     @EventHandler(ignoreCancelled = true, priority = EventPriority.HIGHEST)
     public void onItemCraft(PrepareItemCraftEvent e) {
-        if (ItemManager.toRPGItem(e.getInventory().getResult()) != null) {
-            Random random = new Random();
-            if (random.nextInt(ItemManager.toRPGItem(e.getInventory().getResult()).recipechance) != 0) {
-                ItemStack baseitem = new ItemStack(e.getInventory().getResult().getType());
-                e.getInventory().setResult(baseitem);
+        RPGItem rpg = ItemManager.toRPGItem(e.getInventory().getResult());
+        if (rpg != null) {
+            List<ItemStack> temp = rpg.recipe;
+            if (temp != null && temp.size() == 9) {
+                int idx = 0;
+                for (ItemStack s : temp) {
+                    if (!canStack(s, e.getInventory().getMatrix()[idx])) {
+                        idx = -1;
+                        break;
+                    }
+                    idx++;
+                }
+                if (idx < 0) {
+                    e.getInventory().setResult(new ItemStack(Material.AIR));
+                } else {
+                    Random random = new Random();
+                    if (random.nextInt(ItemManager.toRPGItem(e.getInventory().getResult()).recipechance) != 0) {
+                        ItemStack baseitem = new ItemStack(e.getInventory().getResult().getType());
+                        e.getInventory().setResult(baseitem);
+                    }
+                }
+            } else {
+                e.getInventory().setResult(new ItemStack(Material.AIR));
             }
+        }
+    }
+
+    static private boolean canStack(ItemStack a, ItemStack b) {
+        if (a!=null && a.getType() == Material.AIR) a = null;
+        if (b!=null && b.getType() == Material.AIR) b = null;
+        if (a == null && b == null) return true;
+        if (a != null && b != null) {
+            ItemStack ap = a.clone(), bp = b.clone();
+            ap.setAmount(1);
+            bp.setAmount(1);
+            return ap.equals(bp);
+        } else {
+            return false;
         }
     }
 }
