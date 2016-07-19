@@ -19,7 +19,7 @@ public class PowerTicker extends BukkitRunnable {
                     continue;
                 item.tick(player);
             }
-            ItemStack part = player.getItemInHand();
+            ItemStack part = player.getInventory().getItemInMainHand();
             RPGItem item = ItemManager.toRPGItem(part);
             if (item == null)
                 continue;

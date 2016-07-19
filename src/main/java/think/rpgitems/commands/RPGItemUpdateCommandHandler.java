@@ -43,7 +43,7 @@ public class RPGItemUpdateCommandHandler implements CommandExecutor {
         }
         Player p = (Player) sender;
         p.sendMessage(ChatColor.LIGHT_PURPLE + ChatColor.BOLD.toString() + Locale.get("message.update.head"));
-        ItemStack item = p.getItemInHand();
+        ItemStack item = p.getInventory().getItemInMainHand();
         if (item == null || item.getType() == Material.AIR) {
             p.sendMessage(ChatColor.RED + Locale.get("message.update.noitem"));
             p.sendMessage(ChatColor.RED + ChatColor.BOLD.toString() + Locale.get("message.update.fail"));
@@ -101,7 +101,7 @@ public class RPGItemUpdateCommandHandler implements CommandExecutor {
             return;
         }
         Player p = (Player) sender;
-        ItemStack item = p.getItemInHand();
+        ItemStack item = p.getInventory().getItemInMainHand();
         if (item == null || item.getType() == Material.AIR) {
             p.sendMessage("You must take item in hand");
         } else if (!item.hasItemMeta()) {
@@ -140,7 +140,7 @@ public class RPGItemUpdateCommandHandler implements CommandExecutor {
             return;
         }
         Player p = (Player) sender;
-        ItemStack item = p.getItemInHand();
+        ItemStack item = p.getInventory().getItemInMainHand();
         if (item == null || item.getType() == Material.AIR) {
             p.sendMessage("You must take item in hand");
         } else if (!item.hasItemMeta()) {
@@ -184,7 +184,7 @@ public class RPGItemUpdateCommandHandler implements CommandExecutor {
             return;
         }
         Player p = (Player) sender;
-        ItemStack item = p.getItemInHand();
+        ItemStack item = p.getInventory().getItemInMainHand();
         if (item == null || item.getType() == Material.AIR) {
             p.sendMessage("You must take item in hand");
         } else if (!item.hasItemMeta()) {

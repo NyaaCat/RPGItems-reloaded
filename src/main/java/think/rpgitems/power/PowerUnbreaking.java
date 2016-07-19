@@ -33,9 +33,9 @@ public class PowerUnbreaking extends Power implements PowerHit {
     @Override
     public void hit(Player player, LivingEntity e, double damage) {
         if (random.nextDouble() < ((double) level) / 100d) {
-            System.out.println(player.getItemInHand().getDurability());
-            player.getItemInHand().setDurability((short) (player.getItemInHand().getDurability() - 1));
-            System.out.println(player.getItemInHand().getDurability());
+            System.out.println(player.getInventory().getItemInMainHand().getDurability());
+            player.getInventory().getItemInMainHand().setDurability((short) (player.getInventory().getItemInMainHand().getDurability() - 1));
+            System.out.println(player.getInventory().getItemInMainHand().getDurability());
             player.updateInventory();
         }
     }

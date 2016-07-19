@@ -513,7 +513,7 @@ public class Handler implements CommandHandler {
             }
             Inventory recipeInventory = Bukkit.createInventory(player, 27, title);
             if (item.hasRecipe) {
-                ItemStack blank = new ItemStack(Material.WALL_SIGN);
+                ItemStack blank = new ItemStack(Material.THIN_GLASS);
                 ItemMeta meta = blank.getItemMeta();
                 meta.setDisplayName(ChatColor.RED + Locale.get("message.recipe.1"));
                 ArrayList<String> lore = new ArrayList<String>();

@@ -99,7 +99,7 @@ public class Events implements Listener {
                 e.setCancelled(true);
 
         Player player = e.getPlayer();
-        ItemStack item = player.getItemInHand();
+        ItemStack item = player.getInventory().getItemInMainHand();
         RPGItem rItem;
         if ((rItem = ItemManager.toRPGItem(item)) != null) {
             RPGMetadata meta = RPGItem.getMetadata(item);
@@ -107,7 +107,7 @@ public class Events implements Listener {
                 int durability = meta.containsKey(RPGMetadata.DURABILITY) ? ((Number) meta.get(RPGMetadata.DURABILITY)).intValue() : rItem.getMaxDurability();
                 durability--;
                 if (durability <= 0) {
-                    player.setItemInHand(null);
+                    player.getInventory().setItemInMainHand(null);
                 }
                 meta.put(RPGMetadata.DURABILITY, Integer.valueOf(durability));
             }
@@ -169,7 +169,7 @@ public class Events implements Listener {
         ProjectileSource shooter = e.getEntity().getShooter();
         if (shooter instanceof Player) {
             Player player = (Player) shooter;
-            ItemStack item = player.getItemInHand();
+            ItemStack item = player.getInventory().getItemInMainHand();
             RPGItem rItem = ItemManager.toRPGItem(item);
             if (rItem == null)
                 return;
@@ -184,7 +184,7 @@ public class Events implements Listener {
                 int durability = meta.containsKey(RPGMetadata.DURABILITY) ? ((Number) meta.get(RPGMetadata.DURABILITY)).intValue() : rItem.getMaxDurability();
                 durability--;
                 if (durability <= 0) {
-                    player.setItemInHand(null);
+                    player.getInventory().setItemInMainHand(null);
                 }
                 meta.put(RPGMetadata.DURABILITY, Integer.valueOf(durability));
             }
@@ -240,7 +240,12 @@ public class Events implements Listener {
 
     @EventHandler
     public void onBlockPlace(BlockPlaceEvent e) {
-        ItemStack item = e.getItemInHand();
+        ItemStack item;
+        if (e.getHand() == EquipmentSlot.OFF_HAND) {
+            item = e.getPlayer().getInventory().getItemInOffHand();
+        } else {
+            item = e.getItemInHand();
+        }
         if (item == null)
             return;
 
@@ -372,7 +377,7 @@ public class Events implements Listener {
 
     private double playerDamager(EntityDamageByEntityEvent e, double damage) {
         Player player = (Player) e.getDamager();
-        ItemStack item = player.getItemInHand();
+        ItemStack item = player.getInventory().getItemInMainHand();
         if (item.getType() == Material.BOW || item.getType() == Material.SNOW_BALL || item.getType() == Material.EGG || item.getType() == Material.POTION)
             return damage;
 
@@ -388,12 +393,16 @@ public class Events implements Listener {
         }
         damage = rItem.getDamageMin() != rItem.getDamageMax() ? (rItem.getDamageMin() + random.nextInt(rItem.getDamageMax() - rItem.getDamageMin())) : rItem.getDamageMin();
         Collection<PotionEffect> potionEffects = player.getActivePotionEffects();
-        double strength = 1, weak = 0;
+        double strength = 0, weak = 0;
         for (PotionEffect pe : potionEffects) {
-            if (pe.getType() == PotionEffectType.INCREASE_DAMAGE) strength = 1+1.3*(pe.getAmplifier()+1);
-            if (pe.getType() == PotionEffectType.WEAKNESS) weak = 0.5*(pe.getAmplifier()+1);
+            if (pe.getType().equals(PotionEffectType.INCREASE_DAMAGE)) {
+                strength = 3 * (pe.getAmplifier() + 1);//MC 1.9+
+            }
+            if (pe.getType().equals(PotionEffectType.WEAKNESS)) {
+                weak = 4 * (pe.getAmplifier() + 1);//MC 1.9+
+            }
         }
-        damage = damage * strength - weak;
+        damage = damage + strength - weak;
         if (e.getEntity() instanceof LivingEntity) {
             rItem.hit(player, (LivingEntity) e.getEntity(), e.getDamage());
         }
@@ -402,7 +411,7 @@ public class Events implements Listener {
             int durability = meta.containsKey(RPGMetadata.DURABILITY) ? ((Number) meta.get(RPGMetadata.DURABILITY)).intValue() : rItem.getMaxDurability();
             durability--;
             if (durability <= 0) {
-                player.setItemInHand(null);
+                player.getInventory().setItemInMainHand(null);
             }
             meta.put(RPGMetadata.DURABILITY, Integer.valueOf(durability));
         }

@@ -91,7 +91,8 @@ public class PowerIce extends Power implements PowerRightClick {
                                     for (int z = -1; z < 2; z++) {
                                         Location loc = landingLoc.clone().add(x, y, z);
                                         Block b = world.getBlockAt(loc);
-                                        if (!b.getType().isSolid() && !b.getType().toString().contains("SIGN")) {
+                                        if (!b.getType().isSolid() && !b.getType().toString().contains("SIGN")
+                                                && !(b.getType() == Material.SKULL || b.getType() == Material.FLOWER_POT)) {
                                             changedBlocks.put(b.getLocation(), b.getTypeId() | (b.getData() << 16));
                                             b.setType(Material.PACKED_ICE);
                                         }
