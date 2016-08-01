@@ -44,7 +44,7 @@ public class PowerLifeSteal extends Power implements PowerHit {
 
     @Override
     public String displayText() {
-        return ChatColor.GREEN + String.format(Locale.get("power.lifesteal"), (double) chance);
+        return ChatColor.GREEN + String.format(Locale.get("power.lifesteal"), chance);
     }
 
     @Override
