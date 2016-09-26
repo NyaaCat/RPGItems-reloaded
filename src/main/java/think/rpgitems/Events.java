@@ -270,13 +270,25 @@ public class Events implements Listener {
         }
     }
 
-    @EventHandler
+    @EventHandler(priority = EventPriority.MONITOR, ignoreCancelled = true)
     public void onPlayerPickup(PlayerPickupItemEvent e) {
-        ItemStack item = e.getItem().getItemStack();
-        if (ItemManager.toRPGItem(item) != null) {
-            RPGItem.updateItem(item);
-            e.getItem().setItemStack(item);
-        }
+        final Player p = e.getPlayer();
+        new BukkitRunnable(){
+            @Override
+            public void run() {
+                if (!p.isOnline()) return;
+                PlayerInventory in = p.getInventory();
+                for (int i = 0; i < in.getSize(); i++) {
+                    ItemStack item = in.getItem(i);
+                    if (ItemManager.toRPGItem(item) != null)
+                        RPGItem.updateItem(item);
+                }
+                for (ItemStack item : p.getInventory().getArmorContents()) {
+                    if (ItemManager.toRPGItem(item) != null)
+                        RPGItem.updateItem(item);
+                }
+            }
+        }.runTaskLater(Plugin.plugin, 1L);
     }
 
     private HashSet<LocaleInventory> localeInventories = new HashSet<LocaleInventory>();
