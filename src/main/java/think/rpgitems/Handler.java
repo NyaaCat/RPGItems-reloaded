@@ -32,6 +32,7 @@ public class Handler implements CommandHandler {
     @CommandDocumentation("$command.rpgitem.reload")
     @CommandGroup("reload")
     public void reload(CommandSender sender) {
+        Plugin.plugin.reloadConfig();
         Plugin.plugin.updateConfig();
         Locale.reload();
         WorldGuard.reload();
