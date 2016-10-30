@@ -167,6 +167,9 @@ public class ItemManager {
             return null;
         try {
             int id = ItemManager.decodeId(meta.getLore().get(0));
+            if (id == -1) {
+                return null;
+            }
             RPGItem rItem = ItemManager.getItemById(id);
             return rItem;
         } catch (Exception e) {
@@ -199,12 +202,13 @@ public class ItemManager {
 
     public static int decodeId(String str) throws Exception {
         if (str.length() < 16) {
-            throw new Exception();
+            return -1;
         }
         StringBuilder out = new StringBuilder();
         for (int i = 0; i < 16; i++) {
-            if (str.charAt(i) != ChatColor.COLOR_CHAR)
-                throw new Exception();
+            if (str.charAt(i) != ChatColor.COLOR_CHAR){
+                return -1;
+            }
             i++;
             out.append(str.charAt(i));
         }

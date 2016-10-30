@@ -64,6 +64,9 @@ public class RPGItemUpdateCommandHandler implements CommandExecutor {
         int id; RPGItem ritem = null;
         try {
             id = ItemManager.decodeId(name);
+            if (id == -1) {
+                throw new Exception();
+            }
             ritem = ItemManager.getItemById(id);
         } catch (Exception ex) {
             p.sendMessage(ChatColor.RED + Locale.get("message.update.notvalid"));
@@ -110,7 +113,11 @@ public class RPGItemUpdateCommandHandler implements CommandExecutor {
             ItemMeta meta = item.getItemMeta();
             if (meta.hasDisplayName()) {
                 try {
-                    p.sendMessage("DisplayName ID: " + ItemManager.decodeId(meta.getDisplayName()));
+                    int id = ItemManager.decodeId(meta.getDisplayName());
+                    if (id == -1) {
+                        throw new Exception();
+                    }
+                    p.sendMessage("DisplayName ID: " + id);
                 } catch (Exception ex) {
                     p.sendMessage("DisplayName contains no valid ID.");
                 }
@@ -119,7 +126,11 @@ public class RPGItemUpdateCommandHandler implements CommandExecutor {
             }
             if (meta.hasLore() && meta.getLore().size() > 0) {
                 try {
-                    p.sendMessage("Lore ID: " + ItemManager.decodeId(meta.getLore().get(0)));
+                    int id = ItemManager.decodeId(meta.getLore().get(0));
+                    if (id == -1) {
+                        throw new Exception();
+                    }
+                    p.sendMessage("Lore ID: " + id);
                 } catch (Exception ex) {
                     p.sendMessage("DisplayName contains no valid ID.");
                 }
@@ -150,6 +161,9 @@ public class RPGItemUpdateCommandHandler implements CommandExecutor {
             if (meta.hasDisplayName()) {
                 try {
                     int id = ItemManager.decodeId(meta.getDisplayName());
+                    if (id == -1) {
+                        throw new Exception();
+                    }
                     p.sendMessage("DisplayName ID: " + id);
                     RPGItem ritem = ItemManager.getItemById(id);
                     List<String> lore;
@@ -216,7 +230,10 @@ public class RPGItemUpdateCommandHandler implements CommandExecutor {
         if (!item.hasItemMeta()) return false;
         String name = item.getItemMeta().getDisplayName();
         try {
-            ItemManager.decodeId(name);
+            int id = ItemManager.decodeId(name);
+            if (id == -1) {
+                return false;
+            }
             return true;
         } catch (Exception ex) {
             return false;
