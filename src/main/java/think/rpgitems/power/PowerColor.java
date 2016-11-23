@@ -103,7 +103,7 @@ public class PowerColor extends Power implements PowerRightClick, PowerLeftClick
                 if (clicked.getType().equals(Material.CLAY) || clicked.getType().equals(Material.HARD_CLAY))
                     clicked.setType(Material.STAINED_CLAY);
 
-                clicked.setData(DyeColor.values()[color.asInt()].getData());
+                clicked.setData(DyeColor.values()[color.asInt()].getDyeData());
             } else {
                 player.sendMessage(ChatColor.AQUA + String.format(Locale.get("message.cooldown"), ((double) (cooldown - System.currentTimeMillis() / 50)) / 20d));
             }
