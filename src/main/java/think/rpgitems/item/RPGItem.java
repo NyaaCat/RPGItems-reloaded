@@ -376,10 +376,10 @@ public class RPGItem {
             lines.add(0, getMCEncodedID());
         }
         meta.setLore(lines);
-        meta.spigot().setUnbreakable(false);
+        meta.setUnbreakable(false);
         for (Power p : powers) {
             if (p instanceof PowerUnbreakable) {
-                meta.spigot().setUnbreakable(true);
+                meta.setUnbreakable(true);
                 break;
             }
         }
