@@ -192,7 +192,7 @@ public class Events implements Listener {
             if (durability <= 0) {
                 player.getInventory().setItemInMainHand(null);
             } else {
-                player.getInventory().setItemInMainHand(item);
+                player.updateInventory();
             }
             rpgProjectiles.put(e.getEntity().getEntityId(), rItem.getID());
         }
