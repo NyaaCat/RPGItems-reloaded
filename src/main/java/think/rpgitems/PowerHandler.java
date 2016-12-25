@@ -1,6 +1,7 @@
 package think.rpgitems;
 
 import org.bukkit.ChatColor;
+import org.bukkit.Effect;
 import org.bukkit.Material;
 import org.bukkit.command.CommandSender;
 import org.bukkit.potion.PotionEffectType;
@@ -751,6 +752,10 @@ public class PowerHandler implements CommandHandler {
     @CommandGroup("item_power_particle")
     public void particle(CommandSender sender, RPGItem item, String effect) {
         if (!PowerParticle.acceptableEffect(effect)) {
+            for (Effect e : Effect.values()) {
+                if (PowerParticle.acceptableEffect(e.name()))
+                    sender.sendMessage(e.name());
+            }
             sender.sendMessage(ChatColor.RED + String.format(Locale.get("message.error.visualeffect"), effect));
             return;
         }
@@ -767,6 +772,10 @@ public class PowerHandler implements CommandHandler {
     @CommandGroup("item_power_particletick")
     public void particle(CommandSender sender, RPGItem item, String effect, int interval) {
         if (!PowerParticle.acceptableEffect(effect)) {
+            for (Effect e : Effect.values()) {
+                if (PowerParticle.acceptableEffect(e.name()))
+                    sender.sendMessage(e.name());
+            }
             sender.sendMessage(ChatColor.RED + String.format(Locale.get("message.error.visualeffect"), effect));
             return;
         }
