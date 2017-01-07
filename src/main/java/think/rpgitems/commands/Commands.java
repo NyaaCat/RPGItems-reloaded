@@ -495,8 +495,23 @@ abstract public class Commands {
                             if (dArgs[1].equalsIgnoreCase("PotionEffectType")) {
                                 StringBuilder out = new StringBuilder();
                                 for (PotionEffectType type : PotionEffectType.values()) {
-                                    if (type != null)
-                                        out.append(type.getName().toLowerCase()).append(", ");
+                                    if (type != null) {
+                                        if (out.length() > 0) {
+                                            out.append(", ");
+                                        }
+                                        out.append(type.getName().toLowerCase());
+                                    }
+                                }
+                                docStr += out.toString();
+                            } else if (dArgs[1].equalsIgnoreCase("ItemFlag")) {
+                                StringBuilder out = new StringBuilder();
+                                for (think.rpgitems.item.ItemFlag flag : think.rpgitems.item.ItemFlag.values()) {
+                                    if (flag != null) {
+                                        if (out.length() > 0) {
+                                            out.append(", ");
+                                        }
+                                        out.append(flag.name());
+                                    }
                                 }
                                 docStr += out.toString();
                             }

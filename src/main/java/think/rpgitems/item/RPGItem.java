@@ -31,6 +31,7 @@ import org.bukkit.entity.Entity;
 import org.bukkit.entity.LivingEntity;
 import org.bukkit.entity.Player;
 import org.bukkit.entity.Projectile;
+import org.bukkit.inventory.ItemFlag;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.Recipe;
 import org.bukkit.inventory.ShapedRecipe;
@@ -77,6 +78,7 @@ public class RPGItem {
     public boolean showPowerLore = true;
     public boolean showArmourLore = true;
     public Map<Enchantment, Integer> enchantMap = null;
+    public ArrayList<ItemFlag> itemFlags = new ArrayList<ItemFlag>();
 
     // Powers
     public ArrayList<Power> powers = new ArrayList<Power>();
@@ -218,6 +220,17 @@ public class RPGItem {
                 }
             }
         }
+        itemFlags = new ArrayList<ItemFlag>();
+        if (s.isList("itemFlags")) {
+            List<String> flags = s.getStringList("itemFlags");
+            for (String flagName : flags) {
+                try {
+                    itemFlags.add(ItemFlag.valueOf(flagName));
+                } catch (IllegalArgumentException e) {
+                    e.printStackTrace();
+                }
+            }
+        }
         rebuild();
     }
 
@@ -282,6 +295,15 @@ public class RPGItem {
             }
         } else {
             s.set("enchantments", null);
+        }
+        if (!itemFlags.isEmpty()) {
+            List<String> tmp = new ArrayList<>();
+            for (ItemFlag flag : itemFlags) {
+                tmp.add(flag.name());
+            }
+            s.set("itemFlags", tmp);
+        } else {
+            s.set("itemFlags", null);
         }
     }
 
@@ -383,7 +405,12 @@ public class RPGItem {
                 break;
             }
         }
-
+        for (ItemFlag flag : meta.getItemFlags()) {
+            meta.removeItemFlags(flag);
+        }
+        for (ItemFlag flag : itemFlags) {
+            meta.addItemFlags(flag);
+        }
         Set<Enchantment> enchs = meta.getEnchants().keySet();
         for (Enchantment e : enchs) {
             meta.removeEnchant(e);
@@ -711,6 +738,16 @@ public class RPGItem {
             sender.sendMessage(s);
         }
         sender.sendMessage(String.format(Locale.get("message.print.durability"), maxDurability));
+        if (!itemFlags.isEmpty()) {
+            String str = "";
+            for (ItemFlag flag : itemFlags) {
+                if (str.length() > 0) {
+                    str += ", ";
+                }
+                str += flag.name();
+            }
+            sender.sendMessage(Locale.get("message.print.itemflags") + str);
+        }
     }
 
     public void setDisplay(String str) {
