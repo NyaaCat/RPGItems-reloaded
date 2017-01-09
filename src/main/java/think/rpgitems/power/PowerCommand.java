@@ -72,7 +72,11 @@ public class PowerCommand extends Power implements PowerRightClick, PowerLeftCli
         boolean wasOp = player.isOp();
         if (permission.equals("*"))
             player.setOp(true);
-        player.chat("/" + command.replaceAll("\\{player\\}", player.getName()));
+        String cmd = command;
+        cmd = cmd.replaceAll("\\{player\\}", player.getName());
+        cmd = cmd.replaceAll("\\{yaw\\}", Float.toString(player.getLocation().getYaw()+90));
+        cmd = cmd.replaceAll("\\{pitch\\}", Float.toString(-player.getLocation().getPitch()));
+        player.chat("/" + cmd);
         if (permission.equals("*"))
             player.setOp(wasOp);
     }
