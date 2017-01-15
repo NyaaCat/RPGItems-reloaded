@@ -224,6 +224,42 @@ public class PowerHandler implements CommandHandler {
         sender.sendMessage(ChatColor.AQUA + Locale.get("message.power.ok"));
     }
 
+
+    @CommandString("rpgitem $n[] power commandhit $display:s[] $command:s[]")
+    @CommandDocumentation("$command.rpgitem.commandhit")
+    @CommandGroup("item_power_commandhit")
+    public void commandhit(CommandSender sender, RPGItem item, String displayText, String command) {
+        PowerCommandHit com = new PowerCommandHit();
+        command = command.trim();
+        if (command.charAt(0) == '/') {
+            command = command.substring(1);
+        }
+        com.display = displayText;
+        com.command = command;
+        com.item = item;
+        item.addPower(com);
+        ItemManager.save(Plugin.plugin);
+        sender.sendMessage(ChatColor.AQUA + Locale.get("message.power.ok"));
+    }
+
+    @CommandString("rpgitem $n[] power commandhit $display:s[] $command:s[] $permission:s[]")
+    @CommandDocumentation("$command.rpgitem.commandhit.full")
+    @CommandGroup("item_power_commandhit")
+    public void commandhit(CommandSender sender, RPGItem item, String displayText, String command, String permission) {
+        PowerCommandHit com = new PowerCommandHit();
+        command = command.trim();
+        if (command.charAt(0) == '/') {
+            command = command.substring(1);
+        }
+        com.display = displayText;
+        com.command = command;
+        com.permission = permission;
+        com.item = item;
+        item.addPower(com);
+        ItemManager.save(Plugin.plugin);
+        sender.sendMessage(ChatColor.AQUA + Locale.get("message.power.ok"));
+    }
+
     @CommandString("rpgitem $n[] power delayedcommand $delay:i[] $cooldown:i[] $o[left,right] $display:s[] $command:s[] $permission:s[]")
     @CommandDocumentation("$command.rpgitem.delayedcommand.full")
     @CommandGroup("item_power_delayedcommand")

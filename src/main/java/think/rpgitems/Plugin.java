@@ -80,6 +80,7 @@ public class Plugin extends JavaPlugin {
         Power.powers.put("particletick", PowerParticleTick.class);
         Power.powers.put("delayedcommand", PowerDelayedCommand.class);
         Power.powers.put("lorefilter", PowerLoreFilter.class);
+        Power.powers.put("commandhit", PowerCommandHit.class);
     }
 
     @Override
