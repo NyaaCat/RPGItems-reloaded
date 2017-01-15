@@ -36,7 +36,6 @@ import think.rpgitems.power.types.PowerRightClick;
 public class PowerArrow extends Power implements PowerRightClick {
 
     public long cooldownTime = 20;
-
     public int amplifier = 1;
     public int duration = 15;
     public PotionEffectType type = null;
@@ -83,10 +82,23 @@ public class PowerArrow extends Power implements PowerRightClick {
     @Override
     public void init(ConfigurationSection s) {
         cooldownTime = s.getLong("cooldown", 20);
+        String potionEffectName = s.getString("type", "null");
+        if(potionEffectName.equals("null")){
+            type = null;
+        } else {
+            type = PotionEffectType.getByName(potionEffectName);
+        }
     }
 
     @Override
     public void save(ConfigurationSection s) {
         s.set("cooldown", cooldownTime);
+        s.set("duration", duration);
+        s.set("amplifier", amplifier);
+        if(type == null){
+            s.set("type", "null");
+        } else {
+            s.set("type", type.getName());
+        }
     }
 }
