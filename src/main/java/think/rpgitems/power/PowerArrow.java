@@ -21,7 +21,12 @@ import org.bukkit.Sound;
 import org.bukkit.block.Block;
 import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.entity.Arrow;
+import org.bukkit.entity.TippedArrow;
 import org.bukkit.entity.Player;
+import org.bukkit.potion.PotionData;
+import org.bukkit.potion.PotionEffect;
+import org.bukkit.potion.PotionEffectType;
+import org.bukkit.potion.PotionType;
 
 import think.rpgitems.Events;
 import think.rpgitems.data.Locale;
@@ -31,6 +36,10 @@ import think.rpgitems.power.types.PowerRightClick;
 public class PowerArrow extends Power implements PowerRightClick {
 
     public long cooldownTime = 20;
+
+    public int amplifier = 1;
+    public int duration = 15;
+    public PotionEffectType type = null;
 
     @Override
     public void rightClick(Player player, Block clicked) {
@@ -47,8 +56,14 @@ public class PowerArrow extends Power implements PowerRightClick {
             if (cooldown <= System.currentTimeMillis() / 50) {
                 value.set(System.currentTimeMillis() / 50 + cooldownTime);
                 player.playSound(player.getLocation(), Sound.ENTITY_ARROW_SHOOT, 1.0f, 1.0f);
-                Arrow arrow = player.launchProjectile(Arrow.class);
-                Events.removeArrows.put(arrow.getEntityId(), (byte) 1);
+                if(type == null) {
+                    Arrow arrow = player.launchProjectile(Arrow.class);
+                    Events.removeArrows.put(arrow.getEntityId(), (byte) 1);
+                }else{
+                    TippedArrow arrow = player.launchProjectile(TippedArrow.class);
+                    arrow.addCustomEffect(new PotionEffect(type,duration,amplifier), true);
+                    Events.removeArrows.put(arrow.getEntityId(), (byte) 1);
+                }
             } else {
                 player.sendMessage(ChatColor.AQUA + String.format(Locale.get("message.cooldown"), ((double) (cooldown - System.currentTimeMillis() / 50)) / 20d));
             }

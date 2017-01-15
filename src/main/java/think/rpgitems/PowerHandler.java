@@ -92,6 +92,23 @@ public class PowerHandler implements CommandHandler {
         sender.sendMessage(ChatColor.AQUA + Locale.get("message.power.ok"));
     }
 
+    @CommandString("rpgitem $n[] power arrow $cooldown:i[] $effect:s[] $duration:i[] $amplifier:i[]")
+    @CommandDocumentation("$command.rpgitem.arrow.tipped")
+    @CommandGroup("item_power_arrow")
+    public void arrow(CommandSender sender, RPGItem item, int cooldown, String effect, int duration, int amplifier) {
+        PowerArrow pow = new PowerArrow();
+        pow.item = item;
+        pow.cooldownTime = cooldown;
+        pow.duration = duration;
+        pow.amplifier = amplifier;
+        pow.type = PotionEffectType.getByName(effect);
+
+        item.addPower(pow);
+        ItemManager.save(Plugin.plugin);
+        sender.sendMessage(ChatColor.AQUA + Locale.get("message.power.ok"));
+    }
+
+
     @CommandString("rpgitem $n[] power arrow $cooldown:i[]")
     @CommandDocumentation("$command.rpgitem.arrow.full")
     @CommandGroup("item_power_arrow")
@@ -103,7 +120,7 @@ public class PowerHandler implements CommandHandler {
         ItemManager.save(Plugin.plugin);
         sender.sendMessage(ChatColor.AQUA + Locale.get("message.power.ok"));
     }
-    
+
     @CommandString("rpgitem $n[] power color")
     @CommandDocumentation("$command.rpgitem.color")
     @CommandGroup("item_power_color")
