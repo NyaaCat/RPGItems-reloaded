@@ -9,6 +9,7 @@ import org.bukkit.enchantments.Enchantment;
 import org.bukkit.entity.EntityType;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.Inventory;
+import org.bukkit.inventory.ItemFlag;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.ItemMeta;
 import org.bukkit.inventory.meta.LeatherArmorMeta;
@@ -640,6 +641,31 @@ public class Handler implements CommandHandler {
         item.rebuild();
         ItemManager.save(Plugin.plugin);
         sender.sendMessage(Locale.get("message.toggleLore."+(item.showArmourLore?"show":"hide")));
+    }
+
+    @CommandString("rpgitem $n[] additemflag $e[think.rpgitems.item.ItemFlag]")
+    @CommandDocumentation("$command.rpgitem.itemflag.add+ItemFlag")
+    @CommandGroup("item_itemflag")
+    public void addItemFlag(CommandSender sender, RPGItem item, think.rpgitems.item.ItemFlag flag) {
+        item.itemFlags.add(ItemFlag.valueOf(flag.name()));
+        item.rebuild();
+        ItemManager.save(Plugin.plugin);
+        sender.sendMessage(String.format(ChatColor.GREEN + Locale.get("message.itemflag.add"), flag.name()));
+    }
+
+    @CommandString("rpgitem $n[] removeitemflag $e[think.rpgitems.item.ItemFlag]")
+    @CommandDocumentation("$command.rpgitem.itemflag.remove+ItemFlag")
+    @CommandGroup("item_itemflag")
+    public void removeItemFlag(CommandSender sender, RPGItem item, think.rpgitems.item.ItemFlag flag) {
+        ItemFlag itemFlag = ItemFlag.valueOf(flag.name());
+        if (item.itemFlags.contains(itemFlag)) {
+            item.itemFlags.remove(itemFlag);
+            item.rebuild();
+            ItemManager.save(Plugin.plugin);
+            sender.sendMessage(String.format(ChatColor.AQUA + Locale.get("message.itemflag.remove"), flag.name()));
+        } else {
+            sender.sendMessage(String.format(ChatColor.RED + Locale.get("message.itemflag.notfound"), flag.name()));
+        }
     }
 
     @CommandString("rpgitem version")
