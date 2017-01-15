@@ -18,18 +18,13 @@ package think.rpgitems.power;
 
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
-import org.bukkit.Server;
-import org.bukkit.command.*;
 import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.entity.LivingEntity;
 import org.bukkit.entity.Player;
-import org.bukkit.permissions.Permission;
 import org.bukkit.permissions.PermissionAttachment;
-import org.bukkit.permissions.PermissionAttachmentInfo;
 import think.rpgitems.Plugin;
 import think.rpgitems.power.types.PowerHit;
 
-import java.util.Set;
 
 public class PowerCommandHit extends Power implements PowerHit {
 
@@ -79,8 +74,6 @@ public class PowerCommandHit extends Power implements PowerHit {
     public void hit(Player player, LivingEntity e, double damage) {
         if (item.getHasPermission() && !player.hasPermission(item.getPermission())) return;
         executeCommand(player, e);
-
-
     }
 
     @Override
