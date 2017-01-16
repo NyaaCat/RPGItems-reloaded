@@ -82,6 +82,8 @@ public class PowerArrow extends Power implements PowerRightClick {
     @Override
     public void init(ConfigurationSection s) {
         cooldownTime = s.getLong("cooldown", 20);
+        duration = s.getInt("duration", 1);
+        amplifier = s.getInt("amplifier", 15);
         String potionEffectName = s.getString("type", "null");
         if(potionEffectName.equals("null")){
             type = null;
