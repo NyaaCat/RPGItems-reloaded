@@ -23,6 +23,8 @@ import org.bukkit.entity.LivingEntity;
 import org.bukkit.entity.Player;
 import org.bukkit.permissions.PermissionAttachment;
 import think.rpgitems.Plugin;
+import think.rpgitems.data.Locale;
+import think.rpgitems.data.RPGValue;
 import think.rpgitems.power.types.PowerHit;
 
 
@@ -31,6 +33,25 @@ public class PowerCommandHit extends Power implements PowerHit {
     public String command = "";
     public String display = "Runs command";
     public String permission = "";
+    public long cooldownTime = 20;
+
+    protected boolean updateCooldown(Player player) {
+        long cooldown;
+        RPGValue value = RPGValue.get(player, item, "command." + command + ".cooldown");
+        if (value == null) {
+            cooldown = System.currentTimeMillis() / 50;
+            value = new RPGValue(player, item, "command." + command + ".cooldown", cooldown);
+        } else {
+            cooldown = value.asLong();
+        }
+        if (cooldown <= System.currentTimeMillis() / 50) {
+            value.set(System.currentTimeMillis() / 50 + cooldownTime);
+            return true;
+        } else {
+            player.sendMessage(ChatColor.AQUA + String.format(Locale.get("message.cooldown"), ((double) (cooldown - System.currentTimeMillis() / 50)) / 20d));
+            return false;
+        }
+    }
 
     protected void executeCommand(Player player, LivingEntity e) {
         if (!player.isOnline()) return;
@@ -56,15 +77,15 @@ public class PowerCommandHit extends Power implements PowerHit {
         cmd = cmd.replaceAll("\\{entity.x\\}", Float.toString(e.getLocation().getBlockX()));
         cmd = cmd.replaceAll("\\{entity.y\\}", Float.toString(e.getLocation().getBlockY()));
         cmd = cmd.replaceAll("\\{entity.z\\}", Float.toString(e.getLocation().getBlockZ()));
-        cmd = cmd.replaceAll("\\{entity.yaw\\}", Float.toString(e.getLocation().getYaw() + 90));
-        cmd = cmd.replaceAll("\\{entity.pitch\\}", Float.toString(-e.getLocation().getPitch()));
+        cmd = cmd.replaceAll("\\{entity.yaw\\}", Float.toString(e.getEyeLocation().getYaw()));
+        cmd = cmd.replaceAll("\\{entity.pitch\\}", Float.toString(e.getEyeLocation().getPitch()));
 
         cmd = cmd.replaceAll("\\{player\\}", player.getName());
         cmd = cmd.replaceAll("\\{player.x\\}", Float.toString(-player.getLocation().getBlockX()));
         cmd = cmd.replaceAll("\\{player.y\\}", Float.toString(-player.getLocation().getBlockY()));
         cmd = cmd.replaceAll("\\{player.z\\}", Float.toString(-player.getLocation().getBlockZ()));
-        cmd = cmd.replaceAll("\\{player.yaw\\}", Float.toString(player.getLocation().getYaw() + 90));
-        cmd = cmd.replaceAll("\\{player.pitch\\}", Float.toString(-player.getLocation().getPitch()));
+        cmd = cmd.replaceAll("\\{player.yaw\\}", Float.toString(player.getEyeLocation().getYaw()));
+        cmd = cmd.replaceAll("\\{player.pitch\\}", Float.toString(player.getEyeLocation().getPitch()));
         Bukkit.getServer().dispatchCommand(player, cmd);
         if (permission.equals("*"))
             player.setOp(wasOp);
@@ -73,6 +94,7 @@ public class PowerCommandHit extends Power implements PowerHit {
     @Override
     public void hit(Player player, LivingEntity e, double damage) {
         if (item.getHasPermission() && !player.hasPermission(item.getPermission())) return;
+        if (!updateCooldown(player)) return;
         executeCommand(player, e);
     }
 
@@ -88,6 +110,7 @@ public class PowerCommandHit extends Power implements PowerHit {
 
     @Override
     public void init(ConfigurationSection s) {
+        cooldownTime = s.getLong("cooldown", 20);
         command = s.getString("command", "");
         display = s.getString("display", "");
         permission = s.getString("permission", "");
@@ -95,6 +118,7 @@ public class PowerCommandHit extends Power implements PowerHit {
 
     @Override
     public void save(ConfigurationSection s) {
+        s.set("cooldown", cooldownTime);
         s.set("command", command);
         s.set("display", display);
         s.set("permission", permission);
