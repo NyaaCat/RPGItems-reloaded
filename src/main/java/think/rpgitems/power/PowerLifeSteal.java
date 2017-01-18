@@ -18,6 +18,7 @@ package think.rpgitems.power;
 
 import java.util.Random;
 
+import org.bukkit.attribute.Attribute;
 import org.bukkit.ChatColor;
 import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.entity.LivingEntity;
@@ -35,8 +36,8 @@ public class PowerLifeSteal extends Power implements PowerHit {
     public void hit(Player player, LivingEntity e, double damage) {
         if (item.getHasPermission() == true && player.hasPermission(item.getPermission()) == false) {
         } else if (random.nextInt(chance) == 0) {
-            if ((player.getHealth() + damage) >= player.getMaxHealth()) {
-                player.setHealth(player.getMaxHealth());
+            if ((player.getHealth() + damage) >= player.getAttribute(Attribute.GENERIC_MAX_HEALTH).getValue()) {
+                player.setHealth(player.getAttribute(Attribute.GENERIC_MAX_HEALTH).getValue());
             } else
                 player.setHealth(player.getHealth() + damage);
         }

@@ -103,7 +103,7 @@ public class PowerHandler implements CommandHandler {
         ItemManager.save(Plugin.plugin);
         sender.sendMessage(ChatColor.AQUA + Locale.get("message.power.ok"));
     }
-    
+
     @CommandString("rpgitem $n[] power color")
     @CommandDocumentation("$command.rpgitem.color")
     @CommandGroup("item_power_color")
@@ -203,6 +203,44 @@ public class PowerHandler implements CommandHandler {
 
         item.addPower(com);
         item.rebuild();
+        ItemManager.save(Plugin.plugin);
+        sender.sendMessage(ChatColor.AQUA + Locale.get("message.power.ok"));
+    }
+
+
+    @CommandString("rpgitem $n[] power commandhit $cooldown:i[] $display:s[] $command:s[]")
+    @CommandDocumentation("$command.rpgitem.commandhit")
+    @CommandGroup("item_power_commandhit")
+    public void commandhit(CommandSender sender, RPGItem item, int cooldown, String displayText, String command) {
+        PowerCommandHit com = new PowerCommandHit();
+        command = command.trim();
+        if (command.charAt(0) == '/') {
+            command = command.substring(1);
+        }
+        com.cooldownTime = cooldown;
+        com.display = displayText;
+        com.command = command;
+        com.item = item;
+        item.addPower(com);
+        ItemManager.save(Plugin.plugin);
+        sender.sendMessage(ChatColor.AQUA + Locale.get("message.power.ok"));
+    }
+
+    @CommandString("rpgitem $n[] power commandhit $cooldown:i[] $display:s[] $command:s[] $permission:s[]")
+    @CommandDocumentation("$command.rpgitem.commandhit.full")
+    @CommandGroup("item_power_commandhit")
+    public void commandhit(CommandSender sender, RPGItem item, int cooldown, String displayText, String command, String permission) {
+        PowerCommandHit com = new PowerCommandHit();
+        command = command.trim();
+        if (command.charAt(0) == '/') {
+            command = command.substring(1);
+        }
+        com.cooldownTime = cooldown;
+        com.display = displayText;
+        com.command = command;
+        com.permission = permission;
+        com.item = item;
+        item.addPower(com);
         ItemManager.save(Plugin.plugin);
         sender.sendMessage(ChatColor.AQUA + Locale.get("message.power.ok"));
     }
@@ -526,6 +564,25 @@ public class PowerHandler implements CommandHandler {
         pow.item = item;
         pow.cooldownTime = cooldown;
         pow.distance = distance;
+        item.addPower(pow);
+        ItemManager.save(Plugin.plugin);
+        sender.sendMessage(ChatColor.AQUA + Locale.get("message.power.ok"));
+    }
+
+    @CommandString("rpgitem $n[] power tippedarrow $cooldown:i[] $effect:s[] $duration:i[] $amplifier:i[]")
+    @CommandDocumentation("$command.rpgitem.tippedarrow+PotionEffectType")
+    @CommandGroup("item_power_tippedarrow")
+    public void tippedarrow(CommandSender sender, RPGItem item, int cooldown, String effect, int duration, int amplifier) {
+        PowerTippedArrow pow = new PowerTippedArrow();
+        pow.item = item;
+        pow.cooldownTime = cooldown;
+        pow.duration = duration;
+        pow.amplifier = amplifier;
+        pow.type = PotionEffectType.getByName(effect);
+        if(pow.type == null){
+            sender.sendMessage(ChatColor.RED + String.format(Locale.get("message.error.effect"), effect));
+            return;
+        }
         item.addPower(pow);
         ItemManager.save(Plugin.plugin);
         sender.sendMessage(ChatColor.AQUA + Locale.get("message.power.ok"));
