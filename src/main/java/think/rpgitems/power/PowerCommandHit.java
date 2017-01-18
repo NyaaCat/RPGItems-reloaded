@@ -36,7 +36,7 @@ public class PowerCommandHit extends Power implements PowerHit {
         if (!player.isOnline()) return;
 
         if (permission.length() != 0 && !permission.equals("*")) {
-            PermissionAttachment attachment = player.addAttachment(Plugin.plugin, 10);
+            PermissionAttachment attachment = player.addAttachment(Plugin.plugin, 1);
             String[] perms = permission.split("\\.");
             StringBuilder p = new StringBuilder();
             for (int i = 0; i < perms.length; i++) {
@@ -51,20 +51,20 @@ public class PowerCommandHit extends Power implements PowerHit {
 
         String cmd = command;
 
-        cmd = cmd.replaceAll("\\{e\\}", e.getName());
-        cmd = cmd.replaceAll("\\{e.uuid\\}", e.getUniqueId().toString());
-        cmd = cmd.replaceAll("\\{e.x\\}", Float.toString(e.getLocation().getBlockX()));
-        cmd = cmd.replaceAll("\\{e.y\\}", Float.toString(e.getLocation().getBlockY()));
-        cmd = cmd.replaceAll("\\{e.z\\}", Float.toString(e.getLocation().getBlockZ()));
-        cmd = cmd.replaceAll("\\{e.yaw\\}", Float.toString(e.getLocation().getYaw()+90));
-        cmd = cmd.replaceAll("\\{e.pitch\\}", Float.toString(-e.getLocation().getPitch()));
+        cmd = cmd.replaceAll("\\{entity\\}", e.getName());
+        cmd = cmd.replaceAll("\\{entity.uuid\\}", e.getUniqueId().toString());
+        cmd = cmd.replaceAll("\\{entity.x\\}", Float.toString(e.getLocation().getBlockX()));
+        cmd = cmd.replaceAll("\\{entity.y\\}", Float.toString(e.getLocation().getBlockY()));
+        cmd = cmd.replaceAll("\\{entity.z\\}", Float.toString(e.getLocation().getBlockZ()));
+        cmd = cmd.replaceAll("\\{entity.yaw\\}", Float.toString(e.getLocation().getYaw() + 90));
+        cmd = cmd.replaceAll("\\{entity.pitch\\}", Float.toString(-e.getLocation().getPitch()));
 
-        cmd = cmd.replaceAll("\\{p\\}", player.getName());
-        cmd = cmd.replaceAll("\\{p.x\\}", Float.toString(-player.getLocation().getBlockX()));
-        cmd = cmd.replaceAll("\\{p.y\\}", Float.toString(-player.getLocation().getBlockY()));
-        cmd = cmd.replaceAll("\\{p.z\\}", Float.toString(-player.getLocation().getBlockZ()));
-        cmd = cmd.replaceAll("\\{p.yaw\\}", Float.toString(player.getLocation().getYaw()+90));
-        cmd = cmd.replaceAll("\\{p.pitch\\}", Float.toString(-player.getLocation().getPitch()));
+        cmd = cmd.replaceAll("\\{player\\}", player.getName());
+        cmd = cmd.replaceAll("\\{player.x\\}", Float.toString(-player.getLocation().getBlockX()));
+        cmd = cmd.replaceAll("\\{player.y\\}", Float.toString(-player.getLocation().getBlockY()));
+        cmd = cmd.replaceAll("\\{player.z\\}", Float.toString(-player.getLocation().getBlockZ()));
+        cmd = cmd.replaceAll("\\{player.yaw\\}", Float.toString(player.getLocation().getYaw() + 90));
+        cmd = cmd.replaceAll("\\{player.pitch\\}", Float.toString(-player.getLocation().getPitch()));
         Bukkit.getServer().dispatchCommand(player, cmd);
         if (permission.equals("*"))
             player.setOp(wasOp);
