@@ -6,6 +6,7 @@ import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.entity.Entity;
 import org.bukkit.entity.LivingEntity;
 import org.bukkit.entity.Player;
+import org.bukkit.inventory.ItemStack;
 import org.bukkit.util.Vector;
 import think.rpgitems.data.Locale;
 import think.rpgitems.power.types.PowerTick;
@@ -37,7 +38,7 @@ public class PowerAttract extends Power implements PowerTick {
     }
 
     @Override
-    public void tick(Player player) {
+    public void tick(Player player, ItemStack i) {
         if (item.getHasPermission() && !player.hasPermission(item.getPermission())) return;
         double factor = Math.sqrt(radius-1)/maxSpeed;
         for (Entity e : player.getNearbyEntities(radius, radius, radius)) {

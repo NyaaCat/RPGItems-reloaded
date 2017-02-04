@@ -31,7 +31,7 @@ public class PowerConsume extends Power implements PowerRightClick {
     public int cdTicks = 0;
 
     @Override
-    public void rightClick(final Player player, Block clicked) {
+    public void rightClick(final Player player, ItemStack i, Block clicked) {
         if (checkCooldown(player, cdTicks)) {
             if (item.getHasPermission() && !player.hasPermission(item.getPermission())) return;
             ItemStack item = player.getInventory().getItemInMainHand();

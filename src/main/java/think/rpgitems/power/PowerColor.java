@@ -23,18 +23,21 @@ import org.bukkit.block.Block;
 import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.entity.Player;
 
+import org.bukkit.inventory.ItemStack;
 import think.rpgitems.data.Locale;
 import think.rpgitems.data.RPGValue;
+import think.rpgitems.power.types.PowerConsuming;
 import think.rpgitems.power.types.PowerLeftClick;
 import think.rpgitems.power.types.PowerRightClick;
 import think.rpgitems.support.WorldGuard;
 
-public class PowerColor extends Power implements PowerRightClick, PowerLeftClick {
+public class PowerColor extends Power implements PowerRightClick, PowerLeftClick, PowerConsuming {
 
     public long cooldownTime = 0;
     public boolean glass = true;
     public boolean clay = true;
     public boolean wool = true;
+    public int consumption = 0;
 
     private static HashMap<DyeColor, ChatColor> dyeToChatColor;
 
@@ -60,7 +63,7 @@ public class PowerColor extends Power implements PowerRightClick, PowerLeftClick
 
     @SuppressWarnings("deprecation")
     @Override
-    public void rightClick(Player player, Block clicked) {
+    public void rightClick(Player player, ItemStack i, Block clicked) {
         if (clicked == null)
             return;
         if(!WorldGuard.canBuild(player, clicked.getLocation()))
@@ -94,6 +97,7 @@ public class PowerColor extends Power implements PowerRightClick, PowerLeftClick
                 cooldown = value.asLong();
             }
             if (cooldown <= System.currentTimeMillis() / 50) {
+                if(!item.consumeDurability(i,consumption))return;
                 value.set(System.currentTimeMillis() / 50 + cooldownTime);
                 
                 if (clicked.getType().equals(Material.GLASS))
@@ -112,7 +116,7 @@ public class PowerColor extends Power implements PowerRightClick, PowerLeftClick
     }
 
     @Override
-    public void leftClick(Player player, Block clicked) {
+    public void leftClick(Player player, ItemStack i, Block clicked) {
         if (item.getHasPermission() == true && player.hasPermission(item.getPermission()) == false) {
         } else {
             RPGValue value = RPGValue.get(player, item, "color.current");
@@ -142,6 +146,7 @@ public class PowerColor extends Power implements PowerRightClick, PowerLeftClick
         glass = s.getBoolean("glass", true);
         wool = s.getBoolean("wool", true);
         clay = s.getBoolean("clay", true);
+        consumption = s.getInt("consumption", 0);
     }
 
     @Override
@@ -150,5 +155,14 @@ public class PowerColor extends Power implements PowerRightClick, PowerLeftClick
         s.set("glass", glass);
         s.set("clay", clay);
         s.set("wool", wool);
+        s.set("consumption", consumption);
+    }
+
+    public int getConsumption(){
+        return consumption;
+    }
+
+    public void setConsumption(int cost){
+        consumption = cost;
     }
 }

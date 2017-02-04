@@ -21,6 +21,7 @@ import org.bukkit.block.Block;
 import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.entity.Player;
 import org.bukkit.entity.Projectile;
+import org.bukkit.inventory.ItemStack;
 import org.bukkit.util.BlockIterator;
 
 import think.rpgitems.Plugin;
@@ -33,9 +34,10 @@ public class PowerTeleport extends Power implements PowerRightClick, PowerProjec
 
     public int distance = 5;
     public long cooldownTime = 20;
+    public int consumption = 0;
 
     @Override
-    public void rightClick(Player player, Block clicked) {
+    public void rightClick(Player player, ItemStack i, Block clicked) {
         long cooldown;
         if (item.getHasPermission() == true && player.hasPermission(item.getPermission()) == false) {
         } else {
@@ -47,6 +49,7 @@ public class PowerTeleport extends Power implements PowerRightClick, PowerProjec
                 cooldown = value.asLong();
             }
             if (cooldown <= System.currentTimeMillis() / 50) {
+                if(!item.consumeDurability(i,consumption))return;
                 value.set(System.currentTimeMillis() / 50 + cooldownTime);
                 // float dist = 0;
                 World world = player.getWorld();
@@ -91,7 +94,7 @@ public class PowerTeleport extends Power implements PowerRightClick, PowerProjec
     }
 
     @Override
-    public void projectileHit(Player player, Projectile p) {
+    public void projectileHit(Player player, ItemStack i, Projectile p) {
         long cooldown;
         RPGValue value = RPGValue.get(player, item, "teleport.cooldown");
         if (value == null) {
@@ -124,12 +127,14 @@ public class PowerTeleport extends Power implements PowerRightClick, PowerProjec
     public void init(ConfigurationSection s) {
         cooldownTime = s.getLong("cooldown");
         distance = s.getInt("distance");
+        consumption = s.getInt("consumption", 0);
     }
 
     @Override
     public void save(ConfigurationSection s) {
         s.set("cooldown", cooldownTime);
         s.set("distance", distance);
+        s.set("consumption", consumption);
     }
 
     @Override
@@ -140,5 +145,13 @@ public class PowerTeleport extends Power implements PowerRightClick, PowerProjec
     @Override
     public String displayText() {
         return ChatColor.GREEN + String.format(Locale.get("power.teleport"), distance, (double) cooldownTime / 20d);
+    }
+
+    public int getConsumption(){
+        return consumption;
+    }
+
+    public void setConsumption(int cost){
+        consumption = cost;
     }
 }

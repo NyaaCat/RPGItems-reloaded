@@ -8,18 +8,21 @@ import org.bukkit.block.Block;
 import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.entity.*;
 
+import org.bukkit.inventory.ItemStack;
 import think.rpgitems.Plugin;
 import think.rpgitems.data.Locale;
 import think.rpgitems.data.RPGValue;
+import think.rpgitems.power.types.PowerConsuming;
 import think.rpgitems.power.types.PowerRightClick;
 
-public class PowerForceField extends Power implements PowerRightClick {
+public class PowerForceField extends Power implements PowerRightClick, PowerConsuming {
     public static final String name = "forcefield";
     public int cooldown = 200;
     public int radius = 5;
     public int height = 30;
     public int base = -15;
     public int ttl = 100;
+    public int consumption = 0;
 
     @Override
     public void init(ConfigurationSection s) {
@@ -28,6 +31,7 @@ public class PowerForceField extends Power implements PowerRightClick {
         height = s.getInt("height");
         base = s.getInt("base");
         ttl = s.getInt("ttl");
+        consumption = s.getInt("consumption", 0);
     }
 
     @Override
@@ -37,6 +41,7 @@ public class PowerForceField extends Power implements PowerRightClick {
         s.set("height", height);
         s.set("base", base);
         s.set("ttl", ttl);
+        s.set("consumption", consumption);
     }
 
     @Override
@@ -50,7 +55,7 @@ public class PowerForceField extends Power implements PowerRightClick {
     }
 
     @Override
-    public void rightClick(Player player, Block clicked) {
+    public void rightClick(Player player, ItemStack i, Block clicked) {
         if (item.getHasPermission() && !player.hasPermission(item.getPermission())) return;
         RPGValue value = RPGValue.get(player, item, "projectile.cooldown");
         long cd;
@@ -64,6 +69,7 @@ public class PowerForceField extends Power implements PowerRightClick {
             player.sendMessage(ChatColor.AQUA + String.format(Locale.get("message.cooldown"), ((double) (cd - System.currentTimeMillis() / 50)) / 20d));
             return;
         }
+        if(!item.consumeDurability(i,consumption))return;
         value.set(System.currentTimeMillis() / 50 + cooldown);
         World w = player.getWorld();
         int x = player.getLocation().getBlockX();
@@ -185,5 +191,13 @@ public class PowerForceField extends Power implements PowerRightClick {
             }
         }
         return list;
+    }
+
+    public int getConsumption(){
+        return consumption;
+    }
+
+    public void setConsumption(int cost){
+        consumption = cost;
     }
 }

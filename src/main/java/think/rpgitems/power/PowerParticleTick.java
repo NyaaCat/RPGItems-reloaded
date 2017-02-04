@@ -3,6 +3,7 @@ package think.rpgitems.power;
 import org.bukkit.Effect;
 import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.entity.Player;
+import org.bukkit.inventory.ItemStack;
 import think.rpgitems.data.Locale;
 import think.rpgitems.data.RPGValue;
 import think.rpgitems.power.types.PowerTick;
@@ -33,7 +34,7 @@ public class PowerParticleTick extends Power implements PowerTick {
     }
 
     @Override
-    public void tick(Player player) {
+    public void tick(Player player, ItemStack i) {
         long cdTick;
         RPGValue value = RPGValue.get(player, item, "particle.interval");
         if (value == null) {

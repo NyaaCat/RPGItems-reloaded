@@ -29,24 +29,28 @@ import org.bukkit.block.Block;
 import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.entity.FallingBlock;
 import org.bukkit.entity.Player;
+import org.bukkit.inventory.ItemStack;
 import org.bukkit.scheduler.BukkitRunnable;
 import org.bukkit.util.Vector;
 
 import think.rpgitems.Plugin;
 import think.rpgitems.data.Locale;
 import think.rpgitems.data.RPGValue;
+import think.rpgitems.power.types.PowerConsuming;
 import think.rpgitems.power.types.PowerRightClick;
 
-public class PowerRainbow extends Power implements PowerRightClick {
+public class PowerRainbow extends Power implements PowerRightClick, PowerConsuming {
 
     public long cooldownTime = 20;
     public int count = 5;
     public boolean isFire = false;
+    public int consumption = 0;
+
     private Random random = new Random();
 
     @SuppressWarnings("deprecation")
     @Override
-    public void rightClick(Player player, Block clicked) {
+    public void rightClick(Player player, ItemStack is, Block clicked) {
         long cooldown;
         if (item.getHasPermission() == true && player.hasPermission(item.getPermission()) == false) {
         } else {
@@ -58,6 +62,7 @@ public class PowerRainbow extends Power implements PowerRightClick {
                 cooldown = value.asLong();
             }
             if (cooldown <= System.currentTimeMillis() / 50) {
+                item.consumeDurability(is,0);
                 value.set(System.currentTimeMillis() / 50 + cooldownTime);
                 player.playSound(player.getLocation(), Sound.ENTITY_ARROW_SHOOT, 1.0f, 1.0f);
                 final ArrayList<FallingBlock> blocks = new ArrayList<FallingBlock>();
@@ -131,6 +136,7 @@ public class PowerRainbow extends Power implements PowerRightClick {
         cooldownTime = s.getLong("cooldown", 20);
         count = s.getInt("count", 5);
         isFire = s.getBoolean("isFire");
+        consumption = s.getInt("consumption", 0);
     }
 
     @Override
@@ -138,5 +144,14 @@ public class PowerRainbow extends Power implements PowerRightClick {
         s.set("cooldown", cooldownTime);
         s.set("count", count);
         s.set("isFire", isFire);
+        s.set("consumption", consumption);
+    }
+
+    public int getConsumption(){
+        return consumption;
+    }
+
+    public void setConsumption(int cost){
+        consumption = cost;
     }
 }

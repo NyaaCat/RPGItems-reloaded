@@ -102,18 +102,11 @@ public class Events implements Listener {
         ItemStack item = player.getInventory().getItemInMainHand();
         RPGItem rItem;
         if ((rItem = ItemManager.toRPGItem(item)) != null) {
-            RPGMetadata meta = RPGItem.getMetadata(item);
-            int durability = 1;
-            if (rItem.getMaxDurability() != -1) {
-                durability = meta.containsKey(RPGMetadata.DURABILITY) ? ((Number) meta.get(RPGMetadata.DURABILITY)).intValue() : rItem.getMaxDurability();
-                if (durability > rItem.getMaxDurability()) {
-                    durability = rItem.getMaxDurability();
-                }
-                durability--;
-                meta.put(RPGMetadata.DURABILITY, Integer.valueOf(durability));
+            boolean can = rItem.consumeDurability(item, 1);
+            if(!can){
+                e.setCancelled(true);
             }
-            RPGItem.updateItem(item, meta);
-            if (durability <= 0) {
+            if (rItem.getDurability(item) <= 0) {
                 player.getInventory().setItemInMainHand(null);
             } else {
                 player.getInventory().setItemInMainHand(item);
@@ -146,7 +139,7 @@ public class Events implements Listener {
 
     @EventHandler
     public void onProjectileHit(ProjectileHitEvent e) {
-        final Entity entity = e.getEntity();
+        final Projectile entity = e.getEntity();
         if (removeArrows.contains(entity.getEntityId())) {
             entity.remove();
             removeArrows.remove(entity.getEntityId());
@@ -158,12 +151,14 @@ public class Events implements Listener {
                     rpgProjectiles.remove(entity.getEntityId());
                 }
             }.runTask(Plugin.plugin);
-            if (item == null)
+            ItemStack hItem = ((Player)entity.getShooter()).getInventory().getItemInMainHand();
+            RPGItem rItem = ItemManager.toRPGItem(hItem);
+            if (item == null || rItem != item)
                 return;
-            item.projectileHit((Player) ((Projectile) entity).getShooter(), (Projectile) entity);
+            item.projectileHit((Player) ((Projectile) entity).getShooter(), hItem, (Projectile) entity);
         }
     }
-    
+
     @EventHandler
     public void onBowShoot(EntityShootBowEvent e) {
         e.getProjectile().setMetadata("rpgitems.force", new FixedMetadataValue(Plugin.plugin, e.getForce()));
@@ -176,6 +171,7 @@ public class Events implements Listener {
             Player player = (Player) shooter;
             ItemStack item = player.getInventory().getItemInMainHand();
             RPGItem rItem = ItemManager.toRPGItem(item);
+
             if (rItem == null)
                 return;
             if (!WorldGuard.canPvP(player) && !rItem.ignoreWorldGuard)
@@ -183,22 +179,6 @@ public class Events implements Listener {
             if (rItem.getHasPermission() == true && player.hasPermission(rItem.getPermission()) == false) {
                 e.setCancelled(true);
                 player.sendMessage(ChatColor.RED + String.format(Locale.get("message.error.permission")));
-            }
-            RPGMetadata meta = RPGItem.getMetadata(item);
-            int durability = 1;
-            if (rItem.getMaxDurability() != -1) {
-                durability = meta.containsKey(RPGMetadata.DURABILITY) ? ((Number) meta.get(RPGMetadata.DURABILITY)).intValue() : rItem.getMaxDurability();
-                if (durability > rItem.getMaxDurability()) {
-                    durability = rItem.getMaxDurability();
-                }
-                durability--;
-                meta.put(RPGMetadata.DURABILITY, Integer.valueOf(durability));
-            }
-            RPGItem.updateItem(item, meta);
-            if (durability <= 0) {
-                player.getInventory().setItemInMainHand(null);
-            } else {
-                player.updateInventory();
             }
             rpgProjectiles.put(e.getEntity().getEntityId(), rItem.getID());
         }
@@ -239,11 +219,11 @@ public class Events implements Listener {
 
         Action action = e.getAction();
         if (action == Action.RIGHT_CLICK_AIR) {
-            rItem.rightClick(p, e.getClickedBlock());
+            rItem.rightClick(p, e.getItem(), e.getClickedBlock());
         } else if (action == Action.RIGHT_CLICK_BLOCK && !BYPASS_BLOCK.contains(e.getMaterial())) {
-            rItem.rightClick(p, e.getClickedBlock());
+            rItem.rightClick(p, e.getItem(), e.getClickedBlock());
         } else if (action == Action.LEFT_CLICK_AIR || action == Action.LEFT_CLICK_BLOCK) {
-            rItem.leftClick(p, e.getClickedBlock());
+            rItem.leftClick(p, e.getItem(), e.getClickedBlock());
         }
         RPGItem.updateItem(e.getItem());
     }
@@ -339,15 +319,15 @@ public class Events implements Listener {
                 e.setCancelled(true);
             } else {
                 switch (clickEvent.getResult()) {
-                case DEFAULT: // Can't really do this with current events
-                case ALLOW:
-                    System.out.println("ok...");
-                    System.out.println(inv.getView().getItem(e.getRawSlot()));
-                    inv.getView().setItem(e.getRawSlot(), clickEvent.getCursor());
-                    System.out.println(inv.getView().getItem(e.getRawSlot()));
-                    break;
-                case DENY:
-                    break;
+                    case DEFAULT: // Can't really do this with current events
+                    case ALLOW:
+                        System.out.println("ok...");
+                        System.out.println(inv.getView().getItem(e.getRawSlot()));
+                        inv.getView().setItem(e.getRawSlot(), clickEvent.getCursor());
+                        System.out.println(inv.getView().getItem(e.getRawSlot()));
+                        break;
+                    case DENY:
+                        break;
                 }
             }
             for (LocaleInventory localeInv : localeInventories) {
@@ -426,20 +406,14 @@ public class Events implements Listener {
         }
         damage = damage + strength - weak;
         if (e.getEntity() instanceof LivingEntity) {
-            rItem.hit(player, (LivingEntity) e.getEntity(), e.getDamage());
+            rItem.hit(player, item, (LivingEntity) e.getEntity(), e.getDamage());
         }
-        RPGMetadata meta = RPGItem.getMetadata(item);
-        int durability = 1;
-        if (rItem.getMaxDurability() != -1) {
-            durability = meta.containsKey(RPGMetadata.DURABILITY) ? ((Number) meta.get(RPGMetadata.DURABILITY)).intValue() : rItem.getMaxDurability();
-            if (durability > rItem.getMaxDurability()) {
-                durability = rItem.getMaxDurability();
-            }
-            durability--;
-            meta.put(RPGMetadata.DURABILITY, Integer.valueOf(durability));
+        boolean can = rItem.consumeDurability(item, 1);
+        if(!can){
+            e.setCancelled(true);
+            return 0;
         }
-        RPGItem.updateItem(item, meta);
-        if (durability <= 0) {
+        if (rItem.getDurability(item) <= 0) {
             player.getInventory().setItemInMainHand(null);
         } else {
             player.getInventory().setItemInMainHand(item);
@@ -454,15 +428,19 @@ public class Events implements Listener {
             if (rItem == null)
                 return damage;
             damage = rItem.getDamageMin() != rItem.getDamageMax() ? (rItem.getDamageMin() + random.nextInt(rItem.getDamageMax() - rItem.getDamageMin())) : rItem.getDamageMin();
-            
+
             //Apply force adjustments
             if(e.getDamager().hasMetadata("rpgitems.force")) {
                 damage *= e.getDamager().getMetadata("rpgitems.force").get(0).asFloat();
             }
-            
+
+            Player player = (Player) entity.getShooter();
+            ItemStack item = player.getInventory().getItemInMainHand();
+            RPGItem hItem = ItemManager.toRPGItem(item);
+            if(rItem != hItem) return damage;
             if (e.getEntity() instanceof LivingEntity) {
                 LivingEntity le = (LivingEntity) e.getEntity();
-                rItem.hit((Player) entity.getShooter(), le, e.getDamage());
+                rItem.hit((Player) entity.getShooter(), item, le, e.getDamage());
             }
         }
         return damage;
@@ -492,19 +470,7 @@ public class Events implements Listener {
             if (pRItem.getArmour() > 0) {
                 damage -= Math.round(((double) damage) * (((double) pRItem.getArmour()) / 100d));
             }
-            RPGMetadata meta = RPGItem.getMetadata(pArmour);
-            if (pRItem.getMaxDurability() != -1) {
-                int durability = meta.containsKey(RPGMetadata.DURABILITY) ? ((Number) meta.get(RPGMetadata.DURABILITY)).intValue() : pRItem.getMaxDurability();
-                if (durability > pRItem.getMaxDurability()) {
-                    durability = pRItem.getMaxDurability();
-                }
-                durability--;
-                if (durability <= 0) {
-                    armour[i] = null;
-                }
-                meta.put(RPGMetadata.DURABILITY, Integer.valueOf(durability));
-            }
-            RPGItem.updateItem(pArmour, meta);
+            pRItem.consumeDurability(pArmour, 1);
         }
         if(hasRPGItem) {
             p.getInventory().setArmorContents(armour);
@@ -517,14 +483,14 @@ public class Events implements Listener {
         for (ItemStack item : e.getInventory().getArmorContents()) {
             RPGItem ri = ItemManager.toRPGItem(item);
             if (ri == null) continue;
-            double d = ri.takeHit(e, null, damage);
+            double d = ri.takeHit(e, item, null, damage);
             if (d < 0) continue;
             if (d < ret) ret = d;
         }
         for (ItemStack item : e.getInventory().getContents()) {
             RPGItem ri = ItemManager.toRPGItem(item);
             if (ri == null) continue;
-            double d = ri.takeHit(e, null, damage);
+            double d = ri.takeHit(e, item,null, damage);
             if (d < 0) continue;
             if (d < ret) ret = d;
         }

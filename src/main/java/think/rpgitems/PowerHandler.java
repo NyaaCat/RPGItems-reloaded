@@ -207,7 +207,6 @@ public class PowerHandler implements CommandHandler {
         sender.sendMessage(ChatColor.AQUA + Locale.get("message.power.ok"));
     }
 
-
     @CommandString("rpgitem $n[] power commandhit $cooldown:i[] $display:s[] $command:s[]")
     @CommandDocumentation("$command.rpgitem.commandhit")
     @CommandGroup("item_power_commandhit_b")
@@ -282,6 +281,29 @@ public class PowerHandler implements CommandHandler {
     @CommandGroup("item_power_consume")
     public void consume(CommandSender sender, RPGItem item, int cooldown) {
         PowerConsume pow = new PowerConsume();
+        pow.item = item;
+        pow.cdTicks = cooldown;
+        item.addPower(pow);
+        ItemManager.save(Plugin.plugin);
+        sender.sendMessage(ChatColor.AQUA + Locale.get("message.power.ok"));
+    }
+
+    @CommandString("rpgitem $n[] power consumehit")
+    @CommandDocumentation("$command.rpgitem.consumehit")
+    @CommandGroup("item_power_consumehit")
+    public void consumehit(CommandSender sender, RPGItem item) {
+        PowerConsumeHit pow = new PowerConsumeHit();
+        pow.item = item;
+        item.addPower(pow);
+        ItemManager.save(Plugin.plugin);
+        sender.sendMessage(ChatColor.AQUA + Locale.get("message.power.ok"));
+    }
+
+    @CommandString("rpgitem $n[] power consumehit $cooldown:i[]")
+    @CommandDocumentation("$command.rpgitem.consumehit.cd")
+    @CommandGroup("item_power_consumehit")
+    public void consumehit(CommandSender sender, RPGItem item, int cooldown) {
+        PowerConsumeHit pow = new PowerConsumeHit();
         pow.item = item;
         pow.cdTicks = cooldown;
         item.addPower(pow);

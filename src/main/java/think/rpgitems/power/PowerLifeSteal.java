@@ -24,18 +24,22 @@ import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.entity.LivingEntity;
 import org.bukkit.entity.Player;
 
+import org.bukkit.inventory.ItemStack;
 import think.rpgitems.data.Locale;
+import think.rpgitems.power.types.PowerConsuming;
 import think.rpgitems.power.types.PowerHit;
 
-public class PowerLifeSteal extends Power implements PowerHit {
+public class PowerLifeSteal extends Power implements PowerHit, PowerConsuming {
 
     public int chance = 20;
+    public int consumption = 0;
     private Random random = new Random();
 
     @Override
-    public void hit(Player player, LivingEntity e, double damage) {
+    public void hit(Player player, ItemStack i, LivingEntity e, double damage) {
         if (item.getHasPermission() == true && player.hasPermission(item.getPermission()) == false) {
         } else if (random.nextInt(chance) == 0) {
+            if(!item.consumeDurability(i,consumption))return;
             if ((player.getHealth() + damage) >= player.getAttribute(Attribute.GENERIC_MAX_HEALTH).getValue()) {
                 player.setHealth(player.getAttribute(Attribute.GENERIC_MAX_HEALTH).getValue());
             } else
@@ -56,10 +60,20 @@ public class PowerLifeSteal extends Power implements PowerHit {
     @Override
     public void init(ConfigurationSection s) {
         chance = s.getInt("chance");
+        consumption = s.getInt("consumption", 0);
     }
 
     @Override
     public void save(ConfigurationSection s) {
         s.set("chance", chance);
+        s.set("consumption", consumption);
+    }
+
+    public int getConsumption(){
+        return consumption;
+    }
+
+    public void setConsumption(int cost){
+        consumption = cost;
     }
 }
