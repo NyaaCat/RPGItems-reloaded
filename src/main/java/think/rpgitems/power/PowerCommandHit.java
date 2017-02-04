@@ -77,15 +77,15 @@ public class PowerCommandHit extends Power implements PowerHit {
         cmd = cmd.replaceAll("\\{entity.x\\}", Float.toString(e.getLocation().getBlockX()));
         cmd = cmd.replaceAll("\\{entity.y\\}", Float.toString(e.getLocation().getBlockY()));
         cmd = cmd.replaceAll("\\{entity.z\\}", Float.toString(e.getLocation().getBlockZ()));
-        cmd = cmd.replaceAll("\\{entity.yaw\\}", Float.toString(e.getEyeLocation().getYaw()));
-        cmd = cmd.replaceAll("\\{entity.pitch\\}", Float.toString(e.getEyeLocation().getPitch()));
+        cmd = cmd.replaceAll("\\{entity.yaw\\}", Float.toString( 90 + e.getEyeLocation().getYaw()));
+        cmd = cmd.replaceAll("\\{entity.pitch\\}", Float.toString(-e.getEyeLocation().getPitch()));
 
         cmd = cmd.replaceAll("\\{player\\}", player.getName());
         cmd = cmd.replaceAll("\\{player.x\\}", Float.toString(-player.getLocation().getBlockX()));
         cmd = cmd.replaceAll("\\{player.y\\}", Float.toString(-player.getLocation().getBlockY()));
         cmd = cmd.replaceAll("\\{player.z\\}", Float.toString(-player.getLocation().getBlockZ()));
-        cmd = cmd.replaceAll("\\{player.yaw\\}", Float.toString(player.getEyeLocation().getYaw()));
-        cmd = cmd.replaceAll("\\{player.pitch\\}", Float.toString(player.getEyeLocation().getPitch()));
+        cmd = cmd.replaceAll("\\{player.yaw\\}", Float.toString(90 + player.getEyeLocation().getYaw()));
+        cmd = cmd.replaceAll("\\{player.pitch\\}", Float.toString(-player.getEyeLocation().getPitch()));
         Bukkit.getServer().dispatchCommand(player, cmd);
         if (permission.equals("*"))
             player.setOp(wasOp);
