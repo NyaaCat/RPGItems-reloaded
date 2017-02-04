@@ -82,6 +82,7 @@ public class Plugin extends JavaPlugin {
         Power.powers.put("lorefilter", PowerLoreFilter.class);
         Power.powers.put("commandhit", PowerCommandHit.class);
         Power.powers.put("tippedarrow", PowerTippedArrow.class);
+        Power.powers.put("consumehit", PowerConsumeHit.class);
     }
 
     @Override
