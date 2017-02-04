@@ -106,6 +106,9 @@ public class Events implements Listener {
             int durability = 1;
             if (rItem.getMaxDurability() != -1) {
                 durability = meta.containsKey(RPGMetadata.DURABILITY) ? ((Number) meta.get(RPGMetadata.DURABILITY)).intValue() : rItem.getMaxDurability();
+                if (durability > rItem.getMaxDurability()) {
+                    durability = rItem.getMaxDurability();
+                }
                 durability--;
                 meta.put(RPGMetadata.DURABILITY, Integer.valueOf(durability));
             }
@@ -185,6 +188,9 @@ public class Events implements Listener {
             int durability = 1;
             if (rItem.getMaxDurability() != -1) {
                 durability = meta.containsKey(RPGMetadata.DURABILITY) ? ((Number) meta.get(RPGMetadata.DURABILITY)).intValue() : rItem.getMaxDurability();
+                if (durability > rItem.getMaxDurability()) {
+                    durability = rItem.getMaxDurability();
+                }
                 durability--;
                 meta.put(RPGMetadata.DURABILITY, Integer.valueOf(durability));
             }
@@ -426,6 +432,9 @@ public class Events implements Listener {
         int durability = 1;
         if (rItem.getMaxDurability() != -1) {
             durability = meta.containsKey(RPGMetadata.DURABILITY) ? ((Number) meta.get(RPGMetadata.DURABILITY)).intValue() : rItem.getMaxDurability();
+            if (durability > rItem.getMaxDurability()) {
+                durability = rItem.getMaxDurability();
+            }
             durability--;
             meta.put(RPGMetadata.DURABILITY, Integer.valueOf(durability));
         }
@@ -486,6 +495,9 @@ public class Events implements Listener {
             RPGMetadata meta = RPGItem.getMetadata(pArmour);
             if (pRItem.getMaxDurability() != -1) {
                 int durability = meta.containsKey(RPGMetadata.DURABILITY) ? ((Number) meta.get(RPGMetadata.DURABILITY)).intValue() : pRItem.getMaxDurability();
+                if (durability > pRItem.getMaxDurability()) {
+                    durability = pRItem.getMaxDurability();
+                }
                 durability--;
                 if (durability <= 0) {
                     armour[i] = null;

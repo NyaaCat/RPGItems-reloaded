@@ -109,6 +109,7 @@ public class RPGItem {
         this.id = id;
         encodedID = getMCEncodedID(id);
         item = new ItemStack(Material.WOOD_SWORD);
+        hasBar = true;
 
         displayName = item.getType().toString();
 
@@ -388,6 +389,11 @@ public class RPGItem {
     }
 
     public void rebuild() {
+        if (item.getType().getMaxDurability() != 0) {
+            hasBar = true;
+        } else {
+            hasBar = false;
+        }
         List<String> lines = getTooltipLines();
         ItemMeta meta = getLocaleMeta();
         meta.setDisplayName(lines.get(0));

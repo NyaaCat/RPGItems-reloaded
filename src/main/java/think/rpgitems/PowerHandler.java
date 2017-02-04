@@ -210,7 +210,7 @@ public class PowerHandler implements CommandHandler {
 
     @CommandString("rpgitem $n[] power commandhit $cooldown:i[] $display:s[] $command:s[]")
     @CommandDocumentation("$command.rpgitem.commandhit")
-    @CommandGroup("item_power_commandhit")
+    @CommandGroup("item_power_commandhit_b")
     public void commandhit(CommandSender sender, RPGItem item, int cooldown, String displayText, String command) {
         PowerCommandHit com = new PowerCommandHit();
         command = command.trim();
@@ -228,7 +228,7 @@ public class PowerHandler implements CommandHandler {
 
     @CommandString("rpgitem $n[] power commandhit $cooldown:i[] $display:s[] $command:s[] $permission:s[]")
     @CommandDocumentation("$command.rpgitem.commandhit.full")
-    @CommandGroup("item_power_commandhit")
+    @CommandGroup("item_power_commandhit_a")
     public void commandhit(CommandSender sender, RPGItem item, int cooldown, String displayText, String command, String permission) {
         PowerCommandHit com = new PowerCommandHit();
         command = command.trim();
