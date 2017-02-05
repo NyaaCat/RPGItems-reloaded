@@ -80,7 +80,7 @@ public class PowerTippedArrow extends Power implements PowerRightClick {
         amplifier = s.getInt("amplifier", 15);
         String potionEffectName = s.getString("type", "HARM");
         type = PotionEffectType.getByName(potionEffectName);
-        consumption = s.getInt("consumption", 0);
+        consumption = s.getInt("consumption", 1);
     }
 
     @Override
