@@ -25,38 +25,53 @@ import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
 import think.rpgitems.Plugin;
 import think.rpgitems.data.Locale;
+import think.rpgitems.power.types.PowerLeftClick;
 import think.rpgitems.power.types.PowerRightClick;
 
-public class PowerConsume extends Power implements PowerRightClick {
+public class PowerConsume extends Power implements PowerRightClick, PowerLeftClick {
     public int cdTicks = 0;
+    public boolean isRight = true;
 
     @Override
     public void rightClick(final Player player, Block clicked) {
-        if (checkCooldown(player, cdTicks)) {
-            if (item.getHasPermission() && !player.hasPermission(item.getPermission())) return;
-            ItemStack item = player.getInventory().getItemInMainHand();
-            int count = item.getAmount() - 1;
-            if (count == 0) {
-                Bukkit.getScheduler().scheduleSyncDelayedTask(Plugin.plugin, new Runnable() {
-                    @Override
-                    public void run() {
-                        player.getInventory().setItemInMainHand(new ItemStack(Material.AIR));
-                    }
-                }, 1L);
-            } else {
-                item.setAmount(count);
-            }
+        if (isRight && checkCooldown(player, cdTicks)) {
+            consume(player);
+        }
+    }
+
+    @Override
+    public void leftClick(final Player player, Block clicked) {
+        if (!isRight && checkCooldown(player, cdTicks)) {
+            consume(player);
+        }
+    }
+
+    private void consume(final Player player) {
+        if (item.getHasPermission() && !player.hasPermission(item.getPermission())) return;
+        ItemStack item = player.getInventory().getItemInMainHand();
+        int count = item.getAmount() - 1;
+        if (count == 0) {
+            Bukkit.getScheduler().scheduleSyncDelayedTask(Plugin.plugin, new Runnable() {
+                @Override
+                public void run() {
+                    player.getInventory().setItemInMainHand(new ItemStack(Material.AIR));
+                }
+            }, 1L);
+        } else {
+            item.setAmount(count);
         }
     }
 
     @Override
     public void init(ConfigurationSection s) {
         cdTicks = s.getInt("cooldown", 0);
+        isRight = s.getBoolean("isRight", true);
     }
 
     @Override
     public void save(ConfigurationSection s) {
         s.set("cooldown", cdTicks);
+        s.set("isRight", isRight);
     }
 
     @Override

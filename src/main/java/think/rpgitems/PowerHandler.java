@@ -289,6 +289,20 @@ public class PowerHandler implements CommandHandler {
         sender.sendMessage(ChatColor.AQUA + Locale.get("message.power.ok"));
     }
 
+    @CommandString("rpgitem $n[] power consume $o[left,right] $cooldown:i[]")
+    @CommandDocumentation("$command.rpgitem.consume.full")
+    @CommandGroup("item_power_consume_left")
+    public void consume(CommandSender sender, RPGItem item, String mouse, int cooldown) {
+        PowerConsume pow = new PowerConsume();
+        pow.isRight = mouse.equals("right");
+        pow.item = item;
+        pow.cdTicks = cooldown;
+        item.addPower(pow);
+        ItemManager.save(Plugin.plugin);
+        sender.sendMessage(ChatColor.AQUA + Locale.get("message.power.ok"));
+    }
+
+
     @CommandString("rpgitem $n[] power fire $cooldown:i[] $distance:i[] $burnduration:i[]")
     @CommandDocumentation("$command.rpgitem.fire")
     @CommandGroup("item_power_fire")
