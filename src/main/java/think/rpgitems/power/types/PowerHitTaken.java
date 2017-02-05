@@ -3,6 +3,7 @@ package think.rpgitems.power.types;
 import org.bukkit.entity.Entity;
 import org.bukkit.entity.LivingEntity;
 import org.bukkit.entity.Player;
+import org.bukkit.inventory.ItemStack;
 
 public interface PowerHitTaken extends Power {
     /**
@@ -11,5 +12,5 @@ public interface PowerHitTaken extends Power {
      * @param damage damage value
      * @return new damage value, if nothing change, return a negative number.
      */
-    double takeHit(Player target, Entity damager, double damage);
+    double takeHit(Player target, ItemStack i, Entity damager, double damage);
 }

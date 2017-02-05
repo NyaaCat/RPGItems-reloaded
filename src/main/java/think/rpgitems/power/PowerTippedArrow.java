@@ -22,6 +22,7 @@ import org.bukkit.block.Block;
 import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.entity.Player;
 import org.bukkit.entity.TippedArrow;
+import org.bukkit.inventory.ItemStack;
 import org.bukkit.potion.PotionEffect;
 import org.bukkit.potion.PotionEffectType;
 import think.rpgitems.Events;
@@ -35,9 +36,10 @@ public class PowerTippedArrow extends Power implements PowerRightClick {
     public int amplifier = 1;
     public int duration = 15;
     public PotionEffectType type = null;
+    public int consumption = 0;
 
     @Override
-    public void rightClick(Player player, Block clicked) {
+    public void rightClick(Player player, ItemStack i, Block clicked) {
         long cooldown;
         if (item.getHasPermission() == true && player.hasPermission(item.getPermission()) == false) {
         } else {
@@ -49,6 +51,7 @@ public class PowerTippedArrow extends Power implements PowerRightClick {
                 cooldown = value.asLong();
             }
             if (cooldown <= System.currentTimeMillis() / 50) {
+                if(!item.consumeDurability(i,consumption))return;
                 value.set(System.currentTimeMillis() / 50 + cooldownTime);
                 player.playSound(player.getLocation(), Sound.ENTITY_ARROW_SHOOT, 1.0f, 1.0f);
                 TippedArrow arrow = player.launchProjectile(TippedArrow.class);
@@ -77,6 +80,7 @@ public class PowerTippedArrow extends Power implements PowerRightClick {
         amplifier = s.getInt("amplifier", 15);
         String potionEffectName = s.getString("type", "HARM");
         type = PotionEffectType.getByName(potionEffectName);
+        consumption = s.getInt("consumption", 0);
     }
 
     @Override
@@ -85,5 +89,14 @@ public class PowerTippedArrow extends Power implements PowerRightClick {
         s.set("duration", duration);
         s.set("amplifier", amplifier);
         s.set("type", type.getName());
+        s.set("consumption", consumption);
+    }
+
+    public int getConsumption(){
+        return consumption;
+    }
+
+    public void setConsumption(int cost){
+        consumption = cost;
     }
 }

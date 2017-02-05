@@ -23,22 +23,25 @@ import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.entity.Entity;
 import org.bukkit.entity.FallingBlock;
 import org.bukkit.entity.Player;
+import org.bukkit.inventory.ItemStack;
 import org.bukkit.scheduler.BukkitRunnable;
 import think.rpgitems.Plugin;
 import think.rpgitems.data.Locale;
 import think.rpgitems.data.RPGValue;
+import think.rpgitems.power.types.PowerConsuming;
 import think.rpgitems.power.types.PowerRightClick;
 
 import java.util.List;
 import java.util.Random;
 
-public class PowerIce extends Power implements PowerRightClick {
+public class PowerIce extends Power implements PowerRightClick, PowerConsuming {
 
     public long cooldownTime = 20;
+    public int consumption = 0;
 
     @SuppressWarnings("deprecation")
     @Override
-    public void rightClick(final Player player, Block clicked) {
+    public void rightClick(final Player player, ItemStack i, Block clicked) {
         long cooldown;
         if (item.getHasPermission() == true && player.hasPermission(item.getPermission()) == false) {
         } else {
@@ -50,6 +53,7 @@ public class PowerIce extends Power implements PowerRightClick {
                 cooldown = value.asLong();
             }
             if (cooldown <= System.currentTimeMillis() / 50) {
+                if(!item.consumeDurability(i,consumption))return;
                 value.set(System.currentTimeMillis() / 50 + cooldownTime);
                 player.playSound(player.getLocation(), Sound.ENTITY_EGG_THROW, 1.0f, 0.1f);
 
@@ -148,10 +152,20 @@ public class PowerIce extends Power implements PowerRightClick {
     @Override
     public void init(ConfigurationSection s) {
         cooldownTime = s.getLong("cooldown", 20);
+        consumption = s.getInt("consumption", 0);
     }
 
     @Override
     public void save(ConfigurationSection s) {
         s.set("cooldown", cooldownTime);
+        s.set("consumption", consumption);
+    }
+
+    public int getConsumption(){
+        return consumption;
+    }
+
+    public void setConsumption(int cost){
+        consumption = cost;
     }
 }

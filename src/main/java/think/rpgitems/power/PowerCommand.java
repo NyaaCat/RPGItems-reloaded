@@ -22,6 +22,7 @@ import org.bukkit.block.Block;
 import org.bukkit.command.defaults.BukkitCommand;
 import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.entity.Player;
+import org.bukkit.inventory.ItemStack;
 import org.bukkit.permissions.PermissionAttachment;
 
 import think.rpgitems.Plugin;
@@ -29,14 +30,16 @@ import think.rpgitems.data.Locale;
 import think.rpgitems.data.RPGValue;
 import think.rpgitems.power.types.PowerLeftClick;
 import think.rpgitems.power.types.PowerRightClick;
+import think.rpgitems.power.types.PowerConsuming;
 
-public class PowerCommand extends Power implements PowerRightClick, PowerLeftClick {
+public class PowerCommand extends Power implements PowerRightClick, PowerLeftClick, PowerConsuming {
 
     public String command = "";
     public String display = "Runs command";
     public String permission = "";
     public boolean isRight = true;
     public long cooldownTime = 20;
+    public int consumption = 0;
 
     protected boolean updateCooldown(Player player) {
         long cooldown;
@@ -82,16 +85,18 @@ public class PowerCommand extends Power implements PowerRightClick, PowerLeftCli
     }
 
     @Override
-    public void rightClick(Player player, Block clicked) {
+    public void rightClick(Player player, ItemStack i, Block clicked) {
         if (item.getHasPermission() && !player.hasPermission(item.getPermission())) return;
         if (!isRight || !updateCooldown(player)) return;
+        if(!item.consumeDurability(i,consumption))return;
         executeCommand(player);
     }
 
     @Override
-    public void leftClick(Player player, Block clicked) {
+    public void leftClick(Player player, ItemStack i, Block clicked) {
         if (item.getHasPermission() && !player.hasPermission(item.getPermission())) return;
         if (isRight || !updateCooldown(player)) return;
+        if(!item.consumeDurability(i,consumption))return;
         executeCommand(player);
     }
 
@@ -112,6 +117,7 @@ public class PowerCommand extends Power implements PowerRightClick, PowerLeftCli
         display = s.getString("display", "");
         isRight = s.getBoolean("isRight", true);
         permission = s.getString("permission", "");
+        consumption = s.getInt("consumption", 1);
     }
 
     @Override
@@ -121,5 +127,14 @@ public class PowerCommand extends Power implements PowerRightClick, PowerLeftCli
         s.set("display", display);
         s.set("isRight", isRight);
         s.set("permission", permission);
+        s.set("consumption", consumption);
+    }
+
+    public int getConsumption(){
+        return consumption;
+    }
+
+    public void setConsumption(int cost){
+        consumption = cost;
     }
 }

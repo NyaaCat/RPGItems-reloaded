@@ -22,6 +22,7 @@ import think.rpgitems.item.ItemManager;
 import think.rpgitems.item.Quality;
 import think.rpgitems.item.RPGItem;
 import think.rpgitems.power.Power;
+import think.rpgitems.power.types.PowerConsuming;
 import think.rpgitems.support.WorldGuard;
 
 import java.util.*;
@@ -576,6 +577,41 @@ public class Handler implements CommandHandler {
         }
         ItemManager.save(Plugin.plugin);
         sender.sendMessage(String.format(ChatColor.AQUA + Locale.get("message.drop.set"), item.getDisplay() + ChatColor.AQUA, typeS.toLowerCase(), item.dropChances.get(typeS)));
+    }
+
+    @CommandString("rpgitem $n[] consumption $power:s[] $nth:i[] $cost:i[]")
+    @CommandDocumentation("$command.rpgitem.power_cost")
+    @CommandGroup("item_power_cost")
+    public void setItemPowerConsumption(CommandSender sender, RPGItem item, String power, int nth, int cost) {
+        Class p = Power.powers.get(power);
+        if(p == null){
+            sender.sendMessage(Locale.get("message.power_cost.notfound"));
+        }
+        for (Power pow:item.powers) {
+            if(p.isInstance(pow) && pow instanceof PowerConsuming && --nth == 0){
+                ((PowerConsuming) pow).setConsumption(cost);
+                ItemManager.save(Plugin.plugin);
+                sender.sendMessage(Locale.get("message.power_cost.change"));
+                return;
+            }
+        }
+        sender.sendMessage(Locale.get("message.power_cost.notfound"));
+    }
+
+    @CommandString("rpgitem $n[] consumption $power:s[]")
+    @CommandDocumentation("$command.rpgitem.power_cost.get")
+    @CommandGroup("item_power_get_cost")
+    public void getItemPowerConsumption(CommandSender sender, RPGItem item, String power) {
+        Class p = Power.powers.get(power);
+        if(p == null){
+            sender.sendMessage(Locale.get("message.power_cost.notfound"));
+        }
+        int nth=0;
+        for (Power pow:item.powers) {
+            if(p.isInstance(pow) && pow instanceof PowerConsuming){
+                sender.sendMessage(String.format(ChatColor.AQUA + Locale.get("message.power_cost.get"), ++nth, power , ((PowerConsuming) pow).getConsumption()));
+            }
+        }
     }
 
     @CommandString("rpgitem $n[] durability $durability:i[]")

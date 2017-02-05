@@ -3,8 +3,10 @@ package think.rpgitems.power;
 import org.bukkit.block.Block;
 import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.entity.Player;
+import org.bukkit.inventory.ItemStack;
 import org.bukkit.scheduler.BukkitRunnable;
 import think.rpgitems.Plugin;
+import think.rpgitems.power.types.PowerConsuming;
 
 public class PowerDelayedCommand extends PowerCommand {
     public int delay = 20;
@@ -31,9 +33,10 @@ public class PowerDelayedCommand extends PowerCommand {
     }
 
     @Override
-    public void rightClick(final Player player, Block clicked) {
+    public void rightClick(final Player player, ItemStack i, Block clicked) {
         if (item.getHasPermission() && !player.hasPermission(item.getPermission())) return;
         if (!isRight || !updateCooldown(player)) return;
+        if(!item.consumeDurability(i,consumption))return;
         (new BukkitRunnable() {
             @Override
             public void run() {
@@ -43,9 +46,10 @@ public class PowerDelayedCommand extends PowerCommand {
     }
 
     @Override
-    public void leftClick(final Player player, Block clicked) {
+    public void leftClick(final Player player, ItemStack i, Block clicked) {
         if (item.getHasPermission() && !player.hasPermission(item.getPermission())) return;
         if (isRight || !updateCooldown(player)) return;
+        if(!item.consumeDurability(i,consumption))return;
         (new BukkitRunnable() {
             @Override
             public void run() {

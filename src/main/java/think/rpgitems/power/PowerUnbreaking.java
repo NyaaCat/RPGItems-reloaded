@@ -20,6 +20,7 @@ import org.bukkit.ChatColor;
 import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.entity.LivingEntity;
 import org.bukkit.entity.Player;
+import org.bukkit.inventory.ItemStack;
 import think.rpgitems.data.Locale;
 import think.rpgitems.power.types.PowerHit;
 
@@ -31,7 +32,7 @@ public class PowerUnbreaking extends Power implements PowerHit {
     private Random random = new Random();
 
     @Override
-    public void hit(Player player, LivingEntity e, double damage) {
+    public void hit(Player player, ItemStack i, LivingEntity e, double damage) {
         if (random.nextDouble() < ((double) level) / 100d) {
             System.out.println(player.getInventory().getItemInMainHand().getDurability());
             player.getInventory().getItemInMainHand().setDurability((short) (player.getInventory().getItemInMainHand().getDurability() - 1));

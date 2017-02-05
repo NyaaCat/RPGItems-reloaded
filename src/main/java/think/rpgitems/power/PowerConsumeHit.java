@@ -17,55 +17,48 @@
 package think.rpgitems.power;
 
 import org.bukkit.ChatColor;
+import org.bukkit.Material;
 import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.entity.LivingEntity;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
 import think.rpgitems.data.Locale;
-import think.rpgitems.power.types.PowerConsuming;
 import think.rpgitems.power.types.PowerHit;
 
-public class PowerFlame extends Power implements PowerHit, PowerConsuming {
-
-    public int burnTime = 20;
-    public int consumption = 0;
+public class PowerConsumeHit extends Power implements PowerHit {
+    public int cdTicks = 0;
 
     @Override
-    public void hit(Player player, ItemStack i, LivingEntity e, double damage) {
-        if (item.getHasPermission() == true && player.hasPermission(item.getPermission()) == false) {
-        } else {
-            if(!item.consumeDurability(i,consumption))return;
-            e.setFireTicks(burnTime);
+    public void hit(final Player player, ItemStack is, LivingEntity e, double damage) {
+        if (checkCooldown(player, cdTicks)) {
+            if (item.getHasPermission() && !player.hasPermission(item.getPermission())) return;
+            int count = is.getAmount() - 1;
+            if (count == 0) {
+                is.setAmount(0);
+                is.setType(Material.AIR);
+            } else {
+                is.setAmount(count);
+            }
         }
     }
 
     @Override
-    public String displayText() {
-        return ChatColor.GREEN + String.format(Locale.get("power.flame"), (double) burnTime / 20d);
-    }
-
-    @Override
-    public String getName() {
-        return "flame";
-    }
-
-    @Override
     public void init(ConfigurationSection s) {
-        burnTime = s.getInt("burntime");
-        consumption = s.getInt("consumption", 0);
+        cdTicks = s.getInt("cooldown", 0);
     }
 
     @Override
     public void save(ConfigurationSection s) {
-        s.set("burntime", burnTime);
-        s.set("consumption", consumption);
+        s.set("cooldown", cdTicks);
     }
 
-    public int getConsumption(){
-        return consumption;
+    @Override
+    public String getName() {
+        return "consumehit";
     }
 
-    public void setConsumption(int cost){
-        consumption = cost;
+    @Override
+    public String displayText() {
+        return ChatColor.GREEN + Locale.get("power.consumehit");
     }
 }

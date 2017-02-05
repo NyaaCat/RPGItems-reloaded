@@ -22,16 +22,19 @@ import org.bukkit.entity.Entity;
 import org.bukkit.entity.LivingEntity;
 import org.bukkit.entity.Player;
 
+import org.bukkit.inventory.ItemStack;
 import think.rpgitems.data.Locale;
 import think.rpgitems.data.RPGValue;
+import think.rpgitems.power.types.PowerConsuming;
 import think.rpgitems.power.types.PowerHitTaken;
 
-public class PowerRescue extends Power implements PowerHitTaken {
+public class PowerRescue extends Power implements PowerHitTaken, PowerConsuming {
 
     public String permission = "";
     public int healthTrigger = 4;
     public boolean useBed = true;
     public long cooldownTime = 20;
+    public int consumption = 0;
 
     @Override
     public String displayText() {
@@ -49,6 +52,7 @@ public class PowerRescue extends Power implements PowerHitTaken {
         healthTrigger = s.getInt("healthTrigger", 4);
         useBed = s.getBoolean("useBed", true);
         permission = s.getString("permission", "");
+        consumption = s.getInt("consumption", 0);
     }
 
     @Override
@@ -57,10 +61,11 @@ public class PowerRescue extends Power implements PowerHitTaken {
         s.set("healthTrigger", healthTrigger);
         s.set("useBed", useBed);
         s.set("permission", permission);
+        s.set("consumption", consumption);
     }
 
     @Override
-    public double takeHit(Player target, Entity damager, double damage) {
+    public double takeHit(Player target, ItemStack i, Entity damager, double damage) {
         if (item.getHasPermission() == true && target.hasPermission(item.getPermission()) == false) {
             return -1;
         } else {
@@ -75,6 +80,7 @@ public class PowerRescue extends Power implements PowerHitTaken {
                 cooldown = value.asLong();
             }
             if (cooldown <= System.currentTimeMillis() / 50) {
+                if(!item.consumeDurability(i,consumption))return damage;
                 value.set(System.currentTimeMillis() / 50 + cooldownTime);
                 target.sendMessage(ChatColor.AQUA + Locale.get("power.rescue.info"));
                 if(target.getBedSpawnLocation() != null)
@@ -91,5 +97,13 @@ public class PowerRescue extends Power implements PowerHitTaken {
                 return -1;
             }
         }
+    }
+
+    public int getConsumption(){
+        return consumption;
+    }
+
+    public void setConsumption(int cost){
+        consumption = cost;
     }
 }

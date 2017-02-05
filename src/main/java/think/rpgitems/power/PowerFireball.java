@@ -23,16 +23,19 @@ import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.entity.Player;
 import org.bukkit.entity.SmallFireball;
 
+import org.bukkit.inventory.ItemStack;
 import think.rpgitems.data.Locale;
 import think.rpgitems.data.RPGValue;
+import think.rpgitems.power.types.PowerConsuming;
 import think.rpgitems.power.types.PowerRightClick;
 
-public class PowerFireball extends Power implements PowerRightClick {
+public class PowerFireball extends Power implements PowerRightClick, PowerConsuming {
 
     public long cooldownTime = 20;
+    public int consumption = 0;
 
     @Override
-    public void rightClick(Player player, Block clicked) {
+    public void rightClick(Player player, ItemStack i, Block clicked) {
         long cooldown;
         if (item.getHasPermission() == true && player.hasPermission(item.getPermission()) == false) {
         } else {
@@ -44,6 +47,7 @@ public class PowerFireball extends Power implements PowerRightClick {
                 cooldown = value.asLong();
             }
             if (cooldown <= System.currentTimeMillis() / 50) {
+                if(!item.consumeDurability(i,consumption))return;
                 value.set(System.currentTimeMillis() / 50 + cooldownTime);
                 player.playSound(player.getLocation(), Sound.ENTITY_GHAST_SHOOT, 1.0f, 1.0f);
                 player.launchProjectile(SmallFireball.class);
@@ -66,10 +70,20 @@ public class PowerFireball extends Power implements PowerRightClick {
     @Override
     public void init(ConfigurationSection s) {
         cooldownTime = s.getLong("cooldown", 20);
+        consumption = s.getInt("consumption", 0);
     }
 
     @Override
     public void save(ConfigurationSection s) {
         s.set("cooldown", cooldownTime);
+        s.set("consumption", consumption);
+    }
+
+    public int getConsumption(){
+        return consumption;
+    }
+
+    public void setConsumption(int cost){
+        consumption = cost;
     }
 }

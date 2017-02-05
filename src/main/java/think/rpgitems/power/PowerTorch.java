@@ -23,6 +23,7 @@ import org.bukkit.block.Block;
 import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.entity.FallingBlock;
 import org.bukkit.entity.Player;
+import org.bukkit.inventory.ItemStack;
 import org.bukkit.metadata.FixedMetadataValue;
 import org.bukkit.scheduler.BukkitRunnable;
 
@@ -35,10 +36,11 @@ import think.rpgitems.power.types.PowerRightClick;
 public class PowerTorch extends Power implements PowerRightClick {
 
     public long cooldownTime = 20;
+    public int consumption = 0;
 
     @SuppressWarnings("deprecation")
     @Override
-    public void rightClick(final Player player, Block clicked) {
+    public void rightClick(final Player player, ItemStack i, Block clicked) {
         long cooldown;
         if (item.getHasPermission() == true && player.hasPermission(item.getPermission()) == false) {
         } else {
@@ -50,6 +52,7 @@ public class PowerTorch extends Power implements PowerRightClick {
                 cooldown = value.asLong();
             }
             if (cooldown <= System.currentTimeMillis() / 50) {
+                if(!item.consumeDurability(i,consumption))return;
                 value.set(System.currentTimeMillis() / 50 + cooldownTime);
                 player.playSound(player.getLocation(), Sound.ITEM_FLINTANDSTEEL_USE, 1.0f, 0.8f);
                 final FallingBlock block = player.getWorld().spawnFallingBlock(player.getLocation().add(0, 1.8, 0), Material.TORCH, (byte) 0);
@@ -130,11 +133,13 @@ public class PowerTorch extends Power implements PowerRightClick {
     @Override
     public void init(ConfigurationSection s) {
         cooldownTime = s.getLong("cooldown", 20);
+        consumption = s.getInt("consumption", 0);
     }
 
     @Override
     public void save(ConfigurationSection s) {
         s.set("cooldown", cooldownTime);
+        s.set("consumption", consumption);
     }
 
     private List<Byte> getPossibleOrientations(Location loc) {
@@ -158,5 +163,13 @@ public class PowerTorch extends Power implements PowerRightClick {
                 }
 
         return orientations;
+    }
+
+    public int getConsumption(){
+        return consumption;
+    }
+
+    public void setConsumption(int cost){
+        consumption = cost;
     }
 }

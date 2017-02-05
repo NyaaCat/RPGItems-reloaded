@@ -20,6 +20,7 @@ import org.bukkit.ChatColor;
 import org.bukkit.block.Block;
 import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.entity.Player;
+import org.bukkit.inventory.ItemStack;
 import org.bukkit.potion.PotionEffect;
 import org.bukkit.potion.PotionEffectType;
 
@@ -34,7 +35,7 @@ public class PowerRush extends Power implements PowerRightClick {
     private int time = 20;
 
     @Override
-    public void rightClick(Player player, Block clicked) {
+    public void rightClick(Player player, ItemStack i, Block clicked) {
         long cooldown;
         if (item.getHasPermission() == true && player.hasPermission(item.getPermission()) == false) {
         } else {

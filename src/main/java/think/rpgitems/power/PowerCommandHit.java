@@ -21,19 +21,22 @@ import org.bukkit.ChatColor;
 import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.entity.LivingEntity;
 import org.bukkit.entity.Player;
+import org.bukkit.inventory.ItemStack;
 import org.bukkit.permissions.PermissionAttachment;
 import think.rpgitems.Plugin;
 import think.rpgitems.data.Locale;
 import think.rpgitems.data.RPGValue;
+import think.rpgitems.power.types.PowerConsuming;
 import think.rpgitems.power.types.PowerHit;
 
 
-public class PowerCommandHit extends Power implements PowerHit {
+public class PowerCommandHit extends Power implements PowerHit, PowerConsuming {
 
     public String command = "";
     public String display = "Runs command";
     public String permission = "";
     public long cooldownTime = 20;
+    public int consumption = 0;
 
     protected boolean updateCooldown(Player player) {
         long cooldown;
@@ -92,9 +95,10 @@ public class PowerCommandHit extends Power implements PowerHit {
     }
 
     @Override
-    public void hit(Player player, LivingEntity e, double damage) {
+    public void hit(Player player, ItemStack i, LivingEntity e, double damage) {
         if (item.getHasPermission() && !player.hasPermission(item.getPermission())) return;
         if (!updateCooldown(player)) return;
+        if(!item.consumeDurability(i,consumption))return;
         executeCommand(player, e);
     }
 
@@ -114,6 +118,7 @@ public class PowerCommandHit extends Power implements PowerHit {
         command = s.getString("command", "");
         display = s.getString("display", "");
         permission = s.getString("permission", "");
+        consumption = s.getInt("consumption", 0);
     }
 
     @Override
@@ -122,5 +127,14 @@ public class PowerCommandHit extends Power implements PowerHit {
         s.set("command", command);
         s.set("display", display);
         s.set("permission", permission);
+        s.set("consumption", consumption);
+    }
+
+    public int getConsumption(){
+        return consumption;
+    }
+
+    public void setConsumption(int cost){
+        consumption = cost;
     }
 }

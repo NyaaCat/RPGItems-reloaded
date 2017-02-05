@@ -22,23 +22,26 @@ import org.bukkit.*;
 import org.bukkit.block.Block;
 import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.entity.*;
+import org.bukkit.inventory.ItemStack;
 import org.bukkit.scheduler.BukkitRunnable;
 import org.bukkit.util.Vector;
 
 import think.rpgitems.Plugin;
 import think.rpgitems.data.Locale;
 import think.rpgitems.data.RPGValue;
+import think.rpgitems.power.types.PowerConsuming;
 import think.rpgitems.power.types.PowerRightClick;
 
-public class PowerFire extends Power implements PowerRightClick {
+public class PowerFire extends Power implements PowerRightClick, PowerConsuming {
 
     public long cooldownTime = 20;
     public int distance = 15;
     public int burnduration = 40;
+    public int consumption = 0;
 
     @SuppressWarnings("deprecation")
     @Override
-    public void rightClick(final Player player, Block clicked) {
+    public void rightClick(final Player player, ItemStack i, Block clicked) {
         long cooldown;
         RPGValue value = RPGValue.get(player, item, "fire.cooldown");
         if (value == null) {
@@ -48,6 +51,7 @@ public class PowerFire extends Power implements PowerRightClick {
             cooldown = value.asLong();
         }
         if (cooldown <= System.currentTimeMillis() / 50) {
+            if(!item.consumeDurability(i,consumption))return;
             value.set(System.currentTimeMillis() / 50 + cooldownTime);
             player.playSound(player.getLocation(), Sound.ITEM_FLINTANDSTEEL_USE, 1.0f, 1.2f);
             final List<Block> fireblocks = new ArrayList<Block>();
@@ -146,6 +150,7 @@ public class PowerFire extends Power implements PowerRightClick {
         cooldownTime = s.getLong("cooldown", 20);
         distance = s.getInt("distance");
         burnduration = s.getInt("burnduration");
+        consumption = s.getInt("consumption", 0);
     }
 
     @Override
@@ -153,5 +158,14 @@ public class PowerFire extends Power implements PowerRightClick {
         s.set("cooldown", cooldownTime);
         s.set("distance", distance);
         s.set("burnduration", burnduration);
+        s.set("consumption", consumption);
+    }
+
+    public int getConsumption(){
+        return consumption;
+    }
+
+    public void setConsumption(int cost){
+        consumption = cost;
     }
 }

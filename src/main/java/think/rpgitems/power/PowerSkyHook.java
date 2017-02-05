@@ -7,6 +7,7 @@ import org.bukkit.Material;
 import org.bukkit.block.Block;
 import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.entity.Player;
+import org.bukkit.inventory.ItemStack;
 import org.bukkit.scheduler.BukkitRunnable;
 import org.bukkit.util.Vector;
 import think.rpgitems.Plugin;
@@ -22,7 +23,7 @@ public class PowerSkyHook extends Power implements PowerRightClick {
     public int hookDistance = 10;
 
     @Override
-    public void rightClick(final Player player, Block clicked) {
+    public void rightClick(final Player player, ItemStack i, Block clicked) {
         if (item.getHasPermission() == true && player.hasPermission(item.getPermission()) == false) {
         } else {
             RPGValue isHooking = RPGValue.get(player, item, "skyhook.isHooking");
