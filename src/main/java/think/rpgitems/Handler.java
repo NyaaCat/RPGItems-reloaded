@@ -52,9 +52,26 @@ public class Handler implements CommandHandler {
     @CommandDocumentation("$command.rpgitem.list")
     @CommandGroup("list")
     public void listItems(CommandSender sender) {
-        sender.sendMessage(ChatColor.GREEN + "RPGItems:");
+        sender.sendMessage(ChatColor.AQUA + "RPGItems:");
         for (RPGItem item : ItemManager.itemByName.values()) {
             sender.sendMessage(ChatColor.GREEN + item.getName() + " - " + item.getDisplay());
+        }
+    }
+
+    @CommandString("rpgitem list $page:i[]")
+    @CommandDocumentation("$command.rpgitem.list.paged")
+    @CommandGroup("list")
+    public void listItems(CommandSender sender, int page) {
+        int index = 0;
+        Collection<RPGItem> items = ItemManager.itemByName.values();
+        int perPage = Plugin.plugin.getConfig().getInt("itemperpage", 9);
+        sender.sendMessage(ChatColor.AQUA + "RPGItems: " + page + " / " + (int)(items.size()/(double)perPage + 0.5) );
+        for (RPGItem item : ItemManager.itemByName.values()) {
+            ++index;
+            if(index > (page - 1)*perPage && index <= page*perPage){
+                sender.sendMessage(ChatColor.GREEN + item.getName() + " - " + item.getDisplay());
+            }
+            if(index == page*perPage )return;
         }
     }
 

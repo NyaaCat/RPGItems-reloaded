@@ -127,6 +127,7 @@ command.rpgitem.lifesteal=给 @[物品]\# 添加生命偷取技能, 偷取几率
 command.rpgitem.lightning=给 @[物品]\# 添加闪电技能, 默认几率为1/20. 攻击目标时一定几率生成闪电
 command.rpgitem.lightning.full=给 @[物品]\# 添加闪电技能, 几率为1/@[分母数值]\#. 攻击目标时一定几率生成闪电
 command.rpgitem.list=显示所有RPG Items创造出来的物品
+command.rpgitem.list.paged=显示所有RPG Items创造出来的物品，分页显示
 command.rpgitem.lore=显示 @[物品]\# 当前描述
 command.rpgitem.lore.set=给 @[物品]\# 设置 @[描述]\#
 command.rpgitem.particle=向 @[Item]\# 添加粒子效果. 当右键时，在玩家周围产生粒子。  @[VisualEffect]\# 可以是 SMOKE/ENDER_SIGNAL/MOBSPAWNER_FLAMES 之一。
