@@ -72,7 +72,7 @@ public class PowerArrow extends Power implements PowerRightClick, PowerConsuming
     @Override
     public void init(ConfigurationSection s) {
         cooldownTime = s.getLong("cooldown", 20);
-        consumption = s.getInt("consumption", 0);
+        consumption = s.getInt("consumption", 1);
     }
 
     @Override

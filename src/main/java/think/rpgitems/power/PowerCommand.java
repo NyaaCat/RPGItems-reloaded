@@ -117,7 +117,7 @@ public class PowerCommand extends Power implements PowerRightClick, PowerLeftCli
         display = s.getString("display", "");
         isRight = s.getBoolean("isRight", true);
         permission = s.getString("permission", "");
-        consumption = s.getInt("consumption", 1);
+        consumption = s.getInt("consumption", 0);
     }
 
     @Override

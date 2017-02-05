@@ -32,7 +32,7 @@ public class PowerProjectile extends Power implements PowerRightClick, PowerCons
         cone = s.getBoolean("isCone");
         range = s.getInt("range");
         amount = s.getInt("amount");
-        consumption = s.getInt("consumption", 0);
+        consumption = s.getInt("consumption", 1);
     }
 
     @Override
