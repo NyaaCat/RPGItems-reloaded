@@ -77,6 +77,7 @@ command.rpgitem.commandhit=给 @[Item]\# 添加击中指令技能. 冷却时间�
 command.rpgitem.commandhit.full=给 @[Item]\# 添加击中指令技能. 冷却时间为 @[Cooldown]\#. 工具提示为 @[Display]\#. @[指令]\# 会在击中目标后执行, 并给予运行此 @[Command]\# 的 @[Permission]\#. ***注意***\: 如果你想在 @[Display]\# 或 @[Command]\# 或 @[Permission]\# 留空, 那么要在字符串周围加 `符号. 例如\: `/say Hello`
 command.rpgitem.consume=设置 @[Item]\# 为消耗品. 右键时消耗该物品
 command.rpgitem.consume.cd=设置 @[Item]\# 为消耗品. 右键时消耗该物品. 冷却时间为 @[Cooldown]\#.
+command.rpgitem.consume.full=设置 @[Item]\# 为消耗品. 冷却时间为 @[Cooldown]\#. @[left/right]\# 时消耗该物品
 command.rpgitem.consumehit=设置 @[Item]\# 为消耗品. 击中时消耗该物品.
 command.rpgitem.consumehit.cd=设置 @[Item]\# 为消耗品. 击中时消耗该物品. 冷却时间为 @[Cooldown]\#.
 command.rpgitem.create=创建一个名为 @[Name]\# 的物品. 这个 @[Name]\# 只是用于编辑指令调用它, 并非显示在游戏中物品的展示名, 展示名需要用display指令进行更改
