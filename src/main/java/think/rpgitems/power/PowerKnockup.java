@@ -20,23 +20,28 @@ import org.bukkit.ChatColor;
 import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.entity.LivingEntity;
 import org.bukkit.entity.Player;
+import org.bukkit.inventory.ItemStack;
 import think.rpgitems.data.Locale;
+import think.rpgitems.power.types.PowerConsuming;
 import think.rpgitems.power.types.PowerHit;
 
 import java.util.Random;
 
-public class PowerKnockup extends Power implements PowerHit {
+public class PowerKnockup extends Power implements PowerHit, PowerConsuming {
 
     public int chance = 20;
     public double power = 2;
+    public int consumption = 0;
 
     private Random rand = new Random();
 
     @Override
-    public void hit(Player player, LivingEntity e, double damage) {
+    public void hit(Player player, ItemStack i, LivingEntity e, double damage) {
         if (item.getHasPermission() == true && player.hasPermission(item.getPermission()) == false) {
-        } else if (rand.nextInt(chance) == 0)
+        } else if (rand.nextInt(chance) == 0){
+            item.consumeDurability(i, 1);
             e.setVelocity(player.getLocation().getDirection().setY(power));
+        }
     }
 
     @Override
@@ -53,12 +58,21 @@ public class PowerKnockup extends Power implements PowerHit {
     public void init(ConfigurationSection s) {
         chance = s.getInt("chance");
         power = s.getDouble("power", 2);
+        consumption = s.getInt("consumption", 0);
     }
 
     @Override
     public void save(ConfigurationSection s) {
         s.set("chance", chance);
         s.set("power", power);
+        s.set("consumption", consumption);
     }
 
+    public int getConsumption(){
+        return consumption;
+    }
+
+    public void setConsumption(int cost){
+        consumption = cost;
+    }
 }

@@ -21,14 +21,16 @@ import org.bukkit.Effect;
 import org.bukkit.block.Block;
 import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.entity.*;
+import org.bukkit.inventory.ItemStack;
 import org.bukkit.potion.PotionEffect;
 import org.bukkit.potion.PotionEffectType;
 
 import think.rpgitems.data.Locale;
 import think.rpgitems.data.RPGValue;
+import think.rpgitems.power.types.PowerConsuming;
 import think.rpgitems.power.types.PowerRightClick;
 
-public class PowerAOE extends Power implements PowerRightClick {
+public class PowerAOE extends Power implements PowerRightClick, PowerConsuming {
 
     public long cooldownTime = 20;
     public int amplifier = 1;
@@ -37,6 +39,7 @@ public class PowerAOE extends Power implements PowerRightClick {
     public boolean selfapplication = true;
     public PotionEffectType type;
     public String name = null;
+    public int consumption = 0;
 
     @Override
     public void init(ConfigurationSection s) {
@@ -47,6 +50,7 @@ public class PowerAOE extends Power implements PowerRightClick {
         selfapplication = s.getBoolean("selfapplication", true);
         type = PotionEffectType.getByName(s.getString("type", "HARM"));
         name = s.getString("name");
+        consumption = s.getInt("consumption", 0);
     }
 
     @Override
@@ -58,10 +62,11 @@ public class PowerAOE extends Power implements PowerRightClick {
         s.set("selfapplication", selfapplication);
         s.set("type", type.getName());
         s.set("name", name);
+        s.set("consumption", consumption);
     }
 
     @Override
-    public void rightClick(final Player player, Block clicked) {
+    public void rightClick(final Player player, ItemStack i, Block clicked) {
         long cooldown;
         if (item.getHasPermission() == true && player.hasPermission(item.getPermission()) == false) {
         } else {
@@ -73,6 +78,7 @@ public class PowerAOE extends Power implements PowerRightClick {
                 cooldown = value.asLong();
             }
             if (cooldown <= System.currentTimeMillis() / 50) {
+                if(!item.consumeDurability(i,consumption))return;
                 value.set(System.currentTimeMillis() / 50 + cooldownTime);
                 PotionEffect effect = new PotionEffect(type, duration, amplifier-1);
                 if(selfapplication)
@@ -95,5 +101,13 @@ public class PowerAOE extends Power implements PowerRightClick {
     @Override
     public String displayText() {
         return name!=null?name:ChatColor.GREEN + String.format(Locale.get("power.aoe"), type.getName(), amplifier, duration, selfapplication ? Locale.get("power.aoe.selfapplication.true"):Locale.get("power.aoe.selfapplication.false"), range, (double) cooldownTime / 20d);
+    }
+
+    public int getConsumption(){
+        return consumption;
+    }
+
+    public void setConsumption(int cost){
+        consumption = cost;
     }
 }

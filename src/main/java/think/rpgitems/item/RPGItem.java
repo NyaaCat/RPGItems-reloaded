@@ -348,43 +348,63 @@ public class RPGItem {
         }
     }
 
-    public void leftClick(Player player, Block block) {
+    public void leftClick(Player player, ItemStack i, Block block) {
         for (PowerLeftClick power : powerLeftClick) {
-            power.leftClick(player, block);
+            power.leftClick(player, i, block);
+        }
+        if(getDurability(i) <= 0){
+            i.setAmount(0);
+            i.setType(Material.AIR);
         }
     }
 
-    public void rightClick(Player player, Block block) {
+    public void rightClick(Player player, ItemStack i, Block block) {
         for (PowerRightClick power : powerRightClick) {
-            power.rightClick(player, block);
+            power.rightClick(player, i, block);
+        }
+        if(getDurability(i) <= 0){
+            i.setAmount(0);
+            i.setType(Material.AIR);
         }
     }
 
-    public void projectileHit(Player player, Projectile arrow) {
+    public void projectileHit(Player player, ItemStack i, Projectile arrow) {
         for (PowerProjectileHit power : powerProjectileHit) {
-            power.projectileHit(player, arrow);
+            power.projectileHit(player, i, arrow);
+        }
+        if(getDurability(i) <= 0){
+            i.setAmount(0);
+            i.setType(Material.AIR);
         }
     }
 
-    public void hit(Player damager, LivingEntity target, double damage) {
+    public void hit(Player damager, ItemStack i, LivingEntity target, double damage) {
         for (PowerHit power : powerHit) {
-            power.hit(damager, target, damage);
+            power.hit(damager, i, target, damage);
+        }
+        if(getDurability(i) <= 0){
+            i.setAmount(0);
+            i.setType(Material.AIR);
         }
     }
     
-    public double takeHit(Player target, Entity damager, double damage) {
+    public double takeHit(Player target, ItemStack i, Entity damager, double damage) {
         double ret = Double.MAX_VALUE;
         for (PowerHitTaken power : powerHitTaken) {
-            double d = power.takeHit(target, damager, damage);
+            double d = power.takeHit(target, i, damager, damage);
             if (d < 0) continue;
             ret = d < ret ? d : ret;
+        }
+        if(getDurability(i) <= 0){
+            i.setAmount(0);
+            i.setType(Material.AIR);
         }
         return ret == Double.MAX_VALUE? -1 : ret;
     }
 
-    public void tick(Player player) {
+    public void tick(Player player, ItemStack i) {
         for (PowerTick power : powerTick) {
-            power.tick(player);
+            power.tick(player, i);
         }
     }
 
@@ -433,11 +453,11 @@ public class RPGItem {
             while (it.hasNext()) {
                 ItemStack item = it.next();
                 if (ItemManager.toRPGItem(item) != null)
-                    updateItem(item, false);
+                    updateItem(item);
             }
             for (ItemStack item : player.getInventory().getArmorContents()) {
                 if (ItemManager.toRPGItem(item) != null)
-                    updateItem(item, false);
+                    updateItem(item);
 
             }
         }
@@ -463,23 +483,12 @@ public class RPGItem {
     }
 
     public static void updateItem(ItemStack item, RPGMetadata rpgMeta) {
-        updateItem(item, rpgMeta, false);
-    }
-
-    public static void updateItem(ItemStack item, boolean updateDurability) {
-        updateItem(item, getMetadata(item), false);
-    }
-
-    public static void updateItem(ItemStack item, RPGMetadata rpgMeta, boolean updateDurability) {
         RPGItem rItem = ItemManager.toRPGItem(item);
         if (rItem == null)
             return;
         List<String> reservedLores = filterLores(rItem, item);
         item.setType(rItem.item.getType());
         ItemMeta meta = rItem.getLocaleMeta();
-        if (!(meta instanceof LeatherArmorMeta) && updateDurability) {
-            item.setDurability(rItem.item.getDurability());
-        }
         List<String> lore = meta.getLore();
         rItem.addExtra(rpgMeta, item, lore);
         lore.set(0, meta.getLore().get(0) + rpgMeta.toMCString());
@@ -537,9 +546,7 @@ public class RPGItem {
                 else
                     lore.set(lore.size()-1, out.toString());
             }
-            if (hasBar) {
-                item.setDurability((short) (item.getType().getMaxDurability() - ((short) ((double) item.getType().getMaxDurability() * ((double) durability / (double) maxDurability)))));
-            }
+            item.setDurability((short) (item.getType().getMaxDurability() - ((short) ((double) item.getType().getMaxDurability() * ((double) durability / (double) maxDurability)))));
         } else if (maxDurability <= 0) {
             item.setDurability(hasBar ? (short) 0 : this.item.getDurability());
         }
@@ -946,6 +953,34 @@ public class RPGItem {
 
     public int getMaxDurability() {
         return maxDurability <= 0 ? -1 : maxDurability;
+    }
+
+
+    public int getDurability(ItemStack item) {
+        RPGMetadata meta = getMetadata(item);
+        int durability = Integer.MAX_VALUE;
+        if (getMaxDurability() != -1) {
+            durability = meta.containsKey(RPGMetadata.DURABILITY) ? ((Number) meta.get(RPGMetadata.DURABILITY)).intValue() : getMaxDurability();
+        }
+        return durability;
+    }
+    public boolean consumeDurability(ItemStack item, int val) {
+        RPGMetadata meta = getMetadata(item);
+        int durability = 1;
+        if (getMaxDurability() != -1) {
+            durability = meta.containsKey(RPGMetadata.DURABILITY) ? ((Number) meta.get(RPGMetadata.DURABILITY)).intValue() : getMaxDurability();
+            if(durability <= val && getLocaleMeta().isUnbreakable()){
+                return false;
+            }
+            durability-= val;
+            if (durability > getMaxDurability()) {
+                durability = getMaxDurability();
+            }
+            meta.put(RPGMetadata.DURABILITY, Integer.valueOf(durability));
+        }
+        updateItem(item, meta);
+
+        return true;
     }
 
     public void give(Player player) {

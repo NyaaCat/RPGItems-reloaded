@@ -33,14 +33,14 @@ public class PowerConsume extends Power implements PowerRightClick, PowerLeftCli
     public boolean isRight = true;
 
     @Override
-    public void rightClick(final Player player, Block clicked) {
+    public void rightClick(final Player player, ItemStack i, Block clicked) {
         if (isRight && checkCooldown(player, cdTicks)) {
             consume(player);
         }
     }
 
     @Override
-    public void leftClick(final Player player, Block clicked) {
+    public void leftClick(final Player player, ItemStack i, Block clicked) {
         if (!isRight && checkCooldown(player, cdTicks)) {
             consume(player);
         }

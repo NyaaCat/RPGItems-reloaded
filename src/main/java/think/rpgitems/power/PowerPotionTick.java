@@ -3,6 +3,7 @@ package think.rpgitems.power;
 import org.bukkit.ChatColor;
 import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.entity.Player;
+import org.bukkit.inventory.ItemStack;
 import org.bukkit.potion.PotionEffect;
 import org.bukkit.potion.PotionEffectType;
 import think.rpgitems.data.Locale;
@@ -14,7 +15,7 @@ public class PowerPotionTick extends Power implements PowerTick {
     public PotionEffectType effect = PotionEffectType.SPEED;
 
     @Override
-    public void tick(Player player) {
+    public void tick(Player player, ItemStack i) {
         if (item.getHasPermission() == true && player.hasPermission(item.getPermission()) == false) {
             player.sendMessage(ChatColor.RED + String.format(Locale.get("message.error.permission")));
         } else {

@@ -21,6 +21,7 @@ import org.bukkit.Location;
 import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.entity.Entity;
 import org.bukkit.entity.Player;
+import org.bukkit.inventory.ItemStack;
 import think.rpgitems.data.RPGValue;
 import think.rpgitems.item.RPGItem;
 

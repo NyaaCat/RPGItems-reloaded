@@ -20,22 +20,25 @@ import org.bukkit.ChatColor;
 import org.bukkit.block.Block;
 import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.entity.Player;
+import org.bukkit.inventory.ItemStack;
 import org.bukkit.potion.PotionEffect;
 import org.bukkit.potion.PotionEffectType;
 
 import think.rpgitems.data.Locale;
 import think.rpgitems.data.RPGValue;
+import think.rpgitems.power.types.PowerConsuming;
 import think.rpgitems.power.types.PowerRightClick;
 
-public class PowerPotionSelf extends Power implements PowerRightClick {
+public class PowerPotionSelf extends Power implements PowerRightClick, PowerConsuming {
 
     public long cooldownTime = 20;
     public int amplifier = 3;
     public int time = 20;
+    public int consumption = 0;
     public PotionEffectType type = PotionEffectType.HEAL;
 
     @Override
-    public void rightClick(Player player, Block clicked) {
+    public void rightClick(Player player, ItemStack i, Block clicked) {
         long cooldown;
         if (item.getHasPermission() == true && player.hasPermission(item.getPermission()) == false) {
         } else {
@@ -47,6 +50,7 @@ public class PowerPotionSelf extends Power implements PowerRightClick {
                 cooldown = value.asLong();
             }
             if (cooldown <= System.currentTimeMillis() / 50) {
+                if(!item.consumeDurability(i,consumption))return;
                 value.set(System.currentTimeMillis() / 50 + cooldownTime);
                 player.addPotionEffect(new PotionEffect(type, time, amplifier), true);
             } else {
@@ -61,6 +65,7 @@ public class PowerPotionSelf extends Power implements PowerRightClick {
         amplifier = s.getInt("amp");
         time = s.getInt("time");
         type = PotionEffectType.getByName(s.getString("type", "heal"));
+        consumption = s.getInt("consumption", 0);
     }
 
     @Override
@@ -69,6 +74,7 @@ public class PowerPotionSelf extends Power implements PowerRightClick {
         s.set("amp", amplifier);
         s.set("time", time);
         s.set("type", type.getName());
+        s.set("consumption", consumption);
     }
 
     @Override
@@ -79,5 +85,13 @@ public class PowerPotionSelf extends Power implements PowerRightClick {
     @Override
     public String displayText() {
         return ChatColor.GREEN + String.format(Locale.get("power.potionself"), type.getName().toLowerCase().replaceAll("_", " "), amplifier + 1, ((double) time) / 20d);
+    }
+
+    public int getConsumption(){
+        return consumption;
+    }
+
+    public void setConsumption(int cost){
+        consumption = cost;
     }
 }

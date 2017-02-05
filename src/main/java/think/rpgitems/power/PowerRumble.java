@@ -25,25 +25,29 @@ import org.bukkit.entity.Entity;
 import org.bukkit.entity.ItemFrame;
 import org.bukkit.entity.Painting;
 import org.bukkit.entity.Player;
+import org.bukkit.inventory.ItemStack;
 import org.bukkit.metadata.FixedMetadataValue;
 import org.bukkit.scheduler.BukkitRunnable;
 import org.bukkit.util.Vector;
 import think.rpgitems.Plugin;
 import think.rpgitems.data.Locale;
 import think.rpgitems.data.RPGValue;
+import think.rpgitems.power.types.PowerConsuming;
 import think.rpgitems.power.types.PowerRightClick;
 
 import java.util.Random;
 
-public class PowerRumble extends Power implements PowerRightClick {
+public class PowerRumble extends Power implements PowerRightClick, PowerConsuming {
 
     public long cooldownTime = 20;
     public int power = 2;
     public int distance = 15;
+    public int consumption = 0;
 
     @Override
     public void init(ConfigurationSection s) {
         cooldownTime = s.getLong("cooldown", 20);
+        consumption = s.getInt("consumption", 0);
         power = s.getInt("power", 2);
         distance = s.getInt("distance", 15);
     }
@@ -53,10 +57,11 @@ public class PowerRumble extends Power implements PowerRightClick {
         s.set("cooldown", cooldownTime);
         s.set("power", power);
         s.set("distance", distance);
+        s.set("consumption", consumption);
     }
 
     @Override
-    public void rightClick(final Player player, Block block) {
+    public void rightClick(final Player player, ItemStack i, Block block) {
         long cooldown;
         if (item.getHasPermission() == true && player.hasPermission(item.getPermission()) == false) {
         } else {
@@ -68,6 +73,7 @@ public class PowerRumble extends Power implements PowerRightClick {
                 cooldown = value.asLong();
             }
             if (cooldown <= System.currentTimeMillis() / 50) {
+                if(!item.consumeDurability(i,consumption))return;
                 value.set(System.currentTimeMillis() / 50 + cooldownTime);
                 final Location location = player.getLocation().add(0, -0.2, 0);
                 final Vector direction = player.getLocation().getDirection();
@@ -140,5 +146,13 @@ public class PowerRumble extends Power implements PowerRightClick {
     @Override
     public String displayText() {
         return ChatColor.GREEN + String.format(Locale.get("power.rumble"), (double) cooldownTime / 20d);
+    }
+
+    public int getConsumption(){
+        return consumption;
+    }
+
+    public void setConsumption(int cost){
+        consumption = cost;
     }
 }

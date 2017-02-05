@@ -6,20 +6,23 @@ import org.bukkit.block.Block;
 import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.entity.*;
 
+import org.bukkit.inventory.ItemStack;
 import org.bukkit.util.Vector;
 import think.rpgitems.data.Locale;
 import think.rpgitems.data.RPGValue;
+import think.rpgitems.power.types.PowerConsuming;
 import think.rpgitems.power.types.PowerRightClick;
 
 import java.util.Random;
 
-public class PowerProjectile extends Power implements PowerRightClick{
+public class PowerProjectile extends Power implements PowerRightClick, PowerConsuming {
     public static final String name = "projectile";
     public long cooldownTime = 20;
     private Class<? extends Projectile> projectileType = Snowball.class;
     public boolean cone = false;
     public int range = 15;
     public int amount = 5;
+    public int consumption = 0;
     private Random rand = new Random();
 
     @Override
@@ -29,6 +32,7 @@ public class PowerProjectile extends Power implements PowerRightClick{
         cone = s.getBoolean("isCone");
         range = s.getInt("range");
         amount = s.getInt("amount");
+        consumption = s.getInt("consumption", 0);
     }
 
     @Override
@@ -38,6 +42,7 @@ public class PowerProjectile extends Power implements PowerRightClick{
         s.set("isCone", cone);
         s.set("range", range);
         s.set("amount", amount);
+        s.set("consumption", consumption);
     }
 
     public void setType(String type) {
@@ -72,7 +77,7 @@ public class PowerProjectile extends Power implements PowerRightClick{
     }
 
     @Override
-    public void rightClick(Player player, Block clicked) {
+    public void rightClick(Player player, ItemStack is, Block clicked) {
         long cooldown;
         if (item.getHasPermission() == true && player.hasPermission(item.getPermission()) == false) {
         } else {
@@ -84,6 +89,7 @@ public class PowerProjectile extends Power implements PowerRightClick{
                 cooldown = value.asLong();
             }
             if (cooldown <= System.currentTimeMillis() / 50) {
+                item.consumeDurability(is,1);
                 value.set(System.currentTimeMillis() / 50 + cooldownTime);
                 if(!cone) {
                     player.launchProjectile(projectileType);
@@ -100,5 +106,13 @@ public class PowerProjectile extends Power implements PowerRightClick{
                 player.sendMessage(ChatColor.AQUA + String.format(Locale.get("message.cooldown"), ((double) (cooldown - System.currentTimeMillis() / 50)) / 20d));
             }
         }
+    }
+
+    public int getConsumption(){
+        return consumption;
+    }
+
+    public void setConsumption(int cost){
+        consumption = cost;
     }
 }
