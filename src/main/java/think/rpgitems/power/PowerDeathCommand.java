@@ -8,12 +8,11 @@ import org.bukkit.entity.LivingEntity;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
 import think.rpgitems.data.Locale;
-import think.rpgitems.power.types.PowerConsuming;
 import think.rpgitems.power.types.PowerHit;
 
 import java.util.Random;
 
-public class PowerDeathCommand extends Power implements PowerHit, PowerConsuming {
+public class PowerDeathCommand extends Power implements PowerHit {
     public static final String name = "deathcommand";
 
     public String command = "";
@@ -66,11 +65,4 @@ public class PowerDeathCommand extends Power implements PowerHit, PowerConsuming
         }
     }
 
-    public int getConsumption(){
-        return consumption;
-    }
-
-    public void setConsumption(int cost){
-        consumption = cost;
-    }
 }

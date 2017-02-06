@@ -6,10 +6,9 @@ import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
 import think.rpgitems.data.Locale;
-import think.rpgitems.power.types.PowerConsuming;
 import think.rpgitems.power.types.PowerRightClick;
 
-public class PowerParticle extends Power implements PowerRightClick, PowerConsuming {
+public class PowerParticle extends Power implements PowerRightClick {
     public String effect = "FLAME";
     public int consumption = 0;
 
@@ -54,11 +53,4 @@ public class PowerParticle extends Power implements PowerRightClick, PowerConsum
         }
     }
 
-    public int getConsumption(){
-        return consumption;
-    }
-
-    public void setConsumption(int cost){
-        consumption = cost;
-    }
 }

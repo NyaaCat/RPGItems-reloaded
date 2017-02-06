@@ -26,12 +26,11 @@ import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
 import think.rpgitems.data.Locale;
 import think.rpgitems.data.RPGValue;
-import think.rpgitems.power.types.PowerConsuming;
 import think.rpgitems.power.types.PowerLeftClick;
 import think.rpgitems.power.types.PowerRightClick;
 import think.rpgitems.support.WorldGuard;
 
-public class PowerColor extends Power implements PowerRightClick, PowerLeftClick, PowerConsuming {
+public class PowerColor extends Power implements PowerRightClick, PowerLeftClick {
 
     public long cooldownTime = 0;
     public boolean glass = true;
@@ -158,11 +157,4 @@ public class PowerColor extends Power implements PowerRightClick, PowerLeftClick
         s.set("consumption", consumption);
     }
 
-    public int getConsumption(){
-        return consumption;
-    }
-
-    public void setConsumption(int cost){
-        consumption = cost;
-    }
 }

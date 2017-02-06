@@ -27,10 +27,9 @@ import org.bukkit.inventory.ItemStack;
 import think.rpgitems.Events;
 import think.rpgitems.data.Locale;
 import think.rpgitems.data.RPGValue;
-import think.rpgitems.power.types.PowerConsuming;
 import think.rpgitems.power.types.PowerRightClick;
 
-public class PowerArrow extends Power implements PowerRightClick, PowerConsuming {
+public class PowerArrow extends Power implements PowerRightClick {
 
     public long cooldownTime = 20;
     public int consumption = 0;
@@ -81,11 +80,4 @@ public class PowerArrow extends Power implements PowerRightClick, PowerConsuming
         s.set("consumption", consumption);
     }
 
-    public int getConsumption(){
-        return consumption;
-    }
-
-    public void setConsumption(int cost){
-        consumption = cost;
-    }
 }

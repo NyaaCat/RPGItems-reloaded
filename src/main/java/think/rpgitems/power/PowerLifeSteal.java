@@ -26,10 +26,9 @@ import org.bukkit.entity.Player;
 
 import org.bukkit.inventory.ItemStack;
 import think.rpgitems.data.Locale;
-import think.rpgitems.power.types.PowerConsuming;
 import think.rpgitems.power.types.PowerHit;
 
-public class PowerLifeSteal extends Power implements PowerHit, PowerConsuming {
+public class PowerLifeSteal extends Power implements PowerHit {
 
     public int chance = 20;
     public int consumption = 0;
@@ -69,11 +68,4 @@ public class PowerLifeSteal extends Power implements PowerHit, PowerConsuming {
         s.set("consumption", consumption);
     }
 
-    public int getConsumption(){
-        return consumption;
-    }
-
-    public void setConsumption(int cost){
-        consumption = cost;
-    }
 }

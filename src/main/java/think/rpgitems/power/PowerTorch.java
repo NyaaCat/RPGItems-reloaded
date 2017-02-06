@@ -165,11 +165,4 @@ public class PowerTorch extends Power implements PowerRightClick {
         return orientations;
     }
 
-    public int getConsumption(){
-        return consumption;
-    }
-
-    public void setConsumption(int cost){
-        consumption = cost;
-    }
 }

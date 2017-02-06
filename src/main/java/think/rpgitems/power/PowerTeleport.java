@@ -147,11 +147,4 @@ public class PowerTeleport extends Power implements PowerRightClick, PowerProjec
         return ChatColor.GREEN + String.format(Locale.get("power.teleport"), distance, (double) cooldownTime / 20d);
     }
 
-    public int getConsumption(){
-        return consumption;
-    }
-
-    public void setConsumption(int cost){
-        consumption = cost;
-    }
 }

@@ -19,16 +19,14 @@ package think.rpgitems.power;
 import org.bukkit.ChatColor;
 import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.entity.Entity;
-import org.bukkit.entity.LivingEntity;
 import org.bukkit.entity.Player;
 
 import org.bukkit.inventory.ItemStack;
 import think.rpgitems.data.Locale;
 import think.rpgitems.data.RPGValue;
-import think.rpgitems.power.types.PowerConsuming;
 import think.rpgitems.power.types.PowerHitTaken;
 
-public class PowerRescue extends Power implements PowerHitTaken, PowerConsuming {
+public class PowerRescue extends Power implements PowerHitTaken {
 
     public String permission = "";
     public int healthTrigger = 4;
@@ -99,11 +97,4 @@ public class PowerRescue extends Power implements PowerHitTaken, PowerConsuming 
         }
     }
 
-    public int getConsumption(){
-        return consumption;
-    }
-
-    public void setConsumption(int cost){
-        consumption = cost;
-    }
 }

@@ -24,12 +24,11 @@ import org.bukkit.inventory.ItemStack;
 import org.bukkit.potion.PotionEffect;
 import org.bukkit.potion.PotionEffectType;
 import think.rpgitems.data.Locale;
-import think.rpgitems.power.types.PowerConsuming;
 import think.rpgitems.power.types.PowerHit;
 
 import java.util.Random;
 
-public class PowerPotionHit extends Power implements PowerHit, PowerConsuming {
+public class PowerPotionHit extends Power implements PowerHit {
 
     public int chance = 20;
     private Random random = new Random();
@@ -75,11 +74,4 @@ public class PowerPotionHit extends Power implements PowerHit, PowerConsuming {
         s.set("consumption", consumption);
     }
 
-    public int getConsumption(){
-        return consumption;
-    }
-
-    public void setConsumption(int cost){
-        consumption = cost;
-    }
 }

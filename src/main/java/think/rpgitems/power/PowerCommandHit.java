@@ -26,11 +26,10 @@ import org.bukkit.permissions.PermissionAttachment;
 import think.rpgitems.Plugin;
 import think.rpgitems.data.Locale;
 import think.rpgitems.data.RPGValue;
-import think.rpgitems.power.types.PowerConsuming;
 import think.rpgitems.power.types.PowerHit;
 
 
-public class PowerCommandHit extends Power implements PowerHit, PowerConsuming {
+public class PowerCommandHit extends Power implements PowerHit {
 
     public String command = "";
     public String display = "Runs command";
@@ -130,11 +129,4 @@ public class PowerCommandHit extends Power implements PowerHit, PowerConsuming {
         s.set("consumption", consumption);
     }
 
-    public int getConsumption(){
-        return consumption;
-    }
-
-    public void setConsumption(int cost){
-        consumption = cost;
-    }
 }

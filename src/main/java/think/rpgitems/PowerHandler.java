@@ -180,7 +180,7 @@ public class PowerHandler implements CommandHandler {
         PowerConsume pow = new PowerConsume();
         pow.isRight = mouse.equals("right");
         pow.item = item;
-        pow.cdTicks = cooldown;
+        pow.cooldownTime = cooldown;
         item.addPower(pow);
         ItemManager.save(Plugin.plugin);
         sender.sendMessage(ChatColor.AQUA + Locale.get("message.power.ok"));
@@ -295,7 +295,7 @@ public class PowerHandler implements CommandHandler {
     public void consume(CommandSender sender, RPGItem item, int cooldown) {
         PowerConsume pow = new PowerConsume();
         pow.item = item;
-        pow.cdTicks = cooldown;
+        pow.cooldownTime = cooldown;
         item.addPower(pow);
         ItemManager.save(Plugin.plugin);
         sender.sendMessage(ChatColor.AQUA + Locale.get("message.power.ok"));
@@ -318,7 +318,7 @@ public class PowerHandler implements CommandHandler {
     public void consumehit(CommandSender sender, RPGItem item, int cooldown) {
         PowerConsumeHit pow = new PowerConsumeHit();
         pow.item = item;
-        pow.cdTicks = cooldown;
+        pow.cooldowmTime = cooldown;
         item.addPower(pow);
         ItemManager.save(Plugin.plugin);
         sender.sendMessage(ChatColor.AQUA + Locale.get("message.power.ok"));

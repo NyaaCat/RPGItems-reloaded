@@ -29,10 +29,9 @@ import org.bukkit.util.Vector;
 import think.rpgitems.Plugin;
 import think.rpgitems.data.Locale;
 import think.rpgitems.data.RPGValue;
-import think.rpgitems.power.types.PowerConsuming;
 import think.rpgitems.power.types.PowerRightClick;
 
-public class PowerFire extends Power implements PowerRightClick, PowerConsuming {
+public class PowerFire extends Power implements PowerRightClick {
 
     public long cooldownTime = 20;
     public int distance = 15;
@@ -161,11 +160,4 @@ public class PowerFire extends Power implements PowerRightClick, PowerConsuming 
         s.set("consumption", consumption);
     }
 
-    public int getConsumption(){
-        return consumption;
-    }
-
-    public void setConsumption(int cost){
-        consumption = cost;
-    }
 }

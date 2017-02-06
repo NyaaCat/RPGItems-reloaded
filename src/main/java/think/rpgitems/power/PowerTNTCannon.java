@@ -79,11 +79,4 @@ public class PowerTNTCannon extends Power implements PowerRightClick {
         s.set("consumption", consumption);
     }
 
-    public int getConsumption(){
-        return consumption;
-    }
-
-    public void setConsumption(int cost){
-        consumption = cost;
-    }
 }

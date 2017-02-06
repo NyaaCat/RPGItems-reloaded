@@ -22,10 +22,9 @@ import org.bukkit.entity.LivingEntity;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
 import think.rpgitems.data.Locale;
-import think.rpgitems.power.types.PowerConsuming;
 import think.rpgitems.power.types.PowerHit;
 
-public class PowerFlame extends Power implements PowerHit, PowerConsuming {
+public class PowerFlame extends Power implements PowerHit {
 
     public int burnTime = 20;
     public int consumption = 0;
@@ -61,11 +60,4 @@ public class PowerFlame extends Power implements PowerHit, PowerConsuming {
         s.set("consumption", consumption);
     }
 
-    public int getConsumption(){
-        return consumption;
-    }
-
-    public void setConsumption(int cost){
-        consumption = cost;
-    }
 }

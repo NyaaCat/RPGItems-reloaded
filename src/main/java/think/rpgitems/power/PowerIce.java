@@ -28,13 +28,12 @@ import org.bukkit.scheduler.BukkitRunnable;
 import think.rpgitems.Plugin;
 import think.rpgitems.data.Locale;
 import think.rpgitems.data.RPGValue;
-import think.rpgitems.power.types.PowerConsuming;
 import think.rpgitems.power.types.PowerRightClick;
 
 import java.util.List;
 import java.util.Random;
 
-public class PowerIce extends Power implements PowerRightClick, PowerConsuming {
+public class PowerIce extends Power implements PowerRightClick {
 
     public long cooldownTime = 20;
     public int consumption = 0;
@@ -161,11 +160,4 @@ public class PowerIce extends Power implements PowerRightClick, PowerConsuming {
         s.set("consumption", consumption);
     }
 
-    public int getConsumption(){
-        return consumption;
-    }
-
-    public void setConsumption(int cost){
-        consumption = cost;
-    }
 }
