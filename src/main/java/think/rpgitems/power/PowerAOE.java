@@ -27,10 +27,9 @@ import org.bukkit.potion.PotionEffectType;
 
 import think.rpgitems.data.Locale;
 import think.rpgitems.data.RPGValue;
-import think.rpgitems.power.types.PowerConsuming;
 import think.rpgitems.power.types.PowerRightClick;
 
-public class PowerAOE extends Power implements PowerRightClick, PowerConsuming {
+public class PowerAOE extends Power implements PowerRightClick {
 
     public long cooldownTime = 20;
     public int amplifier = 1;
@@ -103,11 +102,4 @@ public class PowerAOE extends Power implements PowerRightClick, PowerConsuming {
         return name!=null?name:ChatColor.GREEN + String.format(Locale.get("power.aoe"), type.getName(), amplifier, duration, selfapplication ? Locale.get("power.aoe.selfapplication.true"):Locale.get("power.aoe.selfapplication.false"), range, (double) cooldownTime / 20d);
     }
 
-    public int getConsumption(){
-        return consumption;
-    }
-
-    public void setConsumption(int cost){
-        consumption = cost;
-    }
 }

@@ -16,10 +16,8 @@
  */
 package think.rpgitems.power;
 
-import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
 import org.bukkit.block.Block;
-import org.bukkit.command.defaults.BukkitCommand;
 import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
@@ -30,9 +28,8 @@ import think.rpgitems.data.Locale;
 import think.rpgitems.data.RPGValue;
 import think.rpgitems.power.types.PowerLeftClick;
 import think.rpgitems.power.types.PowerRightClick;
-import think.rpgitems.power.types.PowerConsuming;
 
-public class PowerCommand extends Power implements PowerRightClick, PowerLeftClick, PowerConsuming {
+public class PowerCommand extends Power implements PowerRightClick, PowerLeftClick {
 
     public String command = "";
     public String display = "Runs command";
@@ -130,11 +127,4 @@ public class PowerCommand extends Power implements PowerRightClick, PowerLeftCli
         s.set("consumption", consumption);
     }
 
-    public int getConsumption(){
-        return consumption;
-    }
-
-    public void setConsumption(int cost){
-        consumption = cost;
-    }
 }

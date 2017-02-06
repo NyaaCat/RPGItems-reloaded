@@ -26,11 +26,11 @@ import think.rpgitems.data.Locale;
 import think.rpgitems.power.types.PowerHit;
 
 public class PowerConsumeHit extends Power implements PowerHit {
-    public int cdTicks = 0;
+    public int cooldowmTime = 0;
 
     @Override
     public void hit(final Player player, ItemStack is, LivingEntity e, double damage) {
-        if (checkCooldown(player, cdTicks)) {
+        if (checkCooldown(player, cooldowmTime)) {
             if (item.getHasPermission() && !player.hasPermission(item.getPermission())) return;
             int count = is.getAmount() - 1;
             if (count == 0) {
@@ -44,12 +44,12 @@ public class PowerConsumeHit extends Power implements PowerHit {
 
     @Override
     public void init(ConfigurationSection s) {
-        cdTicks = s.getInt("cooldown", 0);
+        cooldowmTime = s.getInt("cooldown", 0);
     }
 
     @Override
     public void save(ConfigurationSection s) {
-        s.set("cooldown", cdTicks);
+        s.set("cooldown", cooldowmTime);
     }
 
     @Override

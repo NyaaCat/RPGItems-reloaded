@@ -12,10 +12,9 @@ import org.bukkit.inventory.ItemStack;
 import think.rpgitems.Plugin;
 import think.rpgitems.data.Locale;
 import think.rpgitems.data.RPGValue;
-import think.rpgitems.power.types.PowerConsuming;
 import think.rpgitems.power.types.PowerRightClick;
 
-public class PowerForceField extends Power implements PowerRightClick, PowerConsuming {
+public class PowerForceField extends Power implements PowerRightClick {
     public static final String name = "forcefield";
     public int cooldown = 200;
     public int radius = 5;
@@ -193,11 +192,4 @@ public class PowerForceField extends Power implements PowerRightClick, PowerCons
         return list;
     }
 
-    public int getConsumption(){
-        return consumption;
-    }
-
-    public void setConsumption(int cost){
-        consumption = cost;
-    }
 }

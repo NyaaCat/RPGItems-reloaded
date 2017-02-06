@@ -32,12 +32,11 @@ import org.bukkit.util.Vector;
 import think.rpgitems.Plugin;
 import think.rpgitems.data.Locale;
 import think.rpgitems.data.RPGValue;
-import think.rpgitems.power.types.PowerConsuming;
 import think.rpgitems.power.types.PowerRightClick;
 
 import java.util.Random;
 
-public class PowerRumble extends Power implements PowerRightClick, PowerConsuming {
+public class PowerRumble extends Power implements PowerRightClick {
 
     public long cooldownTime = 20;
     public int power = 2;
@@ -148,11 +147,4 @@ public class PowerRumble extends Power implements PowerRightClick, PowerConsumin
         return ChatColor.GREEN + String.format(Locale.get("power.rumble"), (double) cooldownTime / 20d);
     }
 
-    public int getConsumption(){
-        return consumption;
-    }
-
-    public void setConsumption(int cost){
-        consumption = cost;
-    }
 }

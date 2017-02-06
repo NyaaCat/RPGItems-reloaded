@@ -6,7 +6,6 @@ import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.scheduler.BukkitRunnable;
 import think.rpgitems.Plugin;
-import think.rpgitems.power.types.PowerConsuming;
 
 public class PowerDelayedCommand extends PowerCommand {
     public int delay = 20;

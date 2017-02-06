@@ -9,12 +9,11 @@ import org.bukkit.entity.Skeleton;
 import org.bukkit.entity.Zombie;
 import org.bukkit.inventory.ItemStack;
 import think.rpgitems.data.Locale;
-import think.rpgitems.power.types.PowerConsuming;
 import think.rpgitems.power.types.PowerHit;
 
 import java.util.Random;
 
-public class PowerPumpkin extends Power implements PowerHit, PowerConsuming {
+public class PowerPumpkin extends Power implements PowerHit {
     public static final String name ="pumpkin";
     public int chance = 20;
     public double drop = 0;
@@ -58,11 +57,4 @@ public class PowerPumpkin extends Power implements PowerHit, PowerConsuming {
         }
     }
 
-    public int getConsumption(){
-        return consumption;
-    }
-
-    public void setConsumption(int cost){
-        consumption = cost;
-    }
 }

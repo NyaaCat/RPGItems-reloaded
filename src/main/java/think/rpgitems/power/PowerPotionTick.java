@@ -13,12 +13,14 @@ public class PowerPotionTick extends Power implements PowerTick {
 
     public int amplifier = 2;
     public PotionEffectType effect = PotionEffectType.SPEED;
+    public int consumption = 0;
 
     @Override
     public void tick(Player player, ItemStack i) {
         if (item.getHasPermission() == true && player.hasPermission(item.getPermission()) == false) {
             player.sendMessage(ChatColor.RED + String.format(Locale.get("message.error.permission")));
         } else {
+            if(!item.consumeDurability(i,consumption))return;
             boolean hasEffect = false;
             for (PotionEffect potionEffect : player.getActivePotionEffects()) {
                 if (potionEffect.getType().equals(effect)) {
@@ -39,14 +41,14 @@ public class PowerPotionTick extends Power implements PowerTick {
     public void init(ConfigurationSection s) {
         amplifier = s.getInt("amplifier");
         effect = PotionEffectType.getByName(s.getString("effect", "heal"));
-
+        consumption = s.getInt("consumption", 0);
     }
 
     @Override
     public void save(ConfigurationSection s) {
         s.set("amplifier", amplifier);
         s.set("effect", effect.getName());
-
+        s.set("consumption", consumption);
     }
 
     @Override

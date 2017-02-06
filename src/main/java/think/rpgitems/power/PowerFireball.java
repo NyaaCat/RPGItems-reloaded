@@ -26,10 +26,9 @@ import org.bukkit.entity.SmallFireball;
 import org.bukkit.inventory.ItemStack;
 import think.rpgitems.data.Locale;
 import think.rpgitems.data.RPGValue;
-import think.rpgitems.power.types.PowerConsuming;
 import think.rpgitems.power.types.PowerRightClick;
 
-public class PowerFireball extends Power implements PowerRightClick, PowerConsuming {
+public class PowerFireball extends Power implements PowerRightClick {
 
     public long cooldownTime = 20;
     public int consumption = 0;
@@ -79,11 +78,4 @@ public class PowerFireball extends Power implements PowerRightClick, PowerConsum
         s.set("consumption", consumption);
     }
 
-    public int getConsumption(){
-        return consumption;
-    }
-
-    public void setConsumption(int cost){
-        consumption = cost;
-    }
 }

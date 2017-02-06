@@ -1,7 +1,6 @@
 package think.rpgitems.power;
 
 import org.bukkit.ChatColor;
-import org.bukkit.Location;
 import org.bukkit.block.Block;
 import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.entity.*;
@@ -10,12 +9,11 @@ import org.bukkit.inventory.ItemStack;
 import org.bukkit.util.Vector;
 import think.rpgitems.data.Locale;
 import think.rpgitems.data.RPGValue;
-import think.rpgitems.power.types.PowerConsuming;
 import think.rpgitems.power.types.PowerRightClick;
 
 import java.util.Random;
 
-public class PowerProjectile extends Power implements PowerRightClick, PowerConsuming {
+public class PowerProjectile extends Power implements PowerRightClick {
     public static final String name = "projectile";
     public long cooldownTime = 20;
     private Class<? extends Projectile> projectileType = Snowball.class;
@@ -108,11 +106,4 @@ public class PowerProjectile extends Power implements PowerRightClick, PowerCons
         }
     }
 
-    public int getConsumption(){
-        return consumption;
-    }
-
-    public void setConsumption(int cost){
-        consumption = cost;
-    }
 }

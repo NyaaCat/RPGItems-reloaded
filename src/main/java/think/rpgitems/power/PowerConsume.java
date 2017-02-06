@@ -29,27 +29,29 @@ import think.rpgitems.power.types.PowerLeftClick;
 import think.rpgitems.power.types.PowerRightClick;
 
 public class PowerConsume extends Power implements PowerRightClick, PowerLeftClick {
-    public int cdTicks = 0;
+    public int cooldownTime = 0;
     public boolean isRight = true;
+    public int consumption = 0;
 
     @Override
     public void rightClick(final Player player, ItemStack i, Block clicked) {
-        if (isRight && checkCooldown(player, cdTicks)) {
+        if (isRight && checkCooldown(player, cooldownTime)) {
             consume(player);
         }
     }
 
     @Override
     public void leftClick(final Player player, ItemStack i, Block clicked) {
-        if (!isRight && checkCooldown(player, cdTicks)) {
+        if (!isRight && checkCooldown(player, cooldownTime)) {
             consume(player);
         }
     }
 
     private void consume(final Player player) {
         if (item.getHasPermission() && !player.hasPermission(item.getPermission())) return;
-        ItemStack item = player.getInventory().getItemInMainHand();
-        int count = item.getAmount() - 1;
+        ItemStack stack = player.getInventory().getItemInMainHand();
+        if(!item.consumeDurability(stack,consumption))return;
+        int count = stack.getAmount() - 1;
         if (count == 0) {
             Bukkit.getScheduler().scheduleSyncDelayedTask(Plugin.plugin, new Runnable() {
                 @Override
@@ -58,20 +60,22 @@ public class PowerConsume extends Power implements PowerRightClick, PowerLeftCli
                 }
             }, 1L);
         } else {
-            item.setAmount(count);
+            stack.setAmount(count);
         }
     }
 
     @Override
     public void init(ConfigurationSection s) {
-        cdTicks = s.getInt("cooldown", 0);
+        cooldownTime = s.getInt("cooldown", 0);
         isRight = s.getBoolean("isRight", true);
+        consumption = s.getInt("consumption", 0);
     }
 
     @Override
     public void save(ConfigurationSection s) {
-        s.set("cooldown", cdTicks);
+        s.set("cooldown", cooldownTime);
         s.set("isRight", isRight);
+        s.set("consumption", consumption);
     }
 
     @Override

@@ -22,9 +22,9 @@ import think.rpgitems.item.ItemManager;
 import think.rpgitems.item.Quality;
 import think.rpgitems.item.RPGItem;
 import think.rpgitems.power.Power;
-import think.rpgitems.power.types.PowerConsuming;
 import think.rpgitems.support.WorldGuard;
 
+import java.lang.reflect.Field;
 import java.util.*;
 
 public class Handler implements CommandHandler {
@@ -65,7 +65,7 @@ public class Handler implements CommandHandler {
         int index = 0;
         Collection<RPGItem> items = ItemManager.itemByName.values();
         int perPage = Plugin.plugin.getConfig().getInt("itemperpage", 9);
-        sender.sendMessage(ChatColor.AQUA + "RPGItems: " + page + " / " + (int)(items.size()/(double)perPage + 0.5) );
+        sender.sendMessage(ChatColor.AQUA + "RPGItems: " + page + " / " + (int)Math.ceil(items.size()/(double)perPage) );
         for (RPGItem item : ItemManager.itemByName.values()) {
             ++index;
             if(index > (page - 1)*perPage && index <= page*perPage){
@@ -596,39 +596,71 @@ public class Handler implements CommandHandler {
         sender.sendMessage(String.format(ChatColor.AQUA + Locale.get("message.drop.set"), item.getDisplay() + ChatColor.AQUA, typeS.toLowerCase(), item.dropChances.get(typeS)));
     }
 
-    @CommandString("rpgitem $n[] consumption $power:s[] $nth:i[] $cost:i[]")
-    @CommandDocumentation("$command.rpgitem.power_cost")
-    @CommandGroup("item_power_cost")
-    public void setItemPowerConsumption(CommandSender sender, RPGItem item, String power, int nth, int cost) {
+    @CommandString("rpgitem $n[] get $power:s[] $nth:i[] $property:s[]")
+    @CommandDocumentation("$command.rpgitem.power_property_set")
+    @CommandGroup("item_power_property_g")
+    public void getItemPowerProperty(CommandSender sender, RPGItem item, String power, int nth, String property) {
+        int i = nth;
         Class p = Power.powers.get(power);
         if(p == null){
-            sender.sendMessage(Locale.get("message.power_cost.notfound"));
+            sender.sendMessage(String.format(Locale.get("message.power.unknown"), power));
+            return;
         }
         for (Power pow:item.powers) {
-            if(p.isInstance(pow) && pow instanceof PowerConsuming && --nth == 0){
-                ((PowerConsuming) pow).setConsumption(cost);
-                ItemManager.save(Plugin.plugin);
-                sender.sendMessage(Locale.get("message.power_cost.change"));
+            if(p.isInstance(pow) && --i == 0){
+                try{
+                    Field pro = p.getField(property);
+                    String val = pro.get(pow).toString();
+                    sender.sendMessage(String.format(Locale.get("message.power_property.get"), nth, power, property, val));
+                }catch (Exception e){
+                    sender.sendMessage(ChatColor.RED + String.format(Locale.get("message.power_property.property_notfound"), property));
+                    return;
+                }
                 return;
             }
         }
-        sender.sendMessage(Locale.get("message.power_cost.notfound"));
+        sender.sendMessage(ChatColor.RED + Locale.get("message.power_property.power_notfound"));
     }
 
-    @CommandString("rpgitem $n[] consumption $power:s[]")
-    @CommandDocumentation("$command.rpgitem.power_cost.get")
-    @CommandGroup("item_power_get_cost")
-    public void getItemPowerConsumption(CommandSender sender, RPGItem item, String power) {
+    @CommandString("rpgitem $n[] set $power:s[] $nth:i[] $property:s[] $val:s[]")
+    @CommandDocumentation("$command.rpgitem.power_property_get")
+    @CommandGroup("item_power_property_s")
+    public void setItemPowerProperty(CommandSender sender, RPGItem item, String power, int nth, String property, String val) {
         Class p = Power.powers.get(power);
         if(p == null){
-            sender.sendMessage(Locale.get("message.power_cost.notfound"));
+            sender.sendMessage(String.format(Locale.get("message.power.unknown"), power));
+            return;
         }
-        int nth=0;
         for (Power pow:item.powers) {
-            if(p.isInstance(pow) && pow instanceof PowerConsuming){
-                sender.sendMessage(String.format(ChatColor.AQUA + Locale.get("message.power_cost.get"), ++nth, power , ((PowerConsuming) pow).getConsumption()));
+            if(p.isInstance(pow) && --nth == 0){
+                try {
+                    Field pro = p.getField(property);
+                    if(pro.getType() == int.class || pro.getType() == long.class){
+                        try {
+                            pro.set(pow, Integer.parseInt(val));
+                        }catch (NumberFormatException e){
+                            sender.sendMessage(ChatColor.RED + String.format(Locale.get("message.power_property.not_vaild_int"), val));
+                            return;
+                        }
+                    }else if(pro.getType() == String.class){
+                        pro.set(pow, val);
+                    }else if(pro.getType() == boolean.class){
+                        if(val.equalsIgnoreCase("true") || val.equalsIgnoreCase("false")){
+                            pro.set(pow, val.equalsIgnoreCase("true"));
+                        }
+                        sender.sendMessage(ChatColor.RED + String.format(Locale.get("message.power_property.not_vaild_bool"), val));
+                        return;
+                    }
+                }catch (Exception e){
+                    sender.sendMessage(ChatColor.RED + String.format(Locale.get("message.power_property.property_notfound"), property));
+                    return;
+                }
+                ItemManager.save(Plugin.plugin);
+                sender.sendMessage(Locale.get("message.power_property.change"));
+                return;
             }
         }
+        sender.sendMessage(ChatColor.RED + Locale.get("message.power_property.power_notfound"));
     }
 
     @CommandString("rpgitem $n[] durability $durability:i[]")

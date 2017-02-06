@@ -23,13 +23,12 @@ import org.bukkit.entity.Player;
 import org.bukkit.entity.Projectile;
 import org.bukkit.inventory.ItemStack;
 import think.rpgitems.data.Locale;
-import think.rpgitems.power.types.PowerConsuming;
 import think.rpgitems.power.types.PowerHit;
 import think.rpgitems.power.types.PowerProjectileHit;
 
 import java.util.Random;
 
-public class PowerLightning extends Power implements PowerHit, PowerProjectileHit, PowerConsuming {
+public class PowerLightning extends Power implements PowerHit, PowerProjectileHit {
 
     public int chance = 20;
     public int consumption = 0;
@@ -77,11 +76,4 @@ public class PowerLightning extends Power implements PowerHit, PowerProjectileHi
         s.set("consumption", consumption);
     }
 
-    public int getConsumption(){
-        return consumption;
-    }
-
-    public void setConsumption(int cost){
-        consumption = cost;
-    }
 }
