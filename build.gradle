@@ -1,0 +1,29 @@
+apply plugin: 'java'
+
+sourceCompatibility = 1.7
+targetCompatibility = 1.7
+
+repositories {
+    jcenter()
+
+    maven {
+        name 'Spigot'
+        url 'https://hub.spigotmc.org/nexus/content/groups/public/'
+    }
+
+    maven {
+        name 'Sonatype'
+        url 'https://oss.sonatype.org/content/groups/public'
+    }
+
+    maven {
+        name 'sk89q'
+        url 'http://maven.sk89q.com/artifactory/repo/'
+    }
+}
+
+dependencies {
+    compile 'org.spigotmc:spigot-api:1.11-R0.1-SNAPSHOT'
+    compile 'com.sk89q:worldguard:6.1'
+}
+

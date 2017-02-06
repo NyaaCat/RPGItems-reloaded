@@ -1,9 +1,0 @@
-name: RPG Items
-main: think.rpgitems.Plugin
-version: 3.5
-dev-url: http://rpgitems2.webs.com/
-softdepend: [WorldGuard]
-commands:
-    rpgitem:
-        description: RPG Items
-        usage: RPG Items
