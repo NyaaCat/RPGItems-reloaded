@@ -1,5 +1,7 @@
 package think.rpgitems;
 
+import net.md_5.bungee.api.chat.BaseComponent;
+import net.md_5.bungee.api.chat.TextComponent;
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
 import org.bukkit.Color;
@@ -54,7 +56,15 @@ public class Handler implements CommandHandler {
     public void listItems(CommandSender sender) {
         sender.sendMessage(ChatColor.AQUA + "RPGItems:");
         for (RPGItem item : ItemManager.itemByName.values()) {
-            sender.sendMessage(ChatColor.GREEN + item.getName() + " - " + item.getDisplay());
+            if (sender instanceof Player) {
+                Player player = ((Player) sender).getPlayer();
+                BaseComponent msg = new TextComponent();
+                msg.addExtra(ChatColor.GREEN + item.getName() + " - " + ChatColor.RESET);
+                msg.addExtra(item.getComponent());
+                player.spigot().sendMessage(msg);
+            } else {
+                sender.sendMessage(ChatColor.GREEN + item.getName() + " - " + item.getDisplay());
+            }
         }
     }
 
@@ -69,7 +79,15 @@ public class Handler implements CommandHandler {
         for (RPGItem item : ItemManager.itemByName.values()) {
             ++index;
             if(index > (page - 1)*perPage && index <= page*perPage){
-                sender.sendMessage(ChatColor.GREEN + item.getName() + " - " + item.getDisplay());
+                if (sender instanceof Player) {
+                    Player player = ((Player) sender).getPlayer();
+                    BaseComponent msg = new TextComponent();
+                    msg.addExtra(ChatColor.GREEN + item.getName() + " - " + ChatColor.RESET);
+                    msg.addExtra(item.getComponent());
+                    player.spigot().sendMessage(msg);
+                } else {
+                    sender.sendMessage(ChatColor.GREEN + item.getName() + " - " + item.getDisplay());
+                }
             }
             if(index == page*perPage )return;
         }

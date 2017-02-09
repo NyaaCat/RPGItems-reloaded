@@ -17,6 +17,10 @@
 package think.rpgitems.item;
 
 import gnu.trove.map.hash.TObjectDoubleHashMap;
+import net.md_5.bungee.api.chat.BaseComponent;
+import net.md_5.bungee.api.chat.ClickEvent;
+import net.md_5.bungee.api.chat.HoverEvent;
+import net.md_5.bungee.api.chat.TextComponent;
 import org.apache.commons.lang.StringUtils;
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
@@ -46,6 +50,7 @@ import think.rpgitems.power.Power;
 import think.rpgitems.power.PowerLoreFilter;
 import think.rpgitems.power.PowerUnbreakable;
 import think.rpgitems.power.types.*;
+import think.rpgitems.utils.ReflectionUtil;
 
 import java.util.*;
 import java.util.Map.Entry;
@@ -747,8 +752,12 @@ public class RPGItem {
 
     public void print(CommandSender sender) {
         List<String> lines = getTooltipLines();
-        for (String s : lines) {
-            sender.sendMessage(s);
+        for (int i = 0; i < lines.size(); i++) {
+            if (i == 0 && sender instanceof Player) {
+                ((Player) sender).spigot().sendMessage(getComponent());
+                continue;
+            }
+            sender.sendMessage(lines.get(i));
         }
         sender.sendMessage(String.format(Locale.get("message.print.durability"), maxDurability));
         if (!itemFlags.isEmpty()) {
@@ -1068,5 +1077,14 @@ public class RPGItem {
 
     public void updateLocaleMeta(ItemMeta meta) {
         this.localeMeta = meta;
+    }
+
+    public BaseComponent getComponent() {
+        BaseComponent msg = new TextComponent(getDisplay());
+        msg.setClickEvent(new ClickEvent(ClickEvent.Action.SUGGEST_COMMAND, "/rpgitem " + getName()));
+        HoverEvent hover = new HoverEvent(HoverEvent.Action.SHOW_ITEM,
+                new BaseComponent[]{new TextComponent(ReflectionUtil.convertItemStackToJson(toItemStack()))});
+        msg.setHoverEvent(hover);
+        return msg;
     }
 }
