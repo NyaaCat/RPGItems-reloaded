@@ -771,6 +771,16 @@ public class Handler implements CommandHandler {
         }
     }
 
+    @CommandString("rpgitem $n[] customItemModel")
+    @CommandDocumentation("$command.rpgitem.customitemmodel")
+    @CommandGroup("item_customitemmodel")
+    public void toggleCustomItemModel(CommandSender sender, RPGItem item) {
+        item.customItemModel = !item.customItemModel;
+        item.rebuild();
+        ItemManager.save(Plugin.plugin);
+        sender.sendMessage(Locale.get("message.customitemmodel." + (item.customItemModel ? "enable" : "disable")));
+    }
+    
     @CommandString("rpgitem version")
     @CommandDocumentation("$command.rpgitem.version")
     @CommandGroup("version")

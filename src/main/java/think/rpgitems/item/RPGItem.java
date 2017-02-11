@@ -84,6 +84,7 @@ public class RPGItem {
     public boolean showArmourLore = true;
     public Map<Enchantment, Integer> enchantMap = null;
     public ArrayList<ItemFlag> itemFlags = new ArrayList<ItemFlag>();
+    public boolean customItemModel = false;
 
     // Powers
     public ArrayList<Power> powers = new ArrayList<Power>();
@@ -237,6 +238,7 @@ public class RPGItem {
                 }
             }
         }
+        customItemModel = s.getBoolean("customItemModel", false);
         rebuild();
     }
 
@@ -311,6 +313,7 @@ public class RPGItem {
         } else {
             s.set("itemFlags", null);
         }
+        s.set("customItemModel", customItemModel);
     }
 
     public void resetRecipe(boolean removeOld) {
@@ -436,6 +439,9 @@ public class RPGItem {
                 break;
             }
         }
+        if (customItemModel) {
+            meta.setUnbreakable(true);
+        }
         for (ItemFlag flag : meta.getItemFlags()) {
             meta.removeItemFlags(flag);
         }
@@ -537,7 +543,7 @@ public class RPGItem {
             }
             int durability = ((Number) rpgMeta.get(RPGMetadata.DURABILITY)).intValue();
 
-            if (!hasBar || forceBar) {
+            if (!hasBar || forceBar || customItemModel) {
                 StringBuilder out = new StringBuilder();
                 char boxChar = '\u25A0';
                 int boxCount = tooltipWidth / 4;
@@ -551,9 +557,17 @@ public class RPGItem {
                 else
                     lore.set(lore.size()-1, out.toString());
             }
-            item.setDurability((short) (item.getType().getMaxDurability() - ((short) ((double) item.getType().getMaxDurability() * ((double) durability / (double) maxDurability)))));
+            if (customItemModel) {
+                item.setDurability(this.item.getDurability());
+            } else {
+                item.setDurability((short) (item.getType().getMaxDurability() - ((short) ((double) item.getType().getMaxDurability() * ((double) durability / (double) maxDurability)))));
+            }
         } else if (maxDurability <= 0) {
-            item.setDurability(hasBar ? (short) 0 : this.item.getDurability());
+            if (customItemModel) {
+                item.setDurability(this.item.getDurability());
+            } else {
+                item.setDurability(hasBar ? (short) 0 : this.item.getDurability());
+            }
         }
     }
 
@@ -760,6 +774,9 @@ public class RPGItem {
             sender.sendMessage(lines.get(i));
         }
         sender.sendMessage(String.format(Locale.get("message.print.durability"), maxDurability));
+        if (customItemModel) {
+            sender.sendMessage(String.format(Locale.get("message.print.customitemmodel"), this.item.getType().name() + ":" + this.item.getDurability()));
+        }
         if (!itemFlags.isEmpty()) {
             String str = "";
             for (ItemFlag flag : itemFlags) {
@@ -978,7 +995,7 @@ public class RPGItem {
         int durability = 1;
         if (getMaxDurability() != -1) {
             durability = meta.containsKey(RPGMetadata.DURABILITY) ? ((Number) meta.get(RPGMetadata.DURABILITY)).intValue() : getMaxDurability();
-            if(durability <= val && getLocaleMeta().isUnbreakable()){
+            if (durability <= val && (getLocaleMeta().isUnbreakable() && !customItemModel)) {
                 return false;
             }
             durability-= val;
