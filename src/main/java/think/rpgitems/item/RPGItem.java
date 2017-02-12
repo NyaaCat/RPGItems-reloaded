@@ -109,6 +109,10 @@ public class RPGItem {
     private int maxDurability;
     private boolean hasBar = false;
     private boolean forceBar = false;
+    public int blockBreakingCost = 1;
+    public int hittingCost = 1;
+    public int hitCost = 1;
+    public boolean hitCostByDamage = false;
 
     public RPGItem(String name, int id) {
         this.name = name;
@@ -208,6 +212,10 @@ public class RPGItem {
         if (item.getType().getMaxDurability() != 0) {
             hasBar = true;
         }
+        hitCost = s.getInt("hitCost", 1);
+        hittingCost = s.getInt("hittingCost", 1);
+        blockBreakingCost = s.getInt("blockBreakingCost", 1);
+        hitCostByDamage = s.getBoolean("hitCostByDamage", false);
         maxDurability = s.getInt("maxDurability", item.getType().getMaxDurability());
         forceBar = s.getBoolean("forceBar", false);
 
@@ -291,6 +299,10 @@ public class RPGItem {
             drops.set(key, dropChances.get(key));
         }
 
+        s.set("hitCost", hitCost);
+        s.set("hittingCost", hittingCost);
+        s.set("blockBreakingCost", blockBreakingCost);
+        s.set("hitCostByDamage", hitCostByDamage);
         s.set("maxDurability", maxDurability);
         s.set("forceBar", forceBar);
         s.set("showPowerText", showPowerLore);
