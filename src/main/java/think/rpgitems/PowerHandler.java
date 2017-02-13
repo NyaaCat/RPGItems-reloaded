@@ -318,7 +318,7 @@ public class PowerHandler implements CommandHandler {
     public void consumehit(CommandSender sender, RPGItem item, int cooldown) {
         PowerConsumeHit pow = new PowerConsumeHit();
         pow.item = item;
-        pow.cooldowmTime = cooldown;
+        pow.cooldownTime = cooldown;
         item.addPower(pow);
         ItemManager.save(Plugin.plugin);
         sender.sendMessage(ChatColor.AQUA + Locale.get("message.power.ok"));
