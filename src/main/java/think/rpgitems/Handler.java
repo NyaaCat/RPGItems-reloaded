@@ -665,9 +665,10 @@ public class Handler implements CommandHandler {
                     }else if(pro.getType() == boolean.class){
                         if(val.equalsIgnoreCase("true") || val.equalsIgnoreCase("false")){
                             pro.set(pow, val.equalsIgnoreCase("true"));
+                        } else {
+                            sender.sendMessage(ChatColor.RED + String.format(Locale.get("message.power_property.not_vaild_bool"), val));
+                            return;
                         }
-                        sender.sendMessage(ChatColor.RED + String.format(Locale.get("message.power_property.not_vaild_bool"), val));
-                        return;
                     }
                 }catch (Exception e){
                     sender.sendMessage(ChatColor.RED + String.format(Locale.get("message.power_property.property_notfound"), property));

@@ -93,6 +93,7 @@ public class RPGItem {
     private ArrayList<PowerProjectileHit> powerProjectileHit = new ArrayList<PowerProjectileHit>();
     private ArrayList<PowerHit> powerHit = new ArrayList<PowerHit>();
     private ArrayList<PowerHitTaken> powerHitTaken = new ArrayList<PowerHitTaken>();
+    private ArrayList<PowerHurt> powerHurt = new ArrayList<PowerHurt>();
     private ArrayList<PowerTick> powerTick = new ArrayList<PowerTick>();
 
     // Recipes
@@ -420,6 +421,17 @@ public class RPGItem {
             i.setType(Material.AIR);
         }
         return ret == Double.MAX_VALUE? -1 : ret;
+    }
+
+    public void hurt(Player target, ItemStack i, Entity damager, double damage) {
+        System.out.println("powerHurt.size() "+powerHurt.size());
+        for (PowerHurt power : powerHurt) {
+            power.hurt(target, i, damager, damage);
+        }
+        if(getDurability(i) <= 0){
+            i.setAmount(0);
+            i.setType(Material.AIR);
+        }
     }
 
     public void tick(Player player, ItemStack i) {
@@ -1047,6 +1059,9 @@ public class RPGItem {
         if (power instanceof PowerProjectileHit) {
             powerProjectileHit.add((PowerProjectileHit) power);
         }
+        if (power instanceof PowerHurt) {
+            powerHurt.add((PowerHurt) power);
+        }
         if (power instanceof PowerTick) {
             powerTick.add((PowerTick) power);
         }
@@ -1072,6 +1087,9 @@ public class RPGItem {
             }
             if (power instanceof PowerHitTaken) {
                 powerHitTaken.remove((PowerHitTaken) power);
+            }
+            if (power instanceof PowerHurt) {
+                powerHurt.remove((PowerHurt) power);
             }
             if (power instanceof PowerLeftClick) {
                 powerLeftClick.remove(power);
