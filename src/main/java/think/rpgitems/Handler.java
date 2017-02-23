@@ -682,6 +682,63 @@ public class Handler implements CommandHandler {
         sender.sendMessage(ChatColor.RED + Locale.get("message.power_property.power_notfound"));
     }
 
+    @CommandString("rpgitem $n[] cost breaking")
+    @CommandDocumentation("$command.rpgitem.cost.break.get")
+    @CommandGroup("item_cost_break")
+    public void getItemBlockBreakingCost(CommandSender sender, RPGItem item) {
+        sender.sendMessage(String.format(Locale.get("message.cost.get"),item.blockBreakingCost));
+    }
+
+    @CommandString("rpgitem $n[] cost hitting")
+    @CommandDocumentation("$command.rpgitem.cost.hitting.get")
+    @CommandGroup("item_cost_hitting")
+    public void getItemHittingConst(CommandSender sender, RPGItem item) {
+        sender.sendMessage(String.format(Locale.get("message.cost.get"),item.hittingCost));
+    }
+
+    @CommandString("rpgitem $n[] cost hit")
+    @CommandDocumentation("$command.rpgitem.cost.hit.get")
+    @CommandGroup("item_cost_hit")
+    public void getItemHitConst(CommandSender sender, RPGItem item) {
+        sender.sendMessage(String.format(Locale.get("message.cost.get"),item.hitCost));
+    }
+
+    @CommandString("rpgitem $n[] cost breaking $durability:i[]")
+    @CommandDocumentation("$command.rpgitem.cost.breaking")
+    @CommandGroup("item_cost_hitting")
+    public void setItemBreakingConst(CommandSender sender, RPGItem item, int newValue) {
+        item.blockBreakingCost = newValue;
+        ItemManager.save(Plugin.plugin);
+        sender.sendMessage(Locale.get("message.cost.change"));
+    }
+
+    @CommandString("rpgitem $n[] cost hitting $durability:i[]")
+    @CommandDocumentation("$command.rpgitem.cost.hitting")
+    @CommandGroup("item_cost_hitting")
+    public void setItemHittingConst(CommandSender sender, RPGItem item, int newValue) {
+        item.hittingCost = newValue;
+        ItemManager.save(Plugin.plugin);
+        sender.sendMessage(Locale.get("message.cost.change"));
+    }
+
+    @CommandString("rpgitem $n[] cost hit $durability:i[]")
+    @CommandDocumentation("$command.rpgitem.cost.hit")
+    @CommandGroup("item_cost_hit")
+    public void setItemHitConst(CommandSender sender, RPGItem item, int newValue) {
+        item.hitCost = newValue;
+        ItemManager.save(Plugin.plugin);
+        sender.sendMessage(Locale.get("message.cost.change"));
+    }
+
+    @CommandString("rpgitem $n[] cost hit toggle")
+    @CommandDocumentation("$command.rpgitem.cost.hit_toggle")
+    @CommandGroup("item_cost_hit_toggle")
+    public void toggleHitCost(CommandSender sender, RPGItem item) {
+        item.hitCostByDamage = !item.hitCostByDamage;
+        ItemManager.save(Plugin.plugin);
+        sender.sendMessage(Locale.get("message.cost.hit_toggle." + (item.hitCostByDamage ? "enable" : "disable")));
+    }
+
     @CommandString("rpgitem $n[] durability $durability:i[]")
     @CommandDocumentation("$command.rpgitem.durability")
     @CommandGroup("item_durability")

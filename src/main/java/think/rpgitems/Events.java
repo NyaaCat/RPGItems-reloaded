@@ -102,7 +102,7 @@ public class Events implements Listener {
         ItemStack item = player.getInventory().getItemInMainHand();
         RPGItem rItem;
         if ((rItem = ItemManager.toRPGItem(item)) != null) {
-            boolean can = rItem.consumeDurability(item, 1);
+            boolean can = rItem.consumeDurability(item, rItem.blockBreakingCost);
             if(!can){
                 e.setCancelled(true);
             }
@@ -408,7 +408,7 @@ public class Events implements Listener {
         if (e.getEntity() instanceof LivingEntity) {
             rItem.hit(player, item, (LivingEntity) e.getEntity(), e.getDamage());
         }
-        boolean can = rItem.consumeDurability(item, 1);
+        boolean can = rItem.consumeDurability(item, rItem.hittingCost);
         if(!can){
             e.setCancelled(true);
             return 0;
@@ -470,7 +470,11 @@ public class Events implements Listener {
             if (pRItem.getArmour() > 0) {
                 damage -= Math.round(((double) damage) * (((double) pRItem.getArmour()) / 100d));
             }
-            pRItem.consumeDurability(pArmour, 1);
+            if(!pRItem.hitCostByDamage){
+                pRItem.consumeDurability(pArmour, pRItem.hitCost);
+            }else{
+                pRItem.consumeDurability(pArmour, (int)(pRItem.hitCost * damage / 100d));
+            }
         }
         if(hasRPGItem) {
             p.getInventory().setArmorContents(armour);
