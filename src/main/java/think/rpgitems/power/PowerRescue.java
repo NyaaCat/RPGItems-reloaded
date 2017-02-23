@@ -18,6 +18,7 @@ package think.rpgitems.power;
 
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
+import org.bukkit.Effect;
 import org.bukkit.Sound;
 import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.entity.Entity;
@@ -37,7 +38,7 @@ public class PowerRescue extends Power implements PowerHurt {
     public String permission = "";
     public int healthTrigger = 4;
     public boolean useBed = true;
-    public boolean inPlace = false;
+    public boolean inPlace = true;
     public long cooldownTime = 20;
     public int consumption = 0;
 
@@ -56,7 +57,7 @@ public class PowerRescue extends Power implements PowerHurt {
         cooldownTime = s.getLong("cooldown", 20);
         healthTrigger = s.getInt("healthTrigger", 4);
         useBed = s.getBoolean("useBed", true);
-        inPlace = s.getBoolean("inPlace", false);
+        inPlace = s.getBoolean("inPlace", true);
         permission = s.getString("permission", "");
         consumption = s.getInt("consumption", 0);
     }
@@ -94,18 +95,14 @@ public class PowerRescue extends Power implements PowerHurt {
                 target.sendMessage(ChatColor.AQUA + Locale.get("power.rescue.info"));
                 target.addPotionEffect(new PotionEffect(PotionEffectType.HEALTH_BOOST, 1 ,(int)(damage / 4 +1)));
                 target.setHealth(healthTrigger + damage);
-                target.addPotionEffect(new PotionEffect(PotionEffectType.DAMAGE_RESISTANCE, 80 ,10));
-                target.addPotionEffect(new PotionEffect(PotionEffectType.INCREASE_DAMAGE, 80 ,255));
-                target.getWorld().playSound(target.getLocation(), Sound.ENTITY_GUARDIAN_DEATH_LAND, 1, 1);
+                target.addPotionEffect(new PotionEffect(PotionEffectType.DAMAGE_RESISTANCE, 100 ,10));
+                target.addPotionEffect(new PotionEffect(PotionEffectType.REGENERATION, 200 ,2));
+                target.getWorld().playSound(target.getLocation(), Sound.BLOCK_ENCHANTMENT_TABLE_USE, 10, 1);
                 EntityDamageEvent.DamageCause cause = target.getLastDamageCause().getCause();
                 if(inPlace && cause != DamageCause.DRAGON_BREATH
                         && cause != DamageCause.DROWNING
                         && cause != DamageCause.SUFFOCATION){
                     target.addPotionEffect(new PotionEffect(PotionEffectType.GLOWING, 160 ,10));
-                    target.addPotionEffect(new PotionEffect(PotionEffectType.REGENERATION, 120 ,2));
-                    target.addPotionEffect(new PotionEffect(PotionEffectType.SLOW, 80 ,20));
-                    target.addPotionEffect(new PotionEffect(PotionEffectType.LEVITATION, 80 ,255));
-                    target.addPotionEffect(new PotionEffect(PotionEffectType.JUMP, 80 ,128));
                 } else if(useBed && target.getBedSpawnLocation() != null)
                     target.teleport(target.getBedSpawnLocation());
                 else
