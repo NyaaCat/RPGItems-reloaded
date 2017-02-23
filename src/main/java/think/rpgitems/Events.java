@@ -478,23 +478,31 @@ public class Events implements Listener {
         return damage;
     }
 
-    private double playerHurt(Player e, double damage) {
+    private double playerHitTaken(Player e, double damage) {
         double ret = Double.MAX_VALUE;
-        for (ItemStack item : e.getInventory().getArmorContents()) {
+        for (ItemStack item : e.getInventory().getContents()) {
             RPGItem ri = ItemManager.toRPGItem(item);
             if (ri == null) continue;
             double d = ri.takeHit(e, item, null, damage);
             if (d < 0) continue;
             if (d < ret) ret = d;
         }
-        for (ItemStack item : e.getInventory().getContents()) {
-            RPGItem ri = ItemManager.toRPGItem(item);
-            if (ri == null) continue;
-            double d = ri.takeHit(e, item,null, damage);
-            if (d < 0) continue;
-            if (d < ret) ret = d;
+        return ret == Double.MAX_VALUE ? damage : ret;
+    }
+
+    @EventHandler(priority = EventPriority.MONITOR, ignoreCancelled = true)
+    private void onPlayerHurt(EntityDamageEvent ev) {
+        if (ev.getEntity() instanceof Player) {
+            System.out.println(ev.getCause());
+            System.out.println(ev.hashCode());
+            Player e = (Player)ev.getEntity();
+            double damage = ev.getFinalDamage();
+            for (ItemStack item : e.getInventory().getContents()) {
+                RPGItem ri = ItemManager.toRPGItem(item);
+                if (ri == null) continue;
+                ri.hurt(e, item,null, damage);
+            }
         }
-        return ret == Double.MAX_VALUE? damage : ret;
     }
 
     @EventHandler(priority = EventPriority.LOWEST, ignoreCancelled = true)
@@ -513,7 +521,7 @@ public class Events implements Listener {
             e.setDamage(damage);
         }
         if (ev.getEntity() instanceof Player) {
-            ev.setDamage(playerHurt((Player)ev.getEntity(), ev.getDamage()));
+            ev.setDamage(playerHitTaken((Player)ev.getEntity(), ev.getDamage()));
         }
     }
 

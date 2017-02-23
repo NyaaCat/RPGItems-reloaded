@@ -16,21 +16,28 @@
  */
 package think.rpgitems.power;
 
+import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
+import org.bukkit.Sound;
 import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.entity.Entity;
 import org.bukkit.entity.Player;
 
+import org.bukkit.event.entity.EntityDamageEvent;
+import org.bukkit.event.entity.EntityDamageEvent.DamageCause;
 import org.bukkit.inventory.ItemStack;
+import org.bukkit.potion.PotionEffect;
+import org.bukkit.potion.PotionEffectType;
 import think.rpgitems.data.Locale;
 import think.rpgitems.data.RPGValue;
-import think.rpgitems.power.types.PowerHitTaken;
+import think.rpgitems.power.types.PowerHurt;
 
-public class PowerRescue extends Power implements PowerHitTaken {
+public class PowerRescue extends Power implements PowerHurt {
 
     public String permission = "";
     public int healthTrigger = 4;
     public boolean useBed = true;
+    public boolean inPlace = false;
     public long cooldownTime = 20;
     public int consumption = 0;
 
@@ -49,6 +56,7 @@ public class PowerRescue extends Power implements PowerHitTaken {
         cooldownTime = s.getLong("cooldown", 20);
         healthTrigger = s.getInt("healthTrigger", 4);
         useBed = s.getBoolean("useBed", true);
+        inPlace = s.getBoolean("inPlace", false);
         permission = s.getString("permission", "");
         consumption = s.getInt("consumption", 0);
     }
@@ -58,17 +66,20 @@ public class PowerRescue extends Power implements PowerHitTaken {
         s.set("cooldown", cooldownTime);
         s.set("healthTrigger", healthTrigger);
         s.set("useBed", useBed);
+        s.set("inPlace", inPlace);
         s.set("permission", permission);
         s.set("consumption", consumption);
     }
 
     @Override
-    public double takeHit(Player target, ItemStack i, Entity damager, double damage) {
+    public void hurt(Player target, ItemStack i, Entity damager, double damage) {
+        System.out.println(damage);
+        Thread.dumpStack();
         if (item.getHasPermission() == true && target.hasPermission(item.getPermission()) == false) {
-            return -1;
+            return;
         } else {
             double health = target.getHealth() - damage;
-            if(health > healthTrigger) return -1;
+            if(health > healthTrigger) return;
             long cooldown;
             RPGValue value = RPGValue.get(target, item, "rescue.cooldown");
             if (value == null) {
@@ -78,21 +89,29 @@ public class PowerRescue extends Power implements PowerHitTaken {
                 cooldown = value.asLong();
             }
             if (cooldown <= System.currentTimeMillis() / 50) {
-                if(!item.consumeDurability(i,consumption))return damage;
+                if(!item.consumeDurability(i, consumption));
                 value.set(System.currentTimeMillis() / 50 + cooldownTime);
                 target.sendMessage(ChatColor.AQUA + Locale.get("power.rescue.info"));
-                if(target.getBedSpawnLocation() != null)
+                target.addPotionEffect(new PotionEffect(PotionEffectType.HEALTH_BOOST, 1 ,(int)(damage / 4 +1)));
+                target.setHealth(healthTrigger + damage);
+                target.addPotionEffect(new PotionEffect(PotionEffectType.DAMAGE_RESISTANCE, 80 ,10));
+                target.addPotionEffect(new PotionEffect(PotionEffectType.INCREASE_DAMAGE, 80 ,255));
+                target.getWorld().playSound(target.getLocation(), Sound.ENTITY_GUARDIAN_DEATH_LAND, 1, 1);
+                EntityDamageEvent.DamageCause cause = target.getLastDamageCause().getCause();
+                if(inPlace && cause != DamageCause.DRAGON_BREATH
+                        && cause != DamageCause.DROWNING
+                        && cause != DamageCause.SUFFOCATION){
+                    target.addPotionEffect(new PotionEffect(PotionEffectType.GLOWING, 160 ,10));
+                    target.addPotionEffect(new PotionEffect(PotionEffectType.REGENERATION, 120 ,2));
+                    target.addPotionEffect(new PotionEffect(PotionEffectType.SLOW, 80 ,20));
+                    target.addPotionEffect(new PotionEffect(PotionEffectType.LEVITATION, 80 ,255));
+                    target.addPotionEffect(new PotionEffect(PotionEffectType.JUMP, 80 ,128));
+                } else if(useBed && target.getBedSpawnLocation() != null)
                     target.teleport(target.getBedSpawnLocation());
                 else
                     target.teleport(target.getWorld().getSpawnLocation());
-                if (health < 0.1D) {
-                    return target.getHealth() - 0.1;
-                } else {
-                    return damage;
-                }
             } else {
                 target.sendMessage(ChatColor.AQUA + String.format(Locale.get("message.cooldown"), ((double) (cooldown - System.currentTimeMillis() / 50)) / 20d));
-                return -1;
             }
         }
     }
