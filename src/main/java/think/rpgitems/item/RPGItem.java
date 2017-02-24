@@ -424,7 +424,6 @@ public class RPGItem {
     }
 
     public void hurt(Player target, ItemStack i, Entity damager, double damage) {
-        System.out.println("powerHurt.size() "+powerHurt.size());
         for (PowerHurt power : powerHurt) {
             power.hurt(target, i, damager, damage);
         }

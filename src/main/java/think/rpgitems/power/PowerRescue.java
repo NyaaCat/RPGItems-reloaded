@@ -74,8 +74,6 @@ public class PowerRescue extends Power implements PowerHurt {
 
     @Override
     public void hurt(Player target, ItemStack i, Entity damager, double damage) {
-        System.out.println(damage);
-        Thread.dumpStack();
         if (item.getHasPermission() == true && target.hasPermission(item.getPermission()) == false) {
             return;
         } else {
