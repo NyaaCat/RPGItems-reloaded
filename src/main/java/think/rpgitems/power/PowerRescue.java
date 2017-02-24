@@ -16,14 +16,11 @@
  */
 package think.rpgitems.power;
 
-import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
-import org.bukkit.Effect;
 import org.bukkit.Sound;
 import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.entity.Entity;
 import org.bukkit.entity.Player;
-
 import org.bukkit.event.entity.EntityDamageEvent;
 import org.bukkit.event.entity.EntityDamageEvent.DamageCause;
 import org.bukkit.inventory.ItemStack;
@@ -38,7 +35,7 @@ public class PowerRescue extends Power implements PowerHurt {
     public String permission = "";
     public int healthTrigger = 4;
     public boolean useBed = true;
-    public boolean inPlace = true;
+    public boolean inPlace = false;
     public long cooldownTime = 20;
     public int consumption = 0;
 
@@ -57,7 +54,7 @@ public class PowerRescue extends Power implements PowerHurt {
         cooldownTime = s.getLong("cooldown", 20);
         healthTrigger = s.getInt("healthTrigger", 4);
         useBed = s.getBoolean("useBed", true);
-        inPlace = s.getBoolean("inPlace", true);
+        inPlace = s.getBoolean("inPlace", false);
         permission = s.getString("permission", "");
         consumption = s.getInt("consumption", 0);
     }
@@ -74,8 +71,6 @@ public class PowerRescue extends Power implements PowerHurt {
 
     @Override
     public void hurt(Player target, ItemStack i, Entity damager, double damage) {
-        System.out.println(damage);
-        Thread.dumpStack();
         if (item.getHasPermission() == true && target.hasPermission(item.getPermission()) == false) {
             return;
         } else {
