@@ -660,6 +660,13 @@ public class Handler implements CommandHandler {
                             sender.sendMessage(ChatColor.RED + String.format(Locale.get("message.power_property.not_vaild_int"), val));
                             return;
                         }
+                    }else if(pro.getType() == double.class) {
+                        try {
+                            pro.set(pow, Double.parseDouble(val));
+                        }catch (NumberFormatException e){
+                            sender.sendMessage(ChatColor.RED + String.format(Locale.get("message.power_property.not_vaild_int"), val));
+                            return;
+                        }
                     }else if(pro.getType() == String.class){
                         pro.set(pow, val);
                     }else if(pro.getType() == boolean.class){
@@ -669,6 +676,8 @@ public class Handler implements CommandHandler {
                             sender.sendMessage(ChatColor.RED + String.format(Locale.get("message.power_property.not_vaild_bool"), val));
                             return;
                         }
+                    }else {
+                        sender.sendMessage(ChatColor.RED + String.format(Locale.get("message.power_property.property_unsupporttype"), property));
                     }
                 }catch (Exception e){
                     sender.sendMessage(ChatColor.RED + String.format(Locale.get("message.power_property.property_notfound"), property));

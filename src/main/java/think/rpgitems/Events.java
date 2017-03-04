@@ -46,7 +46,6 @@ import org.bukkit.projectiles.ProjectileSource;
 import org.bukkit.scheduler.BukkitRunnable;
 import think.rpgitems.commands.RPGItemUpdateCommandHandler;
 import think.rpgitems.data.Locale;
-import think.rpgitems.data.RPGMetadata;
 import think.rpgitems.item.ItemManager;
 import think.rpgitems.item.LocaleInventory;
 import think.rpgitems.item.RPGItem;
@@ -446,6 +445,23 @@ public class Events implements Listener {
         return damage;
     }
 
+    @EventHandler(priority = EventPriority.LOWEST, ignoreCancelled = true)
+    public void onDamage(EntityDamageEvent ev) {
+        if (ev instanceof EntityDamageByEntityEvent) {
+            EntityDamageByEntityEvent e = (EntityDamageByEntityEvent) ev;
+            double damage = e.getDamage();
+            if (e.getDamager() instanceof Player) {
+                damage = playerDamager(e, damage);
+            } else if (e.getDamager() instanceof Projectile) {
+                damage = projectileDamager(e, damage);
+            }
+            if (e.getEntity() instanceof Player) {
+                damage = playerHit(e, damage);
+            }
+            e.setDamage(damage);
+        }
+    }
+
     private double playerHit(EntityDamageByEntityEvent e, double damage) {
         Player p = (Player) e.getEntity();
         if (e.isCancelled() || !WorldGuard.canPvP(p))
@@ -467,13 +483,14 @@ public class Events implements Listener {
                 e.setCancelled(true);
                 p.sendMessage(ChatColor.RED + String.format(Locale.get("message.error.permission")));
             }
-            if (pRItem.getArmour() > 0) {
-                damage -= Math.round(((double) damage) * (((double) pRItem.getArmour()) / 100d));
-            }
+            boolean can;
             if(!pRItem.hitCostByDamage){
-                pRItem.consumeDurability(pArmour, pRItem.hitCost);
+                can = pRItem.consumeDurability(pArmour, pRItem.hitCost);
             }else{
-                pRItem.consumeDurability(pArmour, (int)(pRItem.hitCost * damage / 100d));
+                can = pRItem.consumeDurability(pArmour, (int)(pRItem.hitCost * damage / 100d));
+            }
+            if (can && pRItem.getArmour() > 0) {
+                damage -= Math.round(((double) damage) * (((double) pRItem.getArmour()) / 100d));
             }
         }
         if(hasRPGItem) {
@@ -482,48 +499,35 @@ public class Events implements Listener {
         return damage;
     }
 
-    private double playerHitTaken(Player e, double damage) {
+
+    @EventHandler(priority = EventPriority.HIGHEST)
+    public void onPlayerHitTaken(EntityDamageEvent ev) {
+        if (ev.getEntity() instanceof Player) {
+            ev.setDamage(playerHitTaken((Player)ev.getEntity(), ev));
+        }
+    }
+
+    private double playerHitTaken(Player e, EntityDamageEvent ev) {
         double ret = Double.MAX_VALUE;
         for (ItemStack item : e.getInventory().getContents()) {
             RPGItem ri = ItemManager.toRPGItem(item);
             if (ri == null) continue;
-            double d = ri.takeHit(e, item, null, damage);
+            double d = ri.takeHit(e, item,  ev);
             if (d < 0) continue;
             if (d < ret) ret = d;
         }
-        return ret == Double.MAX_VALUE ? damage : ret;
+        return ret == Double.MAX_VALUE ? ev.getDamage() : ret;
     }
 
     @EventHandler(priority = EventPriority.MONITOR, ignoreCancelled = true)
     private void onPlayerHurt(EntityDamageEvent ev) {
         if (ev.getEntity() instanceof Player) {
             Player e = (Player)ev.getEntity();
-            double damage = ev.getFinalDamage();
             for (ItemStack item : e.getInventory().getContents()) {
                 RPGItem ri = ItemManager.toRPGItem(item);
                 if (ri == null) continue;
-                ri.hurt(e, item,null, damage);
+                ri.hurt(e, item, ev);
             }
-        }
-    }
-
-    @EventHandler(priority = EventPriority.LOWEST, ignoreCancelled = true)
-    public void onDamage(EntityDamageEvent ev) {
-        if (ev instanceof EntityDamageByEntityEvent) {
-            EntityDamageByEntityEvent e = (EntityDamageByEntityEvent) ev;
-            double damage = e.getDamage();
-            if (e.getDamager() instanceof Player) {
-                damage = playerDamager(e, damage);
-            } else if (e.getDamager() instanceof Projectile) {
-                damage = projectileDamager(e, damage);
-            }
-            if (e.getEntity() instanceof Player) {
-                damage = playerHit(e, damage);
-            }
-            e.setDamage(damage);
-        }
-        if (ev.getEntity() instanceof Player) {
-            ev.setDamage(playerHitTaken((Player)ev.getEntity(), ev.getDamage()));
         }
     }
 

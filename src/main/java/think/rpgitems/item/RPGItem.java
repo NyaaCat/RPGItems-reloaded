@@ -35,6 +35,7 @@ import org.bukkit.entity.Entity;
 import org.bukkit.entity.LivingEntity;
 import org.bukkit.entity.Player;
 import org.bukkit.entity.Projectile;
+import org.bukkit.event.entity.EntityDamageEvent;
 import org.bukkit.inventory.ItemFlag;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.Recipe;
@@ -409,10 +410,10 @@ public class RPGItem {
         }
     }
     
-    public double takeHit(Player target, ItemStack i, Entity damager, double damage) {
+    public double takeHit(Player target, ItemStack i, EntityDamageEvent ev) {
         double ret = Double.MAX_VALUE;
         for (PowerHitTaken power : powerHitTaken) {
-            double d = power.takeHit(target, i, damager, damage);
+            double d = power.takeHit(target, i, ev);
             if (d < 0) continue;
             ret = d < ret ? d : ret;
         }
@@ -423,9 +424,9 @@ public class RPGItem {
         return ret == Double.MAX_VALUE? -1 : ret;
     }
 
-    public void hurt(Player target, ItemStack i, Entity damager, double damage) {
+    public void hurt(Player target, ItemStack i, EntityDamageEvent ev) {
         for (PowerHurt power : powerHurt) {
-            power.hurt(target, i, damager, damage);
+            power.hurt(target, i, ev);
         }
         if(getDurability(i) <= 0){
             i.setAmount(0);
