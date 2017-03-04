@@ -173,6 +173,51 @@ public class PowerHandler implements CommandHandler {
         sender.sendMessage(ChatColor.AQUA + Locale.get("message.power.ok"));
     }
 
+    @CommandString("rpgitem $n[] power aoecommand $cooldown:i[] $o[left,right] $display:s[] $command:s[] $min:i[] $max:i[] $facing:i[]")
+    @CommandDocumentation("$command.rpgitem.aoecommand")
+    @CommandGroup("item_power_aoecommand_a")
+    public void aoecommand(CommandSender sender, RPGItem item, int cooldown, String mouse, String displayText, String command, int min, int max, int facing) {
+        PowerAOECommand com = new PowerAOECommand();
+        com.cooldownTime = cooldown;
+        command = command.trim();
+        if (command.charAt(0) == '/') {
+            command = command.substring(1);
+        }
+        com.isRight = mouse.equals("right");
+        com.display = displayText;
+        com.command = command;
+        com.item = item;
+        com.r = max;
+        com.rm = min;
+        com.facing = facing;
+        item.addPower(com);
+        ItemManager.save(Plugin.plugin);
+        sender.sendMessage(ChatColor.AQUA + Locale.get("message.power.ok"));
+    }
+
+    @CommandString("rpgitem $n[] power aoecommand $cooldown:i[] $o[left,right] $display:s[] $command:s[] $min:i[] $max:i[] $facing:i[] $permission:s[]")
+    @CommandDocumentation("$command.rpgitem.aoecommand.full")
+    @CommandGroup("item_power_aoecommand_b")
+    public void aoecommand(CommandSender sender, RPGItem item, int cooldown, String mouse, String displayText, String command, int min, int max, int facing, String permission) {
+        PowerAOECommand com = new PowerAOECommand();
+        com.cooldownTime = cooldown;
+        command = command.trim();
+        if (command.charAt(0) == '/') {
+            command = command.substring(1);
+        }
+        com.isRight = mouse.equals("right");
+        com.display = displayText;
+        com.command = command;
+        com.permission = permission;
+        com.item = item;
+        com.r = max;
+        com.rm = min;
+        com.facing = facing;
+        item.addPower(com);
+        ItemManager.save(Plugin.plugin);
+        sender.sendMessage(ChatColor.AQUA + Locale.get("message.power.ok"));
+    }
+
     @CommandString("rpgitem $n[] power consume $o[left,right] $cooldown:i[]")
     @CommandDocumentation("$command.rpgitem.consume.full")
     @CommandGroup("item_power_consume_left")

@@ -83,6 +83,7 @@ public class Plugin extends JavaPlugin {
         Power.powers.put("commandhit", PowerCommandHit.class);
         Power.powers.put("tippedarrow", PowerTippedArrow.class);
         Power.powers.put("consumehit", PowerConsumeHit.class);
+        Power.powers.put("aoecommand", PowerAOECommand.class);
     }
 
     @Override

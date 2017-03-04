@@ -18,6 +18,7 @@ package think.rpgitems.item;
 
 import gnu.trove.map.hash.TIntObjectHashMap;
 import org.bukkit.ChatColor;
+import org.bukkit.Material;
 import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.configuration.InvalidConfigurationException;
 import org.bukkit.configuration.file.YamlConfiguration;
@@ -158,7 +159,7 @@ public class ItemManager {
     }
 
     public static RPGItem toRPGItem(ItemStack item) {
-        if (item == null)
+        if (item == null || item.getType() == Material.AIR)
             return null;
         if (!item.hasItemMeta())
             return null;

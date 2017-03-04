@@ -20,14 +20,12 @@ import gnu.trove.map.hash.TObjectIntHashMap;
 import org.bukkit.Location;
 import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.entity.Entity;
+import org.bukkit.entity.LivingEntity;
 import org.bukkit.entity.Player;
-import org.bukkit.inventory.ItemStack;
 import think.rpgitems.data.RPGValue;
 import think.rpgitems.item.RPGItem;
 
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
+import java.util.*;
 
 public abstract class Power {
 
@@ -60,6 +58,51 @@ public abstract class Power {
             }
         }
         return entities.toArray(new Entity[entities.size()]);
+    }
+
+    public static LivingEntity[] getNearbyLivingEntities(Location l, double radius, double min) {
+        final java.util.List<java.util.Map.Entry<LivingEntity, Double>> entities = new java.util.ArrayList<>();
+        for (Entity e : l.getWorld().getNearbyEntities(l, radius, radius, radius)) {
+            try {
+                if (e instanceof LivingEntity){
+                    double d = l.distance(e.getLocation());
+                    if (d <= radius && d >= min) {
+                        entities.add(new AbstractMap.SimpleImmutableEntry<>((LivingEntity) e,d));
+                    }
+                }
+            } catch(RuntimeException ex) {
+                ex.printStackTrace();
+            }
+        }
+        java.util.List<LivingEntity> entity = new java.util.ArrayList<>();
+        entities.sort(Comparator.comparing(java.util.Map.Entry::getValue));
+        entities.forEach((k)-> entity.add(k.getKey()));
+        return entity.toArray(new LivingEntity[entity.size()]);
+    }
+
+    /** @param entities
+     *            List of nearby entities
+     * @param startPos
+     *            starting position
+     * @param degrees
+     *            angle of cone
+     * @param direction
+     *            direction of the cone
+     * @return All entities inside the cone */
+    public static List<LivingEntity> getEntitiesInCone(LivingEntity[] entities, org.bukkit.util.Vector startPos, double degrees, org.bukkit.util.Vector direction) {
+        List<LivingEntity> newEntities = new ArrayList<>();
+        for (LivingEntity e : entities) {
+            org.bukkit.util.Vector relativePosition = e.getEyeLocation().toVector();
+            relativePosition.subtract(startPos);
+            if (getAngleBetweenVectors(direction, relativePosition) > degrees) continue;
+            newEntities.add(e);
+        }
+        return newEntities;
+    }
+
+
+    public static float getAngleBetweenVectors(org.bukkit.util.Vector v1, org.bukkit.util.Vector v2) {
+        return Math.abs((float)Math.toDegrees(v1.angle(v2)));
     }
 
     protected final boolean checkCooldown(Player p, int cdTicks) {
