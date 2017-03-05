@@ -22,7 +22,10 @@ import gnu.trove.map.hash.TObjectIntHashMap;
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
 import org.bukkit.Material;
-import org.bukkit.entity.*;
+import org.bukkit.entity.HumanEntity;
+import org.bukkit.entity.LivingEntity;
+import org.bukkit.entity.Player;
+import org.bukkit.entity.Projectile;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.EventPriority;
 import org.bukkit.event.Listener;
@@ -183,21 +186,50 @@ public class Events implements Listener {
         }
     }
 
-    private Set<Material> BYPASS_BLOCK = new HashSet<Material>(){{
+    private Set<Material> BYPASS_BLOCK = new HashSet<Material>() {{
         add(Material.ACACIA_DOOR);
         add(Material.BIRCH_DOOR);
         add(Material.DARK_OAK_DOOR);
-        add(Material.IRON_DOOR);
+        add(Material.IRON_DOOR_BLOCK);
         add(Material.JUNGLE_DOOR);
         add(Material.SPRUCE_DOOR);
         add(Material.TRAP_DOOR);
-        add(Material.WOOD_DOOR);
         add(Material.WOODEN_DOOR);
+        add(Material.FENCE_GATE);
+        add(Material.ACACIA_FENCE_GATE);
+        add(Material.BIRCH_FENCE_GATE);
+        add(Material.DARK_OAK_FENCE_GATE);
+        add(Material.JUNGLE_FENCE_GATE);
+        add(Material.SPRUCE_FENCE_GATE);
         add(Material.CHEST);
         add(Material.TRAPPED_CHEST);
-        add(Material.CHEST);
-        add(Material.CHEST);
-        add(Material.CHEST);
+        add(Material.ENCHANTMENT_TABLE);
+        add(Material.WORKBENCH);
+        add(Material.BEACON);
+        add(Material.ANVIL);
+        add(Material.FURNACE);
+        add(Material.BURNING_FURNACE);
+        add(Material.BREWING_STAND);
+        add(Material.HOPPER);
+        add(Material.DISPENSER);
+        add(Material.DROPPER);
+        add(Material.ENDER_CHEST);
+        add(Material.WHITE_SHULKER_BOX);
+        add(Material.ORANGE_SHULKER_BOX);
+        add(Material.MAGENTA_SHULKER_BOX);
+        add(Material.LIGHT_BLUE_SHULKER_BOX);
+        add(Material.YELLOW_SHULKER_BOX);
+        add(Material.LIME_SHULKER_BOX);
+        add(Material.PINK_SHULKER_BOX);
+        add(Material.GRAY_SHULKER_BOX);
+        add(Material.SILVER_SHULKER_BOX);
+        add(Material.CYAN_SHULKER_BOX);
+        add(Material.PURPLE_SHULKER_BOX);
+        add(Material.BLUE_SHULKER_BOX);
+        add(Material.BROWN_SHULKER_BOX);
+        add(Material.GREEN_SHULKER_BOX);
+        add(Material.RED_SHULKER_BOX);
+        add(Material.BLACK_SHULKER_BOX);
     }};
     @EventHandler
     public void onPlayerAction(PlayerInteractEvent e) {
@@ -219,7 +251,8 @@ public class Events implements Listener {
         Action action = e.getAction();
         if (action == Action.RIGHT_CLICK_AIR) {
             rItem.rightClick(p, e.getItem(), e.getClickedBlock());
-        } else if (action == Action.RIGHT_CLICK_BLOCK && !BYPASS_BLOCK.contains(e.getMaterial())) {
+        } else if (action == Action.RIGHT_CLICK_BLOCK && 
+                !(BYPASS_BLOCK.contains(e.getClickedBlock().getType()) && !p.isSneaking())) {
             rItem.rightClick(p, e.getItem(), e.getClickedBlock());
         } else if (action == Action.LEFT_CLICK_AIR || action == Action.LEFT_CLICK_BLOCK) {
             rItem.leftClick(p, e.getItem(), e.getClickedBlock());
