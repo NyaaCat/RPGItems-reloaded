@@ -118,7 +118,7 @@ public class PowerAOECommand extends PowerCommand {
         facing = s.getDouble("facing", 30);
         c = s.getInt("c", 100);
         selfapplication = s.getBoolean("selfapplication", false);
-        mustsee = s.getBoolean("mustSee", mustsee);
+        mustsee = s.getBoolean("mustsee", mustsee);
         super.init(s);
     }
 
