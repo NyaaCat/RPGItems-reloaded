@@ -5,7 +5,7 @@ targetCompatibility = 1.8
 
 repositories {
     jcenter()
-
+    mavenCentral()
     maven {
         name 'Spigot'
         url 'https://hub.spigotmc.org/nexus/content/groups/public/'
@@ -18,12 +18,13 @@ repositories {
 
     maven {
         name 'sk89q'
-        url 'http://maven.sk89q.com/artifactory/repo/'
+        url "http://maven.sk89q.com/repo/"
     }
 }
 
 dependencies {
     compile 'org.spigotmc:spigot-api:1.11-R0.1-SNAPSHOT'
-    compile 'com.sk89q:worldguard:6.1'
+    compile 'com.sk89q.worldguard:worldguard-legacy:6.2'
+    compileOnly 'com.sk89q.worldedit:worldedit-core:6.1'
 }
 

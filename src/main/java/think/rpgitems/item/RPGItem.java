@@ -51,6 +51,7 @@ import think.rpgitems.power.Power;
 import think.rpgitems.power.PowerLoreFilter;
 import think.rpgitems.power.PowerUnbreakable;
 import think.rpgitems.power.types.*;
+import think.rpgitems.support.WorldGuard;
 import think.rpgitems.utils.ReflectionUtil;
 
 import java.util.*;
@@ -372,6 +373,7 @@ public class RPGItem {
 
     public void leftClick(Player player, ItemStack i, Block block) {
         for (PowerLeftClick power : powerLeftClick) {
+            if(!WorldGuard.canUsePowerNow(player, power))continue;
             power.leftClick(player, i, block);
         }
         if(getDurability(i) <= 0){
@@ -382,6 +384,7 @@ public class RPGItem {
 
     public void rightClick(Player player, ItemStack i, Block block) {
         for (PowerRightClick power : powerRightClick) {
+            if(!WorldGuard.canUsePowerNow(player, power))continue;
             power.rightClick(player, i, block);
         }
         if(getDurability(i) <= 0){
@@ -392,6 +395,7 @@ public class RPGItem {
 
     public void projectileHit(Player player, ItemStack i, Projectile arrow) {
         for (PowerProjectileHit power : powerProjectileHit) {
+            if(!WorldGuard.canUsePowerNow(player, power))continue;
             power.projectileHit(player, i, arrow);
         }
         if(getDurability(i) <= 0){
@@ -402,6 +406,7 @@ public class RPGItem {
 
     public void hit(Player damager, ItemStack i, LivingEntity target, double damage) {
         for (PowerHit power : powerHit) {
+            if(!WorldGuard.canUsePowerNow(damager, power))continue;
             power.hit(damager, i, target, damage);
         }
         if(getDurability(i) <= 0){
@@ -413,6 +418,7 @@ public class RPGItem {
     public double takeHit(Player target, ItemStack i, EntityDamageEvent ev) {
         double ret = Double.MAX_VALUE;
         for (PowerHitTaken power : powerHitTaken) {
+            if(!WorldGuard.canUsePowerNow(target, power))continue;
             double d = power.takeHit(target, i, ev);
             if (d < 0) continue;
             ret = d < ret ? d : ret;
@@ -426,6 +432,7 @@ public class RPGItem {
 
     public void hurt(Player target, ItemStack i, EntityDamageEvent ev) {
         for (PowerHurt power : powerHurt) {
+            if(!WorldGuard.canUsePowerNow(target, power))continue;
             power.hurt(target, i, ev);
         }
         if(getDurability(i) <= 0){
@@ -436,6 +443,7 @@ public class RPGItem {
 
     public void tick(Player player, ItemStack i) {
         for (PowerTick power : powerTick) {
+            if(!WorldGuard.canUsePowerNow(player, power))continue;
             power.tick(player, i);
         }
     }

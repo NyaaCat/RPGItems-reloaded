@@ -29,43 +29,96 @@ import org.bukkit.configuration.file.FileConfiguration;
 import org.bukkit.configuration.file.YamlConfiguration;
 import org.bukkit.entity.Player;
 import org.bukkit.plugin.Plugin;
+import think.rpgitems.power.types.Power;
 
 import java.io.File;
 import java.io.IOException;
+import java.util.Collection;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.UUID;
 
 public class WorldGuard {
 
-    private static Plugin plugin;
-    private static WorldGuardPlugin wgPlugin;
-    private static boolean hasSupport = false;
-    private static int majorVersion;
-    private static FileConfiguration config;
     public static boolean useWorldGuard = true;
+    public static boolean useCustomFlag = true;
+    public static boolean forceRefresh = false;
+    public static Map<UUID, Collection<String>> disabledNowByPlayer;
+    private static Plugin plugin;
+    static WorldGuardPlugin wgPlugin;
+    static int majorVersion;
+    static int minorVersion;
+    static int pointVersion;
+    private static boolean hasSupport = false;
+    private static FileConfiguration config;
+
+    public static void load() {
+        if (!useWorldGuard || !useCustomFlag) {
+            return;
+        }
+        try {
+            WGHandler.init();
+        } catch (NoClassDefFoundError ignored) {
+
+        }
+    }
 
     public static void init(think.rpgitems.Plugin pl) {
         plugin = pl;
         Plugin wgPlugin = plugin.getServer().getPluginManager().getPlugin("WorldGuard");
         useWorldGuard = plugin.getConfig().getBoolean("support.worldguard", false);
+        useCustomFlag = plugin.getConfig().getBoolean("support.wgcustomflag", true);
+        forceRefresh = plugin.getConfig().getBoolean("support.wgforcerefresh", false);
         if (wgPlugin == null || !(wgPlugin instanceof WorldGuardPlugin)) {
             return;
         }
         hasSupport = true;
         WorldGuard.wgPlugin = (WorldGuardPlugin) wgPlugin;
-        majorVersion = Character.digit(wgPlugin.getDescription().getVersion().charAt(0), 9);
-        think.rpgitems.Plugin.logger.info("[RPGItems] WorldGuard version " + majorVersion + " found");
+        majorVersion = Character.digit(WorldGuard.wgPlugin.getDescription().getVersion().charAt(0), 9);
+        minorVersion = Character.digit(WorldGuard.wgPlugin.getDescription().getVersion().charAt(2), 9);
+        pointVersion = Character.digit(WorldGuard.wgPlugin.getDescription().getVersion().charAt(4), 9);
+        think.rpgitems.Plugin.logger.info("[RPGItems] WorldGuard version " + majorVersion + "." + minorVersion + "." + pointVersion + " : " + WorldGuard.wgPlugin.getDescription().getVersion() + " found");
         loadConfig();
+        if (!(WorldGuard.majorVersion > 6 || (WorldGuard.majorVersion == 6 && WorldGuard.minorVersion >= 2) || (WorldGuard.majorVersion == 6 && WorldGuard.minorVersion == 1 && WorldGuard.pointVersion >= 3))) {
+            useCustomFlag = false;
+        }
+        if (!useCustomFlag) {
+            return;
+        }
+        WGHandler.registerHandler();
+        disabledNowByPlayer = new HashMap<>();
+        for (Player p : plugin.getServer().getOnlinePlayers()) {
+            WGHandler.refreshPlayerWG(p);
+        }
     }
-    
+
     public static void reload() {
+        if (useCustomFlag) {
+            WGHandler.unregisterHandler();
+        }
         useWorldGuard = plugin.getConfig().getBoolean("support.worldguard", false);
-        if (wgPlugin == null || !(wgPlugin instanceof WorldGuardPlugin)) {
+        useCustomFlag = plugin.getConfig().getBoolean("support.wgcustomflag", true);
+        forceRefresh = plugin.getConfig().getBoolean("support.wgforcerefresh", false);
+        if (wgPlugin == null) {
             return;
         }
         hasSupport = true;
-        WorldGuard.wgPlugin = (WorldGuardPlugin) wgPlugin;
-        majorVersion = Character.digit(wgPlugin.getDescription().getVersion().charAt(0), 9);
-        think.rpgitems.Plugin.logger.info("[RPGItems] WorldGuard version " + majorVersion + " found");
+        WorldGuard.wgPlugin = (WorldGuardPlugin) plugin.getServer().getPluginManager().getPlugin("WorldGuard");
+        majorVersion = Character.digit(WorldGuard.wgPlugin.getDescription().getVersion().charAt(0), 9);
+        minorVersion = Character.digit(WorldGuard.wgPlugin.getDescription().getVersion().charAt(2), 9);
+        think.rpgitems.Plugin.logger.info("[RPGItems] WorldGuard version " + majorVersion + "." + minorVersion + " : " + WorldGuard.wgPlugin.getDescription().getVersion() + " found");
         loadConfig();
+        if (!(WorldGuard.majorVersion > 6 || (WorldGuard.majorVersion == 6 && WorldGuard.minorVersion >= 2) || (WorldGuard.majorVersion == 6 && WorldGuard.minorVersion == 1 && WorldGuard.pointVersion >= 3))) {
+            useCustomFlag = false;
+        }
+        if (!useCustomFlag) {
+            return;
+        }
+        WGHandler.registerHandler();
+        disabledNowByPlayer = new HashMap<>();
+        for (Player p : plugin.getServer().getOnlinePlayers()) {
+            WGHandler.refreshPlayerWG(p);
+        }
     }
 
     public static boolean isEnabled() {
@@ -73,25 +126,18 @@ public class WorldGuard {
     }
 
     public static boolean canBuild(Player player, Location location) {
-        if (!hasSupport || !useWorldGuard)
-            return true;
-        return wgPlugin.canBuild(player, location);
+        return !hasSupport || !useWorldGuard || wgPlugin.canBuild(player, location);
     }
 
-    @SuppressWarnings("deprecation")
     public static boolean canPvP(Player player) {
-        if (!hasSupport || !useWorldGuard)
+        if (!hasSupport || !useWorldGuard || useCustomFlag)
             return true;
-        
-        if(majorVersion >= 6) {
-            State stat = wgPlugin.getRegionContainer().createQuery().queryState(player.getLocation(), player, DefaultFlag.PVP);
-            return stat == null || stat.equals(State.ALLOW);
-        } else {
-            return wgPlugin.getGlobalRegionManager().allows(DefaultFlag.PVP, player.getLocation(), wgPlugin.wrapPlayer(player));
-        }
+
+        State stat = wgPlugin.getRegionContainer().createQuery().queryState(player.getLocation(), player, DefaultFlag.PVP);
+        return stat == null || stat.equals(State.ALLOW);
     }
 
-    public static void loadConfig() {
+    private static void loadConfig() {
         config = null;
         config = YamlConfiguration.loadConfiguration(new File(plugin.getDataFolder(), "worldguard_region.yml"));
     }
@@ -112,10 +158,19 @@ public class WorldGuard {
                 }
             }
         }
-        if (hasRPGItemFlag(worldName, "__global__")) {
-            return getRPGItemFlag(worldName, "__global__");
+        return !hasRPGItemFlag(worldName, "__global__") || getRPGItemFlag(worldName, "__global__");
+    }
+
+    public static boolean canUsePowerNow(Player player, Power pow) {
+        if (!hasSupport || !useWorldGuard) {
+            return true;
         }
-        return true;
+        if (!useCustomFlag) return canUseRPGItem(player);
+        if (forceRefresh) WGHandler.refreshPlayerWG(player);
+        String name = think.rpgitems.power.Power.powers.inverse().get(pow.getClass());
+        if (disabledNowByPlayer == null) return true;
+        Collection<String> ban = disabledNowByPlayer.get(player.getUniqueId());
+        return !(ban != null && (ban.contains(name) || ban.contains("all")));
     }
 
     public static boolean canUseRPGItem(Player player) {
@@ -125,14 +180,10 @@ public class WorldGuard {
     public static void setRPGItemFlag(String worldName, String regionName, Boolean flag) {
         config.set(worldName + "." + regionName, flag);
         saveConfig();
-        return;
     }
 
     public static boolean hasRPGItemFlag(String worldName, String regionName) {
-        if (config.contains(worldName + "." + regionName)) {
-            return true;
-        }
-        return false;
+        return config.contains(worldName + "." + regionName);
     }
 
     public static boolean getRPGItemFlag(String worldName, String regionName) {
@@ -142,16 +193,20 @@ public class WorldGuard {
     public static void removeRPGItemFlag(String worldName, String regionName) {
         config.set(worldName + "." + regionName, null);
         saveConfig();
-        return;
     }
 
-    public static void saveConfig() {
+    private static void saveConfig() {
         try {
             config.save(new File(plugin.getDataFolder(), "worldguard_region.yml"));
         } catch (IOException e) {
             e.printStackTrace();
         }
-        return;
     }
 
+    public static void unload() {
+        if (!hasSupport || !useWorldGuard || !useCustomFlag) {
+            return;
+        }
+        WGHandler.unregisterHandler();
+    }
 }

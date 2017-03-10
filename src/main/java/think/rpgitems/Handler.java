@@ -111,6 +111,42 @@ public class Handler implements CommandHandler {
         Plugin.plugin.saveConfig();
     }
 
+    @CommandString("rpgitem option wgcustomflag")
+    @CommandDocumentation("$command.rpgitem.wgcustomflag")
+    @CommandGroup("option_wgcustomflag")
+    public void toggleCustomFlag(CommandSender sender) {
+        if (!WorldGuard.isEnabled()) {
+            sender.sendMessage(ChatColor.RED + Locale.get("message.worldguard.error"));
+            return;
+        }
+        if (WorldGuard.useCustomFlag) {
+            sender.sendMessage(ChatColor.AQUA + Locale.get("message.wgcustomflag.disable"));
+        } else {
+            sender.sendMessage(ChatColor.AQUA + Locale.get("message.wgcustomflag.enable"));
+        }
+        WorldGuard.useCustomFlag = !WorldGuard.useCustomFlag;
+        Plugin.plugin.getConfig().set("support.wgcustomflag", WorldGuard.useCustomFlag);
+        Plugin.plugin.saveConfig();
+    }
+
+    @CommandString("rpgitem option wgforcerefreash")
+    @CommandDocumentation("$command.rpgitem.wgforcerefreash")
+    @CommandGroup("option_wgforcerefreash")
+    public void toggleForceRefreash(CommandSender sender) {
+        if (!WorldGuard.isEnabled()) {
+            sender.sendMessage(ChatColor.RED + Locale.get("message.worldguard.error"));
+            return;
+        }
+        if (WorldGuard.forceRefresh) {
+            sender.sendMessage(ChatColor.AQUA + Locale.get("message.wgforcerefresh.disable"));
+        } else {
+            sender.sendMessage(ChatColor.AQUA + Locale.get("message.wgforcerefresh.enable"));
+        }
+        WorldGuard.forceRefresh = !WorldGuard.forceRefresh;
+        Plugin.plugin.getConfig().set("support.wgforcerefresh", WorldGuard.forceRefresh);
+        Plugin.plugin.saveConfig();
+    }
+
     @CommandString("rpgitem $n[]")
     @CommandDocumentation("$command.rpgitem.print")
     @CommandGroup("item")

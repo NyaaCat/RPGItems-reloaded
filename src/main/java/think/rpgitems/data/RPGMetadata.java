@@ -12,7 +12,7 @@ import java.util.List;
 
 /**
  * RPGMetadata is a (bad) way of tagging extra data onto an item without it showing up on the item itself. This uses a similar system to Notch's entity metadata system. The data will be encoded in minecraft colour codes which makes this really inefficient because 1 byte -> 2 bytes(Hex) -> 4 bytes(
- * Colour codes). RPGMetadatais prefixed with CAFE to allow it to be easily detected.
+ * Colour codes). RPGMetadata is prefixed with CAFE to allow it to be easily detected.
  */
 public class RPGMetadata extends TIntObjectHashMap<Object> {
 

@@ -52,6 +52,7 @@ import think.rpgitems.data.Locale;
 import think.rpgitems.item.ItemManager;
 import think.rpgitems.item.LocaleInventory;
 import think.rpgitems.item.RPGItem;
+import think.rpgitems.support.WGHandler;
 import think.rpgitems.support.WorldGuard;
 
 import java.util.*;
@@ -289,6 +290,9 @@ public class Events implements Listener {
         for (ItemStack item : player.getInventory().getArmorContents()) {
             if (ItemManager.toRPGItem(item) != null)
                 RPGItem.updateItem(item);
+        }
+        if(WorldGuard.isEnabled() && WorldGuard.useWorldGuard && WorldGuard.useCustomFlag){
+            WGHandler.onPlayerJoin(e);
         }
     }
 
@@ -533,7 +537,7 @@ public class Events implements Listener {
     }
 
 
-    @EventHandler(priority = EventPriority.HIGHEST)
+    @EventHandler(priority = EventPriority.HIGHEST, ignoreCancelled = true)
     public void onPlayerHitTaken(EntityDamageEvent ev) {
         if (ev.getEntity() instanceof Player) {
             ev.setDamage(playerHitTaken((Player)ev.getEntity(), ev));

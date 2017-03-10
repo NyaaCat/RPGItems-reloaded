@@ -16,6 +16,8 @@
  */
 package think.rpgitems.power;
 
+import com.google.common.collect.BiMap;
+import com.google.common.collect.HashBiMap;
 import gnu.trove.map.hash.TObjectIntHashMap;
 import org.bukkit.Location;
 import org.bukkit.configuration.ConfigurationSection;
@@ -29,7 +31,7 @@ import java.util.*;
 
 public abstract class Power {
 
-    public static HashMap<String, Class<? extends Power>> powers = new HashMap<String, Class<? extends Power>>();
+    public static BiMap<String, Class<? extends Power>> powers = HashBiMap.create();
     public static TObjectIntHashMap<String> powerUsage = new TObjectIntHashMap<String>();
 
     public RPGItem item;

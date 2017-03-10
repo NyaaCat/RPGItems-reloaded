@@ -33,7 +33,6 @@ import think.rpgitems.support.WorldGuard;
 import java.util.List;
 import java.util.logging.Logger;
 
-@SuppressWarnings("deprecation")
 public class Plugin extends JavaPlugin {
 
     public static Logger logger = Logger.getLogger("RPGItems");
@@ -57,7 +56,6 @@ public class Plugin extends JavaPlugin {
         Power.powers.put("fireball", PowerFireball.class);
         Power.powers.put("ice", PowerIce.class);
         Power.powers.put("knockup", PowerKnockup.class);
-        Power.powers.put("rush", PowerRush.class);
         Power.powers.put("potionself", PowerPotionSelf.class);
         Power.powers.put("consume", PowerConsume.class);
         Power.powers.put("unbreakable", PowerUnbreakable.class);
@@ -84,6 +82,7 @@ public class Plugin extends JavaPlugin {
         Power.powers.put("tippedarrow", PowerTippedArrow.class);
         Power.powers.put("consumehit", PowerConsumeHit.class);
         Power.powers.put("aoecommand", PowerAOECommand.class);
+        WorldGuard.load();
     }
 
     @Override
@@ -122,6 +121,7 @@ public class Plugin extends JavaPlugin {
 
     @Override
     public void onDisable() {
+        WorldGuard.unload();
         this.getServer().getScheduler().cancelAllTasks();
     }
 
