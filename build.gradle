@@ -25,6 +25,6 @@ repositories {
 dependencies {
     compile 'org.spigotmc:spigot-api:1.11-R0.1-SNAPSHOT'
     compile 'com.sk89q.worldguard:worldguard-legacy:6.2'
-    compileOnly 'com.sk89q.worldedit:worldedit-core:6.1'
+    compile 'com.sk89q.worldedit:worldedit-core:6.1'
 }
 
