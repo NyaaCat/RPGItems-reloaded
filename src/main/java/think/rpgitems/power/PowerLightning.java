@@ -37,19 +37,19 @@ public class PowerLightning extends Power implements PowerHit, PowerProjectileHi
 
     @Override
     public void hit(Player player, ItemStack i, LivingEntity e, double damage) {
-        if (item.getHasPermission() == true && player.hasPermission(item.getPermission()) == false) {
-        } else if (random.nextInt(chance) == 0){
-            if(!item.consumeDurability(i,consumption))return;
+        if (item.getHasPermission() && !player.hasPermission(item.getPermission())) {
+        } else if (random.nextInt(chance) == 0) {
+            if (!item.consumeDurability(i, consumption)) return;
             e.getWorld().strikeLightning(e.getLocation());
         }
     }
 
     @Override
     public void projectileHit(Player player, ItemStack i, Projectile p) {
-        if (item.getHasPermission() == true && player.hasPermission(item.getPermission()) == false) {
-            player.sendMessage(ChatColor.RED + String.format(Locale.get("message.error.permission")));
-        } else if (random.nextInt(chance) == 0){
-            if(!item.consumeDurability(i,consumption))return;
+        if (item.getHasPermission() && !player.hasPermission(item.getPermission())) {
+            player.sendMessage(ChatColor.RED + Locale.get("message.error.permission"));
+        } else if (random.nextInt(chance) == 0) {
+            if (!item.consumeDurability(i, consumption)) return;
             p.getWorld().strikeLightning(p.getLocation());
         }
     }

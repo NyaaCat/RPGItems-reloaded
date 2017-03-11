@@ -124,7 +124,7 @@ public final class ReflectionUtil {
      */
     public static Method getMethod(Class<?> clazz, String methodName, Class<?>... params) {
         if (!loadedMethods.containsKey(clazz)) {
-            loadedMethods.put(clazz, new HashMap<String, Method>());
+            loadedMethods.put(clazz, new HashMap<>());
         }
 
         Map<String, Method> methods = loadedMethods.get(clazz);

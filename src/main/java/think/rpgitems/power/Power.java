@@ -27,12 +27,15 @@ import org.bukkit.entity.Player;
 import think.rpgitems.data.RPGValue;
 import think.rpgitems.item.RPGItem;
 
-import java.util.*;
+import java.util.AbstractMap;
+import java.util.ArrayList;
+import java.util.Comparator;
+import java.util.List;
 
 public abstract class Power {
 
     public static BiMap<String, Class<? extends Power>> powers = HashBiMap.create();
-    public static TObjectIntHashMap<String> powerUsage = new TObjectIntHashMap<String>();
+    public static TObjectIntHashMap<String> powerUsage = new TObjectIntHashMap<>();
 
     public RPGItem item;
 
@@ -55,7 +58,7 @@ public abstract class Power {
                 if (l.distance(e.getLocation()) <= radius) {
                     entities.add(e);
                 }
-            } catch(RuntimeException ex) {
+            } catch (RuntimeException ex) {
                 ex.printStackTrace();
             }
         }
@@ -66,31 +69,29 @@ public abstract class Power {
         final java.util.List<java.util.Map.Entry<LivingEntity, Double>> entities = new java.util.ArrayList<>();
         for (Entity e : l.getWorld().getNearbyEntities(l, radius, radius, radius)) {
             try {
-                if (e instanceof LivingEntity){
+                if (e instanceof LivingEntity) {
                     double d = l.distance(e.getLocation());
                     if (d <= radius && d >= min) {
-                        entities.add(new AbstractMap.SimpleImmutableEntry<>((LivingEntity) e,d));
+                        entities.add(new AbstractMap.SimpleImmutableEntry<>((LivingEntity) e, d));
                     }
                 }
-            } catch(RuntimeException ex) {
+            } catch (RuntimeException ex) {
                 ex.printStackTrace();
             }
         }
         java.util.List<LivingEntity> entity = new java.util.ArrayList<>();
         entities.sort(Comparator.comparing(java.util.Map.Entry::getValue));
-        entities.forEach((k)-> entity.add(k.getKey()));
+        entities.forEach((k) -> entity.add(k.getKey()));
         return entity.toArray(new LivingEntity[entity.size()]);
     }
 
-    /** @param entities
-     *            List of nearby entities
-     * @param startPos
-     *            starting position
-     * @param degrees
-     *            angle of cone
-     * @param direction
-     *            direction of the cone
-     * @return All entities inside the cone */
+    /**
+     * @param entities  List of nearby entities
+     * @param startPos  starting position
+     * @param degrees   angle of cone
+     * @param direction direction of the cone
+     * @return All entities inside the cone
+     */
     public static List<LivingEntity> getEntitiesInCone(LivingEntity[] entities, org.bukkit.util.Vector startPos, double degrees, org.bukkit.util.Vector direction) {
         List<LivingEntity> newEntities = new ArrayList<>();
         for (LivingEntity e : entities) {
@@ -104,7 +105,7 @@ public abstract class Power {
 
 
     public static float getAngleBetweenVectors(org.bukkit.util.Vector v1, org.bukkit.util.Vector v2) {
-        return Math.abs((float)Math.toDegrees(v1.angle(v2)));
+        return Math.abs((float) Math.toDegrees(v1.angle(v2)));
     }
 
     protected final boolean checkCooldown(Player p, int cdTicks) {

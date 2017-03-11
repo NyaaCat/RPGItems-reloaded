@@ -15,14 +15,14 @@ public class PowerTicker extends BukkitRunnable {
     @Override
     public void run() {
         for (final Player player : Bukkit.getOnlinePlayers()) {
-            if(!WorldGuard.canPvP(player))continue;
+            if (!WorldGuard.canPvP(player)) continue;
             ItemStack[] armour = player.getInventory().getArmorContents();
             for (ItemStack part : armour) {
                 RPGItem item = ItemManager.toRPGItem(part);
                 if (item == null)
                     continue;
                 item.tick(player, part);
-                if(item.getDurability(part) <= 0){
+                if (item.getDurability(part) <= 0) {
                     part.setType(Material.AIR);
                 }
             }
@@ -30,7 +30,7 @@ public class PowerTicker extends BukkitRunnable {
             RPGItem item = ItemManager.toRPGItem(part);
             if (item == null)
                 continue;
-            if(item.getDurability(part) <= 0){
+            if (item.getDurability(part) <= 0) {
                 Bukkit.getScheduler().scheduleSyncDelayedTask(Plugin.plugin, new Runnable() {
                     @Override
                     public void run() {

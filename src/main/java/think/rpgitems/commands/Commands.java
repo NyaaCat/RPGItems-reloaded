@@ -36,8 +36,8 @@ import java.util.*;
 import java.util.Map.Entry;
 
 abstract public class Commands {
-    private static HashMap<String, ArrayList<CommandDef>> commands = new HashMap<String, ArrayList<CommandDef>>();
-    private static TCharObjectHashMap<Class<? extends CommandArgument>> argTypes = new TCharObjectHashMap<Class<? extends CommandArgument>>();
+    private static HashMap<String, ArrayList<CommandDef>> commands = new HashMap<>();
+    private static TCharObjectHashMap<Class<? extends CommandArgument>> argTypes = new TCharObjectHashMap<>();
 
     static {
         argTypes.put('s', ArgumentString.class);
@@ -114,7 +114,7 @@ abstract public class Commands {
                 sender.sendMessage(ChatColor.RED + Locale.get("message.error.permission"));
             return;
         }
-        ArrayList<String> args = new ArrayList<String>();
+        ArrayList<String> args = new ArrayList<>();
         while (true) {
             int end;
             if (com.length() == 0) {
@@ -144,7 +144,8 @@ abstract public class Commands {
             }
         }
         CommandError lastError = null;
-        comLoop: for (CommandDef c : command) {
+        comLoop:
+        for (CommandDef c : command) {
             if (c.arguments.length != args.size()) {
                 if (c.arguments.length != 0 && c.arguments[c.arguments.length - 1] instanceof ArgumentString) {
                     if (args.size() < c.arguments.length)
@@ -153,7 +154,7 @@ abstract public class Commands {
                     continue;
                 }
             }
-            ArrayList<Object> outArgs = new ArrayList<Object>();
+            ArrayList<Object> outArgs = new ArrayList<>();
             outArgs.add(sender);
             for (int i = 0; i < c.arguments.length; i++) {
                 CommandArgument a = c.arguments[i];
@@ -202,8 +203,9 @@ abstract public class Commands {
             if (lastError != null) {
                 sender.sendMessage(ChatColor.RED + String.format(Locale.get("message.error.command"), lastError.error));
             } else {
-                ArrayList<String> consts = new ArrayList<String>();
-                comLoop: for (CommandDef c : command) {
+                ArrayList<String> consts = new ArrayList<>();
+                comLoop:
+                for (CommandDef c : command) {
                     for (int i = 0; i < c.arguments.length; i++) {
                         if (i >= args.size())
                             break;
@@ -251,7 +253,7 @@ abstract public class Commands {
     public static List<String> complete(CommandSender sender, String com) {
         com = com.trim();
         if (com.length() == 0) {
-            return new ArrayList<String>();
+            return new ArrayList<>();
         }
         String comName;
         int pos = com.indexOf(' ');
@@ -266,7 +268,7 @@ abstract public class Commands {
 
         if (command == null) {
             if (pos == -1) {
-                ArrayList<String> out = new ArrayList<String>();
+                ArrayList<String> out = new ArrayList<>();
                 for (String n : commands.keySet()) {
                     if (n.startsWith(comName)) {
                         out.add("/" + n);
@@ -274,9 +276,9 @@ abstract public class Commands {
                 }
                 return out;
             }
-            return new ArrayList<String>();
+            return new ArrayList<>();
         }
-        ArrayList<String> args = new ArrayList<String>();
+        ArrayList<String> args = new ArrayList<>();
         while (true) {
             int end;
             if (com.length() == 0) {
@@ -305,9 +307,10 @@ abstract public class Commands {
                 break;
             }
         }
-        HashMap<String, Boolean> out = new HashMap<String, Boolean>();
+        HashMap<String, Boolean> out = new HashMap<>();
 
-        comLoop: for (CommandDef c : command) {
+        comLoop:
+        for (CommandDef c : command) {
             for (int i = 0; i < c.arguments.length; i++) {
                 CommandArgument a = c.arguments[i];
                 if (i == args.size() - 1) {
@@ -333,7 +336,7 @@ abstract public class Commands {
                 }
             }
         }
-        ArrayList<String> outList = new ArrayList<String>();
+        ArrayList<String> outList = new ArrayList<>();
         for (String s : out.keySet()) {
             outList.add(s);
         }
@@ -388,7 +391,7 @@ abstract public class Commands {
         def.handlePermissions = comString.handlePermissions();
 
         if (!commands.containsKey(comName)) {
-            commands.put(comName, new ArrayList<CommandDef>());
+            commands.put(comName, new ArrayList<>());
         }
         commands.get(comName).add(def);
         if (pos == -1) {
@@ -396,7 +399,7 @@ abstract public class Commands {
             return;
         }
         com = com.substring(pos + 1);
-        ArrayList<CommandArgument> arguments = new ArrayList<CommandArgument>();
+        ArrayList<CommandArgument> arguments = new ArrayList<>();
         int realArgumentsCount = 0;
         while (true) {
             pos = com.indexOf(' ');
@@ -530,57 +533,57 @@ abstract public class Commands {
                             i++;
                             l = chars[i];
                             switch (l) {
-                            case '0':
-                                docBuf.append(ChatColor.BLACK);
-                                break;
-                            case '1':
-                                docBuf.append(ChatColor.DARK_BLUE);
-                                break;
-                            case '2':
-                                docBuf.append(ChatColor.DARK_GREEN);
-                                break;
-                            case '3':
-                                docBuf.append(ChatColor.DARK_AQUA);
-                                break;
-                            case '4':
-                                docBuf.append(ChatColor.DARK_RED);
-                                break;
-                            case '5':
-                                docBuf.append(ChatColor.DARK_PURPLE);
-                                break;
-                            case '6':
-                                docBuf.append(ChatColor.GOLD);
-                                break;
-                            case '7':
-                                docBuf.append(ChatColor.GRAY);
-                                break;
-                            case '8':
-                                docBuf.append(ChatColor.DARK_GRAY);
-                                break;
-                            case '9':
-                                docBuf.append(ChatColor.BLUE);
-                                break;
-                            case 'a':
-                                docBuf.append(ChatColor.GREEN);
-                                break;
-                            case 'b':
-                                docBuf.append(ChatColor.AQUA);
-                                break;
-                            case 'c':
-                                docBuf.append(ChatColor.RED);
-                                break;
-                            case 'd':
-                                docBuf.append(ChatColor.LIGHT_PURPLE);
-                                break;
-                            case 'e':
-                                docBuf.append(ChatColor.YELLOW);
-                                break;
-                            case 'f':
-                                docBuf.append(ChatColor.WHITE);
-                                break;
-                            case 'r':
-                                docBuf.append(ChatColor.WHITE);
-                                break;
+                                case '0':
+                                    docBuf.append(ChatColor.BLACK);
+                                    break;
+                                case '1':
+                                    docBuf.append(ChatColor.DARK_BLUE);
+                                    break;
+                                case '2':
+                                    docBuf.append(ChatColor.DARK_GREEN);
+                                    break;
+                                case '3':
+                                    docBuf.append(ChatColor.DARK_AQUA);
+                                    break;
+                                case '4':
+                                    docBuf.append(ChatColor.DARK_RED);
+                                    break;
+                                case '5':
+                                    docBuf.append(ChatColor.DARK_PURPLE);
+                                    break;
+                                case '6':
+                                    docBuf.append(ChatColor.GOLD);
+                                    break;
+                                case '7':
+                                    docBuf.append(ChatColor.GRAY);
+                                    break;
+                                case '8':
+                                    docBuf.append(ChatColor.DARK_GRAY);
+                                    break;
+                                case '9':
+                                    docBuf.append(ChatColor.BLUE);
+                                    break;
+                                case 'a':
+                                    docBuf.append(ChatColor.GREEN);
+                                    break;
+                                case 'b':
+                                    docBuf.append(ChatColor.AQUA);
+                                    break;
+                                case 'c':
+                                    docBuf.append(ChatColor.RED);
+                                    break;
+                                case 'd':
+                                    docBuf.append(ChatColor.LIGHT_PURPLE);
+                                    break;
+                                case 'e':
+                                    docBuf.append(ChatColor.YELLOW);
+                                    break;
+                                case 'f':
+                                    docBuf.append(ChatColor.WHITE);
+                                    break;
+                                case 'r':
+                                    docBuf.append(ChatColor.WHITE);
+                                    break;
                             }
                         } else {
                             docBuf.append(l);
@@ -593,7 +596,7 @@ abstract public class Commands {
     }
 
     private static HashMap<String, String> getMap() {
-        HashMap<String, String> langMap = new HashMap<String, String>();
+        HashMap<String, String> langMap = new HashMap<>();
         langMap.put("en_US", "English (US)");
         BufferedReader r = null;
         try {
@@ -685,57 +688,57 @@ abstract public class Commands {
                                 docBuf.append("<span style='color:#");
                             }
                             switch (l) {
-                            case '0':
-                                docBuf.append("000000");
-                                break;
-                            case '1':
-                                docBuf.append("0000aa");
-                                break;
-                            case '2':
-                                docBuf.append("00aa00");
-                                break;
-                            case '3':
-                                docBuf.append("00aaaa");
-                                break;
-                            case '4':
-                                docBuf.append("aa0000");
-                                break;
-                            case '5':
-                                docBuf.append("aa00aa");
-                                break;
-                            case '6':
-                                docBuf.append("ffaa00");
-                                break;
-                            case '7':
-                                docBuf.append("aaaaaa");
-                                break;
-                            case '8':
-                                docBuf.append("555555");
-                                break;
-                            case '9':
-                                docBuf.append("5555ff");
-                                break;
-                            case 'a':
-                                docBuf.append("55ff55");
-                                break;
-                            case 'b':
-                                docBuf.append("55ffff");
-                                break;
-                            case 'c':
-                                docBuf.append("ff5555");
-                                break;
-                            case 'd':
-                                docBuf.append("ff55ff");
-                                break;
-                            case 'e':
-                                docBuf.append("ffff55");
-                                break;
-                            case 'f':
-                                docBuf.append("ffffff");
-                                break;
-                            case 'r':
-                                docBuf.append("'></span'");
-                                break;
+                                case '0':
+                                    docBuf.append("000000");
+                                    break;
+                                case '1':
+                                    docBuf.append("0000aa");
+                                    break;
+                                case '2':
+                                    docBuf.append("00aa00");
+                                    break;
+                                case '3':
+                                    docBuf.append("00aaaa");
+                                    break;
+                                case '4':
+                                    docBuf.append("aa0000");
+                                    break;
+                                case '5':
+                                    docBuf.append("aa00aa");
+                                    break;
+                                case '6':
+                                    docBuf.append("ffaa00");
+                                    break;
+                                case '7':
+                                    docBuf.append("aaaaaa");
+                                    break;
+                                case '8':
+                                    docBuf.append("555555");
+                                    break;
+                                case '9':
+                                    docBuf.append("5555ff");
+                                    break;
+                                case 'a':
+                                    docBuf.append("55ff55");
+                                    break;
+                                case 'b':
+                                    docBuf.append("55ffff");
+                                    break;
+                                case 'c':
+                                    docBuf.append("ff5555");
+                                    break;
+                                case 'd':
+                                    docBuf.append("ff55ff");
+                                    break;
+                                case 'e':
+                                    docBuf.append("ffff55");
+                                    break;
+                                case 'f':
+                                    docBuf.append("ffffff");
+                                    break;
+                                case 'r':
+                                    docBuf.append("'></span'");
+                                    break;
                             }
                             docBuf.append("'>");
                         } else {
@@ -843,8 +846,7 @@ class ArgumentInteger extends CommandArgument {
             }
         } else {
             try {
-                int i = Integer.parseInt(in);
-                return i;
+                return Integer.parseInt(in);
             } catch (NumberFormatException e) {
                 return new CommandError(String.format(Locale.get("message.error.integer.format"), in));
             }
@@ -853,7 +855,7 @@ class ArgumentInteger extends CommandArgument {
 
     @Override
     public List<String> tabComplete(String in) {
-        return new ArrayList<String>();
+        return new ArrayList<>();
     }
 
     @Override
@@ -905,8 +907,7 @@ class ArgumentDouble extends CommandArgument {
             }
         } else {
             try {
-                double i = Double.parseDouble(in);
-                return i;
+                return Double.parseDouble(in);
             } catch (NumberFormatException e) {
                 return new CommandError(String.format(Locale.get("message.error.double.format"), in));
             }
@@ -915,7 +916,7 @@ class ArgumentDouble extends CommandArgument {
 
     @Override
     public List<String> tabComplete(String in) {
-        return new ArrayList<String>();
+        return new ArrayList<>();
     }
 
     @Override
@@ -954,7 +955,7 @@ class ArgumentString extends CommandArgument {
 
     @Override
     public List<String> tabComplete(String in) {
-        return new ArrayList<String>();
+        return new ArrayList<>();
     }
 
     @Override
@@ -990,7 +991,7 @@ class ArgumentConst extends CommandArgument {
 
     @Override
     public List<String> tabComplete(String in) {
-        ArrayList<String> a = new ArrayList<String>();
+        ArrayList<String> a = new ArrayList<>();
         String lValue = value;
         if (lValue.startsWith(in))
             a.add(lValue);
@@ -1030,7 +1031,7 @@ class ArgumentPlayer extends CommandArgument {
     @Override
     public List<String> tabComplete(String in) {
         List<Player> players = Bukkit.matchPlayer(in);
-        ArrayList<String> out = new ArrayList<String>();
+        ArrayList<String> out = new ArrayList<>();
         for (Player player : players) {
             out.add(player.getName());
         }
@@ -1079,7 +1080,7 @@ class ArgumentOption extends CommandArgument {
 
     @Override
     public List<String> tabComplete(String in) {
-        ArrayList<String> out = new ArrayList<String>();
+        ArrayList<String> out = new ArrayList<>();
         in = in.toLowerCase();
         for (String o : options) {
             if (o.startsWith(in)) {
@@ -1129,7 +1130,7 @@ class ArgumentItem extends CommandArgument {
     @Override
     public List<String> tabComplete(String in) {
         in = in.toLowerCase();
-        ArrayList<String> out = new ArrayList<String>();
+        ArrayList<String> out = new ArrayList<>();
         for (String i : ItemManager.itemByName.keySet()) {
             if (i.startsWith(in)) {
                 out.add(i);
@@ -1167,7 +1168,7 @@ class ArgumentMaterial extends CommandArgument {
 
     @Override
     public List<String> tabComplete(String in) {
-        ArrayList<String> out = new ArrayList<String>();
+        ArrayList<String> out = new ArrayList<>();
         String it = in.toUpperCase();
         for (Material m : Material.values()) {
             if (m.toString().startsWith(it)) {
@@ -1206,7 +1207,7 @@ class ArgumentEnum extends CommandArgument {
         }
     }
 
-    @SuppressWarnings({ "unchecked", "rawtypes" })
+    @SuppressWarnings({"unchecked", "rawtypes"})
     @Override
     public Object parse(String in) {
         Enum<?> en = null;
@@ -1220,7 +1221,7 @@ class ArgumentEnum extends CommandArgument {
 
     @Override
     public List<String> tabComplete(String in) {
-        ArrayList<String> out = new ArrayList<String>();
+        ArrayList<String> out = new ArrayList<>();
         String it = in.toUpperCase();
         for (Object en : enumConsts) {
             if (en.toString().startsWith(it)) {

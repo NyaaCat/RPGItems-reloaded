@@ -1,18 +1,20 @@
 package think.rpgitems.power;
 
-import java.util.HashSet;
-import java.util.Set;
-
 import org.bukkit.*;
 import org.bukkit.block.Block;
 import org.bukkit.configuration.ConfigurationSection;
-import org.bukkit.entity.*;
-
+import org.bukkit.entity.Entity;
+import org.bukkit.entity.ItemFrame;
+import org.bukkit.entity.Painting;
+import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
 import think.rpgitems.Plugin;
 import think.rpgitems.data.Locale;
 import think.rpgitems.data.RPGValue;
 import think.rpgitems.power.types.PowerRightClick;
+
+import java.util.HashSet;
+import java.util.Set;
 
 public class PowerForceField extends Power implements PowerRightClick {
     public static final String name = "forcefield";
@@ -68,14 +70,18 @@ public class PowerForceField extends Power implements PowerRightClick {
             player.sendMessage(ChatColor.AQUA + String.format(Locale.get("message.cooldown"), ((double) (cd - System.currentTimeMillis() / 50)) / 20d));
             return;
         }
-        if(!item.consumeDurability(i,consumption))return;
+        if (!item.consumeDurability(i, consumption)) return;
         value.set(System.currentTimeMillis() / 50 + cooldown);
         World w = player.getWorld();
         int x = player.getLocation().getBlockX();
         int y = player.getLocation().getBlockY();
         int z = player.getLocation().getBlockZ();
-        int l = y + base; if (l<1) l=1; if (l > 255) return;
-        int h = y + base + height; if (h > 255) h=255; if (h<1) return;
+        int l = y + base;
+        if (l < 1) l = 1;
+        if (l > 255) return;
+        int h = y + base + height;
+        if (h > 255) h = 255;
+        if (h < 1) return;
 
         buildWallTask tsk = new buildWallTask(w, circlePoints(w, x, z, radius, l), l, h, ttl);
         tsk.setId(Bukkit.getScheduler().scheduleSyncRepeatingTask(Plugin.plugin, tsk, 1, 1));
@@ -104,39 +110,41 @@ public class PowerForceField extends Power implements PowerRightClick {
             wasBarrier = new HashSet<>();
             this.ttl = ttl;
         }
+
         @Override
         public void run() {
             if (current != -1) {
                 for (Location l : circlePoints) {
                     if (wasWool.contains(l)) {
-                        l.add(0,1,0);
+                        l.add(0, 1, 0);
                         continue;
                     }
                     if (w.getBlockAt(l).getType() == Material.BARRIER) {
                         wasBarrier.add(l.clone());
-                        l.add(0,1,0);
+                        l.add(0, 1, 0);
                         continue;
                     }
                     if (w.getBlockAt(l).getType() == Material.WOOL)
                         w.getBlockAt(l).setType(Material.BARRIER);
-                    l.add(0,1,0);
+                    l.add(0, 1, 0);
                 }
             }
             if (current == -1) {
                 current = l;
             } else {
-                current ++;
+                current++;
             }
             if (current <= h) {
-                loop: for (Location l : circlePoints) {
+                loop:
+                for (Location l : circlePoints) {
                     if (w.getBlockAt(l).getType() == Material.WOOL) {
                         wasWool.add(l.clone());
                         continue;
                     }
                     if (w.getBlockAt(l).getType() == Material.AIR) {
-                        for (Entity e : w.getNearbyEntities(l,2,2,2)) {
+                        for (Entity e : w.getNearbyEntities(l, 2, 2, 2)) {
                             if (e instanceof ItemFrame || e instanceof Painting) {
-                                if (e.getLocation().distance(l)<1.5) continue loop;
+                                if (e.getLocation().distance(l) < 1.5) continue loop;
                             }
                         }
                         w.getBlockAt(l).setType(Material.WOOL);
@@ -149,7 +157,7 @@ public class PowerForceField extends Power implements PowerRightClick {
                     public void run() {
                         for (int i = h; i >= l; i--) {
                             for (Location l : circlePoints) {
-                                l.subtract(0,1,0);
+                                l.subtract(0, 1, 0);
                                 if (!wasBarrier.contains(l) && w.getBlockAt(l).getType() == Material.BARRIER) {
                                     w.getBlockAt(l).setType(Material.AIR);
                                 }
@@ -162,29 +170,24 @@ public class PowerForceField extends Power implements PowerRightClick {
     }
 
     /* copied from wikipedia */
-    private Set<Location> circlePoints(World w, int x0, int y0, int radius, int l)
-    {
+    private Set<Location> circlePoints(World w, int x0, int y0, int radius, int l) {
         int x = radius;
         int y = 0;
         int decisionOver2 = 1 - x;   // Decision criterion divided by 2 evaluated at x=r, y=0
         Set<Location> list = new HashSet<>();
-        while( y <= x )
-        {
+        while (y <= x) {
             list.add(new Location(w, x + x0, l, y + y0)); // Octant 1
             list.add(new Location(w, y + x0, l, x + y0)); // Octant 2
-            list.add(new Location(w,-x + x0, l, y + y0)); // Octant 4
-            list.add(new Location(w,-y + x0, l, x + y0)); // Octant 3
-            list.add(new Location(w,-x + x0, l,-y + y0)); // Octant 5
-            list.add(new Location(w,-y + x0, l,-x + y0)); // Octant 6
-            list.add(new Location(w, x + x0, l,-y + y0)); // Octant 8
-            list.add(new Location(w, y + x0, l,-x + y0)); // Octant 7
+            list.add(new Location(w, -x + x0, l, y + y0)); // Octant 4
+            list.add(new Location(w, -y + x0, l, x + y0)); // Octant 3
+            list.add(new Location(w, -x + x0, l, -y + y0)); // Octant 5
+            list.add(new Location(w, -y + x0, l, -x + y0)); // Octant 6
+            list.add(new Location(w, x + x0, l, -y + y0)); // Octant 8
+            list.add(new Location(w, y + x0, l, -x + y0)); // Octant 7
             y++;
-            if (decisionOver2<=0)
-            {
+            if (decisionOver2 <= 0) {
                 decisionOver2 += 2 * y + 1;   // Change in decision criterion for y -> y+1
-            }
-            else
-            {
+            } else {
                 x--;
                 decisionOver2 += 2 * (y - x) + 1;   // Change for y -> y+1, x -> x-1
             }

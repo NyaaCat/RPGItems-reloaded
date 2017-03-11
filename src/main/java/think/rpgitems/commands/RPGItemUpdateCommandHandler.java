@@ -61,7 +61,8 @@ public class RPGItemUpdateCommandHandler implements CommandExecutor {
             return;
         }
         String name = item.getItemMeta().getDisplayName();
-        int id; RPGItem ritem = null;
+        int id;
+        RPGItem ritem = null;
         try {
             id = ItemManager.decodeId(name);
             if (id == -1) {
@@ -83,7 +84,7 @@ public class RPGItemUpdateCommandHandler implements CommandExecutor {
         List<String> lore;
         if (meta.hasLore()) {
             lore = meta.getLore();
-        }else{
+        } else {
             lore = new ArrayList<>();
         }
         if (lore.size() <= 0) lore.add("");
@@ -169,7 +170,7 @@ public class RPGItemUpdateCommandHandler implements CommandExecutor {
                     List<String> lore;
                     if (meta.hasLore()) {
                         lore = meta.getLore();
-                    }else{
+                    } else {
                         lore = new ArrayList<>();
                     }
                     if (lore.size() <= 0) lore.add("");
@@ -214,7 +215,7 @@ public class RPGItemUpdateCommandHandler implements CommandExecutor {
                     p.sendMessage("Invalid Lore");
                 } else {
                     List<String> l = meta.getLore();
-                    l.set(0,l.get(0).substring(RPGItem.MC_ENCODED_ID_LENGTH));
+                    l.set(0, l.get(0).substring(RPGItem.MC_ENCODED_ID_LENGTH));
                     meta.setLore(l);
                     meta.setDisplayName(ritem.getTooltipLines().get(0));
                     item.setItemMeta(meta);
@@ -231,10 +232,7 @@ public class RPGItemUpdateCommandHandler implements CommandExecutor {
         String name = item.getItemMeta().getDisplayName();
         try {
             int id = ItemManager.decodeId(name);
-            if (id == -1) {
-                return false;
-            }
-            return true;
+            return id != -1;
         } catch (Exception ex) {
             return false;
         }

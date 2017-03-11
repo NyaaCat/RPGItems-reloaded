@@ -50,7 +50,7 @@ public class PowerConsume extends Power implements PowerRightClick, PowerLeftCli
     private void consume(final Player player) {
         if (item.getHasPermission() && !player.hasPermission(item.getPermission())) return;
         ItemStack stack = player.getInventory().getItemInMainHand();
-        if(!item.consumeDurability(stack,consumption))return;
+        if (!item.consumeDurability(stack, consumption)) return;
         int count = stack.getAmount() - 1;
         if (count == 0) {
             Bukkit.getScheduler().scheduleSyncDelayedTask(Plugin.plugin, new Runnable() {

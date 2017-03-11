@@ -7,7 +7,7 @@ import java.util.List;
 
 public class ItemGroup {
     private String name;
-    private List<Integer> items = new ArrayList<Integer>();
+    private List<Integer> items = new ArrayList<>();
 
     public ItemGroup(String name) {
         this.name = name;

@@ -1,11 +1,9 @@
 package think.rpgitems.power;
 
 import org.bukkit.ChatColor;
-import org.bukkit.Location;
 import org.bukkit.block.Block;
 import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.entity.*;
-
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.scheduler.BukkitRunnable;
 import org.bukkit.util.Vector;
@@ -15,7 +13,6 @@ import think.rpgitems.data.Locale;
 import think.rpgitems.data.RPGValue;
 import think.rpgitems.power.types.PowerRightClick;
 
-import java.util.Random;
 import java.util.concurrent.ThreadLocalRandom;
 
 public class PowerProjectile extends Power implements PowerRightClick {
@@ -55,12 +52,24 @@ public class PowerProjectile extends Power implements PowerRightClick {
 
     public void setType(String type) {
         switch (type) {
-            case "skull": projectileType = WitherSkull.class; break;
-            case "fireball": projectileType = Fireball.class; break;
-            case "smallfireball": projectileType = SmallFireball.class; break;
-            case "arrow": projectileType = Arrow.class; break;
-            case "llamaspit": projectileType = LlamaSpit.class; break;
-            default: projectileType = Snowball.class; break;
+            case "skull":
+                projectileType = WitherSkull.class;
+                break;
+            case "fireball":
+                projectileType = Fireball.class;
+                break;
+            case "smallfireball":
+                projectileType = SmallFireball.class;
+                break;
+            case "arrow":
+                projectileType = Arrow.class;
+                break;
+            case "llamaspit":
+                projectileType = LlamaSpit.class;
+                break;
+            default:
+                projectileType = Snowball.class;
+                break;
         }
     }
 
@@ -90,13 +99,13 @@ public class PowerProjectile extends Power implements PowerRightClick {
 
     @Override
     public String displayText() {
-        return ChatColor.GREEN + String.format(Locale.get(cone?"power.projectile.cone":"power.projectile"), getType(), (double) cooldownTime / 20d);
+        return ChatColor.GREEN + String.format(Locale.get(cone ? "power.projectile.cone" : "power.projectile"), getType(), (double) cooldownTime / 20d);
     }
 
     @Override
     public void rightClick(Player player, ItemStack is, Block clicked) {
         long cooldown;
-        if (item.getHasPermission() == true && player.hasPermission(item.getPermission()) == false) {
+        if (item.getHasPermission() && !player.hasPermission(item.getPermission())) {
         } else {
             RPGValue value = RPGValue.get(player, item, "projectile.cooldown");
             if (value == null) {
@@ -106,14 +115,14 @@ public class PowerProjectile extends Power implements PowerRightClick {
                 cooldown = value.asLong();
             }
             if (cooldown <= System.currentTimeMillis() / 50) {
-                if(!item.consumeDurability(is, consumption))return;
+                if (!item.consumeDurability(is, consumption)) return;
                 value.set(System.currentTimeMillis() / 50 + cooldownTime);
-                if(!cone) {
+                if (!cone) {
                     Projectile projectile = player.launchProjectile(projectileType);
                     projectile.setGravity(gravity);
-                    if(projectileType == Arrow.class)
-                    Events.removeArrows.put(projectile.getEntityId(), (byte) 1);
-                    if(!gravity){
+                    if (projectileType == Arrow.class)
+                        Events.removeArrows.put(projectile.getEntityId(), (byte) 1);
+                    if (!gravity) {
                         (new BukkitRunnable() {
                             @Override
                             public void run() {
@@ -126,23 +135,23 @@ public class PowerProjectile extends Power implements PowerRightClick {
                     double phi = range / 180f * Math.PI;
                     Vector a, b;
                     Vector ax1 = loc.getCrossProduct(z_axis);
-                    if(ax1.length() < 0.01){
+                    if (ax1.length() < 0.01) {
                         a = x_axis.clone();
                         b = y_axis.clone();
-                    }else{
+                    } else {
                         a = ax1.normalize();
                         b = loc.getCrossProduct(a).normalize();
                     }
                     for (int i = 0; i < amount; i++) {
                         double z = range == 0 ? 1 : ThreadLocalRandom.current().nextDouble(Math.cos(phi), 1);
-                        double det = ThreadLocalRandom.current().nextDouble(0, 2*Math.PI);
+                        double det = ThreadLocalRandom.current().nextDouble(0, 2 * Math.PI);
                         double theta = Math.acos(z);
                         Vector v = a.clone().multiply(Math.cos(det)).add(b.clone().multiply(Math.sin(det))).multiply(Math.sin(theta)).add(loc.clone().multiply(Math.cos(theta)));
-                        Projectile projectile = player.launchProjectile(projectileType,  v.normalize());
+                        Projectile projectile = player.launchProjectile(projectileType, v.normalize());
                         projectile.setGravity(gravity);
-                        if(projectileType == Arrow.class)
-                        Events.removeArrows.put(projectile.getEntityId(), (byte) 1);
-                        if(!gravity){
+                        if (projectileType == Arrow.class)
+                            Events.removeArrows.put(projectile.getEntityId(), (byte) 1);
+                        if (!gravity) {
                             (new BukkitRunnable() {
                                 @Override
                                 public void run() {

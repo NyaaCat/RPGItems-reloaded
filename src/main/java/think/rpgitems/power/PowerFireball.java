@@ -22,7 +22,6 @@ import org.bukkit.block.Block;
 import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.entity.Player;
 import org.bukkit.entity.SmallFireball;
-
 import org.bukkit.inventory.ItemStack;
 import think.rpgitems.data.Locale;
 import think.rpgitems.data.RPGValue;
@@ -36,7 +35,7 @@ public class PowerFireball extends Power implements PowerRightClick {
     @Override
     public void rightClick(Player player, ItemStack i, Block clicked) {
         long cooldown;
-        if (item.getHasPermission() == true && player.hasPermission(item.getPermission()) == false) {
+        if (item.getHasPermission() && !player.hasPermission(item.getPermission())) {
         } else {
             RPGValue value = RPGValue.get(player, item, "tnt.fireball");
             if (value == null) {
@@ -46,7 +45,7 @@ public class PowerFireball extends Power implements PowerRightClick {
                 cooldown = value.asLong();
             }
             if (cooldown <= System.currentTimeMillis() / 50) {
-                if(!item.consumeDurability(i,consumption))return;
+                if (!item.consumeDurability(i, consumption)) return;
                 value.set(System.currentTimeMillis() / 50 + cooldownTime);
                 player.playSound(player.getLocation(), Sound.ENTITY_GHAST_SHOOT, 1.0f, 1.0f);
                 player.launchProjectile(SmallFireball.class);

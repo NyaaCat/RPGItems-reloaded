@@ -124,13 +124,9 @@ public class Update04To05 implements Updater {
                     }
                     boolean ignoreWorldGuard = s.getBoolean("ignoreWorldGuard", false);
                     boolean haspermission = false;
-                    if (haspermissiontemp == "true") {
-                        haspermission = true;
-                    } else {
-                        haspermission = false;
-                    }
+                    haspermission = haspermissiontemp == "true";
                     ConfigurationSection powerSection = s.getConfigurationSection("powers");
-                    ArrayList<Power> powers = new ArrayList<Power>();
+                    ArrayList<Power> powers = new ArrayList<>();
                     if (powerSection != null) {
                         for (String key : powerSection.getKeys(false)) {
                             try {

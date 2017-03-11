@@ -17,10 +17,10 @@ public class PowerPotionTick extends Power implements PowerTick {
 
     @Override
     public void tick(Player player, ItemStack i) {
-        if (item.getHasPermission() == true && player.hasPermission(item.getPermission()) == false) {
-            player.sendMessage(ChatColor.RED + String.format(Locale.get("message.error.permission")));
+        if (item.getHasPermission() && !player.hasPermission(item.getPermission())) {
+            player.sendMessage(ChatColor.RED + Locale.get("message.error.permission"));
         } else {
-            if(!item.consumeDurability(i,consumption))return;
+            if (!item.consumeDurability(i, consumption)) return;
             boolean hasEffect = false;
             for (PotionEffect potionEffect : player.getActivePotionEffects()) {
                 if (potionEffect.getType().equals(effect)) {

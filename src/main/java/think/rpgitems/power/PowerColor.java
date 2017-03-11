@@ -16,19 +16,20 @@
  */
 package think.rpgitems.power;
 
-import java.util.HashMap;
-
-import org.bukkit.*;
+import org.bukkit.ChatColor;
+import org.bukkit.DyeColor;
+import org.bukkit.Material;
 import org.bukkit.block.Block;
 import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.entity.Player;
-
 import org.bukkit.inventory.ItemStack;
 import think.rpgitems.data.Locale;
 import think.rpgitems.data.RPGValue;
 import think.rpgitems.power.types.PowerLeftClick;
 import think.rpgitems.power.types.PowerRightClick;
 import think.rpgitems.support.WorldGuard;
+
+import java.util.HashMap;
 
 public class PowerColor extends Power implements PowerRightClick, PowerLeftClick {
 
@@ -41,7 +42,7 @@ public class PowerColor extends Power implements PowerRightClick, PowerLeftClick
     private static HashMap<DyeColor, ChatColor> dyeToChatColor;
 
     static {
-        dyeToChatColor = new HashMap<DyeColor, ChatColor>();
+        dyeToChatColor = new HashMap<>();
         dyeToChatColor.put(DyeColor.BLACK, ChatColor.DARK_GRAY);
         dyeToChatColor.put(DyeColor.BLUE, ChatColor.DARK_BLUE);
         dyeToChatColor.put(DyeColor.BROWN, ChatColor.GOLD);
@@ -65,7 +66,7 @@ public class PowerColor extends Power implements PowerRightClick, PowerLeftClick
     public void rightClick(Player player, ItemStack i, Block clicked) {
         if (clicked == null)
             return;
-        if(!WorldGuard.canBuild(player, clicked.getLocation()))
+        if (!WorldGuard.canBuild(player, clicked.getLocation()))
             return;
         if (clicked.getType().toString().contains("GLASS")) {
             if (!glass)
@@ -81,7 +82,7 @@ public class PowerColor extends Power implements PowerRightClick, PowerLeftClick
         }
 
         long cooldown;
-        if (item.getHasPermission() == true && player.hasPermission(item.getPermission()) == false) {
+        if (item.getHasPermission() && !player.hasPermission(item.getPermission())) {
         } else {
             RPGValue color = RPGValue.get(player, item, "color.current");
             if (color == null) {
@@ -96,9 +97,9 @@ public class PowerColor extends Power implements PowerRightClick, PowerLeftClick
                 cooldown = value.asLong();
             }
             if (cooldown <= System.currentTimeMillis() / 50) {
-                if(!item.consumeDurability(i,consumption))return;
+                if (!item.consumeDurability(i, consumption)) return;
                 value.set(System.currentTimeMillis() / 50 + cooldownTime);
-                
+
                 if (clicked.getType().equals(Material.GLASS))
                     clicked.setType(Material.STAINED_GLASS);
                 if (clicked.getType().equals(Material.THIN_GLASS))
@@ -116,7 +117,7 @@ public class PowerColor extends Power implements PowerRightClick, PowerLeftClick
 
     @Override
     public void leftClick(Player player, ItemStack i, Block clicked) {
-        if (item.getHasPermission() == true && player.hasPermission(item.getPermission()) == false) {
+        if (item.getHasPermission() && !player.hasPermission(item.getPermission())) {
         } else {
             RPGValue value = RPGValue.get(player, item, "color.current");
             if (value == null) {

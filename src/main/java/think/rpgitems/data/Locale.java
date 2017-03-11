@@ -16,20 +16,15 @@
  */
 package think.rpgitems.data;
 
-import java.io.BufferedReader;
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileNotFoundException;
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.InputStreamReader;
-import java.io.UnsupportedEncodingException;
-import java.util.*;
-
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
-
 import think.rpgitems.Plugin;
+
+import java.io.*;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.Properties;
 
 public class Locale {
 
@@ -49,7 +44,7 @@ public class Locale {
             Plugin.logger.warning("Duplicated init of Locale");
         }
     }
-    
+
     public static void reload() {
         instance = new Locale(plugin);
     }
@@ -68,7 +63,7 @@ public class Locale {
         }
 
         // load files
-        if(plugin.getResource("locale/" + usedLocale + ".lang") != null) {
+        if (plugin.getResource("locale/" + usedLocale + ".lang") != null) {
             plugin.saveResource("locale/" + usedLocale + ".lang", false);
         } else {
             plugin.getLogger().warning("Language: " + usedLocale + "not found. Resetting to:" + DEFAULT_LANGUAGE);
@@ -90,7 +85,7 @@ public class Locale {
     }
 
     private Map<String, String> loadLocaleStream(InputStream in) {
-        Map <String, String> map = new HashMap<>();
+        Map<String, String> map = new HashMap<>();
         Properties prop = new Properties();
         try {
             prop.load(new InputStreamReader(in, "UTF-8"));

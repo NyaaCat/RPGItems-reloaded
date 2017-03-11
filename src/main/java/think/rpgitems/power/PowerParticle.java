@@ -36,9 +36,9 @@ public class PowerParticle extends Power implements PowerRightClick {
 
     @Override
     public void rightClick(Player player, ItemStack i, Block clicked) {
-        if(!item.consumeDurability(i,consumption))return;
+        if (!item.consumeDurability(i, consumption)) return;
         if (effect.equalsIgnoreCase("SMOKE")) {
-            player.getWorld().playEffect(player.getLocation().add(0,2,0), Effect.valueOf(effect), 4);
+            player.getWorld().playEffect(player.getLocation().add(0, 2, 0), Effect.valueOf(effect), 4);
         } else {
             player.getWorld().playEffect(player.getLocation(), Effect.valueOf(effect), 0);
         }

@@ -39,10 +39,11 @@ public class PowerPotionHit extends Power implements PowerHit {
 
     @Override
     public void hit(Player player, ItemStack i, LivingEntity e, double damage) {
-        if (item.getHasPermission() == true && player.hasPermission(item.getPermission()) == false) {
-        } else if (random.nextInt(chance) == 0){
+        if (item.getHasPermission() && !player.hasPermission(item.getPermission())) {
+        } else if (random.nextInt(chance) == 0) {
             e.addPotionEffect(new PotionEffect(type, duration, amplifier));
-            if(!item.consumeDurability(i,consumption))return;
+            if (!item.consumeDurability(i, consumption)) {
+            }
         }
     }
 

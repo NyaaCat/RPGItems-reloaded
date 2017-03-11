@@ -39,9 +39,10 @@ public class PowerRescue extends Power implements PowerHurt, PowerHitTaken {
     public long cooldownTime = 20;
     public int consumption = 0;
     public double damageTrigger = 1024;
+
     @Override
     public String displayText() {
-        return ChatColor.GREEN + String.format(Locale.get("power.rescue"), ((double) healthTrigger) / 2,(double) cooldownTime / 20d);
+        return ChatColor.GREEN + String.format(Locale.get("power.rescue"), ((double) healthTrigger) / 2, (double) cooldownTime / 20d);
     }
 
     @Override
@@ -73,21 +74,20 @@ public class PowerRescue extends Power implements PowerHurt, PowerHitTaken {
 
     @Override
     public void hurt(Player target, ItemStack i, EntityDamageEvent ev) {
-        if (item.getHasPermission() == true && target.hasPermission(item.getPermission()) == false) {
-            return;
+        if (item.getHasPermission() && !target.hasPermission(item.getPermission())) {
         } else {
             double health = target.getHealth() - ev.getFinalDamage();
-            if(health > healthTrigger) return;
+            if (health > healthTrigger) return;
             rescue(target, i, ev, false);
         }
     }
 
     @Override
     public double takeHit(Player target, ItemStack i, EntityDamageEvent ev) {
-        if (item.getHasPermission() == true && target.hasPermission(item.getPermission()) == false) {
+        if (item.getHasPermission() && !target.hasPermission(item.getPermission())) {
             return ev.getDamage();
         } else {
-            if(ev.getFinalDamage() < damageTrigger) return ev.getFinalDamage();
+            if (ev.getFinalDamage() < damageTrigger) return ev.getFinalDamage();
             rescue(target, i, ev, true);
             return 0;
         }
@@ -103,25 +103,25 @@ public class PowerRescue extends Power implements PowerHurt, PowerHitTaken {
             cooldown = value.asLong();
         }
         if (cooldown <= System.currentTimeMillis() / 50) {
-            if(!item.consumeDurability(i,consumption))return;
+            if (!item.consumeDurability(i, consumption)) return;
             value.set(System.currentTimeMillis() / 50 + cooldownTime);
             target.sendMessage(ChatColor.AQUA + Locale.get("power.rescue.info"));
             DamageCause cause = ev.getCause();
-            if(!canceled){
-                target.addPotionEffect(new PotionEffect(PotionEffectType.HEALTH_BOOST, 1 ,255));
+            if (!canceled) {
+                target.addPotionEffect(new PotionEffect(PotionEffectType.HEALTH_BOOST, 1, 255));
                 target.setHealth(healthTrigger + ev.getFinalDamage());
             }
-            target.addPotionEffect(new PotionEffect(PotionEffectType.DAMAGE_RESISTANCE, 200 ,10));
-            target.addPotionEffect(new PotionEffect(PotionEffectType.REGENERATION, 400 ,2));
-            target.addPotionEffect(new PotionEffect(PotionEffectType.SATURATION, 400 ,2));
+            target.addPotionEffect(new PotionEffect(PotionEffectType.DAMAGE_RESISTANCE, 200, 10));
+            target.addPotionEffect(new PotionEffect(PotionEffectType.REGENERATION, 400, 2));
+            target.addPotionEffect(new PotionEffect(PotionEffectType.SATURATION, 400, 2));
             target.getWorld().playSound(target.getLocation(), Sound.BLOCK_ENCHANTMENT_TABLE_USE, 10, 1);
 
-            if(inPlace && cause != DamageCause.DRAGON_BREATH
+            if (inPlace && cause != DamageCause.DRAGON_BREATH
                     && cause != DamageCause.DROWNING
                     && cause != DamageCause.SUFFOCATION
-                    && cause != DamageCause.VOID){
-                target.addPotionEffect(new PotionEffect(PotionEffectType.GLOWING, 160 ,10));
-            } else if(useBed && target.getBedSpawnLocation() != null)
+                    && cause != DamageCause.VOID) {
+                target.addPotionEffect(new PotionEffect(PotionEffectType.GLOWING, 160, 10));
+            } else if (useBed && target.getBedSpawnLocation() != null)
                 target.teleport(target.getBedSpawnLocation());
             else
                 target.teleport(target.getWorld().getSpawnLocation());

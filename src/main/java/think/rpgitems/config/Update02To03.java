@@ -115,7 +115,7 @@ public class Update02To03 implements Updater {
                     boolean ignoreWorldGuard = s.getBoolean("ignoreWorldGuard", false);
 
                     ConfigurationSection powerSection = s.getConfigurationSection("powers");
-                    ArrayList<Power> powers = new ArrayList<Power>();
+                    ArrayList<Power> powers = new ArrayList<>();
                     if (powerSection != null) {
                         for (String key : powerSection.getKeys(false)) {
                             try {

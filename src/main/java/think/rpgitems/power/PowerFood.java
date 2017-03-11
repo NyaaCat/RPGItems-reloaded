@@ -23,7 +23,6 @@ import org.bukkit.block.Block;
 import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
-
 import think.rpgitems.Plugin;
 import think.rpgitems.data.Locale;
 import think.rpgitems.power.types.PowerRightClick;
@@ -33,7 +32,7 @@ public class PowerFood extends Power implements PowerRightClick {
 
     @Override
     public void rightClick(final Player player, ItemStack i, Block clicked) {
-        if (item.getHasPermission() == true && player.hasPermission(item.getPermission()) == false) {
+        if (item.getHasPermission() && !player.hasPermission(item.getPermission())) {
         } else {
             ItemStack item = player.getInventory().getItemInMainHand();
             int count = item.getAmount() - 1;

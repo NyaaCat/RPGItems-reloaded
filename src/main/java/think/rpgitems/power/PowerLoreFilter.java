@@ -2,9 +2,10 @@ package think.rpgitems.power;
 
 import org.bukkit.configuration.ConfigurationSection;
 
-public class PowerLoreFilter extends Power{
+public class PowerLoreFilter extends Power {
     public String regex = null;
     public String desc = "";
+
     @Override
     public void init(ConfigurationSection s) {
         regex = s.getString("regex", null);

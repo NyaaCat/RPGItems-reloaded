@@ -118,11 +118,11 @@ public class PowerHandler implements CommandHandler {
         ItemManager.save(Plugin.plugin);
         sender.sendMessage(ChatColor.AQUA + Locale.get("message.power.ok"));
     }
-    
+
     @CommandString("rpgitem $n[] power color $cooldown:i[] $glass:s[] $clay:s[] $wool:s[]")
     @CommandDocumentation("$command.rpgitem.color.full")
     @CommandGroup("item_power_color")
-    public void color(CommandSender sender, RPGItem item, int cooldown, String glass,  String clay,  String wool) {
+    public void color(CommandSender sender, RPGItem item, int cooldown, String glass, String clay, String wool) {
         PowerColor color = new PowerColor();
         color.cooldownTime = cooldown;
         color.glass = glass.equalsIgnoreCase("true");
@@ -133,7 +133,7 @@ public class PowerHandler implements CommandHandler {
         ItemManager.save(Plugin.plugin);
         sender.sendMessage(ChatColor.AQUA + Locale.get("message.power.ok"));
     }
-    
+
     @CommandString("rpgitem $n[] power command $cooldown:i[] $o[left,right] $display:s[] $command:s[]")
     @CommandDocumentation("$command.rpgitem.command")
     @CommandGroup("item_power_command_b")
@@ -659,7 +659,7 @@ public class PowerHandler implements CommandHandler {
         pow.duration = duration;
         pow.amplifier = amplifier;
         pow.type = PotionEffectType.getByName(effect);
-        if(pow.type == null){
+        if (pow.type == null) {
             sender.sendMessage(ChatColor.RED + String.format(Locale.get("message.error.effect"), effect));
             return;
         }
@@ -798,7 +798,7 @@ public class PowerHandler implements CommandHandler {
         power.amount = amount;
         power.cooldownTime = cooldown;
         power.item = item;
-        power.cone=true;
+        power.cone = true;
         item.addPower(power);
         ItemManager.save(Plugin.plugin);
         sender.sendMessage(ChatColor.AQUA + Locale.get("message.power.ok"));
@@ -852,7 +852,7 @@ public class PowerHandler implements CommandHandler {
     @CommandDocumentation("$command.rpgitem.attract")
     @CommandGroup("item_power_attract")
     public void attract(CommandSender sender, RPGItem item) {
-        PowerAttract p =new PowerAttract();
+        PowerAttract p = new PowerAttract();
         p.item = item;
         item.addPower(p);
         ItemManager.save(Plugin.plugin);
@@ -863,7 +863,7 @@ public class PowerHandler implements CommandHandler {
     @CommandDocumentation("$command.rpgitem.attract.full")
     @CommandGroup("item_power_attract")
     public void attract(CommandSender sender, RPGItem item, int radius, double speed) {
-        PowerAttract p =new PowerAttract();
+        PowerAttract p = new PowerAttract();
         p.item = item;
         p.radius = radius;
         p.maxSpeed = speed;

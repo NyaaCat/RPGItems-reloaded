@@ -23,7 +23,6 @@ import org.bukkit.entity.Player;
 import org.bukkit.entity.Projectile;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.util.BlockIterator;
-
 import think.rpgitems.Plugin;
 import think.rpgitems.data.Locale;
 import think.rpgitems.data.RPGValue;
@@ -39,7 +38,7 @@ public class PowerTeleport extends Power implements PowerRightClick, PowerProjec
     @Override
     public void rightClick(Player player, ItemStack i, Block clicked) {
         long cooldown;
-        if (item.getHasPermission() == true && player.hasPermission(item.getPermission()) == false) {
+        if (item.getHasPermission() && !player.hasPermission(item.getPermission())) {
         } else {
             RPGValue value = RPGValue.get(player, item, "teleport.cooldown");
             if (value == null) {
@@ -49,7 +48,7 @@ public class PowerTeleport extends Power implements PowerRightClick, PowerProjec
                 cooldown = value.asLong();
             }
             if (cooldown <= System.currentTimeMillis() / 50) {
-                if(!item.consumeDurability(i,consumption))return;
+                if (!item.consumeDurability(i, consumption)) return;
                 value.set(System.currentTimeMillis() / 50 + cooldownTime);
                 // float dist = 0;
                 World world = player.getWorld();
@@ -113,7 +112,6 @@ public class PowerTeleport extends Power implements PowerRightClick, PowerProjec
                 return;
             }
             newLoc.setPitch(start.getPitch());
-            ;
             newLoc.setYaw(start.getYaw());
             player.teleport(newLoc);
             world.playEffect(newLoc, Effect.ENDER_SIGNAL, 0);

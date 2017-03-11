@@ -3,12 +3,10 @@ package think.rpgitems.power;
 import org.bukkit.Bukkit;
 import org.bukkit.block.Block;
 import org.bukkit.configuration.ConfigurationSection;
-import org.bukkit.entity.Entity;
 import org.bukkit.entity.LivingEntity;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.permissions.PermissionAttachment;
-import org.bukkit.scheduler.BukkitRunnable;
 import think.rpgitems.Plugin;
 
 import java.util.List;
@@ -29,24 +27,19 @@ public class PowerAOECommand extends PowerCommand {
     public boolean mustsee = false;
 
     @Override
-    public String displayText() {
-        return super.displayText();
-    }
-
-    @Override
     public String getName() {
         return "aoecommand";
     }
 
-    private void aoeCommand(Player player){
+    private void aoeCommand(Player player) {
         if (!player.isOnline()) return;
 
         if (permission.length() != 0 && !permission.equals("*")) {
             PermissionAttachment attachment = player.addAttachment(Plugin.plugin, 1);
             String[] perms = permission.split("\\.");
             StringBuilder p = new StringBuilder();
-            for (int i = 0; i < perms.length; i++) {
-                p.append(perms[i]);
+            for (String perm : perms) {
+                p.append(perm);
                 attachment.setPermission(p.toString(), true);
                 p.append('.');
             }
@@ -66,16 +59,16 @@ public class PowerAOECommand extends PowerCommand {
             player.setOp(true);
         boolean isPlayer = type.equalsIgnoreCase("player");
 
-        if(type.equalsIgnoreCase("entity") || isPlayer){
+        if (type.equalsIgnoreCase("entity") || isPlayer) {
             LivingEntity[] nearbyEntities = getNearbyLivingEntities(player.getLocation(), r, rm);
             List<LivingEntity> ent = getEntitiesInCone(nearbyEntities, player.getEyeLocation().toVector(), facing, player.getEyeLocation().getDirection());
             LivingEntity[] entities = ent.toArray(new LivingEntity[ent.size()]);
-            for(int i = 0; i < c && i < entities.length; ++i){
+            for (int i = 0; i < c && i < entities.length; ++i) {
                 String cmd = usercmd;
                 LivingEntity e = entities[i];
-                if(     (mustsee && ! player.hasLineOfSight(e))
+                if ((mustsee && !player.hasLineOfSight(e))
                         || (!selfapplication && e == player)
-                        || (isPlayer && !(e instanceof Player)) ){
+                        || (isPlayer && !(e instanceof Player))) {
                     ++c;
                     continue;
                 }
@@ -84,7 +77,7 @@ public class PowerAOECommand extends PowerCommand {
                 cmd = cmd.replaceAll("\\{entity.x\\}", Float.toString(e.getLocation().getBlockX()));
                 cmd = cmd.replaceAll("\\{entity.y\\}", Float.toString(e.getLocation().getBlockY()));
                 cmd = cmd.replaceAll("\\{entity.z\\}", Float.toString(e.getLocation().getBlockZ()));
-                cmd = cmd.replaceAll("\\{entity.yaw\\}", Float.toString( 90 + e.getEyeLocation().getYaw()));
+                cmd = cmd.replaceAll("\\{entity.yaw\\}", Float.toString(90 + e.getEyeLocation().getYaw()));
                 cmd = cmd.replaceAll("\\{entity.pitch\\}", Float.toString(-e.getEyeLocation().getPitch()));
                 Bukkit.getServer().dispatchCommand(player, cmd);
             }
@@ -98,7 +91,7 @@ public class PowerAOECommand extends PowerCommand {
     public void rightClick(Player player, ItemStack i, Block clicked) {
         if (item.getHasPermission() && !player.hasPermission(item.getPermission())) return;
         if (!isRight || !updateCooldown(player)) return;
-        if(!item.consumeDurability(i,consumption))return;
+        if (!item.consumeDurability(i, consumption)) return;
         aoeCommand(player);
     }
 
@@ -106,7 +99,7 @@ public class PowerAOECommand extends PowerCommand {
     public void leftClick(Player player, ItemStack i, Block clicked) {
         if (item.getHasPermission() && !player.hasPermission(item.getPermission())) return;
         if (isRight || !updateCooldown(player)) return;
-        if(!item.consumeDurability(i,consumption))return;
+        if (!item.consumeDurability(i, consumption)) return;
         aoeCommand(player);
     }
 

@@ -22,7 +22,6 @@ import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.permissions.PermissionAttachment;
-
 import think.rpgitems.Plugin;
 import think.rpgitems.data.Locale;
 import think.rpgitems.data.RPGValue;
@@ -63,8 +62,8 @@ public class PowerCommand extends Power implements PowerRightClick, PowerLeftCli
             PermissionAttachment attachment = player.addAttachment(Plugin.plugin, 1);
             String[] perms = permission.split("\\.");
             StringBuilder p = new StringBuilder();
-            for (int i = 0; i < perms.length; i++) {
-                p.append(perms[i]);
+            for (String perm : perms) {
+                p.append(perm);
                 attachment.setPermission(p.toString(), true);
                 p.append('.');
             }
@@ -74,7 +73,7 @@ public class PowerCommand extends Power implements PowerRightClick, PowerLeftCli
             player.setOp(true);
         String cmd = command;
         cmd = cmd.replaceAll("\\{player\\}", player.getName());
-        cmd = cmd.replaceAll("\\{yaw\\}", Float.toString(player.getLocation().getYaw()+90));
+        cmd = cmd.replaceAll("\\{yaw\\}", Float.toString(player.getLocation().getYaw() + 90));
         cmd = cmd.replaceAll("\\{pitch\\}", Float.toString(-player.getLocation().getPitch()));
         player.chat("/" + cmd);
         if (permission.equals("*"))
@@ -85,7 +84,7 @@ public class PowerCommand extends Power implements PowerRightClick, PowerLeftCli
     public void rightClick(Player player, ItemStack i, Block clicked) {
         if (item.getHasPermission() && !player.hasPermission(item.getPermission())) return;
         if (!isRight || !updateCooldown(player)) return;
-        if(!item.consumeDurability(i,consumption))return;
+        if (!item.consumeDurability(i, consumption)) return;
         executeCommand(player);
     }
 
@@ -93,7 +92,7 @@ public class PowerCommand extends Power implements PowerRightClick, PowerLeftCli
     public void leftClick(Player player, ItemStack i, Block clicked) {
         if (item.getHasPermission() && !player.hasPermission(item.getPermission())) return;
         if (isRight || !updateCooldown(player)) return;
-        if(!item.consumeDurability(i,consumption))return;
+        if (!item.consumeDurability(i, consumption)) return;
         executeCommand(player);
     }
 

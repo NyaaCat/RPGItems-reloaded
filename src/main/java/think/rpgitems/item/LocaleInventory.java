@@ -1,7 +1,5 @@
 package think.rpgitems.item;
 
-import java.util.Iterator;
-
 import org.bukkit.Bukkit;
 import org.bukkit.entity.HumanEntity;
 import org.bukkit.entity.Player;
@@ -33,9 +31,7 @@ public class LocaleInventory extends InventoryView {
 
     public void reload() {
         fake.setContents(real.getContents());
-        Iterator<ItemStack> it = fake.iterator();
-        while (it.hasNext()) {
-            ItemStack item = it.next();
+        for (ItemStack item : fake) {
             RPGItem rItem = ItemManager.toRPGItem(item);
             if (rItem == null)
                 continue;

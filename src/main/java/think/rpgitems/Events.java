@@ -61,8 +61,8 @@ public class Events implements Listener {
 
     public static TIntByteHashMap removeArrows = new TIntByteHashMap();
     public static TIntIntHashMap rpgProjectiles = new TIntIntHashMap();
-    public static TObjectIntHashMap<String> recipeWindows = new TObjectIntHashMap<String>();
-    public static HashMap<String, Set<Integer>> drops = new HashMap<String, Set<Integer>>();
+    public static TObjectIntHashMap<String> recipeWindows = new TObjectIntHashMap<>();
+    public static HashMap<String, Set<Integer>> drops = new HashMap<>();
     public static boolean useLocaleInv = false;
 
     @EventHandler
@@ -106,7 +106,7 @@ public class Events implements Listener {
         RPGItem rItem;
         if ((rItem = ItemManager.toRPGItem(item)) != null) {
             boolean can = rItem.consumeDurability(item, rItem.blockBreakingCost);
-            if(!can){
+            if (!can) {
                 e.setCancelled(true);
             }
             if (rItem.getDurability(item) <= 0) {
@@ -154,11 +154,11 @@ public class Events implements Listener {
                     rpgProjectiles.remove(entity.getEntityId());
                 }
             }.runTask(Plugin.plugin);
-            ItemStack hItem = ((Player)entity.getShooter()).getInventory().getItemInMainHand();
+            ItemStack hItem = ((Player) entity.getShooter()).getInventory().getItemInMainHand();
             RPGItem rItem = ItemManager.toRPGItem(hItem);
             if (item == null || rItem != item)
                 return;
-            item.projectileHit((Player)entity.getShooter(), hItem, entity);
+            item.projectileHit((Player) entity.getShooter(), hItem, entity);
         }
     }
 
@@ -179,9 +179,9 @@ public class Events implements Listener {
                 return;
             if (!WorldGuard.canPvP(player) && !rItem.ignoreWorldGuard)
                 return;
-            if (rItem.getHasPermission() == true && player.hasPermission(rItem.getPermission()) == false) {
+            if (rItem.getHasPermission() && !player.hasPermission(rItem.getPermission())) {
                 e.setCancelled(true);
-                player.sendMessage(ChatColor.RED + String.format(Locale.get("message.error.permission")));
+                player.sendMessage(ChatColor.RED + Locale.get("message.error.permission"));
             }
             rpgProjectiles.put(e.getEntity().getEntityId(), rItem.getID());
         }
@@ -232,6 +232,7 @@ public class Events implements Listener {
         add(Material.RED_SHULKER_BOX);
         add(Material.BLACK_SHULKER_BOX);
     }};
+
     @EventHandler
     public void onPlayerAction(PlayerInteractEvent e) {
         Player p = e.getPlayer();
@@ -252,7 +253,7 @@ public class Events implements Listener {
         Action action = e.getAction();
         if (action == Action.RIGHT_CLICK_AIR) {
             rItem.rightClick(p, e.getItem(), e.getClickedBlock());
-        } else if (action == Action.RIGHT_CLICK_BLOCK && 
+        } else if (action == Action.RIGHT_CLICK_BLOCK &&
                 !(BYPASS_BLOCK.contains(e.getClickedBlock().getType()) && !p.isSneaking())) {
             rItem.rightClick(p, e.getItem(), e.getClickedBlock());
         } else if (action == Action.LEFT_CLICK_AIR || action == Action.LEFT_CLICK_BLOCK) {
@@ -291,7 +292,7 @@ public class Events implements Listener {
             if (ItemManager.toRPGItem(item) != null)
                 RPGItem.updateItem(item);
         }
-        if(WorldGuard.isEnabled() && WorldGuard.useWorldGuard && WorldGuard.useCustomFlag){
+        if (WorldGuard.isEnabled() && WorldGuard.useWorldGuard && WorldGuard.useCustomFlag) {
             WGHandler.onPlayerJoin(e);
         }
     }
@@ -299,7 +300,7 @@ public class Events implements Listener {
     @EventHandler(priority = EventPriority.MONITOR, ignoreCancelled = true)
     public void onPlayerPickup(PlayerPickupItemEvent e) {
         final Player p = e.getPlayer();
-        new BukkitRunnable(){
+        new BukkitRunnable() {
             @Override
             public void run() {
                 if (!p.isOnline()) return;
@@ -317,7 +318,7 @@ public class Events implements Listener {
         }.runTaskLater(Plugin.plugin, 1L);
     }
 
-    private HashSet<LocaleInventory> localeInventories = new HashSet<LocaleInventory>();
+    private HashSet<LocaleInventory> localeInventories = new HashSet<>();
 
     @EventHandler
     public void onInventoryClose(InventoryCloseEvent e) {
@@ -325,7 +326,7 @@ public class Events implements Listener {
             int id = recipeWindows.remove(e.getPlayer().getName());
             RPGItem item = ItemManager.getItemById(id);
             if (item.recipe == null) {
-                item.recipe = new ArrayList<ItemStack>();
+                item.recipe = new ArrayList<>();
             }
             item.recipe.clear();
             for (int y = 0; y < 3; y++) {
@@ -338,7 +339,7 @@ public class Events implements Listener {
             item.hasRecipe = true;
             item.resetRecipe(true);
             ItemManager.save(Plugin.plugin);
-            ((Player) e.getPlayer()).sendMessage(ChatColor.AQUA + "Recipe set for " + item.getName());
+            e.getPlayer().sendMessage(ChatColor.AQUA + "Recipe set for " + item.getName());
         } else if (useLocaleInv && e.getView() instanceof LocaleInventory) {
             localeInventories.remove(e.getView());
             ((LocaleInventory) e.getView()).getView().close();
@@ -424,10 +425,10 @@ public class Events implements Listener {
             return damage;
         if (!WorldGuard.canPvP(player) && !rItem.ignoreWorldGuard)
             return damage;
-        if (rItem.getHasPermission() == true && player.hasPermission(rItem.getPermission()) == false) {
+        if (rItem.getHasPermission() && !player.hasPermission(rItem.getPermission())) {
             damage = 0;
             e.setCancelled(true);
-            player.sendMessage(ChatColor.RED + String.format(Locale.get("message.error.permission")));
+            player.sendMessage(ChatColor.RED + Locale.get("message.error.permission"));
         }
         damage = rItem.getDamageMin() != rItem.getDamageMax() ? (rItem.getDamageMin() + random.nextInt(rItem.getDamageMax() - rItem.getDamageMin())) : rItem.getDamageMin();
         Collection<PotionEffect> potionEffects = player.getActivePotionEffects();
@@ -445,7 +446,7 @@ public class Events implements Listener {
             rItem.hit(player, item, (LivingEntity) e.getEntity(), e.getDamage());
         }
         boolean can = rItem.consumeDurability(item, rItem.hittingCost);
-        if(!can){
+        if (!can) {
             e.setCancelled(true);
             return 0;
         }
@@ -466,14 +467,14 @@ public class Events implements Listener {
             damage = rItem.getDamageMin() != rItem.getDamageMax() ? (rItem.getDamageMin() + random.nextInt(rItem.getDamageMax() - rItem.getDamageMin())) : rItem.getDamageMin();
 
             //Apply force adjustments
-            if(e.getDamager().hasMetadata("rpgitems.force")) {
+            if (e.getDamager().hasMetadata("rpgitems.force")) {
                 damage *= e.getDamager().getMetadata("rpgitems.force").get(0).asFloat();
             }
 
             Player player = (Player) entity.getShooter();
             ItemStack item = player.getInventory().getItemInMainHand();
             RPGItem hItem = ItemManager.toRPGItem(item);
-            if(rItem != hItem) return damage;
+            if (rItem != hItem) return damage;
             if (e.getEntity() instanceof LivingEntity) {
                 LivingEntity le = (LivingEntity) e.getEntity();
                 rItem.hit((Player) entity.getShooter(), item, le, e.getDamage());
@@ -505,8 +506,7 @@ public class Events implements Listener {
             return damage;
         ItemStack[] armour = p.getInventory().getArmorContents();
         boolean hasRPGItem = false;
-        for (int i = 0; i < armour.length; i++) {
-            ItemStack pArmour = armour[i];
+        for (ItemStack pArmour : armour) {
             RPGItem pRItem = ItemManager.toRPGItem(pArmour);
             if (pRItem == null) {
                 continue;
@@ -515,22 +515,22 @@ public class Events implements Listener {
             }
             if (!WorldGuard.canPvP(p) && !pRItem.ignoreWorldGuard)
                 return damage;
-            if (pRItem.getHasPermission() == true && p.hasPermission(pRItem.getPermission()) == false) {
+            if (pRItem.getHasPermission() && !p.hasPermission(pRItem.getPermission())) {
                 damage = 0;
                 e.setCancelled(true);
-                p.sendMessage(ChatColor.RED + String.format(Locale.get("message.error.permission")));
+                p.sendMessage(ChatColor.RED + Locale.get("message.error.permission"));
             }
             boolean can;
-            if(!pRItem.hitCostByDamage){
+            if (!pRItem.hitCostByDamage) {
                 can = pRItem.consumeDurability(pArmour, pRItem.hitCost);
-            }else{
-                can = pRItem.consumeDurability(pArmour, (int)(pRItem.hitCost * damage / 100d));
+            } else {
+                can = pRItem.consumeDurability(pArmour, (int) (pRItem.hitCost * damage / 100d));
             }
             if (can && pRItem.getArmour() > 0) {
-                damage -= Math.round(((double) damage) * (((double) pRItem.getArmour()) / 100d));
+                damage -= Math.round(damage * (((double) pRItem.getArmour()) / 100d));
             }
         }
-        if(hasRPGItem) {
+        if (hasRPGItem) {
             p.getInventory().setArmorContents(armour);
         }
         return damage;
@@ -540,7 +540,7 @@ public class Events implements Listener {
     @EventHandler(priority = EventPriority.HIGHEST, ignoreCancelled = true)
     public void onPlayerHitTaken(EntityDamageEvent ev) {
         if (ev.getEntity() instanceof Player) {
-            ev.setDamage(playerHitTaken((Player)ev.getEntity(), ev));
+            ev.setDamage(playerHitTaken((Player) ev.getEntity(), ev));
         }
     }
 
@@ -549,7 +549,7 @@ public class Events implements Listener {
         for (ItemStack item : e.getInventory().getContents()) {
             RPGItem ri = ItemManager.toRPGItem(item);
             if (ri == null) continue;
-            double d = ri.takeHit(e, item,  ev);
+            double d = ri.takeHit(e, item, ev);
             if (d < 0) continue;
             if (d < ret) ret = d;
         }
@@ -559,7 +559,7 @@ public class Events implements Listener {
     @EventHandler(priority = EventPriority.MONITOR, ignoreCancelled = true)
     private void onPlayerHurt(EntityDamageEvent ev) {
         if (ev.getEntity() instanceof Player) {
-            Player e = (Player)ev.getEntity();
+            Player e = (Player) ev.getEntity();
             for (ItemStack item : e.getInventory().getContents()) {
                 RPGItem ri = ItemManager.toRPGItem(item);
                 if (ri == null) continue;
@@ -598,8 +598,8 @@ public class Events implements Listener {
     }
 
     static private boolean canStack(ItemStack a, ItemStack b) {
-        if (a!=null && a.getType() == Material.AIR) a = null;
-        if (b!=null && b.getType() == Material.AIR) b = null;
+        if (a != null && a.getType() == Material.AIR) a = null;
+        if (b != null && b.getType() == Material.AIR) b = null;
         if (a == null && b == null) return true;
         if (a != null && b != null) {
             ItemStack ap = a.clone(), bp = b.clone();

@@ -28,7 +28,7 @@ public class ConfigUpdater {
     static HashMap<String, Updater> updates;
 
     static {
-        updates = new HashMap<String, Updater>();
+        updates = new HashMap<>();
         updates.put("0.1", new Update01To02());
         updates.put("0.2", new Update02To03());
         updates.put("0.3", new Update03To04());

@@ -31,7 +31,7 @@ import java.util.*;
 
 public class Handler implements CommandHandler {
 
-    
+
     @CommandString("rpgitem reload")
     @CommandDocumentation("$command.rpgitem.reload")
     @CommandGroup("reload")
@@ -49,7 +49,7 @@ public class Handler implements CommandHandler {
         }
         sender.sendMessage(ChatColor.GREEN + "[RPGItems] Reloaded RPGItems.");
     }
-    
+
     @CommandString("rpgitem list")
     @CommandDocumentation("$command.rpgitem.list")
     @CommandGroup("list")
@@ -75,10 +75,10 @@ public class Handler implements CommandHandler {
         int index = 0;
         Collection<RPGItem> items = ItemManager.itemByName.values();
         int perPage = Plugin.plugin.getConfig().getInt("itemperpage", 9);
-        sender.sendMessage(ChatColor.AQUA + "RPGItems: " + page + " / " + (int)Math.ceil(items.size()/(double)perPage) );
+        sender.sendMessage(ChatColor.AQUA + "RPGItems: " + page + " / " + (int) Math.ceil(items.size() / (double) perPage));
         for (RPGItem item : ItemManager.itemByName.values()) {
             ++index;
-            if(index > (page - 1)*perPage && index <= page*perPage){
+            if (index > (page - 1) * perPage && index <= page * perPage) {
                 if (sender instanceof Player) {
                     Player player = ((Player) sender).getPlayer();
                     BaseComponent msg = new TextComponent();
@@ -89,7 +89,7 @@ public class Handler implements CommandHandler {
                     sender.sendMessage(ChatColor.GREEN + item.getName() + " - " + item.getDisplay());
                 }
             }
-            if(index == page*perPage )return;
+            if (index == page * perPage) return;
         }
     }
 
@@ -392,7 +392,7 @@ public class Handler implements CommandHandler {
     public void setItemItem(CommandSender sender, RPGItem item, Material material, String hexColour) {
         int dam;
         try {
-            dam = Integer.parseInt((String) hexColour, 16);
+            dam = Integer.parseInt(hexColour, 16);
         } catch (NumberFormatException e) {
             sender.sendMessage(ChatColor.RED + "Failed to parse " + hexColour);
             return;
@@ -590,7 +590,7 @@ public class Handler implements CommandHandler {
                 ItemStack blank = new ItemStack(Material.THIN_GLASS);
                 ItemMeta meta = blank.getItemMeta();
                 meta.setDisplayName(ChatColor.RED + Locale.get("message.recipe.1"));
-                ArrayList<String> lore = new ArrayList<String>();
+                ArrayList<String> lore = new ArrayList<>();
                 lore.add(ChatColor.WHITE + Locale.get("message.recipe.2"));
                 lore.add(ChatColor.WHITE + Locale.get("message.recipe.3"));
                 lore.add(ChatColor.WHITE + Locale.get("message.recipe.4"));
@@ -635,7 +635,7 @@ public class Handler implements CommandHandler {
         if (chance > 0) {
             item.dropChances.put(typeS, chance);
             if (!Events.drops.containsKey(typeS)) {
-                Events.drops.put(typeS, new HashSet<Integer>());
+                Events.drops.put(typeS, new HashSet<>());
             }
             Set<Integer> set = Events.drops.get(typeS);
             set.add(item.getID());
@@ -656,17 +656,17 @@ public class Handler implements CommandHandler {
     public void getItemPowerProperty(CommandSender sender, RPGItem item, String power, int nth, String property) {
         int i = nth;
         Class p = Power.powers.get(power);
-        if(p == null){
+        if (p == null) {
             sender.sendMessage(String.format(Locale.get("message.power.unknown"), power));
             return;
         }
-        for (Power pow:item.powers) {
-            if(p.isInstance(pow) && --i == 0){
-                try{
+        for (Power pow : item.powers) {
+            if (p.isInstance(pow) && --i == 0) {
+                try {
                     Field pro = p.getField(property);
                     String val = pro.get(pow).toString();
                     sender.sendMessage(String.format(Locale.get("message.power_property.get"), nth, power, property, val));
-                }catch (Exception e){
+                } catch (Exception e) {
                     sender.sendMessage(ChatColor.RED + String.format(Locale.get("message.power_property.property_notfound"), property));
                     return;
                 }
@@ -681,41 +681,41 @@ public class Handler implements CommandHandler {
     @CommandGroup("item_power_property_s")
     public void setItemPowerProperty(CommandSender sender, RPGItem item, String power, int nth, String property, String val) {
         Class p = Power.powers.get(power);
-        if(p == null){
+        if (p == null) {
             sender.sendMessage(String.format(Locale.get("message.power.unknown"), power));
             return;
         }
-        for (Power pow:item.powers) {
-            if(p.isInstance(pow) && --nth == 0){
+        for (Power pow : item.powers) {
+            if (p.isInstance(pow) && --nth == 0) {
                 try {
                     Field pro = p.getField(property);
-                    if(pro.getType() == int.class || pro.getType() == long.class){
+                    if (pro.getType() == int.class || pro.getType() == long.class) {
                         try {
                             pro.set(pow, Integer.parseInt(val));
-                        }catch (NumberFormatException e){
+                        } catch (NumberFormatException e) {
                             sender.sendMessage(ChatColor.RED + String.format(Locale.get("message.power_property.not_vaild_int"), val));
                             return;
                         }
-                    }else if(pro.getType() == double.class) {
+                    } else if (pro.getType() == double.class) {
                         try {
                             pro.set(pow, Double.parseDouble(val));
-                        }catch (NumberFormatException e){
+                        } catch (NumberFormatException e) {
                             sender.sendMessage(ChatColor.RED + String.format(Locale.get("message.power_property.not_vaild_int"), val));
                             return;
                         }
-                    }else if(pro.getType() == String.class){
+                    } else if (pro.getType() == String.class) {
                         pro.set(pow, val);
-                    }else if(pro.getType() == boolean.class){
-                        if(val.equalsIgnoreCase("true") || val.equalsIgnoreCase("false")){
+                    } else if (pro.getType() == boolean.class) {
+                        if (val.equalsIgnoreCase("true") || val.equalsIgnoreCase("false")) {
                             pro.set(pow, val.equalsIgnoreCase("true"));
                         } else {
                             sender.sendMessage(ChatColor.RED + String.format(Locale.get("message.power_property.not_vaild_bool"), val));
                             return;
                         }
-                    }else {
+                    } else {
                         sender.sendMessage(ChatColor.RED + String.format(Locale.get("message.power_property.property_unsupporttype"), property));
                     }
-                }catch (Exception e){
+                } catch (Exception e) {
                     sender.sendMessage(ChatColor.RED + String.format(Locale.get("message.power_property.property_notfound"), property));
                     return;
                 }
@@ -731,21 +731,21 @@ public class Handler implements CommandHandler {
     @CommandDocumentation("$command.rpgitem.cost.break.get")
     @CommandGroup("item_cost_break")
     public void getItemBlockBreakingCost(CommandSender sender, RPGItem item) {
-        sender.sendMessage(String.format(Locale.get("message.cost.get"),item.blockBreakingCost));
+        sender.sendMessage(String.format(Locale.get("message.cost.get"), item.blockBreakingCost));
     }
 
     @CommandString("rpgitem $n[] cost hitting")
     @CommandDocumentation("$command.rpgitem.cost.hitting.get")
     @CommandGroup("item_cost_hitting")
     public void getItemHittingConst(CommandSender sender, RPGItem item) {
-        sender.sendMessage(String.format(Locale.get("message.cost.get"),item.hittingCost));
+        sender.sendMessage(String.format(Locale.get("message.cost.get"), item.hittingCost));
     }
 
     @CommandString("rpgitem $n[] cost hit")
     @CommandDocumentation("$command.rpgitem.cost.hit.get")
     @CommandGroup("item_cost_hit")
     public void getItemHitConst(CommandSender sender, RPGItem item) {
-        sender.sendMessage(String.format(Locale.get("message.cost.get"),item.hitCost));
+        sender.sendMessage(String.format(Locale.get("message.cost.get"), item.hitCost));
     }
 
     @CommandString("rpgitem $n[] cost breaking $durability:i[]")
@@ -861,7 +861,7 @@ public class Handler implements CommandHandler {
         item.showPowerLore = !item.showPowerLore;
         item.rebuild();
         ItemManager.save(Plugin.plugin);
-        sender.sendMessage(Locale.get("message.toggleLore."+(item.showPowerLore?"show":"hide")));
+        sender.sendMessage(Locale.get("message.toggleLore." + (item.showPowerLore ? "show" : "hide")));
     }
 
     @CommandString("rpgitem $n[] toggleArmorLore")
@@ -871,7 +871,7 @@ public class Handler implements CommandHandler {
         item.showArmourLore = !item.showArmourLore;
         item.rebuild();
         ItemManager.save(Plugin.plugin);
-        sender.sendMessage(Locale.get("message.toggleLore."+(item.showArmourLore?"show":"hide")));
+        sender.sendMessage(Locale.get("message.toggleLore." + (item.showArmourLore ? "show" : "hide")));
     }
 
     @CommandString("rpgitem $n[] additemflag $e[think.rpgitems.item.ItemFlag]")
@@ -908,12 +908,12 @@ public class Handler implements CommandHandler {
         ItemManager.save(Plugin.plugin);
         sender.sendMessage(Locale.get("message.customitemmodel." + (item.customItemModel ? "enable" : "disable")));
     }
-    
+
     @CommandString("rpgitem version")
     @CommandDocumentation("$command.rpgitem.version")
     @CommandGroup("version")
     public void printVersion(CommandSender sender) {
-        sender.sendMessage(String.format(Locale.get("message.version").replace("\\n","\n"), Plugin.plugin.getDescription().getVersion()));
+        sender.sendMessage(String.format(Locale.get("message.version").replace("\\n", "\n"), Plugin.plugin.getDescription().getVersion()));
     }
 
     @CommandString("rpgitem debug")

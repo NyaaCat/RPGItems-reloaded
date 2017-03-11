@@ -16,20 +16,24 @@
  */
 package think.rpgitems.power;
 
-import java.util.*;
-
 import org.bukkit.*;
 import org.bukkit.block.Block;
 import org.bukkit.configuration.ConfigurationSection;
-import org.bukkit.entity.*;
+import org.bukkit.entity.Damageable;
+import org.bukkit.entity.Entity;
+import org.bukkit.entity.FallingBlock;
+import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.scheduler.BukkitRunnable;
 import org.bukkit.util.Vector;
-
 import think.rpgitems.Plugin;
 import think.rpgitems.data.Locale;
 import think.rpgitems.data.RPGValue;
 import think.rpgitems.power.types.PowerRightClick;
+
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Random;
 
 public class PowerFire extends Power implements PowerRightClick {
 
@@ -50,24 +54,24 @@ public class PowerFire extends Power implements PowerRightClick {
             cooldown = value.asLong();
         }
         if (cooldown <= System.currentTimeMillis() / 50) {
-            if(!item.consumeDurability(i,consumption))return;
+            if (!item.consumeDurability(i, consumption)) return;
             value.set(System.currentTimeMillis() / 50 + cooldownTime);
             player.playSound(player.getLocation(), Sound.ITEM_FLINTANDSTEEL_USE, 1.0f, 1.2f);
-            final List<Block> fireblocks = new ArrayList<Block>();
+            final List<Block> fireblocks = new ArrayList<>();
             final FallingBlock block = player.getWorld().spawnFallingBlock(player.getLocation().add(0, 1.8, 0), Material.FIRE, (byte) 0);
             block.setVelocity(player.getLocation().getDirection().multiply(2d));
             block.setDropItem(false);
-            
-            final Location location = player.getLocation().add(0,0.5,0).getBlock().getLocation();
+
+            final Location location = player.getLocation().add(0, 0.5, 0).getBlock().getLocation();
             final Vector direction = player.getLocation().getDirection();
             direction.setY(0);
             direction.normalize();
             location.add(direction.multiply(4));
-            
+
             BukkitRunnable run = new BukkitRunnable() {
                 private boolean finishedFire = false, blockDead = false;
                 private int count = 0;
-                
+
                 public void run() {
                     if (!finishedFire) {
                         if (!location.getBlock().getType().equals(Material.AIR)) {
@@ -92,7 +96,7 @@ public class PowerFire extends Power implements PowerRightClick {
                         }
                         count++;
 
-                        if(finishedFire) {
+                        if (finishedFire) {
                             (new BukkitRunnable() {
                                 @Override
                                 public void run() {
@@ -118,8 +122,8 @@ public class PowerFire extends Power implements PowerRightClick {
                         }
                     } else {
                         List<Entity> ents = block.getNearbyEntities(0, 1, 0);
-                        for(Entity ent : ents)
-                            if(ent instanceof Damageable)
+                        for (Entity ent : ents)
+                            if (ent instanceof Damageable)
                                 ent.setFireTicks(burnduration);
                     }
 

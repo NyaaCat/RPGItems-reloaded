@@ -25,7 +25,7 @@ public class RPGValue {
 
     Object value;
 
-    static HashMap<String, RPGValue> map = new HashMap<String, RPGValue>();
+    static HashMap<String, RPGValue> map = new HashMap<>();
 
     public static RPGValue get(Player player, RPGItem item, String name) {
         return map.get(player.getName() + "." + item.getID() + "." + name);

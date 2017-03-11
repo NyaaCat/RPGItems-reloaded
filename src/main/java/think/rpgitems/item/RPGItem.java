@@ -31,7 +31,6 @@ import org.bukkit.command.CommandSender;
 import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.configuration.MemoryConfiguration;
 import org.bukkit.enchantments.Enchantment;
-import org.bukkit.entity.Entity;
 import org.bukkit.entity.LivingEntity;
 import org.bukkit.entity.Player;
 import org.bukkit.entity.Projectile;
@@ -80,23 +79,23 @@ public class RPGItem {
     private String type = Plugin.plugin.getConfig().getString("defaults.sword", "Sword");
     private String hand = Plugin.plugin.getConfig().getString("defaults.hand", "One handed");
     public boolean ignoreWorldGuard = false;
-    public List<String> description = new ArrayList<String>();
+    public List<String> description = new ArrayList<>();
 
     public boolean showPowerLore = true;
     public boolean showArmourLore = true;
     public Map<Enchantment, Integer> enchantMap = null;
-    public ArrayList<ItemFlag> itemFlags = new ArrayList<ItemFlag>();
+    public ArrayList<ItemFlag> itemFlags = new ArrayList<>();
     public boolean customItemModel = false;
 
     // Powers
-    public ArrayList<Power> powers = new ArrayList<Power>();
-    private ArrayList<PowerLeftClick> powerLeftClick = new ArrayList<PowerLeftClick>();
-    private ArrayList<PowerRightClick> powerRightClick = new ArrayList<PowerRightClick>();
-    private ArrayList<PowerProjectileHit> powerProjectileHit = new ArrayList<PowerProjectileHit>();
-    private ArrayList<PowerHit> powerHit = new ArrayList<PowerHit>();
-    private ArrayList<PowerHitTaken> powerHitTaken = new ArrayList<PowerHitTaken>();
-    private ArrayList<PowerHurt> powerHurt = new ArrayList<PowerHurt>();
-    private ArrayList<PowerTick> powerTick = new ArrayList<PowerTick>();
+    public ArrayList<Power> powers = new ArrayList<>();
+    private ArrayList<PowerLeftClick> powerLeftClick = new ArrayList<>();
+    private ArrayList<PowerRightClick> powerRightClick = new ArrayList<>();
+    private ArrayList<PowerProjectileHit> powerProjectileHit = new ArrayList<>();
+    private ArrayList<PowerHit> powerHit = new ArrayList<>();
+    private ArrayList<PowerHitTaken> powerHitTaken = new ArrayList<>();
+    private ArrayList<PowerHurt> powerHurt = new ArrayList<>();
+    private ArrayList<PowerTick> powerTick = new ArrayList<>();
 
     // Recipes
     public int recipechance = 6;
@@ -104,7 +103,7 @@ public class RPGItem {
     public List<ItemStack> recipe = null;
 
     // Drops
-    public TObjectDoubleHashMap<String> dropChances = new TObjectDoubleHashMap<String>();
+    public TObjectDoubleHashMap<String> dropChances = new TObjectDoubleHashMap<>();
 
     private int tooltipWidth = 150;
 
@@ -201,7 +200,7 @@ public class RPGItem {
                 if (chance > 0) {
                     dropChances.put(key, chance);
                     if (!Events.drops.containsKey(key)) {
-                        Events.drops.put(key, new HashSet<Integer>());
+                        Events.drops.put(key, new HashSet<>());
                     }
                     Set<Integer> set = Events.drops.get(key);
                     set.add(getID());
@@ -223,7 +222,7 @@ public class RPGItem {
         blockBreakingCost = s.getInt("blockBreakingCost", 1);
         hitCostByDamage = s.getBoolean("hitCostByDamage", false);
         maxDurability = s.getInt("maxDurability", item.getType().getMaxDurability());
-        defaultDurability = s.getInt("defaultDurability", maxDurability > 0? maxDurability : -1);
+        defaultDurability = s.getInt("defaultDurability", maxDurability > 0 ? maxDurability : -1);
         durabilityLowerBound = s.getInt("durabilityLowerBound", 0);
         durabilityUpperBound = s.getInt("durabilityUpperBound", item.getType().getMaxDurability());
         forceBar = s.getBoolean("forceBar", false);
@@ -244,7 +243,7 @@ public class RPGItem {
                 }
             }
         }
-        itemFlags = new ArrayList<ItemFlag>();
+        itemFlags = new ArrayList<>();
         if (s.isList("itemFlags")) {
             List<String> flags = s.getStringList("itemFlags");
             for (String flagName : flags) {
@@ -272,7 +271,7 @@ public class RPGItem {
         s.set("type", type.replaceAll("" + COLOR_CHAR, "&"));
         s.set("hand", hand.replaceAll("" + COLOR_CHAR, "&"));
         s.set("lore", loreText.replaceAll("" + COLOR_CHAR, "&"));
-        ArrayList<String> descriptionConv = new ArrayList<String>(description);
+        ArrayList<String> descriptionConv = new ArrayList<>(description);
         for (int i = 0; i < descriptionConv.size(); i++) {
             descriptionConv.set(i, descriptionConv.get(i).replaceAll("" + COLOR_CHAR, "&"));
         }
@@ -361,7 +360,7 @@ public class RPGItem {
             int i = 0;
             for (ItemStack s : recipe) {
                 if (!charMap.containsKey(s)) {
-                    charMap.put(s, (char)(65+(i++)));
+                    charMap.put(s, (char) (65 + (i++)));
                 }
             }
 
@@ -382,10 +381,10 @@ public class RPGItem {
 
     public void leftClick(Player player, ItemStack i, Block block) {
         for (PowerLeftClick power : powerLeftClick) {
-            if(!WorldGuard.canUsePowerNow(player, power))continue;
+            if (!WorldGuard.canUsePowerNow(player, power)) continue;
             power.leftClick(player, i, block);
         }
-        if(getDurability(i) <= 0){
+        if (getDurability(i) <= 0) {
             i.setAmount(0);
             i.setType(Material.AIR);
         }
@@ -393,10 +392,10 @@ public class RPGItem {
 
     public void rightClick(Player player, ItemStack i, Block block) {
         for (PowerRightClick power : powerRightClick) {
-            if(!WorldGuard.canUsePowerNow(player, power))continue;
+            if (!WorldGuard.canUsePowerNow(player, power)) continue;
             power.rightClick(player, i, block);
         }
-        if(getDurability(i) <= 0){
+        if (getDurability(i) <= 0) {
             i.setAmount(0);
             i.setType(Material.AIR);
         }
@@ -404,10 +403,10 @@ public class RPGItem {
 
     public void projectileHit(Player player, ItemStack i, Projectile arrow) {
         for (PowerProjectileHit power : powerProjectileHit) {
-            if(!WorldGuard.canUsePowerNow(player, power))continue;
+            if (!WorldGuard.canUsePowerNow(player, power)) continue;
             power.projectileHit(player, i, arrow);
         }
-        if(getDurability(i) <= 0){
+        if (getDurability(i) <= 0) {
             i.setAmount(0);
             i.setType(Material.AIR);
         }
@@ -415,36 +414,36 @@ public class RPGItem {
 
     public void hit(Player damager, ItemStack i, LivingEntity target, double damage) {
         for (PowerHit power : powerHit) {
-            if(!WorldGuard.canUsePowerNow(damager, power))continue;
+            if (!WorldGuard.canUsePowerNow(damager, power)) continue;
             power.hit(damager, i, target, damage);
         }
-        if(getDurability(i) <= 0){
+        if (getDurability(i) <= 0) {
             i.setAmount(0);
             i.setType(Material.AIR);
         }
     }
-    
+
     public double takeHit(Player target, ItemStack i, EntityDamageEvent ev) {
         double ret = Double.MAX_VALUE;
         for (PowerHitTaken power : powerHitTaken) {
-            if(!WorldGuard.canUsePowerNow(target, power))continue;
+            if (!WorldGuard.canUsePowerNow(target, power)) continue;
             double d = power.takeHit(target, i, ev);
             if (d < 0) continue;
             ret = d < ret ? d : ret;
         }
-        if(getDurability(i) <= 0){
+        if (getDurability(i) <= 0) {
             i.setAmount(0);
             i.setType(Material.AIR);
         }
-        return ret == Double.MAX_VALUE? -1 : ret;
+        return ret == Double.MAX_VALUE ? -1 : ret;
     }
 
     public void hurt(Player target, ItemStack i, EntityDamageEvent ev) {
         for (PowerHurt power : powerHurt) {
-            if(!WorldGuard.canUsePowerNow(target, power))continue;
+            if (!WorldGuard.canUsePowerNow(target, power)) continue;
             power.hurt(target, i, ev);
         }
-        if(getDurability(i) <= 0){
+        if (getDurability(i) <= 0) {
             i.setAmount(0);
             i.setType(Material.AIR);
         }
@@ -452,17 +451,13 @@ public class RPGItem {
 
     public void tick(Player player, ItemStack i) {
         for (PowerTick power : powerTick) {
-            if(!WorldGuard.canUsePowerNow(player, power))continue;
+            if (!WorldGuard.canUsePowerNow(player, power)) continue;
             power.tick(player, i);
         }
     }
 
     public void rebuild() {
-        if (item.getType().getMaxDurability() != 0) {
-            hasBar = true;
-        } else {
-            hasBar = false;
-        }
+        hasBar = item.getType().getMaxDurability() != 0;
         List<String> lines = getTooltipLines();
         ItemMeta meta = getLocaleMeta();
         meta.setDisplayName(lines.get(0));
@@ -501,9 +496,7 @@ public class RPGItem {
         updateLocaleMeta(meta);
 
         for (Player player : Bukkit.getOnlinePlayers()) {
-            Iterator<ItemStack> it = player.getInventory().iterator();
-            while (it.hasNext()) {
-                ItemStack item = it.next();
+            for (ItemStack item : player.getInventory()) {
                 if (ItemManager.toRPGItem(item) != null)
                     updateItem(item);
             }
@@ -550,8 +543,8 @@ public class RPGItem {
         lore.addAll(reservedLores);
         meta.setLore(lore);
         Map<Enchantment, Integer> enchs = item.getEnchantments();
-        if(enchs.size() > 0)
-            for(Enchantment ench : enchs.keySet())
+        if (enchs.size() > 0)
+            for (Enchantment ench : enchs.keySet())
                 meta.addEnchant(ench, enchs.get(ench), true);
         item.setItemMeta(meta);
     }
@@ -560,14 +553,14 @@ public class RPGItem {
         List<String> ret = new ArrayList<>();
         List<Pattern> patterns = new ArrayList<>();
         for (Power p : r.powers) {
-            if (p instanceof PowerLoreFilter && ((PowerLoreFilter) p).regex!=null) {
+            if (p instanceof PowerLoreFilter && ((PowerLoreFilter) p).regex != null) {
                 patterns.add(Pattern.compile(((PowerLoreFilter) p).regex));
             }
         }
         if (patterns.size() <= 0) return Collections.emptyList();
         if (!i.hasItemMeta() || !i.getItemMeta().hasLore()) return Collections.emptyList();
         for (String str : i.getItemMeta().getLore()) {
-            for (Pattern p: patterns) {
+            for (Pattern p : patterns) {
                 if (p.matcher(ChatColor.stripColor(str)).matches()) {
                     ret.add(str);
                     break;
@@ -593,10 +586,10 @@ public class RPGItem {
                     out.append(i < mid ? ChatColor.GREEN : i == mid ? ChatColor.YELLOW : ChatColor.RED);
                     out.append(boxChar);
                 }
-                if(!lore.get(lore.size()-1).contains(boxChar + ""))
+                if (!lore.get(lore.size() - 1).contains(boxChar + ""))
                     lore.add(out.toString());
                 else
-                    lore.set(lore.size()-1, out.toString());
+                    lore.set(lore.size() - 1, out.toString());
             }
             if (customItemModel) {
                 item.setDurability(this.item.getDurability());
@@ -613,7 +606,7 @@ public class RPGItem {
     }
 
     public List<String> getTooltipLines() {
-        ArrayList<String> output = new ArrayList<String>();
+        ArrayList<String> output = new ArrayList<>();
         output.add(encodedID + quality.colour + ChatColor.BOLD + displayName);
 
         // add powerLores
@@ -636,7 +629,7 @@ public class RPGItem {
         if (loreText.length() > 0) {
             wrapLines(String.format("%s%s\"%s\"",
                     ChatColor.YELLOW, ChatColor.ITALIC,
-                    ChatColor.translateAlternateColorCodes('&', loreText)),0);
+                    ChatColor.translateAlternateColorCodes('&', loreText)), 0);
         } else {
             _loreMinLen = 0;
         }
@@ -717,11 +710,12 @@ public class RPGItem {
                 ans.set(idx, ans.get(idx) + " " + tmp);
             } else {
                 currlen = word_len;
-                ans.add(tmp); idx++;
+                ans.add(tmp);
+                idx++;
             }
         }
         for (int i = 1; i < ans.size(); i++) {
-            ans.set(i, getLastFormat(ans.get(i-1)) + ans.get(i));
+            ans.set(i, getLastFormat(ans.get(i - 1)) + ans.get(i));
         }
         return ans;
     }
@@ -736,12 +730,12 @@ public class RPGItem {
                 char c = str.charAt(index + 1);
                 ChatColor style = getByChar(c);
                 if (style == null) continue;
-                if (style.isColor()) return style.toString() + (format == null? "": format);
+                if (style.isColor()) return style.toString() + (format == null ? "" : format);
                 if (style.isFormat() && format == null) format = style.toString();
             }
         }
 
-        return (format == null? "": format);
+        return (format == null ? "" : format);
     }
 
     public ItemStack toItemStack() {
@@ -769,6 +763,7 @@ public class RPGItem {
     }
 
     public static final int MC_ENCODED_ID_LENGTH = 16;
+
     public static String getMCEncodedID(int id) {
         String hex = String.format("%08x", id);
         StringBuilder out = new StringBuilder();
@@ -1026,8 +1021,9 @@ public class RPGItem {
         }
         return durability;
     }
+
     public boolean consumeDurability(ItemStack item, int val) {
-        if(val == 0)return true;
+        if (val == 0) return true;
         RPGMetadata meta = getMetadata(item);
         int durability;
         if (getMaxDurability() != -1) {
@@ -1039,7 +1035,7 @@ public class RPGItem {
                     && !customItemModel)) {
                 return false;
             }
-            durability-= val;
+            durability -= val;
             if (durability > getMaxDurability()) {
                 durability = getMaxDurability();
             }

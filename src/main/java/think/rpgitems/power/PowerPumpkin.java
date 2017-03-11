@@ -14,7 +14,7 @@ import think.rpgitems.power.types.PowerHit;
 import java.util.Random;
 
 public class PowerPumpkin extends Power implements PowerHit {
-    public static final String name ="pumpkin";
+    public static final String name = "pumpkin";
     public int chance = 20;
     public double drop = 0;
     public int consumption = 0;
@@ -49,12 +49,12 @@ public class PowerPumpkin extends Power implements PowerHit {
     public void hit(Player player, ItemStack i, LivingEntity e, double damage) {
         if (item.getHasPermission() && !player.hasPermission(item.getPermission())) return;
         if (rand.nextInt(chance) != 0) return;
-        if(!item.consumeDurability(i,consumption))return;
+        if (!item.consumeDurability(i, consumption)) return;
         if (e instanceof Skeleton || e instanceof Zombie)
-        if (e.getEquipment().getHelmet() == null || e.getEquipment().getHelmet().getType() == Material.AIR) {
-            e.getEquipment().setHelmet(new ItemStack(Material.PUMPKIN));
-            e.getEquipment().setHelmetDropChance((float)drop);
-        }
+            if (e.getEquipment().getHelmet() == null || e.getEquipment().getHelmet().getType() == Material.AIR) {
+                e.getEquipment().setHelmet(new ItemStack(Material.PUMPKIN));
+                e.getEquipment().setHelmetDropChance((float) drop);
+            }
     }
 
 }

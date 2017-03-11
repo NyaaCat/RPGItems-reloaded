@@ -109,8 +109,8 @@ public class Plugin extends JavaPlugin {
         getLogger().info("The updater is currently under maintenance,");
         getServer().getConsoleSender().sendMessage("[RPGItems] Please check " + ChatColor.DARK_GRAY + ChatColor.ITALIC + ChatColor.BOLD + "www.github.com/NyaaCat/RPGitems-reloaded" + ChatColor.RESET + " for updates.");
 
-        if (updater != null)
-            return;
+        if (updater != null) {
+        }
         //updater = new Updater(this, 70226, this.getFile(), Updater.UpdateType.DEFAULT, false);
     }
 

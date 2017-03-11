@@ -62,8 +62,8 @@ public class PowerCommandHit extends Power implements PowerHit {
             PermissionAttachment attachment = player.addAttachment(Plugin.plugin, 1);
             String[] perms = permission.split("\\.");
             StringBuilder p = new StringBuilder();
-            for (int i = 0; i < perms.length; i++) {
-                p.append(perms[i]);
+            for (String perm : perms) {
+                p.append(perm);
                 attachment.setPermission(p.toString(), true);
                 p.append('.');
             }
@@ -79,7 +79,7 @@ public class PowerCommandHit extends Power implements PowerHit {
         cmd = cmd.replaceAll("\\{entity.x\\}", Float.toString(e.getLocation().getBlockX()));
         cmd = cmd.replaceAll("\\{entity.y\\}", Float.toString(e.getLocation().getBlockY()));
         cmd = cmd.replaceAll("\\{entity.z\\}", Float.toString(e.getLocation().getBlockZ()));
-        cmd = cmd.replaceAll("\\{entity.yaw\\}", Float.toString( 90 + e.getEyeLocation().getYaw()));
+        cmd = cmd.replaceAll("\\{entity.yaw\\}", Float.toString(90 + e.getEyeLocation().getYaw()));
         cmd = cmd.replaceAll("\\{entity.pitch\\}", Float.toString(-e.getEyeLocation().getPitch()));
 
         cmd = cmd.replaceAll("\\{player\\}", player.getName());
@@ -97,7 +97,7 @@ public class PowerCommandHit extends Power implements PowerHit {
     public void hit(Player player, ItemStack i, LivingEntity e, double damage) {
         if (item.getHasPermission() && !player.hasPermission(item.getPermission())) return;
         if (!updateCooldown(player)) return;
-        if(!item.consumeDurability(i,consumption))return;
+        if (!item.consumeDurability(i, consumption)) return;
         executeCommand(player, e);
     }
 

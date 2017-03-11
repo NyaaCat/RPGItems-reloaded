@@ -33,16 +33,16 @@ import java.util.HashMap;
 import java.util.Map.Entry;
 
 public class ItemManager {
-    public static TIntObjectHashMap<RPGItem> itemById = new TIntObjectHashMap<RPGItem>();
-    public static HashMap<String, RPGItem> itemByName = new HashMap<String, RPGItem>();
-    public static HashMap<String, ItemGroup> groups = new HashMap<String, ItemGroup>();
+    public static TIntObjectHashMap<RPGItem> itemById = new TIntObjectHashMap<>();
+    public static HashMap<String, RPGItem> itemByName = new HashMap<>();
+    public static HashMap<String, ItemGroup> groups = new HashMap<>();
     public static int currentPos = 0;
     private static Plugin plugin;
-    
+
     public static void reload() {
-        itemById = new TIntObjectHashMap<RPGItem>();
-        itemByName = new HashMap<String, RPGItem>();
-        groups = new HashMap<String, ItemGroup>();
+        itemById = new TIntObjectHashMap<>();
+        itemByName = new HashMap<>();
+        groups = new HashMap<>();
         currentPos = 0;
         load(plugin);
     }
@@ -60,7 +60,7 @@ public class ItemManager {
                 itemStorage = new YamlConfiguration();
                 String str = new String(data, "UTF-8");
                 itemStorage.loadFromString(str);
-            } catch (FileNotFoundException e) {
+            } catch (FileNotFoundException ignored) {
             } catch (IOException e) {
                 e.printStackTrace();
             } catch (InvalidConfigurationException e) {
@@ -77,8 +77,8 @@ public class ItemManager {
             ConfigurationSection section = itemStorage.getConfigurationSection("items");
             if (section == null)
                 return;
-            for (Object obj : section.getValues(false).values()){
-                ConfigurationSection sec = (ConfigurationSection)obj;
+            for (Object obj : section.getValues(false).values()) {
+                ConfigurationSection sec = (ConfigurationSection) obj;
                 RPGItem item = new RPGItem(sec);
                 itemById.put(item.getID(), item);
                 itemByName.put(item.getName(), item);
@@ -123,9 +123,9 @@ public class ItemManager {
         itemStorage.set("pos", currentPos);
         ConfigurationSection newSection = itemStorage.createSection("items");
         for (RPGItem item : itemById.valueCollection()) {
-            ConfigurationSection itemSection = newSection.getConfigurationSection(item.getName().replace(".","_"));
+            ConfigurationSection itemSection = newSection.getConfigurationSection(item.getName().replace(".", "_"));
             if (itemSection == null) {
-                itemSection = newSection.createSection(item.getName().replace(".","_"));
+                itemSection = newSection.createSection(item.getName().replace(".", "_"));
             }
             item.save(itemSection);
         }
@@ -171,8 +171,7 @@ public class ItemManager {
             if (id == -1) {
                 return null;
             }
-            RPGItem rItem = ItemManager.getItemById(id);
-            return rItem;
+            return ItemManager.getItemById(id);
         } catch (Exception e) {
             return null;
         }
@@ -201,13 +200,13 @@ public class ItemManager {
         return itemByName.get(uid);
     }
 
-    public static int decodeId(String str) throws Exception {
+    public static int decodeId(String str) throws NumberFormatException {
         if (str.length() < 16) {
             return -1;
         }
         StringBuilder out = new StringBuilder();
         for (int i = 0; i < 16; i++) {
-            if (str.charAt(i) != ChatColor.COLOR_CHAR){
+            if (str.charAt(i) != ChatColor.COLOR_CHAR) {
                 return -1;
             }
             i++;

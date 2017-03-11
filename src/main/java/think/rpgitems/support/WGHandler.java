@@ -64,7 +64,7 @@ public class WGHandler extends Handler {
         Location loc = p.getLocation();
         RegionContainer container = WorldGuard.wgPlugin.getRegionContainer();
         RegionManager regions = container.get(loc.getWorld());
-        if(regions == null)return;
+        if (regions == null) return;
         ApplicableRegionSet set = regions.getApplicableRegions(BukkitUtil.toVector(loc));
         LocalPlayer localPlayer = WorldGuard.wgPlugin.wrapPlayer(p);
         Collection<String> disabled = set.queryValue(localPlayer, disabledPower);

@@ -42,7 +42,7 @@ public class PowerIce extends Power implements PowerRightClick {
     @Override
     public void rightClick(final Player player, ItemStack i, Block clicked) {
         long cooldown;
-        if (item.getHasPermission() == true && player.hasPermission(item.getPermission()) == false) {
+        if (item.getHasPermission() && !player.hasPermission(item.getPermission())) {
         } else {
             RPGValue value = RPGValue.get(player, item, "ice.cooldown");
             if (value == null) {
@@ -52,7 +52,7 @@ public class PowerIce extends Power implements PowerRightClick {
                 cooldown = value.asLong();
             }
             if (cooldown <= System.currentTimeMillis() / 50) {
-                if(!item.consumeDurability(i,consumption))return;
+                if (!item.consumeDurability(i, consumption)) return;
                 value.set(System.currentTimeMillis() / 50 + cooldownTime);
                 player.playSound(player.getLocation(), Sound.ENTITY_EGG_THROW, 1.0f, 0.1f);
 
@@ -88,7 +88,7 @@ public class PowerIce extends Power implements PowerRightClick {
                                 }
                             }
                             cancel();
-                            final TObjectLongHashMap<Location> changedBlocks = new gnu.trove.map.hash.TObjectLongHashMap<Location>();
+                            final TObjectLongHashMap<Location> changedBlocks = new gnu.trove.map.hash.TObjectLongHashMap<>();
                             for (int x = -1; x < 2; x++) {
                                 for (int y = -1; y < 3; y++) {
                                     for (int z = -1; z < 2; z++) {

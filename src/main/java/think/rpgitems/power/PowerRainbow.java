@@ -16,15 +16,7 @@
  */
 package think.rpgitems.power;
 
-import java.util.ArrayList;
-import java.util.Iterator;
-import java.util.Random;
-
-import org.bukkit.ChatColor;
-import org.bukkit.Effect;
-import org.bukkit.Location;
-import org.bukkit.Material;
-import org.bukkit.Sound;
+import org.bukkit.*;
 import org.bukkit.block.Block;
 import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.entity.FallingBlock;
@@ -32,11 +24,14 @@ import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.scheduler.BukkitRunnable;
 import org.bukkit.util.Vector;
-
 import think.rpgitems.Plugin;
 import think.rpgitems.data.Locale;
 import think.rpgitems.data.RPGValue;
 import think.rpgitems.power.types.PowerRightClick;
+
+import java.util.ArrayList;
+import java.util.Iterator;
+import java.util.Random;
 
 public class PowerRainbow extends Power implements PowerRightClick {
 
@@ -51,7 +46,7 @@ public class PowerRainbow extends Power implements PowerRightClick {
     @Override
     public void rightClick(Player player, ItemStack is, Block clicked) {
         long cooldown;
-        if (item.getHasPermission() == true && player.hasPermission(item.getPermission()) == false) {
+        if (item.getHasPermission() && !player.hasPermission(item.getPermission())) {
         } else {
             RPGValue value = RPGValue.get(player, item, "arrow.rainbow");
             if (value == null) {
@@ -61,10 +56,10 @@ public class PowerRainbow extends Power implements PowerRightClick {
                 cooldown = value.asLong();
             }
             if (cooldown <= System.currentTimeMillis() / 50) {
-                if(!item.consumeDurability(is,consumption))return;
+                if (!item.consumeDurability(is, consumption)) return;
                 value.set(System.currentTimeMillis() / 50 + cooldownTime);
                 player.playSound(player.getLocation(), Sound.ENTITY_ARROW_SHOOT, 1.0f, 1.0f);
-                final ArrayList<FallingBlock> blocks = new ArrayList<FallingBlock>();
+                final ArrayList<FallingBlock> blocks = new ArrayList<>();
                 for (int i = 0; i < count; i++) {
                     FallingBlock block;
                     if (!isFire) {
@@ -78,7 +73,7 @@ public class PowerRainbow extends Power implements PowerRightClick {
                 }
                 (new BukkitRunnable() {
 
-                    ArrayList<Location> fallLocs = new ArrayList<Location>();
+                    ArrayList<Location> fallLocs = new ArrayList<>();
                     Random random = new Random();
 
                     public void run() {

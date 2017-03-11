@@ -20,11 +20,12 @@ import org.bukkit.ChatColor;
 import org.bukkit.Effect;
 import org.bukkit.block.Block;
 import org.bukkit.configuration.ConfigurationSection;
-import org.bukkit.entity.*;
+import org.bukkit.entity.Entity;
+import org.bukkit.entity.LivingEntity;
+import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.potion.PotionEffect;
 import org.bukkit.potion.PotionEffectType;
-
 import think.rpgitems.data.Locale;
 import think.rpgitems.data.RPGValue;
 import think.rpgitems.power.types.PowerRightClick;
@@ -67,7 +68,7 @@ public class PowerAOE extends Power implements PowerRightClick {
     @Override
     public void rightClick(final Player player, ItemStack i, Block clicked) {
         long cooldown;
-        if (item.getHasPermission() == true && player.hasPermission(item.getPermission()) == false) {
+        if (item.getHasPermission() && !player.hasPermission(item.getPermission())) {
         } else {
             RPGValue value = RPGValue.get(player, item, "aoe.cooldown");
             if (value == null) {
@@ -77,14 +78,14 @@ public class PowerAOE extends Power implements PowerRightClick {
                 cooldown = value.asLong();
             }
             if (cooldown <= System.currentTimeMillis() / 50) {
-                if(!item.consumeDurability(i,consumption))return;
+                if (!item.consumeDurability(i, consumption)) return;
                 value.set(System.currentTimeMillis() / 50 + cooldownTime);
-                PotionEffect effect = new PotionEffect(type, duration, amplifier-1);
-                if(selfapplication)
+                PotionEffect effect = new PotionEffect(type, duration, amplifier - 1);
+                if (selfapplication)
                     player.addPotionEffect(effect);
                 player.getWorld().playEffect(player.getLocation(), Effect.POTION_BREAK, 1);
-                for(Entity ent : player.getNearbyEntities(range, range, range))
-                    if(ent instanceof LivingEntity)
+                for (Entity ent : player.getNearbyEntities(range, range, range))
+                    if (ent instanceof LivingEntity)
                         ((LivingEntity) ent).addPotionEffect(effect);
             } else {
                 player.sendMessage(ChatColor.AQUA + String.format(Locale.get("message.cooldown"), ((double) (cooldown - System.currentTimeMillis() / 50)) / 20d));
@@ -99,7 +100,7 @@ public class PowerAOE extends Power implements PowerRightClick {
 
     @Override
     public String displayText() {
-        return name!=null?name:ChatColor.GREEN + String.format(Locale.get("power.aoe"), type.getName(), amplifier, duration, selfapplication ? Locale.get("power.aoe.selfapplication.true"):Locale.get("power.aoe.selfapplication.false"), range, (double) cooldownTime / 20d);
+        return name != null ? name : ChatColor.GREEN + String.format(Locale.get("power.aoe"), type.getName(), amplifier, duration, selfapplication ? Locale.get("power.aoe.selfapplication.true") : Locale.get("power.aoe.selfapplication.false"), range, (double) cooldownTime / 20d);
     }
 
 }

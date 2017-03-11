@@ -24,7 +24,7 @@ public class PowerSkyHook extends Power implements PowerRightClick {
 
     @Override
     public void rightClick(final Player player, ItemStack i, Block clicked) {
-        if (item.getHasPermission() == true && player.hasPermission(item.getPermission()) == false) {
+        if (item.getHasPermission() && !player.hasPermission(item.getPermission())) {
         } else {
             RPGValue isHooking = RPGValue.get(player, item, "skyhook.isHooking");
             if (isHooking == null) {

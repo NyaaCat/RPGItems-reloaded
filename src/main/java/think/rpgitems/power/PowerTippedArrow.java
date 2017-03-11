@@ -41,7 +41,7 @@ public class PowerTippedArrow extends Power implements PowerRightClick {
     @Override
     public void rightClick(Player player, ItemStack i, Block clicked) {
         long cooldown;
-        if (item.getHasPermission() == true && player.hasPermission(item.getPermission()) == false) {
+        if (item.getHasPermission() && !player.hasPermission(item.getPermission())) {
         } else {
             RPGValue value = RPGValue.get(player, item, "tippedarrow.cooldown");
             if (value == null) {
@@ -51,7 +51,7 @@ public class PowerTippedArrow extends Power implements PowerRightClick {
                 cooldown = value.asLong();
             }
             if (cooldown <= System.currentTimeMillis() / 50) {
-                if(!item.consumeDurability(i,consumption))return;
+                if (!item.consumeDurability(i, consumption)) return;
                 value.set(System.currentTimeMillis() / 50 + cooldownTime);
                 player.playSound(player.getLocation(), Sound.ENTITY_ARROW_SHOOT, 1.0f, 1.0f);
                 TippedArrow arrow = player.launchProjectile(TippedArrow.class);

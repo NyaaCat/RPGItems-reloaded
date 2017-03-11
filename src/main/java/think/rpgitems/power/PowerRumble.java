@@ -62,7 +62,7 @@ public class PowerRumble extends Power implements PowerRightClick {
     @Override
     public void rightClick(final Player player, ItemStack i, Block block) {
         long cooldown;
-        if (item.getHasPermission() == true && player.hasPermission(item.getPermission()) == false) {
+        if (item.getHasPermission() && !player.hasPermission(item.getPermission())) {
         } else {
             RPGValue value = RPGValue.get(player, item, "rumble.cooldown");
             if (value == null) {
@@ -72,7 +72,7 @@ public class PowerRumble extends Power implements PowerRightClick {
                 cooldown = value.asLong();
             }
             if (cooldown <= System.currentTimeMillis() / 50) {
-                if(!item.consumeDurability(i,consumption))return;
+                if (!item.consumeDurability(i, consumption)) return;
                 value.set(System.currentTimeMillis() / 50 + cooldownTime);
                 final Location location = player.getLocation().add(0, -0.2, 0);
                 final Vector direction = player.getLocation().getDirection();

@@ -16,8 +16,7 @@
  */
 package think.rpgitems.power;
 
-import java.util.*;
-
+import gnu.trove.map.hash.TObjectLongHashMap;
 import org.bukkit.*;
 import org.bukkit.block.Block;
 import org.bukkit.configuration.ConfigurationSection;
@@ -26,12 +25,14 @@ import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.metadata.FixedMetadataValue;
 import org.bukkit.scheduler.BukkitRunnable;
-
-import gnu.trove.map.hash.TObjectLongHashMap;
 import think.rpgitems.Plugin;
 import think.rpgitems.data.Locale;
 import think.rpgitems.data.RPGValue;
 import think.rpgitems.power.types.PowerRightClick;
+
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Random;
 
 public class PowerTorch extends Power implements PowerRightClick {
 
@@ -42,7 +43,7 @@ public class PowerTorch extends Power implements PowerRightClick {
     @Override
     public void rightClick(final Player player, ItemStack i, Block clicked) {
         long cooldown;
-        if (item.getHasPermission() == true && player.hasPermission(item.getPermission()) == false) {
+        if (item.getHasPermission() && !player.hasPermission(item.getPermission())) {
         } else {
             RPGValue value = RPGValue.get(player, item, "torch.cooldown");
             if (value == null) {
@@ -52,7 +53,7 @@ public class PowerTorch extends Power implements PowerRightClick {
                 cooldown = value.asLong();
             }
             if (cooldown <= System.currentTimeMillis() / 50) {
-                if(!item.consumeDurability(i,consumption))return;
+                if (!item.consumeDurability(i, consumption)) return;
                 value.set(System.currentTimeMillis() / 50 + cooldownTime);
                 player.playSound(player.getLocation(), Sound.ITEM_FLINTANDSTEEL_USE, 1.0f, 0.8f);
                 final FallingBlock block = player.getWorld().spawnFallingBlock(player.getLocation().add(0, 1.8, 0), Material.TORCH, (byte) 0);
@@ -68,7 +69,7 @@ public class PowerTorch extends Power implements PowerRightClick {
                             if (block.getLocation().getBlock().getType().equals(Material.TORCH))
                                 block.setMetadata("RPGItems.Torch", new FixedMetadataValue(Plugin.plugin, null));
                             cancel();
-                            final TObjectLongHashMap<Location> changedBlocks = new gnu.trove.map.hash.TObjectLongHashMap<Location>();
+                            final TObjectLongHashMap<Location> changedBlocks = new gnu.trove.map.hash.TObjectLongHashMap<>();
                             for (int x = -2; x <= 2; x++) {
                                 for (int y = -2; y <= 3; y++) {
                                     for (int z = -2; z <= 2; z++) {
@@ -143,7 +144,7 @@ public class PowerTorch extends Power implements PowerRightClick {
     }
 
     private List<Byte> getPossibleOrientations(Location loc) {
-        List<Byte> orientations = new ArrayList<Byte>();
+        List<Byte> orientations = new ArrayList<>();
         if (loc.subtract(0, 1, 0).getBlock().getType().isSolid())
             orientations.add((byte) 5);
         for (int x = -1; x <= 1; x++)

@@ -9,10 +9,6 @@ import think.rpgitems.Plugin;
 
 public class PowerDelayedCommand extends PowerCommand {
     public int delay = 20;
-    @Override
-    public String displayText() {
-        return super.displayText();
-    }
 
     @Override
     public String getName() {
@@ -35,7 +31,7 @@ public class PowerDelayedCommand extends PowerCommand {
     public void rightClick(final Player player, ItemStack i, Block clicked) {
         if (item.getHasPermission() && !player.hasPermission(item.getPermission())) return;
         if (!isRight || !updateCooldown(player)) return;
-        if(!item.consumeDurability(i,consumption))return;
+        if (!item.consumeDurability(i, consumption)) return;
         (new BukkitRunnable() {
             @Override
             public void run() {
@@ -48,7 +44,7 @@ public class PowerDelayedCommand extends PowerCommand {
     public void leftClick(final Player player, ItemStack i, Block clicked) {
         if (item.getHasPermission() && !player.hasPermission(item.getPermission())) return;
         if (isRight || !updateCooldown(player)) return;
-        if(!item.consumeDurability(i,consumption))return;
+        if (!item.consumeDurability(i, consumption)) return;
         (new BukkitRunnable() {
             @Override
             public void run() {
