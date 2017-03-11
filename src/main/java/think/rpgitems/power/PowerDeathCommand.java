@@ -54,7 +54,7 @@ public class PowerDeathCommand extends Power implements PowerHit {
     public void hit(Player player, ItemStack is, LivingEntity e, double damage) {
         if (item.getHasPermission() && !player.hasPermission(item.getPermission())) return;
         if (rand.nextInt(chance) == 0) {
-            item.consumeDurability(is,1);
+            if(!item.consumeDurability(is,consumption))return;
             Location loc = e.getLocation();
             int x = (int) loc.getX();
             int y = (int) loc.getY();

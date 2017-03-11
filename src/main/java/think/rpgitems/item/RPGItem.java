@@ -110,6 +110,9 @@ public class RPGItem {
 
     // Durability
     private int maxDurability;
+    public int defaultDurability;
+    public int durabilityLowerBound;
+    public int durabilityUpperBound;
     private boolean hasBar = false;
     private boolean forceBar = false;
     public int blockBreakingCost = 1;
@@ -220,6 +223,9 @@ public class RPGItem {
         blockBreakingCost = s.getInt("blockBreakingCost", 1);
         hitCostByDamage = s.getBoolean("hitCostByDamage", false);
         maxDurability = s.getInt("maxDurability", item.getType().getMaxDurability());
+        defaultDurability = s.getInt("defaultDurability", maxDurability > 0? maxDurability : -1);
+        durabilityLowerBound = s.getInt("durabilityLowerBound", 0);
+        durabilityUpperBound = s.getInt("durabilityUpperBound", item.getType().getMaxDurability());
         forceBar = s.getBoolean("forceBar", false);
 
         if (maxDurability == 0) {
@@ -307,6 +313,9 @@ public class RPGItem {
         s.set("blockBreakingCost", blockBreakingCost);
         s.set("hitCostByDamage", hitCostByDamage);
         s.set("maxDurability", maxDurability);
+        s.set("defaultDurability", defaultDurability);
+        s.set("durabilityLowerBound", durabilityLowerBound);
+        s.set("durabilityUpperBound", durabilityUpperBound);
         s.set("forceBar", forceBar);
         s.set("showPowerText", showPowerLore);
         s.set("showArmourLore", showArmourLore);
@@ -571,7 +580,7 @@ public class RPGItem {
     public void addExtra(RPGMetadata rpgMeta, ItemStack item, List<String> lore) {
         if (maxDurability > 0) {
             if (!rpgMeta.containsKey(RPGMetadata.DURABILITY)) {
-                rpgMeta.put(RPGMetadata.DURABILITY, Integer.valueOf(maxDurability));
+                rpgMeta.put(RPGMetadata.DURABILITY, Integer.valueOf(defaultDurability));
             }
             int durability = ((Number) rpgMeta.get(RPGMetadata.DURABILITY)).intValue();
 
@@ -735,11 +744,6 @@ public class RPGItem {
         return (format == null? "": format);
     }
 
-    @Deprecated
-    public ItemStack toItemStack(String locale) {
-        return toItemStack();
-    }
-
     public ItemStack toItemStack() {
         ItemStack rStack = item.clone();
         RPGMetadata rpgMeta = new RPGMetadata();
@@ -783,15 +787,6 @@ public class RPGItem {
         for (int i = 0; i < str.length(); i++) {
             char c = str.charAt(i);
             width += Font.widths[c] + 1;
-        }
-        return width;
-    }
-
-    private static int getStringWidthBold(String str) {
-        int width = 0;
-        for (int i = 0; i < str.length(); i++) {
-            char c = str.charAt(i);
-            width += Font.widths[c] + 2;
         }
         return width;
     }
@@ -1009,6 +1004,15 @@ public class RPGItem {
             rebuild();
     }
 
+    public void setDefaultDurability(int newVal) {
+        defaultDurability = newVal;
+    }
+
+    public void setDurabilityBound(int min, int max) {
+        durabilityLowerBound = min;
+        durabilityUpperBound = max;
+    }
+
     public int getMaxDurability() {
         return maxDurability <= 0 ? -1 : maxDurability;
     }
@@ -1023,11 +1027,16 @@ public class RPGItem {
         return durability;
     }
     public boolean consumeDurability(ItemStack item, int val) {
+        if(val == 0)return true;
         RPGMetadata meta = getMetadata(item);
-        int durability = 1;
+        int durability;
         if (getMaxDurability() != -1) {
-            durability = meta.containsKey(RPGMetadata.DURABILITY) ? ((Number) meta.get(RPGMetadata.DURABILITY)).intValue() : getMaxDurability();
-            if (durability <= val && (getLocaleMeta().isUnbreakable() && !customItemModel)) {
+            durability = meta.containsKey(RPGMetadata.DURABILITY) ? ((Number) meta.get(RPGMetadata.DURABILITY)).intValue() : defaultDurability;
+            if ((durability <= val
+                    || (val > 0 && durability < durabilityLowerBound)
+                    || (val < 0 && durability > durabilityUpperBound))
+                    && (getLocaleMeta().isUnbreakable()
+                    && !customItemModel)) {
                 return false;
             }
             durability-= val;
@@ -1091,13 +1100,13 @@ public class RPGItem {
         }
         if (power != null) {
             if (power instanceof PowerHit) {
-                powerHit.remove((PowerHit) power);
+                powerHit.remove(power);
             }
             if (power instanceof PowerHitTaken) {
-                powerHitTaken.remove((PowerHitTaken) power);
+                powerHitTaken.remove(power);
             }
             if (power instanceof PowerHurt) {
-                powerHurt.remove((PowerHurt) power);
+                powerHurt.remove(power);
             }
             if (power instanceof PowerLeftClick) {
                 powerLeftClick.remove(power);

@@ -158,7 +158,7 @@ public class Events implements Listener {
             RPGItem rItem = ItemManager.toRPGItem(hItem);
             if (item == null || rItem != item)
                 return;
-            item.projectileHit((Player) ((Projectile) entity).getShooter(), hItem, (Projectile) entity);
+            item.projectileHit((Player)entity.getShooter(), hItem, entity);
         }
     }
 

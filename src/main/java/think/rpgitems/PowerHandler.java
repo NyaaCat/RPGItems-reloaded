@@ -746,9 +746,10 @@ public class PowerHandler implements CommandHandler {
         sender.sendMessage(ChatColor.AQUA + Locale.get("message.power.ok"));
     }
 
-    @CommandString("rpgitem $n[] power projectile $projectileType:s[]")
+    //always cause confusion...projectileType may eat the argument behind and get something like `skull 1`
+/*    @CommandString("rpgitem $n[] power projectile $projectileType:s[]")
     @CommandDocumentation("$command.rpgitem.projectile")
-    @CommandGroup("item_power_projectile")
+    @CommandGroup("item_power_projectile_a")
     public void projectile(CommandSender sender, RPGItem item, String projectileType) {
         PowerProjectile power = new PowerProjectile();
         if (!power.acceptableType(projectileType)) {
@@ -760,11 +761,11 @@ public class PowerHandler implements CommandHandler {
         item.addPower(power);
         ItemManager.save(Plugin.plugin);
         sender.sendMessage(ChatColor.AQUA + Locale.get("message.power.ok"));
-    }
+    }*/
 
     @CommandString("rpgitem $n[] power projectile $projectileType:s[] $cooldown:i[]")
     @CommandDocumentation("$command.rpgitem.projectile.full")
-    @CommandGroup("item_power_projectile")
+    @CommandGroup("item_power_projectile_b")
     public void projectile(CommandSender sender, RPGItem item, String projectileType, int cooldown) {
         PowerProjectile power = new PowerProjectile();
         power.cooldownTime = cooldown;
@@ -781,7 +782,7 @@ public class PowerHandler implements CommandHandler {
 
     @CommandString("rpgitem $n[] power projectile $projectileType:s[] $cooldown:i[] $range:i[] $amount:i[]")
     @CommandDocumentation("$command.rpgitem.projectile.cone")
-    @CommandGroup("item_power_projectile")
+    @CommandGroup("item_power_projectile_c")
     public void projectile(CommandSender sender, RPGItem item, String projectileType, int cooldown, int range, int amount) {
         PowerProjectile power = new PowerProjectile();
         if (projectileType.equalsIgnoreCase("fireball")) {

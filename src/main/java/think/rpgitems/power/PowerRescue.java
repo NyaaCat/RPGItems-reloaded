@@ -103,7 +103,7 @@ public class PowerRescue extends Power implements PowerHurt, PowerHitTaken {
             cooldown = value.asLong();
         }
         if (cooldown <= System.currentTimeMillis() / 50) {
-            if(!item.consumeDurability(i, consumption));
+            if(!item.consumeDurability(i,consumption))return;
             value.set(System.currentTimeMillis() / 50 + cooldownTime);
             target.sendMessage(ChatColor.AQUA + Locale.get("power.rescue.info"));
             DamageCause cause = ev.getCause();

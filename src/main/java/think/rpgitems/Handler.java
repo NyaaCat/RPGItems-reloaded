@@ -811,6 +811,31 @@ public class Handler implements CommandHandler {
         sender.sendMessage(Locale.get("message.durability.toggle"));
     }
 
+    @CommandString("rpgitem $n[] defaultdurability $durability:i[]")
+    @CommandDocumentation("$command.rpgitem.durability.default")
+    @CommandGroup("item_defaultdurability")
+    public void setItemDefaultDurability(CommandSender sender, RPGItem item, int newValue) {
+        item.setDefaultDurability(newValue);
+        ItemManager.save(Plugin.plugin);
+        sender.sendMessage(Locale.get("message.durability.change"));
+    }
+
+    @CommandString("rpgitem $n[] durabilitybound $min:i[] $max:i[]")
+    @CommandDocumentation("$command.rpgitem.durability.bound")
+    @CommandGroup("item_durabilitybound")
+    public void setItemDurabilityBound(CommandSender sender, RPGItem item, int min, int max) {
+        item.setDurabilityBound(min, max);
+        ItemManager.save(Plugin.plugin);
+        sender.sendMessage(Locale.get("message.durability.change"));
+    }
+
+    @CommandString("rpgitem $n[] durabilityinfo")
+    @CommandDocumentation("$command.rpgitem.durability.info")
+    @CommandGroup("item_durability")
+    public void getItemDurability(CommandSender sender, RPGItem item) {
+        sender.sendMessage(String.format(Locale.get("message.durability.info"), item.getMaxDurability(), item.defaultDurability, item.durabilityLowerBound, item.durabilityUpperBound));
+    }
+
     @CommandString("rpgitem $n[] permission $permission:s[] $haspermission:s[]")
     @CommandDocumentation("$command.rpgitem.permission")
     @CommandGroup("item_permission")
