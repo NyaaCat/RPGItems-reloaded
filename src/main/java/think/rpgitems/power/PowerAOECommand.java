@@ -57,9 +57,10 @@ public class PowerAOECommand extends PowerCommand {
         boolean wasOp = player.isOp();
         if (permission.equals("*"))
             player.setOp(true);
-        boolean isPlayer = type.equalsIgnoreCase("player");
+        boolean forPlayers = type.equalsIgnoreCase("player");
+        boolean forMobs = type.equalsIgnoreCase("mobs");
 
-        if (type.equalsIgnoreCase("entity") || isPlayer) {
+        if (type.equalsIgnoreCase("entity") || forPlayers || forMobs) {
             LivingEntity[] nearbyEntities = getNearbyLivingEntities(player.getLocation(), r, rm);
             List<LivingEntity> ent = getEntitiesInCone(nearbyEntities, player.getEyeLocation().toVector(), facing, player.getEyeLocation().getDirection());
             LivingEntity[] entities = ent.toArray(new LivingEntity[ent.size()]);
@@ -68,7 +69,9 @@ public class PowerAOECommand extends PowerCommand {
                 LivingEntity e = entities[i];
                 if ((mustsee && !player.hasLineOfSight(e))
                         || (!selfapplication && e == player)
-                        || (isPlayer && !(e instanceof Player))) {
+                        || (forPlayers && !(e instanceof Player))
+                        || (forMobs && e instanceof Player)
+                        ) {
                     ++c;
                     continue;
                 }
