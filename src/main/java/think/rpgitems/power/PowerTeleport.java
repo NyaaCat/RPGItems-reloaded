@@ -29,26 +29,44 @@ import think.rpgitems.data.RPGValue;
 import think.rpgitems.power.types.PowerProjectileHit;
 import think.rpgitems.power.types.PowerRightClick;
 
+/**
+ * Power teleport.
+ * <p>
+ * The teleport power will teleport you
+ * in the direction you're looking in
+ * or to the place where the projectile hit
+ * with maximum distance of {@link #distance} blocks
+ * </p>
+ */
 public class PowerTeleport extends Power implements PowerRightClick, PowerProjectileHit {
 
+    /**
+     * Maximum distance.
+     */
     public int distance = 5;
+    /**
+     * Cooldown time of this power
+     */
     public long cooldownTime = 20;
+    /**
+     * Cost of this power
+     */
     public int consumption = 0;
 
     @Override
-    public void rightClick(Player player, ItemStack i, Block clicked) {
+    public void rightClick(Player player, ItemStack item, Block clicked) {
         long cooldown;
-        if (item.getHasPermission() && !player.hasPermission(item.getPermission())) {
+        if (this.item.getHasPermission() && !player.hasPermission(this.item.getPermission())) {
         } else {
-            RPGValue value = RPGValue.get(player, item, "teleport.cooldown");
+            RPGValue value = RPGValue.get(player, this.item, "teleport.cooldown");
             if (value == null) {
                 cooldown = System.currentTimeMillis() / 50;
-                value = new RPGValue(player, item, "teleport.cooldown", cooldown);
+                value = new RPGValue(player, this.item, "teleport.cooldown", cooldown);
             } else {
                 cooldown = value.asLong();
             }
             if (cooldown <= System.currentTimeMillis() / 50) {
-                if (!item.consumeDurability(i, consumption)) return;
+                if (!this.item.consumeDurability(item, consumption)) return;
                 value.set(System.currentTimeMillis() / 50 + cooldownTime);
                 // float dist = 0;
                 World world = player.getWorld();
@@ -93,12 +111,12 @@ public class PowerTeleport extends Power implements PowerRightClick, PowerProjec
     }
 
     @Override
-    public void projectileHit(Player player, ItemStack i, Projectile p) {
+    public void projectileHit(Player player, ItemStack item, Projectile p) {
         long cooldown;
-        RPGValue value = RPGValue.get(player, item, "teleport.cooldown");
+        RPGValue value = RPGValue.get(player, this.item, "teleport.cooldown");
         if (value == null) {
             cooldown = System.currentTimeMillis() / 50;
-            value = new RPGValue(player, item, "teleport.cooldown", cooldown);
+            value = new RPGValue(player, this.item, "teleport.cooldown", cooldown);
         } else {
             cooldown = value.asLong();
         }

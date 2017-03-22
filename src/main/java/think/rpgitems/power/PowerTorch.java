@@ -34,26 +34,37 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Random;
 
+/**
+ * Power torch.
+ * <p>
+ * The torch power will shoots torches to light up an area.
+ * </p>
+ */
 public class PowerTorch extends Power implements PowerRightClick {
-
+    /**
+     * Cooldown time of this power
+     */
     public long cooldownTime = 20;
+    /**
+     * Cost of this power
+     */
     public int consumption = 0;
 
     @SuppressWarnings("deprecation")
     @Override
-    public void rightClick(final Player player, ItemStack i, Block clicked) {
+    public void rightClick(final Player player, ItemStack item, Block clicked) {
         long cooldown;
-        if (item.getHasPermission() && !player.hasPermission(item.getPermission())) {
+        if (this.item.getHasPermission() && !player.hasPermission(this.item.getPermission())) {
         } else {
-            RPGValue value = RPGValue.get(player, item, "torch.cooldown");
+            RPGValue value = RPGValue.get(player, this.item, "torch.cooldown");
             if (value == null) {
                 cooldown = System.currentTimeMillis() / 50;
-                value = new RPGValue(player, item, "torch.cooldown", cooldown);
+                value = new RPGValue(player, this.item, "torch.cooldown", cooldown);
             } else {
                 cooldown = value.asLong();
             }
             if (cooldown <= System.currentTimeMillis() / 50) {
-                if (!item.consumeDurability(i, consumption)) return;
+                if (!this.item.consumeDurability(item, consumption)) return;
                 value.set(System.currentTimeMillis() / 50 + cooldownTime);
                 player.playSound(player.getLocation(), Sound.ITEM_FLINTANDSTEEL_USE, 1.0f, 0.8f);
                 final FallingBlock block = player.getWorld().spawnFallingBlock(player.getLocation().add(0, 1.8, 0), Material.TORCH, (byte) 0);

@@ -36,11 +36,31 @@ import think.rpgitems.power.types.PowerRightClick;
 
 import java.util.Random;
 
+/**
+ * Power rumble.
+ * <p>
+ * The rumble power sends a shockwave through the ground
+ * and sends any hit entities flying with power {@link #power}.
+ * The wave will travel {@link #distance} blocks.
+ * </p>
+ */
 public class PowerRumble extends Power implements PowerRightClick {
 
+    /**
+     * Cooldown time of this power
+     */
     public long cooldownTime = 20;
+    /**
+     * Power of rumble
+     */
     public int power = 2;
+    /**
+     * Maximum distance of rumble
+     */
     public int distance = 15;
+    /**
+     * Cost of this power
+     */
     public int consumption = 0;
 
     @Override
@@ -60,19 +80,19 @@ public class PowerRumble extends Power implements PowerRightClick {
     }
 
     @Override
-    public void rightClick(final Player player, ItemStack i, Block block) {
+    public void rightClick(final Player player, ItemStack item, Block block) {
         long cooldown;
-        if (item.getHasPermission() && !player.hasPermission(item.getPermission())) {
+        if (this.item.getHasPermission() && !player.hasPermission(this.item.getPermission())) {
         } else {
-            RPGValue value = RPGValue.get(player, item, "rumble.cooldown");
+            RPGValue value = RPGValue.get(player, this.item, "rumble.cooldown");
             if (value == null) {
                 cooldown = System.currentTimeMillis() / 50;
-                value = new RPGValue(player, item, "rumble.cooldown", cooldown);
+                value = new RPGValue(player, this.item, "rumble.cooldown", cooldown);
             } else {
                 cooldown = value.asLong();
             }
             if (cooldown <= System.currentTimeMillis() / 50) {
-                if (!item.consumeDurability(i, consumption)) return;
+                if (!this.item.consumeDurability(item, consumption)) return;
                 value.set(System.currentTimeMillis() / 50 + cooldownTime);
                 final Location location = player.getLocation().add(0, -0.2, 0);
                 final Vector direction = player.getLocation().getDirection();

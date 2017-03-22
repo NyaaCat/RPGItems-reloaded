@@ -32,25 +32,68 @@ import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
 
+/**
+ * Base class for all powers
+ */
 public abstract class Power {
 
+    /**
+     * Power by name, and name by power
+     */
     public static BiMap<String, Class<? extends Power>> powers = HashBiMap.create();
+
+    /**
+     * Usage count by power name
+     */
     public static TObjectIntHashMap<String> powerUsage = new TObjectIntHashMap<>();
 
+    /**
+     * Item it belongs to
+     */
     public RPGItem item;
 
+    /**
+     * Placeholder
+     */
     public Power() {
 
     }
 
+    /**
+     * Loads configuration for this power
+     *
+     * @param s Configuration
+     */
     public abstract void init(ConfigurationSection s);
 
+    /**
+     * Saves configuration for this power
+     *
+     * @param s Configuration
+     */
     public abstract void save(ConfigurationSection s);
 
+    /**
+     * Name of this power
+     *
+     * @return name
+     */
     public abstract String getName();
 
+    /**
+     * Display text of this power
+     *
+     * @return Display text
+     */
     public abstract String displayText();
 
+    /**
+     * Get nearby entities entity [ ].
+     *
+     * @param l      the l
+     * @param radius the radius
+     * @return the entity [ ]
+     */
     public static Entity[] getNearbyEntities(Location l, double radius) {
         List<Entity> entities = new ArrayList<>();
         for (Entity e : l.getWorld().getNearbyEntities(l, radius, radius, radius)) {
@@ -65,6 +108,14 @@ public abstract class Power {
         return entities.toArray(new Entity[entities.size()]);
     }
 
+    /**
+     * Get nearby living entities living entity [ ].
+     *
+     * @param l      the l
+     * @param radius the radius
+     * @param min    the min
+     * @return the living entity [ ]
+     */
     public static LivingEntity[] getNearbyLivingEntities(Location l, double radius, double min) {
         final java.util.List<java.util.Map.Entry<LivingEntity, Double>> entities = new java.util.ArrayList<>();
         for (Entity e : l.getWorld().getNearbyEntities(l, radius, radius, radius)) {
@@ -86,6 +137,8 @@ public abstract class Power {
     }
 
     /**
+     * Gets entities in cone.
+     *
      * @param entities  List of nearby entities
      * @param startPos  starting position
      * @param degrees   angle of cone
@@ -104,10 +157,24 @@ public abstract class Power {
     }
 
 
+    /**
+     * Gets angle between vectors.
+     *
+     * @param v1 the v 1
+     * @param v2 the v 2
+     * @return the angle between vectors
+     */
     public static float getAngleBetweenVectors(org.bukkit.util.Vector v1, org.bukkit.util.Vector v2) {
         return Math.abs((float) Math.toDegrees(v1.angle(v2)));
     }
 
+    /**
+     * Check cooldown boolean.
+     *
+     * @param p       the p
+     * @param cdTicks the cd ticks
+     * @return the boolean
+     */
     protected final boolean checkCooldown(Player p, int cdTicks) {
         long cooldown;
         RPGValue value = RPGValue.get(p, item, getName() + ".cooldown");

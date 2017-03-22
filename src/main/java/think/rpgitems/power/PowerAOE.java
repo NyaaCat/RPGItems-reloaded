@@ -30,15 +30,49 @@ import think.rpgitems.data.Locale;
 import think.rpgitems.data.RPGValue;
 import think.rpgitems.power.types.PowerRightClick;
 
+/**
+ * Power aoe.
+ * <p>
+ * On right click the aoe power will apply {@link #type effect}
+ * to all entities within the {@link #range range} for {@link #duration duration} ticks
+ * at power {@link #amplifier amplifier}.
+ * By default, the user will be targeted by the potion
+ * as well if not set via {@link #selfapplication selfapplication}.
+ * </p>
+ */
 public class PowerAOE extends Power implements PowerRightClick {
 
+    /**
+     * Cooldown time of this power
+     */
     public long cooldownTime = 20;
+    /**
+     * Amplifier of the potion
+     */
     public int amplifier = 1;
+    /**
+     * Duration of the potion
+     */
     public int duration = 15;
+    /**
+     * Range of the potion
+     */
     public int range = 5;
+    /**
+     * Whether the potion will be apply to the user
+     */
     public boolean selfapplication = true;
+    /**
+     * Type of the potion
+     */
     public PotionEffectType type;
+    /**
+     * Display text of this power. Will use default text in case of null
+     */
     public String name = null;
+    /**
+     * Cost of this power
+     */
     public int consumption = 0;
 
     @Override
@@ -66,19 +100,19 @@ public class PowerAOE extends Power implements PowerRightClick {
     }
 
     @Override
-    public void rightClick(final Player player, ItemStack i, Block clicked) {
+    public void rightClick(final Player player, ItemStack item, Block clicked) {
         long cooldown;
-        if (item.getHasPermission() && !player.hasPermission(item.getPermission())) {
+        if (this.item.getHasPermission() && !player.hasPermission(this.item.getPermission())) {
         } else {
-            RPGValue value = RPGValue.get(player, item, "aoe.cooldown");
+            RPGValue value = RPGValue.get(player, this.item, "aoe.cooldown");
             if (value == null) {
                 cooldown = System.currentTimeMillis() / 50;
-                value = new RPGValue(player, item, "aoe.cooldown", cooldown);
+                value = new RPGValue(player, this.item, "aoe.cooldown", cooldown);
             } else {
                 cooldown = value.asLong();
             }
             if (cooldown <= System.currentTimeMillis() / 50) {
-                if (!item.consumeDurability(i, consumption)) return;
+                if (!this.item.consumeDurability(item, consumption)) return;
                 value.set(System.currentTimeMillis() / 50 + cooldownTime);
                 PotionEffect effect = new PotionEffect(type, duration, amplifier - 1);
                 if (selfapplication)

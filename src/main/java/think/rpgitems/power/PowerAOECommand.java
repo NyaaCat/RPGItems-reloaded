@@ -11,19 +11,52 @@ import think.rpgitems.Plugin;
 
 import java.util.List;
 
+/**
+ * Power aoecommand.
+ * <p>
+ *  The item will run {@link #command} for every entity
+ *  in range({@link #rm min} blocks ~ {@link #r max} blocks in {@link #facing view angle})
+ *  on {@link #isRight click} giving the {@link #permission}
+ *  just for the use of the command.
+ *  </p>
+ */
 public class PowerAOECommand extends PowerCommand {
+    /**
+     * Whether the command will be apply to the user
+     */
     public boolean selfapplication = false;
 
+    /**
+     * Type of targets. Can be `entity` `player` `mobs` now
+     * entity: apply the command to every {@link LivingEntity} in range
+     * player: apply the command to every {@link Player} in range
+     * mobs: apply the command to every {@link LivingEntity}  except {@link Player}in range
+     */
     public String type = "entity";
 
+    /**
+     * Maximum radius
+     */
     public int r = 10;
 
+    /**
+     * Minimum radius
+     */
     public int rm = 0;
 
+    /**
+     * Maximum view angle
+     */
     public double facing = 30;
 
+    /**
+     * Maximum count
+     */
     public int c = 100;
 
+    /**
+     * Whether only apply to the entities that player have line of sight
+     */
     public boolean mustsee = false;
 
     @Override
@@ -91,18 +124,18 @@ public class PowerAOECommand extends PowerCommand {
     }
 
     @Override
-    public void rightClick(Player player, ItemStack i, Block clicked) {
-        if (item.getHasPermission() && !player.hasPermission(item.getPermission())) return;
+    public void rightClick(Player player, ItemStack item, Block clicked) {
+        if (this.item.getHasPermission() && !player.hasPermission(this.item.getPermission())) return;
         if (!isRight || !updateCooldown(player)) return;
-        if (!item.consumeDurability(i, consumption)) return;
+        if (!this.item.consumeDurability(item, consumption)) return;
         aoeCommand(player);
     }
 
     @Override
-    public void leftClick(Player player, ItemStack i, Block clicked) {
-        if (item.getHasPermission() && !player.hasPermission(item.getPermission())) return;
+    public void leftClick(Player player, ItemStack item, Block clicked) {
+        if (this.item.getHasPermission() && !player.hasPermission(this.item.getPermission())) return;
         if (isRight || !updateCooldown(player)) return;
-        if (!item.consumeDurability(i, consumption)) return;
+        if (!this.item.consumeDurability(item, consumption)) return;
         aoeCommand(player);
     }
 

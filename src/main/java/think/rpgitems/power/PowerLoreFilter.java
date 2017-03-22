@@ -2,8 +2,21 @@ package think.rpgitems.power;
 
 import org.bukkit.configuration.ConfigurationSection;
 
+/**
+ * Power lorefilter.
+ * <p>
+ * Not a triggerable power.
+ * Preserve all lore lines match the {@link #regex}.
+ * </p>
+ */
 public class PowerLoreFilter extends Power {
+    /**
+     * Regex to filter the lore
+     */
     public String regex = null;
+    /**
+     * Display text
+     */
     public String desc = "";
 
     @Override

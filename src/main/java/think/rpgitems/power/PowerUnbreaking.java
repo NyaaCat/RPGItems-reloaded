@@ -26,13 +26,24 @@ import think.rpgitems.power.types.PowerHit;
 
 import java.util.Random;
 
+/**
+ * Power unbreaking.
+ * <p>
+ * The unbreaking power works similar to normal unbreaking.
+ * </p>
+ * @deprecated Breaks durability system
+ */
+@Deprecated
 public class PowerUnbreaking extends Power implements PowerHit {
 
+    /**
+     * Level of unbreaking
+     */
     public int level = 1;
     private Random random = new Random();
 
     @Override
-    public void hit(Player player, ItemStack i, LivingEntity e, double damage) {
+    public void hit(Player player, ItemStack item, LivingEntity entity, double damage) {
         if (random.nextDouble() < ((double) level) / 100d) {
             player.getInventory().getItemInMainHand().setDurability((short) (player.getInventory().getItemInMainHand().getDurability() - 1));
             player.updateInventory();

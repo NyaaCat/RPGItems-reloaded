@@ -7,7 +7,17 @@ import org.bukkit.inventory.ItemStack;
 import org.bukkit.scheduler.BukkitRunnable;
 import think.rpgitems.Plugin;
 
+/**
+ *  Power delayedcommand.
+ *  <p>
+ *  The item will run {@link #command} on {@link #isRight click} with a {@link #delay}
+ *  giving the permission {@link #permission} just for the use of the command.
+ *  </p>
+ */
 public class PowerDelayedCommand extends PowerCommand {
+    /**
+     * Delay before executing command
+     */
     public int delay = 20;
 
     @Override
@@ -28,10 +38,10 @@ public class PowerDelayedCommand extends PowerCommand {
     }
 
     @Override
-    public void rightClick(final Player player, ItemStack i, Block clicked) {
-        if (item.getHasPermission() && !player.hasPermission(item.getPermission())) return;
+    public void rightClick(final Player player, ItemStack item, Block clicked) {
+        if (this.item.getHasPermission() && !player.hasPermission(this.item.getPermission())) return;
         if (!isRight || !updateCooldown(player)) return;
-        if (!item.consumeDurability(i, consumption)) return;
+        if (!this.item.consumeDurability(item, consumption)) return;
         (new BukkitRunnable() {
             @Override
             public void run() {
@@ -41,10 +51,10 @@ public class PowerDelayedCommand extends PowerCommand {
     }
 
     @Override
-    public void leftClick(final Player player, ItemStack i, Block clicked) {
-        if (item.getHasPermission() && !player.hasPermission(item.getPermission())) return;
+    public void leftClick(final Player player, ItemStack item, Block clicked) {
+        if (this.item.getHasPermission() && !player.hasPermission(this.item.getPermission())) return;
         if (isRight || !updateCooldown(player)) return;
-        if (!item.consumeDurability(i, consumption)) return;
+        if (!this.item.consumeDurability(item, consumption)) return;
         (new BukkitRunnable() {
             @Override
             public void run() {

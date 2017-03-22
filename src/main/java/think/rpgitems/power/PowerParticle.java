@@ -8,8 +8,20 @@ import org.bukkit.inventory.ItemStack;
 import think.rpgitems.data.Locale;
 import think.rpgitems.power.types.PowerRightClick;
 
+/**
+ * Power particle.
+ * <p>
+ * When right clicked, spawn some particles around the user.
+ * </p>
+ */
 public class PowerParticle extends Power implements PowerRightClick {
+    /**
+     * Name of particle effect
+     */
     public String effect = "FLAME";
+    /**
+     * Cost of this power
+     */
     public int consumption = 0;
 
     @Override
@@ -35,8 +47,8 @@ public class PowerParticle extends Power implements PowerRightClick {
     }
 
     @Override
-    public void rightClick(Player player, ItemStack i, Block clicked) {
-        if (!item.consumeDurability(i, consumption)) return;
+    public void rightClick(Player player, ItemStack item, Block clicked) {
+        if (!this.item.consumeDurability(item, consumption)) return;
         if (effect.equalsIgnoreCase("SMOKE")) {
             player.getWorld().playEffect(player.getLocation().add(0, 2, 0), Effect.valueOf(effect), 4);
         } else {
@@ -44,6 +56,12 @@ public class PowerParticle extends Power implements PowerRightClick {
         }
     }
 
+    /**
+     * Acceptable effect boolean.
+     *
+     * @param effect the effect
+     * @return the boolean
+     */
     public static boolean acceptableEffect(String effect) {
         try {
             Effect eff = Effect.valueOf(effect.toUpperCase());

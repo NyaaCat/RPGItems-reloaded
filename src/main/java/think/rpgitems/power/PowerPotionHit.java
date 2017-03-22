@@ -28,21 +28,42 @@ import think.rpgitems.power.types.PowerHit;
 
 import java.util.Random;
 
+/**
+ * Power potionhit.
+ * <p>
+ * On hit it will apply {@link #type effect} for {@link #duration} ticks at power {@link #amplifier} with a chance of hitting of 1/{@link #chance}.
+ * </p>
+ */
 public class PowerPotionHit extends Power implements PowerHit {
 
+    /**
+     * Chance of triggering this power
+     */
     public int chance = 20;
-    private Random random = new Random();
+    /**
+     * Type of potion effect
+     */
     public PotionEffectType type = PotionEffectType.HARM;
+    /**
+     * Duration of potion effect
+     */
     public int duration = 20;
+    /**
+     * Amplifier of potion effect
+     */
     public int amplifier = 1;
+    /**
+     * Cost of this power
+     */
     public int consumption = 0;
 
+    private Random random = new Random();
     @Override
-    public void hit(Player player, ItemStack i, LivingEntity e, double damage) {
-        if (item.getHasPermission() && !player.hasPermission(item.getPermission())) {
+    public void hit(Player player, ItemStack item, LivingEntity entity, double damage) {
+        if (this.item.getHasPermission() && !player.hasPermission(this.item.getPermission())) {
         } else if (random.nextInt(chance) == 0) {
-            e.addPotionEffect(new PotionEffect(type, duration, amplifier));
-            if (!item.consumeDurability(i, consumption)) {
+            entity.addPotionEffect(new PotionEffect(type, duration, amplifier));
+            if (!this.item.consumeDurability(item, consumption)) {
             }
         }
     }

@@ -28,15 +28,46 @@ import think.rpgitems.data.RPGValue;
 import think.rpgitems.power.types.PowerLeftClick;
 import think.rpgitems.power.types.PowerRightClick;
 
+/**
+ * Power command.
+ * <p>
+ * The item will run {@link #command} on {@link #isRight click}
+ * giving the permission {@link #permission} just for the use of the command.
+ * </p>
+ */
 public class PowerCommand extends Power implements PowerRightClick, PowerLeftClick {
 
+    /**
+     * Command to be executed
+     */
     public String command = "";
+    /**
+     * Display text of this power
+     */
     public String display = "Runs command";
+    /**
+     * Permission will be given to user executing the {@code command}
+     */
     public String permission = "";
+    /**
+     * Whether triggers when right click.
+     */
     public boolean isRight = true;
+    /**
+     * Cooldown time of this power
+     */
     public long cooldownTime = 20;
+    /**
+     * Cost of this power
+     */
     public int consumption = 0;
 
+    /**
+     * Check and Update cooldown
+     *
+     * @param player player
+     * @return cooldown
+     */
     protected boolean updateCooldown(Player player) {
         long cooldown;
         RPGValue value = RPGValue.get(player, item, "command." + command + ".cooldown");
@@ -55,6 +86,11 @@ public class PowerCommand extends Power implements PowerRightClick, PowerLeftCli
         }
     }
 
+    /**
+     * Execute command
+     *
+     * @param player player
+     */
     protected void executeCommand(Player player) {
         if (!player.isOnline()) return;
 
@@ -81,18 +117,18 @@ public class PowerCommand extends Power implements PowerRightClick, PowerLeftCli
     }
 
     @Override
-    public void rightClick(Player player, ItemStack i, Block clicked) {
-        if (item.getHasPermission() && !player.hasPermission(item.getPermission())) return;
+    public void rightClick(Player player, ItemStack item, Block clicked) {
+        if (this.item.getHasPermission() && !player.hasPermission(this.item.getPermission())) return;
         if (!isRight || !updateCooldown(player)) return;
-        if (!item.consumeDurability(i, consumption)) return;
+        if (!this.item.consumeDurability(item, consumption)) return;
         executeCommand(player);
     }
 
     @Override
-    public void leftClick(Player player, ItemStack i, Block clicked) {
-        if (item.getHasPermission() && !player.hasPermission(item.getPermission())) return;
+    public void leftClick(Player player, ItemStack item, Block clicked) {
+        if (this.item.getHasPermission() && !player.hasPermission(this.item.getPermission())) return;
         if (isRight || !updateCooldown(player)) return;
-        if (!item.consumeDurability(i, consumption)) return;
+        if (!this.item.consumeDurability(item, consumption)) return;
         executeCommand(player);
     }
 

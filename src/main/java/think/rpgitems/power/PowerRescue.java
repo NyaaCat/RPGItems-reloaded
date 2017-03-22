@@ -30,14 +30,40 @@ import think.rpgitems.data.RPGValue;
 import think.rpgitems.power.types.PowerHitTaken;
 import think.rpgitems.power.types.PowerHurt;
 
+/**
+ * Power rescue.
+ * <p>
+ * The rescue power teleports the user to spawn (or to their bed when {@link #useBed} is active)
+ * or rescue them in place when {@link #inPlace}
+ * when their health gets below the {@link #healthTrigger} while in combat with an enemy
+ * or when they takes a damage greater than {@link #damageTrigger}
+ * </p>
+ */
 public class PowerRescue extends Power implements PowerHurt, PowerHitTaken {
 
-    public String permission = "";
+    /**
+     * Health trigger of rescue
+     */
     public int healthTrigger = 4;
+    /**
+     * Whether use bed instead of home
+     */
     public boolean useBed = true;
+    /**
+     * Whether rescue in place instead of teleport
+     */
     public boolean inPlace = false;
+    /**
+     * Cooldown time of this power
+     */
     public long cooldownTime = 20;
+    /**
+     * Cost of this power
+     */
     public int consumption = 0;
+    /**
+     * Damage trigger of rescue
+     */
     public double damageTrigger = 1024;
 
     @Override
@@ -57,7 +83,6 @@ public class PowerRescue extends Power implements PowerHurt, PowerHitTaken {
         damageTrigger = s.getDouble("damageTrigger", 1024);
         useBed = s.getBoolean("useBed", true);
         inPlace = s.getBoolean("inPlace", false);
-        permission = s.getString("permission", "");
         consumption = s.getInt("consumption", 0);
     }
 
@@ -68,27 +93,26 @@ public class PowerRescue extends Power implements PowerHurt, PowerHitTaken {
         s.set("damageTrigger", damageTrigger);
         s.set("useBed", useBed);
         s.set("inPlace", inPlace);
-        s.set("permission", permission);
         s.set("consumption", consumption);
     }
 
     @Override
-    public void hurt(Player target, ItemStack i, EntityDamageEvent ev) {
-        if (item.getHasPermission() && !target.hasPermission(item.getPermission())) {
+    public void hurt(Player target, ItemStack item, EntityDamageEvent event) {
+        if (this.item.getHasPermission() && !target.hasPermission(this.item.getPermission())) {
         } else {
-            double health = target.getHealth() - ev.getFinalDamage();
+            double health = target.getHealth() - event.getFinalDamage();
             if (health > healthTrigger) return;
-            rescue(target, i, ev, false);
+            rescue(target, item, event, false);
         }
     }
 
     @Override
-    public double takeHit(Player target, ItemStack i, EntityDamageEvent ev) {
-        if (item.getHasPermission() && !target.hasPermission(item.getPermission())) {
-            return ev.getDamage();
+    public double takeHit(Player target, ItemStack item, EntityDamageEvent event) {
+        if (this.item.getHasPermission() && !target.hasPermission(this.item.getPermission())) {
+            return event.getDamage();
         } else {
-            if (ev.getFinalDamage() < damageTrigger) return ev.getFinalDamage();
-            rescue(target, i, ev, true);
+            if (event.getFinalDamage() < damageTrigger) return event.getFinalDamage();
+            rescue(target, item, event, true);
             return 0;
         }
     }

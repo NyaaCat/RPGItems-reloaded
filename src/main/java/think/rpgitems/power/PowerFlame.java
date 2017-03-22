@@ -24,17 +24,29 @@ import org.bukkit.inventory.ItemStack;
 import think.rpgitems.data.Locale;
 import think.rpgitems.power.types.PowerHit;
 
+/**
+ * Power flame.
+ * <p>
+ * The flame power will set the target on fire on hit in {@link #burnTime} ticks.
+ * </p>
+ */
 public class PowerFlame extends Power implements PowerHit {
 
+    /**
+     * Duration of the fire, in ticks
+     */
     public int burnTime = 20;
+    /**
+     * Cost of this power
+     */
     public int consumption = 0;
 
     @Override
-    public void hit(Player player, ItemStack i, LivingEntity e, double damage) {
-        if (item.getHasPermission() && !player.hasPermission(item.getPermission())) {
+    public void hit(Player player, ItemStack item, LivingEntity entity, double damage) {
+        if (this.item.getHasPermission() && !player.hasPermission(this.item.getPermission())) {
         } else {
-            if (!item.consumeDurability(i, consumption)) return;
-            e.setFireTicks(burnTime);
+            if (!this.item.consumeDurability(item, consumption)) return;
+            entity.setFireTicks(burnTime);
         }
     }
 

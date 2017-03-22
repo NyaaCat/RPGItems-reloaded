@@ -27,17 +27,30 @@ import think.rpgitems.power.types.PowerHit;
 
 import java.util.Random;
 
+/**
+ * Power lifesteal.
+ * <p>
+ * The lifesteal power will steal enemy life
+ * in a chance of 1/{@link #chance}
+ * </p>
+ */
 public class PowerLifeSteal extends Power implements PowerHit {
 
+    /**
+     * Chance of triggering this power
+     */
     public int chance = 20;
+    /**
+     * Cost of this power
+     */
     public int consumption = 0;
     private Random random = new Random();
 
     @Override
-    public void hit(Player player, ItemStack i, LivingEntity e, double damage) {
-        if (item.getHasPermission() && !player.hasPermission(item.getPermission())) {
+    public void hit(Player player, ItemStack item, LivingEntity entity, double damage) {
+        if (this.item.getHasPermission() && !player.hasPermission(this.item.getPermission())) {
         } else if (random.nextInt(chance) == 0) {
-            if (!item.consumeDurability(i, consumption)) return;
+            if (!this.item.consumeDurability(item, consumption)) return;
             if ((player.getHealth() + damage) >= player.getAttribute(Attribute.GENERIC_MAX_HEALTH).getValue()) {
                 player.setHealth(player.getAttribute(Attribute.GENERIC_MAX_HEALTH).getValue());
             } else

@@ -10,6 +10,9 @@ import think.rpgitems.item.ItemManager;
 import think.rpgitems.item.RPGItem;
 import think.rpgitems.support.WorldGuard;
 
+/**
+ * BukkitRunnable that runs {@link RPGItem#tick(Player, ItemStack)}
+ */
 public class PowerTicker extends BukkitRunnable {
 
     @Override

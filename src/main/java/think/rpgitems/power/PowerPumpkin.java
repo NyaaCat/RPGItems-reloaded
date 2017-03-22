@@ -13,10 +13,26 @@ import think.rpgitems.power.types.PowerHit;
 
 import java.util.Random;
 
+/**
+ * Power pumpkin.
+ * <p>
+ * When hit skeleton or zombie, will have a 1/{@link #chance} chance
+ * to make them wear pumpkin head.
+ * And the pumpkin will have a chance of {@link #drop} to drop when the mobs die.
+ * </p>
+ */
 public class PowerPumpkin extends Power implements PowerHit {
-    public static final String name = "pumpkin";
+    /**
+     * Chance of triggering this power
+     */
     public int chance = 20;
+    /**
+     * Drop chance of the pumpkin
+     */
     public double drop = 0;
+    /**
+     * Cost of this power
+     */
     public int consumption = 0;
 
     private static final Random rand = new Random();
@@ -37,7 +53,7 @@ public class PowerPumpkin extends Power implements PowerHit {
 
     @Override
     public String getName() {
-        return name;
+        return "pumpkin";
     }
 
     @Override
@@ -46,14 +62,14 @@ public class PowerPumpkin extends Power implements PowerHit {
     }
 
     @Override
-    public void hit(Player player, ItemStack i, LivingEntity e, double damage) {
-        if (item.getHasPermission() && !player.hasPermission(item.getPermission())) return;
+    public void hit(Player player, ItemStack item, LivingEntity entity, double damage) {
+        if (this.item.getHasPermission() && !player.hasPermission(this.item.getPermission())) return;
         if (rand.nextInt(chance) != 0) return;
-        if (!item.consumeDurability(i, consumption)) return;
-        if (e instanceof Skeleton || e instanceof Zombie)
-            if (e.getEquipment().getHelmet() == null || e.getEquipment().getHelmet().getType() == Material.AIR) {
-                e.getEquipment().setHelmet(new ItemStack(Material.PUMPKIN));
-                e.getEquipment().setHelmetDropChance((float) drop);
+        if (!this.item.consumeDurability(item, consumption)) return;
+        if (entity instanceof Skeleton || entity instanceof Zombie)
+            if (entity.getEquipment().getHelmet() == null || entity.getEquipment().getHelmet().getType() == Material.AIR) {
+                entity.getEquipment().setHelmet(new ItemStack(Material.PUMPKIN));
+                entity.getEquipment().setHelmetDropChance((float) drop);
             }
     }
 

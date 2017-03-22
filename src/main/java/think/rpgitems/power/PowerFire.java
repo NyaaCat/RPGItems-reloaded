@@ -24,6 +24,7 @@ import org.bukkit.entity.Entity;
 import org.bukkit.entity.FallingBlock;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
+import org.bukkit.material.MaterialData;
 import org.bukkit.scheduler.BukkitRunnable;
 import org.bukkit.util.Vector;
 import think.rpgitems.Plugin;
@@ -35,30 +36,49 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Random;
 
+/**
+ * Power fire.
+ * <p>
+ * The fire power will fire an fireblock on right click
+ * that burns entities hit for {@link #burnduration duration} in ticks.
+ * Furthermore it sends out a burning trail into the aimed direction for {@link #distance} blocks.
+ * </p>
+ */
 public class PowerFire extends Power implements PowerRightClick {
 
+    /**
+     * Cooldown time of this power
+     */
     public long cooldownTime = 20;
+    /**
+     * Maximum distance
+     */
     public int distance = 15;
+    /**
+     * Duration of the fire, in ticks
+     */
     public int burnduration = 40;
+    /**
+     * Cost of this power
+     */
     public int consumption = 0;
 
-    @SuppressWarnings("deprecation")
     @Override
-    public void rightClick(final Player player, ItemStack i, Block clicked) {
+    public void rightClick(final Player player, ItemStack item, Block clicked) {
         long cooldown;
-        RPGValue value = RPGValue.get(player, item, "fire.cooldown");
+        RPGValue value = RPGValue.get(player, this.item, "fire.cooldown");
         if (value == null) {
             cooldown = System.currentTimeMillis() / 50;
-            value = new RPGValue(player, item, "fire.cooldown", cooldown);
+            value = new RPGValue(player, this.item, "fire.cooldown", cooldown);
         } else {
             cooldown = value.asLong();
         }
         if (cooldown <= System.currentTimeMillis() / 50) {
-            if (!item.consumeDurability(i, consumption)) return;
+            if (!this.item.consumeDurability(item, consumption)) return;
             value.set(System.currentTimeMillis() / 50 + cooldownTime);
             player.playSound(player.getLocation(), Sound.ITEM_FLINTANDSTEEL_USE, 1.0f, 1.2f);
             final List<Block> fireblocks = new ArrayList<>();
-            final FallingBlock block = player.getWorld().spawnFallingBlock(player.getLocation().add(0, 1.8, 0), Material.FIRE, (byte) 0);
+            final FallingBlock block = player.getWorld().spawnFallingBlock(player.getLocation().add(0, 1.8, 0), new MaterialData(Material.FIRE));
             block.setVelocity(player.getLocation().getDirection().multiply(2d));
             block.setDropItem(false);
 

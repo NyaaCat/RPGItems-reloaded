@@ -543,7 +543,7 @@ public class PowerHandler implements CommandHandler {
         PowerPotionSelf pow = new PowerPotionSelf();
         pow.item = item;
         pow.cooldownTime = ccoldown;
-        pow.time = duration;
+        pow.duration = duration;
         pow.amplifier = amplifier;
         pow.type = PotionEffectType.getByName(effect);
         if (pow.type == null) {

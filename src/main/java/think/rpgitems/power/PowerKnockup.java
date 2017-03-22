@@ -26,20 +26,36 @@ import think.rpgitems.power.types.PowerHit;
 
 import java.util.Random;
 
+/**
+ * Power knockup.
+ * <p>
+ * The knockup power will send the hit target flying
+ * with a chance of 1/{@link #chance} and a power of {@link #power}.
+ * </p>
+ */
 public class PowerKnockup extends Power implements PowerHit {
 
+    /**
+     * Chance of triggering this power
+     */
     public int chance = 20;
+    /**
+     * Power of knock up
+     */
     public double power = 2;
+    /**
+     * Cost of this power
+     */
     public int consumption = 0;
 
     private Random rand = new Random();
 
     @Override
-    public void hit(Player player, ItemStack i, LivingEntity e, double damage) {
-        if (item.getHasPermission() && !player.hasPermission(item.getPermission())) {
+    public void hit(Player player, ItemStack item, LivingEntity entity, double damage) {
+        if (this.item.getHasPermission() && !player.hasPermission(this.item.getPermission())) {
         } else if (rand.nextInt(chance) == 0) {
-            if (!item.consumeDurability(i, consumption)) return;
-            e.setVelocity(player.getLocation().getDirection().setY(power));
+            if (!this.item.consumeDurability(item, consumption)) return;
+            entity.setVelocity(player.getLocation().getDirection().setY(power));
         }
     }
 

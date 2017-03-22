@@ -33,7 +33,6 @@ import java.util.zip.ZipFile;
  * @author Gravity
  * @version 2.0
  */
-
 public class Updater {
 
     private Plugin plugin;
@@ -189,6 +188,8 @@ public class Updater {
 
     /**
      * Get the result of the update process.
+     *
+     * @return the result
      */
     public Updater.UpdateResult getResult() {
         this.waitForThread();
@@ -197,6 +198,8 @@ public class Updater {
 
     /**
      * Get the latest version's release type (release, beta, or alpha).
+     *
+     * @return the latest type
      */
     public String getLatestType() {
         this.waitForThread();
@@ -205,6 +208,8 @@ public class Updater {
 
     /**
      * Get the latest version's game version.
+     *
+     * @return the latest game version
      */
     public String getLatestGameVersion() {
         this.waitForThread();
@@ -213,6 +218,8 @@ public class Updater {
 
     /**
      * Get the latest version's name.
+     *
+     * @return the latest name
      */
     public String getLatestName() {
         this.waitForThread();
@@ -221,6 +228,8 @@ public class Updater {
 
     /**
      * Get the latest version's file link.
+     *
+     * @return the latest file link
      */
     public String getLatestFileLink() {
         this.waitForThread();

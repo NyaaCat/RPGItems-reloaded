@@ -12,15 +12,38 @@ import think.rpgitems.power.types.PowerHit;
 
 import java.util.Random;
 
+/**
+ * Power deathcommand.
+ * <p>
+ * With a 1/{@link #chance chance} to kill the target then execute the {@link #command}
+ * for {@link #count} times. {@link #desc Description} will be displayed in item lore.
+ * `${x}` `${y}` and `${z}` in the command will be replaced with the death location of the enemy.
+ * </p>
+ */
 public class PowerDeathCommand extends Power implements PowerHit {
-    public static final String name = "deathcommand";
 
+    /**
+     * Command to be executed
+     */
     public String command = "";
+    /**
+     * Chance of triggering this power
+     */
     public int chance = 20;
+    /**
+     * Description in display text
+     */
     public String desc = "";
+    /**
+     * Times to run the {@link #command}
+     */
     public int count = 1;
-    private static final Random rand = new Random();
+    /**
+     * Cost of this power
+     */
     public int consumption = 0;
+
+    private static final Random rand = new Random();
 
     @Override
     public void init(ConfigurationSection s) {
@@ -42,7 +65,7 @@ public class PowerDeathCommand extends Power implements PowerHit {
 
     @Override
     public String getName() {
-        return name;
+        return "deathcommand";
     }
 
     @Override
@@ -51,15 +74,15 @@ public class PowerDeathCommand extends Power implements PowerHit {
     }
 
     @Override
-    public void hit(Player player, ItemStack is, LivingEntity e, double damage) {
-        if (item.getHasPermission() && !player.hasPermission(item.getPermission())) return;
+    public void hit(Player player, ItemStack item, LivingEntity entity, double damage) {
+        if (this.item.getHasPermission() && !player.hasPermission(this.item.getPermission())) return;
         if (rand.nextInt(chance) == 0) {
-            if (!item.consumeDurability(is, consumption)) return;
-            Location loc = e.getLocation();
+            if (!this.item.consumeDurability(item, consumption)) return;
+            Location loc = entity.getLocation();
             int x = (int) loc.getX();
             int y = (int) loc.getY();
             int z = (int) loc.getZ();
-            e.setHealth(0);
+            entity.setHealth(0);
             String cmd = command.replace("${x}", String.valueOf(x)).replace("${y}", String.valueOf(y)).replace("${z}", String.valueOf(z));
             for (int i = 0; i < count; i++) Bukkit.dispatchCommand(Bukkit.getConsoleSender(), cmd);
         }

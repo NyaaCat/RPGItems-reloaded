@@ -25,19 +25,28 @@ import org.bukkit.inventory.ItemStack;
 import think.rpgitems.data.Locale;
 import think.rpgitems.power.types.PowerHit;
 
+/**
+ * Power consumehit.
+ * <p>
+ * The consume power will remove one item when player hit something. With {@link #cooldownTime cooldown} time (ticks).
+ * </p>
+ */
 public class PowerConsumeHit extends Power implements PowerHit {
+    /**
+     * Cooldown time of this power
+     */
     public int cooldownTime = 0;
 
     @Override
-    public void hit(final Player player, ItemStack is, LivingEntity e, double damage) {
+    public void hit(final Player player, ItemStack item, LivingEntity entity, double damage) {
         if (checkCooldown(player, cooldownTime)) {
-            if (item.getHasPermission() && !player.hasPermission(item.getPermission())) return;
-            int count = is.getAmount() - 1;
+            if (this.item.getHasPermission() && !player.hasPermission(this.item.getPermission())) return;
+            int count = item.getAmount() - 1;
             if (count == 0) {
-                is.setAmount(0);
-                is.setType(Material.AIR);
+                item.setAmount(0);
+                item.setType(Material.AIR);
             } else {
-                is.setAmount(count);
+                item.setAmount(count);
             }
         }
     }

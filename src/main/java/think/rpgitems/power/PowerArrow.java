@@ -28,25 +28,37 @@ import think.rpgitems.data.Locale;
 import think.rpgitems.data.RPGValue;
 import think.rpgitems.power.types.PowerRightClick;
 
+/**
+ * Power arrow.
+ * <p>
+ * The arrow power will fire an arrow on right click.
+ * </p>
+ */
 public class PowerArrow extends Power implements PowerRightClick {
 
+    /**
+     * Cooldown time of this power
+     */
     public long cooldownTime = 20;
+    /**
+     * Cost of this power
+     */
     public int consumption = 0;
 
     @Override
-    public void rightClick(Player player, ItemStack i, Block clicked) {
+    public void rightClick(Player player, ItemStack item, Block clicked) {
         long cooldown;
-        if (item.getHasPermission() && !player.hasPermission(item.getPermission())) {
+        if (this.item.getHasPermission() && !player.hasPermission(this.item.getPermission())) {
         } else {
-            RPGValue value = RPGValue.get(player, item, "arrow.cooldown");
+            RPGValue value = RPGValue.get(player, this.item, "arrow.cooldown");
             if (value == null) {
                 cooldown = System.currentTimeMillis() / 50;
-                value = new RPGValue(player, item, "arrow.cooldown", cooldown);
+                value = new RPGValue(player, this.item, "arrow.cooldown", cooldown);
             } else {
                 cooldown = value.asLong();
             }
             if (cooldown <= System.currentTimeMillis() / 50) {
-                if (!item.consumeDurability(i, consumption)) return;
+                if (!this.item.consumeDurability(item, consumption)) return;
                 value.set(System.currentTimeMillis() / 50 + cooldownTime);
                 player.playSound(player.getLocation(), Sound.ENTITY_ARROW_SHOOT, 1.0f, 1.0f);
                 Arrow arrow = player.launchProjectile(Arrow.class);

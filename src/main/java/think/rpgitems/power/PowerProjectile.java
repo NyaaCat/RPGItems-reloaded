@@ -15,18 +15,57 @@ import think.rpgitems.power.types.PowerRightClick;
 
 import java.util.concurrent.ThreadLocalRandom;
 
+/**
+ * Power projectile.
+ * <p>
+ * Launches projectile of type {@link #projectileType} with {@link #gravity} when right clicked.
+ * If use {@link #cone} mode, {@link #amount} of projectiles will randomly distributed in the cone
+ * with angle {@link #range} centered with player's direction.
+ * </p>
+ */
 public class PowerProjectile extends Power implements PowerRightClick {
-    public static final String name = "projectile";
-    public static final Vector z_axis = new Vector(0, 0, 1);
-    public static final Vector x_axis = new Vector(1, 0, 0);
-    public static final Vector y_axis = new Vector(0, 1, 0);
+    /**
+     * Z_axis.
+     */
+    private static final Vector z_axis = new Vector(0, 0, 1);
+    /**
+     * X_axis.
+     */
+    private static final Vector x_axis = new Vector(1, 0, 0);
+    /**
+     * Y_axis.
+     */
+    private static final Vector y_axis = new Vector(0, 1, 0);
+    /**
+     * Cooldown time of this power
+     */
     public long cooldownTime = 20;
-    private Class<? extends Projectile> projectileType = Snowball.class;
+    /**
+     * Whether launch projectiles in cone
+     */
     public boolean cone = false;
+    /**
+     * Whether the projectile have gravity
+     */
     public boolean gravity = true;
+    /**
+     * Range will projectiles spread, in degree
+     */
     public int range = 15;
+    /**
+     * Amount of projectiles
+     */
     public int amount = 5;
+    /**
+     * Speed of projectiles
+     */
+    public double speed = 1;
+    /**
+     * Cost of this power
+     */
     public int consumption = 1;
+
+    private Class<? extends Projectile> projectileType = Snowball.class;
 
     @Override
     public void init(ConfigurationSection s) {
@@ -50,6 +89,11 @@ public class PowerProjectile extends Power implements PowerRightClick {
         s.set("gravity", gravity);
     }
 
+    /**
+     * Sets type from type name
+     *
+     * @param type Type name
+     */
     public void setType(String type) {
         switch (type) {
             case "skull":
@@ -73,6 +117,11 @@ public class PowerProjectile extends Power implements PowerRightClick {
         }
     }
 
+    /**
+     * Gets type name
+     *
+     * @return Type name
+     */
     public String getType() {
         if (projectileType == WitherSkull.class)
             return "skull";
@@ -88,13 +137,19 @@ public class PowerProjectile extends Power implements PowerRightClick {
             return "snowball";
     }
 
+    /**
+     * Check if the type is acceptable
+     *
+     * @param str Type name
+     * @return If acceptable
+     */
     public boolean acceptableType(String str) {
         return str.equals("skull") || str.equals("fireball") || str.equals("snowball") || str.equals("smallfireball") || str.equals("llamaspit") || str.equals("arrow");
     }
 
     @Override
     public String getName() {
-        return name;
+        return "projectile";
     }
 
     @Override
@@ -103,22 +158,22 @@ public class PowerProjectile extends Power implements PowerRightClick {
     }
 
     @Override
-    public void rightClick(Player player, ItemStack is, Block clicked) {
+    public void rightClick(Player player, ItemStack item, Block clicked) {
         long cooldown;
-        if (item.getHasPermission() && !player.hasPermission(item.getPermission())) {
+        if (this.item.getHasPermission() && !player.hasPermission(this.item.getPermission())) {
         } else {
-            RPGValue value = RPGValue.get(player, item, "projectile.cooldown");
+            RPGValue value = RPGValue.get(player, this.item, "projectile.cooldown");
             if (value == null) {
                 cooldown = System.currentTimeMillis() / 50;
-                value = new RPGValue(player, item, "projectile.cooldown", cooldown);
+                value = new RPGValue(player, this.item, "projectile.cooldown", cooldown);
             } else {
                 cooldown = value.asLong();
             }
             if (cooldown <= System.currentTimeMillis() / 50) {
-                if (!item.consumeDurability(is, consumption)) return;
+                if (!this.item.consumeDurability(item, consumption)) return;
                 value.set(System.currentTimeMillis() / 50 + cooldownTime);
                 if (!cone) {
-                    Projectile projectile = player.launchProjectile(projectileType);
+                    Projectile projectile = player.launchProjectile(projectileType, player.getEyeLocation().getDirection().multiply(speed));
                     projectile.setGravity(gravity);
                     if (projectileType == Arrow.class)
                         Events.removeArrows.put(projectile.getEntityId(), (byte) 1);
@@ -128,7 +183,7 @@ public class PowerProjectile extends Power implements PowerRightClick {
                             public void run() {
                                 projectile.remove();
                             }
-                        }).runTaskLater(Plugin.plugin, 60);
+                        }).runTaskLater(Plugin.plugin, 80);
                     }
                 } else {
                     Vector loc = player.getEyeLocation().getDirection();
@@ -147,7 +202,7 @@ public class PowerProjectile extends Power implements PowerRightClick {
                         double det = ThreadLocalRandom.current().nextDouble(0, 2 * Math.PI);
                         double theta = Math.acos(z);
                         Vector v = a.clone().multiply(Math.cos(det)).add(b.clone().multiply(Math.sin(det))).multiply(Math.sin(theta)).add(loc.clone().multiply(Math.cos(theta)));
-                        Projectile projectile = player.launchProjectile(projectileType, v.normalize());
+                        Projectile projectile = player.launchProjectile(projectileType, v.normalize().multiply(speed));
                         projectile.setGravity(gravity);
                         if (projectileType == Arrow.class)
                             Events.removeArrows.put(projectile.getEntityId(), (byte) 1);
@@ -157,7 +212,7 @@ public class PowerProjectile extends Power implements PowerRightClick {
                                 public void run() {
                                     projectile.remove();
                                 }
-                            }).runTaskLater(Plugin.plugin, 60);
+                            }).runTaskLater(Plugin.plugin, 80);
                         }
                     }
                 }

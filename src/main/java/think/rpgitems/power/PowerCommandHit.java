@@ -29,14 +29,42 @@ import think.rpgitems.data.RPGValue;
 import think.rpgitems.power.types.PowerHit;
 
 
+/**
+ * Power commandhit.
+ * <p>
+ * The item will run {@link #command} when player hits some {@link LivingEntity}
+ * giving the permission {@link #permission} just for the use of the command.
+ * </p>
+ */
 public class PowerCommandHit extends Power implements PowerHit {
 
+    /**
+     * Command to be executed
+     */
     public String command = "";
+    /**
+     * Display text of this power
+     */
     public String display = "Runs command";
+    /**
+     * Permission will be given to user executing the {@link #command}
+     */
     public String permission = "";
+    /**
+     * Cooldown time of this power
+     */
     public long cooldownTime = 20;
+    /**
+     * Cost of this power
+     */
     public int consumption = 0;
 
+    /**
+     * Check and Update cooldown
+     *
+     * @param player player
+     * @return cooldown
+     */
     protected boolean updateCooldown(Player player) {
         long cooldown;
         RPGValue value = RPGValue.get(player, item, "command." + command + ".cooldown");
@@ -55,6 +83,12 @@ public class PowerCommandHit extends Power implements PowerHit {
         }
     }
 
+    /**
+     * Execute command
+     *
+     * @param player player
+     * @param e entity
+     */
     protected void executeCommand(Player player, LivingEntity e) {
         if (!player.isOnline()) return;
 
@@ -94,11 +128,11 @@ public class PowerCommandHit extends Power implements PowerHit {
     }
 
     @Override
-    public void hit(Player player, ItemStack i, LivingEntity e, double damage) {
-        if (item.getHasPermission() && !player.hasPermission(item.getPermission())) return;
+    public void hit(Player player, ItemStack item, LivingEntity entity, double damage) {
+        if (this.item.getHasPermission() && !player.hasPermission(this.item.getPermission())) return;
         if (!updateCooldown(player)) return;
-        if (!item.consumeDurability(i, consumption)) return;
-        executeCommand(player, e);
+        if (!this.item.consumeDurability(item, consumption)) return;
+        executeCommand(player, entity);
     }
 
     @Override

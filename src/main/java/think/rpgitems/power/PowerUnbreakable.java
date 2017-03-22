@@ -20,6 +20,13 @@ import org.bukkit.ChatColor;
 import org.bukkit.configuration.ConfigurationSection;
 import think.rpgitems.data.Locale;
 
+/**
+ * Power unbreakable.
+ * <p>
+ * Not a triggerable power.
+ * Mark this item as unbreakable.
+ * </p>
+ */
 public class PowerUnbreakable extends Power {
     @Override
     public void init(ConfigurationSection s) {

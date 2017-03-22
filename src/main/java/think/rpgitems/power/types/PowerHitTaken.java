@@ -4,12 +4,17 @@ import org.bukkit.entity.Player;
 import org.bukkit.event.entity.EntityDamageEvent;
 import org.bukkit.inventory.ItemStack;
 
+/**
+ * Triggers when being hit
+ */
 public interface PowerHitTaken extends Power {
     /**
-     * @param target player been hit
-     * @param i      item that triggered this power
-     * @param ev     damage event
-     * @return new damage value, if nothing change, return a negative number.
+     * Calls when {@code target} using {@code item} being hit in {@code event}
+     *
+     * @param target Player been hit
+     * @param item   Item that triggered this power
+     * @param event  Damage event
+     * @return New damage value, if nothing change, return a negative number.
      */
-    double takeHit(Player target, ItemStack i, EntityDamageEvent ev);
+    double takeHit(Player target, ItemStack item, EntityDamageEvent event);
 }

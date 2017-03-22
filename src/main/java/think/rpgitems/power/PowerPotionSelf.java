@@ -27,30 +27,52 @@ import think.rpgitems.data.Locale;
 import think.rpgitems.data.RPGValue;
 import think.rpgitems.power.types.PowerRightClick;
 
+/**
+ * Power potionself.
+ * <p>
+ * On right click it will apply {@link #type effect}
+ * for {@link #duration} ticks at power {@link #amplifier}.
+ * </p>
+ */
 public class PowerPotionSelf extends Power implements PowerRightClick {
 
+    /**
+     * Cooldown time of this power
+     */
     public long cooldownTime = 20;
-    public int amplifier = 3;
-    public int time = 20;
+    /**
+     * Amplifier of potion effect
+     */
+    public int amplifier = 1;
+    /**
+     * Time of potion effect, in ticks
+     */
+    public int duration = 20;
+    /**
+     * Cost of this power
+     */
     public int consumption = 0;
+    /**
+     * Type of potion effect
+     */
     public PotionEffectType type = PotionEffectType.HEAL;
 
     @Override
-    public void rightClick(Player player, ItemStack i, Block clicked) {
+    public void rightClick(Player player, ItemStack item, Block clicked) {
         long cooldown;
-        if (item.getHasPermission() && !player.hasPermission(item.getPermission())) {
+        if (this.item.getHasPermission() && !player.hasPermission(this.item.getPermission())) {
         } else {
-            RPGValue value = RPGValue.get(player, item, "potionself.cooldown");
+            RPGValue value = RPGValue.get(player, this.item, "potionself.cooldown");
             if (value == null) {
                 cooldown = System.currentTimeMillis() / 50;
-                value = new RPGValue(player, item, "potionself.cooldown", cooldown);
+                value = new RPGValue(player, this.item, "potionself.cooldown", cooldown);
             } else {
                 cooldown = value.asLong();
             }
             if (cooldown <= System.currentTimeMillis() / 50) {
-                if (!item.consumeDurability(i, consumption)) return;
+                if (!this.item.consumeDurability(item, consumption)) return;
                 value.set(System.currentTimeMillis() / 50 + cooldownTime);
-                player.addPotionEffect(new PotionEffect(type, time, amplifier), true);
+                player.addPotionEffect(new PotionEffect(type, duration, amplifier), true);
             } else {
                 player.sendMessage(ChatColor.AQUA + String.format(Locale.get("message.cooldown"), ((double) (cooldown - System.currentTimeMillis() / 50)) / 20d));
             }
@@ -61,7 +83,7 @@ public class PowerPotionSelf extends Power implements PowerRightClick {
     public void init(ConfigurationSection s) {
         cooldownTime = s.getLong("cooldown");
         amplifier = s.getInt("amp");
-        time = s.getInt("time");
+        duration = s.getInt("time");
         type = PotionEffectType.getByName(s.getString("type", "heal"));
         consumption = s.getInt("consumption", 0);
     }
@@ -70,7 +92,7 @@ public class PowerPotionSelf extends Power implements PowerRightClick {
     public void save(ConfigurationSection s) {
         s.set("cooldown", cooldownTime);
         s.set("amp", amplifier);
-        s.set("time", time);
+        s.set("time", duration);
         s.set("type", type.getName());
         s.set("consumption", consumption);
     }
@@ -82,7 +104,7 @@ public class PowerPotionSelf extends Power implements PowerRightClick {
 
     @Override
     public String displayText() {
-        return ChatColor.GREEN + String.format(Locale.get("power.potionself"), type.getName().toLowerCase().replaceAll("_", " "), amplifier + 1, ((double) time) / 20d);
+        return ChatColor.GREEN + String.format(Locale.get("power.potionself"), type.getName().toLowerCase().replaceAll("_", " "), amplifier + 1, ((double) duration) / 20d);
     }
 
 }

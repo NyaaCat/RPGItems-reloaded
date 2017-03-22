@@ -8,9 +8,25 @@ import think.rpgitems.data.Locale;
 import think.rpgitems.data.RPGValue;
 import think.rpgitems.power.types.PowerTick;
 
+/**
+ * Power particletick.
+ * <p>
+ * When item held in hand, spawn some particles around the user.
+ * With the time {@link #interval} given in ticks.
+ * </p>
+ */
 public class PowerParticleTick extends Power implements PowerTick {
+    /**
+     * Name of particle effect
+     */
     public String effect = "FLAME";
+    /**
+     * Interval of particle effect
+     */
     public int interval = 15;
+    /**
+     * Cost of this power
+     */
     public int consumption = 0;
 
     @Override
@@ -38,17 +54,17 @@ public class PowerParticleTick extends Power implements PowerTick {
     }
 
     @Override
-    public void tick(Player player, ItemStack i) {
+    public void tick(Player player, ItemStack item) {
         long cdTick;
-        RPGValue value = RPGValue.get(player, item, "particle.interval");
+        RPGValue value = RPGValue.get(player, this.item, "particle.interval");
         if (value == null) {
             cdTick = System.currentTimeMillis() / 50;
-            value = new RPGValue(player, item, "particle.interval", cdTick);
+            value = new RPGValue(player, this.item, "particle.interval", cdTick);
         } else {
             cdTick = value.asLong();
         }
         if (cdTick <= System.currentTimeMillis() / 50) {
-            if (!item.consumeDurability(i, consumption)) return;
+            if (!this.item.consumeDurability(item, consumption)) return;
             value.set(System.currentTimeMillis() / 50 + interval);
             if (effect.equalsIgnoreCase("SMOKE")) {
                 player.getWorld().playEffect(player.getLocation().add(0, 2, 0), Effect.valueOf(effect), 4);

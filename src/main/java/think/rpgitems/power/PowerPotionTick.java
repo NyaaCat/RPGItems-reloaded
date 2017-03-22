@@ -9,18 +9,34 @@ import org.bukkit.potion.PotionEffectType;
 import think.rpgitems.data.Locale;
 import think.rpgitems.power.types.PowerTick;
 
+/**
+ * Power potiontick.
+ * <p>
+ * The potiontick power will give the welder {@link #effect}
+ * level {@link #amplifier} while held/worn
+ * </p>
+ */
 public class PowerPotionTick extends Power implements PowerTick {
 
-    public int amplifier = 2;
+    /**
+     * Type of potion effect
+     */
     public PotionEffectType effect = PotionEffectType.SPEED;
+    /**
+     * Amplifier of potion effect
+     */
+    public int amplifier = 1;
+    /**
+     * Cost of this power
+     */
     public int consumption = 0;
 
     @Override
-    public void tick(Player player, ItemStack i) {
-        if (item.getHasPermission() && !player.hasPermission(item.getPermission())) {
+    public void tick(Player player, ItemStack item) {
+        if (this.item.getHasPermission() && !player.hasPermission(this.item.getPermission())) {
             player.sendMessage(ChatColor.RED + Locale.get("message.error.permission"));
         } else {
-            if (!item.consumeDurability(i, consumption)) return;
+            if (!this.item.consumeDurability(item, consumption)) return;
             boolean hasEffect = false;
             for (PotionEffect potionEffect : player.getActivePotionEffects()) {
                 if (potionEffect.getType().equals(effect)) {

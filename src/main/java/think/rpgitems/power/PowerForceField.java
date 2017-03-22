@@ -16,13 +16,38 @@ import think.rpgitems.power.types.PowerRightClick;
 import java.util.HashSet;
 import java.util.Set;
 
+/**
+ * Power forcefield.
+ * <p>
+ * When right clicked, creates a force field around the player,
+ * with {@link #radius} {@link #height} based {@link #base} blocks above,
+ * lasts for {@link #ttl} ticks.
+ * </p>
+ */
 public class PowerForceField extends Power implements PowerRightClick {
-    public static final String name = "forcefield";
+    /**
+     * Cooldown time of this power
+     */
     public int cooldown = 200;
+    /**
+     * Radius of force field
+     */
     public int radius = 5;
+    /**
+     * Height of force field
+     */
     public int height = 30;
+    /**
+     * Base of force field
+     */
     public int base = -15;
+    /**
+     * Time to live
+     */
     public int ttl = 100;
+    /**
+     * Cost of this power
+     */
     public int consumption = 0;
 
     @Override
@@ -47,7 +72,7 @@ public class PowerForceField extends Power implements PowerRightClick {
 
     @Override
     public String getName() {
-        return name;
+        return "forcefield";
     }
 
     @Override
@@ -56,13 +81,13 @@ public class PowerForceField extends Power implements PowerRightClick {
     }
 
     @Override
-    public void rightClick(Player player, ItemStack i, Block clicked) {
-        if (item.getHasPermission() && !player.hasPermission(item.getPermission())) return;
-        RPGValue value = RPGValue.get(player, item, "projectile.cooldown");
+    public void rightClick(Player player, ItemStack item, Block clicked) {
+        if (this.item.getHasPermission() && !player.hasPermission(this.item.getPermission())) return;
+        RPGValue value = RPGValue.get(player, this.item, "projectile.cooldown");
         long cd;
         if (value == null) {
             cd = System.currentTimeMillis() / 50;
-            value = new RPGValue(player, item, "projectile.cooldown", cooldown);
+            value = new RPGValue(player, this.item, "projectile.cooldown", cooldown);
         } else {
             cd = value.asLong();
         }
@@ -70,7 +95,7 @@ public class PowerForceField extends Power implements PowerRightClick {
             player.sendMessage(ChatColor.AQUA + String.format(Locale.get("message.cooldown"), ((double) (cd - System.currentTimeMillis() / 50)) / 20d));
             return;
         }
-        if (!item.consumeDurability(i, consumption)) return;
+        if (!this.item.consumeDurability(item, consumption)) return;
         value.set(System.currentTimeMillis() / 50 + cooldown);
         World w = player.getWorld();
         int x = player.getLocation().getBlockX();
@@ -88,18 +113,59 @@ public class PowerForceField extends Power implements PowerRightClick {
     }
 
     private static class buildWallTask implements Runnable {
+        /**
+         * The W.
+         */
         final World w;
+        /**
+         * The Circle points.
+         */
         final Set<Location> circlePoints;
-        final Set<Location> wasWool, wasBarrier;
-        final int l, h;
+        /**
+         * The Was wool.
+         */
+        final Set<Location> wasWool, /**
+         * The Was barrier.
+         */
+        wasBarrier;
+        /**
+         * The L.
+         */
+        final int l, /**
+         * The H.
+         */
+        h;
+        /**
+         * The Current.
+         */
         int current;
+        /**
+         * The Id.
+         */
         int id;
+        /**
+         * The Ttl.
+         */
         final int ttl;
 
+        /**
+         * Sets id.
+         *
+         * @param id the id
+         */
         public void setId(int id) {
             this.id = id;
         }
 
+        /**
+         * Instantiates a new Build wall task.
+         *
+         * @param w            the w
+         * @param circlePoints the circle points
+         * @param l            the l
+         * @param h            the h
+         * @param ttl          the ttl
+         */
         public buildWallTask(World w, Set<Location> circlePoints, int l, int h, int ttl) {
             this.w = w;
             this.circlePoints = circlePoints;

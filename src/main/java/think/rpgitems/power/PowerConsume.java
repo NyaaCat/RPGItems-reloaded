@@ -28,20 +28,36 @@ import think.rpgitems.data.Locale;
 import think.rpgitems.power.types.PowerLeftClick;
 import think.rpgitems.power.types.PowerRightClick;
 
+/**
+ * Power consume.
+ * <p>
+ * The consume power will remove one item on {@link #isRight click}.
+ * With {@link #cooldownTime cooldown} time (ticks).
+ * </p>
+ */
 public class PowerConsume extends Power implements PowerRightClick, PowerLeftClick {
+    /**
+     * Cooldown time of this power
+     */
     public int cooldownTime = 0;
+    /**
+     * Whether triggers when right click.
+     */
     public boolean isRight = true;
+    /**
+     * Cost of this power
+     */
     public int consumption = 0;
 
     @Override
-    public void rightClick(final Player player, ItemStack i, Block clicked) {
+    public void rightClick(final Player player, ItemStack item, Block clicked) {
         if (isRight && checkCooldown(player, cooldownTime)) {
             consume(player);
         }
     }
 
     @Override
-    public void leftClick(final Player player, ItemStack i, Block clicked) {
+    public void leftClick(final Player player, ItemStack item, Block clicked) {
         if (!isRight && checkCooldown(player, cooldownTime)) {
             consume(player);
         }

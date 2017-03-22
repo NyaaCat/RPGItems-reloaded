@@ -27,7 +27,16 @@ import think.rpgitems.Plugin;
 import think.rpgitems.data.Locale;
 import think.rpgitems.power.types.PowerRightClick;
 
+/**
+ * Power food.
+ * <p>
+ * Restore {@link #foodpoints food points} when eaten.
+ * </p>
+ */
 public class PowerFood extends Power implements PowerRightClick {
+    /**
+     * Food Points
+     */
     public int foodpoints;
 
     @Override

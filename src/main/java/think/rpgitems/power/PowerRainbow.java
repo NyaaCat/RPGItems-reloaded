@@ -33,30 +33,49 @@ import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.Random;
 
+/**
+ * Power rainbow.
+ * <p>
+ * The rainbow power will fire {@link #count} of blocks of coloured wool
+ * or {@link #isFire fire} on right click, the wool will remove itself.
+ * </p>
+ */
 public class PowerRainbow extends Power implements PowerRightClick {
 
+    /**
+     * Cooldown time of this power
+     */
     public long cooldownTime = 20;
+    /**
+     * Count of blocks
+     */
     public int count = 5;
+    /**
+     * Whether launch fire instead of wool
+     */
     public boolean isFire = false;
+    /**
+     * Cost of this power
+     */
     public int consumption = 0;
 
     private Random random = new Random();
 
     @SuppressWarnings("deprecation")
     @Override
-    public void rightClick(Player player, ItemStack is, Block clicked) {
+    public void rightClick(Player player, ItemStack item, Block clicked) {
         long cooldown;
-        if (item.getHasPermission() && !player.hasPermission(item.getPermission())) {
+        if (this.item.getHasPermission() && !player.hasPermission(this.item.getPermission())) {
         } else {
-            RPGValue value = RPGValue.get(player, item, "arrow.rainbow");
+            RPGValue value = RPGValue.get(player, this.item, "arrow.rainbow");
             if (value == null) {
                 cooldown = System.currentTimeMillis() / 50;
-                value = new RPGValue(player, item, "arrow.rainbow", cooldown);
+                value = new RPGValue(player, this.item, "arrow.rainbow", cooldown);
             } else {
                 cooldown = value.asLong();
             }
             if (cooldown <= System.currentTimeMillis() / 50) {
-                if (!item.consumeDurability(is, consumption)) return;
+                if (!this.item.consumeDurability(item, consumption)) return;
                 value.set(System.currentTimeMillis() / 50 + cooldownTime);
                 player.playSound(player.getLocation(), Sound.ENTITY_ARROW_SHOOT, 1.0f, 1.0f);
                 final ArrayList<FallingBlock> blocks = new ArrayList<>();

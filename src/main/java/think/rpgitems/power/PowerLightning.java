@@ -28,28 +28,39 @@ import think.rpgitems.power.types.PowerProjectileHit;
 
 import java.util.Random;
 
+/**
+ * Power lightning.
+ * <p>
+ * The lightning power will strike the hit target with lightning with a chance of 1/{@link #chance}.
+ * </p>
+ */
 public class PowerLightning extends Power implements PowerHit, PowerProjectileHit {
-
+    /**
+     * Chance of triggering this power
+     */
     public int chance = 20;
+    /**
+     * Cost of this power
+     */
     public int consumption = 0;
 
     private Random random = new Random();
 
     @Override
-    public void hit(Player player, ItemStack i, LivingEntity e, double damage) {
-        if (item.getHasPermission() && !player.hasPermission(item.getPermission())) {
+    public void hit(Player player, ItemStack item, LivingEntity entity, double damage) {
+        if (this.item.getHasPermission() && !player.hasPermission(this.item.getPermission())) {
         } else if (random.nextInt(chance) == 0) {
-            if (!item.consumeDurability(i, consumption)) return;
-            e.getWorld().strikeLightning(e.getLocation());
+            if (!this.item.consumeDurability(item, consumption)) return;
+            entity.getWorld().strikeLightning(entity.getLocation());
         }
     }
 
     @Override
-    public void projectileHit(Player player, ItemStack i, Projectile p) {
-        if (item.getHasPermission() && !player.hasPermission(item.getPermission())) {
+    public void projectileHit(Player player, ItemStack item, Projectile p) {
+        if (this.item.getHasPermission() && !player.hasPermission(this.item.getPermission())) {
             player.sendMessage(ChatColor.RED + Locale.get("message.error.permission"));
         } else if (random.nextInt(chance) == 0) {
-            if (!item.consumeDurability(i, consumption)) return;
+            if (!this.item.consumeDurability(item, consumption)) return;
             p.getWorld().strikeLightning(p.getLocation());
         }
     }
