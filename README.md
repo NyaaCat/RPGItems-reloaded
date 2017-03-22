@@ -9,4 +9,4 @@ Critical bug fix (e.g. item duplication) may be backported upon request (by open
 All builds can be found in the [Releases Page](https://github.com/NyaaCat/RPGitems-reloaded/releases).  
 Please choose builds with prefixes matching your server version.
 
-[Wiki](https://github.com/NyaaCat/RPGitems-reloaded/wiki) | [Spigot page](https://www.spigotmc.org/resources/rpgitems.17549/) | [Translation](https://www.transifex.com/phoenixlzx/rpgitems/)
+[Wiki](https://github.com/NyaaCat/RPGitems-reloaded/wiki) | [Spigot page](https://www.spigotmc.org/resources/rpgitems.17549/) | [Translation](https://www.transifex.com/phoenixlzx/rpgitems/) | [JavaDoc](https://im.librazy.org/RPGItems/overview-summary.html)
