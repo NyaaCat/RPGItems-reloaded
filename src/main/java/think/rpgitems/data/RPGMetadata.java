@@ -1,24 +1,26 @@
 package think.rpgitems.data;
 
-import gnu.trove.iterator.TIntObjectIterator;
-import gnu.trove.map.hash.TIntObjectHashMap;
 import org.bukkit.ChatColor;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.ItemMeta;
 import think.rpgitems.item.RPGItem;
 
 import java.io.UnsupportedEncodingException;
+import java.util.HashMap;
 import java.util.List;
 
 /**
  * RPGMetadata is a (bad) way of tagging extra data onto an item without it showing up on the item itself. This uses a similar system to Notch's entity metadata system. The data will be encoded in minecraft colour codes which makes this really inefficient because 1 byte -&gt; 2 bytes(Hex) -&gt; 4 bytes(
  * Colour codes). RPGMetadata is prefixed with CAFE to allow it to be easily detected.
  */
-public class RPGMetadata extends TIntObjectHashMap<Object> {
-
-    private final static String METADATA_PREFIX = ChatColor.COLOR_CHAR + "c" + ChatColor.COLOR_CHAR + "a" + ChatColor.COLOR_CHAR + "f" + ChatColor.COLOR_CHAR + "e";
+public class RPGMetadata extends HashMap<Integer, Object> {
 
     public static final int DURABILITY = 0;
+    private final static String METADATA_PREFIX = ChatColor.COLOR_CHAR + "c" + ChatColor.COLOR_CHAR + "a" + ChatColor.COLOR_CHAR + "f" + ChatColor.COLOR_CHAR + "e";
+
+    public RPGMetadata() {
+
+    }
 
     public static boolean hasRPGMetadata(ItemStack item) {
         if (!item.hasItemMeta())
@@ -27,9 +29,7 @@ public class RPGMetadata extends TIntObjectHashMap<Object> {
         if (!meta.hasLore())
             return false;
         List<String> lore = meta.getLore();
-        if (lore.size() == 0)
-            return false;
-        return lore.get(0).contains(METADATA_PREFIX);
+        return lore.size() != 0 && lore.get(0).contains(METADATA_PREFIX);
     }
 
     public static RPGMetadata parseLoreline(String lore) {
@@ -54,17 +54,17 @@ public class RPGMetadata extends TIntObjectHashMap<Object> {
                 case 0: // Byte
                     int byteValue = parseByte(data, off);
                     off += 4;
-                    meta.put(key, Byte.valueOf((byte) byteValue));
+                    meta.put(key, (byte) byteValue);
                     break;
                 case 1: // Short
                     int shortValue = parseShort(data, off);
                     off += 8;
-                    meta.put(key, Short.valueOf((short) shortValue));
+                    meta.put(key, (short) shortValue);
                     break;
                 case 2: // Int
                     int intValue = parseInt(data, off);
                     off += 16;
-                    meta.put(key, Integer.valueOf(intValue));
+                    meta.put(key, intValue);
                     break;
                 case 3: // Float
                     int floatValueBits = parseInt(data, off);
@@ -102,18 +102,12 @@ public class RPGMetadata extends TIntObjectHashMap<Object> {
         return Integer.parseInt("" + bStr.charAt(off + 1) + bStr.charAt(off + 3), 16);
     }
 
-    public RPGMetadata() {
-
-    }
-
     public String toMCString() {
         StringBuilder out = new StringBuilder();
         out.append(METADATA_PREFIX);
-        TIntObjectIterator<Object> it = iterator();
-        while (it.hasNext()) {
-            it.advance();
-            int key = it.key();
-            Object value = it.value();
+        for (HashMap.Entry<Integer, Object> entry : entrySet()) {
+            int key = entry.getKey();
+            Object value = entry.getValue();
             int index = key & 0x1F;
             if (value instanceof Byte) {
                 index |= 0 << 5;
@@ -126,7 +120,7 @@ public class RPGMetadata extends TIntObjectHashMap<Object> {
             } else if (value instanceof Integer) {
                 index |= 2 << 5;
                 writeByte(out, index);
-                writeInt(out, ((Integer) value).intValue());
+                writeInt(out, (Integer) value);
             } else if (value instanceof Float) {
                 index |= 3 << 5;
                 writeByte(out, index);

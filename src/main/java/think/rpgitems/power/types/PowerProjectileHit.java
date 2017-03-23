@@ -9,11 +9,11 @@ import org.bukkit.inventory.ItemStack;
  */
 public interface PowerProjectileHit extends Power {
     /**
-     * Calls when {@code player} using {@code item} has launched a projectile {@code arrow} and it hit something
+     * Calls when {@code player} using {@code stack} has launched a projectile {@code arrow} and it hit something
      *
-     * @param player  Player
-     * @param item    Item that triggered this power
-     * @param arrow   Projectile
+     * @param player Player
+     * @param stack  Item that triggered this power
+     * @param arrow  Projectile
      */
-    void projectileHit(Player player, ItemStack item, Projectile arrow);
+    void projectileHit(Player player, ItemStack stack, Projectile arrow);
 }

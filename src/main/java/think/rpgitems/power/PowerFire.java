@@ -64,17 +64,17 @@ public class PowerFire extends Power implements PowerRightClick {
     public int consumption = 0;
 
     @Override
-    public void rightClick(final Player player, ItemStack item, Block clicked) {
+    public void rightClick(final Player player, ItemStack stack, Block clicked) {
         long cooldown;
-        RPGValue value = RPGValue.get(player, this.item, "fire.cooldown");
+        RPGValue value = RPGValue.get(player, item, "fire.cooldown");
         if (value == null) {
             cooldown = System.currentTimeMillis() / 50;
-            value = new RPGValue(player, this.item, "fire.cooldown", cooldown);
+            value = new RPGValue(player, item, "fire.cooldown", cooldown);
         } else {
             cooldown = value.asLong();
         }
         if (cooldown <= System.currentTimeMillis() / 50) {
-            if (!this.item.consumeDurability(item, consumption)) return;
+            if (!item.consumeDurability(stack, consumption)) return;
             value.set(System.currentTimeMillis() / 50 + cooldownTime);
             player.playSound(player.getLocation(), Sound.ITEM_FLINTANDSTEEL_USE, 1.0f, 1.2f);
             final List<Block> fireblocks = new ArrayList<>();

@@ -45,19 +45,19 @@ public class PowerFireball extends Power implements PowerRightClick {
     public int consumption = 0;
 
     @Override
-    public void rightClick(Player player, ItemStack item, Block clicked) {
+    public void rightClick(Player player, ItemStack stack, Block clicked) {
         long cooldown;
-        if (this.item.getHasPermission() && !player.hasPermission(this.item.getPermission())) {
+        if (item.getHasPermission() && !player.hasPermission(item.getPermission())) {
         } else {
-            RPGValue value = RPGValue.get(player, this.item, "tnt.fireball");
+            RPGValue value = RPGValue.get(player, item, "tnt.fireball");
             if (value == null) {
                 cooldown = System.currentTimeMillis() / 50;
-                value = new RPGValue(player, this.item, "tnt.fireball", cooldown);
+                value = new RPGValue(player, item, "tnt.fireball", cooldown);
             } else {
                 cooldown = value.asLong();
             }
             if (cooldown <= System.currentTimeMillis() / 50) {
-                if (!this.item.consumeDurability(item, consumption)) return;
+                if (!item.consumeDurability(stack, consumption)) return;
                 value.set(System.currentTimeMillis() / 50 + cooldownTime);
                 player.playSound(player.getLocation(), Sound.ENTITY_GHAST_SHOOT, 1.0f, 1.0f);
                 player.launchProjectile(SmallFireball.class);

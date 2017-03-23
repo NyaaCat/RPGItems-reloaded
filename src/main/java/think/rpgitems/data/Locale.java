@@ -36,23 +36,6 @@ public class Locale {
     private static HashMap<String, String> localeStrings = new HashMap<>();
     private String usedLocale;
 
-    public static void init(Plugin pl) {
-        if (instance == null) {
-            instance = new Locale(pl);
-            plugin = pl;
-        } else {
-            Plugin.logger.warning("Duplicated init of Locale");
-        }
-    }
-
-    public static void reload() {
-        instance = new Locale(plugin);
-    }
-
-    private static Locale getInstance() {
-        return instance;
-    }
-
     private Locale(Plugin plugin) {
         // load configures
         usedLocale = plugin.getConfig().getString("language");
@@ -84,6 +67,35 @@ public class Locale {
         }
     }
 
+    public static void init(Plugin pl) {
+        if (instance == null) {
+            instance = new Locale(pl);
+            plugin = pl;
+        } else {
+            Plugin.logger.warning("Duplicated init of Locale");
+        }
+    }
+
+    public static void reload() {
+        instance = new Locale(plugin);
+    }
+
+    private static Locale getInstance() {
+        return instance;
+    }
+
+    public static String getServerLocale() {
+        return getInstance().usedLocale;
+    }
+
+    public static String get(String key) {
+        if (localeStrings == null || !localeStrings.containsKey(key)) {
+            Bukkit.getConsoleSender().sendMessage(ChatColor.RED + "[RPGItems] Unknown translation in " + getServerLocale() + " for " + key + " .");
+            return "<" + key + ">";
+        }
+        return localeStrings.get(key);
+    }
+
     private Map<String, String> loadLocaleStream(InputStream in) {
         Map<String, String> map = new HashMap<>();
         Properties prop = new Properties();
@@ -97,17 +109,5 @@ public class Locale {
             map.put(key, prop.getProperty(key));
         }
         return map;
-    }
-
-    public static String getServerLocale() {
-        return getInstance().usedLocale;
-    }
-
-    public static String get(String key) {
-        if (localeStrings == null || !localeStrings.containsKey(key)) {
-            Bukkit.getConsoleSender().sendMessage(ChatColor.RED + "[RPGItems] Unknown translation in " + getServerLocale() + " for " + key + " .");
-            return "<" + key + ">";
-        }
-        return localeStrings.get(key);
     }
 }

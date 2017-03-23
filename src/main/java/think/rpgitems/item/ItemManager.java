@@ -16,7 +16,6 @@
  */
 package think.rpgitems.item;
 
-import gnu.trove.map.hash.TIntObjectHashMap;
 import org.bukkit.ChatColor;
 import org.bukkit.Material;
 import org.bukkit.configuration.ConfigurationSection;
@@ -33,14 +32,14 @@ import java.util.HashMap;
 import java.util.Map.Entry;
 
 public class ItemManager {
-    public static TIntObjectHashMap<RPGItem> itemById = new TIntObjectHashMap<>();
+    public static HashMap<Integer, RPGItem> itemById = new HashMap<>();
     public static HashMap<String, RPGItem> itemByName = new HashMap<>();
     public static HashMap<String, ItemGroup> groups = new HashMap<>();
     public static int currentPos = 0;
     private static Plugin plugin;
 
     public static void reload() {
-        itemById = new TIntObjectHashMap<>();
+        itemById = new HashMap<>();
         itemByName = new HashMap<>();
         groups = new HashMap<>();
         currentPos = 0;
@@ -83,7 +82,7 @@ public class ItemManager {
                 itemById.put(item.getID(), item);
                 itemByName.put(item.getName(), item);
                 for (Power power : item.powers) {
-                    Power.powerUsage.put(power.getName(), Power.powerUsage.get(power.getName()) + 1);
+                    Power.powerUsage.add(power.getName());
                 }
             }
 
@@ -122,7 +121,7 @@ public class ItemManager {
         itemStorage.set("items", null);
         itemStorage.set("pos", currentPos);
         ConfigurationSection newSection = itemStorage.createSection("items");
-        for (RPGItem item : itemById.valueCollection()) {
+        for (RPGItem item : itemById.values()) {
             ConfigurationSection itemSection = newSection.getConfigurationSection(item.getName().replace(".", "_"));
             if (itemSection == null) {
                 itemSection = newSection.createSection(item.getName().replace(".", "_"));

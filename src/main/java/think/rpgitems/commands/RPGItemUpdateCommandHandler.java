@@ -16,6 +16,18 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class RPGItemUpdateCommandHandler implements CommandExecutor {
+    public static boolean isOldRPGItem(ItemStack item) {
+        if (item == null) return false;
+        if (!item.hasItemMeta()) return false;
+        String name = item.getItemMeta().getDisplayName();
+        try {
+            int id = ItemManager.decodeId(name);
+            return id != -1;
+        } catch (Exception ex) {
+            return false;
+        }
+    }
+
     @Override
     public boolean onCommand(CommandSender sender, Command command, String label, String[] args) {
         if (args.length <= 0) {
@@ -224,17 +236,5 @@ public class RPGItemUpdateCommandHandler implements CommandExecutor {
             }
         }
         p.sendMessage(">>> Downgrade Finish <<<");
-    }
-
-    public static boolean isOldRPGItem(ItemStack item) {
-        if (item == null) return false;
-        if (!item.hasItemMeta()) return false;
-        String name = item.getItemMeta().getDisplayName();
-        try {
-            int id = ItemManager.decodeId(name);
-            return id != -1;
-        } catch (Exception ex) {
-            return false;
-        }
     }
 }

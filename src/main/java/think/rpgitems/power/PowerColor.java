@@ -41,27 +41,6 @@ import java.util.HashMap;
  */
 public class PowerColor extends Power implements PowerRightClick, PowerLeftClick {
 
-    /**
-     * Cooldown time of this power
-     */
-    public long cooldownTime = 0;
-    /**
-     * Whether enabled on glass.
-     */
-    public boolean glass = true;
-    /**
-     * Whether enabled on clay.
-     */
-    public boolean clay = true;
-    /**
-     * Whether enabled on wool.
-     */
-    public boolean wool = true;
-    /**
-     * Cost of this power
-     */
-    public int consumption = 0;
-
     private static HashMap<DyeColor, ChatColor> dyeToChatColor;
 
     static {
@@ -84,9 +63,30 @@ public class PowerColor extends Power implements PowerRightClick, PowerLeftClick
         dyeToChatColor.put(DyeColor.YELLOW, ChatColor.YELLOW);
     }
 
+    /**
+     * Cooldown time of this power
+     */
+    public long cooldownTime = 0;
+    /**
+     * Whether enabled on glass.
+     */
+    public boolean glass = true;
+    /**
+     * Whether enabled on clay.
+     */
+    public boolean clay = true;
+    /**
+     * Whether enabled on wool.
+     */
+    public boolean wool = true;
+    /**
+     * Cost of this power
+     */
+    public int consumption = 0;
+
     @SuppressWarnings("deprecation")
     @Override
-    public void rightClick(Player player, ItemStack item, Block clicked) {
+    public void rightClick(Player player, ItemStack stack, Block clicked) {
         if (clicked == null)
             return;
         if (!WorldGuard.canBuild(player, clicked.getLocation()))
@@ -105,22 +105,22 @@ public class PowerColor extends Power implements PowerRightClick, PowerLeftClick
         }
 
         long cooldown;
-        if (this.item.getHasPermission() && !player.hasPermission(this.item.getPermission())) {
+        if (item.getHasPermission() && !player.hasPermission(item.getPermission())) {
         } else {
-            RPGValue color = RPGValue.get(player, this.item, "color.current");
+            RPGValue color = RPGValue.get(player, item, "color.current");
             if (color == null) {
-                color = new RPGValue(player, this.item, "color.current", 0);
+                color = new RPGValue(player, item, "color.current", 0);
             }
 
-            RPGValue value = RPGValue.get(player, this.item, "color.cooldown");
+            RPGValue value = RPGValue.get(player, item, "color.cooldown");
             if (value == null) {
                 cooldown = System.currentTimeMillis() / 50;
-                value = new RPGValue(player, this.item, "color.cooldown", cooldown);
+                value = new RPGValue(player, item, "color.cooldown", cooldown);
             } else {
                 cooldown = value.asLong();
             }
             if (cooldown <= System.currentTimeMillis() / 50) {
-                if (!this.item.consumeDurability(item, consumption)) return;
+                if (!item.consumeDurability(stack, consumption)) return;
                 value.set(System.currentTimeMillis() / 50 + cooldownTime);
 
                 if (clicked.getType().equals(Material.GLASS))
@@ -139,12 +139,12 @@ public class PowerColor extends Power implements PowerRightClick, PowerLeftClick
     }
 
     @Override
-    public void leftClick(Player player, ItemStack item, Block clicked) {
-        if (this.item.getHasPermission() && !player.hasPermission(this.item.getPermission())) {
+    public void leftClick(Player player, ItemStack stack, Block clicked) {
+        if (item.getHasPermission() && !player.hasPermission(item.getPermission())) {
         } else {
-            RPGValue value = RPGValue.get(player, this.item, "color.current");
+            RPGValue value = RPGValue.get(player, item, "color.current");
             if (value == null) {
-                value = new RPGValue(player, this.item, "color.current", 0);
+                value = new RPGValue(player, item, "color.current", 0);
             } else {
                 int newColorIndex = (value.asInt() + 1) % 16;
                 value.set(newColorIndex);

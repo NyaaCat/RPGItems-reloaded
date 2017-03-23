@@ -8,10 +8,10 @@ import org.bukkit.inventory.ItemStack;
  */
 public interface PowerTick extends Power {
     /**
-     * Calls per tick with {@code player} using {@code item}
+     * Calls per tick with {@code player} using {@code stack}
      *
-     * @param player  Player
-     * @param item    Item that triggered this power
+     * @param player Player
+     * @param stack  Item that triggered this power
      */
-    void tick(Player player, ItemStack item);
+    void tick(Player player, ItemStack stack);
 }

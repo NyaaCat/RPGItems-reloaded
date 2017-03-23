@@ -50,14 +50,14 @@ public class PowerConsume extends Power implements PowerRightClick, PowerLeftCli
     public int consumption = 0;
 
     @Override
-    public void rightClick(final Player player, ItemStack item, Block clicked) {
+    public void rightClick(final Player player, ItemStack stack, Block clicked) {
         if (isRight && checkCooldown(player, cooldownTime)) {
             consume(player);
         }
     }
 
     @Override
-    public void leftClick(final Player player, ItemStack item, Block clicked) {
+    public void leftClick(final Player player, ItemStack stack, Block clicked) {
         if (!isRight && checkCooldown(player, cooldownTime)) {
             consume(player);
         }

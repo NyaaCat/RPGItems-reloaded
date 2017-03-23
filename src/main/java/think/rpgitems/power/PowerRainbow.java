@@ -63,19 +63,19 @@ public class PowerRainbow extends Power implements PowerRightClick {
 
     @SuppressWarnings("deprecation")
     @Override
-    public void rightClick(Player player, ItemStack item, Block clicked) {
+    public void rightClick(Player player, ItemStack stack, Block clicked) {
         long cooldown;
-        if (this.item.getHasPermission() && !player.hasPermission(this.item.getPermission())) {
+        if (item.getHasPermission() && !player.hasPermission(item.getPermission())) {
         } else {
-            RPGValue value = RPGValue.get(player, this.item, "arrow.rainbow");
+            RPGValue value = RPGValue.get(player, item, "arrow.rainbow");
             if (value == null) {
                 cooldown = System.currentTimeMillis() / 50;
-                value = new RPGValue(player, this.item, "arrow.rainbow", cooldown);
+                value = new RPGValue(player, item, "arrow.rainbow", cooldown);
             } else {
                 cooldown = value.asLong();
             }
             if (cooldown <= System.currentTimeMillis() / 50) {
-                if (!this.item.consumeDurability(item, consumption)) return;
+                if (!item.consumeDurability(stack, consumption)) return;
                 value.set(System.currentTimeMillis() / 50 + cooldownTime);
                 player.playSound(player.getLocation(), Sound.ENTITY_ARROW_SHOOT, 1.0f, 1.0f);
                 final ArrayList<FallingBlock> blocks = new ArrayList<>();

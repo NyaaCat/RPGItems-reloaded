@@ -100,19 +100,19 @@ public class PowerAOE extends Power implements PowerRightClick {
     }
 
     @Override
-    public void rightClick(final Player player, ItemStack item, Block clicked) {
+    public void rightClick(final Player player, ItemStack stack, Block clicked) {
         long cooldown;
-        if (this.item.getHasPermission() && !player.hasPermission(this.item.getPermission())) {
+        if (item.getHasPermission() && !player.hasPermission(item.getPermission())) {
         } else {
-            RPGValue value = RPGValue.get(player, this.item, "aoe.cooldown");
+            RPGValue value = RPGValue.get(player, item, "aoe.cooldown");
             if (value == null) {
                 cooldown = System.currentTimeMillis() / 50;
-                value = new RPGValue(player, this.item, "aoe.cooldown", cooldown);
+                value = new RPGValue(player, item, "aoe.cooldown", cooldown);
             } else {
                 cooldown = value.asLong();
             }
             if (cooldown <= System.currentTimeMillis() / 50) {
-                if (!this.item.consumeDurability(item, consumption)) return;
+                if (!item.consumeDurability(stack, consumption)) return;
                 value.set(System.currentTimeMillis() / 50 + cooldownTime);
                 PotionEffect effect = new PotionEffect(type, duration, amplifier - 1);
                 if (selfapplication)

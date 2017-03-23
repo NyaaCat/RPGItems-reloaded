@@ -22,6 +22,7 @@ import java.util.Random;
  */
 public class PowerDeathCommand extends Power implements PowerHit {
 
+    private static final Random rand = new Random();
     /**
      * Command to be executed
      */
@@ -42,8 +43,6 @@ public class PowerDeathCommand extends Power implements PowerHit {
      * Cost of this power
      */
     public int consumption = 0;
-
-    private static final Random rand = new Random();
 
     @Override
     public void init(ConfigurationSection s) {
@@ -74,10 +73,10 @@ public class PowerDeathCommand extends Power implements PowerHit {
     }
 
     @Override
-    public void hit(Player player, ItemStack item, LivingEntity entity, double damage) {
-        if (this.item.getHasPermission() && !player.hasPermission(this.item.getPermission())) return;
+    public void hit(Player player, ItemStack stack, LivingEntity entity, double damage) {
+        if (item.getHasPermission() && !player.hasPermission(item.getPermission())) return;
         if (rand.nextInt(chance) == 0) {
-            if (!this.item.consumeDurability(item, consumption)) return;
+            if (!item.consumeDurability(stack, consumption)) return;
             Location loc = entity.getLocation();
             int x = (int) loc.getX();
             int y = (int) loc.getY();

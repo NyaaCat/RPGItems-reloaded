@@ -8,11 +8,11 @@ import org.bukkit.scheduler.BukkitRunnable;
 import think.rpgitems.Plugin;
 
 /**
- *  Power delayedcommand.
- *  <p>
- *  The item will run {@link #command} on {@link #isRight click} with a {@link #delay}
- *  giving the permission {@link #permission} just for the use of the command.
- *  </p>
+ * Power delayedcommand.
+ * <p>
+ * The item will run {@link #command} on {@link #isRight click} with a {@link #delay}
+ * giving the permission {@link #permission} just for the use of the command.
+ * </p>
  */
 public class PowerDelayedCommand extends PowerCommand {
     /**
@@ -38,10 +38,10 @@ public class PowerDelayedCommand extends PowerCommand {
     }
 
     @Override
-    public void rightClick(final Player player, ItemStack item, Block clicked) {
-        if (this.item.getHasPermission() && !player.hasPermission(this.item.getPermission())) return;
-        if (!isRight || !updateCooldown(player)) return;
-        if (!this.item.consumeDurability(item, consumption)) return;
+    public void rightClick(final Player player, ItemStack stack, Block clicked) {
+        if (item.getHasPermission() && !player.hasPermission(item.getPermission())) return;
+        if (!isRight || !updateCooldownByString(player, item, command, cooldownTime)) return;
+        if (!item.consumeDurability(stack, consumption)) return;
         (new BukkitRunnable() {
             @Override
             public void run() {
@@ -51,10 +51,10 @@ public class PowerDelayedCommand extends PowerCommand {
     }
 
     @Override
-    public void leftClick(final Player player, ItemStack item, Block clicked) {
-        if (this.item.getHasPermission() && !player.hasPermission(this.item.getPermission())) return;
-        if (isRight || !updateCooldown(player)) return;
-        if (!this.item.consumeDurability(item, consumption)) return;
+    public void leftClick(final Player player, ItemStack stack, Block clicked) {
+        if (item.getHasPermission() && !player.hasPermission(item.getPermission())) return;
+        if (isRight || !updateCooldownByString(player, item, command, cooldownTime)) return;
+        if (!item.consumeDurability(stack, consumption)) return;
         (new BukkitRunnable() {
             @Override
             public void run() {

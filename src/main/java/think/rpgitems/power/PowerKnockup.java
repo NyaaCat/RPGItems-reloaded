@@ -51,10 +51,10 @@ public class PowerKnockup extends Power implements PowerHit {
     private Random rand = new Random();
 
     @Override
-    public void hit(Player player, ItemStack item, LivingEntity entity, double damage) {
-        if (this.item.getHasPermission() && !player.hasPermission(this.item.getPermission())) {
+    public void hit(Player player, ItemStack stack, LivingEntity entity, double damage) {
+        if (item.getHasPermission() && !player.hasPermission(item.getPermission())) {
         } else if (rand.nextInt(chance) == 0) {
-            if (!this.item.consumeDurability(item, consumption)) return;
+            if (!item.consumeDurability(stack, consumption)) return;
             entity.setVelocity(player.getLocation().getDirection().setY(power));
         }
     }

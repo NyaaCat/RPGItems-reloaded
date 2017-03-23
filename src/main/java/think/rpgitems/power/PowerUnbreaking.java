@@ -31,6 +31,7 @@ import java.util.Random;
  * <p>
  * The unbreaking power works similar to normal unbreaking.
  * </p>
+ *
  * @deprecated Breaks durability system
  */
 @Deprecated
@@ -43,7 +44,7 @@ public class PowerUnbreaking extends Power implements PowerHit {
     private Random random = new Random();
 
     @Override
-    public void hit(Player player, ItemStack item, LivingEntity entity, double damage) {
+    public void hit(Player player, ItemStack stack, LivingEntity entity, double damage) {
         if (random.nextDouble() < ((double) level) / 100d) {
             player.getInventory().getItemInMainHand().setDurability((short) (player.getInventory().getItemInMainHand().getDurability() - 1));
             player.updateInventory();

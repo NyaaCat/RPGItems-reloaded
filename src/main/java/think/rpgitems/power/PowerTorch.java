@@ -16,7 +16,6 @@
  */
 package think.rpgitems.power;
 
-import gnu.trove.map.hash.TObjectLongHashMap;
 import org.bukkit.*;
 import org.bukkit.block.Block;
 import org.bukkit.configuration.ConfigurationSection;
@@ -31,6 +30,7 @@ import think.rpgitems.data.RPGValue;
 import think.rpgitems.power.types.PowerRightClick;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Random;
 
@@ -52,84 +52,84 @@ public class PowerTorch extends Power implements PowerRightClick {
 
     @SuppressWarnings("deprecation")
     @Override
-    public void rightClick(final Player player, ItemStack item, Block clicked) {
+    public void rightClick(final Player player, ItemStack stack, Block clicked) {
         long cooldown;
-        if (this.item.getHasPermission() && !player.hasPermission(this.item.getPermission())) {
-        } else {
-            RPGValue value = RPGValue.get(player, this.item, "torch.cooldown");
-            if (value == null) {
-                cooldown = System.currentTimeMillis() / 50;
-                value = new RPGValue(player, this.item, "torch.cooldown", cooldown);
-            } else {
-                cooldown = value.asLong();
-            }
-            if (cooldown <= System.currentTimeMillis() / 50) {
-                if (!this.item.consumeDurability(item, consumption)) return;
-                value.set(System.currentTimeMillis() / 50 + cooldownTime);
-                player.playSound(player.getLocation(), Sound.ITEM_FLINTANDSTEEL_USE, 1.0f, 0.8f);
-                final FallingBlock block = player.getWorld().spawnFallingBlock(player.getLocation().add(0, 1.8, 0), Material.TORCH, (byte) 0);
-                block.setVelocity(player.getLocation().getDirection().multiply(2d));
-                block.setDropItem(false);
-                BukkitRunnable run = new BukkitRunnable() {
+        if (item.getHasPermission() && !player.hasPermission(item.getPermission())) return;
 
-                    public void run() {
-                        World world = block.getWorld();
-                        final Random random = new Random();
-                        if (block.isDead()) {
-                            block.remove();
-                            if (block.getLocation().getBlock().getType().equals(Material.TORCH))
-                                block.setMetadata("RPGItems.Torch", new FixedMetadataValue(Plugin.plugin, null));
-                            cancel();
-                            final TObjectLongHashMap<Location> changedBlocks = new gnu.trove.map.hash.TObjectLongHashMap<>();
-                            for (int x = -2; x <= 2; x++) {
-                                for (int y = -2; y <= 3; y++) {
-                                    for (int z = -2; z <= 2; z++) {
-                                        Location loc = block.getLocation().add(x, y, z);
-                                        Block b = world.getBlockAt(loc);
-                                        if (b.getType().equals(Material.AIR) && random.nextInt(100) < 20) {
-                                            List<Byte> orientations = getPossibleOrientations(loc);
-                                            if (orientations.size() > 0) {
-                                                changedBlocks.put(b.getLocation(), b.getTypeId() | (b.getData() << 16));
-                                                byte o = orientations.get(random.nextInt(orientations.size()));
-                                                b.setMetadata("RPGItems.Torch", new FixedMetadataValue(Plugin.plugin, null));
-                                                b.setTypeIdAndData(Material.TORCH.getId(), o, false); // Don't apply physics since the check is done beforehand
-                                            }
+        RPGValue value = RPGValue.get(player, item, "torch.cooldown");
+        if (value == null) {
+            cooldown = System.currentTimeMillis() / 50;
+            value = new RPGValue(player, item, "torch.cooldown", cooldown);
+        } else {
+            cooldown = value.asLong();
+        }
+        if (cooldown <= System.currentTimeMillis() / 50) {
+            if (!item.consumeDurability(stack, consumption)) return;
+            value.set(System.currentTimeMillis() / 50 + cooldownTime);
+            player.playSound(player.getLocation(), Sound.ITEM_FLINTANDSTEEL_USE, 1.0f, 0.8f);
+            final FallingBlock block = player.getWorld().spawnFallingBlock(player.getLocation().add(0, 1.8, 0), Material.TORCH, (byte) 0);
+            block.setVelocity(player.getLocation().getDirection().multiply(2d));
+            block.setDropItem(false);
+            BukkitRunnable run = new BukkitRunnable() {
+
+                public void run() {
+                    World world = block.getWorld();
+                    final Random random = new Random();
+                    if (block.isDead()) {
+                        block.remove();
+                        if (block.getLocation().getBlock().getType().equals(Material.TORCH))
+                            block.setMetadata("RPGItems.Torch", new FixedMetadataValue(Plugin.plugin, null));
+                        cancel();
+                        final HashMap<Location, Long> changedBlocks = new HashMap<>();
+                        for (int x = -2; x <= 2; x++) {
+                            for (int y = -2; y <= 3; y++) {
+                                for (int z = -2; z <= 2; z++) {
+                                    Location loc = block.getLocation().add(x, y, z);
+                                    Block b = world.getBlockAt(loc);
+                                    if (b.getType().equals(Material.AIR) && random.nextInt(100) < 20) {
+                                        List<Byte> orientations = getPossibleOrientations(loc);
+                                        if (orientations.size() > 0) {
+                                            changedBlocks.put(b.getLocation(), b.getTypeId() | ((long) b.getData() << 16));
+                                            byte o = orientations.get(random.nextInt(orientations.size()));
+                                            b.setMetadata("RPGItems.Torch", new FixedMetadataValue(Plugin.plugin, null));
+                                            b.setTypeIdAndData(Material.TORCH.getId(), o, false); // Don't apply physics since the check is done beforehand
                                         }
                                     }
                                 }
                             }
-                            (new BukkitRunnable() {
-
-                                @Override
-                                public void run() {
-                                    if (changedBlocks.isEmpty()) {
-                                        cancel();
-                                        block.removeMetadata("RPGItems.Torch", Plugin.plugin);
-                                        block.getLocation().getBlock().setType(Material.AIR);
-                                        return;
-                                    }
-                                    int index = random.nextInt(changedBlocks.size());
-                                    long data = changedBlocks.values()[index];
-                                    Location position = (Location) changedBlocks.keys()[index];
-                                    changedBlocks.remove(position);
-                                    Block c = position.getBlock();
-                                    position.getWorld().playEffect(position, Effect.STEP_SOUND, c.getTypeId());
-                                    c.removeMetadata("RPGItems.Torch", Plugin.plugin);
-                                    c.setTypeId((int) (data & 0xFFFF));
-                                    c.setData((byte) (data >> 16));
-
-                                }
-                            }).runTaskTimer(Plugin.plugin, 4 * 20 + new Random().nextInt(40), 3);
                         }
+                        (new BukkitRunnable() {
 
+                            @Override
+                            public void run() {
+                                if (changedBlocks.isEmpty()) {
+                                    cancel();
+                                    block.removeMetadata("RPGItems.Torch", Plugin.plugin);
+                                    block.getLocation().getBlock().setType(Material.AIR);
+                                    return;
+                                }
+                                int index = random.nextInt(changedBlocks.size());
+                                long data = changedBlocks.values().toArray(new Long[0])[index];
+                                Location position = changedBlocks.keySet().toArray(new Location[0])[index];
+                                changedBlocks.remove(position);
+                                Block c = position.getBlock();
+                                position.getWorld().playEffect(position, Effect.STEP_SOUND, c.getTypeId());
+                                c.removeMetadata("RPGItems.Torch", Plugin.plugin);
+                                c.setTypeId((int) (data & 0xFFFF));
+                                c.setData((byte) (data >> 16));
+
+                            }
+                        }).runTaskTimer(Plugin.plugin, 4 * 20 + new Random().nextInt(40), 3);
                     }
-                };
-                run.runTaskTimer(Plugin.plugin, 0, 1);
 
-            } else {
-                player.sendMessage(ChatColor.AQUA + String.format(Locale.get("message.cooldown"), ((double) (cooldown - System.currentTimeMillis() / 50)) / 20d));
-            }
+                }
+            };
+            run.runTaskTimer(Plugin.plugin, 0, 1);
+
+        } else {
+            player.sendMessage(ChatColor.AQUA + String.format(Locale.get("message.cooldown"), ((double) (cooldown - System.currentTimeMillis() / 50)) / 20d));
         }
+
     }
 
     @Override

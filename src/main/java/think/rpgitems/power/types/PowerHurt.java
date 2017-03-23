@@ -9,11 +9,11 @@ import org.bukkit.inventory.ItemStack;
  */
 public interface PowerHurt extends Power {
     /**
-     * Calls when {@code target} using {@code item} being hurt in {@code event}
+     * Calls when {@code target} using {@code stack} being hurt in {@code event}
      *
      * @param target Player being hurt
-     * @param item   Item that triggered this power
+     * @param stack  Item that triggered this power
      * @param event  Damage event
      */
-    void hurt(Player target, ItemStack item, EntityDamageEvent event);
+    void hurt(Player target, ItemStack stack, EntityDamageEvent event);
 }

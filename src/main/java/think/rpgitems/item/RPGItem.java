@@ -16,7 +16,6 @@
  */
 package think.rpgitems.item;
 
-import gnu.trove.map.hash.TObjectDoubleHashMap;
 import net.md_5.bungee.api.chat.BaseComponent;
 import net.md_5.bungee.api.chat.ClickEvent;
 import net.md_5.bungee.api.chat.HoverEvent;
@@ -61,14 +60,34 @@ import static org.bukkit.ChatColor.COLOR_CHAR;
 import static org.bukkit.ChatColor.getByChar;
 
 public class RPGItem {
+    public static final int MC_ENCODED_ID_LENGTH = 16;
+    public boolean ignoreWorldGuard = false;
+    public List<String> description = new ArrayList<>();
+    public boolean showPowerLore = true;
+    public boolean showArmourLore = true;
+    public Map<Enchantment, Integer> enchantMap = null;
+    public ArrayList<ItemFlag> itemFlags = new ArrayList<>();
+    public boolean customItemModel = false;
+    // Powers
+    public ArrayList<Power> powers = new ArrayList<>();
+    // Recipes
+    public int recipechance = 6;
+    public boolean hasRecipe = false;
+    public List<ItemStack> recipe = null;
+    // Drops
+    public Map<String, Double> dropChances = new HashMap<>();
+    public int defaultDurability;
+    public int durabilityLowerBound;
+    public int durabilityUpperBound;
+    public int blockBreakingCost = 1;
+    public int hittingCost = 1;
+    public int hitCost = 1;
+    public boolean hitCostByDamage = false;
     private ItemStack item;
-
     private ItemMeta localeMeta;
-
     private int id;
     private String name;
     private String encodedID;
-
     private boolean haspermission;
     private String permission;
     private String displayName;
@@ -78,17 +97,6 @@ public class RPGItem {
     private String loreText = "";
     private String type = Plugin.plugin.getConfig().getString("defaults.sword", "Sword");
     private String hand = Plugin.plugin.getConfig().getString("defaults.hand", "One handed");
-    public boolean ignoreWorldGuard = false;
-    public List<String> description = new ArrayList<>();
-
-    public boolean showPowerLore = true;
-    public boolean showArmourLore = true;
-    public Map<Enchantment, Integer> enchantMap = null;
-    public ArrayList<ItemFlag> itemFlags = new ArrayList<>();
-    public boolean customItemModel = false;
-
-    // Powers
-    public ArrayList<Power> powers = new ArrayList<>();
     private ArrayList<PowerLeftClick> powerLeftClick = new ArrayList<>();
     private ArrayList<PowerRightClick> powerRightClick = new ArrayList<>();
     private ArrayList<PowerProjectileHit> powerProjectileHit = new ArrayList<>();
@@ -96,28 +104,12 @@ public class RPGItem {
     private ArrayList<PowerHitTaken> powerHitTaken = new ArrayList<>();
     private ArrayList<PowerHurt> powerHurt = new ArrayList<>();
     private ArrayList<PowerTick> powerTick = new ArrayList<>();
-
-    // Recipes
-    public int recipechance = 6;
-    public boolean hasRecipe = false;
-    public List<ItemStack> recipe = null;
-
-    // Drops
-    public TObjectDoubleHashMap<String> dropChances = new TObjectDoubleHashMap<>();
-
     private int tooltipWidth = 150;
-
     // Durability
     private int maxDurability;
-    public int defaultDurability;
-    public int durabilityLowerBound;
-    public int durabilityUpperBound;
     private boolean hasBar = false;
     private boolean forceBar = false;
-    public int blockBreakingCost = 1;
-    public int hittingCost = 1;
-    public int hitCost = 1;
-    public boolean hitCostByDamage = false;
+    private int _loreMinLen = 0;
 
     public RPGItem(String name, int id) {
         this.name = name;
@@ -256,6 +248,84 @@ public class RPGItem {
         }
         customItemModel = s.getBoolean("customItemModel", false);
         rebuild();
+    }
+
+    public static RPGMetadata getMetadata(ItemStack item) {
+        // Check for broken item
+        if (!item.hasItemMeta() || !item.getItemMeta().hasLore() || item.getItemMeta().getLore().size() == 0) {
+            // Broken item
+            return new RPGMetadata();
+        }
+        return RPGMetadata.parseLoreline(item.getItemMeta().getLore().get(0));
+    }
+
+    public static void updateItem(ItemStack item) {
+        updateItem(item, getMetadata(item));
+    }
+
+    public static void updateItem(ItemStack item, RPGMetadata rpgMeta) {
+        RPGItem rItem = ItemManager.toRPGItem(item);
+        if (rItem == null)
+            return;
+        List<String> reservedLores = filterLores(rItem, item);
+        item.setType(rItem.item.getType());
+        ItemMeta meta = rItem.getLocaleMeta();
+        List<String> lore = meta.getLore();
+        rItem.addExtra(rpgMeta, item, lore);
+        lore.set(0, meta.getLore().get(0) + rpgMeta.toMCString());
+        // Patch for mcMMO buff. See SkillUtils.java#removeAbilityBuff in mcMMO
+        if (item.hasItemMeta() && item.getItemMeta().hasLore() && item.getItemMeta().getLore().contains("mcMMO Ability Tool"))
+            lore.add("mcMMO Ability Tool");
+        lore.addAll(reservedLores);
+        meta.setLore(lore);
+        Map<Enchantment, Integer> enchs = item.getEnchantments();
+        if (enchs.size() > 0)
+            for (Enchantment ench : enchs.keySet())
+                meta.addEnchant(ench, enchs.get(ench), true);
+        item.setItemMeta(meta);
+    }
+
+    private static List<String> filterLores(RPGItem r, ItemStack i) {
+        List<String> ret = new ArrayList<>();
+        List<Pattern> patterns = new ArrayList<>();
+        for (Power p : r.powers) {
+            if (p instanceof PowerLoreFilter && ((PowerLoreFilter) p).regex != null) {
+                patterns.add(Pattern.compile(((PowerLoreFilter) p).regex));
+            }
+        }
+        if (patterns.size() <= 0) return Collections.emptyList();
+        if (!i.hasItemMeta() || !i.getItemMeta().hasLore()) return Collections.emptyList();
+        for (String str : i.getItemMeta().getLore()) {
+            for (Pattern p : patterns) {
+                if (p.matcher(ChatColor.stripColor(str)).matches()) {
+                    ret.add(str);
+                    break;
+                }
+            }
+        }
+        return ret;
+    }
+
+    public static String getMCEncodedID(int id) {
+        String hex = String.format("%08x", id);
+        StringBuilder out = new StringBuilder();
+        for (char h : hex.toCharArray()) {
+            out.append(COLOR_CHAR);
+            out.append(h);
+        }
+        String str = out.toString();
+        if (str.length() != MC_ENCODED_ID_LENGTH)
+            throw new RuntimeException("Bad RPGItem ID: " + str + " (" + id + ")");
+        return out.toString();
+    }
+
+    private static int getStringWidth(String str) {
+        int width = 0;
+        for (int i = 0; i < str.length(); i++) {
+            char c = str.charAt(i);
+            width += Font.widths[c] + 1;
+        }
+        return width;
     }
 
     public void save(ConfigurationSection s) {
@@ -509,71 +579,14 @@ public class RPGItem {
         resetRecipe(true);
     }
 
-
     public ItemMeta getLocaleMeta() {
         return localeMeta.clone();
     }
 
-    public static RPGMetadata getMetadata(ItemStack item) {
-        // Check for broken item
-        if (!item.hasItemMeta() || !item.getItemMeta().hasLore() || item.getItemMeta().getLore().size() == 0) {
-            // Broken item
-            return new RPGMetadata();
-        }
-        return RPGMetadata.parseLoreline(item.getItemMeta().getLore().get(0));
-    }
-
-    public static void updateItem(ItemStack item) {
-        updateItem(item, getMetadata(item));
-    }
-
-    public static void updateItem(ItemStack item, RPGMetadata rpgMeta) {
-        RPGItem rItem = ItemManager.toRPGItem(item);
-        if (rItem == null)
-            return;
-        List<String> reservedLores = filterLores(rItem, item);
-        item.setType(rItem.item.getType());
-        ItemMeta meta = rItem.getLocaleMeta();
-        List<String> lore = meta.getLore();
-        rItem.addExtra(rpgMeta, item, lore);
-        lore.set(0, meta.getLore().get(0) + rpgMeta.toMCString());
-        // Patch for mcMMO buff. See SkillUtils.java#removeAbilityBuff in mcMMO
-        if (item.hasItemMeta() && item.getItemMeta().hasLore() && item.getItemMeta().getLore().contains("mcMMO Ability Tool"))
-            lore.add("mcMMO Ability Tool");
-        lore.addAll(reservedLores);
-        meta.setLore(lore);
-        Map<Enchantment, Integer> enchs = item.getEnchantments();
-        if (enchs.size() > 0)
-            for (Enchantment ench : enchs.keySet())
-                meta.addEnchant(ench, enchs.get(ench), true);
-        item.setItemMeta(meta);
-    }
-
-    private static List<String> filterLores(RPGItem r, ItemStack i) {
-        List<String> ret = new ArrayList<>();
-        List<Pattern> patterns = new ArrayList<>();
-        for (Power p : r.powers) {
-            if (p instanceof PowerLoreFilter && ((PowerLoreFilter) p).regex != null) {
-                patterns.add(Pattern.compile(((PowerLoreFilter) p).regex));
-            }
-        }
-        if (patterns.size() <= 0) return Collections.emptyList();
-        if (!i.hasItemMeta() || !i.getItemMeta().hasLore()) return Collections.emptyList();
-        for (String str : i.getItemMeta().getLore()) {
-            for (Pattern p : patterns) {
-                if (p.matcher(ChatColor.stripColor(str)).matches()) {
-                    ret.add(str);
-                    break;
-                }
-            }
-        }
-        return ret;
-    }
-
-    public void addExtra(RPGMetadata rpgMeta, ItemStack item, List<String> lore) {
+    public void addExtra(RPGMetadata rpgMeta, ItemStack stack, List<String> lore) {
         if (maxDurability > 0) {
             if (!rpgMeta.containsKey(RPGMetadata.DURABILITY)) {
-                rpgMeta.put(RPGMetadata.DURABILITY, Integer.valueOf(defaultDurability));
+                rpgMeta.put(RPGMetadata.DURABILITY, defaultDurability);
             }
             int durability = ((Number) rpgMeta.get(RPGMetadata.DURABILITY)).intValue();
 
@@ -592,15 +605,15 @@ public class RPGItem {
                     lore.set(lore.size() - 1, out.toString());
             }
             if (customItemModel) {
-                item.setDurability(this.item.getDurability());
+                stack.setDurability(item.getDurability());
             } else {
-                item.setDurability((short) (item.getType().getMaxDurability() - ((short) ((double) item.getType().getMaxDurability() * ((double) durability / (double) maxDurability)))));
+                stack.setDurability((short) (stack.getType().getMaxDurability() - ((short) ((double) stack.getType().getMaxDurability() * ((double) durability / (double) maxDurability)))));
             }
         } else if (maxDurability <= 0) {
             if (customItemModel) {
-                item.setDurability(this.item.getDurability());
+                stack.setDurability(item.getDurability());
             } else {
-                item.setDurability(hasBar ? (short) 0 : this.item.getDurability());
+                stack.setDurability(hasBar ? (short) 0 : item.getDurability());
             }
         }
     }
@@ -683,8 +696,6 @@ public class RPGItem {
         return output;
     }
 
-    private int _loreMinLen = 0;
-
     private List<String> wrapLines(String txt, int maxwidth) {
         List<String> words = new ArrayList<>();
         for (String word : txt.split(" ")) {
@@ -762,30 +773,6 @@ public class RPGItem {
         return encodedID;
     }
 
-    public static final int MC_ENCODED_ID_LENGTH = 16;
-
-    public static String getMCEncodedID(int id) {
-        String hex = String.format("%08x", id);
-        StringBuilder out = new StringBuilder();
-        for (char h : hex.toCharArray()) {
-            out.append(COLOR_CHAR);
-            out.append(h);
-        }
-        String str = out.toString();
-        if (str.length() != MC_ENCODED_ID_LENGTH)
-            throw new RuntimeException("Bad RPGItem ID: " + str + " (" + id + ")");
-        return out.toString();
-    }
-
-    private static int getStringWidth(String str) {
-        int width = 0;
-        for (int i = 0; i < str.length(); i++) {
-            char c = str.charAt(i);
-            width += Font.widths[c] + 1;
-        }
-        return width;
-    }
-
     public void print(CommandSender sender) {
         List<String> lines = getTooltipLines();
         for (int i = 0; i < lines.size(); i++) {
@@ -797,7 +784,7 @@ public class RPGItem {
         }
         sender.sendMessage(String.format(Locale.get("message.print.durability"), maxDurability));
         if (customItemModel) {
-            sender.sendMessage(String.format(Locale.get("message.print.customitemmodel"), this.item.getType().name() + ":" + this.item.getDurability()));
+            sender.sendMessage(String.format(Locale.get("message.print.customitemmodel"), item.getType().name() + ":" + item.getDurability()));
         }
         if (!itemFlags.isEmpty()) {
             String str = "";
@@ -811,10 +798,6 @@ public class RPGItem {
         }
     }
 
-    public void setDisplay(String str) {
-        setDisplay(str, true);
-    }
-
     public void setDisplay(String str, boolean update) {
         displayName = ChatColor.translateAlternateColorCodes('&', str);
         if (update)
@@ -825,8 +808,8 @@ public class RPGItem {
         return quality.colour + ChatColor.BOLD + displayName;
     }
 
-    public void setType(String str) {
-        setType(str, true);
+    public void setDisplay(String str) {
+        setDisplay(str, true);
     }
 
     public void setType(String str, boolean update) {
@@ -839,8 +822,8 @@ public class RPGItem {
         return type;
     }
 
-    public void setHand(String h) {
-        setHand(h, true);
+    public void setType(String str) {
+        setType(str, true);
     }
 
     public void setHand(String h, boolean update) {
@@ -851,6 +834,10 @@ public class RPGItem {
 
     public String getHand() {
         return hand;
+    }
+
+    public void setHand(String h) {
+        setHand(h, true);
     }
 
     public void setDamage(int min, int max) {
@@ -891,12 +878,12 @@ public class RPGItem {
         return permission;
     }
 
-    public boolean getHasPermission() {
-        return haspermission;
-    }
-
     public void setPermission(String p) {
         setPermission(p, true);
+    }
+
+    public boolean getHasPermission() {
+        return haspermission;
     }
 
     public void setPermission(String p, boolean update) {
@@ -915,10 +902,6 @@ public class RPGItem {
             rebuild();
     }
 
-    public void setArmour(int a) {
-        setArmour(a, true);
-    }
-
     public void setArmour(int a, boolean update) {
         armour = a;
         damageMin = damageMax = 0;
@@ -930,8 +913,8 @@ public class RPGItem {
         return armour;
     }
 
-    public void setLore(String str) {
-        setLore(str, true);
+    public void setArmour(int a) {
+        setArmour(a, true);
     }
 
     public void setLore(String str, boolean update) {
@@ -944,8 +927,8 @@ public class RPGItem {
         return loreText;
     }
 
-    public void setQuality(Quality q) {
-        setQuality(q, true);
+    public void setLore(String str) {
+        setLore(str, true);
     }
 
     public void setQuality(Quality q, boolean update) {
@@ -958,8 +941,8 @@ public class RPGItem {
         return quality;
     }
 
-    public void setItem(Material mat) {
-        setItem(mat, true);
+    public void setQuality(Quality q) {
+        setQuality(q, true);
     }
 
     public void setItem(Material mat, boolean update) {
@@ -977,20 +960,20 @@ public class RPGItem {
             rebuild();
     }
 
-    public void setDataValue(short value) {
-        item.setDurability(value);
-    }
-
     public short getDataValue() {
         return item.getDurability();
+    }
+
+    public void setDataValue(short value) {
+        item.setDurability(value);
     }
 
     public Material getItem() {
         return item.getType();
     }
 
-    public void setMaxDurability(int newVal) {
-        setMaxDurability(newVal, true);
+    public void setItem(Material mat) {
+        setItem(mat, true);
     }
 
     public void setMaxDurability(int newVal, boolean update) {
@@ -1012,6 +995,9 @@ public class RPGItem {
         return maxDurability <= 0 ? -1 : maxDurability;
     }
 
+    public void setMaxDurability(int newVal) {
+        setMaxDurability(newVal, true);
+    }
 
     public int getDurability(ItemStack item) {
         RPGMetadata meta = getMetadata(item);
@@ -1039,7 +1025,7 @@ public class RPGItem {
             if (durability > getMaxDurability()) {
                 durability = getMaxDurability();
             }
-            meta.put(RPGMetadata.DURABILITY, Integer.valueOf(durability));
+            meta.put(RPGMetadata.DURABILITY, durability);
         }
         updateItem(item, meta);
 
@@ -1056,7 +1042,7 @@ public class RPGItem {
 
     public void addPower(Power power, boolean update) {
         powers.add(power);
-        Power.powerUsage.put(power.getName(), Power.powerUsage.get(power.getName()) + 1);
+        Power.powerUsage.add(power.getName());
         if (power instanceof PowerHit) {
             powerHit.add((PowerHit) power);
         }

@@ -18,19 +18,20 @@ package think.rpgitems.power;
 
 import com.google.common.collect.BiMap;
 import com.google.common.collect.HashBiMap;
-import gnu.trove.map.hash.TObjectIntHashMap;
+import com.google.common.collect.HashMultiset;
+import com.google.common.collect.Multiset;
+import org.bukkit.ChatColor;
 import org.bukkit.Location;
 import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.entity.Entity;
 import org.bukkit.entity.LivingEntity;
 import org.bukkit.entity.Player;
+import org.bukkit.permissions.PermissionAttachment;
+import think.rpgitems.Plugin;
 import think.rpgitems.data.RPGValue;
 import think.rpgitems.item.RPGItem;
 
-import java.util.AbstractMap;
-import java.util.ArrayList;
-import java.util.Comparator;
-import java.util.List;
+import java.util.*;
 
 /**
  * Base class for all powers
@@ -45,7 +46,7 @@ public abstract class Power {
     /**
      * Usage count by power name
      */
-    public static TObjectIntHashMap<String> powerUsage = new TObjectIntHashMap<>();
+    public static Multiset<String> powerUsage = HashMultiset.create();
 
     /**
      * Item it belongs to
@@ -58,34 +59,6 @@ public abstract class Power {
     public Power() {
 
     }
-
-    /**
-     * Loads configuration for this power
-     *
-     * @param s Configuration
-     */
-    public abstract void init(ConfigurationSection s);
-
-    /**
-     * Saves configuration for this power
-     *
-     * @param s Configuration
-     */
-    public abstract void save(ConfigurationSection s);
-
-    /**
-     * Name of this power
-     *
-     * @return name
-     */
-    public abstract String getName();
-
-    /**
-     * Display text of this power
-     *
-     * @return Display text
-     */
-    public abstract String displayText();
 
     /**
      * Get nearby entities entity [ ].
@@ -156,7 +129,6 @@ public abstract class Power {
         return newEntities;
     }
 
-
     /**
      * Gets angle between vectors.
      *
@@ -167,6 +139,65 @@ public abstract class Power {
     public static float getAngleBetweenVectors(org.bukkit.util.Vector v1, org.bukkit.util.Vector v2) {
         return Math.abs((float) Math.toDegrees(v1.angle(v2)));
     }
+
+    public static boolean updateCooldownByString(Player player, RPGItem item, String command, long cooldownTime) {
+        long cooldown;
+        RPGValue value = RPGValue.get(player, item, "command." + command + ".cooldown");
+        if (value == null) {
+            cooldown = System.currentTimeMillis() / 50;
+            value = new RPGValue(player, item, "command." + command + ".cooldown", cooldown);
+        } else {
+            cooldown = value.asLong();
+        }
+        if (cooldown <= System.currentTimeMillis() / 50) {
+            value.set(System.currentTimeMillis() / 50 + cooldownTime);
+            return true;
+        } else {
+            player.sendMessage(ChatColor.AQUA + String.format(think.rpgitems.data.Locale.get("message.cooldown"), ((double) (cooldown - System.currentTimeMillis() / 50)) / 20d));
+            return false;
+        }
+    }
+
+    public static void AttachPermission(Player player, String permission) {
+        if (permission.length() != 0 && !permission.equals("*")) {
+            PermissionAttachment attachment = player.addAttachment(Plugin.plugin, 1);
+            String[] perms = permission.split("\\.");
+            StringBuilder p = new StringBuilder();
+            for (String perm : perms) {
+                p.append(perm);
+                attachment.setPermission(p.toString(), true);
+                p.append('.');
+            }
+        }
+    }
+
+    /**
+     * Loads configuration for this power
+     *
+     * @param s Configuration
+     */
+    public abstract void init(ConfigurationSection s);
+
+    /**
+     * Saves configuration for this power
+     *
+     * @param s Configuration
+     */
+    public abstract void save(ConfigurationSection s);
+
+    /**
+     * Name of this power
+     *
+     * @return name
+     */
+    public abstract String getName();
+
+    /**
+     * Display text of this power
+     *
+     * @return Display text
+     */
+    public abstract String displayText();
 
     /**
      * Check cooldown boolean.

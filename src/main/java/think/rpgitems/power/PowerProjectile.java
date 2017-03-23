@@ -90,6 +90,26 @@ public class PowerProjectile extends Power implements PowerRightClick {
     }
 
     /**
+     * Gets type name
+     *
+     * @return Type name
+     */
+    public String getType() {
+        if (projectileType == WitherSkull.class)
+            return "skull";
+        else if (projectileType == Fireball.class)
+            return "fireball";
+        else if (projectileType == SmallFireball.class)
+            return "smallfireball";
+        else if (projectileType == Arrow.class)
+            return "arrow";
+        else if (projectileType == LlamaSpit.class)
+            return "llamaspit";
+        else
+            return "snowball";
+    }
+
+    /**
      * Sets type from type name
      *
      * @param type Type name
@@ -118,26 +138,6 @@ public class PowerProjectile extends Power implements PowerRightClick {
     }
 
     /**
-     * Gets type name
-     *
-     * @return Type name
-     */
-    public String getType() {
-        if (projectileType == WitherSkull.class)
-            return "skull";
-        else if (projectileType == Fireball.class)
-            return "fireball";
-        else if (projectileType == SmallFireball.class)
-            return "smallfireball";
-        else if (projectileType == Arrow.class)
-            return "arrow";
-        else if (projectileType == LlamaSpit.class)
-            return "llamaspit";
-        else
-            return "snowball";
-    }
-
-    /**
      * Check if the type is acceptable
      *
      * @param str Type name
@@ -158,25 +158,55 @@ public class PowerProjectile extends Power implements PowerRightClick {
     }
 
     @Override
-    public void rightClick(Player player, ItemStack item, Block clicked) {
+    public void rightClick(Player player, ItemStack stack, Block clicked) {
         long cooldown;
-        if (this.item.getHasPermission() && !player.hasPermission(this.item.getPermission())) {
+        if (item.getHasPermission() && !player.hasPermission(item.getPermission())) {
+            return;
+        }
+        RPGValue value = RPGValue.get(player, item, "projectile.cooldown");
+        if (value == null) {
+            cooldown = System.currentTimeMillis() / 50;
+            value = new RPGValue(player, item, "projectile.cooldown", cooldown);
         } else {
-            RPGValue value = RPGValue.get(player, this.item, "projectile.cooldown");
-            if (value == null) {
-                cooldown = System.currentTimeMillis() / 50;
-                value = new RPGValue(player, this.item, "projectile.cooldown", cooldown);
+            cooldown = value.asLong();
+        }
+        if (cooldown <= System.currentTimeMillis() / 50) {
+            if (!item.consumeDurability(stack, consumption)) return;
+            value.set(System.currentTimeMillis() / 50 + cooldownTime);
+            if (!cone) {
+                Projectile projectile = player.launchProjectile(projectileType, player.getEyeLocation().getDirection().multiply(speed));
+                projectile.setGravity(gravity);
+                if (projectileType == Arrow.class)
+                    Events.removeArrows.add(projectile.getEntityId());
+                if (!gravity) {
+                    (new BukkitRunnable() {
+                        @Override
+                        public void run() {
+                            projectile.remove();
+                        }
+                    }).runTaskLater(Plugin.plugin, 80);
+                }
             } else {
-                cooldown = value.asLong();
-            }
-            if (cooldown <= System.currentTimeMillis() / 50) {
-                if (!this.item.consumeDurability(item, consumption)) return;
-                value.set(System.currentTimeMillis() / 50 + cooldownTime);
-                if (!cone) {
-                    Projectile projectile = player.launchProjectile(projectileType, player.getEyeLocation().getDirection().multiply(speed));
+                Vector loc = player.getEyeLocation().getDirection();
+                double phi = range / 180f * Math.PI;
+                Vector a, b;
+                Vector ax1 = loc.getCrossProduct(z_axis);
+                if (ax1.length() < 0.01) {
+                    a = x_axis.clone();
+                    b = y_axis.clone();
+                } else {
+                    a = ax1.normalize();
+                    b = loc.getCrossProduct(a).normalize();
+                }
+                for (int i = 0; i < amount; i++) {
+                    double z = range == 0 ? 1 : ThreadLocalRandom.current().nextDouble(Math.cos(phi), 1);
+                    double det = ThreadLocalRandom.current().nextDouble(0, 2 * Math.PI);
+                    double theta = Math.acos(z);
+                    Vector v = a.clone().multiply(Math.cos(det)).add(b.clone().multiply(Math.sin(det))).multiply(Math.sin(theta)).add(loc.clone().multiply(Math.cos(theta)));
+                    Projectile projectile = player.launchProjectile(projectileType, v.normalize().multiply(speed));
                     projectile.setGravity(gravity);
                     if (projectileType == Arrow.class)
-                        Events.removeArrows.put(projectile.getEntityId(), (byte) 1);
+                        Events.removeArrows.add(projectile.getEntityId());
                     if (!gravity) {
                         (new BukkitRunnable() {
                             @Override
@@ -185,41 +215,12 @@ public class PowerProjectile extends Power implements PowerRightClick {
                             }
                         }).runTaskLater(Plugin.plugin, 80);
                     }
-                } else {
-                    Vector loc = player.getEyeLocation().getDirection();
-                    double phi = range / 180f * Math.PI;
-                    Vector a, b;
-                    Vector ax1 = loc.getCrossProduct(z_axis);
-                    if (ax1.length() < 0.01) {
-                        a = x_axis.clone();
-                        b = y_axis.clone();
-                    } else {
-                        a = ax1.normalize();
-                        b = loc.getCrossProduct(a).normalize();
-                    }
-                    for (int i = 0; i < amount; i++) {
-                        double z = range == 0 ? 1 : ThreadLocalRandom.current().nextDouble(Math.cos(phi), 1);
-                        double det = ThreadLocalRandom.current().nextDouble(0, 2 * Math.PI);
-                        double theta = Math.acos(z);
-                        Vector v = a.clone().multiply(Math.cos(det)).add(b.clone().multiply(Math.sin(det))).multiply(Math.sin(theta)).add(loc.clone().multiply(Math.cos(theta)));
-                        Projectile projectile = player.launchProjectile(projectileType, v.normalize().multiply(speed));
-                        projectile.setGravity(gravity);
-                        if (projectileType == Arrow.class)
-                            Events.removeArrows.put(projectile.getEntityId(), (byte) 1);
-                        if (!gravity) {
-                            (new BukkitRunnable() {
-                                @Override
-                                public void run() {
-                                    projectile.remove();
-                                }
-                            }).runTaskLater(Plugin.plugin, 80);
-                        }
-                    }
                 }
-            } else {
-                player.sendMessage(ChatColor.AQUA + String.format(Locale.get("message.cooldown"), ((double) (cooldown - System.currentTimeMillis() / 50)) / 20d));
             }
+        } else {
+            player.sendMessage(ChatColor.AQUA + String.format(Locale.get("message.cooldown"), ((double) (cooldown - System.currentTimeMillis() / 50)) / 20d));
         }
+
     }
 
 }

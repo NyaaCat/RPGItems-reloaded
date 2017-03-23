@@ -44,11 +44,11 @@ public class WorldGuard {
     public static boolean useCustomFlag = true;
     public static boolean forceRefresh = false;
     public static Map<UUID, Collection<String>> disabledNowByPlayer;
-    private static Plugin plugin;
     static WorldGuardPlugin wgPlugin;
     static int majorVersion;
     static int minorVersion;
     static int pointVersion;
+    private static Plugin plugin;
     private static boolean hasSupport = false;
     private static FileConfiguration config;
 

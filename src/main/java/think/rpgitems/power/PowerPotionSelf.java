@@ -58,19 +58,19 @@ public class PowerPotionSelf extends Power implements PowerRightClick {
     public PotionEffectType type = PotionEffectType.HEAL;
 
     @Override
-    public void rightClick(Player player, ItemStack item, Block clicked) {
+    public void rightClick(Player player, ItemStack stack, Block clicked) {
         long cooldown;
-        if (this.item.getHasPermission() && !player.hasPermission(this.item.getPermission())) {
+        if (item.getHasPermission() && !player.hasPermission(item.getPermission())) {
         } else {
-            RPGValue value = RPGValue.get(player, this.item, "potionself.cooldown");
+            RPGValue value = RPGValue.get(player, item, "potionself.cooldown");
             if (value == null) {
                 cooldown = System.currentTimeMillis() / 50;
-                value = new RPGValue(player, this.item, "potionself.cooldown", cooldown);
+                value = new RPGValue(player, item, "potionself.cooldown", cooldown);
             } else {
                 cooldown = value.asLong();
             }
             if (cooldown <= System.currentTimeMillis() / 50) {
-                if (!this.item.consumeDurability(item, consumption)) return;
+                if (!item.consumeDurability(stack, consumption)) return;
                 value.set(System.currentTimeMillis() / 50 + cooldownTime);
                 player.addPotionEffect(new PotionEffect(type, duration, amplifier), true);
             } else {

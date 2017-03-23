@@ -18,6 +18,7 @@ package think.rpgitems.config;
 
 import org.bukkit.configuration.ConfigurationSection;
 
+@Deprecated
 public interface Updater {
     void update(ConfigurationSection section);
 }

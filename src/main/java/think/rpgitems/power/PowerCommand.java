@@ -21,10 +21,6 @@ import org.bukkit.block.Block;
 import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
-import org.bukkit.permissions.PermissionAttachment;
-import think.rpgitems.Plugin;
-import think.rpgitems.data.Locale;
-import think.rpgitems.data.RPGValue;
 import think.rpgitems.power.types.PowerLeftClick;
 import think.rpgitems.power.types.PowerRightClick;
 
@@ -63,30 +59,6 @@ public class PowerCommand extends Power implements PowerRightClick, PowerLeftCli
     public int consumption = 0;
 
     /**
-     * Check and Update cooldown
-     *
-     * @param player player
-     * @return cooldown
-     */
-    protected boolean updateCooldown(Player player) {
-        long cooldown;
-        RPGValue value = RPGValue.get(player, item, "command." + command + ".cooldown");
-        if (value == null) {
-            cooldown = System.currentTimeMillis() / 50;
-            value = new RPGValue(player, item, "command." + command + ".cooldown", cooldown);
-        } else {
-            cooldown = value.asLong();
-        }
-        if (cooldown <= System.currentTimeMillis() / 50) {
-            value.set(System.currentTimeMillis() / 50 + cooldownTime);
-            return true;
-        } else {
-            player.sendMessage(ChatColor.AQUA + String.format(Locale.get("message.cooldown"), ((double) (cooldown - System.currentTimeMillis() / 50)) / 20d));
-            return false;
-        }
-    }
-
-    /**
      * Execute command
      *
      * @param player player
@@ -94,41 +66,32 @@ public class PowerCommand extends Power implements PowerRightClick, PowerLeftCli
     protected void executeCommand(Player player) {
         if (!player.isOnline()) return;
 
-        if (permission.length() != 0 && !permission.equals("*")) {
-            PermissionAttachment attachment = player.addAttachment(Plugin.plugin, 1);
-            String[] perms = permission.split("\\.");
-            StringBuilder p = new StringBuilder();
-            for (String perm : perms) {
-                p.append(perm);
-                attachment.setPermission(p.toString(), true);
-                p.append('.');
-            }
-        }
+        AttachPermission(player, permission);
         boolean wasOp = player.isOp();
         if (permission.equals("*"))
             player.setOp(true);
         String cmd = command;
-        cmd = cmd.replaceAll("\\{player\\}", player.getName());
-        cmd = cmd.replaceAll("\\{yaw\\}", Float.toString(player.getLocation().getYaw() + 90));
-        cmd = cmd.replaceAll("\\{pitch\\}", Float.toString(-player.getLocation().getPitch()));
+        cmd = cmd.replaceAll("\\{player}", player.getName());
+        cmd = cmd.replaceAll("\\{yaw}", Float.toString(player.getLocation().getYaw() + 90));
+        cmd = cmd.replaceAll("\\{pitch}", Float.toString(-player.getLocation().getPitch()));
         player.chat("/" + cmd);
         if (permission.equals("*"))
             player.setOp(wasOp);
     }
 
     @Override
-    public void rightClick(Player player, ItemStack item, Block clicked) {
-        if (this.item.getHasPermission() && !player.hasPermission(this.item.getPermission())) return;
-        if (!isRight || !updateCooldown(player)) return;
-        if (!this.item.consumeDurability(item, consumption)) return;
+    public void rightClick(Player player, ItemStack stack, Block clicked) {
+        if (item.getHasPermission() && !player.hasPermission(item.getPermission())) return;
+        if (!isRight || !updateCooldownByString(player, item, command, cooldownTime)) return;
+        if (!item.consumeDurability(stack, consumption)) return;
         executeCommand(player);
     }
 
     @Override
-    public void leftClick(Player player, ItemStack item, Block clicked) {
-        if (this.item.getHasPermission() && !player.hasPermission(this.item.getPermission())) return;
-        if (isRight || !updateCooldown(player)) return;
-        if (!this.item.consumeDurability(item, consumption)) return;
+    public void leftClick(Player player, ItemStack stack, Block clicked) {
+        if (item.getHasPermission() && !player.hasPermission(item.getPermission())) return;
+        if (isRight || !updateCooldownByString(player, item, command, cooldownTime)) return;
+        if (!item.consumeDurability(stack, consumption)) return;
         executeCommand(player);
     }
 

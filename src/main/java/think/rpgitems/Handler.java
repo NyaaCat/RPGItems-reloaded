@@ -505,7 +505,7 @@ public class Handler implements CommandHandler {
     @CommandGroup("item_removepower")
     public void itemRemovePower(CommandSender sender, RPGItem item, String power) {
         if (item.removePower(power)) {
-            Power.powerUsage.put(power, Power.powerUsage.get(power) - 1);
+            Power.powerUsage.remove(power);
             sender.sendMessage(ChatColor.GREEN + String.format(Locale.get("message.power.removed"), power));
             ItemManager.save(Plugin.plugin);
         } else {
@@ -651,7 +651,7 @@ public class Handler implements CommandHandler {
     }
 
     @CommandString("rpgitem $n[] get $power:s[] $nth:i[] $property:s[]")
-    @CommandDocumentation("$command.rpgitem.power_property_set")
+    @CommandDocumentation("$command.rpgitem.power_property_get")
     @CommandGroup("item_power_property_g")
     public void getItemPowerProperty(CommandSender sender, RPGItem item, String power, int nth, String property) {
         int i = nth;
@@ -677,7 +677,7 @@ public class Handler implements CommandHandler {
     }
 
     @CommandString("rpgitem $n[] set $power:s[] $nth:i[] $property:s[] $val:s[]")
-    @CommandDocumentation("$command.rpgitem.power_property_get")
+    @CommandDocumentation("$command.rpgitem.power_property_set")
     @CommandGroup("item_power_property_s")
     public void setItemPowerProperty(CommandSender sender, RPGItem item, String power, int nth, String property, String val) {
         Class p = Power.powers.get(power);

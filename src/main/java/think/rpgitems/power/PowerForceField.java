@@ -81,13 +81,13 @@ public class PowerForceField extends Power implements PowerRightClick {
     }
 
     @Override
-    public void rightClick(Player player, ItemStack item, Block clicked) {
-        if (this.item.getHasPermission() && !player.hasPermission(this.item.getPermission())) return;
-        RPGValue value = RPGValue.get(player, this.item, "projectile.cooldown");
+    public void rightClick(Player player, ItemStack stack, Block clicked) {
+        if (item.getHasPermission() && !player.hasPermission(item.getPermission())) return;
+        RPGValue value = RPGValue.get(player, item, "projectile.cooldown");
         long cd;
         if (value == null) {
             cd = System.currentTimeMillis() / 50;
-            value = new RPGValue(player, this.item, "projectile.cooldown", cooldown);
+            value = new RPGValue(player, item, "projectile.cooldown", cooldown);
         } else {
             cd = value.asLong();
         }
@@ -95,7 +95,7 @@ public class PowerForceField extends Power implements PowerRightClick {
             player.sendMessage(ChatColor.AQUA + String.format(Locale.get("message.cooldown"), ((double) (cd - System.currentTimeMillis() / 50)) / 20d));
             return;
         }
-        if (!this.item.consumeDurability(item, consumption)) return;
+        if (!item.consumeDurability(stack, consumption)) return;
         value.set(System.currentTimeMillis() / 50 + cooldown);
         World w = player.getWorld();
         int x = player.getLocation().getBlockX();
@@ -110,6 +110,32 @@ public class PowerForceField extends Power implements PowerRightClick {
 
         buildWallTask tsk = new buildWallTask(w, circlePoints(w, x, z, radius, l), l, h, ttl);
         tsk.setId(Bukkit.getScheduler().scheduleSyncRepeatingTask(Plugin.plugin, tsk, 1, 1));
+    }
+
+    /* copied from wikipedia */
+    private Set<Location> circlePoints(World w, int x0, int y0, int radius, int l) {
+        int x = radius;
+        int y = 0;
+        int decisionOver2 = 1 - x;   // Decision criterion divided by 2 evaluated at x=r, y=0
+        Set<Location> list = new HashSet<>();
+        while (y <= x) {
+            list.add(new Location(w, x + x0, l, y + y0)); // Octant 1
+            list.add(new Location(w, y + x0, l, x + y0)); // Octant 2
+            list.add(new Location(w, -x + x0, l, y + y0)); // Octant 4
+            list.add(new Location(w, -y + x0, l, x + y0)); // Octant 3
+            list.add(new Location(w, -x + x0, l, -y + y0)); // Octant 5
+            list.add(new Location(w, -y + x0, l, -x + y0)); // Octant 6
+            list.add(new Location(w, x + x0, l, -y + y0)); // Octant 8
+            list.add(new Location(w, y + x0, l, -x + y0)); // Octant 7
+            y++;
+            if (decisionOver2 <= 0) {
+                decisionOver2 += 2 * y + 1;   // Change in decision criterion for y -> y+1
+            } else {
+                x--;
+                decisionOver2 += 2 * (y - x) + 1;   // Change for y -> y+1, x -> x-1
+            }
+        }
+        return list;
     }
 
     private static class buildWallTask implements Runnable {
@@ -136,6 +162,10 @@ public class PowerForceField extends Power implements PowerRightClick {
          */
         h;
         /**
+         * The Ttl.
+         */
+        final int ttl;
+        /**
          * The Current.
          */
         int current;
@@ -143,19 +173,6 @@ public class PowerForceField extends Power implements PowerRightClick {
          * The Id.
          */
         int id;
-        /**
-         * The Ttl.
-         */
-        final int ttl;
-
-        /**
-         * Sets id.
-         *
-         * @param id the id
-         */
-        public void setId(int id) {
-            this.id = id;
-        }
 
         /**
          * Instantiates a new Build wall task.
@@ -175,6 +192,15 @@ public class PowerForceField extends Power implements PowerRightClick {
             wasWool = new HashSet<>();
             wasBarrier = new HashSet<>();
             this.ttl = ttl;
+        }
+
+        /**
+         * Sets id.
+         *
+         * @param id the id
+         */
+        public void setId(int id) {
+            this.id = id;
         }
 
         @Override
@@ -233,32 +259,6 @@ public class PowerForceField extends Power implements PowerRightClick {
                 }, ttl);
             }
         }
-    }
-
-    /* copied from wikipedia */
-    private Set<Location> circlePoints(World w, int x0, int y0, int radius, int l) {
-        int x = radius;
-        int y = 0;
-        int decisionOver2 = 1 - x;   // Decision criterion divided by 2 evaluated at x=r, y=0
-        Set<Location> list = new HashSet<>();
-        while (y <= x) {
-            list.add(new Location(w, x + x0, l, y + y0)); // Octant 1
-            list.add(new Location(w, y + x0, l, x + y0)); // Octant 2
-            list.add(new Location(w, -x + x0, l, y + y0)); // Octant 4
-            list.add(new Location(w, -y + x0, l, x + y0)); // Octant 3
-            list.add(new Location(w, -x + x0, l, -y + y0)); // Octant 5
-            list.add(new Location(w, -y + x0, l, -x + y0)); // Octant 6
-            list.add(new Location(w, x + x0, l, -y + y0)); // Octant 8
-            list.add(new Location(w, y + x0, l, -x + y0)); // Octant 7
-            y++;
-            if (decisionOver2 <= 0) {
-                decisionOver2 += 2 * y + 1;   // Change in decision criterion for y -> y+1
-            } else {
-                x--;
-                decisionOver2 += 2 * (y - x) + 1;   // Change for y -> y+1, x -> x-1
-            }
-        }
-        return list;
     }
 
 }

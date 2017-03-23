@@ -38,15 +38,15 @@ public class PowerConsumeHit extends Power implements PowerHit {
     public int cooldownTime = 0;
 
     @Override
-    public void hit(final Player player, ItemStack item, LivingEntity entity, double damage) {
+    public void hit(final Player player, ItemStack stack, LivingEntity entity, double damage) {
         if (checkCooldown(player, cooldownTime)) {
-            if (this.item.getHasPermission() && !player.hasPermission(this.item.getPermission())) return;
-            int count = item.getAmount() - 1;
+            if (item.getHasPermission() && !player.hasPermission(item.getPermission())) return;
+            int count = stack.getAmount() - 1;
             if (count == 0) {
-                item.setAmount(0);
-                item.setType(Material.AIR);
+                stack.setAmount(0);
+                stack.setType(Material.AIR);
             } else {
-                item.setAmount(count);
+                stack.setAmount(count);
             }
         }
     }

@@ -6,19 +6,17 @@ import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.entity.LivingEntity;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
-import org.bukkit.permissions.PermissionAttachment;
-import think.rpgitems.Plugin;
 
 import java.util.List;
 
 /**
  * Power aoecommand.
  * <p>
- *  The item will run {@link #command} for every entity
- *  in range({@link #rm min} blocks ~ {@link #r max} blocks in {@link #facing view angle})
- *  on {@link #isRight click} giving the {@link #permission}
- *  just for the use of the command.
- *  </p>
+ * The item will run {@link #command} for every entity
+ * in range({@link #rm min} blocks ~ {@link #r max} blocks in {@link #facing view angle})
+ * on {@link #isRight click} giving the {@link #permission}
+ * just for the use of the command.
+ * </p>
  */
 public class PowerAOECommand extends PowerCommand {
     /**
@@ -67,24 +65,15 @@ public class PowerAOECommand extends PowerCommand {
     private void aoeCommand(Player player) {
         if (!player.isOnline()) return;
 
-        if (permission.length() != 0 && !permission.equals("*")) {
-            PermissionAttachment attachment = player.addAttachment(Plugin.plugin, 1);
-            String[] perms = permission.split("\\.");
-            StringBuilder p = new StringBuilder();
-            for (String perm : perms) {
-                p.append(perm);
-                attachment.setPermission(p.toString(), true);
-                p.append('.');
-            }
-        }
+        AttachPermission(player, permission);
 
         String usercmd = command;
-        usercmd = usercmd.replaceAll("\\{player\\}", player.getName());
-        usercmd = usercmd.replaceAll("\\{player.x\\}", Float.toString(-player.getLocation().getBlockX()));
-        usercmd = usercmd.replaceAll("\\{player.y\\}", Float.toString(-player.getLocation().getBlockY()));
-        usercmd = usercmd.replaceAll("\\{player.z\\}", Float.toString(-player.getLocation().getBlockZ()));
-        usercmd = usercmd.replaceAll("\\{player.yaw\\}", Float.toString(90 + player.getEyeLocation().getYaw()));
-        usercmd = usercmd.replaceAll("\\{player.pitch\\}", Float.toString(-player.getEyeLocation().getPitch()));
+        usercmd = usercmd.replaceAll("\\{player}", player.getName());
+        usercmd = usercmd.replaceAll("\\{player.x}", Float.toString(-player.getLocation().getBlockX()));
+        usercmd = usercmd.replaceAll("\\{player.y}", Float.toString(-player.getLocation().getBlockY()));
+        usercmd = usercmd.replaceAll("\\{player.z}", Float.toString(-player.getLocation().getBlockZ()));
+        usercmd = usercmd.replaceAll("\\{player.yaw}", Float.toString(90 + player.getEyeLocation().getYaw()));
+        usercmd = usercmd.replaceAll("\\{player.pitch}", Float.toString(-player.getEyeLocation().getPitch()));
 
 
         boolean wasOp = player.isOp();
@@ -108,13 +97,13 @@ public class PowerAOECommand extends PowerCommand {
                     ++c;
                     continue;
                 }
-                cmd = cmd.replaceAll("\\{entity\\}", e.getName());
-                cmd = cmd.replaceAll("\\{entity.uuid\\}", e.getUniqueId().toString());
-                cmd = cmd.replaceAll("\\{entity.x\\}", Float.toString(e.getLocation().getBlockX()));
-                cmd = cmd.replaceAll("\\{entity.y\\}", Float.toString(e.getLocation().getBlockY()));
-                cmd = cmd.replaceAll("\\{entity.z\\}", Float.toString(e.getLocation().getBlockZ()));
-                cmd = cmd.replaceAll("\\{entity.yaw\\}", Float.toString(90 + e.getEyeLocation().getYaw()));
-                cmd = cmd.replaceAll("\\{entity.pitch\\}", Float.toString(-e.getEyeLocation().getPitch()));
+                cmd = cmd.replaceAll("\\{entity}", e.getName());
+                cmd = cmd.replaceAll("\\{entity.uuid}", e.getUniqueId().toString());
+                cmd = cmd.replaceAll("\\{entity.x}", Float.toString(e.getLocation().getBlockX()));
+                cmd = cmd.replaceAll("\\{entity.y}", Float.toString(e.getLocation().getBlockY()));
+                cmd = cmd.replaceAll("\\{entity.z}", Float.toString(e.getLocation().getBlockZ()));
+                cmd = cmd.replaceAll("\\{entity.yaw}", Float.toString(90 + e.getEyeLocation().getYaw()));
+                cmd = cmd.replaceAll("\\{entity.pitch}", Float.toString(-e.getEyeLocation().getPitch()));
                 Bukkit.getServer().dispatchCommand(player, cmd);
             }
         }
@@ -124,18 +113,18 @@ public class PowerAOECommand extends PowerCommand {
     }
 
     @Override
-    public void rightClick(Player player, ItemStack item, Block clicked) {
-        if (this.item.getHasPermission() && !player.hasPermission(this.item.getPermission())) return;
-        if (!isRight || !updateCooldown(player)) return;
-        if (!this.item.consumeDurability(item, consumption)) return;
+    public void rightClick(Player player, ItemStack stack, Block clicked) {
+        if (item.getHasPermission() && !player.hasPermission(item.getPermission())) return;
+        if (!isRight || !updateCooldownByString(player, item, command, cooldownTime)) return;
+        if (!item.consumeDurability(stack, consumption)) return;
         aoeCommand(player);
     }
 
     @Override
-    public void leftClick(Player player, ItemStack item, Block clicked) {
-        if (this.item.getHasPermission() && !player.hasPermission(this.item.getPermission())) return;
-        if (isRight || !updateCooldown(player)) return;
-        if (!this.item.consumeDurability(item, consumption)) return;
+    public void leftClick(Player player, ItemStack stack, Block clicked) {
+        if (item.getHasPermission() && !player.hasPermission(item.getPermission())) return;
+        if (isRight || !updateCooldownByString(player, item, command, cooldownTime)) return;
+        if (!item.consumeDurability(stack, consumption)) return;
         aoeCommand(player);
     }
 

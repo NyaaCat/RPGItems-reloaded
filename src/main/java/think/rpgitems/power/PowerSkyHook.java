@@ -36,12 +36,12 @@ public class PowerSkyHook extends Power implements PowerRightClick {
     public int hookDistance = 10;
 
     @Override
-    public void rightClick(final Player player, ItemStack item, Block clicked) {
-        if (this.item.getHasPermission() && !player.hasPermission(this.item.getPermission())) {
+    public void rightClick(final Player player, ItemStack stack, Block clicked) {
+        if (item.getHasPermission() && !player.hasPermission(item.getPermission())) {
         } else {
-            RPGValue isHooking = RPGValue.get(player, this.item, "skyhook.isHooking");
+            RPGValue isHooking = RPGValue.get(player, item, "skyhook.isHooking");
             if (isHooking == null) {
-                isHooking = new RPGValue(player, this.item, "skyhook.isHooking", false);
+                isHooking = new RPGValue(player, item, "skyhook.isHooking", false);
             }
             if (isHooking.asBoolean()) {
                 player.setVelocity(player.getLocation().getDirection());
@@ -66,10 +66,10 @@ public class PowerSkyHook extends Power implements PowerRightClick {
                 public void run() {
                     if (!player.getAllowFlight()) {
                         cancel();
-                        RPGValue.get(player, PowerSkyHook.this.item, "skyhook.isHooking").set(false);
+                        RPGValue.get(player, item, "skyhook.isHooking").set(false);
                         return;
                     }
-                    if (!RPGValue.get(player, PowerSkyHook.this.item, "skyhook.isHooking").asBoolean()) {
+                    if (!RPGValue.get(player, item, "skyhook.isHooking").asBoolean()) {
                         player.setFlying(false);
                         if (player.getGameMode() != GameMode.CREATIVE)
                             player.setAllowFlight(false);

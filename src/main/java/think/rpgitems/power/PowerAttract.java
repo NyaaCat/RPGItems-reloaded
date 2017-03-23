@@ -51,8 +51,8 @@ public class PowerAttract extends Power implements PowerTick {
     }
 
     @Override
-    public void tick(Player player, ItemStack item) {
-        if (this.item.getHasPermission() && !player.hasPermission(this.item.getPermission())) return;
+    public void tick(Player player, ItemStack stack) {
+        if (item.getHasPermission() && !player.hasPermission(item.getPermission())) return;
         double factor = Math.sqrt(radius - 1) / maxSpeed;
         for (Entity e : player.getNearbyEntities(radius, radius, radius)) {
             if (e instanceof LivingEntity && !(e instanceof Player)) {

@@ -42,10 +42,10 @@ public class PowerFlame extends Power implements PowerHit {
     public int consumption = 0;
 
     @Override
-    public void hit(Player player, ItemStack item, LivingEntity entity, double damage) {
-        if (this.item.getHasPermission() && !player.hasPermission(this.item.getPermission())) {
+    public void hit(Player player, ItemStack stack, LivingEntity entity, double damage) {
+        if (item.getHasPermission() && !player.hasPermission(item.getPermission())) {
         } else {
-            if (!this.item.consumeDurability(item, consumption)) return;
+            if (!item.consumeDurability(stack, consumption)) return;
             entity.setFireTicks(burnTime);
         }
     }

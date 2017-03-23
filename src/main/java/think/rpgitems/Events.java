@@ -16,9 +16,6 @@
  */
 package think.rpgitems;
 
-import gnu.trove.map.hash.TIntByteHashMap;
-import gnu.trove.map.hash.TIntIntHashMap;
-import gnu.trove.map.hash.TObjectIntHashMap;
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
 import org.bukkit.Material;
@@ -59,11 +56,72 @@ import java.util.*;
 
 public class Events implements Listener {
 
-    public static TIntByteHashMap removeArrows = new TIntByteHashMap();
-    public static TIntIntHashMap rpgProjectiles = new TIntIntHashMap();
-    public static TObjectIntHashMap<String> recipeWindows = new TObjectIntHashMap<>();
+    public static HashSet<Integer> removeArrows = new HashSet<>();
+    public static HashMap<Integer, Integer> rpgProjectiles = new HashMap<>();
+    public static HashMap<String, Integer> recipeWindows = new HashMap<>();
     public static HashMap<String, Set<Integer>> drops = new HashMap<>();
     public static boolean useLocaleInv = false;
+    private Set<Material> BYPASS_BLOCK = new HashSet<Material>() {{
+        add(Material.ACACIA_DOOR);
+        add(Material.BIRCH_DOOR);
+        add(Material.DARK_OAK_DOOR);
+        add(Material.IRON_DOOR_BLOCK);
+        add(Material.JUNGLE_DOOR);
+        add(Material.SPRUCE_DOOR);
+        add(Material.TRAP_DOOR);
+        add(Material.WOODEN_DOOR);
+        add(Material.FENCE_GATE);
+        add(Material.ACACIA_FENCE_GATE);
+        add(Material.BIRCH_FENCE_GATE);
+        add(Material.DARK_OAK_FENCE_GATE);
+        add(Material.JUNGLE_FENCE_GATE);
+        add(Material.SPRUCE_FENCE_GATE);
+        add(Material.CHEST);
+        add(Material.TRAPPED_CHEST);
+        add(Material.ENCHANTMENT_TABLE);
+        add(Material.WORKBENCH);
+        add(Material.BEACON);
+        add(Material.ANVIL);
+        add(Material.FURNACE);
+        add(Material.BURNING_FURNACE);
+        add(Material.BREWING_STAND);
+        add(Material.HOPPER);
+        add(Material.DISPENSER);
+        add(Material.DROPPER);
+        add(Material.ENDER_CHEST);
+        add(Material.WHITE_SHULKER_BOX);
+        add(Material.ORANGE_SHULKER_BOX);
+        add(Material.MAGENTA_SHULKER_BOX);
+        add(Material.LIGHT_BLUE_SHULKER_BOX);
+        add(Material.YELLOW_SHULKER_BOX);
+        add(Material.LIME_SHULKER_BOX);
+        add(Material.PINK_SHULKER_BOX);
+        add(Material.GRAY_SHULKER_BOX);
+        add(Material.SILVER_SHULKER_BOX);
+        add(Material.CYAN_SHULKER_BOX);
+        add(Material.PURPLE_SHULKER_BOX);
+        add(Material.BLUE_SHULKER_BOX);
+        add(Material.BROWN_SHULKER_BOX);
+        add(Material.GREEN_SHULKER_BOX);
+        add(Material.RED_SHULKER_BOX);
+        add(Material.BLACK_SHULKER_BOX);
+    }};
+    private HashSet<LocaleInventory> localeInventories = new HashSet<>();
+    private Random random = new Random();
+
+    static private boolean canStack(ItemStack a, ItemStack b) {
+        if (a != null && a.getType() == Material.AIR) a = null;
+        if (b != null && b.getType() == Material.AIR) b = null;
+        if (a == null && b == null) return true;
+        if (a != null && b != null) {
+            ItemStack ap = a.clone(), bp = b.clone();
+            ap.setAmount(1);
+            bp.setAmount(1);
+            return ap.equals(bp);
+        } else {
+            return false;
+        }
+    }
 
     @EventHandler
     public void onItemEnchant(EnchantItemEvent e) {
@@ -146,7 +204,7 @@ public class Events implements Listener {
         if (removeArrows.contains(entity.getEntityId())) {
             entity.remove();
             removeArrows.remove(entity.getEntityId());
-        } else if (rpgProjectiles.contains(entity.getEntityId())) {
+        } else if (rpgProjectiles.containsKey(entity.getEntityId())) {
             RPGItem item = ItemManager.getItemById(rpgProjectiles.get(entity.getEntityId()));
             new BukkitRunnable() {
                 @Override
@@ -186,52 +244,6 @@ public class Events implements Listener {
             rpgProjectiles.put(e.getEntity().getEntityId(), rItem.getID());
         }
     }
-
-    private Set<Material> BYPASS_BLOCK = new HashSet<Material>() {{
-        add(Material.ACACIA_DOOR);
-        add(Material.BIRCH_DOOR);
-        add(Material.DARK_OAK_DOOR);
-        add(Material.IRON_DOOR_BLOCK);
-        add(Material.JUNGLE_DOOR);
-        add(Material.SPRUCE_DOOR);
-        add(Material.TRAP_DOOR);
-        add(Material.WOODEN_DOOR);
-        add(Material.FENCE_GATE);
-        add(Material.ACACIA_FENCE_GATE);
-        add(Material.BIRCH_FENCE_GATE);
-        add(Material.DARK_OAK_FENCE_GATE);
-        add(Material.JUNGLE_FENCE_GATE);
-        add(Material.SPRUCE_FENCE_GATE);
-        add(Material.CHEST);
-        add(Material.TRAPPED_CHEST);
-        add(Material.ENCHANTMENT_TABLE);
-        add(Material.WORKBENCH);
-        add(Material.BEACON);
-        add(Material.ANVIL);
-        add(Material.FURNACE);
-        add(Material.BURNING_FURNACE);
-        add(Material.BREWING_STAND);
-        add(Material.HOPPER);
-        add(Material.DISPENSER);
-        add(Material.DROPPER);
-        add(Material.ENDER_CHEST);
-        add(Material.WHITE_SHULKER_BOX);
-        add(Material.ORANGE_SHULKER_BOX);
-        add(Material.MAGENTA_SHULKER_BOX);
-        add(Material.LIGHT_BLUE_SHULKER_BOX);
-        add(Material.YELLOW_SHULKER_BOX);
-        add(Material.LIME_SHULKER_BOX);
-        add(Material.PINK_SHULKER_BOX);
-        add(Material.GRAY_SHULKER_BOX);
-        add(Material.SILVER_SHULKER_BOX);
-        add(Material.CYAN_SHULKER_BOX);
-        add(Material.PURPLE_SHULKER_BOX);
-        add(Material.BLUE_SHULKER_BOX);
-        add(Material.BROWN_SHULKER_BOX);
-        add(Material.GREEN_SHULKER_BOX);
-        add(Material.RED_SHULKER_BOX);
-        add(Material.BLACK_SHULKER_BOX);
-    }};
 
     @EventHandler
     public void onPlayerAction(PlayerInteractEvent e) {
@@ -317,8 +329,6 @@ public class Events implements Listener {
             }
         }.runTaskLater(Plugin.plugin, 1L);
     }
-
-    private HashSet<LocaleInventory> localeInventories = new HashSet<>();
 
     @EventHandler
     public void onInventoryClose(InventoryCloseEvent e) {
@@ -412,8 +422,6 @@ public class Events implements Listener {
         }
     }
 
-    private Random random = new Random();
-
     private double playerDamager(EntityDamageByEntityEvent e, double damage) {
         Player player = (Player) e.getDamager();
         ItemStack item = player.getInventory().getItemInMainHand();
@@ -460,7 +468,7 @@ public class Events implements Listener {
 
     private double projectileDamager(EntityDamageByEntityEvent e, double damage) {
         Projectile entity = (Projectile) e.getDamager();
-        if (rpgProjectiles.contains(entity.getEntityId())) {
+        if (rpgProjectiles.containsKey(entity.getEntityId())) {
             RPGItem rItem = ItemManager.getItemById(rpgProjectiles.get(entity.getEntityId()));
             if (rItem == null)
                 return damage;
@@ -536,7 +544,6 @@ public class Events implements Listener {
         return damage;
     }
 
-
     @EventHandler(priority = EventPriority.HIGHEST, ignoreCancelled = true)
     public void onPlayerHitTaken(EntityDamageEvent ev) {
         if (ev.getEntity() instanceof Player) {
@@ -594,20 +601,6 @@ public class Events implements Listener {
             } else {
                 e.getInventory().setResult(new ItemStack(Material.AIR));
             }
-        }
-    }
-
-    static private boolean canStack(ItemStack a, ItemStack b) {
-        if (a != null && a.getType() == Material.AIR) a = null;
-        if (b != null && b.getType() == Material.AIR) b = null;
-        if (a == null && b == null) return true;
-        if (a != null && b != null) {
-            ItemStack ap = a.clone(), bp = b.clone();
-            ap.setAmount(1);
-            bp.setAmount(1);
-            return ap.equals(bp);
-        } else {
-            return false;
         }
     }
 }

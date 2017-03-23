@@ -23,17 +23,16 @@ import java.util.HashMap;
 
 public class RPGValue {
 
-    Object value;
-
     static HashMap<String, RPGValue> map = new HashMap<>();
-
-    public static RPGValue get(Player player, RPGItem item, String name) {
-        return map.get(player.getName() + "." + item.getID() + "." + name);
-    }
+    Object value;
 
     public RPGValue(Player player, RPGItem item, String name, Object value) {
         this.value = value;
         map.put(player.getName() + "." + item.getID() + "." + name, this);
+    }
+
+    public static RPGValue get(Player player, RPGItem item, String name) {
+        return map.get(player.getName() + "." + item.getID() + "." + name);
     }
 
     public void set(Object value) {

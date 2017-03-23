@@ -9,12 +9,12 @@ import org.bukkit.inventory.ItemStack;
  */
 public interface PowerHit extends Power {
     /**
-     * Calls when {@code player} using {@code item} hits an {@code entity} with {@code damage}
+     * Calls when {@code player} using {@code stack} hits an {@code entity} with {@code damage}
      *
      * @param player Player
-     * @param item   ItemStack of this RPGItem
+     * @param stack  ItemStack of this RPGItem
      * @param entity LivingEntity being hit
      * @param damage Damage of this event
      */
-    void hit(Player player, ItemStack item, LivingEntity entity, double damage);
+    void hit(Player player, ItemStack stack, LivingEntity entity, double damage);
 }

@@ -35,83 +35,29 @@ import java.util.zip.ZipFile;
  */
 public class Updater {
 
-    private Plugin plugin;
-    private UpdateType type;
-    private String versionName;
-    private String versionLink;
-    private String versionType;
-    private String versionGameVersion;
-
-    private boolean announce; // Whether to announce file downloads
-
-    private URL url; // Connecting to RSS
-    private File file; // The plugin's file
-    private Thread thread; // Updater thread
-
-    private int id = -1; // Project's Curse ID
-    private String apiKey = null; // BukkitDev ServerMods API key
     private static final String TITLE_VALUE = "name"; // Gets remote file's title
     private static final String LINK_VALUE = "downloadUrl"; // Gets remote file's download link
     private static final String TYPE_VALUE = "releaseType"; // Gets remote file's release type
     private static final String VERSION_VALUE = "gameVersion"; // Gets remote file's build version
     private static final String QUERY = "/servermods/files?projectIds="; // Path to GET
     private static final String HOST = "https://api.curseforge.com"; // Slugs will be appended to this to get to the project's RSS feed
-
     private static final String[] NO_UPDATE_TAG = {"-DEV", "-PRE", "-SNAPSHOT"}; // If the version number contains one of these, don't update.
     private static final int BYTE_SIZE = 1024; // Used for downloading files
+    private Plugin plugin;
+    private UpdateType type;
+    private String versionName;
+    private String versionLink;
+    private String versionType;
+    private String versionGameVersion;
+    private boolean announce; // Whether to announce file downloads
+    private URL url; // Connecting to RSS
+    private File file; // The plugin's file
+    private Thread thread; // Updater thread
+    private int id = -1; // Project's Curse ID
+    private String apiKey = null; // BukkitDev ServerMods API key
     private YamlConfiguration config; // Config file
     private String updateFolder;// The folder that downloads will be placed in
     private Updater.UpdateResult result = Updater.UpdateResult.SUCCESS; // Used for determining the outcome of the update process
-
-    /**
-     * Gives the dev the result of the update process. Can be obtained by called getResult().
-     */
-    public enum UpdateResult {
-        /**
-         * The updater found an update, and has readied it to be loaded the next time the server restarts/reloads.
-         */
-        SUCCESS, /**
-         * The updater did not find an update, and nothing was downloaded.
-         */
-        NO_UPDATE, /**
-         * The server administrator has disabled the updating system
-         */
-        DISABLED, /**
-         * The updater found an update, but was unable to download it.
-         */
-        FAIL_DOWNLOAD, /**
-         * For some reason, the updater was unable to contact dev.bukkit.org to download the file.
-         */
-        FAIL_DBO, /**
-         * When running the version check, the file on DBO did not contain the a version in the format 'vVersion' such as 'v1.0'.
-         */
-        FAIL_NOVERSION, /**
-         * The id provided by the plugin running the updater was invalid and doesn't exist on DBO.
-         */
-        FAIL_BADID, /**
-         * The server administrator has improperly configured their API key in the configuration
-         */
-        FAIL_APIKEY, /**
-         * The updater found an update, but because of the UpdateType being set to NO_DOWNLOAD, it wasn't downloaded.
-         */
-        UPDATE_AVAILABLE
-    }
-
-    /**
-     * Allows the dev to specify the type of update that will be run.
-     */
-    public enum UpdateType {
-        /**
-         * Run a version check, and then if the file is out of date, download the newest version.
-         */
-        DEFAULT, /**
-         * Don't run a version check, just find the latest update and download it.
-         */
-        NO_VERSION_CHECK, /**
-         * Get information about the version and the download size, but don't actually download anything.
-         */
-        NO_DOWNLOAD
-    }
 
     /**
      * Initialize the updater
@@ -480,6 +426,56 @@ public class Updater {
             e.printStackTrace();
             return false;
         }
+    }
+
+    /**
+     * Gives the dev the result of the update process. Can be obtained by called getResult().
+     */
+    public enum UpdateResult {
+        /**
+         * The updater found an update, and has readied it to be loaded the next time the server restarts/reloads.
+         */
+        SUCCESS, /**
+         * The updater did not find an update, and nothing was downloaded.
+         */
+        NO_UPDATE, /**
+         * The server administrator has disabled the updating system
+         */
+        DISABLED, /**
+         * The updater found an update, but was unable to download it.
+         */
+        FAIL_DOWNLOAD, /**
+         * For some reason, the updater was unable to contact dev.bukkit.org to download the file.
+         */
+        FAIL_DBO, /**
+         * When running the version check, the file on DBO did not contain the a version in the format 'vVersion' such as 'v1.0'.
+         */
+        FAIL_NOVERSION, /**
+         * The id provided by the plugin running the updater was invalid and doesn't exist on DBO.
+         */
+        FAIL_BADID, /**
+         * The server administrator has improperly configured their API key in the configuration
+         */
+        FAIL_APIKEY, /**
+         * The updater found an update, but because of the UpdateType being set to NO_DOWNLOAD, it wasn't downloaded.
+         */
+        UPDATE_AVAILABLE
+    }
+
+    /**
+     * Allows the dev to specify the type of update that will be run.
+     */
+    public enum UpdateType {
+        /**
+         * Run a version check, and then if the file is out of date, download the newest version.
+         */
+        DEFAULT, /**
+         * Don't run a version check, just find the latest update and download it.
+         */
+        NO_VERSION_CHECK, /**
+         * Get information about the version and the download size, but don't actually download anything.
+         */
+        NO_DOWNLOAD
     }
 
     private class UpdateRunnable implements Runnable {

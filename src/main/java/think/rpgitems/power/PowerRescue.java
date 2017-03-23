@@ -97,27 +97,27 @@ public class PowerRescue extends Power implements PowerHurt, PowerHitTaken {
     }
 
     @Override
-    public void hurt(Player target, ItemStack item, EntityDamageEvent event) {
-        if (this.item.getHasPermission() && !target.hasPermission(this.item.getPermission())) {
+    public void hurt(Player target, ItemStack stack, EntityDamageEvent event) {
+        if (item.getHasPermission() && !target.hasPermission(item.getPermission())) {
         } else {
             double health = target.getHealth() - event.getFinalDamage();
             if (health > healthTrigger) return;
-            rescue(target, item, event, false);
+            rescue(target, stack, event, false);
         }
     }
 
     @Override
-    public double takeHit(Player target, ItemStack item, EntityDamageEvent event) {
-        if (this.item.getHasPermission() && !target.hasPermission(this.item.getPermission())) {
+    public double takeHit(Player target, ItemStack stack, EntityDamageEvent event) {
+        if (item.getHasPermission() && !target.hasPermission(item.getPermission())) {
             return event.getDamage();
         } else {
             if (event.getFinalDamage() < damageTrigger) return event.getFinalDamage();
-            rescue(target, item, event, true);
+            rescue(target, stack, event, true);
             return 0;
         }
     }
 
-    private void rescue(Player target, ItemStack i, EntityDamageEvent ev, boolean canceled) {
+    private void rescue(Player target, ItemStack stack, EntityDamageEvent event, boolean canceled) {
         long cooldown;
         RPGValue value = RPGValue.get(target, item, "rescue.cooldown");
         if (value == null) {
@@ -127,13 +127,13 @@ public class PowerRescue extends Power implements PowerHurt, PowerHitTaken {
             cooldown = value.asLong();
         }
         if (cooldown <= System.currentTimeMillis() / 50) {
-            if (!item.consumeDurability(i, consumption)) return;
+            if (!item.consumeDurability(stack, consumption)) return;
             value.set(System.currentTimeMillis() / 50 + cooldownTime);
             target.sendMessage(ChatColor.AQUA + Locale.get("power.rescue.info"));
-            DamageCause cause = ev.getCause();
+            DamageCause cause = event.getCause();
             if (!canceled) {
                 target.addPotionEffect(new PotionEffect(PotionEffectType.HEALTH_BOOST, 1, 255));
-                target.setHealth(healthTrigger + ev.getFinalDamage());
+                target.setHealth(healthTrigger + event.getFinalDamage());
             }
             target.addPotionEffect(new PotionEffect(PotionEffectType.DAMAGE_RESISTANCE, 200, 10));
             target.addPotionEffect(new PotionEffect(PotionEffectType.REGENERATION, 400, 2));

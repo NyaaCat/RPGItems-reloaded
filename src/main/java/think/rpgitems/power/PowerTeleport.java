@@ -54,19 +54,19 @@ public class PowerTeleport extends Power implements PowerRightClick, PowerProjec
     public int consumption = 0;
 
     @Override
-    public void rightClick(Player player, ItemStack item, Block clicked) {
+    public void rightClick(Player player, ItemStack stack, Block clicked) {
         long cooldown;
-        if (this.item.getHasPermission() && !player.hasPermission(this.item.getPermission())) {
+        if (item.getHasPermission() && !player.hasPermission(item.getPermission())) {
         } else {
-            RPGValue value = RPGValue.get(player, this.item, "teleport.cooldown");
+            RPGValue value = RPGValue.get(player, item, "teleport.cooldown");
             if (value == null) {
                 cooldown = System.currentTimeMillis() / 50;
-                value = new RPGValue(player, this.item, "teleport.cooldown", cooldown);
+                value = new RPGValue(player, item, "teleport.cooldown", cooldown);
             } else {
                 cooldown = value.asLong();
             }
             if (cooldown <= System.currentTimeMillis() / 50) {
-                if (!this.item.consumeDurability(item, consumption)) return;
+                if (!item.consumeDurability(stack, consumption)) return;
                 value.set(System.currentTimeMillis() / 50 + cooldownTime);
                 // float dist = 0;
                 World world = player.getWorld();
@@ -111,12 +111,12 @@ public class PowerTeleport extends Power implements PowerRightClick, PowerProjec
     }
 
     @Override
-    public void projectileHit(Player player, ItemStack item, Projectile p) {
+    public void projectileHit(Player player, ItemStack stack, Projectile p) {
         long cooldown;
-        RPGValue value = RPGValue.get(player, this.item, "teleport.cooldown");
+        RPGValue value = RPGValue.get(player, item, "teleport.cooldown");
         if (value == null) {
             cooldown = System.currentTimeMillis() / 50;
-            value = new RPGValue(player, this.item, "teleport.cooldown", cooldown);
+            value = new RPGValue(player, item, "teleport.cooldown", cooldown);
         } else {
             cooldown = value.asLong();
         }

@@ -54,17 +54,17 @@ public class PowerParticleTick extends Power implements PowerTick {
     }
 
     @Override
-    public void tick(Player player, ItemStack item) {
+    public void tick(Player player, ItemStack stack) {
         long cdTick;
-        RPGValue value = RPGValue.get(player, this.item, "particle.interval");
+        RPGValue value = RPGValue.get(player, item, "particle.interval");
         if (value == null) {
             cdTick = System.currentTimeMillis() / 50;
-            value = new RPGValue(player, this.item, "particle.interval", cdTick);
+            value = new RPGValue(player, item, "particle.interval", cdTick);
         } else {
             cdTick = value.asLong();
         }
         if (cdTick <= System.currentTimeMillis() / 50) {
-            if (!this.item.consumeDurability(item, consumption)) return;
+            if (!item.consumeDurability(stack, consumption)) return;
             value.set(System.currentTimeMillis() / 50 + interval);
             if (effect.equalsIgnoreCase("SMOKE")) {
                 player.getWorld().playEffect(player.getLocation().add(0, 2, 0), Effect.valueOf(effect), 4);

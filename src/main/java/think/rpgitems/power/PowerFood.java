@@ -40,7 +40,7 @@ public class PowerFood extends Power implements PowerRightClick {
     public int foodpoints;
 
     @Override
-    public void rightClick(final Player player, ItemStack i, Block clicked) {
+    public void rightClick(final Player player, ItemStack stack, Block clicked) {
         if (item.getHasPermission() && !player.hasPermission(item.getPermission())) {
         } else {
             ItemStack item = player.getInventory().getItemInMainHand();

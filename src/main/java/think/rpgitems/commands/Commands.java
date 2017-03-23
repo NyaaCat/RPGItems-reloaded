@@ -16,7 +16,6 @@
  */
 package think.rpgitems.commands;
 
-import gnu.trove.map.hash.TCharObjectHashMap;
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
 import org.bukkit.Material;
@@ -37,7 +36,7 @@ import java.util.Map.Entry;
 
 abstract public class Commands {
     private static HashMap<String, ArrayList<CommandDef>> commands = new HashMap<>();
-    private static TCharObjectHashMap<Class<? extends CommandArgument>> argTypes = new TCharObjectHashMap<>();
+    private static HashMap<Character, Class<? extends CommandArgument>> argTypes = new HashMap<>();
 
     static {
         argTypes.put('s', ArgumentString.class);
@@ -48,6 +47,18 @@ abstract public class Commands {
         argTypes.put('n', ArgumentItem.class);
         argTypes.put('m', ArgumentMaterial.class);
         argTypes.put('e', ArgumentEnum.class);
+    }
+
+    static {
+        register(new CommandHandler() {
+
+            @CommandString("rpgitem help $terms:s[]")
+            @CommandDocumentation("$command.rpgitem.help")
+            @CommandGroup("help")
+            public void help(CommandSender sender, String query) {
+                searchHelp(sender, query);
+            }
+        });
     }
 
     public static void exec(CommandSender sender, String com) {
@@ -449,18 +460,6 @@ abstract public class Commands {
         arguments.toArray(def.arguments);
     }
 
-    static {
-        register(new CommandHandler() {
-
-            @CommandString("rpgitem help $terms:s[]")
-            @CommandDocumentation("$command.rpgitem.help")
-            @CommandGroup("help")
-            public void help(CommandSender sender, String query) {
-                searchHelp(sender, query);
-            }
-        });
-    }
-
     public static void searchHelp(CommandSender sender, String terms) {
         if (terms.equalsIgnoreCase("_genhelp")) {
             generateHelp();
@@ -785,6 +784,8 @@ class CommandDef implements Comparable<CommandDef> {
 }
 
 abstract class CommandArgument {
+    public String name = "";
+
     public abstract void init(String a);
 
     public abstract Object parse(String in);
@@ -794,8 +795,6 @@ abstract class CommandArgument {
     public abstract String printable(String locale);
 
     public abstract Class<?> getType();
-
-    public String name = "";
 
     public boolean isConst() {
         return false;
