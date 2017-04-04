@@ -62,9 +62,9 @@ public class PowerPumpkin extends Power implements PowerHit {
 
     @Override
     public void hit(Player player, ItemStack stack, LivingEntity entity, double damage) {
-        if (item.getHasPermission() && !player.hasPermission(item.getPermission())) return;
-        if (rand.nextInt(chance) != 0) return;
+        if (!item.checkPermission(player, true)) return;
         if (!item.consumeDurability(stack, consumption)) return;
+        if (rand.nextInt(chance) != 0) return;
         if (entity instanceof Skeleton || entity instanceof Zombie)
             if (entity.getEquipment().getHelmet() == null || entity.getEquipment().getHelmet().getType() == Material.AIR) {
                 entity.getEquipment().setHelmet(new ItemStack(Material.PUMPKIN));

@@ -81,80 +81,64 @@ public class PowerRumble extends Power implements PowerRightClick {
 
     @Override
     public void rightClick(final Player player, ItemStack stack, Block block) {
-        long cooldown;
-        if (item.getHasPermission() && !player.hasPermission(item.getPermission())) {
-        } else {
-            RPGValue value = RPGValue.get(player, item, "rumble.cooldown");
-            if (value == null) {
-                cooldown = System.currentTimeMillis() / 50;
-                value = new RPGValue(player, item, "rumble.cooldown", cooldown);
-            } else {
-                cooldown = value.asLong();
-            }
-            if (cooldown <= System.currentTimeMillis() / 50) {
-                if (!item.consumeDurability(stack, consumption)) return;
-                value.set(System.currentTimeMillis() / 50 + cooldownTime);
-                final Location location = player.getLocation().add(0, -0.2, 0);
-                final Vector direction = player.getLocation().getDirection();
-                direction.setY(0);
-                direction.normalize();
-                BukkitRunnable task = new BukkitRunnable() {
+        if (!checkCooldown(player, cooldownTime, true)) return;
+        if (!item.consumeDurability(stack, consumption)) return;
+        final Location location = player.getLocation().add(0, -0.2, 0);
+        final Vector direction = player.getLocation().getDirection();
+        direction.setY(0);
+        direction.normalize();
+        BukkitRunnable task = new BukkitRunnable() {
+            private int count = 0;
 
-                    private int count = 0;
+            public void run() {
+                Location above = location.clone().add(0, 1, 0);
+                if (above.getBlock().getType().isSolid() || !location.getBlock().getType().isSolid()) {
+                    cancel();
+                    return;
+                }
 
-                    public void run() {
-                        Location above = location.clone().add(0, 1, 0);
-                        if (above.getBlock().getType().isSolid() || !location.getBlock().getType().isSolid()) {
-                            cancel();
-                            return;
-                        }
-
-                        Location temp = location.clone();
-                        for (int x = -2; x <= 2; x++) {
-                            for (int z = -2; z <= 2; z++) {
-                                temp.setX(x + location.getBlockX());
-                                temp.setZ(z + location.getBlockZ());
-                                Block block = temp.getBlock();
-                                temp.getWorld().playEffect(temp, Effect.STEP_SOUND, block.getType());
-                            }
-                        }
-                        Entity[] near = getNearbyEntities(location, 1.5);
-                        boolean hit = false;
-                        Random random = new Random();
-                        for (Entity e : near) {
-                            if (e != player) {
-                                hit = true;
-                                break;
-                            }
-                        }
-                        if (hit) {
-                            near = getNearbyEntities(location, power * 2 + 1);
-                            for (Entity e : near) {
-                                if (e != player) {
-                                    if (e instanceof ItemFrame || e instanceof Painting) {
-                                        e.setMetadata("RPGItems.Rumble", new FixedMetadataValue(Plugin.plugin, null)); // Add metadata to protect hanging entities from the explosion
-                                        continue;
-                                    }
-                                    if (e.getLocation().distance(location) <= 2.5)
-                                        e.setVelocity(new Vector(random.nextGaussian() / 4d, 1d + random.nextDouble() * (double) power, random.nextGaussian() / 4d));
-                                }
-                            }
-                            location.getWorld().createExplosion(location.getX(), location.getY(), location.getZ(), power, false, false); // Trigger the explosion after all hanging entities have been protected
-                            cancel();
-                            return;
-                        }
-                        location.add(direction);
-                        if (count >= distance) {
-                            cancel();
-                        }
-                        count++;
+                Location temp = location.clone();
+                for (int x = -2; x <= 2; x++) {
+                    for (int z = -2; z <= 2; z++) {
+                        temp.setX(x + location.getBlockX());
+                        temp.setZ(z + location.getBlockZ());
+                        Block block = temp.getBlock();
+                        temp.getWorld().playEffect(temp, Effect.STEP_SOUND, block.getType());
                     }
-                };
-                task.runTaskTimer(Plugin.plugin, 0, 3);
-            } else {
-                player.sendMessage(ChatColor.AQUA + String.format(Locale.get("message.cooldown"), ((double) (cooldown - System.currentTimeMillis() / 50)) / 20d));
+                }
+                Entity[] near = getNearbyEntities(location, 1.5);
+                boolean hit = false;
+                Random random = new Random();
+                for (Entity e : near) {
+                    if (e != player) {
+                        hit = true;
+                        break;
+                    }
+                }
+                if (hit) {
+                    near = getNearbyEntities(location, power * 2 + 1);
+                    for (Entity e : near) {
+                        if (e != player) {
+                            if (e instanceof ItemFrame || e instanceof Painting) {
+                                e.setMetadata("RPGItems.Rumble", new FixedMetadataValue(Plugin.plugin, null)); // Add metadata to protect hanging entities from the explosion
+                                continue;
+                            }
+                            if (e.getLocation().distance(location) <= 2.5)
+                                e.setVelocity(new Vector(random.nextGaussian() / 4d, 1d + random.nextDouble() * (double) power, random.nextGaussian() / 4d));
+                        }
+                    }
+                    location.getWorld().createExplosion(location.getX(), location.getY(), location.getZ(), power, false, false); // Trigger the explosion after all hanging entities have been protected
+                    cancel();
+                    return;
+                }
+                location.add(direction);
+                if (count >= distance) {
+                    cancel();
+                }
+                count++;
             }
-        }
+        };
+        task.runTaskTimer(Plugin.plugin, 0, 3);
     }
 
     @Override

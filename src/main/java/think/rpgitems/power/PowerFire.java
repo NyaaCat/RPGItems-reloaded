@@ -65,97 +65,85 @@ public class PowerFire extends Power implements PowerRightClick {
 
     @Override
     public void rightClick(final Player player, ItemStack stack, Block clicked) {
-        long cooldown;
-        RPGValue value = RPGValue.get(player, item, "fire.cooldown");
-        if (value == null) {
-            cooldown = System.currentTimeMillis() / 50;
-            value = new RPGValue(player, item, "fire.cooldown", cooldown);
-        } else {
-            cooldown = value.asLong();
-        }
-        if (cooldown <= System.currentTimeMillis() / 50) {
-            if (!item.consumeDurability(stack, consumption)) return;
-            value.set(System.currentTimeMillis() / 50 + cooldownTime);
-            player.playSound(player.getLocation(), Sound.ITEM_FLINTANDSTEEL_USE, 1.0f, 1.2f);
-            final List<Block> fireblocks = new ArrayList<>();
-            final FallingBlock block = player.getWorld().spawnFallingBlock(player.getLocation().add(0, 1.8, 0), new MaterialData(Material.FIRE));
-            block.setVelocity(player.getLocation().getDirection().multiply(2d));
-            block.setDropItem(false);
+        if (!item.checkPermission(player, true))return;
+        if (!checkCooldown(player, cooldownTime, true))return;
+        if (!item.consumeDurability(stack, consumption)) return;
+        player.playSound(player.getLocation(), Sound.ITEM_FLINTANDSTEEL_USE, 1.0f, 1.2f);
+        final List<Block> fireblocks = new ArrayList<>();
+        final FallingBlock block = player.getWorld().spawnFallingBlock(player.getLocation().add(0, 1.8, 0), new MaterialData(Material.FIRE));
+        block.setVelocity(player.getLocation().getDirection().multiply(2d));
+        block.setDropItem(false);
 
-            final Location location = player.getLocation().add(0, 0.5, 0).getBlock().getLocation();
-            final Vector direction = player.getLocation().getDirection();
-            direction.setY(0);
-            direction.normalize();
-            location.add(direction.multiply(4));
+        final Location location = player.getLocation().add(0, 0.5, 0).getBlock().getLocation();
+        final Vector direction = player.getLocation().getDirection();
+        direction.setY(0);
+        direction.normalize();
+        location.add(direction.multiply(4));
 
-            BukkitRunnable run = new BukkitRunnable() {
-                private boolean finishedFire = false, blockDead = false;
-                private int count = 0;
+        BukkitRunnable run = new BukkitRunnable() {
+            private boolean finishedFire = false, blockDead = false;
+            private int count = 0;
 
-                public void run() {
-                    if (!finishedFire) {
-                        if (!location.getBlock().getType().equals(Material.AIR)) {
-                            finishedFire = true;
-                        }
+            public void run() {
+                if (!finishedFire) {
+                    if (!location.getBlock().getType().equals(Material.AIR)) {
+                        finishedFire = true;
+                    }
 
-                        Location temp = location.clone();
-                        for (int x = -1; x <= 1; x++) {
-                            for (int z = -1; z <= 1; z++) {
-                                temp.setX(x + location.getBlockX());
-                                temp.setZ(z + location.getBlockZ());
-                                Block block = temp.getBlock();
-                                if (block.getType().equals(Material.AIR) && !block.getRelative(0, -1, 0).getType().isBurnable()) {
-                                    block.setType(Material.FIRE);
-                                    fireblocks.add(block);
-                                }
+                    Location temp = location.clone();
+                    for (int x = -1; x <= 1; x++) {
+                        for (int z = -1; z <= 1; z++) {
+                            temp.setX(x + location.getBlockX());
+                            temp.setZ(z + location.getBlockZ());
+                            Block block = temp.getBlock();
+                            if (block.getType().equals(Material.AIR) && !block.getRelative(0, -1, 0).getType().isBurnable()) {
+                                block.setType(Material.FIRE);
+                                fireblocks.add(block);
                             }
                         }
-                        location.add(direction);
-                        if (count >= distance) {
-                            finishedFire = true;
-                        }
-                        count++;
+                    }
+                    location.add(direction);
+                    if (count >= distance) {
+                        finishedFire = true;
+                    }
+                    count++;
 
-                        if (finishedFire) {
-                            (new BukkitRunnable() {
-                                @Override
-                                public void run() {
-                                    if (fireblocks.isEmpty()) {
-                                        cancel();
-                                        return;
-                                    }
-                                    Block fb = fireblocks.get(0);
-                                    fb.getWorld().playEffect(fb.getLocation(), Effect.EXTINGUISH, 1);
-                                    fb.setType(Material.AIR);
-                                    fireblocks.remove(fb);
+                    if (finishedFire) {
+                        (new BukkitRunnable() {
+                            @Override
+                            public void run() {
+                                if (fireblocks.isEmpty()) {
+                                    cancel();
+                                    return;
                                 }
-                            }).runTaskTimer(Plugin.plugin, 4 * 20 + new Random().nextInt(40), 3);
-                        }
+                                Block fb = fireblocks.get(0);
+                                fb.getWorld().playEffect(fb.getLocation(), Effect.EXTINGUISH, 1);
+                                fb.setType(Material.AIR);
+                                fireblocks.remove(fb);
+                            }
+                        }).runTaskTimer(Plugin.plugin, 4 * 20 + new Random().nextInt(40), 3);
                     }
-
-                    if (!blockDead) {
-                        if (block.isDead()) {
-                            block.remove();
-                            if (block.getLocation().getBlock().getType().equals(Material.FIRE))
-                                block.getLocation().getBlock().setType(Material.AIR);
-                            blockDead = true;
-                        }
-                    } else {
-                        List<Entity> ents = block.getNearbyEntities(0, 1, 0);
-                        for (Entity ent : ents)
-                            if (ent instanceof Damageable)
-                                ent.setFireTicks(burnduration);
-                    }
-
-                    if (finishedFire && blockDead)
-                        cancel();
                 }
-            };
-            run.runTaskTimer(Plugin.plugin, 0, 1);
 
-        } else {
-            player.sendMessage(ChatColor.AQUA + String.format(Locale.get("message.cooldown"), ((double) (cooldown - System.currentTimeMillis() / 50)) / 20d));
-        }
+                if (!blockDead) {
+                    if (block.isDead()) {
+                        block.remove();
+                        if (block.getLocation().getBlock().getType().equals(Material.FIRE))
+                            block.getLocation().getBlock().setType(Material.AIR);
+                        blockDead = true;
+                    }
+                } else {
+                    List<Entity> ents = block.getNearbyEntities(0, 1, 0);
+                    for (Entity ent : ents)
+                        if (ent instanceof Damageable)
+                            ent.setFireTicks(burnduration);
+                }
+
+                if (finishedFire && blockDead)
+                    cancel();
+            }
+        };
+        run.runTaskTimer(Plugin.plugin, 0, 1);
     }
 
     @Override

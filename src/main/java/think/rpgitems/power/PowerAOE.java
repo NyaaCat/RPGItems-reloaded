@@ -101,30 +101,16 @@ public class PowerAOE extends Power implements PowerRightClick {
 
     @Override
     public void rightClick(final Player player, ItemStack stack, Block clicked) {
-        long cooldown;
-        if (item.getHasPermission() && !player.hasPermission(item.getPermission())) {
-        } else {
-            RPGValue value = RPGValue.get(player, item, "aoe.cooldown");
-            if (value == null) {
-                cooldown = System.currentTimeMillis() / 50;
-                value = new RPGValue(player, item, "aoe.cooldown", cooldown);
-            } else {
-                cooldown = value.asLong();
-            }
-            if (cooldown <= System.currentTimeMillis() / 50) {
-                if (!item.consumeDurability(stack, consumption)) return;
-                value.set(System.currentTimeMillis() / 50 + cooldownTime);
-                PotionEffect effect = new PotionEffect(type, duration, amplifier - 1);
-                if (selfapplication)
-                    player.addPotionEffect(effect);
-                player.getWorld().playEffect(player.getLocation(), Effect.POTION_BREAK, 1);
-                for (Entity ent : player.getNearbyEntities(range, range, range))
-                    if (ent instanceof LivingEntity)
-                        ((LivingEntity) ent).addPotionEffect(effect);
-            } else {
-                player.sendMessage(ChatColor.AQUA + String.format(Locale.get("message.cooldown"), ((double) (cooldown - System.currentTimeMillis() / 50)) / 20d));
-            }
-        }
+        if (!item.checkPermission(player, true))return;
+        if (!checkCooldown(player, cooldownTime, true))return;
+        if (!item.consumeDurability(stack, consumption)) return;
+        PotionEffect effect = new PotionEffect(type, duration, amplifier - 1);
+        if (selfapplication)
+            player.addPotionEffect(effect);
+        player.getWorld().playEffect(player.getLocation(), Effect.POTION_BREAK, 1);
+        for (Entity ent : player.getNearbyEntities(range, range, range))
+            if (ent instanceof LivingEntity)
+                ((LivingEntity) ent).addPotionEffect(effect);
     }
 
     @Override

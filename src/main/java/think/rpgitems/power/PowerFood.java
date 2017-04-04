@@ -41,24 +41,22 @@ public class PowerFood extends Power implements PowerRightClick {
 
     @Override
     public void rightClick(final Player player, ItemStack stack, Block clicked) {
-        if (item.getHasPermission() && !player.hasPermission(item.getPermission())) {
+        if (!item.checkPermission(player, true))return;
+        ItemStack item = player.getInventory().getItemInMainHand();
+        int count = item.getAmount() - 1;
+        if (count == 0) {
+            int newFoodPoint = player.getFoodLevel() + foodpoints;
+            if (newFoodPoint > 20) newFoodPoint = 20;
+            player.setFoodLevel(newFoodPoint);
+            Bukkit.getScheduler().scheduleSyncDelayedTask(Plugin.plugin, new Runnable() {
+                @Override
+                public void run() {
+                    player.getInventory().setItemInMainHand(new ItemStack(Material.AIR));
+                }
+            }, 1L);
         } else {
-            ItemStack item = player.getInventory().getItemInMainHand();
-            int count = item.getAmount() - 1;
-            if (count == 0) {
-                int newFoodPoint = player.getFoodLevel() + foodpoints;
-                if (newFoodPoint > 20) newFoodPoint = 20;
-                player.setFoodLevel(newFoodPoint);
-                Bukkit.getScheduler().scheduleSyncDelayedTask(Plugin.plugin, new Runnable() {
-                    @Override
-                    public void run() {
-                        player.getInventory().setItemInMainHand(new ItemStack(Material.AIR));
-                    }
-                }, 1L);
-            } else {
-                player.setFoodLevel(player.getFoodLevel() + foodpoints);
-                item.setAmount(count);
-            }
+            player.setFoodLevel(player.getFoodLevel() + foodpoints);
+            item.setAmount(count);
         }
     }
 

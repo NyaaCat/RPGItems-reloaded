@@ -62,27 +62,14 @@ public class PowerTippedArrow extends Power implements PowerRightClick {
 
     @Override
     public void rightClick(Player player, ItemStack stack, Block clicked) {
-        long cooldown;
-        if (item.getHasPermission() && !player.hasPermission(item.getPermission())) {
-        } else {
-            RPGValue value = RPGValue.get(player, item, "tippedarrow.cooldown");
-            if (value == null) {
-                cooldown = System.currentTimeMillis() / 50;
-                value = new RPGValue(player, item, "tippedarrow.cooldown", cooldown);
-            } else {
-                cooldown = value.asLong();
-            }
-            if (cooldown <= System.currentTimeMillis() / 50) {
-                if (!item.consumeDurability(stack, consumption)) return;
-                value.set(System.currentTimeMillis() / 50 + cooldownTime);
-                player.playSound(player.getLocation(), Sound.ENTITY_ARROW_SHOOT, 1.0f, 1.0f);
-                TippedArrow arrow = player.launchProjectile(TippedArrow.class);
-                arrow.addCustomEffect(new PotionEffect(type, duration, amplifier), true);
-                Events.removeArrows.add(arrow.getEntityId());
-            } else {
-                player.sendMessage(ChatColor.AQUA + String.format(Locale.get("message.cooldown"), ((double) (cooldown - System.currentTimeMillis() / 50)) / 20d));
-            }
-        }
+        if (!item.checkPermission(player, true))return;
+        if (!checkCooldown(player, cooldownTime, true)) return;
+        if (!item.consumeDurability(stack, consumption)) return;
+        player.playSound(player.getLocation(), Sound.ENTITY_ARROW_SHOOT, 1.0f, 1.0f);
+        TippedArrow arrow = player.launchProjectile(TippedArrow.class);
+        Events.rpgProjectiles.put(arrow.getEntityId(), item.getID());
+        arrow.addCustomEffect(new PotionEffect(type, duration, amplifier), true);
+        Events.removeArrows.add(arrow.getEntityId());
     }
 
     @Override

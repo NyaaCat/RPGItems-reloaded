@@ -52,9 +52,9 @@ public class PowerKnockup extends Power implements PowerHit {
 
     @Override
     public void hit(Player player, ItemStack stack, LivingEntity entity, double damage) {
-        if (item.getHasPermission() && !player.hasPermission(item.getPermission())) {
-        } else if (rand.nextInt(chance) == 0) {
-            if (!item.consumeDurability(stack, consumption)) return;
+        if (!item.checkPermission(player, true))return;
+        if (!item.consumeDurability(stack, consumption)) return;
+        if (rand.nextInt(chance) == 0) {
             entity.setVelocity(player.getLocation().getDirection().setY(power));
         }
     }

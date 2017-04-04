@@ -114,16 +114,16 @@ public class PowerAOECommand extends PowerCommand {
 
     @Override
     public void rightClick(Player player, ItemStack stack, Block clicked) {
-        if (item.getHasPermission() && !player.hasPermission(item.getPermission())) return;
-        if (!isRight || !updateCooldownByString(player, item, command, cooldownTime)) return;
+        if (!item.checkPermission(player, true))return;
+        if (!isRight || !checkCooldownByString(player, item, command, cooldownTime)) return;
         if (!item.consumeDurability(stack, consumption)) return;
         aoeCommand(player);
     }
 
     @Override
     public void leftClick(Player player, ItemStack stack, Block clicked) {
-        if (item.getHasPermission() && !player.hasPermission(item.getPermission())) return;
-        if (isRight || !updateCooldownByString(player, item, command, cooldownTime)) return;
+        if (!item.checkPermission(player, true))return;
+        if (isRight || !checkCooldownByString(player, item, command, cooldownTime)) return;
         if (!item.consumeDurability(stack, consumption)) return;
         aoeCommand(player);
     }

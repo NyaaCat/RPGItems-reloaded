@@ -45,10 +45,11 @@ import org.bukkit.potion.PotionEffectType;
 import org.bukkit.projectiles.ProjectileSource;
 import org.bukkit.scheduler.BukkitRunnable;
 import think.rpgitems.commands.RPGItemUpdateCommandHandler;
-import think.rpgitems.data.Locale;
 import think.rpgitems.item.ItemManager;
 import think.rpgitems.item.LocaleInventory;
 import think.rpgitems.item.RPGItem;
+import think.rpgitems.power.PowerRanged;
+import think.rpgitems.power.PowerRangedOnly;
 import think.rpgitems.support.WGHandler;
 import think.rpgitems.support.WorldGuard;
 
@@ -201,22 +202,31 @@ public class Events implements Listener {
     @EventHandler
     public void onProjectileHit(ProjectileHitEvent e) {
         final Projectile entity = e.getEntity();
-        if (removeArrows.contains(entity.getEntityId())) {
-            entity.remove();
-            removeArrows.remove(entity.getEntityId());
-        } else if (rpgProjectiles.containsKey(entity.getEntityId())) {
-            RPGItem item = ItemManager.getItemById(rpgProjectiles.get(entity.getEntityId()));
+        if (rpgProjectiles.containsKey(entity.getEntityId())) {
+            RPGItem rItem = ItemManager.getItemById(rpgProjectiles.get(entity.getEntityId()));
             new BukkitRunnable() {
                 @Override
                 public void run() {
                     rpgProjectiles.remove(entity.getEntityId());
                 }
             }.runTask(Plugin.plugin);
-            ItemStack hItem = ((Player) entity.getShooter()).getInventory().getItemInMainHand();
-            RPGItem rItem = ItemManager.toRPGItem(hItem);
-            if (item == null || rItem != item)
+            if (rItem == null)
                 return;
-            item.projectileHit((Player) entity.getShooter(), hItem, entity);
+            ItemStack item = ((Player) entity.getShooter()).getInventory().getItemInMainHand();
+            RPGItem hItem = ItemManager.toRPGItem(item);
+            if (rItem != hItem){
+                item = ((Player) entity.getShooter()).getInventory().getItemInOffHand();
+                hItem = ItemManager.toRPGItem(item);
+                if (rItem != hItem){
+                    return;
+                }
+            }
+
+            rItem.projectileHit((Player) entity.getShooter(), item, entity);
+        }
+        if (removeArrows.contains(entity.getEntityId())) {
+            entity.remove();
+            removeArrows.remove(entity.getEntityId());
         }
     }
 
@@ -233,13 +243,20 @@ public class Events implements Listener {
             ItemStack item = player.getInventory().getItemInMainHand();
             RPGItem rItem = ItemManager.toRPGItem(item);
 
-            if (rItem == null)
+            if (rItem == null){
+                item = player.getInventory().getItemInOffHand();
+                rItem = ItemManager.toRPGItem(item);
+                if (rItem == null){
+                    return;
+                }
+            }
+            if (!rItem.hasPower(PowerRanged.class) && !rItem.hasPower(PowerRangedOnly.class) && item.getType() != Material.BOW && item.getType() != Material.SNOW_BALL && item.getType() != Material.EGG && item.getType() != Material.POTION) {
                 return;
+            }
             if (!WorldGuard.canPvP(player) && !rItem.ignoreWorldGuard)
                 return;
-            if (rItem.getHasPermission() && !player.hasPermission(rItem.getPermission())) {
+            if (!rItem.checkPermission(player, true)) {
                 e.setCancelled(true);
-                player.sendMessage(ChatColor.RED + Locale.get("message.error.permission"));
             }
             rpgProjectiles.put(e.getEntity().getEntityId(), rItem.getID());
         }
@@ -257,8 +274,7 @@ public class Events implements Listener {
             return;
         if (!WorldGuard.canPvP(p) && !rItem.ignoreWorldGuard)
             return;
-        if (rItem.getHasPermission() && !p.hasPermission(rItem.getPermission())) {
-            p.sendMessage(ChatColor.RED + Locale.get("message.error.permission"));
+        if (!rItem.checkPermission(p, true)) {
             return;
         }
 
@@ -382,7 +398,7 @@ public class Events implements Listener {
                     localeInv.reload();
             }
         }
-        if (!e.isCancelled() && e.getClickedInventory() instanceof AnvilInventory) {
+        if (e.getClickedInventory() instanceof AnvilInventory) {
             if (e.getRawSlot() == 2) {
                 HumanEntity p = e.getWhoClicked();
                 ItemStack ind1 = e.getView().getItem(0);
@@ -433,30 +449,46 @@ public class Events implements Listener {
             return damage;
         if (!WorldGuard.canPvP(player) && !rItem.ignoreWorldGuard)
             return damage;
-        if (rItem.getHasPermission() && !player.hasPermission(rItem.getPermission())) {
-            damage = 0;
+        if (!rItem.checkPermission(player, true)) {
             e.setCancelled(true);
-            player.sendMessage(ChatColor.RED + Locale.get("message.error.permission"));
+            return 0;
         }
-        damage = rItem.getDamageMin() != rItem.getDamageMax() ? (rItem.getDamageMin() + random.nextInt(rItem.getDamageMax() - rItem.getDamageMin())) : rItem.getDamageMin();
-        Collection<PotionEffect> potionEffects = player.getActivePotionEffects();
-        double strength = 0, weak = 0;
-        for (PotionEffect pe : potionEffects) {
-            if (pe.getType().equals(PotionEffectType.INCREASE_DAMAGE)) {
-                strength = 3 * (pe.getAmplifier() + 1);//MC 1.9+
-            }
-            if (pe.getType().equals(PotionEffectType.WEAKNESS)) {
-                weak = 4 * (pe.getAmplifier() + 1);//MC 1.9+
-            }
-        }
-        damage = damage + strength - weak;
-        if (e.getEntity() instanceof LivingEntity) {
-            rItem.hit(player, item, (LivingEntity) e.getEntity(), e.getDamage());
+        if(rItem.hasPower(PowerRangedOnly.class)){
+            e.setCancelled(true);
+            return 0;
         }
         boolean can = rItem.consumeDurability(item, rItem.hittingCost);
         if (!can) {
             e.setCancelled(true);
             return 0;
+        }
+        double originDamage = damage;
+        switch (rItem.damageMode){
+            case FIXED:
+            case ADDITIONAL:
+                damage = rItem.getDamageMin() != rItem.getDamageMax() ? (rItem.getDamageMin() + random.nextInt(rItem.getDamageMax() - rItem.getDamageMin())) : rItem.getDamageMin();
+                Collection<PotionEffect> potionEffects = player.getActivePotionEffects();
+                double strength = 0, weak = 0;
+                for (PotionEffect pe : potionEffects) {
+                    if (pe.getType().equals(PotionEffectType.INCREASE_DAMAGE)) {
+                        strength = 3 * (pe.getAmplifier() + 1);//MC 1.9+
+                    }
+                    if (pe.getType().equals(PotionEffectType.WEAKNESS)) {
+                        weak = 4 * (pe.getAmplifier() + 1);//MC 1.9+
+                    }
+                }
+                damage = damage + strength - weak;
+                if(rItem.damageMode == RPGItem.DamageMode.ADDITIONAL){
+                    damage += originDamage;
+                }
+                break;
+            case VANILLA:
+                //no-op
+                break;
+
+        }
+        if (e.getEntity() instanceof LivingEntity) {
+            rItem.hit(player, item, (LivingEntity) e.getEntity(), damage);
         }
         if (rItem.getDurability(item) <= 0) {
             player.getInventory().setItemInMainHand(null);
@@ -468,44 +500,59 @@ public class Events implements Listener {
 
     private double projectileDamager(EntityDamageByEntityEvent e, double damage) {
         Projectile entity = (Projectile) e.getDamager();
-        if (rpgProjectiles.containsKey(entity.getEntityId())) {
-            RPGItem rItem = ItemManager.getItemById(rpgProjectiles.get(entity.getEntityId()));
-            if (rItem == null)
+
+        Integer projectileID = rpgProjectiles.get(entity.getEntityId());
+        if(projectileID == null)return damage;
+        RPGItem rItem = ItemManager.getItemById(projectileID);
+        if (rItem == null)
+            return damage;
+        Player player = (Player) entity.getShooter();
+        ItemStack item = player.getInventory().getItemInMainHand();
+        RPGItem hItem = ItemManager.toRPGItem(item);
+        if (rItem != hItem){
+            item = player.getInventory().getItemInOffHand();
+            hItem = ItemManager.toRPGItem(item);
+            if (rItem != hItem){
                 return damage;
-            damage = rItem.getDamageMin() != rItem.getDamageMax() ? (rItem.getDamageMin() + random.nextInt(rItem.getDamageMax() - rItem.getDamageMin())) : rItem.getDamageMin();
-
-            //Apply force adjustments
-            if (e.getDamager().hasMetadata("rpgitems.force")) {
-                damage *= e.getDamager().getMetadata("rpgitems.force").get(0).asFloat();
             }
-
-            Player player = (Player) entity.getShooter();
-            ItemStack item = player.getInventory().getItemInMainHand();
-            RPGItem hItem = ItemManager.toRPGItem(item);
-            if (rItem != hItem) return damage;
-            if (e.getEntity() instanceof LivingEntity) {
-                LivingEntity le = (LivingEntity) e.getEntity();
-                rItem.hit((Player) entity.getShooter(), item, le, e.getDamage());
-            }
+        }
+        double originDamage = damage;
+        switch (rItem.damageMode) {
+            case FIXED:
+            case ADDITIONAL:
+                damage = rItem.getDamageMin() != rItem.getDamageMax() ? (rItem.getDamageMin() + random.nextInt(rItem.getDamageMax() - rItem.getDamageMin())) : rItem.getDamageMin();
+                //Apply force adjustments
+                if (e.getDamager().hasMetadata("rpgitems.force")) {
+                    damage *= e.getDamager().getMetadata("rpgitems.force").get(0).asFloat();
+                }
+                if (rItem.damageMode == RPGItem.DamageMode.ADDITIONAL) {
+                    damage += originDamage;
+                }
+                break;
+            case VANILLA:
+                //no-op
+                break;
+        }
+        if (e.getEntity() instanceof LivingEntity) {
+            LivingEntity le = (LivingEntity) e.getEntity();
+            rItem.hit((Player) entity.getShooter(), item, le, damage);
         }
         return damage;
     }
 
     @EventHandler(priority = EventPriority.LOWEST, ignoreCancelled = true)
-    public void onDamage(EntityDamageEvent ev) {
-        if (ev instanceof EntityDamageByEntityEvent) {
-            EntityDamageByEntityEvent e = (EntityDamageByEntityEvent) ev;
-            double damage = e.getDamage();
-            if (e.getDamager() instanceof Player) {
-                damage = playerDamager(e, damage);
-            } else if (e.getDamager() instanceof Projectile) {
-                damage = projectileDamager(e, damage);
-            }
-            if (e.getEntity() instanceof Player) {
-                damage = playerHit(e, damage);
-            }
-            e.setDamage(damage);
+    public void onDamage(EntityDamageByEntityEvent ev) {
+        double damage = ev.getDamage();
+        if (ev.getDamager() instanceof Player) {
+            damage = playerDamager(ev, damage);
+        } else if (ev.getDamager() instanceof Projectile) {
+            damage = projectileDamager(ev, damage);
         }
+        if (ev.getEntity() instanceof Player) {
+            damage = playerHit(ev, damage);
+        }
+        ev.setDamage(damage);
+
     }
 
     private double playerHit(EntityDamageByEntityEvent e, double damage) {
@@ -523,10 +570,9 @@ public class Events implements Listener {
             }
             if (!WorldGuard.canPvP(p) && !pRItem.ignoreWorldGuard)
                 return damage;
-            if (pRItem.getHasPermission() && !p.hasPermission(pRItem.getPermission())) {
+            if (!pRItem.checkPermission(p, true)) {
                 damage = 0;
                 e.setCancelled(true);
-                p.sendMessage(ChatColor.RED + Locale.get("message.error.permission"));
             }
             boolean can;
             if (!pRItem.hitCostByDamage) {

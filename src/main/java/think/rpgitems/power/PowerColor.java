@@ -104,52 +104,33 @@ public class PowerColor extends Power implements PowerRightClick, PowerLeftClick
             return;
         }
 
-        long cooldown;
-        if (item.getHasPermission() && !player.hasPermission(item.getPermission())) {
-        } else {
-            RPGValue color = RPGValue.get(player, item, "color.current");
-            if (color == null) {
-                color = new RPGValue(player, item, "color.current", 0);
-            }
-
-            RPGValue value = RPGValue.get(player, item, "color.cooldown");
-            if (value == null) {
-                cooldown = System.currentTimeMillis() / 50;
-                value = new RPGValue(player, item, "color.cooldown", cooldown);
-            } else {
-                cooldown = value.asLong();
-            }
-            if (cooldown <= System.currentTimeMillis() / 50) {
-                if (!item.consumeDurability(stack, consumption)) return;
-                value.set(System.currentTimeMillis() / 50 + cooldownTime);
-
-                if (clicked.getType().equals(Material.GLASS))
-                    clicked.setType(Material.STAINED_GLASS);
-                if (clicked.getType().equals(Material.THIN_GLASS))
-                    clicked.setType(Material.STAINED_GLASS_PANE);
-                if (clicked.getType().equals(Material.CLAY) || clicked.getType().equals(Material.HARD_CLAY))
-                    clicked.setType(Material.STAINED_CLAY);
-
-                clicked.setData(DyeColor.values()[color.asInt()].getDyeData());
-            } else {
-                player.sendMessage(ChatColor.AQUA + String.format(Locale.get("message.cooldown"), ((double) (cooldown - System.currentTimeMillis() / 50)) / 20d));
-            }
+        if (!item.checkPermission(player, true))return;
+        if (!checkCooldown(player, cooldownTime, true)) return;
+        if (!item.consumeDurability(stack, consumption)) return;
+        RPGValue color = RPGValue.get(player, item, "color.current");
+        if (color == null) {
+            color = new RPGValue(player, item, "color.current", 0);
         }
+        if (clicked.getType().equals(Material.GLASS))
+            clicked.setType(Material.STAINED_GLASS);
+        if (clicked.getType().equals(Material.THIN_GLASS))
+            clicked.setType(Material.STAINED_GLASS_PANE);
+        if (clicked.getType().equals(Material.CLAY) || clicked.getType().equals(Material.HARD_CLAY))
+            clicked.setType(Material.STAINED_CLAY);
 
+        clicked.setData(DyeColor.values()[color.asInt()].getDyeData());
     }
 
     @Override
     public void leftClick(Player player, ItemStack stack, Block clicked) {
-        if (item.getHasPermission() && !player.hasPermission(item.getPermission())) {
+        if (!item.checkPermission(player, true))return;
+        RPGValue value = RPGValue.get(player, item, "color.current");
+        if (value == null) {
+            value = new RPGValue(player, item, "color.current", 0);
         } else {
-            RPGValue value = RPGValue.get(player, item, "color.current");
-            if (value == null) {
-                value = new RPGValue(player, item, "color.current", 0);
-            } else {
-                int newColorIndex = (value.asInt() + 1) % 16;
-                value.set(newColorIndex);
-                player.sendMessage(ChatColor.AQUA + ChatColor.translateAlternateColorCodes('&', String.format(Locale.get("message.color.next"), dyeToChatColor.get(DyeColor.values()[newColorIndex]))));
-            }
+            int newColorIndex = (value.asInt() + 1) % 16;
+            value.set(newColorIndex);
+            player.sendMessage(ChatColor.AQUA + ChatColor.translateAlternateColorCodes('&', String.format(Locale.get("message.color.next"), dyeToChatColor.get(DyeColor.values()[newColorIndex]))));
         }
     }
 

@@ -46,7 +46,7 @@ public class PowerCommand extends Power implements PowerRightClick, PowerLeftCli
      */
     public String permission = "";
     /**
-     * Whether triggers when right click.
+     * Whether triggers when right click
      */
     public boolean isRight = true;
     /**
@@ -81,16 +81,16 @@ public class PowerCommand extends Power implements PowerRightClick, PowerLeftCli
 
     @Override
     public void rightClick(Player player, ItemStack stack, Block clicked) {
-        if (item.getHasPermission() && !player.hasPermission(item.getPermission())) return;
-        if (!isRight || !updateCooldownByString(player, item, command, cooldownTime)) return;
+        if (!item.checkPermission(player, true))return;
+        if (!isRight || !checkCooldownByString(player, item, command, cooldownTime)) return;
         if (!item.consumeDurability(stack, consumption)) return;
         executeCommand(player);
     }
 
     @Override
     public void leftClick(Player player, ItemStack stack, Block clicked) {
-        if (item.getHasPermission() && !player.hasPermission(item.getPermission())) return;
-        if (isRight || !updateCooldownByString(player, item, command, cooldownTime)) return;
+        if (!item.checkPermission(player, true))return;
+        if (isRight || !checkCooldownByString(player, item, command, cooldownTime)) return;
         if (!item.consumeDurability(stack, consumption)) return;
         executeCommand(player);
     }

@@ -17,56 +17,34 @@
 package think.rpgitems.power;
 
 import org.bukkit.ChatColor;
-import org.bukkit.Material;
 import org.bukkit.configuration.ConfigurationSection;
-import org.bukkit.entity.LivingEntity;
-import org.bukkit.entity.Player;
-import org.bukkit.inventory.ItemStack;
 import think.rpgitems.data.Locale;
-import think.rpgitems.power.types.PowerHit;
 
 /**
- * Power consumehit.
+ * Power ranged.
  * <p>
- * The consume power will remove one item when player hit something. With {@link #cooldownTime cooldown} time (ticks).
+ * Not a triggerable power.
+ * Mark this item as ranged.
  * </p>
  */
-public class PowerConsumeHit extends Power implements PowerHit {
-    /**
-     * Cooldown time of this power
-     */
-    public int cooldownTime = 0;
-
-    @Override
-    public void hit(final Player player, ItemStack stack, LivingEntity entity, double damage) {
-        if (!checkCooldown(player, cooldownTime, false)) return;
-        if (!item.checkPermission(player, true))return;
-        int count = stack.getAmount() - 1;
-        if (count == 0) {
-            stack.setAmount(0);
-            stack.setType(Material.AIR);
-        } else {
-            stack.setAmount(count);
-        }
-    }
-
+public class PowerRanged extends Power {
     @Override
     public void init(ConfigurationSection s) {
-        cooldownTime = s.getInt("cooldown", 0);
+
     }
 
     @Override
     public void save(ConfigurationSection s) {
-        s.set("cooldown", cooldownTime);
+
     }
 
     @Override
     public String getName() {
-        return "consumehit";
+        return "ranged";
     }
 
     @Override
     public String displayText() {
-        return ChatColor.GREEN + Locale.get("power.consumehit");
+        return ChatColor.GREEN + Locale.get("power.ranged");
     }
 }

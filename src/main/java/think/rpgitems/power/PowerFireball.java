@@ -23,6 +23,7 @@ import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.entity.Player;
 import org.bukkit.entity.SmallFireball;
 import org.bukkit.inventory.ItemStack;
+import think.rpgitems.Events;
 import think.rpgitems.data.Locale;
 import think.rpgitems.data.RPGValue;
 import think.rpgitems.power.types.PowerRightClick;
@@ -46,26 +47,12 @@ public class PowerFireball extends Power implements PowerRightClick {
 
     @Override
     public void rightClick(Player player, ItemStack stack, Block clicked) {
-        long cooldown;
-        if (item.getHasPermission() && !player.hasPermission(item.getPermission())) {
-        } else {
-            RPGValue value = RPGValue.get(player, item, "tnt.fireball");
-            if (value == null) {
-                cooldown = System.currentTimeMillis() / 50;
-                value = new RPGValue(player, item, "tnt.fireball", cooldown);
-            } else {
-                cooldown = value.asLong();
-            }
-            if (cooldown <= System.currentTimeMillis() / 50) {
-                if (!item.consumeDurability(stack, consumption)) return;
-                value.set(System.currentTimeMillis() / 50 + cooldownTime);
-                player.playSound(player.getLocation(), Sound.ENTITY_GHAST_SHOOT, 1.0f, 1.0f);
-                player.launchProjectile(SmallFireball.class);
-            } else {
-                player.sendMessage(ChatColor.AQUA + String.format(Locale.get("message.cooldown"), ((double) (cooldown - System.currentTimeMillis() / 50)) / 20d));
-            }
-        }
-    }
+        if (!item.checkPermission(player, true))return;
+        if (!checkCooldown(player, cooldownTime, true))return;
+        if (!item.consumeDurability(stack, consumption)) return;
+        player.playSound(player.getLocation(), Sound.ENTITY_GHAST_SHOOT, 1.0f, 1.0f);
+        Events.rpgProjectiles.put(player.launchProjectile(SmallFireball.class).getEntityId(), item.getID());
+}
 
     @Override
     public String displayText() {

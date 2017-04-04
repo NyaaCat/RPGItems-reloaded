@@ -60,6 +60,11 @@ import static org.bukkit.ChatColor.COLOR_CHAR;
 import static org.bukkit.ChatColor.getByChar;
 
 public class RPGItem {
+    public enum DamageMode{
+        FIXED,
+        VANILLA,
+        ADDITIONAL,
+    }
     public static final int MC_ENCODED_ID_LENGTH = 16;
     public boolean ignoreWorldGuard = false;
     public List<String> description = new ArrayList<>();
@@ -83,6 +88,7 @@ public class RPGItem {
     public int hittingCost = 1;
     public int hitCost = 1;
     public boolean hitCostByDamage = false;
+    public DamageMode damageMode = DamageMode.FIXED;
     private ItemStack item;
     private ItemMeta localeMeta;
     private int id;
@@ -247,6 +253,12 @@ public class RPGItem {
             }
         }
         customItemModel = s.getBoolean("customItemModel", false);
+        String damageModeStr = s.getString("damageMode", "FIXED");
+        try{
+            damageMode = DamageMode.valueOf(damageModeStr);
+        }catch (IllegalArgumentException e){
+            damageMode = DamageMode.FIXED;
+        }
         rebuild();
     }
 
@@ -434,9 +446,9 @@ public class RPGItem {
                 }
             }
 
-            String shape = "";
+            StringBuilder shape = new StringBuilder();
             for (ItemStack m : recipe) {
-                shape += charMap.get(m);
+                shape.append(charMap.get(m));
             }
             shapedRecipe.shape(shape.substring(0, 3), shape.substring(3, 6), shape.substring(6, 9));
 
@@ -648,9 +660,7 @@ public class RPGItem {
         }
 
         // add descriptions
-        for (String s : description) {
-            output.add(s);
-        }
+        output.addAll(description);
 
         // compute width
         int width = 0;
@@ -664,14 +674,19 @@ public class RPGItem {
         if (showArmourLore) {
             armorMinLen = getStringWidth(ChatColor.stripColor(hand + "     " + type));
 
-            if (damageMin == 0 && damageMax == 0 && armour != 0) {
+            if (armour != 0) {
                 damageStr = armour + "% " + Plugin.plugin.getConfig().getString("defaults.armour", "Armour");
-            } else if (armour == 0 && damageMin == 0 && damageMax == 0) {
-                damageStr = null;
-            } else if (damageMin == damageMax) {
-                damageStr = damageMin + " " + Plugin.plugin.getConfig().getString("defaults.damage", "Damage");
-            } else {
-                damageStr = damageMin + "-" + damageMax + " " + Plugin.plugin.getConfig().getString("defaults.damage", "Damage");
+            }
+            if((damageMin !=0 || damageMax !=0) && damageMode != DamageMode.VANILLA){
+                damageStr = damageStr == null? "" : damageStr + " & ";
+                if(damageMode == DamageMode.ADDITIONAL) {
+                    damageStr += Plugin.plugin.getConfig().getString("defaults.additionaldamage", "Additional ");
+                }
+                if (damageMin == damageMax) {
+                    damageStr += damageMin + " " + Plugin.plugin.getConfig().getString("defaults.damage", "Damage");
+                } else {
+                    damageStr += damageMin + "-" + damageMax + " " + Plugin.plugin.getConfig().getString("defaults.damage", "Damage");
+                }
             }
             if (damageStr != null) {
                 armorMinLen = Math.max(armorMinLen, getStringWidth(ChatColor.stripColor(damageStr)));
@@ -787,12 +802,12 @@ public class RPGItem {
             sender.sendMessage(String.format(Locale.get("message.print.customitemmodel"), item.getType().name() + ":" + item.getDurability()));
         }
         if (!itemFlags.isEmpty()) {
-            String str = "";
+            StringBuilder str = new StringBuilder();
             for (ItemFlag flag : itemFlags) {
                 if (str.length() > 0) {
-                    str += ", ";
+                    str.append(", ");
                 }
-                str += flag.name();
+                str.append(flag.name());
             }
             sender.sendMessage(Locale.get("message.print.itemflags") + str);
         }
@@ -847,7 +862,6 @@ public class RPGItem {
     public void setDamage(int min, int max, boolean update) {
         damageMin = min;
         damageMax = max;
-        armour = 0;
         if (update)
             rebuild();
     }
@@ -902,9 +916,16 @@ public class RPGItem {
             rebuild();
     }
 
+    public boolean checkPermission(Player p, boolean showWarn){
+        if(getHasPermission() && !p.hasPermission(getPermission())){
+            if(showWarn)p.sendMessage(ChatColor.RED + Locale.get("message.error.permission"));
+            return false;
+        }
+        return true;
+    }
+
     public void setArmour(int a, boolean update) {
         armour = a;
-        damageMin = damageMax = 0;
         if (update)
             rebuild();
     }
@@ -1014,11 +1035,13 @@ public class RPGItem {
         int durability;
         if (getMaxDurability() != -1) {
             durability = meta.containsKey(RPGMetadata.DURABILITY) ? ((Number) meta.get(RPGMetadata.DURABILITY)).intValue() : defaultDurability;
-            if ((durability <= val
-                    || (val > 0 && durability < durabilityLowerBound)
-                    || (val < 0 && durability > durabilityUpperBound))
-                    && (getLocaleMeta().isUnbreakable()
-                    && !customItemModel)) {
+            if((val > 0 && durability < durabilityLowerBound)
+                    || (val < 0 && durability > durabilityUpperBound)){
+                return false;
+            }
+            if (durability <= val
+                    && getLocaleMeta().isUnbreakable()
+                    && !customItemModel) {
                 return false;
             }
             durability -= val;
@@ -1034,6 +1057,10 @@ public class RPGItem {
 
     public void give(Player player) {
         player.getInventory().addItem(toItemStack());
+    }
+
+    public boolean hasPower(Class<? extends Power> power) {
+        return powers.stream().anyMatch(p -> p.getClass().equals(power));
     }
 
     public void addPower(Power power) {

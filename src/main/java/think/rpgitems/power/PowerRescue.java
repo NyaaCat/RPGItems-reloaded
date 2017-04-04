@@ -98,59 +98,45 @@ public class PowerRescue extends Power implements PowerHurt, PowerHitTaken {
 
     @Override
     public void hurt(Player target, ItemStack stack, EntityDamageEvent event) {
-        if (item.getHasPermission() && !target.hasPermission(item.getPermission())) {
-        } else {
-            double health = target.getHealth() - event.getFinalDamage();
-            if (health > healthTrigger) return;
-            rescue(target, stack, event, false);
-        }
+        if (!item.checkPermission(target, false))return;
+        double health = target.getHealth() - event.getFinalDamage();
+        if (health > healthTrigger) return;
+        rescue(target, stack, event, false);
     }
 
     @Override
     public double takeHit(Player target, ItemStack stack, EntityDamageEvent event) {
-        if (item.getHasPermission() && !target.hasPermission(item.getPermission())) {
+        if (!item.checkPermission(target, false)) {
             return event.getDamage();
         } else {
-            if (event.getFinalDamage() < damageTrigger) return event.getFinalDamage();
+            if (event.getFinalDamage() < damageTrigger) return event.getDamage();
             rescue(target, stack, event, true);
             return 0;
         }
     }
 
     private void rescue(Player target, ItemStack stack, EntityDamageEvent event, boolean canceled) {
-        long cooldown;
-        RPGValue value = RPGValue.get(target, item, "rescue.cooldown");
-        if (value == null) {
-            cooldown = System.currentTimeMillis() / 50;
-            value = new RPGValue(target, item, "rescue.cooldown", cooldown);
-        } else {
-            cooldown = value.asLong();
+        if (!checkCooldown(target, cooldownTime, true)) return;
+        if (!item.consumeDurability(stack, consumption)) return;
+        target.sendMessage(ChatColor.AQUA + Locale.get("power.rescue.info"));
+        DamageCause cause = event.getCause();
+        if (!canceled) {
+            target.addPotionEffect(new PotionEffect(PotionEffectType.HEALTH_BOOST, 1, 255));
+            target.setHealth(healthTrigger + event.getFinalDamage());
         }
-        if (cooldown <= System.currentTimeMillis() / 50) {
-            if (!item.consumeDurability(stack, consumption)) return;
-            value.set(System.currentTimeMillis() / 50 + cooldownTime);
-            target.sendMessage(ChatColor.AQUA + Locale.get("power.rescue.info"));
-            DamageCause cause = event.getCause();
-            if (!canceled) {
-                target.addPotionEffect(new PotionEffect(PotionEffectType.HEALTH_BOOST, 1, 255));
-                target.setHealth(healthTrigger + event.getFinalDamage());
-            }
-            target.addPotionEffect(new PotionEffect(PotionEffectType.DAMAGE_RESISTANCE, 200, 10));
-            target.addPotionEffect(new PotionEffect(PotionEffectType.REGENERATION, 400, 2));
-            target.addPotionEffect(new PotionEffect(PotionEffectType.SATURATION, 400, 2));
-            target.getWorld().playSound(target.getLocation(), Sound.BLOCK_ENCHANTMENT_TABLE_USE, 10, 1);
+        target.addPotionEffect(new PotionEffect(PotionEffectType.DAMAGE_RESISTANCE, 200, 10));
+        target.addPotionEffect(new PotionEffect(PotionEffectType.REGENERATION, 400, 2));
+        target.addPotionEffect(new PotionEffect(PotionEffectType.SATURATION, 400, 2));
+        target.getWorld().playSound(target.getLocation(), Sound.BLOCK_ENCHANTMENT_TABLE_USE, 10, 1);
 
-            if (inPlace && cause != DamageCause.DRAGON_BREATH
-                    && cause != DamageCause.DROWNING
-                    && cause != DamageCause.SUFFOCATION
-                    && cause != DamageCause.VOID) {
-                target.addPotionEffect(new PotionEffect(PotionEffectType.GLOWING, 160, 10));
-            } else if (useBed && target.getBedSpawnLocation() != null)
-                target.teleport(target.getBedSpawnLocation());
-            else
-                target.teleport(target.getWorld().getSpawnLocation());
-        } else {
-            target.sendMessage(ChatColor.AQUA + String.format(Locale.get("message.cooldown"), ((double) (cooldown - System.currentTimeMillis() / 50)) / 20d));
-        }
+        if (inPlace && cause != DamageCause.DRAGON_BREATH
+                && cause != DamageCause.DROWNING
+                && cause != DamageCause.SUFFOCATION
+                && cause != DamageCause.VOID) {
+            target.addPotionEffect(new PotionEffect(PotionEffectType.GLOWING, 160, 10));
+        } else if (useBed && target.getBedSpawnLocation() != null)
+            target.teleport(target.getBedSpawnLocation());
+        else
+            target.teleport(target.getWorld().getSpawnLocation());
     }
 }

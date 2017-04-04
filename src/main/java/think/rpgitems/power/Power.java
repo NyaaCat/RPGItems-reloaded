@@ -28,7 +28,7 @@ import org.bukkit.entity.LivingEntity;
 import org.bukkit.entity.Player;
 import org.bukkit.permissions.PermissionAttachment;
 import think.rpgitems.Plugin;
-import think.rpgitems.data.RPGValue;
+import think.rpgitems.data.*;
 import think.rpgitems.item.RPGItem;
 
 import java.util.*;
@@ -140,20 +140,21 @@ public abstract class Power {
         return Math.abs((float) Math.toDegrees(v1.angle(v2)));
     }
 
-    public static boolean updateCooldownByString(Player player, RPGItem item, String command, long cooldownTime) {
+    public static boolean checkCooldownByString(Player player, RPGItem item, String command, long cooldownTime) {
         long cooldown;
         RPGValue value = RPGValue.get(player, item, "command." + command + ".cooldown");
+        long nowTick = System.currentTimeMillis() / 50;
         if (value == null) {
-            cooldown = System.currentTimeMillis() / 50;
+            cooldown = nowTick;
             value = new RPGValue(player, item, "command." + command + ".cooldown", cooldown);
         } else {
             cooldown = value.asLong();
         }
-        if (cooldown <= System.currentTimeMillis() / 50) {
-            value.set(System.currentTimeMillis() / 50 + cooldownTime);
+        if (cooldown <= nowTick) {
+            value.set(nowTick + cooldownTime);
             return true;
         } else {
-            player.sendMessage(ChatColor.AQUA + String.format(think.rpgitems.data.Locale.get("message.cooldown"), ((double) (cooldown - System.currentTimeMillis() / 50)) / 20d));
+            player.sendMessage(ChatColor.AQUA + String.format(think.rpgitems.data.Locale.get("message.cooldown"), ((double) (cooldown - nowTick)) / 20d));
             return false;
         }
     }
@@ -206,19 +207,21 @@ public abstract class Power {
      * @param cdTicks the cd ticks
      * @return the boolean
      */
-    protected final boolean checkCooldown(Player p, int cdTicks) {
+    protected final boolean checkCooldown(Player p, long cdTicks, boolean showWarn) {
         long cooldown;
         RPGValue value = RPGValue.get(p, item, getName() + ".cooldown");
+        long nowTick = System.currentTimeMillis() / 50;
         if (value == null) {
-            cooldown = System.currentTimeMillis() / 50;
+            cooldown = nowTick;
             value = new RPGValue(p, item, getName() + ".cooldown", cooldown);
         } else {
             cooldown = value.asLong();
         }
-        if (cooldown <= System.currentTimeMillis() / 50) {
-            value.set(System.currentTimeMillis() / 50 + cdTicks);
+        if (cooldown <= nowTick) {
+            value.set(nowTick + cdTicks);
             return true;
         } else {
+            if(showWarn)p.sendMessage(ChatColor.AQUA + String.format(think.rpgitems.data.Locale.get("message.cooldown"), ((double) (cooldown - nowTick)) / 20d));
             return false;
         }
     }

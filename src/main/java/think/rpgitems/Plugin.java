@@ -59,7 +59,6 @@ public class Plugin extends JavaPlugin {
         Power.powers.put("potionself", PowerPotionSelf.class);
         Power.powers.put("consume", PowerConsume.class);
         Power.powers.put("unbreakable", PowerUnbreakable.class);
-        Power.powers.put("unbreaking", PowerUnbreaking.class);
         Power.powers.put("rescue", PowerRescue.class);
         Power.powers.put("rumble", PowerRumble.class);
         Power.powers.put("skyhook", PowerSkyHook.class);
@@ -82,6 +81,9 @@ public class Plugin extends JavaPlugin {
         Power.powers.put("tippedarrow", PowerTippedArrow.class);
         Power.powers.put("consumehit", PowerConsumeHit.class);
         Power.powers.put("aoecommand", PowerAOECommand.class);
+        Power.powers.put("ranged", PowerRanged.class);
+        Power.powers.put("rangedonly", PowerRangedOnly.class);
+        Power.powers.put("deflect", PowerDeflect.class);
         WorldGuard.load();
     }
 

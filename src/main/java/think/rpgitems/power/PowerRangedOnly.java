@@ -18,56 +18,33 @@ package think.rpgitems.power;
 
 import org.bukkit.ChatColor;
 import org.bukkit.configuration.ConfigurationSection;
-import org.bukkit.entity.LivingEntity;
-import org.bukkit.entity.Player;
-import org.bukkit.inventory.ItemStack;
 import think.rpgitems.data.Locale;
-import think.rpgitems.power.types.PowerHit;
-
-import java.util.Random;
 
 /**
- * Power unbreaking.
+ * Power ranged.
  * <p>
- * The unbreaking power works similar to normal unbreaking.
+ * Not a triggerable power.
+ * Mark this item as ranged only.
  * </p>
- *
- * @deprecated Breaks durability system
  */
-@Deprecated
-public class PowerUnbreaking extends Power implements PowerHit {
-
-    /**
-     * Level of unbreaking
-     */
-    public int level = 1;
-    private Random random = new Random();
-
-    @Override
-    public void hit(Player player, ItemStack stack, LivingEntity entity, double damage) {
-        if (random.nextDouble() < ((double) level) / 100d) {
-            player.getInventory().getItemInMainHand().setDurability((short) (player.getInventory().getItemInMainHand().getDurability() - 1));
-            player.updateInventory();
-        }
-    }
-
+public class PowerRangedOnly extends Power {
     @Override
     public void init(ConfigurationSection s) {
-        level = s.getInt("level", 1);
+
     }
 
     @Override
     public void save(ConfigurationSection s) {
-        s.set("level", level);
+
     }
 
     @Override
     public String getName() {
-        return "unbreaking";
+        return "rangedonly";
     }
 
     @Override
     public String displayText() {
-        return String.format(ChatColor.GREEN + Locale.get("power.unbreaking"), level);
+        return ChatColor.GREEN + Locale.get("power.rangedonly");
     }
 }

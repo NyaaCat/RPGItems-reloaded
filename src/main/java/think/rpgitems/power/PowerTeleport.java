@@ -55,88 +55,64 @@ public class PowerTeleport extends Power implements PowerRightClick, PowerProjec
 
     @Override
     public void rightClick(Player player, ItemStack stack, Block clicked) {
-        long cooldown;
-        if (item.getHasPermission() && !player.hasPermission(item.getPermission())) {
-        } else {
-            RPGValue value = RPGValue.get(player, item, "teleport.cooldown");
-            if (value == null) {
-                cooldown = System.currentTimeMillis() / 50;
-                value = new RPGValue(player, item, "teleport.cooldown", cooldown);
-            } else {
-                cooldown = value.asLong();
-            }
-            if (cooldown <= System.currentTimeMillis() / 50) {
-                if (!item.consumeDurability(stack, consumption)) return;
-                value.set(System.currentTimeMillis() / 50 + cooldownTime);
-                // float dist = 0;
-                World world = player.getWorld();
-                Location start = player.getLocation();
-                start.setY(start.getY() + 1.6);
-                // Location current = new Location(world, 0, 0, 0);
-                Block lastSafe = world.getBlockAt(start);
-                // Keeping the old method because BlockIterator could get removed (irc)
-                // double dir = Math.toRadians(start.getYaw()) + (Math.PI / 2d);
-                // double dirY = Math.toRadians(start.getPitch()) + (Math.PI / 2d);
-                try {
-                    BlockIterator bi = new BlockIterator(player, distance);
-                    // while (dist < distance) {
-                    while (bi.hasNext()) {
-                        // current.setX(start.getX() + dist * Math.cos(dir) *
-                        // Math.sin(dirY));
-                        // current.setY(start.getY() + dist * Math.cos(dirY));
-                        // current.setZ(start.getZ() + dist * Math.sin(dir) *
-                        // Math.sin(dirY));
-                        Block block = bi.next();// world.getBlockAt(current);
-                        if (!block.getType().isSolid() || (block.getType() == Material.AIR)) {
-                            lastSafe = block;
-                        } else {
-                            break;
-                        }
-                        // dist+= 0.5;
-                    }
-                } catch (IllegalStateException ex) {
-                    ex.printStackTrace();
-                    Plugin.logger.info("This exception may be harmless");
+        if (!item.checkPermission(player, true))return;
+        if (!checkCooldown(player, cooldownTime, true)) return;
+        if (!item.consumeDurability(stack, consumption)) return;
+        // float dist = 0;
+        World world = player.getWorld();
+        Location start = player.getLocation();
+        start.setY(start.getY() + 1.6);
+        // Location current = new Location(world, 0, 0, 0);
+        Block lastSafe = world.getBlockAt(start);
+        // Keeping the old method because BlockIterator could get removed (irc)
+        // double dir = Math.toRadians(start.getYaw()) + (Math.PI / 2d);
+        // double dirY = Math.toRadians(start.getPitch()) + (Math.PI / 2d);
+        try {
+            BlockIterator bi = new BlockIterator(player, distance);
+            // while (dist < distance) {
+            while (bi.hasNext()) {
+                // current.setX(start.getX() + dist * Math.cos(dir) *
+                // Math.sin(dirY));
+                // current.setY(start.getY() + dist * Math.cos(dirY));
+                // current.setZ(start.getZ() + dist * Math.sin(dir) *
+                // Math.sin(dirY));
+                Block block = bi.next();// world.getBlockAt(current);
+                if (!block.getType().isSolid() || (block.getType() == Material.AIR)) {
+                    lastSafe = block;
+                } else {
+                    break;
                 }
-                Location newLoc = lastSafe.getLocation();
-                newLoc.setPitch(start.getPitch());
-                newLoc.setYaw(start.getYaw());
-                player.teleport(newLoc);
-                world.playEffect(newLoc, Effect.ENDER_SIGNAL, 0);
-                world.playSound(newLoc, Sound.ENTITY_ENDERMEN_TELEPORT, 1.0f, 0.3f);
-            } else {
-                player.sendMessage(ChatColor.AQUA + String.format(Locale.get("message.cooldown"), ((double) (cooldown - System.currentTimeMillis() / 50)) / 20d));
+                // dist+= 0.5;
             }
+        } catch (IllegalStateException ex) {
+            ex.printStackTrace();
+            Plugin.logger.info("This exception may be harmless");
         }
+        Location newLoc = lastSafe.getLocation();
+        newLoc.setPitch(start.getPitch());
+        newLoc.setYaw(start.getYaw());
+        player.teleport(newLoc);
+        world.playEffect(newLoc, Effect.ENDER_SIGNAL, 0);
+        world.playSound(newLoc, Sound.ENTITY_ENDERMEN_TELEPORT, 1.0f, 0.3f);
     }
 
     @Override
     public void projectileHit(Player player, ItemStack stack, Projectile p) {
-        long cooldown;
-        RPGValue value = RPGValue.get(player, item, "teleport.cooldown");
-        if (value == null) {
-            cooldown = System.currentTimeMillis() / 50;
-            value = new RPGValue(player, item, "teleport.cooldown", cooldown);
-        } else {
-            cooldown = value.asLong();
+        if (!item.checkPermission(player, true))return;
+        if (!checkCooldown(player, cooldownTime, true)) return;
+        if (!item.consumeDurability(stack, consumption)) return;
+        World world = player.getWorld();
+        Location start = player.getLocation();
+        Location newLoc = p.getLocation();
+        if (start.distanceSquared(newLoc) >= distance * distance) {
+            player.sendMessage(ChatColor.AQUA + Locale.get("message.too.far"));
+            return;
         }
-        if (cooldown <= System.currentTimeMillis() / 50) {
-            value.set(System.currentTimeMillis() / 50 + cooldownTime);
-            World world = player.getWorld();
-            Location start = player.getLocation();
-            Location newLoc = p.getLocation();
-            if (start.distanceSquared(newLoc) >= distance * distance) {
-                player.sendMessage(ChatColor.AQUA + Locale.get("message.too.far"));
-                return;
-            }
-            newLoc.setPitch(start.getPitch());
-            newLoc.setYaw(start.getYaw());
-            player.teleport(newLoc);
-            world.playEffect(newLoc, Effect.ENDER_SIGNAL, 0);
-            world.playSound(newLoc, Sound.ENTITY_ENDERMEN_TELEPORT, 1.0f, 0.3f);
-        } else {
-            player.sendMessage(ChatColor.AQUA + String.format(Locale.get("message.cooldown"), ((double) (cooldown - System.currentTimeMillis() / 50)) / 20d));
-        }
+        newLoc.setPitch(start.getPitch());
+        newLoc.setYaw(start.getYaw());
+        player.teleport(newLoc);
+        world.playEffect(newLoc, Effect.ENDER_SIGNAL, 0);
+        world.playSound(newLoc, Sound.ENTITY_ENDERMEN_TELEPORT, 1.0f, 0.3f);
     }
 
     @Override

@@ -64,74 +64,60 @@ public class PowerRainbow extends Power implements PowerRightClick {
     @SuppressWarnings("deprecation")
     @Override
     public void rightClick(Player player, ItemStack stack, Block clicked) {
-        long cooldown;
-        if (item.getHasPermission() && !player.hasPermission(item.getPermission())) {
-        } else {
-            RPGValue value = RPGValue.get(player, item, "arrow.rainbow");
-            if (value == null) {
-                cooldown = System.currentTimeMillis() / 50;
-                value = new RPGValue(player, item, "arrow.rainbow", cooldown);
+        if (!item.checkPermission(player, true))return;
+        if (!checkCooldown(player, cooldownTime, true)) return;
+        if (!item.consumeDurability(stack, consumption)) return;
+        player.playSound(player.getLocation(), Sound.ENTITY_ARROW_SHOOT, 1.0f, 1.0f);
+        final ArrayList<FallingBlock> blocks = new ArrayList<>();
+        for (int i = 0; i < count; i++) {
+            FallingBlock block;
+            if (!isFire) {
+                block = player.getWorld().spawnFallingBlock(player.getLocation().add(0, 1.8, 0), Material.WOOL, (byte) random.nextInt(16));
             } else {
-                cooldown = value.asLong();
+                block = player.getWorld().spawnFallingBlock(player.getLocation().add(0, 1.8, 0), Material.FIRE, (byte) 0);
             }
-            if (cooldown <= System.currentTimeMillis() / 50) {
-                if (!item.consumeDurability(stack, consumption)) return;
-                value.set(System.currentTimeMillis() / 50 + cooldownTime);
-                player.playSound(player.getLocation(), Sound.ENTITY_ARROW_SHOOT, 1.0f, 1.0f);
-                final ArrayList<FallingBlock> blocks = new ArrayList<>();
-                for (int i = 0; i < count; i++) {
-                    FallingBlock block;
-                    if (!isFire) {
-                        block = player.getWorld().spawnFallingBlock(player.getLocation().add(0, 1.8, 0), Material.WOOL, (byte) random.nextInt(16));
-                    } else {
-                        block = player.getWorld().spawnFallingBlock(player.getLocation().add(0, 1.8, 0), Material.FIRE, (byte) 0);
-                    }
-                    block.setVelocity(player.getLocation().getDirection().multiply(new Vector(random.nextDouble() * 2d + 0.5, random.nextDouble() * 2d + 0.5, random.nextDouble() * 2d + 0.5)));
-                    block.setDropItem(false);
-                    blocks.add(block);
-                }
-                (new BukkitRunnable() {
-
-                    ArrayList<Location> fallLocs = new ArrayList<>();
-                    Random random = new Random();
-
-                    public void run() {
-
-                        Iterator<Location> l = fallLocs.iterator();
-                        while (l.hasNext()) {
-                            Location loc = l.next();
-                            if (random.nextBoolean()) {
-                                Block b = loc.getBlock();
-                                if (b.getType() == (isFire ? Material.FIRE : Material.WOOL)) {
-                                    loc.getWorld().playEffect(loc, Effect.STEP_SOUND, isFire ? Material.FIRE : Material.WOOL, b.getData());
-                                    b.setType(Material.AIR);
-                                }
-                                l.remove();
-                            }
-                            if (random.nextInt(5) == 0) {
-                                break;
-                            }
-                        }
-
-                        Iterator<FallingBlock> it = blocks.iterator();
-                        while (it.hasNext()) {
-                            FallingBlock block = it.next();
-                            if (block.isDead()) {
-                                fallLocs.add(block.getLocation());
-                                it.remove();
-                            }
-                        }
-
-                        if (fallLocs.isEmpty() && blocks.isEmpty()) {
-                            cancel();
-                        }
-
-                    }
-                }).runTaskTimer(Plugin.plugin, 0, 5);
-            } else {
-                player.sendMessage(ChatColor.AQUA + String.format(Locale.get("message.cooldown"), ((double) (cooldown - System.currentTimeMillis() / 50)) / 20d));
-            }
+            block.setVelocity(player.getLocation().getDirection().multiply(new Vector(random.nextDouble() * 2d + 0.5, random.nextDouble() * 2d + 0.5, random.nextDouble() * 2d + 0.5)));
+            block.setDropItem(false);
+            blocks.add(block);
         }
+        (new BukkitRunnable() {
+
+            ArrayList<Location> fallLocs = new ArrayList<>();
+            Random random = new Random();
+
+            public void run() {
+
+                Iterator<Location> l = fallLocs.iterator();
+                while (l.hasNext()) {
+                    Location loc = l.next();
+                    if (random.nextBoolean()) {
+                        Block b = loc.getBlock();
+                        if (b.getType() == (isFire ? Material.FIRE : Material.WOOL)) {
+                            loc.getWorld().playEffect(loc, Effect.STEP_SOUND, isFire ? Material.FIRE : Material.WOOL, b.getData());
+                            b.setType(Material.AIR);
+                        }
+                        l.remove();
+                    }
+                    if (random.nextInt(5) == 0) {
+                        break;
+                    }
+                }
+
+                Iterator<FallingBlock> it = blocks.iterator();
+                while (it.hasNext()) {
+                    FallingBlock block = it.next();
+                    if (block.isDead()) {
+                        fallLocs.add(block.getLocation());
+                        it.remove();
+                    }
+                }
+
+                if (fallLocs.isEmpty() && blocks.isEmpty()) {
+                    cancel();
+                }
+
+            }
+        }).runTaskTimer(Plugin.plugin, 0, 5);
     }
 
     @Override

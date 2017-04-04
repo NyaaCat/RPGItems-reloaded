@@ -10,7 +10,6 @@ import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
 import think.rpgitems.Plugin;
 import think.rpgitems.data.Locale;
-import think.rpgitems.data.RPGValue;
 import think.rpgitems.power.types.PowerRightClick;
 
 import java.util.HashSet;
@@ -28,7 +27,7 @@ public class PowerForceField extends Power implements PowerRightClick {
     /**
      * Cooldown time of this power
      */
-    public int cooldown = 200;
+    public int cooldownTime = 200;
     /**
      * Radius of force field
      */
@@ -52,7 +51,7 @@ public class PowerForceField extends Power implements PowerRightClick {
 
     @Override
     public void init(ConfigurationSection s) {
-        cooldown = s.getInt("cooldown");
+        cooldownTime = s.getInt("cooldown");
         radius = s.getInt("radius");
         height = s.getInt("height");
         base = s.getInt("base");
@@ -62,7 +61,7 @@ public class PowerForceField extends Power implements PowerRightClick {
 
     @Override
     public void save(ConfigurationSection s) {
-        s.set("cooldown", cooldown);
+        s.set("cooldown", cooldownTime);
         s.set("radius", radius);
         s.set("height", height);
         s.set("base", base);
@@ -77,26 +76,14 @@ public class PowerForceField extends Power implements PowerRightClick {
 
     @Override
     public String displayText() {
-        return ChatColor.GREEN + String.format(Locale.get("power.forcefield"), radius, height, base, (double) ttl / 20d, (double) cooldown / 20d);
+        return ChatColor.GREEN + String.format(Locale.get("power.forcefield"), radius, height, base, (double) ttl / 20d, (double) cooldownTime / 20d);
     }
 
     @Override
     public void rightClick(Player player, ItemStack stack, Block clicked) {
-        if (item.getHasPermission() && !player.hasPermission(item.getPermission())) return;
-        RPGValue value = RPGValue.get(player, item, "projectile.cooldown");
-        long cd;
-        if (value == null) {
-            cd = System.currentTimeMillis() / 50;
-            value = new RPGValue(player, item, "projectile.cooldown", cooldown);
-        } else {
-            cd = value.asLong();
-        }
-        if (cd > System.currentTimeMillis() / 50) {
-            player.sendMessage(ChatColor.AQUA + String.format(Locale.get("message.cooldown"), ((double) (cd - System.currentTimeMillis() / 50)) / 20d));
-            return;
-        }
+        if (!item.checkPermission(player, true))return;
+        if (!checkCooldown(player, cooldownTime, true)) return;
         if (!item.consumeDurability(stack, consumption)) return;
-        value.set(System.currentTimeMillis() / 50 + cooldown);
         World w = player.getWorld();
         int x = player.getLocation().getBlockX();
         int y = player.getLocation().getBlockY();
@@ -183,7 +170,7 @@ public class PowerForceField extends Power implements PowerRightClick {
          * @param h            the h
          * @param ttl          the ttl
          */
-        public buildWallTask(World w, Set<Location> circlePoints, int l, int h, int ttl) {
+        buildWallTask(World w, Set<Location> circlePoints, int l, int h, int ttl) {
             this.w = w;
             this.circlePoints = circlePoints;
             this.l = l;
@@ -244,15 +231,12 @@ public class PowerForceField extends Power implements PowerRightClick {
                 }
             } else {
                 Bukkit.getScheduler().cancelTask(id);
-                Bukkit.getScheduler().scheduleSyncDelayedTask(Plugin.plugin, new Runnable() {
-                    @Override
-                    public void run() {
-                        for (int i = h; i >= l; i--) {
-                            for (Location l : circlePoints) {
-                                l.subtract(0, 1, 0);
-                                if (!wasBarrier.contains(l) && w.getBlockAt(l).getType() == Material.BARRIER) {
-                                    w.getBlockAt(l).setType(Material.AIR);
-                                }
+                Bukkit.getScheduler().scheduleSyncDelayedTask(Plugin.plugin, () -> {
+                    for (int i = h; i >= l; i--) {
+                        for (Location l : circlePoints) {
+                            l.subtract(0, 1, 0);
+                            if (!wasBarrier.contains(l) && w.getBlockAt(l).getType() == Material.BARRIER) {
+                                w.getBlockAt(l).setType(Material.AIR);
                             }
                         }
                     }

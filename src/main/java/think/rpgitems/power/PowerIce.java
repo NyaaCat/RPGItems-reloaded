@@ -55,99 +55,83 @@ public class PowerIce extends Power implements PowerRightClick {
     @SuppressWarnings("deprecation")
     @Override
     public void rightClick(final Player player, ItemStack stack, Block clicked) {
-        long cooldown;
-        if (item.getHasPermission() && !player.hasPermission(item.getPermission())) return;
-        RPGValue value = RPGValue.get(player, item, "ice.cooldown");
-        if (value == null) {
-            cooldown = System.currentTimeMillis() / 50;
-            value = new RPGValue(player, item, "ice.cooldown", cooldown);
-        } else {
-            cooldown = value.asLong();
-        }
-        if (cooldown <= System.currentTimeMillis() / 50) {
-            if (!item.consumeDurability(stack, consumption)) return;
-            value.set(System.currentTimeMillis() / 50 + cooldownTime);
-            player.playSound(player.getLocation(), Sound.ENTITY_EGG_THROW, 1.0f, 0.1f);
+        if (!item.checkPermission(player, true))return;
+        if (!checkCooldown(player, cooldownTime, true))return;
+        if (!item.consumeDurability(stack, consumption)) return;
+        player.playSound(player.getLocation(), Sound.ENTITY_EGG_THROW, 1.0f, 0.1f);
 
-            // launch an ice block
-            final FallingBlock block = player.getWorld().spawnFallingBlock(player.getLocation().add(0, 1.8, 0), Material.PACKED_ICE, (byte) 0);
-            block.setVelocity(player.getLocation().getDirection().multiply(2d));
-            block.setDropItem(false);
+        // launch an ice block
+        final FallingBlock block = player.getWorld().spawnFallingBlock(player.getLocation().add(0, 1.8, 0), Material.PACKED_ICE, (byte) 0);
+        block.setVelocity(player.getLocation().getDirection().multiply(2d));
+        block.setDropItem(false);
 
+        BukkitRunnable run = new BukkitRunnable() {
+            public void run() {
+                boolean hit = false;
+                World world = block.getWorld();
 
-            BukkitRunnable run = new BukkitRunnable() {
-
-                public void run() {
-                    boolean hit = false;
-                    World world = block.getWorld();
-
-                    List<Entity> entities = block.getNearbyEntities(1, 1, 1);
-                    for (Entity e : entities) {
-                        if (e != player) {
-                            hit = true;
-                            break;
-                        }
+                List<Entity> entities = block.getNearbyEntities(1, 1, 1);
+                for (Entity e : entities) {
+                    if (e != player) {
+                        hit = true;
+                        break;
                     }
-
-                    if (block.isDead() || hit) {
-                        Location landingLoc = block.getLocation();
-                        boolean hitBlock = block.isDead();
-                        // remove entity and (potential) placed block.
-                        block.remove();
-                        if (hitBlock) {
-                            if (landingLoc.getBlock().getType().equals(Material.PACKED_ICE)) {
-                                landingLoc.getBlock().setType(Material.AIR);
-                            }
-                        }
-                        cancel();
-                        final HashMap<Location, Long> changedBlocks = new HashMap<>();
-                        for (int x = -1; x < 2; x++) {
-                            for (int y = -1; y < 3; y++) {
-                                for (int z = -1; z < 2; z++) {
-                                    Location loc = landingLoc.clone().add(x, y, z);
-                                    Block b = world.getBlockAt(loc);
-                                    if (!b.getType().isSolid() && !b.getType().toString().contains("SIGN")
-                                            && !(b.getType() == Material.SKULL || b.getType() == Material.FLOWER_POT)) {
-                                        changedBlocks.put(b.getLocation(), b.getTypeId() | ((long) b.getData() << 16));
-                                        b.setType(Material.PACKED_ICE);
-                                    }
-                                }
-                            }
-                        }
-
-                        // ice block remove timer
-                        (new BukkitRunnable() {
-                            Random random = new Random();
-
-                            @Override
-                            public void run() {
-                                for (int i = 0; i < 4; i++) {
-                                    if (changedBlocks.isEmpty()) {
-                                        cancel();
-                                        return;
-                                    }
-                                    int index = random.nextInt(changedBlocks.size());
-                                    long data = changedBlocks.values().toArray(new Long[0])[index];
-                                    Location position = changedBlocks.keySet().toArray(new Location[0])[index];
-                                    changedBlocks.remove(position);
-                                    Block c = position.getBlock();
-                                    position.getWorld().playEffect(position, Effect.STEP_SOUND, c.getTypeId());
-                                    c.setTypeId((int) (data & 0xFFFF));
-                                    c.setData((byte) (data >> 16));
-                                }
-
-                            }
-                        }).runTaskTimer(Plugin.plugin, 4 * 20 + new Random().nextInt(40), 3);
-                    }
-
                 }
-            };
-            run.runTaskTimer(Plugin.plugin, 0, 1);
 
-        } else {
-            player.sendMessage(ChatColor.AQUA + String.format(Locale.get("message.cooldown"), ((double) (cooldown - System.currentTimeMillis() / 50)) / 20d));
-        }
+                if (block.isDead() || hit) {
+                    Location landingLoc = block.getLocation();
+                    boolean hitBlock = block.isDead();
+                    // remove entity and (potential) placed block.
+                    block.remove();
+                    if (hitBlock) {
+                        if (landingLoc.getBlock().getType().equals(Material.PACKED_ICE)) {
+                            landingLoc.getBlock().setType(Material.AIR);
+                        }
+                    }
+                    cancel();
+                    final HashMap<Location, Long> changedBlocks = new HashMap<>();
+                    for (int x = -1; x < 2; x++) {
+                        for (int y = -1; y < 3; y++) {
+                            for (int z = -1; z < 2; z++) {
+                                Location loc = landingLoc.clone().add(x, y, z);
+                                Block b = world.getBlockAt(loc);
+                                if (!b.getType().isSolid() && !b.getType().toString().contains("SIGN")
+                                        && !(b.getType() == Material.SKULL || b.getType() == Material.FLOWER_POT)) {
+                                    changedBlocks.put(b.getLocation(), b.getTypeId() | ((long) b.getData() << 16));
+                                    b.setType(Material.PACKED_ICE);
+                                }
+                            }
+                        }
+                    }
 
+                    // ice block remove timer
+                    (new BukkitRunnable() {
+                        Random random = new Random();
+
+                        @Override
+                        public void run() {
+                            for (int i = 0; i < 4; i++) {
+                                if (changedBlocks.isEmpty()) {
+                                    cancel();
+                                    return;
+                                }
+                                int index = random.nextInt(changedBlocks.size());
+                                long data = changedBlocks.values().toArray(new Long[0])[index];
+                                Location position = changedBlocks.keySet().toArray(new Location[0])[index];
+                                changedBlocks.remove(position);
+                                Block c = position.getBlock();
+                                position.getWorld().playEffect(position, Effect.STEP_SOUND, c.getTypeId());
+                                c.setTypeId((int) (data & 0xFFFF));
+                                c.setData((byte) (data >> 16));
+                            }
+
+                        }
+                    }).runTaskTimer(Plugin.plugin, 4 * 20 + new Random().nextInt(40), 3);
+                }
+
+            }
+        };
+        run.runTaskTimer(Plugin.plugin, 0, 1);
     }
 
     @Override

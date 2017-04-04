@@ -48,9 +48,9 @@ public class PowerLifeSteal extends Power implements PowerHit {
 
     @Override
     public void hit(Player player, ItemStack stack, LivingEntity entity, double damage) {
-        if (item.getHasPermission() && !player.hasPermission(item.getPermission())) {
-        } else if (random.nextInt(chance) == 0) {
-            if (!item.consumeDurability(stack, consumption)) return;
+        if (!item.checkPermission(player, true))return;
+        if (!item.consumeDurability(stack, consumption)) return;
+        if (random.nextInt(chance) == 0) {
             if ((player.getHealth() + damage) >= player.getAttribute(Attribute.GENERIC_MAX_HEALTH).getValue()) {
                 player.setHealth(player.getAttribute(Attribute.GENERIC_MAX_HEALTH).getValue());
             } else

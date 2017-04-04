@@ -96,8 +96,8 @@ public class PowerCommandHit extends Power implements PowerHit {
     @Override
     public void hit(Player player, ItemStack stack, LivingEntity entity, double damage) {
         if(damage < minDamage)return;
-        if (item.getHasPermission() && !player.hasPermission(item.getPermission())) return;
-        if (!updateCooldownByString(player, item, command, cooldownTime)) return;
+        if (!item.checkPermission(player, true))return;
+        if (!checkCooldownByString(player, item, command, cooldownTime)) return;
         if (!item.consumeDurability(stack, consumption)) return;
 
         executeCommand(player, entity);

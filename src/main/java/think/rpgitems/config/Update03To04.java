@@ -6,7 +6,6 @@ import think.rpgitems.item.ItemManager;
 import think.rpgitems.item.RPGItem;
 import think.rpgitems.power.Power;
 import think.rpgitems.power.PowerUnbreakable;
-import think.rpgitems.power.PowerUnbreaking;
 
 import java.util.Iterator;
 
@@ -24,11 +23,6 @@ public class Update03To04 implements Updater {
                 Power power = it.next();
                 if (power instanceof PowerUnbreakable) {
                     item.setMaxDurability(-1, false);
-                    it.remove();
-                }
-                if (power instanceof PowerUnbreaking) {
-                    PowerUnbreaking ub = (PowerUnbreaking) power;
-                    item.setMaxDurability((int) ((double) item.getMaxDurability() * (1d + (double) (ub.level) / 2d)));
                     it.remove();
                 }
             }

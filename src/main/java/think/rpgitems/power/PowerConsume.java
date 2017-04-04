@@ -51,20 +51,21 @@ public class PowerConsume extends Power implements PowerRightClick, PowerLeftCli
 
     @Override
     public void rightClick(final Player player, ItemStack stack, Block clicked) {
-        if (isRight && checkCooldown(player, cooldownTime)) {
+        if (!item.checkPermission(player, true))return;
+        if (isRight && checkCooldown(player, cooldownTime, false)) {
             consume(player);
         }
     }
 
     @Override
     public void leftClick(final Player player, ItemStack stack, Block clicked) {
-        if (!isRight && checkCooldown(player, cooldownTime)) {
+        if (!item.checkPermission(player, true))return;
+        if (!isRight && checkCooldown(player, cooldownTime, false)) {
             consume(player);
         }
     }
 
     private void consume(final Player player) {
-        if (item.getHasPermission() && !player.hasPermission(item.getPermission())) return;
         ItemStack stack = player.getInventory().getItemInMainHand();
         if (!item.consumeDurability(stack, consumption)) return;
         int count = stack.getAmount() - 1;

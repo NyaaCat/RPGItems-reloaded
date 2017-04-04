@@ -922,4 +922,24 @@ public class Handler implements CommandHandler {
     public void debug(CommandSender sender) {
         sender.sendMessage("Not available in releases");
     }
+
+    @CommandString("rpgitem $n[] damageMode")
+    @CommandDocumentation("$command.rpgitem.customitemmodel")
+    @CommandGroup("item_customitemmodel")
+    public void toggleItemDamageMode(CommandSender sender, RPGItem item) {
+        switch (item.damageMode){
+            case FIXED:
+                item.damageMode = RPGItem.DamageMode.VANILLA;
+                break;
+            case VANILLA:
+                item.damageMode = RPGItem.DamageMode.ADDITIONAL;
+                break;
+            case ADDITIONAL:
+                item.damageMode = RPGItem.DamageMode.FIXED;
+                break;
+        }
+        item.rebuild();
+        ItemManager.save(Plugin.plugin);
+        sender.sendMessage(Locale.get("message.damagemode." + item.damageMode.name().toLowerCase()));
+    }
 }

@@ -838,7 +838,7 @@ public class PowerHandler implements CommandHandler {
     public void forcefield(CommandSender sender, RPGItem item, int cooldown, int radius, int height, int base, int duration) {
         PowerForceField p = new PowerForceField();
         p.item = item;
-        p.cooldown = cooldown;
+        p.cooldownTime = cooldown;
         p.radius = radius;
         p.height = height;
         p.base = base;
@@ -946,6 +946,36 @@ public class PowerHandler implements CommandHandler {
         p.regex = regex;
         p.desc = description;
         item.addPower(p);
+        ItemManager.save(Plugin.plugin);
+        sender.sendMessage(ChatColor.AQUA + Locale.get("message.power.ok"));
+    }
+
+    @CommandString("rpgitem $n[] power ranged")
+    @CommandDocumentation("$command.rpgitem.ranged")
+    @CommandGroup("item_power_ranged")
+    public void ranged(CommandSender sender, RPGItem item) {
+        PowerRanged pow = new PowerRanged();
+        item.addPower(pow);
+        ItemManager.save(Plugin.plugin);
+        sender.sendMessage(ChatColor.AQUA + Locale.get("message.power.ok"));
+    }
+
+    @CommandString("rpgitem $n[] power rangedonly")
+    @CommandDocumentation("$command.rpgitem.rangedonly")
+    @CommandGroup("item_power_rangedonly")
+    public void rangedonly(CommandSender sender, RPGItem item) {
+        PowerRangedOnly pow = new PowerRangedOnly();
+        item.addPower(pow);
+        ItemManager.save(Plugin.plugin);
+        sender.sendMessage(ChatColor.AQUA + Locale.get("message.power.ok"));
+    }
+
+    @CommandString("rpgitem $n[] power deflect")
+    @CommandDocumentation("$command.rpgitem.deflect")
+    @CommandGroup("item_power_deflect")
+    public void deflect(CommandSender sender, RPGItem item) {
+        PowerDeflect pow = new PowerDeflect();
+        item.addPower(pow);
         ItemManager.save(Plugin.plugin);
         sender.sendMessage(ChatColor.AQUA + Locale.get("message.power.ok"));
     }
