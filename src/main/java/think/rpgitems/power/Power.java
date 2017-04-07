@@ -205,6 +205,7 @@ public abstract class Power {
      *
      * @param p       the p
      * @param cdTicks the cd ticks
+     * @param showWarn whether to show warning to player
      * @return the boolean
      */
     protected final boolean checkCooldown(Player p, long cdTicks, boolean showWarn) {

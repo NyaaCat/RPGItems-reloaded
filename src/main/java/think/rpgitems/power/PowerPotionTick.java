@@ -1,6 +1,7 @@
 package think.rpgitems.power;
 
 import org.bukkit.ChatColor;
+import org.bukkit.attribute.Attribute;
 import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
@@ -8,6 +9,8 @@ import org.bukkit.potion.PotionEffect;
 import org.bukkit.potion.PotionEffectType;
 import think.rpgitems.data.Locale;
 import think.rpgitems.power.types.PowerTick;
+
+import static java.lang.Double.min;
 
 /**
  * Power potiontick.
@@ -40,7 +43,6 @@ public class PowerPotionTick    extends Power implements PowerTick {
         if (!item.checkPermission(player, true))return;
         if (!checkCooldown(player, interval, false))return;
         if (!item.consumeDurability(stack, consumption)) return;
-        if (player.isDead())return;
         double health = player.getHealth();
         boolean hasEffect = false;
         for (PotionEffect potionEffect : player.getActivePotionEffects()) {
@@ -54,7 +56,9 @@ public class PowerPotionTick    extends Power implements PowerTick {
         if (!hasEffect && amplifier != 0) {
             player.addPotionEffect(new PotionEffect(effect, 60, amplifier, true), true);
         }
-        player.setHealth(health);
+        if(effect.equals(PotionEffectType.HEALTH_BOOST) && health > 0)
+            health = min(health, player.getAttribute(Attribute.GENERIC_MAX_HEALTH).getValue());
+            player.setHealth(health);
     }
 
     @Override
