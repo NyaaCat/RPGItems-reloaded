@@ -56,9 +56,10 @@ public class PowerPotionTick    extends Power implements PowerTick {
         if (!hasEffect && amplifier != 0) {
             player.addPotionEffect(new PotionEffect(effect, 60, amplifier, true), true);
         }
-        if(effect.equals(PotionEffectType.HEALTH_BOOST) && health > 0)
+        if(effect.equals(PotionEffectType.HEALTH_BOOST) && health > 0) {
             health = min(health, player.getAttribute(Attribute.GENERIC_MAX_HEALTH).getValue());
             player.setHealth(health);
+        }
     }
 
     @Override
