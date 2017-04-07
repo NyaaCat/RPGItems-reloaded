@@ -955,6 +955,7 @@ public class PowerHandler implements CommandHandler {
     @CommandGroup("item_power_ranged")
     public void ranged(CommandSender sender, RPGItem item) {
         PowerRanged pow = new PowerRanged();
+        pow.item = item;
         item.addPower(pow);
         ItemManager.save(Plugin.plugin);
         sender.sendMessage(ChatColor.AQUA + Locale.get("message.power.ok"));
@@ -965,6 +966,7 @@ public class PowerHandler implements CommandHandler {
     @CommandGroup("item_power_rangedonly")
     public void rangedonly(CommandSender sender, RPGItem item) {
         PowerRangedOnly pow = new PowerRangedOnly();
+        pow.item = item;
         item.addPower(pow);
         ItemManager.save(Plugin.plugin);
         sender.sendMessage(ChatColor.AQUA + Locale.get("message.power.ok"));
@@ -975,6 +977,7 @@ public class PowerHandler implements CommandHandler {
     @CommandGroup("item_power_deflect")
     public void deflect(CommandSender sender, RPGItem item) {
         PowerDeflect pow = new PowerDeflect();
+        pow.item = item;
         item.addPower(pow);
         ItemManager.save(Plugin.plugin);
         sender.sendMessage(ChatColor.AQUA + Locale.get("message.power.ok"));

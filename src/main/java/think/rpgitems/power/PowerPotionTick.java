@@ -37,6 +37,10 @@ public class PowerPotionTick    extends Power implements PowerTick {
      * Interval of this power
      */
     public int interval = 0;
+    /**
+     * Duration of this power
+     */
+    public int duration = 60;
 
     @Override
     public void tick(Player player, ItemStack stack) {
@@ -49,7 +53,7 @@ public class PowerPotionTick    extends Power implements PowerTick {
             if (potionEffect.getType().equals(effect)) {
                 hasEffect = true;
                 if (potionEffect.getDuration() <= 5 || potionEffect.getAmplifier() < amplifier || amplifier == 0)
-                    player.addPotionEffect(new PotionEffect(effect, 60, amplifier, true), true);
+                    player.addPotionEffect(new PotionEffect(effect, duration, amplifier, true), true);
                 break;
             }
         }
@@ -68,6 +72,7 @@ public class PowerPotionTick    extends Power implements PowerTick {
         effect = PotionEffectType.getByName(s.getString("effect", "heal"));
         consumption = s.getInt("consumption", 0);
         interval = s.getInt("interval", 0);
+        duration = s.getInt("duration", 60);
     }
 
     @Override
@@ -76,6 +81,7 @@ public class PowerPotionTick    extends Power implements PowerTick {
         s.set("effect", effect.getName());
         s.set("consumption", consumption);
         s.set("interval", interval);
+        s.set("duration", duration);
     }
 
     @Override
