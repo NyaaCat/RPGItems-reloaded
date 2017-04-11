@@ -171,7 +171,7 @@ public class PowerDeflect extends Power implements PowerHitTaken, PowerRightClic
     public void rightClick(Player player, ItemStack stack, Block clicked) {
         if (!isRight || !initiative
                 || !item.checkPermission(player, true)
-                || !checkCooldownByString(player, item, "deflect.initiative", cooldownTime)
+                || !checkCooldownByString(player, item, "deflect.initiative", cooldownTime, true)
                 || !item.consumeDurability(stack, consumption))
             return;
         time = System.currentTimeMillis() / 50 + duration;
@@ -181,7 +181,7 @@ public class PowerDeflect extends Power implements PowerHitTaken, PowerRightClic
     public void leftClick(Player player, ItemStack stack, Block clicked) {
         if (isRight || !initiative
                 || !item.checkPermission(player, true)
-                || !checkCooldownByString(player, item, "deflect.initiative", cooldownTime)
+                || !checkCooldownByString(player, item, "deflect.initiative", cooldownTime, true)
                 || !item.consumeDurability(stack, consumption))
             return;
         time = System.currentTimeMillis() / 50 + duration;

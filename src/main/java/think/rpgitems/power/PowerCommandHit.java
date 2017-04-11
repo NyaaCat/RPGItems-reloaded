@@ -97,7 +97,7 @@ public class PowerCommandHit extends Power implements PowerHit {
     public void hit(Player player, ItemStack stack, LivingEntity entity, double damage) {
         if(damage < minDamage)return;
         if (!item.checkPermission(player, true))return;
-        if (!checkCooldownByString(player, item, command, cooldownTime)) return;
+        if (!checkCooldownByString(player, item, command, cooldownTime, true)) return;
         if (!item.consumeDurability(stack, consumption)) return;
 
         executeCommand(player, entity);
@@ -120,6 +120,7 @@ public class PowerCommandHit extends Power implements PowerHit {
         display = s.getString("display", "");
         permission = s.getString("permission", "");
         consumption = s.getInt("consumption", 0);
+        minDamage = s.getInt("minDamage", 0);
     }
 
     @Override
@@ -128,7 +129,7 @@ public class PowerCommandHit extends Power implements PowerHit {
         s.set("command", command);
         s.set("display", display);
         s.set("permission", permission);
-        s.set("consumption", consumption);
+        s.set("minDamage", minDamage);
     }
 
 }

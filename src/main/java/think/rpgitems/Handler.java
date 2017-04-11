@@ -685,46 +685,48 @@ public class Handler implements CommandHandler {
             sender.sendMessage(String.format(Locale.get("message.power.unknown"), power));
             return;
         }
-        for (Power pow : item.powers) {
-            if (p.isInstance(pow) && --nth == 0) {
-                try {
-                    Field pro = p.getField(property);
-                    if (pro.getType() == int.class || pro.getType() == long.class) {
-                        try {
-                            pro.set(pow, Integer.parseInt(val));
-                        } catch (NumberFormatException e) {
-                            sender.sendMessage(ChatColor.RED + String.format(Locale.get("message.power_property.not_vaild_int"), val));
-                            return;
-                        }
-                    } else if (pro.getType() == double.class) {
-                        try {
-                            pro.set(pow, Double.parseDouble(val));
-                        } catch (NumberFormatException e) {
-                            sender.sendMessage(ChatColor.RED + String.format(Locale.get("message.power_property.not_vaild_int"), val));
-                            return;
-                        }
-                    } else if (pro.getType() == String.class) {
-                        pro.set(pow, val);
-                    } else if (pro.getType() == boolean.class) {
-                        if (val.equalsIgnoreCase("true") || val.equalsIgnoreCase("false")) {
-                            pro.set(pow, val.equalsIgnoreCase("true"));
-                        } else {
-                            sender.sendMessage(ChatColor.RED + String.format(Locale.get("message.power_property.not_vaild_bool"), val));
-                            return;
-                        }
-                    } else {
-                        sender.sendMessage(ChatColor.RED + String.format(Locale.get("message.power_property.property_unsupporttype"), property));
+        Optional<Power> op = item.powers.stream().filter(pwr -> pwr.getClass().equals(p)).skip(nth - 1).findFirst();
+        if (op.isPresent()){
+            Power pow = op.get();
+            try {
+                Field pro = p.getField(property);
+                if (pro.getType() == int.class || pro.getType() == long.class) {
+                    try {
+                        pro.set(pow, Integer.parseInt(val));
+                    } catch (NumberFormatException e) {
+                        sender.sendMessage(ChatColor.RED + String.format(Locale.get("message.power_property.not_vaild_int"), val));
+                        return;
                     }
-                } catch (Exception e) {
-                    sender.sendMessage(ChatColor.RED + String.format(Locale.get("message.power_property.property_notfound"), property));
-                    return;
+                } else if (pro.getType() == double.class) {
+                    try {
+                        pro.set(pow, Double.parseDouble(val));
+                    } catch (NumberFormatException e) {
+                        sender.sendMessage(ChatColor.RED + String.format(Locale.get("message.power_property.not_vaild_int"), val));
+                        return;
+                    }
+                } else if (pro.getType() == String.class) {
+                    pro.set(pow, val);
+                } else if (pro.getType() == boolean.class) {
+                    if (val.equalsIgnoreCase("true") || val.equalsIgnoreCase("false")) {
+                        pro.set(pow, val.equalsIgnoreCase("true"));
+                    } else {
+                        sender.sendMessage(ChatColor.RED + String.format(Locale.get("message.power_property.not_vaild_bool"), val));
+                        return;
+                    }
+                } else {
+                    sender.sendMessage(ChatColor.RED + String.format(Locale.get("message.power_property.property_unsupporttype"), property));
                 }
-                ItemManager.save(Plugin.plugin);
-                sender.sendMessage(Locale.get("message.power_property.change"));
+            } catch (Exception e) {
+                sender.sendMessage(ChatColor.RED + String.format(Locale.get("message.power_property.property_notfound"), property));
                 return;
             }
+        } else {
+            sender.sendMessage(ChatColor.RED + Locale.get("message.power_property.power_notfound"));
+            return;
         }
-        sender.sendMessage(ChatColor.RED + Locale.get("message.power_property.power_notfound"));
+        item.rebuild();
+        ItemManager.save(Plugin.plugin);
+        sender.sendMessage(Locale.get("message.power_property.change"));
     }
 
     @CommandString("rpgitem $n[] cost breaking")

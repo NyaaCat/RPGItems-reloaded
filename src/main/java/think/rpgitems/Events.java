@@ -540,7 +540,7 @@ public class Events implements Listener {
         return damage;
     }
 
-    @EventHandler(priority = EventPriority.LOWEST, ignoreCancelled = true)
+    @EventHandler(priority = EventPriority.HIGH, ignoreCancelled = true)
     public void onDamage(EntityDamageByEntityEvent ev) {
         double damage = ev.getDamage();
         if (ev.getDamager() instanceof Player) {

@@ -167,6 +167,7 @@ command.rpgitem.rainbow=Adds the rainbow power to @[Item]\# with a default coold
 command.rpgitem.rainbow.full=Adds the rainbow power to @[Item]\# with a cooldown of @[Cooldown]\# ticks and a block count of @[Count]\#. The rainbow power will fire blocks of coloured wool on right click, the wool will remove itself.
 command.rpgitem.ranged==Adds the ranged mark to @[Item]\#.
 command.rpgitem.rangedonly==Adds the rangedonly mark to @[Item]\#.
+command.rpgitem.realdamage==Adds the realdamage power to @[Item]\# with a cooldown of @[Cooldown]\# ticks. The item will do real @[Damage]\# to LivingEntity player hits but always leave at least 0.1 health.
 command.rpgitem.recipe=Sets the @[Item]\#'s recipe
 command.rpgitem.reload=Reload the plugin
 command.rpgitem.remove=Remove the item @[Item]\# from the system. This does not currently remove the item from players' inventories but all powers and damage will stop working on them.
@@ -330,12 +331,14 @@ power.particletick=Spawn some particles when held
 power.potionhit=%d%% chance to apply %s
 power.potionself=Grants %s %d for %.1fs
 power.potiontick=Gives %s %d while in use
+power.potiontick.clear=Clear %s while in use
 power.projectile=Launches a `%s` when right clicked (%.1fs cooldown)
 power.projectile.badType=ProjectileType must be skull, fireball, smallfireball, arrow, llamaspit or snowball
 power.projectile.cone=Launches multiple `%s` when right clicked (%.1fs cooldown)
 power.projectile.noFireball=Fireball can't be used with cone mechanism.
 power.pumpkin=1/%d chance to make enemy put on a pumpkin
 power.rainbow=Shoots %d multicoloured wool (%.1fs cooldown)
+power.realdamage=Do %.1f real damage to enemy.
 power.rescue=Rescues you when below %.1f Hearts (%.1fs cooldown)
 power.rescue.info=You've been rescued.
 power.ranged=Can use as a ranged weapon

@@ -982,4 +982,17 @@ public class PowerHandler implements CommandHandler {
         ItemManager.save(Plugin.plugin);
         sender.sendMessage(ChatColor.AQUA + Locale.get("message.power.ok"));
     }
+
+    @CommandString("rpgitem $n[] power realdamage $cooldown:i[] $damage:i[]")
+    @CommandDocumentation("$command.rpgitem.realdamage")
+    @CommandGroup("item_power_realdamage")
+    public void realdamage(CommandSender sender, RPGItem item, int cooldown, int damage) {
+        PowerRealDamage pow = new PowerRealDamage();
+        pow.item = item;
+        pow.cooldownTime = cooldown;
+        pow.realDamage = damage;
+        item.addPower(pow);
+        ItemManager.save(Plugin.plugin);
+        sender.sendMessage(ChatColor.AQUA + Locale.get("message.power.ok"));
+    }
 }

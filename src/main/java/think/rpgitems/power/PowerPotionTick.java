@@ -19,7 +19,7 @@ import static java.lang.Double.min;
  * level {@link #amplifier} while held/worn
  * </p>
  */
-public class PowerPotionTick    extends Power implements PowerTick {
+public class PowerPotionTick extends Power implements PowerTick {
 
     /**
      * Type of potion effect
@@ -41,24 +41,30 @@ public class PowerPotionTick    extends Power implements PowerTick {
      * Duration of this power
      */
     public int duration = 60;
+    /**
+     * Whether to remove the effect instead of adding it.
+     */
+    public boolean clear = false;
 
     @Override
     public void tick(Player player, ItemStack stack) {
         if (!item.checkPermission(player, true))return;
-        if (!checkCooldown(player, interval, false))return;
+        if (!checkCooldownByString(player, item, "potiontick." + effect.getName(), interval, false))return;
         if (!item.consumeDurability(stack, consumption)) return;
         double health = player.getHealth();
         boolean hasEffect = false;
         for (PotionEffect potionEffect : player.getActivePotionEffects()) {
             if (potionEffect.getType().equals(effect)) {
                 hasEffect = true;
-                if (potionEffect.getDuration() <= 5 || potionEffect.getAmplifier() < amplifier || amplifier == 0)
+                if (clear) {
+                    player.removePotionEffect(effect);
+                } else if (potionEffect.getDuration() <= 5 || potionEffect.getAmplifier() < amplifier)
                     player.addPotionEffect(new PotionEffect(effect, duration, amplifier, true), true);
                 break;
             }
         }
-        if (!hasEffect && amplifier != 0) {
-            player.addPotionEffect(new PotionEffect(effect, 60, amplifier, true), true);
+        if (!hasEffect && !clear) {
+            player.addPotionEffect(new PotionEffect(effect, duration, amplifier, true), true);
         }
         if(effect.equals(PotionEffectType.HEALTH_BOOST) && health > 0) {
             health = min(health, player.getAttribute(Attribute.GENERIC_MAX_HEALTH).getValue());
@@ -73,6 +79,7 @@ public class PowerPotionTick    extends Power implements PowerTick {
         consumption = s.getInt("consumption", 0);
         interval = s.getInt("interval", 0);
         duration = s.getInt("duration", 60);
+        clear = s.getBoolean("clear", false);
     }
 
     @Override
@@ -82,6 +89,7 @@ public class PowerPotionTick    extends Power implements PowerTick {
         s.set("consumption", consumption);
         s.set("interval", interval);
         s.set("duration", duration);
+        s.set("clear", clear);
     }
 
     @Override
@@ -91,6 +99,8 @@ public class PowerPotionTick    extends Power implements PowerTick {
 
     @Override
     public String displayText() {
-        return ChatColor.GREEN + String.format(Locale.get("power.potiontick"), effect.getName().toLowerCase().replaceAll("_", " "), amplifier + 1);
+        return clear?
+                ChatColor.GREEN + String.format(Locale.get("power.potiontick.clear"), effect.getName().toLowerCase().replaceAll("_", " "))
+                :ChatColor.GREEN + String.format(Locale.get("power.potiontick"), effect.getName().toLowerCase().replaceAll("_", " "), amplifier + 1);
     }
 }
