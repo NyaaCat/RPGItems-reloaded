@@ -183,6 +183,7 @@ command.rpgitem.tntcannon=Adds the tntcannon power to @[Item]\# with a default c
 command.rpgitem.tntcannon.full=Adds the tntcannon power to @[Item]\# with a cooldown of @[Cooldown]\# ticks. The tntcannon power will fire active tnt on right click.
 command.rpgitem.toggleArmorLore=Switch ON/OFF the hand/armor/damage lores. You can still modify the lores by /rpgitem {itemName} description command.
 command.rpgitem.togglePowerLore=Switch ON/OFF the default description lores. You can still modify the lores by /rpgitem {itemName} description command.
+command.rpgitem.toggleDamageMode=Toggle item damage mode
 command.rpgitem.torch=Adds the torch power to @[Item]\# that shoots @[Torches]\# to light up an area.
 command.rpgitem.type=Shows the item @[Item]\#'s current type
 command.rpgitem.type.set=Sets the item @[Item]\#'s type to @[Type]\#

@@ -16,6 +16,7 @@
  */
 package think.rpgitems.power;
 
+import org.bukkit.ChatColor;
 import org.bukkit.attribute.Attribute;
 import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.entity.LivingEntity;
@@ -73,7 +74,7 @@ public class PowerRealDamage extends Power implements PowerHit {
 
     @Override
     public String displayText() {
-        return String.format(Locale.get("power.realdamage"), realDamage);
+        return ChatColor.GREEN + String.format(Locale.get("power.realdamage"), realDamage);
     }
 
     @Override

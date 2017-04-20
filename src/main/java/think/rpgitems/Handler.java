@@ -926,8 +926,8 @@ public class Handler implements CommandHandler {
     }
 
     @CommandString("rpgitem $n[] damageMode")
-    @CommandDocumentation("$command.rpgitem.customitemmodel")
-    @CommandGroup("item_customitemmodel")
+    @CommandDocumentation("$command.rpgitem.toggleDamageMode")
+    @CommandGroup("item_toggleDamageMode")
     public void toggleItemDamageMode(CommandSender sender, RPGItem item) {
         switch (item.damageMode){
             case FIXED:
@@ -942,6 +942,6 @@ public class Handler implements CommandHandler {
         }
         item.rebuild();
         ItemManager.save(Plugin.plugin);
-        sender.sendMessage(Locale.get("message.damagemode." + item.damageMode.name().toLowerCase()));
+        sender.sendMessage(String.format(Locale.get("message.damagemode." + item.damageMode.name().toLowerCase()), item.getName()));
     }
 }
