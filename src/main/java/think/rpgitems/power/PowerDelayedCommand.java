@@ -5,7 +5,7 @@ import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.scheduler.BukkitRunnable;
-import think.rpgitems.Plugin;
+import think.rpgitems.RPGItems;
 
 /**
  * Power delayedcommand.
@@ -47,7 +47,7 @@ public class PowerDelayedCommand extends PowerCommand {
             public void run() {
                 executeCommand(player);
             }
-        }).runTaskLater(Plugin.plugin, delay);
+        }).runTaskLater(RPGItems.plugin, delay);
     }
 
     @Override
@@ -60,6 +60,6 @@ public class PowerDelayedCommand extends PowerCommand {
             public void run() {
                 executeCommand(player);
             }
-        }).runTaskLater(Plugin.plugin, delay);
+        }).runTaskLater(RPGItems.plugin, delay);
     }
 }

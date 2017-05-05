@@ -29,9 +29,8 @@ import org.bukkit.inventory.ItemStack;
 import org.bukkit.metadata.FixedMetadataValue;
 import org.bukkit.scheduler.BukkitRunnable;
 import org.bukkit.util.Vector;
-import think.rpgitems.Plugin;
+import think.rpgitems.RPGItems;
 import think.rpgitems.data.Locale;
-import think.rpgitems.data.RPGValue;
 import think.rpgitems.power.types.PowerRightClick;
 
 import java.util.Random;
@@ -120,7 +119,7 @@ public class PowerRumble extends Power implements PowerRightClick {
                     for (Entity e : near) {
                         if (e != player) {
                             if (e instanceof ItemFrame || e instanceof Painting) {
-                                e.setMetadata("RPGItems.Rumble", new FixedMetadataValue(Plugin.plugin, null)); // Add metadata to protect hanging entities from the explosion
+                                e.setMetadata("RPGItems.Rumble", new FixedMetadataValue(RPGItems.plugin, null)); // Add metadata to protect hanging entities from the explosion
                                 continue;
                             }
                             if (e.getLocation().distance(location) <= 2.5)
@@ -138,7 +137,7 @@ public class PowerRumble extends Power implements PowerRightClick {
                 count++;
             }
         };
-        task.runTaskTimer(Plugin.plugin, 0, 3);
+        task.runTaskTimer(RPGItems.plugin, 0, 3);
     }
 
     @Override

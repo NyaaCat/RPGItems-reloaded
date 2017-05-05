@@ -23,7 +23,7 @@ import org.bukkit.block.Block;
 import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
-import think.rpgitems.Plugin;
+import think.rpgitems.RPGItems;
 import think.rpgitems.data.Locale;
 import think.rpgitems.power.types.PowerRightClick;
 
@@ -48,7 +48,7 @@ public class PowerFood extends Power implements PowerRightClick {
             int newFoodPoint = player.getFoodLevel() + foodpoints;
             if (newFoodPoint > 20) newFoodPoint = 20;
             player.setFoodLevel(newFoodPoint);
-            Bukkit.getScheduler().scheduleSyncDelayedTask(Plugin.plugin, new Runnable() {
+            Bukkit.getScheduler().scheduleSyncDelayedTask(RPGItems.plugin, new Runnable() {
                 @Override
                 public void run() {
                     player.getInventory().setItemInMainHand(new ItemStack(Material.AIR));

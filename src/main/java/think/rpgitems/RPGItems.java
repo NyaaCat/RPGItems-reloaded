@@ -22,22 +22,22 @@ import org.bukkit.command.CommandSender;
 import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.plugin.java.JavaPlugin;
 import think.rpgitems.commands.Commands;
-import think.rpgitems.commands.RPGItemUpdateCommandHandler;
-import think.rpgitems.config.ConfigUpdater;
 import think.rpgitems.data.Font;
 import think.rpgitems.data.Locale;
 import think.rpgitems.item.ItemManager;
-import think.rpgitems.power.*;
+import think.rpgitems.power.PowerTicker;
 import think.rpgitems.support.WorldGuard;
 
 import java.util.List;
 import java.util.logging.Logger;
 
-public class Plugin extends JavaPlugin {
+public class RPGItems extends JavaPlugin {
 
     public static Logger logger = Logger.getLogger("RPGItems");
-    public static Plugin plugin;
+    public static RPGItems plugin;
     public static Updater updater;
+
+    public static RPGItems instance = null;
 
     @Override
     public void onLoad() {
@@ -49,8 +49,8 @@ public class Plugin extends JavaPlugin {
 
     @Override
     public void onEnable() {
+        instance = this;
         Locale.init(this);
-        updateConfig();
         WorldGuard.init(this);
         ConfigurationSection conf = getConfig();
         if (conf.getBoolean("autoupdate", true)) {
@@ -60,25 +60,15 @@ public class Plugin extends JavaPlugin {
             Events.useLocaleInv = true;
         }
         getServer().getPluginManager().registerEvents(new Events(), this);
-        getServer().getPluginCommand("rpgitemupdate").setExecutor(new RPGItemUpdateCommandHandler());
         ItemManager.load(this);
         Commands.register(new Handler());
-        Commands.register(new PowerHandler());
+        Commands.register(new PowerHandler(instance, null));
         new PowerTicker().runTaskTimer(this, 0, 1);
     }
 
     public void startUpdater() {
         getLogger().info("The updater is currently under maintenance,");
         getServer().getConsoleSender().sendMessage("[RPGItems] Please check " + ChatColor.DARK_GRAY + ChatColor.ITALIC + ChatColor.BOLD + "www.github.com/NyaaCat/RPGitems-reloaded" + ChatColor.RESET + " for updates.");
-
-        if (updater != null) {
-        }
-        //updater = new Updater(this, 70226, this.getFile(), Updater.UpdateType.DEFAULT, false);
-    }
-
-    public void updateConfig() {
-        ConfigUpdater.updateConfig(getConfig());
-        saveConfig();
     }
 
     @Override

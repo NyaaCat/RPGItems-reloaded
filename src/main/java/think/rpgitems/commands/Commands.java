@@ -22,7 +22,7 @@ import org.bukkit.Material;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
 import org.bukkit.potion.PotionEffectType;
-import think.rpgitems.Plugin;
+import think.rpgitems.RPGItems;
 import think.rpgitems.data.Locale;
 import think.rpgitems.item.ItemManager;
 import think.rpgitems.item.RPGItem;
@@ -105,7 +105,7 @@ abstract public class Commands {
             }
             // Print usage
             if (sender.hasPermission("rpgitem") || sender.hasPermission("rpgitem.command") || sender.hasPermission("rpgitem.command." + comName)) {
-                sender.sendMessage(String.format(ChatColor.GREEN + Locale.get("message.command.usage"), comName, Plugin.plugin.getDescription().getVersion()));
+                sender.sendMessage(String.format(ChatColor.GREEN + Locale.get("message.command.usage"), comName, RPGItems.plugin.getDescription().getVersion()));
                 for (CommandDef c : command) {
                     StringBuilder buf = new StringBuilder();
                     buf.append(ChatColor.GREEN).append('/').append(comName);
@@ -599,7 +599,7 @@ abstract public class Commands {
         langMap.put("en_US", "English (US)");
         BufferedReader r = null;
         try {
-            r = new BufferedReader(new InputStreamReader(Plugin.plugin.getResource("languages.txt"), "UTF-8"));
+            r = new BufferedReader(new InputStreamReader(RPGItems.plugin.getResource("languages.txt"), "UTF-8"));
             String line = null;
             while ((line = r.readLine()) != null) {
                 String[] args = line.split("=");
@@ -627,7 +627,7 @@ abstract public class Commands {
         HashMap<String, String> langMap = getMap();
 
         try {
-            File out = new File(Plugin.plugin.getDataFolder(), Calendar.getInstance().get(Calendar.YEAR) + "-" + Calendar.getInstance().get(Calendar.MONTH) + "-" + Calendar.getInstance().get(Calendar.DAY_OF_MONTH) + "-" + locale + ".md");
+            File out = new File(RPGItems.plugin.getDataFolder(), Calendar.getInstance().get(Calendar.YEAR) + "-" + Calendar.getInstance().get(Calendar.MONTH) + "-" + Calendar.getInstance().get(Calendar.DAY_OF_MONTH) + "-" + locale + ".md");
             if (out.exists()) {
                 out.delete();
             }

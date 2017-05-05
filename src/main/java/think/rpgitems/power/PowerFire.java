@@ -27,9 +27,8 @@ import org.bukkit.inventory.ItemStack;
 import org.bukkit.material.MaterialData;
 import org.bukkit.scheduler.BukkitRunnable;
 import org.bukkit.util.Vector;
-import think.rpgitems.Plugin;
+import think.rpgitems.RPGItems;
 import think.rpgitems.data.Locale;
-import think.rpgitems.data.RPGValue;
 import think.rpgitems.power.types.PowerRightClick;
 
 import java.util.ArrayList;
@@ -121,7 +120,7 @@ public class PowerFire extends Power implements PowerRightClick {
                                 fb.setType(Material.AIR);
                                 fireblocks.remove(fb);
                             }
-                        }).runTaskTimer(Plugin.plugin, 4 * 20 + new Random().nextInt(40), 3);
+                        }).runTaskTimer(RPGItems.plugin, 4 * 20 + new Random().nextInt(40), 3);
                     }
                 }
 
@@ -143,7 +142,7 @@ public class PowerFire extends Power implements PowerRightClick {
                     cancel();
             }
         };
-        run.runTaskTimer(Plugin.plugin, 0, 1);
+        run.runTaskTimer(RPGItems.plugin, 0, 1);
     }
 
     @Override

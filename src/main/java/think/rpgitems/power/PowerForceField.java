@@ -8,7 +8,7 @@ import org.bukkit.entity.ItemFrame;
 import org.bukkit.entity.Painting;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
-import think.rpgitems.Plugin;
+import think.rpgitems.RPGItems;
 import think.rpgitems.data.Locale;
 import think.rpgitems.power.types.PowerRightClick;
 
@@ -96,7 +96,7 @@ public class PowerForceField extends Power implements PowerRightClick {
         if (h < 1) return;
 
         buildWallTask tsk = new buildWallTask(w, circlePoints(w, x, z, radius, l), l, h, ttl);
-        tsk.setId(Bukkit.getScheduler().scheduleSyncRepeatingTask(Plugin.plugin, tsk, 1, 1));
+        tsk.setId(Bukkit.getScheduler().scheduleSyncRepeatingTask(RPGItems.plugin, tsk, 1, 1));
     }
 
     /* copied from wikipedia */
@@ -231,7 +231,7 @@ public class PowerForceField extends Power implements PowerRightClick {
                 }
             } else {
                 Bukkit.getScheduler().cancelTask(id);
-                Bukkit.getScheduler().scheduleSyncDelayedTask(Plugin.plugin, () -> {
+                Bukkit.getScheduler().scheduleSyncDelayedTask(RPGItems.plugin, () -> {
                     for (int i = h; i >= l; i--) {
                         for (Location l : circlePoints) {
                             l.subtract(0, 1, 0);

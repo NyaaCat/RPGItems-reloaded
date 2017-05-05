@@ -23,9 +23,8 @@ import org.bukkit.entity.Player;
 import org.bukkit.entity.Projectile;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.util.BlockIterator;
-import think.rpgitems.Plugin;
+import think.rpgitems.RPGItems;
 import think.rpgitems.data.Locale;
-import think.rpgitems.data.RPGValue;
 import think.rpgitems.power.types.PowerProjectileHit;
 import think.rpgitems.power.types.PowerRightClick;
 
@@ -86,7 +85,7 @@ public class PowerTeleport extends Power implements PowerRightClick, PowerProjec
             }
         } catch (IllegalStateException ex) {
             ex.printStackTrace();
-            Plugin.logger.info("This exception may be harmless");
+            RPGItems.logger.info("This exception may be harmless");
         }
         Location newLoc = lastSafe.getLocation();
         newLoc.setPitch(start.getPitch());

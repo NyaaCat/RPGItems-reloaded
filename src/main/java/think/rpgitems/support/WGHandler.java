@@ -18,6 +18,7 @@ import com.sk89q.worldguard.session.handler.Handler;
 import org.bukkit.Location;
 import org.bukkit.entity.Player;
 import org.bukkit.event.player.PlayerJoinEvent;
+import think.rpgitems.RPGItems;
 
 import java.util.Collection;
 import java.util.Set;
@@ -47,7 +48,7 @@ public class WGHandler extends Handler {
             FlagRegistry registry = wg.getFlagRegistry();
             try {
                 registry.register(disabledPower);
-                think.rpgitems.Plugin.logger.info("[RPGItems] WorldGuard custom flag disabled-rpg-powers registered");
+                RPGItems.logger.info("[RPGItems] WorldGuard custom flag disabled-rpg-powers registered");
             } catch (FlagConflictException e) {
                 e.printStackTrace();
                 useCustomFlag = false;

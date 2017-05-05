@@ -24,9 +24,8 @@ import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.metadata.FixedMetadataValue;
 import org.bukkit.scheduler.BukkitRunnable;
-import think.rpgitems.Plugin;
+import think.rpgitems.RPGItems;
 import think.rpgitems.data.Locale;
-import think.rpgitems.data.RPGValue;
 import think.rpgitems.power.types.PowerRightClick;
 
 import java.util.ArrayList;
@@ -68,7 +67,7 @@ public class PowerTorch extends Power implements PowerRightClick {
                 if (block.isDead()) {
                     block.remove();
                     if (block.getLocation().getBlock().getType().equals(Material.TORCH))
-                        block.setMetadata("RPGItems.Torch", new FixedMetadataValue(Plugin.plugin, null));
+                        block.setMetadata("RPGItems.Torch", new FixedMetadataValue(RPGItems.plugin, null));
                     cancel();
                     final HashMap<Location, Long> changedBlocks = new HashMap<>();
                     for (int x = -2; x <= 2; x++) {
@@ -81,7 +80,7 @@ public class PowerTorch extends Power implements PowerRightClick {
                                     if (orientations.size() > 0) {
                                         changedBlocks.put(b.getLocation(), b.getTypeId() | ((long) b.getData() << 16));
                                         byte o = orientations.get(random.nextInt(orientations.size()));
-                                        b.setMetadata("RPGItems.Torch", new FixedMetadataValue(Plugin.plugin, null));
+                                        b.setMetadata("RPGItems.Torch", new FixedMetadataValue(RPGItems.plugin, null));
                                         b.setTypeIdAndData(Material.TORCH.getId(), o, false); // Don't apply physics since the check is done beforehand
                                     }
                                 }
@@ -94,7 +93,7 @@ public class PowerTorch extends Power implements PowerRightClick {
                         public void run() {
                             if (changedBlocks.isEmpty()) {
                                 cancel();
-                                block.removeMetadata("RPGItems.Torch", Plugin.plugin);
+                                block.removeMetadata("RPGItems.Torch", RPGItems.plugin);
                                 block.getLocation().getBlock().setType(Material.AIR);
                                 return;
                             }
@@ -104,17 +103,17 @@ public class PowerTorch extends Power implements PowerRightClick {
                             changedBlocks.remove(position);
                             Block c = position.getBlock();
                             position.getWorld().playEffect(position, Effect.STEP_SOUND, c.getTypeId());
-                            c.removeMetadata("RPGItems.Torch", Plugin.plugin);
+                            c.removeMetadata("RPGItems.Torch", RPGItems.plugin);
                             c.setTypeId((int) (data & 0xFFFF));
                             c.setData((byte) (data >> 16));
 
                         }
-                    }).runTaskTimer(Plugin.plugin, 4 * 20 + new Random().nextInt(40), 3);
+                    }).runTaskTimer(RPGItems.plugin, 4 * 20 + new Random().nextInt(40), 3);
                 }
 
             }
         };
-        run.runTaskTimer(Plugin.plugin, 0, 1);
+        run.runTaskTimer(RPGItems.plugin, 0, 1);
     }
 
     @Override

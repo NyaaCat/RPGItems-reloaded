@@ -8,9 +8,8 @@ import org.bukkit.inventory.ItemStack;
 import org.bukkit.scheduler.BukkitRunnable;
 import org.bukkit.util.Vector;
 import think.rpgitems.Events;
-import think.rpgitems.Plugin;
+import think.rpgitems.RPGItems;
 import think.rpgitems.data.Locale;
-import think.rpgitems.data.RPGValue;
 import think.rpgitems.power.types.PowerRightClick;
 
 import java.util.concurrent.ThreadLocalRandom;
@@ -176,7 +175,7 @@ public class PowerProjectile extends Power implements PowerRightClick {
                     public void run() {
                         projectile.remove();
                     }
-                }).runTaskLater(Plugin.plugin, 80);
+                }).runTaskLater(RPGItems.plugin, 80);
             }
         } else {
             Vector loc = player.getEyeLocation().getDirection();
@@ -206,7 +205,7 @@ public class PowerProjectile extends Power implements PowerRightClick {
                         public void run() {
                             projectile.remove();
                         }
-                    }).runTaskLater(Plugin.plugin, 80);
+                    }).runTaskLater(RPGItems.plugin, 80);
                 }
             }
         }

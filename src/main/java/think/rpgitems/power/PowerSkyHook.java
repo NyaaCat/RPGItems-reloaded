@@ -10,7 +10,7 @@ import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.scheduler.BukkitRunnable;
 import org.bukkit.util.Vector;
-import think.rpgitems.Plugin;
+import think.rpgitems.RPGItems;
 import think.rpgitems.data.Locale;
 import think.rpgitems.data.RPGValue;
 import think.rpgitems.power.types.PowerRightClick;
@@ -98,7 +98,7 @@ public class PowerSkyHook extends Power implements PowerRightClick {
                 player.setVelocity(dir.multiply(0.5));
 
             }
-        }).runTaskTimer(Plugin.plugin, 0, 0);
+        }).runTaskTimer(RPGItems.plugin, 0, 0);
     }
 
     @Override

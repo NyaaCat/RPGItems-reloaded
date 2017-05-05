@@ -29,6 +29,7 @@ import org.bukkit.configuration.file.FileConfiguration;
 import org.bukkit.configuration.file.YamlConfiguration;
 import org.bukkit.entity.Player;
 import org.bukkit.plugin.Plugin;
+import think.rpgitems.RPGItems;
 import think.rpgitems.power.types.Power;
 
 import java.io.File;
@@ -63,7 +64,7 @@ public class WorldGuard {
         }
     }
 
-    public static void init(think.rpgitems.Plugin pl) {
+    public static void init(RPGItems pl) {
         plugin = pl;
         Plugin wgPlugin = plugin.getServer().getPluginManager().getPlugin("WorldGuard");
         useWorldGuard = plugin.getConfig().getBoolean("support.worldguard", false);
@@ -77,7 +78,7 @@ public class WorldGuard {
         majorVersion = Character.digit(WorldGuard.wgPlugin.getDescription().getVersion().charAt(0), 9);
         minorVersion = Character.digit(WorldGuard.wgPlugin.getDescription().getVersion().charAt(2), 9);
         pointVersion = Character.digit(WorldGuard.wgPlugin.getDescription().getVersion().charAt(4), 9);
-        think.rpgitems.Plugin.logger.info("[RPGItems] WorldGuard version " + majorVersion + "." + minorVersion + "." + pointVersion + " : " + WorldGuard.wgPlugin.getDescription().getVersion() + " found");
+        RPGItems.logger.info("[RPGItems] WorldGuard version " + majorVersion + "." + minorVersion + "." + pointVersion + " : " + WorldGuard.wgPlugin.getDescription().getVersion() + " found");
         loadConfig();
         if (!(WorldGuard.majorVersion > 6 || (WorldGuard.majorVersion == 6 && WorldGuard.minorVersion >= 2) || (WorldGuard.majorVersion == 6 && WorldGuard.minorVersion == 1 && WorldGuard.pointVersion >= 3))) {
             useCustomFlag = false;
@@ -106,7 +107,7 @@ public class WorldGuard {
         WorldGuard.wgPlugin = (WorldGuardPlugin) plugin.getServer().getPluginManager().getPlugin("WorldGuard");
         majorVersion = Character.digit(WorldGuard.wgPlugin.getDescription().getVersion().charAt(0), 9);
         minorVersion = Character.digit(WorldGuard.wgPlugin.getDescription().getVersion().charAt(2), 9);
-        think.rpgitems.Plugin.logger.info("[RPGItems] WorldGuard version " + majorVersion + "." + minorVersion + " : " + WorldGuard.wgPlugin.getDescription().getVersion() + " found");
+        RPGItems.logger.info("[RPGItems] WorldGuard version " + majorVersion + "." + minorVersion + " : " + WorldGuard.wgPlugin.getDescription().getVersion() + " found");
         loadConfig();
         if (!(WorldGuard.majorVersion > 6 || (WorldGuard.majorVersion == 6 && WorldGuard.minorVersion >= 2) || (WorldGuard.majorVersion == 6 && WorldGuard.minorVersion == 1 && WorldGuard.pointVersion >= 3))) {
             useCustomFlag = false;

@@ -18,7 +18,7 @@ package think.rpgitems.data;
 
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
-import think.rpgitems.Plugin;
+import think.rpgitems.RPGItems;
 
 import java.io.*;
 import java.util.Collections;
@@ -31,12 +31,12 @@ public class Locale {
     private static final String DEFAULT_LANGUAGE = "en_GB";
 
     private static Locale instance = null;
-    private static Plugin plugin;
+    private static RPGItems plugin;
 
     private static HashMap<String, String> localeStrings = new HashMap<>();
     private String usedLocale;
 
-    private Locale(Plugin plugin) {
+    private Locale(RPGItems plugin) {
         // load configures
         usedLocale = plugin.getConfig().getString("language");
         if (!plugin.getConfig().contains("language")) {
@@ -63,16 +63,16 @@ public class Locale {
             localeStrings.putAll(loadLocaleStream(new FileInputStream(new File(localeFolder.getAbsolutePath() + File.separatorChar + usedLocale + ".lang"))));
         } catch (FileNotFoundException ex) {
             ex.printStackTrace();
-            Plugin.logger.warning("Error when loading language files.");
+            RPGItems.logger.warning("Error when loading language files.");
         }
     }
 
-    public static void init(Plugin pl) {
+    public static void init(RPGItems pl) {
         if (instance == null) {
             instance = new Locale(pl);
             plugin = pl;
         } else {
-            Plugin.logger.warning("Duplicated init of Locale");
+            RPGItems.logger.warning("Duplicated init of Locale");
         }
     }
 

@@ -44,7 +44,6 @@ import org.bukkit.potion.PotionEffect;
 import org.bukkit.potion.PotionEffectType;
 import org.bukkit.projectiles.ProjectileSource;
 import org.bukkit.scheduler.BukkitRunnable;
-import think.rpgitems.commands.RPGItemUpdateCommandHandler;
 import think.rpgitems.item.ItemManager;
 import think.rpgitems.item.LocaleInventory;
 import think.rpgitems.item.RPGItem;
@@ -129,9 +128,6 @@ public class Events implements Listener {
         if (ItemManager.toRPGItem(e.getItem()) != null) {
             if (!e.getEnchanter().hasPermission("rpgitem.allowenchant.new"))
                 e.setCancelled(true);
-        } else if (RPGItemUpdateCommandHandler.isOldRPGItem(e.getItem())) {
-            if (!e.getEnchanter().hasPermission("rpgitem.allowenchant.old"))
-                e.setCancelled(true);
         }
     }
 
@@ -139,7 +135,7 @@ public class Events implements Listener {
     public void onHangingBreak(HangingBreakEvent e) {
         if (e.getCause().equals(RemoveCause.EXPLOSION))
             if (e.getEntity().hasMetadata("RPGItems.Rumble")) {
-                e.getEntity().removeMetadata("RPGItems.Rumble", Plugin.plugin); // Allow the entity to be broken again
+                e.getEntity().removeMetadata("RPGItems.Rumble", RPGItems.plugin); // Allow the entity to be broken again
                 e.setCancelled(true);
             }
     }
@@ -149,7 +145,7 @@ public class Events implements Listener {
         if (e.getChangedType().equals(Material.TORCH))
             if (e.getBlock().hasMetadata("RPGItems.Torch")) {
                 e.setCancelled(true); // Cancelling this does not work
-                e.getBlock().removeMetadata("RPGItems.Torch", Plugin.plugin);
+                e.getBlock().removeMetadata("RPGItems.Torch", RPGItems.plugin);
                 e.getBlock().setType(Material.AIR);
             }
     }
@@ -209,15 +205,15 @@ public class Events implements Listener {
                 public void run() {
                     rpgProjectiles.remove(entity.getEntityId());
                 }
-            }.runTask(Plugin.plugin);
+            }.runTask(RPGItems.plugin);
             if (rItem == null)
                 return;
             ItemStack item = ((Player) entity.getShooter()).getInventory().getItemInMainHand();
             RPGItem hItem = ItemManager.toRPGItem(item);
-            if (rItem != hItem){
+            if (rItem != hItem) {
                 item = ((Player) entity.getShooter()).getInventory().getItemInOffHand();
                 hItem = ItemManager.toRPGItem(item);
-                if (rItem != hItem){
+                if (rItem != hItem) {
                     return;
                 }
             }
@@ -232,7 +228,7 @@ public class Events implements Listener {
 
     @EventHandler
     public void onBowShoot(EntityShootBowEvent e) {
-        e.getProjectile().setMetadata("rpgitems.force", new FixedMetadataValue(Plugin.plugin, e.getForce()));
+        e.getProjectile().setMetadata("rpgitems.force", new FixedMetadataValue(RPGItems.plugin, e.getForce()));
     }
 
     @EventHandler
@@ -243,10 +239,10 @@ public class Events implements Listener {
             ItemStack item = player.getInventory().getItemInMainHand();
             RPGItem rItem = ItemManager.toRPGItem(item);
 
-            if (rItem == null){
+            if (rItem == null) {
                 item = player.getInventory().getItemInOffHand();
                 rItem = ItemManager.toRPGItem(item);
-                if (rItem == null){
+                if (rItem == null) {
                     return;
                 }
             }
@@ -343,7 +339,7 @@ public class Events implements Listener {
                         RPGItem.updateItem(item);
                 }
             }
-        }.runTaskLater(Plugin.plugin, 1L);
+        }.runTaskLater(RPGItems.plugin, 1L);
     }
 
     @EventHandler
@@ -364,7 +360,7 @@ public class Events implements Listener {
             }
             item.hasRecipe = true;
             item.resetRecipe(true);
-            ItemManager.save(Plugin.plugin);
+            ItemManager.save(RPGItems.plugin);
             e.getPlayer().sendMessage(ChatColor.AQUA + "Recipe set for " + item.getName());
         } else if (useLocaleInv && e.getView() instanceof LocaleInventory) {
             localeInventories.remove(e.getView());
@@ -405,9 +401,6 @@ public class Events implements Listener {
                 ItemStack ind2 = e.getView().getItem(1);
                 if (ItemManager.toRPGItem(ind1) != null || ItemManager.toRPGItem(ind2) != null) {
                     if (!p.hasPermission("rpgitem.allowenchant.new"))
-                        e.setCancelled(true);
-                } else if (RPGItemUpdateCommandHandler.isOldRPGItem(ind1) || RPGItemUpdateCommandHandler.isOldRPGItem(ind2)) {
-                    if (!p.hasPermission("rpgitem.allowenchant.old"))
                         e.setCancelled(true);
                 }
             }
@@ -453,7 +446,7 @@ public class Events implements Listener {
             e.setCancelled(true);
             return 0;
         }
-        if(rItem.hasPower(PowerRangedOnly.class)){
+        if (rItem.hasPower(PowerRangedOnly.class)) {
             e.setCancelled(true);
             return 0;
         }
@@ -463,7 +456,7 @@ public class Events implements Listener {
             return 0;
         }
         double originDamage = damage;
-        switch (rItem.damageMode){
+        switch (rItem.damageMode) {
             case FIXED:
             case ADDITIONAL:
                 damage = rItem.getDamageMin() != rItem.getDamageMax() ? (rItem.getDamageMin() + random.nextInt(rItem.getDamageMax() - rItem.getDamageMin())) : rItem.getDamageMin();
@@ -478,7 +471,7 @@ public class Events implements Listener {
                     }
                 }
                 damage = damage + strength - weak;
-                if(rItem.damageMode == RPGItem.DamageMode.ADDITIONAL){
+                if (rItem.damageMode == RPGItem.DamageMode.ADDITIONAL) {
                     damage += originDamage;
                 }
                 break;
@@ -502,17 +495,17 @@ public class Events implements Listener {
         Projectile entity = (Projectile) e.getDamager();
 
         Integer projectileID = rpgProjectiles.get(entity.getEntityId());
-        if(projectileID == null)return damage;
+        if (projectileID == null) return damage;
         RPGItem rItem = ItemManager.getItemById(projectileID);
         if (rItem == null)
             return damage;
         Player player = (Player) entity.getShooter();
         ItemStack item = player.getInventory().getItemInMainHand();
         RPGItem hItem = ItemManager.toRPGItem(item);
-        if (rItem != hItem){
+        if (rItem != hItem) {
             item = player.getInventory().getItemInOffHand();
             hItem = ItemManager.toRPGItem(item);
-            if (rItem != hItem){
+            if (rItem != hItem) {
                 return damage;
             }
         }

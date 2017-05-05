@@ -28,7 +28,7 @@ import org.bukkit.inventory.ItemStack;
 import org.bukkit.metadata.FixedMetadataValue;
 import org.bukkit.util.Vector;
 import think.rpgitems.Events;
-import think.rpgitems.Plugin;
+import think.rpgitems.RPGItems;
 import think.rpgitems.data.Locale;
 import think.rpgitems.power.types.PowerHitTaken;
 import think.rpgitems.power.types.PowerLeftClick;
@@ -148,7 +148,7 @@ public class PowerDeflect extends Power implements PowerHitTaken, PowerRightClic
                     event.setCancelled(true);
                     p.remove();
                     target.getLocation().getWorld().playSound(target.getLocation(), Sound.ITEM_SHIELD_BLOCK, 1.0f, 3.0f);
-                    Bukkit.getScheduler().runTaskLater(Plugin.plugin, () -> {
+                    Bukkit.getScheduler().runTaskLater(RPGItems.plugin, () -> {
                         Projectile t = target.launchProjectile(p.getClass());
                         if (p instanceof TippedArrow) {
                             TippedArrow tippedArrowP = (TippedArrow) p;
@@ -157,7 +157,7 @@ public class PowerDeflect extends Power implements PowerHitTaken, PowerRightClic
                             tippedArrowP.getCustomEffects().forEach(potionEffect -> tippedArrowT.addCustomEffect(potionEffect, true));
                         }
                         t.setShooter(target);
-                        t.setMetadata("rpgitems.force", new FixedMetadataValue(Plugin.plugin, 1));
+                        t.setMetadata("rpgitems.force", new FixedMetadataValue(RPGItems.plugin, 1));
                         Events.removeArrows.add(t.getEntityId());
                     }, 1);
                     return 0;

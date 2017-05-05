@@ -24,9 +24,8 @@ import org.bukkit.entity.FallingBlock;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.scheduler.BukkitRunnable;
-import think.rpgitems.Plugin;
+import think.rpgitems.RPGItems;
 import think.rpgitems.data.Locale;
-import think.rpgitems.data.RPGValue;
 import think.rpgitems.power.types.PowerRightClick;
 
 import java.util.HashMap;
@@ -126,12 +125,12 @@ public class PowerIce extends Power implements PowerRightClick {
                             }
 
                         }
-                    }).runTaskTimer(Plugin.plugin, 4 * 20 + new Random().nextInt(40), 3);
+                    }).runTaskTimer(RPGItems.plugin, 4 * 20 + new Random().nextInt(40), 3);
                 }
 
             }
         };
-        run.runTaskTimer(Plugin.plugin, 0, 1);
+        run.runTaskTimer(RPGItems.plugin, 0, 1);
     }
 
     @Override

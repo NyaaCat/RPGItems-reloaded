@@ -24,7 +24,7 @@ import org.bukkit.configuration.file.YamlConfiguration;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.ItemMeta;
 import org.bukkit.util.FileUtil;
-import think.rpgitems.Plugin;
+import think.rpgitems.RPGItems;
 import think.rpgitems.power.Power;
 
 import java.io.*;
@@ -36,7 +36,7 @@ public class ItemManager {
     public static HashMap<String, RPGItem> itemByName = new HashMap<>();
     public static HashMap<String, ItemGroup> groups = new HashMap<>();
     public static int currentPos = 0;
-    private static Plugin plugin;
+    private static RPGItems plugin;
 
     public static void reload() {
         itemById = new HashMap<>();
@@ -46,7 +46,7 @@ public class ItemManager {
         load(plugin);
     }
 
-    public static void load(Plugin pl) {
+    public static void load(RPGItems pl) {
         try {
             plugin = pl;
             FileInputStream in = null;
@@ -114,7 +114,7 @@ public class ItemManager {
         }
     }
 
-    public static void save(Plugin plugin) {
+    public static void save(RPGItems plugin) {
 
         YamlConfiguration itemStorage = new YamlConfiguration();
 

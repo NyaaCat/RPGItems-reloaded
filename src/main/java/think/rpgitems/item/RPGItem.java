@@ -41,7 +41,7 @@ import org.bukkit.inventory.ShapedRecipe;
 import org.bukkit.inventory.meta.ItemMeta;
 import org.bukkit.inventory.meta.LeatherArmorMeta;
 import think.rpgitems.Events;
-import think.rpgitems.Plugin;
+import think.rpgitems.RPGItems;
 import think.rpgitems.data.Font;
 import think.rpgitems.data.Locale;
 import think.rpgitems.data.RPGMetadata;
@@ -101,8 +101,8 @@ public class RPGItem {
     private int damageMin = 0, damageMax = 3;
     private int armour = 0;
     private String loreText = "";
-    private String type = Plugin.plugin.getConfig().getString("defaults.sword", "Sword");
-    private String hand = Plugin.plugin.getConfig().getString("defaults.hand", "One handed");
+    private String type = RPGItems.plugin.getConfig().getString("defaults.sword", "Sword");
+    private String hand = RPGItems.plugin.getConfig().getString("defaults.hand", "One handed");
     private ArrayList<PowerLeftClick> powerLeftClick = new ArrayList<>();
     private ArrayList<PowerRightClick> powerRightClick = new ArrayList<>();
     private ArrayList<PowerProjectileHit> powerProjectileHit = new ArrayList<>();
@@ -137,8 +137,8 @@ public class RPGItem {
         name = s.getString("name");
         id = s.getInt("id");
         setDisplay(s.getString("display"), false);
-        setType(s.getString("type", Plugin.plugin.getConfig().getString("defaults.sword", "Sword")), false);
-        setHand(s.getString("hand", Plugin.plugin.getConfig().getString("defaults.hand", "One handed")), false);
+        setType(s.getString("type", RPGItems.plugin.getConfig().getString("defaults.sword", "Sword")), false);
+        setHand(s.getString("hand", RPGItems.plugin.getConfig().getString("defaults.hand", "One handed")), false);
         setLore(s.getString("lore"), false);
         description = (List<String>) s.getList("description", new ArrayList<String>());
         for (int i = 0; i < description.size(); i++) {
@@ -675,17 +675,17 @@ public class RPGItem {
             armorMinLen = getStringWidth(ChatColor.stripColor(hand + "     " + type));
 
             if (armour != 0) {
-                damageStr = armour + "% " + Plugin.plugin.getConfig().getString("defaults.armour", "Armour");
+                damageStr = armour + "% " + RPGItems.plugin.getConfig().getString("defaults.armour", "Armour");
             }
             if((damageMin !=0 || damageMax !=0) && damageMode != DamageMode.VANILLA){
                 damageStr = damageStr == null? "" : damageStr + " & ";
                 if(damageMode == DamageMode.ADDITIONAL) {
-                    damageStr += Plugin.plugin.getConfig().getString("defaults.additionaldamage", "Additional ");
+                    damageStr += RPGItems.plugin.getConfig().getString("defaults.additionaldamage", "Additional ");
                 }
                 if (damageMin == damageMax) {
-                    damageStr += damageMin + " " + Plugin.plugin.getConfig().getString("defaults.damage", "Damage");
+                    damageStr += damageMin + " " + RPGItems.plugin.getConfig().getString("defaults.damage", "Damage");
                 } else {
-                    damageStr += damageMin + "-" + damageMax + " " + Plugin.plugin.getConfig().getString("defaults.damage", "Damage");
+                    damageStr += damageMin + "-" + damageMax + " " + RPGItems.plugin.getConfig().getString("defaults.damage", "Damage");
                 }
             }
             if (damageStr != null) {

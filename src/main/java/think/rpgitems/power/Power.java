@@ -16,10 +16,7 @@
  */
 package think.rpgitems.power;
 
-import com.google.common.collect.BiMap;
-import com.google.common.collect.HashBiMap;
-import com.google.common.collect.HashMultiset;
-import com.google.common.collect.Multiset;
+import com.google.common.collect.*;
 import org.bukkit.ChatColor;
 import org.bukkit.Location;
 import org.bukkit.configuration.ConfigurationSection;
@@ -27,40 +24,45 @@ import org.bukkit.entity.Entity;
 import org.bukkit.entity.LivingEntity;
 import org.bukkit.entity.Player;
 import org.bukkit.permissions.PermissionAttachment;
-import think.rpgitems.Plugin;
-import think.rpgitems.data.*;
+import think.rpgitems.RPGItems;
+import think.rpgitems.commands.*;
+import think.rpgitems.data.RPGValue;
 import think.rpgitems.item.RPGItem;
 
+import java.lang.annotation.Annotation;
+import java.lang.invoke.LambdaMetafactory;
+import java.lang.invoke.MethodHandle;
+import java.lang.invoke.MethodHandles;
+import java.lang.invoke.MethodType;
+import java.lang.reflect.Field;
+import java.lang.reflect.Method;
 import java.util.*;
+import java.util.function.BiConsumer;
+import java.util.function.BiFunction;
+import java.util.stream.Collectors;
 
 /**
  * Base class for all powers
  */
 public abstract class Power {
 
+    static final HashBasedTable<Class<? extends Power>, String, BiFunction<Object, String, String>> transformers;
+    static final HashBasedTable<Class<? extends Power>, String, BiFunction<Object, String, Boolean>> validators;
+    static final HashBasedTable<Class<? extends Power>, String, BiConsumer<Object, String>> setters;
     /**
      * Power by name, and name by power
      */
     public static BiMap<String, Class<? extends Power>> powers = HashBiMap.create();
-
     /**
      * Usage count by power name
      */
     public static Multiset<String> powerUsage = HashMultiset.create();
 
-    /**
-     * Item it belongs to
-     */
-    public RPGItem item;
-
-    /**
-     * Placeholder
-     */
-    public Power() {
-
-    }
-
     static {
+        transformers = HashBasedTable.create();
+        validators = HashBasedTable.create();
+        setters = HashBasedTable.create();
+
         Power.powers.put("aoe", PowerAOE.class);
         Power.powers.put("arrow", PowerArrow.class);
         Power.powers.put("tntcannon", PowerTNTCannon.class);
@@ -102,6 +104,113 @@ public abstract class Power {
         Power.powers.put("rangedonly", PowerRangedOnly.class);
         Power.powers.put("deflect", PowerDeflect.class);
         Power.powers.put("realdamage", PowerRealDamage.class);
+        MethodHandles.Lookup lookup = MethodHandles.lookup();
+        for (Class<? extends Power> cls : Power.powers.values()) {
+            Map<Class<? extends Annotation>, List<Annotation>> annos =
+                    Arrays.stream(cls.getFields())
+                          .flatMap(field -> Arrays.stream(field.getAnnotations()))
+                          .distinct()
+                          .collect(Collectors.groupingBy(Annotation::annotationType, Collectors.toList()));
+
+            MethodType transformerType = MethodType.methodType(String.class, cls, String.class);
+            //noinspection SuspiciousMethodCalls
+            List<Transformer> transformerList =
+                    annos.get(Transformer.class)
+                         .stream().map(i -> (Transformer) i)
+                         .collect(Collectors.toList());
+            transformerList.forEach(
+                    tranAnno -> {
+                        String fname = tranAnno.value();
+                        try {
+                            Method m = cls.getMethod(fname, String.class);
+                            MethodHandle mh = lookup.unreflect(m);
+                            if (!mh.type().equals(transformerType)) {
+                                return;
+                            }
+                            transformers.put(cls, fname, (BiFunction<Object, String, String>) LambdaMetafactory.metafactory(
+                                    lookup,
+                                    "apply",
+                                    MethodType.methodType(BiFunction.class),
+                                    transformerType.generic(),
+                                    mh,
+                                    transformerType).getTarget().invokeExact());
+                        } catch (Throwable e) {
+                            e.printStackTrace();
+                        }
+
+                    }
+            );
+
+            MethodType validatorType = MethodType.methodType(boolean.class, cls, String.class);
+            //noinspection SuspiciousMethodCalls
+            List<Validator> validatorList =
+                    annos.get(Validator.class)
+                         .stream().map(i -> (Validator) i)
+                         .collect(Collectors.toList());
+            validatorList.forEach(
+                    valiAnno -> {
+                        String fname = valiAnno.value();
+                        try {
+                            Method m = cls.getMethod(fname, String.class);
+                            MethodHandle mh = lookup.unreflect(m);
+                            if (!mh.type().equals(validatorType)) {
+                                return;
+                            }
+                            validators.put(cls, fname, (BiFunction<Object, String, Boolean>) LambdaMetafactory.metafactory(
+                                    lookup,
+                                    "apply",
+                                    MethodType.methodType(BiFunction.class),
+                                    validatorType.generic(),
+                                    mh,
+                                    validatorType).getTarget().invokeExact());
+                        } catch (Throwable e) {
+                            e.printStackTrace();
+                        }
+
+                    }
+            );
+
+            MethodType setterType = MethodType.methodType(void.class, cls, String.class);
+            //noinspection SuspiciousMethodCalls
+            List<Setter> setterList =
+                    annos.get(Setter.class)
+                         .stream().map(i -> (Setter) i)
+                         .collect(Collectors.toList());
+            setterList.forEach(
+                    setterAnno -> {
+                        String fname = setterAnno.value();
+                        try {
+                            Method m = cls.getMethod(fname, String.class);
+                            MethodHandle mh = lookup.unreflect(m);
+                            if (!mh.type().equals(setterType)) {
+                                return;
+                            }
+                            setters.put(cls, fname, (BiConsumer<Object, String>) LambdaMetafactory.metafactory(
+                                    lookup,
+                                    "accept",
+                                    MethodType.methodType(BiConsumer.class),
+                                    setterType.generic().changeReturnType(void.class),
+                                    mh,
+                                    setterType).getTarget().invokeExact());
+                        } catch (Throwable e) {
+                            e.printStackTrace();
+                        }
+
+                    }
+            );
+        }
+    }
+
+    /**
+     * Item it belongs to
+     */
+    public RPGItem item;
+
+    /**
+     * Placeholder
+     */
+    public Power() {
+
     }
 
     /**
@@ -198,14 +307,15 @@ public abstract class Power {
             value.set(nowTick + cooldownTime);
             return true;
         } else {
-            if(showWarn)player.sendMessage(ChatColor.AQUA + String.format(think.rpgitems.data.Locale.get("message.cooldown"), ((double) (cooldown - nowTick)) / 20d));
+            if (showWarn)
+                player.sendMessage(ChatColor.AQUA + String.format(think.rpgitems.data.Locale.get("message.cooldown"), ((double) (cooldown - nowTick)) / 20d));
             return false;
         }
     }
 
     public static void AttachPermission(Player player, String permission) {
         if (permission.length() != 0 && !permission.equals("*")) {
-            PermissionAttachment attachment = player.addAttachment(Plugin.plugin, 1);
+            PermissionAttachment attachment = player.addAttachment(RPGItems.plugin, 1);
             String[] perms = permission.split("\\.");
             StringBuilder p = new StringBuilder();
             for (String perm : perms) {
@@ -247,8 +357,8 @@ public abstract class Power {
     /**
      * Check cooldown boolean.
      *
-     * @param p       the p
-     * @param cdTicks the cd ticks
+     * @param p        the p
+     * @param cdTicks  the cd ticks
      * @param showWarn whether to show warning to player
      * @return the boolean
      */
@@ -266,8 +376,115 @@ public abstract class Power {
             value.set(nowTick + cdTicks);
             return true;
         } else {
-            if(showWarn)p.sendMessage(ChatColor.AQUA + String.format(think.rpgitems.data.Locale.get("message.cooldown"), ((double) (cooldown - nowTick)) / 20d));
+            if (showWarn)
+                p.sendMessage(ChatColor.AQUA + String.format(think.rpgitems.data.Locale.get("message.cooldown"), ((double) (cooldown - nowTick)) / 20d));
             return false;
+        }
+    }
+
+    @SuppressWarnings("unchecked")
+    public static void setPower(Power power, String field, String value) {
+
+        Scanner reader = new Scanner(System.in);
+        boolean suc = false;
+        Field f = null;
+        Class<? extends Power> cls = power.getClass();
+        while (!suc) {
+            try {
+               f = cls.getField(field);
+                suc = true;
+            } catch (NoSuchFieldException e) {
+                //throw new BadCommandException("internal.error.invalid_command_arg", e);
+                System.out.println(e.getMessage());
+            }
+        }
+        Transformer tf = f.getAnnotation(Transformer.class);
+        if (tf != null) {
+            value = transformers.get(cls, tf.value()).apply(power, value);
+        }
+        BooleanChoice bc = f.getAnnotation(BooleanChoice.class);
+        if(bc != null){
+            String trueChoice = bc.trueChoice();
+            String falseChoice = bc.falseChoice();
+            try{
+                if (value.equalsIgnoreCase(trueChoice) || value.equalsIgnoreCase(falseChoice)) {
+                    f.set(power, value.equalsIgnoreCase(trueChoice));
+                } else {
+                    System.out.println("Not a boolean!");
+                }
+            }catch (IllegalAccessException e){
+                e.printStackTrace();
+            }catch (Exception e){
+                e.printStackTrace();
+                System.out.println("Not a boolean!");
+            }
+            return;
+        }
+        List<String> rest;
+        AcceptedValue as = f.getAnnotation(AcceptedValue.class);
+        if (as != null) {
+            rest = Arrays.asList(as.value());
+            while (true) {
+                if (!rest.contains(value)) {
+                    System.out.println("available:" + rest.stream().reduce(" ", (a, b) -> a + ", " + b));
+                    value = reader.next();
+                } else {
+                    break;
+                }
+            }
+        }
+        Validator ck = f.getAnnotation(Validator.class);
+        if (ck != null) {
+            Boolean b = validators.get(cls, ck.value()).apply(power, value);
+            if(!b){
+                System.out.println("Not valid!");
+                return;
+            }
+        }
+        Setter st = f.getAnnotation(Setter.class);
+        if (st != null) {
+            setters.get(cls, st.value()).accept(power, value);
+        } else {
+            try{
+                if (f.getType() == int.class) {
+                    try {
+                        f.set(power, Integer.parseInt(value));
+                    } catch (NumberFormatException e) {
+                        System.out.println("Not a int!");
+                    }
+                } else if(f.getType() == long.class){
+                    try {
+                        f.set(power, Long.parseLong(value));
+                    } catch (NumberFormatException e) {
+                        System.out.println("Not a long!");
+                    }
+                } else if (f.getType() == double.class) {
+                    try {
+                        f.set(power, Double.parseDouble(value));
+                    } catch (NumberFormatException e) {
+                        System.out.println("Not a double!");
+                    }
+                } else if (f.getType() == String.class) {
+                    f.set(power, value);
+                } else if (f.getType() == boolean.class) {
+                    if (value.equalsIgnoreCase("true") || value.equalsIgnoreCase("false")) {
+                        f.set(power, Boolean.valueOf(value));
+                    } else {
+                        System.out.println("Not a boolean!");
+                    }
+                } else if (f.getType().isEnum()) {
+                    try{
+                        f.set(power, Enum.valueOf((Class<Enum>)f.getType(), value));
+                    }
+                    catch (IllegalArgumentException e){
+                        System.out.println("Not a enum!");
+                    }
+                } else {
+                    System.out.println("Not supported!");
+                }
+            }catch (Exception e){
+                e.printStackTrace();
+            }
         }
     }
 }

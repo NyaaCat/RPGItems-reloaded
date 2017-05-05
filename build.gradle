@@ -1,4 +1,7 @@
-apply plugin: 'java'
+plugins {
+    id 'java'
+    id 'org.inferred.processors' version '1.2.11'
+}
 
 sourceCompatibility = 1.8
 targetCompatibility = 1.8
@@ -20,11 +23,32 @@ repositories {
         name 'sk89q'
         url "http://maven.sk89q.com/repo/"
     }
+    maven {
+        name 'NyaaCore'
+        url 'https://raw.githubusercontent.com/NyaaCat/NyaaCore/maven-repo'
+    }
+
+    maven {
+        name 'nu-langchecker'
+        url 'https://raw.githubusercontent.com/Librazy/NyaaUtilsLangChecker/maven-repo'
+    }
 }
 
 dependencies {
     compile 'org.spigotmc:spigot-api:1.11-R0.1-SNAPSHOT'
     compile 'com.sk89q.worldguard:worldguard-legacy:6.2'
     compile 'com.sk89q.worldedit:worldedit-core:6.1'
+    compile('cat.nyaa:nyaacore:2.0-SNAPSHOT') {
+        transitive = false
+    }
+    processor 'org.librazy:NyaaUtilsLangChecker:1.0-SNAPSHOT'
 }
 
+String nyaaCoreLangDir = System.getenv("NYAACORE_LANG_DIR")
+
+compileJava {
+    options.compilerArgs += ["-Xplugin:NyaaUtilsLangAnnotationProcessor"]
+    if (nyaaCoreLangDir != null) {
+        options.compilerArgs += ["-ALANG_DIR_ADDITIONAL_PATH=" + nyaaCoreLangDir]
+    }
+}

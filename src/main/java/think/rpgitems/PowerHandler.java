@@ -1,5 +1,7 @@
 package think.rpgitems;
 
+import cat.nyaa.nyaacore.CommandReceiver;
+import cat.nyaa.nyaacore.LanguageRepository;
 import org.bukkit.ChatColor;
 import org.bukkit.Effect;
 import org.bukkit.Material;
@@ -14,7 +16,12 @@ import think.rpgitems.item.ItemManager;
 import think.rpgitems.item.RPGItem;
 import think.rpgitems.power.*;
 
-public class PowerHandler implements CommandHandler {
+public class PowerHandler extends CommandReceiver<RPGItems> implements CommandHandler {
+    private final RPGItems plugin;
+    PowerHandler(RPGItems plugin, LanguageRepository i18n) {
+        super(plugin, i18n);
+        this.plugin = plugin;
+    }
 
     @CommandString("rpgitem $n[] power aoe $cooldown:i[] $range:i[] $effect:s[] $duration:i[] $amplifier:i[]")
     @CommandDocumentation("$command.rpgitem.aoe+PotionEffectType")
@@ -33,7 +40,7 @@ public class PowerHandler implements CommandHandler {
             return;
         }
         item.addPower(pow);
-        ItemManager.save(Plugin.plugin);
+        ItemManager.save(RPGItems.plugin);
         sender.sendMessage(ChatColor.AQUA + Locale.get("message.power.ok"));
     }
 
@@ -54,7 +61,7 @@ public class PowerHandler implements CommandHandler {
             return;
         }
         item.addPower(pow);
-        ItemManager.save(Plugin.plugin);
+        ItemManager.save(RPGItems.plugin);
         sender.sendMessage(ChatColor.AQUA + Locale.get("message.power.ok"));
     }
 
@@ -76,7 +83,7 @@ public class PowerHandler implements CommandHandler {
             return;
         }
         item.addPower(pow);
-        ItemManager.save(Plugin.plugin);
+        ItemManager.save(RPGItems.plugin);
         sender.sendMessage(ChatColor.AQUA + Locale.get("message.power.ok"));
     }
 
@@ -88,7 +95,7 @@ public class PowerHandler implements CommandHandler {
         pow.cooldownTime = 20;
         pow.item = item;
         item.addPower(pow);
-        ItemManager.save(Plugin.plugin);
+        ItemManager.save(RPGItems.plugin);
         sender.sendMessage(ChatColor.AQUA + Locale.get("message.power.ok"));
     }
 
@@ -100,7 +107,7 @@ public class PowerHandler implements CommandHandler {
         pow.item = item;
         pow.cooldownTime = cooldown;
         item.addPower(pow);
-        ItemManager.save(Plugin.plugin);
+        ItemManager.save(RPGItems.plugin);
         sender.sendMessage(ChatColor.AQUA + Locale.get("message.power.ok"));
     }
 
@@ -115,7 +122,7 @@ public class PowerHandler implements CommandHandler {
         color.wool = true;
         color.item = item;
         item.addPower(color);
-        ItemManager.save(Plugin.plugin);
+        ItemManager.save(RPGItems.plugin);
         sender.sendMessage(ChatColor.AQUA + Locale.get("message.power.ok"));
     }
 
@@ -130,7 +137,7 @@ public class PowerHandler implements CommandHandler {
         color.wool = wool.equalsIgnoreCase("true");
         color.item = item;
         item.addPower(color);
-        ItemManager.save(Plugin.plugin);
+        ItemManager.save(RPGItems.plugin);
         sender.sendMessage(ChatColor.AQUA + Locale.get("message.power.ok"));
     }
 
@@ -149,7 +156,7 @@ public class PowerHandler implements CommandHandler {
         com.command = command;
         com.item = item;
         item.addPower(com);
-        ItemManager.save(Plugin.plugin);
+        ItemManager.save(RPGItems.plugin);
         sender.sendMessage(ChatColor.AQUA + Locale.get("message.power.ok"));
     }
 
@@ -169,7 +176,7 @@ public class PowerHandler implements CommandHandler {
         com.permission = permission;
         com.item = item;
         item.addPower(com);
-        ItemManager.save(Plugin.plugin);
+        ItemManager.save(RPGItems.plugin);
         sender.sendMessage(ChatColor.AQUA + Locale.get("message.power.ok"));
     }
 
@@ -191,7 +198,7 @@ public class PowerHandler implements CommandHandler {
         com.rm = min;
         com.facing = facing;
         item.addPower(com);
-        ItemManager.save(Plugin.plugin);
+        ItemManager.save(RPGItems.plugin);
         sender.sendMessage(ChatColor.AQUA + Locale.get("message.power.ok"));
     }
 
@@ -214,7 +221,7 @@ public class PowerHandler implements CommandHandler {
         com.rm = min;
         com.facing = facing;
         item.addPower(com);
-        ItemManager.save(Plugin.plugin);
+        ItemManager.save(RPGItems.plugin);
         sender.sendMessage(ChatColor.AQUA + Locale.get("message.power.ok"));
     }
 
@@ -227,7 +234,7 @@ public class PowerHandler implements CommandHandler {
         pow.item = item;
         pow.cooldownTime = cooldown;
         item.addPower(pow);
-        ItemManager.save(Plugin.plugin);
+        ItemManager.save(RPGItems.plugin);
         sender.sendMessage(ChatColor.AQUA + Locale.get("message.power.ok"));
     }
 
@@ -261,7 +268,7 @@ public class PowerHandler implements CommandHandler {
 
         item.addPower(com);
         item.rebuild();
-        ItemManager.save(Plugin.plugin);
+        ItemManager.save(RPGItems.plugin);
         sender.sendMessage(ChatColor.AQUA + Locale.get("message.power.ok"));
     }
 
@@ -279,7 +286,7 @@ public class PowerHandler implements CommandHandler {
         com.command = command;
         com.item = item;
         item.addPower(com);
-        ItemManager.save(Plugin.plugin);
+        ItemManager.save(RPGItems.plugin);
         sender.sendMessage(ChatColor.AQUA + Locale.get("message.power.ok"));
     }
 
@@ -298,7 +305,7 @@ public class PowerHandler implements CommandHandler {
         com.permission = permission;
         com.item = item;
         item.addPower(com);
-        ItemManager.save(Plugin.plugin);
+        ItemManager.save(RPGItems.plugin);
         sender.sendMessage(ChatColor.AQUA + Locale.get("message.power.ok"));
     }
 
@@ -319,7 +326,7 @@ public class PowerHandler implements CommandHandler {
         com.item = item;
         com.delay = delay;
         item.addPower(com);
-        ItemManager.save(Plugin.plugin);
+        ItemManager.save(RPGItems.plugin);
         sender.sendMessage(ChatColor.AQUA + Locale.get("message.power.ok"));
     }
 
@@ -330,7 +337,7 @@ public class PowerHandler implements CommandHandler {
         PowerConsume pow = new PowerConsume();
         pow.item = item;
         item.addPower(pow);
-        ItemManager.save(Plugin.plugin);
+        ItemManager.save(RPGItems.plugin);
         sender.sendMessage(ChatColor.AQUA + Locale.get("message.power.ok"));
     }
 
@@ -342,7 +349,7 @@ public class PowerHandler implements CommandHandler {
         pow.item = item;
         pow.cooldownTime = cooldown;
         item.addPower(pow);
-        ItemManager.save(Plugin.plugin);
+        ItemManager.save(RPGItems.plugin);
         sender.sendMessage(ChatColor.AQUA + Locale.get("message.power.ok"));
     }
 
@@ -353,7 +360,7 @@ public class PowerHandler implements CommandHandler {
         PowerConsumeHit pow = new PowerConsumeHit();
         pow.item = item;
         item.addPower(pow);
-        ItemManager.save(Plugin.plugin);
+        ItemManager.save(RPGItems.plugin);
         sender.sendMessage(ChatColor.AQUA + Locale.get("message.power.ok"));
     }
 
@@ -365,7 +372,7 @@ public class PowerHandler implements CommandHandler {
         pow.item = item;
         pow.cooldownTime = cooldown;
         item.addPower(pow);
-        ItemManager.save(Plugin.plugin);
+        ItemManager.save(RPGItems.plugin);
         sender.sendMessage(ChatColor.AQUA + Locale.get("message.power.ok"));
     }
 
@@ -379,7 +386,7 @@ public class PowerHandler implements CommandHandler {
         pow.burnduration = burnduration;
         pow.item = item;
         item.addPower(pow);
-        ItemManager.save(Plugin.plugin);
+        ItemManager.save(RPGItems.plugin);
         sender.sendMessage(ChatColor.AQUA + Locale.get("message.power.ok"));
     }
 
@@ -391,7 +398,7 @@ public class PowerHandler implements CommandHandler {
         pow.cooldownTime = 20;
         pow.item = item;
         item.addPower(pow);
-        ItemManager.save(Plugin.plugin);
+        ItemManager.save(RPGItems.plugin);
         sender.sendMessage(ChatColor.AQUA + Locale.get("message.power.ok"));
     }
 
@@ -403,7 +410,7 @@ public class PowerHandler implements CommandHandler {
         pow.item = item;
         pow.cooldownTime = cooldown;
         item.addPower(pow);
-        ItemManager.save(Plugin.plugin);
+        ItemManager.save(RPGItems.plugin);
         sender.sendMessage(ChatColor.AQUA + Locale.get("message.power.ok"));
     }
 
@@ -415,7 +422,7 @@ public class PowerHandler implements CommandHandler {
         pow.burnTime = 20;
         pow.item = item;
         item.addPower(pow);
-        ItemManager.save(Plugin.plugin);
+        ItemManager.save(RPGItems.plugin);
         sender.sendMessage(ChatColor.AQUA + Locale.get("message.power.ok"));
     }
 
@@ -427,7 +434,7 @@ public class PowerHandler implements CommandHandler {
         pow.item = item;
         pow.burnTime = burnTime;
         item.addPower(pow);
-        ItemManager.save(Plugin.plugin);
+        ItemManager.save(RPGItems.plugin);
         sender.sendMessage(ChatColor.AQUA + Locale.get("message.power.ok"));
     }
 
@@ -439,7 +446,7 @@ public class PowerHandler implements CommandHandler {
         pow.item = item;
         pow.chance = chance;
         item.addPower(pow);
-        ItemManager.save(Plugin.plugin);
+        ItemManager.save(RPGItems.plugin);
         sender.sendMessage(ChatColor.AQUA + Locale.get("message.power.ok"));
     }
 
@@ -451,7 +458,7 @@ public class PowerHandler implements CommandHandler {
         pow.cooldownTime = 20;
         pow.item = item;
         item.addPower(pow);
-        ItemManager.save(Plugin.plugin);
+        ItemManager.save(RPGItems.plugin);
         sender.sendMessage(ChatColor.AQUA + Locale.get("message.power.ok"));
     }
 
@@ -463,7 +470,7 @@ public class PowerHandler implements CommandHandler {
         pow.item = item;
         pow.cooldownTime = cooldown;
         item.addPower(pow);
-        ItemManager.save(Plugin.plugin);
+        ItemManager.save(RPGItems.plugin);
         sender.sendMessage(ChatColor.AQUA + Locale.get("message.power.ok"));
     }
 
@@ -476,7 +483,7 @@ public class PowerHandler implements CommandHandler {
         pow.chance = 20;
         pow.power = 2;
         item.addPower(pow);
-        ItemManager.save(Plugin.plugin);
+        ItemManager.save(RPGItems.plugin);
         sender.sendMessage(ChatColor.AQUA + Locale.get("message.power.ok"));
     }
 
@@ -489,7 +496,7 @@ public class PowerHandler implements CommandHandler {
         pow.chance = chance;
         pow.power = power;
         item.addPower(pow);
-        ItemManager.save(Plugin.plugin);
+        ItemManager.save(RPGItems.plugin);
         sender.sendMessage(ChatColor.AQUA + Locale.get("message.power.ok"));
     }
 
@@ -501,7 +508,7 @@ public class PowerHandler implements CommandHandler {
         pow.item = item;
         pow.chance = 20;
         item.addPower(pow);
-        ItemManager.save(Plugin.plugin);
+        ItemManager.save(RPGItems.plugin);
         sender.sendMessage(ChatColor.AQUA + Locale.get("message.power.ok"));
     }
 
@@ -513,7 +520,7 @@ public class PowerHandler implements CommandHandler {
         pow.item = item;
         pow.chance = chance;
         item.addPower(pow);
-        ItemManager.save(Plugin.plugin);
+        ItemManager.save(RPGItems.plugin);
         sender.sendMessage(ChatColor.AQUA + Locale.get("message.power.ok"));
     }
 
@@ -532,7 +539,7 @@ public class PowerHandler implements CommandHandler {
             return;
         }
         item.addPower(pow);
-        ItemManager.save(Plugin.plugin);
+        ItemManager.save(RPGItems.plugin);
         sender.sendMessage(ChatColor.AQUA + Locale.get("message.power.ok"));
     }
 
@@ -551,7 +558,7 @@ public class PowerHandler implements CommandHandler {
             return;
         }
         item.addPower(pow);
-        ItemManager.save(Plugin.plugin);
+        ItemManager.save(RPGItems.plugin);
         sender.sendMessage(ChatColor.AQUA + Locale.get("message.power.ok"));
     }
 
@@ -564,7 +571,7 @@ public class PowerHandler implements CommandHandler {
         pow.count = 5;
         pow.item = item;
         item.addPower(pow);
-        ItemManager.save(Plugin.plugin);
+        ItemManager.save(RPGItems.plugin);
         sender.sendMessage(ChatColor.AQUA + Locale.get("message.power.ok"));
     }
 
@@ -577,7 +584,7 @@ public class PowerHandler implements CommandHandler {
         pow.count = count;
         pow.item = item;
         item.addPower(pow);
-        ItemManager.save(Plugin.plugin);
+        ItemManager.save(RPGItems.plugin);
         sender.sendMessage(ChatColor.AQUA + Locale.get("message.power.ok"));
     }
 
@@ -591,7 +598,7 @@ public class PowerHandler implements CommandHandler {
         pow.item = item;
         pow.isFire = "true".equalsIgnoreCase(isFire);
         item.addPower(pow);
-        ItemManager.save(Plugin.plugin);
+        ItemManager.save(RPGItems.plugin);
         sender.sendMessage(ChatColor.AQUA + Locale.get("message.power.ok"));
     }
 
@@ -605,7 +612,7 @@ public class PowerHandler implements CommandHandler {
         pow.healthTrigger = healthTrigger;
         pow.useBed = Boolean.parseBoolean(useBed);
         item.addPower(pow);
-        ItemManager.save(Plugin.plugin);
+        ItemManager.save(RPGItems.plugin);
         sender.sendMessage(ChatColor.AQUA + Locale.get("message.power.ok"));
     }
 
@@ -619,7 +626,7 @@ public class PowerHandler implements CommandHandler {
         pow.power = power;
         pow.distance = distance;
         item.addPower(pow);
-        ItemManager.save(Plugin.plugin);
+        ItemManager.save(RPGItems.plugin);
         sender.sendMessage(ChatColor.AQUA + Locale.get("message.power.ok"));
     }
 
@@ -632,7 +639,7 @@ public class PowerHandler implements CommandHandler {
         pow.cooldownTime = 20;
         pow.distance = 5;
         item.addPower(pow);
-        ItemManager.save(Plugin.plugin);
+        ItemManager.save(RPGItems.plugin);
         sender.sendMessage(ChatColor.AQUA + Locale.get("message.power.ok"));
     }
 
@@ -645,7 +652,7 @@ public class PowerHandler implements CommandHandler {
         pow.cooldownTime = cooldown;
         pow.distance = distance;
         item.addPower(pow);
-        ItemManager.save(Plugin.plugin);
+        ItemManager.save(RPGItems.plugin);
         sender.sendMessage(ChatColor.AQUA + Locale.get("message.power.ok"));
     }
 
@@ -664,7 +671,7 @@ public class PowerHandler implements CommandHandler {
             return;
         }
         item.addPower(pow);
-        ItemManager.save(Plugin.plugin);
+        ItemManager.save(RPGItems.plugin);
         sender.sendMessage(ChatColor.AQUA + Locale.get("message.power.ok"));
     }
 
@@ -676,7 +683,7 @@ public class PowerHandler implements CommandHandler {
         pow.item = item;
         pow.cooldownTime = 20;
         item.addPower(pow);
-        ItemManager.save(Plugin.plugin);
+        ItemManager.save(RPGItems.plugin);
         sender.sendMessage(ChatColor.AQUA + Locale.get("message.power.ok"));
     }
 
@@ -688,7 +695,7 @@ public class PowerHandler implements CommandHandler {
         pow.item = item;
         pow.cooldownTime = cooldown;
         item.addPower(pow);
-        ItemManager.save(Plugin.plugin);
+        ItemManager.save(RPGItems.plugin);
         sender.sendMessage(ChatColor.AQUA + Locale.get("message.power.ok"));
     }
 
@@ -700,7 +707,7 @@ public class PowerHandler implements CommandHandler {
         pow.item = item;
         pow.cooldownTime = cooldown;
         item.addPower(pow);
-        ItemManager.save(Plugin.plugin);
+        ItemManager.save(RPGItems.plugin);
         sender.sendMessage(ChatColor.AQUA + Locale.get("message.power.ok"));
     }
 
@@ -713,7 +720,7 @@ public class PowerHandler implements CommandHandler {
         pow.railMaterial = material;
         pow.hookDistance = distance;
         item.addPower(pow);
-        ItemManager.save(Plugin.plugin);
+        ItemManager.save(RPGItems.plugin);
         sender.sendMessage(ChatColor.AQUA + Locale.get("message.power.ok"));
     }
 
@@ -730,7 +737,7 @@ public class PowerHandler implements CommandHandler {
             return;
         }
         item.addPower(pow);
-        ItemManager.save(Plugin.plugin);
+        ItemManager.save(RPGItems.plugin);
         sender.sendMessage(ChatColor.AQUA + Locale.get("message.power.ok"));
     }
 
@@ -742,7 +749,7 @@ public class PowerHandler implements CommandHandler {
         pow.item = item;
         pow.foodpoints = foodpoints;
         item.addPower(pow);
-        ItemManager.save(Plugin.plugin);
+        ItemManager.save(RPGItems.plugin);
         sender.sendMessage(ChatColor.AQUA + Locale.get("message.power.ok"));
     }
 
@@ -759,7 +766,7 @@ public class PowerHandler implements CommandHandler {
         power.setType(projectileType);
         power.item = item;
         item.addPower(power);
-        ItemManager.save(Plugin.plugin);
+        ItemManager.save(RPGItems.plugin);
         sender.sendMessage(ChatColor.AQUA + Locale.get("message.power.ok"));
     }*/
 
@@ -776,7 +783,7 @@ public class PowerHandler implements CommandHandler {
         power.setType(projectileType);
         power.item = item;
         item.addPower(power);
-        ItemManager.save(Plugin.plugin);
+        ItemManager.save(RPGItems.plugin);
         sender.sendMessage(ChatColor.AQUA + Locale.get("message.power.ok"));
     }
 
@@ -800,7 +807,7 @@ public class PowerHandler implements CommandHandler {
         power.item = item;
         power.cone = true;
         item.addPower(power);
-        ItemManager.save(Plugin.plugin);
+        ItemManager.save(RPGItems.plugin);
         sender.sendMessage(ChatColor.AQUA + Locale.get("message.power.ok"));
     }
 
@@ -813,7 +820,7 @@ public class PowerHandler implements CommandHandler {
         power.chance = chance;
         power.command = command;
         item.addPower(power);
-        ItemManager.save(Plugin.plugin);
+        ItemManager.save(RPGItems.plugin);
         sender.sendMessage(ChatColor.AQUA + Locale.get("message.power.ok"));
     }
 
@@ -828,7 +835,7 @@ public class PowerHandler implements CommandHandler {
         power.desc = description;
         power.count = count;
         item.addPower(power);
-        ItemManager.save(Plugin.plugin);
+        ItemManager.save(RPGItems.plugin);
         sender.sendMessage(ChatColor.AQUA + Locale.get("message.power.ok"));
     }
 
@@ -844,7 +851,7 @@ public class PowerHandler implements CommandHandler {
         p.base = base;
         p.ttl = duration;
         item.addPower(p);
-        ItemManager.save(Plugin.plugin);
+        ItemManager.save(RPGItems.plugin);
         sender.sendMessage(ChatColor.AQUA + Locale.get("message.power.ok"));
     }
 
@@ -855,7 +862,7 @@ public class PowerHandler implements CommandHandler {
         PowerAttract p = new PowerAttract();
         p.item = item;
         item.addPower(p);
-        ItemManager.save(Plugin.plugin);
+        ItemManager.save(RPGItems.plugin);
         sender.sendMessage(ChatColor.AQUA + Locale.get("message.power.ok"));
     }
 
@@ -868,7 +875,7 @@ public class PowerHandler implements CommandHandler {
         p.radius = radius;
         p.maxSpeed = speed;
         item.addPower(p);
-        ItemManager.save(Plugin.plugin);
+        ItemManager.save(RPGItems.plugin);
         sender.sendMessage(ChatColor.AQUA + Locale.get("message.power.ok"));
     }
 
@@ -881,7 +888,7 @@ public class PowerHandler implements CommandHandler {
         p.chance = chance;
         p.drop = dropChance;
         item.addPower(p);
-        ItemManager.save(Plugin.plugin);
+        ItemManager.save(RPGItems.plugin);
         sender.sendMessage(ChatColor.AQUA + Locale.get("message.power.ok"));
     }
 
@@ -901,7 +908,7 @@ public class PowerHandler implements CommandHandler {
         p.item = item;
         p.effect = effect.toUpperCase();
         item.addPower(p);
-        ItemManager.save(Plugin.plugin);
+        ItemManager.save(RPGItems.plugin);
         sender.sendMessage(ChatColor.AQUA + Locale.get("message.power.ok"));
     }
 
@@ -922,7 +929,7 @@ public class PowerHandler implements CommandHandler {
         p.effect = effect.toUpperCase();
         p.interval = interval;
         item.addPower(p);
-        ItemManager.save(Plugin.plugin);
+        ItemManager.save(RPGItems.plugin);
         sender.sendMessage(ChatColor.AQUA + Locale.get("message.power.ok"));
     }
 
@@ -933,7 +940,7 @@ public class PowerHandler implements CommandHandler {
         PowerUnbreakable p = new PowerUnbreakable();
         p.item = item;
         item.addPower(p);
-        ItemManager.save(Plugin.plugin);
+        ItemManager.save(RPGItems.plugin);
         sender.sendMessage(ChatColor.AQUA + Locale.get("message.power.ok"));
     }
 
@@ -946,7 +953,7 @@ public class PowerHandler implements CommandHandler {
         p.regex = regex;
         p.desc = description;
         item.addPower(p);
-        ItemManager.save(Plugin.plugin);
+        ItemManager.save(RPGItems.plugin);
         sender.sendMessage(ChatColor.AQUA + Locale.get("message.power.ok"));
     }
 
@@ -957,7 +964,7 @@ public class PowerHandler implements CommandHandler {
         PowerRanged pow = new PowerRanged();
         pow.item = item;
         item.addPower(pow);
-        ItemManager.save(Plugin.plugin);
+        ItemManager.save(RPGItems.plugin);
         sender.sendMessage(ChatColor.AQUA + Locale.get("message.power.ok"));
     }
 
@@ -968,7 +975,7 @@ public class PowerHandler implements CommandHandler {
         PowerRangedOnly pow = new PowerRangedOnly();
         pow.item = item;
         item.addPower(pow);
-        ItemManager.save(Plugin.plugin);
+        ItemManager.save(RPGItems.plugin);
         sender.sendMessage(ChatColor.AQUA + Locale.get("message.power.ok"));
     }
 
@@ -979,7 +986,7 @@ public class PowerHandler implements CommandHandler {
         PowerDeflect pow = new PowerDeflect();
         pow.item = item;
         item.addPower(pow);
-        ItemManager.save(Plugin.plugin);
+        ItemManager.save(RPGItems.plugin);
         sender.sendMessage(ChatColor.AQUA + Locale.get("message.power.ok"));
     }
 
@@ -992,7 +999,12 @@ public class PowerHandler implements CommandHandler {
         pow.cooldownTime = cooldown;
         pow.realDamage = damage;
         item.addPower(pow);
-        ItemManager.save(Plugin.plugin);
+        ItemManager.save(RPGItems.plugin);
         sender.sendMessage(ChatColor.AQUA + Locale.get("message.power.ok"));
+    }
+
+    @Override
+    public String getHelpPrefix() {
+        return "rpgitems";
     }
 }
