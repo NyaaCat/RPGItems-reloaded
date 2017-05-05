@@ -1,0 +1,250 @@
+command:
+  info:
+    command: Comando
+    player: '[Jugador]'
+    cooldown: Recarga
+    integer:
+      limit: '[Entero(%d-%d)]'
+    armour: Armadura
+    hand: Mano
+    hexcolour: ColorHex
+    duration: Duración
+    double: '[Doble]'
+    effect: Efecto
+    lore: Historia
+    damage: Daño
+    haspermission: Activado
+    quality: Calidad
+    min: Min
+    type: Tipo
+    string:
+      limit: '[Linea(Max:%d)]'
+    material: '[Material]'
+    details: Detalles
+    distance: Distancia
+    foodpoints: Puntos de comida
+    lineno: Número de línea
+    burntime: Tiempo ardiendo
+    itemid: ID del objeto
+    count: Cuenta
+    data: Datos
+    power: Poder
+    terms: Términos
+    descriptionline: Descripción
+    amplifier: Amplificador
+    display: Nombre mostrado
+    item: '[Objeto]'
+    permission: Permiso
+    max: Max
+    chance: Probabilidad
+    level: Nivel
+    durability: Durabilidad
+    name: Nombre
+  rpgitem:
+    tntcannon:
+      full: Añade el poder cañon de TNT a @[Item]# con un tiempo de recarga de @[Cooldown]# ticks. El poder lanzará TNT encendido cuando se haga click derecho.
+    command:
+      old: Ejecuta el comando con click @[left/right]#. @[Detials]# es una | lista separada de @[display Text]# | @[command]# | @[permission]#. La información de la herramienta muestra @[display Text]#. El texto a mostrar y el comando deben estar separados por el símbolo |. Si se añade un permiso se le dará al jugador solo para el uso del objeto y después se le será retirado
+      full: 'Añade el poder comando al objeto @[Item]# con un tiempo de regarga de
+        @[Cooldown]# ticks. El objeto mostrará @[Display]#. El objeto ejecutará el
+        comando @[Command]# con click @[left,right]# dando el permiso @[Permission]#
+        únicamente para el uso del comando. **Nota**: Si necesitas usar espacios en
+        @[Display]#, @[Command]# o en @[Permission]# debes poner ` antes y después
+        ej.: `/say Hola`'
+    flame:
+      full: Añade el poder llama a @[Item]# con un tiempo de quemado de @[Burntime]# ticks. El poder llama prendera fuego al objetivo cuando se le golpee
+    potiontick: Añade el poder potiontick a @[Item]#. EL poder potiontick da al usuario del @[Item]# @[Effect]# nivel @[Amplifier]# mientras se lo ponga o sostenga
+    description:
+      add: Añade la línea @[DescriptionLine]# al objeto @[Item]#
+      set: Asigna la linea @[LineNo]# a @[DescriptionLine]# en el objeto @[Item]#
+      remove: Borra la línea @[LineNo]# del objeto @[Item]#
+    item:
+      set:
+        id: Asigna el objeto mostrado con @[Item]# a @[ItemID]#
+    potionself: 'Añade el poder autopoción @[Item]# con un tiempo de recarga de @[Cooldown]#
+      ticks. Cuando se hace click derecho aplica el efecto @[Effect]# durante @[Duration]#
+      ticks con poder de @[Amplifier]#. Efectos de pociones válidos: '
+    give: Da el objeto @[Item]# a quien ejecuta el comando
+    ice:
+      full: Añade el poder hielo a @[Item]# con un tiempo de recarga de @[Cooldown]# ticks. El poder hielo lanzará un bloque de hielo que creara una caja de hielo al impactar. El hielo desaparecerá lentamente al poco tiempo
+    durability:
+      infinite: Asigna durabilidad infinita. Esto implica que el objeto nunca se romperá
+    hand:
+      set: Asigna la mano con la que se usa el objeto @[Item]# a @[Hand]#
+    remove: Borra el objeto @[Item]# del sistema. Esto no borra los objetos de los inventarios de los jugadores, pero los poderes y el daño dejarán de funcionar en ellos.
+    fireball:
+      full: Añade el poder bola de fuego a @[Item]# con un tiempo de recarga de @[Cooldown]# ticks. El poder bola de fuego lanzará una bola de fuego cuando se haga click derecho
+    display:
+      set: Asigna el nombre con que aparece el objeto @[Item]# a @[Display]#
+    list: Muestra una lista de objetos creados
+    knockup:
+      full: Añade el poder peloteo al objeto @[Item]# con una probabilidad de 1/@[Chance]# y un poder de @[Power]#. El poder peloteo enviará al objetivo volando cuando lo golpee
+    teleport: Añade el poder teletransporte a @[Item]# con un tiempo de recarga predeterminado de 20 ticks (1 segundo) y teletransporta a una distancia de 5 bloques. El poder te teletransporta en la direccción en la que estés mirando
+    removepower: Quita el poder @[Power]# del objeto @[Item]#
+    lifesteal: Añade el poder vampiro a @[Item]# con una probabilidad de robar vida al enemigo de 1/@[Chance]#
+    skyhook: Añade el poder gancho del cielo a @[Item]#. El poder gancho permite al usuario engancharse en @[Material]# hasta a @[Distance]# bloques de distancia
+    drop: Da la posibilidad de que @[Item]# sea soltado por  @[EntityType]#. 0% significa que no será droppeado
+    consume: Añade el poder Consumir al objeto @[Item]#. El poder consumir destruye el objeto cuando se hace click derecho.
+    lore:
+      set: Cambia la historia del objeto @[Item]# a @[Lore]#
+    arrow:
+      full: Añade el poder Flecha al objeto @[Item]# con un tiempo de regarga de @[Cooldown]# ticks. El poder flecha disparará una flecha cuando se haga click derecho
+    permission: Habilita/Deshabilita la restricción de permisos en el objeto @[Item]#. La restricción de permisos previene que un jugador use un objeto si no tiene el permiso @[Permission]#. La restricción puede ser encendida o apagada con la opción @[Enabled]#.
+    recipe: Asigna la receta de @[Item]#
+    worldguard: Alterna el soporte de WorldGuard. Si se encuentra habilitado previene usar objetos en un area no-pvp
+    giveperms: Cambia si dar o no los permisos para dar.
+    damage:
+      set:
+        range: Asigna el daño del objeto @[Item]# a un número aleatorio entre @[Min]# y @[Max]#
+    unbreaking:
+      full: Añade el poder duración a @[Item]# con un nivel de @[Level]#. El poder duración funciona de forma similar al encantamiento
+    type:
+      set: Asigna el tipo del objeto @[Item]# a @[Type]#
+    armour:
+      set: Asigna al objeto @[Item]# la armadura @[Armour]#
+    rainbow:
+      full: Añade el poder arcoiris a @[Item]# con un tiempo de recarga of @[Cooldown]# y un número de @[Count]# bloques. El poder arcoiris lanzará lana de colores con click derecho. La lana se destruye automáticamente.
+    error:
+      command: 'Error: %s'
+    help: Muestra comandos y ayuda para comandos que contienen los términos de búsqueda @[Terms]#
+    lightning: Añade el poder rayo a @[Item]# con una probabilidad predeterminada de 1/20. El poder rayo dará al objetivo golpeado con un rayo
+    rumble: Añade el poder retumbar a @[Item]# Con un tiempo de recarga de @[Cooldown]# ticks y una fuerza de @[Power]#, la onda viajará @[Distance]# bloques. El poder retumbar envía una onda de choque por el suelo que lanza por los aires a quien golpee
+    removerecipe: Borra la receta de @[Item]#
+    potionhit: 'Añade el poder golpepoción a @[Item]# con una probabilidad de funcionar
+      de 1/@[Chance]#. En el golpe, aplica el efecto @[Effect]# durante @[Duration]#
+      ticks con poder de @[Amplifier]#. Efectos de pociones válidos: '
+    unbreakable: Añade el poder indestructible a @[Item]#. El poder indestructible previene que el objeto se rompa
+    quality: Muestra la calidad actual del objeto @[Item]#
+    food: Añade el poder comida a @[Item]# y restaura @[Food points]# cuando es comido.
+    create: 'Crea un objeto con el nombre @[Name]#. El @[Name]# es lo que se usa para
+      identificar al objeto en los comandos ej: Give. @[Name]# no es el nombre que
+      aparece en el objeto, eso se asigna con Display.'
+    print: Muestra el actual nombre mostrado del objeto @[Item]# en el chat
+message:
+  recipe:
+    removed: Receta borrada
+    '3': con la forma de la receta
+    '4': de crafteo que quieres que
+    '1': No cambiar. Usa los huecos vacíos
+    '2': Coloca objetos en los huecos vacíos
+    '5': tenga el objeto
+  error:
+    effect: '%s no es un efecto válido'
+    permission: No tienes permiso
+    double:
+      limit: El número debe estar entre %.2f y %.2f
+      format: '''%s'' no es un doble'
+    item: Objeto desconocido '%s'
+    string:
+      length: '''%s'' es mayor que el tamaño máximo %d'
+    only:
+      player: Este comando solo puede ser usado por jugadores
+    integer:
+      format: '''%s'' no es un entero'
+      limit: El número debe estar entre %d y %d
+    material: Material desconocido '%s'
+    command:
+      format: Texto a mostrar y comando deben estar separados por una |
+    player: No se puede encontrar al jugador %s
+    unknown:
+      command: 'Error: Comando desconocido %s'
+    option: Opción inválida '%s'
+  armour:
+    get: La armadura del objeto '%s' es '%d%%'
+    set: La armadura del objeto '%s' ha cambiado a '%d%%'
+  drop:
+    get: La probabilidad de que '%s' sea droppeado por '%s' es %.2f%%
+    set: La probabilidad de que '%s' sea droppeado por '%s' fue cambiada a %.2f%%
+  command:
+    usage: 'Uso del comando: /%s (%s)'
+    info: Ayuda mas detallada en la pagina de información en http://rpgitems2.webs.com/ o en /rpgitem help [terms]
+  help:
+    for: Mostrando ayuda para '%s'
+  cooldown: Debes esperar %.1f segundos
+  give:
+    ok: Te fue dado %s
+    to: Se le ha dado %s a %s
+    console: No se le pueden dar objetos a la consola
+  description:
+    remove: Línea borrada
+    out:
+      of:
+        range: La línea %d esta fuera del intervalo
+    change: Línea cambiada
+    ok: Línea añadida
+  worldguard:
+    disable: Soporte de Worldguard desactivado
+    error: No se encontró el plugin Worldguard
+    override:
+      disabled: Ignorar Worldguard desactivado
+      active: Ignorar Worldguard activo
+    enable: Soporte de Worldguard activo
+  hand:
+    get: La ano con la que se usa el objeto '%s' es '%s'
+    set: Mano con la que se usa el objeto '%s' cambiada a '%s'
+  create:
+    ok: Objeto '%s' creado
+    fail: Ya existe un objeto con ese nombre
+  lore:
+    get: La historia del objeto '%s' es '%s'
+    set: Historia del objeto '%s' cambiada a '%s'
+  too:
+    far: Cayó demasiado lejos...
+  display:
+    get: El nombre mostrado del objeto '%s' ess '%s'
+    set: El nombre mostrado del objeto '%s' ha cambiado a '%s'
+  type:
+    set: Tipo del objeto cambiado a '%s' cambiado a '%s'
+    get: El tipo del objeto '%s' es '%s'
+  damage:
+    set:
+      range: Daño del objeto '%s' cambiado a %d-%d
+    get: El daño del objeto '%s' es %d-%d
+  item:
+    set: Objeto mostrado por el objeto '%s' cambiado a '%s:%d'
+    cant:
+      find: No se pudo encontrar el objeto
+    get: El objeto mostrado por el objeto '%s' es '%s'
+  quality:
+    get: La calidad del objeto '%s' es '%s'
+    note: 'Calidades: '
+    set: Calidad del objeto '%s' cambiada a '%s'
+  giveperms:
+    'true': Dar ahora requiere permisos
+    'false': Dar ahora no requiere permisos
+  durability:
+    change: Durabilidad cambiada
+    toggle: Barra de durabilidad cambiada
+  permission:
+    booleanerror: Habilitado debe ser booleano ! (true o false)
+    success: La restricción de permisos fue correctamente ajustada !
+  remove:
+    ok: Objeto '%s' borrado
+  power:
+    ok: Poder añadido
+    unknown: Poder desconocido %s
+    removed: Poder %s borrado
+  skyhook:
+    fail: Fallaste al engancharte a algo
+  print:
+    durability: 'Durabilidad máxima: %d'
+power:
+  potionself: Concede %s %d durante %.1fs
+  food: Restaura %d puntos de salud
+  lightning: '%d%% probabilidad de electrocutar al golpear'
+  rainbow: Dispara %d bloques de lana de colores (Recarga en %.1fs)
+  consume: Consumido al usarlo
+  teleport: Se teletransporta %d bloques (Recarga en %.1fs)
+  ice: Dispara hielo (Recarga en %.1fs)
+  fireball: Shoots a fireball (Recarga en%.1fs)
+  lifesteal: '%d sobre 1 probabilidades de robar la salud al enemigo'
+  unbreaking: Duración %d
+  knockup: '%d%% probabilidad de enviar al objetivo volando'
+  rumble: Envía una onda de choque. (Recarga en %.1fs)
+  flame: Quema al objetivo durante %.1f segundos
+  skyhook: Te enganchaste a un rail de cielo
+  unbreakable: Nunca se rompe
+  tntcannon: Dispara TNT (Recarga en %.1fs)
+  potiontick: Te da %s %d durante su uso
+  potionhit: '%d%% probabilidad de aplicar %s'
+  arrow: Dispara una flecha. (Recarga en %.1fs)

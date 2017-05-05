@@ -1,0 +1,248 @@
+command:
+  info:
+    command: Commande
+    player: '[Joueur]'
+    cooldown: Temps de recharge
+    integer:
+      limit: '[Entier(%d-%d)]'
+    armour: Armure
+    hand: Main
+    hexcolour: HexCouleur
+    duration: Durée
+    double: '[Double]'
+    effect: Effet
+    lore: Histoire
+    damage: Dégâts
+    haspermission: Activée
+    quality: Qualité
+    min: Min
+    type: Type
+    string:
+      limit: '[Chaîne(Max:%d)]'
+    material: '[Matière]'
+    details: Détails
+    distance: Distance
+    foodpoints: Points de nourriture
+    lineno: LineNo
+    burntime: Temps de brûlure
+    itemid: ID de l'objet
+    count: Nombre
+    data: Données
+    power: Pouvoir
+    terms: Termes
+    descriptionline: DescriptionLigne
+    amplifier: Amplification
+    display: Affichage
+    item: '[Objet]'
+    permission: Permission
+    max: Max
+    chance: Chance
+    level: Niveau
+    durability: Durabilité
+    name: Nom
+  rpgitem:
+    tntcannon:
+      full: Ajoute le pourvoir de tntcannon sur @[Item]# avec un temps de recharge de @[Cooldown]# ticks. Le pouvoir de tntcannon tire un bloc de tnt avec le clic droit.
+    command:
+      old: Exécute la commande avec le clic @[left/right]#. @[Detials]# est une | liste séparée de @[display Text]# | @[command]# | @[permission]#. L'info-bulle affiche @[display Text]#. L'affichage texte et la commande doivent être séparés par un symbole | . Si la permission est prévue, elle sera donnée au joueur seulement pour l'utilisation de l'item et sera ensuite supprimée.
+      full: 'Ajoute le pouvoir de commande sur @[Item]# avec un temps de recharge
+        de @[Cooldown]# ticks. L''info-bulle affichera @[Display]#. L''item sera exécuté
+        @[Command]# sur le clic @[left,right]#. L''utilisation de l''item donnera
+        alors la permission  @[Permission]# seulement pour utiliser cette dernière.
+        **Note** Si vous voulez des espaces dans @[Display]# ou @[Command]# il faut
+        entourer la ligne avec ` e.g: `/say Hello`'
+    flame:
+      full: Ajoute le pouvoir d'embrasement sur @[Item]# avec un temps de brûlure de @[Burntime]# ticks. Le pouvoir d'embrasement brûle une cible en la frappant.
+    potiontick: Ajoute de le pouvoir de tick de potion sur @[Item]#. Le pouvoir de tick de potion donne @[Effect]# @[Amplifier]# au porteur de @[Item]# tant qu'il est porté
+    description:
+      add: Ajoute une ligne @[DescriptionLine]# sur l'item @[Item]#
+      set: Définit la ligne @[LineNo]#  en @[DescriptionLine]# sur l'item @[Item]#
+      remove: Supprime la ligne @[LineNo]# sur l'item @[Item]#
+    item:
+      set:
+        id: Définit le matériel de l'item @[Item]# comme @[ItemID]#
+    potionself: 'Ajoute le pouvoir de potion sur soi sur @[Item]# avec un temps de
+      recharge de @[Cooldown]#. En faisant clic droit cela applique @[Effect]# pour
+      @[Duration]# ticks de puissance @[Amplifier]#. Effet de potion valide:'
+    give: Donne l'item @[Item]# à l'utilisateur de cette commande.
+    ice:
+      full: Ajoute le pouvoir de glace sur @[Item]# avec un temps de chargement de @[Cooldown]# ticks. Le pouvoir de glace tire un bloc de glace avec le clic droit, qui disparaît peu après.
+    durability:
+      infinite: Défini la durabilité � infini. Cela veut dire que l'objet est incassable
+    hand:
+      set: Définit la "main" utilisée de l'item @[Item]# comme @[Hand]#
+    remove: Supprime l'item @[Item]# du système. Cela ne supprime pas l'item de l'inventaire du joueur mais tout les pouvoirs ainsi que les dégâts n'auront plus d'effet.
+    fireball:
+      full: Ajoute le pouvoir de boule de feu sur l'item @[Item]# avec un temps de recharge de  @[Cooldown]# ticks. Le pouvoir de boule de feu peut tirer une boule de feu avec le clic droit.
+    display:
+      set: Définit le surnom de l'item @[Item]# comme @[Display]#
+    list: Affiche la liste de tout les items crées.
+    knockup:
+      full: Ajoute le pouvoir de propulsion sur @[Item]# avec une chance de 1/@[Chance]# et un pouvoir de @[Power]#. Le pouvoir de propulsion envoie la cible en l'air.
+    teleport: Ajoute le pouvoir de téléportation sur @[Item]# avec un temps de recharge par défaut de 20 ticks (1 seconde) et une téléportation de 5 bloc. Le pouvoir de téléportation vous téléporte dans la direction voulue.
+    removepower: Supprime le pouvoir @[Power]# de l'item @[Item]#
+    lifesteal: Ajoute de le pouvoir de drainage de vie sur @[Item]# avec une chance de voler la vie de l'ennemi de 1/@[Chance]#.
+    skyhook: Ajoute de le pouvoir de grappin sur @[Item]#. le pouvoir de grappin permet � l'utilisateur de s'agripper � @[Material]# jusqu'� @[Distance]# blocs au loin
+    drop: Obtient la chance que @[Item]# soit droppé par @[EntityType]#. 0% signifie qu'il n'est pas droppé
+    consume: Ajoute le pouvoir de consumation sur l'item @[Item]#. Le pouvoir de consumation sera supprimé avec le clic droit.
+    lore:
+      set: Définit l'histoire de l'item @[Item]# comme @[Lore]#
+    arrow:
+      full: Ajoute le pouvoir de flèche à l'item @[Item]# avec un temps de recharge de @[Cooldown]# ticks. Le pouvoir de flèche peut tirer une flèche avec le clic droit.
+    permission: Active/désactive la restriction de permission sur l'item @[Item]#. La restriction de permission empêche le joueur d'utiliser l'item s'il n'a pas la permission @[Permission]#. La restriction de permission peut être activé/désactivé avec l'option @[Activé]#.
+    recipe: Défini la recette de @[Item]#
+    worldguard: Active/désactive le support de World Guard. Actuellement, s'il est activé, il empêche l'utilisation de RPG Items dans les zones non-pvp.
+    giveperms: Active/désactive si la commande /rpgitem @[Item]# give requiert des permissions
+    damage:
+      set:
+        range: Définit les dégâts de l'item @[Item]# comme dégâts aléatoire entre @[Min]# et @[Max]#
+    unbreaking:
+      full: Ajoute de le pouvoir de durabilité sur @[Item]# avec un niveau de @[Level]#. Le pouvoir de durabilité augmente la résistance de l'item.
+    type:
+      set: Définit le type de l'item @[Item]# comme @[Type]#
+    armour:
+      set: Définit l'armure de l'item @[Item]# à @[Armour]#
+    rainbow:
+      full: Ajoute le pouvoir d'arc-en-ciel sur @[Item]# avec un temps de recharge de @[Cooldown]# et un nombre de bloc de @[Count]# . Le pouvoir d'arc-en-ciel tire plusieurs bloc de laine colorés avec le clic droit, qui disparaissent peu après.
+    error:
+      command: 'Erreur: %s'
+    help: Affiche les commandes et l'aide pour les commandes qui contiennent des termes de recherche @[Terms]#
+    lightning: Ajoute le pouvoir de foudre sur @[Item]# avec une chance de 1/20. Le pouvoir de foudre frappe la cible avec un éclair.
+    rumble: Ajoute le pouvoir de grondement sur @[Item]# avec un temps de recharge de @[Cooldown]# ticks et une puissance de @[Power]#. La vague traversera une distance de @[Distance]# blocs. Le pouvoir de grondement créer une onde de choc sur le sol qui enverra toutes entités en l'air.
+    removerecipe: Supprime la recette de @[Item]#
+    potionhit: 'Ajoute le pouvoir de potionhit sur @[Item]# avec une chance de frapper
+      de 1/@[Chance]#. En frappant cela applique @[Effect]# pour @[Duration]# ticks
+      de puissance @[Amplifier]#. Effet de potion valide:'
+    unbreakable: Ajoute de le pouvoir incassable sur @[Item]#. Le pouvoir incassable empêche l'item de casser.
+    quality: Affiche la qualité actuelle de l'item @[Item]#
+    food: Ajoute le pouvoir de nourriture sur @[Item]# et donne @[Food points]# quand il est mang�.
+    create: Crée un item avec le nom @[Name]#. Le @[Name]# est le nom que vous utiliserez pour les futures commandes comme par exemple le "Give". @[Name]# n'est pas le "surnom" de l'item qui s'affiche dans l'info-bulle, c'est la commande (/rpgitem "item" display "Surnom") qui changera l'affichage du nom de votre item.
+    print: Affiche l'info-bulle de l'item @[Item]# dans le chat.
+message:
+  recipe:
+    removed: Recette supprimée
+    '3': dans la disposition de la
+    '4': recette de craft que vous voulez
+    '1': Ne pas changer. Utilisez les case vides
+    '2': Placez les objets dans les espaces vides
+    '5': avoir
+  error:
+    effect: '%s n''est pas un effet valide'
+    permission: Vous n'avez pas la permission
+    double:
+      limit: Le nombre doit être entre %.2f et %.2f
+      format: '''%s'' n''est pas un double'
+    item: Item '%s' est inconnu
+    string:
+      length: '''%s'' est plus long que la longueur max %d'
+    only:
+      player: Cette commande peut être utilisé seulement en jeu
+    integer:
+      format: '''%s'' n''est pas entier'
+      limit: Le nombre doit être entre %d et %d
+    material: Le matériel '%s' est inconnu
+    command:
+      format: Le texte et la commande doivent être séparés par un |
+    player: Joueur %s introuvable
+    unknown:
+      command: 'Erreur: Commande %s inconnue'
+    option: L'option '%s' est invalide
+  armour:
+    get: L'armure de l'item '%s' est '%d%%'
+    set: L'armure de l'item '%s' est maintenant de '%d%%'
+  drop:
+    get: La chance que '%s' soit dropé par '%s' est %.2f%%
+    set: La chance que '%s' soit dropé par '%s' a été définie � %.2f%%
+  command:
+    usage: Usage de la commande pour /%s (%s)
+    info: Aide plus détaillée sur notre site web http://rpgitems2.webs.com/ ou /rpgitem help [terms]
+  help:
+    for: Affichage de l'aide pour '%s'
+  cooldown: Vous devez attendre %.1f secondes.
+  give:
+    ok: Vous vous êtes donné(e) %s
+    to: '%s donné  %s'
+    console: Impossible de donner l'item de la console
+  description:
+    remove: Ligne supprimée
+    out:
+      of:
+        range: Ligne %d hors de portée
+    change: Ligne changée
+    ok: Ajout de ligne
+  worldguard:
+    disable: Support de World Guard désactivé.
+    error: Aucun plugin "World Guard" trouvé
+    override:
+      disabled: Ignorance de World Guard désactivé
+      active: Ignorance de World Guard activé
+    enable: Support de World Guard activé.
+  hand:
+    get: La main utilisée pour l'item '%s' est '%s'
+    set: La main utilisée pour l'item '%s' est maintenant '%s'
+  create:
+    ok: L'item '%s' a été crée.
+    fail: L'item n'a pas pu être crée car un autre utilise déjà ce nom.
+  lore:
+    get: L'histoire de l'item '%s' est '%s'
+    set: L'histoire de l'item '%s' est '%s'
+  too:
+    far: C'est tombé trop loin...
+  display:
+    get: Le surnom de l'item '%s' est '%s'
+    set: Le surnom de l'item '%s' sera maintenant '%s'
+  type:
+    set: Le type de l'item '%s' est maintenant '%s'
+    get: Le type de l'item '%s' est '%s'
+  damage:
+    set:
+      range: Les dégâts de l'item '%s' sont maintenant de %d-%d
+    get: Les dégâts de l'item '%s' sont %d-%d
+  item:
+    set: Définit le matériel de l'item @[Item]# comme @[Material]#
+    cant:
+      find: Item non trouvé
+    get: Le matériel de l'item '%s est  '%s
+  quality:
+    get: La qualité de l'item '%s' est '%s'
+    note: 'Qualités:'
+    set: La qualité de l'item '%s' est maintenant '%s'
+  giveperms:
+    'true': La commande /rpgitem @[Item]# give requiert maintenant des permissions
+    'false': La commande /rpgitem @[Item]# give ne requiert maintenant plus de permissions
+  durability:
+    change: Durabilité modifiée
+    toggle: Bar de durabilité activeée/désactivée
+  permission:
+    booleanerror: Activé doit être booléen ! (true ou false)
+    success: Restriction de permission définie avec succès !
+  remove:
+    ok: Item '%s' supprimé.
+  power:
+    ok: Pouvoir ajouté
+    unknown: Pouvoir %s inconnu
+    removed: Pouvoir  '%s' supprimé
+  skyhook:
+    fail: 'Vous avez échoué � accrocher quoi que ce soit '
+  print:
+    durability: 'Maximum de durabilité: %d'
+power:
+  potionself: Active %s %d pour %.1fs
+  food: Redonne %d point(s) de nourriture
+  lightning: '%d%% de lancer un éclair en frappant'
+  rainbow: Tire %d laines multicolores (%.1fs)
+  consume: 'Consumé à l''utilisation '
+  teleport: Téléporte à %d blocs (%.1fs)
+  ice: Tire de glace (%.1fs)
+  fireball: Tire une boule de feu. (%.1fs)
+  lifesteal: '%d chance sur 1 de voler la vie de l''ennemi frappé'
+  unbreaking: Durabilité %d
+  knockup: '%d%% de chance de d''envoyer la cible en l''air'
+  rumble: Envoie une onde de choque (%.1fs)
+  flame: Brûle la cible pendant %.1f secondes.
+  skyhook: Permet de s'agripper
+  unbreakable: Ne casse jamais
+  tntcannon: Tire de la TNT (%.1fs)
+  potiontick: Donne %s %d pendant l'utilisation
+  potionhit: '%d%% de chance d''appliquer %s'
+  arrow: Tire une flèche. (temps de recharge de %.1f)

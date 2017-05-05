@@ -1,0 +1,422 @@
+command:
+  info:
+    command: Command
+    player: '[Player]'
+    selfapplication: SelfApplication
+    wool: ApplyOnWool
+    cooldown: Cooldown
+    integer:
+      limit: '[Integer(%d-%d)]'
+    healthtrigger: HealthTrigger
+    armour: Armour
+    hand: Hand
+    projectileType: ProjectileType
+    hexcolour: HexColour
+    duration: Duration
+    clay: ApplyOnClay
+    double: '[Double]'
+    effect: Effect
+    lore: Lore
+    usebed: UseBed
+    damage: Damage
+    glass: ApplyOnGlass
+    delay: Delay
+    haspermission: Enabled
+    quality: Quality
+    min: Min
+    type: Type
+    facing: Facing Angle
+    self: '[SelfApplied]'
+    maxSpeed: MaxSpeed
+    string:
+      limit: '[String(Max:%d)]'
+    material: '[Material]'
+    dropChance: DropChance
+    details: Details
+    distance: Distance
+    foodpoints: FoodPoints
+    lineno: LineNo
+    burntime: Burntime
+    displayName: DisplayName
+    itemid: ItemID
+    count: Count
+    regex: Regex
+    data: Data
+    property: Property
+    amount: Amount
+    power: Power
+    interval: Interval
+    terms: Terms
+    radius: Radius
+    descriptionline: DescriptionLine
+    amplifier: Amplifier
+    torches: Torches
+    display: Display
+    item: '[Item]'
+    visualeffect: VisualEffect
+    permission: Permission
+    height: Height
+    max: Max
+    nth: Nth
+    chance: Chance
+    burnduration: FireDuration
+    base: Base
+    level: Level
+    name: Name
+    durability: Durability
+    page: Page
+    range: Range
+    val: Value
+    isFire: IsFireBlock
+  rpgitem:
+    commandhit:
+      full: 'Adds the command-when-hit power to @[Item]# with a cooldown of @[Cooldown]#
+        ticks. The tooltip will display @[Dispaly]#. The item will run @[Command]#
+        when player hits something giving the permission @[Permission]# just for the
+        use of the command. **Note**: If you want spaces in @[Display]#, @[Command]#
+        or @[Permission]# then surround the string with ` e.g: `/say Hello`'
+    projectile:
+      cone: 'Adds the power to @[Item]# with a cooldown of @[Cooldown]# ticks. Launches
+        @[Amount]# projectiles of type @[ProjectileType]# when right clicked. Randomly
+        distributed in the cone with angle @[Range]# centered with player''s direction.
+        Acceptable types: skull, snowball, smallfireball, arrow, llamaspit'
+    tntcannon:
+      full: Adds the tntcannon power to @[Item]# with a cooldown of @[Cooldown]# ticks. The tntcannon power will fire active tnt on right click.
+    command:
+      old: Runs the command on @[left/right]# click. @[Details]# is a | seperated list of @[display Text]# | @[command]# | @[permission]#. The tool-tip displays @[display Text]#. display Text and command must be separated a | symbol. If permission is provided the player will be given the permission just for the use of the item and then it will be removed
+      full: 'Adds the command power to @[Item]# with a cooldown of @[Cooldown]# ticks.
+        The tooltip will display @[Display]#. The item will run @[Command]# on @[left,right]#
+        click giving the permission @[Permission]# just for the use of the command.
+        **Note**: If you want spaces in @[Display]#, @[Command]# or @[Permission]#
+        then surround the string with ` e.g: `/say Hello`'
+    flame:
+      full: Adds the flame power to @[Item]# with a burntime of @[Burntime]# ticks. The flame power will set the target on fire on hit
+    itemflag:
+      add: 'Add the ItemFlag to @[Item]#. Valid ItemFlags: '
+      remove: 'Remove the ItemFlag from @[Item]#. Valid ItemFlags: '
+    consume: Adds the consume power to @[Item]#. The consume power will remove one item on right click.
+    potiontick: Adds the potiontick power to @[Item]#. The potiontick power will give the welder of the @[Item]# @[Effect]# level @[Amplifier]# while held/worn
+    description:
+      add: Adds the line @[DescriptionLine]# to the item @[Item]#
+      set: Sets the line @[LineNo]# to @[DescriptionLine]# on the item @[Item]#
+      remove: Removes the line @[LineNo]# on the item @[Item]#
+    item:
+      set:
+        id: Sets the item @[Item]#'s item to @[ItemID]#
+    durability:
+      infinite: Sets the durability to infinite. This means the item should never break
+      default: Sets the default durability for the item.
+    potionself: 'Adds the potionself power to @[Item]# with a cooldown of @[Cooldown]#.
+      On right click it will apply @[Effect]# for @[Duration]# ticks at power @[Amplifier]#.
+      Valid potion effects:'
+    give: Gives the item @[Item]# to the user of the command
+    ice:
+      full: Adds the ice power to @[Item]# with a cooldown of @[Cooldown]# ticks. The ice power will fire an ice block on right click which will then create a box of ice on impact, the ice will slowly remove itself
+    pumpkin: Add the power to @[Item]#. When hit skeleton or zombie, will have a 1/@[Chance]# chance to make them wear pumpkin head. And the pumpkin will have a chance of @[DropChance]# to drop when the mobs die. @[DropChance]# must between 0 and 1.
+    attract: 'Add the power to @[Item]#. Pull around mobs to player when held in hand.
+      Radius:5 MaxSpeed: 0.4.'
+    ranged: =Adds the ranged mark to @[Item]#.
+    hand:
+      set: Sets the item @[Item]#'s hand to @[Hand]#
+    color: Adds the color power to @[Item]#. The power allows changing the color of glass, clay and wool.
+    torch: Adds the torch power to @[Item]# that shoots @[Torches]# to light up an area.
+    remove: Remove the item @[Item]# from the system. This does not currently remove the item from players' inventories but all powers and damage will stop working on them.
+    fireball:
+      full: Adds the fireball power to @[Item]# with a cooldown of @[Cooldown]# ticks. The fireball power will fire an fireball on right click
+    enchantment:
+      clear: Remove all attached enchantments.
+      list: List attached enchantments.
+      clone: Clone the enchantments of the item in hand to specified rpgitem.
+    aoecommand:
+      full: 'Adds the aoe command power to @[Item]# with a cooldown of @[Cooldown]#
+        ticks. The tooltip will display @[Display]#. The item will run @[Command]#
+        for every entity in range(@[min]# blocks ~ @[max]# blocks in @[facing]#) on
+        @[left,right]# click giving the permission @[Permission]# just for the use
+        of the command. **Note**: If you want spaces in @[Display]#, @[Command]# or
+        @[Permission]# then surround the string with ` e.g: `/say Hello`'
+    toggleArmorLore: Switch ON/OFF the hand/armor/damage lores. You can still modify the lores by /rpgitem {itemName} description command.
+    display:
+      set: Sets the item @[Item]#'s display name to @[Display]#
+    togglePowerLore: Switch ON/OFF the default description lores. You can still modify the lores by /rpgitem {itemName} description command.
+    list: Shows a list of all created items
+    knockup:
+      full: Adds the knockup power to @[Item]# with a chance of 1/@[Chance]# and a power of @[Power]#. The knockup power will send the hit target flying
+    toggleDamageMode: Toggle item damage mode
+    power_property_set: Set @[Nth]# @[Power]# of @[Item]#'s @[Property]# to @[Value]#
+    teleport: Adds the teleport power to @[Item]# with a default cooldown of 20 ticks (1 second) and teleport distance of 5 blocks. The teleport will teleport you in the direction you're looking in
+    deathcommand: Adds the power to @[Item]#. With a 1/@[Chance]# chance to kill the target then execute the @[Command]#. `${x}` `${y}` and `${z}` in the command will be replaced with the death location of the enemy.
+    particle: Add the power to @[Item]#. When right clicked, spawn some particles around the user.  @[VisualEffect]# can be SMOKE/ENDER_SIGNAL/MOBSPAWNER_FLAMES
+    removepower: Removes power @[Power]# from item @[Item]#
+    lifesteal: Adds the lifesteal power to @[Item]# with a chance of enemy life stealing of 1/@[Chance]#
+    particletick: Add the power to @[Item]#. When item held in hand, spawn some particles around the user. With the time @[Interval]# given in ticks. @[VisualEffect]# can be SMOKE/ENDER_SIGNAL/MOBSPAWNER_FLAMES
+    skyhook: Adds the skyhook power to @[Item]#. The skyhook power will allow the user to hook on to @[Material]# up to @[Distance]# blocks away
+    drop: Gets the chance that @[Item]# will drop from @[EntityType]#. 0% means it doesn't drop
+    rangedonly: =Adds the rangedonly mark to @[Item]#.
+    aoe: 'Adds the aoe power to @[Item]# with a cooldown of @[Cooldown]# ticks. On
+      right click the aoe power will apply @[Effect]# to all entities within the @[Distance]#
+      for @[Duration]# ticks at power @[Amplifier]#. By default, the user will be
+      targeted by the potion as well if not set via @[Self]#. Valid potion effects:'
+    lore:
+      set: Sets the item @[Item]#'s lore to @[Lore]#
+    wgforcerefreash: Toggles worldguard custom flag force refresh on each use. Enabling this can workaround failure of automatic refresh after /reload but use more resource.
+    arrow:
+      full: Adds the arrow power to @[Item]# with a cooldown of @[Cooldown]# ticks. The arrow power will fire an arrow on right click.
+    permission: Enable/disable the permission restriction on the item @[Item]#. The permission restriction prevent a player to use an item if he doesn't have the permission @[Permission]#. The permission restriction can be toggled on or off with the @[Enabled]# option.
+    recipe: Sets the @[Item]#'s recipe
+    rescue: Adds the rescue power to @[Item]# with a cooldown of @[Cooldown]# ticks and a health trigger of @[HealthTrigger]#. The rescue power teleports the user to spawn (or to their bed when @[UseBed]# is active) when their health gets below the hp trigger while in combat with an enemy
+    worldguard: Toggles worldguard support.
+    reload: Reload the plugin
+    giveperms: Toggles give requiring permissions
+    damage:
+      set:
+        range: Sets the item @[Item]#'s damage to do random damage between @[Min]# and @[Max]#
+    armour:
+      set: Sets the item @[Item]#'s armour to @[Armour]#
+    type:
+      set: Sets the item @[Item]#'s type to @[Type]#
+    rainbow:
+      full: Adds the rainbow power to @[Item]# with a cooldown of @[Cooldown]# ticks and a block count of @[Count]#. The rainbow power will fire blocks of coloured wool on right click, the wool will remove itself.
+    error:
+      command: 'Error: %s'
+    consumehit: Adds the consume power to @[Item]#. The consume power will remove one item when player hit something.
+    delayedcommand:
+      full: 'Adds the delayedcommand power which will be executed after @[Delay]#
+        ticks to @[Item]# with a cooldown of @[Cooldown]# ticks. The tooltip will
+        display @[Display]#. The item will run @[Command]# on @[left,right]# click
+        giving the permission @[Permission]# just for the use of the command. **Note**:
+        If you want spaces in @[Display]#, @[Command]# or @[Permission]# then surround
+        the string with ` e.g: `/say Hello`'
+    help: Shows commands and help for commands that contain the search terms @[Terms]#
+    lightning: Adds the lightning power to @[Item]# with a default chance of 1/20. The lightning power will strike the hit target with lightning
+    forcefield: Add the power to @[Item]#. When right clicked, creates a forcefield around the player, with @[Radius]# @[height]# based @[Base]# blocks above, lasts for @[Cooldown]# ticks
+    rumble: Adds the rumble power to @[Item]# with a cooldown of @[Cooldown]# ticks and a power of @[Power]#, the wave will travel @[Distance]# blocks. The rumble power sends a shockwave through the ground and sends any hit entities flying
+    removerecipe: Removes the @[Item]#'s recipe
+    potionhit: 'Adds the potionhit power to @[Item]# with a chance of hitting of 1/@[Chance]#.
+      On hit it will apply @[Effect]# for @[Duration]# ticks at power @[Amplifier]#.
+      Valid potion effects:'
+    customitemmodel: Toggles custom item model support
+    lorefilter: Preserve all lore lines match the @[Regex]#
+    wgcustomflag: Toggles worldguard custom flag support. If enabled, RPGItem will use disabled-rpg-powers flag to ban specified power usage in the region, otherwise prevents RPG Items from being used in non-pvp area
+    unbreakable: Adds the unbreakable mark to @[Item]#. The unbreakable mark prevents the item from breaking
+    power_property_get: Show @[Nth]# @[Power]# of @[Item]#'s @[Property]#
+    quality: Shows the item @[Item]#'s current quality
+    food: Add the food power to @[Item]# and restore @[Food points]# when eated.
+    tippedarrow: 'Adds the tipped arrow power to @[Item]# with a cooldown of @[Cooldown]#
+      ticks and @[Effect]# for @[Duration]# ticks at power @[Amplifier]#. The arrow
+      power will fire an arrow on right click. Valid potion effects:'
+    create: 'Create an item with the name @[Name]#. The @[Name]# is what you use to
+      identify the item for later commands e.g: Give. @[Name]# is not the name of
+      the item on the tool-tip, that is set with Display instead.'
+    fire: Adds the fire power to @[Item]# with a cooldown of @[Cooldown]# ticks. The fire power will shoot fire on right click.
+    print: Prints item @[Item]#'s tool-tip to chat
+    realdamage: =Adds the realdamage power to @[Item]# with a cooldown of @[Cooldown]# ticks. The item will do real @[Damage]# to LivingEntity player hits but always leave at least 0.1 health.
+message:
+  recipe:
+    removed: Recipe removed
+    '3': in the shape of the crafting
+    '4': recipe that you want the item to
+    '1': Do not change. Use the empty slots
+    '2': Place items in the empty spaces
+    '5': have
+  customitemmodel:
+    disable: Custom item model disabled
+    enable: Custom item model enabled
+  enchantment:
+    removed: Attached enchantments removed
+    success: Success
+    fail: FAIL
+    item: Enchantment:%s Level:%d
+    listing: Listing attached enchantments for item %s
+    no_ench: No attached enchantments
+    empty_ench: This item has an empty enchantment list
+  error:
+    effect: '%s is not a valid effect'
+    permission: You do not have permission
+    double:
+      limit: Number must be between %.2f and %.2f
+      format: '''%s'' is not a double'
+    item: Unknown item '%s'
+    string:
+      length: '''%s'' in longer than max length %d'
+    only:
+      player: This command can only be used by players
+    integer:
+      format: '''%s'' is not a integer'
+      limit: Number must be between %d and %d
+    damagetolarge: 'Damage TOO large. MAX: 32767'
+    material: Unknown material '%s'
+    command:
+      format: Display text and command must be seperated by a |
+    visualeffect: 'Not a valid visual effect: %s'
+    player: Cannot find player %s
+    unknown:
+      command: 'Error: Unknown command %s'
+    option: Invalid option '%s'
+  wgcustomflag:
+    disable: Worldguard custom flag disabled
+    enable: Worldguard custom flag enabled
+  armour:
+    get: Item '%s' armour is '%d%%'
+    set: Item '%s' armour set to '%d%%'
+  power_property:
+    property_notfound: Unknown property  %s
+    not_vaild_bool: '''%s'' is not an valid boolean'
+    power_notfound: Unknown power on this item
+    property_unsupporttype: '''%s'' if of type other than int/double/String/boolean'
+    not_vaild_int: '''%s'' is not an valid integer'
+    get: '%d th power ''%s''''s property %s is %s'
+    change: Property set
+  drop:
+    get: The chance that '%s' will drop from '%s' is %.2f%%
+    set: The chance that '%s' will drop from '%s' was set to %.2f%%
+  command:
+    usage: 'Command usage for: /%s (%s)'
+    info: More detailed help on http://rpgitems2.webs.com/ or /rpgitem help [terms]
+  help:
+    for: Showing help for '%s'
+  cooldown: You must wait %.1f seconds
+  give:
+    ok: You were given %s
+    to: Gave %s to %s
+    console: Cannot give console items
+  description:
+    remove: Removed line
+    out:
+      of:
+        range: Line %d is out of range
+    change: Changed line
+    ok: Added line
+  durability:
+    info: 'Max: %d, Default: %d, Lower %d, Upper %d'
+    change: Durability changed
+    toggle: Durability bar toggled
+  worldguard:
+    disable: Worldguard support disabled
+    error: No Worldguard plugin found
+    override:
+      disabled: Worldguard override disabled
+      active: Worldguard override active
+    enable: Worldguard support enabled
+  itemflag:
+    remove: ItemFlag %s removed
+    notfound: ItemFlag %s does not exists
+    add: Added ItemFlag %s
+  hand:
+    get: Item '%s' hand is '%s'
+    set: Item '%s' hand set to '%s'
+  create:
+    ok: Item '%s' created
+    fail: An item with that name already exists
+  lore:
+    get: Item '%s' lore is '%s'
+    set: Item '%s' lore set to '%s'
+  update:
+    fail: '>>> FAIL <<<'
+    noitem: You must take item in hand
+    notvalid: Not a valid RPGItem
+    noneed: Valid new RPGItem detected, no need to update
+    head: '>>> Update RPGItem <<<'
+    updating: Valid legacy RPGItem detected. Updating ...
+    success: '>>> SUCCESS <<<'
+  too:
+    far: It landed too far away...
+  version: |-
+    RPGItem v%s (1.11 branch)
+
+    Copyright © 2017 NyaaCat Developers
+    Copyright © 2013 TheCreeperOfRedstone
+    License GPLv3+: GNU GPL version 3 or later <http://gnu.org/licenses/gpl.html>.
+    This is free software: you are free to change and redistribute it.
+    There is NO WARRANTY, to the extent permitted by law.
+
+    Report Bugs At: https://github.com/NyaaCat/RPGitems-reloaded/issues
+  display:
+    get: Item '%s' display name is '%s'
+    set: Item '%s' display name set to '%s'
+  deprecation:
+    lore: '[NOTICE] "lore" is a deprecated feature. Please try "description" instead.'
+  type:
+    set: Item '%s' type set to '%s'
+    get: Item '%s' type is '%s'
+  damage:
+    set:
+      range: Item '%s' damage set to %d-%d
+    get: Item '%s' damage is %d-%d
+  item:
+    set: Item '%s' item set to '%s:%d'
+    cant:
+      find: Cannot find item
+    get: Item '%s' item is '%s'
+  damagemode:
+    fixed: Item '%s' damage mode set to fixed damage (default)
+    additional: Item '%s' damage mode set to additional damage (vanilla minecraft damage plus RPGItem damage)
+    vanilla: Item '%s' damage mode set to vanilla damage (use vanilla minecraft damage)
+  quality:
+    get: Item '%s' quality is '%s'
+    note: 'Qualities:'
+    set: Item '%s' quality set to '%s'
+  giveperms:
+    'true': Give now requires permissions
+    'false': Give now does not require permissions
+  print:
+    itemflags: 'ItemFlags: '
+    customitemmodel: 'Custom item model: %s'
+    durability: 'Max durability: %d'
+  permission:
+    booleanerror: Enabled must be boolean ! (true or false)
+    success: Permission restriction successfully set !
+  remove:
+    ok: Item '%s' removed
+  wgforcerefresh:
+    enable: Worldguard custom flag force refresh enabled
+  power:
+    ok: Power added
+    unknown: Unknown power %s
+    removed: Power %s removed
+  toggleLore:
+    show: Lore now been displayed
+    hide: Lore now been hid
+  skyhook:
+    fail: You failed to hook anything
+  color:
+    next: '%sChanged paint!'
+power:
+  potionself: Grants %s %d for %.1fs
+  deathcommand: 1/%d chance to kill the enemy then %s
+  food: Restore %d food point(s)
+  lightning: '%d%% chance to shock on hit'
+  attract: Handheld blackhole!
+  projectile:
+    cone: Launches multiple `%s` when right clicked (%.1fs cooldown)
+    noFireball: Fireball can't be used with cone mechanism.
+  realdamage: Do %.1f real damage to enemy.
+  rainbow: Shoots %d multicoloured wool (%.1fs cooldown)
+  consume: Consumed on use
+  teleport: Teleports %d blocks (%.1fs cooldown)
+  ranged: Can use as a ranged weapon
+  ice: Shoots Ice (%.1fs cooldown)
+  rescue: Rescues you when below %.1f Hearts (%.1fs cooldown)
+  consumehit: Consumed on hit
+  aoe: Applies %s level %d for %d ticks to everything %s within %d blocks. (%.1fs cooldown)
+  particle: Spawn some particles when used
+  deflect: Deflect arrows or fireballs
+  fireball: Shoots a fireball (%.1fs cooldown)
+  fire: Shoots fire (%.1fs cooldown)
+  torch: Lights up an area with torches (%.1fs cooldown)
+  tippedarrow: Shoots an tipped arrow with effect %s %d for %.1fs (%.1fs cooldown)
+  color: Changes the color of Clay, Glass and Wool (%.1fs cooldown)
+  forcefield: Create a forcefield around you, radius %d, height %d, based %d blocks above, lasts for %.1fs
+  lifesteal: 1/%d chance to steal the ennemy life
+  unbreaking: Unbreaking %d
+  knockup: '%d%% chance to send target flying'
+  rumble: Sends out a shockwave. (%.1fs cooldown)
+  potiontick: Gives %s %d while in use
+  pumpkin: 1/%d chance to make enemy put on a pumpkin
+  flame: Burns target for %.1f seconds
+  rangedonly: Can only use as a ranged weapon
+  skyhook: Hooks onto a sky rail
+  unbreakable: Never breaks
+  tntcannon: Shoots TNT (%.1fs cooldown)
+  particletick: Spawn some particles when held
+  potionhit: '%d%% chance to apply %s'
+  arrow: Shoots an arrow. (%.1fs cooldown)
