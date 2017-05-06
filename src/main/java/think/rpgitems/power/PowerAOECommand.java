@@ -6,6 +6,7 @@ import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.entity.LivingEntity;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
+import think.rpgitems.commands.ArgumentPriority;
 
 import java.util.List;
 
@@ -35,16 +36,19 @@ public class PowerAOECommand extends PowerCommand {
     /**
      * Maximum radius
      */
+    @ArgumentPriority(6)
     public int r = 10;
 
     /**
      * Minimum radius
      */
+    @ArgumentPriority(5)
     public int rm = 0;
 
     /**
      * Maximum view angle
      */
+    @ArgumentPriority(value = 7, required = true)
     public double facing = 30;
 
     /**

@@ -22,6 +22,7 @@ import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.entity.LivingEntity;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
+import think.rpgitems.commands.ArgumentPriority;
 import think.rpgitems.power.types.PowerHit;
 
 
@@ -37,18 +38,22 @@ public class PowerCommandHit extends Power implements PowerHit {
     /**
      * Command to be executed
      */
+    @ArgumentPriority(value = 2,required = true)
     public String command = "";
     /**
      * Display text of this power
      */
+    @ArgumentPriority(1)
     public String display = "Runs command";
     /**
      * Permission will be given to user executing the {@link #command}
      */
+    @ArgumentPriority(3)
     public String permission = "";
     /**
      * Cooldown time of this power
      */
+    @ArgumentPriority
     public long cooldownTime = 20;
     /**
      * Cost of this power

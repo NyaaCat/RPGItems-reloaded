@@ -23,8 +23,10 @@ import org.bukkit.block.Block;
 import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
+import think.rpgitems.I18n;
 import think.rpgitems.RPGItems;
-import think.rpgitems.data.Locale;
+import think.rpgitems.commands.ArgumentPriority;
+
 import think.rpgitems.power.types.PowerRightClick;
 
 /**
@@ -37,6 +39,7 @@ public class PowerFood extends Power implements PowerRightClick {
     /**
      * Food Points
      */
+    @ArgumentPriority(required = true)
     public int foodpoints;
 
     @Override
@@ -77,6 +80,6 @@ public class PowerFood extends Power implements PowerRightClick {
 
     @Override
     public String displayText() {
-        return ChatColor.GREEN + String.format(Locale.get("power.food"), foodpoints);
+        return I18n.format("power.food", foodpoints);
     }
 }

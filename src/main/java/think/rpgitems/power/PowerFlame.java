@@ -21,7 +21,9 @@ import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.entity.LivingEntity;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
-import think.rpgitems.data.Locale;
+import think.rpgitems.I18n;
+import think.rpgitems.commands.ArgumentPriority;
+
 import think.rpgitems.power.types.PowerHit;
 
 /**
@@ -35,6 +37,7 @@ public class PowerFlame extends Power implements PowerHit {
     /**
      * Duration of the fire, in ticks
      */
+    @ArgumentPriority
     public int burnTime = 20;
     /**
      * Cost of this power
@@ -50,7 +53,7 @@ public class PowerFlame extends Power implements PowerHit {
 
     @Override
     public String displayText() {
-        return ChatColor.GREEN + String.format(Locale.get("power.flame"), (double) burnTime / 20d);
+        return I18n.format("power.flame", (double) burnTime / 20d);
     }
 
     @Override

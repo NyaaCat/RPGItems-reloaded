@@ -18,7 +18,8 @@ package think.rpgitems.power;
 
 import org.bukkit.ChatColor;
 import org.bukkit.configuration.ConfigurationSection;
-import think.rpgitems.data.Locale;
+import think.rpgitems.I18n;
+
 
 /**
  * Power unbreakable.
@@ -45,6 +46,6 @@ public class PowerUnbreakable extends Power {
 
     @Override
     public String displayText() {
-        return ChatColor.GREEN + Locale.get("power.unbreakable");
+        return I18n.format("power.unbreakable");
     }
 }

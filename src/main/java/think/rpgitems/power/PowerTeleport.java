@@ -23,8 +23,10 @@ import org.bukkit.entity.Player;
 import org.bukkit.entity.Projectile;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.util.BlockIterator;
+import think.rpgitems.I18n;
 import think.rpgitems.RPGItems;
-import think.rpgitems.data.Locale;
+import think.rpgitems.commands.ArgumentPriority;
+
 import think.rpgitems.power.types.PowerProjectileHit;
 import think.rpgitems.power.types.PowerRightClick;
 
@@ -42,10 +44,12 @@ public class PowerTeleport extends Power implements PowerRightClick, PowerProjec
     /**
      * Maximum distance.
      */
+    @ArgumentPriority(1)
     public int distance = 5;
     /**
      * Cooldown time of this power
      */
+    @ArgumentPriority
     public long cooldownTime = 20;
     /**
      * Cost of this power
@@ -104,7 +108,7 @@ public class PowerTeleport extends Power implements PowerRightClick, PowerProjec
         Location start = player.getLocation();
         Location newLoc = p.getLocation();
         if (start.distanceSquared(newLoc) >= distance * distance) {
-            player.sendMessage(ChatColor.AQUA + Locale.get("message.too.far"));
+            player.sendMessage(I18n.format("message.too.far"));
             return;
         }
         newLoc.setPitch(start.getPitch());
@@ -135,7 +139,7 @@ public class PowerTeleport extends Power implements PowerRightClick, PowerProjec
 
     @Override
     public String displayText() {
-        return ChatColor.GREEN + String.format(Locale.get("power.teleport"), distance, (double) cooldownTime / 20d);
+        return I18n.format("power.teleport", distance, (double) cooldownTime / 20d);
     }
 
 }

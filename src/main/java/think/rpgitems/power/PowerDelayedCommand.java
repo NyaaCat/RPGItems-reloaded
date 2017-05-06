@@ -6,6 +6,7 @@ import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.scheduler.BukkitRunnable;
 import think.rpgitems.RPGItems;
+import think.rpgitems.commands.ArgumentPriority;
 
 /**
  * Power delayedcommand.
@@ -18,6 +19,7 @@ public class PowerDelayedCommand extends PowerCommand {
     /**
      * Delay before executing command
      */
+    @ArgumentPriority(0)
     public int delay = 20;
 
     @Override

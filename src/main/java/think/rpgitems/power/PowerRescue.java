@@ -25,8 +25,10 @@ import org.bukkit.event.entity.EntityDamageEvent.DamageCause;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.potion.PotionEffect;
 import org.bukkit.potion.PotionEffectType;
-import think.rpgitems.data.Locale;
-import think.rpgitems.data.RPGValue;
+import think.rpgitems.I18n;
+import think.rpgitems.commands.ArgumentPriority;
+
+import think.rpgitems.item.RPGItem;
 import think.rpgitems.power.types.PowerHitTaken;
 import think.rpgitems.power.types.PowerHurt;
 
@@ -44,18 +46,22 @@ public class PowerRescue extends Power implements PowerHurt, PowerHitTaken {
     /**
      * Health trigger of rescue
      */
+    @ArgumentPriority(1)
     public int healthTrigger = 4;
     /**
      * Whether use bed instead of home
      */
+    @ArgumentPriority(2)
     public boolean useBed = true;
     /**
      * Whether rescue in place instead of teleport
      */
+    @ArgumentPriority(3)
     public boolean inPlace = false;
     /**
      * Cooldown time of this power
      */
+    @ArgumentPriority
     public long cooldownTime = 20;
     /**
      * Cost of this power
@@ -68,7 +74,7 @@ public class PowerRescue extends Power implements PowerHurt, PowerHitTaken {
 
     @Override
     public String displayText() {
-        return ChatColor.GREEN + String.format(Locale.get("power.rescue"), ((double) healthTrigger) / 2, (double) cooldownTime / 20d);
+        return I18n.format("power.rescue", ((double) healthTrigger) / 2, (double) cooldownTime / 20d);
     }
 
     @Override
@@ -118,7 +124,7 @@ public class PowerRescue extends Power implements PowerHurt, PowerHitTaken {
     private void rescue(Player target, ItemStack stack, EntityDamageEvent event, boolean canceled) {
         if (!checkCooldown(target, cooldownTime, true)) return;
         if (!item.consumeDurability(stack, consumption)) return;
-        target.sendMessage(ChatColor.AQUA + Locale.get("power.rescue.info"));
+        target.sendMessage(I18n.format("power.rescue.info"));
         DamageCause cause = event.getCause();
         if (!canceled) {
             target.addPotionEffect(new PotionEffect(PotionEffectType.HEALTH_BOOST, 1, 255));

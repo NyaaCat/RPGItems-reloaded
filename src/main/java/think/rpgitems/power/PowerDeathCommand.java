@@ -7,7 +7,9 @@ import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.entity.LivingEntity;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
-import think.rpgitems.data.Locale;
+import think.rpgitems.I18n;
+import think.rpgitems.commands.ArgumentPriority;
+
 import think.rpgitems.power.types.PowerHit;
 
 import java.util.Random;
@@ -26,18 +28,22 @@ public class PowerDeathCommand extends Power implements PowerHit {
     /**
      * Command to be executed
      */
+    @ArgumentPriority(value = 1,required = true)
     public String command = "";
     /**
      * Chance of triggering this power
      */
+    @ArgumentPriority
     public int chance = 20;
     /**
      * Description in display text
      */
+    @ArgumentPriority(3)
     public String desc = "";
     /**
      * Times to run the {@link #command}
      */
+    @ArgumentPriority(2)
     public int count = 1;
     /**
      * Cost of this power
@@ -69,7 +75,7 @@ public class PowerDeathCommand extends Power implements PowerHit {
 
     @Override
     public String displayText() {
-        return ChatColor.GREEN + String.format(Locale.get("power.deathcommand"), chance, desc.equals("") ? "execute some command" : desc);
+        return I18n.format("power.deathcommand", chance, desc.equals("") ? "execute some command" : desc);
     }
 
     @Override

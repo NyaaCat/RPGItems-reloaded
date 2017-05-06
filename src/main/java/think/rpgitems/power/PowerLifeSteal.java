@@ -22,7 +22,9 @@ import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.entity.LivingEntity;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
-import think.rpgitems.data.Locale;
+import think.rpgitems.I18n;
+import think.rpgitems.commands.ArgumentPriority;
+
 import think.rpgitems.power.types.PowerHit;
 
 import java.util.Random;
@@ -39,6 +41,7 @@ public class PowerLifeSteal extends Power implements PowerHit {
     /**
      * Chance of triggering this power
      */
+    @ArgumentPriority
     public int chance = 20;
     /**
      * Cost of this power
@@ -60,7 +63,7 @@ public class PowerLifeSteal extends Power implements PowerHit {
 
     @Override
     public String displayText() {
-        return ChatColor.GREEN + String.format(Locale.get("power.lifesteal"), chance);
+        return I18n.format("power.lifesteal", chance);
     }
 
     @Override

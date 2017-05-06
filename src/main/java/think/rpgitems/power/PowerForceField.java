@@ -8,8 +8,10 @@ import org.bukkit.entity.ItemFrame;
 import org.bukkit.entity.Painting;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
+import think.rpgitems.I18n;
 import think.rpgitems.RPGItems;
-import think.rpgitems.data.Locale;
+import think.rpgitems.commands.ArgumentPriority;
+
 import think.rpgitems.power.types.PowerRightClick;
 
 import java.util.HashSet;
@@ -27,22 +29,27 @@ public class PowerForceField extends Power implements PowerRightClick {
     /**
      * Cooldown time of this power
      */
+    @ArgumentPriority
     public int cooldownTime = 200;
     /**
      * Radius of force field
      */
+    @ArgumentPriority(1)
     public int radius = 5;
     /**
      * Height of force field
      */
+    @ArgumentPriority(2)
     public int height = 30;
     /**
      * Base of force field
      */
+    @ArgumentPriority(3)
     public int base = -15;
     /**
      * Time to live
      */
+    @ArgumentPriority(value = 4, required = true)
     public int ttl = 100;
     /**
      * Cost of this power
@@ -76,7 +83,7 @@ public class PowerForceField extends Power implements PowerRightClick {
 
     @Override
     public String displayText() {
-        return ChatColor.GREEN + String.format(Locale.get("power.forcefield"), radius, height, base, (double) ttl / 20d, (double) cooldownTime / 20d);
+        return I18n.format("power.forcefield", radius, height, base, (double) ttl / 20d, (double) cooldownTime / 20d);
     }
 
     @Override

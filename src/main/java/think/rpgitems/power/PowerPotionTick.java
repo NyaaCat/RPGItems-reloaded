@@ -7,7 +7,9 @@ import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.potion.PotionEffect;
 import org.bukkit.potion.PotionEffectType;
-import think.rpgitems.data.Locale;
+import think.rpgitems.I18n;
+import think.rpgitems.commands.ArgumentPriority;
+
 import think.rpgitems.power.types.PowerTick;
 
 import static java.lang.Double.min;
@@ -24,10 +26,12 @@ public class PowerPotionTick extends Power implements PowerTick {
     /**
      * Type of potion effect
      */
+    @ArgumentPriority(value = 1,required = true)
     public PotionEffectType effect = PotionEffectType.SPEED;
     /**
      * Amplifier of potion effect
      */
+    @ArgumentPriority
     public int amplifier = 1;
     /**
      * Cost of this power
@@ -36,10 +40,12 @@ public class PowerPotionTick extends Power implements PowerTick {
     /**
      * Interval of this power
      */
+    @ArgumentPriority(2)
     public int interval = 0;
     /**
      * Duration of this power
      */
+    @ArgumentPriority(3)
     public int duration = 60;
     /**
      * Whether to remove the effect instead of adding it.
@@ -100,7 +106,7 @@ public class PowerPotionTick extends Power implements PowerTick {
     @Override
     public String displayText() {
         return clear?
-                ChatColor.GREEN + String.format(Locale.get("power.potiontick.clear"), effect.getName().toLowerCase().replaceAll("_", " "))
-                :ChatColor.GREEN + String.format(Locale.get("power.potiontick"), effect.getName().toLowerCase().replaceAll("_", " "), amplifier + 1);
+                I18n.format("power.potiontick.clear", effect.getName().toLowerCase().replaceAll("_", " "))
+                :I18n.format("power.potiontick", effect.getName().toLowerCase().replaceAll("_", " "), amplifier + 1);
     }
 }

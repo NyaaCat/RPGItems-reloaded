@@ -49,6 +49,7 @@ public class ItemManager {
     public static void load(RPGItems pl) {
         try {
             plugin = pl;
+            RPGItem.plugin = pl;
             FileInputStream in = null;
             YamlConfiguration itemStorage = null;
             try {
@@ -72,8 +73,15 @@ public class ItemManager {
                     e.printStackTrace();
                 }
             }
-            currentPos = itemStorage.getInt("pos", 0);
-            ConfigurationSection section = itemStorage.getConfigurationSection("items");
+            ConfigurationSection section;
+            try {
+                currentPos = itemStorage.getInt("pos", 0);
+                section = itemStorage.getConfigurationSection("items");
+            } catch (NullPointerException e){
+                plugin.getLogger().severe("Error loading items.yml. Is this your first time to load RPGItems?");
+                dump(e);
+                return;
+            }
             if (section == null)
                 return;
             for (Object obj : section.getValues(false).values()) {
@@ -95,22 +103,27 @@ public class ItemManager {
             }
         } catch (Exception e) {
             // Something went wrong
+            e.printStackTrace();
             plugin.getLogger().severe("Error loading items.yml. Creating backup");
-            File file = new File(plugin.getDataFolder(), "items.yml");
-            long time = System.currentTimeMillis();
-            File backup = new File(plugin.getDataFolder(), time + "-items.yml");
-            FileUtil.copy(file, backup);
-            File log = new File(plugin.getDataFolder(), time + "-log.txt");
-            PrintStream ps = null;
-            try {
-                ps = new PrintStream(log);
-                ps.printf("RPGItems (%s) ItemManager.load\r\n", plugin.getDescription().getVersion());
-                e.printStackTrace(ps);
-            } catch (FileNotFoundException e1) {
-                e1.printStackTrace();
-            } finally {
-                ps.close();
-            }
+            dump(e);
+        }
+    }
+
+    public static void dump(Exception e) {
+        File file = new File(plugin.getDataFolder(), "items.yml");
+        long time = System.currentTimeMillis();
+        File backup = new File(plugin.getDataFolder(), time + "-items.yml");
+        FileUtil.copy(file, backup);
+        File log = new File(plugin.getDataFolder(), time + "-log.txt");
+        PrintStream ps = null;
+        try {
+            ps = new PrintStream(log);
+            ps.printf("RPGItems (%s) ItemManager.load\r\n", plugin.getDescription().getVersion());
+            e.printStackTrace(ps);
+        } catch (FileNotFoundException e1) {
+            e1.printStackTrace();
+        } finally {
+            ps.close();
         }
     }
 

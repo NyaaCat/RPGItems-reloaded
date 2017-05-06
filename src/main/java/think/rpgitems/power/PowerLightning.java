@@ -22,7 +22,9 @@ import org.bukkit.entity.LivingEntity;
 import org.bukkit.entity.Player;
 import org.bukkit.entity.Projectile;
 import org.bukkit.inventory.ItemStack;
-import think.rpgitems.data.Locale;
+import think.rpgitems.I18n;
+import think.rpgitems.commands.ArgumentPriority;
+
 import think.rpgitems.power.types.PowerHit;
 import think.rpgitems.power.types.PowerProjectileHit;
 
@@ -38,6 +40,7 @@ public class PowerLightning extends Power implements PowerHit, PowerProjectileHi
     /**
      * Chance of triggering this power
      */
+    @ArgumentPriority
     public int chance = 20;
     /**
      * Cost of this power
@@ -66,7 +69,7 @@ public class PowerLightning extends Power implements PowerHit, PowerProjectileHi
 
     @Override
     public String displayText() {
-        return ChatColor.GREEN + String.format(Locale.get("power.lightning"), (int) ((1d / (double) chance) * 100d));
+        return I18n.format("power.lightning", (int) ((1d / (double) chance) * 100d));
     }
 
     @Override

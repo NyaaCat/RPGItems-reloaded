@@ -40,11 +40,14 @@ import org.bukkit.inventory.Recipe;
 import org.bukkit.inventory.ShapedRecipe;
 import org.bukkit.inventory.meta.ItemMeta;
 import org.bukkit.inventory.meta.LeatherArmorMeta;
+import org.librazy.nyaautils_lang_checker.LangKey;
+import org.librazy.nyaautils_lang_checker.LangKeyType;
 import think.rpgitems.Events;
+import think.rpgitems.I18n;
 import think.rpgitems.RPGItems;
 import think.rpgitems.data.Font;
-import think.rpgitems.data.Locale;
 import think.rpgitems.data.RPGMetadata;
+
 import think.rpgitems.power.Power;
 import think.rpgitems.power.PowerLoreFilter;
 import think.rpgitems.power.PowerUnbreakable;
@@ -60,7 +63,7 @@ import static org.bukkit.ChatColor.COLOR_CHAR;
 import static org.bukkit.ChatColor.getByChar;
 
 public class RPGItem {
-    public enum DamageMode{
+    @LangKey(type = LangKeyType.PREFIX) public enum DamageMode{
         FIXED,
         VANILLA,
         ADDITIONAL,
@@ -116,6 +119,7 @@ public class RPGItem {
     private boolean hasBar = false;
     private boolean forceBar = false;
     private int _loreMinLen = 0;
+    static RPGItems plugin;
 
     public RPGItem(String name, int id) {
         this.name = name;
@@ -797,9 +801,9 @@ public class RPGItem {
             }
             sender.sendMessage(lines.get(i));
         }
-        sender.sendMessage(String.format(Locale.get("message.print.durability"), maxDurability));
+        sender.sendMessage(I18n.format("message.print.durability", maxDurability));
         if (customItemModel) {
-            sender.sendMessage(String.format(Locale.get("message.print.customitemmodel"), item.getType().name() + ":" + item.getDurability()));
+            sender.sendMessage(I18n.format("message.print.customitemmodel", item.getType().name() + ":" + item.getDurability()));
         }
         if (!itemFlags.isEmpty()) {
             StringBuilder str = new StringBuilder();
@@ -809,7 +813,7 @@ public class RPGItem {
                 }
                 str.append(flag.name());
             }
-            sender.sendMessage(Locale.get("message.print.itemflags") + str);
+            sender.sendMessage(I18n.format("message.print.itemflags") + str);
         }
     }
 
@@ -918,7 +922,7 @@ public class RPGItem {
 
     public boolean checkPermission(Player p, boolean showWarn){
         if(getHasPermission() && !p.hasPermission(getPermission())){
-            if(showWarn)p.sendMessage(ChatColor.RED + Locale.get("message.error.permission"));
+            if(showWarn)p.sendMessage(I18n.format("message.error.permission"));
             return false;
         }
         return true;
@@ -1159,5 +1163,9 @@ public class RPGItem {
                 new BaseComponent[]{new TextComponent(ReflectionUtil.convertItemStackToJson(toItemStack()))});
         msg.setHoverEvent(hover);
         return msg;
+    }
+
+    public static RPGItems getPlugin(){
+        return plugin;
     }
 }

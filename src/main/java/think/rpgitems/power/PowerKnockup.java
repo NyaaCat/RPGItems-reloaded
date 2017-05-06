@@ -21,7 +21,9 @@ import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.entity.LivingEntity;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
-import think.rpgitems.data.Locale;
+import think.rpgitems.I18n;
+import think.rpgitems.commands.ArgumentPriority;
+
 import think.rpgitems.power.types.PowerHit;
 
 import java.util.Random;
@@ -38,10 +40,12 @@ public class PowerKnockup extends Power implements PowerHit {
     /**
      * Chance of triggering this power
      */
+    @ArgumentPriority
     public int chance = 20;
     /**
      * Power of knock up
      */
+    @ArgumentPriority(1)
     public double power = 2;
     /**
      * Cost of this power
@@ -61,7 +65,7 @@ public class PowerKnockup extends Power implements PowerHit {
 
     @Override
     public String displayText() {
-        return ChatColor.GREEN + String.format(Locale.get("power.knockup"), (int) ((1d / (double) chance) * 100d));
+        return I18n.format("power.knockup", (int) ((1d / (double) chance) * 100d));
     }
 
     @Override

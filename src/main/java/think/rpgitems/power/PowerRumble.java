@@ -29,8 +29,10 @@ import org.bukkit.inventory.ItemStack;
 import org.bukkit.metadata.FixedMetadataValue;
 import org.bukkit.scheduler.BukkitRunnable;
 import org.bukkit.util.Vector;
+import think.rpgitems.I18n;
 import think.rpgitems.RPGItems;
-import think.rpgitems.data.Locale;
+import think.rpgitems.commands.ArgumentPriority;
+
 import think.rpgitems.power.types.PowerRightClick;
 
 import java.util.Random;
@@ -48,14 +50,17 @@ public class PowerRumble extends Power implements PowerRightClick {
     /**
      * Cooldown time of this power
      */
+    @ArgumentPriority
     public long cooldownTime = 20;
     /**
      * Power of rumble
      */
+    @ArgumentPriority(1)
     public int power = 2;
     /**
      * Maximum distance of rumble
      */
+    @ArgumentPriority(2)
     public int distance = 15;
     /**
      * Cost of this power
@@ -147,7 +152,7 @@ public class PowerRumble extends Power implements PowerRightClick {
 
     @Override
     public String displayText() {
-        return ChatColor.GREEN + String.format(Locale.get("power.rumble"), (double) cooldownTime / 20d);
+        return I18n.format("power.rumble", (double) cooldownTime / 20d);
     }
 
 }

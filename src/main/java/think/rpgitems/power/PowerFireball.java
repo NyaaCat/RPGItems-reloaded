@@ -24,8 +24,9 @@ import org.bukkit.entity.Player;
 import org.bukkit.entity.SmallFireball;
 import org.bukkit.inventory.ItemStack;
 import think.rpgitems.Events;
-import think.rpgitems.data.Locale;
-import think.rpgitems.data.RPGValue;
+import think.rpgitems.I18n;
+import think.rpgitems.commands.ArgumentPriority;
+
 import think.rpgitems.power.types.PowerRightClick;
 
 /**
@@ -39,6 +40,7 @@ public class PowerFireball extends Power implements PowerRightClick {
     /**
      * Cooldown time of this power
      */
+    @ArgumentPriority
     public long cooldownTime = 20;
     /**
      * Cost of this power
@@ -56,7 +58,7 @@ public class PowerFireball extends Power implements PowerRightClick {
 
     @Override
     public String displayText() {
-        return ChatColor.GREEN + String.format(Locale.get("power.fireball"), (double) cooldownTime / 20d);
+        return I18n.format("power.fireball", (double) cooldownTime / 20d);
     }
 
     @Override

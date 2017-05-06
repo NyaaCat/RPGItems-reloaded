@@ -26,8 +26,10 @@ import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.potion.PotionEffect;
 import org.bukkit.potion.PotionEffectType;
-import think.rpgitems.data.Locale;
-import think.rpgitems.data.RPGValue;
+import think.rpgitems.I18n;
+import think.rpgitems.commands.ArgumentPriority;
+import think.rpgitems.commands.Setter;
+
 import think.rpgitems.power.types.PowerRightClick;
 
 /**
@@ -45,26 +47,33 @@ public class PowerAOE extends Power implements PowerRightClick {
     /**
      * Cooldown time of this power
      */
+    @ArgumentPriority
     public long cooldownTime = 20;
     /**
      * Amplifier of the potion
      */
+    @ArgumentPriority(value = 4, required = true)
     public int amplifier = 1;
     /**
      * Duration of the potion
      */
+    @ArgumentPriority(3)
     public int duration = 15;
     /**
      * Range of the potion
      */
+    @ArgumentPriority(1)
     public int range = 5;
     /**
      * Whether the potion will be apply to the user
      */
+    @ArgumentPriority(5)
     public boolean selfapplication = true;
     /**
      * Type of the potion
      */
+    @ArgumentPriority(2)
+    @Setter("setType")
     public PotionEffectType type;
     /**
      * Display text of this power. Will use default text in case of null
@@ -120,7 +129,10 @@ public class PowerAOE extends Power implements PowerRightClick {
 
     @Override
     public String displayText() {
-        return name != null ? name : ChatColor.GREEN + String.format(Locale.get("power.aoe"), type.getName(), amplifier, duration, selfapplication ? Locale.get("power.aoe.selfapplication.true") : Locale.get("power.aoe.selfapplication.false"), range, (double) cooldownTime / 20d);
+        return name != null ? name : I18n.format("power.aoe", type.getName(), amplifier, duration, selfapplication ? I18n.format("power.aoe.selfapplication.true") : I18n.format("power.aoe.selfapplication.false"), range, (double) cooldownTime / 20d);
     }
 
+    public void setType(String effect){
+        type = PotionEffectType.getByName(effect);
+    }
 }

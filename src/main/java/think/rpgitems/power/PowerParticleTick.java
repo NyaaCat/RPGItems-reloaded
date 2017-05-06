@@ -4,8 +4,10 @@ import org.bukkit.Effect;
 import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
-import think.rpgitems.data.Locale;
-import think.rpgitems.data.RPGValue;
+import think.rpgitems.I18n;
+import think.rpgitems.commands.ArgumentPriority;
+import think.rpgitems.commands.Validator;
+
 import think.rpgitems.power.types.PowerTick;
 
 /**
@@ -19,15 +21,33 @@ public class PowerParticleTick extends Power implements PowerTick {
     /**
      * Name of particle effect
      */
+    @ArgumentPriority(required = true)
+    @Validator("acceptableEffect")
     public String effect = "FLAME";
     /**
      * Interval of particle effect
      */
+    @ArgumentPriority(1)
     public int interval = 15;
     /**
      * Cost of this power
      */
     public int consumption = 0;
+
+    /**
+     * Acceptable effect boolean.
+     *
+     * @param effect the effect
+     * @return the boolean
+     */
+    public boolean acceptableEffect(String effect) {
+        try {
+            Effect eff = Effect.valueOf(effect.toUpperCase());
+            return eff.getType() == Effect.Type.VISUAL || eff.getType() == Effect.Type.PARTICLE;
+        } catch (IllegalArgumentException ex) {
+            return false;
+        }
+    }
 
     @Override
     public void init(ConfigurationSection s) {
@@ -50,7 +70,7 @@ public class PowerParticleTick extends Power implements PowerTick {
 
     @Override
     public String displayText() {
-        return Locale.get("power.particletick");
+        return I18n.format("power.particletick");
     }
 
     @Override

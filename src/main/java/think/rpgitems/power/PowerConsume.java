@@ -23,8 +23,11 @@ import org.bukkit.block.Block;
 import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
+import think.rpgitems.I18n;
 import think.rpgitems.RPGItems;
-import think.rpgitems.data.Locale;
+import think.rpgitems.commands.ArgumentPriority;
+import think.rpgitems.commands.BooleanChoice;
+
 import think.rpgitems.power.types.PowerLeftClick;
 import think.rpgitems.power.types.PowerRightClick;
 
@@ -39,10 +42,13 @@ public class PowerConsume extends Power implements PowerRightClick, PowerLeftCli
     /**
      * Cooldown time of this power
      */
+    @ArgumentPriority(1)
     public int cooldownTime = 0;
     /**
      * Whether triggers when right click.
      */
+    @ArgumentPriority
+    @BooleanChoice(name = "mouse",falseChoice = "left", trueChoice = "right")
     public boolean isRight = true;
     /**
      * Cost of this power
@@ -102,6 +108,6 @@ public class PowerConsume extends Power implements PowerRightClick, PowerLeftCli
 
     @Override
     public String displayText() {
-        return ChatColor.GREEN + Locale.get("power.consume");
+        return I18n.format("power.consume");
     }
 }

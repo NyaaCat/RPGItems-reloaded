@@ -27,8 +27,10 @@ import org.bukkit.inventory.ItemStack;
 import org.bukkit.material.MaterialData;
 import org.bukkit.scheduler.BukkitRunnable;
 import org.bukkit.util.Vector;
+import think.rpgitems.I18n;
 import think.rpgitems.RPGItems;
-import think.rpgitems.data.Locale;
+import think.rpgitems.commands.ArgumentPriority;
+
 import think.rpgitems.power.types.PowerRightClick;
 
 import java.util.ArrayList;
@@ -48,14 +50,17 @@ public class PowerFire extends Power implements PowerRightClick {
     /**
      * Cooldown time of this power
      */
+    @ArgumentPriority
     public long cooldownTime = 20;
     /**
      * Maximum distance
      */
+    @ArgumentPriority(1)
     public int distance = 15;
     /**
      * Duration of the fire, in ticks
      */
+    @ArgumentPriority(2)
     public int burnduration = 40;
     /**
      * Cost of this power
@@ -147,7 +152,7 @@ public class PowerFire extends Power implements PowerRightClick {
 
     @Override
     public String displayText() {
-        return ChatColor.GREEN + String.format(Locale.get("power.fire"), (double) cooldownTime / 20d);
+        return I18n.format("power.fire", (double) cooldownTime / 20d);
     }
 
     @Override

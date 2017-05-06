@@ -8,7 +8,9 @@ import org.bukkit.entity.LivingEntity;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.util.Vector;
-import think.rpgitems.data.Locale;
+import think.rpgitems.I18n;
+import think.rpgitems.commands.ArgumentPriority;
+
 import think.rpgitems.power.types.PowerTick;
 
 /**
@@ -22,10 +24,12 @@ public class PowerAttract extends Power implements PowerTick {
     /**
      * Maximum radius
      */
+    @ArgumentPriority
     public int radius = 5;
     /**
      * Maximum speed.
      */
+    @ArgumentPriority(value = 1,required = true)
     public double maxSpeed = 0.4D;
 
     @Override
@@ -47,7 +51,7 @@ public class PowerAttract extends Power implements PowerTick {
 
     @Override
     public String displayText() {
-        return ChatColor.RED + Locale.get("power.attract");
+        return I18n.format("power.attract");
     }
 
     @Override

@@ -232,7 +232,7 @@ message:
     change: 技能属性已设置
   drop:
     get: 从 '%s' 掉落 '%s' 的几率为 %.2f%%
-    set: 从 '%s' 掉落 '%s' 的几率设置为 %.2f%
+    set: 从 '%s' 掉落 '%s' 的几率设置为 %.2f%%
   command:
     usage: '指令用法: /%s (%s)'
     info: 更详细帮助信息请查看bukkitdev页面, 或输入/rpgitem help [关键词] 插件汉化by wolski from mcbbs.net

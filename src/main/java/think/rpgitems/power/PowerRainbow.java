@@ -24,8 +24,10 @@ import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.scheduler.BukkitRunnable;
 import org.bukkit.util.Vector;
+import think.rpgitems.I18n;
 import think.rpgitems.RPGItems;
-import think.rpgitems.data.Locale;
+import think.rpgitems.commands.ArgumentPriority;
+
 import think.rpgitems.power.types.PowerRightClick;
 
 import java.util.ArrayList;
@@ -44,14 +46,17 @@ public class PowerRainbow extends Power implements PowerRightClick {
     /**
      * Cooldown time of this power
      */
+    @ArgumentPriority
     public long cooldownTime = 20;
     /**
      * Count of blocks
      */
+    @ArgumentPriority(1)
     public int count = 5;
     /**
      * Whether launch fire instead of wool
      */
+    @ArgumentPriority(2)
     public boolean isFire = false;
     /**
      * Cost of this power
@@ -121,7 +126,7 @@ public class PowerRainbow extends Power implements PowerRightClick {
 
     @Override
     public String displayText() {
-        return ChatColor.GREEN + String.format(Locale.get("power.rainbow"), count, (double) cooldownTime / 20d);
+        return I18n.format("power.rainbow", count, (double) cooldownTime / 20d);
     }
 
     @Override

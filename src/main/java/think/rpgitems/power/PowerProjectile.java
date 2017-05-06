@@ -8,8 +8,13 @@ import org.bukkit.inventory.ItemStack;
 import org.bukkit.scheduler.BukkitRunnable;
 import org.bukkit.util.Vector;
 import think.rpgitems.Events;
+import think.rpgitems.I18n;
 import think.rpgitems.RPGItems;
-import think.rpgitems.data.Locale;
+import think.rpgitems.commands.AcceptedValue;
+import think.rpgitems.commands.ArgumentPriority;
+import think.rpgitems.commands.Setter;
+import think.rpgitems.commands.Validator;
+
 import think.rpgitems.power.types.PowerRightClick;
 
 import java.util.concurrent.ThreadLocalRandom;
@@ -38,10 +43,12 @@ public class PowerProjectile extends Power implements PowerRightClick {
     /**
      * Cooldown time of this power
      */
+    @ArgumentPriority
     public long cooldownTime = 20;
     /**
      * Whether launch projectiles in cone
      */
+    @ArgumentPriority(1)
     public boolean cone = false;
     /**
      * Whether the projectile have gravity
@@ -50,20 +57,36 @@ public class PowerProjectile extends Power implements PowerRightClick {
     /**
      * Range will projectiles spread, in degree
      */
+    @ArgumentPriority(3)
     public int range = 15;
     /**
      * Amount of projectiles
      */
+    @ArgumentPriority(4)
     public int amount = 5;
     /**
      * Speed of projectiles
      */
+    @ArgumentPriority(5)
     public double speed = 1;
     /**
      * Cost of this power
      */
     public int consumption = 1;
-
+    @AcceptedValue({
+            "skull",
+            "fireball",
+            "snowball",
+            "smallfireball",
+            "llamaspit",
+            "arrow"
+    })
+    /**
+     * Type of projectiles
+     */
+    @Validator("acceptableType")
+    @Setter("setType")
+    @ArgumentPriority(value = 2,required = true)
     private Class<? extends Projectile> projectileType = Snowball.class;
 
     @Override
@@ -145,7 +168,7 @@ public class PowerProjectile extends Power implements PowerRightClick {
      * @return If acceptable
      */
     public boolean acceptableType(String str) {
-        return str.equals("skull") || str.equals("fireball") || str.equals("snowball") || str.equals("smallfireball") || str.equals("llamaspit") || str.equals("arrow");
+        return !(cone && str.equalsIgnoreCase("fireball"));
     }
 
     @Override
@@ -155,13 +178,13 @@ public class PowerProjectile extends Power implements PowerRightClick {
 
     @Override
     public String displayText() {
-        return ChatColor.GREEN + String.format(Locale.get(cone ? "power.projectile.cone" : "power.projectile"), getType(), (double) cooldownTime / 20d);
+        return I18n.format(cone ? "power.projectile.cone" : "power.projectile", getType(), (double) cooldownTime / 20d);
     }
 
     @Override
     public void rightClick(Player player, ItemStack stack, Block clicked) {
-        if (!item.checkPermission(player, true))return;
-        if (!checkCooldown(player, cooldownTime, true))return;
+        if (!item.checkPermission(player, true)) return;
+        if (!checkCooldown(player, cooldownTime, true)) return;
         if (!item.consumeDurability(stack, consumption)) return;
         if (!cone) {
             Projectile projectile = player.launchProjectile(projectileType, player.getEyeLocation().getDirection().multiply(speed));

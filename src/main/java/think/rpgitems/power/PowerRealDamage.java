@@ -24,7 +24,9 @@ import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.potion.PotionEffect;
 import org.bukkit.potion.PotionEffectType;
-import think.rpgitems.data.Locale;
+import think.rpgitems.I18n;
+import think.rpgitems.commands.ArgumentPriority;
+
 import think.rpgitems.power.types.PowerHit;
 
 import static java.lang.Double.max;
@@ -42,6 +44,7 @@ public class PowerRealDamage extends Power implements PowerHit {
     /**
      * Cooldown time of this power
      */
+    @ArgumentPriority
     public long cooldownTime = 20;
     /**
      * Cost of this power
@@ -50,6 +53,7 @@ public class PowerRealDamage extends Power implements PowerHit {
     /**
      * Damage of this power
      */
+    @ArgumentPriority(value = 1,required = true)
     public double realDamage = 0;
     /**
      * Minimum damage to trigger
@@ -58,6 +62,7 @@ public class PowerRealDamage extends Power implements PowerHit {
 
     @Override
     public void hit(Player player, ItemStack stack, LivingEntity entity, double damage) {
+        if(damage < minDamage)return;
         if (!item.checkPermission(player, true)) return;
         if (!checkCooldown(player, cooldownTime, true)) return;
         if (!item.consumeDurability(stack, consumption)) return;
@@ -74,7 +79,7 @@ public class PowerRealDamage extends Power implements PowerHit {
 
     @Override
     public String displayText() {
-        return ChatColor.GREEN + String.format(Locale.get("power.realdamage"), realDamage);
+        return I18n.format("power.realdamage", realDamage);
     }
 
     @Override

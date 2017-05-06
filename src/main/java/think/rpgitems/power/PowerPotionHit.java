@@ -23,7 +23,10 @@ import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.potion.PotionEffect;
 import org.bukkit.potion.PotionEffectType;
-import think.rpgitems.data.Locale;
+import think.rpgitems.I18n;
+import think.rpgitems.commands.ArgumentPriority;
+import think.rpgitems.commands.Setter;
+
 import think.rpgitems.power.types.PowerHit;
 
 import java.util.Random;
@@ -39,18 +42,23 @@ public class PowerPotionHit extends Power implements PowerHit {
     /**
      * Chance of triggering this power
      */
+    @ArgumentPriority
     public int chance = 20;
     /**
      * Type of potion effect
      */
+    @Setter("setType")
+    @ArgumentPriority(value = 3,required = true)
     public PotionEffectType type = PotionEffectType.HARM;
     /**
      * Duration of potion effect
      */
+    @ArgumentPriority(1)
     public int duration = 20;
     /**
      * Amplifier of potion effect
      */
+    @ArgumentPriority(2)
     public int amplifier = 1;
     /**
      * Cost of this power
@@ -70,7 +78,7 @@ public class PowerPotionHit extends Power implements PowerHit {
 
     @Override
     public String displayText() {
-        return ChatColor.GREEN + String.format(Locale.get("power.potionhit"), (int) ((1d / (double) chance) * 100d), type.getName().toLowerCase().replace('_', ' '));
+        return I18n.format("power.potionhit", (int) ((1d / (double) chance) * 100d), type.getName().toLowerCase().replace('_', ' '));
     }
 
     @Override
@@ -96,4 +104,7 @@ public class PowerPotionHit extends Power implements PowerHit {
         s.set("consumption", consumption);
     }
 
+    public void setType(String effect){
+        type = PotionEffectType.getByName(effect);
+    }
 }

@@ -6,7 +6,8 @@ import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 
 @Retention(RetentionPolicy.RUNTIME)
-@Target(ElementType.METHOD)
-public @interface CommandGroup {
-    String value();
+@Target(ElementType.FIELD)
+public @interface ArgumentPriority {
+    int value() default 0;
+    boolean required() default false;
 }

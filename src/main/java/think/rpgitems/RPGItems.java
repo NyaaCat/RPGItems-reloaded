@@ -16,28 +16,21 @@
  */
 package think.rpgitems;
 
-import org.bukkit.ChatColor;
-import org.bukkit.command.Command;
-import org.bukkit.command.CommandSender;
 import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.plugin.java.JavaPlugin;
-import think.rpgitems.commands.Commands;
 import think.rpgitems.data.Font;
-import think.rpgitems.data.Locale;
 import think.rpgitems.item.ItemManager;
 import think.rpgitems.power.PowerTicker;
 import think.rpgitems.support.WorldGuard;
 
-import java.util.List;
 import java.util.logging.Logger;
 
 public class RPGItems extends JavaPlugin {
 
     public static Logger logger = Logger.getLogger("RPGItems");
     public static RPGItems plugin;
-    public static Updater updater;
-
-    public static RPGItems instance = null;
+    public Handler commandHandler;
+    public I18n i18n;
 
     @Override
     public void onLoad() {
@@ -49,50 +42,27 @@ public class RPGItems extends JavaPlugin {
 
     @Override
     public void onEnable() {
-        instance = this;
-        Locale.init(this);
+        plugin = this;
         WorldGuard.init(this);
         ConfigurationSection conf = getConfig();
-        if (conf.getBoolean("autoupdate", true)) {
-            startUpdater();
-        }
         if (conf.getBoolean("localeInv", false)) {
             Events.useLocaleInv = true;
         }
+        i18n = new I18n(this, "en_US");
+        commandHandler = new Handler(this, i18n);
+        getCommand("rpgitem").setExecutor(commandHandler);
+        getCommand("rpgitem").setTabCompleter(commandHandler);
+
         getServer().getPluginManager().registerEvents(new Events(), this);
         ItemManager.load(this);
-        Commands.register(new Handler());
-        Commands.register(new PowerHandler(instance, null));
         new PowerTicker().runTaskTimer(this, 0, 1);
-    }
-
-    public void startUpdater() {
-        getLogger().info("The updater is currently under maintenance,");
-        getServer().getConsoleSender().sendMessage("[RPGItems] Please check " + ChatColor.DARK_GRAY + ChatColor.ITALIC + ChatColor.BOLD + "www.github.com/NyaaCat/RPGitems-reloaded" + ChatColor.RESET + " for updates.");
     }
 
     @Override
     public void onDisable() {
         WorldGuard.unload();
+        getCommand("rpgitem").setExecutor(null);
+        getCommand("rpgitem").setTabCompleter(null);
         this.getServer().getScheduler().cancelAllTasks();
-    }
-
-    @Override
-    public boolean onCommand(CommandSender sender, Command cmd, String label, String[] args) {
-        StringBuilder out = new StringBuilder();
-        out.append(label).append(' ');
-        for (String arg : args)
-            out.append(arg).append(' ');
-        Commands.exec(sender, out.toString());
-        return true;
-    }
-
-    @Override
-    public List<String> onTabComplete(CommandSender sender, Command command, String alias, String[] args) {
-        StringBuilder out = new StringBuilder();
-        out.append(alias).append(' ');
-        for (String arg : args)
-            out.append(arg).append(' ');
-        return Commands.complete(sender, out.toString());
     }
 }

@@ -109,7 +109,6 @@ command:
     potionself: 'Adds the potionself power to @[Item]# with a cooldown of @[Cooldown]#.
       On right click it will apply @[Effect]# for @[Duration]# ticks at power @[Amplifier]#.
       Valid potion effects:'
-    give: Gives the item @[Item]# to the user of the command
     ice:
       full: Adds the ice power to @[Item]# with a cooldown of @[Cooldown]# ticks. The ice power will fire an ice block on right click which will then create a box of ice on impact, the ice will slowly remove itself
     pumpkin: Add the power to @[Item]#. When hit skeleton or zombie, will have a 1/@[Chance]# chance to make them wear pumpkin head. And the pumpkin will have a chance of @[DropChance]# to drop when the mobs die. @[DropChance]# must between 0 and 1.
@@ -164,9 +163,6 @@ command:
     permission: Enable/disable the permission restriction on the item @[Item]#. The permission restriction prevent a player to use an item if he doesn't have the permission @[Permission]#. The permission restriction can be toggled on or off with the @[Enabled]# option.
     recipe: Sets the @[Item]#'s recipe
     rescue: Adds the rescue power to @[Item]# with a cooldown of @[Cooldown]# ticks and a health trigger of @[HealthTrigger]#. The rescue power teleports the user to spawn (or to their bed when @[UseBed]# is active) when their health gets below the hp trigger while in combat with an enemy
-    worldguard: Toggles worldguard support.
-    reload: Reload the plugin
-    giveperms: Toggles give requiring permissions
     damage:
       set:
         range: Sets the item @[Item]#'s damage to do random damage between @[Min]# and @[Max]#
@@ -340,6 +336,7 @@ message:
     get: Item '%s' type is '%s'
   damage:
     set:
+      to: Item '%s' damage set to %d
       range: Item '%s' damage set to %d-%d
     get: Item '%s' damage is %d-%d
   item:
@@ -369,10 +366,12 @@ message:
     ok: Item '%s' removed
   wgforcerefresh:
     enable: Worldguard custom flag force refresh enabled
+    disable: Worldguard custom flag force refresh disabled
   power:
     ok: Power added
     unknown: Unknown power %s
     removed: Power %s removed
+    required: "Missing required argument: %s"
   toggleLore:
     show: Lore now been displayed
     hide: Lore now been hid
@@ -420,3 +419,19 @@ power:
   particletick: Spawn some particles when held
   potionhit: '%d%% chance to apply %s'
   arrow: Shoots an arrow. (%.1fs cooldown)
+manual:
+  give:
+    description: "Gives the item to the user of the command or a player"
+    usage: "/rpgitem give item [player]"
+
+  worldguard:
+    description: Toggles worldguard support.
+    usage: "/rpgitem worldguard"
+
+  reload:
+    description: Reload the plugin
+    usage: "/rpgitem reload"
+
+  giveperms:
+    description: Toggles give requiring permissions
+    usage: "/rpgitem giveperms"

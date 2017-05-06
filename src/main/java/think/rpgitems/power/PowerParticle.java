@@ -5,7 +5,10 @@ import org.bukkit.block.Block;
 import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
-import think.rpgitems.data.Locale;
+import think.rpgitems.I18n;
+import think.rpgitems.commands.ArgumentPriority;
+import think.rpgitems.commands.Validator;
+
 import think.rpgitems.power.types.PowerRightClick;
 
 /**
@@ -18,6 +21,8 @@ public class PowerParticle extends Power implements PowerRightClick {
     /**
      * Name of particle effect
      */
+    @ArgumentPriority(required = true)
+    @Validator("acceptableEffect")
     public String effect = "FLAME";
     /**
      * Cost of this power
@@ -30,7 +35,7 @@ public class PowerParticle extends Power implements PowerRightClick {
      * @param effect the effect
      * @return the boolean
      */
-    public static boolean acceptableEffect(String effect) {
+    public boolean acceptableEffect(String effect) {
         try {
             Effect eff = Effect.valueOf(effect.toUpperCase());
             return eff.getType() == Effect.Type.VISUAL || eff.getType() == Effect.Type.PARTICLE;
@@ -58,7 +63,7 @@ public class PowerParticle extends Power implements PowerRightClick {
 
     @Override
     public String displayText() {
-        return Locale.get("power.particle");
+        return I18n.format("power.particle");
     }
 
     @Override

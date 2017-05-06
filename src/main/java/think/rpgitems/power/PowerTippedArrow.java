@@ -26,8 +26,9 @@ import org.bukkit.inventory.ItemStack;
 import org.bukkit.potion.PotionEffect;
 import org.bukkit.potion.PotionEffectType;
 import think.rpgitems.Events;
-import think.rpgitems.data.Locale;
-import think.rpgitems.data.RPGValue;
+import think.rpgitems.I18n;
+import think.rpgitems.commands.ArgumentPriority;
+
 import think.rpgitems.power.types.PowerRightClick;
 
 /**
@@ -42,18 +43,22 @@ public class PowerTippedArrow extends Power implements PowerRightClick {
     /**
      * Cooldown time of this power
      */
+    @ArgumentPriority
     public long cooldownTime = 20;
     /**
      * Amplifier of potion effect
      */
+    @ArgumentPriority(3)
     public int amplifier = 1;
     /**
      * Duration of potion effect, in ticks
      */
+    @ArgumentPriority(2)
     public int duration = 15;
     /**
      * Type of potion effect
      */
+    @ArgumentPriority(1)
     public PotionEffectType type = null;
     /**
      * Cost of this power
@@ -74,7 +79,7 @@ public class PowerTippedArrow extends Power implements PowerRightClick {
 
     @Override
     public String displayText() {
-        return ChatColor.GREEN + String.format(Locale.get("power.tippedarrow"), type.getName().toLowerCase().replaceAll("_", " "), amplifier + 1, ((double) duration) / 20d, (double) cooldownTime / 20d);
+        return I18n.format("power.tippedarrow", type.getName().toLowerCase().replaceAll("_", " "), amplifier + 1, ((double) duration) / 20d, (double) cooldownTime / 20d);
     }
 
     @Override

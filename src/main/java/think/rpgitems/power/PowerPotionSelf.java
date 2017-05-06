@@ -23,8 +23,10 @@ import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.potion.PotionEffect;
 import org.bukkit.potion.PotionEffectType;
-import think.rpgitems.data.Locale;
-import think.rpgitems.data.RPGValue;
+import think.rpgitems.I18n;
+import think.rpgitems.commands.ArgumentPriority;
+import think.rpgitems.commands.Setter;
+
 import think.rpgitems.power.types.PowerRightClick;
 
 /**
@@ -39,14 +41,17 @@ public class PowerPotionSelf extends Power implements PowerRightClick {
     /**
      * Cooldown time of this power
      */
+    @ArgumentPriority
     public long cooldownTime = 20;
     /**
      * Amplifier of potion effect
      */
+    @ArgumentPriority(2)
     public int amplifier = 1;
     /**
      * Time of potion effect, in ticks
      */
+    @ArgumentPriority(1)
     public int duration = 20;
     /**
      * Cost of this power
@@ -55,6 +60,8 @@ public class PowerPotionSelf extends Power implements PowerRightClick {
     /**
      * Type of potion effect
      */
+    @Setter("setType")
+    @ArgumentPriority(value = 3,required = true)
     public PotionEffectType type = PotionEffectType.HEAL;
 
     @Override
@@ -90,7 +97,10 @@ public class PowerPotionSelf extends Power implements PowerRightClick {
 
     @Override
     public String displayText() {
-        return ChatColor.GREEN + String.format(Locale.get("power.potionself"), type.getName().toLowerCase().replaceAll("_", " "), amplifier + 1, ((double) duration) / 20d);
+        return I18n.format("power.potionself", type.getName().toLowerCase().replaceAll("_", " "), amplifier + 1, ((double) duration) / 20d);
     }
 
+    public void setType(String effect){
+        type = PotionEffectType.getByName(effect);
+    }
 }

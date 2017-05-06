@@ -1,5 +1,7 @@
 package think.rpgitems;
 
+import cat.nyaa.nyaacore.CommandReceiver;
+import cat.nyaa.nyaacore.LanguageRepository;
 import net.md_5.bungee.api.chat.BaseComponent;
 import net.md_5.bungee.api.chat.TextComponent;
 import org.bukkit.Bukkit;
@@ -15,11 +17,7 @@ import org.bukkit.inventory.ItemFlag;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.ItemMeta;
 import org.bukkit.inventory.meta.LeatherArmorMeta;
-import think.rpgitems.commands.CommandDocumentation;
-import think.rpgitems.commands.CommandGroup;
-import think.rpgitems.commands.CommandHandler;
-import think.rpgitems.commands.CommandString;
-import think.rpgitems.data.Locale;
+import think.rpgitems.commands.*;
 import think.rpgitems.item.ItemManager;
 import think.rpgitems.item.Quality;
 import think.rpgitems.item.RPGItem;
@@ -28,556 +26,543 @@ import think.rpgitems.support.WorldGuard;
 
 import java.lang.reflect.Field;
 import java.util.*;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
-public class Handler implements CommandHandler {
+import static think.rpgitems.power.Power.*;
 
+public class Handler extends CommandReceiver<RPGItems> {
+    private final RPGItems plugin;
 
-    @CommandString("rpgitem reload")
-    @CommandDocumentation("$command.rpgitem.reload")
-    @CommandGroup("reload")
-    public void reload(CommandSender sender) {
-        RPGItems.plugin.reloadConfig();
-        Locale.reload();
+    Handler(RPGItems plugin, LanguageRepository i18n) {
+        super(plugin, i18n);
+        this.plugin = plugin;
+    }
+
+    @SuppressWarnings("unchecked")
+    public static void setPower(Power power, String field, String value) throws BadCommandException {
+        Field f;
+        Class<? extends Power> cls = power.getClass();
+        try {
+            f = cls.getField(field);
+        } catch (NoSuchFieldException e) {
+            throw new BadCommandException("internal.error.invalid_command_arg", e);//TODO
+        }
+        setPower(power, f, value);
+    }
+
+    public static void setPower(Power power, Field field, String value) {
+        Class<? extends Power> cls = power.getClass();
+        Transformer tf = field.getAnnotation(Transformer.class);
+        if (tf != null) {
+            value = transformers.get(cls, tf.value()).apply(power, value);
+        }
+        BooleanChoice bc = field.getAnnotation(BooleanChoice.class);
+        if (bc != null) {
+            String trueChoice = bc.trueChoice();
+            String falseChoice = bc.falseChoice();
+            try {
+                if (value.equalsIgnoreCase(trueChoice) || value.equalsIgnoreCase(falseChoice)) {
+                    field.set(power, value.equalsIgnoreCase(trueChoice));
+                } else {
+                    //System.out.println("Not a boolean!");
+                    throw new BadCommandException("internal.error.invalid_command_arg");//TODO
+                }
+            } catch (Exception e) {
+                e.printStackTrace();
+                //System.out.println("Not a boolean!");
+            }
+            return;
+        }
+        List<String> rest;
+        AcceptedValue as = field.getAnnotation(AcceptedValue.class);
+        if (as != null) {
+            rest = Arrays.asList(as.value());
+            if (!rest.contains(value)) {
+                System.out.println("available:" + rest.stream().reduce(" ", (a, b) -> a + ", " + b));
+                return;
+            }
+        }
+        Validator ck = field.getAnnotation(Validator.class);
+        if (ck != null) {
+            Boolean b = validators.get(cls, ck.value()).apply(power, value);
+            if (!b) {
+                System.out.println("Not valid!");
+                return;
+            }
+        }
+        Setter st = field.getAnnotation(Setter.class);
+        if (st != null) {
+            setters.get(cls, st.value()).accept(power, value);
+        } else {
+            try {
+                if (field.getType() == int.class) {
+                    try {
+                        field.set(power, Integer.parseInt(value));
+                    } catch (NumberFormatException e) {
+                        System.out.println("Not a int!");
+                    }
+                } else if (field.getType() == long.class) {
+                    try {
+                        field.set(power, Long.parseLong(value));
+                    } catch (NumberFormatException e) {
+                        System.out.println("Not a long!");
+                    }
+                } else if (field.getType() == double.class) {
+                    try {
+                        field.set(power, Double.parseDouble(value));
+                    } catch (NumberFormatException e) {
+                        System.out.println("Not a double!");
+                    }
+                } else if (field.getType() == String.class) {
+                    field.set(power, value);
+                } else if (field.getType() == boolean.class) {
+                    if (value.equalsIgnoreCase("true") || value.equalsIgnoreCase("false")) {
+                        field.set(power, Boolean.valueOf(value));
+                    } else {
+                        System.out.println("Not a boolean!");
+                    }
+                } else if (field.getType().isEnum()) {
+                    try {
+                        field.set(power, Enum.valueOf((Class<Enum>) field.getType(), value));
+                    } catch (IllegalArgumentException e) {
+                        System.out.println("Not a enum!");
+                    }
+                } else {
+                    System.out.println("Not supported!");
+                }
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
+        }
+    }
+
+    @Override
+    public String getHelpPrefix() {
+        return "";
+    }
+
+    @SubCommand("reload")
+    public void reload(CommandSender sender, Arguments args) {
+        plugin.reloadConfig();
+        plugin.i18n.load();
         WorldGuard.reload();
         ItemManager.reload();
-        if (RPGItems.plugin.getConfig().getBoolean("autoupdate", true)) {
-            RPGItems.plugin.startUpdater();
-        }
-        if (RPGItems.plugin.getConfig().getBoolean("localeInv", false)) {
+        if (plugin.getConfig().getBoolean("localeInv", false)) {
             Events.useLocaleInv = true;
         }
         sender.sendMessage(ChatColor.GREEN + "[RPGItems] Reloaded RPGItems.");
     }
 
-    @CommandString("rpgitem list")
-    @CommandDocumentation("$command.rpgitem.list")
-    @CommandGroup("list")
-    public void listItems(CommandSender sender) {
-        sender.sendMessage(ChatColor.AQUA + "RPGItems:");
-        for (RPGItem item : ItemManager.itemByName.values()) {
-            if (sender instanceof Player) {
-                Player player = ((Player) sender).getPlayer();
-                BaseComponent msg = new TextComponent();
-                msg.addExtra(ChatColor.GREEN + item.getName() + " - " + ChatColor.RESET);
-                msg.addExtra(item.getComponent());
-                player.spigot().sendMessage(msg);
-            } else {
-                sender.sendMessage(ChatColor.GREEN + item.getName() + " - " + item.getDisplay());
-            }
-        }
-    }
-
-    @CommandString("rpgitem list $page:i[]")
-    @CommandDocumentation("$command.rpgitem.list.paged")
-    @CommandGroup("list")
-    public void listItems(CommandSender sender, int page) {
-        int index = 0;
+    @SubCommand("list")
+    public void listItems(CommandSender sender, Arguments args) {
         Collection<RPGItem> items = ItemManager.itemByName.values();
         int perPage = RPGItems.plugin.getConfig().getInt("itemperpage", 9);
-        sender.sendMessage(ChatColor.AQUA + "RPGItems: " + page + " / " + (int) Math.ceil(items.size() / (double) perPage));
-        for (RPGItem item : ItemManager.itemByName.values()) {
-            ++index;
-            if (index > (page - 1) * perPage && index <= page * perPage) {
-                if (sender instanceof Player) {
-                    Player player = ((Player) sender).getPlayer();
-                    BaseComponent msg = new TextComponent();
-                    msg.addExtra(ChatColor.GREEN + item.getName() + " - " + ChatColor.RESET);
-                    msg.addExtra(item.getComponent());
-                    player.spigot().sendMessage(msg);
-                } else {
-                    sender.sendMessage(ChatColor.GREEN + item.getName() + " - " + item.getDisplay());
-                }
-            }
-            if (index == page * perPage) return;
+        Stream<RPGItem> stream = ItemManager.itemByName.values().stream();
+        if (args.length() != 1) {
+            int page = args.nextInt();
+            stream = ItemManager.itemByName.values().stream().skip((page - 1) * perPage).limit(page);
+            sender.sendMessage(ChatColor.AQUA + "RPGItems: " + page + " / " + (int) Math.ceil(items.size() / (double) perPage));
         }
+
+        stream.forEach(item -> {
+                    if (sender instanceof Player) {
+                        Player player = ((Player) sender).getPlayer();
+                        BaseComponent msg = new TextComponent();
+                        msg.addExtra(ChatColor.GREEN + item.getName() + " - " + ChatColor.RESET);
+                        msg.addExtra(item.getComponent());
+                        player.spigot().sendMessage(msg);
+                    } else {
+                        sender.sendMessage(ChatColor.GREEN + item.getName() + " - " + item.getDisplay());
+                    }
+                }
+        );
     }
 
-    @CommandString("rpgitem option worldguard")
-    @CommandDocumentation("$command.rpgitem.worldguard")
-    @CommandGroup("option_worldguard")
-    public void toggleWorldGuard(CommandSender sender) {
+    @SubCommand("worldguard")
+    public void toggleWorldGuard(CommandSender sender, Arguments args) {
         if (!WorldGuard.isEnabled()) {
-            sender.sendMessage(ChatColor.RED + Locale.get("message.worldguard.error"));
+            sender.sendMessage(I18n.format("message.worldguard.error"));
             return;
         }
         if (WorldGuard.useWorldGuard) {
-            sender.sendMessage(ChatColor.AQUA + Locale.get("message.worldguard.disable"));
+            sender.sendMessage(I18n.format("message.worldguard.disable"));
         } else {
-            sender.sendMessage(ChatColor.AQUA + Locale.get("message.worldguard.enable"));
+            sender.sendMessage(I18n.format("message.worldguard.enable"));
         }
         WorldGuard.useWorldGuard = !WorldGuard.useWorldGuard;
         RPGItems.plugin.getConfig().set("support.worldguard", WorldGuard.useWorldGuard);
         RPGItems.plugin.saveConfig();
     }
 
-    @CommandString("rpgitem option wgcustomflag")
-    @CommandDocumentation("$command.rpgitem.wgcustomflag")
-    @CommandGroup("option_wgcustomflag")
-    public void toggleCustomFlag(CommandSender sender) {
+    @SubCommand("wgcustomflag")
+    public void toggleCustomFlag(CommandSender sender, Arguments args) {
         if (!WorldGuard.isEnabled()) {
-            sender.sendMessage(ChatColor.RED + Locale.get("message.worldguard.error"));
+            sender.sendMessage(I18n.format("message.worldguard.error"));
             return;
         }
         if (WorldGuard.useCustomFlag) {
-            sender.sendMessage(ChatColor.AQUA + Locale.get("message.wgcustomflag.disable"));
+            sender.sendMessage(I18n.format("message.wgcustomflag.disable"));
         } else {
-            sender.sendMessage(ChatColor.AQUA + Locale.get("message.wgcustomflag.enable"));
+            sender.sendMessage(I18n.format("message.wgcustomflag.enable"));
         }
         WorldGuard.useCustomFlag = !WorldGuard.useCustomFlag;
         RPGItems.plugin.getConfig().set("support.wgcustomflag", WorldGuard.useCustomFlag);
         RPGItems.plugin.saveConfig();
     }
 
-    @CommandString("rpgitem option wgforcerefreash")
-    @CommandDocumentation("$command.rpgitem.wgforcerefreash")
-    @CommandGroup("option_wgforcerefreash")
-    public void toggleForceRefreash(CommandSender sender) {
+    @SubCommand("wgforcerefreash")
+    public void toggleForceRefreash(CommandSender sender, Arguments args) {
         if (!WorldGuard.isEnabled()) {
-            sender.sendMessage(ChatColor.RED + Locale.get("message.worldguard.error"));
+            sender.sendMessage(I18n.format("message.worldguard.error"));
             return;
         }
         if (WorldGuard.forceRefresh) {
-            sender.sendMessage(ChatColor.AQUA + Locale.get("message.wgforcerefresh.disable"));
+            sender.sendMessage(I18n.format("message.wgforcerefresh.disable"));
         } else {
-            sender.sendMessage(ChatColor.AQUA + Locale.get("message.wgforcerefresh.enable"));
+            sender.sendMessage(I18n.format("message.wgforcerefresh.enable"));
         }
         WorldGuard.forceRefresh = !WorldGuard.forceRefresh;
         RPGItems.plugin.getConfig().set("support.wgforcerefresh", WorldGuard.forceRefresh);
         RPGItems.plugin.saveConfig();
     }
 
-    @CommandString("rpgitem $n[]")
-    @CommandDocumentation("$command.rpgitem.print")
-    @CommandGroup("item")
-    public void printItem(CommandSender sender, RPGItem item) {
+    @SubCommand("item")
+    public void printItem(CommandSender sender, Arguments args) {
+        RPGItem item = ItemManager.itemByName.get(args.next());
         item.print(sender);
     }
 
-    @CommandString("rpgitem $name:s[] create")
-    @CommandDocumentation("$command.rpgitem.create")
-    @CommandGroup("item")
-    public void createItem(CommandSender sender, String itemName) {
+    @SubCommand("create")
+    public void createItem(CommandSender sender, Arguments args) {
+        String itemName = args.next();
         if (ItemManager.newItem(itemName.toLowerCase()) != null) {
-            sender.sendMessage(String.format(ChatColor.GREEN + Locale.get("message.create.ok"), itemName));
+            sender.sendMessage(I18n.format("message.create.ok", itemName));
             ItemManager.save(RPGItems.plugin);
         } else {
-            sender.sendMessage(ChatColor.RED + Locale.get("message.create.fail"));
+            sender.sendMessage(I18n.format("message.create.fail"));
         }
     }
 
-    @CommandString("rpgitem option giveperms")
-    @CommandDocumentation("$command.rpgitem.giveperms")
-    @CommandGroup("option_giveperms")
-    public void givePerms(CommandSender sender) {
+    @SubCommand("giveperms")
+    public void givePerms(CommandSender sender, Arguments args) {
         RPGItems.plugin.getConfig().set("give-perms", !RPGItems.plugin.getConfig().getBoolean("give-perms", false));
         if (RPGItems.plugin.getConfig().getBoolean("give-perms", false)) {
-            sender.sendMessage(ChatColor.AQUA + Locale.get("message.giveperms.true"));
+            sender.sendMessage(I18n.format("message.giveperms.true"));
         } else {
-            sender.sendMessage(ChatColor.AQUA + Locale.get("message.giveperms.false"));
+            sender.sendMessage(I18n.format("message.giveperms.false"));
         }
         RPGItems.plugin.saveConfig();
     }
 
-    @CommandString(value = "rpgitem $n[] give", handlePermissions = true)
-    @CommandDocumentation("$command.rpgitem.give")
-    @CommandGroup("item_give")
-    public void giveItem(CommandSender sender, RPGItem item) {
-        if (sender instanceof Player) {
-            if ((!RPGItems.plugin.getConfig().getBoolean("give-perms", false) && sender.hasPermission("rpgitem")) || (RPGItems.plugin.getConfig().getBoolean("give-perms", false) && sender.hasPermission("rpgitem.give." + item.getName()))) {
-                item.give((Player) sender);
-                sender.sendMessage(ChatColor.AQUA + String.format(Locale.get("message.give.ok"), item.getDisplay()));
-            } else {
-                sender.sendMessage(ChatColor.RED + Locale.get("message.error.permission"));
-            }
-        } else {
-            sender.sendMessage(ChatColor.RED + Locale.get("message.give.console"));
-        }
-    }
-
-    @CommandString("rpgitem $n[] give $p[]")
-    @CommandDocumentation("$command.rpgitem.give.player")
-    @CommandGroup("item_give")
-    public void giveItemPlayer(CommandSender sender, RPGItem item, Player player) {
-        item.give(player);
-        sender.sendMessage(ChatColor.AQUA + String.format(Locale.get("message.give.to"), item.getDisplay() + ChatColor.AQUA, player.getName()));
-        player.sendMessage(ChatColor.AQUA + String.format(Locale.get("message.give.ok"), item.getDisplay()));
-    }
-
-    @CommandString("rpgitem $n[] give $p[] $count:i[]")
-    @CommandDocumentation("$command.rpgitem.give.player.count")
-    @CommandGroup("item_give")
-    public void giveItemPlayerCount(CommandSender sender, RPGItem item, Player player, int count) {
-        for (int i = 0; i < count; i++) {
-            item.give(player);
-        }
-    }
-
-    @CommandString("rpgitem $n[] remove")
-    @CommandDocumentation("$command.rpgitem.remove")
-    @CommandGroup("item_remove")
-    public void removeItem(CommandSender sender, RPGItem item) {
-        ItemManager.remove(item);
-        sender.sendMessage(ChatColor.AQUA + String.format(Locale.get("message.remove.ok"), item.getName()));
-        ItemManager.save(RPGItems.plugin);
-    }
-
-    @CommandString("rpgitem $n[] display")
-    @CommandDocumentation("$command.rpgitem.display")
-    @CommandGroup("item_display")
-    public void getItemDisplay(CommandSender sender, RPGItem item) {
-        sender.sendMessage(ChatColor.AQUA + String.format(Locale.get("message.display.get"), item.getName(), item.getDisplay()));
-    }
-
-    @CommandString("rpgitem $n[] display $display:s[]")
-    @CommandDocumentation("$command.rpgitem.display.set")
-    @CommandGroup("item_display")
-    public void setItemDisplay(CommandSender sender, RPGItem item, String display) {
-        item.setDisplay(display);
-        sender.sendMessage(ChatColor.AQUA + String.format(Locale.get("message.display.set"), item.getName(), item.getDisplay()));
-        ItemManager.save(RPGItems.plugin);
-    }
-
-    @CommandString("rpgitem $n[] quality")
-    @CommandDocumentation("$command.rpgitem.quality")
-    @CommandGroup("item_quality")
-    public void getItemQuality(CommandSender sender, RPGItem item) {
-        sender.sendMessage(ChatColor.AQUA + String.format(Locale.get("message.quality.get"), item.getName(), item.getQuality().toString().toLowerCase()));
-    }
-
-    @CommandString("rpgitem $n[] quality $e[think.rpgitems.item.Quality]")
-    @CommandDocumentation("$command.rpgitem.quality.set")
-    @CommandGroup("item_quality")
-    public void setItemQuality(CommandSender sender, RPGItem item, Quality quality) {
-        item.setQuality(quality);
-        sender.sendMessage(ChatColor.AQUA + String.format(Locale.get("message.quality.set"), item.getName(), item.getQuality().toString().toLowerCase()));
-        ItemManager.save(RPGItems.plugin);
-    }
-
-    @CommandString("rpgitem $n[] damage")
-    @CommandDocumentation("$command.rpgitem.damage")
-    @CommandGroup("item_damage")
-    public void getItemDamage(CommandSender sender, RPGItem item) {
-        sender.sendMessage(ChatColor.AQUA + String.format(Locale.get("message.damage.get"), item.getName(), item.getDamageMin(), item.getDamageMax()));
-    }
-
-    @CommandString("rpgitem $n[] damage $damage:i[]")
-    @CommandDocumentation("$command.rpgitem.damage.set")
-    @CommandGroup("item_damage")
-    public void setItemDamage(CommandSender sender, RPGItem item, int damage) {
-        if (damage > 32767) {
-            sender.sendMessage(ChatColor.RED + Locale.get("message.error.damagetolarge"));
-            return;
-        }
-        item.setDamage(damage, damage);
-        sender.sendMessage(ChatColor.AQUA + String.format(Locale.get("message.damage.set"), item.getName(), item.getDamageMin()));
-        ItemManager.save(RPGItems.plugin);
-    }
-
-    @CommandString("rpgitem $n[] damage $min:i[] $max:i[]")
-    @CommandDocumentation("$command.rpgitem.damage.set.range")
-    @CommandGroup("item_damage")
-    public void setItemDamage(CommandSender sender, RPGItem item, int min, int max) {
-        if (min > 32767 || max > 32767) {
-            sender.sendMessage(ChatColor.RED + Locale.get("message.error.damagetolarge"));
-            return;
-        }
-        item.setDamage(min, max);
-        sender.sendMessage(ChatColor.AQUA + String.format(Locale.get("message.damage.set.range"), item.getName(), item.getDamageMin(), item.getDamageMax()));
-        ItemManager.save(RPGItems.plugin);
-    }
-
-    @CommandString("rpgitem $n[] armour")
-    @CommandDocumentation("$command.rpgitem.armour")
-    @CommandGroup("item_armour")
-    public void getItemArmour(CommandSender sender, RPGItem item) {
-        sender.sendMessage(ChatColor.AQUA + String.format(Locale.get("message.armour.get"), item.getName(), item.getArmour()));
-    }
-
-    @CommandString("rpgitem $n[] armour $armour:i[0,100]")
-    @CommandDocumentation("$command.rpgitem.armour.set")
-    @CommandGroup("item_armour")
-    public void setItemArmour(CommandSender sender, RPGItem item, int armour) {
-        item.setArmour(armour);
-        sender.sendMessage(ChatColor.AQUA + String.format(Locale.get("message.armour.set"), item.getName(), item.getArmour()));
-        ItemManager.save(RPGItems.plugin);
-    }
-
-    @CommandString("rpgitem $n[] type")
-    @CommandDocumentation("$command.rpgitem.type")
-    @CommandGroup("item_type")
-    public void getItemType(CommandSender sender, RPGItem item) {
-        sender.sendMessage(ChatColor.AQUA + String.format(Locale.get("message.type.get"), item.getName(), item.getType()));
-    }
-
-    @CommandString("rpgitem $n[] type $type:s[]")
-    @CommandDocumentation("$command.rpgitem.type.set")
-    @CommandGroup("item_type")
-    public void setItemType(CommandSender sender, RPGItem item, String type) {
-        item.setType(type);
-        sender.sendMessage(ChatColor.AQUA + String.format(Locale.get("message.type.set"), item.getName(), item.getType()));
-        ItemManager.save(RPGItems.plugin);
-    }
-
-    @CommandString("rpgitem $n[] hand")
-    @CommandDocumentation("$command.rpgitem.hand")
-    @CommandGroup("item_hand")
-    public void getItemHand(CommandSender sender, RPGItem item) {
-        sender.sendMessage(ChatColor.AQUA + String.format(Locale.get("message.hand.get"), item.getName(), item.getHand()));
-    }
-
-    @CommandString("rpgitem $n[] hand $hand:s[]")
-    @CommandDocumentation("$command.rpgitem.hand.set")
-    @CommandGroup("item_hand")
-    public void setItemHand(CommandSender sender, RPGItem item, String hand) {
-        item.setHand(hand);
-        sender.sendMessage(ChatColor.AQUA + String.format(Locale.get("message.hand.set"), item.getName(), item.getHand()));
-        ItemManager.save(RPGItems.plugin);
-    }
-
-    @CommandString("rpgitem $n[] lore")
-    @CommandDocumentation("$command.rpgitem.lore")
-    @CommandGroup("item_lore")
-    public void getItemLore(CommandSender sender, RPGItem item) {
-        sender.sendMessage(ChatColor.RED + Locale.get("message.deprecation.lore"));
-        sender.sendMessage(ChatColor.AQUA + String.format(Locale.get("message.lore.get"), item.getName(), item.getLore()));
-    }
-
-    @CommandString("rpgitem $n[] lore $lore:s[]")
-    @CommandDocumentation("$command.rpgitem.lore.set")
-    @CommandGroup("item_lore")
-    public void setItemLore(CommandSender sender, RPGItem item, String lore) {
-        sender.sendMessage(ChatColor.RED + Locale.get("message.deprecation.lore"));
-        item.setLore(lore);
-        sender.sendMessage(ChatColor.AQUA + String.format(Locale.get("message.lore.set"), item.getName(), item.getLore()));
-        ItemManager.save(RPGItems.plugin);
-    }
-
-    @CommandString("rpgitem $n[] item")
-    @CommandDocumentation("$command.rpgitem.item")
-    @CommandGroup("item_item")
-    public void getItemItem(CommandSender sender, RPGItem item) {
-        sender.sendMessage(ChatColor.AQUA + String.format(Locale.get("message.item.get"), item.getName(), item.getItem().toString()));
-    }
-
-    @CommandString("rpgitem $n[] item $m[]")
-    @CommandDocumentation("$command.rpgitem.item.set")
-    @CommandGroup("item_item")
-    public void setItemItem(CommandSender sender, RPGItem item, Material material) {
-        item.setItem(material);
-        sender.sendMessage(ChatColor.AQUA + String.format(Locale.get("message.item.set"), item.getName(), item.getItem(), item.getDataValue()));
-        ItemManager.save(RPGItems.plugin);
-    }
-
-    @CommandString("rpgitem $n[] item $m[] $data:i[]")
-    @CommandDocumentation("$command.rpgitem.item.set.data")
-    @CommandGroup("item_item")
-    public void setItemItem(CommandSender sender, RPGItem item, Material material, int data) {
-        item.setItem(material, false);
-        ItemMeta meta = item.getLocaleMeta();
-        if (meta instanceof LeatherArmorMeta) {
-            ((LeatherArmorMeta) meta).setColor(Color.fromRGB(data));
-        } else {
-            item.setDataValue((short) data);
-        }
-        item.updateLocaleMeta(meta);
-        item.rebuild();
-        sender.sendMessage(ChatColor.AQUA + String.format(Locale.get("message.item.set"), item.getName(), item.getItem(), item.getDataValue()));
-        ItemManager.save(RPGItems.plugin);
-    }
-
-    @CommandString("rpgitem $n[] item $m[] hex $hexcolour:s[]")
-    @CommandDocumentation("$command.rpgitem.item.set.data.hex")
-    @CommandGroup("item_item")
-    public void setItemItem(CommandSender sender, RPGItem item, Material material, String hexColour) {
-        int dam;
-        try {
-            dam = Integer.parseInt(hexColour, 16);
-        } catch (NumberFormatException e) {
-            sender.sendMessage(ChatColor.RED + "Failed to parse " + hexColour);
-            return;
-        }
-        item.setItem(material, true);
-        ItemMeta meta = item.getLocaleMeta();
-        if (meta instanceof LeatherArmorMeta) {
-            ((LeatherArmorMeta) meta).setColor(Color.fromRGB(dam));
-        } else {
-            item.setDataValue((short) dam);
-        }
-        item.updateLocaleMeta(meta);
-        item.rebuild();
-        sender.sendMessage(ChatColor.AQUA + String.format(Locale.get("message.item.set"), item.getName(), item.getItem(), item.getDataValue()));
-        ItemManager.save(RPGItems.plugin);
-    }
-
-    @SuppressWarnings("deprecation")
-    @CommandString("rpgitem $n[] item $itemid:i[]")
-    @CommandDocumentation("$command.rpgitem.item.set.id")
-    @CommandGroup("item_item")
-    public void setItemItem(CommandSender sender, RPGItem item, int id) {
-        Material mat = Material.getMaterial(id);
-        if (mat == null) {
-            sender.sendMessage(ChatColor.RED + "Cannot find item");
-            return;
-        }
-        item.setItem(mat);
-        sender.sendMessage(ChatColor.AQUA + String.format(Locale.get("message.item.set"), item.getName(), item.getItem(), item.getDataValue()));
-        ItemManager.save(RPGItems.plugin);
-    }
-
-    @SuppressWarnings("deprecation")
-    @CommandString("rpgitem $n[] item $itemid:i[] $data:i[]")
-    @CommandDocumentation("$command.rpgitem.item.set.id.data")
-    @CommandGroup("item_item")
-    public void setItemItem(CommandSender sender, RPGItem item, int id, int data) {
-        Material mat = Material.getMaterial(id);
-        if (mat == null) {
-            sender.sendMessage(ChatColor.RED + Locale.get("message.item.cant.find"));
-            return;
-        }
-        item.setItem(mat, true);
-        ItemMeta meta = item.toItemStack().getItemMeta();
-        if (meta instanceof LeatherArmorMeta) {
-            ((LeatherArmorMeta) meta).setColor(Color.fromRGB(data));
-        } else {
-            item.setDataValue((short) data);
-        }
-        item.updateLocaleMeta(meta);
-        item.rebuild();
-        sender.sendMessage(ChatColor.AQUA + String.format(Locale.get("message.item.set"), item.getName(), item.getItem(), item.getDataValue()));
-        ItemManager.save(RPGItems.plugin);
-    }
-
-    @CommandString("rpgitem $n[] enchantment")
-    @CommandDocumentation("$command.rpgitem.enchentment.list")
-    @CommandGroup("item_enchantment")
-    public void itemListEnchant(CommandSender sender, RPGItem item) {
-        if (item.enchantMap != null) {
-            sender.sendMessage(ChatColor.GREEN + String.format(Locale.get("message.enchantment.listing"), item.getName()));
-            if (item.enchantMap.size() == 0) {
-                sender.sendMessage(ChatColor.GREEN + Locale.get("message.enchantment.empty_ench"));
-            } else {
-                for (Enchantment ench : item.enchantMap.keySet()) {
-                    sender.sendMessage(ChatColor.GREEN + String.format(Locale.get("message.enchantment.item"),
-                            ench.getName(), item.enchantMap.get(ench)));
-                }
-            }
-        } else {
-            sender.sendMessage(ChatColor.RED + Locale.get("message.enchantment.no_ench"));
-        }
-    }
-
-    @CommandString("rpgitem $n[] enchantment clone")
-    @CommandDocumentation("$command.rpgitem.enchentment.clone")
-    @CommandGroup("item_enchantment")
-    public void itemCloneEnchant(CommandSender sender, RPGItem item) {
-        if (sender instanceof Player) {
-            ItemStack hand = ((Player) sender).getInventory().getItemInMainHand();
-            if (hand == null || hand.getType() == Material.AIR) {
-                sender.sendMessage(ChatColor.RED + Locale.get("message.enchantment.fail"));
-            } else {
-                if (hand.hasItemMeta()) {
-                    item.enchantMap = new HashMap<>(hand.getItemMeta().getEnchants());
+    @SubCommand("give")
+    public void giveItem(CommandSender sender, Arguments args) {
+        RPGItem item = ItemManager.itemByName.get(args.next());
+        if (args.length() == 2) {
+            if (sender instanceof Player) {
+                if ((!RPGItems.plugin.getConfig().getBoolean("give-perms", false) && sender.hasPermission("rpgitem")) || (RPGItems.plugin.getConfig().getBoolean("give-perms", false) && sender.hasPermission("rpgitem.give." + item.getName()))) {
+                    item.give((Player) sender);
+                    sender.sendMessage(I18n.format("message.give.ok", item.getDisplay()));
                 } else {
-                    item.enchantMap = Collections.emptyMap();
+                    sender.sendMessage(I18n.format("message.error.permission"));
                 }
-                item.rebuild();
-                ItemManager.save(RPGItems.plugin);
-                sender.sendMessage(ChatColor.GREEN + Locale.get("message.enchantment.success"));
+            } else {
+                sender.sendMessage(I18n.format("message.give.console"));
             }
         } else {
-            sender.sendMessage(ChatColor.RED + Locale.get("message.enchantment.fail"));
+            Player player = args.nextPlayer();
+            int count;
+            try {
+                count = args.nextInt();
+            } catch (BadCommandException e) {
+                count = 1;
+            }
+            for (int i = 0; i < count; i++) {
+                item.give(player);
+            }
+
+            sender.sendMessage(I18n.format("message.give.to", item.getDisplay() + ChatColor.AQUA, player.getName()));
+            player.sendMessage(I18n.format("message.give.ok", item.getDisplay()));
         }
     }
 
-    @CommandString("rpgitem $n[] enchantment clear")
-    @CommandDocumentation("$command.rpgitem.enchentment.clear")
-    @CommandGroup("item_enchantment")
-    public void itemClearEnchant(CommandSender sender, RPGItem item) {
-        item.enchantMap = null;
-        item.rebuild();
+    @SubCommand("remove")
+    public void removeItem(CommandSender sender, Arguments args) {
+        RPGItem item = ItemManager.itemByName.get(args.next());
+        ItemManager.remove(item);
+        sender.sendMessage(I18n.format("message.remove.ok", item.getName()));
         ItemManager.save(RPGItems.plugin);
-        sender.sendMessage(ChatColor.GREEN + Locale.get("message.enchantment.removed"));
     }
 
-    @CommandString("rpgitem $n[] removepower $power:s[]")
-    @CommandDocumentation("$command.rpgitem.removepower")
-    @CommandGroup("item_removepower")
-    public void itemRemovePower(CommandSender sender, RPGItem item, String power) {
-        if (item.removePower(power)) {
-            Power.powerUsage.remove(power);
-            sender.sendMessage(ChatColor.GREEN + String.format(Locale.get("message.power.removed"), power));
+    @SubCommand("display")
+    public void itemDisplay(CommandSender sender, Arguments args) {
+        RPGItem item = ItemManager.itemByName.get(args.next());
+        String value = args.next();
+        if (value != null) {
+            item.setDisplay(value);
+            sender.sendMessage(I18n.format("message.display.set", item.getName(), item.getDisplay()));
             ItemManager.save(RPGItems.plugin);
         } else {
-            sender.sendMessage(ChatColor.RED + String.format(Locale.get("message.power.unknown"), power));
+            sender.sendMessage(I18n.format("message.display.get", item.getName(), item.getDisplay()));
         }
     }
 
-    @CommandString("rpgitem $n[] description add $descriptionline:s[]")
-    @CommandDocumentation("$command.rpgitem.description.add")
-    @CommandGroup("item_description")
-    public void itemAddDescription(CommandSender sender, RPGItem item, String line) {
-        item.addDescription(ChatColor.WHITE + line);
-        sender.sendMessage(ChatColor.AQUA + Locale.get("message.description.ok"));
-        ItemManager.save(RPGItems.plugin);
-    }
-
-    @CommandString("rpgitem $n[] description set $lineno:i[] $descriptionline:s[]")
-    @CommandDocumentation("$command.rpgitem.description.set")
-    @CommandGroup("item_description")
-    public void itemSetDescription(CommandSender sender, RPGItem item, int lineNo, String line) {
-        if (lineNo < 0 || lineNo >= item.description.size()) {
-            sender.sendMessage(ChatColor.RED + String.format(Locale.get("message.description.out.of.range"), lineNo));
-            return;
+    @SubCommand("quality")
+    public void itemQuality(CommandSender sender, Arguments args) {
+        RPGItem item = ItemManager.itemByName.get(args.next());
+        try {
+            Quality quality = args.nextEnum(Quality.class);
+            item.setQuality(quality);
+            sender.sendMessage(I18n.format("message.quality.set", item.getName(), item.getQuality().toString().toLowerCase()));
+            ItemManager.save(RPGItems.plugin);
+        } catch (BadCommandException e) {
+            sender.sendMessage(I18n.format("message.quality.get", item.getName(), item.getQuality().toString().toLowerCase()));
         }
-        item.description.set(lineNo, ChatColor.translateAlternateColorCodes('&', ChatColor.WHITE + line));
-        item.rebuild();
-        sender.sendMessage(ChatColor.AQUA + Locale.get("message.description.change"));
-        ItemManager.save(RPGItems.plugin);
     }
 
-    @CommandString("rpgitem $n[] description remove $lineno:i[]")
-    @CommandDocumentation("$command.rpgitem.description.remove")
-    @CommandGroup("item_description")
-    public void itemRemoveDescription(CommandSender sender, RPGItem item, int lineNo) {
-        if (lineNo < 0 || lineNo >= item.description.size()) {
-            sender.sendMessage(ChatColor.RED + String.format(Locale.get("message.description.out.of.range"), lineNo));
-            return;
+    @SubCommand("damage")
+    public void itemDamage(CommandSender sender, Arguments args) {
+        RPGItem item = ItemManager.itemByName.get(args.next());
+        try {
+            int damageMin = args.nextInt();
+            int damageMax;
+            if (damageMin > 32767) {
+                sender.sendMessage(I18n.format("message.error.damagetolarge"));
+                return;
+            }
+            try {
+                damageMax = args.nextInt();
+            } catch (BadCommandException e) {
+                damageMax = damageMin;
+            }
+            item.setDamage(damageMin, damageMax);
+            if (damageMin != damageMax) {
+                msg(sender, "message.damage.set.range", item.getName(), item.getDamageMin(), item.getDamageMax());
+            } else {
+                msg(sender, "message.damage.set.to", item.getName(), item.getDamageMin());
+            }
+            ItemManager.save(RPGItems.plugin);
+        } catch (BadCommandException e) {
+            sender.sendMessage(I18n.format("message.damage.get", item.getName(), item.getDamageMin(), item.getDamageMax()));
         }
-        item.description.remove(lineNo);
-        item.rebuild();
-        sender.sendMessage(ChatColor.AQUA + Locale.get("message.description.remove"));
-        ItemManager.save(RPGItems.plugin);
     }
 
-    @CommandString("rpgitem $n[] worldguard")
-    @CommandDocumentation("$command.rpgitem.item.worldguard")
-    @CommandGroup("item_worldguard")
-    public void itemToggleWorldGuard(CommandSender sender, RPGItem item) {
+    @SubCommand("armour")
+    public void itemArmour(CommandSender sender, Arguments args) {
+        RPGItem item = ItemManager.itemByName.get(args.next());
+        try {
+            int armour = args.nextInt();
+            item.setArmour(armour);
+            sender.sendMessage(I18n.format("message.armour.set", item.getName(), item.getArmour()));
+            ItemManager.save(RPGItems.plugin);
+        } catch (BadCommandException e) {
+            sender.sendMessage(I18n.format("message.armour.get", item.getName(), item.getArmour()));
+        }
+    }
+
+    @SubCommand("type")
+    public void itemType(CommandSender sender, Arguments args) {
+        RPGItem item = ItemManager.itemByName.get(args.next());
+        String type = args.next();
+        if (type != null) {
+            item.setType(type);
+            sender.sendMessage(I18n.format("message.type.set", item.getName(), item.getType()));
+            ItemManager.save(RPGItems.plugin);
+        } else {
+            sender.sendMessage(I18n.format("message.type.get", item.getName(), item.getType()));
+        }
+    }
+
+    @SubCommand("hand")
+    public void itemHand(CommandSender sender, Arguments args) {
+        RPGItem item = ItemManager.itemByName.get(args.next());
+        String type = args.next();
+        if (type != null) {
+            item.setHand(type);
+            sender.sendMessage(I18n.format("message.hand.set", item.getName(), item.getType()));
+            ItemManager.save(RPGItems.plugin);
+        } else {
+            sender.sendMessage(I18n.format("message.hand.get", item.getName(), item.getType()));
+        }
+    }
+
+    @SuppressWarnings("deprecation")
+    @SubCommand("item")
+    public void itemItem(CommandSender sender, Arguments args) {
+        RPGItem item = ItemManager.itemByName.get(args.next());
+        if (args.length() == 2) {
+            sender.sendMessage(I18n.format("message.item.get", item.getName(), item.getItem().toString()));
+        } else if (args.length() >= 3) {
+            Material material;
+            try {
+                material = Material.getMaterial(args.nextInt());
+                material.getData();
+            } catch (Exception e) {
+                material = args.nextEnum(Material.class);
+            }
+            item.setItem(material, false);
+            if (args.length() == 4) {
+                int dam;
+                try {
+                    dam = args.nextInt();
+                } catch (Exception e) {
+                    String hexColour = "";
+                    try {
+                        hexColour = args.nextString();
+                        dam = Integer.parseInt(hexColour, 16);
+                    } catch (NumberFormatException e2) {
+                        sender.sendMessage(ChatColor.RED + "Failed to parse " + hexColour);
+                        return;
+                    }
+                }
+                ItemMeta meta = item.getLocaleMeta();
+                if (meta instanceof LeatherArmorMeta) {
+                    ((LeatherArmorMeta) meta).setColor(Color.fromRGB(dam));
+                } else {
+                    item.setDataValue((short) dam);
+                }
+                item.updateLocaleMeta(meta);
+            }
+            item.rebuild();
+            sender.sendMessage(I18n.format("message.item.set", item.getName(), item.getItem(), item.getDataValue()));
+            ItemManager.save(RPGItems.plugin);
+        }
+    }
+
+    @SubCommand("enchantment")
+    public void itemListEnchant(CommandSender sender, Arguments args) {
+        RPGItem item = ItemManager.itemByName.get(args.next());
+        if (args.length() == 2) {
+            if (item.enchantMap != null) {
+                sender.sendMessage(I18n.format("message.enchantment.listing", item.getName()));
+                if (item.enchantMap.size() == 0) {
+                    sender.sendMessage(I18n.format("message.enchantment.empty_ench"));
+                } else {
+                    for (Enchantment ench : item.enchantMap.keySet()) {
+                        sender.sendMessage(I18n.format("message.enchantment.item",
+                                ench.getName(), item.enchantMap.get(ench)));
+                    }
+                }
+            } else {
+                sender.sendMessage(I18n.format("message.enchantment.no_ench"));
+            }
+        }
+        String command = args.next();
+        switch (command) {
+            case "clone": {
+                if (sender instanceof Player) {
+                    ItemStack hand = ((Player) sender).getInventory().getItemInMainHand();
+                    if (hand == null || hand.getType() == Material.AIR) {
+                        sender.sendMessage(I18n.format("message.enchantment.fail"));
+                    } else {
+                        if (hand.hasItemMeta()) {
+                            item.enchantMap = new HashMap<>(hand.getItemMeta().getEnchants());
+                        } else {
+                            item.enchantMap = Collections.emptyMap();
+                        }
+                        item.rebuild();
+                        ItemManager.save(RPGItems.plugin);
+                        sender.sendMessage(I18n.format("message.enchantment.success"));
+                    }
+                } else {
+                    sender.sendMessage(I18n.format("message.enchantment.fail"));
+                }
+            }
+            break;
+            case "clear": {
+                item.enchantMap = null;
+                item.rebuild();
+                ItemManager.save(RPGItems.plugin);
+                sender.sendMessage(I18n.format("message.enchantment.removed"));
+            }
+            break;
+            default:
+                break;//TODO
+        }
+    }
+
+    @SubCommand("removepower")
+    public void itemRemovePower(CommandSender sender, Arguments args) {
+        RPGItem item = ItemManager.itemByName.get(args.next());
+        String power = args.next();
+        if (item.removePower(power)) {
+            Power.powerUsage.remove(power);
+            sender.sendMessage(I18n.format("message.power.removed", power));
+            ItemManager.save(RPGItems.plugin);
+        } else {
+            sender.sendMessage(I18n.format("message.power.unknown", power));
+        }
+    }
+
+    @SubCommand("description")
+    public void itemAddDescription(CommandSender sender, Arguments args) {
+        RPGItem item = ItemManager.itemByName.get(args.next());
+        String command = args.next();
+        switch (command) {
+            case "add": {
+                String line = args.next();
+                item.addDescription(ChatColor.WHITE + line);
+                sender.sendMessage(I18n.format("message.description.ok"));
+                ItemManager.save(RPGItems.plugin);
+            }
+            break;
+            case "set": {
+                int lineNo = args.nextInt();
+                String line = args.next();
+                if (lineNo < 0 || lineNo >= item.description.size()) {
+                    sender.sendMessage(I18n.format("message.description.out.of.range", lineNo));
+                    return;
+                }
+                item.description.set(lineNo, ChatColor.translateAlternateColorCodes('&', ChatColor.WHITE + line));
+                item.rebuild();
+                sender.sendMessage(I18n.format("message.description.change"));
+                ItemManager.save(RPGItems.plugin);
+            }
+            break;
+            case "remove": {
+                int lineNo = args.nextInt();
+                if (lineNo < 0 || lineNo >= item.description.size()) {
+                    sender.sendMessage(I18n.format("message.description.out.of.range", lineNo));
+                    return;
+                }
+                item.description.remove(lineNo);
+                item.rebuild();
+                sender.sendMessage(I18n.format("message.description.remove"));
+                ItemManager.save(RPGItems.plugin);
+            }
+            break;
+            default:
+                break;//TODO
+        }
+    }
+
+    @SubCommand("worldguard")
+    public void itemToggleWorldGuard(CommandSender sender, Arguments args) {
+        RPGItem item = ItemManager.itemByName.get(args.next());
         if (!WorldGuard.isEnabled()) {
-            sender.sendMessage(ChatColor.AQUA + Locale.get("message.worldguard.error"));
+            sender.sendMessage(I18n.format("message.worldguard.error"));
             return;
         }
         item.ignoreWorldGuard = !item.ignoreWorldGuard;
         if (item.ignoreWorldGuard) {
-            sender.sendMessage(ChatColor.AQUA + Locale.get("message.worldguard.override.active"));
+            sender.sendMessage(I18n.format("message.worldguard.override.active"));
         } else {
-            sender.sendMessage(ChatColor.AQUA + Locale.get("message.worldguard.override.disabled"));
+            sender.sendMessage(I18n.format("message.worldguard.override.disabled"));
         }
     }
 
-    @CommandString("rpgitem $n[] removerecipe")
-    @CommandDocumentation("$command.rpgitem.removerecipe")
-    @CommandGroup("item_recipe")
-    public void itemRemoveRecipe(CommandSender sender, RPGItem item) {
+    @SubCommand("removerecipe")
+    public void itemRemoveRecipe(CommandSender sender, Arguments args) {
+        RPGItem item = ItemManager.itemByName.get(args.next());
         item.hasRecipe = false;
         item.resetRecipe(true);
-        sender.sendMessage(ChatColor.AQUA + Locale.get("message.recipe.removed"));
+        sender.sendMessage(I18n.format("message.recipe.removed"));
     }
 
-    @CommandString("rpgitem $n[] recipe $chance:i[]")
-    @CommandDocumentation("$command.rpgitem.recipe")
-    @CommandGroup("item_recipe")
-    public void itemSetRecipe(CommandSender sender, RPGItem item, int chance) {
+    @SubCommand("recipe")
+    public void itemSetRecipe(CommandSender sender, Arguments args) {
+        RPGItem item = ItemManager.itemByName.get(args.next());
+        int chance = args.nextInt();
         if (sender instanceof Player) {
             Player player = (Player) sender;
             String title = "RPGItems - " + item.getDisplay();
@@ -588,12 +573,12 @@ public class Handler implements CommandHandler {
             if (item.hasRecipe) {
                 ItemStack blank = new ItemStack(Material.THIN_GLASS);
                 ItemMeta meta = blank.getItemMeta();
-                meta.setDisplayName(ChatColor.RED + Locale.get("message.recipe.1"));
+                meta.setDisplayName(I18n.format("message.recipe.1"));
                 ArrayList<String> lore = new ArrayList<>();
-                lore.add(ChatColor.WHITE + Locale.get("message.recipe.2"));
-                lore.add(ChatColor.WHITE + Locale.get("message.recipe.3"));
-                lore.add(ChatColor.WHITE + Locale.get("message.recipe.4"));
-                lore.add(ChatColor.WHITE + Locale.get("message.recipe.5"));
+                lore.add(ChatColor.WHITE + I18n.format("message.recipe.2"));
+                lore.add(ChatColor.WHITE + I18n.format("message.recipe.3"));
+                lore.add(ChatColor.WHITE + I18n.format("message.recipe.4"));
+                lore.add(ChatColor.WHITE + I18n.format("message.recipe.5"));
                 meta.setLore(lore);
                 blank.setItemMeta(meta);
                 for (int i = 0; i < 27; i++) {
@@ -614,49 +599,49 @@ public class Handler implements CommandHandler {
             player.openInventory(recipeInventory);
             Events.recipeWindows.put(player.getName(), item.getID());
         } else {
-            sender.sendMessage(ChatColor.RED + Locale.get("message.error.only.player"));
+            sender.sendMessage(I18n.format("message.error.only.player"));
         }
     }
 
-    @CommandString("rpgitem $n[] drop $e[org.bukkit.entity.EntityType]")
-    @CommandDocumentation("$command.rpgitem.drop")
-    @CommandGroup("item_drop")
-    public void getItemDropChance(CommandSender sender, RPGItem item, EntityType type) {
-        sender.sendMessage(String.format(ChatColor.AQUA + Locale.get("message.drop.get"), item.getDisplay() + ChatColor.AQUA, type.toString().toLowerCase(), item.dropChances.get(type.toString())));
-    }
-
-    @CommandString("rpgitem $n[] drop $e[org.bukkit.entity.EntityType] $chance:f[]")
-    @CommandDocumentation("$command.rpgitem.drop.set")
-    @CommandGroup("item_drop")
-    public void setItemDropChance(CommandSender sender, RPGItem item, EntityType type, double chance) {
-        chance = Math.min(chance, 100.0);
-        String typeS = type.toString();
-        if (chance > 0) {
-            item.dropChances.put(typeS, chance);
-            if (!Events.drops.containsKey(typeS)) {
-                Events.drops.put(typeS, new HashSet<>());
-            }
-            Set<Integer> set = Events.drops.get(typeS);
-            set.add(item.getID());
+    @SubCommand("drop")
+    public void getItemDropChance(CommandSender sender, Arguments args) {
+        RPGItem item = ItemManager.itemByName.get(args.next());
+        EntityType type = args.nextEnum(EntityType.class);
+        if (args.length() == 2) {
+            sender.sendMessage(I18n.format("message.drop.get", item.getDisplay() + ChatColor.AQUA, type.toString().toLowerCase(), item.dropChances.get(type.toString())));
         } else {
-            item.dropChances.remove(typeS);
-            if (Events.drops.containsKey(typeS)) {
+            double chance = args.nextDouble();
+            chance = Math.min(chance, 100.0);
+            String typeS = type.toString();
+            if (chance > 0) {
+                item.dropChances.put(typeS, chance);
+                if (!Events.drops.containsKey(typeS)) {
+                    Events.drops.put(typeS, new HashSet<>());
+                }
                 Set<Integer> set = Events.drops.get(typeS);
-                set.remove(item.getID());
+                set.add(item.getID());
+            } else {
+                item.dropChances.remove(typeS);
+                if (Events.drops.containsKey(typeS)) {
+                    Set<Integer> set = Events.drops.get(typeS);
+                    set.remove(item.getID());
+                }
             }
+            ItemManager.save(RPGItems.plugin);
+            msg(sender, "message.drop.set", item.getDisplay() , typeS.toLowerCase(), item.dropChances.get(typeS));
         }
-        ItemManager.save(RPGItems.plugin);
-        sender.sendMessage(String.format(ChatColor.AQUA + Locale.get("message.drop.set"), item.getDisplay() + ChatColor.AQUA, typeS.toLowerCase(), item.dropChances.get(typeS)));
     }
 
-    @CommandString("rpgitem $n[] get $power:s[] $nth:i[] $property:s[]")
-    @CommandDocumentation("$command.rpgitem.power_property_get")
-    @CommandGroup("item_power_property_g")
-    public void getItemPowerProperty(CommandSender sender, RPGItem item, String power, int nth, String property) {
+    @SubCommand("get")
+    public void getItemPowerProperty(CommandSender sender, Arguments args) {
+        RPGItem item = ItemManager.itemByName.get(args.next());
+        String power = args.next();
+        int nth = args.nextInt();
+        String property = args.next();
         int i = nth;
         Class p = Power.powers.get(power);
         if (p == null) {
-            sender.sendMessage(String.format(Locale.get("message.power.unknown"), power));
+            msg(sender, "message.power.unknown", power);
             return;
         }
         for (Power pow : item.powers) {
@@ -664,271 +649,202 @@ public class Handler implements CommandHandler {
                 try {
                     Field pro = p.getField(property);
                     String val = pro.get(pow).toString();
-                    sender.sendMessage(String.format(Locale.get("message.power_property.get"), nth, power, property, val));
+                    sender.sendMessage(I18n.format("message.power_property.get", nth, power, property, val));
                 } catch (Exception e) {
-                    sender.sendMessage(ChatColor.RED + String.format(Locale.get("message.power_property.property_notfound"), property));
+                    sender.sendMessage(I18n.format("message.power_property.property_notfound", property));
                     return;
                 }
                 return;
             }
         }
-        sender.sendMessage(ChatColor.RED + Locale.get("message.power_property.power_notfound"));
+        sender.sendMessage(I18n.format("message.power_property.power_notfound"));
     }
 
-    @CommandString("rpgitem $n[] set $power:s[] $nth:i[] $property:s[] $val:s[]")
-    @CommandDocumentation("$command.rpgitem.power_property_set")
-    @CommandGroup("item_power_property_s")
-    public void setItemPowerProperty(CommandSender sender, RPGItem item, String power, int nth, String property, String val) {
+    @SubCommand("set")
+    public void setItemPowerProperty(CommandSender sender, Arguments args) {
+        RPGItem item = ItemManager.itemByName.get(args.next());
+        String power = args.next();
+        int nth = args.nextInt();
+        String property = args.next();
+        String val = args.next();
         Class p = Power.powers.get(power);
         if (p == null) {
-            sender.sendMessage(String.format(Locale.get("message.power.unknown"), power));
+            msg(sender, "message.power.unknown", power);
             return;
         }
         Optional<Power> op = item.powers.stream().filter(pwr -> pwr.getClass().equals(p)).skip(nth - 1).findFirst();
-        if (op.isPresent()){
+        if (op.isPresent()) {
             Power pow = op.get();
-            try {
-                Field pro = p.getField(property);
-                if (pro.getType() == int.class || pro.getType() == long.class) {
-                    try {
-                        pro.set(pow, Integer.parseInt(val));
-                    } catch (NumberFormatException e) {
-                        sender.sendMessage(ChatColor.RED + String.format(Locale.get("message.power_property.not_vaild_int"), val));
-                        return;
-                    }
-                } else if (pro.getType() == double.class) {
-                    try {
-                        pro.set(pow, Double.parseDouble(val));
-                    } catch (NumberFormatException e) {
-                        sender.sendMessage(ChatColor.RED + String.format(Locale.get("message.power_property.not_vaild_int"), val));
-                        return;
-                    }
-                } else if (pro.getType() == String.class) {
-                    pro.set(pow, val);
-                } else if (pro.getType() == boolean.class) {
-                    if (val.equalsIgnoreCase("true") || val.equalsIgnoreCase("false")) {
-                        pro.set(pow, val.equalsIgnoreCase("true"));
-                    } else {
-                        sender.sendMessage(ChatColor.RED + String.format(Locale.get("message.power_property.not_vaild_bool"), val));
-                        return;
-                    }
-                } else {
-                    sender.sendMessage(ChatColor.RED + String.format(Locale.get("message.power_property.property_unsupporttype"), property));
-                }
-            } catch (Exception e) {
-                sender.sendMessage(ChatColor.RED + String.format(Locale.get("message.power_property.property_notfound"), property));
-                return;
-            }
+            setPower(pow, property, val);
         } else {
-            sender.sendMessage(ChatColor.RED + Locale.get("message.power_property.power_notfound"));
+            sender.sendMessage(I18n.format("message.power_property.power_notfound"));
             return;
         }
         item.rebuild();
         ItemManager.save(RPGItems.plugin);
-        sender.sendMessage(Locale.get("message.power_property.change"));
+        sender.sendMessage(I18n.format("message.power_property.change"));
     }
 
-    @CommandString("rpgitem $n[] cost breaking")
-    @CommandDocumentation("$command.rpgitem.cost.break.get")
-    @CommandGroup("item_cost_break")
-    public void getItemBlockBreakingCost(CommandSender sender, RPGItem item) {
-        sender.sendMessage(String.format(Locale.get("message.cost.get"), item.blockBreakingCost));
-    }
-
-    @CommandString("rpgitem $n[] cost hitting")
-    @CommandDocumentation("$command.rpgitem.cost.hitting.get")
-    @CommandGroup("item_cost_hitting")
-    public void getItemHittingConst(CommandSender sender, RPGItem item) {
-        sender.sendMessage(String.format(Locale.get("message.cost.get"), item.hittingCost));
-    }
-
-    @CommandString("rpgitem $n[] cost hit")
-    @CommandDocumentation("$command.rpgitem.cost.hit.get")
-    @CommandGroup("item_cost_hit")
-    public void getItemHitConst(CommandSender sender, RPGItem item) {
-        sender.sendMessage(String.format(Locale.get("message.cost.get"), item.hitCost));
-    }
-
-    @CommandString("rpgitem $n[] cost breaking $durability:i[]")
-    @CommandDocumentation("$command.rpgitem.cost.breaking")
-    @CommandGroup("item_cost_hitting")
-    public void setItemBreakingConst(CommandSender sender, RPGItem item, int newValue) {
-        item.blockBreakingCost = newValue;
-        ItemManager.save(RPGItems.plugin);
-        sender.sendMessage(Locale.get("message.cost.change"));
-    }
-
-    @CommandString("rpgitem $n[] cost hitting $durability:i[]")
-    @CommandDocumentation("$command.rpgitem.cost.hitting")
-    @CommandGroup("item_cost_hitting")
-    public void setItemHittingConst(CommandSender sender, RPGItem item, int newValue) {
-        item.hittingCost = newValue;
-        ItemManager.save(RPGItems.plugin);
-        sender.sendMessage(Locale.get("message.cost.change"));
-    }
-
-    @CommandString("rpgitem $n[] cost hit $durability:i[]")
-    @CommandDocumentation("$command.rpgitem.cost.hit")
-    @CommandGroup("item_cost_hit")
-    public void setItemHitConst(CommandSender sender, RPGItem item, int newValue) {
-        item.hitCost = newValue;
-        ItemManager.save(RPGItems.plugin);
-        sender.sendMessage(Locale.get("message.cost.change"));
-    }
-
-    @CommandString("rpgitem $n[] cost hit toggle")
-    @CommandDocumentation("$command.rpgitem.cost.hit_toggle")
-    @CommandGroup("item_cost_hit_toggle")
-    public void toggleHitCost(CommandSender sender, RPGItem item) {
-        item.hitCostByDamage = !item.hitCostByDamage;
-        ItemManager.save(RPGItems.plugin);
-        sender.sendMessage(Locale.get("message.cost.hit_toggle." + (item.hitCostByDamage ? "enable" : "disable")));
-    }
-
-    @CommandString("rpgitem $n[] durability $durability:i[]")
-    @CommandDocumentation("$command.rpgitem.durability")
-    @CommandGroup("item_durability")
-    public void setItemDurability(CommandSender sender, RPGItem item, int newValue) {
-        item.setMaxDurability(newValue);
-        ItemManager.save(RPGItems.plugin);
-        sender.sendMessage(Locale.get("message.durability.change"));
-    }
-
-    @CommandString("rpgitem $n[] durability infinite")
-    @CommandDocumentation("$command.rpgitem.durability.infinite")
-    @CommandGroup("item_durability")
-    public void setItemDurabilityInfinite(CommandSender sender, RPGItem item) {
-        item.setMaxDurability(-1);
-        ItemManager.save(RPGItems.plugin);
-        sender.sendMessage(Locale.get("message.durability.change"));
-    }
-
-    @CommandString("rpgitem $n[] durability togglebar")
-    @CommandDocumentation("$command.rpgitem.durability.togglebar")
-    @CommandGroup("item_durability")
-    public void toggleItemDurabilityBar(CommandSender sender, RPGItem item) {
-        item.toggleBar();
-        ItemManager.save(RPGItems.plugin);
-        sender.sendMessage(Locale.get("message.durability.toggle"));
-    }
-
-    @CommandString("rpgitem $n[] defaultdurability $durability:i[]")
-    @CommandDocumentation("$command.rpgitem.durability.default")
-    @CommandGroup("item_defaultdurability")
-    public void setItemDefaultDurability(CommandSender sender, RPGItem item, int newValue) {
-        item.setDefaultDurability(newValue);
-        ItemManager.save(RPGItems.plugin);
-        sender.sendMessage(Locale.get("message.durability.change"));
-    }
-
-    @CommandString("rpgitem $n[] durabilitybound $min:i[] $max:i[]")
-    @CommandDocumentation("$command.rpgitem.durability.bound")
-    @CommandGroup("item_durabilitybound")
-    public void setItemDurabilityBound(CommandSender sender, RPGItem item, int min, int max) {
-        item.setDurabilityBound(min, max);
-        ItemManager.save(RPGItems.plugin);
-        sender.sendMessage(Locale.get("message.durability.change"));
-    }
-
-    @CommandString("rpgitem $n[] durabilityinfo")
-    @CommandDocumentation("$command.rpgitem.durability.info")
-    @CommandGroup("item_durability")
-    public void getItemDurability(CommandSender sender, RPGItem item) {
-        sender.sendMessage(String.format(Locale.get("message.durability.info"), item.getMaxDurability(), item.defaultDurability, item.durabilityLowerBound, item.durabilityUpperBound));
-    }
-
-    @CommandString("rpgitem $n[] permission $permission:s[] $haspermission:s[]")
-    @CommandDocumentation("$command.rpgitem.permission")
-    @CommandGroup("item_permission")
-    public void setPermission(CommandSender sender, RPGItem item, String permission, String haspermission) {
-        boolean enabled = false;
-        if (haspermission.equalsIgnoreCase("true")) {
-            enabled = true;
-        } else if (haspermission.equalsIgnoreCase("false")) {
-            enabled = false;
+    @SubCommand("cost")
+    public void itemCost(CommandSender sender, Arguments args) {
+        RPGItem item = ItemManager.itemByName.get(args.next());
+        String type = args.next();
+        if (args.length() == 3) {
+            switch (type) {
+                case "breaking":
+                    sender.sendMessage(I18n.format("message.cost.get", item.blockBreakingCost));
+                    break;
+                case "hitting":
+                    sender.sendMessage(I18n.format("message.cost.get", item.hittingCost));
+                    break;
+                case "hit":
+                    sender.sendMessage(I18n.format("message.cost.get", item.hitCost));
+                    break;
+                case "toggle":
+                    item.hitCostByDamage = !item.hitCostByDamage;
+                    ItemManager.save(RPGItems.plugin);
+                    sender.sendMessage(I18n.format("message.cost.hit_toggle." + (item.hitCostByDamage ? "enable" : "disable")));
+                    break;
+            }
         } else {
-            sender.sendMessage(Locale.get("message.permission.booleanerror"));
+            int newValue = args.nextInt();
+            switch (type) {
+                case "breaking":
+                    item.blockBreakingCost = newValue;
+                    ItemManager.save(RPGItems.plugin);
+                    sender.sendMessage(I18n.format("message.cost.change"));
+                    break;
+                case "hitting":
+                    item.hitCost = newValue;
+                    ItemManager.save(RPGItems.plugin);
+                    sender.sendMessage(I18n.format("message.cost.change"));
+                    break;
+                case "hit":
+                    item.hitCost = newValue;
+                    ItemManager.save(RPGItems.plugin);
+                    sender.sendMessage(I18n.format("message.cost.change"));
+                    break;
+            }
         }
+    }
+
+    @SubCommand("durability")
+    public void itemDurability(CommandSender sender, Arguments args) {
+        RPGItem item = ItemManager.itemByName.get(args.next());
+        if (args.length() == 2) {
+            sender.sendMessage(I18n.format("message.durability.info", item.getMaxDurability(), item.defaultDurability, item.durabilityLowerBound, item.durabilityUpperBound));
+            return;
+        }
+        try {
+            int durability = args.nextInt();
+            item.setMaxDurability(durability);
+            ItemManager.save(RPGItems.plugin);
+            sender.sendMessage(I18n.format("message.durability.change"));
+        } catch (Exception e) {
+            switch (args.next()) {
+                case "infinite": {
+                    item.setMaxDurability(-1);
+                    ItemManager.save(RPGItems.plugin);
+                    sender.sendMessage(I18n.format("message.durability.change"));
+                }
+                break;
+                case "togglebar": {
+                    item.toggleBar();
+                    ItemManager.save(RPGItems.plugin);
+                    sender.sendMessage(I18n.format("message.durability.toggle"));
+                }
+                break;
+                case "default": {
+                    int durability = args.nextInt();
+                    item.setDefaultDurability(durability);
+                    ItemManager.save(RPGItems.plugin);
+                    sender.sendMessage(I18n.format("message.durability.change"));
+                }
+                break;
+                case "bound": {
+                    int min = args.nextInt();
+                    int max = args.nextInt();
+                    item.setDurabilityBound(min, max);
+                    ItemManager.save(RPGItems.plugin);
+                    sender.sendMessage(I18n.format("message.durability.change"));
+                }
+                break;
+            }
+        }
+    }
+
+    @SubCommand("permission")
+    public void setPermission(CommandSender sender, Arguments args) {
+        RPGItem item = ItemManager.itemByName.get(args.next());
+        String permission = args.next();
+        boolean enabled = args.nextBoolean();
         item.setPermission(permission);
         item.setHaspermission(enabled);
         ItemManager.save(RPGItems.plugin);
-        sender.sendMessage(Locale.get("message.permission.success"));
+        sender.sendMessage(I18n.format("message.permission.success"));
     }
 
-    @CommandString("rpgitem $n[] togglePowerLore")
-    @CommandDocumentation("$command.rpgitem.togglePowerLore")
-    @CommandGroup("item_togglePowerLore")
-    public void togglePowerLore(CommandSender sender, RPGItem item) {
+    @SubCommand("togglePowerLore")
+    public void togglePowerLore(CommandSender sender, Arguments args) {
+        RPGItem item = ItemManager.itemByName.get(args.next());
         item.showPowerLore = !item.showPowerLore;
         item.rebuild();
         ItemManager.save(RPGItems.plugin);
-        sender.sendMessage(Locale.get("message.toggleLore." + (item.showPowerLore ? "show" : "hide")));
+        sender.sendMessage(I18n.format("message.toggleLore." + (item.showPowerLore ? "show" : "hide")));
     }
 
-    @CommandString("rpgitem $n[] toggleArmorLore")
-    @CommandDocumentation("$command.rpgitem.toggleArmorLore")
-    @CommandGroup("item_toggleArmorLore")
-    public void toggleArmorLore(CommandSender sender, RPGItem item) {
+    @SubCommand("toggleArmorLore")
+    public void toggleArmorLore(CommandSender sender, Arguments args) {
+        RPGItem item = ItemManager.itemByName.get(args.next());
         item.showArmourLore = !item.showArmourLore;
         item.rebuild();
         ItemManager.save(RPGItems.plugin);
-        sender.sendMessage(Locale.get("message.toggleLore." + (item.showArmourLore ? "show" : "hide")));
+        sender.sendMessage(I18n.format("message.toggleLore." + (item.showArmourLore ? "show" : "hide")));
     }
 
-    @CommandString("rpgitem $n[] additemflag $e[think.rpgitems.item.ItemFlag]")
-    @CommandDocumentation("$command.rpgitem.itemflag.add+ItemFlag")
-    @CommandGroup("item_itemflag")
-    public void addItemFlag(CommandSender sender, RPGItem item, think.rpgitems.item.ItemFlag flag) {
+    @SubCommand("additemflag")
+    public void addItemFlag(CommandSender sender, Arguments args) {
+        RPGItem item = ItemManager.itemByName.get(args.next());
+        think.rpgitems.item.ItemFlag flag = args.nextEnum(think.rpgitems.item.ItemFlag.class);
         item.itemFlags.add(ItemFlag.valueOf(flag.name()));
         item.rebuild();
         ItemManager.save(RPGItems.plugin);
-        sender.sendMessage(String.format(ChatColor.GREEN + Locale.get("message.itemflag.add"), flag.name()));
+        sender.sendMessage(I18n.format("message.itemflag.add", flag.name()));
     }
 
-    @CommandString("rpgitem $n[] removeitemflag $e[think.rpgitems.item.ItemFlag]")
-    @CommandDocumentation("$command.rpgitem.itemflag.remove+ItemFlag")
-    @CommandGroup("item_itemflag")
-    public void removeItemFlag(CommandSender sender, RPGItem item, think.rpgitems.item.ItemFlag flag) {
+    @SubCommand("removeitemflag")
+    public void removeItemFlag(CommandSender sender, Arguments args) {
+        RPGItem item = ItemManager.itemByName.get(args.next());
+        think.rpgitems.item.ItemFlag flag = args.nextEnum(think.rpgitems.item.ItemFlag.class);
         ItemFlag itemFlag = ItemFlag.valueOf(flag.name());
         if (item.itemFlags.contains(itemFlag)) {
             item.itemFlags.remove(itemFlag);
             item.rebuild();
             ItemManager.save(RPGItems.plugin);
-            sender.sendMessage(String.format(ChatColor.AQUA + Locale.get("message.itemflag.remove"), flag.name()));
+            sender.sendMessage(I18n.format("message.itemflag.remove", flag.name()));
         } else {
-            sender.sendMessage(String.format(ChatColor.RED + Locale.get("message.itemflag.notfound"), flag.name()));
+            sender.sendMessage(I18n.format("message.itemflag.notfound", flag.name()));
         }
     }
 
-    @CommandString("rpgitem $n[] customItemModel")
-    @CommandDocumentation("$command.rpgitem.customitemmodel")
-    @CommandGroup("item_customitemmodel")
-    public void toggleCustomItemModel(CommandSender sender, RPGItem item) {
+    @SubCommand("customItemModel")
+    public void toggleCustomItemModel(CommandSender sender, Arguments args) {
+        RPGItem item = ItemManager.itemByName.get(args.next());
         item.customItemModel = !item.customItemModel;
         item.rebuild();
         ItemManager.save(RPGItems.plugin);
-        sender.sendMessage(Locale.get("message.customitemmodel." + (item.customItemModel ? "enable" : "disable")));
+        sender.sendMessage(I18n.format("message.customitemmodel." + (item.customItemModel ? "enable" : "disable")));
     }
 
-    @CommandString("rpgitem version")
-    @CommandDocumentation("$command.rpgitem.version")
-    @CommandGroup("version")
-    public void printVersion(CommandSender sender) {
-        sender.sendMessage(String.format(Locale.get("message.version").replace("\\n", "\n"), RPGItems.plugin.getDescription().getVersion()));
+    @SubCommand("version")
+    public void printVersion(CommandSender sender, Arguments args) {
+        sender.sendMessage(I18n.format("message.version", RPGItems.plugin.getDescription().getVersion()));
     }
 
-    @CommandString("rpgitem debug")
-    @CommandDocumentation("$command.rpgitem.debug")
-    @CommandGroup("debug")
-    public void debug(CommandSender sender) {
-        sender.sendMessage("Not available in releases");
-    }
-
-    @CommandString("rpgitem $n[] damageMode")
-    @CommandDocumentation("$command.rpgitem.toggleDamageMode")
-    @CommandGroup("item_toggleDamageMode")
-    public void toggleItemDamageMode(CommandSender sender, RPGItem item) {
-        switch (item.damageMode){
+    @SubCommand("damageMode")
+    public void toggleItemDamageMode(CommandSender sender, Arguments args) {
+        RPGItem item = ItemManager.itemByName.get(args.next());
+        switch (item.damageMode) {
             case FIXED:
                 item.damageMode = RPGItem.DamageMode.VANILLA;
                 break;
@@ -941,6 +857,70 @@ public class Handler implements CommandHandler {
         }
         item.rebuild();
         ItemManager.save(RPGItems.plugin);
-        sender.sendMessage(String.format(Locale.get("message.damagemode." + item.damageMode.name().toLowerCase()), item.getName()));
+        msg(sender, "message.damagemode." + item.damageMode.name(), item.getName());
+    }
+
+    @SubCommand("power")
+    public void itemAddPower(CommandSender sender, Arguments args) {
+        RPGItem item = ItemManager.itemByName.get(args.next());
+        String str = args.next();
+        Class<? extends Power> cls = Power.powers.get(str);
+        if (cls == null) {
+            msg(sender, "message.power.unknown", str);
+            return;
+        }
+        Power power;
+        try {
+            power = cls.newInstance();
+        } catch (InstantiationException | IllegalAccessException e) {
+            e.printStackTrace();
+            return;
+        }
+        SortedMap<ArgumentPriority, Field> argMap = Power.propertyArgPriorities.get(cls);
+        Set<Field> required = new HashSet<>();
+        Set<Field> settled = new HashSet<>();
+        Optional<ArgumentPriority> req = argMap.keySet()
+                                               .stream()
+                                               .filter(ArgumentPriority::required)
+                                               .sorted(Comparator.comparing(ArgumentPriority::value).reversed())
+                                               .findFirst();
+        if (req.isPresent()) {
+            int lastreq = req.get().value();
+            required = argMap.entrySet()
+                             .stream()
+                             .filter(entry -> entry.getKey().value() <= lastreq)
+                             .map(Map.Entry::getValue)
+                             .collect(Collectors.toSet());
+        }
+        for (Field field : cls.getFields()) {
+            String name = field.getName();
+            String value = args.argString(name, null);
+            if (value != null) {
+                setPower(power, field, value);
+                required.remove(field);
+                settled.add(field);
+            }
+        }
+        for (Field field : argMap.values()) {
+            if (settled.contains(field)) continue;
+            String value = args.next();
+            if (value == null) {
+                if (!required.isEmpty()) {
+                    throw new BadCommandException("message.power.required",
+                            String.join(", ",
+                                    required.stream().map(Field::getName).collect(Collectors.toList()))
+                    );
+                } else {
+                    break;
+                }
+            }
+            setPower(power, field, value);
+            required.remove(field);
+            settled.add(field);
+        }
+        power.item = item;
+        item.addPower(power);
+        sender.sendMessage(I18n.format("message.power.ok"));
+        ItemManager.save(RPGItems.plugin);
     }
 }

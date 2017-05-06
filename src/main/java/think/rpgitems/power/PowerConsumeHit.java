@@ -22,7 +22,9 @@ import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.entity.LivingEntity;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
-import think.rpgitems.data.Locale;
+import think.rpgitems.I18n;
+import think.rpgitems.commands.ArgumentPriority;
+
 import think.rpgitems.power.types.PowerHit;
 
 /**
@@ -35,6 +37,7 @@ public class PowerConsumeHit extends Power implements PowerHit {
     /**
      * Cooldown time of this power
      */
+    @ArgumentPriority
     public int cooldownTime = 0;
 
     @Override
@@ -67,6 +70,6 @@ public class PowerConsumeHit extends Power implements PowerHit {
 
     @Override
     public String displayText() {
-        return ChatColor.GREEN + Locale.get("power.consumehit");
+        return I18n.format("power.consumehit");
     }
 }

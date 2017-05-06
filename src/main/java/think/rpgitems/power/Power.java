@@ -24,9 +24,14 @@ import org.bukkit.entity.Entity;
 import org.bukkit.entity.LivingEntity;
 import org.bukkit.entity.Player;
 import org.bukkit.permissions.PermissionAttachment;
+import think.rpgitems.I18n;
 import think.rpgitems.RPGItems;
-import think.rpgitems.commands.*;
+import think.rpgitems.commands.ArgumentPriority;
+import think.rpgitems.commands.Setter;
+import think.rpgitems.commands.Transformer;
+import think.rpgitems.commands.Validator;
 import think.rpgitems.data.RPGValue;
+
 import think.rpgitems.item.RPGItem;
 
 import java.lang.annotation.Annotation;
@@ -46,9 +51,10 @@ import java.util.stream.Collectors;
  */
 public abstract class Power {
 
-    static final HashBasedTable<Class<? extends Power>, String, BiFunction<Object, String, String>> transformers;
-    static final HashBasedTable<Class<? extends Power>, String, BiFunction<Object, String, Boolean>> validators;
-    static final HashBasedTable<Class<? extends Power>, String, BiConsumer<Object, String>> setters;
+    public static final HashBasedTable<Class<? extends Power>, String, BiFunction<Object, String, String>> transformers;
+    public static final HashBasedTable<Class<? extends Power>, String, BiFunction<Object, String, Boolean>> validators;
+    public static final HashBasedTable<Class<? extends Power>, String, BiConsumer<Object, String>> setters;
+    public static final Map<Class<? extends Power>, SortedMap<ArgumentPriority, Field>> propertyArgPriorities;
     /**
      * Power by name, and name by power
      */
@@ -62,7 +68,7 @@ public abstract class Power {
         transformers = HashBasedTable.create();
         validators = HashBasedTable.create();
         setters = HashBasedTable.create();
-
+        propertyArgPriorities = new HashMap<>();
         Power.powers.put("aoe", PowerAOE.class);
         Power.powers.put("arrow", PowerArrow.class);
         Power.powers.put("tntcannon", PowerTNTCannon.class);
@@ -113,11 +119,14 @@ public abstract class Power {
                           .collect(Collectors.groupingBy(Annotation::annotationType, Collectors.toList()));
 
             MethodType transformerType = MethodType.methodType(String.class, cls, String.class);
-            //noinspection SuspiciousMethodCalls
-            List<Transformer> transformerList =
-                    annos.get(Transformer.class)
-                         .stream().map(i -> (Transformer) i)
-                         .collect(Collectors.toList());
+            List<Transformer> transformerList;
+            if (annos.get(Transformer.class) == null) {
+                transformerList = new ArrayList<>();
+            } else {
+                transformerList = annos.get(Transformer.class)
+                                       .stream().map(i -> (Transformer) i)
+                                       .collect(Collectors.toList());
+            }
             transformerList.forEach(
                     tranAnno -> {
                         String fname = tranAnno.value();
@@ -142,11 +151,14 @@ public abstract class Power {
             );
 
             MethodType validatorType = MethodType.methodType(boolean.class, cls, String.class);
-            //noinspection SuspiciousMethodCalls
-            List<Validator> validatorList =
-                    annos.get(Validator.class)
-                         .stream().map(i -> (Validator) i)
-                         .collect(Collectors.toList());
+            List<Validator> validatorList;
+            if (annos.get(Validator.class) == null) {
+                validatorList = new ArrayList<>();
+            } else {
+                validatorList = annos.get(Validator.class)
+                                       .stream().map(i -> (Validator) i)
+                                       .collect(Collectors.toList());
+            }
             validatorList.forEach(
                     valiAnno -> {
                         String fname = valiAnno.value();
@@ -171,11 +183,14 @@ public abstract class Power {
             );
 
             MethodType setterType = MethodType.methodType(void.class, cls, String.class);
-            //noinspection SuspiciousMethodCalls
-            List<Setter> setterList =
-                    annos.get(Setter.class)
-                         .stream().map(i -> (Setter) i)
-                         .collect(Collectors.toList());
+            List<Setter> setterList;
+            if (annos.get(Setter.class) == null) {
+                setterList = new ArrayList<>();
+            } else {
+                setterList = annos.get(Setter.class)
+                                     .stream().map(i -> (Setter) i)
+                                     .collect(Collectors.toList());
+            }
             setterList.forEach(
                     setterAnno -> {
                         String fname = setterAnno.value();
@@ -198,6 +213,11 @@ public abstract class Power {
 
                     }
             );
+            SortedMap<ArgumentPriority, Field> argumentPriorityMap = new TreeMap<>(Comparator.comparing(ArgumentPriority::value));
+            Arrays.stream(cls.getFields())
+                  .filter(field -> field.getAnnotation(ArgumentPriority.class) != null)
+                  .forEach(field -> argumentPriorityMap.put(field.getAnnotation(ArgumentPriority.class), field));
+            propertyArgPriorities.put(cls, argumentPriorityMap);
         }
     }
 
@@ -308,7 +328,7 @@ public abstract class Power {
             return true;
         } else {
             if (showWarn)
-                player.sendMessage(ChatColor.AQUA + String.format(think.rpgitems.data.Locale.get("message.cooldown"), ((double) (cooldown - nowTick)) / 20d));
+                player.sendMessage(I18n.format("message.cooldown", ((double) (cooldown - nowTick)) / 20d));
             return false;
         }
     }
@@ -377,114 +397,8 @@ public abstract class Power {
             return true;
         } else {
             if (showWarn)
-                p.sendMessage(ChatColor.AQUA + String.format(think.rpgitems.data.Locale.get("message.cooldown"), ((double) (cooldown - nowTick)) / 20d));
+                p.sendMessage(I18n.format("message.cooldown", ((double) (cooldown - nowTick)) / 20d));
             return false;
-        }
-    }
-
-    @SuppressWarnings("unchecked")
-    public static void setPower(Power power, String field, String value) {
-
-        Scanner reader = new Scanner(System.in);
-        boolean suc = false;
-        Field f = null;
-        Class<? extends Power> cls = power.getClass();
-        while (!suc) {
-            try {
-               f = cls.getField(field);
-                suc = true;
-            } catch (NoSuchFieldException e) {
-                //throw new BadCommandException("internal.error.invalid_command_arg", e);
-                System.out.println(e.getMessage());
-            }
-        }
-        Transformer tf = f.getAnnotation(Transformer.class);
-        if (tf != null) {
-            value = transformers.get(cls, tf.value()).apply(power, value);
-        }
-        BooleanChoice bc = f.getAnnotation(BooleanChoice.class);
-        if(bc != null){
-            String trueChoice = bc.trueChoice();
-            String falseChoice = bc.falseChoice();
-            try{
-                if (value.equalsIgnoreCase(trueChoice) || value.equalsIgnoreCase(falseChoice)) {
-                    f.set(power, value.equalsIgnoreCase(trueChoice));
-                } else {
-                    System.out.println("Not a boolean!");
-                }
-            }catch (IllegalAccessException e){
-                e.printStackTrace();
-            }catch (Exception e){
-                e.printStackTrace();
-                System.out.println("Not a boolean!");
-            }
-            return;
-        }
-        List<String> rest;
-        AcceptedValue as = f.getAnnotation(AcceptedValue.class);
-        if (as != null) {
-            rest = Arrays.asList(as.value());
-            while (true) {
-                if (!rest.contains(value)) {
-                    System.out.println("available:" + rest.stream().reduce(" ", (a, b) -> a + ", " + b));
-                    value = reader.next();
-                } else {
-                    break;
-                }
-            }
-        }
-        Validator ck = f.getAnnotation(Validator.class);
-        if (ck != null) {
-            Boolean b = validators.get(cls, ck.value()).apply(power, value);
-            if(!b){
-                System.out.println("Not valid!");
-                return;
-            }
-        }
-        Setter st = f.getAnnotation(Setter.class);
-        if (st != null) {
-            setters.get(cls, st.value()).accept(power, value);
-        } else {
-            try{
-                if (f.getType() == int.class) {
-                    try {
-                        f.set(power, Integer.parseInt(value));
-                    } catch (NumberFormatException e) {
-                        System.out.println("Not a int!");
-                    }
-                } else if(f.getType() == long.class){
-                    try {
-                        f.set(power, Long.parseLong(value));
-                    } catch (NumberFormatException e) {
-                        System.out.println("Not a long!");
-                    }
-                } else if (f.getType() == double.class) {
-                    try {
-                        f.set(power, Double.parseDouble(value));
-                    } catch (NumberFormatException e) {
-                        System.out.println("Not a double!");
-                    }
-                } else if (f.getType() == String.class) {
-                    f.set(power, value);
-                } else if (f.getType() == boolean.class) {
-                    if (value.equalsIgnoreCase("true") || value.equalsIgnoreCase("false")) {
-                        f.set(power, Boolean.valueOf(value));
-                    } else {
-                        System.out.println("Not a boolean!");
-                    }
-                } else if (f.getType().isEnum()) {
-                    try{
-                        f.set(power, Enum.valueOf((Class<Enum>)f.getType(), value));
-                    }
-                    catch (IllegalArgumentException e){
-                        System.out.println("Not a enum!");
-                    }
-                } else {
-                    System.out.println("Not supported!");
-                }
-            }catch (Exception e){
-                e.printStackTrace();
-            }
         }
     }
 }

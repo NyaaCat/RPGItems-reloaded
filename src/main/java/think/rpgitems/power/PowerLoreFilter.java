@@ -1,6 +1,7 @@
 package think.rpgitems.power;
 
 import org.bukkit.configuration.ConfigurationSection;
+import think.rpgitems.commands.ArgumentPriority;
 
 /**
  * Power lorefilter.
@@ -13,10 +14,12 @@ public class PowerLoreFilter extends Power {
     /**
      * Regex to filter the lore
      */
+    @ArgumentPriority
     public String regex = null;
     /**
      * Display text
      */
+    @ArgumentPriority(value = 1,required = true)
     public String desc = "";
 
     @Override

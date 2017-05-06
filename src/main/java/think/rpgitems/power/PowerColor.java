@@ -23,8 +23,10 @@ import org.bukkit.block.Block;
 import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
-import think.rpgitems.data.Locale;
+import think.rpgitems.I18n;
+import think.rpgitems.commands.ArgumentPriority;
 import think.rpgitems.data.RPGValue;
+
 import think.rpgitems.power.types.PowerLeftClick;
 import think.rpgitems.power.types.PowerRightClick;
 import think.rpgitems.support.WorldGuard;
@@ -66,18 +68,22 @@ public class PowerColor extends Power implements PowerRightClick, PowerLeftClick
     /**
      * Cooldown time of this power
      */
+    @ArgumentPriority
     public long cooldownTime = 0;
     /**
      * Whether enabled on glass.
      */
+    @ArgumentPriority(1)
     public boolean glass = true;
     /**
      * Whether enabled on clay.
      */
+    @ArgumentPriority(2)
     public boolean clay = true;
     /**
      * Whether enabled on wool.
      */
+    @ArgumentPriority(3)
     public boolean wool = true;
     /**
      * Cost of this power
@@ -130,13 +136,13 @@ public class PowerColor extends Power implements PowerRightClick, PowerLeftClick
         } else {
             int newColorIndex = (value.asInt() + 1) % 16;
             value.set(newColorIndex);
-            player.sendMessage(ChatColor.AQUA + ChatColor.translateAlternateColorCodes('&', String.format(Locale.get("message.color.next"), dyeToChatColor.get(DyeColor.values()[newColorIndex]))));
+            player.sendMessage(I18n.format("message.color.next", dyeToChatColor.get(DyeColor.values()[newColorIndex])));
         }
     }
 
     @Override
     public String displayText() {
-        return ChatColor.GREEN + String.format(Locale.get("power.color"), (double) cooldownTime / 20d);
+        return I18n.format("power.color", (double) cooldownTime / 20d);
     }
 
     @Override

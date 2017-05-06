@@ -10,9 +10,11 @@ import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.scheduler.BukkitRunnable;
 import org.bukkit.util.Vector;
+import think.rpgitems.I18n;
 import think.rpgitems.RPGItems;
-import think.rpgitems.data.Locale;
+import think.rpgitems.commands.ArgumentPriority;
 import think.rpgitems.data.RPGValue;
+
 import think.rpgitems.power.types.PowerRightClick;
 
 import java.util.Set;
@@ -29,10 +31,12 @@ public class PowerSkyHook extends Power implements PowerRightClick {
     /**
      * Material that can hooks on
      */
+    @ArgumentPriority
     public Material railMaterial = Material.GLASS;
     /**
      * Maximum distance.
      */
+    @ArgumentPriority(value = 1,required = true)
     public int hookDistance = 10;
 
     @Override
@@ -49,7 +53,7 @@ public class PowerSkyHook extends Power implements PowerRightClick {
         }
         Block block = player.getTargetBlock((Set<Material>) null, hookDistance);
         if (block.getType() != railMaterial) {
-            player.sendMessage(ChatColor.AQUA + Locale.get("message.skyhook.fail"));
+            player.sendMessage(I18n.format("message.skyhook.fail"));
             return;
         }
         isHooking.set(true);
@@ -120,7 +124,7 @@ public class PowerSkyHook extends Power implements PowerRightClick {
 
     @Override
     public String displayText() {
-        return ChatColor.GREEN + Locale.get("power.skyhook");
+        return I18n.format("power.skyhook");
     }
 
 }

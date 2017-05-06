@@ -28,8 +28,11 @@ import org.bukkit.inventory.ItemStack;
 import org.bukkit.metadata.FixedMetadataValue;
 import org.bukkit.util.Vector;
 import think.rpgitems.Events;
+import think.rpgitems.I18n;
 import think.rpgitems.RPGItems;
-import think.rpgitems.data.Locale;
+import think.rpgitems.commands.ArgumentPriority;
+import think.rpgitems.commands.BooleanChoice;
+
 import think.rpgitems.power.types.PowerHitTaken;
 import think.rpgitems.power.types.PowerLeftClick;
 import think.rpgitems.power.types.PowerRightClick;
@@ -49,11 +52,13 @@ public class PowerDeflect extends Power implements PowerHitTaken, PowerRightClic
     /**
      * Cooldown time of this power
      */
+    @ArgumentPriority(2)
     public int cooldownTime = 20;
 
     /**
      * Cooldown time of this power in passive mode
      */
+    @ArgumentPriority(4)
     public int cooldownTimePassive = 20;
 
     /**
@@ -69,16 +74,19 @@ public class PowerDeflect extends Power implements PowerHitTaken, PowerRightClic
     /**
      * Whether it is passive
      */
-    public boolean passive = true;
+    @ArgumentPriority(3)
+    public boolean passive = false;
 
     /**
-     * Whether it is passive
+     * Whether it is initiative
      */
+    @ArgumentPriority(1)
     public boolean initiative = true;
 
     /**
      * Whether triggers when right click.
      */
+    @BooleanChoice(name = "mouse",falseChoice = "left", trueChoice = "right")
     public boolean isRight = true;
 
     /**
@@ -89,13 +97,14 @@ public class PowerDeflect extends Power implements PowerHitTaken, PowerRightClic
     /**
      * Maximum view angle
      */
+    @ArgumentPriority(required = true)
     public double facing = 30;
 
     private long time = 0;
 
     @Override
     public String displayText() {
-        return ChatColor.GREEN + String.format(Locale.get("power.deflect"), (double) cooldownTime / 20d);
+        return I18n.format("power.deflect", (double) cooldownTime / 20d);
     }
 
     @Override

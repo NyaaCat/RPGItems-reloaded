@@ -1,17 +1,22 @@
 name: RPGItems
 main: think.rpgitems.RPGItems
+description: "RPGItems"
 version: 3.6
-dev-url: https://github.com/NyaaCat/RPGitems-reloaded
-softdepend: [WorldGuard,NyaaCore]
+depend: [NyaaCore]
+softdepend: [WorldGuard]
+authors: [RecursiveG,Librazy]
+website: "https://github.com/NyaaCat/RPGitems-reloaded"
+database: false
+
 commands:
-    rpgitem:
-        description: RPG Items
-        usage: RPG Items
+  rpgitem:
+    description: RPG Items
+    permission: rpgitem
+    permission-message: "You do not have the required permission: <permission>"
+    usage: "/<command> [SubCommand...] [Arguments...] or /<command> help"
 
 permissions:
-    rpgitemupdate.command:
-        default: op
-    rpgitem.allowenchant.new:
-        default: op
-    rpgitem.allowenchant.old:
-        default: op
+  rpgitem.allowenchant.new:
+    default: op
+  rpgitem.allowenchant.old:
+    default: op
