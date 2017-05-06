@@ -83,7 +83,6 @@ command:
     tntcannon:
       full: Adds the tntcannon power to @[Item]# with a cooldown of @[Cooldown]# ticks. The tntcannon power will fire active tnt on right click.
     command:
-      old: Runs the command on @[left/right]# click. @[Details]# is a | seperated list of @[display Text]# | @[command]# | @[permission]#. The tool-tip displays @[display Text]#. display Text and command must be separated a | symbol. If permission is provided the player will be given the permission just for the use of the item and then it will be removed
       full: 'Adds the command power to @[Item]# with a cooldown of @[Cooldown]# ticks.
         The tooltip will display @[Display]#. The item will run @[Command]# on @[left,right]#
         click giving the permission @[Permission]# just for the use of the command.
@@ -114,7 +113,7 @@ command:
     pumpkin: Add the power to @[Item]#. When hit skeleton or zombie, will have a 1/@[Chance]# chance to make them wear pumpkin head. And the pumpkin will have a chance of @[DropChance]# to drop when the mobs die. @[DropChance]# must between 0 and 1.
     attract: 'Add the power to @[Item]#. Pull around mobs to player when held in hand.
       Radius:5 MaxSpeed: 0.4.'
-    ranged: =Adds the ranged mark to @[Item]#.
+    ranged: Adds the ranged mark to @[Item]#.
     hand:
       set: Sets the item @[Item]#'s hand to @[Hand]#
     color: Adds the color power to @[Item]#. The power allows changing the color of glass, clay and wool.
@@ -165,6 +164,7 @@ command:
     rescue: Adds the rescue power to @[Item]# with a cooldown of @[Cooldown]# ticks and a health trigger of @[HealthTrigger]#. The rescue power teleports the user to spawn (or to their bed when @[UseBed]# is active) when their health gets below the hp trigger while in combat with an enemy
     damage:
       set:
+        value: Sets the item @[Item]#'s damage to @[Damage]#
         range: Sets the item @[Item]#'s damage to do random damage between @[Min]# and @[Max]#
     armour:
       set: Sets the item @[Item]#'s armour to @[Armour]#
@@ -207,6 +207,12 @@ command:
     print: Prints item @[Item]#'s tool-tip to chat
     realdamage: =Adds the realdamage power to @[Item]# with a cooldown of @[Cooldown]# ticks. The item will do real @[Damage]# to LivingEntity player hits but always leave at least 0.1 health.
 message:
+  cost:
+    hit_toggle:
+      enable: cost on being hit set to percentage of damage
+      disable: cost on being hit set to fixed value
+    change: cost set
+    get: "cost %d durability"
   recipe:
     removed: Recipe removed
     '3': in the shape of the crafting
@@ -317,7 +323,7 @@ message:
   too:
     far: It landed too far away...
   version: |-
-    RPGItem v%s (1.11 branch)
+    RPGItem v%s (1.11.2 branch)
 
     Copyright © 2017 NyaaCat Developers
     Copyright © 2013 TheCreeperOfRedstone
@@ -336,14 +342,14 @@ message:
     get: Item '%s' type is '%s'
   damage:
     set:
-      to: Item '%s' damage set to %d
+      value: Item '%s' damage set to %d
       range: Item '%s' damage set to %d-%d
     get: Item '%s' damage is %d-%d
   item:
-    set: Item '%s' item set to '%s:%d'
+    set: Item '%s' item set to '{itemName}:%d'
     cant:
       find: Cannot find item
-    get: Item '%s' item is '%s'
+    get: Item '%s' item is '{itemName}:%d'
   damagemode:
     FIXED: Item '%s' damage mode set to fixed damage (default)
     ADDITIONAL: Item '%s' damage mode set to additional damage (vanilla minecraft damage plus RPGItem damage)
@@ -386,6 +392,7 @@ power:
   lightning: '%d%% chance to shock on hit'
   attract: Handheld blackhole!
   projectile:
+    display: Launches a `%s` when right clicked (%.1fs cooldown)
     cone: Launches multiple `%s` when right clicked (%.1fs cooldown)
     noFireball: Fireball can't be used with cone mechanism.
   realdamage: Do %.1f real damage to enemy.
@@ -395,10 +402,14 @@ power:
   ranged: Can use as a ranged weapon
   ice: Shoots Ice (%.1fs cooldown)
   rescue:
-    rescue: Rescues you when below %.1f Hearts (%.1fs cooldown)
+    display: Rescues you when below %.1f Hearts (%.1fs cooldown)
     info: You've been rescued.
   consumehit: Consumed on hit
-  aoe: Applies %s level %d for %d ticks to everything %s within %d blocks. (%.1fs cooldown)
+  aoe:
+    display: Applies %s level %d for %d ticks to everything %s within %d blocks. (%.1fs cooldown)
+    selfapplication:
+      false: excluding yourself
+      true: including yourself
   particle: Spawn some particles when used
   deflect: Deflect arrows or fireballs
   fireball: Shoots a fireball (%.1fs cooldown)
@@ -411,7 +422,9 @@ power:
   unbreaking: Unbreaking %d
   knockup: '%d%% chance to send target flying'
   rumble: Sends out a shockwave. (%.1fs cooldown)
-  potiontick: Gives %s %d while in use
+  potiontick:
+    display: Gives %s %d while in use
+    clear: Clear %s while in use
   pumpkin: 1/%d chance to make enemy put on a pumpkin
   flame: Burns target for %.1f seconds
   rangedonly: Can only use as a ranged weapon

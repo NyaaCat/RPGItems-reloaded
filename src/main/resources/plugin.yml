@@ -4,7 +4,7 @@ description: "RPGItems"
 version: 3.6
 depend: [NyaaCore]
 softdepend: [WorldGuard]
-authors: [RecursiveG,Librazy]
+authors: [Taiterio,cyilin,RecursiveG,Librazy]
 website: "https://github.com/NyaaCat/RPGitems-reloaded"
 database: false
 

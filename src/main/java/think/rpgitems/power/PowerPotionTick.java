@@ -107,6 +107,6 @@ public class PowerPotionTick extends Power implements PowerTick {
     public String displayText() {
         return clear?
                 I18n.format("power.potiontick.clear", effect.getName().toLowerCase().replaceAll("_", " "))
-                :I18n.format("power.potiontick", effect.getName().toLowerCase().replaceAll("_", " "), amplifier + 1);
+                :I18n.format("power.potiontick.display", effect.getName().toLowerCase().replaceAll("_", " "), amplifier + 1);
     }
 }

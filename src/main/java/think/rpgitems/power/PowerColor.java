@@ -132,11 +132,11 @@ public class PowerColor extends Power implements PowerRightClick, PowerLeftClick
         if (!item.checkPermission(player, true))return;
         RPGValue value = RPGValue.get(player, item, "color.current");
         if (value == null) {
-            value = new RPGValue(player, item, "color.current", 0);
+            new RPGValue(player, item, "color.current", 0);
         } else {
             int newColorIndex = (value.asInt() + 1) % 16;
             value.set(newColorIndex);
-            player.sendMessage(I18n.format("message.color.next", dyeToChatColor.get(DyeColor.values()[newColorIndex])));
+            player.sendMessage(I18n.format("message.color.next", dyeToChatColor.get(DyeColor.values()[newColorIndex]).toString()));
         }
     }
 

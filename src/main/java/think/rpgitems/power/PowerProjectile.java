@@ -178,7 +178,7 @@ public class PowerProjectile extends Power implements PowerRightClick {
 
     @Override
     public String displayText() {
-        return I18n.format(cone ? "power.projectile.cone" : "power.projectile", getType(), (double) cooldownTime / 20d);
+        return I18n.format(cone ? "power.projectile.cone" : "power.projectile.display", getType(), (double) cooldownTime / 20d);
     }
 
     @Override
