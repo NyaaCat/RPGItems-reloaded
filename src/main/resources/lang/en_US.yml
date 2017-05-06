@@ -345,9 +345,9 @@ message:
       find: Cannot find item
     get: Item '%s' item is '%s'
   damagemode:
-    fixed: Item '%s' damage mode set to fixed damage (default)
-    additional: Item '%s' damage mode set to additional damage (vanilla minecraft damage plus RPGItem damage)
-    vanilla: Item '%s' damage mode set to vanilla damage (use vanilla minecraft damage)
+    FIXED: Item '%s' damage mode set to fixed damage (default)
+    ADDITIONAL: Item '%s' damage mode set to additional damage (vanilla minecraft damage plus RPGItem damage)
+    VANILLA: Item '%s' damage mode set to vanilla damage (use vanilla minecraft damage)
   quality:
     get: Item '%s' quality is '%s'
     note: 'Qualities:'
@@ -394,7 +394,9 @@ power:
   teleport: Teleports %d blocks (%.1fs cooldown)
   ranged: Can use as a ranged weapon
   ice: Shoots Ice (%.1fs cooldown)
-  rescue: Rescues you when below %.1f Hearts (%.1fs cooldown)
+  rescue:
+    rescue: Rescues you when below %.1f Hearts (%.1fs cooldown)
+    info: You've been rescued.
   consumehit: Consumed on hit
   aoe: Applies %s level %d for %d ticks to everything %s within %d blocks. (%.1fs cooldown)
   particle: Spawn some particles when used

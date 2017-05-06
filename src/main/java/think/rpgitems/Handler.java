@@ -50,7 +50,7 @@ public class Handler extends CommandReceiver<RPGItems> {
         }
         setPower(power, f, value);
     }
-
+    @SuppressWarnings("unchecked")
     public static void setPower(Power power, Field field, String value) {
         Class<? extends Power> cls = power.getClass();
         Transformer tf = field.getAnnotation(Transformer.class);
@@ -182,13 +182,13 @@ public class Handler extends CommandReceiver<RPGItems> {
     @SubCommand("worldguard")
     public void toggleWorldGuard(CommandSender sender, Arguments args) {
         if (!WorldGuard.isEnabled()) {
-            sender.sendMessage(I18n.format("message.worldguard.error"));
+            msg(sender,"message.worldguard.error");
             return;
         }
         if (WorldGuard.useWorldGuard) {
-            sender.sendMessage(I18n.format("message.worldguard.disable"));
+            msg(sender,"message.worldguard.disable");
         } else {
-            sender.sendMessage(I18n.format("message.worldguard.enable"));
+            msg(sender,"message.worldguard.enable");
         }
         WorldGuard.useWorldGuard = !WorldGuard.useWorldGuard;
         RPGItems.plugin.getConfig().set("support.worldguard", WorldGuard.useWorldGuard);
@@ -198,13 +198,13 @@ public class Handler extends CommandReceiver<RPGItems> {
     @SubCommand("wgcustomflag")
     public void toggleCustomFlag(CommandSender sender, Arguments args) {
         if (!WorldGuard.isEnabled()) {
-            sender.sendMessage(I18n.format("message.worldguard.error"));
+            msg(sender,"message.worldguard.error");
             return;
         }
         if (WorldGuard.useCustomFlag) {
-            sender.sendMessage(I18n.format("message.wgcustomflag.disable"));
+            msg(sender,"message.wgcustomflag.disable");
         } else {
-            sender.sendMessage(I18n.format("message.wgcustomflag.enable"));
+            msg(sender,"message.wgcustomflag.enable");
         }
         WorldGuard.useCustomFlag = !WorldGuard.useCustomFlag;
         RPGItems.plugin.getConfig().set("support.wgcustomflag", WorldGuard.useCustomFlag);
@@ -214,13 +214,13 @@ public class Handler extends CommandReceiver<RPGItems> {
     @SubCommand("wgforcerefreash")
     public void toggleForceRefreash(CommandSender sender, Arguments args) {
         if (!WorldGuard.isEnabled()) {
-            sender.sendMessage(I18n.format("message.worldguard.error"));
+            msg(sender,"message.worldguard.error");
             return;
         }
         if (WorldGuard.forceRefresh) {
-            sender.sendMessage(I18n.format("message.wgforcerefresh.disable"));
+            msg(sender,"message.wgforcerefresh.disable");
         } else {
-            sender.sendMessage(I18n.format("message.wgforcerefresh.enable"));
+            msg(sender,"message.wgforcerefresh.enable");
         }
         WorldGuard.forceRefresh = !WorldGuard.forceRefresh;
         RPGItems.plugin.getConfig().set("support.wgforcerefresh", WorldGuard.forceRefresh);
@@ -237,10 +237,10 @@ public class Handler extends CommandReceiver<RPGItems> {
     public void createItem(CommandSender sender, Arguments args) {
         String itemName = args.next();
         if (ItemManager.newItem(itemName.toLowerCase()) != null) {
-            sender.sendMessage(I18n.format("message.create.ok", itemName));
+            msg(sender,"message.create.ok", itemName);
             ItemManager.save(RPGItems.plugin);
         } else {
-            sender.sendMessage(I18n.format("message.create.fail"));
+            msg(sender,"message.create.fail");
         }
     }
 
@@ -248,9 +248,9 @@ public class Handler extends CommandReceiver<RPGItems> {
     public void givePerms(CommandSender sender, Arguments args) {
         RPGItems.plugin.getConfig().set("give-perms", !RPGItems.plugin.getConfig().getBoolean("give-perms", false));
         if (RPGItems.plugin.getConfig().getBoolean("give-perms", false)) {
-            sender.sendMessage(I18n.format("message.giveperms.true"));
+            msg(sender,"message.giveperms.true");
         } else {
-            sender.sendMessage(I18n.format("message.giveperms.false"));
+            msg(sender,"message.giveperms.false");
         }
         RPGItems.plugin.saveConfig();
     }
@@ -262,12 +262,12 @@ public class Handler extends CommandReceiver<RPGItems> {
             if (sender instanceof Player) {
                 if ((!RPGItems.plugin.getConfig().getBoolean("give-perms", false) && sender.hasPermission("rpgitem")) || (RPGItems.plugin.getConfig().getBoolean("give-perms", false) && sender.hasPermission("rpgitem.give." + item.getName()))) {
                     item.give((Player) sender);
-                    sender.sendMessage(I18n.format("message.give.ok", item.getDisplay()));
+                    msg(sender,"message.give.ok", item.getDisplay());
                 } else {
-                    sender.sendMessage(I18n.format("message.error.permission"));
+                    msg(sender,"message.error.permission");
                 }
             } else {
-                sender.sendMessage(I18n.format("message.give.console"));
+                msg(sender,"message.give.console");
             }
         } else {
             Player player = args.nextPlayer();
@@ -281,8 +281,8 @@ public class Handler extends CommandReceiver<RPGItems> {
                 item.give(player);
             }
 
-            sender.sendMessage(I18n.format("message.give.to", item.getDisplay() + ChatColor.AQUA, player.getName()));
-            player.sendMessage(I18n.format("message.give.ok", item.getDisplay()));
+            msg(sender,"message.give.to", item.getDisplay() + ChatColor.AQUA, player.getName());
+            msg(player,"message.give.ok", item.getDisplay());
         }
     }
 
@@ -290,7 +290,7 @@ public class Handler extends CommandReceiver<RPGItems> {
     public void removeItem(CommandSender sender, Arguments args) {
         RPGItem item = ItemManager.itemByName.get(args.next());
         ItemManager.remove(item);
-        sender.sendMessage(I18n.format("message.remove.ok", item.getName()));
+        msg(sender,"message.remove.ok", item.getName());
         ItemManager.save(RPGItems.plugin);
     }
 
@@ -300,10 +300,10 @@ public class Handler extends CommandReceiver<RPGItems> {
         String value = args.next();
         if (value != null) {
             item.setDisplay(value);
-            sender.sendMessage(I18n.format("message.display.set", item.getName(), item.getDisplay()));
+            msg(sender,"message.display.set", item.getName(), item.getDisplay());
             ItemManager.save(RPGItems.plugin);
         } else {
-            sender.sendMessage(I18n.format("message.display.get", item.getName(), item.getDisplay()));
+            msg(sender,"message.display.get", item.getName(), item.getDisplay());
         }
     }
 
@@ -313,10 +313,10 @@ public class Handler extends CommandReceiver<RPGItems> {
         try {
             Quality quality = args.nextEnum(Quality.class);
             item.setQuality(quality);
-            sender.sendMessage(I18n.format("message.quality.set", item.getName(), item.getQuality().toString().toLowerCase()));
+            msg(sender,"message.quality.set", item.getName(), item.getQuality().toString().toLowerCase());
             ItemManager.save(RPGItems.plugin);
         } catch (BadCommandException e) {
-            sender.sendMessage(I18n.format("message.quality.get", item.getName(), item.getQuality().toString().toLowerCase()));
+            msg(sender,"message.quality.get", item.getName(), item.getQuality().toString().toLowerCase());
         }
     }
 
@@ -327,7 +327,7 @@ public class Handler extends CommandReceiver<RPGItems> {
             int damageMin = args.nextInt();
             int damageMax;
             if (damageMin > 32767) {
-                sender.sendMessage(I18n.format("message.error.damagetolarge"));
+                msg(sender,"message.error.damagetolarge");
                 return;
             }
             try {
@@ -343,7 +343,7 @@ public class Handler extends CommandReceiver<RPGItems> {
             }
             ItemManager.save(RPGItems.plugin);
         } catch (BadCommandException e) {
-            sender.sendMessage(I18n.format("message.damage.get", item.getName(), item.getDamageMin(), item.getDamageMax()));
+            msg(sender,"message.damage.get", item.getName(), item.getDamageMin(), item.getDamageMax());
         }
     }
 
@@ -353,10 +353,10 @@ public class Handler extends CommandReceiver<RPGItems> {
         try {
             int armour = args.nextInt();
             item.setArmour(armour);
-            sender.sendMessage(I18n.format("message.armour.set", item.getName(), item.getArmour()));
+            msg(sender,"message.armour.set", item.getName(), item.getArmour());
             ItemManager.save(RPGItems.plugin);
         } catch (BadCommandException e) {
-            sender.sendMessage(I18n.format("message.armour.get", item.getName(), item.getArmour()));
+            msg(sender,"message.armour.get", item.getName(), item.getArmour());
         }
     }
 
@@ -366,10 +366,10 @@ public class Handler extends CommandReceiver<RPGItems> {
         String type = args.next();
         if (type != null) {
             item.setType(type);
-            sender.sendMessage(I18n.format("message.type.set", item.getName(), item.getType()));
+            msg(sender,"message.type.set", item.getName(), item.getType());
             ItemManager.save(RPGItems.plugin);
         } else {
-            sender.sendMessage(I18n.format("message.type.get", item.getName(), item.getType()));
+            msg(sender,"message.type.get", item.getName(), item.getType());
         }
     }
 
@@ -379,10 +379,10 @@ public class Handler extends CommandReceiver<RPGItems> {
         String type = args.next();
         if (type != null) {
             item.setHand(type);
-            sender.sendMessage(I18n.format("message.hand.set", item.getName(), item.getType()));
+            msg(sender,"message.hand.set", item.getName(), item.getType());
             ItemManager.save(RPGItems.plugin);
         } else {
-            sender.sendMessage(I18n.format("message.hand.get", item.getName(), item.getType()));
+            msg(sender,"message.hand.get", item.getName(), item.getType());
         }
     }
 
@@ -391,7 +391,7 @@ public class Handler extends CommandReceiver<RPGItems> {
     public void itemItem(CommandSender sender, Arguments args) {
         RPGItem item = ItemManager.itemByName.get(args.next());
         if (args.length() == 2) {
-            sender.sendMessage(I18n.format("message.item.get", item.getName(), item.getItem().toString()));
+            msg(sender,"message.item.get", item.getName(), item.getItem().toString());
         } else if (args.length() >= 3) {
             Material material;
             try {
@@ -424,7 +424,7 @@ public class Handler extends CommandReceiver<RPGItems> {
                 item.updateLocaleMeta(meta);
             }
             item.rebuild();
-            sender.sendMessage(I18n.format("message.item.set", item.getName(), item.getItem(), item.getDataValue()));
+            msg(sender,"message.item.set", item.getName(), item.getItem(), item.getDataValue());
             ItemManager.save(RPGItems.plugin);
         }
     }
@@ -434,17 +434,17 @@ public class Handler extends CommandReceiver<RPGItems> {
         RPGItem item = ItemManager.itemByName.get(args.next());
         if (args.length() == 2) {
             if (item.enchantMap != null) {
-                sender.sendMessage(I18n.format("message.enchantment.listing", item.getName()));
+                msg(sender,"message.enchantment.listing", item.getName());
                 if (item.enchantMap.size() == 0) {
-                    sender.sendMessage(I18n.format("message.enchantment.empty_ench"));
+                    msg(sender,"message.enchantment.empty_ench");
                 } else {
                     for (Enchantment ench : item.enchantMap.keySet()) {
-                        sender.sendMessage(I18n.format("message.enchantment.item",
-                                ench.getName(), item.enchantMap.get(ench)));
+                        msg(sender,"message.enchantment.item",
+                                ench.getName(), item.enchantMap.get(ench));
                     }
                 }
             } else {
-                sender.sendMessage(I18n.format("message.enchantment.no_ench"));
+                msg(sender,"message.enchantment.no_ench");
             }
         }
         String command = args.next();
@@ -453,7 +453,7 @@ public class Handler extends CommandReceiver<RPGItems> {
                 if (sender instanceof Player) {
                     ItemStack hand = ((Player) sender).getInventory().getItemInMainHand();
                     if (hand == null || hand.getType() == Material.AIR) {
-                        sender.sendMessage(I18n.format("message.enchantment.fail"));
+                        msg(sender,"message.enchantment.fail");
                     } else {
                         if (hand.hasItemMeta()) {
                             item.enchantMap = new HashMap<>(hand.getItemMeta().getEnchants());
@@ -462,10 +462,10 @@ public class Handler extends CommandReceiver<RPGItems> {
                         }
                         item.rebuild();
                         ItemManager.save(RPGItems.plugin);
-                        sender.sendMessage(I18n.format("message.enchantment.success"));
+                        msg(sender,"message.enchantment.success");
                     }
                 } else {
-                    sender.sendMessage(I18n.format("message.enchantment.fail"));
+                    msg(sender,"message.enchantment.fail");
                 }
             }
             break;
@@ -473,7 +473,7 @@ public class Handler extends CommandReceiver<RPGItems> {
                 item.enchantMap = null;
                 item.rebuild();
                 ItemManager.save(RPGItems.plugin);
-                sender.sendMessage(I18n.format("message.enchantment.removed"));
+                msg(sender,"message.enchantment.removed");
             }
             break;
             default:
@@ -487,10 +487,10 @@ public class Handler extends CommandReceiver<RPGItems> {
         String power = args.next();
         if (item.removePower(power)) {
             Power.powerUsage.remove(power);
-            sender.sendMessage(I18n.format("message.power.removed", power));
+            msg(sender,"message.power.removed", power);
             ItemManager.save(RPGItems.plugin);
         } else {
-            sender.sendMessage(I18n.format("message.power.unknown", power));
+            msg(sender,"message.power.unknown", power);
         }
     }
 
@@ -502,7 +502,7 @@ public class Handler extends CommandReceiver<RPGItems> {
             case "add": {
                 String line = args.next();
                 item.addDescription(ChatColor.WHITE + line);
-                sender.sendMessage(I18n.format("message.description.ok"));
+                msg(sender,"message.description.ok");
                 ItemManager.save(RPGItems.plugin);
             }
             break;
@@ -510,24 +510,24 @@ public class Handler extends CommandReceiver<RPGItems> {
                 int lineNo = args.nextInt();
                 String line = args.next();
                 if (lineNo < 0 || lineNo >= item.description.size()) {
-                    sender.sendMessage(I18n.format("message.description.out.of.range", lineNo));
+                    msg(sender,"message.description.out.of.range", lineNo);
                     return;
                 }
                 item.description.set(lineNo, ChatColor.translateAlternateColorCodes('&', ChatColor.WHITE + line));
                 item.rebuild();
-                sender.sendMessage(I18n.format("message.description.change"));
+                msg(sender,"message.description.change");
                 ItemManager.save(RPGItems.plugin);
             }
             break;
             case "remove": {
                 int lineNo = args.nextInt();
                 if (lineNo < 0 || lineNo >= item.description.size()) {
-                    sender.sendMessage(I18n.format("message.description.out.of.range", lineNo));
+                    msg(sender,"message.description.out.of.range", lineNo);
                     return;
                 }
                 item.description.remove(lineNo);
                 item.rebuild();
-                sender.sendMessage(I18n.format("message.description.remove"));
+                msg(sender,"message.description.remove");
                 ItemManager.save(RPGItems.plugin);
             }
             break;
@@ -540,14 +540,14 @@ public class Handler extends CommandReceiver<RPGItems> {
     public void itemToggleWorldGuard(CommandSender sender, Arguments args) {
         RPGItem item = ItemManager.itemByName.get(args.next());
         if (!WorldGuard.isEnabled()) {
-            sender.sendMessage(I18n.format("message.worldguard.error"));
+            msg(sender,"message.worldguard.error");
             return;
         }
         item.ignoreWorldGuard = !item.ignoreWorldGuard;
         if (item.ignoreWorldGuard) {
-            sender.sendMessage(I18n.format("message.worldguard.override.active"));
+            msg(sender,"message.worldguard.override.active");
         } else {
-            sender.sendMessage(I18n.format("message.worldguard.override.disabled"));
+            msg(sender,"message.worldguard.override.disabled");
         }
     }
 
@@ -556,7 +556,7 @@ public class Handler extends CommandReceiver<RPGItems> {
         RPGItem item = ItemManager.itemByName.get(args.next());
         item.hasRecipe = false;
         item.resetRecipe(true);
-        sender.sendMessage(I18n.format("message.recipe.removed"));
+        msg(sender,"message.recipe.removed");
     }
 
     @SubCommand("recipe")
@@ -599,7 +599,7 @@ public class Handler extends CommandReceiver<RPGItems> {
             player.openInventory(recipeInventory);
             Events.recipeWindows.put(player.getName(), item.getID());
         } else {
-            sender.sendMessage(I18n.format("message.error.only.player"));
+            msg(sender,"message.error.only.player");
         }
     }
 
@@ -608,7 +608,7 @@ public class Handler extends CommandReceiver<RPGItems> {
         RPGItem item = ItemManager.itemByName.get(args.next());
         EntityType type = args.nextEnum(EntityType.class);
         if (args.length() == 2) {
-            sender.sendMessage(I18n.format("message.drop.get", item.getDisplay() + ChatColor.AQUA, type.toString().toLowerCase(), item.dropChances.get(type.toString())));
+            msg(sender,"message.drop.get", item.getDisplay() + ChatColor.AQUA, type.toString().toLowerCase(), item.dropChances.get(type.toString()));
         } else {
             double chance = args.nextDouble();
             chance = Math.min(chance, 100.0);
@@ -649,15 +649,15 @@ public class Handler extends CommandReceiver<RPGItems> {
                 try {
                     Field pro = p.getField(property);
                     String val = pro.get(pow).toString();
-                    sender.sendMessage(I18n.format("message.power_property.get", nth, power, property, val));
+                    msg(sender,"message.power_property.get", nth, power, property, val);
                 } catch (Exception e) {
-                    sender.sendMessage(I18n.format("message.power_property.property_notfound", property));
+                    msg(sender,"message.power_property.property_notfound", property);
                     return;
                 }
                 return;
             }
         }
-        sender.sendMessage(I18n.format("message.power_property.power_notfound"));
+        msg(sender,"message.power_property.power_notfound");
     }
 
     @SubCommand("set")
@@ -677,12 +677,12 @@ public class Handler extends CommandReceiver<RPGItems> {
             Power pow = op.get();
             setPower(pow, property, val);
         } else {
-            sender.sendMessage(I18n.format("message.power_property.power_notfound"));
+            msg(sender,"message.power_property.power_notfound");
             return;
         }
         item.rebuild();
         ItemManager.save(RPGItems.plugin);
-        sender.sendMessage(I18n.format("message.power_property.change"));
+        msg(sender,"message.power_property.change");
     }
 
     @SubCommand("cost")
@@ -692,18 +692,18 @@ public class Handler extends CommandReceiver<RPGItems> {
         if (args.length() == 3) {
             switch (type) {
                 case "breaking":
-                    sender.sendMessage(I18n.format("message.cost.get", item.blockBreakingCost));
+                    msg(sender,"message.cost.get", item.blockBreakingCost);
                     break;
                 case "hitting":
-                    sender.sendMessage(I18n.format("message.cost.get", item.hittingCost));
+                    msg(sender,"message.cost.get", item.hittingCost);
                     break;
                 case "hit":
-                    sender.sendMessage(I18n.format("message.cost.get", item.hitCost));
+                    msg(sender,"message.cost.get", item.hitCost);
                     break;
                 case "toggle":
                     item.hitCostByDamage = !item.hitCostByDamage;
                     ItemManager.save(RPGItems.plugin);
-                    sender.sendMessage(I18n.format("message.cost.hit_toggle." + (item.hitCostByDamage ? "enable" : "disable")));
+                    msg(sender,"message.cost.hit_toggle." + (item.hitCostByDamage ? "enable" : "disable"));
                     break;
             }
         } else {
@@ -712,17 +712,17 @@ public class Handler extends CommandReceiver<RPGItems> {
                 case "breaking":
                     item.blockBreakingCost = newValue;
                     ItemManager.save(RPGItems.plugin);
-                    sender.sendMessage(I18n.format("message.cost.change"));
+                    msg(sender,"message.cost.change");
                     break;
                 case "hitting":
                     item.hitCost = newValue;
                     ItemManager.save(RPGItems.plugin);
-                    sender.sendMessage(I18n.format("message.cost.change"));
+                    msg(sender,"message.cost.change");
                     break;
                 case "hit":
                     item.hitCost = newValue;
                     ItemManager.save(RPGItems.plugin);
-                    sender.sendMessage(I18n.format("message.cost.change"));
+                    msg(sender,"message.cost.change");
                     break;
             }
         }
@@ -732,33 +732,33 @@ public class Handler extends CommandReceiver<RPGItems> {
     public void itemDurability(CommandSender sender, Arguments args) {
         RPGItem item = ItemManager.itemByName.get(args.next());
         if (args.length() == 2) {
-            sender.sendMessage(I18n.format("message.durability.info", item.getMaxDurability(), item.defaultDurability, item.durabilityLowerBound, item.durabilityUpperBound));
+            msg(sender,"message.durability.info", item.getMaxDurability(), item.defaultDurability, item.durabilityLowerBound, item.durabilityUpperBound);
             return;
         }
         try {
             int durability = args.nextInt();
             item.setMaxDurability(durability);
             ItemManager.save(RPGItems.plugin);
-            sender.sendMessage(I18n.format("message.durability.change"));
+            msg(sender,"message.durability.change");
         } catch (Exception e) {
             switch (args.next()) {
                 case "infinite": {
                     item.setMaxDurability(-1);
                     ItemManager.save(RPGItems.plugin);
-                    sender.sendMessage(I18n.format("message.durability.change"));
+                    msg(sender,"message.durability.change");
                 }
                 break;
                 case "togglebar": {
                     item.toggleBar();
                     ItemManager.save(RPGItems.plugin);
-                    sender.sendMessage(I18n.format("message.durability.toggle"));
+                    msg(sender,"message.durability.toggle");
                 }
                 break;
                 case "default": {
                     int durability = args.nextInt();
                     item.setDefaultDurability(durability);
                     ItemManager.save(RPGItems.plugin);
-                    sender.sendMessage(I18n.format("message.durability.change"));
+                    msg(sender,"message.durability.change");
                 }
                 break;
                 case "bound": {
@@ -766,7 +766,7 @@ public class Handler extends CommandReceiver<RPGItems> {
                     int max = args.nextInt();
                     item.setDurabilityBound(min, max);
                     ItemManager.save(RPGItems.plugin);
-                    sender.sendMessage(I18n.format("message.durability.change"));
+                    msg(sender,"message.durability.change");
                 }
                 break;
             }
@@ -781,7 +781,7 @@ public class Handler extends CommandReceiver<RPGItems> {
         item.setPermission(permission);
         item.setHaspermission(enabled);
         ItemManager.save(RPGItems.plugin);
-        sender.sendMessage(I18n.format("message.permission.success"));
+        msg(sender,"message.permission.success");
     }
 
     @SubCommand("togglePowerLore")
@@ -790,7 +790,7 @@ public class Handler extends CommandReceiver<RPGItems> {
         item.showPowerLore = !item.showPowerLore;
         item.rebuild();
         ItemManager.save(RPGItems.plugin);
-        sender.sendMessage(I18n.format("message.toggleLore." + (item.showPowerLore ? "show" : "hide")));
+        msg(sender,"message.toggleLore." + (item.showPowerLore ? "show" : "hide"));
     }
 
     @SubCommand("toggleArmorLore")
@@ -799,7 +799,7 @@ public class Handler extends CommandReceiver<RPGItems> {
         item.showArmourLore = !item.showArmourLore;
         item.rebuild();
         ItemManager.save(RPGItems.plugin);
-        sender.sendMessage(I18n.format("message.toggleLore." + (item.showArmourLore ? "show" : "hide")));
+        msg(sender,"message.toggleLore." + (item.showArmourLore ? "show" : "hide"));
     }
 
     @SubCommand("additemflag")
@@ -809,7 +809,7 @@ public class Handler extends CommandReceiver<RPGItems> {
         item.itemFlags.add(ItemFlag.valueOf(flag.name()));
         item.rebuild();
         ItemManager.save(RPGItems.plugin);
-        sender.sendMessage(I18n.format("message.itemflag.add", flag.name()));
+        msg(sender,"message.itemflag.add", flag.name());
     }
 
     @SubCommand("removeitemflag")
@@ -821,9 +821,9 @@ public class Handler extends CommandReceiver<RPGItems> {
             item.itemFlags.remove(itemFlag);
             item.rebuild();
             ItemManager.save(RPGItems.plugin);
-            sender.sendMessage(I18n.format("message.itemflag.remove", flag.name()));
+            msg(sender,"message.itemflag.remove", flag.name());
         } else {
-            sender.sendMessage(I18n.format("message.itemflag.notfound", flag.name()));
+            msg(sender,"message.itemflag.notfound", flag.name());
         }
     }
 
@@ -833,12 +833,12 @@ public class Handler extends CommandReceiver<RPGItems> {
         item.customItemModel = !item.customItemModel;
         item.rebuild();
         ItemManager.save(RPGItems.plugin);
-        sender.sendMessage(I18n.format("message.customitemmodel." + (item.customItemModel ? "enable" : "disable")));
+        msg(sender,"message.customitemmodel." + (item.customItemModel ? "enable" : "disable"));
     }
 
     @SubCommand("version")
     public void printVersion(CommandSender sender, Arguments args) {
-        sender.sendMessage(I18n.format("message.version", RPGItems.plugin.getDescription().getVersion()));
+        msg(sender,"message.version", RPGItems.plugin.getDescription().getVersion());
     }
 
     @SubCommand("damageMode")
@@ -920,7 +920,7 @@ public class Handler extends CommandReceiver<RPGItems> {
         }
         power.item = item;
         item.addPower(power);
-        sender.sendMessage(I18n.format("message.power.ok"));
+        msg(sender,"message.power.ok");
         ItemManager.save(RPGItems.plugin);
     }
 }

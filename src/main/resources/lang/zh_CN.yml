@@ -304,9 +304,9 @@ message:
       find: 没有找到该物品
     get: 物品 '%s' 材质为 '%s
   damagemode:
-    fixed: 物品 '%s' 伤害模式设定为固定伤害（默认）
-    additional: 物品 '%s' 伤害模式设定为附加伤害
-    vanilla: 物品 '%s' 伤害模式设定为原版伤害
+    FIXED: 物品 '%s' 伤害模式设定为固定伤害（默认）
+    ADDITIONAL: 物品 '%s' 伤害模式设定为附加伤害
+    VANILLA: 物品 '%s' 伤害模式设定为原版伤害
   quality:
     get: 物品 '%s' 品质为 '%s'
     note: '品质:'
@@ -350,7 +350,9 @@ power:
   teleport: 传送 %d 格 (%.1f 秒冷却)
   ranged: 可远程使用
   ice: 发射冰块 (%.1f 秒冷却时间)
-  rescue: 当生命值低于 %.1f 颗心时施展拯救技能 (%.1f秒冷却)
+  rescue:
+    display: 当生命值低于 %.1f 颗心时施展拯救技能 (%.1f秒冷却)
+    info: 你已被拯救。
   consumehit: 击中后消耗掉
   aoe: 附加 %s  (级别 %d ) 效果，时间为 %d 单位，作用物品：%s，作用范围：%d 格方块，冷却时间：%.1f秒
   particle: 右键时产生一些粒子

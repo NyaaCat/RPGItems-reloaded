@@ -74,7 +74,7 @@ public class PowerRescue extends Power implements PowerHurt, PowerHitTaken {
 
     @Override
     public String displayText() {
-        return I18n.format("power.rescue", ((double) healthTrigger) / 2, (double) cooldownTime / 20d);
+        return I18n.format("power.rescue.display", ((double) healthTrigger) / 2, (double) cooldownTime / 20d);
     }
 
     @Override

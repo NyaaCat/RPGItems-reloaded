@@ -63,7 +63,7 @@ import static org.bukkit.ChatColor.COLOR_CHAR;
 import static org.bukkit.ChatColor.getByChar;
 
 public class RPGItem {
-    @LangKey(type = LangKeyType.PREFIX) public enum DamageMode{
+    @LangKey(type = LangKeyType.SUFFIX) public enum DamageMode{
         FIXED,
         VANILLA,
         ADDITIONAL,
