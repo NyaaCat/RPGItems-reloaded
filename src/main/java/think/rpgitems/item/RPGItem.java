@@ -400,7 +400,8 @@ public class RPGItem {
         s.set("forceBar", forceBar);
         s.set("showPowerText", showPowerLore);
         s.set("showArmourLore", showArmourLore);
-
+        s.set("damageMode", damageMode.name());
+        
         if (enchantMap != null) {
             ConfigurationSection ench = s.createSection("enchantments");
             for (Enchantment e : enchantMap.keySet()) {
