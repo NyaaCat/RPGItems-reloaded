@@ -84,10 +84,10 @@ public class PowerProjectile extends Power implements PowerRightClick {
     /**
      * Type of projectiles
      */
-    @Validator("acceptableType")
+    @Validator(value = "acceptableType", message = "power.projectile.noFireball")
     @Setter("setType")
     @ArgumentPriority(value = 2,required = true)
-    private Class<? extends Projectile> projectileType = Snowball.class;
+    public Class<? extends Projectile> projectileType = Snowball.class;
 
     @Override
     public void init(ConfigurationSection s) {

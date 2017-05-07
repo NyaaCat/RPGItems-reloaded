@@ -39,7 +39,7 @@ public class Handler extends CommandReceiver<RPGItems> {
     }
 
     @SuppressWarnings("unchecked")
-    public static void setPower(Power power, String field, String value) throws BadCommandException {
+    public static void setPower(Power power, String field, String value) throws BadCommandException, IllegalAccessException {
         Field f;
         Class<? extends Power> cls = power.getClass();
         try {
@@ -51,7 +51,7 @@ public class Handler extends CommandReceiver<RPGItems> {
     }
 
     @SuppressWarnings("unchecked")
-    public static void setPower(Power power, Field field, String value) {
+    public static void setPower(Power power, Field field, String value) throws BadCommandException, IllegalAccessException {
         Class<? extends Power> cls = power.getClass();
         Transformer tf = field.getAnnotation(Transformer.class);
         if (tf != null) {
@@ -61,16 +61,10 @@ public class Handler extends CommandReceiver<RPGItems> {
         if (bc != null) {
             String trueChoice = bc.trueChoice();
             String falseChoice = bc.falseChoice();
-            try {
-                if (value.equalsIgnoreCase(trueChoice) || value.equalsIgnoreCase(falseChoice)) {
-                    field.set(power, value.equalsIgnoreCase(trueChoice));
-                } else {
-                    //System.out.println("Not a boolean!");
-                    throw new BadCommandException("internal.error.invalid_command_arg");//TODO
-                }
-            } catch (Exception e) {
-                e.printStackTrace();
-                //System.out.println("Not a boolean!");
+            if (value.equalsIgnoreCase(trueChoice) || value.equalsIgnoreCase(falseChoice)) {
+                field.set(power, value.equalsIgnoreCase(trueChoice));
+            } else {
+                throw new BadCommandException("internal.error.invalid_option", field.getName(), falseChoice + ", " + trueChoice);//TODO
             }
             return;
         }
@@ -79,60 +73,54 @@ public class Handler extends CommandReceiver<RPGItems> {
         if (as != null) {
             rest = Arrays.asList(as.value());
             if (!rest.contains(value)) {
-                System.out.println("available:" + rest.stream().reduce(" ", (a, b) -> a + ", " + b));
-                return;
+                throw new BadCommandException("internal.error.invalid_option", field.getName(), rest.stream().reduce(" ", (a, b) -> a + ", " + b));
             }
         }
         Validator ck = field.getAnnotation(Validator.class);
         if (ck != null) {
             Boolean b = validators.get(cls, ck.value()).apply(power, value);
             if (!b) {
-                System.out.println("Not valid!");
-                return;
+                throw new BadCommandException("internal.error.invalid_option", field.getName(), I18n.format(ck.message(), value));
             }
         }
         Setter st = field.getAnnotation(Setter.class);
         if (st != null) {
             setters.get(cls, st.value()).accept(power, value);
         } else {
-            try {
-                if (field.getType() == int.class) {
-                    try {
-                        field.set(power, Integer.parseInt(value));
-                    } catch (NumberFormatException e) {
-                        System.out.println("Not a int!");
-                    }
-                } else if (field.getType() == long.class) {
-                    try {
-                        field.set(power, Long.parseLong(value));
-                    } catch (NumberFormatException e) {
-                        System.out.println("Not a long!");
-                    }
-                } else if (field.getType() == double.class) {
-                    try {
-                        field.set(power, Double.parseDouble(value));
-                    } catch (NumberFormatException e) {
-                        System.out.println("Not a double!");
-                    }
-                } else if (field.getType() == String.class) {
-                    field.set(power, value);
-                } else if (field.getType() == boolean.class) {
-                    if (value.equalsIgnoreCase("true") || value.equalsIgnoreCase("false")) {
-                        field.set(power, Boolean.valueOf(value));
-                    } else {
-                        System.out.println("Not a boolean!");
-                    }
-                } else if (field.getType().isEnum()) {
-                    try {
-                        field.set(power, Enum.valueOf((Class<Enum>) field.getType(), value));
-                    } catch (IllegalArgumentException e) {
-                        System.out.println("Not a enum!");
-                    }
-                } else {
-                    System.out.println("Not supported!");
+            if (field.getType() == int.class) {
+                try {
+                    field.set(power, Integer.parseInt(value));
+                } catch (NumberFormatException e) {
+                    throw new BadCommandException("internal.error.bad_int", value);
                 }
-            } catch (Exception e) {
-                e.printStackTrace();
+            } else if (field.getType() == long.class) {
+                try {
+                    field.set(power, Long.parseLong(value));
+                } catch (NumberFormatException e) {
+                    throw new BadCommandException("internal.error.bad_int", value);
+                }
+            } else if (field.getType() == double.class) {
+                try {
+                    field.set(power, Double.parseDouble(value));
+                } catch (NumberFormatException e) {
+                    throw new BadCommandException("internal.error.bad_double", value);
+                }
+            } else if (field.getType() == String.class) {
+                field.set(power, value);
+            } else if (field.getType() == boolean.class) {
+                if (value.equalsIgnoreCase("true") || value.equalsIgnoreCase("false")) {
+                    field.set(power, Boolean.valueOf(value));
+                } else {
+                    throw new BadCommandException("internal.error.invalid_option", field.getName(), "true, false");
+                }
+            } else if (field.getType().isEnum()) {
+                try {
+                    field.set(power, Enum.valueOf((Class<Enum>) field.getType(), value));
+                } catch (IllegalArgumentException e) {
+                    throw new BadCommandException("internal.error.bad_enum", field.getName(), Stream.of(field.getType().getEnumConstants()).map(Object::toString).reduce(" ", (a, b) -> a + ", " + b));
+                }
+            } else {
+                throw new BadCommandException("internal.error.invalid_command_arg");
             }
         }
     }
@@ -159,14 +147,18 @@ public class Handler extends CommandReceiver<RPGItems> {
         Collection<RPGItem> items = ItemManager.itemByName.values();
         int perPage = RPGItems.plugin.getConfig().getInt("itemperpage", 9);
         Stream<RPGItem> stream = ItemManager.itemByName.values().stream();
+
         if (args.length() != 1) {
+            int max = (int) Math.ceil(items.size() / (double) perPage);
             int page = args.nextInt();
+            if (!(0 < page || page <= max)) {
+                throw new BadCommandException("message.num_out_of_range", page, 0, max);
+            }
             stream = ItemManager.itemByName.values().stream().skip((page - 1) * perPage).limit(page);
-            sender.sendMessage(ChatColor.AQUA + "RPGItems: " + page + " / " + (int) Math.ceil(items.size() / (double) perPage));
+            sender.sendMessage(ChatColor.AQUA + "RPGItems: " + page + " / " + max);
         }
-        stream.forEach(item -> {
-                    new Message("{itemName} -" + item.getName()).append(item.toItemStack()).send(sender);
-                }
+
+        stream.forEach(item -> new Message("").append(I18n.format("message.item.list", item.getName()), item.toItemStack()).send(sender)
         );
     }
 
@@ -216,12 +208,6 @@ public class Handler extends CommandReceiver<RPGItems> {
         WorldGuard.forceRefresh = !WorldGuard.forceRefresh;
         RPGItems.plugin.getConfig().set("support.wgforcerefresh", WorldGuard.forceRefresh);
         RPGItems.plugin.saveConfig();
-    }
-
-    @SubCommand("item")
-    public void printItem(CommandSender sender, Arguments args) {
-        RPGItem item = ItemManager.itemByName.get(args.next());
-        item.print(sender);
     }
 
     @SubCommand("create")
@@ -383,8 +369,8 @@ public class Handler extends CommandReceiver<RPGItems> {
         RPGItem item = ItemManager.itemByName.get(args.next());
         if (args.length() == 2) {
             //msg(sender,"message.item.get", item.getName(), item.getItem().toString());
-            new Message(I18n.format("message.item.get", item.getName(), (int)item.getDataValue()))
-                    .append(new ItemStack(item.getItem()))
+            new Message("")
+                    .append(I18n.format("message.item.get", item.getName(), item.getItem().name(), (int) item.getDataValue()), new ItemStack(item.getItem()))
                     .send(sender);
         } else if (args.length() >= 3) {
             Material material;
@@ -418,12 +404,19 @@ public class Handler extends CommandReceiver<RPGItems> {
                 item.updateLocaleMeta(meta);
             }
             item.rebuild();
+
             //msg(sender,"message.item.set", item.getName(), item.getItem(), item.getDataValue());
-            new Message(I18n.format("message.item.set", item.getName(), (int)item.getDataValue()))
-                    .append(new ItemStack(item.getItem()))
+            new Message("")
+                    .append(I18n.format("message.item.set", item.getName(), item.getItem().name(), (int) item.getDataValue()), new ItemStack(item.getItem()))
                     .send(sender);
             ItemManager.save(RPGItems.plugin);
         }
+    }
+
+    @SubCommand("info")
+    public void itemInfo(CommandSender sender, Arguments args) {
+        RPGItem item = ItemManager.itemByName.get(args.next());
+        item.print(sender);
     }
 
     @SubCommand("enchantment")
@@ -507,7 +500,7 @@ public class Handler extends CommandReceiver<RPGItems> {
                 int lineNo = args.nextInt();
                 String line = args.next();
                 if (lineNo < 0 || lineNo >= item.description.size()) {
-                    msg(sender, "message.description.out.of.range", lineNo);
+                    msg(sender, "message.num_out_of_range", lineNo, 0, item.description.size());
                     return;
                 }
                 item.description.set(lineNo, ChatColor.translateAlternateColorCodes('&', ChatColor.WHITE + line));
@@ -519,7 +512,7 @@ public class Handler extends CommandReceiver<RPGItems> {
             case "remove": {
                 int lineNo = args.nextInt();
                 if (lineNo < 0 || lineNo >= item.description.size()) {
-                    msg(sender, "message.description.out.of.range", lineNo);
+                    msg(sender, "message.num_out_of_range", lineNo, 0, item.description.size());
                     return;
                 }
                 item.description.remove(lineNo);
@@ -658,7 +651,7 @@ public class Handler extends CommandReceiver<RPGItems> {
     }
 
     @SubCommand("set")
-    public void setItemPowerProperty(CommandSender sender, Arguments args) {
+    public void setItemPowerProperty(CommandSender sender, Arguments args) throws IllegalAccessException {
         RPGItem item = ItemManager.itemByName.get(args.next());
         String power = args.next();
         int nth = args.nextInt();
@@ -859,7 +852,7 @@ public class Handler extends CommandReceiver<RPGItems> {
     }
 
     @SubCommand("power")
-    public void itemAddPower(CommandSender sender, Arguments args) {
+    public void itemAddPower(CommandSender sender, Arguments args) throws IllegalAccessException {
         RPGItem item = ItemManager.itemByName.get(args.next());
         String str = args.next();
         Class<? extends Power> cls = Power.powers.get(str);

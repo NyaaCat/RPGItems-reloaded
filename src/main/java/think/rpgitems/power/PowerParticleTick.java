@@ -22,7 +22,7 @@ public class PowerParticleTick extends Power implements PowerTick {
      * Name of particle effect
      */
     @ArgumentPriority(required = true)
-    @Validator("acceptableEffect")
+    @Validator(value = "acceptableEffect", message = "message.error.visualeffect")
     public String effect = "FLAME";
     /**
      * Interval of particle effect

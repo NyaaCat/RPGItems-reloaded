@@ -22,7 +22,7 @@ public class PowerParticle extends Power implements PowerRightClick {
      * Name of particle effect
      */
     @ArgumentPriority(required = true)
-    @Validator("acceptableEffect")
+    @Validator(value = "acceptableEffect", message = "message.error.visualeffect")
     public String effect = "FLAME";
     /**
      * Cost of this power

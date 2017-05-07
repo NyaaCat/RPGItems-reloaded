@@ -16,6 +16,7 @@
  */
 package think.rpgitems.item;
 
+import cat.nyaa.nyaacore.Message;
 import net.md_5.bungee.api.chat.BaseComponent;
 import net.md_5.bungee.api.chat.ClickEvent;
 import net.md_5.bungee.api.chat.HoverEvent;
@@ -47,7 +48,6 @@ import think.rpgitems.I18n;
 import think.rpgitems.RPGItems;
 import think.rpgitems.data.Font;
 import think.rpgitems.data.RPGMetadata;
-
 import think.rpgitems.power.Power;
 import think.rpgitems.power.PowerLoreFilter;
 import think.rpgitems.power.PowerUnbreakable;
@@ -63,12 +63,8 @@ import static org.bukkit.ChatColor.COLOR_CHAR;
 import static org.bukkit.ChatColor.getByChar;
 
 public class RPGItem {
-    @LangKey(type = LangKeyType.SUFFIX) public enum DamageMode{
-        FIXED,
-        VANILLA,
-        ADDITIONAL,
-    }
     public static final int MC_ENCODED_ID_LENGTH = 16;
+    static RPGItems plugin;
     public boolean ignoreWorldGuard = false;
     public List<String> description = new ArrayList<>();
     public boolean showPowerLore = true;
@@ -119,8 +115,6 @@ public class RPGItem {
     private boolean hasBar = false;
     private boolean forceBar = false;
     private int _loreMinLen = 0;
-    static RPGItems plugin;
-
     public RPGItem(String name, int id) {
         this.name = name;
         this.id = id;
@@ -258,9 +252,9 @@ public class RPGItem {
         }
         customItemModel = s.getBoolean("customItemModel", false);
         String damageModeStr = s.getString("damageMode", "FIXED");
-        try{
+        try {
             damageMode = DamageMode.valueOf(damageModeStr);
-        }catch (IllegalArgumentException e){
+        } catch (IllegalArgumentException e) {
             damageMode = DamageMode.FIXED;
         }
         rebuild();
@@ -342,6 +336,10 @@ public class RPGItem {
             width += Font.widths[c] + 1;
         }
         return width;
+    }
+
+    public static RPGItems getPlugin() {
+        return plugin;
     }
 
     public void save(ConfigurationSection s) {
@@ -681,9 +679,9 @@ public class RPGItem {
             if (armour != 0) {
                 damageStr = armour + "% " + RPGItems.plugin.getConfig().getString("defaults.armour", "Armour");
             }
-            if((damageMin !=0 || damageMax !=0) && damageMode != DamageMode.VANILLA){
-                damageStr = damageStr == null? "" : damageStr + " & ";
-                if(damageMode == DamageMode.ADDITIONAL) {
+            if ((damageMin != 0 || damageMax != 0) && damageMode != DamageMode.VANILLA) {
+                damageStr = damageStr == null ? "" : damageStr + " & ";
+                if (damageMode == DamageMode.ADDITIONAL) {
                     damageStr += RPGItems.plugin.getConfig().getString("defaults.additionaldamage", "Additional ");
                 }
                 if (damageMin == damageMax) {
@@ -793,15 +791,17 @@ public class RPGItem {
     }
 
     public void print(CommandSender sender) {
-        List<String> lines = getTooltipLines();
-        for (int i = 0; i < lines.size(); i++) {
-            if (i == 0 && sender instanceof Player) {
-                ((Player) sender).spigot().sendMessage(getComponent());
-                continue;
+        if (sender instanceof Player) {
+            new Message("")
+                    .append(I18n.format("message.item.print"), toItemStack())
+                    .send(sender);
+        } else {
+            List<String> lines = getTooltipLines();
+            for (int i = 0; i < lines.size(); i++) {
+                sender.sendMessage(lines.get(i));
             }
-            sender.sendMessage(lines.get(i));
         }
-        sender.sendMessage(I18n.format("message.print.durability", maxDurability));
+        sender.sendMessage(I18n.format("message.durability.info", getMaxDurability(), defaultDurability, durabilityLowerBound, durabilityUpperBound));
         if (customItemModel) {
             sender.sendMessage(I18n.format("message.print.customitemmodel", item.getType().name() + ":" + item.getDurability()));
         }
@@ -920,9 +920,9 @@ public class RPGItem {
             rebuild();
     }
 
-    public boolean checkPermission(Player p, boolean showWarn){
-        if(getHasPermission() && !p.hasPermission(getPermission())){
-            if(showWarn)p.sendMessage(I18n.format("message.error.permission"));
+    public boolean checkPermission(Player p, boolean showWarn) {
+        if (getHasPermission() && !p.hasPermission(getPermission())) {
+            if (showWarn) p.sendMessage(I18n.format("message.error.permission"));
             return false;
         }
         return true;
@@ -1039,8 +1039,8 @@ public class RPGItem {
         int durability;
         if (getMaxDurability() != -1) {
             durability = meta.containsKey(RPGMetadata.DURABILITY) ? ((Number) meta.get(RPGMetadata.DURABILITY)).intValue() : defaultDurability;
-            if((val > 0 && durability < durabilityLowerBound)
-                    || (val < 0 && durability > durabilityUpperBound)){
+            if ((val > 0 && durability < durabilityLowerBound)
+                    || (val < 0 && durability > durabilityUpperBound)) {
                 return false;
             }
             if (durability <= val
@@ -1165,7 +1165,10 @@ public class RPGItem {
         return msg;
     }
 
-    public static RPGItems getPlugin(){
-        return plugin;
+    @LangKey(type = LangKeyType.SUFFIX)
+    public enum DamageMode {
+        FIXED,
+        VANILLA,
+        ADDITIONAL,
     }
 }

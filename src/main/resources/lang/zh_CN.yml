@@ -1,3 +1,6 @@
+internal:
+  error:
+    invalid_option: "无效输入 %s. 可选项: %s"
 command:
   info:
     command: 指令
@@ -253,11 +256,9 @@ message:
     empty_ench: 没有附魔
   description:
     remove: 该行文本已移除
-    out:
-      of:
-        range: 行 %d 已超出范围
     change: 该行文本已变更
     ok: 该行文本已增加
+  num_out_of_range: '%d 已超出范围 (%d, %d]'
   durability:
     info: '最大: %d, 默认: %d, 下限: %d, 上限: %d'
     change: 耐久度已变更
@@ -308,10 +309,12 @@ message:
       range: 物品 '%s' 伤害设置为 %d-%d
     get: 物品 '%s' 伤害为 %d-%d
   item:
-    set: 物品 '%s' 材质已设置为 '{itemName}:%d'
+    set: '物品 ''%s'' 材质已设置为 {itemName} (%s): %d '
     cant:
       find: 没有找到该物品
-    get: 物品 '%s' 材质为 '{itemName}:%d'
+    get: '物品 ''%s'' 材质为 {itemName} (%s): %d '
+    list: '%s - {itemName}'
+    print: '{itemName}'
   damagemode:
     FIXED: 物品 '%s' 伤害模式设定为固定伤害（默认）
     ADDITIONAL: 物品 '%s' 伤害模式设定为附加伤害
@@ -335,6 +338,7 @@ message:
     ok: 技能已添加
     unknown: 未知技能 %s
     removed: 技能 %s 已移除
+    required: "缺少必选参数: %s"
   toggleLore:
     show: 文字已显示
     hide: 文字已隐藏

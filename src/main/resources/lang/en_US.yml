@@ -1,3 +1,6 @@
+internal:
+  error:
+    invalid_option: "Invalid option for %s. Available: %s"
 command:
   info:
     command: Command
@@ -283,11 +286,9 @@ message:
     console: Cannot give console items
   description:
     remove: Removed line
-    out:
-      of:
-        range: Line %d is out of range
     change: Changed line
     ok: Added line
+  num_out_of_range: '%d is out of range (%d, %d]'
   durability:
     info: 'Max: %d, Default: %d, Lower %d, Upper %d'
     change: Durability changed
@@ -335,8 +336,6 @@ message:
   display:
     get: Item '%s' display name is '%s'
     set: Item '%s' display name set to '%s'
-  deprecation:
-    lore: '[NOTICE] "lore" is a deprecated feature. Please try "description" instead.'
   type:
     set: Item '%s' type set to '%s'
     get: Item '%s' type is '%s'
@@ -346,10 +345,12 @@ message:
       range: Item '%s' damage set to %d-%d
     get: Item '%s' damage is %d-%d
   item:
-    set: Item '%s' item set to '{itemName}:%d'
+    set: 'Item ''%s'' item set to {itemName} (%s): %d '
     cant:
       find: Cannot find item
-    get: Item '%s' item is '{itemName}:%d'
+    get: 'Item ''%s'' item is {itemName} (%s): %d '
+    list: '%s - {itemName}'
+    print: '{itemName}'
   damagemode:
     FIXED: Item '%s' damage mode set to fixed damage (default)
     ADDITIONAL: Item '%s' damage mode set to additional damage (vanilla minecraft damage plus RPGItem damage)

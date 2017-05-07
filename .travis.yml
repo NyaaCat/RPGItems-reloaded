@@ -1,7 +1,12 @@
 language: java
 jdk: oraclejdk8
 
-before_install: "sed -i \"s/^\\(version:.*\\)/\\1.$TRAVIS_BUILD_NUMBER/\" src/main/resources/plugin.yml"
+before_install:
+- "sed -i \"s/^\\(version:.*\\)/\\1.$TRAVIS_BUILD_NUMBER/\" src/main/resources/plugin.yml"
+- pushd ~/build/
+- git clone --depth=1 https://github.com/NyaaCat/NyaaCore NyaaCat/NyaaCore
+- export NYAACORE_LANG_DIR=`readlink -f ./NyaaCat/NyaaCore/src/main/resources/lang/`
+- popd
 after_success:
 - 'cp build/libs/RPGitems-reloaded.jar ./rpgitem-reloaded-$TRAVIS_BRANCH-v$main_version.$TRAVIS_BUILD_NUMBER.jar'
 
