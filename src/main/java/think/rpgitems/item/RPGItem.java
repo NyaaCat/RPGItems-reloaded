@@ -228,6 +228,11 @@ public class RPGItem {
         if (maxDurability == 0) {
             maxDurability = -1;
         }
+        
+       if (defaultDurability == 0) {
+            defaultDurability = maxDurability > 0 ? maxDurability : -1;
+        }
+        
         showPowerLore = s.getBoolean("showPowerText", true);
         showArmourLore = s.getBoolean("showArmourLore", true);
 
