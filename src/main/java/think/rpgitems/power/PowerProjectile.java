@@ -180,6 +180,7 @@ public class PowerProjectile extends Power implements PowerRightClick {
             }
         } else {
             Vector loc = player.getEyeLocation().getDirection();
+            range = Math.abs(range) % 360;
             double phi = range / 180f * Math.PI;
             Vector a, b;
             Vector ax1 = loc.getCrossProduct(z_axis);
