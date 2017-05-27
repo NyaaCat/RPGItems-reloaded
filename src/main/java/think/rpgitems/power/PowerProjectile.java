@@ -75,7 +75,7 @@ public class PowerProjectile extends Power implements PowerRightClick {
         range = s.getInt("range");
         amount = s.getInt("amount");
         consumption = s.getInt("consumption", 1);
-        speed = s.getDouble("consumption", 1);
+        speed = s.getDouble("speed", 1);
         gravity = s.getBoolean("gravity", true);
     }
 
