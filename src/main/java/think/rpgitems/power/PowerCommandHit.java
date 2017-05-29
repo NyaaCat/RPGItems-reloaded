@@ -130,6 +130,6 @@ public class PowerCommandHit extends Power implements PowerHit {
         s.set("display", display);
         s.set("permission", permission);
         s.set("minDamage", minDamage);
+        s.set("consumption", consumption);
     }
-
 }
