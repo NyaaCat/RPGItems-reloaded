@@ -24,4 +24,4 @@ deploy:
 
 branches:
   except:
-- "/^*-v[0-9]/"
+  - "/^*-v[0-9]/"
