@@ -103,16 +103,18 @@ public class Events implements Listener {
         RPGItem rItem;
         if ((rItem = ItemManager.toRPGItem(item)) != null) {
             RPGMetadata meta = RPGItem.getMetadata(item);
+            int durability = 1;
             if (rItem.getMaxDurability() != -1) {
-                int durability = meta.containsKey(RPGMetadata.DURABILITY) ? ((Number) meta.get(RPGMetadata.DURABILITY)).intValue() : rItem.getMaxDurability();
+                durability = meta.containsKey(RPGMetadata.DURABILITY) ? ((Number) meta.get(RPGMetadata.DURABILITY)).intValue() : rItem.getMaxDurability();
                 durability--;
-                if (durability <= 0) {
-                    player.setItemInHand(null);
-                }
                 meta.put(RPGMetadata.DURABILITY, Integer.valueOf(durability));
             }
             RPGItem.updateItem(item, meta);
-            player.updateInventory();
+            if (durability <= 0) {
+                player.getInventory().setItemInHand(new ItemStack(Material.AIR));
+            } else {
+                player.getInventory().setItemInHand(item);
+            }
         }
 
     }
@@ -180,16 +182,18 @@ public class Events implements Listener {
                 player.sendMessage(ChatColor.RED + String.format(Locale.get("message.error.permission")));
             }
             RPGMetadata meta = RPGItem.getMetadata(item);
+            int durability = 1;
             if (rItem.getMaxDurability() != -1) {
-                int durability = meta.containsKey(RPGMetadata.DURABILITY) ? ((Number) meta.get(RPGMetadata.DURABILITY)).intValue() : rItem.getMaxDurability();
+                durability = meta.containsKey(RPGMetadata.DURABILITY) ? ((Number) meta.get(RPGMetadata.DURABILITY)).intValue() : rItem.getMaxDurability();
                 durability--;
-                if (durability <= 0) {
-                    player.setItemInHand(null);
-                }
                 meta.put(RPGMetadata.DURABILITY, Integer.valueOf(durability));
             }
             RPGItem.updateItem(item, meta);
-            player.updateInventory();
+            if (durability <= 0) {
+                player.getInventory().setItemInHand(new ItemStack(Material.AIR));
+            } else {
+                player.updateInventory();
+            }
             rpgProjectiles.put(e.getEntity().getEntityId(), rItem.getID());
         }
     }
@@ -409,16 +413,18 @@ public class Events implements Listener {
             rItem.hit(player, (LivingEntity) e.getEntity(), e.getDamage());
         }
         RPGMetadata meta = RPGItem.getMetadata(item);
+        int durability = 1;
         if (rItem.getMaxDurability() != -1) {
-            int durability = meta.containsKey(RPGMetadata.DURABILITY) ? ((Number) meta.get(RPGMetadata.DURABILITY)).intValue() : rItem.getMaxDurability();
+            durability = meta.containsKey(RPGMetadata.DURABILITY) ? ((Number) meta.get(RPGMetadata.DURABILITY)).intValue() : rItem.getMaxDurability();
             durability--;
-            if (durability <= 0) {
-                player.setItemInHand(null);
-            }
             meta.put(RPGMetadata.DURABILITY, Integer.valueOf(durability));
         }
         RPGItem.updateItem(item, meta);
-        player.updateInventory();
+        if (durability <= 0) {
+            player.getInventory().setItemInHand(new ItemStack(Material.AIR));
+        } else {
+            player.getInventory().setItemInHand(item);
+        }
         return damage;
     }
 
@@ -448,11 +454,15 @@ public class Events implements Listener {
         if (e.isCancelled() || !WorldGuard.canPvP(p))
             return damage;
         ItemStack[] armour = p.getInventory().getArmorContents();
+        boolean hasRPGItem = false;
         for (int i = 0; i < armour.length; i++) {
             ItemStack pArmour = armour[i];
             RPGItem pRItem = ItemManager.toRPGItem(pArmour);
-            if (pRItem == null)
+            if (pRItem == null) {
                 continue;
+            } else {
+                hasRPGItem = true;
+            }
             if (!WorldGuard.canPvP(p) && !pRItem.ignoreWorldGuard)
                 return damage;
             if (pRItem.getHasPermission() == true && p.hasPermission(pRItem.getPermission()) == false) {
@@ -474,8 +484,9 @@ public class Events implements Listener {
             }
             RPGItem.updateItem(pArmour, meta);
         }
-        p.getInventory().setArmorContents(armour);
-        p.updateInventory();
+        if(hasRPGItem) {
+            p.getInventory().setArmorContents(armour);
+        }
         return damage;
     }
 
