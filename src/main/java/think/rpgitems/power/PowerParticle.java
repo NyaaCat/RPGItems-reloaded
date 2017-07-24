@@ -8,7 +8,6 @@ import org.bukkit.inventory.ItemStack;
 import think.rpgitems.I18n;
 import think.rpgitems.commands.ArgumentPriority;
 import think.rpgitems.commands.Validator;
-
 import think.rpgitems.power.types.PowerRightClick;
 
 /**

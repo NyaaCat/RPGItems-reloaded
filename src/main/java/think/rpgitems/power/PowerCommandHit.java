@@ -38,7 +38,7 @@ public class PowerCommandHit extends Power implements PowerHit {
     /**
      * Command to be executed
      */
-    @ArgumentPriority(value = 2,required = true)
+    @ArgumentPriority(value = 2, required = true)
     public String command = "";
     /**
      * Display text of this power
@@ -63,6 +63,7 @@ public class PowerCommandHit extends Power implements PowerHit {
      * Minimum damage to trigger
      */
     public double minDamage = 0;
+
     /**
      * Execute command
      *
@@ -100,8 +101,8 @@ public class PowerCommandHit extends Power implements PowerHit {
 
     @Override
     public void hit(Player player, ItemStack stack, LivingEntity entity, double damage) {
-        if(damage < minDamage)return;
-        if (!item.checkPermission(player, true))return;
+        if (damage < minDamage) return;
+        if (!item.checkPermission(player, true)) return;
         if (!checkCooldownByString(player, item, command, cooldownTime, true)) return;
         if (!item.consumeDurability(stack, consumption)) return;
 

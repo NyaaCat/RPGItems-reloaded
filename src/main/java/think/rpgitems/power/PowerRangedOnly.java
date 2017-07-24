@@ -16,7 +16,6 @@
  */
 package think.rpgitems.power;
 
-import org.bukkit.ChatColor;
 import org.bukkit.configuration.ConfigurationSection;
 import think.rpgitems.I18n;
 

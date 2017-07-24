@@ -16,7 +16,6 @@
  */
 package think.rpgitems.power;
 
-import org.bukkit.ChatColor;
 import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.entity.LivingEntity;
 import org.bukkit.entity.Player;
@@ -24,7 +23,6 @@ import org.bukkit.entity.Projectile;
 import org.bukkit.inventory.ItemStack;
 import think.rpgitems.I18n;
 import think.rpgitems.commands.ArgumentPriority;
-
 import think.rpgitems.power.types.PowerHit;
 import think.rpgitems.power.types.PowerProjectileHit;
 
@@ -51,7 +49,7 @@ public class PowerLightning extends Power implements PowerHit, PowerProjectileHi
 
     @Override
     public void hit(Player player, ItemStack stack, LivingEntity entity, double damage) {
-        if (!item.checkPermission(player, true))return;
+        if (!item.checkPermission(player, true)) return;
         if (!item.consumeDurability(stack, consumption)) return;
         if (random.nextInt(chance) == 0) {
             entity.getWorld().strikeLightning(entity.getLocation());
@@ -60,7 +58,7 @@ public class PowerLightning extends Power implements PowerHit, PowerProjectileHi
 
     @Override
     public void projectileHit(Player player, ItemStack stack, Projectile p) {
-        if (!item.checkPermission(player, true))return;
+        if (!item.checkPermission(player, true)) return;
         if (!item.consumeDurability(stack, consumption)) return;
         if (random.nextInt(chance) == 0) {
             p.getWorld().strikeLightning(p.getLocation());

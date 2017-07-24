@@ -1,6 +1,9 @@
 package think.rpgitems.power;
 
-import org.bukkit.*;
+import org.bukkit.Bukkit;
+import org.bukkit.Location;
+import org.bukkit.Material;
+import org.bukkit.World;
 import org.bukkit.block.Block;
 import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.entity.Entity;
@@ -11,7 +14,6 @@ import org.bukkit.inventory.ItemStack;
 import think.rpgitems.I18n;
 import think.rpgitems.RPGItems;
 import think.rpgitems.commands.ArgumentPriority;
-
 import think.rpgitems.power.types.PowerRightClick;
 
 import java.util.HashSet;
@@ -88,7 +90,7 @@ public class PowerForceField extends Power implements PowerRightClick {
 
     @Override
     public void rightClick(Player player, ItemStack stack, Block clicked) {
-        if (!item.checkPermission(player, true))return;
+        if (!item.checkPermission(player, true)) return;
         if (!checkCooldown(player, cooldownTime, true)) return;
         if (!item.consumeDurability(stack, consumption)) return;
         World w = player.getWorld();

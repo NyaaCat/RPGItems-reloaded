@@ -27,7 +27,6 @@ import org.bukkit.scheduler.BukkitRunnable;
 import think.rpgitems.I18n;
 import think.rpgitems.RPGItems;
 import think.rpgitems.commands.ArgumentPriority;
-
 import think.rpgitems.power.types.PowerRightClick;
 
 import java.util.ArrayList;
@@ -55,7 +54,7 @@ public class PowerTorch extends Power implements PowerRightClick {
     @SuppressWarnings("deprecation")
     @Override
     public void rightClick(final Player player, ItemStack stack, Block clicked) {
-        if (!item.checkPermission(player, true))return;
+        if (!item.checkPermission(player, true)) return;
         if (!checkCooldown(player, cooldownTime, true)) return;
         if (!item.consumeDurability(stack, consumption)) return;
         player.playSound(player.getLocation(), Sound.ITEM_FLINTANDSTEEL_USE, 1.0f, 0.8f);

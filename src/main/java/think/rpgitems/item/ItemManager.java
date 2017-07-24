@@ -77,7 +77,7 @@ public class ItemManager {
             try {
                 currentPos = itemStorage.getInt("pos", 0);
                 section = itemStorage.getConfigurationSection("items");
-            } catch (NullPointerException e){
+            } catch (NullPointerException e) {
                 plugin.getLogger().severe("Error loading items.yml. Is this your first time to load RPGItems?");
                 dump(e);
                 return;

@@ -1,6 +1,5 @@
 package think.rpgitems.power;
 
-import org.bukkit.ChatColor;
 import org.bukkit.Location;
 import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.entity.Entity;
@@ -10,7 +9,6 @@ import org.bukkit.inventory.ItemStack;
 import org.bukkit.util.Vector;
 import think.rpgitems.I18n;
 import think.rpgitems.commands.ArgumentPriority;
-
 import think.rpgitems.power.types.PowerTick;
 
 /**
@@ -29,7 +27,7 @@ public class PowerAttract extends Power implements PowerTick {
     /**
      * Maximum speed.
      */
-    @ArgumentPriority(value = 1,required = true)
+    @ArgumentPriority(value = 1, required = true)
     public double maxSpeed = 0.4D;
 
     @Override
@@ -56,7 +54,7 @@ public class PowerAttract extends Power implements PowerTick {
 
     @Override
     public void tick(Player player, ItemStack stack) {
-        if (!item.checkPermission(player, true))return;
+        if (!item.checkPermission(player, true)) return;
         double factor = Math.sqrt(radius - 1) / maxSpeed;
         for (Entity e : player.getNearbyEntities(radius, radius, radius)) {
             if (e instanceof LivingEntity && !(e instanceof Player)) {

@@ -1,6 +1,5 @@
 package think.rpgitems.power;
 
-import org.bukkit.ChatColor;
 import org.bukkit.GameMode;
 import org.bukkit.Location;
 import org.bukkit.Material;
@@ -14,7 +13,6 @@ import think.rpgitems.I18n;
 import think.rpgitems.RPGItems;
 import think.rpgitems.commands.ArgumentPriority;
 import think.rpgitems.data.RPGValue;
-
 import think.rpgitems.power.types.PowerRightClick;
 
 import java.util.Set;
@@ -36,7 +34,7 @@ public class PowerSkyHook extends Power implements PowerRightClick {
     /**
      * Maximum distance.
      */
-    @ArgumentPriority(value = 1,required = true)
+    @ArgumentPriority(value = 1, required = true)
     public int hookDistance = 10;
 
     @Override

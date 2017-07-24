@@ -16,7 +16,6 @@
  */
 package think.rpgitems.power;
 
-import org.bukkit.ChatColor;
 import org.bukkit.block.Block;
 import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.entity.Player;
@@ -26,7 +25,6 @@ import org.bukkit.potion.PotionEffectType;
 import think.rpgitems.I18n;
 import think.rpgitems.commands.ArgumentPriority;
 import think.rpgitems.commands.Setter;
-
 import think.rpgitems.power.types.PowerRightClick;
 
 /**
@@ -61,13 +59,13 @@ public class PowerPotionSelf extends Power implements PowerRightClick {
      * Type of potion effect
      */
     @Setter("setType")
-    @ArgumentPriority(value = 3,required = true)
+    @ArgumentPriority(value = 3, required = true)
     public PotionEffectType type = PotionEffectType.HEAL;
 
     @Override
     public void rightClick(Player player, ItemStack stack, Block clicked) {
-        if (!item.checkPermission(player, true))return;
-        if (!checkCooldown(player, cooldownTime, true))return;
+        if (!item.checkPermission(player, true)) return;
+        if (!checkCooldown(player, cooldownTime, true)) return;
         if (!item.consumeDurability(stack, consumption)) return;
         player.addPotionEffect(new PotionEffect(type, duration, amplifier), true);
     }
@@ -100,7 +98,7 @@ public class PowerPotionSelf extends Power implements PowerRightClick {
         return I18n.format("power.potionself", type.getName().toLowerCase().replaceAll("_", " "), amplifier + 1, ((double) duration) / 20d);
     }
 
-    public void setType(String effect){
+    public void setType(String effect) {
         type = PotionEffectType.getByName(effect);
     }
 }

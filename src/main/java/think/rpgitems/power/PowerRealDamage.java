@@ -16,7 +16,6 @@
  */
 package think.rpgitems.power;
 
-import org.bukkit.ChatColor;
 import org.bukkit.attribute.Attribute;
 import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.entity.LivingEntity;
@@ -26,7 +25,6 @@ import org.bukkit.potion.PotionEffect;
 import org.bukkit.potion.PotionEffectType;
 import think.rpgitems.I18n;
 import think.rpgitems.commands.ArgumentPriority;
-
 import think.rpgitems.power.types.PowerHit;
 
 import static java.lang.Double.max;
@@ -53,7 +51,7 @@ public class PowerRealDamage extends Power implements PowerHit {
     /**
      * Damage of this power
      */
-    @ArgumentPriority(value = 1,required = true)
+    @ArgumentPriority(value = 1, required = true)
     public double realDamage = 0;
     /**
      * Minimum damage to trigger
@@ -62,13 +60,13 @@ public class PowerRealDamage extends Power implements PowerHit {
 
     @Override
     public void hit(Player player, ItemStack stack, LivingEntity entity, double damage) {
-        if(damage < minDamage)return;
+        if (damage < minDamage) return;
         if (!item.checkPermission(player, true)) return;
         if (!checkCooldown(player, cooldownTime, true)) return;
         if (!item.consumeDurability(stack, consumption)) return;
-        if(entity.hasPotionEffect(PotionEffectType.DAMAGE_RESISTANCE)){
+        if (entity.hasPotionEffect(PotionEffectType.DAMAGE_RESISTANCE)) {
             PotionEffect e = entity.getPotionEffect(PotionEffectType.DAMAGE_RESISTANCE);
-            if(e.getAmplifier() >= 4)return;
+            if (e.getAmplifier() >= 4) return;
         }
         double health = entity.getHealth();
         double newHealth = health - realDamage;

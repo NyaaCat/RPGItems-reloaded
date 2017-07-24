@@ -17,7 +17,6 @@
 package think.rpgitems.power;
 
 import org.bukkit.Bukkit;
-import org.bukkit.ChatColor;
 import org.bukkit.Sound;
 import org.bukkit.block.Block;
 import org.bukkit.configuration.ConfigurationSection;
@@ -32,7 +31,6 @@ import think.rpgitems.I18n;
 import think.rpgitems.RPGItems;
 import think.rpgitems.commands.ArgumentPriority;
 import think.rpgitems.commands.BooleanChoice;
-
 import think.rpgitems.power.types.PowerHitTaken;
 import think.rpgitems.power.types.PowerLeftClick;
 import think.rpgitems.power.types.PowerRightClick;
@@ -86,7 +84,7 @@ public class PowerDeflect extends Power implements PowerHitTaken, PowerRightClic
     /**
      * Whether triggers when right click.
      */
-    @BooleanChoice(name = "mouse",falseChoice = "left", trueChoice = "right")
+    @BooleanChoice(name = "mouse", falseChoice = "left", trueChoice = "right")
     public boolean isRight = true;
 
     /**
@@ -141,8 +139,8 @@ public class PowerDeflect extends Power implements PowerHitTaken, PowerRightClic
     @Override
     public double takeHit(Player target, ItemStack stack, EntityDamageEvent event) {
         if (!item.checkPermission(target, true)
-                || !((System.currentTimeMillis() / 50 < time) || (passive && (ThreadLocalRandom.current().nextInt(0, 100) < chance) && checkCooldown(target, cooldownTimePassive, false)))
-                || !item.consumeDurability(stack, consumption))
+                    || !((System.currentTimeMillis() / 50 < time) || (passive && (ThreadLocalRandom.current().nextInt(0, 100) < chance) && checkCooldown(target, cooldownTimePassive, false)))
+                    || !item.consumeDurability(stack, consumption))
             return event.getDamage();
         if (event instanceof EntityDamageByEntityEvent) {
             EntityDamageByEntityEvent byEntityEvent = (EntityDamageByEntityEvent) event;
@@ -153,7 +151,7 @@ public class PowerDeflect extends Power implements PowerHitTaken, PowerRightClic
                 Vector relativePosition = target.getEyeLocation().toVector();
                 relativePosition.subtract(source.getEyeLocation().toVector());
                 if (getAngleBetweenVectors(target.getEyeLocation().getDirection(), relativePosition.multiply(-1)) < facing
-                        && (p instanceof SmallFireball || p instanceof LargeFireball || p instanceof Arrow)) {
+                            && (p instanceof SmallFireball || p instanceof LargeFireball || p instanceof Arrow)) {
                     event.setCancelled(true);
                     p.remove();
                     target.getLocation().getWorld().playSound(target.getLocation(), Sound.ITEM_SHIELD_BLOCK, 1.0f, 3.0f);
@@ -179,9 +177,9 @@ public class PowerDeflect extends Power implements PowerHitTaken, PowerRightClic
     @Override
     public void rightClick(Player player, ItemStack stack, Block clicked) {
         if (!isRight || !initiative
-                || !item.checkPermission(player, true)
-                || !checkCooldownByString(player, item, "deflect.initiative", cooldownTime, true)
-                || !item.consumeDurability(stack, consumption))
+                    || !item.checkPermission(player, true)
+                    || !checkCooldownByString(player, item, "deflect.initiative", cooldownTime, true)
+                    || !item.consumeDurability(stack, consumption))
             return;
         time = System.currentTimeMillis() / 50 + duration;
     }
@@ -189,9 +187,9 @@ public class PowerDeflect extends Power implements PowerHitTaken, PowerRightClic
     @Override
     public void leftClick(Player player, ItemStack stack, Block clicked) {
         if (isRight || !initiative
-                || !item.checkPermission(player, true)
-                || !checkCooldownByString(player, item, "deflect.initiative", cooldownTime, true)
-                || !item.consumeDurability(stack, consumption))
+                    || !item.checkPermission(player, true)
+                    || !checkCooldownByString(player, item, "deflect.initiative", cooldownTime, true)
+                    || !item.consumeDurability(stack, consumption))
             return;
         time = System.currentTimeMillis() / 50 + duration;
     }

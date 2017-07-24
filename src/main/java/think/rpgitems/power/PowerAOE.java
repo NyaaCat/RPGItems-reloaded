@@ -16,7 +16,6 @@
  */
 package think.rpgitems.power;
 
-import org.bukkit.ChatColor;
 import org.bukkit.Effect;
 import org.bukkit.block.Block;
 import org.bukkit.configuration.ConfigurationSection;
@@ -29,7 +28,6 @@ import org.bukkit.potion.PotionEffectType;
 import think.rpgitems.I18n;
 import think.rpgitems.commands.ArgumentPriority;
 import think.rpgitems.commands.Setter;
-
 import think.rpgitems.power.types.PowerRightClick;
 
 /**
@@ -110,8 +108,8 @@ public class PowerAOE extends Power implements PowerRightClick {
 
     @Override
     public void rightClick(final Player player, ItemStack stack, Block clicked) {
-        if (!item.checkPermission(player, true))return;
-        if (!checkCooldown(player, cooldownTime, true))return;
+        if (!item.checkPermission(player, true)) return;
+        if (!checkCooldown(player, cooldownTime, true)) return;
         if (!item.consumeDurability(stack, consumption)) return;
         PotionEffect effect = new PotionEffect(type, duration, amplifier - 1);
         if (selfapplication)
@@ -132,7 +130,7 @@ public class PowerAOE extends Power implements PowerRightClick {
         return name != null ? name : I18n.format("power.aoe.display", type.getName(), amplifier, duration, selfapplication ? I18n.format("power.aoe.selfapplication.true") : I18n.format("power.aoe.selfapplication.false"), range, (double) cooldownTime / 20d);
     }
 
-    public void setType(String effect){
+    public void setType(String effect) {
         type = PotionEffectType.getByName(effect);
     }
 }

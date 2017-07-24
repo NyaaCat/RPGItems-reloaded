@@ -17,7 +17,6 @@
 package think.rpgitems.power;
 
 import org.bukkit.Bukkit;
-import org.bukkit.ChatColor;
 import org.bukkit.Material;
 import org.bukkit.block.Block;
 import org.bukkit.configuration.ConfigurationSection;
@@ -27,7 +26,6 @@ import think.rpgitems.I18n;
 import think.rpgitems.RPGItems;
 import think.rpgitems.commands.ArgumentPriority;
 import think.rpgitems.commands.BooleanChoice;
-
 import think.rpgitems.power.types.PowerLeftClick;
 import think.rpgitems.power.types.PowerRightClick;
 
@@ -48,7 +46,7 @@ public class PowerConsume extends Power implements PowerRightClick, PowerLeftCli
      * Whether triggers when right click.
      */
     @ArgumentPriority
-    @BooleanChoice(name = "mouse",falseChoice = "left", trueChoice = "right")
+    @BooleanChoice(name = "mouse", falseChoice = "left", trueChoice = "right")
     public boolean isRight = true;
     /**
      * Cost of this power
@@ -57,7 +55,7 @@ public class PowerConsume extends Power implements PowerRightClick, PowerLeftCli
 
     @Override
     public void rightClick(final Player player, ItemStack stack, Block clicked) {
-        if (!item.checkPermission(player, true))return;
+        if (!item.checkPermission(player, true)) return;
         if (isRight && checkCooldown(player, cooldownTime, false)) {
             consume(player);
         }
@@ -65,7 +63,7 @@ public class PowerConsume extends Power implements PowerRightClick, PowerLeftCli
 
     @Override
     public void leftClick(final Player player, ItemStack stack, Block clicked) {
-        if (!item.checkPermission(player, true))return;
+        if (!item.checkPermission(player, true)) return;
         if (!isRight && checkCooldown(player, cooldownTime, false)) {
             consume(player);
         }

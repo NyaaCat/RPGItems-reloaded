@@ -16,7 +16,6 @@
  */
 package think.rpgitems.power;
 
-import org.bukkit.ChatColor;
 import org.bukkit.Material;
 import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.entity.LivingEntity;
@@ -24,7 +23,6 @@ import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
 import think.rpgitems.I18n;
 import think.rpgitems.commands.ArgumentPriority;
-
 import think.rpgitems.power.types.PowerHit;
 
 /**
@@ -43,7 +41,7 @@ public class PowerConsumeHit extends Power implements PowerHit {
     @Override
     public void hit(final Player player, ItemStack stack, LivingEntity entity, double damage) {
         if (!checkCooldown(player, cooldownTime, false)) return;
-        if (!item.checkPermission(player, true))return;
+        if (!item.checkPermission(player, true)) return;
         int count = stack.getAmount() - 1;
         if (count == 0) {
             stack.setAmount(0);

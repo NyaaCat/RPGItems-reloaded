@@ -5,19 +5,9 @@ import org.bukkit.plugin.java.JavaPlugin;
 import org.librazy.nyaautils_lang_checker.LangKey;
 
 public class I18n extends LanguageRepository {
-    public static I18n instance = null;
-    private String lang = "en_US";
+    private static I18n instance = null;
     private final RPGItems plugin;
-
-    @Override
-    protected JavaPlugin getPlugin() {
-        return plugin;
-    }
-
-    @Override
-    protected String getLanguage() {
-        return lang;
-    }
+    private String lang = "en_US";
 
     public I18n(RPGItems plugin, String lang) {
         instance = this;
@@ -27,6 +17,16 @@ public class I18n extends LanguageRepository {
     }
 
     public static String format(@LangKey String key, Object... args) {
-        return instance.get(key, args);
+        return instance.getFormatted(key, args);
+    }
+
+    @Override
+    protected JavaPlugin getPlugin() {
+        return plugin;
+    }
+
+    @Override
+    protected String getLanguage() {
+        return lang;
     }
 }

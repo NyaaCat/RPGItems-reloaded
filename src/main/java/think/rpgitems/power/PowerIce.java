@@ -27,7 +27,6 @@ import org.bukkit.scheduler.BukkitRunnable;
 import think.rpgitems.I18n;
 import think.rpgitems.RPGItems;
 import think.rpgitems.commands.ArgumentPriority;
-
 import think.rpgitems.power.types.PowerRightClick;
 
 import java.util.HashMap;
@@ -57,8 +56,8 @@ public class PowerIce extends Power implements PowerRightClick {
     @SuppressWarnings("deprecation")
     @Override
     public void rightClick(final Player player, ItemStack stack, Block clicked) {
-        if (!item.checkPermission(player, true))return;
-        if (!checkCooldown(player, cooldownTime, true))return;
+        if (!item.checkPermission(player, true)) return;
+        if (!checkCooldown(player, cooldownTime, true)) return;
         if (!item.consumeDurability(stack, consumption)) return;
         player.playSound(player.getLocation(), Sound.ENTITY_EGG_THROW, 1.0f, 0.1f);
 
@@ -98,7 +97,7 @@ public class PowerIce extends Power implements PowerRightClick {
                                 Location loc = landingLoc.clone().add(x, y, z);
                                 Block b = world.getBlockAt(loc);
                                 if (!b.getType().isSolid() && !b.getType().toString().contains("SIGN")
-                                        && !(b.getType() == Material.SKULL || b.getType() == Material.FLOWER_POT)) {
+                                            && !(b.getType() == Material.SKULL || b.getType() == Material.FLOWER_POT)) {
                                     changedBlocks.put(b.getLocation(), b.getTypeId() | ((long) b.getData() << 16));
                                     b.setType(Material.PACKED_ICE);
                                 }

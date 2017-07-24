@@ -9,5 +9,6 @@ import java.lang.annotation.Target;
 @Target(ElementType.FIELD)
 public @interface ArgumentPriority {
     int value() default 0;
+
     boolean required() default false;
 }

@@ -16,7 +16,6 @@
  */
 package think.rpgitems.power;
 
-import org.bukkit.ChatColor;
 import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.entity.LivingEntity;
 import org.bukkit.entity.Player;
@@ -26,7 +25,6 @@ import org.bukkit.potion.PotionEffectType;
 import think.rpgitems.I18n;
 import think.rpgitems.commands.ArgumentPriority;
 import think.rpgitems.commands.Setter;
-
 import think.rpgitems.power.types.PowerHit;
 
 import java.util.Random;
@@ -48,7 +46,7 @@ public class PowerPotionHit extends Power implements PowerHit {
      * Type of potion effect
      */
     @Setter("setType")
-    @ArgumentPriority(value = 3,required = true)
+    @ArgumentPriority(value = 3, required = true)
     public PotionEffectType type = PotionEffectType.HARM;
     /**
      * Duration of potion effect
@@ -69,7 +67,7 @@ public class PowerPotionHit extends Power implements PowerHit {
 
     @Override
     public void hit(Player player, ItemStack stack, LivingEntity entity, double damage) {
-        if (!item.checkPermission(player, true))return;
+        if (!item.checkPermission(player, true)) return;
         if (!item.consumeDurability(stack, consumption)) return;
         if (rand.nextInt(chance) == 0) {
             entity.addPotionEffect(new PotionEffect(type, duration, amplifier));
@@ -104,7 +102,7 @@ public class PowerPotionHit extends Power implements PowerHit {
         s.set("consumption", consumption);
     }
 
-    public void setType(String effect){
+    public void setType(String effect) {
         type = PotionEffectType.getByName(effect);
     }
 }

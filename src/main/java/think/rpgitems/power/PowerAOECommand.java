@@ -94,9 +94,9 @@ public class PowerAOECommand extends PowerCommand {
                 String cmd = usercmd;
                 LivingEntity e = entities[i];
                 if ((mustsee && !player.hasLineOfSight(e))
-                        || (!selfapplication && e == player)
-                        || (forPlayers && !(e instanceof Player))
-                        || (forMobs && e instanceof Player)
+                            || (!selfapplication && e == player)
+                            || (forPlayers && !(e instanceof Player))
+                            || (forMobs && e instanceof Player)
                         ) {
                     ++c;
                     continue;
@@ -118,7 +118,7 @@ public class PowerAOECommand extends PowerCommand {
 
     @Override
     public void rightClick(Player player, ItemStack stack, Block clicked) {
-        if (!item.checkPermission(player, true))return;
+        if (!item.checkPermission(player, true)) return;
         if (!isRight || !checkCooldownByString(player, item, command, cooldownTime, true)) return;
         if (!item.consumeDurability(stack, consumption)) return;
         aoeCommand(player);
@@ -126,7 +126,7 @@ public class PowerAOECommand extends PowerCommand {
 
     @Override
     public void leftClick(Player player, ItemStack stack, Block clicked) {
-        if (!item.checkPermission(player, true))return;
+        if (!item.checkPermission(player, true)) return;
         if (isRight || !checkCooldownByString(player, item, command, cooldownTime, true)) return;
         if (!item.consumeDurability(stack, consumption)) return;
         aoeCommand(player);

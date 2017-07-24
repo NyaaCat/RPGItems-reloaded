@@ -41,7 +41,7 @@ public class PowerDelayedCommand extends PowerCommand {
 
     @Override
     public void rightClick(final Player player, ItemStack stack, Block clicked) {
-        if (!item.checkPermission(player, true))return;
+        if (!item.checkPermission(player, true)) return;
         if (!isRight || !checkCooldownByString(player, item, command, cooldownTime, true)) return;
         if (!item.consumeDurability(stack, consumption)) return;
         (new BukkitRunnable() {
@@ -54,7 +54,7 @@ public class PowerDelayedCommand extends PowerCommand {
 
     @Override
     public void leftClick(final Player player, ItemStack stack, Block clicked) {
-        if (!item.checkPermission(player, true))return;
+        if (!item.checkPermission(player, true)) return;
         if (isRight || !checkCooldownByString(player, item, command, cooldownTime, true)) return;
         if (!item.consumeDurability(stack, consumption)) return;
         (new BukkitRunnable() {

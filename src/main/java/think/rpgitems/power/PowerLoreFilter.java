@@ -19,7 +19,7 @@ public class PowerLoreFilter extends Power {
     /**
      * Display text
      */
-    @ArgumentPriority(value = 1,required = true)
+    @ArgumentPriority(value = 1, required = true)
     public String desc = "";
 
     @Override

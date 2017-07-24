@@ -278,7 +278,7 @@ public class Events implements Listener {
         if (action == Action.RIGHT_CLICK_AIR) {
             rItem.rightClick(p, e.getItem(), e.getClickedBlock());
         } else if (action == Action.RIGHT_CLICK_BLOCK &&
-                !(BYPASS_BLOCK.contains(e.getClickedBlock().getType()) && !p.isSneaking())) {
+                           !(BYPASS_BLOCK.contains(e.getClickedBlock().getType()) && !p.isSneaking())) {
             rItem.rightClick(p, e.getItem(), e.getClickedBlock());
         } else if (action == Action.LEFT_CLICK_AIR || action == Action.LEFT_CLICK_BLOCK) {
             rItem.leftClick(p, e.getItem(), e.getClickedBlock());
@@ -423,7 +423,7 @@ public class Events implements Listener {
             } catch (ArrayIndexOutOfBoundsException ex) {
                 // Fix for the bug with anvils in craftbukkit
             }
-        } else if (useLocaleInv) {
+        } else {
             LocaleInventory localeInv = new LocaleInventory((Player) e.getPlayer(), e.getView());
             e.setCancelled(true);
             e.getPlayer().openInventory(localeInv);

@@ -1,7 +1,6 @@
 package think.rpgitems.power;
 
 import org.bukkit.Bukkit;
-import org.bukkit.ChatColor;
 import org.bukkit.Location;
 import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.entity.LivingEntity;
@@ -9,7 +8,6 @@ import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
 import think.rpgitems.I18n;
 import think.rpgitems.commands.ArgumentPriority;
-
 import think.rpgitems.power.types.PowerHit;
 
 import java.util.Random;
@@ -28,7 +26,7 @@ public class PowerDeathCommand extends Power implements PowerHit {
     /**
      * Command to be executed
      */
-    @ArgumentPriority(value = 1,required = true)
+    @ArgumentPriority(value = 1, required = true)
     public String command = "";
     /**
      * Chance of triggering this power
@@ -80,7 +78,7 @@ public class PowerDeathCommand extends Power implements PowerHit {
 
     @Override
     public void hit(Player player, ItemStack stack, LivingEntity entity, double damage) {
-        if (!item.checkPermission(player, true))return;
+        if (!item.checkPermission(player, true)) return;
         if (rand.nextInt(chance) == 0) {
             if (!item.consumeDurability(stack, consumption)) return;
             Location loc = entity.getLocation();

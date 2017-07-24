@@ -115,6 +115,7 @@ public class RPGItem {
     private boolean hasBar = false;
     private boolean forceBar = false;
     private int _loreMinLen = 0;
+
     public RPGItem(String name, int id) {
         this.name = name;
         this.id = id;
@@ -1040,12 +1041,12 @@ public class RPGItem {
         if (getMaxDurability() != -1) {
             durability = meta.containsKey(RPGMetadata.DURABILITY) ? ((Number) meta.get(RPGMetadata.DURABILITY)).intValue() : defaultDurability;
             if ((val > 0 && durability < durabilityLowerBound)
-                    || (val < 0 && durability > durabilityUpperBound)) {
+                        || (val < 0 && durability > durabilityUpperBound)) {
                 return false;
             }
             if (durability <= val
-                    && getLocaleMeta().isUnbreakable()
-                    && !customItemModel) {
+                        && getLocaleMeta().isUnbreakable()
+                        && !customItemModel) {
                 return false;
             }
             durability -= val;
@@ -1160,7 +1161,7 @@ public class RPGItem {
         BaseComponent msg = new TextComponent(getDisplay());
         msg.setClickEvent(new ClickEvent(ClickEvent.Action.SUGGEST_COMMAND, "/rpgitem " + getName()));
         HoverEvent hover = new HoverEvent(HoverEvent.Action.SHOW_ITEM,
-                new BaseComponent[]{new TextComponent(ReflectionUtil.convertItemStackToJson(toItemStack()))});
+                                                 new BaseComponent[]{new TextComponent(ReflectionUtil.convertItemStackToJson(toItemStack()))});
         msg.setHoverEvent(hover);
         return msg;
     }

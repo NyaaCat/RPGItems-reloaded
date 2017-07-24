@@ -1,6 +1,5 @@
 package think.rpgitems.power;
 
-import org.bukkit.ChatColor;
 import org.bukkit.block.Block;
 import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.entity.*;
@@ -14,7 +13,6 @@ import think.rpgitems.commands.AcceptedValue;
 import think.rpgitems.commands.ArgumentPriority;
 import think.rpgitems.commands.Setter;
 import think.rpgitems.commands.Validator;
-
 import think.rpgitems.power.types.PowerRightClick;
 
 import java.util.concurrent.ThreadLocalRandom;
@@ -74,19 +72,19 @@ public class PowerProjectile extends Power implements PowerRightClick {
      */
     public int consumption = 1;
     @AcceptedValue({
-            "skull",
-            "fireball",
-            "snowball",
-            "smallfireball",
-            "llamaspit",
-            "arrow"
+                           "skull",
+                           "fireball",
+                           "snowball",
+                           "smallfireball",
+                           "llamaspit",
+                           "arrow"
     })
     /**
      * Type of projectiles
      */
     @Validator(value = "acceptableType", message = "power.projectile.noFireball")
     @Setter("setType")
-    @ArgumentPriority(value = 2,required = true)
+    @ArgumentPriority(value = 2, required = true)
     public Class<? extends Projectile> projectileType = Snowball.class;
 
     @Override

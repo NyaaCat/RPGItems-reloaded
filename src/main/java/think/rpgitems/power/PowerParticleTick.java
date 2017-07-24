@@ -7,7 +7,6 @@ import org.bukkit.inventory.ItemStack;
 import think.rpgitems.I18n;
 import think.rpgitems.commands.ArgumentPriority;
 import think.rpgitems.commands.Validator;
-
 import think.rpgitems.power.types.PowerTick;
 
 /**
@@ -75,7 +74,7 @@ public class PowerParticleTick extends Power implements PowerTick {
 
     @Override
     public void tick(Player player, ItemStack stack) {
-        if (!checkCooldown(player, interval, false))return;
+        if (!checkCooldown(player, interval, false)) return;
         if (!item.consumeDurability(stack, consumption)) return;
         if (effect.equalsIgnoreCase("SMOKE")) {
             player.getWorld().playEffect(player.getLocation().add(0, 2, 0), Effect.valueOf(effect), 4);

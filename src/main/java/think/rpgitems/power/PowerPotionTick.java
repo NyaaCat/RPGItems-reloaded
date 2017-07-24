@@ -1,6 +1,5 @@
 package think.rpgitems.power;
 
-import org.bukkit.ChatColor;
 import org.bukkit.attribute.Attribute;
 import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.entity.Player;
@@ -9,7 +8,6 @@ import org.bukkit.potion.PotionEffect;
 import org.bukkit.potion.PotionEffectType;
 import think.rpgitems.I18n;
 import think.rpgitems.commands.ArgumentPriority;
-
 import think.rpgitems.power.types.PowerTick;
 
 import static java.lang.Double.min;
@@ -26,7 +24,7 @@ public class PowerPotionTick extends Power implements PowerTick {
     /**
      * Type of potion effect
      */
-    @ArgumentPriority(value = 1,required = true)
+    @ArgumentPriority(value = 1, required = true)
     public PotionEffectType effect = PotionEffectType.SPEED;
     /**
      * Amplifier of potion effect
@@ -54,8 +52,8 @@ public class PowerPotionTick extends Power implements PowerTick {
 
     @Override
     public void tick(Player player, ItemStack stack) {
-        if (!item.checkPermission(player, true))return;
-        if (!checkCooldownByString(player, item, "potiontick." + effect.getName(), interval, false))return;
+        if (!item.checkPermission(player, true)) return;
+        if (!checkCooldownByString(player, item, "potiontick." + effect.getName(), interval, false)) return;
         if (!item.consumeDurability(stack, consumption)) return;
         double health = player.getHealth();
         boolean hasEffect = false;
@@ -72,7 +70,7 @@ public class PowerPotionTick extends Power implements PowerTick {
         if (!hasEffect && !clear) {
             player.addPotionEffect(new PotionEffect(effect, duration, amplifier, true), true);
         }
-        if(effect.equals(PotionEffectType.HEALTH_BOOST) && health > 0) {
+        if (effect.equals(PotionEffectType.HEALTH_BOOST) && health > 0) {
             health = min(health, player.getAttribute(Attribute.GENERIC_MAX_HEALTH).getValue());
             player.setHealth(health);
         }
@@ -105,8 +103,8 @@ public class PowerPotionTick extends Power implements PowerTick {
 
     @Override
     public String displayText() {
-        return clear?
-                I18n.format("power.potiontick.clear", effect.getName().toLowerCase().replaceAll("_", " "))
-                :I18n.format("power.potiontick.display", effect.getName().toLowerCase().replaceAll("_", " "), amplifier + 1);
+        return clear ?
+                       I18n.format("power.potiontick.clear", effect.getName().toLowerCase().replaceAll("_", " "))
+                       : I18n.format("power.potiontick.display", effect.getName().toLowerCase().replaceAll("_", " "), amplifier + 1);
     }
 }

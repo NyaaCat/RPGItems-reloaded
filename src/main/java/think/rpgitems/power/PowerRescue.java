@@ -16,7 +16,6 @@
  */
 package think.rpgitems.power;
 
-import org.bukkit.ChatColor;
 import org.bukkit.Sound;
 import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.entity.Player;
@@ -27,8 +26,6 @@ import org.bukkit.potion.PotionEffect;
 import org.bukkit.potion.PotionEffectType;
 import think.rpgitems.I18n;
 import think.rpgitems.commands.ArgumentPriority;
-
-import think.rpgitems.item.RPGItem;
 import think.rpgitems.power.types.PowerHitTaken;
 import think.rpgitems.power.types.PowerHurt;
 
@@ -104,7 +101,7 @@ public class PowerRescue extends Power implements PowerHurt, PowerHitTaken {
 
     @Override
     public void hurt(Player target, ItemStack stack, EntityDamageEvent event) {
-        if (!item.checkPermission(target, false))return;
+        if (!item.checkPermission(target, false)) return;
         double health = target.getHealth() - event.getFinalDamage();
         if (health > healthTrigger) return;
         rescue(target, stack, event, false);
@@ -136,9 +133,9 @@ public class PowerRescue extends Power implements PowerHurt, PowerHitTaken {
         target.getWorld().playSound(target.getLocation(), Sound.BLOCK_ENCHANTMENT_TABLE_USE, 10, 1);
 
         if (inPlace && cause != DamageCause.DRAGON_BREATH
-                && cause != DamageCause.DROWNING
-                && cause != DamageCause.SUFFOCATION
-                && cause != DamageCause.VOID) {
+                    && cause != DamageCause.DROWNING
+                    && cause != DamageCause.SUFFOCATION
+                    && cause != DamageCause.VOID) {
             target.addPotionEffect(new PotionEffect(PotionEffectType.GLOWING, 160, 10));
         } else if (useBed && target.getBedSpawnLocation() != null)
             target.teleport(target.getBedSpawnLocation());

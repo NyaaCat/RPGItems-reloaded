@@ -26,7 +26,6 @@ import org.bukkit.inventory.ItemStack;
 import think.rpgitems.I18n;
 import think.rpgitems.commands.ArgumentPriority;
 import think.rpgitems.data.RPGValue;
-
 import think.rpgitems.power.types.PowerLeftClick;
 import think.rpgitems.power.types.PowerRightClick;
 import think.rpgitems.support.WorldGuard;
@@ -110,7 +109,7 @@ public class PowerColor extends Power implements PowerRightClick, PowerLeftClick
             return;
         }
 
-        if (!item.checkPermission(player, true))return;
+        if (!item.checkPermission(player, true)) return;
         if (!checkCooldown(player, cooldownTime, true)) return;
         if (!item.consumeDurability(stack, consumption)) return;
         RPGValue color = RPGValue.get(player, item, "color.current");
@@ -129,7 +128,7 @@ public class PowerColor extends Power implements PowerRightClick, PowerLeftClick
 
     @Override
     public void leftClick(Player player, ItemStack stack, Block clicked) {
-        if (!item.checkPermission(player, true))return;
+        if (!item.checkPermission(player, true)) return;
         RPGValue value = RPGValue.get(player, item, "color.current");
         if (value == null) {
             new RPGValue(player, item, "color.current", 0);

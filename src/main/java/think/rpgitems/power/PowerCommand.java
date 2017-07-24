@@ -38,7 +38,7 @@ public class PowerCommand extends Power implements PowerRightClick, PowerLeftCli
     /**
      * Command to be executed
      */
-    @ArgumentPriority(value = 4,required = true)
+    @ArgumentPriority(value = 4, required = true)
     public String command = "";
     /**
      * Display text of this power
@@ -54,7 +54,7 @@ public class PowerCommand extends Power implements PowerRightClick, PowerLeftCli
      * Whether triggers when right click
      */
     @ArgumentPriority(2)
-    @BooleanChoice(name = "mouse",falseChoice = "left", trueChoice = "right")
+    @BooleanChoice(name = "mouse", falseChoice = "left", trueChoice = "right")
     public boolean isRight = true;
     /**
      * Cooldown time of this power
@@ -89,7 +89,7 @@ public class PowerCommand extends Power implements PowerRightClick, PowerLeftCli
 
     @Override
     public void rightClick(Player player, ItemStack stack, Block clicked) {
-        if (!item.checkPermission(player, true))return;
+        if (!item.checkPermission(player, true)) return;
         if (!isRight || !checkCooldownByString(player, item, command, cooldownTime, true)) return;
         if (!item.consumeDurability(stack, consumption)) return;
         executeCommand(player);
@@ -97,7 +97,7 @@ public class PowerCommand extends Power implements PowerRightClick, PowerLeftCli
 
     @Override
     public void leftClick(Player player, ItemStack stack, Block clicked) {
-        if (!item.checkPermission(player, true))return;
+        if (!item.checkPermission(player, true)) return;
         if (isRight || !checkCooldownByString(player, item, command, cooldownTime, true)) return;
         if (!item.consumeDurability(stack, consumption)) return;
         executeCommand(player);

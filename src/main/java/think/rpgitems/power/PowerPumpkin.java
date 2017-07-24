@@ -1,6 +1,5 @@
 package think.rpgitems.power;
 
-import org.bukkit.ChatColor;
 import org.bukkit.Material;
 import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.entity.LivingEntity;
@@ -10,7 +9,6 @@ import org.bukkit.entity.Zombie;
 import org.bukkit.inventory.ItemStack;
 import think.rpgitems.I18n;
 import think.rpgitems.commands.ArgumentPriority;
-
 import think.rpgitems.power.types.PowerHit;
 
 import java.util.Random;
@@ -33,7 +31,7 @@ public class PowerPumpkin extends Power implements PowerHit {
     /**
      * Drop chance of the pumpkin
      */
-    @ArgumentPriority(value = 1,required = true)
+    @ArgumentPriority(value = 1, required = true)
     public double drop = 0;
     /**
      * Cost of this power

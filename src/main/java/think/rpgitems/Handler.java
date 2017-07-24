@@ -39,7 +39,7 @@ public class Handler extends CommandReceiver<RPGItems> {
     }
 
     @SuppressWarnings("unchecked")
-    public static void setPower(Power power, String field, String value) throws BadCommandException, IllegalAccessException {
+    private static void setPower(Power power, String field, String value) throws BadCommandException, IllegalAccessException {
         Field f;
         Class<? extends Power> cls = power.getClass();
         try {
@@ -51,7 +51,7 @@ public class Handler extends CommandReceiver<RPGItems> {
     }
 
     @SuppressWarnings("unchecked")
-    public static void setPower(Power power, Field field, String value) throws BadCommandException, IllegalAccessException {
+    private static void setPower(Power power, Field field, String value) throws BadCommandException, IllegalAccessException {
         Class<? extends Power> cls = power.getClass();
         Transformer tf = field.getAnnotation(Transformer.class);
         if (tf != null) {
@@ -376,6 +376,7 @@ public class Handler extends CommandReceiver<RPGItems> {
             Material material;
             try {
                 material = Material.getMaterial(args.nextInt());
+                //noinspection ResultOfMethodCallIgnored
                 material.getData();
             } catch (Exception e) {
                 material = args.nextEnum(Material.class);
@@ -898,8 +899,8 @@ public class Handler extends CommandReceiver<RPGItems> {
             if (value == null) {
                 if (!required.isEmpty()) {
                     throw new BadCommandException("message.power.required",
-                            String.join(", ",
-                                    required.stream().map(Field::getName).collect(Collectors.toList()))
+                                                         String.join(", ",
+                                                                 required.stream().map(Field::getName).collect(Collectors.toList()))
                     );
                 } else {
                     break;

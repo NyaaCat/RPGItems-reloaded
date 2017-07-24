@@ -11,5 +11,6 @@ import java.lang.annotation.Target;
 @Target(ElementType.FIELD)
 public @interface Validator {
     String value();
+
     @LangKey String message();
 }

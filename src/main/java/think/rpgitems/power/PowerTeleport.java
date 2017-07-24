@@ -26,7 +26,6 @@ import org.bukkit.util.BlockIterator;
 import think.rpgitems.I18n;
 import think.rpgitems.RPGItems;
 import think.rpgitems.commands.ArgumentPriority;
-
 import think.rpgitems.power.types.PowerProjectileHit;
 import think.rpgitems.power.types.PowerRightClick;
 
@@ -58,7 +57,7 @@ public class PowerTeleport extends Power implements PowerRightClick, PowerProjec
 
     @Override
     public void rightClick(Player player, ItemStack stack, Block clicked) {
-        if (!item.checkPermission(player, true))return;
+        if (!item.checkPermission(player, true)) return;
         if (!checkCooldown(player, cooldownTime, true)) return;
         if (!item.consumeDurability(stack, consumption)) return;
         // float dist = 0;
@@ -101,7 +100,7 @@ public class PowerTeleport extends Power implements PowerRightClick, PowerProjec
 
     @Override
     public void projectileHit(Player player, ItemStack stack, Projectile p) {
-        if (!item.checkPermission(player, true))return;
+        if (!item.checkPermission(player, true)) return;
         if (!checkCooldown(player, cooldownTime, true)) return;
         if (!item.consumeDurability(stack, consumption)) return;
         World world = player.getWorld();

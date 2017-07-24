@@ -17,7 +17,6 @@
 package think.rpgitems.power;
 
 import com.google.common.collect.*;
-import org.bukkit.ChatColor;
 import org.bukkit.Location;
 import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.entity.Entity;
@@ -31,7 +30,6 @@ import think.rpgitems.commands.Setter;
 import think.rpgitems.commands.Transformer;
 import think.rpgitems.commands.Validator;
 import think.rpgitems.data.RPGValue;
-
 import think.rpgitems.item.RPGItem;
 
 import java.lang.annotation.Annotation;
@@ -49,6 +47,7 @@ import java.util.stream.Collectors;
 /**
  * Base class for all powers
  */
+@SuppressWarnings("unchecked")
 public abstract class Power {
 
     public static final HashBasedTable<Class<? extends Power>, String, BiFunction<Object, String, String>> transformers;
@@ -156,8 +155,8 @@ public abstract class Power {
                 validatorList = new ArrayList<>();
             } else {
                 validatorList = annos.get(Validator.class)
-                                       .stream().map(i -> (Validator) i)
-                                       .collect(Collectors.toList());
+                                     .stream().map(i -> (Validator) i)
+                                     .collect(Collectors.toList());
             }
             validatorList.forEach(
                     valiAnno -> {
@@ -188,8 +187,8 @@ public abstract class Power {
                 setterList = new ArrayList<>();
             } else {
                 setterList = annos.get(Setter.class)
-                                     .stream().map(i -> (Setter) i)
-                                     .collect(Collectors.toList());
+                                  .stream().map(i -> (Setter) i)
+                                  .collect(Collectors.toList());
             }
             setterList.forEach(
                     setterAnno -> {
@@ -240,7 +239,7 @@ public abstract class Power {
      * @param radius the radius
      * @return the entity [ ]
      */
-    public static Entity[] getNearbyEntities(Location l, double radius) {
+    static Entity[] getNearbyEntities(Location l, double radius) {
         List<Entity> entities = new ArrayList<>();
         for (Entity e : l.getWorld().getNearbyEntities(l, radius, radius, radius)) {
             try {
@@ -262,7 +261,7 @@ public abstract class Power {
      * @param min    the min
      * @return the living entity [ ]
      */
-    public static LivingEntity[] getNearbyLivingEntities(Location l, double radius, double min) {
+    static LivingEntity[] getNearbyLivingEntities(Location l, double radius, double min) {
         final java.util.List<java.util.Map.Entry<LivingEntity, Double>> entities = new java.util.ArrayList<>();
         for (Entity e : l.getWorld().getNearbyEntities(l, radius, radius, radius)) {
             try {
@@ -291,7 +290,7 @@ public abstract class Power {
      * @param direction direction of the cone
      * @return All entities inside the cone
      */
-    public static List<LivingEntity> getEntitiesInCone(LivingEntity[] entities, org.bukkit.util.Vector startPos, double degrees, org.bukkit.util.Vector direction) {
+    static List<LivingEntity> getEntitiesInCone(LivingEntity[] entities, org.bukkit.util.Vector startPos, double degrees, org.bukkit.util.Vector direction) {
         List<LivingEntity> newEntities = new ArrayList<>();
         for (LivingEntity e : entities) {
             org.bukkit.util.Vector relativePosition = e.getEyeLocation().toVector();
@@ -309,11 +308,11 @@ public abstract class Power {
      * @param v2 the v 2
      * @return the angle between vectors
      */
-    public static float getAngleBetweenVectors(org.bukkit.util.Vector v1, org.bukkit.util.Vector v2) {
+    static float getAngleBetweenVectors(org.bukkit.util.Vector v1, org.bukkit.util.Vector v2) {
         return Math.abs((float) Math.toDegrees(v1.angle(v2)));
     }
 
-    public static boolean checkCooldownByString(Player player, RPGItem item, String command, long cooldownTime, boolean showWarn) {
+    static boolean checkCooldownByString(Player player, RPGItem item, String command, long cooldownTime, boolean showWarn) {
         long cooldown;
         RPGValue value = RPGValue.get(player, item, "command." + command + ".cooldown");
         long nowTick = System.currentTimeMillis() / 50;
@@ -323,6 +322,10 @@ public abstract class Power {
         } else {
             cooldown = value.asLong();
         }
+        return checkAndSetCooldown(player, cooldownTime, showWarn, cooldown, value, nowTick);
+    }
+
+    private static boolean checkAndSetCooldown(Player player, long cooldownTime, boolean showWarn, long cooldown, RPGValue value, long nowTick) {
         if (cooldown <= nowTick) {
             value.set(nowTick + cooldownTime);
             return true;
@@ -333,7 +336,7 @@ public abstract class Power {
         }
     }
 
-    public static void AttachPermission(Player player, String permission) {
+    static void AttachPermission(Player player, String permission) {
         if (permission.length() != 0 && !permission.equals("*")) {
             PermissionAttachment attachment = player.addAttachment(RPGItems.plugin, 1);
             String[] perms = permission.split("\\.");
@@ -392,13 +395,6 @@ public abstract class Power {
         } else {
             cooldown = value.asLong();
         }
-        if (cooldown <= nowTick) {
-            value.set(nowTick + cdTicks);
-            return true;
-        } else {
-            if (showWarn)
-                p.sendMessage(I18n.format("message.cooldown", ((double) (cooldown - nowTick)) / 20d));
-            return false;
-        }
+        return checkAndSetCooldown(p, cdTicks, showWarn, cooldown, value, nowTick);
     }
 }
