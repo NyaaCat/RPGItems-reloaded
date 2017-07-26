@@ -24,6 +24,7 @@ import think.rpgitems.power.Power;
 import think.rpgitems.support.WorldGuard;
 
 import java.lang.reflect.Field;
+import java.lang.reflect.InvocationTargetException;
 import java.util.*;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
@@ -630,7 +631,7 @@ public class Handler extends CommandReceiver<RPGItems> {
         int nth = args.nextInt();
         String property = args.next();
         int i = nth;
-        Class p = Power.powers.get(power);
+        Class<? extends Power> p = Power.powers.get(power);
         if (p == null) {
             msg(sender, "message.power.unknown", power);
             return;
@@ -658,7 +659,7 @@ public class Handler extends CommandReceiver<RPGItems> {
         int nth = args.nextInt();
         String property = args.next();
         String val = args.next();
-        Class p = Power.powers.get(power);
+        Class<? extends Power> p = Power.powers.get(power);
         if (p == null) {
             msg(sender, "message.power.unknown", power);
             return;
@@ -863,28 +864,29 @@ public class Handler extends CommandReceiver<RPGItems> {
         }
         Power power;
         try {
-            power = cls.newInstance();
-        } catch (InstantiationException | IllegalAccessException e) {
+            power = cls.getConstructor().newInstance();
+        } catch (InstantiationException | IllegalAccessException | NoSuchMethodException | InvocationTargetException e) {
             e.printStackTrace();
+            msg(sender, "internal.error.command_exception");
             return;
         }
-        SortedMap<ArgumentPriority, Field> argMap = Power.propertyArgPriorities.get(cls);
+        SortedMap<Property, Field> argMap = Power.propertyPriorities.get(cls);
         Set<Field> required = new HashSet<>();
         Set<Field> settled = new HashSet<>();
-        Optional<ArgumentPriority> req = argMap.keySet()
-                                               .stream()
-                                               .filter(ArgumentPriority::required)
-                                               .sorted(Comparator.comparing(ArgumentPriority::value).reversed())
-                                               .findFirst();
+        Optional<Property> req = argMap.keySet()
+                                       .stream()
+                                       .filter(Property::required)
+                                       .sorted(Comparator.comparing(Property::order).reversed())
+                                       .findFirst();
         if (req.isPresent()) {
-            int lastreq = req.get().value();
+            int last = req.get().order();
             required = argMap.entrySet()
                              .stream()
-                             .filter(entry -> entry.getKey().value() <= lastreq)
+                             .filter(entry -> entry.getKey().order() <= last)
                              .map(Map.Entry::getValue)
                              .collect(Collectors.toSet());
         }
-        for (Field field : cls.getFields()) {
+        for (Field field : argMap.values()) {
             String name = field.getName();
             String value = args.argString(name, null);
             if (value != null) {

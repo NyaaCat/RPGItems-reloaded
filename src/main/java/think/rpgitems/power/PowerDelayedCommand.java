@@ -6,7 +6,7 @@ import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.scheduler.BukkitRunnable;
 import think.rpgitems.RPGItems;
-import think.rpgitems.commands.ArgumentPriority;
+import think.rpgitems.commands.Property;
 
 /**
  * Power delayedcommand.
@@ -15,11 +15,12 @@ import think.rpgitems.commands.ArgumentPriority;
  * giving the permission {@link #permission} just for the use of the command.
  * </p>
  */
+@SuppressWarnings("WeakerAccess")
 public class PowerDelayedCommand extends PowerCommand {
     /**
      * Delay before executing command
      */
-    @ArgumentPriority(0)
+    @Property(order = 0)
     public int delay = 20;
 
     @Override

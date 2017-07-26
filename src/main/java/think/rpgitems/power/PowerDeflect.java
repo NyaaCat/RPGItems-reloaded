@@ -29,7 +29,7 @@ import org.bukkit.util.Vector;
 import think.rpgitems.Events;
 import think.rpgitems.I18n;
 import think.rpgitems.RPGItems;
-import think.rpgitems.commands.ArgumentPriority;
+import think.rpgitems.commands.Property;
 import think.rpgitems.commands.BooleanChoice;
 import think.rpgitems.power.types.PowerHitTaken;
 import think.rpgitems.power.types.PowerLeftClick;
@@ -45,40 +45,43 @@ import java.util.concurrent.ThreadLocalRandom;
  * 2. auto triggered when {@link #passive} is enabled with a chance of {@link #chance} and a cooldown of {@link #cooldownTimePassive}
  * </p>
  */
+@SuppressWarnings("WeakerAccess")
 public class PowerDeflect extends Power implements PowerHitTaken, PowerRightClick, PowerLeftClick {
 
     /**
      * Cooldown time of this power
      */
-    @ArgumentPriority(2)
+    @Property(order = 2)
     public int cooldownTime = 20;
 
     /**
      * Cooldown time of this power in passive mode
      */
-    @ArgumentPriority(4)
+    @Property(order = 4)
     public int cooldownTimePassive = 20;
 
     /**
      * Cost of this power
      */
+    @Property
     public int consumption = 0;
 
     /**
      * Chance in percentage of triggering this power in passive mode
      */
+    @Property
     public int chance = 50;
 
     /**
      * Whether it is passive
      */
-    @ArgumentPriority(3)
+    @Property(order = 3)
     public boolean passive = false;
 
     /**
      * Whether it is initiative
      */
-    @ArgumentPriority(1)
+    @Property(order = 1)
     public boolean initiative = true;
 
     /**
@@ -90,12 +93,13 @@ public class PowerDeflect extends Power implements PowerHitTaken, PowerRightClic
     /**
      * Duration of this power
      */
+    @Property
     public int duration = 50;
 
     /**
      * Maximum view angle
      */
-    @ArgumentPriority(required = true)
+    @Property(order = 0, required = true)
     public double facing = 30;
 
     private long time = 0;

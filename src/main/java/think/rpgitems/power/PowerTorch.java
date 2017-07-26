@@ -26,7 +26,7 @@ import org.bukkit.metadata.FixedMetadataValue;
 import org.bukkit.scheduler.BukkitRunnable;
 import think.rpgitems.I18n;
 import think.rpgitems.RPGItems;
-import think.rpgitems.commands.ArgumentPriority;
+import think.rpgitems.commands.Property;
 import think.rpgitems.power.types.PowerRightClick;
 
 import java.util.ArrayList;
@@ -44,11 +44,12 @@ public class PowerTorch extends Power implements PowerRightClick {
     /**
      * Cooldown time of this power
      */
-    @ArgumentPriority
+    @Property(order = 0)
     public long cooldownTime = 20;
     /**
      * Cost of this power
      */
+    @Property
     public int consumption = 0;
 
     @SuppressWarnings("deprecation")

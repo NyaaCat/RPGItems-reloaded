@@ -30,7 +30,7 @@ import org.bukkit.scheduler.BukkitRunnable;
 import org.bukkit.util.Vector;
 import think.rpgitems.I18n;
 import think.rpgitems.RPGItems;
-import think.rpgitems.commands.ArgumentPriority;
+import think.rpgitems.commands.Property;
 import think.rpgitems.power.types.PowerRightClick;
 
 import java.util.Random;
@@ -43,26 +43,28 @@ import java.util.Random;
  * The wave will travel {@link #distance} blocks.
  * </p>
  */
+@SuppressWarnings("WeakerAccess")
 public class PowerRumble extends Power implements PowerRightClick {
 
     /**
      * Cooldown time of this power
      */
-    @ArgumentPriority
+    @Property(order = 0)
     public long cooldownTime = 20;
     /**
      * Power of rumble
      */
-    @ArgumentPriority(1)
+    @Property(order = 1)
     public int power = 2;
     /**
      * Maximum distance of rumble
      */
-    @ArgumentPriority(2)
+    @Property(order = 2)
     public int distance = 15;
     /**
      * Cost of this power
      */
+    @Property
     public int consumption = 0;
 
     @Override

@@ -21,7 +21,7 @@ import org.bukkit.block.Block;
 import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
-import think.rpgitems.commands.ArgumentPriority;
+import think.rpgitems.commands.Property;
 import think.rpgitems.commands.BooleanChoice;
 import think.rpgitems.power.types.PowerLeftClick;
 import think.rpgitems.power.types.PowerRightClick;
@@ -33,37 +33,39 @@ import think.rpgitems.power.types.PowerRightClick;
  * giving the permission {@link #permission} just for the use of the command.
  * </p>
  */
+@SuppressWarnings("WeakerAccess")
 public class PowerCommand extends Power implements PowerRightClick, PowerLeftClick {
 
     /**
      * Command to be executed
      */
-    @ArgumentPriority(value = 4, required = true)
+    @Property(order = 4, required = true)
     public String command = "";
     /**
      * Display text of this power
      */
-    @ArgumentPriority(3)
+    @Property(order = 3)
     public String display = "Runs command";
     /**
      * Permission will be given to user executing the {@code command}
      */
-    @ArgumentPriority(8)
+    @Property(order = 8)
     public String permission = "";
     /**
      * Whether triggers when right click
      */
-    @ArgumentPriority(2)
+    @Property(order = 2)
     @BooleanChoice(name = "mouse", falseChoice = "left", trueChoice = "right")
     public boolean isRight = true;
     /**
      * Cooldown time of this power
      */
-    @ArgumentPriority(1)
+    @Property(order = 1)
     public long cooldownTime = 20;
     /**
      * Cost of this power
      */
+    @Property
     public int consumption = 0;
 
     /**

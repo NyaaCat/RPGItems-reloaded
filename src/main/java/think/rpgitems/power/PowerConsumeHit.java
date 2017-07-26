@@ -22,7 +22,7 @@ import org.bukkit.entity.LivingEntity;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
 import think.rpgitems.I18n;
-import think.rpgitems.commands.ArgumentPriority;
+import think.rpgitems.commands.Property;
 import think.rpgitems.power.types.PowerHit;
 
 /**
@@ -35,7 +35,7 @@ public class PowerConsumeHit extends Power implements PowerHit {
     /**
      * Cooldown time of this power
      */
-    @ArgumentPriority
+    @Property(order = 0)
     public int cooldownTime = 0;
 
     @Override

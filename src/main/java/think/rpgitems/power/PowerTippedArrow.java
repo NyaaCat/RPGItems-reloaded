@@ -26,7 +26,7 @@ import org.bukkit.potion.PotionEffect;
 import org.bukkit.potion.PotionEffectType;
 import think.rpgitems.Events;
 import think.rpgitems.I18n;
-import think.rpgitems.commands.ArgumentPriority;
+import think.rpgitems.commands.Property;
 import think.rpgitems.power.types.PowerRightClick;
 
 /**
@@ -36,31 +36,33 @@ import think.rpgitems.power.types.PowerRightClick;
  * with {@link #type effect} for {@link #duration} ticks at power {@link #amplifier}
  * </p>
  */
+@SuppressWarnings("WeakerAccess")
 public class PowerTippedArrow extends Power implements PowerRightClick {
 
     /**
      * Cooldown time of this power
      */
-    @ArgumentPriority
+    @Property(order = 0)
     public long cooldownTime = 20;
     /**
      * Amplifier of potion effect
      */
-    @ArgumentPriority(3)
+    @Property(order = 3)
     public int amplifier = 1;
     /**
      * Duration of potion effect, in ticks
      */
-    @ArgumentPriority(2)
+    @Property(order = 2)
     public int duration = 15;
     /**
      * Type of potion effect
      */
-    @ArgumentPriority(1)
+    @Property(order = 1)
     public PotionEffectType type = null;
     /**
      * Cost of this power
      */
+    @Property
     public int consumption = 0;
 
     @Override

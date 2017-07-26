@@ -13,7 +13,7 @@ import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
 import think.rpgitems.I18n;
 import think.rpgitems.RPGItems;
-import think.rpgitems.commands.ArgumentPriority;
+import think.rpgitems.commands.Property;
 import think.rpgitems.power.types.PowerRightClick;
 
 import java.util.HashSet;
@@ -27,35 +27,37 @@ import java.util.Set;
  * lasts for {@link #ttl} ticks.
  * </p>
  */
+@SuppressWarnings("WeakerAccess")
 public class PowerForceField extends Power implements PowerRightClick {
     /**
      * Cooldown time of this power
      */
-    @ArgumentPriority
+    @Property(order = 0)
     public int cooldownTime = 200;
     /**
      * Radius of force field
      */
-    @ArgumentPriority(1)
+    @Property(order = 1)
     public int radius = 5;
     /**
      * Height of force field
      */
-    @ArgumentPriority(2)
+    @Property(order = 2)
     public int height = 30;
     /**
      * Base of force field
      */
-    @ArgumentPriority(3)
+    @Property(order = 3)
     public int base = -15;
     /**
      * Time to live
      */
-    @ArgumentPriority(value = 4, required = true)
+    @Property(order = 4, required = true)
     public int ttl = 100;
     /**
      * Cost of this power
      */
+    @Property
     public int consumption = 0;
 
     @Override

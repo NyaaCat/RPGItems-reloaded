@@ -8,7 +8,7 @@ import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.util.Vector;
 import think.rpgitems.I18n;
-import think.rpgitems.commands.ArgumentPriority;
+import think.rpgitems.commands.Property;
 import think.rpgitems.power.types.PowerTick;
 
 /**
@@ -18,16 +18,17 @@ import think.rpgitems.power.types.PowerTick;
  * Moving the mobs with max speed of {@link #maxSpeed maxSpeed}
  * </p>
  */
+@SuppressWarnings("WeakerAccess")
 public class PowerAttract extends Power implements PowerTick {
     /**
      * Maximum radius
      */
-    @ArgumentPriority
+    @Property(order = 0)
     public int radius = 5;
     /**
      * Maximum speed.
      */
-    @ArgumentPriority(value = 1, required = true)
+    @Property(order = 1, required = true)
     public double maxSpeed = 0.4D;
 
     @Override

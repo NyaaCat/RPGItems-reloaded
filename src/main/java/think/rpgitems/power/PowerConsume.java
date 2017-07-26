@@ -24,7 +24,7 @@ import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
 import think.rpgitems.I18n;
 import think.rpgitems.RPGItems;
-import think.rpgitems.commands.ArgumentPriority;
+import think.rpgitems.commands.Property;
 import think.rpgitems.commands.BooleanChoice;
 import think.rpgitems.power.types.PowerLeftClick;
 import think.rpgitems.power.types.PowerRightClick;
@@ -36,21 +36,23 @@ import think.rpgitems.power.types.PowerRightClick;
  * With {@link #cooldownTime cooldown} time (ticks).
  * </p>
  */
+@SuppressWarnings("WeakerAccess")
 public class PowerConsume extends Power implements PowerRightClick, PowerLeftClick {
     /**
      * Cooldown time of this power
      */
-    @ArgumentPriority(1)
+    @Property(order = 1)
     public int cooldownTime = 0;
     /**
      * Whether triggers when right click.
      */
-    @ArgumentPriority
+    @Property(order = 0)
     @BooleanChoice(name = "mouse", falseChoice = "left", trueChoice = "right")
     public boolean isRight = true;
     /**
      * Cost of this power
      */
+    @Property
     public int consumption = 0;
 
     @Override

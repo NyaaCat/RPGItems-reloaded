@@ -24,7 +24,7 @@ import org.bukkit.inventory.ItemStack;
 import org.bukkit.potion.PotionEffect;
 import org.bukkit.potion.PotionEffectType;
 import think.rpgitems.I18n;
-import think.rpgitems.commands.ArgumentPriority;
+import think.rpgitems.commands.Property;
 import think.rpgitems.power.types.PowerHit;
 
 import static java.lang.Double.max;
@@ -37,25 +37,28 @@ import static java.lang.Double.min;
  * The item will do {@link #realDamage} to {@link LivingEntity} player hits
  * </p>
  */
+@SuppressWarnings("WeakerAccess")
 public class PowerRealDamage extends Power implements PowerHit {
 
     /**
      * Cooldown time of this power
      */
-    @ArgumentPriority
+    @Property(order = 0)
     public long cooldownTime = 20;
     /**
      * Cost of this power
      */
+    @Property
     public int consumption = 0;
     /**
      * Damage of this power
      */
-    @ArgumentPriority(value = 1, required = true)
+    @Property(order = 1, required = true)
     public double realDamage = 0;
     /**
      * Minimum damage to trigger
      */
+    @Property
     public double minDamage = 0;
 
     @Override

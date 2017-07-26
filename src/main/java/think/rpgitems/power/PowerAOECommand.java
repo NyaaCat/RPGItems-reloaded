@@ -6,7 +6,7 @@ import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.entity.LivingEntity;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
-import think.rpgitems.commands.ArgumentPriority;
+import think.rpgitems.commands.Property;
 
 import java.util.List;
 
@@ -19,6 +19,7 @@ import java.util.List;
  * just for the use of the command.
  * </p>
  */
+@SuppressWarnings("WeakerAccess")
 public class PowerAOECommand extends PowerCommand {
     /**
      * Whether the command will be apply to the user
@@ -31,34 +32,37 @@ public class PowerAOECommand extends PowerCommand {
      * player: apply the command to every {@link Player} in range
      * mobs: apply the command to every {@link LivingEntity}  except {@link Player}in range
      */
+    @Property
     public String type = "entity";
 
     /**
      * Maximum radius
      */
-    @ArgumentPriority(6)
+    @Property(order = 6)
     public int r = 10;
 
     /**
      * Minimum radius
      */
-    @ArgumentPriority(5)
+    @Property(order = 5)
     public int rm = 0;
 
     /**
      * Maximum view angle
      */
-    @ArgumentPriority(value = 7, required = true)
+    @Property(order = 7, required = true)
     public double facing = 30;
 
     /**
      * Maximum count
      */
+    @Property
     public int c = 100;
 
     /**
      * Whether only apply to the entities that player have line of sight
      */
+    @Property
     public boolean mustsee = false;
 
     @Override

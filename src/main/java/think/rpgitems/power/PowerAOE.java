@@ -26,7 +26,7 @@ import org.bukkit.inventory.ItemStack;
 import org.bukkit.potion.PotionEffect;
 import org.bukkit.potion.PotionEffectType;
 import think.rpgitems.I18n;
-import think.rpgitems.commands.ArgumentPriority;
+import think.rpgitems.commands.Property;
 import think.rpgitems.commands.Setter;
 import think.rpgitems.power.types.PowerRightClick;
 
@@ -40,46 +40,49 @@ import think.rpgitems.power.types.PowerRightClick;
  * as well if not set via {@link #selfapplication selfapplication}.
  * </p>
  */
+@SuppressWarnings("WeakerAccess")
 public class PowerAOE extends Power implements PowerRightClick {
 
     /**
      * Cooldown time of this power
      */
-    @ArgumentPriority
+    @Property(order = 0)
     public long cooldownTime = 20;
     /**
      * Amplifier of the potion
      */
-    @ArgumentPriority(value = 4, required = true)
+    @Property(order = 4, required = true)
     public int amplifier = 1;
     /**
      * Duration of the potion
      */
-    @ArgumentPriority(3)
+    @Property(order = 3)
     public int duration = 15;
     /**
      * Range of the potion
      */
-    @ArgumentPriority(1)
+    @Property(order = 1)
     public int range = 5;
     /**
      * Whether the potion will be apply to the user
      */
-    @ArgumentPriority(5)
+    @Property(order = 5)
     public boolean selfapplication = true;
     /**
      * Type of the potion
      */
-    @ArgumentPriority(2)
+    @Property(order = 2)
     @Setter("setType")
     public PotionEffectType type;
     /**
      * Display text of this power. Will use default text in case of null
      */
+    @Property
     public String name = null;
     /**
      * Cost of this power
      */
+    @Property
     public int consumption = 0;
 
     @Override

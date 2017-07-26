@@ -11,7 +11,7 @@ import org.bukkit.scheduler.BukkitRunnable;
 import org.bukkit.util.Vector;
 import think.rpgitems.I18n;
 import think.rpgitems.RPGItems;
-import think.rpgitems.commands.ArgumentPriority;
+import think.rpgitems.commands.Property;
 import think.rpgitems.data.RPGValue;
 import think.rpgitems.power.types.PowerRightClick;
 
@@ -24,17 +24,18 @@ import java.util.Set;
  * up to {@link #hookDistance distance} blocks away
  * </p>
  */
+@SuppressWarnings("WeakerAccess")
 public class PowerSkyHook extends Power implements PowerRightClick {
 
     /**
      * Material that can hooks on
      */
-    @ArgumentPriority
+    @Property(order = 0)
     public Material railMaterial = Material.GLASS;
     /**
      * Maximum distance.
      */
-    @ArgumentPriority(value = 1, required = true)
+    @Property(order = 1, required = true)
     public int hookDistance = 10;
 
     @Override

@@ -25,7 +25,7 @@ import org.bukkit.inventory.ItemStack;
 import org.bukkit.potion.PotionEffect;
 import org.bukkit.potion.PotionEffectType;
 import think.rpgitems.I18n;
-import think.rpgitems.commands.ArgumentPriority;
+import think.rpgitems.commands.Property;
 import think.rpgitems.power.types.PowerHitTaken;
 import think.rpgitems.power.types.PowerHurt;
 
@@ -38,35 +38,38 @@ import think.rpgitems.power.types.PowerHurt;
  * or when they takes a damage greater than {@link #damageTrigger}
  * </p>
  */
+@SuppressWarnings("WeakerAccess")
 public class PowerRescue extends Power implements PowerHurt, PowerHitTaken {
 
     /**
      * Health trigger of rescue
      */
-    @ArgumentPriority(1)
+    @Property(order = 1)
     public int healthTrigger = 4;
     /**
      * Whether use bed instead of home
      */
-    @ArgumentPriority(2)
+    @Property(order = 2)
     public boolean useBed = true;
     /**
      * Whether rescue in place instead of teleport
      */
-    @ArgumentPriority(3)
+    @Property(order = 3)
     public boolean inPlace = false;
     /**
      * Cooldown time of this power
      */
-    @ArgumentPriority
+    @Property(order = 0)
     public long cooldownTime = 20;
     /**
      * Cost of this power
      */
+    @Property
     public int consumption = 0;
     /**
      * Damage trigger of rescue
      */
+    @Property
     public double damageTrigger = 1024;
 
     @Override

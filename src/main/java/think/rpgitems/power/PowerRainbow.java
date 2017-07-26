@@ -29,7 +29,7 @@ import org.bukkit.scheduler.BukkitRunnable;
 import org.bukkit.util.Vector;
 import think.rpgitems.I18n;
 import think.rpgitems.RPGItems;
-import think.rpgitems.commands.ArgumentPriority;
+import think.rpgitems.commands.Property;
 import think.rpgitems.power.types.PowerRightClick;
 
 import java.util.ArrayList;
@@ -43,26 +43,28 @@ import java.util.Random;
  * or {@link #isFire fire} on right click, the wool will remove itself.
  * </p>
  */
+@SuppressWarnings("WeakerAccess")
 public class PowerRainbow extends Power implements PowerRightClick {
 
     /**
      * Cooldown time of this power
      */
-    @ArgumentPriority
+    @Property(order = 0)
     public long cooldownTime = 20;
     /**
      * Count of blocks
      */
-    @ArgumentPriority(1)
+    @Property(order = 1)
     public int count = 5;
     /**
      * Whether launch fire instead of wool
      */
-    @ArgumentPriority(2)
+    @Property(order = 2)
     public boolean isFire = false;
     /**
      * Cost of this power
      */
+    @Property
     public int consumption = 0;
 
     private Random random = new Random();

@@ -24,7 +24,7 @@ import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
 import think.rpgitems.I18n;
-import think.rpgitems.commands.ArgumentPriority;
+import think.rpgitems.commands.Property;
 import think.rpgitems.data.RPGValue;
 import think.rpgitems.power.types.PowerLeftClick;
 import think.rpgitems.power.types.PowerRightClick;
@@ -40,6 +40,7 @@ import java.util.HashMap;
  * for the order: glass, clay, wool.
  * </p>
  */
+@SuppressWarnings("WeakerAccess")
 public class PowerColor extends Power implements PowerRightClick, PowerLeftClick {
 
     private static HashMap<DyeColor, ChatColor> dyeToChatColor;
@@ -67,26 +68,27 @@ public class PowerColor extends Power implements PowerRightClick, PowerLeftClick
     /**
      * Cooldown time of this power
      */
-    @ArgumentPriority
+    @Property(order = 0)
     public long cooldownTime = 0;
     /**
      * Whether enabled on glass.
      */
-    @ArgumentPriority(1)
+    @Property(order = 1)
     public boolean glass = true;
     /**
      * Whether enabled on clay.
      */
-    @ArgumentPriority(2)
+    @Property(order = 2)
     public boolean clay = true;
     /**
      * Whether enabled on wool.
      */
-    @ArgumentPriority(3)
+    @Property(order = 3)
     public boolean wool = true;
     /**
      * Cost of this power
      */
+    @Property
     public int consumption = 0;
 
     @SuppressWarnings("deprecation")

@@ -24,7 +24,7 @@ import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
 import think.rpgitems.I18n;
 import think.rpgitems.RPGItems;
-import think.rpgitems.commands.ArgumentPriority;
+import think.rpgitems.commands.Property;
 import think.rpgitems.power.types.PowerRightClick;
 
 /**
@@ -33,11 +33,12 @@ import think.rpgitems.power.types.PowerRightClick;
  * Restore {@link #foodpoints food points} when eaten.
  * </p>
  */
+@SuppressWarnings("WeakerAccess")
 public class PowerFood extends Power implements PowerRightClick {
     /**
      * Food Points
      */
-    @ArgumentPriority(required = true)
+    @Property(order = 0, required = true)
     public int foodpoints;
 
     @Override

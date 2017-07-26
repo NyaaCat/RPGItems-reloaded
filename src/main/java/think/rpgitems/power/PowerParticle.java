@@ -6,7 +6,7 @@ import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
 import think.rpgitems.I18n;
-import think.rpgitems.commands.ArgumentPriority;
+import think.rpgitems.commands.Property;
 import think.rpgitems.commands.Validator;
 import think.rpgitems.power.types.PowerRightClick;
 
@@ -20,12 +20,13 @@ public class PowerParticle extends Power implements PowerRightClick {
     /**
      * Name of particle effect
      */
-    @ArgumentPriority(required = true)
+    @Property(order = 0, required = true)
     @Validator(value = "acceptableEffect", message = "message.error.visualeffect")
     public String effect = "FLAME";
     /**
      * Cost of this power
      */
+    @Property
     public int consumption = 0;
 
     /**

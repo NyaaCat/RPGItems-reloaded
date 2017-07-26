@@ -7,7 +7,7 @@ import org.bukkit.entity.LivingEntity;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
 import think.rpgitems.I18n;
-import think.rpgitems.commands.ArgumentPriority;
+import think.rpgitems.commands.Property;
 import think.rpgitems.power.types.PowerHit;
 
 import java.util.Random;
@@ -20,32 +20,34 @@ import java.util.Random;
  * `${x}` `${y}` and `${z}` in the command will be replaced with the death location of the enemy.
  * </p>
  */
+@SuppressWarnings("WeakerAccess")
 public class PowerDeathCommand extends Power implements PowerHit {
 
     private static final Random rand = new Random();
     /**
      * Command to be executed
      */
-    @ArgumentPriority(value = 1, required = true)
+    @Property(order = 1, required = true)
     public String command = "";
     /**
      * Chance of triggering this power
      */
-    @ArgumentPriority
+    @Property(order = 0)
     public int chance = 20;
     /**
      * Description in display text
      */
-    @ArgumentPriority(3)
+    @Property(order = 3)
     public String desc = "";
     /**
      * Times to run the {@link #command}
      */
-    @ArgumentPriority(2)
+    @Property(order = 2)
     public int count = 1;
     /**
      * Cost of this power
      */
+    @Property
     public int consumption = 0;
 
     @Override

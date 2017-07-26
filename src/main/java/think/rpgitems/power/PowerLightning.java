@@ -22,7 +22,7 @@ import org.bukkit.entity.Player;
 import org.bukkit.entity.Projectile;
 import org.bukkit.inventory.ItemStack;
 import think.rpgitems.I18n;
-import think.rpgitems.commands.ArgumentPriority;
+import think.rpgitems.commands.Property;
 import think.rpgitems.power.types.PowerHit;
 import think.rpgitems.power.types.PowerProjectileHit;
 
@@ -38,11 +38,12 @@ public class PowerLightning extends Power implements PowerHit, PowerProjectileHi
     /**
      * Chance of triggering this power
      */
-    @ArgumentPriority
+    @Property(order = 0)
     public int chance = 20;
     /**
      * Cost of this power
      */
+    @Property
     public int consumption = 0;
 
     private Random random = new Random();

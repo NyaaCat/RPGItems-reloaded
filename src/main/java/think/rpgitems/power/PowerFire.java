@@ -32,7 +32,7 @@ import org.bukkit.scheduler.BukkitRunnable;
 import org.bukkit.util.Vector;
 import think.rpgitems.I18n;
 import think.rpgitems.RPGItems;
-import think.rpgitems.commands.ArgumentPriority;
+import think.rpgitems.commands.Property;
 import think.rpgitems.power.types.PowerRightClick;
 
 import java.util.ArrayList;
@@ -47,26 +47,28 @@ import java.util.Random;
  * Furthermore it sends out a burning trail into the aimed direction for {@link #distance} blocks.
  * </p>
  */
+@SuppressWarnings("WeakerAccess")
 public class PowerFire extends Power implements PowerRightClick {
 
     /**
      * Cooldown time of this power
      */
-    @ArgumentPriority
+    @Property(order = 0)
     public long cooldownTime = 20;
     /**
      * Maximum distance
      */
-    @ArgumentPriority(1)
+    @Property(order = 1)
     public int distance = 15;
     /**
      * Duration of the fire, in ticks
      */
-    @ArgumentPriority(2)
+    @Property(order = 2)
     public int burnduration = 40;
     /**
      * Cost of this power
      */
+    @Property
     public int consumption = 0;
 
     @Override

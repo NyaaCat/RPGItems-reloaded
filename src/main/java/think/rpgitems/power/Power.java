@@ -25,7 +25,7 @@ import org.bukkit.entity.Player;
 import org.bukkit.permissions.PermissionAttachment;
 import think.rpgitems.I18n;
 import think.rpgitems.RPGItems;
-import think.rpgitems.commands.ArgumentPriority;
+import think.rpgitems.commands.Property;
 import think.rpgitems.commands.Setter;
 import think.rpgitems.commands.Transformer;
 import think.rpgitems.commands.Validator;
@@ -53,7 +53,7 @@ public abstract class Power {
     public static final HashBasedTable<Class<? extends Power>, String, BiFunction<Object, String, String>> transformers;
     public static final HashBasedTable<Class<? extends Power>, String, BiFunction<Object, String, Boolean>> validators;
     public static final HashBasedTable<Class<? extends Power>, String, BiConsumer<Object, String>> setters;
-    public static final Map<Class<? extends Power>, SortedMap<ArgumentPriority, Field>> propertyArgPriorities;
+    public static final Map<Class<? extends Power>, SortedMap<Property, Field>> propertyPriorities;
     /**
      * Power by name, and name by power
      */
@@ -67,7 +67,7 @@ public abstract class Power {
         transformers = HashBasedTable.create();
         validators = HashBasedTable.create();
         setters = HashBasedTable.create();
-        propertyArgPriorities = new HashMap<>();
+        propertyPriorities = new HashMap<>();
         Power.powers.put("aoe", PowerAOE.class);
         Power.powers.put("arrow", PowerArrow.class);
         Power.powers.put("tntcannon", PowerTNTCannon.class);
@@ -212,11 +212,11 @@ public abstract class Power {
 
                     }
             );
-            SortedMap<ArgumentPriority, Field> argumentPriorityMap = new TreeMap<>(Comparator.comparing(ArgumentPriority::value));
+            SortedMap<Property, Field> argumentPriorityMap = new TreeMap<>(Comparator.comparing(Property::order));
             Arrays.stream(cls.getFields())
-                  .filter(field -> field.getAnnotation(ArgumentPriority.class) != null)
-                  .forEach(field -> argumentPriorityMap.put(field.getAnnotation(ArgumentPriority.class), field));
-            propertyArgPriorities.put(cls, argumentPriorityMap);
+                  .filter(field -> field.getAnnotation(Property.class) != null)
+                  .forEach(field -> argumentPriorityMap.put(field.getAnnotation(Property.class), field));
+            propertyPriorities.put(cls, argumentPriorityMap);
         }
     }
 

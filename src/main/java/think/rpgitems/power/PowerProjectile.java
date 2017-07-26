@@ -10,7 +10,7 @@ import think.rpgitems.Events;
 import think.rpgitems.I18n;
 import think.rpgitems.RPGItems;
 import think.rpgitems.commands.AcceptedValue;
-import think.rpgitems.commands.ArgumentPriority;
+import think.rpgitems.commands.Property;
 import think.rpgitems.commands.Setter;
 import think.rpgitems.commands.Validator;
 import think.rpgitems.power.types.PowerRightClick;
@@ -25,6 +25,7 @@ import java.util.concurrent.ThreadLocalRandom;
  * with angle {@link #range} centered with player's direction.
  * </p>
  */
+@SuppressWarnings("WeakerAccess")
 public class PowerProjectile extends Power implements PowerRightClick {
     /**
      * Z_axis.
@@ -41,12 +42,12 @@ public class PowerProjectile extends Power implements PowerRightClick {
     /**
      * Cooldown time of this power
      */
-    @ArgumentPriority
+    @Property(order = 0)
     public long cooldownTime = 20;
     /**
      * Whether launch projectiles in cone
      */
-    @ArgumentPriority(1)
+    @Property(order = 1)
     public boolean cone = false;
     /**
      * Whether the projectile have gravity
@@ -55,22 +56,26 @@ public class PowerProjectile extends Power implements PowerRightClick {
     /**
      * Range will projectiles spread, in degree
      */
-    @ArgumentPriority(3)
+    @Property(order = 3)
     public int range = 15;
     /**
      * Amount of projectiles
      */
-    @ArgumentPriority(4)
+    @Property(order = 4)
     public int amount = 5;
     /**
      * Speed of projectiles
      */
-    @ArgumentPriority(5)
+    @Property(order = 5)
     public double speed = 1;
     /**
      * Cost of this power
      */
+    @Property
     public int consumption = 1;
+    /**
+     * Type of projectiles
+     */
     @AcceptedValue({
                            "skull",
                            "fireball",
@@ -79,12 +84,9 @@ public class PowerProjectile extends Power implements PowerRightClick {
                            "llamaspit",
                            "arrow"
     })
-    /**
-     * Type of projectiles
-     */
     @Validator(value = "acceptableType", message = "power.projectile.noFireball")
     @Setter("setType")
-    @ArgumentPriority(value = 2, required = true)
+    @Property(order = 2, required = true)
     public Class<? extends Projectile> projectileType = Snowball.class;
 
     @Override
@@ -95,7 +97,7 @@ public class PowerProjectile extends Power implements PowerRightClick {
         range = s.getInt("range");
         amount = s.getInt("amount");
         consumption = s.getInt("consumption", 1);
-        speed = s.getDouble("consumption", 1);
+        speed = s.getDouble("speed", 1);
         gravity = s.getBoolean("gravity", true);
     }
 
@@ -200,6 +202,7 @@ public class PowerProjectile extends Power implements PowerRightClick {
             }
         } else {
             Vector loc = player.getEyeLocation().getDirection();
+            range = Math.abs(range) % 360;
             double phi = range / 180f * Math.PI;
             Vector a, b;
             Vector ax1 = loc.getCrossProduct(z_axis);

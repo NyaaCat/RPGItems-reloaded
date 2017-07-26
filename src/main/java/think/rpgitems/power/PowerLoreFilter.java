@@ -1,7 +1,7 @@
 package think.rpgitems.power;
 
 import org.bukkit.configuration.ConfigurationSection;
-import think.rpgitems.commands.ArgumentPriority;
+import think.rpgitems.commands.Property;
 
 /**
  * Power lorefilter.
@@ -10,16 +10,17 @@ import think.rpgitems.commands.ArgumentPriority;
  * Preserve all lore lines match the {@link #regex}.
  * </p>
  */
+@SuppressWarnings("WeakerAccess")
 public class PowerLoreFilter extends Power {
     /**
      * Regex to filter the lore
      */
-    @ArgumentPriority
+    @Property(order = 0)
     public String regex = null;
     /**
      * Display text
      */
-    @ArgumentPriority(value = 1, required = true)
+    @Property(order = 1, required = true)
     public String desc = "";
 
     @Override

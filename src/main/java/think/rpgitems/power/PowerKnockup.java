@@ -21,7 +21,7 @@ import org.bukkit.entity.LivingEntity;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
 import think.rpgitems.I18n;
-import think.rpgitems.commands.ArgumentPriority;
+import think.rpgitems.commands.Property;
 import think.rpgitems.power.types.PowerHit;
 
 import java.util.Random;
@@ -38,16 +38,17 @@ public class PowerKnockup extends Power implements PowerHit {
     /**
      * Chance of triggering this power
      */
-    @ArgumentPriority
+    @Property(order = 0)
     public int chance = 20;
     /**
      * Power of knock up
      */
-    @ArgumentPriority(1)
+    @Property(order = 1)
     public double power = 2;
     /**
      * Cost of this power
      */
+    @Property
     public int consumption = 0;
 
     private Random rand = new Random();

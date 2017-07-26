@@ -7,7 +7,7 @@ import org.bukkit.inventory.ItemStack;
 import org.bukkit.potion.PotionEffect;
 import org.bukkit.potion.PotionEffectType;
 import think.rpgitems.I18n;
-import think.rpgitems.commands.ArgumentPriority;
+import think.rpgitems.commands.Property;
 import think.rpgitems.power.types.PowerTick;
 
 import static java.lang.Double.min;
@@ -19,17 +19,18 @@ import static java.lang.Double.min;
  * level {@link #amplifier} while held/worn
  * </p>
  */
+@SuppressWarnings("WeakerAccess")
 public class PowerPotionTick extends Power implements PowerTick {
 
     /**
      * Type of potion effect
      */
-    @ArgumentPriority(value = 1, required = true)
+    @Property(order = 1, required = true)
     public PotionEffectType effect = PotionEffectType.SPEED;
     /**
      * Amplifier of potion effect
      */
-    @ArgumentPriority
+    @Property(order = 0)
     public int amplifier = 1;
     /**
      * Cost of this power
@@ -38,16 +39,17 @@ public class PowerPotionTick extends Power implements PowerTick {
     /**
      * Interval of this power
      */
-    @ArgumentPriority(2)
+    @Property(order = 2)
     public int interval = 0;
     /**
      * Duration of this power
      */
-    @ArgumentPriority(3)
+    @Property(order = 3)
     public int duration = 60;
     /**
      * Whether to remove the effect instead of adding it.
      */
+    @Property
     public boolean clear = false;
 
     @Override

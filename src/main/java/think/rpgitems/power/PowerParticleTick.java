@@ -5,7 +5,7 @@ import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
 import think.rpgitems.I18n;
-import think.rpgitems.commands.ArgumentPriority;
+import think.rpgitems.commands.Property;
 import think.rpgitems.commands.Validator;
 import think.rpgitems.power.types.PowerTick;
 
@@ -16,21 +16,23 @@ import think.rpgitems.power.types.PowerTick;
  * With the time {@link #interval} given in ticks.
  * </p>
  */
+@SuppressWarnings("WeakerAccess")
 public class PowerParticleTick extends Power implements PowerTick {
     /**
      * Name of particle effect
      */
-    @ArgumentPriority(required = true)
+    @Property(order = 0, required = true)
     @Validator(value = "acceptableEffect", message = "message.error.visualeffect")
     public String effect = "FLAME";
     /**
      * Interval of particle effect
      */
-    @ArgumentPriority(1)
+    @Property(order = 1)
     public int interval = 15;
     /**
      * Cost of this power
      */
+    @Property
     public int consumption = 0;
 
     /**

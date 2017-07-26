@@ -22,7 +22,7 @@ import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.entity.LivingEntity;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
-import think.rpgitems.commands.ArgumentPriority;
+import think.rpgitems.commands.Property;
 import think.rpgitems.power.types.PowerHit;
 
 
@@ -33,35 +33,38 @@ import think.rpgitems.power.types.PowerHit;
  * giving the permission {@link #permission} just for the use of the command.
  * </p>
  */
+@SuppressWarnings("WeakerAccess")
 public class PowerCommandHit extends Power implements PowerHit {
 
     /**
      * Command to be executed
      */
-    @ArgumentPriority(value = 2, required = true)
+    @Property(order = 2, required = true)
     public String command = "";
     /**
      * Display text of this power
      */
-    @ArgumentPriority(1)
+    @Property(order = 1)
     public String display = "Runs command";
     /**
      * Permission will be given to user executing the {@link #command}
      */
-    @ArgumentPriority(3)
+    @Property(order = 3)
     public String permission = "";
     /**
      * Cooldown time of this power
      */
-    @ArgumentPriority
+    @Property(order = 0)
     public long cooldownTime = 20;
     /**
      * Cost of this power
      */
+    @Property
     public int consumption = 0;
     /**
      * Minimum damage to trigger
      */
+    @Property
     public double minDamage = 0;
 
     /**
@@ -136,6 +139,6 @@ public class PowerCommandHit extends Power implements PowerHit {
         s.set("display", display);
         s.set("permission", permission);
         s.set("minDamage", minDamage);
+        s.set("consumption", consumption);
     }
-
 }

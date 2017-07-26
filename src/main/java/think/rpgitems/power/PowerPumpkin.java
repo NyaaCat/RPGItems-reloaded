@@ -8,7 +8,7 @@ import org.bukkit.entity.Skeleton;
 import org.bukkit.entity.Zombie;
 import org.bukkit.inventory.ItemStack;
 import think.rpgitems.I18n;
-import think.rpgitems.commands.ArgumentPriority;
+import think.rpgitems.commands.Property;
 import think.rpgitems.power.types.PowerHit;
 
 import java.util.Random;
@@ -21,21 +21,23 @@ import java.util.Random;
  * And the pumpkin will have a chance of {@link #drop} to drop when the mobs die.
  * </p>
  */
+@SuppressWarnings("WeakerAccess")
 public class PowerPumpkin extends Power implements PowerHit {
     private static final Random rand = new Random();
     /**
      * Chance of triggering this power
      */
-    @ArgumentPriority
+    @Property(order = 0)
     public int chance = 20;
     /**
      * Drop chance of the pumpkin
      */
-    @ArgumentPriority(value = 1, required = true)
+    @Property(order = 1, required = true)
     public double drop = 0;
     /**
      * Cost of this power
      */
+    @Property
     public int consumption = 0;
 
     @Override

@@ -23,7 +23,7 @@ import org.bukkit.inventory.ItemStack;
 import org.bukkit.potion.PotionEffect;
 import org.bukkit.potion.PotionEffectType;
 import think.rpgitems.I18n;
-import think.rpgitems.commands.ArgumentPriority;
+import think.rpgitems.commands.Property;
 import think.rpgitems.commands.Setter;
 import think.rpgitems.power.types.PowerRightClick;
 
@@ -34,32 +34,34 @@ import think.rpgitems.power.types.PowerRightClick;
  * for {@link #duration} ticks at power {@link #amplifier}.
  * </p>
  */
+@SuppressWarnings("WeakerAccess")
 public class PowerPotionSelf extends Power implements PowerRightClick {
 
     /**
      * Cooldown time of this power
      */
-    @ArgumentPriority
+    @Property(order = 0)
     public long cooldownTime = 20;
     /**
      * Amplifier of potion effect
      */
-    @ArgumentPriority(2)
+    @Property(order = 2)
     public int amplifier = 1;
     /**
      * Time of potion effect, in ticks
      */
-    @ArgumentPriority(1)
+    @Property(order = 1)
     public int duration = 20;
     /**
      * Cost of this power
      */
+    @Property
     public int consumption = 0;
     /**
      * Type of potion effect
      */
     @Setter("setType")
-    @ArgumentPriority(value = 3, required = true)
+    @Property(order = 3, required = true)
     public PotionEffectType type = PotionEffectType.HEAL;
 
     @Override
