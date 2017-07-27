@@ -548,6 +548,7 @@ public class Handler extends CommandReceiver<RPGItems> {
         RPGItem item = ItemManager.itemByName.get(args.next());
         item.hasRecipe = false;
         item.resetRecipe(true);
+        ItemManager.save(RPGItems.plugin);
         msg(sender, "message.recipe.removed");
     }
 

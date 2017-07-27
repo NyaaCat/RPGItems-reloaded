@@ -22,10 +22,7 @@ import net.md_5.bungee.api.chat.ClickEvent;
 import net.md_5.bungee.api.chat.HoverEvent;
 import net.md_5.bungee.api.chat.TextComponent;
 import org.apache.commons.lang.StringUtils;
-import org.bukkit.Bukkit;
-import org.bukkit.ChatColor;
-import org.bukkit.Color;
-import org.bukkit.Material;
+import org.bukkit.*;
 import org.bukkit.block.Block;
 import org.bukkit.command.CommandSender;
 import org.bukkit.configuration.ConfigurationSection;
@@ -78,6 +75,7 @@ public class RPGItem {
     public int recipechance = 6;
     public boolean hasRecipe = false;
     public List<ItemStack> recipe = null;
+    public NamespacedKey namespacedKey;
     // Drops
     public Map<String, Double> dropChances = new HashMap<>();
     public int defaultDurability;
@@ -187,6 +185,7 @@ public class RPGItem {
         hasRecipe = s.getBoolean("hasRecipe", false);
         if (hasRecipe) {
             recipe = (List<ItemStack>) s.getList("recipe");
+            namespacedKey = new NamespacedKey(RPGItems.plugin, s.getString("namespacedKey", name + "_" + System.currentTimeMillis()));
         }
 
         ConfigurationSection drops = s.getConfigurationSection("dropChances");
@@ -385,6 +384,7 @@ public class RPGItem {
         s.set("hasRecipe", hasRecipe);
         if (hasRecipe) {
             s.set("recipe", recipe);
+            s.set("namespacedKey", namespacedKey.getKey());
         }
 
         ConfigurationSection drops = s.createSection("dropChances");
@@ -425,6 +425,7 @@ public class RPGItem {
     }
 
     public void resetRecipe(boolean removeOld) {
+        boolean hasOldRecipe = false;
         if (removeOld) {
             Iterator<Recipe> it = Bukkit.recipeIterator();
             while (it.hasNext()) {
@@ -433,13 +434,16 @@ public class RPGItem {
                 if (rpgitem == null)
                     continue;
                 if (rpgitem.getID() == getID()) {
-                    it.remove();
+                    hasOldRecipe = true;
                 }
             }
         }
         if (hasRecipe) {
+            if (namespacedKey == null || hasOldRecipe) {
+                namespacedKey = new NamespacedKey(RPGItems.plugin, name + "_" + System.currentTimeMillis());
+            }
             item.setItemMeta(localeMeta);
-            ShapedRecipe shapedRecipe = new ShapedRecipe(item);
+            ShapedRecipe shapedRecipe = new ShapedRecipe(namespacedKey, item);
 
             Map<ItemStack, Character> charMap = new HashMap<>();
             int i = 0;

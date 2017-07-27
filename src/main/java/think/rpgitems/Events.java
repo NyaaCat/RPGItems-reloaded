@@ -618,6 +618,10 @@ public class Events implements Listener {
     public void onItemCraft(PrepareItemCraftEvent e) {
         RPGItem rpg = ItemManager.toRPGItem(e.getInventory().getResult());
         if (rpg != null) {
+            if (!rpg.hasRecipe) {
+                e.getInventory().setResult(new ItemStack(Material.AIR));
+                return;
+            }
             List<ItemStack> temp = rpg.recipe;
             if (temp != null && temp.size() == 9) {
                 int idx = 0;
