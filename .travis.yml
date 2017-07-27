@@ -21,8 +21,7 @@ deploy:
   skip_cleanup: true
   provider: releases
   prerelease: true
-  api_key:
-    secure: "YP55s7eknSfGBjpP7yPLSYHRORRN0AXr2jOjK2Oq9IGCnNankBvzgGIhsNfT8ePRfMbiOtk4D/ZhBn90ct83Dp7Il1OVkHsfAhvvE6bZ3iZI8x9zc1n/SSxneNKdWrHTGM+WuBoS9mr4J/YdWwvaLaYr9E0iwHWdqTJlTiPfKhtp5MZ89h1Yj7u94dXmkwv6e0oLUKexfkiLINOsuj+cpk81SVO9RHlBEZDFlg/KhwOe6r1XPUgKvJVUgrQHjdZ7aAiYclb3O2UiTHZdqPow00vNdXlk/sIM63dAdw8CTfPxXKHVAnGE+9OAADC4Ml+74I1rfOJaSUz6bWXa9zkgRk5VpoFGEr4i45j42ZxSgsq4Xh721lsCip31dT/QyiJ8YeCn6QK8XtS5KhV6ao22QoCVq6+UmmrHGW/Yl2wiqt6Xos1gDgW1iZHXXP4byQnZ5sDX95Ic0Sq3nSneCnCiHYkjC93HvoM/J5ZRA4Kz2/BdgMPNuWGOsDaOPsEoG4N/GBZKvAdxf0779BewuFuVPPdPDtS0iJCZ/jJZonVitFFGkG4RnIyH5npI0siWpxPY3lMiPiFwJBaYOHTq6WvYEGCazfl1kqVccXs1wEgxyovwTJryhBtz387TVXiQ/lo7AsKitNOigl5DDMQFVhD4xYcvABKmC6M1JrPlMxzy4Mk="
+  api_key: $GITHUB_KEY
   file: './rpgitem-reloaded-$TRAVIS_BRANCH-v$main_version.$TRAVIS_BUILD_NUMBER.jar'
   on:
     tags: false
@@ -31,7 +30,3 @@ deploy:
 branches:
   except:
   - "/^*-v[0-9]/"
-
-env:
-  global:
-  - secure: T4qek8O38AhXbDOz5Xh7XkOoFW7RumwIQzIhkhPp3weRy8nBx25qKLLF6XlhFs6j4Hx6Hp2wLfv+xcMqd3JQXNDYGwdTbHYf50zvZPADnReQa7OB+6qCt4RykOAmv1Fh+bhhwhITYuun8Wg3HABRUIsUJcle5jzCT9xiKxIDBe+NzcN2YczTU2Za/8XAErAdZo0LH97oLb87ukIQnInV905c3zYpcDxZUl7eqkwL3KkUPPW1OlCRgVJbHcA05OAJK0lAYicECHqU0td9NIjPMp/Js3Y8pMrb/p7r3Th/ZNkAWbTVXUimtvpiMLDDFik2Q/zoAb3lWqE9JeADCeN/h3vbcKfh5JGFxb4zvSMd3ECedg+9HVJx2854wygEa3Vq5OdRi5Imn7C3Kk3sUgQKd2lBfq60b4scgjXGhNWAuqsvB/BvimOLmmy93udfQnRKyb0AOW8vfunBATVQ4yvoXdUD/ltnwDKIZocZu3R4TprMbsDi6aKx/ugRq04zHw8Nb+U3mMkA5ivvjix2gxJpLDp3EfSWampWMXTxseIJeqgphUP7jZufdqTpSyuokZEQUjJSr084i6MRn55dMdCPj7L3FcMAEwjJMpOydQEZcTmkz/hmqw2BL7hiMT6qx3VAbSd55qCMjev57O5RgXuwGbHjb9hq3wKouB/2iGacMag=
