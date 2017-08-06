@@ -39,7 +39,6 @@ public class Handler extends CommandReceiver<RPGItems> {
         this.plugin = plugin;
     }
 
-    @SuppressWarnings("unchecked")
     private static void setPower(Power power, String field, String value) throws BadCommandException, IllegalAccessException {
         Field f;
         Class<? extends Power> cls = power.getClass();
@@ -568,10 +567,10 @@ public class Handler extends CommandReceiver<RPGItems> {
                 ItemMeta meta = blank.getItemMeta();
                 meta.setDisplayName(I18n.format("message.recipe.1"));
                 ArrayList<String> lore = new ArrayList<>();
-                lore.add(ChatColor.WHITE + I18n.format("message.recipe.2"));
-                lore.add(ChatColor.WHITE + I18n.format("message.recipe.3"));
-                lore.add(ChatColor.WHITE + I18n.format("message.recipe.4"));
-                lore.add(ChatColor.WHITE + I18n.format("message.recipe.5"));
+                lore.add(I18n.format("message.recipe.2"));
+                lore.add(I18n.format("message.recipe.3"));
+                lore.add(I18n.format("message.recipe.4"));
+                lore.add(I18n.format("message.recipe.5"));
                 meta.setLore(lore);
                 blank.setItemMeta(meta);
                 for (int i = 0; i < 27; i++) {
@@ -601,7 +600,7 @@ public class Handler extends CommandReceiver<RPGItems> {
         RPGItem item = ItemManager.itemByName.get(args.next());
         EntityType type = args.nextEnum(EntityType.class);
         if (args.length() == 2) {
-            msg(sender, "message.drop.get", item.getDisplay() + ChatColor.AQUA, type.toString().toLowerCase(), item.dropChances.get(type.toString()));
+            msg(sender, "message.drop.get", item.getDisplay(), type.toString().toLowerCase(), item.dropChances.get(type.toString()));
         } else {
             double chance = args.nextDouble();
             chance = Math.min(chance, 100.0);
@@ -820,7 +819,6 @@ public class Handler extends CommandReceiver<RPGItems> {
         }
     }
 
-
     @SubCommand("customItemModel")
     public void toggleCustomItemModel(CommandSender sender, Arguments args) {
         RPGItem item = ItemManager.itemByName.get(args.next());
@@ -872,21 +870,18 @@ public class Handler extends CommandReceiver<RPGItems> {
             return;
         }
         SortedMap<Property, Field> argMap = Power.propertyPriorities.get(cls);
-        Set<Field> required = new HashSet<>();
         Set<Field> settled = new HashSet<>();
         Optional<Property> req = argMap.keySet()
                                        .stream()
                                        .filter(Property::required)
-                                       .sorted(Comparator.comparing(Property::order).reversed())
-                                       .findFirst();
-        if (req.isPresent()) {
-            int last = req.get().order();
-            required = argMap.entrySet()
-                             .stream()
-                             .filter(entry -> entry.getKey().order() <= last)
-                             .map(Map.Entry::getValue)
-                             .collect(Collectors.toSet());
-        }
+                                       .reduce((first, second) -> second); //findLast
+
+        Set<Field> required = req.map(r -> argMap.entrySet()
+                                                 .stream()
+                                                 .filter(entry -> entry.getKey().order() <= r.order())
+                                                 .map(Map.Entry::getValue)
+                                                 .collect(Collectors.toSet())).orElse(Collections.emptySet());
+
         for (Field field : argMap.values()) {
             String name = field.getName();
             String value = args.argString(name, null);
@@ -896,7 +891,11 @@ public class Handler extends CommandReceiver<RPGItems> {
                 settled.add(field);
             }
         }
-        for (Field field : argMap.values()) {
+        for (Field field : argMap.entrySet()
+                                 .stream()
+                                 .filter(p -> p.getKey().order() != Integer.MAX_VALUE)
+                                 .map(Map.Entry::getValue)
+                                 .collect(Collectors.toList())) {
             if (settled.contains(field)) continue;
             String value = args.next();
             if (value == null) {
