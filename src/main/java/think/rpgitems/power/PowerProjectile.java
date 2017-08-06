@@ -52,6 +52,7 @@ public class PowerProjectile extends Power implements PowerRightClick {
     /**
      * Whether the projectile have gravity
      */
+    @Property
     public boolean gravity = true;
     /**
      * Range will projectiles spread, in degree

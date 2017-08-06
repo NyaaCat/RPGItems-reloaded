@@ -1,6 +1,5 @@
 package think.rpgitems;
 
-import cat.nyaa.nyaacore.CommandReceiver;
 import cat.nyaa.nyaacore.LanguageRepository;
 import cat.nyaa.nyaacore.Message;
 import org.bukkit.Bukkit;
@@ -31,7 +30,7 @@ import java.util.stream.Stream;
 
 import static think.rpgitems.power.Power.*;
 
-public class Handler extends CommandReceiver<RPGItems> {
+public class Handler extends RPGCommandReceiver {
     private final RPGItems plugin;
 
     Handler(RPGItems plugin, LanguageRepository i18n) {
@@ -869,12 +868,12 @@ public class Handler extends CommandReceiver<RPGItems> {
             msg(sender, "internal.error.command_exception");
             return;
         }
-        SortedMap<Property, Field> argMap = Power.propertyPriorities.get(cls);
+        SortedMap<PowerProperty, Field> argMap = Power.propertyPriorities.get(cls);
         Set<Field> settled = new HashSet<>();
-        Optional<Property> req = argMap.keySet()
-                                       .stream()
-                                       .filter(Property::required)
-                                       .reduce((first, second) -> second); //findLast
+        Optional<PowerProperty> req = argMap.keySet()
+                                            .stream()
+                                            .filter(PowerProperty::required)
+                                            .reduce((first, second) -> second); //findLast
 
         Set<Field> required = req.map(r -> argMap.entrySet()
                                                  .stream()

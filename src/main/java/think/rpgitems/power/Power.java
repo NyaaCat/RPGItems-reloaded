@@ -25,10 +25,7 @@ import org.bukkit.entity.Player;
 import org.bukkit.permissions.PermissionAttachment;
 import think.rpgitems.I18n;
 import think.rpgitems.RPGItems;
-import think.rpgitems.commands.Property;
-import think.rpgitems.commands.Setter;
-import think.rpgitems.commands.Transformer;
-import think.rpgitems.commands.Validator;
+import think.rpgitems.commands.*;
 import think.rpgitems.data.RPGValue;
 import think.rpgitems.item.RPGItem;
 
@@ -53,7 +50,7 @@ public abstract class Power {
     public static final HashBasedTable<Class<? extends Power>, String, BiFunction<Object, String, String>> transformers;
     public static final HashBasedTable<Class<? extends Power>, String, BiFunction<Object, String, Boolean>> validators;
     public static final HashBasedTable<Class<? extends Power>, String, BiConsumer<Object, String>> setters;
-    public static final Map<Class<? extends Power>, SortedMap<Property, Field>> propertyPriorities;
+    public static final Map<Class<? extends Power>, SortedMap<PowerProperty, Field>> propertyPriorities;
     /**
      * Power by name, and name by power
      */
@@ -212,10 +209,10 @@ public abstract class Power {
 
                     }
             );
-            SortedMap<Property, Field> argumentPriorityMap = new TreeMap<>(Comparator.comparing(Property::order));
+            SortedMap<PowerProperty, Field> argumentPriorityMap = new TreeMap<>(Comparator.comparing(PowerProperty::order).thenComparing(PowerProperty::hashCode));
             Arrays.stream(cls.getFields())
                   .filter(field -> field.getAnnotation(Property.class) != null)
-                  .forEach(field -> argumentPriorityMap.put(field.getAnnotation(Property.class), field));
+                  .forEach(field -> argumentPriorityMap.put(new PowerProperty(field.getName(), field.getAnnotation(Property.class).required(), field.getAnnotation(Property.class).order()), field));
             propertyPriorities.put(cls, argumentPriorityMap);
         }
     }

@@ -37,7 +37,6 @@ import org.bukkit.event.hanging.HangingBreakEvent.RemoveCause;
 import org.bukkit.event.inventory.*;
 import org.bukkit.event.player.PlayerInteractEvent;
 import org.bukkit.event.player.PlayerJoinEvent;
-import org.bukkit.event.player.PlayerPickupItemEvent;
 import org.bukkit.inventory.*;
 import org.bukkit.metadata.FixedMetadataValue;
 import org.bukkit.potion.PotionEffect;
@@ -322,8 +321,11 @@ public class Events implements Listener {
     }
 
     @EventHandler(priority = EventPriority.MONITOR, ignoreCancelled = true)
-    public void onPlayerPickup(PlayerPickupItemEvent e) {
-        final Player p = e.getPlayer();
+    public void onPlayerPickup(EntityPickupItemEvent e) {
+        if (!(e.getEntity() instanceof Player)) {
+            return;
+        }
+        final Player p = (Player) e.getEntity();
         new BukkitRunnable() {
             @Override
             public void run() {
