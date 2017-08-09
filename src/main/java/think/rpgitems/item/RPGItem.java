@@ -689,6 +689,8 @@ public class RPGItem {
                 damageStr = damageStr == null ? "" : damageStr + " & ";
                 if (damageMode == DamageMode.ADDITIONAL) {
                     damageStr += RPGItems.plugin.getConfig().getString("defaults.additionaldamage", "Additional ");
+                } else if (damageMode == DamageMode.MULTIPLY) {
+                    damageStr += RPGItems.plugin.getConfig().getString("defaults.multiplydamage", "Times ");
                 }
                 if (damageMin == damageMax) {
                     damageStr += damageMin + " " + RPGItems.plugin.getConfig().getString("defaults.damage", "Damage");
@@ -1176,5 +1178,6 @@ public class RPGItem {
         FIXED,
         VANILLA,
         ADDITIONAL,
+        MULTIPLY,
     }
 }

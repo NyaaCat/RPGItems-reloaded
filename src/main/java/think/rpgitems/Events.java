@@ -459,9 +459,16 @@ public class Events implements Listener {
         }
         double originDamage = damage;
         switch (rItem.damageMode) {
+            case MULTIPLY:
             case FIXED:
             case ADDITIONAL:
                 damage = rItem.getDamageMin() != rItem.getDamageMax() ? (rItem.getDamageMin() + random.nextInt(rItem.getDamageMax() - rItem.getDamageMin())) : rItem.getDamageMin();
+
+                if (rItem.damageMode == RPGItem.DamageMode.MULTIPLY) {
+                    damage *= originDamage;
+                    break;
+                }
+
                 Collection<PotionEffect> potionEffects = player.getActivePotionEffects();
                 double strength = 0, weak = 0;
                 for (PotionEffect pe : potionEffects) {
@@ -473,6 +480,7 @@ public class Events implements Listener {
                     }
                 }
                 damage = damage + strength - weak;
+
                 if (rItem.damageMode == RPGItem.DamageMode.ADDITIONAL) {
                     damage += originDamage;
                 }
@@ -515,7 +523,14 @@ public class Events implements Listener {
         switch (rItem.damageMode) {
             case FIXED:
             case ADDITIONAL:
+            case MULTIPLY:
                 damage = rItem.getDamageMin() != rItem.getDamageMax() ? (rItem.getDamageMin() + random.nextInt(rItem.getDamageMax() - rItem.getDamageMin())) : rItem.getDamageMin();
+
+                if (rItem.damageMode == RPGItem.DamageMode.MULTIPLY) {
+                    damage *= originDamage;
+                    break;
+                }
+
                 //Apply force adjustments
                 if (e.getDamager().hasMetadata("rpgitems.force")) {
                     damage *= e.getDamager().getMetadata("rpgitems.force").get(0).asFloat();

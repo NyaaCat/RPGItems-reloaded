@@ -354,6 +354,7 @@ message:
   damagemode:
     FIXED: Item '%s' damage mode set to fixed damage (default)
     ADDITIONAL: Item '%s' damage mode set to additional damage (vanilla minecraft damage plus RPGItem damage)
+    MULTIPLY: Item '%s' damage mode set to multiply damage (vanilla minecraft damage multiply by RPGItem damage)
     VANILLA: Item '%s' damage mode set to vanilla damage (use vanilla minecraft damage)
   quality:
     get: Item '%s' quality is '%s'

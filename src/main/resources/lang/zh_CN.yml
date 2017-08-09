@@ -317,7 +317,8 @@ message:
     print: '{itemName}'
   damagemode:
     FIXED: 物品 '%s' 伤害模式设定为固定伤害（默认）
-    ADDITIONAL: 物品 '%s' 伤害模式设定为附加伤害
+    MULTIPLY: 物品 '%s' 伤害模式设定为乘法伤害（原版伤害乘以RPG伤害）
+    ADDITIONAL: 物品 '%s' 伤害模式设定为附加伤害（原版伤害加RPG伤害）
     VANILLA: 物品 '%s' 伤害模式设定为原版伤害
   quality:
     get: 物品 '%s' 品质为 '%s'
