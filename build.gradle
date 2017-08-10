@@ -28,7 +28,7 @@ repositories {
     }
     maven {
         name 'NyaaCore-dev'
-        url 'https://raw.githubusercontent.com/Librazy/NyaaCore/maven-repo-dev'
+        url 'https://raw.githubusercontent.com/NyaaCat/NyaaCore/maven-repo-dev'
     }
 
     maven {

@@ -726,13 +726,14 @@ public class Handler extends RPGCommandReceiver {
             msg(sender, "message.durability.info", item.getMaxDurability(), item.defaultDurability, item.durabilityLowerBound, item.durabilityUpperBound);
             return;
         }
+        String arg = args.next();
         try {
-            int durability = args.nextInt();
+            int durability = Integer.parseInt(arg);
             item.setMaxDurability(durability);
             ItemManager.save(RPGItems.plugin);
             msg(sender, "message.durability.change");
         } catch (Exception e) {
-            switch (args.next()) {
+            switch (arg) {
                 case "infinite": {
                     item.setMaxDurability(-1);
                     ItemManager.save(RPGItems.plugin);
