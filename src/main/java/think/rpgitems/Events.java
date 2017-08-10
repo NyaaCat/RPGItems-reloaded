@@ -462,7 +462,7 @@ public class Events implements Listener {
             case MULTIPLY:
             case FIXED:
             case ADDITIONAL:
-                damage = rItem.getDamageMin() != rItem.getDamageMax() ? (rItem.getDamageMin() + random.nextInt(rItem.getDamageMax() - rItem.getDamageMin())) : rItem.getDamageMin();
+                damage = rItem.getDamageMin() != rItem.getDamageMax() ? (rItem.getDamageMin() + random.nextInt(rItem.getDamageMax() - rItem.getDamageMin() + 1)) : rItem.getDamageMin();
 
                 if (rItem.damageMode == RPGItem.DamageMode.MULTIPLY) {
                     damage *= originDamage;
@@ -524,7 +524,7 @@ public class Events implements Listener {
             case FIXED:
             case ADDITIONAL:
             case MULTIPLY:
-                damage = rItem.getDamageMin() != rItem.getDamageMax() ? (rItem.getDamageMin() + random.nextInt(rItem.getDamageMax() - rItem.getDamageMin())) : rItem.getDamageMin();
+                damage = rItem.getDamageMin() != rItem.getDamageMax() ? (rItem.getDamageMin() + random.nextInt(rItem.getDamageMax() - rItem.getDamageMin() + 1)) : rItem.getDamageMin();
 
                 if (rItem.damageMode == RPGItem.DamageMode.MULTIPLY) {
                     damage *= originDamage;
