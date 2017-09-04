@@ -11,14 +11,24 @@ import think.rpgitems.item.RPGItem;
 import think.rpgitems.power.Power;
 
 import java.lang.reflect.Field;
+import java.lang.reflect.Method;
 import java.util.*;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 import java.util.stream.Stream;
 
 public abstract class RPGCommandReceiver extends CommandReceiver {
+    private final Map<String, String> subCommandAttribute = new HashMap<>();
+
     public RPGCommandReceiver(RPGItems plugin, LanguageRepository i18n) {
         super(plugin, i18n);
+        subCommands.forEach(
+                (s, method) -> {
+                    Attribute attr = method.getAnnotation(Attribute.class);
+                    if(attr == null)return;
+                    subCommandAttribute.put(s, attr.value());
+                }
+        );
     }
 
     private static List<String> resolvePropertyValueSuggestion(Class<? extends Power> power, String propertyName, boolean hasNamePrefix) {

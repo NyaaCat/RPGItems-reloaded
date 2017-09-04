@@ -129,7 +129,8 @@ public class Handler extends RPGCommandReceiver {
         return "";
     }
 
-    @SubCommand(value = "reload", attribute = "command")
+    @SubCommand("reload")
+    @Attribute("command")
     public void reload(CommandSender sender, Arguments args) {
         plugin.reloadConfig();
         plugin.i18n.load();
@@ -141,7 +142,8 @@ public class Handler extends RPGCommandReceiver {
         sender.sendMessage(ChatColor.GREEN + "[RPGItems] Reloaded RPGItems.");
     }
 
-    @SubCommand(value = "list", attribute = "command")
+    @SubCommand("list")
+    @Attribute("command")
     public void listItems(CommandSender sender, Arguments args) {
         Collection<RPGItem> items = ItemManager.itemByName.values();
         int perPage = RPGItems.plugin.getConfig().getInt("itemperpage", 9);
@@ -161,7 +163,8 @@ public class Handler extends RPGCommandReceiver {
         );
     }
 
-    @SubCommand(value = "worldguard", attribute = "command")
+    @SubCommand("worldguard")
+    @Attribute("command")
     public void toggleWorldGuard(CommandSender sender, Arguments args) {
         if (!WorldGuard.isEnabled()) {
             msg(sender, "message.worldguard.error");
@@ -177,7 +180,8 @@ public class Handler extends RPGCommandReceiver {
         RPGItems.plugin.saveConfig();
     }
 
-    @SubCommand(value = "wgcustomflag", attribute = "command")
+    @SubCommand("wgcustomflag")
+    @Attribute("command")
     public void toggleCustomFlag(CommandSender sender, Arguments args) {
         if (!WorldGuard.isEnabled()) {
             msg(sender, "message.worldguard.error");
@@ -193,7 +197,8 @@ public class Handler extends RPGCommandReceiver {
         RPGItems.plugin.saveConfig();
     }
 
-    @SubCommand(value = "wgforcerefreash", attribute = "command")
+    @SubCommand("wgforcerefreash")
+    @Attribute("command")
     public void toggleForceRefreash(CommandSender sender, Arguments args) {
         if (!WorldGuard.isEnabled()) {
             msg(sender, "message.worldguard.error");
@@ -209,7 +214,8 @@ public class Handler extends RPGCommandReceiver {
         RPGItems.plugin.saveConfig();
     }
 
-    @SubCommand(value = "create", attribute = "item")
+    @SubCommand("create")
+    @Attribute("item")
     public void createItem(CommandSender sender, Arguments args) {
         String itemName = args.next();
         if (ItemManager.newItem(itemName.toLowerCase()) != null) {
@@ -220,7 +226,8 @@ public class Handler extends RPGCommandReceiver {
         }
     }
 
-    @SubCommand(value = "giveperms", attribute = "command")
+    @SubCommand("giveperms")
+    @Attribute("command")
     public void givePerms(CommandSender sender, Arguments args) {
         RPGItems.plugin.getConfig().set("give-perms", !RPGItems.plugin.getConfig().getBoolean("give-perms", false));
         if (RPGItems.plugin.getConfig().getBoolean("give-perms", false)) {
@@ -231,7 +238,8 @@ public class Handler extends RPGCommandReceiver {
         RPGItems.plugin.saveConfig();
     }
 
-    @SubCommand(value = "give", attribute = "item")
+    @SubCommand("give")
+    @Attribute("item")
     public void giveItem(CommandSender sender, Arguments args) {
         RPGItem item = ItemManager.itemByName.get(args.next());
         if (args.length() == 2) {
@@ -262,7 +270,8 @@ public class Handler extends RPGCommandReceiver {
         }
     }
 
-    @SubCommand(value = "remove", attribute = "item")
+    @SubCommand("remove")
+    @Attribute("item")
     public void removeItem(CommandSender sender, Arguments args) {
         RPGItem item = ItemManager.itemByName.get(args.next());
         ItemManager.remove(item);
@@ -270,7 +279,8 @@ public class Handler extends RPGCommandReceiver {
         ItemManager.save(RPGItems.plugin);
     }
 
-    @SubCommand(value = "display", attribute = "item")
+    @SubCommand("display")
+    @Attribute("item")
     public void itemDisplay(CommandSender sender, Arguments args) {
         RPGItem item = ItemManager.itemByName.get(args.next());
         String value = args.next();
@@ -283,7 +293,8 @@ public class Handler extends RPGCommandReceiver {
         }
     }
 
-    @SubCommand(value = "quality", attribute = "item")
+    @SubCommand("quality")
+    @Attribute("item")
     public void itemQuality(CommandSender sender, Arguments args) {
         RPGItem item = ItemManager.itemByName.get(args.next());
         try {
@@ -296,7 +307,8 @@ public class Handler extends RPGCommandReceiver {
         }
     }
 
-    @SubCommand(value = "damage", attribute = "item")
+    @SubCommand("damage")
+    @Attribute("item")
     public void itemDamage(CommandSender sender, Arguments args) {
         RPGItem item = ItemManager.itemByName.get(args.next());
         try {
@@ -323,7 +335,8 @@ public class Handler extends RPGCommandReceiver {
         }
     }
 
-    @SubCommand(value = "armour", attribute = "item")
+    @SubCommand("armour")
+    @Attribute("item")
     public void itemArmour(CommandSender sender, Arguments args) {
         RPGItem item = ItemManager.itemByName.get(args.next());
         try {
@@ -336,7 +349,8 @@ public class Handler extends RPGCommandReceiver {
         }
     }
 
-    @SubCommand(value = "type", attribute = "item")
+    @SubCommand("type")
+    @Attribute("item")
     public void itemType(CommandSender sender, Arguments args) {
         RPGItem item = ItemManager.itemByName.get(args.next());
         String type = args.next();
@@ -349,7 +363,8 @@ public class Handler extends RPGCommandReceiver {
         }
     }
 
-    @SubCommand(value = "hand", attribute = "item")
+    @SubCommand("hand")
+    @Attribute("item")
     public void itemHand(CommandSender sender, Arguments args) {
         RPGItem item = ItemManager.itemByName.get(args.next());
         String type = args.next();
@@ -363,7 +378,8 @@ public class Handler extends RPGCommandReceiver {
     }
 
     @SuppressWarnings("deprecation")
-    @SubCommand(value = "item", attribute = "item")
+    @SubCommand("item")
+    @Attribute("item")
     public void itemItem(CommandSender sender, Arguments args) {
         RPGItem item = ItemManager.itemByName.get(args.next());
         if (args.length() == 2) {
@@ -413,13 +429,15 @@ public class Handler extends RPGCommandReceiver {
         }
     }
 
-    @SubCommand(value = "info", attribute = "item")
+    @SubCommand("info")
+    @Attribute("item")
     public void itemInfo(CommandSender sender, Arguments args) {
         RPGItem item = ItemManager.itemByName.get(args.next());
         item.print(sender);
     }
 
-    @SubCommand(value = "enchantment", attribute = "item:clone,clear")
+    @SubCommand("enchantment")
+    @Attribute("item:clone,clear")
     public void itemListEnchant(CommandSender sender, Arguments args) {
         RPGItem item = ItemManager.itemByName.get(args.next());
         if (args.length() == 2) {
@@ -471,7 +489,8 @@ public class Handler extends RPGCommandReceiver {
         }
     }
 
-    @SubCommand(value = "removepower", attribute = "power")
+    @SubCommand("removepower")
+    @Attribute("power")
     public void itemRemovePower(CommandSender sender, Arguments args) {
         RPGItem item = ItemManager.itemByName.get(args.next());
         String power = args.next();
@@ -484,7 +503,8 @@ public class Handler extends RPGCommandReceiver {
         }
     }
 
-    @SubCommand(value = "description", attribute = "item:add,set,remove")
+    @SubCommand("description")
+    @Attribute("item:add,set,remove")
     public void itemAddDescription(CommandSender sender, Arguments args) {
         RPGItem item = ItemManager.itemByName.get(args.next());
         String command = args.next();
@@ -526,7 +546,8 @@ public class Handler extends RPGCommandReceiver {
         }
     }
 
-    @SubCommand(value = "worldguard", attribute = "command")
+    @SubCommand("worldguard")
+    @Attribute("command")
     public void itemToggleWorldGuard(CommandSender sender, Arguments args) {
         RPGItem item = ItemManager.itemByName.get(args.next());
         if (!WorldGuard.isEnabled()) {
@@ -541,7 +562,8 @@ public class Handler extends RPGCommandReceiver {
         }
     }
 
-    @SubCommand(value = "removerecipe", attribute = "item")
+    @SubCommand("removerecipe")
+    @Attribute("item")
     public void itemRemoveRecipe(CommandSender sender, Arguments args) {
         RPGItem item = ItemManager.itemByName.get(args.next());
         item.hasRecipe = false;
@@ -550,7 +572,8 @@ public class Handler extends RPGCommandReceiver {
         msg(sender, "message.recipe.removed");
     }
 
-    @SubCommand(value = "recipe", attribute = "item")
+    @SubCommand("recipe")
+    @Attribute("item")
     public void itemSetRecipe(CommandSender sender, Arguments args) {
         RPGItem item = ItemManager.itemByName.get(args.next());
         int chance = args.nextInt();
@@ -594,7 +617,8 @@ public class Handler extends RPGCommandReceiver {
         }
     }
 
-    @SubCommand(value = "drop", attribute = "item")
+    @SubCommand("drop")
+    @Attribute("item")
     public void getItemDropChance(CommandSender sender, Arguments args) {
         RPGItem item = ItemManager.itemByName.get(args.next());
         EntityType type = args.nextEnum(EntityType.class);
@@ -623,7 +647,8 @@ public class Handler extends RPGCommandReceiver {
         }
     }
 
-    @SubCommand(value = "get", attribute = "property")
+    @SubCommand("get")
+    @Attribute("property")
     public void getItemPowerProperty(CommandSender sender, Arguments args) {
         RPGItem item = ItemManager.itemByName.get(args.next());
         String power = args.next();
@@ -651,7 +676,8 @@ public class Handler extends RPGCommandReceiver {
         msg(sender, "message.power_property.power_notfound");
     }
 
-    @SubCommand(value = "set", attribute = "property")
+    @SubCommand("set")
+    @Attribute("property")
     public void setItemPowerProperty(CommandSender sender, Arguments args) throws IllegalAccessException {
         RPGItem item = ItemManager.itemByName.get(args.next());
         String power = args.next();
@@ -676,7 +702,8 @@ public class Handler extends RPGCommandReceiver {
         msg(sender, "message.power_property.change");
     }
 
-    @SubCommand(value = "cost", attribute = "item:breaking,hitting,hit,toggle")
+    @SubCommand("cost")
+    @Attribute("item:breaking,hitting,hit,toggle")
     public void itemCost(CommandSender sender, Arguments args) {
         RPGItem item = ItemManager.itemByName.get(args.next());
         String type = args.next();
@@ -719,7 +746,8 @@ public class Handler extends RPGCommandReceiver {
         }
     }
 
-    @SubCommand(value = "durability", attribute = "item:infinite,togglebar,default,bound")
+    @SubCommand("durability")
+    @Attribute("item:infinite,togglebar,default,bound")
     public void itemDurability(CommandSender sender, Arguments args) {
         RPGItem item = ItemManager.itemByName.get(args.next());
         if (args.length() == 2) {
@@ -765,7 +793,8 @@ public class Handler extends RPGCommandReceiver {
         }
     }
 
-    @SubCommand(value = "permission", attribute = "item")
+    @SubCommand("permission")
+    @Attribute("item")
     public void setPermission(CommandSender sender, Arguments args) {
         RPGItem item = ItemManager.itemByName.get(args.next());
         String permission = args.next();
@@ -776,7 +805,8 @@ public class Handler extends RPGCommandReceiver {
         msg(sender, "message.permission.success");
     }
 
-    @SubCommand(value = "togglepowerlore", attribute = "item")
+    @SubCommand("togglepowerlore")
+    @Attribute("item")
     public void togglePowerLore(CommandSender sender, Arguments args) {
         RPGItem item = ItemManager.itemByName.get(args.next());
         item.showPowerLore = !item.showPowerLore;
@@ -785,7 +815,8 @@ public class Handler extends RPGCommandReceiver {
         msg(sender, "message.toggleLore." + (item.showPowerLore ? "show" : "hide"));
     }
 
-    @SubCommand(value = "togglearmorlore", attribute = "item")
+    @SubCommand("togglearmorlore")
+    @Attribute("item")
     public void toggleArmorLore(CommandSender sender, Arguments args) {
         RPGItem item = ItemManager.itemByName.get(args.next());
         item.showArmourLore = !item.showArmourLore;
@@ -794,7 +825,8 @@ public class Handler extends RPGCommandReceiver {
         msg(sender, "message.toggleLore." + (item.showArmourLore ? "show" : "hide"));
     }
 
-    @SubCommand(value = "additemflag", attribute = "item")
+    @SubCommand("additemflag")
+    @Attribute("item")
     public void addItemFlag(CommandSender sender, Arguments args) {
         RPGItem item = ItemManager.itemByName.get(args.next());
         think.rpgitems.item.ItemFlag flag = args.nextEnum(think.rpgitems.item.ItemFlag.class);
@@ -804,7 +836,8 @@ public class Handler extends RPGCommandReceiver {
         msg(sender, "message.itemflag.add", flag.name());
     }
 
-    @SubCommand(value = "removeitemflag", attribute = "item")
+    @SubCommand("removeitemflag")
+    @Attribute("item")
     public void removeItemFlag(CommandSender sender, Arguments args) {
         RPGItem item = ItemManager.itemByName.get(args.next());
         think.rpgitems.item.ItemFlag flag = args.nextEnum(think.rpgitems.item.ItemFlag.class);
@@ -819,7 +852,8 @@ public class Handler extends RPGCommandReceiver {
         }
     }
 
-    @SubCommand(value = "customitemmodel", attribute = "item")
+    @SubCommand("customitemmodel")
+    @Attribute("item")
     public void toggleCustomItemModel(CommandSender sender, Arguments args) {
         RPGItem item = ItemManager.itemByName.get(args.next());
         item.customItemModel = !item.customItemModel;
@@ -828,12 +862,14 @@ public class Handler extends RPGCommandReceiver {
         msg(sender, "message.customitemmodel." + (item.customItemModel ? "enable" : "disable"));
     }
 
-    @SubCommand(value = "version", attribute = "command")
+    @SubCommand("version")
+    @Attribute("command")
     public void printVersion(CommandSender sender, Arguments args) {
         msg(sender, "message.version", RPGItems.plugin.getDescription().getVersion());
     }
 
-    @SubCommand(value = "damagemode", attribute = "item")
+    @SubCommand("damagemode")
+    @Attribute("item")
     public void toggleItemDamageMode(CommandSender sender, Arguments args) {
         RPGItem item = ItemManager.itemByName.get(args.next());
         switch (item.damageMode) {
@@ -855,7 +891,8 @@ public class Handler extends RPGCommandReceiver {
         msg(sender, "message.damagemode." + item.damageMode.name(), item.getName());
     }
 
-    @SubCommand(value = "power", attribute = "power")
+    @SubCommand("power")
+    @Attribute("power")
     public void itemAddPower(CommandSender sender, Arguments args) throws IllegalAccessException {
         RPGItem item = ItemManager.itemByName.get(args.next());
         String str = args.next();
