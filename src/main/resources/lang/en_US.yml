@@ -236,7 +236,7 @@ message:
     empty_ench: This item has an empty enchantment list
   error:
     effect: '%s is not a valid effect'
-    permission: You do not have permission
+    permission: You do not have permission for '%s'
     double:
       limit: Number must be between %.2f and %.2f
       format: '''%s'' is not a double'

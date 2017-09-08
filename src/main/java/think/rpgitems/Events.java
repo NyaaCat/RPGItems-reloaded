@@ -581,8 +581,7 @@ public class Events implements Listener {
             if (!WorldGuard.canPvP(p) && !pRItem.ignoreWorldGuard)
                 return damage;
             if (!pRItem.checkPermission(p, true)) {
-                damage = 0;
-                e.setCancelled(true);
+                continue;
             }
             boolean can;
             if (!pRItem.hitCostByDamage) {

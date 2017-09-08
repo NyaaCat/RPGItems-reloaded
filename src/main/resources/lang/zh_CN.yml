@@ -198,7 +198,7 @@ message:
     '5': 进行放置
   error:
     effect: '%s 不是一个有效的效果'
-    permission: 你没有权限那样做
+    permission: 你没有权限： '%s'
     double:
       limit: 数值必须在 %.2f 到 %.2f 之间
       format: '''%s'' 不是双数'

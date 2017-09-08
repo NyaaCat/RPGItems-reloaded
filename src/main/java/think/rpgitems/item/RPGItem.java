@@ -52,6 +52,7 @@ import think.rpgitems.power.types.*;
 import think.rpgitems.support.WorldGuard;
 import think.rpgitems.utils.ReflectionUtil;
 
+import java.lang.reflect.InvocationTargetException;
 import java.util.*;
 import java.util.Map.Entry;
 import java.util.regex.Pattern;
@@ -165,13 +166,11 @@ public class RPGItem {
                         // Invalid power
                         continue;
                     }
-                    Power pow = Power.powers.get(section.getString("powerName")).newInstance();
+                    Power pow = Power.powers.get(section.getString("powerName")).getConstructor().newInstance();
                     pow.init(section);
                     pow.item = this;
                     addPower(pow, false);
-                } catch (InstantiationException e) {
-                    e.printStackTrace();
-                } catch (IllegalAccessException e) {
+                } catch (InstantiationException | IllegalAccessException | NoSuchMethodException | InvocationTargetException e) {
                     e.printStackTrace();
                 }
             }
@@ -930,7 +929,7 @@ public class RPGItem {
 
     public boolean checkPermission(Player p, boolean showWarn) {
         if (getHasPermission() && !p.hasPermission(getPermission())) {
-            if (showWarn) p.sendMessage(I18n.format("message.error.permission"));
+            if (showWarn) p.sendMessage(I18n.format("message.error.permission", getDisplay()));
             return false;
         }
         return true;

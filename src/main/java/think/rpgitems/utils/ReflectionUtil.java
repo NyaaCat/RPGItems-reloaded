@@ -163,7 +163,7 @@ public final class ReflectionUtil {
         Object itemAsJsonObject; // This is the net.minecraft.server.ItemStack after being put through saveNmsItem method
 
         try {
-            nmsNbtTagCompoundObj = nbtTagCompoundClazz.newInstance();
+            nmsNbtTagCompoundObj = nbtTagCompoundClazz.getConstructor().newInstance();
             nmsItemStackObj = asNMSCopyMethod.invoke(null, itemStack);
             itemAsJsonObject = saveNmsItemStackMethod.invoke(nmsItemStackObj, nmsNbtTagCompoundObj);
         } catch (Throwable t) {
@@ -186,9 +186,7 @@ public final class ReflectionUtil {
                 Method isEmptyMethod = ReflectionUtil.getMethod(nmsItemStackObj.getClass(), "isEmpty");
                 return !((boolean) isEmptyMethod.invoke(nmsItemStackObj));
             }
-        } catch (IllegalAccessException e) {
-            e.printStackTrace();
-        } catch (InvocationTargetException e) {
+        } catch (IllegalAccessException | InvocationTargetException e) {
             e.printStackTrace();
         }
         return false;

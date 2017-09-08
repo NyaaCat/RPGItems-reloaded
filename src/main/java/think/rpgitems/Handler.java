@@ -248,7 +248,7 @@ public class Handler extends RPGCommandReceiver {
                     item.give((Player) sender);
                     msg(sender, "message.give.ok", item.getDisplay());
                 } else {
-                    msg(sender, "message.error.permission");
+                    msg(sender, "message.error.permission", item.getDisplay());
                 }
             } else {
                 msg(sender, "message.give.console");
