@@ -1,19 +1,27 @@
 package think.rpgitems.power;
 
+import com.google.common.cache.Cache;
+import com.google.common.cache.CacheBuilder;
+import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
 import org.bukkit.block.Block;
 import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.entity.*;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.scheduler.BukkitRunnable;
+import org.bukkit.scheduler.BukkitScheduler;
 import org.bukkit.util.Vector;
 import think.rpgitems.Events;
 import think.rpgitems.Plugin;
+import think.rpgitems.api.RPGItems;
 import think.rpgitems.data.Locale;
 import think.rpgitems.data.RPGValue;
+import think.rpgitems.item.RPGItem;
 import think.rpgitems.power.types.PowerRightClick;
 
+import java.util.UUID;
 import java.util.concurrent.ThreadLocalRandom;
+import java.util.concurrent.TimeUnit;
 
 /**
  * Power projectile.
@@ -36,6 +44,8 @@ public class PowerProjectile extends Power implements PowerRightClick {
      * Y_axis.
      */
     private static final Vector y_axis = new Vector(0, 1, 0);
+
+    private static Cache<UUID, Integer> brustCounter = CacheBuilder.newBuilder().expireAfterAccess(3, TimeUnit.SECONDS).concurrencyLevel(2).build();
     /**
      * Cooldown time of this power
      */
@@ -64,6 +74,14 @@ public class PowerProjectile extends Power implements PowerRightClick {
      * Cost of this power
      */
     public int consumption = 1;
+    /**
+     * Brust count of one shoot
+     */
+    public int brustCount = 1;
+    /**
+     * Interval between brusts
+     */
+    public int brustInterval = 1;
 
     private Class<? extends Projectile> projectileType = Snowball.class;
 
@@ -77,6 +95,8 @@ public class PowerProjectile extends Power implements PowerRightClick {
         consumption = s.getInt("consumption", 1);
         speed = s.getDouble("speed", 1);
         gravity = s.getBoolean("gravity", true);
+        brustCount = s.getInt("brustCount", 1);
+        brustInterval = s.getInt("brustInterval", 1);
     }
 
     @Override
@@ -89,6 +109,8 @@ public class PowerProjectile extends Power implements PowerRightClick {
         s.set("consumption", consumption);
         s.set("speed", speed);
         s.set("gravity", gravity);
+        s.set("brustCount", brustCount);
+        s.set("brustInterval", brustInterval);
     }
 
     /**
@@ -164,6 +186,28 @@ public class PowerProjectile extends Power implements PowerRightClick {
         if (!item.checkPermission(player, true))return;
         if (!checkCooldown(player, cooldownTime, true))return;
         if (!item.consumeDurability(stack, consumption)) return;
+        fire(player);
+        if (brustCount > 1){
+            brustCounter.put(player.getUniqueId(), brustCount - 1);
+            (new BukkitRunnable() {
+                @Override
+                public void run() {
+                    Integer i;
+                    if(player.getInventory().getItemInMainHand().equals(stack) && (i = brustCounter.getIfPresent(player.getUniqueId())) != null){
+                        if(i > 0){
+                            fire(player);
+                            brustCounter.put(player.getUniqueId(), i - 1);
+                            return;
+                        }
+                    }
+                    brustCounter.invalidate(player.getUniqueId());
+                    this.cancel();
+                }
+            }).runTaskTimer(Plugin.plugin, 1, brustInterval);
+        }
+    }
+
+    private void fire(Player player) {
         if (!cone) {
             Projectile projectile = player.launchProjectile(projectileType, player.getEyeLocation().getDirection().multiply(speed));
             Events.rpgProjectiles.put(projectile.getEntityId(), item.getID());
