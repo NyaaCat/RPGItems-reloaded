@@ -1,21 +1,27 @@
 package think.rpgitems.power;
 
+import com.google.common.cache.Cache;
+import com.google.common.cache.CacheBuilder;
+import org.bukkit.Bukkit;
 import org.bukkit.block.Block;
 import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.entity.*;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.scheduler.BukkitRunnable;
+import org.bukkit.scheduler.BukkitScheduler;
 import org.bukkit.util.Vector;
 import think.rpgitems.Events;
 import think.rpgitems.I18n;
-import think.rpgitems.RPGItems;
 import think.rpgitems.commands.AcceptedValue;
 import think.rpgitems.commands.Property;
 import think.rpgitems.commands.Setter;
 import think.rpgitems.commands.Validator;
+import think.rpgitems.item.RPGItem;
 import think.rpgitems.power.types.PowerRightClick;
 
+import java.util.UUID;
 import java.util.concurrent.ThreadLocalRandom;
+import java.util.concurrent.TimeUnit;
 
 /**
  * Power projectile.
@@ -39,6 +45,8 @@ public class PowerProjectile extends Power implements PowerRightClick {
      * Y_axis.
      */
     private static final Vector y_axis = new Vector(0, 1, 0);
+
+    private static Cache<UUID, Integer> burstCounter = CacheBuilder.newBuilder().expireAfterAccess(3, TimeUnit.SECONDS).concurrencyLevel(2).build();
     /**
      * Cooldown time of this power
      */
@@ -75,6 +83,14 @@ public class PowerProjectile extends Power implements PowerRightClick {
     @Property
     public int consumption = 1;
     /**
+     * burst count of one shoot
+     */
+    public int burstCount = 1;
+    /**
+     * Interval between bursts
+     */
+    public int burstInterval = 1;
+    /**
      * Type of projectiles
      */
     @AcceptedValue({
@@ -100,6 +116,8 @@ public class PowerProjectile extends Power implements PowerRightClick {
         consumption = s.getInt("consumption", 1);
         speed = s.getDouble("speed", 1);
         gravity = s.getBoolean("gravity", true);
+        burstCount = s.getInt("burstCount", 1);
+        burstInterval = s.getInt("burstInterval", 1);
     }
 
     @Override
@@ -112,6 +130,8 @@ public class PowerProjectile extends Power implements PowerRightClick {
         s.set("consumption", consumption);
         s.set("speed", speed);
         s.set("gravity", gravity);
+        s.set("burstCount", burstCount);
+        s.set("burstInterval", burstInterval);
     }
 
     /**
@@ -187,6 +207,28 @@ public class PowerProjectile extends Power implements PowerRightClick {
         if (!item.checkPermission(player, true)) return;
         if (!checkCooldown(player, cooldownTime, true)) return;
         if (!item.consumeDurability(stack, consumption)) return;
+        fire(player);
+        if (burstCount > 1){
+            burstCounter.put(player.getUniqueId(), burstCount - 1);
+            (new BukkitRunnable() {
+                @Override
+                public void run() {
+                    Integer i;
+                    if(player.getInventory().getItemInMainHand().equals(stack) && (i = burstCounter.getIfPresent(player.getUniqueId())) != null){
+                        if(i > 0){
+                            fire(player);
+                            burstCounter.put(player.getUniqueId(), i - 1);
+                            return;
+                        }
+                    }
+                    burstCounter.invalidate(player.getUniqueId());
+                    this.cancel();
+                }
+            }).runTaskTimer(Plugin.plugin, 1, burstInterval);
+        }
+    }
+
+    private void fire(Player player) {
         if (!cone) {
             Projectile projectile = player.launchProjectile(projectileType, player.getEyeLocation().getDirection().multiply(speed));
             Events.rpgProjectiles.put(projectile.getEntityId(), item.getID());
