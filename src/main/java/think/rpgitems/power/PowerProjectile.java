@@ -45,7 +45,7 @@ public class PowerProjectile extends Power implements PowerRightClick {
      */
     private static final Vector y_axis = new Vector(0, 1, 0);
 
-    private static Cache<UUID, Integer> brustCounter = CacheBuilder.newBuilder().expireAfterAccess(3, TimeUnit.SECONDS).concurrencyLevel(2).build();
+    private static Cache<UUID, Integer> burstCounter = CacheBuilder.newBuilder().expireAfterAccess(3, TimeUnit.SECONDS).concurrencyLevel(2).build();
     /**
      * Cooldown time of this power
      */
@@ -75,13 +75,13 @@ public class PowerProjectile extends Power implements PowerRightClick {
      */
     public int consumption = 1;
     /**
-     * Brust count of one shoot
+     * burst count of one shoot
      */
-    public int brustCount = 1;
+    public int burstCount = 1;
     /**
-     * Interval between brusts
+     * Interval between bursts
      */
-    public int brustInterval = 1;
+    public int burstInterval = 1;
 
     private Class<? extends Projectile> projectileType = Snowball.class;
 
@@ -95,8 +95,8 @@ public class PowerProjectile extends Power implements PowerRightClick {
         consumption = s.getInt("consumption", 1);
         speed = s.getDouble("speed", 1);
         gravity = s.getBoolean("gravity", true);
-        brustCount = s.getInt("brustCount", 1);
-        brustInterval = s.getInt("brustInterval", 1);
+        burstCount = s.getInt("burstCount", 1);
+        burstInterval = s.getInt("burstInterval", 1);
     }
 
     @Override
@@ -109,8 +109,8 @@ public class PowerProjectile extends Power implements PowerRightClick {
         s.set("consumption", consumption);
         s.set("speed", speed);
         s.set("gravity", gravity);
-        s.set("brustCount", brustCount);
-        s.set("brustInterval", brustInterval);
+        s.set("burstCount", burstCount);
+        s.set("burstInterval", burstInterval);
     }
 
     /**
@@ -187,23 +187,23 @@ public class PowerProjectile extends Power implements PowerRightClick {
         if (!checkCooldown(player, cooldownTime, true))return;
         if (!item.consumeDurability(stack, consumption)) return;
         fire(player);
-        if (brustCount > 1){
-            brustCounter.put(player.getUniqueId(), brustCount - 1);
+        if (burstCount > 1){
+            burstCounter.put(player.getUniqueId(), burstCount - 1);
             (new BukkitRunnable() {
                 @Override
                 public void run() {
                     Integer i;
-                    if(player.getInventory().getItemInMainHand().equals(stack) && (i = brustCounter.getIfPresent(player.getUniqueId())) != null){
+                    if(player.getInventory().getItemInMainHand().equals(stack) && (i = burstCounter.getIfPresent(player.getUniqueId())) != null){
                         if(i > 0){
                             fire(player);
-                            brustCounter.put(player.getUniqueId(), i - 1);
+                            burstCounter.put(player.getUniqueId(), i - 1);
                             return;
                         }
                     }
-                    brustCounter.invalidate(player.getUniqueId());
+                    burstCounter.invalidate(player.getUniqueId());
                     this.cancel();
                 }
-            }).runTaskTimer(Plugin.plugin, 1, brustInterval);
+            }).runTaskTimer(Plugin.plugin, 1, burstInterval);
         }
     }
 
