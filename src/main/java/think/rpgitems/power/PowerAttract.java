@@ -11,6 +11,8 @@ import org.bukkit.util.Vector;
 import think.rpgitems.data.Locale;
 import think.rpgitems.power.types.PowerTick;
 
+import java.util.List;
+
 /**
  * Power attract.
  * <p>
@@ -52,9 +54,18 @@ public class PowerAttract extends Power implements PowerTick {
 
     @Override
     public void tick(Player player, ItemStack stack) {
-        if (!item.checkPermission(player, true))return;
+        if (!item.checkPermission(player, true)) return;
         double factor = Math.sqrt(radius - 1) / maxSpeed;
-        for (Entity e : player.getNearbyEntities(radius, radius, radius)) {
+        List<Entity> entities = player.getNearbyEntities(radius, radius, radius);
+
+        for (Entity e :
+                item.powers.stream().filter(power -> power instanceof PowerSelector).findFirst().map(
+                        selector ->
+                                ((PowerSelector) selector).canApplyTo(getClass()) ?
+                                        ((PowerSelector) selector).filter(player, entities) :
+                                        entities
+                ).orElse(entities)
+                ) {
             if (e instanceof LivingEntity && !(e instanceof Player)) {
                 Location locTarget = e.getLocation();
                 Location locPlayer = player.getLocation();

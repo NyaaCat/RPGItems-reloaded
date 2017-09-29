@@ -16,6 +16,7 @@
  */
 package think.rpgitems.power;
 
+import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
 import org.bukkit.Sound;
 import org.bukkit.block.Block;
@@ -23,10 +24,13 @@ import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.entity.Arrow;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
+import org.bukkit.scoreboard.Team;
 import think.rpgitems.Events;
 import think.rpgitems.data.Locale;
 import think.rpgitems.data.RPGValue;
 import think.rpgitems.power.types.PowerRightClick;
+
+import java.util.Set;
 
 /**
  * Power arrow.
@@ -50,6 +54,21 @@ public class PowerArrow extends Power implements PowerRightClick {
         if (!item.checkPermission(player, true))return;
         if (!checkCooldown(player, cooldownTime, true))return;
         if (!item.consumeDurability(stack, consumption)) return;
+        System.out.println(player.getScoreboard());
+        System.out.println(Bukkit.getScoreboardManager().getMainScoreboard());
+
+        Set<String> entries = player.getScoreboard().getEntries();
+        entries.forEach(System.out::println);
+        Set<String> entries2 = Bukkit.getScoreboardManager().getMainScoreboard().getEntries();
+        entries2.forEach(System.out::println);
+        Set<Team> teams = Bukkit.getScoreboardManager().getMainScoreboard().getTeams();
+        teams.forEach(team -> {
+            System.out.println(team);
+            System.out.println("=====");
+            team.getEntries().forEach(System.out::println);
+            System.out.println("\n");
+            System.out.println("\n");
+        });
         player.playSound(player.getLocation(), Sound.ENTITY_ARROW_SHOOT, 1.0f, 1.0f);
         Arrow arrow = player.launchProjectile(Arrow.class);
         Events.rpgProjectiles.put(arrow.getEntityId(), item.getID());

@@ -102,6 +102,7 @@ public abstract class Power {
         Power.powers.put("rangedonly", PowerRangedOnly.class);
         Power.powers.put("deflect", PowerDeflect.class);
         Power.powers.put("realdamage", PowerRealDamage.class);
+        Power.powers.put("selector", PowerSelector.class);
     }
 
     /**

@@ -995,4 +995,14 @@ public class PowerHandler implements CommandHandler {
         ItemManager.save(Plugin.plugin);
         sender.sendMessage(ChatColor.AQUA + Locale.get("message.power.ok"));
     }
+
+    @CommandString("rpgitem $n[] power selector")
+    @CommandDocumentation("$command.rpgitem.selector")
+    @CommandGroup("item_power_selector")
+    public void selector(CommandSender sender, RPGItem item) {
+        PowerSelector pow = new PowerSelector();
+        item.addPower(pow);
+        ItemManager.save(Plugin.plugin);
+        sender.sendMessage(ChatColor.AQUA + Locale.get("message.power.ok"));
+    }
 }
