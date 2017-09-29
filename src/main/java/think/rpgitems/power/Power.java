@@ -183,7 +183,7 @@ public abstract class Power {
         item.powers.stream().filter(power -> power instanceof PowerSelector).forEach(
                 selector -> {
                     if (((PowerSelector) selector).canApplyTo(getClass())) {
-                        ((PowerSelector) selector).filter(player, entities);
+                        ((PowerSelector) selector).inPlaceFilter(player, entities);
                     }
                 }
         );

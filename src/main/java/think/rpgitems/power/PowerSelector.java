@@ -304,7 +304,7 @@ public class PowerSelector extends Power {
         return result;
     }
 
-    public Collection<Entity> filter(Player p, List<Entity> entities) {
+    public void inPlaceFilter(Player p, List<Entity> entities) {
         Location ref = reference(p);
         List<Entity> ents = entities.stream().filter(entity -> inRadius(entity, ref, r, rm)).collect(Collectors.toList());
         if (Stream.of(dx, dy, dz).anyMatch(Objects::nonNull))
@@ -325,7 +325,8 @@ public class PowerSelector extends Power {
             Map<String, Pair<Integer, Integer>> t = scoreCache.getUnchecked(score);
             ents = ents.stream().filter(entity -> matchScore(entity, p.getScoreboard(), t)).collect(Collectors.toList());
         }
-        return ents;
+        entities.clear();
+        entities.addAll(ents);
     }
 
     @Override
