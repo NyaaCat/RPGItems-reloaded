@@ -28,10 +28,13 @@ import org.bukkit.entity.LivingEntity;
 import org.bukkit.entity.Player;
 import org.bukkit.permissions.PermissionAttachment;
 import think.rpgitems.Plugin;
-import think.rpgitems.data.*;
+import think.rpgitems.data.RPGValue;
 import think.rpgitems.item.RPGItem;
 
-import java.util.*;
+import java.util.AbstractMap;
+import java.util.ArrayList;
+import java.util.Comparator;
+import java.util.List;
 
 /**
  * Base class for all powers
@@ -106,55 +109,6 @@ public abstract class Power {
     }
 
     /**
-     * Get nearby entities entity [ ].
-     *
-     * @param l      the l
-     * @param radius the radius
-     * @return the entity [ ]
-     */
-    public static Entity[] getNearbyEntities(Location l, double radius) {
-        List<Entity> entities = new ArrayList<>();
-        for (Entity e : l.getWorld().getNearbyEntities(l, radius, radius, radius)) {
-            try {
-                if (l.distance(e.getLocation()) <= radius) {
-                    entities.add(e);
-                }
-            } catch (RuntimeException ex) {
-                ex.printStackTrace();
-            }
-        }
-        return entities.toArray(new Entity[entities.size()]);
-    }
-
-    /**
-     * Get nearby living entities living entity [ ].
-     *
-     * @param l      the l
-     * @param radius the radius
-     * @param min    the min
-     * @return the living entity [ ]
-     */
-    public static LivingEntity[] getNearbyLivingEntities(Location l, double radius, double min) {
-        final java.util.List<java.util.Map.Entry<LivingEntity, Double>> entities = new java.util.ArrayList<>();
-        for (Entity e : l.getWorld().getNearbyEntities(l, radius, radius, radius)) {
-            try {
-                if (e instanceof LivingEntity) {
-                    double d = l.distance(e.getLocation());
-                    if (d <= radius && d >= min) {
-                        entities.add(new AbstractMap.SimpleImmutableEntry<>((LivingEntity) e, d));
-                    }
-                }
-            } catch (RuntimeException ex) {
-                ex.printStackTrace();
-            }
-        }
-        java.util.List<LivingEntity> entity = new java.util.ArrayList<>();
-        entities.sort(Comparator.comparing(java.util.Map.Entry::getValue));
-        entities.forEach((k) -> entity.add(k.getKey()));
-        return entity.toArray(new LivingEntity[entity.size()]);
-    }
-
-    /**
      * Gets entities in cone.
      *
      * @param entities  List of nearby entities
@@ -163,7 +117,7 @@ public abstract class Power {
      * @param direction direction of the cone
      * @return All entities inside the cone
      */
-    public static List<LivingEntity> getEntitiesInCone(LivingEntity[] entities, org.bukkit.util.Vector startPos, double degrees, org.bukkit.util.Vector direction) {
+    public static List<LivingEntity> getEntitiesInCone(List<LivingEntity> entities, org.bukkit.util.Vector startPos, double degrees, org.bukkit.util.Vector direction) {
         List<LivingEntity> newEntities = new ArrayList<>();
         for (LivingEntity e : entities) {
             org.bukkit.util.Vector relativePosition = e.getEyeLocation().toVector();
@@ -172,17 +126,6 @@ public abstract class Power {
             newEntities.add(e);
         }
         return newEntities;
-    }
-
-    /**
-     * Gets angle between vectors.
-     *
-     * @param v1 the v 1
-     * @param v2 the v 2
-     * @return the angle between vectors
-     */
-    public static float getAngleBetweenVectors(org.bukkit.util.Vector v1, org.bukkit.util.Vector v2) {
-        return Math.abs((float) Math.toDegrees(v1.angle(v2)));
     }
 
     public static boolean checkCooldownByString(Player player, RPGItem item, String command, long cooldownTime, boolean showWarn) {
@@ -199,9 +142,91 @@ public abstract class Power {
             value.set(nowTick + cooldownTime);
             return true;
         } else {
-            if(showWarn)player.sendMessage(ChatColor.AQUA + String.format(think.rpgitems.data.Locale.get("message.cooldown"), ((double) (cooldown - nowTick)) / 20d));
+            if (showWarn)
+                player.sendMessage(ChatColor.AQUA + String.format(think.rpgitems.data.Locale.get("message.cooldown"), ((double) (cooldown - nowTick)) / 20d));
             return false;
         }
+    }
+
+    /**
+     * Get nearby entities entity [ ].
+     *
+     * @param l      the l
+     * @param radius the radius
+     * @return the entity [ ]
+     */
+    public List<Entity> getNearbyEntities(Location l, Player player, double radius) {
+        return getNearbyEntities(l, player, radius, radius, radius, radius);
+    }
+
+    /**
+     * Get nearby entities entity [ ].
+     *
+     * @param l      the l
+     * @param dx     the dx
+     * @param dy     the dy
+     * @param dz     the dz
+     * @param radius the radius
+     * @return the entity [ ]
+     */
+    public List<Entity> getNearbyEntities(Location l, Player player, double dx, double dy, double dz, double radius) {
+        List<Entity> entities = new ArrayList<>();
+        for (Entity e : l.getWorld().getNearbyEntities(l, dx, dy, dz)) {
+            try {
+                if (l.distance(e.getLocation()) <= radius) {
+                    entities.add(e);
+                }
+            } catch (RuntimeException ex) {
+                ex.printStackTrace();
+            }
+        }
+        item.powers.stream().filter(power -> power instanceof PowerSelector).forEach(
+                selector -> {
+                    if (((PowerSelector) selector).canApplyTo(getClass())) {
+                        ((PowerSelector) selector).filter(player, entities);
+                    }
+                }
+        );
+        return entities;
+    }
+
+    /**
+     * Gets angle between vectors.
+     *
+     * @param v1 the v 1
+     * @param v2 the v 2
+     * @return the angle between vectors
+     */
+    public static float getAngleBetweenVectors(org.bukkit.util.Vector v1, org.bukkit.util.Vector v2) {
+        return Math.abs((float) Math.toDegrees(v1.angle(v2)));
+    }
+
+    /**
+     * Get nearest living entities living entity [ ].
+     *
+     * @param l      the l
+     * @param radius the radius
+     * @param min    the min
+     * @return the living entity [ ]
+     */
+    public List<LivingEntity> getNearestLivingEntities(Location l, Player player, double radius, double min) {
+        final java.util.List<java.util.Map.Entry<LivingEntity, Double>> entities = new java.util.ArrayList<>();
+        for (Entity e : getNearbyEntities(l, player, radius)) {
+            try {
+                if (e instanceof LivingEntity) {
+                    double d = l.distance(e.getLocation());
+                    if (d <= radius && d >= min) {
+                        entities.add(new AbstractMap.SimpleImmutableEntry<>((LivingEntity) e, d));
+                    }
+                }
+            } catch (RuntimeException ex) {
+                ex.printStackTrace();
+            }
+        }
+        List<LivingEntity> entity = new ArrayList<>();
+        entities.sort(Comparator.comparing(java.util.Map.Entry::getValue));
+        entities.forEach((k) -> entity.add(k.getKey()));
+        return entity;
     }
 
     public static void AttachPermission(Player player, String permission) {
@@ -248,8 +273,8 @@ public abstract class Power {
     /**
      * Check cooldown boolean.
      *
-     * @param p       the p
-     * @param cdTicks the cd ticks
+     * @param p        the p
+     * @param cdTicks  the cd ticks
      * @param showWarn whether to show warning to player
      * @return the boolean
      */
@@ -267,7 +292,8 @@ public abstract class Power {
             value.set(nowTick + cdTicks);
             return true;
         } else {
-            if(showWarn)p.sendMessage(ChatColor.AQUA + String.format(think.rpgitems.data.Locale.get("message.cooldown"), ((double) (cooldown - nowTick)) / 20d));
+            if (showWarn)
+                p.sendMessage(ChatColor.AQUA + String.format(think.rpgitems.data.Locale.get("message.cooldown"), ((double) (cooldown - nowTick)) / 20d));
             return false;
         }
     }

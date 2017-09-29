@@ -29,7 +29,6 @@ import org.bukkit.scheduler.BukkitRunnable;
 import org.bukkit.util.Vector;
 import think.rpgitems.Plugin;
 import think.rpgitems.data.Locale;
-import think.rpgitems.data.RPGValue;
 import think.rpgitems.power.types.PowerRightClick;
 
 import java.util.ArrayList;
@@ -133,7 +132,7 @@ public class PowerFire extends Power implements PowerRightClick {
                         blockDead = true;
                     }
                 } else {
-                    List<Entity> ents = block.getNearbyEntities(0, 1, 0);
+                    List<Entity> ents = getNearbyEntities(block.getLocation(), player, 0, 1, 0, 1);
                     for (Entity ent : ents)
                         if (ent instanceof Damageable)
                             ent.setFireTicks(burnduration);

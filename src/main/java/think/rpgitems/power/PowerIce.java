@@ -26,7 +26,6 @@ import org.bukkit.inventory.ItemStack;
 import org.bukkit.scheduler.BukkitRunnable;
 import think.rpgitems.Plugin;
 import think.rpgitems.data.Locale;
-import think.rpgitems.data.RPGValue;
 import think.rpgitems.power.types.PowerRightClick;
 
 import java.util.HashMap;
@@ -70,7 +69,7 @@ public class PowerIce extends Power implements PowerRightClick {
                 boolean hit = false;
                 World world = block.getWorld();
 
-                List<Entity> entities = block.getNearbyEntities(1, 1, 1);
+                List<Entity> entities = getNearbyEntities(block.getLocation(), player, 1);
                 for (Entity e : entities) {
                     if (e != player) {
                         hit = true;

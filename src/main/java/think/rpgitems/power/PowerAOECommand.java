@@ -83,16 +83,16 @@ public class PowerAOECommand extends PowerCommand {
         boolean forMobs = type.equalsIgnoreCase("mobs");
 
         if (type.equalsIgnoreCase("entity") || forPlayers || forMobs) {
-            LivingEntity[] nearbyEntities = getNearbyLivingEntities(player.getLocation(), r, rm);
+            List<LivingEntity> nearbyEntities = getNearestLivingEntities(player.getLocation(), player, r, rm);
             List<LivingEntity> ent = getEntitiesInCone(nearbyEntities, player.getEyeLocation().toVector(), facing, player.getEyeLocation().getDirection());
             LivingEntity[] entities = ent.toArray(new LivingEntity[ent.size()]);
             for (int i = 0; i < c && i < entities.length; ++i) {
                 String cmd = usercmd;
                 LivingEntity e = entities[i];
                 if ((mustsee && !player.hasLineOfSight(e))
-                        || (!selfapplication && e == player)
-                        || (forPlayers && !(e instanceof Player))
-                        || (forMobs && e instanceof Player)
+                            || (!selfapplication && e == player)
+                            || (forPlayers && !(e instanceof Player))
+                            || (forMobs && e instanceof Player)
                         ) {
                     ++c;
                     continue;
@@ -114,7 +114,7 @@ public class PowerAOECommand extends PowerCommand {
 
     @Override
     public void rightClick(Player player, ItemStack stack, Block clicked) {
-        if (!item.checkPermission(player, true))return;
+        if (!item.checkPermission(player, true)) return;
         if (!isRight || !checkCooldownByString(player, item, command, cooldownTime, true)) return;
         if (!item.consumeDurability(stack, consumption)) return;
         aoeCommand(player);
@@ -122,7 +122,7 @@ public class PowerAOECommand extends PowerCommand {
 
     @Override
     public void leftClick(Player player, ItemStack stack, Block clicked) {
-        if (!item.checkPermission(player, true))return;
+        if (!item.checkPermission(player, true)) return;
         if (isRight || !checkCooldownByString(player, item, command, cooldownTime, true)) return;
         if (!item.consumeDurability(stack, consumption)) return;
         aoeCommand(player);

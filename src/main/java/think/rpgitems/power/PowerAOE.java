@@ -27,7 +27,6 @@ import org.bukkit.inventory.ItemStack;
 import org.bukkit.potion.PotionEffect;
 import org.bukkit.potion.PotionEffectType;
 import think.rpgitems.data.Locale;
-import think.rpgitems.data.RPGValue;
 import think.rpgitems.power.types.PowerRightClick;
 
 /**
@@ -101,14 +100,14 @@ public class PowerAOE extends Power implements PowerRightClick {
 
     @Override
     public void rightClick(final Player player, ItemStack stack, Block clicked) {
-        if (!item.checkPermission(player, true))return;
-        if (!checkCooldown(player, cooldownTime, true))return;
+        if (!item.checkPermission(player, true)) return;
+        if (!checkCooldown(player, cooldownTime, true)) return;
         if (!item.consumeDurability(stack, consumption)) return;
         PotionEffect effect = new PotionEffect(type, duration, amplifier - 1);
         if (selfapplication)
             player.addPotionEffect(effect);
         player.getWorld().playEffect(player.getLocation(), Effect.POTION_BREAK, 1);
-        for (Entity ent : player.getNearbyEntities(range, range, range))
+        for (Entity ent : getNearbyEntities(player.getLocation(), player, range))
             if (ent instanceof LivingEntity)
                 ((LivingEntity) ent).addPotionEffect(effect);
     }
