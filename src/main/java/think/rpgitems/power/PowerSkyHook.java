@@ -31,6 +31,18 @@ public class PowerSkyHook extends Power implements PowerRightClick {
      */
     public Material railMaterial = Material.GLASS;
     /**
+     * Cooldown time of this power
+     */
+    public long cooldownTime = 20;
+    /**
+     * Cost of this power
+     */
+    public int consumption = 0;
+    /**
+     * Hooking Cost Pre-Tick
+     */
+    public int hookingTickCost = 0;
+    /**
      * Maximum distance.
      */
     public int hookDistance = 10;
@@ -38,6 +50,8 @@ public class PowerSkyHook extends Power implements PowerRightClick {
     @Override
     public void rightClick(final Player player, ItemStack stack, Block clicked) {
         if (!item.checkPermission(player, true)) return;
+        if (!checkCooldown(player, cooldownTime, true)) return;
+        if (!item.consumeDurability(stack, consumption)) return;
         RPGValue isHooking = RPGValue.get(player, item, "skyhook.isHooking");
         if (isHooking == null) {
             isHooking = new RPGValue(player, item, "skyhook.isHooking", false);
@@ -63,7 +77,7 @@ public class PowerSkyHook extends Power implements PowerRightClick {
 
             @Override
             public void run() {
-                if (!player.getAllowFlight()) {
+                if (!(player.getAllowFlight() && item.consumeDurability(stack, hookingTickCost))) {
                     cancel();
                     RPGValue.get(player, item, "skyhook.isHooking").set(false);
                     return;
@@ -103,12 +117,18 @@ public class PowerSkyHook extends Power implements PowerRightClick {
 
     @Override
     public void init(ConfigurationSection s) {
+        cooldownTime = s.getLong("cooldown", 20);
+        hookingTickCost = s.getInt("hookingTickCost", 0);
+        consumption = s.getInt("consumption", 0);
         railMaterial = Material.valueOf(s.getString("railMaterial", "GLASS"));
         hookDistance = s.getInt("hookDistance", 10);
     }
 
     @Override
     public void save(ConfigurationSection s) {
+        s.set("consumption", consumption);
+        s.set("hookingTickCost", hookingTickCost);
+        s.set("cooldown", cooldownTime);
         s.set("railMaterial", railMaterial.toString());
         s.set("hookDistance", hookDistance);
     }
