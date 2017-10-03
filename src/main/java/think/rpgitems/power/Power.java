@@ -107,6 +107,7 @@ public abstract class Power {
         Power.powers.put("deflect", PowerDeflect.class);
         Power.powers.put("realdamage", PowerRealDamage.class);
         Power.powers.put("selector", PowerSelector.class);
+        Power.powers.put("noimmutabletick", PowerNoImmutableTick.class);
         MethodHandles.Lookup lookup = MethodHandles.lookup();
         for (Class<? extends Power> cls : Power.powers.values()) {
             Map<Class<? extends Annotation>, List<Annotation>> annos =
