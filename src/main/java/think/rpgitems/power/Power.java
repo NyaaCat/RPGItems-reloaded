@@ -214,7 +214,7 @@ public abstract class Power {
         final java.util.List<java.util.Map.Entry<LivingEntity, Double>> entities = new java.util.ArrayList<>();
         for (Entity e : getNearbyEntities(l, player, radius)) {
             try {
-                if (e instanceof LivingEntity) {
+                if (e instanceof LivingEntity && !player.equals(e)) {
                     double d = l.distance(e.getLocation());
                     if (d <= radius && d >= min) {
                         entities.add(new AbstractMap.SimpleImmutableEntry<>((LivingEntity) e, d));
