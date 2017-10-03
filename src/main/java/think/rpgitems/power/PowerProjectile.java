@@ -2,21 +2,16 @@ package think.rpgitems.power;
 
 import com.google.common.cache.Cache;
 import com.google.common.cache.CacheBuilder;
-import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
 import org.bukkit.block.Block;
 import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.entity.*;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.scheduler.BukkitRunnable;
-import org.bukkit.scheduler.BukkitScheduler;
 import org.bukkit.util.Vector;
 import think.rpgitems.Events;
 import think.rpgitems.Plugin;
-import think.rpgitems.api.RPGItems;
 import think.rpgitems.data.Locale;
-import think.rpgitems.data.RPGValue;
-import think.rpgitems.item.RPGItem;
 import think.rpgitems.power.types.PowerRightClick;
 
 import java.util.UUID;

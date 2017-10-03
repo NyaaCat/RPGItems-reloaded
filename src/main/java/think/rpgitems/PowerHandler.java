@@ -1005,4 +1005,14 @@ public class PowerHandler implements CommandHandler {
         ItemManager.save(Plugin.plugin);
         sender.sendMessage(ChatColor.AQUA + Locale.get("message.power.ok"));
     }
+
+    @CommandString("rpgitem $n[] power noimmutabletick")
+    @CommandDocumentation("$command.rpgitem.noimmutabletick")
+    @CommandGroup("item_power_selector")
+    public void noImmutableTick(CommandSender sender, RPGItem item) {
+        PowerNoImmutableTick pow = new PowerNoImmutableTick();
+        item.addPower(pow);
+        ItemManager.save(Plugin.plugin);
+        sender.sendMessage(ChatColor.AQUA + Locale.get("message.power.ok"));
+    }
 }
