@@ -94,7 +94,9 @@ public class WorldGuard {
 
     public static void reload() {
         if (useCustomFlag) {
-            WGHandler.unregisterHandler();
+            try {
+                WGHandler.unregisterHandler();
+            } catch (NoClassDefFoundError ignored) { }
         }
         useWorldGuard = plugin.getConfig().getBoolean("support.worldguard", false);
         useCustomFlag = plugin.getConfig().getBoolean("support.wgcustomflag", true);
@@ -114,11 +116,15 @@ public class WorldGuard {
         if (!useCustomFlag) {
             return;
         }
-        WGHandler.registerHandler();
+        try {
+            WGHandler.registerHandler();
+        } catch (NoClassDefFoundError ignored) { }
         disabledNowByPlayer = new HashMap<>();
-        for (Player p : plugin.getServer().getOnlinePlayers()) {
-            WGHandler.refreshPlayerWG(p);
-        }
+        try {
+            for (Player p : plugin.getServer().getOnlinePlayers()) {
+                WGHandler.refreshPlayerWG(p);
+            }
+        } catch (NoClassDefFoundError ignored) { }
     }
 
     public static boolean isEnabled() {
