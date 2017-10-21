@@ -1,5 +1,5 @@
 language: java
-jdk: oraclejdk7
+jdk: oraclejdk8
 
 before_install: "sed -i \"s/^\\(version:.*\\)/\\1.$TRAVIS_BUILD_NUMBER/\" src/main/resources/plugin.yml"
 after_success:
@@ -10,7 +10,9 @@ before_deploy:
 - git config --global user.name "Travis CI"
 - export GIT_TAG=$TRAVIS_BRANCH-v3.5.$TRAVIS_BUILD_NUMBER
 - git tag $GIT_TAG -a -m "Generated tag from TravisCI for build $TRAVIS_BUILD_NUMBER"
-- git push -q https://$GITHUB_KEY@github.com/NyaaCat/RPGitems-reloaded --follow-tags
+- git config credential.helper "store --file=.git/credentials"
+- echo "https://${GITHUB_KEY}:@github.com" > .git/credentials
+- git push -q origin HEAD:$TRAVIS_BRANCH --follow-tags
 
 deploy:
   skip_cleanup: true
