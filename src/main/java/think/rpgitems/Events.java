@@ -103,16 +103,18 @@ public class Events implements Listener {
         RPGItem rItem;
         if ((rItem = ItemManager.toRPGItem(item)) != null) {
             RPGMetadata meta = RPGItem.getMetadata(item);
+            int durability = 1;
             if (rItem.getMaxDurability() != -1) {
-                int durability = meta.containsKey(RPGMetadata.DURABILITY) ? ((Number) meta.get(RPGMetadata.DURABILITY)).intValue() : rItem.getMaxDurability();
+                durability = meta.containsKey(RPGMetadata.DURABILITY) ? ((Number) meta.get(RPGMetadata.DURABILITY)).intValue() : rItem.getMaxDurability();
                 durability--;
-                if (durability <= 0) {
-                    player.setItemInHand(null);
-                }
                 meta.put(RPGMetadata.DURABILITY, Integer.valueOf(durability));
             }
             RPGItem.updateItem(item, meta);
-            player.updateInventory();
+            if (durability <= 0) {
+                player.getInventory().setItemInHand(new ItemStack(Material.AIR));
+            } else {
+                player.getInventory().setItemInHand(item);
+            }
         }
 
     }
@@ -180,16 +182,18 @@ public class Events implements Listener {
                 player.sendMessage(ChatColor.RED + String.format(Locale.get("message.error.permission")));
             }
             RPGMetadata meta = RPGItem.getMetadata(item);
+            int durability = 1;
             if (rItem.getMaxDurability() != -1) {
-                int durability = meta.containsKey(RPGMetadata.DURABILITY) ? ((Number) meta.get(RPGMetadata.DURABILITY)).intValue() : rItem.getMaxDurability();
+                durability = meta.containsKey(RPGMetadata.DURABILITY) ? ((Number) meta.get(RPGMetadata.DURABILITY)).intValue() : rItem.getMaxDurability();
                 durability--;
-                if (durability <= 0) {
-                    player.setItemInHand(null);
-                }
                 meta.put(RPGMetadata.DURABILITY, Integer.valueOf(durability));
             }
             RPGItem.updateItem(item, meta);
-            player.updateInventory();
+            if (durability <= 0) {
+                player.getInventory().setItemInHand(new ItemStack(Material.AIR));
+            } else {
+                player.updateInventory();
+            }
             rpgProjectiles.put(e.getEntity().getEntityId(), rItem.getID());
         }
     }
@@ -259,13 +263,25 @@ public class Events implements Listener {
         }
     }
 
-    @EventHandler
+    @EventHandler(priority = EventPriority.MONITOR, ignoreCancelled = true)
     public void onPlayerPickup(PlayerPickupItemEvent e) {
-        ItemStack item = e.getItem().getItemStack();
-        if (ItemManager.toRPGItem(item) != null) {
-            RPGItem.updateItem(item);
-            e.getItem().setItemStack(item);
-        }
+        final Player p = e.getPlayer();
+        new BukkitRunnable(){
+            @Override
+            public void run() {
+                if (!p.isOnline()) return;
+                PlayerInventory in = p.getInventory();
+                for (int i = 0; i < in.getSize(); i++) {
+                    ItemStack item = in.getItem(i);
+                    if (ItemManager.toRPGItem(item) != null)
+                        RPGItem.updateItem(item);
+                }
+                for (ItemStack item : p.getInventory().getArmorContents()) {
+                    if (ItemManager.toRPGItem(item) != null)
+                        RPGItem.updateItem(item);
+                }
+            }
+        }.runTaskLater(Plugin.plugin, 1L);
     }
 
     private HashSet<LocaleInventory> localeInventories = new HashSet<LocaleInventory>();
@@ -392,16 +408,18 @@ public class Events implements Listener {
             rItem.hit(player, (LivingEntity) e.getEntity(), e.getDamage());
         }
         RPGMetadata meta = RPGItem.getMetadata(item);
+        int durability = 1;
         if (rItem.getMaxDurability() != -1) {
-            int durability = meta.containsKey(RPGMetadata.DURABILITY) ? ((Number) meta.get(RPGMetadata.DURABILITY)).intValue() : rItem.getMaxDurability();
+            durability = meta.containsKey(RPGMetadata.DURABILITY) ? ((Number) meta.get(RPGMetadata.DURABILITY)).intValue() : rItem.getMaxDurability();
             durability--;
-            if (durability <= 0) {
-                player.setItemInHand(null);
-            }
             meta.put(RPGMetadata.DURABILITY, Integer.valueOf(durability));
         }
         RPGItem.updateItem(item, meta);
-        player.updateInventory();
+        if (durability <= 0) {
+            player.getInventory().setItemInHand(new ItemStack(Material.AIR));
+        } else {
+            player.getInventory().setItemInHand(item);
+        }
         return damage;
     }
 
@@ -431,11 +449,15 @@ public class Events implements Listener {
         if (e.isCancelled() || !WorldGuard.canPvP(p))
             return damage;
         ItemStack[] armour = p.getInventory().getArmorContents();
+        boolean hasRPGItem = false;
         for (int i = 0; i < armour.length; i++) {
             ItemStack pArmour = armour[i];
             RPGItem pRItem = ItemManager.toRPGItem(pArmour);
-            if (pRItem == null)
+            if (pRItem == null) {
                 continue;
+            } else {
+                hasRPGItem = true;
+            }
             if (!WorldGuard.canPvP(p) && !pRItem.ignoreWorldGuard)
                 return damage;
             if (pRItem.getHasPermission() == true && p.hasPermission(pRItem.getPermission()) == false) {
@@ -457,8 +479,9 @@ public class Events implements Listener {
             }
             RPGItem.updateItem(pArmour, meta);
         }
-        p.getInventory().setArmorContents(armour);
-        p.updateInventory();
+        if(hasRPGItem) {
+            p.getInventory().setArmorContents(armour);
+        }
         return damage;
     }
 
@@ -503,12 +526,44 @@ public class Events implements Listener {
 
     @EventHandler(ignoreCancelled = true, priority = EventPriority.HIGHEST)
     public void onItemCraft(PrepareItemCraftEvent e) {
-        if (ItemManager.toRPGItem(e.getInventory().getResult()) != null) {
-            Random random = new Random();
-            if (random.nextInt(ItemManager.toRPGItem(e.getInventory().getResult()).recipechance) != 0) {
-                ItemStack baseitem = new ItemStack(e.getInventory().getResult().getType());
-                e.getInventory().setResult(baseitem);
+        RPGItem rpg = ItemManager.toRPGItem(e.getInventory().getResult());
+        if (rpg != null) {
+            List<ItemStack> temp = rpg.recipe;
+            if (temp != null && temp.size() == 9) {
+                int idx = 0;
+                for (ItemStack s : temp) {
+                    if (!canStack(s, e.getInventory().getMatrix()[idx])) {
+                        idx = -1;
+                        break;
+                    }
+                    idx++;
+                }
+                if (idx < 0) {
+                    e.getInventory().setResult(new ItemStack(Material.AIR));
+                } else {
+                    Random random = new Random();
+                    if (random.nextInt(ItemManager.toRPGItem(e.getInventory().getResult()).recipechance) != 0) {
+                        ItemStack baseitem = new ItemStack(e.getInventory().getResult().getType());
+                        e.getInventory().setResult(baseitem);
+                    }
+                }
+            } else {
+                e.getInventory().setResult(new ItemStack(Material.AIR));
             }
+        }
+    }
+
+    static private boolean canStack(ItemStack a, ItemStack b) {
+        if (a!=null && a.getType() == Material.AIR) a = null;
+        if (b!=null && b.getType() == Material.AIR) b = null;
+        if (a == null && b == null) return true;
+        if (a != null && b != null) {
+            ItemStack ap = a.clone(), bp = b.clone();
+            ap.setAmount(1);
+            bp.setAmount(1);
+            return ap.equals(bp);
+        } else {
+            return false;
         }
     }
 }
