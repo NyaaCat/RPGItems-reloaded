@@ -49,6 +49,9 @@ public class PowerDeathCommand extends Power implements PowerHit {
     @Override
     public void hit(Player player, LivingEntity e, double damage) {
         if (item.getHasPermission() && !player.hasPermission(item.getPermission())) return;
+        if (e.spigot().isInvulnerable()) {
+            return;
+        }
         if (rand.nextInt(chance) == 0) {
             Location loc = e.getLocation();
             int x = (int) loc.getX();
