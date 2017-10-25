@@ -115,12 +115,12 @@ public final class ReflectionUtil {
     }
 
     /**
-     * Get a method from a class that has the specific paramaters
+     * Get a method from a class that has the specific parameters
      *
      * @param clazz      The class we are searching
      * @param methodName The name of the method
      * @param params     Any parameters that the method has
-     * @return The method with appropriate paramaters
+     * @return The method with appropriate parameters
      */
     public static Method getMethod(Class<?> clazz, String methodName, Class<?>... params) {
         if (!loadedMethods.containsKey(clazz)) {
