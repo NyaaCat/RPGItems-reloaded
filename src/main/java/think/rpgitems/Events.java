@@ -53,13 +53,15 @@ import think.rpgitems.support.WorldGuard;
 
 import java.util.*;
 
+import static think.rpgitems.RPGItems.plugin;
+
 public class Events implements Listener {
 
     public static HashSet<Integer> removeArrows = new HashSet<>();
     public static HashMap<Integer, Integer> rpgProjectiles = new HashMap<>();
-    public static HashMap<String, Integer> recipeWindows = new HashMap<>();
+    static HashMap<String, Integer> recipeWindows = new HashMap<>();
     public static HashMap<String, Set<Integer>> drops = new HashMap<>();
-    public static boolean useLocaleInv = false;
+    static boolean useLocaleInv = false;
     private Set<Material> BYPASS_BLOCK = new HashSet<Material>() {{
         add(Material.ACACIA_DOOR);
         add(Material.BIRCH_DOOR);
@@ -134,7 +136,7 @@ public class Events implements Listener {
     public void onHangingBreak(HangingBreakEvent e) {
         if (e.getCause().equals(RemoveCause.EXPLOSION))
             if (e.getEntity().hasMetadata("RPGItems.Rumble")) {
-                e.getEntity().removeMetadata("RPGItems.Rumble", RPGItems.plugin); // Allow the entity to be broken again
+                e.getEntity().removeMetadata("RPGItems.Rumble", plugin); // Allow the entity to be broken again
                 e.setCancelled(true);
             }
     }
@@ -144,7 +146,7 @@ public class Events implements Listener {
         if (e.getChangedType().equals(Material.TORCH))
             if (e.getBlock().hasMetadata("RPGItems.Torch")) {
                 e.setCancelled(true); // Cancelling this does not work
-                e.getBlock().removeMetadata("RPGItems.Torch", RPGItems.plugin);
+                e.getBlock().removeMetadata("RPGItems.Torch", plugin);
                 e.getBlock().setType(Material.AIR);
             }
     }
@@ -197,14 +199,16 @@ public class Events implements Listener {
     @EventHandler
     public void onProjectileHit(ProjectileHitEvent e) {
         final Projectile entity = e.getEntity();
+        if (removeArrows.contains(entity.getEntityId())) {
+            Bukkit.getScheduler().runTaskLater(plugin, () -> {
+                removeArrows.remove(entity.getEntityId());
+                entity.remove();
+            }, 1);
+        }
         if (rpgProjectiles.containsKey(entity.getEntityId())) {
             RPGItem rItem = ItemManager.getItemById(rpgProjectiles.get(entity.getEntityId()));
-            new BukkitRunnable() {
-                @Override
-                public void run() {
-                    rpgProjectiles.remove(entity.getEntityId());
-                }
-            }.runTask(RPGItems.plugin);
+            rpgProjectiles.remove(entity.getEntityId());
+
             if (rItem == null)
                 return;
             ItemStack item = ((Player) entity.getShooter()).getInventory().getItemInMainHand();
@@ -219,15 +223,11 @@ public class Events implements Listener {
 
             rItem.projectileHit((Player) entity.getShooter(), item, entity);
         }
-        if (removeArrows.contains(entity.getEntityId())) {
-            entity.remove();
-            removeArrows.remove(entity.getEntityId());
-        }
     }
 
     @EventHandler
     public void onBowShoot(EntityShootBowEvent e) {
-        e.getProjectile().setMetadata("rpgitems.force", new FixedMetadataValue(RPGItems.plugin, e.getForce()));
+        e.getProjectile().setMetadata("rpgitems.force", new FixedMetadataValue(plugin, e.getForce()));
     }
 
     @EventHandler
@@ -341,7 +341,7 @@ public class Events implements Listener {
                         RPGItem.updateItem(item);
                 }
             }
-        }.runTaskLater(RPGItems.plugin, 1L);
+        }.runTaskLater(plugin, 1L);
     }
 
     @EventHandler
@@ -362,7 +362,7 @@ public class Events implements Listener {
             }
             item.hasRecipe = true;
             item.resetRecipe(true);
-            ItemManager.save(RPGItems.plugin);
+            ItemManager.save(plugin);
             e.getPlayer().sendMessage(ChatColor.AQUA + "Recipe set for " + item.getName());
         } else if (useLocaleInv && e.getView() instanceof LocaleInventory) {
             localeInventories.remove(e.getView());
