@@ -12,6 +12,7 @@ import org.bukkit.scheduler.BukkitScheduler;
 import org.bukkit.util.Vector;
 import think.rpgitems.Events;
 import think.rpgitems.I18n;
+import think.rpgitems.RPGItems;
 import think.rpgitems.commands.AcceptedValue;
 import think.rpgitems.commands.Property;
 import think.rpgitems.commands.Setter;
@@ -224,7 +225,7 @@ public class PowerProjectile extends Power implements PowerRightClick {
                     burstCounter.invalidate(player.getUniqueId());
                     this.cancel();
                 }
-            }).runTaskTimer(Plugin.plugin, 1, burstInterval);
+            }).runTaskTimer(RPGItems.plugin, 1, burstInterval);
         }
     }
 

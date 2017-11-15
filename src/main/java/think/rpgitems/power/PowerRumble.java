@@ -33,6 +33,7 @@ import think.rpgitems.RPGItems;
 import think.rpgitems.commands.Property;
 import think.rpgitems.power.types.PowerRightClick;
 
+import java.util.List;
 import java.util.Random;
 
 /**
@@ -110,7 +111,7 @@ public class PowerRumble extends Power implements PowerRightClick {
                         temp.getWorld().playEffect(temp, Effect.STEP_SOUND, block.getType());
                     }
                 }
-                Entity[] near = getNearbyEntities(location, 1.5);
+                List<Entity> near = getNearbyEntities(location, player,1.5);
                 boolean hit = false;
                 Random random = new Random();
                 for (Entity e : near) {
@@ -120,7 +121,7 @@ public class PowerRumble extends Power implements PowerRightClick {
                     }
                 }
                 if (hit) {
-                    near = getNearbyEntities(location, power * 2 + 1);
+                    near = getNearbyEntities(location, player,power * 2 + 1);
                     for (Entity e : near) {
                         if (e != player) {
                             if (e instanceof ItemFrame || e instanceof Painting) {

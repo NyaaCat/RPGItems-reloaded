@@ -11,6 +11,8 @@ import think.rpgitems.I18n;
 import think.rpgitems.commands.Property;
 import think.rpgitems.power.types.PowerTick;
 
+import java.util.List;
+
 /**
  * Power attract.
  * <p>
@@ -57,7 +59,8 @@ public class PowerAttract extends Power implements PowerTick {
     public void tick(Player player, ItemStack stack) {
         if (!item.checkPermission(player, true)) return;
         double factor = Math.sqrt(radius - 1) / maxSpeed;
-        for (Entity e : player.getNearbyEntities(radius, radius, radius)) {
+        List<Entity> entities = getNearbyEntities(player.getLocation(), player, radius);
+        for (Entity e : entities) {
             if (e instanceof LivingEntity && !(e instanceof Player)) {
                 Location locTarget = e.getLocation();
                 Location locPlayer = player.getLocation();

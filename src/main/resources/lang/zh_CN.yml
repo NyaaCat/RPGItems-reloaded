@@ -369,6 +369,7 @@ message:
 
     Bug反馈: https://github.com/NyaaCat/RPGitems-reloaded/issues
 power:
+  selector: 仅对部分实体有效
   potionself: 获得 %s %d 持续 %.1f 秒
   deathcommand: 1/%d 几率杀死敌人然后 %s
   food: 回复 %d 点饥饿值

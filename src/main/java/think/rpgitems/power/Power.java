@@ -106,6 +106,7 @@ public abstract class Power {
         Power.powers.put("rangedonly", PowerRangedOnly.class);
         Power.powers.put("deflect", PowerDeflect.class);
         Power.powers.put("realdamage", PowerRealDamage.class);
+        Power.powers.put("selector", PowerSelector.class);
         MethodHandles.Lookup lookup = MethodHandles.lookup();
         for (Class<? extends Power> cls : Power.powers.values()) {
             Map<Class<? extends Annotation>, List<Annotation>> annos =
@@ -236,7 +237,7 @@ public abstract class Power {
      * @param radius the radius
      * @return the entity [ ]
      */
-    static Entity[] getNearbyEntities(Location l, double radius) {
+    List<Entity> getNearbyEntities(Location l, Player player, double radius) {
         List<Entity> entities = new ArrayList<>();
         for (Entity e : l.getWorld().getNearbyEntities(l, radius, radius, radius)) {
             try {
@@ -247,7 +248,14 @@ public abstract class Power {
                 ex.printStackTrace();
             }
         }
-        return entities.toArray(new Entity[entities.size()]);
+		item.powers.stream().filter(power -> power instanceof PowerSelector).forEach(
+            selector -> {
+                if (((PowerSelector) selector).canApplyTo(getClass())) {
+                    ((PowerSelector) selector).inPlaceFilter(player, entities);
+                }
+            }
+        );
+        return entities;
     }
 
     /**
@@ -258,9 +266,9 @@ public abstract class Power {
      * @param min    the min
      * @return the living entity [ ]
      */
-    static LivingEntity[] getNearbyLivingEntities(Location l, double radius, double min) {
+    List<LivingEntity> getNearestLivingEntities(Location l, Player player, double radius, double min) {
         final java.util.List<java.util.Map.Entry<LivingEntity, Double>> entities = new java.util.ArrayList<>();
-        for (Entity e : l.getWorld().getNearbyEntities(l, radius, radius, radius)) {
+        for (Entity e : getNearbyEntities(l, player, radius)) {
             try {
                 if (e instanceof LivingEntity) {
                     double d = l.distance(e.getLocation());
@@ -275,7 +283,7 @@ public abstract class Power {
         java.util.List<LivingEntity> entity = new java.util.ArrayList<>();
         entities.sort(Comparator.comparing(java.util.Map.Entry::getValue));
         entities.forEach((k) -> entity.add(k.getKey()));
-        return entity.toArray(new LivingEntity[entity.size()]);
+        return entity;
     }
 
     /**
@@ -287,7 +295,7 @@ public abstract class Power {
      * @param direction direction of the cone
      * @return All entities inside the cone
      */
-    static List<LivingEntity> getEntitiesInCone(LivingEntity[] entities, org.bukkit.util.Vector startPos, double degrees, org.bukkit.util.Vector direction) {
+    static List<LivingEntity> getLivingEntitiesInCone(List<LivingEntity> entities, org.bukkit.util.Vector startPos, double degrees, org.bukkit.util.Vector direction) {
         List<LivingEntity> newEntities = new ArrayList<>();
         for (LivingEntity e : entities) {
             org.bukkit.util.Vector relativePosition = e.getEyeLocation().toVector();
