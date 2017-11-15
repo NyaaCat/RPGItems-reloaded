@@ -3,6 +3,10 @@ apply plugin: 'java'
 sourceCompatibility = 1.8
 targetCompatibility = 1.8
 
+configurations.all {
+    resolutionStrategy.cacheChangingModulesFor 0, 'seconds'
+}
+
 repositories {
     jcenter()
     mavenCentral()
@@ -28,3 +32,6 @@ dependencies {
     compile 'com.sk89q.worldedit:worldedit-core:6.1'
 }
 
+compileJava {
+    options.compilerArgs += ["-Xlint:deprecation", "-Xlint:unchecked"]
+}
