@@ -15,7 +15,6 @@ import think.rpgitems.commands.AcceptedValue;
 import think.rpgitems.commands.Property;
 import think.rpgitems.commands.Setter;
 import think.rpgitems.commands.Validator;
-import think.rpgitems.item.RPGItem;
 import think.rpgitems.power.types.PowerRightClick;
 
 import java.util.UUID;
@@ -207,14 +206,14 @@ public class PowerProjectile extends Power implements PowerRightClick {
         if (!checkCooldown(player, cooldownTime, true)) return;
         if (!item.consumeDurability(stack, consumption)) return;
         fire(player);
-        if (burstCount > 1){
+        if (burstCount > 1) {
             burstCounter.put(player.getUniqueId(), burstCount - 1);
             (new BukkitRunnable() {
                 @Override
                 public void run() {
                     Integer i;
-                    if(player.getInventory().getItemInMainHand().equals(stack) && (i = burstCounter.getIfPresent(player.getUniqueId())) != null){
-                        if(i > 0){
+                    if (player.getInventory().getItemInMainHand().equals(stack) && (i = burstCounter.getIfPresent(player.getUniqueId())) != null) {
+                        if (i > 0) {
                             fire(player);
                             burstCounter.put(player.getUniqueId(), i - 1);
                             return;

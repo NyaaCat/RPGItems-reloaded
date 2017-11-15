@@ -72,7 +72,7 @@ public class PowerIce extends Power implements PowerRightClick {
                 boolean hit = false;
                 World world = block.getWorld();
 
-                List<Entity> entities = block.getNearbyEntities(1, 1, 1);
+                List<Entity> entities = getNearbyEntities(block.getLocation(), player, 1,1, 1, 1);
                 for (Entity e : entities) {
                     if (e != player) {
                         hit = true;

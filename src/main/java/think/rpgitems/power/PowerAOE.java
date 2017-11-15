@@ -22,6 +22,7 @@ import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.entity.Entity;
 import org.bukkit.entity.LivingEntity;
 import org.bukkit.entity.Player;
+import org.bukkit.event.player.PlayerJoinEvent;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.potion.PotionEffect;
 import org.bukkit.potion.PotionEffectType;
@@ -118,8 +119,8 @@ public class PowerAOE extends Power implements PowerRightClick {
         if (selfapplication)
             player.addPotionEffect(effect);
         player.getWorld().playEffect(player.getLocation(), Effect.POTION_BREAK, 1);
-        for (Entity ent : player.getNearbyEntities(range, range, range))
-            if (ent instanceof LivingEntity)
+        for (Entity ent : getNearbyEntities(player.getLocation(), player, range))
+            if (ent instanceof LivingEntity && !player.equals(ent))
                 ((LivingEntity) ent).addPotionEffect(effect);
     }
 

@@ -231,16 +231,9 @@ public abstract class Power {
 
     }
 
-    /**
-     * Get nearby entities entity [ ].
-     *
-     * @param l      the l
-     * @param radius the radius
-     * @return the entity [ ]
-     */
-    List<Entity> getNearbyEntities(Location l, Player player, double radius) {
+    List<Entity> getNearbyEntities(Location l, Player player, double radius, double dx, double dy, double dz) {
         List<Entity> entities = new ArrayList<>();
-        for (Entity e : l.getWorld().getNearbyEntities(l, radius, radius, radius)) {
+        for (Entity e : l.getWorld().getNearbyEntities(l, dx, dy, dz)) {
             try {
                 if (l.distance(e.getLocation()) <= radius) {
                     entities.add(e);
@@ -249,14 +242,25 @@ public abstract class Power {
                 ex.printStackTrace();
             }
         }
-		item.powers.stream().filter(power -> power instanceof PowerSelector).forEach(
-            selector -> {
-                if (((PowerSelector) selector).canApplyTo(getClass())) {
-                    ((PowerSelector) selector).inPlaceFilter(player, entities);
+        item.powers.stream().filter(power -> power instanceof PowerSelector).forEach(
+                selector -> {
+                    if (((PowerSelector) selector).canApplyTo(getClass())) {
+                        ((PowerSelector) selector).inPlaceFilter(player, entities);
+                    }
                 }
-            }
         );
         return entities;
+    }
+
+    /**
+     * Get nearby entities entity [ ].
+     *
+     * @param l      the l
+     * @param radius the radius
+     * @return the entity [ ]
+     */
+    List<Entity> getNearbyEntities(Location l, Player player, double radius) {
+        return getNearbyEntities(l, player, radius, radius, radius, radius);
     }
 
     /**
@@ -271,7 +275,7 @@ public abstract class Power {
         final java.util.List<java.util.Map.Entry<LivingEntity, Double>> entities = new java.util.ArrayList<>();
         for (Entity e : getNearbyEntities(l, player, radius)) {
             try {
-                if (e instanceof LivingEntity) {
+                if (e instanceof LivingEntity && !player.equals(e)) {
                     double d = l.distance(e.getLocation());
                     if (d <= radius && d >= min) {
                         entities.add(new AbstractMap.SimpleImmutableEntry<>((LivingEntity) e, d));
