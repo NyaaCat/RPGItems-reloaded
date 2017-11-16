@@ -205,28 +205,28 @@ public class Events implements Listener {
     public void onProjectileHit(ProjectileHitEvent e) {
         final Projectile entity = e.getEntity();
         if (removeArrows.contains(entity.getEntityId())) {
-            Bukkit.getScheduler().runTaskLater(plugin, () -> {
+            Bukkit.getScheduler().runTask(plugin, () -> {
                 removeArrows.remove(entity.getEntityId());
                 entity.remove();
-            }, 1);
+            });
         }
         if (rpgProjectiles.containsKey(entity.getEntityId())) {
             RPGItem rItem = ItemManager.getItemById(rpgProjectiles.get(entity.getEntityId()));
-            rpgProjectiles.remove(entity.getEntityId());
 
             if (rItem == null)
                 return;
             ItemStack item = ((Player) entity.getShooter()).getInventory().getItemInMainHand();
             RPGItem hItem = ItemManager.toRPGItem(item);
-            if (rItem != hItem){
+            if (rItem != hItem) {
                 item = ((Player) entity.getShooter()).getInventory().getItemInOffHand();
                 hItem = ItemManager.toRPGItem(item);
-                if (rItem != hItem){
+                if (rItem != hItem) {
                     return;
                 }
             }
 
             rItem.projectileHit((Player) entity.getShooter(), item, entity);
+            Bukkit.getScheduler().runTask(plugin, () -> rpgProjectiles.remove(entity.getEntityId()));
         }
     }
 
@@ -243,10 +243,10 @@ public class Events implements Listener {
             ItemStack item = player.getInventory().getItemInMainHand();
             RPGItem rItem = ItemManager.toRPGItem(item);
 
-            if (rItem == null){
+            if (rItem == null) {
                 item = player.getInventory().getItemInOffHand();
                 rItem = ItemManager.toRPGItem(item);
-                if (rItem == null){
+                if (rItem == null) {
                     return;
                 }
             }
@@ -282,7 +282,7 @@ public class Events implements Listener {
         if (action == Action.RIGHT_CLICK_AIR) {
             rItem.rightClick(p, e.getItem(), e.getClickedBlock());
         } else if (action == Action.RIGHT_CLICK_BLOCK &&
-                !(BYPASS_BLOCK.contains(e.getClickedBlock().getType()) && !p.isSneaking())) {
+                           !(BYPASS_BLOCK.contains(e.getClickedBlock().getType()) && !p.isSneaking())) {
             rItem.rightClick(p, e.getItem(), e.getClickedBlock());
         } else if (action == Action.LEFT_CLICK_AIR || action == Action.LEFT_CLICK_BLOCK) {
             rItem.leftClick(p, e.getItem(), e.getClickedBlock());
@@ -453,7 +453,7 @@ public class Events implements Listener {
             e.setCancelled(true);
             return 0;
         }
-        if(rItem.hasPower(PowerRangedOnly.class)){
+        if (rItem.hasPower(PowerRangedOnly.class)) {
             e.setCancelled(true);
             return 0;
         }
@@ -463,7 +463,7 @@ public class Events implements Listener {
             return 0;
         }
         double originDamage = damage;
-        switch (rItem.damageMode){
+        switch (rItem.damageMode) {
             case FIXED:
             case ADDITIONAL:
                 damage = rItem.getDamageMin() != rItem.getDamageMax() ? (rItem.getDamageMin() + random.nextInt(rItem.getDamageMax() - rItem.getDamageMin())) : rItem.getDamageMin();
@@ -478,7 +478,7 @@ public class Events implements Listener {
                     }
                 }
                 damage = damage + strength - weak;
-                if(rItem.damageMode == RPGItem.DamageMode.ADDITIONAL){
+                if (rItem.damageMode == RPGItem.DamageMode.ADDITIONAL) {
                     damage += originDamage;
                 }
                 break;
@@ -502,17 +502,17 @@ public class Events implements Listener {
         Projectile entity = (Projectile) e.getDamager();
 
         Integer projectileID = rpgProjectiles.get(entity.getEntityId());
-        if(projectileID == null)return damage;
+        if (projectileID == null) return damage;
         RPGItem rItem = ItemManager.getItemById(projectileID);
         if (rItem == null)
             return damage;
         Player player = (Player) entity.getShooter();
         ItemStack item = player.getInventory().getItemInMainHand();
         RPGItem hItem = ItemManager.toRPGItem(item);
-        if (rItem != hItem){
+        if (rItem != hItem) {
             item = player.getInventory().getItemInOffHand();
             hItem = ItemManager.toRPGItem(item);
-            if (rItem != hItem){
+            if (rItem != hItem) {
                 return damage;
             }
         }
