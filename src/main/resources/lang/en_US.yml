@@ -389,6 +389,7 @@ message:
     next: '%sChanged paint!'
 power:
   selector: Powers only applies to some entites
+  noimmutabletick: Attack won't cause immutable tick on enemy
   potionself: Grants %s %d for %.1fs
   deathcommand: 1/%d chance to kill the enemy then %s
   food: Restore %d food point(s)
