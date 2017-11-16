@@ -200,14 +200,13 @@ public class Events implements Listener {
     public void onProjectileHit(ProjectileHitEvent e) {
         final Projectile entity = e.getEntity();
         if (removeArrows.contains(entity.getEntityId())) {
-            Bukkit.getScheduler().runTaskLater(plugin, () -> {
+            Bukkit.getScheduler().runTask(plugin, () -> {
                 removeArrows.remove(entity.getEntityId());
                 entity.remove();
-            }, 1);
+            });
         }
         if (rpgProjectiles.containsKey(entity.getEntityId())) {
             RPGItem rItem = ItemManager.getItemById(rpgProjectiles.get(entity.getEntityId()));
-            rpgProjectiles.remove(entity.getEntityId());
 
             if (rItem == null)
                 return;
@@ -222,6 +221,9 @@ public class Events implements Listener {
             }
 
             rItem.projectileHit((Player) entity.getShooter(), item, entity);
+            Bukkit.getScheduler().runTask(plugin, () ->
+                rpgProjectiles.remove(entity.getEntityId())
+            );
         }
     }
 
