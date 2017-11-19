@@ -11,7 +11,6 @@ import think.rpgitems.item.RPGItem;
 import think.rpgitems.power.Power;
 
 import java.lang.reflect.Field;
-import java.lang.reflect.Method;
 import java.util.*;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
@@ -25,7 +24,7 @@ public abstract class RPGCommandReceiver extends CommandReceiver {
         subCommands.forEach(
                 (s, method) -> {
                     Attribute attr = method.getAnnotation(Attribute.class);
-                    if(attr == null)return;
+                    if (attr == null) return;
                     subCommandAttribute.put(s, attr.value());
                 }
         );
@@ -168,9 +167,14 @@ public abstract class RPGCommandReceiver extends CommandReceiver {
     @Override
     public boolean onCommand(CommandSender sender, Command command, String label, String[] args) {
         if (ItemManager.getItemByName(args[0]) != null) {
-            String item = args[1];
-            args[1] = args[0];
-            args[0] = item;
+            if (args.length > 1) {
+                String cmd = args[1];
+                args[1] = args[0];
+                args[0] = cmd;
+            } else {
+                args[1] = args[0];
+                args[0] = "print";
+            }
         }
         Arguments cmd = Arguments.parse(args);
         if (cmd == null) return false;

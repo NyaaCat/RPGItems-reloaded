@@ -429,7 +429,7 @@ public class Handler extends RPGCommandReceiver {
         }
     }
 
-    @SubCommand("info")
+    @SubCommand("print")
     @Attribute("item")
     public void itemInfo(CommandSender sender, Arguments args) {
         RPGItem item = ItemManager.itemByName.get(args.next());
