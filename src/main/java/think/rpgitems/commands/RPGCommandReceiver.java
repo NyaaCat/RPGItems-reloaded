@@ -166,13 +166,15 @@ public abstract class RPGCommandReceiver extends CommandReceiver {
 
     @Override
     public boolean onCommand(CommandSender sender, Command command, String label, String[] args) {
-        if (ItemManager.getItemByName(args[0]) != null) {
+        if (args.length > 0 && ItemManager.getItemByName(args[0]) != null) {
             if (args.length > 1) {
                 String cmd = args[1];
                 args[1] = args[0];
                 args[0] = cmd;
             } else {
-                args[1] = args[0];
+                String name = args[0];
+                args = new String[args.length + 1];
+                args[1] = name;
                 args[0] = "print";
             }
         }
