@@ -40,6 +40,8 @@ public class PowerFood extends Power implements PowerRightClick {
      */
     @Property(order = 0, required = true)
     public int foodpoints;
+    //TODO:ADD delay.
+    //TODO:ADD delay.
 
     @Override
     public void rightClick(final Player player, ItemStack stack, Block clicked) {
@@ -64,11 +66,13 @@ public class PowerFood extends Power implements PowerRightClick {
 
     @Override
     public void init(ConfigurationSection s) {
-        foodpoints = s.getInt("foodpoints");
+        foodpoints = s.getInt("foodpoints");    //TODO:ADD delay.
+
     }
 
     @Override
-    public void save(ConfigurationSection s) {
+    public void save(ConfigurationSection s) {    //TODO:ADD delay.
+
         s.set("foodpoints", foodpoints);
     }
 

@@ -50,6 +50,7 @@ public class PowerKnockup extends Power implements PowerHit {
      */
     @Property
     public int consumption = 0;
+    //TODO:ADD delay.
 
     private Random rand = new Random();
 
@@ -60,7 +61,8 @@ public class PowerKnockup extends Power implements PowerHit {
         if (rand.nextInt(chance) == 0) {
             entity.setVelocity(player.getLocation().getDirection().setY(power));
         }
-    }
+    }    //TODO:ADD delay.
+
 
     @Override
     public String displayText() {
@@ -78,12 +80,13 @@ public class PowerKnockup extends Power implements PowerHit {
         power = s.getDouble("power", 2);
         consumption = s.getInt("consumption", 0);
     }
-
+    //TODO:ADD delay.
     @Override
     public void save(ConfigurationSection s) {
         s.set("chance", chance);
         s.set("power", power);
         s.set("consumption", consumption);
     }
+    //TODO:ADD delay.
 
 }

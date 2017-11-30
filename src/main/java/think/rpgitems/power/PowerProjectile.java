@@ -90,7 +90,8 @@ public class PowerProjectile extends Power implements PowerRightClick {
     public int burstInterval = 1;
     /**
      * Type of projectiles
-     */
+     */    //TODO:ADD delay.
+
     @AcceptedValue({
                            "skull",
                            "fireball",
@@ -116,7 +117,8 @@ public class PowerProjectile extends Power implements PowerRightClick {
         gravity = s.getBoolean("gravity", true);
         burstCount = s.getInt("burstCount", 1);
         burstInterval = s.getInt("burstInterval", 1);
-    }
+    }    //TODO:ADD delay.
+
 
     @Override
     public void save(ConfigurationSection s) {
@@ -130,7 +132,8 @@ public class PowerProjectile extends Power implements PowerRightClick {
         s.set("gravity", gravity);
         s.set("burstCount", burstCount);
         s.set("burstInterval", burstInterval);
-    }
+    }    //TODO:ADD delay.
+
 
     /**
      * Gets type name
@@ -205,6 +208,7 @@ public class PowerProjectile extends Power implements PowerRightClick {
         if (!item.checkPermission(player, true)) return;
         if (!checkCooldown(player, cooldownTime, true)) return;
         if (!item.consumeDurability(stack, consumption)) return;
+        //TODO:ADD delay.
         fire(player);
         if (burstCount > 1) {
             burstCounter.put(player.getUniqueId(), burstCount - 1);
@@ -224,7 +228,8 @@ public class PowerProjectile extends Power implements PowerRightClick {
                 }
             }).runTaskTimer(RPGItems.plugin, 1, burstInterval);
         }
-    }
+    }    //TODO:ADD delay.
+
 
     private void fire(Player player) {
         if (!cone) {
@@ -275,5 +280,6 @@ public class PowerProjectile extends Power implements PowerRightClick {
             }
         }
     }
+
 
 }

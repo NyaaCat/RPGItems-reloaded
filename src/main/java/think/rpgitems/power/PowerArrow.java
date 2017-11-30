@@ -45,12 +45,14 @@ public class PowerArrow extends Power implements PowerRightClick {
      */
     @Property
     public int consumption = 0;
+    //TODO:ADD delay.
 
     @Override
     public void rightClick(Player player, ItemStack stack, Block clicked) {
         if (!item.checkPermission(player, true)) return;
         if (!checkCooldown(player, cooldownTime, true)) return;
-        if (!item.consumeDurability(stack, consumption)) return;
+        if (!item.consumeDurability(stack, consumption)) return;    //TODO:ADD delay.
+
         player.playSound(player.getLocation(), Sound.ENTITY_ARROW_SHOOT, 1.0f, 1.0f);
         Arrow arrow = player.launchProjectile(Arrow.class);
         Events.rpgProjectiles.put(arrow.getEntityId(), item.getID());
@@ -70,13 +72,15 @@ public class PowerArrow extends Power implements PowerRightClick {
     @Override
     public void init(ConfigurationSection s) {
         cooldownTime = s.getLong("cooldown", 20);
-        consumption = s.getInt("consumption", 1);
+        consumption = s.getInt("consumption", 1);    //TODO:ADD delay.
+
     }
 
     @Override
     public void save(ConfigurationSection s) {
         s.set("cooldown", cooldownTime);
-        s.set("consumption", consumption);
+        s.set("consumption", consumption);    //TODO:ADD delay.
+
     }
 
 }

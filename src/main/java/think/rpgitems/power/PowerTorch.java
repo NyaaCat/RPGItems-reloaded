@@ -51,6 +51,7 @@ public class PowerTorch extends Power implements PowerRightClick {
      */
     @Property
     public int consumption = 0;
+    //TODO:ADD delay.
 
     @SuppressWarnings("deprecation")
     @Override
@@ -118,6 +119,7 @@ public class PowerTorch extends Power implements PowerRightClick {
         };
         run.runTaskTimer(RPGItems.plugin, 0, 1);
     }
+    //TODO:ADD delay.
 
     @Override
     public String displayText() {
@@ -134,12 +136,14 @@ public class PowerTorch extends Power implements PowerRightClick {
         cooldownTime = s.getLong("cooldown", 20);
         consumption = s.getInt("consumption", 0);
     }
+    //TODO:ADD delay.
 
     @Override
     public void save(ConfigurationSection s) {
         s.set("cooldown", cooldownTime);
         s.set("consumption", consumption);
     }
+    //TODO:ADD delay.
 
     private List<Byte> getPossibleOrientations(Location loc) {
         List<Byte> orientations = new ArrayList<>();

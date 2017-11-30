@@ -48,6 +48,7 @@ public class PowerLifeSteal extends Power implements PowerHit {
     public int consumption = 0;
 
     private Random random = new Random();
+    //TODO:ADD delay.
 
     @Override
     public void hit(Player player, ItemStack stack, LivingEntity entity, double damage) {
@@ -75,12 +76,14 @@ public class PowerLifeSteal extends Power implements PowerHit {
     public void init(ConfigurationSection s) {
         chance = s.getInt("chance");
         consumption = s.getInt("consumption", 0);
-    }
+    }    //TODO:ADD delay.
+
 
     @Override
     public void save(ConfigurationSection s) {
         s.set("chance", chance);
         s.set("consumption", consumption);
     }
+    //TODO:ADD delay.
 
 }

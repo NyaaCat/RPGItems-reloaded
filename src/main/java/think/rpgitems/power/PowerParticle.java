@@ -28,6 +28,7 @@ public class PowerParticle extends Power implements PowerRightClick {
      */
     @Property
     public int consumption = 0;
+    //TODO:ADD delay.
 
     /**
      * Acceptable effect boolean.
@@ -48,13 +49,15 @@ public class PowerParticle extends Power implements PowerRightClick {
     public void init(ConfigurationSection s) {
         effect = s.getString("effect", "FLAME");
         consumption = s.getInt("consumption", 0);
-    }
+    }    //TODO:ADD delay.
+
 
     @Override
     public void save(ConfigurationSection s) {
         s.set("effect", effect);
         s.set("consumption", consumption);
-    }
+    }    //TODO:ADD delay.
+
 
     @Override
     public String getName() {
@@ -74,6 +77,7 @@ public class PowerParticle extends Power implements PowerRightClick {
         } else {
             player.getWorld().playEffect(player.getLocation(), Effect.valueOf(effect), 0);
         }
-    }
+    }    //TODO:ADD delay.
+
 
 }

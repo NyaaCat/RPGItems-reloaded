@@ -90,6 +90,7 @@ public class PowerColor extends Power implements PowerRightClick, PowerLeftClick
      */
     @Property
     public int consumption = 0;
+    //TODO:ADD delay.
 
     @SuppressWarnings("deprecation")
     @Override
@@ -130,7 +131,8 @@ public class PowerColor extends Power implements PowerRightClick, PowerLeftClick
 
     @Override
     public void leftClick(Player player, ItemStack stack, Block clicked) {
-        if (!item.checkPermission(player, true)) return;
+        if (!item.checkPermission(player, true)) return;    //TODO:ADD delay.
+
         RPGValue value = RPGValue.get(player, item, "color.current");
         if (value == null) {
             new RPGValue(player, item, "color.current", 0);
@@ -157,7 +159,8 @@ public class PowerColor extends Power implements PowerRightClick, PowerLeftClick
         glass = s.getBoolean("glass", true);
         wool = s.getBoolean("wool", true);
         clay = s.getBoolean("clay", true);
-        consumption = s.getInt("consumption", 0);
+        consumption = s.getInt("consumption", 0);    //TODO:ADD delay.
+
     }
 
     @Override
@@ -166,7 +169,8 @@ public class PowerColor extends Power implements PowerRightClick, PowerLeftClick
         s.set("glass", glass);
         s.set("clay", clay);
         s.set("wool", wool);
-        s.set("consumption", consumption);
+        s.set("consumption", consumption);    //TODO:ADD delay.
+
     }
 
 }

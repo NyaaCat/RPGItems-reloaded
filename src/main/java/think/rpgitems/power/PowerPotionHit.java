@@ -64,6 +64,7 @@ public class PowerPotionHit extends Power implements PowerHit {
      */
     @Property
     public int consumption = 0;
+    //TODO:ADD delay.
 
     private Random rand = new Random();
 
@@ -75,6 +76,7 @@ public class PowerPotionHit extends Power implements PowerHit {
             entity.addPotionEffect(new PotionEffect(type, duration, amplifier));
         }
     }
+    //TODO:ADD delay.
 
     @Override
     public String displayText() {
@@ -93,7 +95,8 @@ public class PowerPotionHit extends Power implements PowerHit {
         amplifier = s.getInt("amplifier", 1);
         type = PotionEffectType.getByName(s.getString("type", PotionEffectType.HARM.getName()));
         consumption = s.getInt("consumption", 0);
-    }
+    }    //TODO:ADD delay.
+
 
     @Override
     public void save(ConfigurationSection s) {
@@ -102,7 +105,8 @@ public class PowerPotionHit extends Power implements PowerHit {
         s.set("amplifier", amplifier);
         s.set("type", type.getName());
         s.set("consumption", consumption);
-    }
+    }    //TODO:ADD delay.
+
 
     public void setType(String effect) {
         type = PotionEffectType.getByName(effect);

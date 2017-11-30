@@ -72,7 +72,8 @@ public class PowerCommand extends Power implements PowerRightClick, PowerLeftCli
      * Execute command
      *
      * @param player player
-     */
+     */    //TODO:ADD delay.
+
     protected void executeCommand(Player player) {
         if (!player.isOnline()) return;
 
@@ -94,7 +95,8 @@ public class PowerCommand extends Power implements PowerRightClick, PowerLeftCli
         if (!item.checkPermission(player, true)) return;
         if (!isRight || !checkCooldownByString(player, item, command, cooldownTime, true)) return;
         if (!item.consumeDurability(stack, consumption)) return;
-        executeCommand(player);
+        executeCommand(player);    //TODO:ADD delay.
+
     }
 
     @Override
@@ -102,7 +104,8 @@ public class PowerCommand extends Power implements PowerRightClick, PowerLeftCli
         if (!item.checkPermission(player, true)) return;
         if (isRight || !checkCooldownByString(player, item, command, cooldownTime, true)) return;
         if (!item.consumeDurability(stack, consumption)) return;
-        executeCommand(player);
+        executeCommand(player);    //TODO:ADD delay.
+
     }
 
     @Override
@@ -122,7 +125,8 @@ public class PowerCommand extends Power implements PowerRightClick, PowerLeftCli
         display = s.getString("display", "");
         isRight = s.getBoolean("isRight", true);
         permission = s.getString("permission", "");
-        consumption = s.getInt("consumption", 0);
+        consumption = s.getInt("consumption", 0);    //TODO:ADD delay.
+
     }
 
     @Override
@@ -133,6 +137,7 @@ public class PowerCommand extends Power implements PowerRightClick, PowerLeftCli
         s.set("isRight", isRight);
         s.set("permission", permission);
         s.set("consumption", consumption);
-    }
+    }    //TODO:ADD delay.
+
 
 }

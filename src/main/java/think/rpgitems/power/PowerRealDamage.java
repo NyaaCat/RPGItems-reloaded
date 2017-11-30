@@ -60,6 +60,7 @@ public class PowerRealDamage extends Power implements PowerHit {
      */
     @Property
     public double minDamage = 0;
+    //TODO:ADD delay.
 
     @Override
     public void hit(Player player, ItemStack stack, LivingEntity entity, double damage) {
@@ -77,6 +78,7 @@ public class PowerRealDamage extends Power implements PowerHit {
         newHealth = min(newHealth, entity.getAttribute(Attribute.GENERIC_MAX_HEALTH).getValue());
         entity.setHealth(newHealth);
     }
+    //TODO:ADD delay.
 
     @Override
     public String displayText() {
@@ -95,6 +97,7 @@ public class PowerRealDamage extends Power implements PowerHit {
         minDamage = s.getInt("minDamage", 0);
         realDamage = s.getInt("realDamage", 0);
     }
+    //TODO:ADD delay.
 
     @Override
     public void save(ConfigurationSection s) {
@@ -103,5 +106,6 @@ public class PowerRealDamage extends Power implements PowerHit {
         s.set("minDamage", minDamage);
         s.set("realDamage", realDamage);
     }
+    //TODO:ADD delay.
 
 }

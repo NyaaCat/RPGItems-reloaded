@@ -44,6 +44,7 @@ public class PowerTNTCannon extends Power implements PowerRightClick {
      */
     @Property
     public int consumption = 0;
+    //TODO:ADD delay.
 
     @Override
     public void rightClick(Player player, ItemStack stack, Block block) {
@@ -54,6 +55,7 @@ public class PowerTNTCannon extends Power implements PowerRightClick {
         TNTPrimed tnt = player.getWorld().spawn(player.getLocation().add(0, 1.8, 0), TNTPrimed.class);
         tnt.setVelocity(player.getLocation().getDirection().multiply(2d));
     }
+    //TODO:ADD delay.
 
     @Override
     public String displayText() {
@@ -70,11 +72,13 @@ public class PowerTNTCannon extends Power implements PowerRightClick {
         cooldownTime = s.getLong("cooldown", 20);
         consumption = s.getInt("consumption", 0);
     }
+    //TODO:ADD delay.
 
     @Override
     public void save(ConfigurationSection s) {
         s.set("cooldown", cooldownTime);
         s.set("consumption", consumption);
     }
+    //TODO:ADD delay.
 
 }

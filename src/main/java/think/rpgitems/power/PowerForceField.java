@@ -59,6 +59,7 @@ public class PowerForceField extends Power implements PowerRightClick {
      */
     @Property
     public int consumption = 0;
+    //TODO:ADD delay.
 
     @Override
     public void init(ConfigurationSection s) {
@@ -68,7 +69,8 @@ public class PowerForceField extends Power implements PowerRightClick {
         base = s.getInt("base");
         ttl = s.getInt("ttl");
         consumption = s.getInt("consumption", 0);
-    }
+    }    //TODO:ADD delay.
+
 
     @Override
     public void save(ConfigurationSection s) {
@@ -77,7 +79,8 @@ public class PowerForceField extends Power implements PowerRightClick {
         s.set("height", height);
         s.set("base", base);
         s.set("ttl", ttl);
-        s.set("consumption", consumption);
+        s.set("consumption", consumption);    //TODO:ADD delay.
+
     }
 
     @Override
@@ -91,7 +94,8 @@ public class PowerForceField extends Power implements PowerRightClick {
     }
 
     @Override
-    public void rightClick(Player player, ItemStack stack, Block clicked) {
+    public void rightClick(Player player, ItemStack stack, Block clicked) {    //TODO:ADD delay.
+
         if (!item.checkPermission(player, true)) return;
         if (!checkCooldown(player, cooldownTime, true)) return;
         if (!item.consumeDurability(stack, consumption)) return;

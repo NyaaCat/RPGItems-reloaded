@@ -59,7 +59,8 @@ public class PowerPotionSelf extends Power implements PowerRightClick {
     public int consumption = 0;
     /**
      * Type of potion effect
-     */
+     */    //TODO:ADD delay.
+
     @Setter("setType")
     @Property(order = 3, required = true)
     public PotionEffectType type = PotionEffectType.HEAL;
@@ -70,7 +71,8 @@ public class PowerPotionSelf extends Power implements PowerRightClick {
         if (!checkCooldown(player, cooldownTime, true)) return;
         if (!item.consumeDurability(stack, consumption)) return;
         player.addPotionEffect(new PotionEffect(type, duration, amplifier), true);
-    }
+    }    //TODO:ADD delay.
+
 
     @Override
     public void init(ConfigurationSection s) {
@@ -80,6 +82,7 @@ public class PowerPotionSelf extends Power implements PowerRightClick {
         type = PotionEffectType.getByName(s.getString("type", "heal"));
         consumption = s.getInt("consumption", 0);
     }
+    //TODO:ADD delay.
 
     @Override
     public void save(ConfigurationSection s) {
@@ -89,6 +92,7 @@ public class PowerPotionSelf extends Power implements PowerRightClick {
         s.set("type", type.getName());
         s.set("consumption", consumption);
     }
+    //TODO:ADD delay.
 
     @Override
     public String getName() {

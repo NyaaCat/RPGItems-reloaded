@@ -56,6 +56,7 @@ public class PowerTeleport extends Power implements PowerRightClick, PowerProjec
      */
     @Property
     public int consumption = 0;
+    //TODO:ADD delay.
 
     @Override
     public void rightClick(Player player, ItemStack stack, Block clicked) {
@@ -99,6 +100,7 @@ public class PowerTeleport extends Power implements PowerRightClick, PowerProjec
         world.playEffect(newLoc, Effect.ENDER_SIGNAL, 0);
         world.playSound(newLoc, Sound.ENTITY_ENDERMEN_TELEPORT, 1.0f, 0.3f);
     }
+    //TODO:ADD delay.
 
     @Override
     public void projectileHit(Player player, ItemStack stack, Projectile p) {
@@ -118,6 +120,7 @@ public class PowerTeleport extends Power implements PowerRightClick, PowerProjec
         world.playEffect(newLoc, Effect.ENDER_SIGNAL, 0);
         world.playSound(newLoc, Sound.ENTITY_ENDERMEN_TELEPORT, 1.0f, 0.3f);
     }
+    //TODO:ADD delay.
 
     @Override
     public void init(ConfigurationSection s) {
@@ -125,6 +128,7 @@ public class PowerTeleport extends Power implements PowerRightClick, PowerProjec
         distance = s.getInt("distance");
         consumption = s.getInt("consumption", 0);
     }
+    //TODO:ADD delay.
 
     @Override
     public void save(ConfigurationSection s) {
@@ -132,6 +136,7 @@ public class PowerTeleport extends Power implements PowerRightClick, PowerProjec
         s.set("distance", distance);
         s.set("consumption", consumption);
     }
+    //TODO:ADD delay.
 
     @Override
     public String getName() {

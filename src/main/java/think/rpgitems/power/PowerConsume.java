@@ -54,20 +54,22 @@ public class PowerConsume extends Power implements PowerRightClick, PowerLeftCli
      */
     @Property
     public int consumption = 0;
-
+    //TODO:ADD delay.
     @Override
     public void rightClick(final Player player, ItemStack stack, Block clicked) {
         if (!item.checkPermission(player, true)) return;
         if (isRight && checkCooldown(player, cooldownTime, false)) {
             consume(player);
-        }
+        }    //TODO:ADD delay.
+
     }
 
     @Override
     public void leftClick(final Player player, ItemStack stack, Block clicked) {
         if (!item.checkPermission(player, true)) return;
         if (!isRight && checkCooldown(player, cooldownTime, false)) {
-            consume(player);
+            consume(player);    //TODO:ADD delay.
+
         }
     }
 
@@ -91,14 +93,16 @@ public class PowerConsume extends Power implements PowerRightClick, PowerLeftCli
     public void init(ConfigurationSection s) {
         cooldownTime = s.getInt("cooldown", 0);
         isRight = s.getBoolean("isRight", true);
-        consumption = s.getInt("consumption", 0);
+        //TODO:ADD delay.
+
     }
 
     @Override
     public void save(ConfigurationSection s) {
         s.set("cooldown", cooldownTime);
         s.set("isRight", isRight);
-        s.set("consumption", consumption);
+        s.set("consumption", consumption);    //TODO:ADD delay.
+
     }
 
     @Override

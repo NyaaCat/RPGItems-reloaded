@@ -67,6 +67,7 @@ public class PowerRumble extends Power implements PowerRightClick {
      */
     @Property
     public int consumption = 0;
+    //TODO:ADD delay.
 
     @Override
     public void init(ConfigurationSection s) {
@@ -75,6 +76,7 @@ public class PowerRumble extends Power implements PowerRightClick {
         power = s.getInt("power", 2);
         distance = s.getInt("distance", 15);
     }
+    //TODO:ADD delay.
 
     @Override
     public void save(ConfigurationSection s) {
@@ -83,6 +85,7 @@ public class PowerRumble extends Power implements PowerRightClick {
         s.set("distance", distance);
         s.set("consumption", consumption);
     }
+    //TODO:ADD delay.
 
     @Override
     public void rightClick(final Player player, ItemStack stack, Block block) {
@@ -145,6 +148,7 @@ public class PowerRumble extends Power implements PowerRightClick {
         };
         task.runTaskTimer(RPGItems.plugin, 0, 3);
     }
+    //TODO:ADD delay.
 
     @Override
     public String getName() {

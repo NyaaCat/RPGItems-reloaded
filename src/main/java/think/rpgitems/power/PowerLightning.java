@@ -47,6 +47,7 @@ public class PowerLightning extends Power implements PowerHit, PowerProjectileHi
     public int consumption = 0;
 
     private Random random = new Random();
+    //TODO:ADD delay.
 
     @Override
     public void hit(Player player, ItemStack stack, LivingEntity entity, double damage) {
@@ -56,6 +57,7 @@ public class PowerLightning extends Power implements PowerHit, PowerProjectileHi
             entity.getWorld().strikeLightning(entity.getLocation());
         }
     }
+    //TODO:ADD delay.
 
     @Override
     public void projectileHit(Player player, ItemStack stack, Projectile p) {
@@ -80,12 +82,14 @@ public class PowerLightning extends Power implements PowerHit, PowerProjectileHi
     public void init(ConfigurationSection s) {
         chance = s.getInt("chance");
         consumption = s.getInt("consumption", 0);
-    }
+    }    //TODO:ADD delay.
+
 
     @Override
     public void save(ConfigurationSection s) {
         s.set("chance", chance);
         s.set("consumption", consumption);
     }
+    //TODO:ADD delay.
 
 }

@@ -26,7 +26,9 @@ import org.bukkit.event.player.PlayerJoinEvent;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.potion.PotionEffect;
 import org.bukkit.potion.PotionEffectType;
+import org.bukkit.scheduler.BukkitRunnable;
 import think.rpgitems.I18n;
+import think.rpgitems.RPGItems;
 import think.rpgitems.commands.Property;
 import think.rpgitems.commands.Setter;
 import think.rpgitems.power.types.PowerRightClick;
@@ -85,6 +87,11 @@ public class PowerAOE extends Power implements PowerRightClick {
      */
     @Property
     public int consumption = 0;
+    /**
+     * delay before power activate.
+     */
+    @Property(order = 0)
+    public int delay = 0;
 
     @Override
     public void init(ConfigurationSection s) {
@@ -96,6 +103,7 @@ public class PowerAOE extends Power implements PowerRightClick {
         type = PotionEffectType.getByName(s.getString("type", "HARM"));
         name = s.getString("name");
         consumption = s.getInt("consumption", 0);
+        delay = s.getInt("delay");
     }
 
     @Override
@@ -108,6 +116,7 @@ public class PowerAOE extends Power implements PowerRightClick {
         s.set("type", type.getName());
         s.set("name", name);
         s.set("consumption", consumption);
+        s.set("delay",delay);
     }
 
     @Override
@@ -115,13 +124,18 @@ public class PowerAOE extends Power implements PowerRightClick {
         if (!item.checkPermission(player, true)) return;
         if (!checkCooldown(player, cooldownTime, true)) return;
         if (!item.consumeDurability(stack, consumption)) return;
-        PotionEffect effect = new PotionEffect(type, duration, amplifier - 1);
-        if (selfapplication)
-            player.addPotionEffect(effect);
-        player.getWorld().playEffect(player.getLocation(), Effect.POTION_BREAK, 1);
-        for (Entity ent : getNearbyEntities(player.getLocation(), player, range))
-            if (ent instanceof LivingEntity && !player.equals(ent))
-                ((LivingEntity) ent).addPotionEffect(effect);
+        new BukkitRunnable() {
+            @Override
+            public void run() {
+                PotionEffect effect = new PotionEffect(type, duration, amplifier - 1);
+                if (selfapplication)
+                    player.addPotionEffect(effect);
+                player.getWorld().playEffect(player.getLocation(), Effect.POTION_BREAK, 1);
+                for (Entity ent : getNearbyEntities(player.getLocation(), player, range))
+                    if (ent instanceof LivingEntity && !player.equals(ent))
+                        ((LivingEntity) ent).addPotionEffect(effect);
+            }
+        }.runTaskLater(RPGItems.plugin,delay);
     }
 
     @Override

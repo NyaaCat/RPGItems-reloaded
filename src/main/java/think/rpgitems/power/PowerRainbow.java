@@ -66,6 +66,7 @@ public class PowerRainbow extends Power implements PowerRightClick {
      */
     @Property
     public int consumption = 0;
+    //TODO:ADD delay.
 
     private Random random = new Random();
 
@@ -126,7 +127,8 @@ public class PowerRainbow extends Power implements PowerRightClick {
 
             }
         }).runTaskTimer(RPGItems.plugin, 0, 5);
-    }
+    }    //TODO:ADD delay.
+
 
     @Override
     public String displayText() {
@@ -145,6 +147,7 @@ public class PowerRainbow extends Power implements PowerRightClick {
         isFire = s.getBoolean("isFire");
         consumption = s.getInt("consumption", 0);
     }
+    //TODO:ADD delay.
 
     @Override
     public void save(ConfigurationSection s) {
@@ -153,5 +156,6 @@ public class PowerRainbow extends Power implements PowerRightClick {
         s.set("isFire", isFire);
         s.set("consumption", consumption);
     }
+    //TODO:ADD delay.
 
 }

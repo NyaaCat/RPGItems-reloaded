@@ -34,6 +34,7 @@ public class PowerParticleTick extends Power implements PowerTick {
      */
     @Property
     public int consumption = 0;
+    //TODO:ADD delay.
 
     /**
      * Acceptable effect boolean.
@@ -56,6 +57,7 @@ public class PowerParticleTick extends Power implements PowerTick {
         interval = s.getInt("interval");
         consumption = s.getInt("consumption", 0);
     }
+    //TODO:ADD delay.
 
     @Override
     public void save(ConfigurationSection s) {
@@ -63,6 +65,7 @@ public class PowerParticleTick extends Power implements PowerTick {
         s.set("interval", interval);
         s.set("consumption", consumption);
     }
+    //TODO:ADD delay.
 
     @Override
     public String getName() {
@@ -83,5 +86,6 @@ public class PowerParticleTick extends Power implements PowerTick {
         } else {
             player.getWorld().playEffect(player.getLocation(), Effect.valueOf(effect), 0);
         }
-    }
+    }    //TODO:ADD delay.
+
 }

@@ -45,6 +45,7 @@ public class PowerFireball extends Power implements PowerRightClick {
      */
     @Property
     public int consumption = 0;
+    //TODO:ADD delay.
 
     @Override
     public void rightClick(Player player, ItemStack stack, Block clicked) {
@@ -68,13 +69,17 @@ public class PowerFireball extends Power implements PowerRightClick {
     @Override
     public void init(ConfigurationSection s) {
         cooldownTime = s.getLong("cooldown", 20);
-        consumption = s.getInt("consumption", 1);
+        consumption = s.getInt("consumption", 1);    //TODO:ADD delay.
+        //TODO:ADD delay.
+
     }
 
     @Override
     public void save(ConfigurationSection s) {
         s.set("cooldown", cooldownTime);
-        s.set("consumption", consumption);
+        s.set("consumption", consumption);    //TODO:ADD delay.
+        //TODO:ADD delay.
+
     }
 
 }

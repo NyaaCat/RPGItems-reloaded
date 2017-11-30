@@ -49,6 +49,7 @@ public class PowerSkyHook extends Power implements PowerRightClick {
      */
     @Property(order = 1, required = true)
     public int hookDistance = 10;
+    //TODO:ADD delay.
 
     @Override
     public void rightClick(final Player player, ItemStack stack, Block clicked) {
@@ -117,6 +118,7 @@ public class PowerSkyHook extends Power implements PowerRightClick {
             }
         }).runTaskTimer(RPGItems.plugin, 0, 0);
     }
+    //TODO:ADD delay.
 
     @Override
     public void init(ConfigurationSection s) {
@@ -126,6 +128,7 @@ public class PowerSkyHook extends Power implements PowerRightClick {
         railMaterial = Material.valueOf(s.getString("railMaterial", "GLASS"));
         hookDistance = s.getInt("hookDistance", 10);
     }
+    //TODO:ADD delay.
 
     @Override
     public void save(ConfigurationSection s) {
@@ -135,6 +138,7 @@ public class PowerSkyHook extends Power implements PowerRightClick {
         s.set("railMaterial", railMaterial.toString());
         s.set("hookDistance", hookDistance);
     }
+    //TODO:ADD delay.
 
     @Override
     public String getName() {

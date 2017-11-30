@@ -22,18 +22,21 @@ public class PowerLoreFilter extends Power {
      */
     @Property(order = 1, required = true)
     public String desc = "";
+    //TODO:ADD delay.
 
     @Override
     public void init(ConfigurationSection s) {
         regex = s.getString("regex", null);
         desc = s.getString("desc", "");
     }
+    //TODO:ADD delay.
 
     @Override
     public void save(ConfigurationSection s) {
         s.set("regex", regex);
         s.set("desc", desc);
     }
+    //TODO:ADD delay.
 
     @Override
     public String getName() {

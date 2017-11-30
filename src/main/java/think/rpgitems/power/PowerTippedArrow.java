@@ -64,6 +64,7 @@ public class PowerTippedArrow extends Power implements PowerRightClick {
      */
     @Property
     public int consumption = 0;
+    //TODO:ADD delay.
 
     @Override
     public void rightClick(Player player, ItemStack stack, Block clicked) {
@@ -76,6 +77,7 @@ public class PowerTippedArrow extends Power implements PowerRightClick {
         arrow.addCustomEffect(new PotionEffect(type, duration, amplifier), true);
         Events.removeArrows.add(arrow.getEntityId());
     }
+    //TODO:ADD delay.
 
     @Override
     public String displayText() {
@@ -96,6 +98,7 @@ public class PowerTippedArrow extends Power implements PowerRightClick {
         type = PotionEffectType.getByName(potionEffectName);
         consumption = s.getInt("consumption", 1);
     }
+    //TODO:ADD delay.
 
     @Override
     public void save(ConfigurationSection s) {
@@ -105,5 +108,6 @@ public class PowerTippedArrow extends Power implements PowerRightClick {
         s.set("type", type.getName());
         s.set("consumption", consumption);
     }
+    //TODO:ADD delay.
 
 }

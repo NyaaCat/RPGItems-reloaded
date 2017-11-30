@@ -39,20 +39,23 @@ public class PowerPumpkin extends Power implements PowerHit {
      */
     @Property
     public int consumption = 0;
+    //TODO:ADD delay.
 
     @Override
     public void init(ConfigurationSection s) {
         chance = s.getInt("chance");
         drop = s.getDouble("drop");
         consumption = s.getInt("consumption", 0);
-    }
+    }    //TODO:ADD delay.
+
 
     @Override
     public void save(ConfigurationSection s) {
         s.set("chance", chance);
         s.set("drop", drop);
         s.set("consumption", consumption);
-    }
+    }    //TODO:ADD delay.
+
 
     @Override
     public String getName() {
@@ -74,6 +77,7 @@ public class PowerPumpkin extends Power implements PowerHit {
                 entity.getEquipment().setHelmet(new ItemStack(Material.PUMPKIN));
                 entity.getEquipment().setHelmetDropChance((float) drop);
             }
-    }
+    }    //TODO:ADD delay.
+
 
 }
