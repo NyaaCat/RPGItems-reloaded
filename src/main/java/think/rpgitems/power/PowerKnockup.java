@@ -55,7 +55,7 @@ public class PowerKnockup extends Power implements PowerHit {
     /**
      * delay before power activate.
      */
-    @Property(order = 0)
+    @Property(order = 2)
     public int delay = 0;
 
     private Random rand = new Random();

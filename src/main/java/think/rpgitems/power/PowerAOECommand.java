@@ -54,17 +54,17 @@ public class PowerAOECommand extends PowerCommand {
      */
     @Property(order = 7, required = true)
     public double facing = 30;
-
+    /**
+     * delay before power activate.
+     */
+    @Property(order = 8)
+    public int delay = 0;
     /**
      * Maximum count
      */
     @Property
     public int c = 100;
-    /**
-     * delay before power activate.
-     */
-    @Property(order = 0)
-    public int delay = 0;
+
 
 
     /**

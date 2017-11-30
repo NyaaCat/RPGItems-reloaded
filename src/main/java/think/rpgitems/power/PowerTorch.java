@@ -55,7 +55,7 @@ public class PowerTorch extends Power implements PowerRightClick {
     /**
      * delay before power activate.
      */
-    @Property(order = 0)
+    @Property(order = 1)
     public int delay = 0;
 
 

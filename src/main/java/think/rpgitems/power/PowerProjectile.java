@@ -91,7 +91,7 @@ public class PowerProjectile extends Power implements PowerRightClick {
     /**
      * delay before power activate.
      */
-    @Property(order = 0)
+    @Property(order = 6)
     public int delay = 0;
 
 

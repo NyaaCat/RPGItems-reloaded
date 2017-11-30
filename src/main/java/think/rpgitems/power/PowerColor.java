@@ -88,15 +88,16 @@ public class PowerColor extends Power implements PowerRightClick, PowerLeftClick
     @Property(order = 3)
     public boolean wool = true;
     /**
+     * delay before power activate.
+     */
+    @Property(order = 4)
+    public int delay = 0;
+    /**
      * Cost of this power
      */
     @Property
     public int consumption = 0;
-    /**
-     * delay before power activate.
-     */
-    @Property(order = 0)
-    public int delay = 0;
+
 
     @SuppressWarnings("deprecation")
     @Override

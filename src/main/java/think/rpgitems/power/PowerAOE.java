@@ -52,31 +52,36 @@ public class PowerAOE extends Power implements PowerRightClick {
     @Property(order = 0)
     public long cooldownTime = 20;
     /**
-     * Amplifier of the potion
-     */
-    @Property(order = 4, required = true)
-    public int amplifier = 1;
-    /**
-     * Duration of the potion
-     */
-    @Property(order = 3)
-    public int duration = 15;
-    /**
      * Range of the potion
      */
     @Property(order = 1)
     public int range = 5;
-    /**
-     * Whether the potion will be apply to the user
-     */
-    @Property(order = 5)
-    public boolean selfapplication = true;
     /**
      * Type of the potion
      */
     @Property(order = 2)
     @Setter("setType")
     public PotionEffectType type;
+    /**
+     * Duration of the potion
+     */
+    @Property(order = 3)
+    public int duration = 15;
+    /**
+     * Amplifier of the potion
+     */
+    @Property(order = 4, required = true)
+    public int amplifier = 1;
+    /**
+     * Whether the potion will be apply to the user
+     */
+    @Property(order = 5)
+    public boolean selfapplication = true;
+    /**
+     * delay before power activate.
+     */
+    @Property(order = 6)
+    public int delay = 0;
     /**
      * Display text of this power. Will use default text in case of null
      */
@@ -87,11 +92,6 @@ public class PowerAOE extends Power implements PowerRightClick {
      */
     @Property
     public int consumption = 0;
-    /**
-     * delay before power activate.
-     */
-    @Property(order = 0)
-    public int delay = 0;
 
     @Override
     public void init(ConfigurationSection s) {

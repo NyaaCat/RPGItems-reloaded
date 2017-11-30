@@ -43,15 +43,16 @@ public class PowerArrow extends Power implements PowerRightClick {
     @Property(order = 0)
     public long cooldownTime = 20;
     /**
+     * delay before power activate.
+     */
+    @Property(order = 1)
+    public int delay = 0;
+    /**
      * Cost of this power
      */
     @Property
     public int consumption = 0;
-    /**
-     * delay before power activate.
-     */
-    @Property(order = 0)
-    public int delay = 0;
+
 
     @Override
     public void rightClick(Player player, ItemStack stack, Block clicked) {

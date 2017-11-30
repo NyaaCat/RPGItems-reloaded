@@ -62,7 +62,7 @@ public class PowerForceField extends Power implements PowerRightClick {
     /**
      * delay before power activate.
      */
-    @Property(order = 0)
+    @Property(order = 5)
     public int delay = 0;
 
     @Override

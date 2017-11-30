@@ -71,7 +71,7 @@ public class PowerCommandHit extends Power implements PowerHit {
     /**
      * delay before power activate.
      */
-    @Property(order = 0)
+    @Property(order = 4)
     public int delay = 0;
 
     /**

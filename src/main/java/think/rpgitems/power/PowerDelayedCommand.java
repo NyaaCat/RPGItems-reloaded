@@ -15,6 +15,7 @@ import think.rpgitems.commands.Property;
  * giving the permission {@link #permission} just for the use of the command.
  * </p>
  */
+@Deprecated
 @SuppressWarnings("WeakerAccess")
 public class PowerDelayedCommand extends PowerCommand {
     /**

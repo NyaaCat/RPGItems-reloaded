@@ -52,7 +52,7 @@ public class PowerLightning extends Power implements PowerHit, PowerProjectileHi
     /**
      * delay before power activate.
      */
-    @Property(order = 0)
+    @Property(order = 1)
     public int delay = 0;
 
     @Override
