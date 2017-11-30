@@ -5,7 +5,9 @@ import org.bukkit.block.Block;
 import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
+import org.bukkit.scheduler.BukkitRunnable;
 import think.rpgitems.I18n;
+import think.rpgitems.RPGItems;
 import think.rpgitems.commands.Property;
 import think.rpgitems.commands.Validator;
 import think.rpgitems.power.types.PowerRightClick;
@@ -28,7 +30,11 @@ public class PowerParticle extends Power implements PowerRightClick {
      */
     @Property
     public int consumption = 0;
-    //TODO:ADD delay.
+    /**
+     * delay before power activate.
+     */
+    @Property(order = 0)
+    public int delay = 0;
 
     /**
      * Acceptable effect boolean.
@@ -49,14 +55,16 @@ public class PowerParticle extends Power implements PowerRightClick {
     public void init(ConfigurationSection s) {
         effect = s.getString("effect", "FLAME");
         consumption = s.getInt("consumption", 0);
-    }    //TODO:ADD delay.
+        delay = s.getInt("delay",0);
+    }
 
 
     @Override
     public void save(ConfigurationSection s) {
         s.set("effect", effect);
         s.set("consumption", consumption);
-    }    //TODO:ADD delay.
+        s.set("delay",delay);
+    }
 
 
     @Override
@@ -73,11 +81,21 @@ public class PowerParticle extends Power implements PowerRightClick {
     public void rightClick(Player player, ItemStack stack, Block clicked) {
         if (!item.consumeDurability(stack, consumption)) return;
         if (effect.equalsIgnoreCase("SMOKE")) {
-            player.getWorld().playEffect(player.getLocation().add(0, 2, 0), Effect.valueOf(effect), 4);
+            new BukkitRunnable(){
+                @Override
+                public void run() {
+                    player.getWorld().playEffect(player.getLocation().add(0, 2, 0), Effect.valueOf(effect), 4);
+                }
+            }.runTaskLater(RPGItems.plugin,delay);
         } else {
-            player.getWorld().playEffect(player.getLocation(), Effect.valueOf(effect), 0);
+            new BukkitRunnable() {
+                @Override
+                public void run() {
+                    player.getWorld().playEffect(player.getLocation(), Effect.valueOf(effect), 0);
+                }
+            }.runTaskLater(RPGItems.plugin, delay);
         }
-    }    //TODO:ADD delay.
+    }
 
 
 }

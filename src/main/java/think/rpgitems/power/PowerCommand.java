@@ -21,6 +21,8 @@ import org.bukkit.block.Block;
 import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
+import org.bukkit.scheduler.BukkitRunnable;
+import think.rpgitems.RPGItems;
 import think.rpgitems.commands.Property;
 import think.rpgitems.commands.BooleanChoice;
 import think.rpgitems.power.types.PowerLeftClick;
@@ -67,12 +69,17 @@ public class PowerCommand extends Power implements PowerRightClick, PowerLeftCli
      */
     @Property
     public int consumption = 0;
+    /**
+     * delay before power activate.
+     */
+    @Property(order = 0)
+    public int delay = 0;
 
     /**
      * Execute command
      *
      * @param player player
-     */    //TODO:ADD delay.
+     */
 
     protected void executeCommand(Player player) {
         if (!player.isOnline()) return;
@@ -95,7 +102,12 @@ public class PowerCommand extends Power implements PowerRightClick, PowerLeftCli
         if (!item.checkPermission(player, true)) return;
         if (!isRight || !checkCooldownByString(player, item, command, cooldownTime, true)) return;
         if (!item.consumeDurability(stack, consumption)) return;
-        executeCommand(player);    //TODO:ADD delay.
+        new BukkitRunnable(){
+            @Override
+            public void run() {
+                executeCommand(player);
+            }
+        }.runTaskLater(RPGItems.plugin,delay);
 
     }
 
@@ -104,7 +116,12 @@ public class PowerCommand extends Power implements PowerRightClick, PowerLeftCli
         if (!item.checkPermission(player, true)) return;
         if (isRight || !checkCooldownByString(player, item, command, cooldownTime, true)) return;
         if (!item.consumeDurability(stack, consumption)) return;
-        executeCommand(player);    //TODO:ADD delay.
+        new BukkitRunnable(){
+            @Override
+            public void run() {
+                executeCommand(player);
+            }
+        }.runTaskLater(RPGItems.plugin,delay);
 
     }
 
@@ -125,7 +142,8 @@ public class PowerCommand extends Power implements PowerRightClick, PowerLeftCli
         display = s.getString("display", "");
         isRight = s.getBoolean("isRight", true);
         permission = s.getString("permission", "");
-        consumption = s.getInt("consumption", 0);    //TODO:ADD delay.
+        consumption = s.getInt("consumption", 0);
+        delay = s.getInt("delay");
 
     }
 
@@ -137,7 +155,8 @@ public class PowerCommand extends Power implements PowerRightClick, PowerLeftCli
         s.set("isRight", isRight);
         s.set("permission", permission);
         s.set("consumption", consumption);
-    }    //TODO:ADD delay.
+        s.set("delay",delay);
+    }
 
 
 }

@@ -49,8 +49,7 @@ public class PowerDeathCommand extends Power implements PowerHit {
      */
     @Property
     public int consumption = 0;
-    //TODO:ADD delay.
-    //TODO:ADD delay.
+
 
     @Override
     public void init(ConfigurationSection s) {
@@ -58,7 +57,7 @@ public class PowerDeathCommand extends Power implements PowerHit {
         chance = s.getInt("chance");
         desc = s.getString("desc");
         count = s.getInt("count");
-        consumption = s.getInt("consumption", 0);    //    //TODO:ADD delay.
+        consumption = s.getInt("consumption", 0);
 
     }
 
@@ -69,7 +68,7 @@ public class PowerDeathCommand extends Power implements PowerHit {
         s.set("desc", desc);
         s.set("count", count);
         s.set("consumption", consumption);
-    }    //TODO:ADD delay.
+    }
 
 
     @Override
@@ -95,7 +94,6 @@ public class PowerDeathCommand extends Power implements PowerHit {
             String cmd = command.replace("${x}", String.valueOf(x)).replace("${y}", String.valueOf(y)).replace("${z}", String.valueOf(z));
             for (int i = 0; i < count; i++) Bukkit.dispatchCommand(Bukkit.getConsoleSender(), cmd);
         }
-    }    //TODO:ADD delay.
-
+    }
 
 }

@@ -24,9 +24,12 @@ import org.bukkit.entity.TippedArrow;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.potion.PotionEffect;
 import org.bukkit.potion.PotionEffectType;
+import org.bukkit.scheduler.BukkitRunnable;
 import think.rpgitems.Events;
 import think.rpgitems.I18n;
+import think.rpgitems.RPGItems;
 import think.rpgitems.commands.Property;
+import think.rpgitems.item.RPGItem;
 import think.rpgitems.power.types.PowerRightClick;
 
 /**
@@ -64,20 +67,29 @@ public class PowerTippedArrow extends Power implements PowerRightClick {
      */
     @Property
     public int consumption = 0;
-    //TODO:ADD delay.
+    /**
+     * delay before power activate.
+     */
+    @Property(order = 0)
+    public int delay = 0;
+
 
     @Override
     public void rightClick(Player player, ItemStack stack, Block clicked) {
         if (!item.checkPermission(player, true)) return;
         if (!checkCooldown(player, cooldownTime, true)) return;
         if (!item.consumeDurability(stack, consumption)) return;
-        player.playSound(player.getLocation(), Sound.ENTITY_ARROW_SHOOT, 1.0f, 1.0f);
-        TippedArrow arrow = player.launchProjectile(TippedArrow.class);
-        Events.rpgProjectiles.put(arrow.getEntityId(), item.getID());
-        arrow.addCustomEffect(new PotionEffect(type, duration, amplifier), true);
-        Events.removeArrows.add(arrow.getEntityId());
+        new BukkitRunnable() {
+            @Override
+            public void run() {
+                player.playSound(player.getLocation(), Sound.ENTITY_ARROW_SHOOT, 1.0f, 1.0f);
+                TippedArrow arrow = player.launchProjectile(TippedArrow.class);
+                Events.rpgProjectiles.put(arrow.getEntityId(), item.getID());
+                arrow.addCustomEffect(new PotionEffect(type, duration, amplifier), true);
+                Events.removeArrows.add(arrow.getEntityId());
+            }
+        }.runTaskLater(RPGItems.plugin,delay);
     }
-    //TODO:ADD delay.
 
     @Override
     public String displayText() {
@@ -97,9 +109,8 @@ public class PowerTippedArrow extends Power implements PowerRightClick {
         String potionEffectName = s.getString("type", "HARM");
         type = PotionEffectType.getByName(potionEffectName);
         consumption = s.getInt("consumption", 1);
+        delay = s.getInt("delay",0);
     }
-    //TODO:ADD delay.
-
     @Override
     public void save(ConfigurationSection s) {
         s.set("cooldown", cooldownTime);
@@ -107,7 +118,7 @@ public class PowerTippedArrow extends Power implements PowerRightClick {
         s.set("amplifier", amplifier);
         s.set("type", type.getName());
         s.set("consumption", consumption);
+        s.set("delay",delay);
     }
-    //TODO:ADD delay.
 
 }

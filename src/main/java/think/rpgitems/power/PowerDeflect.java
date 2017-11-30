@@ -103,7 +103,7 @@ public class PowerDeflect extends Power implements PowerHitTaken, PowerRightClic
     public double facing = 30;
 
     private long time = 0;
-    //TODO:ADD delay.
+
 
     @Override
     public String displayText() {
@@ -125,7 +125,7 @@ public class PowerDeflect extends Power implements PowerHitTaken, PowerRightClic
         facing = s.getInt("facing", 120);
         initiative = s.getBoolean("initiative", true);
         passive = s.getBoolean("passive", true);
-        isRight = s.getBoolean("isRight", true);    //TODO:ADD delay.
+        isRight = s.getBoolean("isRight", true);
 
     }
 
@@ -140,7 +140,7 @@ public class PowerDeflect extends Power implements PowerHitTaken, PowerRightClic
         s.set("passive", passive);
         s.set("initiative", initiative);
         s.set("isRight", isRight);
-    }    //TODO:ADD delay.
+        }
 
 
     @Override
@@ -188,7 +188,7 @@ public class PowerDeflect extends Power implements PowerHitTaken, PowerRightClic
                     || !checkCooldownByString(player, item, "deflect.initiative", cooldownTime, true)
                     || !item.consumeDurability(stack, consumption))
             return;
-        time = System.currentTimeMillis() / 50 + duration;    //TODO:ADD delay.
+        time = System.currentTimeMillis() / 50 + duration;
 
     }
 
@@ -199,7 +199,7 @@ public class PowerDeflect extends Power implements PowerHitTaken, PowerRightClic
                     || !checkCooldownByString(player, item, "deflect.initiative", cooldownTime, true)
                     || !item.consumeDurability(stack, consumption))
             return;
-        time = System.currentTimeMillis() / 50 + duration;    //TODO:ADD delay.
+        time = System.currentTimeMillis() / 50 + duration;
 
     }
 }

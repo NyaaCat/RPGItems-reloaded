@@ -66,7 +66,12 @@ public class PowerRainbow extends Power implements PowerRightClick {
      */
     @Property
     public int consumption = 0;
-    //TODO:ADD delay.
+    /**
+     * delay before power activate.
+     */
+    @Property(order = 0)
+    public int delay = 0;
+
 
     private Random random = new Random();
 
@@ -89,45 +94,50 @@ public class PowerRainbow extends Power implements PowerRightClick {
             block.setDropItem(false);
             blocks.add(block);
         }
-        (new BukkitRunnable() {
-
-            ArrayList<Location> fallLocs = new ArrayList<>();
-            Random random = new Random();
-
+        new BukkitRunnable() {
+            @Override
             public void run() {
+                (new BukkitRunnable() {
 
-                Iterator<Location> l = fallLocs.iterator();
-                while (l.hasNext()) {
-                    Location loc = l.next();
-                    if (random.nextBoolean()) {
-                        Block b = loc.getBlock();
-                        if (b.getType() == (isFire ? Material.FIRE : Material.WOOL)) {
-                            loc.getWorld().playEffect(loc, Effect.STEP_SOUND, isFire ? Material.FIRE : Material.WOOL, b.getData());
-                            b.setType(Material.AIR);
+                    ArrayList<Location> fallLocs = new ArrayList<>();
+                    Random random = new Random();
+
+                    public void run() {
+
+                        Iterator<Location> l = fallLocs.iterator();
+                        while (l.hasNext()) {
+                            Location loc = l.next();
+                            if (random.nextBoolean()) {
+                                Block b = loc.getBlock();
+                                if (b.getType() == (isFire ? Material.FIRE : Material.WOOL)) {
+                                    loc.getWorld().playEffect(loc, Effect.STEP_SOUND, isFire ? Material.FIRE : Material.WOOL, b.getData());
+                                    b.setType(Material.AIR);
+                                }
+                                l.remove();
+                            }
+                            if (random.nextInt(5) == 0) {
+                                break;
+                            }
                         }
-                        l.remove();
-                    }
-                    if (random.nextInt(5) == 0) {
-                        break;
-                    }
-                }
 
-                Iterator<FallingBlock> it = blocks.iterator();
-                while (it.hasNext()) {
-                    FallingBlock block = it.next();
-                    if (block.isDead()) {
-                        fallLocs.add(block.getLocation());
-                        it.remove();
+                        Iterator<FallingBlock> it = blocks.iterator();
+                        while (it.hasNext()) {
+                            FallingBlock block = it.next();
+                            if (block.isDead()) {
+                                fallLocs.add(block.getLocation());
+                                it.remove();
+                            }
+                        }
+
+                        if (fallLocs.isEmpty() && blocks.isEmpty()) {
+                            cancel();
+                        }
+
                     }
-                }
-
-                if (fallLocs.isEmpty() && blocks.isEmpty()) {
-                    cancel();
-                }
-
+                }).runTaskTimer(RPGItems.plugin, 0, 5);
             }
-        }).runTaskTimer(RPGItems.plugin, 0, 5);
-    }    //TODO:ADD delay.
+        }.runTaskLater(RPGItems.plugin,delay);
+    }
 
 
     @Override
@@ -146,8 +156,8 @@ public class PowerRainbow extends Power implements PowerRightClick {
         count = s.getInt("count", 5);
         isFire = s.getBoolean("isFire");
         consumption = s.getInt("consumption", 0);
+        delay = s.getInt("delay",0);
     }
-    //TODO:ADD delay.
 
     @Override
     public void save(ConfigurationSection s) {
@@ -155,7 +165,7 @@ public class PowerRainbow extends Power implements PowerRightClick {
         s.set("count", count);
         s.set("isFire", isFire);
         s.set("consumption", consumption);
+        s.set("delay",delay);
     }
-    //TODO:ADD delay.
 
 }

@@ -27,6 +27,7 @@ import org.bukkit.scheduler.BukkitRunnable;
 import think.rpgitems.I18n;
 import think.rpgitems.RPGItems;
 import think.rpgitems.commands.Property;
+import think.rpgitems.item.RPGItem;
 import think.rpgitems.power.types.PowerRightClick;
 
 import java.util.ArrayList;
@@ -51,7 +52,12 @@ public class PowerTorch extends Power implements PowerRightClick {
      */
     @Property
     public int consumption = 0;
-    //TODO:ADD delay.
+    /**
+     * delay before power activate.
+     */
+    @Property(order = 0)
+    public int delay = 0;
+
 
     @SuppressWarnings("deprecation")
     @Override
@@ -59,67 +65,72 @@ public class PowerTorch extends Power implements PowerRightClick {
         if (!item.checkPermission(player, true)) return;
         if (!checkCooldown(player, cooldownTime, true)) return;
         if (!item.consumeDurability(stack, consumption)) return;
-        player.playSound(player.getLocation(), Sound.ITEM_FLINTANDSTEEL_USE, 1.0f, 0.8f);
-        final FallingBlock block = player.getWorld().spawnFallingBlock(player.getLocation().add(0, 1.8, 0), Material.TORCH, (byte) 0);
-        block.setVelocity(player.getLocation().getDirection().multiply(2d));
-        block.setDropItem(false);
-        BukkitRunnable run = new BukkitRunnable() {
-
+        new BukkitRunnable() {
+            @Override
             public void run() {
-                World world = block.getWorld();
-                final Random random = new Random();
-                if (block.isDead()) {
-                    block.remove();
-                    if (block.getLocation().getBlock().getType().equals(Material.TORCH))
-                        block.setMetadata("RPGItems.Torch", new FixedMetadataValue(RPGItems.plugin, null));
-                    cancel();
-                    final HashMap<Location, Long> changedBlocks = new HashMap<>();
-                    for (int x = -2; x <= 2; x++) {
-                        for (int y = -2; y <= 3; y++) {
-                            for (int z = -2; z <= 2; z++) {
-                                Location loc = block.getLocation().add(x, y, z);
-                                Block b = world.getBlockAt(loc);
-                                if (b.getType().equals(Material.AIR) && random.nextInt(100) < 20) {
-                                    List<Byte> orientations = getPossibleOrientations(loc);
-                                    if (orientations.size() > 0) {
-                                        changedBlocks.put(b.getLocation(), b.getTypeId() | ((long) b.getData() << 16));
-                                        byte o = orientations.get(random.nextInt(orientations.size()));
-                                        b.setMetadata("RPGItems.Torch", new FixedMetadataValue(RPGItems.plugin, null));
-                                        b.setTypeIdAndData(Material.TORCH.getId(), o, false); // Don't apply physics since the check is done beforehand
+
+                player.playSound(player.getLocation(), Sound.ITEM_FLINTANDSTEEL_USE, 1.0f, 0.8f);
+                final FallingBlock block = player.getWorld().spawnFallingBlock(player.getLocation().add(0, 1.8, 0), Material.TORCH, (byte) 0);
+                block.setVelocity(player.getLocation().getDirection().multiply(2d));
+                block.setDropItem(false);
+                BukkitRunnable run = new BukkitRunnable() {
+
+                    public void run() {
+                        World world = block.getWorld();
+                        final Random random = new Random();
+                        if (block.isDead()) {
+                            block.remove();
+                            if (block.getLocation().getBlock().getType().equals(Material.TORCH))
+                                block.setMetadata("RPGItems.Torch", new FixedMetadataValue(RPGItems.plugin, null));
+                            cancel();
+                            final HashMap<Location, Long> changedBlocks = new HashMap<>();
+                            for (int x = -2; x <= 2; x++) {
+                                for (int y = -2; y <= 3; y++) {
+                                    for (int z = -2; z <= 2; z++) {
+                                        Location loc = block.getLocation().add(x, y, z);
+                                        Block b = world.getBlockAt(loc);
+                                        if (b.getType().equals(Material.AIR) && random.nextInt(100) < 20) {
+                                            List<Byte> orientations = getPossibleOrientations(loc);
+                                            if (orientations.size() > 0) {
+                                                changedBlocks.put(b.getLocation(), b.getTypeId() | ((long) b.getData() << 16));
+                                                byte o = orientations.get(random.nextInt(orientations.size()));
+                                                b.setMetadata("RPGItems.Torch", new FixedMetadataValue(RPGItems.plugin, null));
+                                                b.setTypeIdAndData(Material.TORCH.getId(), o, false); // Don't apply physics since the check is done beforehand
+                                            }
+                                        }
                                     }
                                 }
                             }
+                            (new BukkitRunnable() {
+
+                                @Override
+                                public void run() {
+                                    if (changedBlocks.isEmpty()) {
+                                        cancel();
+                                        block.removeMetadata("RPGItems.Torch", RPGItems.plugin);
+                                        block.getLocation().getBlock().setType(Material.AIR);
+                                        return;
+                                    }
+                                    int index = random.nextInt(changedBlocks.size());
+                                    long data = changedBlocks.values().toArray(new Long[0])[index];
+                                    Location position = changedBlocks.keySet().toArray(new Location[0])[index];
+                                    changedBlocks.remove(position);
+                                    Block c = position.getBlock();
+                                    position.getWorld().playEffect(position, Effect.STEP_SOUND, c.getTypeId());
+                                    c.removeMetadata("RPGItems.Torch", RPGItems.plugin);
+                                    c.setTypeId((int) (data & 0xFFFF));
+                                    c.setData((byte) (data >> 16));
+
+                                }
+                            }).runTaskTimer(RPGItems.plugin, 4 * 20 + new Random().nextInt(40), 3);
                         }
+
                     }
-                    (new BukkitRunnable() {
-
-                        @Override
-                        public void run() {
-                            if (changedBlocks.isEmpty()) {
-                                cancel();
-                                block.removeMetadata("RPGItems.Torch", RPGItems.plugin);
-                                block.getLocation().getBlock().setType(Material.AIR);
-                                return;
-                            }
-                            int index = random.nextInt(changedBlocks.size());
-                            long data = changedBlocks.values().toArray(new Long[0])[index];
-                            Location position = changedBlocks.keySet().toArray(new Location[0])[index];
-                            changedBlocks.remove(position);
-                            Block c = position.getBlock();
-                            position.getWorld().playEffect(position, Effect.STEP_SOUND, c.getTypeId());
-                            c.removeMetadata("RPGItems.Torch", RPGItems.plugin);
-                            c.setTypeId((int) (data & 0xFFFF));
-                            c.setData((byte) (data >> 16));
-
-                        }
-                    }).runTaskTimer(RPGItems.plugin, 4 * 20 + new Random().nextInt(40), 3);
-                }
-
+                };
+                run.runTaskTimer(RPGItems.plugin, 0, 1);
             }
-        };
-        run.runTaskTimer(RPGItems.plugin, 0, 1);
+        }.runTaskLater(RPGItems.plugin,delay);
     }
-    //TODO:ADD delay.
 
     @Override
     public String displayText() {
@@ -135,15 +146,15 @@ public class PowerTorch extends Power implements PowerRightClick {
     public void init(ConfigurationSection s) {
         cooldownTime = s.getLong("cooldown", 20);
         consumption = s.getInt("consumption", 0);
+        delay = s.getInt("delay",0);
     }
-    //TODO:ADD delay.
 
     @Override
     public void save(ConfigurationSection s) {
         s.set("cooldown", cooldownTime);
         s.set("consumption", consumption);
+        s.set("delay",delay);
     }
-    //TODO:ADD delay.
 
     private List<Byte> getPossibleOrientations(Location loc) {
         List<Byte> orientations = new ArrayList<>();

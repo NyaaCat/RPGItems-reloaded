@@ -37,7 +37,7 @@ public class PowerConsumeHit extends Power implements PowerHit {
      */
     @Property(order = 0)
     public int cooldownTime = 0;
-    //TODO:ADD delay.
+
     @Override
     public void hit(final Player player, ItemStack stack, LivingEntity entity, double damage) {
         if (!checkCooldown(player, cooldownTime, false)) return;
@@ -54,13 +54,14 @@ public class PowerConsumeHit extends Power implements PowerHit {
     @Override
     public void init(ConfigurationSection s) {
         cooldownTime = s.getInt("cooldown", 0);
-    }    //TODO:ADD delay.
+
+    }
 
 
     @Override
     public void save(ConfigurationSection s) {
         s.set("cooldown", cooldownTime);
-    }    //TODO:ADD delay.
+    }
 
 
     @Override

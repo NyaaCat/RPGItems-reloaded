@@ -21,7 +21,9 @@ import org.bukkit.entity.LivingEntity;
 import org.bukkit.entity.Player;
 import org.bukkit.entity.Projectile;
 import org.bukkit.inventory.ItemStack;
+import org.bukkit.scheduler.BukkitRunnable;
 import think.rpgitems.I18n;
+import think.rpgitems.RPGItems;
 import think.rpgitems.commands.Property;
 import think.rpgitems.power.types.PowerHit;
 import think.rpgitems.power.types.PowerProjectileHit;
@@ -47,17 +49,25 @@ public class PowerLightning extends Power implements PowerHit, PowerProjectileHi
     public int consumption = 0;
 
     private Random random = new Random();
-    //TODO:ADD delay.
+    /**
+     * delay before power activate.
+     */
+    @Property(order = 0)
+    public int delay = 0;
 
     @Override
     public void hit(Player player, ItemStack stack, LivingEntity entity, double damage) {
         if (!item.checkPermission(player, true)) return;
         if (!item.consumeDurability(stack, consumption)) return;
         if (random.nextInt(chance) == 0) {
-            entity.getWorld().strikeLightning(entity.getLocation());
+            new BukkitRunnable(){
+                @Override
+                public void run() {
+                    entity.getWorld().strikeLightning(entity.getLocation());
+                }
+            }.runTaskLater(RPGItems.plugin,delay);
         }
     }
-    //TODO:ADD delay.
 
     @Override
     public void projectileHit(Player player, ItemStack stack, Projectile p) {
@@ -82,14 +92,14 @@ public class PowerLightning extends Power implements PowerHit, PowerProjectileHi
     public void init(ConfigurationSection s) {
         chance = s.getInt("chance");
         consumption = s.getInt("consumption", 0);
-    }    //TODO:ADD delay.
-
+        delay = s.getInt("delay",0);
+    }
 
     @Override
     public void save(ConfigurationSection s) {
         s.set("chance", chance);
         s.set("consumption", consumption);
+        s.set("delay",delay);
     }
-    //TODO:ADD delay.
 
 }

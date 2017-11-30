@@ -71,7 +71,7 @@ public class PowerRescue extends Power implements PowerHurt, PowerHitTaken {
      */
     @Property
     public double damageTrigger = 1024;
-    //TODO:ADD delay.
+
 
     @Override
     public String displayText() {
@@ -92,7 +92,6 @@ public class PowerRescue extends Power implements PowerHurt, PowerHitTaken {
         inPlace = s.getBoolean("inPlace", false);
         consumption = s.getInt("consumption", 0);
     }
-    //TODO:ADD delay.
 
     @Override
     public void save(ConfigurationSection s) {
@@ -103,7 +102,6 @@ public class PowerRescue extends Power implements PowerHurt, PowerHitTaken {
         s.set("inPlace", inPlace);
         s.set("consumption", consumption);
     }
-    //TODO:ADD delay.
 
     @Override
     public void hurt(Player target, ItemStack stack, EntityDamageEvent event) {
@@ -112,7 +110,6 @@ public class PowerRescue extends Power implements PowerHurt, PowerHitTaken {
         if (health > healthTrigger) return;
         rescue(target, stack, event, false);
     }
-    //TODO:ADD delay.
 
     @Override
     public double takeHit(Player target, ItemStack stack, EntityDamageEvent event) {
@@ -124,7 +121,6 @@ public class PowerRescue extends Power implements PowerHurt, PowerHitTaken {
             return 0;
         }
     }
-    //TODO:ADD delay.
 
     private void rescue(Player target, ItemStack stack, EntityDamageEvent event, boolean canceled) {
         if (!checkCooldown(target, cooldownTime, true)) return;
@@ -149,6 +145,6 @@ public class PowerRescue extends Power implements PowerHurt, PowerHitTaken {
             target.teleport(target.getBedSpawnLocation());
         else
             target.teleport(target.getWorld().getSpawnLocation());
-    }    //TODO:ADD delay.
+    }
 
 }

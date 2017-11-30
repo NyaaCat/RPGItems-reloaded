@@ -67,7 +67,12 @@ public class PowerRumble extends Power implements PowerRightClick {
      */
     @Property
     public int consumption = 0;
-    //TODO:ADD delay.
+    /**
+     * delay before power activate.
+     */
+    @Property(order = 0)
+    public int delay = 0;
+
 
     @Override
     public void init(ConfigurationSection s) {
@@ -75,8 +80,8 @@ public class PowerRumble extends Power implements PowerRightClick {
         consumption = s.getInt("consumption", 0);
         power = s.getInt("power", 2);
         distance = s.getInt("distance", 15);
+        delay = s.getInt("delay",0);
     }
-    //TODO:ADD delay.
 
     @Override
     public void save(ConfigurationSection s) {
@@ -84,71 +89,76 @@ public class PowerRumble extends Power implements PowerRightClick {
         s.set("power", power);
         s.set("distance", distance);
         s.set("consumption", consumption);
+        s.set("delay",delay);
     }
-    //TODO:ADD delay.
 
     @Override
     public void rightClick(final Player player, ItemStack stack, Block block) {
         if (!checkCooldown(player, cooldownTime, true)) return;
         if (!item.consumeDurability(stack, consumption)) return;
-        final Location location = player.getLocation().add(0, -0.2, 0);
-        final Vector direction = player.getLocation().getDirection();
-        direction.setY(0);
-        direction.normalize();
-        BukkitRunnable task = new BukkitRunnable() {
-            private int count = 0;
-
+        new BukkitRunnable() {
+            @Override
             public void run() {
-                Location above = location.clone().add(0, 1, 0);
-                if (above.getBlock().getType().isSolid() || !location.getBlock().getType().isSolid()) {
-                    cancel();
-                    return;
-                }
 
-                Location temp = location.clone();
-                for (int x = -2; x <= 2; x++) {
-                    for (int z = -2; z <= 2; z++) {
-                        temp.setX(x + location.getBlockX());
-                        temp.setZ(z + location.getBlockZ());
-                        Block block = temp.getBlock();
-                        temp.getWorld().playEffect(temp, Effect.STEP_SOUND, block.getType());
-                    }
-                }
-                List<Entity> near = getNearbyEntities(location, player,1.5);
-                boolean hit = false;
-                Random random = new Random();
-                for (Entity e : near) {
-                    if (e != player) {
-                        hit = true;
-                        break;
-                    }
-                }
-                if (hit) {
-                    near = getNearbyEntities(location, player,power * 2 + 1);
-                    for (Entity e : near) {
-                        if (e != player) {
-                            if (e instanceof ItemFrame || e instanceof Painting) {
-                                e.setMetadata("RPGItems.Rumble", new FixedMetadataValue(RPGItems.plugin, null)); // Add metadata to protect hanging entities from the explosion
-                                continue;
-                            }
-                            if (e.getLocation().distance(location) <= 2.5)
-                                e.setVelocity(new Vector(random.nextGaussian() / 4d, 1d + random.nextDouble() * (double) power, random.nextGaussian() / 4d));
+                final Location location = player.getLocation().add(0, -0.2, 0);
+                final Vector direction = player.getLocation().getDirection();
+                direction.setY(0);
+                direction.normalize();
+                BukkitRunnable task = new BukkitRunnable() {
+                    private int count = 0;
+
+                    public void run() {
+                        Location above = location.clone().add(0, 1, 0);
+                        if (above.getBlock().getType().isSolid() || !location.getBlock().getType().isSolid()) {
+                            cancel();
+                            return;
                         }
+
+                        Location temp = location.clone();
+                        for (int x = -2; x <= 2; x++) {
+                            for (int z = -2; z <= 2; z++) {
+                                temp.setX(x + location.getBlockX());
+                                temp.setZ(z + location.getBlockZ());
+                                Block block = temp.getBlock();
+                                temp.getWorld().playEffect(temp, Effect.STEP_SOUND, block.getType());
+                            }
+                        }
+                        List<Entity> near = getNearbyEntities(location, player,1.5);
+                        boolean hit = false;
+                        Random random = new Random();
+                        for (Entity e : near) {
+                            if (e != player) {
+                                hit = true;
+                                break;
+                            }
+                        }
+                        if (hit) {
+                            near = getNearbyEntities(location, player,power * 2 + 1);
+                            for (Entity e : near) {
+                                if (e != player) {
+                                    if (e instanceof ItemFrame || e instanceof Painting) {
+                                        e.setMetadata("RPGItems.Rumble", new FixedMetadataValue(RPGItems.plugin, null)); // Add metadata to protect hanging entities from the explosion
+                                        continue;
+                                    }
+                                    if (e.getLocation().distance(location) <= 2.5)
+                                        e.setVelocity(new Vector(random.nextGaussian() / 4d, 1d + random.nextDouble() * (double) power, random.nextGaussian() / 4d));
+                                }
+                            }
+                            location.getWorld().createExplosion(location.getX(), location.getY(), location.getZ(), power, false, false); // Trigger the explosion after all hanging entities have been protected
+                            cancel();
+                            return;
+                        }
+                        location.add(direction);
+                        if (count >= distance) {
+                            cancel();
+                        }
+                        count++;
                     }
-                    location.getWorld().createExplosion(location.getX(), location.getY(), location.getZ(), power, false, false); // Trigger the explosion after all hanging entities have been protected
-                    cancel();
-                    return;
-                }
-                location.add(direction);
-                if (count >= distance) {
-                    cancel();
-                }
-                count++;
+                };
+                task.runTaskTimer(RPGItems.plugin, 0, 3);
             }
-        };
-        task.runTaskTimer(RPGItems.plugin, 0, 3);
+        }.runTaskLater(RPGItems.plugin,delay);
     }
-    //TODO:ADD delay.
 
     @Override
     public String getName() {

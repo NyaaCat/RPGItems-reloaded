@@ -22,8 +22,11 @@ import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.entity.Player;
 import org.bukkit.entity.TNTPrimed;
 import org.bukkit.inventory.ItemStack;
+import org.bukkit.scheduler.BukkitRunnable;
 import think.rpgitems.I18n;
+import think.rpgitems.RPGItems;
 import think.rpgitems.commands.Property;
+import think.rpgitems.item.RPGItem;
 import think.rpgitems.power.types.PowerRightClick;
 
 /**
@@ -44,18 +47,27 @@ public class PowerTNTCannon extends Power implements PowerRightClick {
      */
     @Property
     public int consumption = 0;
-    //TODO:ADD delay.
+    /**
+     * delay before power activate.
+     */
+    @Property(order = 0)
+    public int delay = 0;
+
 
     @Override
     public void rightClick(Player player, ItemStack stack, Block block) {
         if (!item.checkPermission(player, true)) return;
         if (!checkCooldown(player, cooldownTime, true)) return;
         if (!item.consumeDurability(stack, consumption)) return;
-        player.playSound(player.getLocation(), Sound.ENTITY_ARROW_SHOOT, 1.0f, 1.0f);
-        TNTPrimed tnt = player.getWorld().spawn(player.getLocation().add(0, 1.8, 0), TNTPrimed.class);
-        tnt.setVelocity(player.getLocation().getDirection().multiply(2d));
+        new BukkitRunnable() {
+            @Override
+            public void run() {
+                player.playSound(player.getLocation(), Sound.ENTITY_ARROW_SHOOT, 1.0f, 1.0f);
+                TNTPrimed tnt = player.getWorld().spawn(player.getLocation().add(0, 1.8, 0), TNTPrimed.class);
+                tnt.setVelocity(player.getLocation().getDirection().multiply(2d));
+            }
+        }.runTaskLater(RPGItems.plugin,delay);
     }
-    //TODO:ADD delay.
 
     @Override
     public String displayText() {
@@ -71,14 +83,14 @@ public class PowerTNTCannon extends Power implements PowerRightClick {
     public void init(ConfigurationSection s) {
         cooldownTime = s.getLong("cooldown", 20);
         consumption = s.getInt("consumption", 0);
+        delay = s.getInt("delay",0);
     }
-    //TODO:ADD delay.
 
     @Override
     public void save(ConfigurationSection s) {
         s.set("cooldown", cooldownTime);
         s.set("consumption", consumption);
+        s.set("delay",delay);
     }
-    //TODO:ADD delay.
 
 }
