@@ -47,7 +47,7 @@ public class PowerTippedArrow extends Power implements PowerRightClick {
     /**
      * Amplifier of potion effect
      */
-    @Property(order = 3)
+    @Property(order = 3,required=true)
     public int amplifier = 1;
     /**
      * Duration of potion effect, in ticks
