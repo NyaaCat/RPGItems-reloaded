@@ -60,7 +60,7 @@ public class PowerRumble extends Power implements PowerRightClick {
     /**
      * Maximum distance of rumble
      */
-    @Property(order = 2)
+    @Property(order = 2, required = true)
     public int distance = 15;
     /**
      * Cost of this power
