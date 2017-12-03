@@ -442,7 +442,7 @@ public class RPGItem {
         }
         if (hasRecipe) {
             item.setItemMeta(localeMeta);
-            ShapedRecipe shapedRecipe = new ShapedRecipe(item);
+            ShapedRecipe shapedRecipe = new ShapedRecipe(toItemStack());
 
             Map<ItemStack, Character> charMap = new HashMap<>();
             int i = 0;
