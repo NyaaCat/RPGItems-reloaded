@@ -59,6 +59,11 @@ public class PowerForceField extends Power implements PowerRightClick {
      */
     @Property
     public int consumption = 0;
+    /**
+     * delay before power activate.
+     */
+    @Property(order = 5)
+    public int delay = 0;
 
     @Override
     public void init(ConfigurationSection s) {
@@ -68,7 +73,9 @@ public class PowerForceField extends Power implements PowerRightClick {
         base = s.getInt("base");
         ttl = s.getInt("ttl");
         consumption = s.getInt("consumption", 0);
+        delay = s.getInt("delay",0);
     }
+
 
     @Override
     public void save(ConfigurationSection s) {
@@ -78,6 +85,7 @@ public class PowerForceField extends Power implements PowerRightClick {
         s.set("base", base);
         s.set("ttl", ttl);
         s.set("consumption", consumption);
+        s.set("delay",delay);
     }
 
     @Override
@@ -92,9 +100,11 @@ public class PowerForceField extends Power implements PowerRightClick {
 
     @Override
     public void rightClick(Player player, ItemStack stack, Block clicked) {
+
         if (!item.checkPermission(player, true)) return;
         if (!checkCooldown(player, cooldownTime, true)) return;
         if (!item.consumeDurability(stack, consumption)) return;
+
         World w = player.getWorld();
         int x = player.getLocation().getBlockX();
         int y = player.getLocation().getBlockY();
@@ -107,7 +117,7 @@ public class PowerForceField extends Power implements PowerRightClick {
         if (h < 1) return;
 
         buildWallTask tsk = new buildWallTask(w, circlePoints(w, x, z, radius, l), l, h, ttl);
-        tsk.setId(Bukkit.getScheduler().scheduleSyncRepeatingTask(RPGItems.plugin, tsk, 1, 1));
+        tsk.setId(Bukkit.getScheduler().scheduleSyncRepeatingTask(RPGItems.plugin, tsk, delay, 1));
     }
 
     /* copied from wikipedia */

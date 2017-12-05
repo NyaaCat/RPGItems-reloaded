@@ -53,6 +53,11 @@ public class PowerIce extends Power implements PowerRightClick {
      */
     @Property
     public int consumption = 0;
+    /**
+     * delay before power activate.
+     */
+    @Property(order = 1)
+    public int delay = 0;
 
     @SuppressWarnings("deprecation")
     @Override
@@ -133,8 +138,9 @@ public class PowerIce extends Power implements PowerRightClick {
 
             }
         };
-        run.runTaskTimer(RPGItems.plugin, 0, 1);
+        run.runTaskTimer(RPGItems.plugin, delay, 1);
     }
+
 
     @Override
     public String displayText() {
@@ -150,12 +156,16 @@ public class PowerIce extends Power implements PowerRightClick {
     public void init(ConfigurationSection s) {
         cooldownTime = s.getLong("cooldown", 20);
         consumption = s.getInt("consumption", 0);
+        delay = s.getInt("delay");
     }
+
 
     @Override
     public void save(ConfigurationSection s) {
         s.set("cooldown", cooldownTime);
         s.set("consumption", consumption);
+        s.set("delay",delay);
     }
+
 
 }

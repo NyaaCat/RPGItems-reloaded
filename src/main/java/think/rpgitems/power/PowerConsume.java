@@ -55,12 +55,14 @@ public class PowerConsume extends Power implements PowerRightClick, PowerLeftCli
     @Property
     public int consumption = 0;
 
+
     @Override
     public void rightClick(final Player player, ItemStack stack, Block clicked) {
         if (!item.checkPermission(player, true)) return;
         if (isRight && checkCooldown(player, cooldownTime, false)) {
             consume(player);
         }
+
     }
 
     @Override
@@ -68,6 +70,7 @@ public class PowerConsume extends Power implements PowerRightClick, PowerLeftCli
         if (!item.checkPermission(player, true)) return;
         if (!isRight && checkCooldown(player, cooldownTime, false)) {
             consume(player);
+
         }
     }
 
@@ -91,7 +94,6 @@ public class PowerConsume extends Power implements PowerRightClick, PowerLeftCli
     public void init(ConfigurationSection s) {
         cooldownTime = s.getInt("cooldown", 0);
         isRight = s.getBoolean("isRight", true);
-        consumption = s.getInt("consumption", 0);
     }
 
     @Override

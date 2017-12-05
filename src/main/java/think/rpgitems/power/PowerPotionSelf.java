@@ -22,7 +22,9 @@ import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.potion.PotionEffect;
 import org.bukkit.potion.PotionEffectType;
+import org.bukkit.scheduler.BukkitRunnable;
 import think.rpgitems.I18n;
+import think.rpgitems.RPGItems;
 import think.rpgitems.commands.Property;
 import think.rpgitems.commands.Setter;
 import think.rpgitems.power.types.PowerRightClick;
@@ -58,8 +60,15 @@ public class PowerPotionSelf extends Power implements PowerRightClick {
     @Property
     public int consumption = 0;
     /**
+     * delay before power activate.
+     */
+    @Property(order = 3)
+    public int delay = 0;
+
+    /**
      * Type of potion effect
      */
+
     @Setter("setType")
     @Property(order = 3, required = true)
     public PotionEffectType type = PotionEffectType.HEAL;
@@ -69,8 +78,14 @@ public class PowerPotionSelf extends Power implements PowerRightClick {
         if (!item.checkPermission(player, true)) return;
         if (!checkCooldown(player, cooldownTime, true)) return;
         if (!item.consumeDurability(stack, consumption)) return;
-        player.addPotionEffect(new PotionEffect(type, duration, amplifier), true);
+        new BukkitRunnable() {
+            @Override
+            public void run() {
+                player.addPotionEffect(new PotionEffect(type, duration, amplifier), true);
+            }
+        }.runTaskLater(RPGItems.plugin,delay);
     }
+
 
     @Override
     public void init(ConfigurationSection s) {
@@ -79,6 +94,7 @@ public class PowerPotionSelf extends Power implements PowerRightClick {
         duration = s.getInt("time");
         type = PotionEffectType.getByName(s.getString("type", "heal"));
         consumption = s.getInt("consumption", 0);
+        delay = s.getInt("delay",0);
     }
 
     @Override
@@ -88,8 +104,8 @@ public class PowerPotionSelf extends Power implements PowerRightClick {
         s.set("time", duration);
         s.set("type", type.getName());
         s.set("consumption", consumption);
+        s.set("delay",delay);
     }
-
     @Override
     public String getName() {
         return "potionself";

@@ -54,12 +54,15 @@ public class PowerConsumeHit extends Power implements PowerHit {
     @Override
     public void init(ConfigurationSection s) {
         cooldownTime = s.getInt("cooldown", 0);
+
     }
+
 
     @Override
     public void save(ConfigurationSection s) {
         s.set("cooldown", cooldownTime);
     }
+
 
     @Override
     public String getName() {

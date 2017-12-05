@@ -6,6 +6,8 @@ import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.entity.LivingEntity;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
+import org.bukkit.scheduler.BukkitRunnable;
+import think.rpgitems.RPGItems;
 import think.rpgitems.commands.Property;
 
 import java.util.List;
@@ -52,12 +54,18 @@ public class PowerAOECommand extends PowerCommand {
      */
     @Property(order = 7, required = true)
     public double facing = 30;
-
+    /**
+     * delay before power activate.
+     */
+    @Property(order = 8)
+    public int delay = 0;
     /**
      * Maximum count
      */
     @Property
     public int c = 100;
+
+
 
     /**
      * Whether only apply to the entities that player have line of sight
@@ -125,7 +133,12 @@ public class PowerAOECommand extends PowerCommand {
         if (!item.checkPermission(player, true)) return;
         if (!isRight || !checkCooldownByString(player, item, command, cooldownTime, true)) return;
         if (!item.consumeDurability(stack, consumption)) return;
-        aoeCommand(player);
+        new BukkitRunnable(){
+            @Override
+            public void run() {
+                aoeCommand(player);
+            }
+        }.runTaskLater(RPGItems.plugin,delay);
     }
 
     @Override
@@ -133,7 +146,12 @@ public class PowerAOECommand extends PowerCommand {
         if (!item.checkPermission(player, true)) return;
         if (isRight || !checkCooldownByString(player, item, command, cooldownTime, true)) return;
         if (!item.consumeDurability(stack, consumption)) return;
-        aoeCommand(player);
+        new BukkitRunnable(){
+            @Override
+            public void run() {
+                aoeCommand(player);
+            }
+        }.runTaskLater(RPGItems.plugin,delay);
     }
 
     @Override
@@ -145,6 +163,7 @@ public class PowerAOECommand extends PowerCommand {
         c = s.getInt("c", 100);
         selfapplication = s.getBoolean("selfapplication", false);
         mustsee = s.getBoolean("mustsee", mustsee);
+        delay = s.getInt("delay",0);
         super.init(s);
     }
 
@@ -157,6 +176,7 @@ public class PowerAOECommand extends PowerCommand {
         s.set("c", c);
         s.set("selfapplication", selfapplication);
         s.set("mustsee", mustsee);
+        s.set("delay",delay);
         super.save(s);
     }
 }

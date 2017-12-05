@@ -84,4 +84,5 @@ public class PowerParticleTick extends Power implements PowerTick {
             player.getWorld().playEffect(player.getLocation(), Effect.valueOf(effect), 0);
         }
     }
+
 }

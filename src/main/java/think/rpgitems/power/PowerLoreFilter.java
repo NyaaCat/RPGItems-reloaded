@@ -29,11 +29,13 @@ public class PowerLoreFilter extends Power {
         desc = s.getString("desc", "");
     }
 
+
     @Override
     public void save(ConfigurationSection s) {
         s.set("regex", regex);
         s.set("desc", desc);
     }
+
 
     @Override
     public String getName() {

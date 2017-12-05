@@ -20,7 +20,9 @@ import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.entity.LivingEntity;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
+import org.bukkit.scheduler.BukkitRunnable;
 import think.rpgitems.I18n;
+import think.rpgitems.RPGItems;
 import think.rpgitems.commands.Property;
 import think.rpgitems.power.types.PowerHit;
 
@@ -43,12 +45,22 @@ public class PowerFlame extends Power implements PowerHit {
      */
     @Property
     public int consumption = 0;
+    /**
+     * delay before power activate.
+     */
+    @Property(order = 1)
+    public int delay = 0;
 
     @Override
     public void hit(Player player, ItemStack stack, LivingEntity entity, double damage) {
         if (!item.checkPermission(player, true)) return;
         if (!item.consumeDurability(stack, consumption)) return;
-        entity.setFireTicks(burnTime);
+        new BukkitRunnable(){
+            @Override
+            public void run() {
+                entity.setFireTicks(burnTime);
+            }
+        }.runTaskLater(RPGItems.plugin,delay);
     }
 
     @Override
@@ -65,12 +77,16 @@ public class PowerFlame extends Power implements PowerHit {
     public void init(ConfigurationSection s) {
         burnTime = s.getInt("burntime");
         consumption = s.getInt("consumption", 0);
+        delay = s.getInt("delay");
+
     }
 
     @Override
     public void save(ConfigurationSection s) {
         s.set("burntime", burnTime);
         s.set("consumption", consumption);
+        s.set("delay",delay);
     }
+
 
 }

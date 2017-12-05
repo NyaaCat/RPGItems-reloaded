@@ -23,7 +23,9 @@ import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.potion.PotionEffect;
 import org.bukkit.potion.PotionEffectType;
+import org.bukkit.scheduler.BukkitRunnable;
 import think.rpgitems.I18n;
+import think.rpgitems.RPGItems;
 import think.rpgitems.commands.Property;
 import think.rpgitems.power.types.PowerHit;
 
@@ -60,6 +62,12 @@ public class PowerRealDamage extends Power implements PowerHit {
      */
     @Property
     public double minDamage = 0;
+    /**
+     * delay before power activate.
+     */
+    @Property(order = 2)
+    public int delay = 0;
+
 
     @Override
     public void hit(Player player, ItemStack stack, LivingEntity entity, double damage) {
@@ -67,15 +75,20 @@ public class PowerRealDamage extends Power implements PowerHit {
         if (!item.checkPermission(player, true)) return;
         if (!checkCooldown(player, cooldownTime, true)) return;
         if (!item.consumeDurability(stack, consumption)) return;
-        if (entity.hasPotionEffect(PotionEffectType.DAMAGE_RESISTANCE)) {
-            PotionEffect e = entity.getPotionEffect(PotionEffectType.DAMAGE_RESISTANCE);
-            if (e.getAmplifier() >= 4) return;
-        }
-        double health = entity.getHealth();
-        double newHealth = health - realDamage;
-        newHealth = max(newHealth, 0.1);//Bug workaround
-        newHealth = min(newHealth, entity.getAttribute(Attribute.GENERIC_MAX_HEALTH).getValue());
-        entity.setHealth(newHealth);
+        new BukkitRunnable() {
+            @Override
+            public void run() {
+                if (entity.hasPotionEffect(PotionEffectType.DAMAGE_RESISTANCE)) {
+                    PotionEffect e = entity.getPotionEffect(PotionEffectType.DAMAGE_RESISTANCE);
+                    if (e.getAmplifier() >= 4) return;
+                }
+                double health = entity.getHealth();
+                double newHealth = health - realDamage;
+                newHealth = max(newHealth, 0.1);//Bug workaround
+                newHealth = min(newHealth, entity.getAttribute(Attribute.GENERIC_MAX_HEALTH).getValue());
+                entity.setHealth(newHealth);
+            }
+        }.runTaskLater(RPGItems.plugin, delay);
     }
 
     @Override
@@ -94,6 +107,7 @@ public class PowerRealDamage extends Power implements PowerHit {
         consumption = s.getInt("consumption", 0);
         minDamage = s.getInt("minDamage", 0);
         realDamage = s.getInt("realDamage", 0);
+        delay = s.getInt("delay",0);
     }
 
     @Override
@@ -102,6 +116,7 @@ public class PowerRealDamage extends Power implements PowerHit {
         s.set("consumption", consumption);
         s.set("minDamage", minDamage);
         s.set("realDamage", realDamage);
+        s.set("delay",delay);
     }
 
 }

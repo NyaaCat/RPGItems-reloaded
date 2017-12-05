@@ -16,6 +16,7 @@ public class PowerNoImmutableTick extends Power implements PowerHit {
 
     }
 
+
     @Override
     public void save(ConfigurationSection s) {
 

@@ -72,6 +72,7 @@ public class PowerRescue extends Power implements PowerHurt, PowerHitTaken {
     @Property
     public double damageTrigger = 1024;
 
+
     @Override
     public String displayText() {
         return I18n.format("power.rescue.display", ((double) healthTrigger) / 2, (double) cooldownTime / 20d);
@@ -145,4 +146,5 @@ public class PowerRescue extends Power implements PowerHurt, PowerHitTaken {
         else
             target.teleport(target.getWorld().getSpawnLocation());
     }
+
 }

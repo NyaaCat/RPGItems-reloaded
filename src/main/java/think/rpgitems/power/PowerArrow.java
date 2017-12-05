@@ -22,8 +22,10 @@ import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.entity.Arrow;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
+import org.bukkit.scheduler.BukkitRunnable;
 import think.rpgitems.Events;
 import think.rpgitems.I18n;
+import think.rpgitems.RPGItems;
 import think.rpgitems.commands.Property;
 import think.rpgitems.power.types.PowerRightClick;
 
@@ -41,20 +43,32 @@ public class PowerArrow extends Power implements PowerRightClick {
     @Property(order = 0)
     public long cooldownTime = 20;
     /**
+     * delay before power activate.
+     */
+    @Property(order = 1)
+    public int delay = 0;
+    /**
      * Cost of this power
      */
     @Property
     public int consumption = 0;
+
 
     @Override
     public void rightClick(Player player, ItemStack stack, Block clicked) {
         if (!item.checkPermission(player, true)) return;
         if (!checkCooldown(player, cooldownTime, true)) return;
         if (!item.consumeDurability(stack, consumption)) return;
-        player.playSound(player.getLocation(), Sound.ENTITY_ARROW_SHOOT, 1.0f, 1.0f);
-        Arrow arrow = player.launchProjectile(Arrow.class);
-        Events.rpgProjectiles.put(arrow.getEntityId(), item.getID());
-        Events.removeArrows.add(arrow.getEntityId());
+        new BukkitRunnable(){
+            @Override
+            public void run() {
+                player.playSound(player.getLocation(), Sound.ENTITY_ARROW_SHOOT, 1.0f, 1.0f);
+                Arrow arrow = player.launchProjectile(Arrow.class);
+                Events.rpgProjectiles.put(arrow.getEntityId(), item.getID());
+                Events.removeArrows.add(arrow.getEntityId());
+            }
+        }.runTaskLater(RPGItems.plugin,delay);
+
     }
 
     @Override
@@ -71,12 +85,14 @@ public class PowerArrow extends Power implements PowerRightClick {
     public void init(ConfigurationSection s) {
         cooldownTime = s.getLong("cooldown", 20);
         consumption = s.getInt("consumption", 1);
+        delay = s.getInt("delay");
     }
 
     @Override
     public void save(ConfigurationSection s) {
         s.set("cooldown", cooldownTime);
         s.set("consumption", consumption);
+        s.set("delay",delay);
     }
 
 }

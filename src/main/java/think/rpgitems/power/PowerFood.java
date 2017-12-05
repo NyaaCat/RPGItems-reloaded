@@ -22,9 +22,11 @@ import org.bukkit.block.Block;
 import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
+import org.bukkit.scheduler.BukkitRunnable;
 import think.rpgitems.I18n;
 import think.rpgitems.RPGItems;
 import think.rpgitems.commands.Property;
+import think.rpgitems.item.RPGItem;
 import think.rpgitems.power.types.PowerRightClick;
 
 /**
@@ -40,36 +42,47 @@ public class PowerFood extends Power implements PowerRightClick {
      */
     @Property(order = 0, required = true)
     public int foodpoints;
+    /**
+     * delay before power activate.
+     */
+    @Property(order = 1)
+    public int delay = 0;
 
     @Override
     public void rightClick(final Player player, ItemStack stack, Block clicked) {
         if (!item.checkPermission(player, true)) return;
-        ItemStack item = player.getInventory().getItemInMainHand();
-        int count = item.getAmount() - 1;
-        if (count == 0) {
-            int newFoodPoint = player.getFoodLevel() + foodpoints;
-            if (newFoodPoint > 20) newFoodPoint = 20;
-            player.setFoodLevel(newFoodPoint);
-            Bukkit.getScheduler().scheduleSyncDelayedTask(RPGItems.plugin, new Runnable() {
-                @Override
-                public void run() {
-                    player.getInventory().setItemInMainHand(new ItemStack(Material.AIR));
+        new BukkitRunnable(){
+            @Override
+            public void run() {
+                ItemStack item = player.getInventory().getItemInMainHand();
+                int count = item.getAmount() - 1;
+                if (count == 0) {
+                    int newFoodPoint = player.getFoodLevel() + foodpoints;
+                    if (newFoodPoint > 20) newFoodPoint = 20;
+                    player.setFoodLevel(newFoodPoint);
+                    Bukkit.getScheduler().scheduleSyncDelayedTask(RPGItems.plugin, new Runnable() {
+                        @Override
+                        public void run() {
+                            player.getInventory().setItemInMainHand(new ItemStack(Material.AIR));
+                        }
+                    }, 1L);
+                } else {
+                    player.setFoodLevel(player.getFoodLevel() + foodpoints);
+                    item.setAmount(count);
                 }
-            }, 1L);
-        } else {
-            player.setFoodLevel(player.getFoodLevel() + foodpoints);
-            item.setAmount(count);
-        }
+            }
+        }.runTaskLater(RPGItems.plugin,delay);
     }
-
     @Override
     public void init(ConfigurationSection s) {
         foodpoints = s.getInt("foodpoints");
+        delay = s.getInt("delay");
     }
 
     @Override
     public void save(ConfigurationSection s) {
         s.set("foodpoints", foodpoints);
+        s.set("delay",delay);
     }
 
     @Override

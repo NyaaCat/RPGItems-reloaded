@@ -22,6 +22,8 @@ import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.entity.LivingEntity;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
+import org.bukkit.scheduler.BukkitRunnable;
+import think.rpgitems.RPGItems;
 import think.rpgitems.commands.Property;
 import think.rpgitems.power.types.PowerHit;
 
@@ -66,6 +68,11 @@ public class PowerCommandHit extends Power implements PowerHit {
      */
     @Property
     public double minDamage = 0;
+    /**
+     * delay before power activate.
+     */
+    @Property(order = 4)
+    public int delay = 0;
 
     /**
      * Execute command
@@ -108,8 +115,12 @@ public class PowerCommandHit extends Power implements PowerHit {
         if (!item.checkPermission(player, true)) return;
         if (!checkCooldownByString(player, item, command, cooldownTime, true)) return;
         if (!item.consumeDurability(stack, consumption)) return;
-
-        executeCommand(player, entity);
+        new BukkitRunnable() {
+            @Override
+            public void run() {
+                executeCommand(player, entity);
+            }
+        }.runTaskLater(RPGItems.plugin,delay);
     }
 
     @Override
@@ -130,7 +141,9 @@ public class PowerCommandHit extends Power implements PowerHit {
         permission = s.getString("permission", "");
         consumption = s.getInt("consumption", 0);
         minDamage = s.getInt("minDamage", 0);
+        delay = s.getInt("delay");
     }
+
 
     @Override
     public void save(ConfigurationSection s) {
@@ -140,5 +153,7 @@ public class PowerCommandHit extends Power implements PowerHit {
         s.set("permission", permission);
         s.set("minDamage", minDamage);
         s.set("consumption", consumption);
+        s.set("delay",delay);
+
     }
 }

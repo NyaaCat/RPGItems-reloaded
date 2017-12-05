@@ -89,15 +89,23 @@ public class PowerProjectile extends Power implements PowerRightClick {
      */
     public int burstInterval = 1;
     /**
+     * delay before power activate.
+     */
+    @Property(order = 6)
+    public int delay = 0;
+
+
+    /**
      * Type of projectiles
      */
+
     @AcceptedValue({
-                           "skull",
-                           "fireball",
-                           "snowball",
-                           "smallfireball",
-                           "llamaspit",
-                           "arrow"
+            "skull",
+            "fireball",
+            "snowball",
+            "smallfireball",
+            "llamaspit",
+            "arrow"
     })
     @Validator(value = "acceptableType", message = "power.projectile.noFireball")
     @Setter("setType")
@@ -116,7 +124,9 @@ public class PowerProjectile extends Power implements PowerRightClick {
         gravity = s.getBoolean("gravity", true);
         burstCount = s.getInt("burstCount", 1);
         burstInterval = s.getInt("burstInterval", 1);
+        delay = s.getInt("delay", 0);
     }
+
 
     @Override
     public void save(ConfigurationSection s) {
@@ -130,7 +140,9 @@ public class PowerProjectile extends Power implements PowerRightClick {
         s.set("gravity", gravity);
         s.set("burstCount", burstCount);
         s.set("burstInterval", burstInterval);
+        s.set("delay", delay);
     }
+
 
     /**
      * Gets type name
@@ -205,26 +217,33 @@ public class PowerProjectile extends Power implements PowerRightClick {
         if (!item.checkPermission(player, true)) return;
         if (!checkCooldown(player, cooldownTime, true)) return;
         if (!item.consumeDurability(stack, consumption)) return;
-        fire(player);
-        if (burstCount > 1) {
-            burstCounter.put(player.getUniqueId(), burstCount - 1);
-            (new BukkitRunnable() {
-                @Override
-                public void run() {
-                    Integer i;
-                    if (player.getInventory().getItemInMainHand().equals(stack) && (i = burstCounter.getIfPresent(player.getUniqueId())) != null) {
-                        if (i > 0) {
-                            fire(player);
-                            burstCounter.put(player.getUniqueId(), i - 1);
-                            return;
+        new BukkitRunnable() {
+            @Override
+            public void run() {
+
+                fire(player);
+                if (burstCount > 1) {
+                    burstCounter.put(player.getUniqueId(), burstCount - 1);
+                    (new BukkitRunnable() {
+                        @Override
+                        public void run() {
+                            Integer i;
+                            if (player.getInventory().getItemInMainHand().equals(stack) && (i = burstCounter.getIfPresent(player.getUniqueId())) != null) {
+                                if (i > 0) {
+                                    fire(player);
+                                    burstCounter.put(player.getUniqueId(), i - 1);
+                                    return;
+                                }
+                            }
+                            burstCounter.invalidate(player.getUniqueId());
+                            this.cancel();
                         }
-                    }
-                    burstCounter.invalidate(player.getUniqueId());
-                    this.cancel();
+                    }).runTaskTimer(RPGItems.plugin, 1, burstInterval);
                 }
-            }).runTaskTimer(RPGItems.plugin, 1, burstInterval);
-        }
+            }
+        }.runTaskLater(RPGItems.plugin, delay);
     }
+
 
     private void fire(Player player) {
         if (!cone) {
@@ -275,5 +294,6 @@ public class PowerProjectile extends Power implements PowerRightClick {
             }
         }
     }
+
 
 }

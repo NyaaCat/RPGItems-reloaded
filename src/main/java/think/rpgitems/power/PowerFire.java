@@ -70,6 +70,11 @@ public class PowerFire extends Power implements PowerRightClick {
      */
     @Property
     public int consumption = 0;
+    /**
+     * delay before power activate.
+     */
+    @Property(order = 3)
+    public int delay = 0;
 
     @Override
     public void rightClick(final Player player, ItemStack stack, Block clicked) {
@@ -151,8 +156,9 @@ public class PowerFire extends Power implements PowerRightClick {
                     cancel();
             }
         };
-        run.runTaskTimer(RPGItems.plugin, 0, 1);
+        run.runTaskTimer(RPGItems.plugin, delay, 1);
     }
+
 
     @Override
     public String displayText() {
@@ -170,6 +176,8 @@ public class PowerFire extends Power implements PowerRightClick {
         distance = s.getInt("distance");
         burnduration = s.getInt("burnduration");
         consumption = s.getInt("consumption", 0);
+        delay = s.getInt("delay");
+
     }
 
     @Override
@@ -178,6 +186,8 @@ public class PowerFire extends Power implements PowerRightClick {
         s.set("distance", distance);
         s.set("burnduration", burnduration);
         s.set("consumption", consumption);
+        s.set("delay",delay);
     }
+
 
 }

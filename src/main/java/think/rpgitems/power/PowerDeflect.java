@@ -104,6 +104,7 @@ public class PowerDeflect extends Power implements PowerHitTaken, PowerRightClic
 
     private long time = 0;
 
+
     @Override
     public String displayText() {
         return I18n.format("power.deflect", (double) cooldownTime / 20d);
@@ -125,6 +126,7 @@ public class PowerDeflect extends Power implements PowerHitTaken, PowerRightClic
         initiative = s.getBoolean("initiative", true);
         passive = s.getBoolean("passive", true);
         isRight = s.getBoolean("isRight", true);
+
     }
 
     @Override
@@ -138,7 +140,8 @@ public class PowerDeflect extends Power implements PowerHitTaken, PowerRightClic
         s.set("passive", passive);
         s.set("initiative", initiative);
         s.set("isRight", isRight);
-    }
+        }
+
 
     @Override
     public double takeHit(Player target, ItemStack stack, EntityDamageEvent event) {
@@ -186,6 +189,7 @@ public class PowerDeflect extends Power implements PowerHitTaken, PowerRightClic
                     || !item.consumeDurability(stack, consumption))
             return;
         time = System.currentTimeMillis() / 50 + duration;
+
     }
 
     @Override
@@ -196,5 +200,6 @@ public class PowerDeflect extends Power implements PowerHitTaken, PowerRightClic
                     || !item.consumeDurability(stack, consumption))
             return;
         time = System.currentTimeMillis() / 50 + duration;
+
     }
 }

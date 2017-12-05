@@ -50,6 +50,7 @@ public class PowerDeathCommand extends Power implements PowerHit {
     @Property
     public int consumption = 0;
 
+
     @Override
     public void init(ConfigurationSection s) {
         command = s.getString("command");
@@ -57,6 +58,7 @@ public class PowerDeathCommand extends Power implements PowerHit {
         desc = s.getString("desc");
         count = s.getInt("count");
         consumption = s.getInt("consumption", 0);
+
     }
 
     @Override
@@ -67,6 +69,7 @@ public class PowerDeathCommand extends Power implements PowerHit {
         s.set("count", count);
         s.set("consumption", consumption);
     }
+
 
     @Override
     public String getName() {

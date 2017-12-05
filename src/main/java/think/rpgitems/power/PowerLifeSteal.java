@@ -21,8 +21,11 @@ import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.entity.LivingEntity;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
+import org.bukkit.scheduler.BukkitRunnable;
 import think.rpgitems.I18n;
+import think.rpgitems.RPGItems;
 import think.rpgitems.commands.Property;
+import think.rpgitems.item.RPGItem;
 import think.rpgitems.power.types.PowerHit;
 
 import java.util.Random;
@@ -48,16 +51,26 @@ public class PowerLifeSteal extends Power implements PowerHit {
     public int consumption = 0;
 
     private Random random = new Random();
+    /**
+     * delay before power activate.
+     */
+    @Property(order = 1)
+    public int delay = 0;
 
     @Override
     public void hit(Player player, ItemStack stack, LivingEntity entity, double damage) {
         if (!item.checkPermission(player, true)) return;
         if (!item.consumeDurability(stack, consumption)) return;
         if (random.nextInt(chance) == 0) {
-            if ((player.getHealth() + damage) >= player.getAttribute(Attribute.GENERIC_MAX_HEALTH).getValue()) {
-                player.setHealth(player.getAttribute(Attribute.GENERIC_MAX_HEALTH).getValue());
-            } else
-                player.setHealth(player.getHealth() + damage);
+            new BukkitRunnable(){
+                @Override
+                public void run() {
+                    if ((player.getHealth() + damage) >= player.getAttribute(Attribute.GENERIC_MAX_HEALTH).getValue()) {
+                        player.setHealth(player.getAttribute(Attribute.GENERIC_MAX_HEALTH).getValue());
+                    } else
+                        player.setHealth(player.getHealth() + damage);
+                }
+            }.runTaskLater(RPGItems.plugin,delay);
         }
     }
 
@@ -75,12 +88,15 @@ public class PowerLifeSteal extends Power implements PowerHit {
     public void init(ConfigurationSection s) {
         chance = s.getInt("chance");
         consumption = s.getInt("consumption", 0);
+        delay = s.getInt("delay",0);
     }
+
 
     @Override
     public void save(ConfigurationSection s) {
         s.set("chance", chance);
         s.set("consumption", consumption);
+        s.set("delay",delay);
     }
 
 }

@@ -23,7 +23,9 @@ import org.bukkit.block.Block;
 import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
+import org.bukkit.scheduler.BukkitRunnable;
 import think.rpgitems.I18n;
+import think.rpgitems.RPGItems;
 import think.rpgitems.commands.Property;
 import think.rpgitems.data.RPGValue;
 import think.rpgitems.power.types.PowerLeftClick;
@@ -86,46 +88,59 @@ public class PowerColor extends Power implements PowerRightClick, PowerLeftClick
     @Property(order = 3)
     public boolean wool = true;
     /**
+     * delay before power activate.
+     */
+    @Property(order = 4)
+    public int delay = 0;
+    /**
      * Cost of this power
      */
     @Property
     public int consumption = 0;
 
+
     @SuppressWarnings("deprecation")
     @Override
     public void rightClick(Player player, ItemStack stack, Block clicked) {
-        if (clicked == null)
-            return;
-        if (!WorldGuard.canBuild(player, clicked.getLocation()))
-            return;
-        if (clicked.getType().toString().contains("GLASS")) {
-            if (!glass)
-                return;
-        } else if (clicked.getType().toString().contains("CLAY")) {
-            if (!clay)
-                return;
-        } else if (clicked.getType().equals(Material.WOOL)) {
-            if (!wool)
-                return;
-        } else {
-            return;
-        }
+        new BukkitRunnable(){
+            @Override
+            public void run() {
+                if (clicked == null)
+                    return;
+                if (!WorldGuard.canBuild(player, clicked.getLocation()))
+                    return;
+                if (clicked.getType().toString().contains("GLASS")) {
+                    if (!glass)
+                        return;
+                } else if (clicked.getType().toString().contains("CLAY")) {
+                    if (!clay)
+                        return;
+                } else if (clicked.getType().equals(Material.WOOL)) {
+                    if (!wool)
+                        return;
+                } else {
+                    return;
+                }
 
-        if (!item.checkPermission(player, true)) return;
-        if (!checkCooldown(player, cooldownTime, true)) return;
-        if (!item.consumeDurability(stack, consumption)) return;
-        RPGValue color = RPGValue.get(player, item, "color.current");
-        if (color == null) {
-            color = new RPGValue(player, item, "color.current", 0);
-        }
-        if (clicked.getType().equals(Material.GLASS))
-            clicked.setType(Material.STAINED_GLASS);
-        if (clicked.getType().equals(Material.THIN_GLASS))
-            clicked.setType(Material.STAINED_GLASS_PANE);
-        if (clicked.getType().equals(Material.CLAY) || clicked.getType().equals(Material.HARD_CLAY))
-            clicked.setType(Material.STAINED_CLAY);
+                if (!item.checkPermission(player, true)) return;
+                if (!checkCooldown(player, cooldownTime, true)) return;
+                if (!item.consumeDurability(stack, consumption)) return;
+                RPGValue color = RPGValue.get(player, item, "color.current");
+                if (color == null) {
+                    color = new RPGValue(player, item, "color.current", 0);
+                }
+                if (clicked.getType().equals(Material.GLASS))
+                    clicked.setType(Material.STAINED_GLASS);
+                if (clicked.getType().equals(Material.THIN_GLASS))
+                    clicked.setType(Material.STAINED_GLASS_PANE);
+                if (clicked.getType().equals(Material.CLAY) || clicked.getType().equals(Material.HARD_CLAY))
+                    clicked.setType(Material.STAINED_CLAY);
 
-        clicked.setData(DyeColor.values()[color.asInt()].getDyeData());
+                clicked.setData(DyeColor.values()[color.asInt()].getDyeData());
+            }
+        }.runTaskLater(RPGItems.plugin,delay);
+
+
     }
 
     @Override
@@ -158,6 +173,7 @@ public class PowerColor extends Power implements PowerRightClick, PowerLeftClick
         wool = s.getBoolean("wool", true);
         clay = s.getBoolean("clay", true);
         consumption = s.getInt("consumption", 0);
+        delay = s.getInt("delay");
     }
 
     @Override
@@ -167,6 +183,8 @@ public class PowerColor extends Power implements PowerRightClick, PowerLeftClick
         s.set("clay", clay);
         s.set("wool", wool);
         s.set("consumption", consumption);
+        s.set("delay",delay);
+
     }
 
 }
