@@ -23,6 +23,7 @@ import org.bukkit.entity.HumanEntity;
 import org.bukkit.entity.LivingEntity;
 import org.bukkit.entity.Player;
 import org.bukkit.entity.Projectile;
+import org.bukkit.event.Event;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.EventPriority;
 import org.bukkit.event.Listener;
@@ -37,6 +38,7 @@ import org.bukkit.event.hanging.HangingBreakEvent.RemoveCause;
 import org.bukkit.event.inventory.*;
 import org.bukkit.event.player.PlayerInteractEvent;
 import org.bukkit.event.player.PlayerJoinEvent;
+import org.bukkit.event.player.PlayerMoveEvent;
 import org.bukkit.event.player.PlayerPickupItemEvent;
 import org.bukkit.inventory.*;
 import org.bukkit.metadata.FixedMetadataValue;
@@ -54,6 +56,7 @@ import think.rpgitems.support.WGHandler;
 import think.rpgitems.support.WorldGuard;
 
 import java.util.*;
+import java.util.function.Consumer;
 
 import static think.rpgitems.Plugin.plugin;
 
@@ -64,7 +67,8 @@ public class Events implements Listener {
     public static HashMap<String, Integer> recipeWindows = new HashMap<>();
     public static HashMap<String, Set<Integer>> drops = new HashMap<>();
     public static boolean useLocaleInv = false;
-    private Set<Material> BYPASS_BLOCK = new HashSet<Material>() {{
+
+    private static Set<Material> BYPASS_BLOCK = new HashSet<Material>() {{
         add(Material.ACACIA_DOOR);
         add(Material.BIRCH_DOOR);
         add(Material.DARK_OAK_DOOR);
@@ -111,6 +115,11 @@ public class Events implements Listener {
     }};
     private HashSet<LocaleInventory> localeInventories = new HashSet<>();
     private Random random = new Random();
+    private HashMap<Class<? extends Event>, Consumer<? extends Event>> eventMap = new HashMap<>();
+
+    public <T extends Event> void addEventListener(Class<T> clz, Consumer<T> listener){
+        eventMap.put(clz, listener);
+    }
 
     static private boolean canStack(ItemStack a, ItemStack b) {
         if (a != null && a.getType() == Material.AIR) a = null;
@@ -647,5 +656,17 @@ public class Events implements Listener {
                 e.getInventory().setResult(new ItemStack(Material.AIR));
             }
         }
+    }
+
+    @SuppressWarnings("unchecked")
+    @EventHandler(ignoreCancelled = true, priority = EventPriority.NORMAL)
+    public void onEntityTeleport(EntityTeleportEvent e){
+        ((Consumer<EntityTeleportEvent>)eventMap.getOrDefault(e.getClass(), (s)->{})).accept(e);
+    }
+
+    @SuppressWarnings("unchecked")
+    @EventHandler(ignoreCancelled = true, priority = EventPriority.NORMAL)
+    public void onPlayerMove(PlayerMoveEvent e){
+        ((Consumer<PlayerMoveEvent>)eventMap.getOrDefault(e.getClass(), (s)->{})).accept(e);
     }
 }

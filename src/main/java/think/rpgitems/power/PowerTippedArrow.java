@@ -54,7 +54,7 @@ public class PowerTippedArrow extends Power implements PowerRightClick {
     /**
      * Type of potion effect
      */
-    public PotionEffectType type = null;
+    public PotionEffectType type = PotionEffectType.POISON;
     /**
      * Cost of this power
      */

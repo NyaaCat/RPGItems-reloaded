@@ -124,6 +124,10 @@ public class PowerProjectile extends Power implements PowerRightClick {
             return "arrow";
         else if (projectileType == LlamaSpit.class)
             return "llamaspit";
+        else if (projectileType == ShulkerBullet.class)
+            return "shulkerbullet";
+        else if (projectileType == DragonFireball.class)
+            return "dragonfireball";
         else
             return "snowball";
     }
@@ -150,6 +154,12 @@ public class PowerProjectile extends Power implements PowerRightClick {
             case "llamaspit":
                 projectileType = LlamaSpit.class;
                 break;
+            case "shulkerbullet":
+                projectileType = ShulkerBullet.class;
+                break;
+            case "dragonfireball":
+                projectileType = DragonFireball.class;
+                break;
             default:
                 projectileType = Snowball.class;
                 break;
@@ -163,7 +173,7 @@ public class PowerProjectile extends Power implements PowerRightClick {
      * @return If acceptable
      */
     public boolean acceptableType(String str) {
-        return str.equals("skull") || str.equals("fireball") || str.equals("snowball") || str.equals("smallfireball") || str.equals("llamaspit") || str.equals("arrow");
+        return str.equals("skull") || str.equals("fireball") || str.equals("snowball") || str.equals("smallfireball") || str.equals("llamaspit") || str.equals("arrow")|| str.equals("shulkerbullet")|| str.equals("dragonfireball");
     }
 
     @Override
@@ -178,18 +188,18 @@ public class PowerProjectile extends Power implements PowerRightClick {
 
     @Override
     public void rightClick(Player player, ItemStack stack, Block clicked) {
-        if (!item.checkPermission(player, true))return;
-        if (!checkCooldown(player, cooldownTime, true))return;
+        if (!item.checkPermission(player, true)) return;
+        if (!checkCooldown(player, cooldownTime, true)) return;
         if (!item.consumeDurability(stack, consumption)) return;
         fire(player);
-        if (burstCount > 1){
+        if (burstCount > 1) {
             burstCounter.put(player.getUniqueId(), burstCount - 1);
             (new BukkitRunnable() {
                 @Override
                 public void run() {
                     Integer i;
-                    if(player.getInventory().getItemInMainHand().equals(stack) && (i = burstCounter.getIfPresent(player.getUniqueId())) != null){
-                        if(i > 0){
+                    if (player.getInventory().getItemInMainHand().equals(stack) && (i = burstCounter.getIfPresent(player.getUniqueId())) != null) {
+                        if (i > 0) {
                             fire(player);
                             burstCounter.put(player.getUniqueId(), i - 1);
                             return;

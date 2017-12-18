@@ -1001,6 +1001,7 @@ public class PowerHandler implements CommandHandler {
     @CommandGroup("item_power_selector")
     public void selector(CommandSender sender, RPGItem item) {
         PowerSelector pow = new PowerSelector();
+        pow.item = item;
         item.addPower(pow);
         ItemManager.save(Plugin.plugin);
         sender.sendMessage(ChatColor.AQUA + Locale.get("message.power.ok"));
@@ -1011,6 +1012,33 @@ public class PowerHandler implements CommandHandler {
     @CommandGroup("item_power_selector")
     public void noImmutableTick(CommandSender sender, RPGItem item) {
         PowerNoImmutableTick pow = new PowerNoImmutableTick();
+        pow.item = item;
+        item.addPower(pow);
+        ItemManager.save(Plugin.plugin);
+        sender.sendMessage(ChatColor.AQUA + Locale.get("message.power.ok"));
+    }
+
+    @CommandString("rpgitem $n[] power stuck $cooldown:i[] $duration:i[]")
+    @CommandDocumentation("$command.rpgitem.stuck")
+    @CommandGroup("item_power_stuck")
+    public void stuck(CommandSender sender, RPGItem item, int cooldown, int duration) {
+        PowerStuck pow = new PowerStuck();
+        pow.item = item;
+        pow.cooldownTime = cooldown;
+        pow.duration = duration;
+        item.addPower(pow);
+        ItemManager.save(Plugin.plugin);
+        sender.sendMessage(ChatColor.AQUA + Locale.get("message.power.ok"));
+    }
+
+    @CommandString("rpgitem $n[] power shulkerbullet $cooldown:i[] $range:f[]")
+    @CommandDocumentation("$command.rpgitem.shulkerbullet")
+    @CommandGroup("item_power_shulkerbullet")
+    public void shulkerbullet(CommandSender sender, RPGItem item, int cooldown, double range) {
+        PowerShulkerBullet pow = new PowerShulkerBullet();
+        pow.item = item;
+        pow.cooldownTime = cooldown;
+        pow.range = range;
         item.addPower(pow);
         ItemManager.save(Plugin.plugin);
         sender.sendMessage(ChatColor.AQUA + Locale.get("message.power.ok"));

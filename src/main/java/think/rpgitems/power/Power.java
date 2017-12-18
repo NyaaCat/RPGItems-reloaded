@@ -107,6 +107,8 @@ public abstract class Power {
         Power.powers.put("realdamage", PowerRealDamage.class);
         Power.powers.put("selector", PowerSelector.class);
         Power.powers.put("noimmutabletick", PowerNoImmutableTick.class);
+        Power.powers.put("stuck", PowerStuck.class);
+        Power.powers.put("shulkerbullet", PowerShulkerBullet.class);
     }
 
     /**

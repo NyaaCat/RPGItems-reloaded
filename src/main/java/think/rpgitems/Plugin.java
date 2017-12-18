@@ -37,6 +37,7 @@ public class Plugin extends JavaPlugin {
 
     public static Logger logger = Logger.getLogger("RPGItems");
     public static Plugin plugin;
+    public static Events listener;
     public static Updater updater;
 
     @Override
@@ -59,7 +60,7 @@ public class Plugin extends JavaPlugin {
         if (conf.getBoolean("localeInv", false)) {
             Events.useLocaleInv = true;
         }
-        getServer().getPluginManager().registerEvents(new Events(), this);
+        getServer().getPluginManager().registerEvents(listener = new Events(), this);
         getServer().getPluginCommand("rpgitemupdate").setExecutor(new RPGItemUpdateCommandHandler());
         ItemManager.load(this);
         Commands.register(new Handler());
