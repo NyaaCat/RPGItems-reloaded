@@ -39,7 +39,7 @@ public class PowerShulkerBullet extends Power implements PowerRightClick {
     /**
      * Range of this power
      */
-    public double range = 1;
+    public double range = 10;
 
     private Class<? extends Projectile> projectileType = Snowball.class;
 

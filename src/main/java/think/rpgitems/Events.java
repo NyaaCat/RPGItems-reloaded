@@ -117,8 +117,9 @@ public class Events implements Listener {
     private Random random = new Random();
     private HashMap<Class<? extends Event>, Consumer<? extends Event>> eventMap = new HashMap<>();
 
-    public <T extends Event> void addEventListener(Class<T> clz, Consumer<T> listener){
+    public <T extends Event> Events addEventListener(Class<T> clz, Consumer<T> listener){
         eventMap.put(clz, listener);
+        return this;
     }
 
     static private boolean canStack(ItemStack a, ItemStack b) {
