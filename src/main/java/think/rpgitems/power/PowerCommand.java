@@ -21,8 +21,9 @@ import org.bukkit.block.Block;
 import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
-import think.rpgitems.commands.Property;
+
 import think.rpgitems.commands.BooleanChoice;
+import think.rpgitems.commands.Property;
 import think.rpgitems.power.types.PowerLeftClick;
 import think.rpgitems.power.types.PowerRightClick;
 
@@ -78,15 +79,34 @@ public class PowerCommand extends Power implements PowerRightClick, PowerLeftCli
 
         AttachPermission(player, permission);
         boolean wasOp = player.isOp();
-        if (permission.equals("*"))
-            player.setOp(true);
-        String cmd = command;
-        cmd = cmd.replaceAll("\\{player}", player.getName());
-        cmd = cmd.replaceAll("\\{yaw}", Float.toString(player.getLocation().getYaw() + 90));
-        cmd = cmd.replaceAll("\\{pitch}", Float.toString(-player.getLocation().getPitch()));
-        player.chat("/" + cmd);
-        if (permission.equals("*"))
-            player.setOp(wasOp);
+
+        Runnable run = new Runnable() {
+
+            @Override
+            public void run() {
+                String cmd = command;
+                cmd = cmd.replaceAll("\\{player}", player.getName());
+                cmd = cmd.replaceAll("\\{yaw}", Float.toString(player.getLocation().getYaw() + 90));
+                cmd = cmd.replaceAll("\\{pitch}", Float.toString(-player.getLocation().getPitch()));
+                player.chat("/" + cmd);
+            }
+
+        };
+
+        if (permission.equals("*")) {
+            try {
+                player.setOp(true);
+                run.run();
+            } catch (Exception e) {
+                e.printStackTrace();
+            } finally {
+                if (!wasOp) {
+                    player.setOp(false);
+                }
+            }
+        } else {
+            run.run();
+        }
     }
 
     @Override
