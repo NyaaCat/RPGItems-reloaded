@@ -308,6 +308,8 @@ message.worldguard.enable=Worldguard support enabled
 message.worldguard.error=No Worldguard plugin found
 message.worldguard.override.active=Worldguard override active
 message.worldguard.override.disabled=Worldguard override disabled
+message.stuck=You are stuck and cannot teleport!
+
 power.aoe=Applies %s level %d for %d ticks to everything %s within %d blocks. (%.1fs cooldown)
 power.aoe.selfapplication.false=excluding yourself
 power.aoe.selfapplication.true=including yourself
@@ -352,3 +354,5 @@ power.tntcannon=Shoots TNT (%.1fs cooldown)
 power.torch=Lights up an area with torches (%.1fs cooldown)
 power.unbreakable=Never breaks
 power.unbreaking=Unbreaking %d
+power.stuck=%d%% chance to stuck enemy %d tick (%.1fs cooldown)
+power.shulkerbullet=Launches shulker bullet (%.1f cooldown)

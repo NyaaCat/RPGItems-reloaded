@@ -16,6 +16,7 @@
  */
 package think.rpgitems;
 
+import com.google.common.collect.*;
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
 import org.bukkit.Material;
@@ -36,10 +37,7 @@ import org.bukkit.event.entity.*;
 import org.bukkit.event.hanging.HangingBreakEvent;
 import org.bukkit.event.hanging.HangingBreakEvent.RemoveCause;
 import org.bukkit.event.inventory.*;
-import org.bukkit.event.player.PlayerInteractEvent;
-import org.bukkit.event.player.PlayerJoinEvent;
-import org.bukkit.event.player.PlayerMoveEvent;
-import org.bukkit.event.player.PlayerPickupItemEvent;
+import org.bukkit.event.player.*;
 import org.bukkit.inventory.*;
 import org.bukkit.metadata.FixedMetadataValue;
 import org.bukkit.potion.PotionEffect;
@@ -57,6 +55,7 @@ import think.rpgitems.support.WorldGuard;
 
 import java.util.*;
 import java.util.function.Consumer;
+import java.util.stream.Collectors;
 
 import static think.rpgitems.Plugin.plugin;
 
@@ -115,11 +114,23 @@ public class Events implements Listener {
     }};
     private HashSet<LocaleInventory> localeInventories = new HashSet<>();
     private Random random = new Random();
-    private HashMap<Class<? extends Event>, Consumer<? extends Event>> eventMap = new HashMap<>();
+    private SetMultimap<Class<? extends Event>, Consumer<? extends Event>> eventMap = MultimapBuilder.SortedSetMultimapBuilder.hashKeys().hashSetValues().build();
 
+    @SuppressWarnings("unchecked")
     public <T extends Event> Events addEventListener(Class<T> clz, Consumer<T> listener){
         eventMap.put(clz, listener);
         return this;
+    }
+
+    @SuppressWarnings("unchecked")
+    public <T extends Event> Events removeEventListener(Class<T> clz, Consumer<T> listener){
+        eventMap.remove(clz, listener);
+        return this;
+    }
+
+    @SuppressWarnings("unchecked")
+    private <T extends Event> Set<Consumer<T>> getEventListener(Class<T> clz) {
+        return eventMap.get(clz).stream().map(l -> (Consumer<T>)l).collect(Collectors.toSet());
     }
 
     static private boolean canStack(ItemStack a, ItemStack b) {
@@ -662,12 +673,18 @@ public class Events implements Listener {
     @SuppressWarnings("unchecked")
     @EventHandler(ignoreCancelled = true, priority = EventPriority.NORMAL)
     public void onEntityTeleport(EntityTeleportEvent e){
-        ((Consumer<EntityTeleportEvent>)eventMap.getOrDefault(e.getClass(), (s)->{})).accept(e);
+        getEventListener(EntityTeleportEvent.class).forEach(l -> l.accept(e));
     }
 
     @SuppressWarnings("unchecked")
     @EventHandler(ignoreCancelled = true, priority = EventPriority.NORMAL)
     public void onPlayerMove(PlayerMoveEvent e){
-        ((Consumer<PlayerMoveEvent>)eventMap.getOrDefault(e.getClass(), (s)->{})).accept(e);
+        getEventListener(PlayerMoveEvent.class).forEach(l -> l.accept(e));
+    }
+
+    @SuppressWarnings("unchecked")
+    @EventHandler(ignoreCancelled = true, priority = EventPriority.NORMAL)
+    public void onPlayerMove(PlayerTeleportEvent e){
+        getEventListener(PlayerTeleportEvent.class).forEach(l -> l.accept(e));
     }
 }

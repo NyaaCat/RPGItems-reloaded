@@ -300,6 +300,7 @@ message.worldguard.enable=Worldguard支持已启用
 message.worldguard.error=没有发现Worldguard插件
 message.worldguard.override.active=已忽略Worldguard的限制
 message.worldguard.override.disabled=已开启Worldguard的限制
+message.stuck=你已经被定身，无法传送！
 power.aoe=附加 %s  (级别 %d ) 效果，时间为 %d 单位，作用物品：%s，作用范围：%d 格方块，冷却时间：%.1f秒
 power.aoe.selfapplication.false=排除自身
 power.aoe.selfapplication.true=包含自身

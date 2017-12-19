@@ -25,6 +25,7 @@ import org.bukkit.entity.LivingEntity;
 import org.bukkit.entity.Player;
 import org.bukkit.event.entity.EntityTeleportEvent;
 import org.bukkit.event.player.PlayerMoveEvent;
+import org.bukkit.event.player.PlayerTeleportEvent;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.potion.PotionEffect;
 import org.bukkit.potion.PotionEffectType;
@@ -38,11 +39,12 @@ import java.util.Random;
 import java.util.UUID;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeUnit;
+import java.util.function.Consumer;
 
 /**
- * Power lightning.
+ * Power Stuck.
  * <p>
- * The lightning power will strike the hit target with lightning with a chance of 1/{@link #chance}.
+ * The stuck power will make the hit target stuck with a chance of 1/{@link #chance}.
  * </p>
  */
 public class PowerStuck extends Power implements PowerHit, PowerRightClick {
@@ -94,6 +96,10 @@ public class PowerStuck extends Power implements PowerHit, PowerRightClick {
 
     private Random random = new Random();
 
+    private Consumer<EntityTeleportEvent> tpl;
+
+    private Consumer<PlayerTeleportEvent> pml;
+
     private Cache<UUID, Long> stucked = CacheBuilder.newBuilder().expireAfterAccess(10, TimeUnit.MINUTES).concurrencyLevel(2).build();
 
     @Override
@@ -103,8 +109,9 @@ public class PowerStuck extends Power implements PowerHit, PowerRightClick {
         if (!item.checkPermission(player, true)) return;
         if (random.nextInt(chance) == 0) {
             if (!item.consumeDurability(stack, consumption)) return;
-            stucked.put(entity.getUniqueId(), System.currentTimeMillis());
+            stucked.put(player.getUniqueId(), System.currentTimeMillis());
             entity.addPotionEffect(new PotionEffect(PotionEffectType.SLOW, duration, 10), true);
+            entity.addPotionEffect(new PotionEffect(PotionEffectType.JUMP, duration, 128), true);
         }
     }
 
@@ -118,6 +125,7 @@ public class PowerStuck extends Power implements PowerHit, PowerRightClick {
         entities.forEach(entity -> {
                     stucked.put(entity.getUniqueId(), System.currentTimeMillis());
                     entity.addPotionEffect(new PotionEffect(PotionEffectType.SLOW, duration, 10), true);
+                    entity.addPotionEffect(new PotionEffect(PotionEffectType.JUMP, duration, 128), true);
                 }
         );
     }
@@ -134,23 +142,6 @@ public class PowerStuck extends Power implements PowerHit, PowerRightClick {
 
     @Override
     public void init(ConfigurationSection s) {
-        Plugin.listener.addEventListener(EntityTeleportEvent.class, e -> {
-            try {
-                if (stucked.get(e.getEntity().getUniqueId(), () -> Long.MAX_VALUE) <= System.currentTimeMillis() + duration * 50) {
-                    e.setCancelled(true);
-                }
-            } catch (ExecutionException ex) {
-                ex.printStackTrace();
-            }
-        }).addEventListener(PlayerMoveEvent.class, e -> {
-            try {
-                if (stucked.get(e.getPlayer().getUniqueId(), () -> Long.MAX_VALUE) <= System.currentTimeMillis() + duration * 50) {
-                    e.setCancelled(true);
-                }
-            } catch (ExecutionException ex) {
-                ex.printStackTrace();
-            }
-        });
         facing = s.getDouble("facing", 30);
         chance = s.getInt("chance", 3);
         consumption = s.getInt("consumption", 0);
@@ -160,6 +151,28 @@ public class PowerStuck extends Power implements PowerHit, PowerRightClick {
         range = s.getInt("range", 10);
         allowHit = s.getBoolean("allowHit", true);
         allowAoe = s.getBoolean("allowAoe", false);
+        tpl = e -> {
+            try {
+                if (stucked.get(e.getEntity().getUniqueId(), () -> Long.MIN_VALUE) >= (System.currentTimeMillis() - duration * 50)) {
+                    e.setCancelled(true);
+                }
+            } catch (ExecutionException ex) {
+                ex.printStackTrace();
+            }
+        };
+        pml = e -> {
+            try {
+                if (stucked.get(e.getPlayer().getUniqueId(), () -> Long.MIN_VALUE) >= (System.currentTimeMillis() - duration * 50)) {
+                    if(e.getCause() != PlayerTeleportEvent.TeleportCause.COMMAND){
+                        e.getPlayer().sendMessage(Locale.get("message.stuck"));
+                        e.setCancelled(true);
+                    }
+                }
+            } catch (ExecutionException ex) {
+                ex.printStackTrace();
+            }
+        };
+        Plugin.listener.addEventListener(EntityTeleportEvent.class, tpl).addEventListener(PlayerTeleportEvent.class, pml);
     }
 
     @Override
@@ -173,5 +186,10 @@ public class PowerStuck extends Power implements PowerHit, PowerRightClick {
         s.set("costAoe", costAoe);
         s.set("allowHit", allowHit);
         s.set("allowAoe", allowAoe);
+    }
+
+    @Override
+    protected void finalize(){
+        Plugin.listener.removeEventListener(EntityTeleportEvent.class, tpl).removeEventListener(PlayerTeleportEvent.class, pml);
     }
 }
