@@ -113,7 +113,7 @@ public class PowerStuck extends Power implements PowerHit, PowerRightClick {
         if (!item.checkPermission(player, true)) return;
         if (random.nextInt(chance) == 0) {
             if (!item.consumeDurability(stack, consumption)) return;
-            stucked.put(player.getUniqueId(), System.currentTimeMillis());
+            stucked.put(entity.getUniqueId(), System.currentTimeMillis());
             entity.addPotionEffect(new PotionEffect(PotionEffectType.SLOW, duration, 10), true);
             entity.addPotionEffect(new PotionEffect(PotionEffectType.JUMP, duration, 128), true);
         }
