@@ -24,7 +24,6 @@ import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.entity.LivingEntity;
 import org.bukkit.entity.Player;
 import org.bukkit.event.entity.EntityTeleportEvent;
-import org.bukkit.event.player.PlayerMoveEvent;
 import org.bukkit.event.player.PlayerTeleportEvent;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.potion.PotionEffect;
@@ -62,6 +61,11 @@ public class PowerStuck extends Power implements PowerHit, PowerRightClick {
      * Cost of this power (right click)
      */
     public int costAoe = 0;
+
+    /**
+     * Cost of this power (right click per entity)
+     */
+    public int costPerEntity = 0;
 
     /**
      * Range of this power
@@ -123,6 +127,7 @@ public class PowerStuck extends Power implements PowerHit, PowerRightClick {
         if (!item.consumeDurability(stack, costAoe)) return;
         List<LivingEntity> entities = getEntitiesInCone(getNearestLivingEntities(player.getEyeLocation(), player, range, 0), player.getLocation().toVector(), facing, player.getLocation().getDirection());
         entities.forEach(entity -> {
+                    if (!item.consumeDurability(stack, costPerEntity)) return;
                     stucked.put(entity.getUniqueId(), System.currentTimeMillis());
                     entity.addPotionEffect(new PotionEffect(PotionEffectType.SLOW, duration, 10), true);
                     entity.addPotionEffect(new PotionEffect(PotionEffectType.JUMP, duration, 128), true);
@@ -163,7 +168,7 @@ public class PowerStuck extends Power implements PowerHit, PowerRightClick {
         pml = e -> {
             try {
                 if (stucked.get(e.getPlayer().getUniqueId(), () -> Long.MIN_VALUE) >= (System.currentTimeMillis() - duration * 50)) {
-                    if(e.getCause() != PlayerTeleportEvent.TeleportCause.COMMAND){
+                    if (e.getCause() != PlayerTeleportEvent.TeleportCause.COMMAND) {
                         e.getPlayer().sendMessage(Locale.get("message.stuck"));
                         e.setCancelled(true);
                     }
@@ -189,7 +194,7 @@ public class PowerStuck extends Power implements PowerHit, PowerRightClick {
     }
 
     @Override
-    protected void finalize(){
+    protected void finalize() {
         Plugin.listener.removeEventListener(EntityTeleportEvent.class, tpl).removeEventListener(PlayerTeleportEvent.class, pml);
     }
 }

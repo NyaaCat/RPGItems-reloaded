@@ -35,7 +35,7 @@ public class PowerShulkerBullet extends Power implements PowerRightClick {
     /**
      * Cost of this power
      */
-    public int consumption = 1;
+    public int consumption = 0;
     /**
      * Range of this power
      */
