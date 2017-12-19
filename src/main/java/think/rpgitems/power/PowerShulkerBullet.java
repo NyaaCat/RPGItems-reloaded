@@ -41,8 +41,6 @@ public class PowerShulkerBullet extends Power implements PowerRightClick {
      */
     public double range = 10;
 
-    private Class<? extends Projectile> projectileType = Snowball.class;
-
     @Override
     public void init(ConfigurationSection s) {
         cooldownTime = s.getLong("cooldownTime");
