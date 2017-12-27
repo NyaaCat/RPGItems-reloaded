@@ -347,3 +347,4 @@ power.stuck=攻击后 %d 几率敌人无法移动 %d tick (%.1f 秒冷却时间)
 power.shulkerbullet=发射潜影贝子弹 (%.1f 秒冷却时间)
 command.info.delay=延迟
 command.info.regex=正则表达式
+message.enchantment.removed=已移除物品带有的附魔
