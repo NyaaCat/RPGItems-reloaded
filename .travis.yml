@@ -6,14 +6,15 @@ before_install:
 - pushd ~/build/
 - git clone --depth=1 https://github.com/NyaaCat/NyaaCore NyaaCat/NyaaCore
 - export NYAACORE_LANG_DIR=`readlink -f ./NyaaCat/NyaaCore/src/main/resources/lang/`
+- export main_version=3.6
 - popd
 after_success:
-- 'cp build/libs/RPGitems-reloaded.jar ./rpgitem-reloaded-$TRAVIS_BRANCH-v$main_version.$TRAVIS_BUILD_NUMBER.jar'
+- 'cp build/libs/RPGitems-reloaded.jar ./rpgitem-reloaded-mc$TRAVIS_BRANCH-v$main_version.$TRAVIS_BUILD_NUMBER.jar'
 
 before_deploy:
 - git config --global user.email "builds@travis-ci.com"
 - git config --global user.name "Travis CI"
-- export GIT_TAG=$TRAVIS_BRANCH-v3.6.$TRAVIS_BUILD_NUMBER
+- export GIT_TAG=$TRAVIS_BRANCH-v$main_version.$TRAVIS_BUILD_NUMBER
 - git tag $GIT_TAG -a -m "Generated tag from TravisCI for build $TRAVIS_BUILD_NUMBER"
 - git config credential.helper "store --file=.git/credentials"
 - echo "https://${GITHUB_KEY}:@github.com" > .git/credentials
@@ -24,7 +25,8 @@ deploy:
   provider: releases
   prerelease: true
   api_key: $GITHUB_KEY
-  file: './rpgitem-reloaded-$TRAVIS_BRANCH-v$main_version.$TRAVIS_BUILD_NUMBER.jar'
+  file: './rpgitem-reloaded-mc$TRAVIS_BRANCH-v$main_version.$TRAVIS_BUILD_NUMBER.jar'
+  body: 'RPGitems build $TRAVIS_BUILD_NUMBER for spigot $TRAVIS_BRANCH'
   on:
     tags: false
     all_branches: true
