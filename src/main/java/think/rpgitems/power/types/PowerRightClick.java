@@ -7,7 +7,7 @@ import org.bukkit.inventory.ItemStack;
 /**
  * Triggers when right click
  */
-public interface PowerRightClick extends Power {
+public interface PowerRightClick extends IPower {
     /**
      * Calls when {@code player} using {@code stack} right clicks {@code clicked}
      *

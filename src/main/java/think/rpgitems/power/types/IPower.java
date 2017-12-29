@@ -3,7 +3,7 @@ package think.rpgitems.power.types;
 /**
  * Base interface for all powers
  */
-public interface Power {
+public interface IPower {
     /**
      * Name of this power
      *

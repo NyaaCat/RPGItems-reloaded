@@ -30,7 +30,7 @@ import org.bukkit.configuration.file.YamlConfiguration;
 import org.bukkit.entity.Player;
 import org.bukkit.plugin.Plugin;
 import think.rpgitems.RPGItems;
-import think.rpgitems.power.types.Power;
+import think.rpgitems.power.types.IPower;
 
 import java.io.File;
 import java.io.IOException;
@@ -168,7 +168,7 @@ public class WorldGuard {
         return !hasRPGItemFlag(worldName, "__global__") || getRPGItemFlag(worldName, "__global__");
     }
 
-    public static boolean canUsePowerNow(Player player, Power pow) {
+    public static boolean canUsePowerNow(Player player, IPower pow) {
         if (!hasSupport || !useWorldGuard) {
             return true;
         }

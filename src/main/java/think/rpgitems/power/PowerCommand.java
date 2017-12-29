@@ -24,6 +24,7 @@ import org.bukkit.inventory.ItemStack;
 
 import think.rpgitems.commands.BooleanChoice;
 import think.rpgitems.commands.Property;
+import think.rpgitems.power.types.IPower;
 import think.rpgitems.power.types.PowerDelayable;
 import think.rpgitems.power.types.PowerLeftClick;
 import think.rpgitems.power.types.PowerRightClick;
@@ -159,7 +160,7 @@ public class PowerCommand extends Power implements PowerRightClick, PowerLeftCli
     }
 
     @Override
-    public void triggerLater(think.rpgitems.power.types.Power power, Player player) {
+    public void triggerLater(IPower IPower, Player player) {
 
     }
 }

@@ -7,7 +7,7 @@ import org.bukkit.inventory.ItemStack;
 /**
  * Triggers when being hurt
  */
-public interface PowerHurt extends Power {
+public interface PowerHurt extends IPower {
     /**
      * Calls when {@code target} using {@code stack} being hurt in {@code event}
      *
