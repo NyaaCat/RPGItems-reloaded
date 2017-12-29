@@ -6,7 +6,7 @@ import org.bukkit.inventory.ItemStack;
 /**
  * Triggers per tick
  */
-public interface PowerTick extends Power {
+public interface PowerTick extends IPower {
     /**
      * Calls per tick with {@code player} using {@code stack}
      *

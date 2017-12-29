@@ -7,7 +7,7 @@ import org.bukkit.inventory.ItemStack;
 /**
  * Triggers when RPG Projectile hits
  */
-public interface PowerProjectileHit extends Power {
+public interface PowerProjectileHit extends IPower {
     /**
      * Calls when {@code player} using {@code stack} has launched a projectile {@code arrow} and it hit something
      *

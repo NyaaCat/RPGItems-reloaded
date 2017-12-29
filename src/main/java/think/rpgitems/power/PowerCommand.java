@@ -24,6 +24,8 @@ import org.bukkit.inventory.ItemStack;
 
 import think.rpgitems.commands.BooleanChoice;
 import think.rpgitems.commands.Property;
+import think.rpgitems.power.types.IPower;
+import think.rpgitems.power.types.PowerDelayable;
 import think.rpgitems.power.types.PowerLeftClick;
 import think.rpgitems.power.types.PowerRightClick;
 
@@ -35,7 +37,7 @@ import think.rpgitems.power.types.PowerRightClick;
  * </p>
  */
 @SuppressWarnings("WeakerAccess")
-public class PowerCommand extends Power implements PowerRightClick, PowerLeftClick {
+public class PowerCommand extends Power implements PowerRightClick, PowerLeftClick, PowerDelayable {
 
     /**
      * Command to be executed
@@ -69,6 +71,8 @@ public class PowerCommand extends Power implements PowerRightClick, PowerLeftCli
     @Property
     public int consumption = 0;
 
+    @Property(order = 5)
+    public int delay = 0;
     /**
      * Execute command
      *
@@ -114,7 +118,14 @@ public class PowerCommand extends Power implements PowerRightClick, PowerLeftCli
         if (!item.checkPermission(player, true)) return;
         if (!isRight || !checkCooldownByString(player, item, command, cooldownTime, true)) return;
         if (!item.consumeDurability(stack, consumption)) return;
-        executeCommand(player);
+        Runnable task = new Runnable() {
+            @Override
+            public void run() {
+                if( !player.isOnline() )return;
+                executeCommand(player);
+            }
+        };
+        triggerLater(task,delay);
     }
 
     @Override
@@ -122,7 +133,14 @@ public class PowerCommand extends Power implements PowerRightClick, PowerLeftCli
         if (!item.checkPermission(player, true)) return;
         if (isRight || !checkCooldownByString(player, item, command, cooldownTime, true)) return;
         if (!item.consumeDurability(stack, consumption)) return;
-        executeCommand(player);
+        Runnable task = new Runnable() {
+            @Override
+            public void run() {
+                if(!player.isOnline() )return;
+                executeCommand(player);
+            }
+        };
+        triggerLater(task,delay);
     }
 
     @Override
@@ -143,6 +161,7 @@ public class PowerCommand extends Power implements PowerRightClick, PowerLeftCli
         isRight = s.getBoolean("isRight", true);
         permission = s.getString("permission", "");
         consumption = s.getInt("consumption", 0);
+        delay = s.getInt("delay",0);
     }
 
     @Override
@@ -153,6 +172,7 @@ public class PowerCommand extends Power implements PowerRightClick, PowerLeftCli
         s.set("isRight", isRight);
         s.set("permission", permission);
         s.set("consumption", consumption);
+        s.set("delay",delay);
     }
 
 }

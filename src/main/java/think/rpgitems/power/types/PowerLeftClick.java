@@ -7,7 +7,7 @@ import org.bukkit.inventory.ItemStack;
 /**
  * Triggers when left click
  */
-public interface PowerLeftClick extends Power {
+public interface PowerLeftClick extends IPower {
     /**
      * Calls when {@code player} using {@code stack} left clicks {@code clicked}
      *

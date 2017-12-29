@@ -7,7 +7,7 @@ import org.bukkit.inventory.ItemStack;
 /**
  * Triggers when hit some LivingEntity
  */
-public interface PowerHit extends Power {
+public interface PowerHit extends IPower,PowerDelayable {
     /**
      * Calls when {@code player} using {@code stack} hits an {@code entity} with {@code damage}
      *
