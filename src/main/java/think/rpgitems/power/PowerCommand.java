@@ -115,12 +115,12 @@ public class PowerCommand extends Power implements PowerRightClick, PowerLeftCli
 
     @Override
     public void rightClick(Player player, ItemStack stack, Block clicked) {
+        if (!item.checkPermission(player, true)) return;
+        if (!isRight || !checkCooldownByString(player, item, command, cooldownTime, true)) return;
+        if (!item.consumeDurability(stack, consumption)) return;
         Runnable task = new Runnable() {
             @Override
             public void run() {
-                if (!item.checkPermission(player, true)) return;
-                if (!isRight || !checkCooldownByString(player, item, command, cooldownTime, true)) return;
-                if (!item.consumeDurability(stack, consumption)) return;
                 executeCommand(player);
             }
         };
@@ -129,12 +129,12 @@ public class PowerCommand extends Power implements PowerRightClick, PowerLeftCli
 
     @Override
     public void leftClick(Player player, ItemStack stack, Block clicked) {
+        if (!item.checkPermission(player, true)) return;
+        if (isRight || !checkCooldownByString(player, item, command, cooldownTime, true)) return;
+        if (!item.consumeDurability(stack, consumption)) return;
         Runnable task = new Runnable() {
             @Override
             public void run() {
-                if (!item.checkPermission(player, true)) return;
-                if (isRight || !checkCooldownByString(player, item, command, cooldownTime, true)) return;
-                if (!item.consumeDurability(stack, consumption)) return;
                 executeCommand(player);
             }
         };
