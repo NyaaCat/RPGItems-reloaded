@@ -115,18 +115,30 @@ public class PowerCommand extends Power implements PowerRightClick, PowerLeftCli
 
     @Override
     public void rightClick(Player player, ItemStack stack, Block clicked) {
-        if (!item.checkPermission(player, true)) return;
-        if (!isRight || !checkCooldownByString(player, item, command, cooldownTime, true)) return;
-        if (!item.consumeDurability(stack, consumption)) return;
-        executeCommand(player);
+        Runnable task = new Runnable() {
+            @Override
+            public void run() {
+                if (!item.checkPermission(player, true)) return;
+                if (!isRight || !checkCooldownByString(player, item, command, cooldownTime, true)) return;
+                if (!item.consumeDurability(stack, consumption)) return;
+                executeCommand(player);
+            }
+        };
+        triggerLater(task,delay);
     }
 
     @Override
     public void leftClick(Player player, ItemStack stack, Block clicked) {
-        if (!item.checkPermission(player, true)) return;
-        if (isRight || !checkCooldownByString(player, item, command, cooldownTime, true)) return;
-        if (!item.consumeDurability(stack, consumption)) return;
-        executeCommand(player);
+        Runnable task = new Runnable() {
+            @Override
+            public void run() {
+                if (!item.checkPermission(player, true)) return;
+                if (isRight || !checkCooldownByString(player, item, command, cooldownTime, true)) return;
+                if (!item.consumeDurability(stack, consumption)) return;
+                executeCommand(player);
+            }
+        };
+        triggerLater(task,delay);
     }
 
     @Override
@@ -147,6 +159,7 @@ public class PowerCommand extends Power implements PowerRightClick, PowerLeftCli
         isRight = s.getBoolean("isRight", true);
         permission = s.getString("permission", "");
         consumption = s.getInt("consumption", 0);
+        delay = s.getInt("delay",0);
     }
 
     @Override
@@ -157,10 +170,7 @@ public class PowerCommand extends Power implements PowerRightClick, PowerLeftCli
         s.set("isRight", isRight);
         s.set("permission", permission);
         s.set("consumption", consumption);
+        s.set("delay",delay);
     }
 
-    @Override
-    public void triggerLater(IPower IPower, Player player) {
-
-    }
 }
