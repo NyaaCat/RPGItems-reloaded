@@ -443,7 +443,7 @@ public class RPGItem {
                 namespacedKey = new NamespacedKey(RPGItems.plugin, name + "_" + System.currentTimeMillis());
             }
             item.setItemMeta(localeMeta);
-            ShapedRecipe shapedRecipe = new ShapedRecipe(namespacedKey, item);
+            ShapedRecipe shapedRecipe = new ShapedRecipe(namespacedKey, toItemStack());
 
             Map<ItemStack, Character> charMap = new HashMap<>();
             int i = 0;
