@@ -121,6 +121,7 @@ public class PowerCommand extends Power implements PowerRightClick, PowerLeftCli
         Runnable task = new Runnable() {
             @Override
             public void run() {
+                if( !player.isOnline() )return;
                 executeCommand(player);
             }
         };
@@ -135,6 +136,7 @@ public class PowerCommand extends Power implements PowerRightClick, PowerLeftCli
         Runnable task = new Runnable() {
             @Override
             public void run() {
+                if(!player.isOnline() )return;
                 executeCommand(player);
             }
         };
