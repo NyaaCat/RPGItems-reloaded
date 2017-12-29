@@ -24,6 +24,7 @@ import org.bukkit.inventory.ItemStack;
 
 import think.rpgitems.commands.BooleanChoice;
 import think.rpgitems.commands.Property;
+import think.rpgitems.power.types.PowerDelayable;
 import think.rpgitems.power.types.PowerLeftClick;
 import think.rpgitems.power.types.PowerRightClick;
 
@@ -35,7 +36,7 @@ import think.rpgitems.power.types.PowerRightClick;
  * </p>
  */
 @SuppressWarnings("WeakerAccess")
-public class PowerCommand extends Power implements PowerRightClick, PowerLeftClick {
+public class PowerCommand extends Power implements PowerRightClick, PowerLeftClick, PowerDelayable {
 
     /**
      * Command to be executed
@@ -69,6 +70,8 @@ public class PowerCommand extends Power implements PowerRightClick, PowerLeftCli
     @Property
     public int consumption = 0;
 
+    @Property(order = 5)
+    public int delay = 0;
     /**
      * Execute command
      *
@@ -155,4 +158,8 @@ public class PowerCommand extends Power implements PowerRightClick, PowerLeftCli
         s.set("consumption", consumption);
     }
 
+    @Override
+    public void triggerLater(think.rpgitems.power.types.Power power, Player player) {
+
+    }
 }
