@@ -47,7 +47,7 @@ command:
     data: Data
     property: Property
     amount: Amount
-    IPower: Power
+    power: Power
     interval: Interval
     terms: Terms
     radius: Radius
@@ -84,7 +84,7 @@ command:
         distributed in the cone with angle @[Range]# centered with player''s direction.
         Acceptable types: skull, snowball, smallfireball, arrow, llamaspit'
     tntcannon:
-      full: Adds the tntcannon power to @[Item]# with a cooldown of @[Cooldown]# ticks. The tntcannon IPower will fire active tnt on right click.
+      full: Adds the tntcannon power to @[Item]# with a cooldown of @[Cooldown]# ticks. The tntcannon power will fire active tnt on right click.
     command:
       full: 'Adds the command power to @[Item]# with a cooldown of @[Cooldown]# ticks.
         The tooltip will display @[Display]#. The item will run @[Command]# on @[left,right]#
@@ -92,12 +92,12 @@ command:
         **Note**: If you want spaces in @[Display]#, @[Command]# or @[Permission]#
         then surround the string with ` e.g: `/say Hello`'
     flame:
-      full: Adds the flame power to @[Item]# with a burntime of @[Burntime]# ticks. The flame IPower will set the target on fire on hit
+      full: Adds the flame power to @[Item]# with a burntime of @[Burntime]# ticks. The flame power will set the target on fire on hit
     itemflag:
       add: 'Add the ItemFlag to @[Item]#. Valid ItemFlags: '
       remove: 'Remove the ItemFlag from @[Item]#. Valid ItemFlags: '
-    consume: Adds the consume power to @[Item]#. The consume IPower will remove one item on right click.
-    potiontick: Adds the potiontick power to @[Item]#. The potiontick IPower will give the welder of the @[Item]# @[Effect]# level @[Amplifier]# while held/worn
+    consume: Adds the consume power to @[Item]#. The consume power will remove one item on right click.
+    potiontick: Adds the potiontick power to @[Item]#. The potiontick power will give the welder of the @[Item]# @[Effect]# level @[Amplifier]# while held/worn
     description:
       add: Adds the line @[DescriptionLine]# to the item @[Item]#
       set: Sets the line @[LineNo]# to @[DescriptionLine]# on the item @[Item]#
@@ -112,18 +112,18 @@ command:
       On right click it will apply @[Effect]# for @[Duration]# ticks at power @[Amplifier]#.
       Valid potion effects:'
     ice:
-      full: Adds the ice power to @[Item]# with a cooldown of @[Cooldown]# ticks. The ice IPower will fire an ice block on right click which will then create a box of ice on impact, the ice will slowly remove itself
+      full: Adds the ice power to @[Item]# with a cooldown of @[Cooldown]# ticks. The ice power will fire an ice block on right click which will then create a box of ice on impact, the ice will slowly remove itself
     pumpkin: Add the power to @[Item]#. When hit skeleton or zombie, will have a 1/@[Chance]# chance to make them wear pumpkin head. And the pumpkin will have a chance of @[DropChance]# to drop when the mobs die. @[DropChance]# must between 0 and 1.
     attract: 'Add the power to @[Item]#. Pull around mobs to player when held in hand.
       Radius:5 MaxSpeed: 0.4.'
     ranged: Adds the ranged mark to @[Item]#.
     hand:
       set: Sets the item @[Item]#'s hand to @[Hand]#
-    color: Adds the color power to @[Item]#. The IPower allows changing the color of glass, clay and wool.
+    color: Adds the color power to @[Item]#. The power allows changing the color of glass, clay and wool.
     torch: Adds the torch power to @[Item]# that shoots @[Torches]# to light up an area.
     remove: Remove the item @[Item]# from the system. This does not currently remove the item from players' inventories but all powers and damage will stop working on them.
     fireball:
-      full: Adds the fireball power to @[Item]# with a cooldown of @[Cooldown]# ticks. The fireball IPower will fire an fireball on right click
+      full: Adds the fireball power to @[Item]# with a cooldown of @[Cooldown]# ticks. The fireball power will fire an fireball on right click
     enchantment:
       clear: Remove all attached enchantments.
       list: List attached enchantments.
@@ -141,16 +141,16 @@ command:
     togglePowerLore: Switch ON/OFF the default description lores. You can still modify the lores by /rpgitem {itemName} description command.
     list: Shows a list of all created items
     knockup:
-      full: Adds the knockup IPower to @[Item]# with a chance of 1/@[Chance]# and a IPower of @[Power]#. The knockup IPower will send the hit target flying
+      full: Adds the knockup power to @[Item]# with a chance of 1/@[Chance]# and a power of @[Power]#. The knockup power will send the hit target flying
     toggleDamageMode: Toggle item damage mode
     power_property_set: Set @[Nth]# @[Power]# of @[Item]#'s @[Property]# to @[Value]#
     teleport: Adds the teleport power to @[Item]# with a default cooldown of 20 ticks (1 second) and teleport distance of 5 blocks. The teleport will teleport you in the direction you're looking in
     deathcommand: Adds the power to @[Item]#. With a 1/@[Chance]# chance to kill the target then execute the @[Command]#. `${x}` `${y}` and `${z}` in the command will be replaced with the death location of the enemy.
     particle: Add the power to @[Item]#. When right clicked, spawn some particles around the user.  @[VisualEffect]# can be SMOKE/ENDER_SIGNAL/MOBSPAWNER_FLAMES
-    removepower: Removes IPower @[Power]# from item @[Item]#
+    removepower: Removes power @[Power]# from item @[Item]#
     lifesteal: Adds the lifesteal power to @[Item]# with a chance of enemy life stealing of 1/@[Chance]#
     particletick: Add the power to @[Item]#. When item held in hand, spawn some particles around the user. With the time @[Interval]# given in ticks. @[VisualEffect]# can be SMOKE/ENDER_SIGNAL/MOBSPAWNER_FLAMES
-    skyhook: Adds the skyhook power to @[Item]#. The skyhook IPower will allow the user to hook on to @[Material]# up to @[Distance]# blocks away
+    skyhook: Adds the skyhook power to @[Item]#. The skyhook power will allow the user to hook on to @[Material]# up to @[Distance]# blocks away
     drop: Gets the chance that @[Item]# will drop from @[EntityType]#. 0% means it doesn't drop
     rangedonly: =Adds the rangedonly mark to @[Item]#.
     aoe: 'Adds the aoe power to @[Item]# with a cooldown of @[Cooldown]# ticks. On
@@ -161,10 +161,10 @@ command:
       set: Sets the item @[Item]#'s lore to @[Lore]#
     wgforcerefreash: Toggles worldguard custom flag force refresh on each use. Enabling this can workaround failure of automatic refresh after /reload but use more resource.
     arrow:
-      full: Adds the arrow power to @[Item]# with a cooldown of @[Cooldown]# ticks. The arrow IPower will fire an arrow on right click.
+      full: Adds the arrow power to @[Item]# with a cooldown of @[Cooldown]# ticks. The arrow power will fire an arrow on right click.
     permission: Enable/disable the permission restriction on the item @[Item]#. The permission restriction prevent a player to use an item if he doesn't have the permission @[Permission]#. The permission restriction can be toggled on or off with the @[Enabled]# option.
     recipe: Sets the @[Item]#'s recipe
-    rescue: Adds the rescue power to @[Item]# with a cooldown of @[Cooldown]# ticks and a health trigger of @[HealthTrigger]#. The rescue IPower teleports the user to spawn (or to their bed when @[UseBed]# is active) when their health gets below the hp trigger while in combat with an enemy
+    rescue: Adds the rescue power to @[Item]# with a cooldown of @[Cooldown]# ticks and a health trigger of @[HealthTrigger]#. The rescue power teleports the user to spawn (or to their bed when @[UseBed]# is active) when their health gets below the hp trigger while in combat with an enemy
     damage:
       set:
         value: Sets the item @[Item]#'s damage to @[Damage]#
@@ -174,10 +174,10 @@ command:
     type:
       set: Sets the item @[Item]#'s type to @[Type]#
     rainbow:
-      full: Adds the rainbow power to @[Item]# with a cooldown of @[Cooldown]# ticks and a block count of @[Count]#. The rainbow IPower will fire blocks of coloured wool on right click, the wool will remove itself.
+      full: Adds the rainbow power to @[Item]# with a cooldown of @[Cooldown]# ticks and a block count of @[Count]#. The rainbow power will fire blocks of coloured wool on right click, the wool will remove itself.
     error:
       command: 'Error: %s'
-    consumehit: Adds the consume power to @[Item]#. The consume IPower will remove one item when player hit something.
+    consumehit: Adds the consume power to @[Item]#. The consume power will remove one item when player hit something.
     delayedcommand:
       full: 'Adds the delayedcommand power which will be executed after @[Delay]#
         ticks to @[Item]# with a cooldown of @[Cooldown]# ticks. The tooltip will
@@ -186,9 +186,9 @@ command:
         If you want spaces in @[Display]#, @[Command]# or @[Permission]# then surround
         the string with ` e.g: `/say Hello`'
     help: Shows commands and help for commands that contain the search terms @[Terms]#
-    lightning: Adds the lightning power to @[Item]# with a default chance of 1/20. The lightning IPower will strike the hit target with lightning
+    lightning: Adds the lightning power to @[Item]# with a default chance of 1/20. The lightning power will strike the hit target with lightning
     forcefield: Add the power to @[Item]#. When right clicked, creates a forcefield around the player, with @[Radius]# @[height]# based @[Base]# blocks above, lasts for @[Cooldown]# ticks
-    rumble: Adds the rumble IPower to @[Item]# with a cooldown of @[Cooldown]# ticks and a IPower of @[Power]#, the wave will travel @[Distance]# blocks. The rumble IPower sends a shockwave through the ground and sends any hit entities flying
+    rumble: Adds the rumble power to @[Item]# with a cooldown of @[Cooldown]# ticks and a power of @[Power]#, the wave will travel @[Distance]# blocks. The rumble power sends a shockwave through the ground and sends any hit entities flying
     removerecipe: Removes the @[Item]#'s recipe
     potionhit: 'Adds the potionhit power to @[Item]# with a chance of hitting of 1/@[Chance]#.
       On hit it will apply @[Effect]# for @[Duration]# ticks at power @[Amplifier]#.
@@ -206,7 +206,7 @@ command:
     create: 'Create an item with the name @[Name]#. The @[Name]# is what you use to
       identify the item for later commands e.g: Give. @[Name]# is not the name of
       the item on the tool-tip, that is set with Display instead.'
-    fire: Adds the fire power to @[Item]# with a cooldown of @[Cooldown]# ticks. The fire IPower will shoot fire on right click.
+    fire: Adds the fire power to @[Item]# with a cooldown of @[Cooldown]# ticks. The fire power will shoot fire on right click.
     print: Prints item @[Item]#'s tool-tip to chat
     realdamage: =Adds the realdamage power to @[Item]# with a cooldown of @[Cooldown]# ticks. The item will do real @[Damage]# to LivingEntity player hits but always leave at least 0.1 health.
 message:
