@@ -16,7 +16,8 @@
  */
 package think.rpgitems;
 
-import com.google.common.collect.*;
+import com.google.common.collect.MultimapBuilder;
+import com.google.common.collect.SetMultimap;
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
 import org.bukkit.Material;
@@ -525,8 +526,11 @@ public class Events implements Listener {
         Integer projectileID = rpgProjectiles.get(entity.getEntityId());
         if (projectileID == null) return damage;
         RPGItem rItem = ItemManager.getItemById(projectileID);
-        if (rItem == null)
+        if (rItem == null || !(entity.getShooter() instanceof Player))
             return damage;
+        if (!((Player) entity.getShooter()).isOnline()) {
+            return damage;
+        }
         Player player = (Player) entity.getShooter();
         ItemStack item = player.getInventory().getItemInMainHand();
         RPGItem hItem = ItemManager.toRPGItem(item);
