@@ -235,19 +235,22 @@ public class Events implements Listener {
         if (rpgProjectiles.containsKey(entity.getEntityId())) {
             RPGItem rItem = ItemManager.getItemById(rpgProjectiles.get(entity.getEntityId()));
 
-            if (rItem == null)
+            if (rItem == null || !(entity.getShooter() instanceof Player))
                 return;
-            ItemStack item = ((Player) entity.getShooter()).getInventory().getItemInMainHand();
-            RPGItem hItem = ItemManager.toRPGItem(item);
-            if (rItem != hItem) {
-                item = ((Player) entity.getShooter()).getInventory().getItemInOffHand();
-                hItem = ItemManager.toRPGItem(item);
+            Player player = (Player) entity.getShooter();
+            if (player.isOnline() && !player.isDead()) {
+                ItemStack item = player.getInventory().getItemInMainHand();
+                RPGItem hItem = ItemManager.toRPGItem(item);
                 if (rItem != hItem) {
-                    return;
+                    item = player.getInventory().getItemInOffHand();
+                    hItem = ItemManager.toRPGItem(item);
+                    if (rItem != hItem) {
+                        return;
+                    }
                 }
-            }
 
-            rItem.projectileHit((Player) entity.getShooter(), item, entity);
+                rItem.projectileHit(player, item, entity);
+            }
             Bukkit.getScheduler().runTask(plugin, () -> rpgProjectiles.remove(entity.getEntityId()));
         }
     }
