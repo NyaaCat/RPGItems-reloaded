@@ -350,3 +350,4 @@ command.info.regex=正则表达式
 message.enchantment.removed=已移除物品带有的附魔
 message.customitemmodel.enable=已启用自定义物品模型
 message.customitemmodel.disable=已禁用自定义物品模型
+command.rpgitem.customitemmodel=切换自定义物品模型支持
