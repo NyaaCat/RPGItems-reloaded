@@ -149,6 +149,9 @@ public class PowerDeflect extends Power implements PowerHitTaken, PowerRightClic
                     p.remove();
                     target.getLocation().getWorld().playSound(target.getLocation(), Sound.ITEM_SHIELD_BLOCK, 1.0f, 3.0f);
                     Bukkit.getScheduler().runTaskLater(Plugin.plugin, () -> {
+                        if (!target.isOnline() || target.isDead()) {
+                            return;
+                        }
                         Projectile t = target.launchProjectile(p.getClass());
                         if (p instanceof TippedArrow) {
                             TippedArrow tippedArrowP = (TippedArrow) p;

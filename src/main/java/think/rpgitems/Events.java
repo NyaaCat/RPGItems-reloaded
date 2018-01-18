@@ -16,7 +16,8 @@
  */
 package think.rpgitems;
 
-import com.google.common.collect.*;
+import com.google.common.collect.MultimapBuilder;
+import com.google.common.collect.SetMultimap;
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
 import org.bukkit.Material;
@@ -234,19 +235,22 @@ public class Events implements Listener {
         if (rpgProjectiles.containsKey(entity.getEntityId())) {
             RPGItem rItem = ItemManager.getItemById(rpgProjectiles.get(entity.getEntityId()));
 
-            if (rItem == null)
+            if (rItem == null || !(entity.getShooter() instanceof Player))
                 return;
-            ItemStack item = ((Player) entity.getShooter()).getInventory().getItemInMainHand();
-            RPGItem hItem = ItemManager.toRPGItem(item);
-            if (rItem != hItem) {
-                item = ((Player) entity.getShooter()).getInventory().getItemInOffHand();
-                hItem = ItemManager.toRPGItem(item);
+            Player player = (Player) entity.getShooter();
+            if (player.isOnline() && !player.isDead()) {
+                ItemStack item = player.getInventory().getItemInMainHand();
+                RPGItem hItem = ItemManager.toRPGItem(item);
                 if (rItem != hItem) {
-                    return;
+                    item = player.getInventory().getItemInOffHand();
+                    hItem = ItemManager.toRPGItem(item);
+                    if (rItem != hItem) {
+                        return;
+                    }
                 }
-            }
 
-            rItem.projectileHit((Player) entity.getShooter(), item, entity);
+                rItem.projectileHit(player, item, entity);
+            }
             Bukkit.getScheduler().runTask(plugin, () -> rpgProjectiles.remove(entity.getEntityId()));
         }
     }
@@ -437,7 +441,7 @@ public class Events implements Listener {
 
     @EventHandler(ignoreCancelled = true, priority = EventPriority.HIGHEST)
     public void onInventoryOpen(final InventoryOpenEvent e) {
-        if (e.getView() instanceof LocaleInventory)
+        if (e.getView() instanceof LocaleInventory || e.getInventory().getLocation() == null)
             return;
         if (e.getInventory().getType() != InventoryType.CHEST || !useLocaleInv) {
             Inventory in = e.getInventory();
@@ -525,8 +529,11 @@ public class Events implements Listener {
         Integer projectileID = rpgProjectiles.get(entity.getEntityId());
         if (projectileID == null) return damage;
         RPGItem rItem = ItemManager.getItemById(projectileID);
-        if (rItem == null)
+        if (rItem == null || !(entity.getShooter() instanceof Player))
             return damage;
+        if (!((Player) entity.getShooter()).isOnline()) {
+            return damage;
+        }
         Player player = (Player) entity.getShooter();
         ItemStack item = player.getInventory().getItemInMainHand();
         RPGItem hItem = ItemManager.toRPGItem(item);
