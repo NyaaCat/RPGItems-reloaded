@@ -451,7 +451,7 @@ public class Handler implements CommandHandler {
     }
 
     @CommandString("rpgitem $n[] enchantment")
-    @CommandDocumentation("$command.rpgitem.enchentment.list")
+    @CommandDocumentation("$command.rpgitem.enchantment.list")
     @CommandGroup("item_enchantment")
     public void itemListEnchant(CommandSender sender, RPGItem item) {
         if (item.enchantMap != null) {
@@ -470,7 +470,7 @@ public class Handler implements CommandHandler {
     }
 
     @CommandString("rpgitem $n[] enchantment clone")
-    @CommandDocumentation("$command.rpgitem.enchentment.clone")
+    @CommandDocumentation("$command.rpgitem.enchantment.clone")
     @CommandGroup("item_enchantment")
     public void itemCloneEnchant(CommandSender sender, RPGItem item) {
         if (sender instanceof Player) {
@@ -493,7 +493,7 @@ public class Handler implements CommandHandler {
     }
 
     @CommandString("rpgitem $n[] enchantment clear")
-    @CommandDocumentation("$command.rpgitem.enchentment.clear")
+    @CommandDocumentation("$command.rpgitem.enchantment.clear")
     @CommandGroup("item_enchantment")
     public void itemClearEnchant(CommandSender sender, RPGItem item) {
         item.enchantMap = null;
