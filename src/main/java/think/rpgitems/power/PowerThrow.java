@@ -8,6 +8,7 @@ import org.bukkit.block.Block;
 import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.entity.Entity;
 import org.bukkit.entity.Player;
+import org.bukkit.entity.Projectile;
 import org.bukkit.inventory.ItemStack;
 import think.rpgitems.power.types.PowerLeftClick;
 import think.rpgitems.power.types.PowerRightClick;
@@ -89,7 +90,7 @@ public class PowerThrow extends Power implements PowerRightClick, PowerLeftClick
             Method spawnEntity = chunkRegionLoader.getMethod("a", nbtTagCompound, ReflectionUtil.getNMSClass("World"), double.class, double.class, double.class, boolean.class);
             Object nbt;
             try {
-                nbt = getTagFromJson.invoke(null, entityData);
+                nbt = getTagFromJson.invoke(null, entityData.replaceAll("\\{player}", player.getName()).replaceAll("\\{playerUUID}", player.getUniqueId().toString()));
             } catch (Exception e) {
                 TranslatableComponent msg = new TranslatableComponent("commands.summon.tagError");
                 msg.addWith(new TextComponent(e.getCause().getMessage()));
@@ -103,6 +104,9 @@ public class PowerThrow extends Power implements PowerRightClick, PowerLeftClick
                 UUID uuid = (UUID) getUUID.invoke(entity);
                 for (Entity e : loc.getWorld().getNearbyEntities(loc, 3, 3, 3)) {
                     if (e.getUniqueId().equals(uuid)) {
+                        if (e instanceof Projectile) {
+                            ((Projectile) e).setShooter(player);
+                        }
                         e.setVelocity(loc.getDirection().multiply(speed));
                         return;
                     }
