@@ -1043,4 +1043,21 @@ public class PowerHandler implements CommandHandler {
         ItemManager.save(Plugin.plugin);
         sender.sendMessage(ChatColor.AQUA + Locale.get("message.power.ok"));
     }
+
+    @CommandString("rpgitem $n[] power throw $display:s[] $cooldown:i[] $o[left,right] $speed:f[] $entity:s[] $entityData:s[]")
+    @CommandDocumentation("$command.rpgitem.throw")
+    @CommandGroup("item_power_throw")
+    public void power_throw(CommandSender sender, RPGItem item, String display, int cooldown, String clicktype, double speed, String entity, String data) {
+        PowerThrow pow = new PowerThrow();
+        pow.item = item;
+        pow.display = display;
+        pow.cooldownTime = cooldown;
+        pow.isRight = clicktype.equals("right");
+        pow.entityName = entity;
+        pow.entityData = data;
+        pow.speed = speed;
+        item.addPower(pow);
+        ItemManager.save(Plugin.plugin);
+        sender.sendMessage(ChatColor.AQUA + Locale.get("message.power.ok"));
+    }
 }
