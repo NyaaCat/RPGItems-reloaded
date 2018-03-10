@@ -1,23 +1,18 @@
 package think.rpgitems.power;
 
-import com.google.common.cache.Cache;
-import com.google.common.cache.CacheBuilder;
 import org.bukkit.ChatColor;
 import org.bukkit.block.Block;
 import org.bukkit.configuration.ConfigurationSection;
-import org.bukkit.entity.*;
+import org.bukkit.entity.LivingEntity;
+import org.bukkit.entity.Player;
+import org.bukkit.entity.ShulkerBullet;
 import org.bukkit.inventory.ItemStack;
-import org.bukkit.scheduler.BukkitRunnable;
-import org.bukkit.util.Vector;
 import think.rpgitems.Events;
-import think.rpgitems.Plugin;
 import think.rpgitems.data.Locale;
 import think.rpgitems.power.types.PowerRightClick;
+import think.rpgitems.utils.ReflectionUtil;
 
 import java.util.List;
-import java.util.UUID;
-import java.util.concurrent.ThreadLocalRandom;
-import java.util.concurrent.TimeUnit;
 
 /**
  * Power shulker bullet.
@@ -70,7 +65,14 @@ public class PowerShulkerBullet extends Power implements PowerRightClick {
         if (!item.checkPermission(player, true)) return;
         if (!checkCooldown(player, cooldownTime, true)) return;
         if (!item.consumeDurability(stack, consumption)) return;
-        ShulkerBullet bullet = player.launchProjectile(ShulkerBullet.class);
+        ShulkerBullet bullet = null;
+        if (ReflectionUtil.getVersion().startsWith("v1_11_")) {
+            bullet = player.getWorld().spawn(player.getEyeLocation(), ShulkerBullet.class);
+            bullet.setShooter(player);
+        } else {
+            bullet = player.launchProjectile(ShulkerBullet.class);
+        }
+        Events.rpgProjectiles.put(bullet.getEntityId(), item.getID());
         List<LivingEntity> entities = getEntitiesInCone(getNearestLivingEntities(player.getEyeLocation(), player, range, 0), player.getLocation().toVector(), 30, player.getLocation().getDirection());
         if(!entities.isEmpty()){
             bullet.setTarget(entities.get(0));
