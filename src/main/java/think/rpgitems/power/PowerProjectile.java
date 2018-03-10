@@ -13,6 +13,7 @@ import think.rpgitems.Events;
 import think.rpgitems.Plugin;
 import think.rpgitems.data.Locale;
 import think.rpgitems.power.types.PowerRightClick;
+import think.rpgitems.utils.ReflectionUtil;
 
 import java.util.UUID;
 import java.util.concurrent.ThreadLocalRandom;
@@ -214,16 +215,24 @@ public class PowerProjectile extends Power implements PowerRightClick {
 
     private void fire(Player player) {
         if (!cone) {
-            Projectile projectile = player.launchProjectile(projectileType, player.getEyeLocation().getDirection().multiply(speed));
+            Projectile projectile = null;
+            if (projectileType.isAssignableFrom(ShulkerBullet.class) && ReflectionUtil.getVersion().startsWith("v1_11_")) {
+                projectile = player.getWorld().spawn(player.getEyeLocation(), ShulkerBullet.class);
+                projectile.setShooter(player);
+                projectile.setVelocity(player.getEyeLocation().getDirection().multiply(speed));
+            } else {
+                projectile = player.launchProjectile(projectileType, player.getEyeLocation().getDirection().multiply(speed));
+            }
             Events.rpgProjectiles.put(projectile.getEntityId(), item.getID());
             projectile.setGravity(gravity);
             if (projectileType == Arrow.class)
                 Events.removeArrows.add(projectile.getEntityId());
             if (!gravity) {
+                Projectile finalProjectile = projectile;
                 (new BukkitRunnable() {
                     @Override
                     public void run() {
-                        projectile.remove();
+                        finalProjectile.remove();
                     }
                 }).runTaskLater(Plugin.plugin, 80);
             }
@@ -245,16 +254,24 @@ public class PowerProjectile extends Power implements PowerRightClick {
                 double det = ThreadLocalRandom.current().nextDouble(0, 2 * Math.PI);
                 double theta = Math.acos(z);
                 Vector v = a.clone().multiply(Math.cos(det)).add(b.clone().multiply(Math.sin(det))).multiply(Math.sin(theta)).add(loc.clone().multiply(Math.cos(theta)));
-                Projectile projectile = player.launchProjectile(projectileType, v.normalize().multiply(speed));
+                Projectile projectile = null;
+                if (projectileType.isAssignableFrom(ShulkerBullet.class) && ReflectionUtil.getVersion().startsWith("v1_11_")) {
+                    projectile = player.getWorld().spawn(player.getEyeLocation(), ShulkerBullet.class);
+                    projectile.setShooter(player);
+                    projectile.setVelocity(v.normalize().multiply(speed));
+                } else {
+                    projectile = player.launchProjectile(projectileType, v.normalize().multiply(speed));
+                }
                 Events.rpgProjectiles.put(projectile.getEntityId(), item.getID());
                 projectile.setGravity(gravity);
                 if (projectileType == Arrow.class)
                     Events.removeArrows.add(projectile.getEntityId());
                 if (!gravity) {
+                    Projectile finalProjectile = projectile;
                     (new BukkitRunnable() {
                         @Override
                         public void run() {
-                            projectile.remove();
+                            finalProjectile.remove();
                         }
                     }).runTaskLater(Plugin.plugin, 80);
                 }
