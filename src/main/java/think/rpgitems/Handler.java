@@ -15,8 +15,6 @@ import org.bukkit.inventory.ItemFlag;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.ItemMeta;
 import org.bukkit.inventory.meta.LeatherArmorMeta;
-import org.bukkit.potion.PotionEffect;
-import org.bukkit.potion.PotionEffectType;
 import think.rpgitems.commands.CommandDocumentation;
 import think.rpgitems.commands.CommandGroup;
 import think.rpgitems.commands.CommandHandler;
@@ -945,5 +943,18 @@ public class Handler implements CommandHandler {
         item.rebuild();
         ItemManager.save(Plugin.plugin);
         sender.sendMessage(String.format(Locale.get("message.damagemode." + item.damageMode.name().toLowerCase()), item.getName()));
+    }
+
+    @CommandString("rpgitem $n[] clone $name:s[]")
+    @CommandDocumentation("$command.rpgitem.clone")
+    @CommandGroup("item_clone")
+    public void clone(CommandSender sender, RPGItem item, String name) {
+        RPGItem i = ItemManager.cloneItem(item, name);
+        ItemManager.save(Plugin.plugin);
+        if (i != null) {
+            sender.sendMessage(String.format(Locale.get("message.clone.success"), item.getName(), i.getName()));
+        } else {
+            sender.sendMessage(String.format(Locale.get("message.clone.fail"), item.getName(), name));
+        }
     }
 }

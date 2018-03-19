@@ -52,6 +52,7 @@ import think.rpgitems.power.types.*;
 import think.rpgitems.support.WorldGuard;
 import think.rpgitems.utils.ReflectionUtil;
 
+import java.io.Serializable;
 import java.util.*;
 import java.util.Map.Entry;
 import java.util.regex.Pattern;
@@ -59,7 +60,7 @@ import java.util.regex.Pattern;
 import static org.bukkit.ChatColor.COLOR_CHAR;
 import static org.bukkit.ChatColor.getByChar;
 
-public class RPGItem {
+public class RPGItem implements Cloneable, Serializable {
     public enum DamageMode{
         FIXED,
         VANILLA,
@@ -103,13 +104,13 @@ public class RPGItem {
     private String loreText = "";
     private String type = Plugin.plugin.getConfig().getString("defaults.sword", "Sword");
     private String hand = Plugin.plugin.getConfig().getString("defaults.hand", "One handed");
-    private ArrayList<PowerLeftClick> powerLeftClick = new ArrayList<>();
-    private ArrayList<PowerRightClick> powerRightClick = new ArrayList<>();
-    private ArrayList<PowerProjectileHit> powerProjectileHit = new ArrayList<>();
-    private ArrayList<PowerHit> powerHit = new ArrayList<>();
-    private ArrayList<PowerHitTaken> powerHitTaken = new ArrayList<>();
-    private ArrayList<PowerHurt> powerHurt = new ArrayList<>();
-    private ArrayList<PowerTick> powerTick = new ArrayList<>();
+    private transient ArrayList<PowerLeftClick> powerLeftClick = new ArrayList<>();
+    private transient ArrayList<PowerRightClick> powerRightClick = new ArrayList<>();
+    private transient ArrayList<PowerProjectileHit> powerProjectileHit = new ArrayList<>();
+    private transient ArrayList<PowerHit> powerHit = new ArrayList<>();
+    private transient ArrayList<PowerHitTaken> powerHitTaken = new ArrayList<>();
+    private transient ArrayList<PowerHurt> powerHurt = new ArrayList<>();
+    private transient ArrayList<PowerTick> powerTick = new ArrayList<>();
     private int tooltipWidth = 150;
     // Durability
     private int maxDurability;
@@ -786,6 +787,14 @@ public class RPGItem {
         return name;
     }
 
+    public void setName(String name) {
+        this.name = name;
+    }
+
+    public void setId(int id) {
+        this.id = id;
+    }
+
     public int getID() {
         return id;
     }
@@ -1165,5 +1174,15 @@ public class RPGItem {
                 new BaseComponent[]{new TextComponent(ReflectionUtil.convertItemStackToJson(toItemStack()))});
         msg.setHoverEvent(hover);
         return msg;
+    }
+
+    @Override
+    public RPGItem clone() {
+        try {
+            return (RPGItem) super.clone();
+        }
+        catch (CloneNotSupportedException e) {
+            throw new RuntimeException(e);
+        }
     }
 }

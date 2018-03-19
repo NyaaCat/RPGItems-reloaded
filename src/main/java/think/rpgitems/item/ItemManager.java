@@ -141,10 +141,6 @@ public class ItemManager {
             File f = new File(plugin.getDataFolder(), "items.yml");
             out = new FileOutputStream(f);
             out.write(itemStorage.saveToString().getBytes("UTF-8"));
-        } catch (FileNotFoundException e) {
-            e.printStackTrace();
-        } catch (UnsupportedEncodingException e) {
-            e.printStackTrace();
         } catch (IOException e) {
             e.printStackTrace();
         } finally {
@@ -180,15 +176,28 @@ public class ItemManager {
         if (itemByName.containsKey(name))
             return null;
         int free = 0;
-        while (true) {
+        do {
             free = currentPos++;
-            if (!itemById.containsKey(free))
-                break;
-        }
+        } while (itemById.containsKey(free));
         RPGItem item = new RPGItem(name, free);
         itemById.put(free, item);
         itemByName.put(name, item);
         return item;
+    }
+
+    public static RPGItem cloneItem(RPGItem item, String name) {
+        if (itemByName.containsKey(name))
+            return null;
+        int free = 0;
+        do {
+            free = currentPos++;
+        } while (itemById.containsKey(free));
+        RPGItem newItem = item.clone();
+        newItem.setId(free);
+        newItem.setName(name);
+        itemById.put(free, newItem);
+        itemByName.put(name, newItem);
+        return newItem;
     }
 
     public static RPGItem getItemById(int id) {

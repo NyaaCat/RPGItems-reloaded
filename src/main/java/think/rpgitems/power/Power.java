@@ -31,6 +31,7 @@ import think.rpgitems.Plugin;
 import think.rpgitems.data.RPGValue;
 import think.rpgitems.item.RPGItem;
 
+import java.io.Serializable;
 import java.util.AbstractMap;
 import java.util.ArrayList;
 import java.util.Comparator;
@@ -39,7 +40,7 @@ import java.util.List;
 /**
  * Base class for all powers
  */
-public abstract class Power {
+public abstract class Power implements Serializable {
 
     /**
      * Power by name, and name by power

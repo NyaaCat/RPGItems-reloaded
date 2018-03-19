@@ -26,7 +26,6 @@ import org.bukkit.inventory.ItemStack;
 import org.bukkit.potion.PotionEffect;
 import org.bukkit.potion.PotionEffectType;
 import think.rpgitems.data.Locale;
-import think.rpgitems.data.RPGValue;
 import think.rpgitems.power.types.PowerHitTaken;
 import think.rpgitems.power.types.PowerHurt;
 
@@ -96,9 +95,10 @@ public class PowerRescue extends Power implements PowerHurt, PowerHitTaken {
         s.set("consumption", consumption);
     }
 
+    // shouldn't be called if takeHit works. leave it as-is now
     @Override
     public void hurt(Player target, ItemStack stack, EntityDamageEvent event) {
-        if (!item.checkPermission(target, false))return;
+        if (!item.checkPermission(target, false)) return;
         double health = target.getHealth() - event.getFinalDamage();
         if (health > healthTrigger) return;
         rescue(target, stack, event, false);
@@ -106,13 +106,13 @@ public class PowerRescue extends Power implements PowerHurt, PowerHitTaken {
 
     @Override
     public double takeHit(Player target, ItemStack stack, EntityDamageEvent event) {
-        if (!item.checkPermission(target, false)) {
+        if (!item.checkPermission(target, false))
             return event.getDamage();
-        } else {
-            if (event.getFinalDamage() < damageTrigger) return event.getDamage();
-            rescue(target, stack, event, true);
-            return 0;
-        }
+        double health = target.getHealth() - event.getDamage();
+        if (health > healthTrigger && event.getFinalDamage() < damageTrigger) return event.getDamage();
+        rescue(target, stack, event, true);
+        event.setCancelled(true);
+        return 0;
     }
 
     private void rescue(Player target, ItemStack stack, EntityDamageEvent event, boolean canceled) {
@@ -121,18 +121,18 @@ public class PowerRescue extends Power implements PowerHurt, PowerHitTaken {
         target.sendMessage(ChatColor.AQUA + Locale.get("power.rescue.info"));
         DamageCause cause = event.getCause();
         if (!canceled) {
-            target.addPotionEffect(new PotionEffect(PotionEffectType.HEALTH_BOOST, 1, 255));
-            target.setHealth(healthTrigger + event.getFinalDamage());
+            target.addPotionEffect(new PotionEffect(PotionEffectType.HEALTH_BOOST, 2, 255));
+            target.setHealth(healthTrigger + event.getDamage());
         }
-        target.addPotionEffect(new PotionEffect(PotionEffectType.DAMAGE_RESISTANCE, 200, 10));
-        target.addPotionEffect(new PotionEffect(PotionEffectType.REGENERATION, 400, 2));
-        target.addPotionEffect(new PotionEffect(PotionEffectType.SATURATION, 400, 2));
+        target.addPotionEffect(new PotionEffect(PotionEffectType.DAMAGE_RESISTANCE, 200, 10), true);
+        target.addPotionEffect(new PotionEffect(PotionEffectType.REGENERATION, 400, 2), true);
+        target.addPotionEffect(new PotionEffect(PotionEffectType.SATURATION, 400, 2), true);
         target.getWorld().playSound(target.getLocation(), Sound.BLOCK_ENCHANTMENT_TABLE_USE, 10, 1);
 
         if (inPlace && cause != DamageCause.DRAGON_BREATH
-                && cause != DamageCause.DROWNING
-                && cause != DamageCause.SUFFOCATION
-                && cause != DamageCause.VOID) {
+                    && cause != DamageCause.DROWNING
+                    && cause != DamageCause.SUFFOCATION
+                    && cause != DamageCause.VOID) {
             target.addPotionEffect(new PotionEffect(PotionEffectType.GLOWING, 160, 10));
         } else if (useBed && target.getBedSpawnLocation() != null)
             target.teleport(target.getBedSpawnLocation());
