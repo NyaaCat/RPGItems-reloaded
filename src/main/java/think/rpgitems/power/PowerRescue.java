@@ -16,6 +16,8 @@
  */
 package think.rpgitems.power;
 
+import com.google.common.cache.Cache;
+import com.google.common.cache.CacheBuilder;
 import org.bukkit.ChatColor;
 import org.bukkit.Sound;
 import org.bukkit.configuration.ConfigurationSection;
@@ -29,6 +31,9 @@ import think.rpgitems.data.Locale;
 import think.rpgitems.power.types.PowerHitTaken;
 import think.rpgitems.power.types.PowerHurt;
 
+import java.util.UUID;
+import java.util.concurrent.TimeUnit;
+
 /**
  * Power rescue.
  * <p>
@@ -39,6 +44,8 @@ import think.rpgitems.power.types.PowerHurt;
  * </p>
  */
 public class PowerRescue extends Power implements PowerHurt, PowerHitTaken {
+
+    private static Cache<UUID, Long> rescueTime = CacheBuilder.newBuilder().expireAfterWrite(5, TimeUnit.SECONDS).build();
 
     /**
      * Health trigger of rescue
@@ -110,6 +117,13 @@ public class PowerRescue extends Power implements PowerHurt, PowerHitTaken {
             return event.getDamage();
         double health = target.getHealth() - event.getDamage();
         if (health > healthTrigger && event.getFinalDamage() < damageTrigger) return event.getDamage();
+        Long last = rescueTime.getIfPresent(target.getUniqueId());
+        if (last != null && System.currentTimeMillis() - last < 3000) {
+            event.setCancelled(true);
+            return 0;
+        } else {
+            rescueTime.put(target.getUniqueId(), System.currentTimeMillis());
+        }
         rescue(target, stack, event, true);
         event.setCancelled(true);
         return 0;
