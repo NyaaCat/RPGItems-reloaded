@@ -115,7 +115,7 @@ public class PowerRescue extends Power implements PowerHurt, PowerHitTaken {
     public double takeHit(Player target, ItemStack stack, EntityDamageEvent event) {
         if (!item.checkPermission(target, false))
             return event.getDamage();
-        double health = target.getHealth() - event.getDamage();
+        double health = target.getHealth() - event.getFinalDamage();
         if (health > healthTrigger && event.getFinalDamage() < damageTrigger) return event.getDamage();
         Long last = rescueTime.getIfPresent(target.getUniqueId());
         if (last != null && System.currentTimeMillis() - last < 3000) {
