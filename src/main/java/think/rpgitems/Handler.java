@@ -952,9 +952,9 @@ public class Handler implements CommandHandler {
         RPGItem i = ItemManager.cloneItem(item, name);
         ItemManager.save(Plugin.plugin);
         if (i != null) {
-            sender.sendMessage(String.format(Locale.get("message.clone.success"), item.getName(), i.getName()));
+            sender.sendMessage(String.format(Locale.get("message.cloneitem.success"), item.getName(), i.getName()));
         } else {
-            sender.sendMessage(String.format(Locale.get("message.clone.fail"), item.getName(), name));
+            sender.sendMessage(String.format(Locale.get("message.cloneitem.fail"), item.getName(), name));
         }
     }
 }

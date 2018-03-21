@@ -369,5 +369,5 @@ message.itemflag.remove=已将ItemFlag %s从物品上移除
 message.itemflag.notfound=未找到ItemFlag %s
 message.print.customitemmodel=自定义物品模型: %s
 message.print.itemflags=ItemFlags: 
-message.clone.success=物品 %s 成功克隆为 %s
-message.clone.fail=物品 %s 克隆失败： %s 已存在
+message.cloneitem.success=物品 %s 成功克隆为 %s
+message.cloneitem.fail=物品 %s 克隆失败： %s 已存在
