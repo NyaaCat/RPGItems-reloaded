@@ -52,7 +52,6 @@ import think.rpgitems.power.types.*;
 import think.rpgitems.support.WorldGuard;
 import think.rpgitems.utils.ReflectionUtil;
 
-import java.io.Serializable;
 import java.util.*;
 import java.util.Map.Entry;
 import java.util.regex.Pattern;
@@ -60,12 +59,13 @@ import java.util.regex.Pattern;
 import static org.bukkit.ChatColor.COLOR_CHAR;
 import static org.bukkit.ChatColor.getByChar;
 
-public class RPGItem implements Cloneable, Serializable {
-    public enum DamageMode{
+public class RPGItem {
+    public enum DamageMode {
         FIXED,
         VANILLA,
         ADDITIONAL,
     }
+
     public static final int MC_ENCODED_ID_LENGTH = 16;
     public boolean ignoreWorldGuard = false;
     public List<String> description = new ArrayList<>();
@@ -104,13 +104,13 @@ public class RPGItem implements Cloneable, Serializable {
     private String loreText = "";
     private String type = Plugin.plugin.getConfig().getString("defaults.sword", "Sword");
     private String hand = Plugin.plugin.getConfig().getString("defaults.hand", "One handed");
-    private transient ArrayList<PowerLeftClick> powerLeftClick = new ArrayList<>();
-    private transient ArrayList<PowerRightClick> powerRightClick = new ArrayList<>();
-    private transient ArrayList<PowerProjectileHit> powerProjectileHit = new ArrayList<>();
-    private transient ArrayList<PowerHit> powerHit = new ArrayList<>();
-    private transient ArrayList<PowerHitTaken> powerHitTaken = new ArrayList<>();
-    private transient ArrayList<PowerHurt> powerHurt = new ArrayList<>();
-    private transient ArrayList<PowerTick> powerTick = new ArrayList<>();
+    private ArrayList<PowerLeftClick> powerLeftClick = new ArrayList<>();
+    private ArrayList<PowerRightClick> powerRightClick = new ArrayList<>();
+    private ArrayList<PowerProjectileHit> powerProjectileHit = new ArrayList<>();
+    private ArrayList<PowerHit> powerHit = new ArrayList<>();
+    private ArrayList<PowerHitTaken> powerHitTaken = new ArrayList<>();
+    private ArrayList<PowerHurt> powerHurt = new ArrayList<>();
+    private ArrayList<PowerTick> powerTick = new ArrayList<>();
     private int tooltipWidth = 150;
     // Durability
     private int maxDurability;
@@ -132,11 +132,20 @@ public class RPGItem implements Cloneable, Serializable {
         rebuild();
     }
 
-    @SuppressWarnings("unchecked")
     public RPGItem(ConfigurationSection s) {
-
         name = s.getString("name");
         id = s.getInt("id");
+        restore(s);
+    }
+
+    public RPGItem(ConfigurationSection s, String name, int id) {
+        this.name = name;
+        this.id = id;
+        restore(s);
+    }
+
+    @SuppressWarnings("unchecked")
+    private void restore(ConfigurationSection s) {
         setDisplay(s.getString("display"), false);
         setType(s.getString("type", Plugin.plugin.getConfig().getString("defaults.sword", "Sword")), false);
         setHand(s.getString("hand", Plugin.plugin.getConfig().getString("defaults.hand", "One handed")), false);
@@ -229,11 +238,11 @@ public class RPGItem implements Cloneable, Serializable {
         if (maxDurability == 0) {
             maxDurability = -1;
         }
-        
-       if (defaultDurability == 0) {
+
+        if (defaultDurability == 0) {
             defaultDurability = maxDurability > 0 ? maxDurability : -1;
         }
-        
+
         showPowerLore = s.getBoolean("showPowerText", true);
         showArmourLore = s.getBoolean("showArmourLore", true);
 
@@ -260,9 +269,9 @@ public class RPGItem implements Cloneable, Serializable {
         }
         customItemModel = s.getBoolean("customItemModel", false);
         String damageModeStr = s.getString("damageMode", "FIXED");
-        try{
+        try {
             damageMode = DamageMode.valueOf(damageModeStr);
-        }catch (IllegalArgumentException e){
+        } catch (IllegalArgumentException e) {
             damageMode = DamageMode.FIXED;
         }
         rebuild();
@@ -407,7 +416,7 @@ public class RPGItem implements Cloneable, Serializable {
         s.set("showPowerText", showPowerLore);
         s.set("showArmourLore", showArmourLore);
         s.set("damageMode", damageMode.name());
-        
+
         if (enchantMap != null) {
             ConfigurationSection ench = s.createSection("enchantments");
             for (Enchantment e : enchantMap.keySet()) {
@@ -684,9 +693,9 @@ public class RPGItem implements Cloneable, Serializable {
             if (armour != 0) {
                 damageStr = armour + "% " + Plugin.plugin.getConfig().getString("defaults.armour", "Armour");
             }
-            if((damageMin !=0 || damageMax !=0) && damageMode != DamageMode.VANILLA){
-                damageStr = damageStr == null? "" : damageStr + " & ";
-                if(damageMode == DamageMode.ADDITIONAL) {
+            if ((damageMin != 0 || damageMax != 0) && damageMode != DamageMode.VANILLA) {
+                damageStr = damageStr == null ? "" : damageStr + " & ";
+                if (damageMode == DamageMode.ADDITIONAL) {
                     damageStr += Plugin.plugin.getConfig().getString("defaults.additionaldamage", "Additional ");
                 }
                 if (damageMin == damageMax) {
@@ -785,14 +794,6 @@ public class RPGItem implements Cloneable, Serializable {
 
     public String getName() {
         return name;
-    }
-
-    public void setName(String name) {
-        this.name = name;
-    }
-
-    public void setId(int id) {
-        this.id = id;
     }
 
     public int getID() {
@@ -931,9 +932,9 @@ public class RPGItem implements Cloneable, Serializable {
             rebuild();
     }
 
-    public boolean checkPermission(Player p, boolean showWarn){
-        if(getHasPermission() && !p.hasPermission(getPermission())){
-            if(showWarn)p.sendMessage(ChatColor.RED + Locale.get("message.error.permission"));
+    public boolean checkPermission(Player p, boolean showWarn) {
+        if (getHasPermission() && !p.hasPermission(getPermission())) {
+            if (showWarn) p.sendMessage(ChatColor.RED + Locale.get("message.error.permission"));
             return false;
         }
         return true;
@@ -1050,13 +1051,13 @@ public class RPGItem implements Cloneable, Serializable {
         int durability;
         if (getMaxDurability() != -1) {
             durability = meta.containsKey(RPGMetadata.DURABILITY) ? ((Number) meta.get(RPGMetadata.DURABILITY)).intValue() : defaultDurability;
-            if((val > 0 && durability < durabilityLowerBound)
-                    || (val < 0 && durability > durabilityUpperBound)){
+            if ((val > 0 && durability < durabilityLowerBound)
+                        || (val < 0 && durability > durabilityUpperBound)) {
                 return false;
             }
             if (durability <= val
-                    && getLocaleMeta().isUnbreakable()
-                    && !customItemModel) {
+                        && getLocaleMeta().isUnbreakable()
+                        && !customItemModel) {
                 return false;
             }
             durability -= val;
@@ -1174,15 +1175,5 @@ public class RPGItem implements Cloneable, Serializable {
                 new BaseComponent[]{new TextComponent(ReflectionUtil.convertItemStackToJson(toItemStack()))});
         msg.setHoverEvent(hover);
         return msg;
-    }
-
-    @Override
-    public RPGItem clone() {
-        try {
-            return (RPGItem) super.clone();
-        }
-        catch (CloneNotSupportedException e) {
-            throw new RuntimeException(e);
-        }
     }
 }

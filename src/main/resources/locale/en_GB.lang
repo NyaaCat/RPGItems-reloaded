@@ -361,4 +361,4 @@ power.unbreaking=Unbreaking %d
 power.stuck=%d%% chance to stuck enemy %d tick (%.1fs cooldown)
 power.shulkerbullet=Launches shulker bullet (%.1f cooldown)
 message.clone.success=Successfully cloned item %s as %s
-message.clone.success=Failed to clone item %s : %s already exists
+message.clone.fail=Failed to clone item %s : %s already exists

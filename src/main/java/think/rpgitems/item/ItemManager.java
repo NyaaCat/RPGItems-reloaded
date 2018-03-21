@@ -20,6 +20,7 @@ import org.bukkit.ChatColor;
 import org.bukkit.Material;
 import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.configuration.InvalidConfigurationException;
+import org.bukkit.configuration.MemoryConfiguration;
 import org.bukkit.configuration.file.YamlConfiguration;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.ItemMeta;
@@ -192,9 +193,9 @@ public class ItemManager {
         do {
             free = currentPos++;
         } while (itemById.containsKey(free));
-        RPGItem newItem = item.clone();
-        newItem.setId(free);
-        newItem.setName(name);
+        ConfigurationSection section = new MemoryConfiguration();
+        item.save(section);
+        RPGItem newItem = new RPGItem(section, name, free);
         itemById.put(free, newItem);
         itemByName.put(name, newItem);
         return newItem;
