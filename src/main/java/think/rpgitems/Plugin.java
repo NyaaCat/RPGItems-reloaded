@@ -16,6 +16,7 @@
  */
 package think.rpgitems;
 
+import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandSender;
@@ -50,6 +51,21 @@ public class Plugin extends JavaPlugin {
 
     @Override
     public void onEnable() {
+        if (Bukkit.class.getPackage().getImplementationVersion().startsWith("git-Bukkit-")){
+            Bukkit.getConsoleSender().sendMessage(ChatColor.RED + "======================================");
+            Bukkit.getConsoleSender().sendMessage(ChatColor.RED + "RPGItems plugin require Spigot API, Please make sure you are using Spigot.");
+            Bukkit.getConsoleSender().sendMessage(ChatColor.RED + "======================================");
+        }
+        try {
+            Bukkit.spigot();
+        }catch (NoSuchMethodError e){
+            getCommand("rpgitem").setExecutor((sender, command, label, args) -> {
+                sender.sendMessage(ChatColor.RED + "======================================");
+                sender.sendMessage(ChatColor.RED + "RPGItems plugin require Spigot API, Please make sure you are using Spigot.");
+                sender.sendMessage(ChatColor.RED + "======================================");
+                return true;
+            });
+        }
         Locale.init(this);
         updateConfig();
         WorldGuard.init(this);
