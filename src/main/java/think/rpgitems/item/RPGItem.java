@@ -987,6 +987,7 @@ public class RPGItem {
             maxDurability = mat.getMaxDurability();
         }
         item.setType(mat);
+        updateLocaleMeta(item.getItemMeta());
         if (update)
             rebuild();
     }
