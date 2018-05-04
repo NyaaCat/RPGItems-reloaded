@@ -694,4 +694,13 @@ public class Events implements Listener {
     public void onPlayerMove(PlayerTeleportEvent e){
         getEventListener(PlayerTeleportEvent.class).forEach(l -> l.accept(e));
     }
+
+    @EventHandler(ignoreCancelled = true, priority = EventPriority.NORMAL)
+    public void onItemDamage(PlayerItemDamageEvent e) {
+        if (e.getItem().getType().getMaxDurability() - (e.getItem().getDurability() + e.getDamage()) <= 0) {
+            if (ItemManager.toRPGItem(e.getItem()) != null) {
+                e.setCancelled(true);
+            }
+        }
+    }
 }
