@@ -106,7 +106,7 @@ public class PowerAOE extends Power implements PowerRightClick {
         PotionEffect effect = new PotionEffect(type, duration, amplifier - 1);
         if (selfapplication)
             player.addPotionEffect(effect);
-        player.getWorld().playEffect(player.getLocation(), Effect.POTION_BREAK, 1);
+        player.getWorld().playEffect(player.getLocation(), Effect.POTION_BREAK, type.getColor().asRGB());
         for (Entity ent : getNearbyEntities(player.getLocation(), player, range))
             if (ent instanceof LivingEntity && !player.equals(ent))
                 ((LivingEntity) ent).addPotionEffect(effect);
