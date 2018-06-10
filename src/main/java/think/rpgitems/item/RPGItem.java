@@ -588,7 +588,7 @@ public class RPGItem {
         }
         if (enchantMap != null) {
             for (Enchantment e : enchantMap.keySet()) {
-                meta.addEnchant(e, enchantMap.get(e), false);
+                meta.addEnchant(e, enchantMap.get(e), true);
             }
         }
         updateLocaleMeta(meta);
