@@ -29,8 +29,8 @@ import org.bukkit.util.Vector;
 import think.rpgitems.Events;
 import think.rpgitems.I18n;
 import think.rpgitems.RPGItems;
-import think.rpgitems.commands.Property;
 import think.rpgitems.commands.BooleanChoice;
+import think.rpgitems.commands.Property;
 import think.rpgitems.power.types.PowerHitTaken;
 import think.rpgitems.power.types.PowerLeftClick;
 import think.rpgitems.power.types.PowerRightClick;
@@ -160,6 +160,9 @@ public class PowerDeflect extends Power implements PowerHitTaken, PowerRightClic
                     p.remove();
                     target.getLocation().getWorld().playSound(target.getLocation(), Sound.ITEM_SHIELD_BLOCK, 1.0f, 3.0f);
                     Bukkit.getScheduler().runTaskLater(RPGItems.plugin, () -> {
+                        if (!target.isOnline() || target.isDead()) {
+                            return;
+                        }
                         Projectile t = target.launchProjectile(p.getClass());
                         if (p instanceof TippedArrow) {
                             TippedArrow tippedArrowP = (TippedArrow) p;

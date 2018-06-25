@@ -29,6 +29,7 @@ import think.rpgitems.commands.*;
 import think.rpgitems.data.RPGValue;
 import think.rpgitems.item.RPGItem;
 
+import java.io.Serializable;
 import java.lang.annotation.Annotation;
 import java.lang.invoke.LambdaMetafactory;
 import java.lang.invoke.MethodHandle;
@@ -40,12 +41,11 @@ import java.util.*;
 import java.util.function.BiConsumer;
 import java.util.function.BiFunction;
 import java.util.stream.Collectors;
-
 /**
  * Base class for all powers
  */
 @SuppressWarnings("unchecked")
-public abstract class Power {
+public abstract class Power implements Serializable {
 
     public static final HashBasedTable<Class<? extends Power>, String, BiFunction<Object, String, String>> transformers;
     public static final HashBasedTable<Class<? extends Power>, String, BiFunction<Object, String, Boolean>> validators;
@@ -108,6 +108,9 @@ public abstract class Power {
         Power.powers.put("realdamage", PowerRealDamage.class);
         Power.powers.put("selector", PowerSelector.class);
         Power.powers.put("noimmutabletick", PowerNoImmutableTick.class);
+        Power.powers.put("stuck", PowerStuck.class);
+        Power.powers.put("shulkerbullet", PowerShulkerBullet.class);
+        Power.powers.put("throw", PowerThrow.class);
         MethodHandles.Lookup lookup = MethodHandles.lookup();
         for (Class<? extends Power> cls : Power.powers.values()) {
             Map<Class<? extends Annotation>, List<Annotation>> annos =

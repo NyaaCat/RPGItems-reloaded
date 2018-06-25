@@ -69,6 +69,8 @@ command:
     range: 范围
     val: 值
     isFire: 是否火焰方块
+    delay: 延迟
+    regex: 正则表达式
   rpgitem:
     commandhit:
       full: '给 @[Item]# 添加击中指令技能. 冷却时间为 @[Cooldown]#. 工具提示为 @[Display]#. @[指令]# 会在击中目标后执行,
@@ -177,7 +179,7 @@ command:
     removerecipe: 已删除 @[物品]# 的合成表
     potionhit: '攻击时有 1/@[分母数值]# 的几率使目标获得药水效果. @[效果]# 为药水效果 @[持续时间]# 单位为游戏刻, @[效果等级]#
       为整数。 可用药水效果:'
-    wgcustomflag: 切换 Worldguard 自定义标志支持. 启用后，RPGItem会根据disabled-rpg-powers标志来禁用特定能力在特定区域的使用, 否则阻止RPG Items的物品在非PVP区使用.
+    wgcustomflag: 切换 Worldguard 自定义标志支持。启用后，RPGItem 会根据 disabled-rpg-powers 标志来禁用特定能力在特定区域的使用，阻止 RPGItem 物品在非 PVP 区使用
     unbreakable: 给 @[物品]# 添加不毁技能. 拥有该技能的 @[物品]# 不会被玩坏
     power_property_get: 获取 @[物品]# 的第 @[nth]# 个 @[技能]# 的 的 @[属性]#
     quality: 显示 @[物品]# 当前品质
@@ -188,6 +190,17 @@ command:
     fire: 给 @[物品]# 添加火焰技能，冷却时间 @[Cooldown]#ticks. 火焰技能在右键使用时发射火焰。
     print: 在聊天框中显示 @[物品]# 属性
     realdamage: =给 @[物品]# 添加真实伤害技能, @[冷却时间]# 为游戏刻. 被击中的生物将受到真实伤害但至少会剩0.1点生命值.
+    shulkerbullet: 给 @[Item]# 添加潜影贝子弹技能
+    stuck: 给 @[Item]# 添加定身技能
+    enchantment:
+      clear: 移除rpgitem的全部附魔.
+      clone: 将手中物品的附魔复制到指定的rpgitem物品上.
+      list: 列出物品的附魔.
+    itemflag:
+      add: '添加ItemFlag到 @[Item]#. 有效的ItemFlags:'
+      remove: '从 @[Item]# 上移除ItemFlag. 有效的ItemFlags:'
+    lorefilter: 保留 @[Regex]# 所匹配的lore
+    toggleDamageMode: 切换物品的伤害模式
 message:
   recipe:
     removed: 合成表已移除
@@ -238,7 +251,7 @@ message:
     set: 从 '%s' 掉落 '%s' 的几率设置为 %.2f%%
   command:
     usage: '指令用法: /%s (%s)'
-    info: 更详细帮助信息请查看bukkitdev页面, 或输入/rpgitem help [关键词] 插件汉化by wolski from mcbbs.net
+    info: 更详细帮助信息请查看 https://github.com/NyaaCat/RPGitems-reloaded/wiki，或输入 /rpgitem help [关键词]
   help:
     for: 显示 '%s' 的帮助信息
   cooldown: 冷却时间还没有结束, 请等待 %.1f 秒
@@ -247,7 +260,7 @@ message:
     to: 把 %s 给 %s
     console: 无法在控制台使用此指令
   enchantment:
-    removed: 附魔已删除
+    removed: 已移除物品带有的附魔
     success: 附魔设置成功
     fail: 附魔设置失败
     item: "附魔:%s 等级:%d"
@@ -299,7 +312,7 @@ message:
     get: 物品 '%s' 展示名为 '%s'
     set: 物品 '%s' 展示名已设置为 '%s'
   deprecation:
-    lore: '[注意] “lore” 不是一个被推荐的功能，请使用 “description” 作为替代'
+    lore: '[注意] lore 是已弃用的特性，请使用 description 替代。'
   type:
     set: 物品 '%s' 类型已设置为 '%s'
     get: 物品 '%s' 类型为 '%s'
@@ -348,7 +361,7 @@ message:
   color:
     next: '%s颜色已改变！'
   print:
-    itemflags: '物品标志: '
+    itemflags: 'ItemFlags: '
     durability: '最大耐久度: %d'
     customitemmodel: '自定义模型: %s'
   itemflag:
@@ -358,10 +371,25 @@ message:
   customitemmodel:
     disable: 自定义物品模型关闭
     enable: 自定义物品模型开启
+  stuck: 你已经被定身，无法传送！
+  enchantment:
+    empty_ench: 这个物品没有任何附魔
+    fail: 失败，手中没有物品
+    item: 附魔:%s 等级:%d
+    listing: 物品 %s 带有的附魔
+    no_ench: 此物品未带有附魔
+    success: 成功
+  itemflag:
+    add: 成功添加ItemFlag %s
+    remove: 已将ItemFlag %s从物品上移除
+    notfound: 未找到ItemFlag %s
+  cloneitem:
+    success: 物品 %s 成功克隆为 %s
+    fail: 物品 %s 克隆失败： %s 已存在
   version: |-
-    RPGItem v%s (1.11.2 branch)
+    RPGItem v%s (1.12 branch)
 
-    版权所有 © 2017 NyaaCat 开发组
+    版权所有 © 2018 NyaaCat 开发组
     版权所有 © 2013 TheCreeperOfRedstone
     以 GPLv3+ 授权: GNU GPL version 3 or later <http://gnu.org/licenses/gpl.html>.
     This is free software: you are free to change and redistribute it.
@@ -419,3 +447,5 @@ power:
   particletick: 持有时产生一些粒子
   potionhit: '%d%% 的几率触发效果 %s'
   arrow: 发射火箭 (%.1f 秒冷却时间)
+  stuck: 攻击后 %d 几率敌人无法移动 %d tick (%.1f 秒冷却时间)
+  shulkerbullet: 发射潜影贝子弹 (%.1f 秒冷却时间)

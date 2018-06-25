@@ -129,11 +129,21 @@ public class RPGItem {
         rebuild();
     }
 
-    @SuppressWarnings("unchecked")
     public RPGItem(ConfigurationSection s) {
 
         name = s.getString("name");
         id = s.getInt("id");
+        restore(s);
+    }
+
+    public RPGItem(ConfigurationSection s, String name, int id) {
+        this.name = name;
+        this.id = id;
+        restore(s);
+    }
+
+    @SuppressWarnings("unchecked")
+    private void restore(ConfigurationSection s) {
         setDisplay(s.getString("display"), false);
         setType(s.getString("type", RPGItems.plugin.getConfig().getString("defaults.sword", "Sword")), false);
         setHand(s.getString("hand", RPGItems.plugin.getConfig().getString("defaults.hand", "One handed")), false);
@@ -225,6 +235,11 @@ public class RPGItem {
         if (maxDurability == 0) {
             maxDurability = -1;
         }
+
+        if (defaultDurability == 0) {
+            defaultDurability = maxDurability > 0 ? maxDurability : -1;
+        }
+
         showPowerLore = s.getBoolean("showPowerText", true);
         showArmourLore = s.getBoolean("showArmourLore", true);
 
@@ -579,7 +594,7 @@ public class RPGItem {
         }
         if (enchantMap != null) {
             for (Enchantment e : enchantMap.keySet()) {
-                meta.addEnchant(e, enchantMap.get(e), false);
+                meta.addEnchant(e, enchantMap.get(e), true);
             }
         }
         updateLocaleMeta(meta);
@@ -982,6 +997,7 @@ public class RPGItem {
             maxDurability = mat.getMaxDurability();
         }
         item.setType(mat);
+        updateLocaleMeta(item.getItemMeta());
         if (update)
             rebuild();
     }

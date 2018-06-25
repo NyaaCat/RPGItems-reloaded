@@ -71,6 +71,9 @@ command:
     range: Range
     val: Value
     isFire: IsFireBlock
+    speed: Speed
+    entity: Entity
+    entityData: EntityData
   rpgitem:
     commandhit:
       full: 'Adds the command-when-hit power to @[Item]# with a cooldown of @[Cooldown]#
@@ -82,7 +85,10 @@ command:
       cone: 'Adds the power to @[Item]# with a cooldown of @[Cooldown]# ticks. Launches
         @[Amount]# projectiles of type @[ProjectileType]# when right clicked. Randomly
         distributed in the cone with angle @[Range]# centered with player''s direction.
-        Acceptable types: skull, snowball, smallfireball, arrow, llamaspit'
+        Acceptable types: skull, snowball, smallfireball, arrow, llamaspit, dragonfireball, shulkerbullet'
+      full: 'Adds the power to @[Item]# with a cooldown of @[Cooldown]# ticks. Launches 
+        a projectile of type @[ProjectileType]# when right clicked. 
+        Acceptable types\: skull, fireball, snowball, smallfireball, arrow, llamaspit, dragonfireball, shulkerbullet'
     tntcannon:
       full: Adds the tntcannon power to @[Item]# with a cooldown of @[Cooldown]# ticks. The tntcannon power will fire active tnt on right click.
     command:
@@ -209,6 +215,7 @@ command:
     fire: Adds the fire power to @[Item]# with a cooldown of @[Cooldown]# ticks. The fire power will shoot fire on right click.
     print: Prints item @[Item]#'s tool-tip to chat
     realdamage: =Adds the realdamage power to @[Item]# with a cooldown of @[Cooldown]# ticks. The item will do real @[Damage]# to LivingEntity player hits but always leave at least 0.1 health.
+    throw: 'Adds the throw power to @[Item]# with a cooldown of @[Cooldown]# ticks. The tooltip will display @[Display]#. The item will throw entity @[Entity]# with @[EntityData]# and @[Speed]\# on @[left,right]# click.'
 message:
   cost:
     hit_toggle:
@@ -387,6 +394,10 @@ message:
     fail: You failed to hook anything
   color:
     next: '%sChanged paint!'
+  stuck: 'You are stuck and cannot teleport!'
+  cloneitem:
+    success: 'Successfully cloned item %s as %s'
+    fail: 'Failed to clone item %s : %s already exists'
 power:
   selector: Powers only applies to some entites
   noimmutabletick: Attack won't cause immutable tick on enemy
@@ -438,6 +449,8 @@ power:
   particletick: Spawn some particles when held
   potionhit: '%d%% chance to apply %s'
   arrow: Shoots an arrow. (%.1fs cooldown)
+  stuck: '%d%% chance to stuck enemy %d tick (%.1fs cooldown)'
+  shulkerbullet: Launches shulker bullet (%.1f cooldown)
 manual:
   give:
     description: "Gives the item to the user of the command or a player"

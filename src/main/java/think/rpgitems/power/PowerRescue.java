@@ -16,6 +16,8 @@
  */
 package think.rpgitems.power;
 
+import com.google.common.cache.Cache;
+import com.google.common.cache.CacheBuilder;
 import org.bukkit.Sound;
 import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.entity.Player;
@@ -29,6 +31,8 @@ import think.rpgitems.commands.Property;
 import think.rpgitems.power.types.PowerHitTaken;
 import think.rpgitems.power.types.PowerHurt;
 
+import java.util.UUID;
+import java.util.concurrent.TimeUnit;
 /**
  * Power rescue.
  * <p>
@@ -40,7 +44,7 @@ import think.rpgitems.power.types.PowerHurt;
  */
 @SuppressWarnings("WeakerAccess")
 public class PowerRescue extends Power implements PowerHurt, PowerHitTaken {
-
+    private static Cache<UUID, Long> rescueTime = CacheBuilder.newBuilder().expireAfterWrite(5, TimeUnit.SECONDS).build();
     /**
      * Health trigger of rescue
      */
@@ -101,7 +105,7 @@ public class PowerRescue extends Power implements PowerHurt, PowerHitTaken {
         s.set("inPlace", inPlace);
         s.set("consumption", consumption);
     }
-
+    // shouldn't be called if takeHit works. leave it as-is now
     @Override
     public void hurt(Player target, ItemStack stack, EntityDamageEvent event) {
         if (!item.checkPermission(target, false)) return;
@@ -112,13 +116,20 @@ public class PowerRescue extends Power implements PowerHurt, PowerHitTaken {
 
     @Override
     public double takeHit(Player target, ItemStack stack, EntityDamageEvent event) {
-        if (!item.checkPermission(target, false)) {
+        if (!item.checkPermission(target, false))
             return event.getDamage();
-        } else {
-            if (event.getFinalDamage() < damageTrigger) return event.getDamage();
-            rescue(target, stack, event, true);
+        double health = target.getHealth() - event.getFinalDamage();
+        if (health > healthTrigger && event.getFinalDamage() < damageTrigger) return event.getDamage();
+        Long last = rescueTime.getIfPresent(target.getUniqueId());
+        if (last != null && System.currentTimeMillis() - last < 3000) {
+            event.setCancelled(true);
             return 0;
+        } else {
+            rescueTime.put(target.getUniqueId(), System.currentTimeMillis());
         }
+        rescue(target, stack, event, true);
+        event.setCancelled(true);
+        return 0;
     }
 
     private void rescue(Player target, ItemStack stack, EntityDamageEvent event, boolean canceled) {
@@ -127,12 +138,12 @@ public class PowerRescue extends Power implements PowerHurt, PowerHitTaken {
         target.sendMessage(I18n.format("power.rescue.info"));
         DamageCause cause = event.getCause();
         if (!canceled) {
-            target.addPotionEffect(new PotionEffect(PotionEffectType.HEALTH_BOOST, 1, 255));
-            target.setHealth(healthTrigger + event.getFinalDamage());
+            target.addPotionEffect(new PotionEffect(PotionEffectType.HEALTH_BOOST, 2, 255));
+            target.setHealth(healthTrigger + event.getDamage());
         }
-        target.addPotionEffect(new PotionEffect(PotionEffectType.DAMAGE_RESISTANCE, 200, 10));
-        target.addPotionEffect(new PotionEffect(PotionEffectType.REGENERATION, 400, 2));
-        target.addPotionEffect(new PotionEffect(PotionEffectType.SATURATION, 400, 2));
+        target.addPotionEffect(new PotionEffect(PotionEffectType.DAMAGE_RESISTANCE, 200, 10), true);
+        target.addPotionEffect(new PotionEffect(PotionEffectType.REGENERATION, 400, 2), true);
+        target.addPotionEffect(new PotionEffect(PotionEffectType.SATURATION, 400, 2), true);
         target.getWorld().playSound(target.getLocation(), Sound.BLOCK_ENCHANTMENT_TABLE_USE, 10, 1);
 
         if (inPlace && cause != DamageCause.DRAGON_BREATH

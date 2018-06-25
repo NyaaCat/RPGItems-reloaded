@@ -964,4 +964,19 @@ public class Handler extends RPGCommandReceiver {
             throw new BadCommandException("message.error.item", name);
         }
     }
+
+    @SubCommand("clone")
+    @Attribute("item")
+    public void cloneItem(CommandSender sender, Arguments args) {
+        RPGItem item = getItemByName(args.nextString());
+        String name = args.nextString();
+        RPGItem i = ItemManager.cloneItem(item, name);
+        ItemManager.save(plugin);
+        if (i != null) {
+            msg(sender, "message.cloneitem.success", item.getName(), i.getName());
+        } else {
+            msg(sender, "message.cloneitem.fail", item.getName(), name);
+        }
+    }
+    
 }

@@ -97,7 +97,9 @@ public class PowerProjectile extends Power implements PowerRightClick {
                            "snowball",
                            "smallfireball",
                            "llamaspit",
-                           "arrow"
+                           "arrow",
+                           "shulkerbullet",
+                           "dragonfireball"
     })
     @Validator(value = "acceptableType", message = "power.projectile.noFireball")
     @Setter("setType")
@@ -148,6 +150,10 @@ public class PowerProjectile extends Power implements PowerRightClick {
             return "arrow";
         else if (projectileType == LlamaSpit.class)
             return "llamaspit";
+        else if (projectileType == ShulkerBullet.class)
+            return "shulkerbullet";
+        else if (projectileType == DragonFireball.class)
+            return "dragonfireball";
         else
             return "snowball";
     }
@@ -173,6 +179,12 @@ public class PowerProjectile extends Power implements PowerRightClick {
                 break;
             case "llamaspit":
                 projectileType = LlamaSpit.class;
+                break;
+            case "shulkerbullet":
+                projectileType = ShulkerBullet.class;
+                break;
+            case "dragonfireball":
+                projectileType = DragonFireball.class;
                 break;
             default:
                 projectileType = Snowball.class;

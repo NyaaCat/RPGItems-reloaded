@@ -16,6 +16,8 @@
  */
 package think.rpgitems;
 
+import com.google.common.collect.MultimapBuilder;
+import com.google.common.collect.SetMultimap;
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
 import org.bukkit.Material;
@@ -23,6 +25,7 @@ import org.bukkit.entity.HumanEntity;
 import org.bukkit.entity.LivingEntity;
 import org.bukkit.entity.Player;
 import org.bukkit.entity.Projectile;
+import org.bukkit.event.Event;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.EventPriority;
 import org.bukkit.event.Listener;
@@ -35,8 +38,7 @@ import org.bukkit.event.entity.*;
 import org.bukkit.event.hanging.HangingBreakEvent;
 import org.bukkit.event.hanging.HangingBreakEvent.RemoveCause;
 import org.bukkit.event.inventory.*;
-import org.bukkit.event.player.PlayerInteractEvent;
-import org.bukkit.event.player.PlayerJoinEvent;
+import org.bukkit.event.player.*;
 import org.bukkit.inventory.*;
 import org.bukkit.metadata.FixedMetadataValue;
 import org.bukkit.potion.PotionEffect;
@@ -52,6 +54,9 @@ import think.rpgitems.support.WGHandler;
 import think.rpgitems.support.WorldGuard;
 
 import java.util.*;
+import java.util.function.Consumer;
+import java.util.stream.Collectors;
+
 
 import static think.rpgitems.RPGItems.plugin;
 
@@ -109,6 +114,24 @@ public class Events implements Listener {
     }};
     private HashSet<LocaleInventory> localeInventories = new HashSet<>();
     private Random random = new Random();
+    private SetMultimap<Class<? extends Event>, Consumer<? extends Event>> eventMap = MultimapBuilder.SortedSetMultimapBuilder.hashKeys().hashSetValues().build();
+
+            @SuppressWarnings("unchecked")
+    public <T extends Event> Events addEventListener(Class<T> clz, Consumer<T> listener){
+                eventMap.put(clz, listener);
+                return this;
+            }
+
+            @SuppressWarnings("unchecked")
+    public <T extends Event> Events removeEventListener(Class<T> clz, Consumer<T> listener){
+                eventMap.remove(clz, listener);
+                return this;
+            }
+
+            @SuppressWarnings("unchecked")
+    private <T extends Event> Set<Consumer<T>> getEventListener(Class<T> clz) {
+                return eventMap.get(clz).stream().map(l -> (Consumer<T>)l).collect(Collectors.toSet());
+            }
 
     static private boolean canStack(ItemStack a, ItemStack b) {
         if (a != null && a.getType() == Material.AIR) a = null;
@@ -208,22 +231,23 @@ public class Events implements Listener {
         if (rpgProjectiles.containsKey(entity.getEntityId())) {
             RPGItem rItem = ItemManager.getItemById(rpgProjectiles.get(entity.getEntityId()));
 
-            if (rItem == null)
+            if (rItem == null || !(entity.getShooter() instanceof Player))
                 return;
-            ItemStack item = ((Player) entity.getShooter()).getInventory().getItemInMainHand();
-            RPGItem hItem = ItemManager.toRPGItem(item);
-            if (rItem != hItem) {
-                item = ((Player) entity.getShooter()).getInventory().getItemInOffHand();
-                hItem = ItemManager.toRPGItem(item);
+            Player player = (Player) entity.getShooter();
+            if (player.isOnline() && !player.isDead()) {
+                ItemStack item = player.getInventory().getItemInMainHand();
+                RPGItem hItem = ItemManager.toRPGItem(item);
                 if (rItem != hItem) {
-                    return;
+                    item = player.getInventory().getItemInOffHand();
+                    hItem = ItemManager.toRPGItem(item);
+                    if (rItem != hItem) {
+                        return;
+                    }
                 }
-            }
 
-            rItem.projectileHit((Player) entity.getShooter(), item, entity);
-            Bukkit.getScheduler().runTask(plugin, () ->
-                rpgProjectiles.remove(entity.getEntityId())
-            );
+                rItem.projectileHit(player, item, entity);
+            }
+            Bukkit.getScheduler().runTask(plugin, () -> rpgProjectiles.remove(entity.getEntityId()));
         }
     }
 
@@ -509,8 +533,11 @@ public class Events implements Listener {
         Integer projectileID = rpgProjectiles.get(entity.getEntityId());
         if (projectileID == null) return damage;
         RPGItem rItem = ItemManager.getItemById(projectileID);
-        if (rItem == null)
+        if (rItem == null || !(entity.getShooter() instanceof Player))
             return damage;
+        if (!((Player) entity.getShooter()).isOnline()) {
+            return damage;
+        }
         Player player = (Player) entity.getShooter();
         ItemStack item = player.getInventory().getItemInMainHand();
         RPGItem hItem = ItemManager.toRPGItem(item);
@@ -661,6 +688,32 @@ public class Events implements Listener {
                 }
             } else {
                 e.getInventory().setResult(new ItemStack(Material.AIR));
+            }
+        }
+    }
+    @SuppressWarnings("unchecked")
+    @EventHandler(ignoreCancelled = true, priority = EventPriority.NORMAL)
+    public void onEntityTeleport(EntityTeleportEvent e){
+        getEventListener(EntityTeleportEvent.class).forEach(l -> l.accept(e));
+    }
+
+    @SuppressWarnings("unchecked")
+    @EventHandler(ignoreCancelled = true, priority = EventPriority.NORMAL)
+    public void onPlayerMove(PlayerMoveEvent e){
+        getEventListener(PlayerMoveEvent.class).forEach(l -> l.accept(e));
+    }
+
+    @SuppressWarnings("unchecked")
+    @EventHandler(ignoreCancelled = true, priority = EventPriority.NORMAL)
+    public void onPlayerMove(PlayerTeleportEvent e){
+        getEventListener(PlayerTeleportEvent.class).forEach(l -> l.accept(e));
+    }
+
+    @EventHandler(ignoreCancelled = true, priority = EventPriority.NORMAL)
+    public void onItemDamage(PlayerItemDamageEvent e) {
+        if (e.getItem().getType().getMaxDurability() - (e.getItem().getDurability() + e.getDamage()) <= 0) {
+            if (ItemManager.toRPGItem(e.getItem()) != null) {
+                e.setCancelled(true);
             }
         }
     }
