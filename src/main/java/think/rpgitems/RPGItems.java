@@ -16,6 +16,8 @@
  */
 package think.rpgitems;
 
+import org.bukkit.Bukkit;
+import org.bukkit.ChatColor;
 import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.plugin.java.JavaPlugin;
 import think.rpgitems.data.Font;
@@ -29,6 +31,7 @@ public class RPGItems extends JavaPlugin {
 
     public static Logger logger = Logger.getLogger("RPGItems");
     public static RPGItems plugin;
+    public static Events listener;
     public Handler commandHandler;
     public I18n i18n;
 
@@ -43,6 +46,21 @@ public class RPGItems extends JavaPlugin {
     @Override
     public void onEnable() {
         plugin = this;
+        if (Bukkit.class.getPackage().getImplementationVersion().startsWith("git-Bukkit-")){
+            Bukkit.getConsoleSender().sendMessage(ChatColor.RED + "======================================");
+            Bukkit.getConsoleSender().sendMessage(ChatColor.RED + "RPGItems plugin require Spigot API, Please make sure you are using Spigot.");
+            Bukkit.getConsoleSender().sendMessage(ChatColor.RED + "======================================");
+        }
+        try {
+            Bukkit.spigot();
+        }catch (NoSuchMethodError e){
+            getCommand("rpgitem").setExecutor((sender, command, label, args) -> {
+                sender.sendMessage(ChatColor.RED + "======================================");
+                sender.sendMessage(ChatColor.RED + "RPGItems plugin require Spigot API, Please make sure you are using Spigot.");
+                sender.sendMessage(ChatColor.RED + "======================================");
+                return true;
+            });
+        }
         WorldGuard.init(this);
         ConfigurationSection conf = getConfig();
         if (conf.getBoolean("localeInv", false)) {
@@ -53,7 +71,7 @@ public class RPGItems extends JavaPlugin {
         getCommand("rpgitem").setExecutor(commandHandler);
         getCommand("rpgitem").setTabCompleter(commandHandler);
 
-        getServer().getPluginManager().registerEvents(new Events(), this);
+        getServer().getPluginManager().registerEvents(listener = new Events(), this);
         ItemManager.load(this);
         new PowerTicker().runTaskTimer(this, 0, 1);
     }

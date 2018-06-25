@@ -51,8 +51,8 @@ public class PowerLightning extends Power implements PowerHit, PowerProjectileHi
     @Override
     public void hit(Player player, ItemStack stack, LivingEntity entity, double damage) {
         if (!item.checkPermission(player, true)) return;
-        if (!item.consumeDurability(stack, consumption)) return;
         if (random.nextInt(chance) == 0) {
+            if (!item.consumeDurability(stack, consumption)) return;
             entity.getWorld().strikeLightning(entity.getLocation());
         }
     }
@@ -60,8 +60,8 @@ public class PowerLightning extends Power implements PowerHit, PowerProjectileHi
     @Override
     public void projectileHit(Player player, ItemStack stack, Projectile p) {
         if (!item.checkPermission(player, true)) return;
-        if (!item.consumeDurability(stack, consumption)) return;
         if (random.nextInt(chance) == 0) {
+            if (!item.consumeDurability(stack, consumption)) return;
             p.getWorld().strikeLightning(p.getLocation());
         }
     }
