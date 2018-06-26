@@ -125,7 +125,7 @@ public class RPGItem {
         displayName = item.getType().toString();
 
         localeMeta = item.getItemMeta();
-
+        itemFlags.add(ItemFlag.HIDE_ATTRIBUTES);
         rebuild();
     }
 
