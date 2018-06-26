@@ -29,6 +29,7 @@ import org.bukkit.potion.PotionEffect;
 import org.bukkit.potion.PotionEffectType;
 import think.rpgitems.I18n;
 import think.rpgitems.RPGItems;
+import think.rpgitems.commands.Property;
 import think.rpgitems.power.types.PowerHit;
 import think.rpgitems.power.types.PowerRightClick;
 
@@ -80,11 +81,13 @@ public class PowerStuck extends Power implements PowerHit, PowerRightClick {
     /**
      * Duration of this power in tick
      */
+    @Property(order = 1)
     public int duration = 100;
 
     /**
      * Cooldown time of this power
      */
+    @Property(order = 0)
     public long cooldownTime = 200;
 
     /**

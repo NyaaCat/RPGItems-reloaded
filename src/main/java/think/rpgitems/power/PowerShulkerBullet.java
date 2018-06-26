@@ -8,6 +8,7 @@ import org.bukkit.entity.ShulkerBullet;
 import org.bukkit.inventory.ItemStack;
 import think.rpgitems.Events;
 import think.rpgitems.I18n;
+import think.rpgitems.commands.Property;
 import think.rpgitems.power.types.PowerRightClick;
 import think.rpgitems.utils.ReflectionUtil;
 
@@ -26,6 +27,7 @@ public class PowerShulkerBullet extends Power implements PowerRightClick {
     /**
      * Cooldown time of this power
      */
+    @Property(order = 0)
     public long cooldownTime = 20;
     /**
      * Cost of this power
@@ -34,6 +36,7 @@ public class PowerShulkerBullet extends Power implements PowerRightClick {
     /**
      * Range of this power
      */
+    @Property(order = 1)
     public double range = 10;
 
     @Override
