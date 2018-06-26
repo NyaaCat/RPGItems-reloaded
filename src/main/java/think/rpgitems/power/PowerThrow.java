@@ -10,6 +10,7 @@ import org.bukkit.entity.Entity;
 import org.bukkit.entity.Player;
 import org.bukkit.entity.Projectile;
 import org.bukkit.inventory.ItemStack;
+import think.rpgitems.commands.Property;
 import think.rpgitems.power.types.PowerLeftClick;
 import think.rpgitems.power.types.PowerRightClick;
 import think.rpgitems.utils.ReflectionUtil;
@@ -19,11 +20,17 @@ import java.lang.reflect.Method;
 import java.util.UUID;
 
 public class PowerThrow extends Power implements PowerRightClick, PowerLeftClick {
+    @Property(order = 5)
     public String entityData = "";
+    @Property(order = 4)
     public String entityName = "";
+    @Property(order = 1)
     public long cooldownTime = 20;
+    @Property(order = 3)
     public double speed = 3;
+    @Property(order = 0)
     public String display = "throw entity";
+    @Property(order = 2)
     public boolean isRight;
     public int consumption = 0;
 
