@@ -423,8 +423,8 @@ power:
   aoe:
     display: Applies %s level %d for %d ticks to everything %s within %d blocks. (%.1fs cooldown)
     selfapplication:
-      false: excluding yourself
-      true: including yourself
+      'false': excluding yourself
+      'true': including yourself
   particle: Spawn some particles when used
   deflect: Deflect arrows or fireballs
   fireball: Shoots a fireball (%.1fs cooldown)
