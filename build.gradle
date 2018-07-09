@@ -35,3 +35,18 @@ dependencies {
 compileJava {
     options.compilerArgs += ["-Xlint:deprecation", "-Xlint:unchecked"]
 }
+
+processResources {
+    if (System.getenv("TRAVIS_BRANCH") != null) {
+        def branch = System.getenv("TRAVIS_BRANCH").toString()
+        def year = Calendar.getInstance().get(Calendar.YEAR).toString()
+        from(sourceSets.main.resources.srcDirs) {
+            include 'locale/en_GB.lang'
+            filter(org.apache.tools.ant.filters.ReplaceTokens, tokens: [BUILD_BRANCH: branch, BUILD_COPYRIGHT_YEAR: year])
+        }
+    }
+}
+
+jar {
+    from "LICENSE"
+}
