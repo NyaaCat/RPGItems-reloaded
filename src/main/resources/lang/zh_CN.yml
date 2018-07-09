@@ -421,8 +421,8 @@ power:
   aoe:
     display: 附加 %s  (级别 %d ) 效果，时间为 %d 单位，作用物品：%s，作用范围：%d 格方块，冷却时间：%.1f秒
     selfapplication:
-      false: 排除自身
-      true: 包含自身
+      'false': 排除自身
+      'true': 包含自身
   particle: 右键时产生一些粒子
   deflect: 反弹射来的箭与火球
   fireball: 发射火球 (%.1f 秒冷却时间)
