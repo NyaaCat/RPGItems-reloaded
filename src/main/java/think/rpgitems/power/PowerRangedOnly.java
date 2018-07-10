@@ -27,7 +27,7 @@ import think.rpgitems.I18n;
  * Mark this item as ranged only.
  * </p>
  */
-public class PowerRangedOnly extends Power {
+public class PowerRangedOnly extends PowerRanged {
     @Override
     public void init(ConfigurationSection s) {
 

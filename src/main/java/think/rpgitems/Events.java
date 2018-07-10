@@ -57,7 +57,6 @@ import java.util.*;
 import java.util.function.Consumer;
 import java.util.stream.Collectors;
 
-
 import static think.rpgitems.RPGItems.plugin;
 
 public class Events implements Listener {
@@ -116,22 +115,22 @@ public class Events implements Listener {
     private Random random = new Random();
     private SetMultimap<Class<? extends Event>, Consumer<? extends Event>> eventMap = MultimapBuilder.SortedSetMultimapBuilder.hashKeys().hashSetValues().build();
 
-            @SuppressWarnings("unchecked")
-    public <T extends Event> Events addEventListener(Class<T> clz, Consumer<T> listener){
-                eventMap.put(clz, listener);
-                return this;
-            }
+    @SuppressWarnings("unchecked")
+    public <T extends Event> Events addEventListener(Class<T> clz, Consumer<T> listener) {
+        eventMap.put(clz, listener);
+        return this;
+    }
 
-            @SuppressWarnings("unchecked")
-    public <T extends Event> Events removeEventListener(Class<T> clz, Consumer<T> listener){
-                eventMap.remove(clz, listener);
-                return this;
-            }
+    @SuppressWarnings("unchecked")
+    public <T extends Event> Events removeEventListener(Class<T> clz, Consumer<T> listener) {
+        eventMap.remove(clz, listener);
+        return this;
+    }
 
-            @SuppressWarnings("unchecked")
+    @SuppressWarnings("unchecked")
     private <T extends Event> Set<Consumer<T>> getEventListener(Class<T> clz) {
-                return eventMap.get(clz).stream().map(l -> (Consumer<T>)l).collect(Collectors.toSet());
-            }
+        return eventMap.get(clz).stream().map(l -> (Consumer<T>) l).collect(Collectors.toSet());
+    }
 
     static private boolean canStack(ItemStack a, ItemStack b) {
         if (a != null && a.getType() == Material.AIR) a = null;
@@ -229,25 +228,34 @@ public class Events implements Listener {
             });
         }
         if (rpgProjectiles.containsKey(entity.getEntityId())) {
-            RPGItem rItem = ItemManager.getItemById(rpgProjectiles.get(entity.getEntityId()));
+            try {
+                RPGItem rItem = ItemManager.getItemById(rpgProjectiles.get(entity.getEntityId()));
 
-            if (rItem == null || !(entity.getShooter() instanceof Player))
-                return;
-            Player player = (Player) entity.getShooter();
-            if (player.isOnline() && !player.isDead()) {
-                ItemStack item = player.getInventory().getItemInMainHand();
-                RPGItem hItem = ItemManager.toRPGItem(item);
-                if (rItem != hItem) {
-                    item = player.getInventory().getItemInOffHand();
-                    hItem = ItemManager.toRPGItem(item);
+                if (rItem == null || !(entity.getShooter() instanceof Player))
+                    return;
+                Player player = (Player) entity.getShooter();
+                if (player.isOnline() && !player.isDead()) {
+                    ItemStack item = player.getInventory().getItemInMainHand();
+                    RPGItem hItem = ItemManager.toRPGItem(item);
                     if (rItem != hItem) {
-                        return;
+                        item = player.getInventory().getItemInOffHand();
+                        hItem = ItemManager.toRPGItem(item);
+                        if (rItem != hItem) {
+                            return;
+                        }
                     }
+                    List<PowerRanged> ranged = rItem.getPower(PowerRanged.class, true);
+                    if (!ranged.isEmpty()) {
+                        double distance = player.getLocation().distance(e.getEntity().getLocation());
+                        if (ranged.get(0).rm > distance || distance > ranged.get(0).r) {
+                            return;
+                        }
+                    }
+                    rItem.projectileHit(player, item, entity);
                 }
-
-                rItem.projectileHit(player, item, entity);
+            } finally {
+                Bukkit.getScheduler().runTask(plugin, () -> rpgProjectiles.remove(entity.getEntityId()));
             }
-            Bukkit.getScheduler().runTask(plugin, () -> rpgProjectiles.remove(entity.getEntityId()));
         }
     }
 
@@ -691,21 +699,22 @@ public class Events implements Listener {
             }
         }
     }
+
     @SuppressWarnings("unchecked")
     @EventHandler(ignoreCancelled = true, priority = EventPriority.NORMAL)
-    public void onEntityTeleport(EntityTeleportEvent e){
+    public void onEntityTeleport(EntityTeleportEvent e) {
         getEventListener(EntityTeleportEvent.class).forEach(l -> l.accept(e));
     }
 
     @SuppressWarnings("unchecked")
     @EventHandler(ignoreCancelled = true, priority = EventPriority.NORMAL)
-    public void onPlayerMove(PlayerMoveEvent e){
+    public void onPlayerMove(PlayerMoveEvent e) {
         getEventListener(PlayerMoveEvent.class).forEach(l -> l.accept(e));
     }
 
     @SuppressWarnings("unchecked")
     @EventHandler(ignoreCancelled = true, priority = EventPriority.NORMAL)
-    public void onPlayerMove(PlayerTeleportEvent e){
+    public void onPlayerMove(PlayerTeleportEvent e) {
         getEventListener(PlayerTeleportEvent.class).forEach(l -> l.accept(e));
     }
 

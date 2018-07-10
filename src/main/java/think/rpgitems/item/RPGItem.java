@@ -56,6 +56,7 @@ import java.lang.reflect.InvocationTargetException;
 import java.util.*;
 import java.util.Map.Entry;
 import java.util.regex.Pattern;
+import java.util.stream.Collectors;
 
 import static org.bukkit.ChatColor.COLOR_CHAR;
 import static org.bukkit.ChatColor.getByChar;
@@ -1088,6 +1089,14 @@ public class RPGItem {
 
     public boolean hasPower(Class<? extends Power> power) {
         return powers.stream().anyMatch(p -> p.getClass().equals(power));
+    }
+
+    public <T extends Power> List<T> getPower(Class<T> power) {
+        return powers.stream().filter(p -> p.getClass().equals(power)).map(power::cast).collect(Collectors.toList());
+    }
+
+    public <T extends Power> List<T> getPower(Class<T> power, boolean subclass) {
+        return subclass ? powers.stream().filter(power::isInstance).map(power::cast).collect(Collectors.toList()) : getPower(power);
     }
 
     public void addPower(Power power) {

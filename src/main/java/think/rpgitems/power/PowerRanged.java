@@ -18,6 +18,7 @@ package think.rpgitems.power;
 
 import org.bukkit.configuration.ConfigurationSection;
 import think.rpgitems.I18n;
+import think.rpgitems.commands.Property;
 
 
 /**
@@ -28,14 +29,28 @@ import think.rpgitems.I18n;
  * </p>
  */
 public class PowerRanged extends Power {
+    /**
+     * Maximum radius
+     */
+    @Property(order = 6)
+    public int r = 10;
+
+    /**
+     * Minimum radius
+     */
+    @Property(order = 5)
+    public int rm = 0;
+
     @Override
     public void init(ConfigurationSection s) {
-
+        r = s.getInt("r", Integer.MAX_VALUE);
+        rm = s.getInt("rm", 0);
     }
 
     @Override
     public void save(ConfigurationSection s) {
-
+        s.set("r", r);
+        s.set("rm", rm);
     }
 
     @Override

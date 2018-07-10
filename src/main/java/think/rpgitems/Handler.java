@@ -731,7 +731,7 @@ public class Handler extends RPGCommandReceiver {
                     msg(sender, "message.cost.change");
                     break;
                 case "hitting":
-                    item.hitCost = newValue;
+                    item.hittingCost = newValue;
                     ItemManager.save(RPGItems.plugin);
                     msg(sender, "message.cost.change");
                     break;
