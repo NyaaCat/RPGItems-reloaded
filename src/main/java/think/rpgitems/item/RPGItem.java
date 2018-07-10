@@ -1045,6 +1045,9 @@ public class RPGItem {
     }
 
     public void setMaxDurability(int newVal) {
+        if (defaultDurability == 0){
+            setDefaultDurability(newVal);
+        }
         setMaxDurability(newVal, true);
     }
 

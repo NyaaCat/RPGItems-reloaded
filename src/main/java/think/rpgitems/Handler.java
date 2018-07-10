@@ -64,7 +64,7 @@ public class Handler extends RPGCommandReceiver {
             if (value.equalsIgnoreCase(trueChoice) || value.equalsIgnoreCase(falseChoice)) {
                 field.set(power, value.equalsIgnoreCase(trueChoice));
             } else {
-                throw new BadCommandException("internal.error.invalid_option", field.getName(), falseChoice + ", " + trueChoice);//TODO
+                throw new BadCommandException("message.error.invalid_option", field.getName(), falseChoice + ", " + trueChoice);//TODO
             }
             return;
         }
@@ -73,14 +73,14 @@ public class Handler extends RPGCommandReceiver {
         if (as != null) {
             rest = Arrays.asList(as.value());
             if (!rest.contains(value)) {
-                throw new BadCommandException("internal.error.invalid_option", field.getName(), rest.stream().reduce(" ", (a, b) -> a + ", " + b));
+                throw new BadCommandException("message.error.invalid_option", field.getName(), rest.stream().reduce(" ", (a, b) -> a + ", " + b));
             }
         }
         Validator ck = field.getAnnotation(Validator.class);
         if (ck != null) {
             Boolean b = validators.get(cls, ck.value()).apply(power, value);
             if (!b) {
-                throw new BadCommandException("internal.error.invalid_option", field.getName(), I18n.format(ck.message(), value));
+                throw new BadCommandException("message.error.invalid_option", field.getName(), I18n.format(ck.message(), value));
             }
         }
         Setter st = field.getAnnotation(Setter.class);
@@ -111,7 +111,7 @@ public class Handler extends RPGCommandReceiver {
                 if (value.equalsIgnoreCase("true") || value.equalsIgnoreCase("false")) {
                     field.set(power, Boolean.valueOf(value));
                 } else {
-                    throw new BadCommandException("internal.error.invalid_option", field.getName(), "true, false");
+                    throw new BadCommandException("message.error.invalid_option", field.getName(), "true, false");
                 }
             } else if (field.getType().isEnum()) {
                 try {
@@ -198,9 +198,9 @@ public class Handler extends RPGCommandReceiver {
         RPGItems.plugin.saveConfig();
     }
 
-    @SubCommand("wgforcerefreash")
+    @SubCommand("wgforcerefresh")
     @Attribute("command")
-    public void toggleForceRefreash(CommandSender sender, Arguments args) {
+    public void toggleForceRefresh(CommandSender sender, Arguments args) {
         if (!WorldGuard.isEnabled()) {
             msg(sender, "message.worldguard.error");
             return;
@@ -213,6 +213,23 @@ public class Handler extends RPGCommandReceiver {
         WorldGuard.forceRefresh = !WorldGuard.forceRefresh;
         RPGItems.plugin.getConfig().set("support.wgforcerefresh", WorldGuard.forceRefresh);
         RPGItems.plugin.saveConfig();
+    }
+
+    @SubCommand("wgignore")
+    @Attribute("item")
+    public void itemToggleWorldGuard(CommandSender sender, Arguments args) {
+        RPGItem item = getItemByName(args.nextString());
+        if (!WorldGuard.isEnabled()) {
+            msg(sender, "message.worldguard.error");
+            return;
+        }
+        item.ignoreWorldGuard = !item.ignoreWorldGuard;
+        if (item.ignoreWorldGuard) {
+            msg(sender, "message.worldguard.override.active");
+        } else {
+            msg(sender, "message.worldguard.override.disabled");
+        }
+        ItemManager.save(RPGItems.plugin);
     }
 
     @SubCommand("create")
@@ -232,9 +249,9 @@ public class Handler extends RPGCommandReceiver {
     public void givePerms(CommandSender sender, Arguments args) {
         RPGItems.plugin.getConfig().set("give-perms", !RPGItems.plugin.getConfig().getBoolean("give-perms", false));
         if (RPGItems.plugin.getConfig().getBoolean("give-perms", false)) {
-            msg(sender, "message.giveperms.true");
+            msg(sender, "message.giveperms.required");
         } else {
-            msg(sender, "message.giveperms.false");
+            msg(sender, "message.giveperms.canceled");
         }
         RPGItems.plugin.saveConfig();
     }
@@ -383,7 +400,6 @@ public class Handler extends RPGCommandReceiver {
     public void itemItem(CommandSender sender, Arguments args) {
         RPGItem item = getItemByName(args.nextString());
         if (args.length() == 2) {
-            //msg(sender,"message.item.get", item.getName(), item.getItem().toString());
             new Message("")
                     .append(I18n.format("message.item.get", item.getName(), item.getItem().name(), (int) item.getDataValue()), new ItemStack(item.getItem()))
                     .send(sender);
@@ -419,7 +435,6 @@ public class Handler extends RPGCommandReceiver {
             }
             item.rebuild();
 
-            //msg(sender,"message.item.set", item.getName(), item.getItem(), item.getDataValue());
             new Message("")
                     .append(I18n.format("message.item.set", item.getName(), item.getItem().name(), (int) item.getDataValue()), new ItemStack(item.getItem()))
                     .send(sender);
@@ -483,7 +498,7 @@ public class Handler extends RPGCommandReceiver {
             }
             break;
             default:
-                break;//TODO
+                throw new BadCommandException("message.error.invalid_option", "enchantment", "clone,clear");
         }
     }
 
@@ -540,23 +555,7 @@ public class Handler extends RPGCommandReceiver {
             }
             break;
             default:
-                break;//TODO
-        }
-    }
-
-    @SubCommand("worldguard")
-    @Attribute("command")
-    public void itemToggleWorldGuard(CommandSender sender, Arguments args) {
-        RPGItem item = getItemByName(args.nextString());
-        if (!WorldGuard.isEnabled()) {
-            msg(sender, "message.worldguard.error");
-            return;
-        }
-        item.ignoreWorldGuard = !item.ignoreWorldGuard;
-        if (item.ignoreWorldGuard) {
-            msg(sender, "message.worldguard.override.active");
-        } else {
-            msg(sender, "message.worldguard.override.disabled");
+                throw new BadCommandException("message.error.invalid_option", "description", "add,set,remove");
         }
     }
 
@@ -721,6 +720,8 @@ public class Handler extends RPGCommandReceiver {
                     ItemManager.save(RPGItems.plugin);
                     msg(sender, "message.cost.hit_toggle." + (item.hitCostByDamage ? "enable" : "disable"));
                     break;
+                default:
+                    throw new BadCommandException("message.error.invalid_option", "cost", "breaking,hitting,hit,toggle");
             }
         } else {
             int newValue = args.nextInt();
@@ -740,6 +741,8 @@ public class Handler extends RPGCommandReceiver {
                     ItemManager.save(RPGItems.plugin);
                     msg(sender, "message.cost.change");
                     break;
+                default:
+                    throw new BadCommandException("message.error.invalid_option", "cost", "breaking,hitting,hit");
             }
         }
     }
@@ -787,6 +790,8 @@ public class Handler extends RPGCommandReceiver {
                     msg(sender, "message.durability.change");
                 }
                 break;
+                default:
+                    throw new BadCommandException("message.error.invalid_option", "durability", "value,infinite,togglebar,default,bound");
             }
         }
     }
@@ -870,33 +875,35 @@ public class Handler extends RPGCommandReceiver {
     @Attribute("item")
     public void toggleItemDamageMode(CommandSender sender, Arguments args) {
         RPGItem item = getItemByName(args.nextString());
-        switch (item.damageMode) {
-            case FIXED:
-                item.damageMode = RPGItem.DamageMode.VANILLA;
-                break;
-            case VANILLA:
-                item.damageMode = RPGItem.DamageMode.ADDITIONAL;
-                break;
-            case ADDITIONAL:
-                item.damageMode = RPGItem.DamageMode.MULTIPLY;
-                break;
-            case MULTIPLY:
-                item.damageMode = RPGItem.DamageMode.FIXED;
-                break;
+        if (args.top() != null) {
+            item.damageMode = args.nextEnum(RPGItem.DamageMode.class);
+            item.rebuild();
+            ItemManager.save(RPGItems.plugin);
         }
-        item.rebuild();
-        ItemManager.save(RPGItems.plugin);
         msg(sender, "message.damagemode." + item.damageMode.name(), item.getName());
     }
 
     @SubCommand("power")
     @Attribute("power")
     public void itemAddPower(CommandSender sender, Arguments args) throws IllegalAccessException {
-        RPGItem item = getItemByName(args.nextString());
-        String str = args.nextString();
-        Class<? extends Power> cls = Power.powers.get(str);
+        String itemStr = args.next();
+        String powerStr = args.next();
+        if (itemStr == null || (itemStr.equals("help") && ItemManager.getItemByName(itemStr) == null) || powerStr == null || powerStr.equals("help")) {
+            // TODO: List Available Power
+            msg(sender, "manual.power.description");
+            msg(sender, "manual.power.usage");
+            return;
+        }
+        if ((itemStr.equals("list") && ItemManager.getItemByName(itemStr) == null) || powerStr.equals("list")) {
+            // TODO: List Item Power
+            msg(sender, "manual.power.description");
+            msg(sender, "manual.power.usage");
+            return;
+        }
+        RPGItem item = getItemByName(itemStr);
+        Class<? extends Power> cls = Power.powers.get(powerStr);
         if (cls == null) {
-            msg(sender, "message.power.unknown", str);
+            msg(sender, "message.power.unknown", powerStr);
             return;
         }
         Power power;
@@ -907,7 +914,7 @@ public class Handler extends RPGCommandReceiver {
             msg(sender, "internal.error.command_exception");
             return;
         }
-        SortedMap<PowerProperty, Field> argMap = Power.propertyPriorities.get(cls);
+        SortedMap<PowerProperty, Field> argMap = Power.propertyOrders.get(cls);
         Set<Field> settled = new HashSet<>();
         Optional<PowerProperty> req = argMap.keySet()
                                             .stream()
@@ -939,8 +946,8 @@ public class Handler extends RPGCommandReceiver {
             if (value == null) {
                 if (!required.isEmpty()) {
                     throw new BadCommandException("message.power.required",
-                                                         String.join(", ",
-                                                                 required.stream().map(Field::getName).collect(Collectors.toList()))
+                            String.join(", ",
+                                    required.stream().map(Field::getName).collect(Collectors.toList()))
                     );
                 } else {
                     break;
@@ -978,5 +985,5 @@ public class Handler extends RPGCommandReceiver {
             msg(sender, "message.cloneitem.fail", item.getName(), name);
         }
     }
-    
+
 }

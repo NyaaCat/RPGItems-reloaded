@@ -131,7 +131,7 @@ public class PowerAOE extends Power implements PowerRightClick {
 
     @Override
     public String displayText() {
-        return name != null ? name : I18n.format("power.aoe.display", type.getName(), amplifier, duration, selfapplication ? I18n.format("power.aoe.selfapplication.true") : I18n.format("power.aoe.selfapplication.false"), range, (double) cooldownTime / 20d);
+        return name != null ? name : I18n.format("power.aoe.display", type.getName(), amplifier, duration, selfapplication ? I18n.format("power.aoe.selfapplication.including") : I18n.format("power.aoe.selfapplication.excluding"), range, (double) cooldownTime / 20d);
     }
 
     public void setType(String effect) {

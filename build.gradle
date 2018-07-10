@@ -38,10 +38,10 @@ repositories {
 }
 
 dependencies {
-    implementation 'org.spigotmc:spigot-api:1.12.1-R0.1-SNAPSHOT'
+    implementation 'org.spigotmc:spigot-api:1.12-R0.1-SNAPSHOT'
     implementation 'com.sk89q.worldguard:worldguard-legacy:6.2'
     implementation 'com.sk89q.worldedit:worldedit-core:6.1'
-    implementation('cat.nyaa:nyaacore:4.0-SNAPSHOT') {
+    implementation('cat.nyaa:nyaacore:5.0-SNAPSHOT') {
         transitive = false
     }
     compileOnly 'org.librazy:NyaaUtilsLangChecker:1.0-SNAPSHOT'

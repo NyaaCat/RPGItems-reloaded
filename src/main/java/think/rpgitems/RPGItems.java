@@ -66,7 +66,7 @@ public class RPGItems extends JavaPlugin {
         if (conf.getBoolean("localeInv", false)) {
             Events.useLocaleInv = true;
         }
-        i18n = new I18n(this, "en_US");
+        i18n = new I18n(this, conf.getString("language"));
         commandHandler = new Handler(this, i18n);
         getCommand("rpgitem").setExecutor(commandHandler);
         getCommand("rpgitem").setTabCompleter(commandHandler);

@@ -7,7 +7,7 @@ import org.librazy.nyaautils_lang_checker.LangKey;
 public class I18n extends LanguageRepository {
     private static I18n instance = null;
     private final RPGItems plugin;
-    private String lang = "en_US";
+    private String lang;
 
     public I18n(RPGItems plugin, String lang) {
         instance = this;

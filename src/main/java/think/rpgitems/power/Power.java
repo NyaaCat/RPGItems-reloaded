@@ -41,6 +41,7 @@ import java.util.*;
 import java.util.function.BiConsumer;
 import java.util.function.BiFunction;
 import java.util.stream.Collectors;
+
 /**
  * Base class for all powers
  */
@@ -50,7 +51,7 @@ public abstract class Power implements Serializable {
     public static final HashBasedTable<Class<? extends Power>, String, BiFunction<Object, String, String>> transformers;
     public static final HashBasedTable<Class<? extends Power>, String, BiFunction<Object, String, Boolean>> validators;
     public static final HashBasedTable<Class<? extends Power>, String, BiConsumer<Object, String>> setters;
-    public static final Map<Class<? extends Power>, SortedMap<PowerProperty, Field>> propertyPriorities;
+    public static final Map<Class<? extends Power>, SortedMap<PowerProperty, Field>> propertyOrders;
     /**
      * Power by name, and name by power
      */
@@ -64,7 +65,7 @@ public abstract class Power implements Serializable {
         transformers = HashBasedTable.create();
         validators = HashBasedTable.create();
         setters = HashBasedTable.create();
-        propertyPriorities = new HashMap<>();
+        propertyOrders = new HashMap<>();
         Power.powers.put("aoe", PowerAOE.class);
         Power.powers.put("arrow", PowerArrow.class);
         Power.powers.put("tntcannon", PowerTNTCannon.class);
@@ -218,7 +219,7 @@ public abstract class Power implements Serializable {
             Arrays.stream(cls.getFields())
                   .filter(field -> field.getAnnotation(Property.class) != null)
                   .forEach(field -> argumentPriorityMap.put(new PowerProperty(field.getName(), field.getAnnotation(Property.class).required(), field.getAnnotation(Property.class).order()), field));
-            propertyPriorities.put(cls, argumentPriorityMap);
+            propertyOrders.put(cls, argumentPriorityMap);
         }
     }
 

@@ -1,79 +1,4 @@
-internal:
-  error:
-    invalid_option: "Invalid option for %s. Available: %s"
 command:
-  info:
-    command: Command
-    player: '[Player]'
-    selfapplication: SelfApplication
-    wool: ApplyOnWool
-    cooldown: Cooldown
-    integer:
-      limit: '[Integer(%d-%d)]'
-    healthtrigger: HealthTrigger
-    armour: Armour
-    hand: Hand
-    projectileType: ProjectileType
-    hexcolour: HexColour
-    duration: Duration
-    clay: ApplyOnClay
-    double: '[Double]'
-    effect: Effect
-    lore: Lore
-    usebed: UseBed
-    damage: Damage
-    glass: ApplyOnGlass
-    delay: Delay
-    haspermission: Enabled
-    quality: Quality
-    min: Min
-    type: Type
-    facing: Facing Angle
-    self: '[SelfApplied]'
-    maxSpeed: MaxSpeed
-    string:
-      limit: '[String(Max:%d)]'
-    material: '[Material]'
-    dropChance: DropChance
-    details: Details
-    distance: Distance
-    foodpoints: FoodPoints
-    lineno: LineNo
-    burntime: Burntime
-    displayName: DisplayName
-    itemid: ItemID
-    count: Count
-    regex: Regex
-    data: Data
-    property: Property
-    amount: Amount
-    power: Power
-    interval: Interval
-    terms: Terms
-    radius: Radius
-    descriptionline: DescriptionLine
-    amplifier: Amplifier
-    torches: Torches
-    display: Display
-    item: '[Item]'
-    visualeffect: VisualEffect
-    permission: Permission
-    height: Height
-    max: Max
-    nth: Nth
-    chance: Chance
-    burnduration: FireDuration
-    base: Base
-    level: Level
-    name: Name
-    durability: Durability
-    page: Page
-    range: Range
-    val: Value
-    isFire: IsFireBlock
-    speed: Speed
-    entity: Entity
-    entityData: EntityData
   rpgitem:
     commandhit:
       full: 'Adds the command-when-hit power to @[Item]# with a cooldown of @[Cooldown]#
@@ -165,7 +90,7 @@ command:
       targeted by the potion as well if not set via @[Self]#. Valid potion effects:'
     lore:
       set: Sets the item @[Item]#'s lore to @[Lore]#
-    wgforcerefreash: Toggles worldguard custom flag force refresh on each use. Enabling this can workaround failure of automatic refresh after /reload but use more resource.
+    wgforcerefresh: Toggles worldguard custom flag force refresh on each use. Enabling this can workaround failure of automatic refresh after /reload but use more resource.
     arrow:
       full: Adds the arrow power to @[Item]# with a cooldown of @[Cooldown]# ticks. The arrow power will fire an arrow on right click.
     permission: Enable/disable the permission restriction on the item @[Item]#. The permission restriction prevent a player to use an item if he doesn't have the permission @[Permission]#. The permission restriction can be toggled on or off with the @[Enabled]# option.
@@ -242,6 +167,7 @@ message:
     no_ench: No attached enchantments
     empty_ench: This item has an empty enchantment list
   error:
+    invalid_option: "Invalid option for %s. Available: %s"
     effect: '%s is not a valid effect'
     permission: You do not have permission for '%s'
     double:
@@ -368,8 +294,8 @@ message:
     note: 'Qualities:'
     set: Item '%s' quality set to '%s'
   giveperms:
-    'true': Give now requires permissions
-    'false': Give now does not require permissions
+    required: Give now requires permissions
+    canceled: Give now does not require permissions
   print:
     itemflags: 'ItemFlags: '
     customitemmodel: 'Custom item model: %s'
@@ -423,8 +349,8 @@ power:
   aoe:
     display: Applies %s level %d for %d ticks to everything %s within %d blocks. (%.1fs cooldown)
     selfapplication:
-      'false': excluding yourself
-      'true': including yourself
+      excluding: excluding yourself
+      including: including yourself
   particle: Spawn some particles when used
   deflect: Deflect arrows or fireballs
   fireball: Shoots a fireball (%.1fs cooldown)
@@ -452,18 +378,182 @@ power:
   stuck: '%d%% chance to stuck enemy %d tick (%.1fs cooldown)'
   shulkerbullet: Launches shulker bullet (%.1f cooldown)
 manual:
-  give:
-    description: "Gives the item to the user of the command or a player"
-    usage: "/rpgitem give item [player]"
+  reload:
+    description: Reload the plugin
+    usage: "/rpgitem reload"
+
+  list:
+    description: List RPGItems
+    usage: "/rpgitem list [page]"
 
   worldguard:
     description: Toggles worldguard support.
     usage: "/rpgitem worldguard"
 
-  reload:
-    description: Reload the plugin
-    usage: "/rpgitem reload"
+  wgcustomflag:
+    description: Toggles worldguard custom flag support.
+    usage: "/rpgitem wgcustomflag"
+
+  wgforcerefresh:
+    description: Toggles worldguard force refresh.
+    usage: "/rpgitem wgforcerefresh"
+
+  wgignore:
+    description: Whether item ignore WorldGruad PvP protect.
+    usage: "/rpgitem wgignore {item}"
+
+  create:
+    description: Create item with specified name
+    usage: "/rpgitem create <name>"
 
   giveperms:
     description: Toggles give requiring permissions
     usage: "/rpgitem giveperms"
+
+  give:
+    description: Gives the item to the user of the command or a player
+    usage: "/rpgitem give {item} [player]"
+
+  remove:
+    description: Remove the item from plugin
+    usage: "/rpgitem remove {item}"
+
+  display:
+    description: Set item name to value
+    usage: "/rpgitem display {item} <value>"
+
+  quality:
+    description: Show/set item quality. Currently no actual usage in plugin.
+    usage: "/rpgitem quality {item} [value]"
+
+  damage:
+    description: |-
+      Show/set item damage value. Available options:
+      [value] - Set damage to a fixed value. /rpgitem test_item damage 15
+      [min] [max] - Set damage to a random value in a range. /rpgitem test_item damage 10 20
+    usage: "/rpgitem damage {item} [option]"
+
+  armour:
+    description: Show/set item armour
+    usage: "/rpgitem armour {item} [value]"
+
+  type:
+    description: Show/set type text for item. Type text is displayed at right under item name.
+    usage: "/rpgitem type {item} [value]"
+
+  hand:
+    description: Show/set hand text for item. Hand text is displayed at left under item name.
+    usage: "/rpgitem hand {item} [value]"
+
+  item:
+    description: |-
+      Set ITEM material to item or with additional options.
+      Available options:
+        [item id] - Set to an item as material.
+        [item id] hex [string] - Set to item material with specified color.
+        [item id] [damage value] - Set to item material with specified damage value.
+    usage: "/rpgitem item {item} [options|value]"
+
+  print:
+    description: Print item status
+    usage: "/rpgitem print {item}"
+
+  enchantment:
+    description: List/clone or clear enchantments in hand to item.
+    usage: "/rpgitem enchantment {item} [clone|clear]"
+
+  removepower:
+    description:  Remove the power from item. If the item have multiple specified power, the first match (pit fall) will be removed.
+    usage: "/rpgitem removepower {item} <power>"
+
+  description:
+    description:  Add/remove or replace text to item description/lore. Formatting codes are supported with & symbol. Line number starts from 0.
+    usage: "/rpgitem description {item} <add <value>|set <line> <value>| remove <line>>"
+
+  removerecipe:
+    description:  Remove item recipe
+    usage: "/rpgitem removerecipe {item}"
+
+  recipe:
+    description:  Add item recipe
+    usage: "/rpgitem recipe {item}"
+
+  drop:
+    description:  Show/set item drop chance from a specified entity
+    usage: "/rpgitem drop {item} <entity> [chance]"
+
+  get:
+    description: |-
+      Get power property of item.
+      E.g, check test_item first potionhit power's duration property:
+      /rpgitem test_item get potionhit 1 duration
+    usage: "/rpgitem get {item} <power> <index> <property>"
+
+  set:
+    description: |-
+      Set power property of item to value.
+      E.g, set the second aoecommand power command attribute, to spawn a ignited creeper at each entity location:
+      /rpgitem test_item set aoecommand 2 command summon creeper {entity.x} {entity.y} {entity.y} {ignited:1,Fuse:5}
+    usage: "/rpgitem get {item} <power> <index> <property> <value>"
+
+  cost:
+    description: |-
+      Show/set durability cost.
+      Available options:
+        breaking | breaking [value|integer] - Show/set durability cost when breaking block using this item.
+        hit | hit [value|integer] - Show/set durability cost when being hit with this item equipped.
+        toggle - Whether durability cost when being hit should based on damage.
+        hitting | hitting [value|integer] - Show/set durability cost when hit other entities with this item.
+      Note: values can be negative, thus hit/hitting/breaking will increase item durability.
+    usage: "/rpgitem cost {item} <option>"
+
+  durability:
+    description: |-
+      Show/set item durability maximum/default value or other option.
+      Available options:
+        [value] - Set maximum durability to value - /rpgitem test_item durability 100
+        infinite - Set durability to infinite - /rpgitem test_item durability infinite
+        default - Set default durability to value - /rpgitem test_item durability default 100
+        togglebar - Set durability bar to force show/hide - /rpgitem test_item durability togglebar
+        bound - Set item durability lower and upper bounds - /rpgitem test_item durability bound 10 100
+    usage: "/rpgitem durability {item} <option>"
+
+  permission:
+    description: Set item permission
+    usage: "/rpgitem permission {item} <permission> <true|false>"
+
+  togglepowerlore:
+    description: Toggle power lore display for item.
+    usage: "/rpgitem togglepowerlore {item}"
+
+  togglearmorlore:
+    description: Toggle armor lore display for item.
+    usage: "/rpgitem togglearmorlore {item}"
+
+  additemflag:
+    description: Add item flag.
+    usage: "/rpgitem additemflag {item} <itemflag>"
+
+  removeitemflag:
+    description: Remove item flag
+    usage: "/rpgitem removeitemflag {item} <itemflag>"
+
+  customitemmodel:
+    description: Toggle custom item model support for item.
+    usage: "/rpgitem customitemmodel {item}"
+
+  version:
+    description: Display version infomation of RPGItem.
+    usage: "/rpgitem version"
+
+  damagemode:
+    description: Show/set damagemode of item
+    usage: "/rpgitem damagemode {item} [damagemode]"
+
+  power:
+    description: Add power to item
+    usage: "/rpgitem power {item} <power> <properties> [optionalProperties]"
+
+  clone:
+    description: Clone item as new item
+    usage: "/rpgitem clone {item} <newItem>"
