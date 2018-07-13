@@ -4,6 +4,8 @@ import org.bukkit.ChatColor;
 import org.bukkit.Effect;
 import org.bukkit.Material;
 import org.bukkit.command.CommandSender;
+import org.bukkit.entity.Player;
+import org.bukkit.inventory.ItemStack;
 import org.bukkit.potion.PotionEffectType;
 import think.rpgitems.commands.CommandDocumentation;
 import think.rpgitems.commands.CommandGroup;
@@ -13,6 +15,7 @@ import think.rpgitems.data.Locale;
 import think.rpgitems.item.ItemManager;
 import think.rpgitems.item.RPGItem;
 import think.rpgitems.power.*;
+import think.rpgitems.utils.ReflectionUtil;
 
 public class PowerHandler implements CommandHandler {
 
@@ -1056,6 +1059,36 @@ public class PowerHandler implements CommandHandler {
         pow.entityName = entity;
         pow.entityData = data;
         pow.speed = speed;
+        item.addPower(pow);
+        ItemManager.save(Plugin.plugin);
+        sender.sendMessage(ChatColor.AQUA + Locale.get("message.power.ok"));
+    }
+
+    @CommandString("rpgitem $n[] power repair $durability:i[] $material:s[] $display:s[] $clicktype:o[left,right] $sneak:o[true,false]")
+    @CommandDocumentation("$command.rpgitem.repair")
+    @CommandGroup("item_power_repair")
+    public void power_repair(CommandSender sender, RPGItem item, int durability, String materialName, String display, String clicktype, String sneak) {
+        PowerRepair pow = new PowerRepair();
+        pow.item = item;
+        pow.display = display;
+        Material m = Material.getMaterial(materialName);
+        if (sender instanceof Player && materialName.equalsIgnoreCase("HAND")) {
+            ItemStack hand = ((Player) sender).getInventory().getItemInMainHand();
+            if (hand == null || hand.getType() == Material.AIR) {
+                sender.sendMessage(ChatColor.RED + Locale.get("message.error.iteminhand"));
+                return;
+            }
+            pow.material = hand.clone();
+            pow.material.setAmount(1);
+        } else if (m == null || m == Material.AIR || !ReflectionUtil.isValidItem(new ItemStack(m))) {
+            sender.sendMessage(ChatColor.RED + String.format(Locale.get("message.error.material"), materialName));
+            return;
+        } else {
+            pow.material = new ItemStack(m);
+        }
+        pow.durability = durability;
+        pow.isRight = clicktype.equals("right");
+        pow.isSneak = sneak.equals("true");
         item.addPower(pow);
         ItemManager.save(Plugin.plugin);
         sender.sendMessage(ChatColor.AQUA + Locale.get("message.power.ok"));

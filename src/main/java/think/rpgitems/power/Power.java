@@ -111,6 +111,7 @@ public abstract class Power implements Serializable {
         Power.powers.put("stuck", PowerStuck.class);
         Power.powers.put("shulkerbullet", PowerShulkerBullet.class);
         Power.powers.put("throw", PowerThrow.class);
+        Power.powers.put("repair", PowerRepair.class);
     }
 
     /**
