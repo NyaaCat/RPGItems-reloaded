@@ -441,7 +441,7 @@ public class Events implements Listener {
 
     @EventHandler(ignoreCancelled = true, priority = EventPriority.HIGHEST)
     public void onInventoryOpen(final InventoryOpenEvent e) {
-        if (e.getView() instanceof LocaleInventory || e.getInventory().getLocation() == null)
+        if (e.getView() instanceof LocaleInventory || e.getInventory().getHolder() == null || e.getInventory().getLocation() == null)
             return;
         if (e.getInventory().getType() != InventoryType.CHEST || !useLocaleInv) {
             Inventory in = e.getInventory();
