@@ -93,7 +93,6 @@ public abstract class Power implements Serializable {
         Power.powers.put("deathcommand", PowerDeathCommand.class);
         Power.powers.put("forcefield", PowerForceField.class);
         Power.powers.put("attract", PowerAttract.class);
-        Power.powers.put("color", PowerColor.class);
         Power.powers.put("pumpkin", PowerPumpkin.class);
         Power.powers.put("particle", PowerParticle.class);
         Power.powers.put("particletick", PowerParticleTick.class);

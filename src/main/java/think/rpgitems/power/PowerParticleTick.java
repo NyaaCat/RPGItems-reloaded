@@ -44,7 +44,7 @@ public class PowerParticleTick extends Power implements PowerTick {
     public boolean acceptableEffect(String effect) {
         try {
             Effect eff = Effect.valueOf(effect.toUpperCase());
-            return eff.getType() == Effect.Type.VISUAL || eff.getType() == Effect.Type.PARTICLE;
+            return eff.getType() == Effect.Type.VISUAL;
         } catch (IllegalArgumentException ex) {
             return false;
         }

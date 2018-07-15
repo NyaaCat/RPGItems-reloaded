@@ -38,7 +38,7 @@ public class PowerParticle extends Power implements PowerRightClick {
     public boolean acceptableEffect(String effect) {
         try {
             Effect eff = Effect.valueOf(effect.toUpperCase());
-            return eff.getType() == Effect.Type.VISUAL || eff.getType() == Effect.Type.PARTICLE;
+            return eff.getType() == Effect.Type.VISUAL;
         } catch (IllegalArgumentException ex) {
             return false;
         }

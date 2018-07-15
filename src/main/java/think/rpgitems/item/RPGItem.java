@@ -120,7 +120,7 @@ public class RPGItem {
         this.name = name;
         this.id = id;
         encodedID = getMCEncodedID(id);
-        item = new ItemStack(Material.WOOD_SWORD);
+        item = new ItemStack(Material.WOODEN_SWORD);
         hasBar = true;
 
         displayName = item.getType().toString();
@@ -248,7 +248,7 @@ public class RPGItem {
             ConfigurationSection ench = s.getConfigurationSection("enchantments");
             enchantMap = new HashMap<>();
             for (String enchName : ench.getKeys(false)) {
-                Enchantment tmp = Enchantment.getByName(enchName);
+                Enchantment tmp = Enchantment.getByKey(NamespacedKey.minecraft(enchName));
                 if (tmp != null) {
                     enchantMap.put(tmp, ench.getInt(enchName));
                 }
@@ -423,7 +423,7 @@ public class RPGItem {
         if (enchantMap != null) {
             ConfigurationSection ench = s.createSection("enchantments");
             for (Enchantment e : enchantMap.keySet()) {
-                ench.set(e.getName(), enchantMap.get(e));
+                ench.set(e.getKey().toString(), enchantMap.get(e));
             }
         } else {
             s.set("enchantments", null);

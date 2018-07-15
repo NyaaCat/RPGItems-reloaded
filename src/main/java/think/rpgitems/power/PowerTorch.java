@@ -18,6 +18,7 @@ package think.rpgitems.power;
 
 import org.bukkit.*;
 import org.bukkit.block.Block;
+import org.bukkit.block.data.BlockData;
 import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.entity.FallingBlock;
 import org.bukkit.entity.Player;
@@ -72,7 +73,7 @@ public class PowerTorch extends Power implements PowerRightClick {
                     if (block.getLocation().getBlock().getType().equals(Material.TORCH))
                         block.setMetadata("RPGItems.Torch", new FixedMetadataValue(RPGItems.plugin, null));
                     cancel();
-                    final HashMap<Location, Long> changedBlocks = new HashMap<>();
+                    final HashMap<Location, BlockData> changedBlocks = new HashMap<>();
                     for (int x = -2; x <= 2; x++) {
                         for (int y = -2; y <= 3; y++) {
                             for (int z = -2; z <= 2; z++) {
@@ -80,11 +81,10 @@ public class PowerTorch extends Power implements PowerRightClick {
                                 Block b = world.getBlockAt(loc);
                                 if (b.getType().equals(Material.AIR) && random.nextInt(100) < 20) {
                                     List<Byte> orientations = getPossibleOrientations(loc);
-                                    if (orientations.size() > 0) {
-                                        changedBlocks.put(b.getLocation(), b.getTypeId() | ((long) b.getData() << 16));
-                                        byte o = orientations.get(random.nextInt(orientations.size()));
+                                    if (!orientations.isEmpty()) {
+                                        changedBlocks.put(b.getLocation(), b.getBlockData());
                                         b.setMetadata("RPGItems.Torch", new FixedMetadataValue(RPGItems.plugin, null));
-                                        b.setTypeIdAndData(Material.TORCH.getId(), o, false); // Don't apply physics since the check is done beforehand
+                                        b.setBlockData(Material.TORCH.createBlockData(), false); // TODO:orientations. Don't apply physics since the check is done beforehand
                                     }
                                 }
                             }
@@ -101,14 +101,13 @@ public class PowerTorch extends Power implements PowerRightClick {
                                 return;
                             }
                             int index = random.nextInt(changedBlocks.size());
-                            long data = changedBlocks.values().toArray(new Long[0])[index];
+                            BlockData data = changedBlocks.values().toArray(new BlockData[0])[index];
                             Location position = changedBlocks.keySet().toArray(new Location[0])[index];
                             changedBlocks.remove(position);
                             Block c = position.getBlock();
-                            position.getWorld().playEffect(position, Effect.STEP_SOUND, c.getTypeId());
+                            position.getWorld().playEffect(position, Effect.STEP_SOUND, c.getBlockData().getMaterial());
                             c.removeMetadata("RPGItems.Torch", RPGItems.plugin);
-                            c.setTypeId((int) (data & 0xFFFF));
-                            c.setData((byte) (data >> 16));
+                            c.setBlockData(data);
 
                         }
                     }).runTaskTimer(RPGItems.plugin, 4 * 20 + new Random().nextInt(40), 3);

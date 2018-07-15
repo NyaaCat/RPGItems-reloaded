@@ -214,7 +214,7 @@ public class PowerForceField extends Power implements PowerRightClick {
                         l.add(0, 1, 0);
                         continue;
                     }
-                    if (w.getBlockAt(l).getType() == Material.WOOL)
+                    if (w.getBlockAt(l).getType() == Material.WHITE_WOOL)
                         w.getBlockAt(l).setType(Material.BARRIER);
                     l.add(0, 1, 0);
                 }
@@ -227,7 +227,7 @@ public class PowerForceField extends Power implements PowerRightClick {
             if (current <= h) {
                 loop:
                 for (Location l : circlePoints) {
-                    if (w.getBlockAt(l).getType() == Material.WOOL) {
+                    if (w.getBlockAt(l).getType() == Material.WHITE_WOOL) {
                         wasWool.add(l.clone());
                         continue;
                     }
@@ -237,7 +237,7 @@ public class PowerForceField extends Power implements PowerRightClick {
                                 if (e.getLocation().distance(l) < 1.5) continue loop;
                             }
                         }
-                        w.getBlockAt(l).setType(Material.WOOL);
+                        w.getBlockAt(l).setType(Material.WHITE_WOOL);
                     }
                 }
             } else {

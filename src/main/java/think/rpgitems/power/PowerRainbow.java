@@ -80,9 +80,9 @@ public class PowerRainbow extends Power implements PowerRightClick {
         for (int i = 0; i < count; i++) {
             FallingBlock block;
             if (!isFire) {
-                block = player.getWorld().spawnFallingBlock(player.getLocation().add(0, 1.8, 0), Material.WOOL, (byte) random.nextInt(16));
+                block = player.getWorld().spawnFallingBlock(player.getLocation().add(0, 1.8, 0), Material.WHITE_WOOL.createBlockData()); //TODO: White rainbow
             } else {
-                block = player.getWorld().spawnFallingBlock(player.getLocation().add(0, 1.8, 0), Material.FIRE, (byte) 0);
+                block = player.getWorld().spawnFallingBlock(player.getLocation().add(0, 1.8, 0), Material.FIRE.createBlockData());
             }
             block.setVelocity(player.getLocation().getDirection().multiply(new Vector(random.nextDouble() * 2d + 0.5, random.nextDouble() * 2d + 0.5, random.nextDouble() * 2d + 0.5)));
             block.setDropItem(false);
@@ -100,8 +100,8 @@ public class PowerRainbow extends Power implements PowerRightClick {
                     Location loc = l.next();
                     if (random.nextBoolean()) {
                         Block b = loc.getBlock();
-                        if (b.getType() == (isFire ? Material.FIRE : Material.WOOL)) {
-                            loc.getWorld().playEffect(loc, Effect.STEP_SOUND, isFire ? Material.FIRE : Material.WOOL, b.getData());
+                        if (b.getType() == (isFire ? Material.FIRE : Material.WHITE_WOOL)) {
+                            loc.getWorld().playEffect(loc, Effect.STEP_SOUND, b.getBlockData().getMaterial());
                             b.setType(Material.AIR);
                         }
                         l.remove();

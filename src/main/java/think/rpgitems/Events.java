@@ -66,51 +66,58 @@ public class Events implements Listener {
     static HashMap<String, Integer> recipeWindows = new HashMap<>();
     public static HashMap<String, Set<Integer>> drops = new HashMap<>();
     static boolean useLocaleInv = false;
-    private Set<Material> BYPASS_BLOCK = new HashSet<Material>() {{
-        add(Material.ACACIA_DOOR);
-        add(Material.BIRCH_DOOR);
-        add(Material.DARK_OAK_DOOR);
-        add(Material.IRON_DOOR_BLOCK);
-        add(Material.JUNGLE_DOOR);
-        add(Material.SPRUCE_DOOR);
-        add(Material.TRAP_DOOR);
-        add(Material.WOODEN_DOOR);
-        add(Material.FENCE_GATE);
-        add(Material.ACACIA_FENCE_GATE);
-        add(Material.BIRCH_FENCE_GATE);
-        add(Material.DARK_OAK_FENCE_GATE);
-        add(Material.JUNGLE_FENCE_GATE);
-        add(Material.SPRUCE_FENCE_GATE);
-        add(Material.CHEST);
-        add(Material.TRAPPED_CHEST);
-        add(Material.ENCHANTMENT_TABLE);
-        add(Material.WORKBENCH);
-        add(Material.BEACON);
-        add(Material.ANVIL);
-        add(Material.FURNACE);
-        add(Material.BURNING_FURNACE);
-        add(Material.BREWING_STAND);
-        add(Material.HOPPER);
-        add(Material.DISPENSER);
-        add(Material.DROPPER);
-        add(Material.ENDER_CHEST);
-        add(Material.WHITE_SHULKER_BOX);
-        add(Material.ORANGE_SHULKER_BOX);
-        add(Material.MAGENTA_SHULKER_BOX);
-        add(Material.LIGHT_BLUE_SHULKER_BOX);
-        add(Material.YELLOW_SHULKER_BOX);
-        add(Material.LIME_SHULKER_BOX);
-        add(Material.PINK_SHULKER_BOX);
-        add(Material.GRAY_SHULKER_BOX);
-        add(Material.SILVER_SHULKER_BOX);
-        add(Material.CYAN_SHULKER_BOX);
-        add(Material.PURPLE_SHULKER_BOX);
-        add(Material.BLUE_SHULKER_BOX);
-        add(Material.BROWN_SHULKER_BOX);
-        add(Material.GREEN_SHULKER_BOX);
-        add(Material.RED_SHULKER_BOX);
-        add(Material.BLACK_SHULKER_BOX);
-    }};
+    private static final Set<Material> BYPASS_BLOCK = new HashSet<>();
+    static {
+        BYPASS_BLOCK.add(Material.ACACIA_DOOR);
+        BYPASS_BLOCK.add(Material.BIRCH_DOOR);
+        BYPASS_BLOCK.add(Material.DARK_OAK_DOOR);
+        BYPASS_BLOCK.add(Material.IRON_DOOR);
+        BYPASS_BLOCK.add(Material.JUNGLE_DOOR);
+        BYPASS_BLOCK.add(Material.OAK_DOOR);
+        BYPASS_BLOCK.add(Material.SPRUCE_DOOR);
+        BYPASS_BLOCK.add(Material.ACACIA_TRAPDOOR);
+        BYPASS_BLOCK.add(Material.BIRCH_TRAPDOOR);
+        BYPASS_BLOCK.add(Material.DARK_OAK_TRAPDOOR);
+        BYPASS_BLOCK.add(Material.IRON_TRAPDOOR);
+        BYPASS_BLOCK.add(Material.JUNGLE_TRAPDOOR);
+        BYPASS_BLOCK.add(Material.OAK_TRAPDOOR);
+        BYPASS_BLOCK.add(Material.SPRUCE_TRAPDOOR);
+        BYPASS_BLOCK.add(Material.ACACIA_FENCE_GATE);
+        BYPASS_BLOCK.add(Material.BIRCH_FENCE_GATE);
+        BYPASS_BLOCK.add(Material.DARK_OAK_FENCE_GATE);
+        BYPASS_BLOCK.add(Material.JUNGLE_FENCE_GATE);
+        BYPASS_BLOCK.add(Material.OAK_FENCE_GATE);
+        BYPASS_BLOCK.add(Material.SPRUCE_FENCE_GATE);
+        BYPASS_BLOCK.add(Material.CHEST);
+        BYPASS_BLOCK.add(Material.TRAPPED_CHEST);
+        BYPASS_BLOCK.add(Material.ENCHANTING_TABLE);
+        BYPASS_BLOCK.add(Material.CRAFTING_TABLE);
+        BYPASS_BLOCK.add(Material.BEACON);
+        BYPASS_BLOCK.add(Material.ANVIL);
+        BYPASS_BLOCK.add(Material.FURNACE);
+        BYPASS_BLOCK.add(Material.FURNACE_MINECART);
+        BYPASS_BLOCK.add(Material.BREWING_STAND);
+        BYPASS_BLOCK.add(Material.HOPPER);
+        BYPASS_BLOCK.add(Material.DISPENSER);
+        BYPASS_BLOCK.add(Material.DROPPER);
+        BYPASS_BLOCK.add(Material.ENDER_CHEST);
+        BYPASS_BLOCK.add(Material.WHITE_SHULKER_BOX);
+        BYPASS_BLOCK.add(Material.ORANGE_SHULKER_BOX);
+        BYPASS_BLOCK.add(Material.MAGENTA_SHULKER_BOX);
+        BYPASS_BLOCK.add(Material.LIGHT_BLUE_SHULKER_BOX);
+        BYPASS_BLOCK.add(Material.YELLOW_SHULKER_BOX);
+        BYPASS_BLOCK.add(Material.LIME_SHULKER_BOX);
+        BYPASS_BLOCK.add(Material.PINK_SHULKER_BOX);
+        BYPASS_BLOCK.add(Material.GRAY_SHULKER_BOX);
+        BYPASS_BLOCK.add(Material.SHULKER_BOX);
+        BYPASS_BLOCK.add(Material.CYAN_SHULKER_BOX);
+        BYPASS_BLOCK.add(Material.PURPLE_SHULKER_BOX);
+        BYPASS_BLOCK.add(Material.BLUE_SHULKER_BOX);
+        BYPASS_BLOCK.add(Material.BROWN_SHULKER_BOX);
+        BYPASS_BLOCK.add(Material.GREEN_SHULKER_BOX);
+        BYPASS_BLOCK.add(Material.RED_SHULKER_BOX);
+        BYPASS_BLOCK.add(Material.BLACK_SHULKER_BOX);
+    }
     private HashSet<LocaleInventory> localeInventories = new HashSet<>();
     private Random random = new Random();
     private SetMultimap<Class<? extends Event>, Consumer<? extends Event>> eventMap = MultimapBuilder.SortedSetMultimapBuilder.hashKeys().hashSetValues().build();
@@ -279,7 +286,7 @@ public class Events implements Listener {
                     return;
                 }
             }
-            if (!rItem.hasPower(PowerRanged.class) && !rItem.hasPower(PowerRangedOnly.class) && item.getType() != Material.BOW && item.getType() != Material.SNOW_BALL && item.getType() != Material.EGG && item.getType() != Material.POTION) {
+            if (!rItem.hasPower(PowerRanged.class) && !rItem.hasPower(PowerRangedOnly.class) && item.getType() != Material.BOW && item.getType() != Material.SNOWBALL && item.getType() != Material.EGG && item.getType() != Material.POTION) {
                 return;
             }
             if (!WorldGuard.canPvP(player) && !rItem.ignoreWorldGuard)
@@ -299,7 +306,7 @@ public class Events implements Listener {
         RPGItem rItem = ItemManager.toRPGItem(e.getItem());
         if (rItem == null) return;
         Material im = e.getMaterial();
-        if (im == Material.BOW || im == Material.SNOW_BALL || im == Material.EGG || im == Material.POTION || im == Material.AIR)
+        if (im == Material.BOW || im == Material.SNOWBALL || im == Material.EGG || im == Material.POTION || im == Material.AIR)
             return;
         if (!WorldGuard.canPvP(p) && !rItem.ignoreWorldGuard)
             return;
@@ -470,7 +477,7 @@ public class Events implements Listener {
     private double playerDamager(EntityDamageByEntityEvent e, double damage) {
         Player player = (Player) e.getDamager();
         ItemStack item = player.getInventory().getItemInMainHand();
-        if (item.getType() == Material.BOW || item.getType() == Material.SNOW_BALL || item.getType() == Material.EGG || item.getType() == Material.POTION)
+        if (item.getType() == Material.BOW || item.getType() == Material.SNOWBALL || item.getType() == Material.EGG || item.getType() == Material.POTION)
             return damage;
 
         RPGItem rItem = ItemManager.toRPGItem(item);

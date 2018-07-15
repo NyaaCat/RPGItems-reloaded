@@ -18,6 +18,7 @@ package think.rpgitems.power;
 
 import org.bukkit.*;
 import org.bukkit.block.Block;
+import org.bukkit.block.data.BlockData;
 import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.entity.Entity;
 import org.bukkit.entity.FallingBlock;
@@ -91,15 +92,15 @@ public class PowerIce extends Power implements PowerRightClick {
                         }
                     }
                     cancel();
-                    final HashMap<Location, Long> changedBlocks = new HashMap<>();
+                    final HashMap<Location, BlockData> changedBlocks = new HashMap<>();
                     for (int x = -1; x < 2; x++) {
                         for (int y = -1; y < 3; y++) {
                             for (int z = -1; z < 2; z++) {
                                 Location loc = landingLoc.clone().add(x, y, z);
                                 Block b = world.getBlockAt(loc);
                                 if (!b.getType().isSolid() && !b.getType().toString().contains("SIGN")
-                                            && !(b.getType() == Material.SKULL || b.getType() == Material.FLOWER_POT)) {
-                                    changedBlocks.put(b.getLocation(), b.getTypeId() | ((long) b.getData() << 16));
+                                            && !(b.getType() == Material.PLAYER_HEAD || b.getType() == Material.FLOWER_POT)) {
+                                    changedBlocks.put(b.getLocation(), b.getBlockData());
                                     b.setType(Material.PACKED_ICE);
                                 }
                             }
@@ -118,13 +119,12 @@ public class PowerIce extends Power implements PowerRightClick {
                                     return;
                                 }
                                 int index = random.nextInt(changedBlocks.size());
-                                long data = changedBlocks.values().toArray(new Long[0])[index];
+                                BlockData data = changedBlocks.values().toArray(new BlockData[0])[index];
                                 Location position = changedBlocks.keySet().toArray(new Location[0])[index];
                                 changedBlocks.remove(position);
                                 Block c = position.getBlock();
-                                position.getWorld().playEffect(position, Effect.STEP_SOUND, c.getTypeId());
-                                c.setTypeId((int) (data & 0xFFFF));
-                                c.setData((byte) (data >> 16));
+                                position.getWorld().playEffect(position, Effect.STEP_SOUND, data.getMaterial());
+                                c.setBlockData(data);
                             }
 
                         }

@@ -81,6 +81,6 @@ public class RPGItems extends JavaPlugin {
         WorldGuard.unload();
         getCommand("rpgitem").setExecutor(null);
         getCommand("rpgitem").setTabCompleter(null);
-        this.getServer().getScheduler().cancelAllTasks();
+        this.getServer().getScheduler().cancelTasks(plugin);
     }
 }

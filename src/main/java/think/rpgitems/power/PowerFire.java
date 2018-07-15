@@ -27,7 +27,6 @@ import org.bukkit.entity.Entity;
 import org.bukkit.entity.FallingBlock;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
-import org.bukkit.material.MaterialData;
 import org.bukkit.scheduler.BukkitRunnable;
 import org.bukkit.util.Vector;
 import think.rpgitems.I18n;
@@ -78,7 +77,7 @@ public class PowerFire extends Power implements PowerRightClick {
         if (!item.consumeDurability(stack, consumption)) return;
         player.playSound(player.getLocation(), Sound.ITEM_FLINTANDSTEEL_USE, 1.0f, 1.2f);
         final List<Block> fireblocks = new ArrayList<>();
-        final FallingBlock block = player.getWorld().spawnFallingBlock(player.getLocation().add(0, 1.8, 0), new MaterialData(Material.FIRE));
+        final FallingBlock block = player.getWorld().spawnFallingBlock(player.getLocation().add(0, 1.8, 0), Material.FIRE.createBlockData());
         block.setVelocity(player.getLocation().getDirection().multiply(2d));
         block.setDropItem(false);
 

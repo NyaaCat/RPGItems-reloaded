@@ -461,7 +461,7 @@ public class Handler extends RPGCommandReceiver {
                 } else {
                     for (Enchantment ench : item.enchantMap.keySet()) {
                         msg(sender, "message.enchantment.item",
-                                ench.getName(), item.enchantMap.get(ench));
+                                ench.getKey().toString(), item.enchantMap.get(ench));
                     }
                 }
             } else {
@@ -582,7 +582,7 @@ public class Handler extends RPGCommandReceiver {
             }
             Inventory recipeInventory = Bukkit.createInventory(player, 27, title);
             if (item.hasRecipe) {
-                ItemStack blank = new ItemStack(Material.THIN_GLASS);
+                ItemStack blank = new ItemStack(Material.GLASS_PANE);
                 ItemMeta meta = blank.getItemMeta();
                 meta.setDisplayName(I18n.format("message.recipe.1"));
                 ArrayList<String> lore = new ArrayList<>();

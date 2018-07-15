@@ -97,7 +97,7 @@ public class PowerTeleport extends Power implements PowerRightClick, PowerProjec
         newLoc.setYaw(start.getYaw());
         player.teleport(newLoc);
         world.playEffect(newLoc, Effect.ENDER_SIGNAL, 0);
-        world.playSound(newLoc, Sound.ENTITY_ENDERMEN_TELEPORT, 1.0f, 0.3f);
+        world.playSound(newLoc, Sound.ENTITY_ENDERMAN_TELEPORT, 1.0f, 0.3f);
     }
 
     @Override
@@ -116,7 +116,7 @@ public class PowerTeleport extends Power implements PowerRightClick, PowerProjec
         newLoc.setYaw(start.getYaw());
         player.teleport(newLoc);
         world.playEffect(newLoc, Effect.ENDER_SIGNAL, 0);
-        world.playSound(newLoc, Sound.ENTITY_ENDERMEN_TELEPORT, 1.0f, 0.3f);
+        world.playSound(newLoc, Sound.ENTITY_ENDERMAN_TELEPORT, 1.0f, 0.3f);
     }
 
     @Override
