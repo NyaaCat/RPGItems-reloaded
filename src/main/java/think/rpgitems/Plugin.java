@@ -101,7 +101,7 @@ public class Plugin extends JavaPlugin {
     @Override
     public void onDisable() {
         WorldGuard.unload();
-        this.getServer().getScheduler().cancelAllTasks();
+        this.getServer().getScheduler().cancelTasks(plugin);
     }
 
     @Override

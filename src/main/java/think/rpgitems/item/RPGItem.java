@@ -1016,6 +1016,9 @@ public class RPGItem {
 
     public void setMaxDurability(int newVal, boolean update) {
         maxDurability = newVal;
+        if (defaultDurability <= 0 || defaultDurability > newVal) {
+            defaultDurability = maxDurability;
+        }
         if (update)
             rebuild();
     }
