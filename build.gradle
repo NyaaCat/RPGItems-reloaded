@@ -38,7 +38,7 @@ repositories {
 }
 
 dependencies {
-    implementation 'org.spigotmc:spigot-api:1.13-pre7-R0.1-SNAPSHOT'
+    implementation 'org.spigotmc:spigot-api:1.13-R0.1-SNAPSHOT'
     implementation 'com.sk89q.worldguard:worldguard-legacy:6.2'
     implementation 'com.sk89q.worldedit:worldedit-core:6.1'
     implementation('cat.nyaa:nyaacore:6.0-SNAPSHOT') {
