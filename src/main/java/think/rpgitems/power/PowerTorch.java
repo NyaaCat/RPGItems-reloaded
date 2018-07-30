@@ -18,7 +18,9 @@ package think.rpgitems.power;
 
 import org.bukkit.*;
 import org.bukkit.block.Block;
+import org.bukkit.block.BlockFace;
 import org.bukkit.block.data.BlockData;
+import org.bukkit.block.data.Directional;
 import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.entity.FallingBlock;
 import org.bukkit.entity.Player;
@@ -53,14 +55,13 @@ public class PowerTorch extends Power implements PowerRightClick {
     @Property
     public int consumption = 0;
 
-    @SuppressWarnings("deprecation")
     @Override
     public void rightClick(final Player player, ItemStack stack, Block clicked) {
         if (!item.checkPermission(player, true)) return;
         if (!checkCooldown(player, cooldownTime, true)) return;
         if (!item.consumeDurability(stack, consumption)) return;
         player.playSound(player.getLocation(), Sound.ITEM_FLINTANDSTEEL_USE, 1.0f, 0.8f);
-        final FallingBlock block = player.getWorld().spawnFallingBlock(player.getLocation().add(0, 1.8, 0), Material.TORCH, (byte) 0);
+        final FallingBlock block = player.getWorld().spawnFallingBlock(player.getLocation().add(0, 1.8, 0), Material.TORCH.createBlockData());
         block.setVelocity(player.getLocation().getDirection().multiply(2d));
         block.setDropItem(false);
         BukkitRunnable run = new BukkitRunnable() {
@@ -73,18 +74,26 @@ public class PowerTorch extends Power implements PowerRightClick {
                     if (block.getLocation().getBlock().getType().equals(Material.TORCH))
                         block.setMetadata("RPGItems.Torch", new FixedMetadataValue(RPGItems.plugin, null));
                     cancel();
-                    final HashMap<Location, BlockData> changedBlocks = new HashMap<>();
+                    final HashMap<Location, Material> changedBlocks = new HashMap<>();
+                    final HashMap<Location, BlockData> changedBlockData = new HashMap<>();
                     for (int x = -2; x <= 2; x++) {
                         for (int y = -2; y <= 3; y++) {
                             for (int z = -2; z <= 2; z++) {
                                 Location loc = block.getLocation().add(x, y, z);
                                 Block b = world.getBlockAt(loc);
                                 if (b.getType().equals(Material.AIR) && random.nextInt(100) < 20) {
-                                    List<Byte> orientations = getPossibleOrientations(loc);
-                                    if (!orientations.isEmpty()) {
-                                        changedBlocks.put(b.getLocation(), b.getBlockData());
+                                    List<BlockFace> faces = getPossibleFaces(loc);
+                                    if (faces.size() > 0) {
+                                        changedBlocks.put(b.getLocation(), b.getType());
+                                        changedBlockData.put(b.getLocation(), b.getBlockData());
+                                        BlockFace o = faces.get(random.nextInt(faces.size()));
                                         b.setMetadata("RPGItems.Torch", new FixedMetadataValue(RPGItems.plugin, null));
-                                        b.setBlockData(Material.TORCH.createBlockData(), false); // TODO:orientations. Don't apply physics since the check is done beforehand
+                                        b.setType(o == BlockFace.DOWN ? Material.TORCH : Material.WALL_TORCH, false);
+                                        if (o != BlockFace.DOWN) {
+                                            Directional f = ((Directional) b.getBlockData());
+                                            f.setFacing(o);
+                                            b.setBlockData(f, false);
+                                        }
                                     }
                                 }
                             }
@@ -97,17 +106,22 @@ public class PowerTorch extends Power implements PowerRightClick {
                             if (changedBlocks.isEmpty()) {
                                 cancel();
                                 block.removeMetadata("RPGItems.Torch", RPGItems.plugin);
-                                block.getLocation().getBlock().setType(Material.AIR);
+                                if (block.getLocation().getBlock().getType() == Material.TORCH) {
+                                    block.getLocation().getBlock().setType(Material.AIR);
+                                }
                                 return;
                             }
                             int index = random.nextInt(changedBlocks.size());
-                            BlockData data = changedBlocks.values().toArray(new BlockData[0])[index];
+                            Location loc = (Location) changedBlocks.keySet().toArray()[index];
+                            Material material = changedBlocks.get(loc);
+                            BlockData data = changedBlockData.get(loc);
                             Location position = changedBlocks.keySet().toArray(new Location[0])[index];
                             changedBlocks.remove(position);
                             Block c = position.getBlock();
-                            position.getWorld().playEffect(position, Effect.STEP_SOUND, c.getBlockData().getMaterial());
+                            position.getWorld().playEffect(position, Effect.STEP_SOUND, c.getType());
                             c.removeMetadata("RPGItems.Torch", RPGItems.plugin);
-                            c.setBlockData(data);
+                            c.setType(material, false);
+                            c.setBlockData(data, false);
 
                         }
                     }).runTaskTimer(RPGItems.plugin, 4 * 20 + new Random().nextInt(40), 3);
@@ -140,27 +154,18 @@ public class PowerTorch extends Power implements PowerRightClick {
         s.set("consumption", consumption);
     }
 
-    private List<Byte> getPossibleOrientations(Location loc) {
-        List<Byte> orientations = new ArrayList<>();
-        if (loc.subtract(0, 1, 0).getBlock().getType().isSolid())
-            orientations.add((byte) 5);
-        for (int x = -1; x <= 1; x++)
-            for (int z = -1; z <= 1; z++)
-                if (Math.abs(x) != Math.abs(z)) {
-                    Material materialToCheck = loc.add(x, 0, z).getBlock().getType();
-                    if (materialToCheck.isSolid() && !materialToCheck.toString().contains("GRASS")) { // Tall grass somehow counts as solid block
-                        if (x > 0)
-                            orientations.add((byte) 2);
-                        else if (x < 0)
-                            orientations.add((byte) 1);
-                        if (z > 0)
-                            orientations.add((byte) 4);
-                        else if (z < 0)
-                            orientations.add((byte) 3);
-                    }
-                }
-
-        return orientations;
+    private List<BlockFace> getPossibleFaces(Location loc) {
+        List<BlockFace> faces = new ArrayList<>();
+        Block relative = loc.getBlock().getRelative(BlockFace.DOWN);
+        if (relative.getType().isSolid() && relative.getType().isOccluding()) {
+            faces.add(BlockFace.DOWN);
+        }
+        for (BlockFace f : ((Directional) Material.WALL_TORCH.createBlockData()).getFaces()) {
+            Block block = loc.getBlock().getRelative(f);
+            if (block.getType().isSolid() && block.getType().isOccluding()) {
+                faces.add(f.getOppositeFace());
+            }
+        }
+        return faces;
     }
-
 }
