@@ -157,7 +157,12 @@ public class RPGItem {
         damageMin = s.getInt("damageMin");
         damageMax = s.getInt("damageMax");
         armour = s.getInt("armour", 0);
-        item = new ItemStack(Material.valueOf(s.getString("item")));
+        String materialName = s.getString("item");
+        Material material = Material.getMaterial(materialName);
+        if (material == null) {
+            material = Material.getMaterial(materialName, true);
+        }
+        item = new ItemStack(material);
         ItemMeta meta = item.getItemMeta();
         if (meta instanceof LeatherArmorMeta) {
             ((LeatherArmorMeta) meta).setColor(Color.fromRGB(s.getInt("item_colour", 0)));
@@ -248,7 +253,12 @@ public class RPGItem {
             ConfigurationSection ench = s.getConfigurationSection("enchantments");
             enchantMap = new HashMap<>();
             for (String enchName : ench.getKeys(false)) {
-                Enchantment tmp = Enchantment.getByKey(NamespacedKey.minecraft(enchName));
+                Enchantment tmp = null;
+                try {
+                    tmp = Enchantment.getByKey(NamespacedKey.minecraft(enchName));
+                } catch (IllegalArgumentException e) {
+                    tmp = Enchantment.getByName(enchName);
+                }
                 if (tmp != null) {
                     enchantMap.put(tmp, ench.getInt(enchName));
                 }
@@ -423,7 +433,7 @@ public class RPGItem {
         if (enchantMap != null) {
             ConfigurationSection ench = s.createSection("enchantments");
             for (Enchantment e : enchantMap.keySet()) {
-                ench.set(e.getKey().toString(), enchantMap.get(e));
+                ench.set(e.getKey().getKey(), enchantMap.get(e));
             }
         } else {
             s.set("enchantments", null);
