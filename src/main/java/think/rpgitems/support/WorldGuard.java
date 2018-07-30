@@ -54,6 +54,9 @@ public class WorldGuard {
     private static FileConfiguration config;
 
     public static void load() {
+        if (true) {
+            return;
+        }
         if (!useWorldGuard || !useCustomFlag) {
             return;
         }
@@ -66,6 +69,9 @@ public class WorldGuard {
 
     public static void init(RPGItems pl) {
         plugin = pl;
+        if (true) {
+            return;
+        }
         Plugin wgPlugin = plugin.getServer().getPluginManager().getPlugin("WorldGuard");
         useWorldGuard = plugin.getConfig().getBoolean("support.worldguard", false);
         useCustomFlag = plugin.getConfig().getBoolean("support.wgcustomflag", true);
@@ -94,6 +100,9 @@ public class WorldGuard {
     }
 
     public static void reload() {
+        if (true) {
+            return;
+        }
         if (useCustomFlag) {
             try {
                 WGHandler.unregisterHandler();
