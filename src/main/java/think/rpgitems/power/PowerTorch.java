@@ -26,7 +26,6 @@ import org.bukkit.metadata.FixedMetadataValue;
 import org.bukkit.scheduler.BukkitRunnable;
 import think.rpgitems.Plugin;
 import think.rpgitems.data.Locale;
-import think.rpgitems.data.RPGValue;
 import think.rpgitems.power.types.PowerRightClick;
 
 import java.util.ArrayList;
@@ -95,7 +94,9 @@ public class PowerTorch extends Power implements PowerRightClick {
                             if (changedBlocks.isEmpty()) {
                                 cancel();
                                 block.removeMetadata("RPGItems.Torch", Plugin.plugin);
-                                block.getLocation().getBlock().setType(Material.AIR);
+                                if (block.getLocation().getBlock().getType() == Material.TORCH) {
+                                    block.getLocation().getBlock().setType(Material.AIR);
+                                }
                                 return;
                             }
                             int index = random.nextInt(changedBlocks.size());
