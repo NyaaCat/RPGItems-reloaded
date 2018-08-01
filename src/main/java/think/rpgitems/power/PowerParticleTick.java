@@ -5,6 +5,7 @@ import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
 import think.rpgitems.I18n;
+import think.rpgitems.RPGItems;
 import think.rpgitems.commands.Property;
 import think.rpgitems.commands.Validator;
 import think.rpgitems.power.types.PowerTick;
@@ -23,7 +24,7 @@ public class PowerParticleTick extends Power implements PowerTick {
      */
     @Property(order = 0, required = true)
     @Validator(value = "acceptableEffect", message = "message.error.visualeffect")
-    public String effect = "FLAME";
+    public String effect = Effect.MOBSPAWNER_FLAMES.name();
     /**
      * Interval of particle effect
      */
@@ -52,7 +53,13 @@ public class PowerParticleTick extends Power implements PowerTick {
 
     @Override
     public void init(ConfigurationSection s) {
-        effect = s.getString("effect", "FLAME");
+        effect = s.getString("effect", Effect.MOBSPAWNER_FLAMES.name());
+        try {
+            Effect.valueOf(effect);
+        } catch (IllegalArgumentException e) {
+            RPGItems.logger.warning("Invalid effect name: " + effect);
+            effect = Effect.MOBSPAWNER_FLAMES.name();
+        }
         interval = s.getInt("interval");
         consumption = s.getInt("consumption", 0);
     }

@@ -1,7 +1,6 @@
 package think.rpgitems.power;
 
-import net.md_5.bungee.api.chat.TextComponent;
-import net.md_5.bungee.api.chat.TranslatableComponent;
+import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
 import org.bukkit.Location;
 import org.bukkit.block.Block;
@@ -99,9 +98,7 @@ public class PowerThrow extends Power implements PowerRightClick, PowerLeftClick
             try {
                 nbt = getTagFromJson.invoke(null, entityData.replaceAll("\\{player}", player.getName()).replaceAll("\\{playerUUID}", player.getUniqueId().toString()));
             } catch (Exception e) {
-                TranslatableComponent msg = new TranslatableComponent("commands.summon.tagError");
-                msg.addWith(new TextComponent(e.getCause().getMessage()));
-                player.spigot().sendMessage(msg);
+                player.sendMessage(e.getCause().getMessage());
                 return;
             }
             setString.invoke(nbt, "id", entityName);
@@ -109,14 +106,12 @@ public class PowerThrow extends Power implements PowerRightClick, PowerLeftClick
             if (entity != null) {
                 setPositionRotation.invoke(entity, loc.getX(), loc.getY(), loc.getZ(), loc.getYaw(), loc.getPitch());
                 UUID uuid = (UUID) getUUID.invoke(entity);
-                for (Entity e: loc.getWorld().getNearbyEntities(loc, 3, 3, 3)) {
-                    if (e.getUniqueId().equals(uuid)) {
-                        if (e instanceof Projectile) {
-                            ((Projectile) e).setShooter(player);
-                        }
-                        e.setVelocity(loc.getDirection().multiply(speed));
-                        return;
+                Entity e = Bukkit.getEntity(uuid);
+                if (e != null) {
+                    if (e instanceof Projectile) {
+                        ((Projectile) e).setShooter(player);
                     }
+                    e.setVelocity(loc.getDirection().multiply(speed));
                 }
             }
         } catch (IllegalAccessException e) {

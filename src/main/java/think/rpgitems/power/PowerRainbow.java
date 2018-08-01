@@ -16,10 +16,7 @@
  */
 package think.rpgitems.power;
 
-import org.bukkit.Effect;
-import org.bukkit.Location;
-import org.bukkit.Material;
-import org.bukkit.Sound;
+import org.bukkit.*;
 import org.bukkit.block.Block;
 import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.entity.FallingBlock;
@@ -69,7 +66,6 @@ public class PowerRainbow extends Power implements PowerRightClick {
 
     private Random random = new Random();
 
-    @SuppressWarnings("deprecation")
     @Override
     public void rightClick(Player player, ItemStack stack, Block clicked) {
         if (!item.checkPermission(player, true)) return;
@@ -80,7 +76,7 @@ public class PowerRainbow extends Power implements PowerRightClick {
         for (int i = 0; i < count; i++) {
             FallingBlock block;
             if (!isFire) {
-                block = player.getWorld().spawnFallingBlock(player.getLocation().add(0, 1.8, 0), Material.WHITE_WOOL.createBlockData()); //TODO: White rainbow
+                block = player.getWorld().spawnFallingBlock(player.getLocation().add(0, 1.8, 0), Tag.WOOL.getValues().toArray(new Material[16])[random.nextInt(16)].createBlockData());
             } else {
                 block = player.getWorld().spawnFallingBlock(player.getLocation().add(0, 1.8, 0), Material.FIRE.createBlockData());
             }
@@ -100,8 +96,8 @@ public class PowerRainbow extends Power implements PowerRightClick {
                     Location loc = l.next();
                     if (random.nextBoolean()) {
                         Block b = loc.getBlock();
-                        if (b.getType() == (isFire ? Material.FIRE : Material.WHITE_WOOL)) {
-                            loc.getWorld().playEffect(loc, Effect.STEP_SOUND, b.getBlockData().getMaterial());
+                        if ((isFire && b.getType() == Material.FIRE) || (!isFire && Tag.WOOL.isTagged(b.getType()))) {
+                            loc.getWorld().playEffect(loc, Effect.STEP_SOUND, b.getType());
                             b.setType(Material.AIR);
                         }
                         l.remove();

@@ -64,7 +64,7 @@ public class PowerIce extends Power implements PowerRightClick {
         player.playSound(player.getLocation(), Sound.ENTITY_EGG_THROW, 1.0f, 0.1f);
 
         // launch an ice block
-        final FallingBlock block = player.getWorld().spawnFallingBlock(player.getLocation().add(0, 1.8, 0), Material.PACKED_ICE, (byte) 0);
+        final FallingBlock block = player.getWorld().spawnFallingBlock(player.getLocation().add(0, 1.8, 0), Material.PACKED_ICE.createBlockData());
         block.setVelocity(player.getLocation().getDirection().multiply(2d));
         block.setDropItem(false);
 
@@ -98,8 +98,8 @@ public class PowerIce extends Power implements PowerRightClick {
                             for (int z = -1; z < 2; z++) {
                                 Location loc = landingLoc.clone().add(x, y, z);
                                 Block b = world.getBlockAt(loc);
-                                if (!b.getType().isSolid() && !b.getType().toString().contains("SIGN")
-                                            && !(b.getType() == Material.PLAYER_HEAD || b.getType() == Material.FLOWER_POT)) {
+                                if (!b.getType().isSolid() &&
+                                        !(b.getType() == Material.PLAYER_HEAD || b.getType() == Material.PLAYER_WALL_HEAD)) {
                                     changedBlocks.put(b.getLocation(), b.getBlockData());
                                     b.setType(Material.PACKED_ICE);
                                 }
@@ -123,7 +123,7 @@ public class PowerIce extends Power implements PowerRightClick {
                                 Location position = changedBlocks.keySet().toArray(new Location[0])[index];
                                 changedBlocks.remove(position);
                                 Block c = position.getBlock();
-                                position.getWorld().playEffect(position, Effect.STEP_SOUND, data.getMaterial());
+                                position.getWorld().playEffect(position, Effect.STEP_SOUND, c.getType());
                                 c.setBlockData(data);
                             }
 
