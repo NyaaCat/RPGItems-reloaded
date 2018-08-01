@@ -31,6 +31,8 @@ public class PowerThrow extends Power implements PowerRightClick, PowerLeftClick
     public String display = "throw entity";
     @Property(order = 2)
     public boolean isRight;
+    @Property(order = 6)
+    public boolean isPersistent;
     public int consumption = 0;
 
     @Override
@@ -41,6 +43,7 @@ public class PowerThrow extends Power implements PowerRightClick, PowerLeftClick
         speed = s.getDouble("speed", 3);
         display = s.getString("display");
         isRight = s.getBoolean("isRight", true);
+        isPersistent = s.getBoolean("isPersistent", false);
         consumption = s.getInt("consumption", 0);
     }
 
@@ -52,6 +55,7 @@ public class PowerThrow extends Power implements PowerRightClick, PowerLeftClick
         s.set("speed", speed);
         s.set("display", display);
         s.set("isRight", isRight);
+        s.set("isPersistent", isPersistent);
         s.set("consumption", consumption);
     }
 
@@ -112,6 +116,7 @@ public class PowerThrow extends Power implements PowerRightClick, PowerLeftClick
                         ((Projectile) e).setShooter(player);
                     }
                     e.setVelocity(loc.getDirection().multiply(speed));
+                    e.setPersistent(isPersistent);
                 }
             }
         } catch (IllegalAccessException e) {

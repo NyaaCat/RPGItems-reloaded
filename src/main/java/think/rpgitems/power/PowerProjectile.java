@@ -241,6 +241,7 @@ public class PowerProjectile extends Power implements PowerRightClick {
     private void fire(Player player) {
         if (!cone) {
             Projectile projectile = player.launchProjectile(projectileType, player.getEyeLocation().getDirection().multiply(speed));
+            projectile.setPersistent(false);
             Events.rpgProjectiles.put(projectile.getEntityId(), item.getID());
             projectile.setGravity(gravity);
             if (projectileType == Arrow.class)
@@ -272,6 +273,7 @@ public class PowerProjectile extends Power implements PowerRightClick {
                 double theta = Math.acos(z);
                 Vector v = a.clone().multiply(Math.cos(det)).add(b.clone().multiply(Math.sin(det))).multiply(Math.sin(theta)).add(loc.clone().multiply(Math.cos(theta)));
                 Projectile projectile = player.launchProjectile(projectileType, v.normalize().multiply(speed));
+                projectile.setPersistent(false);
                 Events.rpgProjectiles.put(projectile.getEntityId(), item.getID());
                 projectile.setGravity(gravity);
                 if (projectileType == Arrow.class)

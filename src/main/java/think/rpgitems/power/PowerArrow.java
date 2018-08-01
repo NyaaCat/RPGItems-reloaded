@@ -55,6 +55,7 @@ public class PowerArrow extends Power implements PowerRightClick {
         Arrow arrow = player.launchProjectile(Arrow.class);
         Events.rpgProjectiles.put(arrow.getEntityId(), item.getID());
         Events.removeArrows.add(arrow.getEntityId());
+        arrow.setPersistent(false);
     }
 
     @Override
