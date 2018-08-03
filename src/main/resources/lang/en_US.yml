@@ -141,6 +141,7 @@ command:
     print: Prints item @[Item]#'s tool-tip to chat
     realdamage: =Adds the realdamage power to @[Item]# with a cooldown of @[Cooldown]# ticks. The item will do real @[Damage]# to LivingEntity player hits but always leave at least 0.1 health.
     throw: 'Adds the throw power to @[Item]# with a cooldown of @[Cooldown]# ticks. The tooltip will display @[Display]#. The item will throw entity @[Entity]# with @[EntityData]# and @[Speed]\# on @[left,right]# click.'
+    repair: 'Adds the repair power to @[Item]#.'
 message:
   cost:
     hit_toggle:
@@ -190,6 +191,8 @@ message:
     unknown:
       command: 'Error: Unknown command %s'
     option: Invalid option '%s'
+    iteminhand: 'No item in your hand'
+    need_material: 'You need a %s to repair this item'
   wgcustomflag:
     disable: Worldguard custom flag disabled
     enable: Worldguard custom flag enabled

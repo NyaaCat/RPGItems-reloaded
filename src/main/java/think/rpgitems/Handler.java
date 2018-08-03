@@ -2,7 +2,6 @@ package think.rpgitems;
 
 import cat.nyaa.nyaacore.LanguageRepository;
 import cat.nyaa.nyaacore.Message;
-import cat.nyaa.nyaacore.utils.ReflectionUtils;
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
 import org.bukkit.Color;
@@ -39,7 +38,7 @@ public class Handler extends RPGCommandReceiver {
         this.plugin = plugin;
     }
 
-    private static void setPower(Power power, String field, String value) throws BadCommandException, IllegalAccessException {
+    private static void setPower(CommandSender sender, Power power, String field, String value) throws BadCommandException, IllegalAccessException {
         Field f;
         Class<? extends Power> cls = power.getClass();
         try {
@@ -47,11 +46,11 @@ public class Handler extends RPGCommandReceiver {
         } catch (NoSuchFieldException e) {
             throw new BadCommandException("internal.error.invalid_command_arg", e);//TODO
         }
-        setPower(power, f, value);
+        setPower(sender, power, f, value);
     }
 
     @SuppressWarnings("unchecked")
-    private static void setPower(Power power, Field field, String value) throws BadCommandException, IllegalAccessException {
+    private static void setPower(CommandSender sender, Power power, Field field, String value) throws BadCommandException, IllegalAccessException {
         Class<? extends Power> cls = power.getClass();
         Transformer tf = field.getAnnotation(Transformer.class);
         if (tf != null) {
@@ -119,6 +118,22 @@ public class Handler extends RPGCommandReceiver {
                 } catch (IllegalArgumentException e) {
                     throw new BadCommandException("internal.error.bad_enum", field.getName(), Stream.of(field.getType().getEnumConstants()).map(Object::toString).reduce(" ", (a, b) -> a + ", " + b));
                 }
+            } else if (field.getType() == ItemStack.class) {
+                Material m = Material.getMaterial(value);
+                ItemStack item = null;
+                if (sender instanceof Player && value.equalsIgnoreCase("HAND")) {
+                    ItemStack hand = ((Player) sender).getInventory().getItemInMainHand();
+                    if (hand == null || hand.getType() == Material.AIR) {
+                        throw new BadCommandException("message.error.iteminhand");
+                    }
+                    item = hand.clone();
+                    item.setAmount(1);
+                } else if (m == null || m == Material.AIR || !m.isItem()) {
+                    throw new BadCommandException("message.error.material", value);
+                } else {
+                    item = new ItemStack(m);
+                }
+                field.set(power, item.clone());
             } else {
                 throw new BadCommandException("internal.error.invalid_command_arg");
             }
@@ -689,7 +704,7 @@ public class Handler extends RPGCommandReceiver {
         Optional<Power> op = item.powers.stream().filter(pwr -> pwr.getClass().equals(p)).skip(nth - 1).findFirst();
         if (op.isPresent()) {
             Power pow = op.get();
-            setPower(pow, property, val);
+            setPower(sender, pow, property, val);
         } else {
             msg(sender, "message.power_property.power_notfound");
             return;
@@ -931,7 +946,7 @@ public class Handler extends RPGCommandReceiver {
             String name = field.getName();
             String value = args.argString(name, null);
             if (value != null) {
-                setPower(power, field, value);
+                setPower(sender, power, field, value);
                 required.remove(field);
                 settled.add(field);
             }
@@ -953,7 +968,7 @@ public class Handler extends RPGCommandReceiver {
                     break;
                 }
             }
-            setPower(power, field, value);
+            setPower(sender, power, field, value);
             required.remove(field);
             settled.add(field);
         }

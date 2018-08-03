@@ -111,6 +111,7 @@ public abstract class Power implements Serializable {
         Power.powers.put("stuck", PowerStuck.class);
         Power.powers.put("shulkerbullet", PowerShulkerBullet.class);
         Power.powers.put("throw", PowerThrow.class);
+        Power.powers.put("repair", PowerRepair.class);
         MethodHandles.Lookup lookup = MethodHandles.lookup();
         for (Class<? extends Power> cls : Power.powers.values()) {
             Map<Class<? extends Annotation>, List<Annotation>> annos =

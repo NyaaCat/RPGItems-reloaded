@@ -1061,6 +1061,14 @@ public class RPGItem {
         setMaxDurability(newVal, true);
     }
 
+    public void setDurability(ItemStack item, int val) {
+        RPGMetadata meta = getMetadata(item);
+        if (getMaxDurability() != -1) {
+            meta.put(RPGMetadata.DURABILITY, val);
+        }
+        updateItem(item, meta);
+    }
+
     public int getDurability(ItemStack item) {
         RPGMetadata meta = getMetadata(item);
         int durability = Integer.MAX_VALUE;
