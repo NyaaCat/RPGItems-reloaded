@@ -406,7 +406,7 @@ public class Handler extends RPGCommandReceiver {
         } else if (args.length() >= 3) {
             String materialName = args.nextString();
             Material material = Material.matchMaterial(materialName);
-            if (material == null || !ReflectionUtils.isValidItem(new ItemStack(material))) {
+            if (material == null || !material.isItem()) {
                 msg(sender, "message.error.material", materialName);
                 return;
             }
