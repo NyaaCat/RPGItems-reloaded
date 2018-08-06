@@ -2,13 +2,18 @@ package think.rpgitems.commands;
 
 import cat.nyaa.nyaacore.CommandReceiver;
 import cat.nyaa.nyaacore.LanguageRepository;
+import cat.nyaa.nyaacore.Message;
+import org.bukkit.Bukkit;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandSender;
+import org.bukkit.entity.Player;
+import org.librazy.nclangchecker.LangKey;
+import think.rpgitems.I18n;
 import think.rpgitems.RPGItems;
 import think.rpgitems.item.ItemManager;
 import think.rpgitems.item.RPGItem;
-import think.rpgitems.power.PowerManager;
 import think.rpgitems.power.Power;
+import think.rpgitems.power.PowerManager;
 import think.rpgitems.utils.Pair;
 
 import java.lang.reflect.Field;
@@ -16,6 +21,8 @@ import java.util.*;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 import java.util.stream.Stream;
+
+import static think.rpgitems.power.PowerManager.powers;
 
 public abstract class RPGCommandReceiver extends CommandReceiver {
     private final Map<String, String> subCommandAttribute = new HashMap<>();
@@ -67,7 +74,8 @@ public abstract class RPGCommandReceiver extends CommandReceiver {
                 return resolveProperty(last, cmd, itemCommand);
             }
             case "power": {
-                Class<? extends Power> power = PowerManager.powers.get(cmd.next());
+                @LangKey(skipCheck = true) String powName = cmd.next();
+                Class<? extends Power> power = powers.get(powName);
                 if (power == null) return null;
                 SortedMap<PowerProperty, Field> argMap = PowerManager.propertyOrders.get(power);
                 Set<Field> settled = new HashSet<>();
@@ -90,13 +98,17 @@ public abstract class RPGCommandReceiver extends CommandReceiver {
                         settled.add(field);
                     }
                 }
-                return resolvePowerSuggestions(last, cmd, power, argMap, settled, required);
+                if (settled.isEmpty() && sender instanceof Player) {
+                    Bukkit.getScheduler().runTask(RPGItem.getPlugin(), () -> new Message(I18n.format("powers." + powName + ".main_description")).send((Player) sender, Message.MessageType.ACTION_BAR));
+                }
+                return resolvePowerSuggestions(sender, last, cmd, power, argMap, settled, required);
             }
-            default: return null;
+            default:
+                return null;
         }
     }
 
-    private List<String> resolvePowerSuggestions(String last, Arguments cmd, Class<? extends Power> power, SortedMap<PowerProperty, Field> argMap, Set<Field> settled, List<Field> required) {
+    private List<String> resolvePowerSuggestions(CommandSender sender, String last, Arguments cmd, Class<? extends Power> power, SortedMap<PowerProperty, Field> argMap, Set<Field> settled, List<Field> required) {
         for (Field field : argMap.entrySet()
                                  .stream()
                                  .filter(p -> p.getKey().order() != Integer.MAX_VALUE)
@@ -107,6 +119,7 @@ public abstract class RPGCommandReceiver extends CommandReceiver {
             if (value == null) {
                 if (argMap.values().stream().anyMatch(f -> last.startsWith(f.getName() + ":"))) {//we are suggesting a value as we have the complete property name
                     String currentPropertyName = last.split(":")[0];
+                    Bukkit.getScheduler().runTask(RPGItem.getPlugin(), () -> new Message(I18n.format("powers." + powers.inverse().get(power) + "." + currentPropertyName)).send((Player) sender, Message.MessageType.ACTION_BAR));
                     return resolvePropertyValueSuggestion(power, currentPropertyName, true).stream().filter(s -> s.startsWith(last)).collect(Collectors.toList());
                 }
                 List<String> suggestions;
@@ -245,7 +258,7 @@ public abstract class RPGCommandReceiver extends CommandReceiver {
                             // four case below
                             switch (itemCommand.getValue()) {
                                 case "power":
-                                    return new ArrayList<>(PowerManager.powers.keySet()); // all powers
+                                    return new ArrayList<>(powers.keySet()); // all powers
                                 case "set":
                                 case "get":
                                 case "removepower":
@@ -257,7 +270,8 @@ public abstract class RPGCommandReceiver extends CommandReceiver {
                         case "command": {
                             return att.length > 1 ? Arrays.asList(att[1].split(",")) : null; // suggestion bundled in attr
                         }
-                        default: return null;
+                        default:
+                            return null;
                     }
                 } else {
                     if (ItemManager.getItemByName(first) != null) {
@@ -281,7 +295,8 @@ public abstract class RPGCommandReceiver extends CommandReceiver {
                             case "command": {
                                 return att.length > 1 ? Arrays.stream(att[1].split(",")).filter(s -> s.startsWith(second)).collect(Collectors.toList()) : null; // bundled in attr
                             }
-                            default: return null;
+                            default:
+                                return null;
                         }
                     }
                 }
@@ -303,7 +318,7 @@ public abstract class RPGCommandReceiver extends CommandReceiver {
                         case "power":
                             switch (itemCommand.getValue()) {
                                 case "power":
-                                    return PowerManager.powers.keySet().stream().filter(s -> s.startsWith(third)).collect(Collectors.toList()); // only case is `/rpgitem power item somepow`
+                                    return powers.keySet().stream().filter(s -> s.startsWith(third)).collect(Collectors.toList()); // only case is `/rpgitem power item somepow`
                                 case "set":
                                 case "get":
                                 case "removepower":
@@ -320,7 +335,7 @@ public abstract class RPGCommandReceiver extends CommandReceiver {
                 }
             }
             default: {
-                return resolvePowerOrPropertySuggestion(sender,args);
+                return resolvePowerOrPropertySuggestion(sender, args);
             }
         }
     }

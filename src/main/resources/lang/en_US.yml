@@ -1,3 +1,13 @@
+powers:
+  aoe:
+    main_description: Apply effect to entities in range. PowerSelector is applicable.
+    cooldownTime: Cooldown of the power, in ticks.
+    range: Effective range in blocks.
+    duration: Duration of applied effect, in ticks.
+    amlifier: Amlifier of applied effect.
+    selfapplication: Whether to apply effect on triggering player.
+    name: Display name of the power.
+    consumption: Durability consumption of the power.
 message:
   cost:
     hit_toggle:
