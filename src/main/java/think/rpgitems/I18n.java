@@ -20,6 +20,10 @@ public class I18n extends LanguageRepository {
         return instance.getFormatted(key, args);
     }
 
+    public static I18n getInstance() {
+        return instance;
+    }
+
     @Override
     protected JavaPlugin getPlugin() {
         return plugin;

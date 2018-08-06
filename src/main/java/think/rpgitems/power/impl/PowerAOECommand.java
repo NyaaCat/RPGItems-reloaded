@@ -6,6 +6,7 @@ import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.entity.LivingEntity;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
+import think.rpgitems.commands.AcceptedValue;
 import think.rpgitems.commands.Property;
 
 import java.util.List;
@@ -35,6 +36,7 @@ public class PowerAOECommand extends PowerCommand {
      * mobs: apply the command to every {@link LivingEntity}  except {@link Player}in range
      */
     @Property
+    @AcceptedValue({"entity", "player", "mobs"})
     public String type = "entity";
 
     /**

@@ -83,17 +83,12 @@ public class PowerCommand extends BasePower implements PowerRightClick, PowerLef
         AttachPermission(player, permission);
         boolean wasOp = player.isOp();
 
-        Runnable run = new Runnable() {
-
-            @Override
-            public void run() {
-                String cmd = command;
-                cmd = cmd.replaceAll("\\{player}", player.getName());
-                cmd = cmd.replaceAll("\\{yaw}", Float.toString(player.getLocation().getYaw() + 90));
-                cmd = cmd.replaceAll("\\{pitch}", Float.toString(-player.getLocation().getPitch()));
-                player.chat("/" + cmd);
-            }
-
+        Runnable run = () -> {
+            String cmd = command;
+            cmd = cmd.replaceAll("\\{player}", player.getName());
+            cmd = cmd.replaceAll("\\{yaw}", Float.toString(player.getLocation().getYaw() + 90));
+            cmd = cmd.replaceAll("\\{pitch}", Float.toString(-player.getLocation().getPitch()));
+            player.chat("/" + cmd);
         };
 
         if (permission.equals("*")) {

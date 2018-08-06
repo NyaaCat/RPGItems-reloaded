@@ -122,7 +122,18 @@ public abstract class RPGCommandReceiver extends CommandReceiver {
             if (value == null) {
                 if (argMap.values().stream().anyMatch(f -> last.startsWith(f.getName() + ":"))) {//we are suggesting a value as we have the complete property name
                     String currentPropertyName = last.split(":")[0];
-                    Bukkit.getScheduler().runTask(RPGItem.getPlugin(), () -> new Message(I18n.format("powers." + powers.inverse().get(power) + "." + currentPropertyName)).send((Player) sender, Message.MessageType.ACTION_BAR));
+                    // TODO: config: enable/disable, rate limit, dup
+                    Bukkit.getScheduler().runTask(RPGItem.getPlugin(), () -> {
+                        @LangKey(skipCheck = true) String key = "powers." + powers.inverse().get(power) + "." + currentPropertyName;
+                        if (I18n.getInstance().hasKey(key)) {
+                            new Message(I18n.format(key)).send((Player) sender, Message.MessageType.ACTION_BAR);
+                            return;
+                        }
+                        @LangKey(skipCheck = true) String baseKey = "powers.base." + currentPropertyName;
+                        if (I18n.getInstance().hasKey(baseKey)) {
+                            new Message(I18n.format(baseKey)).send((Player) sender, Message.MessageType.ACTION_BAR);
+                        }
+                    });
                     return resolvePropertyValueSuggestion(power, currentPropertyName, true).stream().filter(s -> s.startsWith(last)).collect(Collectors.toList());
                 }
                 List<String> suggestions;

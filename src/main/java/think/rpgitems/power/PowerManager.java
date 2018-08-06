@@ -17,6 +17,7 @@
 package think.rpgitems.power;
 
 import cat.nyaa.nyaacore.utils.ClassPathUtils;
+import com.google.common.base.Strings;
 import com.google.common.collect.BiMap;
 import com.google.common.collect.HashBasedTable;
 import com.google.common.collect.HashBiMap;
@@ -58,7 +59,9 @@ public class PowerManager {
         try {
             Power p = clazz.getConstructor().newInstance();
             name = p.getName();
-            powers.put(name, clazz);
+            if (!Strings.isNullOrEmpty(name)) {
+                powers.put(name, clazz);
+            }
         } catch (InstantiationException | IllegalAccessException | NoSuchMethodException | InvocationTargetException e) {
             RPGItem.getPlugin().getLogger().warning("Failed to add power:" + name);
             RPGItem.getPlugin().getLogger().throwing(PowerManager.class.getCanonicalName(), "addPower", e);
