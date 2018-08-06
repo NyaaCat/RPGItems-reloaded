@@ -55,8 +55,11 @@ public abstract class RPGCommandReceiver extends CommandReceiver {
         if (as != null) {
             return Arrays.stream(as.value()).map(s -> (hasNamePrefix ? propertyField.getName() + ":" : "") + s).collect(Collectors.toList());
         }
-        if (propertyField.getType() == boolean.class) {
+        if (propertyField.getType().equals(boolean.class) || propertyField.getType().equals(Boolean.class)) {
             return Stream.of(true, false).map(s -> (hasNamePrefix ? propertyField.getName() + ":" : "") + s).collect(Collectors.toList());
+        }
+        if (propertyField.getType().isEnum()) {
+            return Stream.of(propertyField.getType().getEnumConstants()).map(s -> (hasNamePrefix ? propertyField.getName() + ":" : "") + s.toString()).collect(Collectors.toList());
         }
         return Collections.emptyList();
     }

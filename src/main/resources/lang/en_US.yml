@@ -4,7 +4,7 @@ powers:
     cooldownTime: Cooldown of the power, in ticks.
     range: Effective range in blocks.
     duration: Duration of applied effect, in ticks.
-    amlifier: Amlifier of applied effect.
+    amplifier: Amplifier of applied effect.
     selfapplication: Whether to apply effect on triggering player.
     name: Display name of the power.
     consumption: Durability consumption of the power.
