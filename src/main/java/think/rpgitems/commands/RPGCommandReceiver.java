@@ -7,6 +7,7 @@ import org.bukkit.command.CommandSender;
 import think.rpgitems.RPGItems;
 import think.rpgitems.item.ItemManager;
 import think.rpgitems.item.RPGItem;
+import think.rpgitems.power.PowerManager;
 import think.rpgitems.power.Power;
 import think.rpgitems.utils.Pair;
 
@@ -66,9 +67,9 @@ public abstract class RPGCommandReceiver extends CommandReceiver {
                 return resolveProperty(last, cmd, itemCommand);
             }
             case "power": {
-                Class<? extends Power> power = Power.powers.get(cmd.next());
+                Class<? extends Power> power = PowerManager.powers.get(cmd.next());
                 if (power == null) return null;
-                SortedMap<PowerProperty, Field> argMap = Power.propertyOrders.get(power);
+                SortedMap<PowerProperty, Field> argMap = PowerManager.propertyOrders.get(power);
                 Set<Field> settled = new HashSet<>();
                 Optional<PowerProperty> req = argMap.keySet()
                                                     .stream()
@@ -149,7 +150,7 @@ public abstract class RPGCommandReceiver extends CommandReceiver {
         }
         List<String> suggestions;
         if (cmd.top() == null) {
-            suggestions = Power.propertyOrders.get(powerClass).keySet().stream().map(PowerProperty::name).collect(Collectors.toList());
+            suggestions = PowerManager.propertyOrders.get(powerClass).keySet().stream().map(PowerProperty::name).collect(Collectors.toList());
             if (last.isEmpty()) return suggestions;
             return suggestions.stream().filter(s -> s.startsWith(last)).collect(Collectors.toList());
         }
@@ -244,7 +245,7 @@ public abstract class RPGCommandReceiver extends CommandReceiver {
                             // four case below
                             switch (itemCommand.getValue()) {
                                 case "power":
-                                    return new ArrayList<>(Power.powers.keySet()); // all powers
+                                    return new ArrayList<>(PowerManager.powers.keySet()); // all powers
                                 case "set":
                                 case "get":
                                 case "removepower":
@@ -302,7 +303,7 @@ public abstract class RPGCommandReceiver extends CommandReceiver {
                         case "power":
                             switch (itemCommand.getValue()) {
                                 case "power":
-                                    return Power.powers.keySet().stream().filter(s -> s.startsWith(third)).collect(Collectors.toList()); // only case is `/rpgitem power item somepow`
+                                    return PowerManager.powers.keySet().stream().filter(s -> s.startsWith(third)).collect(Collectors.toList()); // only case is `/rpgitem power item somepow`
                                 case "set":
                                 case "get":
                                 case "removepower":

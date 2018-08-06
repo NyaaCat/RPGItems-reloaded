@@ -2,7 +2,7 @@ package think.rpgitems;
 
 import cat.nyaa.nyaacore.LanguageRepository;
 import org.bukkit.plugin.java.JavaPlugin;
-import org.librazy.nyaautils_lang_checker.LangKey;
+import org.librazy.nclangchecker.LangKey;
 
 public class I18n extends LanguageRepository {
     private static I18n instance = null;

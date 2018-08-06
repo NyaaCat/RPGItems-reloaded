@@ -17,6 +17,7 @@
 package think.rpgitems.item;
 
 import cat.nyaa.nyaacore.Message;
+import cat.nyaa.nyaacore.utils.ItemStackUtils;
 import net.md_5.bungee.api.chat.BaseComponent;
 import net.md_5.bungee.api.chat.ClickEvent;
 import net.md_5.bungee.api.chat.HoverEvent;
@@ -38,19 +39,19 @@ import org.bukkit.inventory.Recipe;
 import org.bukkit.inventory.ShapedRecipe;
 import org.bukkit.inventory.meta.ItemMeta;
 import org.bukkit.inventory.meta.LeatherArmorMeta;
-import org.librazy.nyaautils_lang_checker.LangKey;
-import org.librazy.nyaautils_lang_checker.LangKeyType;
+import org.librazy.nclangchecker.LangKey;
+import org.librazy.nclangchecker.LangKeyType;
 import think.rpgitems.Events;
 import think.rpgitems.I18n;
 import think.rpgitems.RPGItems;
 import think.rpgitems.data.Font;
 import think.rpgitems.data.RPGMetadata;
-import think.rpgitems.power.Power;
-import think.rpgitems.power.PowerLoreFilter;
-import think.rpgitems.power.PowerUnbreakable;
-import think.rpgitems.power.types.*;
+import think.rpgitems.power.*;
+import think.rpgitems.power.impl.PowerLoreFilter;
+import think.rpgitems.power.PowerManager;
+import think.rpgitems.power.impl.PowerUnbreakable;
 import think.rpgitems.support.WorldGuard;
-import think.rpgitems.utils.ReflectionUtil;
+import think.rpgitems.utils.MaterialUtils;
 
 import java.lang.reflect.InvocationTargetException;
 import java.util.*;
@@ -69,10 +70,10 @@ public class RPGItem {
     public boolean showPowerLore = true;
     public boolean showArmourLore = true;
     public Map<Enchantment, Integer> enchantMap = null;
-    public ArrayList<ItemFlag> itemFlags = new ArrayList<>();
+    public List<ItemFlag> itemFlags = new ArrayList<>();
     public boolean customItemModel = false;
     // Powers
-    public ArrayList<Power> powers = new ArrayList<>();
+    public List<Power> powers = new ArrayList<>();
     // Recipes
     public int recipechance = 6;
     public boolean hasRecipe = false;
@@ -158,10 +159,7 @@ public class RPGItem {
         damageMax = s.getInt("damageMax");
         armour = s.getInt("armour", 0);
         String materialName = s.getString("item");
-        Material material = Material.getMaterial(materialName);
-        if (material == null) {
-            material = Material.getMaterial(materialName, true);
-        }
+        Material material = MaterialUtils.getMaterial(materialName, Bukkit.getConsoleSender());
         item = new ItemStack(material);
         ItemMeta meta = item.getItemMeta();
         if (meta instanceof LeatherArmorMeta) {
@@ -178,13 +176,13 @@ public class RPGItem {
             for (String sectionKey : powerList.getKeys(false)) {
                 ConfigurationSection section = powerList.getConfigurationSection(sectionKey);
                 try {
-                    if (!Power.powers.containsKey(section.getString("powerName"))) {
+                    if (!PowerManager.powers.containsKey(section.getString("powerName"))) {
                         // Invalid power
                         continue;
                     }
-                    Power pow = Power.powers.get(section.getString("powerName")).getConstructor().newInstance();
+                    Power pow = PowerManager.powers.get(section.getString("powerName")).getConstructor().newInstance();
                     pow.init(section);
-                    pow.item = this;
+                    pow.setItem(this);
                     addPower(pow, false);
                 } catch (InstantiationException | IllegalAccessException | NoSuchMethodException | InvocationTargetException e) {
                     e.printStackTrace();
@@ -1055,7 +1053,7 @@ public class RPGItem {
     }
 
     public void setMaxDurability(int newVal) {
-        if (defaultDurability == 0){
+        if (defaultDurability == 0) {
             setDefaultDurability(newVal);
         }
         setMaxDurability(newVal, true);
@@ -1126,7 +1124,6 @@ public class RPGItem {
 
     public void addPower(Power power, boolean update) {
         powers.add(power);
-        Power.powerUsage.add(power.getName());
         if (power instanceof PowerHit) {
             powerHit.add((PowerHit) power);
         }
@@ -1213,7 +1210,7 @@ public class RPGItem {
         BaseComponent msg = new TextComponent(getDisplay());
         msg.setClickEvent(new ClickEvent(ClickEvent.Action.SUGGEST_COMMAND, "/rpgitem " + getName()));
         HoverEvent hover = new HoverEvent(HoverEvent.Action.SHOW_ITEM,
-                                                 new BaseComponent[]{new TextComponent(ReflectionUtil.convertItemStackToJson(toItemStack()))});
+                new BaseComponent[]{new TextComponent(ItemStackUtils.itemToJson(toItemStack()))});
         msg.setHoverEvent(hover);
         return msg;
     }

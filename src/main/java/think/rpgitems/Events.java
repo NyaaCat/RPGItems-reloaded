@@ -48,8 +48,8 @@ import org.bukkit.scheduler.BukkitRunnable;
 import think.rpgitems.item.ItemManager;
 import think.rpgitems.item.LocaleInventory;
 import think.rpgitems.item.RPGItem;
-import think.rpgitems.power.PowerRanged;
-import think.rpgitems.power.PowerRangedOnly;
+import think.rpgitems.power.impl.PowerRanged;
+import think.rpgitems.power.impl.PowerRangedOnly;
 import think.rpgitems.support.WGHandler;
 import think.rpgitems.support.WorldGuard;
 

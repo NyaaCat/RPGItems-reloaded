@@ -30,7 +30,7 @@ import org.bukkit.configuration.file.YamlConfiguration;
 import org.bukkit.entity.Player;
 import org.bukkit.plugin.Plugin;
 import think.rpgitems.RPGItems;
-import think.rpgitems.power.types.Power;
+import think.rpgitems.power.Power;
 
 import java.io.File;
 import java.io.IOException;
@@ -183,7 +183,7 @@ public class WorldGuard {
         }
         if (!useCustomFlag) return canUseRPGItem(player);
         if (forceRefresh) WGHandler.refreshPlayerWG(player);
-        String name = think.rpgitems.power.Power.powers.inverse().get(pow.getClass());
+        String name = pow.getName();
         if (disabledNowByPlayer == null) return true;
         Collection<String> ban = disabledNowByPlayer.get(player.getUniqueId());
         return !(ban != null && (ban.contains(name) || ban.contains("all")));

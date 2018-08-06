@@ -19,8 +19,10 @@ import think.rpgitems.commands.*;
 import think.rpgitems.item.ItemManager;
 import think.rpgitems.item.Quality;
 import think.rpgitems.item.RPGItem;
+import think.rpgitems.power.PowerManager;
 import think.rpgitems.power.Power;
 import think.rpgitems.support.WorldGuard;
+import think.rpgitems.utils.MaterialUtils;
 
 import java.lang.reflect.Field;
 import java.lang.reflect.InvocationTargetException;
@@ -28,7 +30,7 @@ import java.util.*;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
-import static think.rpgitems.power.Power.*;
+import static think.rpgitems.power.PowerManager.*;
 
 public class Handler extends RPGCommandReceiver {
     private final RPGItems plugin;
@@ -119,8 +121,8 @@ public class Handler extends RPGCommandReceiver {
                     throw new BadCommandException("internal.error.bad_enum", field.getName(), Stream.of(field.getType().getEnumConstants()).map(Object::toString).reduce(" ", (a, b) -> a + ", " + b));
                 }
             } else if (field.getType() == ItemStack.class) {
-                Material m = Material.getMaterial(value);
-                ItemStack item = null;
+                Material m = MaterialUtils.getMaterial(value, sender);
+                ItemStack item;
                 if (sender instanceof Player && value.equalsIgnoreCase("HAND")) {
                     ItemStack hand = ((Player) sender).getInventory().getItemInMainHand();
                     if (hand == null || hand.getType() == Material.AIR) {
@@ -523,7 +525,6 @@ public class Handler extends RPGCommandReceiver {
         RPGItem item = getItemByName(args.nextString());
         String power = args.nextString();
         if (item.removePower(power)) {
-            Power.powerUsage.remove(power);
             msg(sender, "message.power.removed", power);
             ItemManager.save(RPGItems.plugin);
         } else {
@@ -667,7 +668,7 @@ public class Handler extends RPGCommandReceiver {
         int nth = args.nextInt();
         String property = args.nextString();
         int i = nth;
-        Class<? extends Power> p = Power.powers.get(power);
+        Class<? extends Power> p = PowerManager.powers.get(power);
         if (p == null) {
             msg(sender, "message.power.unknown", power);
             return;
@@ -696,7 +697,7 @@ public class Handler extends RPGCommandReceiver {
         int nth = args.nextInt();
         String property = args.nextString();
         String val = args.nextString();
-        Class<? extends Power> p = Power.powers.get(power);
+        Class<? extends Power> p = PowerManager.powers.get(power);
         if (p == null) {
             msg(sender, "message.power.unknown", power);
             return;
@@ -916,7 +917,7 @@ public class Handler extends RPGCommandReceiver {
             return;
         }
         RPGItem item = getItemByName(itemStr);
-        Class<? extends Power> cls = Power.powers.get(powerStr);
+        Class<? extends Power> cls = PowerManager.powers.get(powerStr);
         if (cls == null) {
             msg(sender, "message.power.unknown", powerStr);
             return;
@@ -929,7 +930,7 @@ public class Handler extends RPGCommandReceiver {
             msg(sender, "internal.error.command_exception");
             return;
         }
-        SortedMap<PowerProperty, Field> argMap = Power.propertyOrders.get(cls);
+        SortedMap<PowerProperty, Field> argMap = PowerManager.propertyOrders.get(cls);
         Set<Field> settled = new HashSet<>();
         Optional<PowerProperty> req = argMap.keySet()
                                             .stream()
@@ -972,7 +973,7 @@ public class Handler extends RPGCommandReceiver {
             required.remove(field);
             settled.add(field);
         }
-        power.item = item;
+        power.setItem(item);
         item.addPower(power);
         msg(sender, "message.power.ok");
         ItemManager.save(RPGItems.plugin);

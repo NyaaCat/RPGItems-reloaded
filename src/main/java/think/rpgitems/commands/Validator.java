@@ -1,6 +1,6 @@
 package think.rpgitems.commands;
 
-import org.librazy.nyaautils_lang_checker.LangKey;
+import org.librazy.nclangchecker.LangKey;
 
 import java.lang.annotation.ElementType;
 import java.lang.annotation.Retention;

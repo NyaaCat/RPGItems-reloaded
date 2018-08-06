@@ -26,7 +26,6 @@ import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.ItemMeta;
 import org.bukkit.util.FileUtil;
 import think.rpgitems.RPGItems;
-import think.rpgitems.power.Power;
 
 import java.io.*;
 import java.util.HashMap;
@@ -90,9 +89,6 @@ public class ItemManager {
                 RPGItem item = new RPGItem(sec);
                 itemById.put(item.getID(), item);
                 itemByName.put(item.getName(), item);
-                for (Power power : item.powers) {
-                    Power.powerUsage.add(power.getName());
-                }
             }
 
             if (itemStorage.contains("groups")) {
