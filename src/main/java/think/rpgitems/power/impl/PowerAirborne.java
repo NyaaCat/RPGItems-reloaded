@@ -27,7 +27,6 @@ public class PowerAirborne extends BasePower implements PowerHit {
         return I18n.format("power.airborne", percentage);
     }
 
-
     @Override
     public void hit(Player player, ItemStack stack, LivingEntity entity, double damage, EntityDamageByEntityEvent event) {
         if (!player.isGliding())

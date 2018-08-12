@@ -27,10 +27,7 @@ import org.bukkit.inventory.ItemStack;
 import org.bukkit.potion.PotionEffect;
 import org.bukkit.potion.PotionEffectType;
 import think.rpgitems.I18n;
-import think.rpgitems.commands.AcceptedValue;
-import think.rpgitems.commands.Getter;
-import think.rpgitems.commands.Property;
-import think.rpgitems.commands.Setter;
+import think.rpgitems.commands.*;
 import think.rpgitems.power.PowerRightClick;
 
 import static think.rpgitems.utils.PowerUtils.checkCooldown;
@@ -80,37 +77,7 @@ public class PowerAOE extends BasePower implements PowerRightClick {
     @Property(order = 2)
     @Setter("setType")
     @Getter("getType")
-    @AcceptedValue({"SPEED",
-            "SLOW",
-            "FAST_DIGGING",
-            "SLOW_DIGGING",
-            "INCREASE_DAMAGE",
-            "HEAL",
-            "HARM",
-            "JUMP",
-            "CONFUSION",
-            "REGENERATION",
-            "DAMAGE_RESISTANCE",
-            "FIRE_RESISTANCE",
-            "WATER_BREATHING",
-            "INVISIBILITY",
-            "BLINDNESS",
-            "NIGHT_VISION",
-            "HUNGER",
-            "WEAKNESS",
-            "POISON",
-            "WITHER",
-            "HEALTH_BOOST",
-            "ABSORPTION",
-            "SATURATION",
-            "GLOWING",
-            "LEVITATION",
-            "LUCK",
-            "UNLUCK",
-            "SLOW_FALLING",
-            "CONDUIT_POWER",
-            "DOLPHINS_GRACE",
-    })
+    @AcceptedValue(preset = Preset.POTION_EFFECT_TYPE)
     public PotionEffectType type;
     /**
      * Display text of this power. Will use default text in case of null

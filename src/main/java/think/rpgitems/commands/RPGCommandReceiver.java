@@ -17,6 +17,7 @@ import think.rpgitems.power.PowerManager;
 import think.rpgitems.utils.Pair;
 
 import java.lang.reflect.Field;
+import java.lang.reflect.ParameterizedType;
 import java.util.*;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
@@ -38,56 +39,94 @@ public abstract class RPGCommandReceiver extends CommandReceiver {
         );
     }
 
-    private static List<String> resolvePropertyValueSuggestion(Class<? extends Power> power, String propertyName, boolean hasNamePrefix) {
+    private static List<String> resolvePropertyValueSuggestion(Class<? extends Power> power, String propertyName, String last, boolean hasNamePrefix) {
         try {
-            return resolvePropertyValueSuggestion(power.getField(propertyName), hasNamePrefix);
+            return resolvePropertyValueSuggestion(power, power.getField(propertyName), last, hasNamePrefix);
         } catch (NoSuchFieldException e) {
             return Collections.emptyList();
         }
     }
 
-    private static List<String> resolvePropertyValueSuggestion(Field propertyField, boolean hasNamePrefix) {
+    @SuppressWarnings("unchecked")
+    private static List<String> resolvePropertyValueSuggestion(Class<? extends Power> power, Field propertyField, String last, boolean hasNamePrefix) {
         BooleanChoice bc = propertyField.getAnnotation(BooleanChoice.class);
         if (bc != null) {
-            return Stream.of(bc.trueChoice(), bc.falseChoice()).map(s -> (hasNamePrefix ? propertyField.getName() + ":" : "") + s).collect(Collectors.toList());
+            return Stream.of(bc.trueChoice(), bc.falseChoice()).map(s -> (hasNamePrefix ? propertyField.getName() + ":" : "") + s).filter(s -> s.startsWith(last)).collect(Collectors.toList());
+        }
+        if (Collection.class.isAssignableFrom(propertyField.getType())) {
+            ParameterizedType listType = (ParameterizedType) propertyField.getGenericType();
+            Class<?> listArg = (Class<?>) listType.getActualTypeArguments()[0];
+            if (!listArg.isEnum()) return Collections.emptyList();
+            return resolveEnumListValue(power, propertyField, (Class<? extends Enum>) listArg, last, hasNamePrefix);
         }
         AcceptedValue as = propertyField.getAnnotation(AcceptedValue.class);
         if (as != null) {
-            return Arrays.stream(as.value()).map(s -> (hasNamePrefix ? propertyField.getName() + ":" : "") + s).collect(Collectors.toList());
+            return getAcceptedValue(power, as).stream().map(s -> (hasNamePrefix ? propertyField.getName() + ":" : "") + s).filter(s -> s.startsWith(last)).collect(Collectors.toList());
         }
         if (propertyField.getType().equals(boolean.class) || propertyField.getType().equals(Boolean.class)) {
-            return Stream.of(true, false).map(s -> (hasNamePrefix ? propertyField.getName() + ":" : "") + s).collect(Collectors.toList());
+            return Stream.of(true, false).map(s -> (hasNamePrefix ? propertyField.getName() + ":" : "") + s).filter(s -> s.startsWith(last)).collect(Collectors.toList());
         }
         if (propertyField.getType().isEnum()) {
-            return Stream.of(propertyField.getType().getEnumConstants()).map(s -> (hasNamePrefix ? propertyField.getName() + ":" : "") + s.toString()).collect(Collectors.toList());
+            return Stream.of(propertyField.getType().getEnumConstants()).map(s -> (hasNamePrefix ? propertyField.getName() + ":" : "") + s.toString()).filter(s -> s.startsWith(last)).collect(Collectors.toList());
         }
         return Collections.emptyList();
     }
 
+    private static List<String> resolveEnumListValue(Class<? extends Power> power, Field propertyField, Class<? extends Enum> listArg, String last, boolean hasNamePrefix) {
+        String currentValuesStr;
+        if (hasNamePrefix) {
+            currentValuesStr = last.replace(propertyField.getName() + ":", "");
+        } else {
+            currentValuesStr = last;
+        }
+        List<String> enumValues = Stream.of(listArg.getEnumConstants()).map(Enum::name).collect(Collectors.toList());
+        List<String> currentVaules = Stream.of(currentValuesStr.split(",")).collect(Collectors.toList());
+        String lastVaule = currentVaules.get(currentVaules.size() - 1);
+        if (enumValues.contains(lastVaule)) {
+            lastVaule = "";
+        } else {
+            currentVaules.remove(currentVaules.size() - 1);
+        }
+        AcceptedValue as = propertyField.getAnnotation(AcceptedValue.class);
+        if (as != null) {
+            List<String> acceptedValue = getAcceptedValue(power, as);
+            enumValues.retainAll(acceptedValue);
+        }
+        String incompleteValue = lastVaule;
+
+        if (Set.class.isAssignableFrom(propertyField.getType()) || (as != null && as.preset() == Preset.TRIGGERS)) {
+            enumValues.removeAll(currentVaules);
+        }
+        String base = incompleteValue.isEmpty() ? last : last.replaceAll(incompleteValue + "$", "");
+        boolean next = (currentVaules.isEmpty() && !hasNamePrefix) || base.endsWith(":") || base.endsWith(",");
+        return enumValues.stream().filter(n -> n.startsWith(incompleteValue)).map(n -> base + (next ? "" : ",") + n).collect(Collectors.toList());
+    }
+
     private List<String> resolvePowerOrPropertySuggestion(CommandSender sender, String[] args) {
-        if (args.length < 4) return null;
+        if (args.length < 4) return Collections.emptyList();
         String last = args[args.length - 1];
         String[] arg = Arrays.copyOf(args, args.length - 1);
         Arguments cmd = Arguments.parse(arg);
+        if (cmd == null) return Collections.emptyList();
         Pair<RPGItem, String> itemCommand = resolveItemCommand(cmd.next(), cmd.next());
-        if (itemCommand == null) return null;
+        if (itemCommand == null) return Collections.emptyList();
         switch (itemCommand.getValue()) {
             case "get":
             case "set": {
-                return resolveProperty(last, cmd, itemCommand);
+                return resolveGetSet(last, cmd, itemCommand);
             }
             case "power": {
                 return resolvePowerProperties(sender, last, cmd);
             }
             default:
-                return null;
+                return Collections.emptyList();
         }
     }
 
     private List<String> resolvePowerProperties(CommandSender sender, String last, Arguments cmd) {
         @LangKey(skipCheck = true) String powName = cmd.next();
         Class<? extends Power> power = powers.get(powName);
-        if (power == null) return null;
+        if (power == null) return Collections.emptyList();
         SortedMap<PowerProperty, Field> argMap = PowerManager.propertyOrders.get(power);
         Set<Field> settled = new HashSet<>();
         Optional<PowerProperty> req = argMap.keySet()
@@ -109,90 +148,69 @@ public abstract class RPGCommandReceiver extends CommandReceiver {
                 settled.add(field);
             }
         }
-        if (settled.isEmpty() && sender instanceof Player) {
+        if (settled.isEmpty()) {
+            actionBarTip(sender, powName);
+        }
+        return resolvePropertiesSuggestions(sender, last, power, argMap, settled, required);
+    }
+
+    private List<String> resolvePropertiesSuggestions(CommandSender sender, String last, Class<? extends Power> power, SortedMap<PowerProperty, Field> argMap, Set<Field> settled, List<Field> required) {
+        if (argMap.values().stream().anyMatch(f -> last.startsWith(f.getName() + ":"))) {//we are suggesting a value as we have the complete property name
+            String currentPropertyName = last.split(":")[0];
+            actionBarTip(sender, power, currentPropertyName);
+            return resolvePropertyValueSuggestion(power, currentPropertyName, last, true);
+        }
+        List<String> suggestions;
+        suggestions = required.stream().map(s -> s.getName() + ":").filter(s -> s.startsWith(last)).collect(Collectors.toList());
+        if (!suggestions.isEmpty()) return suggestions; //required property
+        suggestions = argMap.values().stream().filter(s -> !settled.contains(s)).map(s -> s.getName() + ":").filter(s -> s.startsWith(last)).collect(Collectors.toList());
+        return suggestions; //unsettled property
+    }
+
+    private void actionBarTip(CommandSender sender, @LangKey(skipCheck = true) String powName) {
+        if (sender instanceof Player) {
             Bukkit.getScheduler().runTask(RPGItems.plugin, () -> new Message(I18n.format("power.properties." + powName + ".main_description")).send((Player) sender, Message.MessageType.ACTION_BAR));
         }
-        return resolvePowerSuggestions(sender, last, cmd, power, argMap, settled, required);
     }
 
-    private List<String> resolvePowerSuggestions(CommandSender sender, String last, Arguments cmd, Class<? extends Power> power, SortedMap<PowerProperty, Field> argMap, Set<Field> settled, List<Field> required) {
-        for (Field field : argMap.entrySet()
-                                 .stream()
-                                 .filter(p -> p.getKey().order() != Integer.MAX_VALUE)
-                                 .map(Map.Entry::getValue)
-                                 .collect(Collectors.toList())) {
-            if (settled.contains(field)) continue;
-            String value = cmd.next();
-            if (value == null) {
-                if (argMap.values().stream().anyMatch(f -> last.startsWith(f.getName() + ":"))) {//we are suggesting a value as we have the complete property name
-                    String currentPropertyName = last.split(":")[0];
-                    actionBarTip((Player) sender, power, currentPropertyName);
-                    return resolvePropertyValueSuggestion(power, currentPropertyName, true).stream().filter(s -> s.startsWith(last)).collect(Collectors.toList());
-                }
-                List<String> suggestions;
-                if (!required.isEmpty()) {
-                    Field current = required.stream().findFirst().orElseThrow(RuntimeException::new);
-                    if (last.isEmpty()) {
-                        suggestions = resolvePropertyValueSuggestion(current, true);
-                        if (!suggestions.isEmpty()) return suggestions; // current possible value
-                        return required.stream().map(s -> s.getName() + ":").collect(Collectors.toList());
-                    } else {
-                        suggestions = required.stream().map(s -> s.getName() + ":").filter(s -> s.startsWith(last)).collect(Collectors.toList());
-                        if (!suggestions.isEmpty()) return suggestions; //required property
-                        suggestions = argMap.values().stream().filter(s -> !settled.contains(s)).map(s -> s.getName() + ":").filter(s -> s.startsWith(last)).collect(Collectors.toList());
-                        if (!suggestions.isEmpty()) return suggestions; //unsettled property
-                        return resolvePropertyValueSuggestion(current, false).stream().filter(s -> s.startsWith(last)).collect(Collectors.toList());
-                    }
-                } else {
-                    suggestions = argMap.values().stream().filter(s -> !settled.contains(s)).map(s -> s.getName() + ":").collect(Collectors.toList());
-                    if (!last.isEmpty()) {
-                        suggestions = suggestions.stream().filter(s -> s.startsWith(last)).collect(Collectors.toList());
-                    }
-                    if (!suggestions.isEmpty()) return suggestions; //unsettled property
-                }
-            }
-            required.remove(field);
-            settled.add(field);
-        }
-        return null;
-    }
-
-    private void actionBarTip(Player sender, Class<? extends Power> power, String currentPropertyName) {
+    private void actionBarTip(CommandSender sender, Class<? extends Power> power, String currentPropertyName) {
         // TODO: config: enable/disable, rate limit, dup
-        Bukkit.getScheduler().runTask(RPGItems.plugin, () -> {
-            @LangKey(skipCheck = true) String key = "power.properties." + powers.inverse().get(power) + "." + currentPropertyName;
-            if (I18n.getInstance().hasKey(key)) {
-                new Message(I18n.format(key)).send(sender, Message.MessageType.ACTION_BAR);
-                return;
-            }
-            @LangKey(skipCheck = true) String baseKey = "power.properties.base." + currentPropertyName;
-            if (I18n.getInstance().hasKey(baseKey)) {
-                new Message(I18n.format(baseKey)).send(sender, Message.MessageType.ACTION_BAR);
-            }
-        });
+        if (sender instanceof Player) {
+            Bukkit.getScheduler().runTask(RPGItems.plugin, () -> {
+                        @LangKey(skipCheck = true) String key = "power.properties." + powers.inverse().get(power) + "." + currentPropertyName;
+                        if (I18n.getInstance().hasKey(key)) {
+                            new Message(I18n.format(key)).send((Player) sender, Message.MessageType.ACTION_BAR);
+                            return;
+                        }
+                        @LangKey(skipCheck = true) String baseKey = "power.properties.base." + currentPropertyName;
+                        if (I18n.getInstance().hasKey(baseKey)) {
+                            new Message(I18n.format(baseKey)).send((Player) sender, Message.MessageType.ACTION_BAR);
+                        }
+                    }
+            );
+        }
     }
 
-    private List<String> resolveProperty(String last, Arguments cmd, Pair<RPGItem, String> itemCommand) {
+    private List<String> resolveGetSet(String last, Arguments cmd, Pair<RPGItem, String> itemCommand) {
         RPGItem item = itemCommand.getKey();
         String powerName = cmd.next();
         List<Power> powers = item.powers.stream().filter(p -> p.getName().equals(powerName)).collect(Collectors.toList());
-        if (powers.isEmpty()) return null;
+        if (powers.isEmpty()) return Collections.emptyList();
         Class<? extends Power> powerClass = powers.get(0).getClass();
         if (cmd.top() == null) {
+            // rpgitem item get/set power
             return IntStream.rangeClosed(1, powers.size()).mapToObj(Integer::toString).collect(Collectors.toList());
         } else {
+            // rpgitem item get/set power 1 ...
             cmd.next();
         }
-        List<String> suggestions;
         if (cmd.top() == null) {
-            suggestions = PowerManager.propertyOrders.get(powerClass).keySet().stream().map(PowerProperty::name).collect(Collectors.toList());
-            if (last.isEmpty()) return suggestions;
-            return suggestions.stream().filter(s -> s.startsWith(last)).collect(Collectors.toList());
+            // rpgitem item get/set power 1
+            return PowerManager.propertyOrders.get(powerClass).keySet().stream().map(PowerProperty::name).filter(s -> s.startsWith(last)).collect(Collectors.toList());
         }
-        if (itemCommand.getValue().equals("get")) return null;
-        suggestions = resolvePropertyValueSuggestion(powerClass, cmd.next(), false);
-        if (last.isEmpty()) return suggestions;
-        return suggestions.stream().filter(s -> s.startsWith(last)).collect(Collectors.toList());
+        if (itemCommand.getValue().equals("get")) return Collections.emptyList();
+        // rpgitem item set power 1 property
+        return resolvePropertyValueSuggestion(powerClass, cmd.next(), last, false);
     }
 
     private static Pair<RPGItem, String> resolveItemCommand(String f, String s) {
@@ -231,7 +249,7 @@ public abstract class RPGCommandReceiver extends CommandReceiver {
     public List<String> onTabComplete(CommandSender sender, Command command, String alias, String[] args) {
         boolean suggestion = args[args.length - 1].isEmpty();
         CommandReceiver.Arguments cmd = CommandReceiver.Arguments.parse(args);
-        if (cmd == null) return null;
+        if (cmd == null) return Collections.emptyList();
         switch (cmd.length()) {
             case 0:
                 return subCommandAttribute.entrySet().stream().filter(entry -> entry.getValue().startsWith("command")).map(Map.Entry::getKey).collect(Collectors.toList());
@@ -244,14 +262,14 @@ public abstract class RPGCommandReceiver extends CommandReceiver {
                     } else {
                         // we have a `/rpgitem command` and waiting a argument
                         String attr = subCommandAttribute.get(str);
-                        if (attr == null) return null;
+                        if (attr == null) return Collections.emptyList();
                         if (attr.startsWith("command")) {
                             // it's a global command and we have suggestion in attr
                             String[] att = attr.split(":");
                             if (att.length > 1) {
                                 return Arrays.asList(att[1].split(","));
                             }
-                            return null;
+                            return Collections.emptyList();
                         } else {
                             // it's a item command, just items
                             return new ArrayList<>(ItemManager.itemByName.keySet());
@@ -270,9 +288,9 @@ public abstract class RPGCommandReceiver extends CommandReceiver {
                 if (suggestion) {
                     // may be `/rpgitem item command` or `/rpgitem command item`
                     Pair<RPGItem, String> itemCommand = resolveItemCommand(first, second);
-                    if (itemCommand == null) return null; // neither
+                    if (itemCommand == null) return Collections.emptyList(); // neither
                     String attr = subCommandAttribute.get(itemCommand.getValue());
-                    if (attr == null) return null;
+                    if (attr == null) return Collections.emptyList();
                     String[] att = attr.split(":");
                     switch (att[0]) {
                         case "property":
@@ -286,7 +304,7 @@ public abstract class RPGCommandReceiver extends CommandReceiver {
                                 case "removepower":
                                     return itemCommand.getKey().powers.stream().map(Power::getName).collect(Collectors.toList()); // current powers
                                 default:
-                                    return null;
+                                    return Collections.emptyList();
                             }
                         case "item":
                         case "command": {
@@ -306,7 +324,7 @@ public abstract class RPGCommandReceiver extends CommandReceiver {
                     } else {
                         // trying to complete `/rpgitem commmand argu`
                         String attr = subCommandAttribute.get(first);
-                        if (attr == null) return null;
+                        if (attr == null) return Collections.emptyList();
                         String[] att = attr.split(":");
                         switch (att[0]) {
                             case "property":
@@ -318,7 +336,7 @@ public abstract class RPGCommandReceiver extends CommandReceiver {
                                 return att.length > 1 ? Arrays.stream(att[1].split(",")).filter(s -> s.startsWith(second)).collect(Collectors.toList()) : null; // bundled in attr
                             }
                             default:
-                                return null;
+                                return Collections.emptyList();
                         }
                     }
                 }
@@ -328,9 +346,9 @@ public abstract class RPGCommandReceiver extends CommandReceiver {
                 String second = cmd.next();
                 String third = cmd.next();
                 Pair<RPGItem, String> itemCommand = resolveItemCommand(first, second);
-                if (itemCommand == null) return null;
+                if (itemCommand == null) return Collections.emptyList();
                 String attr = subCommandAttribute.get(itemCommand.getValue());
-                if (attr == null) return null;
+                if (attr == null) return Collections.emptyList();
                 String[] att = attr.split(":");
                 if (suggestion) {
                     return resolvePowerOrPropertySuggestion(sender, args); // only case is `/rpgitem power item somepower`
@@ -346,13 +364,13 @@ public abstract class RPGCommandReceiver extends CommandReceiver {
                                 case "removepower":
                                     return itemCommand.getKey().powers.stream().map(Power::getName).filter(s -> s.startsWith(third)).collect(Collectors.toList()); // complete current powers
                                 default:
-                                    return null;
+                                    return Collections.emptyList();
                             }
                         case "item": {
                             return att.length > 1 ? Arrays.stream(att[1].split(",")).filter(s -> s.startsWith(third)).collect(Collectors.toList()) : null; // bundled
                         }
                         default:
-                            return null;
+                            return Collections.emptyList();
                     }
                 }
             }
@@ -360,5 +378,18 @@ public abstract class RPGCommandReceiver extends CommandReceiver {
                 return resolvePowerOrPropertySuggestion(sender, args);
             }
         }
+    }
+
+    public static List<String> getAcceptedValue(Class<? extends Power> cls, AcceptedValue anno) {
+        if (anno.preset() != Preset.NONE) {
+            return anno.preset().get(cls);
+        } else {
+            return Arrays.asList(anno.value());
+        }
+    }
+
+    @Override
+    protected boolean showCompleteMessage() {
+        return false;
     }
 }

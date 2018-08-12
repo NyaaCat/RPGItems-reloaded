@@ -21,10 +21,7 @@ import com.google.common.collect.SetMultimap;
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
 import org.bukkit.Material;
-import org.bukkit.entity.HumanEntity;
-import org.bukkit.entity.LivingEntity;
-import org.bukkit.entity.Player;
-import org.bukkit.entity.Projectile;
+import org.bukkit.entity.*;
 import org.bukkit.event.Event;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.EventPriority;
@@ -250,6 +247,7 @@ public class Events implements Listener {
     public void onPlayerAction(PlayerInteractEvent e) {
         Player p = e.getPlayer();
         if (e.getAction() == Action.PHYSICAL) return;
+
         RPGItem rItem = ItemManager.toRPGItem(e.getItem());
         if (rItem == null) return;
         Material im = e.getMaterial();
@@ -398,10 +396,7 @@ public class Events implements Listener {
                 switch (clickEvent.getResult()) {
                     case DEFAULT: // Can't really do this with current events
                     case ALLOW:
-                        System.out.println("ok...");
-                        System.out.println(inv.getView().getItem(e.getRawSlot()));
                         inv.getView().setItem(e.getRawSlot(), clickEvent.getCursor());
-                        System.out.println(inv.getView().getItem(e.getRawSlot()));
                         break;
                     case DENY:
                         break;
@@ -450,9 +445,11 @@ public class Events implements Listener {
     }
 
     private double playerDamager(EntityDamageByEntityEvent e, double damage) {
+
         Player player = (Player) e.getDamager();
         ItemStack item = player.getInventory().getItemInMainHand();
-        if (item.getType() == Material.BOW || item.getType() == Material.SNOWBALL || item.getType() == Material.EGG || item.getType() == Material.POTION || item.getType() == Material.TRIDENT)
+
+        if (item.getType() == Material.BOW || item.getType() == Material.SNOWBALL || item.getType() == Material.EGG || item.getType() == Material.POTION)
             return damage;
 
         RPGItem rItem = ItemManager.toRPGItem(item);

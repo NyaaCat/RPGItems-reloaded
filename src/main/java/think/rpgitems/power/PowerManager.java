@@ -57,7 +57,7 @@ public class PowerManager {
      */
     public static BiMap<String, Class<? extends Power>> powers = HashBiMap.create();
 
-    private static void addPower(Class<? extends Power> clazz) {
+    private static void registerPower(Class<? extends Power> clazz) {
         String name = null;
         try {
             Power p = clazz.getConstructor().newInstance();
@@ -235,6 +235,6 @@ public class PowerManager {
 
     public static void load() {
         Class<? extends Power>[] classes = ClassPathUtils.scanSubclasses(RPGItems.plugin, BasePower.class.getPackage().getName(), Power.class);
-        Stream.of(classes).filter(c -> !Modifier.isAbstract(c.getModifiers()) && !c.isInterface()).sorted(Comparator.comparing(Class::getCanonicalName)).forEach(PowerManager::addPower);
+        Stream.of(classes).filter(c -> !Modifier.isAbstract(c.getModifiers()) && !c.isInterface()).sorted(Comparator.comparing(Class::getCanonicalName)).forEach(PowerManager::registerPower);
     }
 }

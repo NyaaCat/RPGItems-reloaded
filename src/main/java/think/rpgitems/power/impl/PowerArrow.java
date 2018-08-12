@@ -48,12 +48,14 @@ public class PowerArrow extends BasePower implements PowerRightClick {
     @Property
     public int consumption = 0;
 
+    @SuppressWarnings("deprecation")
     @Override
     public void rightClick(Player player, ItemStack stack, Block clicked, PlayerInteractEvent event) {
         if (!checkCooldown(this, player, cooldown, true)) return;
         if (!getItem().consumeDurability(stack, consumption)) return;
         player.playSound(player.getLocation(), Sound.ENTITY_ARROW_SHOOT, 1.0f, 1.0f);
         Arrow arrow = player.launchProjectile(Arrow.class);
+        arrow.setPickupStatus(Arrow.PickupStatus.DISALLOWED);
         Events.rpgProjectiles.put(arrow.getEntityId(), getItem().getID());
         Events.removeArrows.add(arrow.getEntityId());
         arrow.setPersistent(false);

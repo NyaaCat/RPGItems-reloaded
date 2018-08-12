@@ -18,13 +18,21 @@ package think.rpgitems.power.impl;
 
 import org.bukkit.ChatColor;
 import org.bukkit.block.Block;
+import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.entity.Player;
+import org.bukkit.event.entity.EntityDamageEvent;
 import org.bukkit.event.player.PlayerInteractEvent;
+import org.bukkit.event.player.PlayerToggleSneakEvent;
+import org.bukkit.event.player.PlayerToggleSprintEvent;
 import org.bukkit.inventory.ItemStack;
-import think.rpgitems.commands.BooleanChoice;
+import think.rpgitems.commands.AcceptedValue;
+import think.rpgitems.commands.Preset;
 import think.rpgitems.commands.Property;
-import think.rpgitems.power.PowerLeftClick;
-import think.rpgitems.power.PowerRightClick;
+import think.rpgitems.power.*;
+
+import java.util.Collections;
+import java.util.List;
+import java.util.Set;
 
 import static think.rpgitems.utils.PowerUtils.AttachPermission;
 import static think.rpgitems.utils.PowerUtils.checkCooldownByString;
@@ -32,12 +40,12 @@ import static think.rpgitems.utils.PowerUtils.checkCooldownByString;
 /**
  * Power command.
  * <p>
- * The item will run {@link #command} on {@link #isRight click}
+ * The item will run {@link #command} on click
  * giving the permission {@link #permission} just for the use of the command.
  * </p>
  */
 @SuppressWarnings("WeakerAccess")
-public class PowerCommand extends BasePower implements PowerRightClick, PowerLeftClick {
+public class PowerCommand extends BasePower implements PowerRightClick, PowerLeftClick, PowerSprint, PowerSneak, PowerHurt {
 
     /**
      * Command to be executed
@@ -55,12 +63,6 @@ public class PowerCommand extends BasePower implements PowerRightClick, PowerLef
     @Property(order = 8)
     public String permission = "";
     /**
-     * Whether triggers when right click
-     */
-    @Property(order = 2)
-    @BooleanChoice(name = "mouse", falseChoice = "left", trueChoice = "right")
-    public boolean isRight = true;
-    /**
      * Cooldown time of this power
      */
     @Property(order = 1)
@@ -70,6 +72,19 @@ public class PowerCommand extends BasePower implements PowerRightClick, PowerLef
      */
     @Property
     public int consumption = 0;
+
+    @Property
+    @AcceptedValue(preset = Preset.TRIGGERS)
+    public Set<TriggerType> triggers = Collections.singleton(TriggerType.RIGHT_CLICK);
+
+    @Override
+    public void init(ConfigurationSection section) {
+        String isRight = section.getString("isRight");
+        if (isRight != null) {
+            triggers = Collections.singleton(isRight.equalsIgnoreCase("true") ? TriggerType.RIGHT_CLICK : TriggerType.LEFT_CLICK);
+        }
+        super.init(section);
+    }
 
     /**
      * Execute command
@@ -85,9 +100,12 @@ public class PowerCommand extends BasePower implements PowerRightClick, PowerLef
         Runnable run = () -> {
             String cmd = command;
             cmd = cmd.replaceAll("\\{player}", player.getName());
+            cmd = cmd.replaceAll("\\{player.x}", Float.toString(-player.getLocation().getBlockX()));
+            cmd = cmd.replaceAll("\\{player.y}", Float.toString(-player.getLocation().getBlockY()));
+            cmd = cmd.replaceAll("\\{player.z}", Float.toString(-player.getLocation().getBlockZ()));
             cmd = cmd.replaceAll("\\{yaw}", Float.toString(player.getLocation().getYaw() + 90));
             cmd = cmd.replaceAll("\\{pitch}", Float.toString(-player.getLocation().getPitch()));
-            player.chat("/" + cmd);
+            player.performCommand(cmd);
         };
 
         if (permission.equals("*")) {
@@ -108,16 +126,42 @@ public class PowerCommand extends BasePower implements PowerRightClick, PowerLef
 
     @Override
     public void rightClick(Player player, ItemStack stack, Block clicked, PlayerInteractEvent event) {
-        if (!isRight || !checkCooldownByString(player, getItem(), command, cooldown, true)) return;
+        if (!triggers.contains(TriggerType.RIGHT_CLICK) || !checkCooldownByString(player, getItem(), command, cooldown, true))
+            return;
         if (!getItem().consumeDurability(stack, consumption)) return;
         executeCommand(player);
     }
 
     @Override
     public void leftClick(Player player, ItemStack stack, Block clicked, PlayerInteractEvent event) {
-        if (isRight || !checkCooldownByString(player, getItem(), command, cooldown, true)) return;
+        if (!triggers.contains(TriggerType.LEFT_CLICK) || !checkCooldownByString(player, getItem(), command, cooldown, true))
+            return;
         if (!getItem().consumeDurability(stack, consumption)) return;
         executeCommand(player);
+    }
+
+    @Override
+    public void sneak(Player player, ItemStack stack, PlayerToggleSneakEvent event) {
+        if (!triggers.contains(TriggerType.SNEAK) || !checkCooldownByString(player, getItem(), command, cooldown, true))
+            return;
+        if (!getItem().consumeDurability(stack, consumption)) return;
+        executeCommand(player);
+    }
+
+    @Override
+    public void sprint(Player player, ItemStack stack, PlayerToggleSprintEvent event) {
+        if (!triggers.contains(TriggerType.SPRINT) || !checkCooldownByString(player, getItem(), command, cooldown, true))
+            return;
+        if (!getItem().consumeDurability(stack, consumption)) return;
+        executeCommand(player);
+    }
+
+    @Override
+    public void hurt(Player target, ItemStack stack, EntityDamageEvent event) {
+        if (!triggers.contains(TriggerType.HURT) || !checkCooldownByString(target, getItem(), command, cooldown, true))
+            return;
+        if (!getItem().consumeDurability(stack, consumption)) return;
+        executeCommand(target);
     }
 
     @Override
@@ -128,5 +172,10 @@ public class PowerCommand extends BasePower implements PowerRightClick, PowerLef
     @Override
     public String getName() {
         return "command";
+    }
+
+    @Override
+    public Set<TriggerType> getTriggers(){
+        return triggers;
     }
 }

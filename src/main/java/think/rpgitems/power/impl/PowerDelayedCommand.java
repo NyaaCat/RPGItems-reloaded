@@ -7,13 +7,14 @@ import org.bukkit.inventory.ItemStack;
 import org.bukkit.scheduler.BukkitRunnable;
 import think.rpgitems.RPGItems;
 import think.rpgitems.commands.Property;
+import think.rpgitems.power.TriggerType;
 
 import static think.rpgitems.utils.PowerUtils.checkCooldownByString;
 
 /**
  * Power delayedcommand.
  * <p>
- * The item will run {@link #command} on {@link #isRight click} with a {@link #delay}
+ * The item will run {@link #command} on click with a {@link #delay}
  * giving the permission {@link #permission} just for the use of the command.
  * </p>
  */
@@ -32,7 +33,7 @@ public class PowerDelayedCommand extends PowerCommand {
 
     @Override
     public void rightClick(final Player player, ItemStack stack, Block clicked, PlayerInteractEvent event) {
-        if (!isRight || !checkCooldownByString(player, getItem(), command, cooldown, true)) return;
+        if (!triggers.contains(TriggerType.RIGHT_CLICK) || !checkCooldownByString(player, getItem(), command, cooldown, true)) return;
         if (!getItem().consumeDurability(stack, consumption)) return;
         (new BukkitRunnable() {
             @Override
@@ -44,7 +45,7 @@ public class PowerDelayedCommand extends PowerCommand {
 
     @Override
     public void leftClick(final Player player, ItemStack stack, Block clicked, PlayerInteractEvent event) {
-        if (isRight || !checkCooldownByString(player, getItem(), command, cooldown, true)) return;
+        if (!triggers.contains(TriggerType.LEFT_CLICK) || !checkCooldownByString(player, getItem(), command, cooldown, true)) return;
         if (!getItem().consumeDurability(stack, consumption)) return;
         (new BukkitRunnable() {
             @Override

@@ -3,6 +3,12 @@ package think.rpgitems.power;
 import org.bukkit.configuration.ConfigurationSection;
 import think.rpgitems.item.RPGItem;
 
+import java.util.Arrays;
+import java.util.List;
+import java.util.Objects;
+import java.util.Set;
+import java.util.stream.Collectors;
+
 /**
  * Base interface for all powers
  */
@@ -41,4 +47,17 @@ public interface Power {
     RPGItem getItem();
 
     void setItem(RPGItem item);
+
+    default Set<TriggerType> getTriggers() {
+        return getTriggerTypes(this.getClass());
+    }
+
+    @SuppressWarnings("unchecked")
+    static Set<TriggerType> getTriggerTypes(Class<? extends Power> cls) {
+        return Arrays.stream(cls.getInterfaces())
+                     .filter(Power.class::isAssignableFrom)
+                     .filter(i -> !Objects.equals(i, Power.class))
+                     .map(i -> TriggerType.fromInterface((Class<? extends Power>) i))
+                     .collect(Collectors.toSet());
+    }
 }

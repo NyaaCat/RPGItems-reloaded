@@ -92,14 +92,14 @@ public class PowerProjectile extends BasePower implements PowerRightClick {
      * Type of projectiles
      */
     @AcceptedValue({
-                           "skull",
-                           "fireball",
-                           "snowball",
-                           "smallfireball",
-                           "llamaspit",
-                           "arrow",
-                           "shulkerbullet",
-                           "dragonfireball"
+            "skull",
+            "fireball",
+            "snowball",
+            "smallfireball",
+            "llamaspit",
+            "arrow",
+            "shulkerbullet",
+            "dragonfireball"
     })
     @Validator(value = "acceptableType", message = "power.projectile.noFireball")
     @Setter("setType")
@@ -245,8 +245,10 @@ public class PowerProjectile extends BasePower implements PowerRightClick {
             projectile.setPersistent(false);
             Events.rpgProjectiles.put(projectile.getEntityId(), getItem().getID());
             projectile.setGravity(gravity);
-            if (projectileType == Arrow.class)
+            if (projectileType == Arrow.class) {
+                ((Arrow) projectile).setPickupStatus(Arrow.PickupStatus.DISALLOWED);
                 Events.removeArrows.add(projectile.getEntityId());
+            }
             if (!gravity) {
                 (new BukkitRunnable() {
                     @Override
@@ -277,8 +279,10 @@ public class PowerProjectile extends BasePower implements PowerRightClick {
                 projectile.setPersistent(false);
                 Events.rpgProjectiles.put(projectile.getEntityId(), getItem().getID());
                 projectile.setGravity(gravity);
-                if (projectileType == Arrow.class)
+                if (projectileType == Arrow.class) {
                     Events.removeArrows.add(projectile.getEntityId());
+                    ((Arrow) projectile).setPickupStatus(Arrow.PickupStatus.DISALLOWED);
+                }
                 if (!gravity) {
                     (new BukkitRunnable() {
                         @Override

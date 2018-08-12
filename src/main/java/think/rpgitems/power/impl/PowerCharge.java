@@ -19,7 +19,7 @@ public class PowerCharge extends BasePower implements PowerHit {
     public int speedPercentage = 20;
 
     @Property
-    private double cap = 300;
+    public double cap = 300;
 
     @Override
     public String getName() {

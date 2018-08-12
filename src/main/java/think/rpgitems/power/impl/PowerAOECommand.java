@@ -9,6 +9,7 @@ import org.bukkit.event.player.PlayerInteractEvent;
 import org.bukkit.inventory.ItemStack;
 import think.rpgitems.commands.AcceptedValue;
 import think.rpgitems.commands.Property;
+import think.rpgitems.power.TriggerType;
 
 import java.util.List;
 
@@ -19,7 +20,7 @@ import static think.rpgitems.utils.PowerUtils.*;
  * <p>
  * The item will run {@link #command} for every entity
  * in range({@link #rm min} blocks ~ {@link #r max} blocks in {@link #facing view angle})
- * on {@link #isRight click} giving the {@link #permission}
+ * on isRightgiving the {@link #permission}
  * just for the use of the command.
  * </p>
  */
@@ -127,39 +128,15 @@ public class PowerAOECommand extends PowerCommand {
 
     @Override
     public void rightClick(Player player, ItemStack stack, Block clicked, PlayerInteractEvent event) {
-        if (!isRight || !checkCooldownByString(player, getItem(), command, cooldown, true)) return;
+        if (!triggers.contains(TriggerType.RIGHT_CLICK) || !checkCooldownByString(player, getItem(), command, cooldown, true)) return;
         if (!getItem().consumeDurability(stack, consumption)) return;
         aoeCommand(player);
     }
 
     @Override
     public void leftClick(Player player, ItemStack stack, Block clicked, PlayerInteractEvent event) {
-        if (isRight || !checkCooldownByString(player, getItem(), command, cooldown, true)) return;
+        if (!triggers.contains(TriggerType.LEFT_CLICK) || !checkCooldownByString(player, getItem(), command, cooldown, true)) return;
         if (!getItem().consumeDurability(stack, consumption)) return;
         aoeCommand(player);
-    }
-
-    @Override
-    public void init(ConfigurationSection s) {
-        type = s.getString("type", "entity");
-        r = s.getInt("r", 10);
-        rm = s.getInt("rm", 0);
-        facing = s.getDouble("facing", 30);
-        c = s.getInt("c", 100);
-        selfapplication = s.getBoolean("selfapplication", false);
-        mustsee = s.getBoolean("mustsee", mustsee);
-        super.init(s);
-    }
-
-    @Override
-    public void save(ConfigurationSection s) {
-        s.set("type", type);
-        s.set("r", r);
-        s.set("rm", rm);
-        s.set("facing", facing);
-        s.set("c", c);
-        s.set("selfapplication", selfapplication);
-        s.set("mustsee", mustsee);
-        super.save(s);
     }
 }

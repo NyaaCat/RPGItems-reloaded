@@ -150,7 +150,7 @@ public class RPGItem {
         restore(s);
     }
 
-    @SuppressWarnings("unchecked")
+    @SuppressWarnings({"unchecked", "deprecation"})
     private void restore(ConfigurationSection s) {
         setDisplay(s.getString("display"), false);
         setType(s.getString("type", RPGItems.plugin.getConfig().getString("defaults.sword", "Sword")), false);
@@ -535,7 +535,7 @@ public class RPGItem {
         }
     }
 
-    public void sneak(Player player, ItemStack i, PlayerToggleSneakEvent event){
+    public void sneak(Player player, ItemStack i, PlayerToggleSneakEvent event) {
         if (!checkPermission(player, true)) return;
         for (PowerSneak power : powerSneak) {
             if (!WorldGuard.canUsePowerNow(player, power)) continue;
@@ -547,7 +547,7 @@ public class RPGItem {
         }
     }
 
-    public void sprint(Player player, ItemStack i, PlayerToggleSprintEvent event){
+    public void sprint(Player player, ItemStack i, PlayerToggleSprintEvent event) {
         if (!checkPermission(player, true)) return;
         for (PowerSprint power : powerSprint) {
             if (!WorldGuard.canUsePowerNow(player, power)) continue;
@@ -1173,34 +1173,35 @@ public class RPGItem {
 
     public void addPower(Power power, boolean update) {
         powers.add(power);
-        if (power instanceof PowerHit) {
+        Set<TriggerType> triggers = power.getTriggers();
+        if (triggers.contains(TriggerType.HIT)) {
             powerHit.add((PowerHit) power);
         }
-        if (power instanceof PowerHitTaken) {
+        if (triggers.contains(TriggerType.HIT_TAKEN)) {
             powerHitTaken.add((PowerHitTaken) power);
         }
-        if (power instanceof PowerLeftClick) {
+        if (triggers.contains(TriggerType.LEFT_CLICK)) {
             powerLeftClick.add((PowerLeftClick) power);
         }
-        if (power instanceof PowerRightClick) {
+        if (triggers.contains(TriggerType.RIGHT_CLICK)) {
             powerRightClick.add((PowerRightClick) power);
         }
-        if (power instanceof PowerProjectileHit) {
+        if (triggers.contains(TriggerType.PROJECTILE_HIT)) {
             powerProjectileHit.add((PowerProjectileHit) power);
         }
-        if (power instanceof PowerHurt) {
+        if (triggers.contains(TriggerType.HURT)) {
             powerHurt.add((PowerHurt) power);
         }
-        if (power instanceof PowerTick) {
+        if (triggers.contains(TriggerType.TICK)) {
             powerTick.add((PowerTick) power);
         }
-        if (power instanceof PowerOffhandClick) {
+        if (triggers.contains(TriggerType.OFFHAND_CLICK)) {
             powerOffhandClick.add((PowerOffhandClick) power);
         }
-        if (power instanceof PowerSneak) {
+        if (triggers.contains(TriggerType.SNEAK)) {
             powerSneak.add((PowerSneak) power);
         }
-        if (power instanceof PowerSprint) {
+        if (triggers.contains(TriggerType.SPRINT)) {
             powerSprint.add((PowerSprint) power);
         }
         if (update)
@@ -1213,36 +1214,26 @@ public class RPGItem {
         while (it.hasNext()) {
             Power p = it.next();
             if (p.getName().equalsIgnoreCase(pow)) {
-                it.remove();
                 power = p;
-                rebuild();
                 break;
             }
         }
         if (power != null) {
-            if (power instanceof PowerHit) {
-                powerHit.remove(power);
-            }
-            if (power instanceof PowerHitTaken) {
-                powerHitTaken.remove(power);
-            }
-            if (power instanceof PowerHurt) {
-                powerHurt.remove(power);
-            }
-            if (power instanceof PowerLeftClick) {
-                powerLeftClick.remove(power);
-            }
-            if (power instanceof PowerRightClick) {
-                powerRightClick.remove(power);
-            }
-            if (power instanceof PowerProjectileHit) {
-                powerProjectileHit.remove(power);
-            }
-            if (power instanceof PowerTick) {
-                powerTick.remove(power);
-            }
+            removePower(power);
         }
         return power != null;
+    }
+
+    public void removePower(Power power) {
+        powers.remove(power);
+        powerHit.remove(power);
+        powerHitTaken.remove(power);
+        powerHurt.remove(power);
+        powerLeftClick.remove(power);
+        powerRightClick.remove(power);
+        powerProjectileHit.remove(power);
+        powerTick.remove(power);
+        rebuild();
     }
 
     public void addDescription(String str) {
