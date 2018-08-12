@@ -1,50 +1,3 @@
-powers:
-  base:
-    cooldownTime: Cooldown of the power, in ticks.
-    display: Display text of this power
-    consumption: Durability consumption of the power.
-  aoe:
-    main_description: Apply effect to entities in range. PowerSelector is applicable.
-    range: Effective range in blocks.
-    duration: Duration of applied effect, in ticks.
-    amplifier: Amplifier of applied effect.
-    type: Type of applied effect.
-    selfapplication: Whether to apply effect on triggering player.
-    name: Display name of the power.
-  aoecommand:
-    main_description: Run command for entities in range. PowerSelector is applicable.
-    range: Effective range in blocks.
-    isRight: Mouse button to trigger the power
-    command: Command to be executed
-    permission: Permission that will be given to user executing command
-    type: Type of entities
-    r: Maximum range in blocks.
-    rm: Minimum range in blocks.
-    facing: Maximum view angle in degrees.
-    c: Maximum count of entities.
-    mustsee: Whether only apply to the entities within line of sight
-  arrow:
-    main_description: Fire an arrow.
-  attract:
-    main_description: Pull around mobs in to player
-    main_duration: Cooldown should equal or greater than duration
-    radius: Effective range in blocks.
-    maxSpeed: Maximum speed when attracting.
-    duration: Duration of this power when triggered by click in tick.
-    attractingTickCost: Durability cost per tick when attracting.
-    attractingEntityTickCost: Durability cost per entity one tick when attracting.
-    triggerType: Available types of trigger.
-    attractPlayer: Whether allow attracting player.
-  command:
-    main_description: Run a command on click.
-    isRight: Mouse button to trigger the power
-    command: Command to be executed
-    permission: Permission that will be given to user executing command
-  commandHit:
-    command: Command to be executed
-    permission: Permission that will be given to user executing command
-    minDamage: Minimum damage to trigger
-
 message:
   cost:
     hit_toggle:
@@ -71,6 +24,7 @@ message:
     no_ench: No attached enchantments
     empty_ench: This item has an empty enchantment list
   error:
+    legacy_name: '%s now have a new name in Minecraft 1.13: %s'
     invalid_option: "Invalid option for %s. Available: %s"
     effect: '%s is not a valid effect'
     permission: You do not have permission for '%s'
@@ -232,6 +186,8 @@ message:
     fail: 'Failed to clone item %s : %s already exists'
 
 power:
+  airborne: 'Damage increase by %d%% when gliding'
+  charge: 'Damage increase with speed, by %d%% when sprinting'
   selector: Powers only applies to some entites
   noimmutabletick: Attack won't cause immutable tick on enemy
   potionself: Grants %s %d for %.1fs
@@ -284,7 +240,263 @@ power:
   arrow: Shoots an arrow. (%.1fs cooldown)
   stuck: '%d%% chance to stuck enemy %d tick (%.1fs cooldown)'
   shulkerbullet: Launches shulker bullet (%.1f cooldown)
-
+  properties:
+    base:
+      cooldown: Cooldown of the power, in ticks.
+      display: Display text of this power
+      consumption: Durability consumption of the power.
+    aoe:
+      main_description: Apply effect to entities in range. PowerSelector is applicable.
+      range: Effective range in blocks.
+      duration: Duration of applied effect, in ticks.
+      amplifier: Amplifier of applied effect.
+      type: Type of applied effect.
+      selfapplication: Whether to apply effect on triggering player.
+      name: Display name of the power.
+    aoecommand:
+      main_description: Run command for entities in range. PowerSelector is applicable.
+      range: Effective range in blocks.
+      isRight: Mouse button to trigger the power
+      command: Command to be executed
+      permission: Permission that will be given to user executing command
+      type: Type of entities
+      r: Maximum range in blocks.
+      rm: Minimum range in blocks.
+      facing: Maximum view angle in degrees.
+      c: Maximum count of entities.
+      mustsee: Whether only apply to the entities within line of sight
+    arrow:
+      main_description: Fire an arrow.
+    attract:
+      main_description: Pull around mobs in to player
+      main_duration: Cooldown should equal or greater than duration
+      radius: Effective range in blocks.
+      maxSpeed: Maximum speed when attracting.
+      duration: Duration of this power when triggered by click in tick.
+      attractingTickCost: Durability cost per tick when attracting.
+      attractingEntityTickCost: Durability cost per entity one tick when attracting.
+      triggerType: Available types of trigger.
+      attractPlayer: Whether allow attracting player.
+    command:
+      main_description: Run a command on click.
+      isRight: Mouse button to trigger the power
+      command: Command to be executed
+      permission: Permission that will be given to user executing command
+    commandhit:
+      main_description: Run a command when hits someting.
+      command: Command to be executed
+      permission: Permission that will be given to user executing command
+      minDamage: Minimum damage to trigger
+    consume:
+      main_description: Remove one item on click.
+      isRight: Mouse button to trigger the power
+    consumehit:
+      main_description: Remove one item when hits something.
+    deathcommand:
+      main_description: ''
+      chance: ''
+      command: ''
+      count: ''
+      desc: ''
+      consumption: ''
+    deflect:
+      main_description: ''
+      facing: ''
+      initiative: ''
+      cooldown: ''
+      passive: ''
+      cooldownPassive: ''
+      consumption: ''
+      duration: ''
+      chance: ''
+    delayedcommand:
+      main_description: ''
+      delay: ''
+      cooldown: ''
+      isRight: ''
+      display: ''
+      command: ''
+      permission: ''
+      consumption: ''
+    fire:
+      main_description: ''
+      cooldown: ''
+      distance: ''
+      burnduration: ''
+      consumption: ''
+    fireball:
+      main_description: ''
+      cooldown: ''
+      consumption: ''
+    flame:
+      main_description: ''
+      burnTime: ''
+      consumption: ''
+    food:
+      main_description: ''
+      foodpoints: ''
+    forcefield:
+      main_description: ''
+      cooldown: ''
+      radius: ''
+      height: ''
+      base: ''
+      ttl: ''
+      consumption: ''
+    ice:
+      main_description: ''
+      cooldown: ''
+      consumption: ''
+    knockup:
+      main_description: ''
+      chance: ''
+      power: ''
+      consumption: ''
+    lifesteal:
+      main_description: ''
+      chance: ''
+      consumption: ''
+    lightning:
+      main_description: ''
+      chance: ''
+      consumption: ''
+    lorefilter:
+      main_description: ''
+      regex: ''
+      desc: ''
+    noimmutabletick:
+      main_description: ''
+    particle:
+      main_description: ''
+      effect: ''
+      consumption: ''
+    particletick:
+      main_description: ''
+      effect: ''
+      interval: ''
+      consumption: ''
+    potionhit:
+      main_description: ''
+      duration: ''
+      amplifier: ''
+      type: ''
+      chance: ''
+      consumption: ''
+    potionself:
+      main_description: ''
+      cooldown: ''
+      duration: ''
+      amplifier: ''
+      type: ''
+      consumption: ''
+    potiontick:
+      main_description: ''
+      amplifier: ''
+      effect: ''
+      interval: ''
+      duration: ''
+      clear: ''
+    projectile:
+      main_description: ''
+      cooldown: ''
+      cone: ''
+      projectileType: ''
+      range: ''
+      amount: ''
+      speed: ''
+      gravity: ''
+      consumption: ''
+    pumpkin:
+      main_description: ''
+      chance: ''
+      drop: ''
+      consumption: ''
+    rainbow:
+      main_description: ''
+      cooldown: ''
+      count: ''
+      isFire: ''
+      consumption: ''
+    ranged:
+      main_description: ''
+      rm: ''
+      r: ''
+    rangedonly:
+      main_description: ''
+      rm: ''
+      r: ''
+    realdamage:
+      main_description: ''
+      cooldown: ''
+      realDamage: ''
+      consumption: ''
+      minDamage: ''
+    repair:
+      main_description: ''
+      display: ''
+      material: ''
+      durability: ''
+      isRight: ''
+      isSneak: ''
+    rescue:
+      main_description: ''
+      cooldown: ''
+      healthTrigger: ''
+      useBed: ''
+      inPlace: ''
+      consumption: ''
+      damageTrigger: ''
+    rumble:
+      main_description: ''
+      cooldown: ''
+      power: ''
+      distance: ''
+      consumption: ''
+    selector:
+      main_description: ''
+    shulkerbullet:
+      main_description: ''
+      cooldown: ''
+      range: ''
+    skyhook:
+      main_description: ''
+      railMaterial: ''
+      hookDistance: ''
+    stuck:
+      main_description: ''
+      cooldown: ''
+      duration: ''
+    tntcannon:
+      main_description: ''
+      cooldown: ''
+      consumption: ''
+    teleport:
+      main_description: ''
+      cooldown: ''
+      distance: ''
+      consumption: ''
+    throw:
+      main_description: ''
+      display: ''
+      cooldown: ''
+      isRight: ''
+      speed: ''
+      entityName: ''
+      entityData: ''
+      isPersistent: ''
+    tippedarrow:
+      main_description: ''
+      cooldown: ''
+      type: ''
+      duration: ''
+      amplifier: ''
+      consumption: ''
+    torch:
+      main_description: ''
+      cooldown: ''
+      consumption: ''
+    unbreakable:
+      main_description: ''
 manual:
   reload:
     description: Reload the plugin

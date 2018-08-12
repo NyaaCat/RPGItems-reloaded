@@ -5,6 +5,7 @@ import org.bukkit.block.Block;
 import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.entity.LivingEntity;
 import org.bukkit.entity.Player;
+import org.bukkit.event.player.PlayerInteractEvent;
 import org.bukkit.inventory.ItemStack;
 import think.rpgitems.commands.AcceptedValue;
 import think.rpgitems.commands.Property;
@@ -125,17 +126,15 @@ public class PowerAOECommand extends PowerCommand {
     }
 
     @Override
-    public void rightClick(Player player, ItemStack stack, Block clicked) {
-        if (!getItem().checkPermission(player, true)) return;
-        if (!isRight || !checkCooldownByString(player, getItem(), command, cooldownTime, true)) return;
+    public void rightClick(Player player, ItemStack stack, Block clicked, PlayerInteractEvent event) {
+        if (!isRight || !checkCooldownByString(player, getItem(), command, cooldown, true)) return;
         if (!getItem().consumeDurability(stack, consumption)) return;
         aoeCommand(player);
     }
 
     @Override
-    public void leftClick(Player player, ItemStack stack, Block clicked) {
-        if (!getItem().checkPermission(player, true)) return;
-        if (isRight || !checkCooldownByString(player, getItem(), command, cooldownTime, true)) return;
+    public void leftClick(Player player, ItemStack stack, Block clicked, PlayerInteractEvent event) {
+        if (isRight || !checkCooldownByString(player, getItem(), command, cooldown, true)) return;
         if (!getItem().consumeDurability(stack, consumption)) return;
         aoeCommand(player);
     }

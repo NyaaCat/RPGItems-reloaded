@@ -19,8 +19,8 @@ package think.rpgitems.power.impl;
 import org.bukkit.Bukkit;
 import org.bukkit.Material;
 import org.bukkit.block.Block;
-import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.entity.Player;
+import org.bukkit.event.player.PlayerInteractEvent;
 import org.bukkit.inventory.ItemStack;
 import think.rpgitems.I18n;
 import think.rpgitems.RPGItems;
@@ -42,8 +42,7 @@ public class PowerFood extends BasePower implements PowerRightClick {
     public int foodpoints;
 
     @Override
-    public void rightClick(final Player player, ItemStack stack, Block clicked) {
-        if (!getItem().checkPermission(player, true)) return;
+    public void rightClick(final Player player, ItemStack stack, Block clicked, PlayerInteractEvent event) {
         ItemStack item = player.getInventory().getItemInMainHand();
         int count = item.getAmount() - 1;
         if (count == 0) {
@@ -55,16 +54,6 @@ public class PowerFood extends BasePower implements PowerRightClick {
             player.setFoodLevel(player.getFoodLevel() + foodpoints);
             item.setAmount(count);
         }
-    }
-
-    @Override
-    public void init(ConfigurationSection s) {
-        foodpoints = s.getInt("foodpoints");
-    }
-
-    @Override
-    public void save(ConfigurationSection s) {
-        s.set("foodpoints", foodpoints);
     }
 
     @Override

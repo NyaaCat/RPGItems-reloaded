@@ -77,38 +77,42 @@ public abstract class RPGCommandReceiver extends CommandReceiver {
                 return resolveProperty(last, cmd, itemCommand);
             }
             case "power": {
-                @LangKey(skipCheck = true) String powName = cmd.next();
-                Class<? extends Power> power = powers.get(powName);
-                if (power == null) return null;
-                SortedMap<PowerProperty, Field> argMap = PowerManager.propertyOrders.get(power);
-                Set<Field> settled = new HashSet<>();
-                Optional<PowerProperty> req = argMap.keySet()
-                                                    .stream()
-                                                    .filter(PowerProperty::required)
-                                                    .reduce((first, second) -> second); //findLast
-
-                List<Field> required = req.map(r -> argMap.entrySet()
-                                                          .stream()
-                                                          .filter(entry -> entry.getKey().order() <= r.order())
-                                                          .map(Map.Entry::getValue)
-                                                          .collect(Collectors.toList())).orElse(new ArrayList<>());
-
-                for (Field field : argMap.values()) {
-                    String name = field.getName();
-                    String value = cmd.argString(name, null);
-                    if (value != null) {
-                        required.remove(field);
-                        settled.add(field);
-                    }
-                }
-                if (settled.isEmpty() && sender instanceof Player) {
-                    Bukkit.getScheduler().runTask(RPGItem.getPlugin(), () -> new Message(I18n.format("powers." + powName + ".main_description")).send((Player) sender, Message.MessageType.ACTION_BAR));
-                }
-                return resolvePowerSuggestions(sender, last, cmd, power, argMap, settled, required);
+                return resolvePowerProperties(sender, last, cmd);
             }
             default:
                 return null;
         }
+    }
+
+    private List<String> resolvePowerProperties(CommandSender sender, String last, Arguments cmd) {
+        @LangKey(skipCheck = true) String powName = cmd.next();
+        Class<? extends Power> power = powers.get(powName);
+        if (power == null) return null;
+        SortedMap<PowerProperty, Field> argMap = PowerManager.propertyOrders.get(power);
+        Set<Field> settled = new HashSet<>();
+        Optional<PowerProperty> req = argMap.keySet()
+                                            .stream()
+                                            .filter(PowerProperty::required)
+                                            .reduce((first, second) -> second); //findLast
+
+        List<Field> required = req.map(r -> argMap.entrySet()
+                                                  .stream()
+                                                  .filter(entry -> entry.getKey().order() <= r.order())
+                                                  .map(Map.Entry::getValue)
+                                                  .collect(Collectors.toList())).orElse(new ArrayList<>());
+
+        for (Field field : argMap.values()) {
+            String name = field.getName();
+            String value = cmd.argString(name, null);
+            if (value != null) {
+                required.remove(field);
+                settled.add(field);
+            }
+        }
+        if (settled.isEmpty() && sender instanceof Player) {
+            Bukkit.getScheduler().runTask(RPGItems.plugin, () -> new Message(I18n.format("power.properties." + powName + ".main_description")).send((Player) sender, Message.MessageType.ACTION_BAR));
+        }
+        return resolvePowerSuggestions(sender, last, cmd, power, argMap, settled, required);
     }
 
     private List<String> resolvePowerSuggestions(CommandSender sender, String last, Arguments cmd, Class<? extends Power> power, SortedMap<PowerProperty, Field> argMap, Set<Field> settled, List<Field> required) {
@@ -122,18 +126,7 @@ public abstract class RPGCommandReceiver extends CommandReceiver {
             if (value == null) {
                 if (argMap.values().stream().anyMatch(f -> last.startsWith(f.getName() + ":"))) {//we are suggesting a value as we have the complete property name
                     String currentPropertyName = last.split(":")[0];
-                    // TODO: config: enable/disable, rate limit, dup
-                    Bukkit.getScheduler().runTask(RPGItem.getPlugin(), () -> {
-                        @LangKey(skipCheck = true) String key = "powers." + powers.inverse().get(power) + "." + currentPropertyName;
-                        if (I18n.getInstance().hasKey(key)) {
-                            new Message(I18n.format(key)).send((Player) sender, Message.MessageType.ACTION_BAR);
-                            return;
-                        }
-                        @LangKey(skipCheck = true) String baseKey = "powers.base." + currentPropertyName;
-                        if (I18n.getInstance().hasKey(baseKey)) {
-                            new Message(I18n.format(baseKey)).send((Player) sender, Message.MessageType.ACTION_BAR);
-                        }
-                    });
+                    actionBarTip((Player) sender, power, currentPropertyName);
                     return resolvePropertyValueSuggestion(power, currentPropertyName, true).stream().filter(s -> s.startsWith(last)).collect(Collectors.toList());
                 }
                 List<String> suggestions;
@@ -162,6 +155,21 @@ public abstract class RPGCommandReceiver extends CommandReceiver {
             settled.add(field);
         }
         return null;
+    }
+
+    private void actionBarTip(Player sender, Class<? extends Power> power, String currentPropertyName) {
+        // TODO: config: enable/disable, rate limit, dup
+        Bukkit.getScheduler().runTask(RPGItems.plugin, () -> {
+            @LangKey(skipCheck = true) String key = "power.properties." + powers.inverse().get(power) + "." + currentPropertyName;
+            if (I18n.getInstance().hasKey(key)) {
+                new Message(I18n.format(key)).send(sender, Message.MessageType.ACTION_BAR);
+                return;
+            }
+            @LangKey(skipCheck = true) String baseKey = "power.properties.base." + currentPropertyName;
+            if (I18n.getInstance().hasKey(baseKey)) {
+                new Message(I18n.format(baseKey)).send(sender, Message.MessageType.ACTION_BAR);
+            }
+        });
     }
 
     private List<String> resolveProperty(String last, Arguments cmd, Pair<RPGItem, String> itemCommand) {

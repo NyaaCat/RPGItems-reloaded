@@ -23,6 +23,7 @@ import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.entity.*;
 import org.bukkit.event.entity.EntityDamageByEntityEvent;
 import org.bukkit.event.entity.EntityDamageEvent;
+import org.bukkit.event.player.PlayerInteractEvent;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.metadata.FixedMetadataValue;
 import org.bukkit.util.Vector;
@@ -37,16 +38,14 @@ import think.rpgitems.power.PowerRightClick;
 
 import java.util.concurrent.ThreadLocalRandom;
 
-import static think.rpgitems.utils.PowerUtils.checkCooldown;
-import static think.rpgitems.utils.PowerUtils.checkCooldownByString;
-import static think.rpgitems.utils.PowerUtils.getAngleBetweenVectors;
+import static think.rpgitems.utils.PowerUtils.*;
 
 /**
  * Power deflect.
  * <p>
  * Deflect arrows or fireballs towards player within {@link #facing} when
- * 1. manual triggered when {@link #initiative} is enabled with a cooldown of {@link #cooldownTime} and duration {@link #duration}
- * 2. auto triggered when {@link #passive} is enabled with a chance of {@link #chance} and a cooldown of {@link #cooldownTimePassive}
+ * 1. manual triggered when {@link #initiative} is enabled with a cooldown of {@link #cooldown} and duration {@link #duration}
+ * 2. auto triggered when {@link #passive} is enabled with a chance of {@link #chance} and a cooldown of {@link #cooldownPassive}
  * </p>
  */
 @SuppressWarnings("WeakerAccess")
@@ -56,13 +55,13 @@ public class PowerDeflect extends BasePower implements PowerHitTaken, PowerRight
      * Cooldown time of this power
      */
     @Property(order = 2)
-    public int cooldownTime = 20;
+    public int cooldown = 20;
 
     /**
      * Cooldown time of this power in passive mode
      */
     @Property(order = 4)
-    public int cooldownTimePassive = 20;
+    public int cooldownPassive = 20;
 
     /**
      * Cost of this power
@@ -110,7 +109,7 @@ public class PowerDeflect extends BasePower implements PowerHitTaken, PowerRight
 
     @Override
     public String displayText() {
-        return I18n.format("power.deflect", (double) cooldownTime / 20d);
+        return I18n.format("power.deflect", (double) cooldown / 20d);
     }
 
     @Override
@@ -120,34 +119,14 @@ public class PowerDeflect extends BasePower implements PowerHitTaken, PowerRight
 
     @Override
     public void init(ConfigurationSection s) {
-        cooldownTime = s.getInt("cooldown", 20);
-        cooldownTimePassive = s.getInt("cooldownpassive", 20);
-        chance = s.getInt("chance", 50);
-        consumption = s.getInt("consumption", 0);
-        duration = s.getInt("duration", 50);
-        facing = s.getInt("facing", 120);
-        initiative = s.getBoolean("initiative", true);
-        passive = s.getBoolean("passive", true);
-        isRight = s.getBoolean("isRight", true);
-    }
-
-    @Override
-    public void save(ConfigurationSection s) {
-        s.set("cooldown", cooldownTime);
-        s.set("cooldownpassive", cooldownTimePassive);
-        s.set("consumption", consumption);
-        s.set("chance", chance);
-        s.set("duration", duration);
-        s.set("facing", facing);
-        s.set("passive", passive);
-        s.set("initiative", initiative);
-        s.set("isRight", isRight);
+        cooldownPassive = s.getInt("cooldownpassive", 20);
+        super.init(s);
     }
 
     @Override
     public double takeHit(Player target, ItemStack stack, EntityDamageEvent event) {
         if (!getItem().checkPermission(target, true)
-                    || !((System.currentTimeMillis() / 50 < time) || (passive && (ThreadLocalRandom.current().nextInt(0, 100) < chance) && checkCooldown(this, target, cooldownTimePassive, false)))
+                    || !((System.currentTimeMillis() / 50 < time) || (passive && (ThreadLocalRandom.current().nextInt(0, 100) < chance) && checkCooldown(this, target, cooldownPassive, false)))
                     || !getItem().consumeDurability(stack, consumption))
             return event.getDamage();
         if (event instanceof EntityDamageByEntityEvent) {
@@ -186,20 +165,20 @@ public class PowerDeflect extends BasePower implements PowerHitTaken, PowerRight
     }
 
     @Override
-    public void rightClick(Player player, ItemStack stack, Block clicked) {
+    public void rightClick(Player player, ItemStack stack, Block clicked, PlayerInteractEvent event) {
         if (!isRight || !initiative
                     || !getItem().checkPermission(player, true)
-                    || !checkCooldownByString(player, getItem(), "deflect.initiative", cooldownTime, true)
+                    || !checkCooldownByString(player, getItem(), "deflect.initiative", cooldown, true)
                     || !getItem().consumeDurability(stack, consumption))
             return;
         time = System.currentTimeMillis() / 50 + duration;
     }
 
     @Override
-    public void leftClick(Player player, ItemStack stack, Block clicked) {
+    public void leftClick(Player player, ItemStack stack, Block clicked, PlayerInteractEvent event) {
         if (isRight || !initiative
                     || !getItem().checkPermission(player, true)
-                    || !checkCooldownByString(player, getItem(), "deflect.initiative", cooldownTime, true)
+                    || !checkCooldownByString(player, getItem(), "deflect.initiative", cooldown, true)
                     || !getItem().consumeDurability(stack, consumption))
             return;
         time = System.currentTimeMillis() / 50 + duration;

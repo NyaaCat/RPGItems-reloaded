@@ -21,6 +21,7 @@ import org.bukkit.block.Block;
 import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.entity.FallingBlock;
 import org.bukkit.entity.Player;
+import org.bukkit.event.player.PlayerInteractEvent;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.scheduler.BukkitRunnable;
 import org.bukkit.util.Vector;
@@ -49,7 +50,7 @@ public class PowerRainbow extends BasePower implements PowerRightClick {
      * Cooldown time of this power
      */
     @Property(order = 0)
-    public long cooldownTime = 20;
+    public long cooldown = 20;
     /**
      * Count of blocks
      */
@@ -69,9 +70,8 @@ public class PowerRainbow extends BasePower implements PowerRightClick {
     private Random random = new Random();
 
     @Override
-    public void rightClick(Player player, ItemStack stack, Block clicked) {
-        if (!getItem().checkPermission(player, true)) return;
-        if (!checkCooldown(this, player, cooldownTime, true)) return;
+    public void rightClick(Player player, ItemStack stack, Block clicked, PlayerInteractEvent event) {
+        if (!checkCooldown(this, player, cooldown, true)) return;
         if (!getItem().consumeDurability(stack, consumption)) return;
         player.playSound(player.getLocation(), Sound.ENTITY_ARROW_SHOOT, 1.0f, 1.0f);
         final ArrayList<FallingBlock> blocks = new ArrayList<>();
@@ -128,7 +128,7 @@ public class PowerRainbow extends BasePower implements PowerRightClick {
 
     @Override
     public String displayText() {
-        return I18n.format("power.rainbow", count, (double) cooldownTime / 20d);
+        return I18n.format("power.rainbow", count, (double) cooldown / 20d);
     }
 
     @Override
@@ -138,7 +138,7 @@ public class PowerRainbow extends BasePower implements PowerRightClick {
 
     @Override
     public void init(ConfigurationSection s) {
-        cooldownTime = s.getLong("cooldown", 20);
+        cooldown = s.getLong("cooldown", 20);
         count = s.getInt("count", 5);
         isFire = s.getBoolean("isFire");
         consumption = s.getInt("consumption", 0);
@@ -146,7 +146,7 @@ public class PowerRainbow extends BasePower implements PowerRightClick {
 
     @Override
     public void save(ConfigurationSection s) {
-        s.set("cooldown", cooldownTime);
+        s.set("cooldown", cooldown);
         s.set("count", count);
         s.set("isFire", isFire);
         s.set("consumption", consumption);

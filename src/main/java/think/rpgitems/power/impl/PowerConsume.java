@@ -19,13 +19,13 @@ package think.rpgitems.power.impl;
 import org.bukkit.Bukkit;
 import org.bukkit.Material;
 import org.bukkit.block.Block;
-import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.entity.Player;
+import org.bukkit.event.player.PlayerInteractEvent;
 import org.bukkit.inventory.ItemStack;
 import think.rpgitems.I18n;
 import think.rpgitems.RPGItems;
-import think.rpgitems.commands.Property;
 import think.rpgitems.commands.BooleanChoice;
+import think.rpgitems.commands.Property;
 import think.rpgitems.power.PowerLeftClick;
 import think.rpgitems.power.PowerRightClick;
 
@@ -35,7 +35,7 @@ import static think.rpgitems.utils.PowerUtils.checkCooldown;
  * Power consume.
  * <p>
  * The consume power will remove one item on {@link #isRight click}.
- * With {@link #cooldownTime cooldown} time (ticks).
+ * With {@link #cooldown cooldown} time (ticks).
  * </p>
  */
 @SuppressWarnings("WeakerAccess")
@@ -44,7 +44,7 @@ public class PowerConsume extends BasePower implements PowerRightClick, PowerLef
      * Cooldown time of this power
      */
     @Property(order = 1)
-    public int cooldownTime = 0;
+    public int cooldown = 0;
     /**
      * Whether triggers when right click.
      */
@@ -58,17 +58,15 @@ public class PowerConsume extends BasePower implements PowerRightClick, PowerLef
     public int consumption = 0;
 
     @Override
-    public void rightClick(final Player player, ItemStack stack, Block clicked) {
-        if (!getItem().checkPermission(player, true)) return;
-        if (isRight && checkCooldown(this, player, cooldownTime, false)) {
+    public void rightClick(final Player player, ItemStack stack, Block clicked, PlayerInteractEvent event) {
+        if (isRight && checkCooldown(this, player, cooldown, false)) {
             consume(player);
         }
     }
 
     @Override
-    public void leftClick(final Player player, ItemStack stack, Block clicked) {
-        if (!getItem().checkPermission(player, true)) return;
-        if (!isRight && checkCooldown(this, player, cooldownTime, false)) {
+    public void leftClick(final Player player, ItemStack stack, Block clicked, PlayerInteractEvent event) {
+        if (!isRight && checkCooldown(this, player, cooldown, false)) {
             consume(player);
         }
     }
@@ -87,20 +85,6 @@ public class PowerConsume extends BasePower implements PowerRightClick, PowerLef
         } else {
             stack.setAmount(count);
         }
-    }
-
-    @Override
-    public void init(ConfigurationSection s) {
-        cooldownTime = s.getInt("cooldown", 0);
-        isRight = s.getBoolean("isRight", true);
-        consumption = s.getInt("consumption", 0);
-    }
-
-    @Override
-    public void save(ConfigurationSection s) {
-        s.set("cooldown", cooldownTime);
-        s.set("isRight", isRight);
-        s.set("consumption", consumption);
     }
 
     @Override

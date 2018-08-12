@@ -18,10 +18,9 @@ package think.rpgitems.power.impl;
 
 import org.bukkit.ChatColor;
 import org.bukkit.block.Block;
-import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.entity.Player;
+import org.bukkit.event.player.PlayerInteractEvent;
 import org.bukkit.inventory.ItemStack;
-
 import think.rpgitems.commands.BooleanChoice;
 import think.rpgitems.commands.Property;
 import think.rpgitems.power.PowerLeftClick;
@@ -65,7 +64,7 @@ public class PowerCommand extends BasePower implements PowerRightClick, PowerLef
      * Cooldown time of this power
      */
     @Property(order = 1)
-    public long cooldownTime = 20;
+    public long cooldown = 20;
     /**
      * Cost of this power
      */
@@ -108,17 +107,15 @@ public class PowerCommand extends BasePower implements PowerRightClick, PowerLef
     }
 
     @Override
-    public void rightClick(Player player, ItemStack stack, Block clicked) {
-        if (!getItem().checkPermission(player, true)) return;
-        if (!isRight || !checkCooldownByString(player, getItem(), command, cooldownTime, true)) return;
+    public void rightClick(Player player, ItemStack stack, Block clicked, PlayerInteractEvent event) {
+        if (!isRight || !checkCooldownByString(player, getItem(), command, cooldown, true)) return;
         if (!getItem().consumeDurability(stack, consumption)) return;
         executeCommand(player);
     }
 
     @Override
-    public void leftClick(Player player, ItemStack stack, Block clicked) {
-        if (!getItem().checkPermission(player, true)) return;
-        if (isRight || !checkCooldownByString(player, getItem(), command, cooldownTime, true)) return;
+    public void leftClick(Player player, ItemStack stack, Block clicked, PlayerInteractEvent event) {
+        if (isRight || !checkCooldownByString(player, getItem(), command, cooldown, true)) return;
         if (!getItem().consumeDurability(stack, consumption)) return;
         executeCommand(player);
     }
@@ -132,25 +129,4 @@ public class PowerCommand extends BasePower implements PowerRightClick, PowerLef
     public String getName() {
         return "command";
     }
-
-    @Override
-    public void init(ConfigurationSection s) {
-        cooldownTime = s.getLong("cooldown", 20);
-        command = s.getString("command", "");
-        display = s.getString("display", "");
-        isRight = s.getBoolean("isRight", true);
-        permission = s.getString("permission", "");
-        consumption = s.getInt("consumption", 0);
-    }
-
-    @Override
-    public void save(ConfigurationSection s) {
-        s.set("cooldown", cooldownTime);
-        s.set("command", command);
-        s.set("display", display);
-        s.set("isRight", isRight);
-        s.set("permission", permission);
-        s.set("consumption", consumption);
-    }
-
 }

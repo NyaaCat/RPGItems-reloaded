@@ -18,9 +18,9 @@ package think.rpgitems.power.impl;
 
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
-import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.entity.LivingEntity;
 import org.bukkit.entity.Player;
+import org.bukkit.event.entity.EntityDamageByEntityEvent;
 import org.bukkit.inventory.ItemStack;
 import think.rpgitems.commands.Property;
 import think.rpgitems.power.PowerHit;
@@ -58,7 +58,7 @@ public class PowerCommandHit extends BasePower implements PowerHit {
      * Cooldown time of this power
      */
     @Property(order = 0)
-    public long cooldownTime = 20;
+    public long cooldown = 20;
     /**
      * Cost of this power
      */
@@ -106,10 +106,9 @@ public class PowerCommandHit extends BasePower implements PowerHit {
     }
 
     @Override
-    public void hit(Player player, ItemStack stack, LivingEntity entity, double damage) {
+    public void hit(Player player, ItemStack stack, LivingEntity entity, double damage, EntityDamageByEntityEvent event) {
         if (damage < minDamage) return;
-        if (!getItem().checkPermission(player, true)) return;
-        if (!checkCooldownByString(player, getItem(), command, cooldownTime, true)) return;
+        if (!checkCooldownByString(player, getItem(), command, cooldown, true)) return;
         if (!getItem().consumeDurability(stack, consumption)) return;
 
         executeCommand(player, entity);
@@ -123,25 +122,5 @@ public class PowerCommandHit extends BasePower implements PowerHit {
     @Override
     public String getName() {
         return "commandhit";
-    }
-
-    @Override
-    public void init(ConfigurationSection s) {
-        cooldownTime = s.getLong("cooldown", 20);
-        command = s.getString("command", "");
-        display = s.getString("display", "");
-        permission = s.getString("permission", "");
-        consumption = s.getInt("consumption", 0);
-        minDamage = s.getInt("minDamage", 0);
-    }
-
-    @Override
-    public void save(ConfigurationSection s) {
-        s.set("cooldown", cooldownTime);
-        s.set("command", command);
-        s.set("display", display);
-        s.set("permission", permission);
-        s.set("minDamage", minDamage);
-        s.set("consumption", consumption);
     }
 }

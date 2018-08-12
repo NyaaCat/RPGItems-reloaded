@@ -2,6 +2,7 @@ package think.rpgitems.power;
 
 import org.bukkit.entity.Player;
 import org.bukkit.entity.Projectile;
+import org.bukkit.event.entity.ProjectileHitEvent;
 import org.bukkit.inventory.ItemStack;
 
 /**
@@ -15,5 +16,5 @@ public interface PowerProjectileHit extends Power {
      * @param stack  Item that triggered this power
      * @param arrow  Projectile
      */
-    void projectileHit(Player player, ItemStack stack, Projectile arrow);
+    void projectileHit(Player player, ItemStack stack, Projectile arrow, ProjectileHitEvent event);
 }

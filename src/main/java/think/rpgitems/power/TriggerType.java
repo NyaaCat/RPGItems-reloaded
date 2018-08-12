@@ -8,4 +8,7 @@ public enum TriggerType {
     RIGHT_CLICK,
     PROJECTILE_HIT,
     TICK,
+    OFFHAND_CLICK,
+    SNEAK,
+    SPRINT,
 }

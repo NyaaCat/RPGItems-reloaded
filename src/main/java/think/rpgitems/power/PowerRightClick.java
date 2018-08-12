@@ -2,6 +2,7 @@ package think.rpgitems.power;
 
 import org.bukkit.block.Block;
 import org.bukkit.entity.Player;
+import org.bukkit.event.player.PlayerInteractEvent;
 import org.bukkit.inventory.ItemStack;
 
 /**
@@ -15,5 +16,5 @@ public interface PowerRightClick extends Power {
      * @param stack   Item that triggered this power
      * @param clicked Block clicked
      */
-    void rightClick(Player player, ItemStack stack, Block clicked);
+    void rightClick(Player player, ItemStack stack, Block clicked, PlayerInteractEvent event);
 }

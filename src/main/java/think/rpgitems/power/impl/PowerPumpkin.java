@@ -6,6 +6,7 @@ import org.bukkit.entity.LivingEntity;
 import org.bukkit.entity.Player;
 import org.bukkit.entity.Skeleton;
 import org.bukkit.entity.Zombie;
+import org.bukkit.event.entity.EntityDamageByEntityEvent;
 import org.bukkit.inventory.ItemStack;
 import think.rpgitems.I18n;
 import think.rpgitems.commands.Property;
@@ -65,8 +66,7 @@ public class PowerPumpkin extends BasePower implements PowerHit {
     }
 
     @Override
-    public void hit(Player player, ItemStack stack, LivingEntity entity, double damage) {
-        if (!getItem().checkPermission(player, true)) return;
+    public void hit(Player player, ItemStack stack, LivingEntity entity, double damage, EntityDamageByEntityEvent event) {
         if (!getItem().consumeDurability(stack, consumption)) return;
         if (rand.nextInt(chance) != 0) return;
         if (entity instanceof Skeleton || entity instanceof Zombie)

@@ -19,11 +19,11 @@ package think.rpgitems.power.impl;
 import org.bukkit.Effect;
 import org.bukkit.Location;
 import org.bukkit.block.Block;
-import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.entity.Entity;
 import org.bukkit.entity.ItemFrame;
 import org.bukkit.entity.Painting;
 import org.bukkit.entity.Player;
+import org.bukkit.event.player.PlayerInteractEvent;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.metadata.FixedMetadataValue;
 import org.bukkit.scheduler.BukkitRunnable;
@@ -54,7 +54,7 @@ public class PowerRumble extends BasePower implements PowerRightClick {
      * Cooldown time of this power
      */
     @Property(order = 0)
-    public long cooldownTime = 20;
+    public long cooldown = 20;
     /**
      * Power of rumble
      */
@@ -72,24 +72,8 @@ public class PowerRumble extends BasePower implements PowerRightClick {
     public int consumption = 0;
 
     @Override
-    public void init(ConfigurationSection s) {
-        cooldownTime = s.getLong("cooldown", 20);
-        consumption = s.getInt("consumption", 0);
-        power = s.getInt("power", 2);
-        distance = s.getInt("distance", 15);
-    }
-
-    @Override
-    public void save(ConfigurationSection s) {
-        s.set("cooldown", cooldownTime);
-        s.set("power", power);
-        s.set("distance", distance);
-        s.set("consumption", consumption);
-    }
-
-    @Override
-    public void rightClick(final Player player, ItemStack stack, Block block) {
-        if (!checkCooldown(this, player, cooldownTime, true)) return;
+    public void rightClick(final Player player, ItemStack stack, Block block, PlayerInteractEvent event) {
+        if (!checkCooldown(this, player, cooldown, true)) return;
         if (!getItem().consumeDurability(stack, consumption)) return;
         final Location location = player.getLocation().add(0, -0.2, 0);
         final Vector direction = player.getLocation().getDirection();
@@ -156,7 +140,7 @@ public class PowerRumble extends BasePower implements PowerRightClick {
 
     @Override
     public String displayText() {
-        return I18n.format("power.rumble", (double) cooldownTime / 20d);
+        return I18n.format("power.rumble", (double) cooldown / 20d);
     }
 
 }

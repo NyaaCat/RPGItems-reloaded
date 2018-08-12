@@ -16,9 +16,9 @@
  */
 package think.rpgitems.power.impl;
 
-import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.entity.LivingEntity;
 import org.bukkit.entity.Player;
+import org.bukkit.event.entity.EntityDamageByEntityEvent;
 import org.bukkit.inventory.ItemStack;
 import think.rpgitems.I18n;
 import think.rpgitems.commands.Property;
@@ -45,8 +45,7 @@ public class PowerFlame extends BasePower implements PowerHit {
     public int consumption = 0;
 
     @Override
-    public void hit(Player player, ItemStack stack, LivingEntity entity, double damage) {
-        if (!getItem().checkPermission(player, true)) return;
+    public void hit(Player player, ItemStack stack, LivingEntity entity, double damage, EntityDamageByEntityEvent event) {
         if (!getItem().consumeDurability(stack, consumption)) return;
         entity.setFireTicks(burnTime);
     }
@@ -60,17 +59,4 @@ public class PowerFlame extends BasePower implements PowerHit {
     public String getName() {
         return "flame";
     }
-
-    @Override
-    public void init(ConfigurationSection s) {
-        burnTime = s.getInt("burntime");
-        consumption = s.getInt("consumption", 0);
-    }
-
-    @Override
-    public void save(ConfigurationSection s) {
-        s.set("burntime", burnTime);
-        s.set("consumption", consumption);
-    }
-
 }

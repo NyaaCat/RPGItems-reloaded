@@ -2,9 +2,9 @@ package think.rpgitems.power.impl;
 
 import org.bukkit.Bukkit;
 import org.bukkit.Location;
-import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.entity.LivingEntity;
 import org.bukkit.entity.Player;
+import org.bukkit.event.entity.EntityDamageByEntityEvent;
 import org.bukkit.inventory.ItemStack;
 import think.rpgitems.I18n;
 import think.rpgitems.commands.Property;
@@ -51,24 +51,6 @@ public class PowerDeathCommand extends BasePower implements PowerHit {
     public int consumption = 0;
 
     @Override
-    public void init(ConfigurationSection s) {
-        command = s.getString("command");
-        chance = s.getInt("chance");
-        desc = s.getString("desc");
-        count = s.getInt("count");
-        consumption = s.getInt("consumption", 0);
-    }
-
-    @Override
-    public void save(ConfigurationSection s) {
-        s.set("command", command);
-        s.set("chance", chance);
-        s.set("desc", desc);
-        s.set("count", count);
-        s.set("consumption", consumption);
-    }
-
-    @Override
     public String getName() {
         return "deathcommand";
     }
@@ -79,8 +61,7 @@ public class PowerDeathCommand extends BasePower implements PowerHit {
     }
 
     @Override
-    public void hit(Player player, ItemStack stack, LivingEntity entity, double damage) {
-        if (!getItem().checkPermission(player, true)) return;
+    public void hit(Player player, ItemStack stack, LivingEntity entity, double damage, EntityDamageByEntityEvent event) {
         if (rand.nextInt(chance) == 0) {
             if (!getItem().consumeDurability(stack, consumption)) return;
             Location loc = entity.getLocation();

@@ -5,10 +5,10 @@ import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
 import org.bukkit.Location;
 import org.bukkit.block.Block;
-import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.entity.Entity;
 import org.bukkit.entity.Player;
 import org.bukkit.entity.Projectile;
+import org.bukkit.event.player.PlayerInteractEvent;
 import org.bukkit.inventory.ItemStack;
 import think.rpgitems.commands.Property;
 import think.rpgitems.power.PowerLeftClick;
@@ -26,7 +26,7 @@ public class PowerThrow extends BasePower implements PowerRightClick, PowerLeftC
     @Property(order = 4)
     public String entityName = "";
     @Property(order = 1)
-    public long cooldownTime = 20;
+    public long cooldown = 20;
     @Property(order = 3)
     public double speed = 3;
     @Property(order = 0)
@@ -36,30 +36,6 @@ public class PowerThrow extends BasePower implements PowerRightClick, PowerLeftC
     @Property(order = 6)
     public boolean isPersistent;
     public int consumption = 0;
-
-    @Override
-    public void init(ConfigurationSection s) {
-        entityName = s.getString("entityName");
-        entityData = s.getString("entityData");
-        cooldownTime = s.getLong("cooldown", 20);
-        speed = s.getDouble("speed", 3);
-        display = s.getString("display");
-        isRight = s.getBoolean("isRight", true);
-        isPersistent = s.getBoolean("isPersistent", false);
-        consumption = s.getInt("consumption", 0);
-    }
-
-    @Override
-    public void save(ConfigurationSection s) {
-        s.set("entityName", entityName);
-        s.set("entityData", entityData);
-        s.set("cooldown", cooldownTime);
-        s.set("speed", speed);
-        s.set("display", display);
-        s.set("isRight", isRight);
-        s.set("isPersistent", isPersistent);
-        s.set("consumption", consumption);
-    }
 
     @Override
     public String getName() {
@@ -72,19 +48,20 @@ public class PowerThrow extends BasePower implements PowerRightClick, PowerLeftC
     }
 
     @Override
-    public void rightClick(Player player, ItemStack stack, Block clicked) {
-        if (isRight && checkCooldownByString(player, getItem(), entityName + entityData, cooldownTime, true) && getItem().consumeDurability(stack, consumption)) {
+    public void rightClick(Player player, ItemStack stack, Block clicked, PlayerInteractEvent event) {
+        if (isRight && checkCooldownByString(player, getItem(), entityName + entityData, cooldown, true) && getItem().consumeDurability(stack, consumption)) {
             summonEntity(player, stack, clicked);
         }
     }
 
     @Override
-    public void leftClick(Player player, ItemStack stack, Block clicked) {
-        if (!isRight && checkCooldownByString(player, getItem(), entityName + entityData, cooldownTime, true) && getItem().consumeDurability(stack, consumption)) {
+    public void leftClick(Player player, ItemStack stack, Block clicked, PlayerInteractEvent event) {
+        if (!isRight && checkCooldownByString(player, getItem(), entityName + entityData, cooldown, true) && getItem().consumeDurability(stack, consumption)) {
             summonEntity(player, stack, clicked);
         }
     }
 
+    @SuppressWarnings("deprecation")
     private void summonEntity(Player player, ItemStack stack, Block block) {
         try {
             Location loc = player.getEyeLocation().clone();

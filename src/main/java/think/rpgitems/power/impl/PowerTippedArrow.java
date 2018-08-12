@@ -21,6 +21,7 @@ import org.bukkit.block.Block;
 import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.entity.Player;
 import org.bukkit.entity.TippedArrow;
+import org.bukkit.event.player.PlayerInteractEvent;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.potion.PotionEffect;
 import org.bukkit.potion.PotionEffectType;
@@ -45,7 +46,7 @@ public class PowerTippedArrow extends BasePower implements PowerRightClick {
      * Cooldown time of this power
      */
     @Property(order = 0)
-    public long cooldownTime = 20;
+    public long cooldown = 20;
     /**
      * Amplifier of potion effect
      */
@@ -68,9 +69,8 @@ public class PowerTippedArrow extends BasePower implements PowerRightClick {
     public int consumption = 0;
 
     @Override
-    public void rightClick(Player player, ItemStack stack, Block clicked) {
-        if (!getItem().checkPermission(player, true)) return;
-        if (!checkCooldown(this, player, cooldownTime, true)) return;
+    public void rightClick(Player player, ItemStack stack, Block clicked, PlayerInteractEvent event) {
+        if (!checkCooldown(this, player, cooldown, true)) return;
         if (!getItem().consumeDurability(stack, consumption)) return;
         player.playSound(player.getLocation(), Sound.ENTITY_ARROW_SHOOT, 1.0f, 1.0f);
         TippedArrow arrow = player.launchProjectile(TippedArrow.class);
@@ -81,7 +81,7 @@ public class PowerTippedArrow extends BasePower implements PowerRightClick {
 
     @Override
     public String displayText() {
-        return I18n.format("power.tippedarrow", type.getName().toLowerCase().replaceAll("_", " "), amplifier + 1, ((double) duration) / 20d, (double) cooldownTime / 20d);
+        return I18n.format("power.tippedarrow", type.getName().toLowerCase().replaceAll("_", " "), amplifier + 1, ((double) duration) / 20d, (double) cooldown / 20d);
     }
 
     @Override
@@ -91,7 +91,7 @@ public class PowerTippedArrow extends BasePower implements PowerRightClick {
 
     @Override
     public void init(ConfigurationSection s) {
-        cooldownTime = s.getLong("cooldown", 20);
+        cooldown = s.getLong("cooldown", 20);
         duration = s.getInt("duration", 1);
         amplifier = s.getInt("amplifier", 15);
         String potionEffectName = s.getString("type", "HARM");
@@ -101,7 +101,7 @@ public class PowerTippedArrow extends BasePower implements PowerRightClick {
 
     @Override
     public void save(ConfigurationSection s) {
-        s.set("cooldown", cooldownTime);
+        s.set("cooldown", cooldown);
         s.set("duration", duration);
         s.set("amplifier", amplifier);
         s.set("type", type.getName());

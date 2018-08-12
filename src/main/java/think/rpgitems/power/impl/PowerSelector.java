@@ -20,7 +20,6 @@ import com.google.common.cache.CacheBuilder;
 import com.google.common.cache.CacheLoader;
 import com.google.common.cache.LoadingCache;
 import org.bukkit.Location;
-import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.entity.Entity;
 import org.bukkit.entity.EntityType;
 import org.bukkit.entity.Player;
@@ -128,49 +127,6 @@ public class PowerSelector extends BasePower {
      * Only first MUST_ON has effect
      */
     public String team;
-
-    @Override
-    public void init(ConfigurationSection s) {
-        applyTo = s.getString("applyTo");
-        type = s.getString("type");
-        x = s.getString("x");
-        y = s.getString("y");
-        z = s.getString("z");
-        score = s.getString("score");
-        tag = s.getString("tag");
-        team = s.getString("team");
-        count = s.getInt("count");
-        if (count < 0) count = null;
-        dx = s.getInt("dx");
-        if (dx < 0) dx = null;
-        dy = s.getInt("dy");
-        if (dy < 0) dy = null;
-        dz = s.getInt("dz");
-        if (dz < 0) dz = null;
-        r = s.getInt("r");
-        if (r < 0) r = null;
-        rm = s.getInt("rm");
-        if (rm < 0) rm = null;
-    }
-
-    @Override
-    public void save(ConfigurationSection s) {
-        s.set("applyTo", applyTo);
-        s.set("type", type);
-        s.set("x", x);
-        s.set("y", y);
-        s.set("z", z);
-        s.set("score", score);
-        s.set("tag", tag);
-        s.set("team", team);
-        s.set("count", count == null ? -1 : count);
-        s.set("dx", dx == null ? -1 : dx);
-        s.set("dy", dy == null ? -1 : dy);
-        s.set("dz", dz == null ? -1 : dz);
-        s.set("r", r == null ? -1 : r);
-        s.set("rm", rm == null ? -1 : rm);
-
-    }
 
     public static LoadingCache<String, Map<String, Pair<Integer, Integer>>> scoreCache = CacheBuilder
                                                                                                  .newBuilder()

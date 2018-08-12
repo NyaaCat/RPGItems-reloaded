@@ -7,6 +7,7 @@ message:
     '2': 如果想自定义合成表
     '5': 进行放置
   error:
+    legacy_name: '%s 在 Minecraft 1.13 有一个新名字：%s'
     invalid_option: '无效输入 %s. 可选项: %s'
     effect: '%s 不是一个有效的效果'
     permission: 你没有权限： '%s'
@@ -190,6 +191,8 @@ message:
 
     Bug反馈: https://github.com/NyaaCat/RPGitems-reloaded/issues'
 power:
+  airborne: 攻击在滑翔时增加 %d%%
+  charge: 攻击随速度增加，并在疾跑时增加 %d%%
   noimmutabletick: 取消攻击后敌方的无敌时间
   selector: 仅对部分实体有效
   potionself: 获得 %s %d 持续 %.1f 秒
@@ -242,6 +245,280 @@ power:
   arrow: 发射火箭 (%.1f 秒冷却时间)
   stuck: 攻击后 %d 几率敌人无法移动 %d tick (%.1f 秒冷却时间)
   shulkerbullet: 发射潜影贝子弹 (%.1f 秒冷却时间)
+  properties:
+    base:
+      cooldown: 技能的冷却时间，以游戏刻为单位
+      display: 技能的提示文字
+      consumption: Durability consumption of the power.
+    aoe:
+      main_description: ''
+      cooldown: ''
+      range: ''
+      type: ''
+      duration: ''
+      amplifier: ''
+      selfapplication: ''
+      consumption: ''
+      name: ''
+    aoecommand:
+      main_description: ''
+      cooldown: ''
+      isRight: ''
+      display: ''
+      command: ''
+      rm: ''
+      r: ''
+      facing: ''
+      permission: ''
+      c: ''
+      type: ''
+      mustsee: ''
+      consumption: ''
+    arrow:
+      main_description: ''
+      cooldown: ''
+      consumption: ''
+    attract:
+      main_description: ''
+      main_duration: 冷却时间应大于等于持续时间
+      radius: ''
+      maxSpeed: ''
+      duration: ''
+      attractingTickCost: ''
+      attractingEntityTickCost: ''
+      triggerType: ''
+      attractPlayer: ''
+      consumption: ''
+      cooldown: ''
+    command:
+      main_description: ''
+      cooldown: ''
+      isRight: ''
+      display: ''
+      command: ''
+      permission: ''
+      consumption: ''
+    commandhit:
+      main_description: ''
+      cooldown: ''
+      display: ''
+      command: ''
+      permission: ''
+      minDamage: ''
+      consumption: ''
+    consume:
+      main_description: ''
+      isRight: ''
+      cooldown: ''
+      consumption: ''
+    consumehit:
+      main_description: ''
+      cooldown: ''
+    deathcommand:
+      main_description: ''
+      chance: ''
+      command: ''
+      count: ''
+      desc: ''
+      consumption: ''
+    deflect:
+      main_description: ''
+      facing: ''
+      initiative: ''
+      cooldown: ''
+      passive: ''
+      cooldownPassive: ''
+      consumption: ''
+      duration: ''
+      chance: ''
+    delayedcommand:
+      main_description: ''
+      delay: ''
+      cooldown: ''
+      isRight: ''
+      display: ''
+      command: ''
+      permission: ''
+      consumption: ''
+    fire:
+      main_description: ''
+      cooldown: ''
+      distance: ''
+      burnduration: ''
+      consumption: ''
+    fireball:
+      main_description: ''
+      cooldown: ''
+      consumption: ''
+    flame:
+      main_description: ''
+      burnTime: ''
+      consumption: ''
+    food:
+      main_description: ''
+      foodpoints: ''
+    forcefield:
+      main_description: ''
+      cooldown: ''
+      radius: ''
+      height: ''
+      base: ''
+      ttl: ''
+      consumption: ''
+    ice:
+      main_description: ''
+      cooldown: ''
+      consumption: ''
+    knockup:
+      main_description: ''
+      chance: ''
+      power: ''
+      consumption: ''
+    lifesteal:
+      main_description: ''
+      chance: ''
+      consumption: ''
+    lightning:
+      main_description: ''
+      chance: ''
+      consumption: ''
+    lorefilter:
+      main_description: ''
+      regex: ''
+      desc: ''
+    noimmutabletick:
+      main_description: ''
+    particle:
+      main_description: ''
+      effect: ''
+      consumption: ''
+    particletick:
+      main_description: ''
+      effect: ''
+      interval: ''
+      consumption: ''
+    potionhit:
+      main_description: ''
+      duration: ''
+      amplifier: ''
+      type: ''
+      chance: ''
+      consumption: ''
+    potionself:
+      main_description: ''
+      cooldown: ''
+      duration: ''
+      amplifier: ''
+      type: ''
+      consumption: ''
+    potiontick:
+      main_description: ''
+      amplifier: ''
+      effect: ''
+      interval: ''
+      duration: ''
+      clear: ''
+    projectile:
+      main_description: ''
+      cooldown: ''
+      cone: ''
+      projectileType: ''
+      range: ''
+      amount: ''
+      speed: ''
+      gravity: ''
+      consumption: ''
+    pumpkin:
+      main_description: ''
+      chance: ''
+      drop: ''
+      consumption: ''
+    rainbow:
+      main_description: ''
+      cooldown: ''
+      count: ''
+      isFire: ''
+      consumption: ''
+    ranged:
+      main_description: ''
+      rm: ''
+      r: ''
+    rangedonly:
+      main_description: ''
+      rm: ''
+      r: ''
+    realdamage:
+      main_description: ''
+      cooldown: ''
+      realDamage: ''
+      consumption: ''
+      minDamage: ''
+    repair:
+      main_description: ''
+      display: ''
+      material: ''
+      durability: ''
+      isRight: ''
+      isSneak: ''
+    rescue:
+      main_description: ''
+      cooldown: ''
+      healthTrigger: ''
+      useBed: ''
+      inPlace: ''
+      consumption: ''
+      damageTrigger: ''
+    rumble:
+      main_description: ''
+      cooldown: ''
+      power: ''
+      distance: ''
+      consumption: ''
+    selector:
+      main_description: ''
+    shulkerbullet:
+      main_description: ''
+      cooldown: ''
+      range: ''
+    skyhook:
+      main_description: ''
+      railMaterial: ''
+      hookDistance: ''
+    stuck:
+      main_description: ''
+      cooldown: ''
+      duration: ''
+    tntcannon:
+      main_description: ''
+      cooldown: ''
+      consumption: ''
+    teleport:
+      main_description: ''
+      cooldown: ''
+      distance: ''
+      consumption: ''
+    throw:
+      main_description: ''
+      display: ''
+      cooldown: ''
+      isRight: ''
+      speed: ''
+      entityName: ''
+      entityData: ''
+      isPersistent: ''
+    tippedarrow:
+      main_description: ''
+      cooldown: ''
+      type: ''
+      duration: ''
+      amplifier: ''
+      consumption: ''
+    torch:
+      main_description: ''
+      cooldown: ''
+      consumption: ''
+    unbreakable:
+      main_description: ''
 manual:
   give:
     description: 将物品给与施令者或特定玩家

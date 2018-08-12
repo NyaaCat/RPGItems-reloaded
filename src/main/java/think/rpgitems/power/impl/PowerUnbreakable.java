@@ -16,7 +16,6 @@
  */
 package think.rpgitems.power.impl;
 
-import org.bukkit.configuration.ConfigurationSection;
 import think.rpgitems.I18n;
 
 
@@ -28,15 +27,6 @@ import think.rpgitems.I18n;
  * </p>
  */
 public class PowerUnbreakable extends BasePower {
-    @Override
-    public void init(ConfigurationSection s) {
-
-    }
-
-    @Override
-    public void save(ConfigurationSection s) {
-
-    }
 
     @Override
     public String getName() {

@@ -18,9 +18,10 @@ package think.rpgitems.power.impl;
 
 import org.bukkit.*;
 import org.bukkit.block.Block;
-import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.entity.Player;
 import org.bukkit.entity.Projectile;
+import org.bukkit.event.entity.ProjectileHitEvent;
+import org.bukkit.event.player.PlayerInteractEvent;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.util.BlockIterator;
 import think.rpgitems.I18n;
@@ -52,7 +53,7 @@ public class PowerTeleport extends BasePower implements PowerRightClick, PowerPr
      * Cooldown time of this power
      */
     @Property(order = 0)
-    public long cooldownTime = 20;
+    public long cooldown = 20;
     /**
      * Cost of this power
      */
@@ -60,9 +61,8 @@ public class PowerTeleport extends BasePower implements PowerRightClick, PowerPr
     public int consumption = 0;
 
     @Override
-    public void rightClick(Player player, ItemStack stack, Block clicked) {
-        if (!getItem().checkPermission(player, true)) return;
-        if (!checkCooldown(this, player, cooldownTime, true)) return;
+    public void rightClick(Player player, ItemStack stack, Block clicked, PlayerInteractEvent event) {
+        if (!checkCooldown(this, player, cooldown, true)) return;
         if (!getItem().consumeDurability(stack, consumption)) return;
         // float dist = 0;
         World world = player.getWorld();
@@ -103,9 +103,8 @@ public class PowerTeleport extends BasePower implements PowerRightClick, PowerPr
     }
 
     @Override
-    public void projectileHit(Player player, ItemStack stack, Projectile p) {
-        if (!getItem().checkPermission(player, true)) return;
-        if (!checkCooldown(this, player, cooldownTime, true)) return;
+    public void projectileHit(Player player, ItemStack stack, Projectile p, ProjectileHitEvent event) {
+        if (!checkCooldown(this, player, cooldown, true)) return;
         if (!getItem().consumeDurability(stack, consumption)) return;
         World world = player.getWorld();
         Location start = player.getLocation();
@@ -122,27 +121,13 @@ public class PowerTeleport extends BasePower implements PowerRightClick, PowerPr
     }
 
     @Override
-    public void init(ConfigurationSection s) {
-        cooldownTime = s.getLong("cooldown");
-        distance = s.getInt("distance");
-        consumption = s.getInt("consumption", 0);
-    }
-
-    @Override
-    public void save(ConfigurationSection s) {
-        s.set("cooldown", cooldownTime);
-        s.set("distance", distance);
-        s.set("consumption", consumption);
-    }
-
-    @Override
     public String getName() {
         return "teleport";
     }
 
     @Override
     public String displayText() {
-        return I18n.format("power.teleport", distance, (double) cooldownTime / 20d);
+        return I18n.format("power.teleport", distance, (double) cooldown / 20d);
     }
 
 }

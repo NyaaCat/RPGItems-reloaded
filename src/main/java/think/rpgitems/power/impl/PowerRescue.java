@@ -19,7 +19,6 @@ package think.rpgitems.power.impl;
 import com.google.common.cache.Cache;
 import com.google.common.cache.CacheBuilder;
 import org.bukkit.Sound;
-import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.entity.Player;
 import org.bukkit.event.entity.EntityDamageEvent;
 import org.bukkit.event.entity.EntityDamageEvent.DamageCause;
@@ -67,7 +66,7 @@ public class PowerRescue extends BasePower implements PowerHurt, PowerHitTaken {
      * Cooldown time of this power
      */
     @Property(order = 0)
-    public long cooldownTime = 20;
+    public long cooldown = 20;
     /**
      * Cost of this power
      */
@@ -81,7 +80,7 @@ public class PowerRescue extends BasePower implements PowerHurt, PowerHitTaken {
 
     @Override
     public String displayText() {
-        return I18n.format("power.rescue.display", ((double) healthTrigger) / 2, (double) cooldownTime / 20d);
+        return I18n.format("power.rescue.display", ((double) healthTrigger) / 2, (double) cooldown / 20d);
     }
 
     @Override
@@ -89,25 +88,6 @@ public class PowerRescue extends BasePower implements PowerHurt, PowerHitTaken {
         return "rescue";
     }
 
-    @Override
-    public void init(ConfigurationSection s) {
-        cooldownTime = s.getLong("cooldown", 20);
-        healthTrigger = s.getInt("healthTrigger", 4);
-        damageTrigger = s.getDouble("damageTrigger", 1024);
-        useBed = s.getBoolean("useBed", true);
-        inPlace = s.getBoolean("inPlace", false);
-        consumption = s.getInt("consumption", 0);
-    }
-
-    @Override
-    public void save(ConfigurationSection s) {
-        s.set("cooldown", cooldownTime);
-        s.set("healthTrigger", healthTrigger);
-        s.set("damageTrigger", damageTrigger);
-        s.set("useBed", useBed);
-        s.set("inPlace", inPlace);
-        s.set("consumption", consumption);
-    }
     // shouldn't be called if takeHit works. leave it as-is now
     @Override
     public void hurt(Player target, ItemStack stack, EntityDamageEvent event) {
@@ -136,7 +116,7 @@ public class PowerRescue extends BasePower implements PowerHurt, PowerHitTaken {
     }
 
     private void rescue(Player target, ItemStack stack, EntityDamageEvent event, boolean canceled) {
-        if (!checkCooldown(this, target, cooldownTime, true)) return;
+        if (!checkCooldown(this, target, cooldown, true)) return;
         if (!getItem().consumeDurability(stack, consumption)) return;
         target.sendMessage(I18n.format("power.rescue.info"));
         DamageCause cause = event.getCause();

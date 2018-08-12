@@ -18,9 +18,9 @@ package think.rpgitems.power.impl;
 
 import org.bukkit.Sound;
 import org.bukkit.block.Block;
-import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.entity.Player;
 import org.bukkit.entity.TNTPrimed;
+import org.bukkit.event.player.PlayerInteractEvent;
 import org.bukkit.inventory.ItemStack;
 import think.rpgitems.I18n;
 import think.rpgitems.commands.Property;
@@ -40,7 +40,7 @@ public class PowerTNTCannon extends BasePower implements PowerRightClick {
      * Cooldown time of this power
      */
     @Property(order = 0)
-    public long cooldownTime = 20;
+    public long cooldown = 20;
     /**
      * Cost of this power
      */
@@ -48,9 +48,8 @@ public class PowerTNTCannon extends BasePower implements PowerRightClick {
     public int consumption = 0;
 
     @Override
-    public void rightClick(Player player, ItemStack stack, Block block) {
-        if (!getItem().checkPermission(player, true)) return;
-        if (!checkCooldown(this, player, cooldownTime, true)) return;
+    public void rightClick(Player player, ItemStack stack, Block block, PlayerInteractEvent event) {
+        if (!checkCooldown(this, player, cooldown, true)) return;
         if (!getItem().consumeDurability(stack, consumption)) return;
         player.playSound(player.getLocation(), Sound.ENTITY_ARROW_SHOOT, 1.0f, 1.0f);
         TNTPrimed tnt = player.getWorld().spawn(player.getLocation().add(0, 1.8, 0), TNTPrimed.class);
@@ -59,24 +58,11 @@ public class PowerTNTCannon extends BasePower implements PowerRightClick {
 
     @Override
     public String displayText() {
-        return I18n.format("power.tntcannon", (double) cooldownTime / 20d);
+        return I18n.format("power.tntcannon", (double) cooldown / 20d);
     }
 
     @Override
     public String getName() {
         return "tntcannon";
     }
-
-    @Override
-    public void init(ConfigurationSection s) {
-        cooldownTime = s.getLong("cooldown", 20);
-        consumption = s.getInt("consumption", 0);
-    }
-
-    @Override
-    public void save(ConfigurationSection s) {
-        s.set("cooldown", cooldownTime);
-        s.set("consumption", consumption);
-    }
-
 }

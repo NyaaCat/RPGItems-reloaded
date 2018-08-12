@@ -16,10 +16,11 @@
  */
 package think.rpgitems.power.impl;
 
-import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.entity.LivingEntity;
 import org.bukkit.entity.Player;
 import org.bukkit.entity.Projectile;
+import org.bukkit.event.entity.EntityDamageByEntityEvent;
+import org.bukkit.event.entity.ProjectileHitEvent;
 import org.bukkit.inventory.ItemStack;
 import think.rpgitems.I18n;
 import think.rpgitems.commands.Property;
@@ -49,8 +50,7 @@ public class PowerLightning extends BasePower implements PowerHit, PowerProjecti
     private Random random = new Random();
 
     @Override
-    public void hit(Player player, ItemStack stack, LivingEntity entity, double damage) {
-        if (!getItem().checkPermission(player, true)) return;
+    public void hit(Player player, ItemStack stack, LivingEntity entity, double damage, EntityDamageByEntityEvent event) {
         if (random.nextInt(chance) == 0) {
             if (!getItem().consumeDurability(stack, consumption)) return;
             entity.getWorld().strikeLightning(entity.getLocation());
@@ -58,8 +58,7 @@ public class PowerLightning extends BasePower implements PowerHit, PowerProjecti
     }
 
     @Override
-    public void projectileHit(Player player, ItemStack stack, Projectile p) {
-        if (!getItem().checkPermission(player, true)) return;
+    public void projectileHit(Player player, ItemStack stack, Projectile p, ProjectileHitEvent event) {
         if (random.nextInt(chance) == 0) {
             if (!getItem().consumeDurability(stack, consumption)) return;
             p.getWorld().strikeLightning(p.getLocation());
@@ -75,17 +74,4 @@ public class PowerLightning extends BasePower implements PowerHit, PowerProjecti
     public String getName() {
         return "lightning";
     }
-
-    @Override
-    public void init(ConfigurationSection s) {
-        chance = s.getInt("chance");
-        consumption = s.getInt("consumption", 0);
-    }
-
-    @Override
-    public void save(ConfigurationSection s) {
-        s.set("chance", chance);
-        s.set("consumption", consumption);
-    }
-
 }

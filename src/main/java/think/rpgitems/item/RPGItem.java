@@ -32,7 +32,12 @@ import org.bukkit.enchantments.Enchantment;
 import org.bukkit.entity.LivingEntity;
 import org.bukkit.entity.Player;
 import org.bukkit.entity.Projectile;
+import org.bukkit.event.entity.EntityDamageByEntityEvent;
 import org.bukkit.event.entity.EntityDamageEvent;
+import org.bukkit.event.entity.ProjectileHitEvent;
+import org.bukkit.event.player.PlayerInteractEvent;
+import org.bukkit.event.player.PlayerToggleSneakEvent;
+import org.bukkit.event.player.PlayerToggleSprintEvent;
 import org.bukkit.inventory.ItemFlag;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.Recipe;
@@ -48,7 +53,6 @@ import think.rpgitems.data.Font;
 import think.rpgitems.data.RPGMetadata;
 import think.rpgitems.power.*;
 import think.rpgitems.power.impl.PowerLoreFilter;
-import think.rpgitems.power.PowerManager;
 import think.rpgitems.power.impl.PowerUnbreakable;
 import think.rpgitems.support.WorldGuard;
 import think.rpgitems.utils.MaterialUtils;
@@ -110,6 +114,9 @@ public class RPGItem {
     private ArrayList<PowerHitTaken> powerHitTaken = new ArrayList<>();
     private ArrayList<PowerHurt> powerHurt = new ArrayList<>();
     private ArrayList<PowerTick> powerTick = new ArrayList<>();
+    private ArrayList<PowerOffhandClick> powerOffhandClick = new ArrayList<>();
+    private ArrayList<PowerSneak> powerSneak = new ArrayList<>();
+    private ArrayList<PowerSprint> powerSprint = new ArrayList<>();
     private int tooltipWidth = 150;
     // Durability
     private int maxDurability;
@@ -132,7 +139,6 @@ public class RPGItem {
     }
 
     public RPGItem(ConfigurationSection s) {
-
         name = s.getString("name");
         id = s.getInt("id");
         restore(s);
@@ -492,10 +498,11 @@ public class RPGItem {
         }
     }
 
-    public void leftClick(Player player, ItemStack i, Block block) {
+    public void leftClick(Player player, ItemStack i, Block block, PlayerInteractEvent event) {
+        if (!checkPermission(player, true)) return;
         for (PowerLeftClick power : powerLeftClick) {
             if (!WorldGuard.canUsePowerNow(player, power)) continue;
-            power.leftClick(player, i, block);
+            power.leftClick(player, i, block, event);
         }
         if (getDurability(i) <= 0) {
             i.setAmount(0);
@@ -503,10 +510,11 @@ public class RPGItem {
         }
     }
 
-    public void rightClick(Player player, ItemStack i, Block block) {
+    public void rightClick(Player player, ItemStack i, Block block, PlayerInteractEvent event) {
+        if (!checkPermission(player, true)) return;
         for (PowerRightClick power : powerRightClick) {
             if (!WorldGuard.canUsePowerNow(player, power)) continue;
-            power.rightClick(player, i, block);
+            power.rightClick(player, i, block, event);
         }
         if (getDurability(i) <= 0) {
             i.setAmount(0);
@@ -514,10 +522,48 @@ public class RPGItem {
         }
     }
 
-    public void projectileHit(Player player, ItemStack i, Projectile arrow) {
+
+    public void offhandClick(Player player, ItemStack i, PlayerInteractEvent event) {
+        if (!checkPermission(player, true)) return;
+        for (PowerOffhandClick power : powerOffhandClick) {
+            if (!WorldGuard.canUsePowerNow(player, power)) continue;
+            power.offhandClick(player, i, event);
+        }
+        if (getDurability(i) <= 0) {
+            i.setAmount(0);
+            i.setType(Material.AIR);
+        }
+    }
+
+    public void sneak(Player player, ItemStack i, PlayerToggleSneakEvent event){
+        if (!checkPermission(player, true)) return;
+        for (PowerSneak power : powerSneak) {
+            if (!WorldGuard.canUsePowerNow(player, power)) continue;
+            power.sneak(player, i, event);
+        }
+        if (getDurability(i) <= 0) {
+            i.setAmount(0);
+            i.setType(Material.AIR);
+        }
+    }
+
+    public void sprint(Player player, ItemStack i, PlayerToggleSprintEvent event){
+        if (!checkPermission(player, true)) return;
+        for (PowerSprint power : powerSprint) {
+            if (!WorldGuard.canUsePowerNow(player, power)) continue;
+            power.sprint(player, i, event);
+        }
+        if (getDurability(i) <= 0) {
+            i.setAmount(0);
+            i.setType(Material.AIR);
+        }
+    }
+
+    public void projectileHit(Player player, ItemStack i, Projectile arrow, ProjectileHitEvent event) {
+        if (!checkPermission(player, true)) return;
         for (PowerProjectileHit power : powerProjectileHit) {
             if (!WorldGuard.canUsePowerNow(player, power)) continue;
-            power.projectileHit(player, i, arrow);
+            power.projectileHit(player, i, arrow, event);
         }
         if (getDurability(i) <= 0) {
             i.setAmount(0);
@@ -525,10 +571,11 @@ public class RPGItem {
         }
     }
 
-    public void hit(Player damager, ItemStack i, LivingEntity target, double damage) {
+    public void hit(Player damager, ItemStack i, LivingEntity target, double damage, EntityDamageByEntityEvent event) {
+        if (!checkPermission(damager, true)) return;
         for (PowerHit power : powerHit) {
             if (!WorldGuard.canUsePowerNow(damager, power)) continue;
-            power.hit(damager, i, target, damage);
+            power.hit(damager, i, target, damage, event);
         }
         if (getDurability(i) <= 0) {
             i.setAmount(0);
@@ -537,6 +584,7 @@ public class RPGItem {
     }
 
     public double takeHit(Player target, ItemStack i, EntityDamageEvent ev) {
+        if (!checkPermission(target, true)) return -1;
         double ret = Double.MAX_VALUE;
         for (PowerHitTaken power : powerHitTaken) {
             if (!WorldGuard.canUsePowerNow(target, power)) continue;
@@ -552,6 +600,7 @@ public class RPGItem {
     }
 
     public void hurt(Player target, ItemStack i, EntityDamageEvent ev) {
+        if (!checkPermission(target, true)) return;
         for (PowerHurt power : powerHurt) {
             if (!WorldGuard.canUsePowerNow(target, power)) continue;
             power.hurt(target, i, ev);
@@ -1144,6 +1193,15 @@ public class RPGItem {
         }
         if (power instanceof PowerTick) {
             powerTick.add((PowerTick) power);
+        }
+        if (power instanceof PowerOffhandClick) {
+            powerOffhandClick.add((PowerOffhandClick) power);
+        }
+        if (power instanceof PowerSneak) {
+            powerSneak.add((PowerSneak) power);
+        }
+        if (power instanceof PowerSprint) {
+            powerSprint.add((PowerSprint) power);
         }
         if (update)
             rebuild();

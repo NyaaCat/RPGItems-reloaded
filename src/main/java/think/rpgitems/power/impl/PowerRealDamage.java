@@ -20,6 +20,7 @@ import org.bukkit.attribute.Attribute;
 import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.entity.LivingEntity;
 import org.bukkit.entity.Player;
+import org.bukkit.event.entity.EntityDamageByEntityEvent;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.potion.PotionEffect;
 import org.bukkit.potion.PotionEffectType;
@@ -45,7 +46,7 @@ public class PowerRealDamage extends BasePower implements PowerHit {
      * Cooldown time of this power
      */
     @Property(order = 0)
-    public long cooldownTime = 20;
+    public long cooldown = 20;
     /**
      * Cost of this power
      */
@@ -63,10 +64,9 @@ public class PowerRealDamage extends BasePower implements PowerHit {
     public double minDamage = 0;
 
     @Override
-    public void hit(Player player, ItemStack stack, LivingEntity entity, double damage) {
+    public void hit(Player player, ItemStack stack, LivingEntity entity, double damage, EntityDamageByEntityEvent event) {
         if (damage < minDamage) return;
-        if (!getItem().checkPermission(player, true)) return;
-        if (!checkCooldown(this, player, cooldownTime, true)) return;
+        if (!checkCooldown(this, player, cooldown, true)) return;
         if (!getItem().consumeDurability(stack, consumption)) return;
         if (entity.hasPotionEffect(PotionEffectType.DAMAGE_RESISTANCE)) {
             PotionEffect e = entity.getPotionEffect(PotionEffectType.DAMAGE_RESISTANCE);
@@ -91,7 +91,7 @@ public class PowerRealDamage extends BasePower implements PowerHit {
 
     @Override
     public void init(ConfigurationSection s) {
-        cooldownTime = s.getLong("cooldown", 20);
+        cooldown = s.getLong("cooldown", 20);
         consumption = s.getInt("consumption", 0);
         minDamage = s.getInt("minDamage", 0);
         realDamage = s.getInt("realDamage", 0);
@@ -99,7 +99,7 @@ public class PowerRealDamage extends BasePower implements PowerHit {
 
     @Override
     public void save(ConfigurationSection s) {
-        s.set("cooldown", cooldownTime);
+        s.set("cooldown", cooldown);
         s.set("consumption", consumption);
         s.set("minDamage", minDamage);
         s.set("realDamage", realDamage);

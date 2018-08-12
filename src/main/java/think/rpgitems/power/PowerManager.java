@@ -21,8 +21,8 @@ import com.google.common.base.Strings;
 import com.google.common.collect.BiMap;
 import com.google.common.collect.HashBasedTable;
 import com.google.common.collect.HashBiMap;
+import think.rpgitems.RPGItems;
 import think.rpgitems.commands.*;
-import think.rpgitems.item.RPGItem;
 import think.rpgitems.power.impl.BasePower;
 
 import java.lang.annotation.Annotation;
@@ -31,12 +31,14 @@ import java.lang.invoke.MethodHandle;
 import java.lang.invoke.MethodHandles;
 import java.lang.invoke.MethodType;
 import java.lang.reflect.Field;
-import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
+import java.lang.reflect.Modifier;
 import java.util.*;
 import java.util.function.BiConsumer;
 import java.util.function.BiFunction;
 import java.util.function.Consumer;
+import java.util.function.Function;
+import java.util.logging.Level;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -45,26 +47,28 @@ import java.util.stream.Stream;
  */
 @SuppressWarnings("unchecked")
 public class PowerManager {
-    public static final HashBasedTable<Class<? extends Power>, String, BiFunction<Object, String, String>> transformers;
-    public static final HashBasedTable<Class<? extends Power>, String, BiFunction<Object, String, Boolean>> validators;
-    public static final HashBasedTable<Class<? extends Power>, String, BiConsumer<Object, String>> setters;
-    public static final Map<Class<? extends Power>, SortedMap<PowerProperty, Field>> propertyOrders;
+    public static final HashBasedTable<Class<? extends Power>, String, BiFunction<Object, String, String>> transformers = HashBasedTable.create();
+    public static final HashBasedTable<Class<? extends Power>, String, BiFunction<Object, String, Boolean>> validators = HashBasedTable.create();
+    public static final HashBasedTable<Class<? extends Power>, String, BiConsumer<Object, String>> setters = HashBasedTable.create();
+    public static final HashBasedTable<Class<? extends Power>, String, Function<Object, String>> getters = HashBasedTable.create();
+    public static final Map<Class<? extends Power>, SortedMap<PowerProperty, Field>> propertyOrders = new HashMap<>();
     /**
      * Power by name, and name by power
      */
     public static BiMap<String, Class<? extends Power>> powers = HashBiMap.create();
 
     private static void addPower(Class<? extends Power> clazz) {
-        String name = "";
+        String name = null;
         try {
             Power p = clazz.getConstructor().newInstance();
             name = p.getName();
             if (!Strings.isNullOrEmpty(name)) {
                 powers.put(name, clazz);
             }
-        } catch (InstantiationException | IllegalAccessException | NoSuchMethodException | InvocationTargetException e) {
-            RPGItem.getPlugin().getLogger().warning("Failed to add power:" + name);
-            RPGItem.getPlugin().getLogger().throwing(PowerManager.class.getCanonicalName(), "addPower", e);
+        } catch (Exception e) {
+            RPGItems.plugin.getLogger().log(Level.WARNING, "Failed to add power:" + name, e);
+            RPGItems.plugin.getLogger().log(Level.WARNING, "With {0}", clazz);
+            return;
         }
         inspectPower(clazz);
     }
@@ -115,12 +119,30 @@ public class PowerManager {
         setterList.forEach(
                 exactSetters(cls, lookup, setterType)
         );
+
+        MethodType getterType = MethodType.methodType(String.class, cls);
+        List<Getter> getterList;
+        if (annos.get(Getter.class) == null) {
+            getterList = new ArrayList<>();
+        } else {
+            getterList = annos.get(Getter.class)
+                              .stream().map(i -> (Getter) i)
+                              .collect(Collectors.toList());
+        }
+        getterList.forEach(
+                exactGetters(cls, lookup, getterType)
+        );
+
+        SortedMap<PowerProperty, Field> argumentPriorityMap = getPowerProperties(cls);
+        propertyOrders.put(cls, argumentPriorityMap);
+    }
+
+    private static SortedMap<PowerProperty, Field> getPowerProperties(Class<? extends Power> cls) {
         SortedMap<PowerProperty, Field> argumentPriorityMap = new TreeMap<>(Comparator.comparing(PowerProperty::order).thenComparing(PowerProperty::hashCode));
         Arrays.stream(cls.getFields())
               .filter(field -> field.getAnnotation(Property.class) != null)
               .forEach(field -> argumentPriorityMap.put(new PowerProperty(field.getName(), field.getAnnotation(Property.class).required(), field.getAnnotation(Property.class).order()), field));
-        propertyOrders.put(cls, argumentPriorityMap);
-
+        return argumentPriorityMap;
     }
 
     private static Consumer<Setter> exactSetters(Class<? extends Power> cls, MethodHandles.Lookup lookup, MethodType setterType) {
@@ -139,6 +161,28 @@ public class PowerManager {
                         setterType.generic().changeReturnType(void.class),
                         mh,
                         setterType).getTarget().invokeExact());
+            } catch (Throwable e) {
+                e.printStackTrace();
+            }
+        };
+    }
+
+    private static Consumer<Getter> exactGetters(Class<? extends Power> cls, MethodHandles.Lookup lookup, MethodType getterType) {
+        return getterAnno -> {
+            String fname = getterAnno.value();
+            try {
+                Method m = cls.getMethod(fname);
+                MethodHandle mh = lookup.unreflect(m);
+                if (!mh.type().equals(getterType)) {
+                    return;
+                }
+                getters.put(cls, fname, (Function<Object, String>) LambdaMetafactory.metafactory(
+                        lookup,
+                        "accept",
+                        MethodType.methodType(Function.class),
+                        getterType.generic(),
+                        mh,
+                        getterType).getTarget().invokeExact());
             } catch (Throwable e) {
                 e.printStackTrace();
             }
@@ -189,13 +233,8 @@ public class PowerManager {
         };
     }
 
-    static {
-        transformers = HashBasedTable.create();
-        validators = HashBasedTable.create();
-        setters = HashBasedTable.create();
-        propertyOrders = new HashMap<>();
-
-        Class<? extends Power>[] classes = ClassPathUtils.scanSubclasses(RPGItem.getPlugin(), BasePower.class.getPackage().getName(), Power.class);
-        Stream.of(classes).forEach(PowerManager::addPower);
+    public static void load() {
+        Class<? extends Power>[] classes = ClassPathUtils.scanSubclasses(RPGItems.plugin, BasePower.class.getPackage().getName(), Power.class);
+        Stream.of(classes).filter(c -> !Modifier.isAbstract(c.getModifiers()) && !c.isInterface()).sorted(Comparator.comparing(Class::getCanonicalName)).forEach(PowerManager::addPower);
     }
 }

@@ -19,6 +19,7 @@ package think.rpgitems.power.impl;
 import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.entity.LivingEntity;
 import org.bukkit.entity.Player;
+import org.bukkit.event.entity.EntityDamageByEntityEvent;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.potion.PotionEffect;
 import org.bukkit.potion.PotionEffectType;
@@ -68,8 +69,7 @@ public class PowerPotionHit extends BasePower implements PowerHit {
     private Random rand = new Random();
 
     @Override
-    public void hit(Player player, ItemStack stack, LivingEntity entity, double damage) {
-        if (!getItem().checkPermission(player, true)) return;
+    public void hit(Player player, ItemStack stack, LivingEntity entity, double damage, EntityDamageByEntityEvent event) {
         if (rand.nextInt(chance) == 0) {
             if (!getItem().consumeDurability(stack, consumption)) return;
             entity.addPotionEffect(new PotionEffect(type, duration, amplifier));

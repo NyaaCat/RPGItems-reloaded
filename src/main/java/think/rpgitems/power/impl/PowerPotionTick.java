@@ -55,7 +55,6 @@ public class PowerPotionTick extends BasePower implements PowerTick {
 
     @Override
     public void tick(Player player, ItemStack stack) {
-        if (!getItem().checkPermission(player, true)) return;
         if (!checkCooldownByString(player, getItem(), "potiontick." + effect.getName(), interval, false)) return;
         if (!getItem().consumeDurability(stack, consumption)) return;
         double health = player.getHealth();

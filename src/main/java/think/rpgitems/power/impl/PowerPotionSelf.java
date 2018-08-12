@@ -19,6 +19,7 @@ package think.rpgitems.power.impl;
 import org.bukkit.block.Block;
 import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.entity.Player;
+import org.bukkit.event.player.PlayerInteractEvent;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.potion.PotionEffect;
 import org.bukkit.potion.PotionEffectType;
@@ -43,7 +44,7 @@ public class PowerPotionSelf extends BasePower implements PowerRightClick {
      * Cooldown time of this power
      */
     @Property(order = 0)
-    public long cooldownTime = 20;
+    public long cooldown = 20;
     /**
      * Amplifier of potion effect
      */
@@ -67,16 +68,15 @@ public class PowerPotionSelf extends BasePower implements PowerRightClick {
     public PotionEffectType type = PotionEffectType.HEAL;
 
     @Override
-    public void rightClick(Player player, ItemStack stack, Block clicked) {
-        if (!getItem().checkPermission(player, true)) return;
-        if (!checkCooldown(this, player, cooldownTime, true)) return;
+    public void rightClick(Player player, ItemStack stack, Block clicked, PlayerInteractEvent event) {
+        if (!checkCooldown(this, player, cooldown, true)) return;
         if (!getItem().consumeDurability(stack, consumption)) return;
         player.addPotionEffect(new PotionEffect(type, duration, amplifier), true);
     }
 
     @Override
     public void init(ConfigurationSection s) {
-        cooldownTime = s.getLong("cooldown");
+        cooldown = s.getLong("cooldown");
         amplifier = s.getInt("amp");
         duration = s.getInt("time");
         type = PotionEffectType.getByName(s.getString("type", "heal"));
@@ -85,7 +85,7 @@ public class PowerPotionSelf extends BasePower implements PowerRightClick {
 
     @Override
     public void save(ConfigurationSection s) {
-        s.set("cooldown", cooldownTime);
+        s.set("cooldown", cooldown);
         s.set("amp", amplifier);
         s.set("time", duration);
         s.set("type", type.getName());

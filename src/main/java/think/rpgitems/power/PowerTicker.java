@@ -1,4 +1,4 @@
-package think.rpgitems.power.impl;
+package think.rpgitems.power;
 
 import org.bukkit.Bukkit;
 import org.bukkit.Material;
@@ -34,12 +34,7 @@ public class PowerTicker extends BukkitRunnable {
             if (item == null)
                 continue;
             if (item.getDurability(part) <= 0) {
-                Bukkit.getScheduler().scheduleSyncDelayedTask(RPGItems.plugin, new Runnable() {
-                    @Override
-                    public void run() {
-                        player.getInventory().setItemInMainHand(new ItemStack(Material.AIR));
-                    }
-                }, 1L);
+                Bukkit.getScheduler().scheduleSyncDelayedTask(RPGItems.plugin, () -> player.getInventory().setItemInMainHand(new ItemStack(Material.AIR)), 1L);
             }
             item.tick(player, part);
         }

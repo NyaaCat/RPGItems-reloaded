@@ -1,6 +1,5 @@
 package think.rpgitems.power.impl;
 
-import org.bukkit.configuration.ConfigurationSection;
 import think.rpgitems.commands.Property;
 
 /**
@@ -22,18 +21,6 @@ public class PowerLoreFilter extends BasePower {
      */
     @Property(order = 1, required = true)
     public String desc = "";
-
-    @Override
-    public void init(ConfigurationSection s) {
-        regex = s.getString("regex", null);
-        desc = s.getString("desc", "");
-    }
-
-    @Override
-    public void save(ConfigurationSection s) {
-        s.set("regex", regex);
-        s.set("desc", desc);
-    }
 
     @Override
     public String getName() {

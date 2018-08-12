@@ -21,11 +21,11 @@ import org.bukkit.Location;
 import org.bukkit.Material;
 import org.bukkit.Sound;
 import org.bukkit.block.Block;
-import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.entity.Damageable;
 import org.bukkit.entity.Entity;
 import org.bukkit.entity.FallingBlock;
 import org.bukkit.entity.Player;
+import org.bukkit.event.player.PlayerInteractEvent;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.scheduler.BukkitRunnable;
 import org.bukkit.util.Vector;
@@ -56,7 +56,7 @@ public class PowerFire extends BasePower implements PowerRightClick {
      * Cooldown time of this power
      */
     @Property(order = 0)
-    public long cooldownTime = 20;
+    public long cooldown = 20;
     /**
      * Maximum distance
      */
@@ -74,9 +74,8 @@ public class PowerFire extends BasePower implements PowerRightClick {
     public int consumption = 0;
 
     @Override
-    public void rightClick(final Player player, ItemStack stack, Block clicked) {
-        if (!getItem().checkPermission(player, true)) return;
-        if (!checkCooldown(this, player, cooldownTime, true)) return;
+    public void rightClick(final Player player, ItemStack stack, Block clicked, PlayerInteractEvent event) {
+        if (!checkCooldown(this, player, cooldown, true)) return;
         if (!getItem().consumeDurability(stack, consumption)) return;
         player.playSound(player.getLocation(), Sound.ITEM_FLINTANDSTEEL_USE, 1.0f, 1.2f);
         final List<Block> fireblocks = new ArrayList<>();
@@ -158,28 +157,11 @@ public class PowerFire extends BasePower implements PowerRightClick {
 
     @Override
     public String displayText() {
-        return I18n.format("power.fire", (double) cooldownTime / 20d);
+        return I18n.format("power.fire", (double) cooldown / 20d);
     }
 
     @Override
     public String getName() {
         return "fire";
     }
-
-    @Override
-    public void init(ConfigurationSection s) {
-        cooldownTime = s.getLong("cooldown", 20);
-        distance = s.getInt("distance");
-        burnduration = s.getInt("burnduration");
-        consumption = s.getInt("consumption", 0);
-    }
-
-    @Override
-    public void save(ConfigurationSection s) {
-        s.set("cooldown", cooldownTime);
-        s.set("distance", distance);
-        s.set("burnduration", burnduration);
-        s.set("consumption", consumption);
-    }
-
 }

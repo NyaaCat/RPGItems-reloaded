@@ -1,8 +1,8 @@
 package think.rpgitems.power.impl;
 
 import org.bukkit.block.Block;
-import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.entity.Player;
+import org.bukkit.event.player.PlayerInteractEvent;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.scheduler.BukkitRunnable;
 import think.rpgitems.RPGItems;
@@ -31,21 +31,8 @@ public class PowerDelayedCommand extends PowerCommand {
     }
 
     @Override
-    public void init(ConfigurationSection s) {
-        delay = s.getInt("delay", 20);
-        super.init(s);
-    }
-
-    @Override
-    public void save(ConfigurationSection s) {
-        s.set("delay", delay);
-        super.save(s);
-    }
-
-    @Override
-    public void rightClick(final Player player, ItemStack stack, Block clicked) {
-        if (!getItem().checkPermission(player, true)) return;
-        if (!isRight || !checkCooldownByString(player, getItem(), command, cooldownTime, true)) return;
+    public void rightClick(final Player player, ItemStack stack, Block clicked, PlayerInteractEvent event) {
+        if (!isRight || !checkCooldownByString(player, getItem(), command, cooldown, true)) return;
         if (!getItem().consumeDurability(stack, consumption)) return;
         (new BukkitRunnable() {
             @Override
@@ -56,9 +43,8 @@ public class PowerDelayedCommand extends PowerCommand {
     }
 
     @Override
-    public void leftClick(final Player player, ItemStack stack, Block clicked) {
-        if (!getItem().checkPermission(player, true)) return;
-        if (isRight || !checkCooldownByString(player, getItem(), command, cooldownTime, true)) return;
+    public void leftClick(final Player player, ItemStack stack, Block clicked, PlayerInteractEvent event) {
+        if (isRight || !checkCooldownByString(player, getItem(), command, cooldown, true)) return;
         if (!getItem().consumeDurability(stack, consumption)) return;
         (new BukkitRunnable() {
             @Override

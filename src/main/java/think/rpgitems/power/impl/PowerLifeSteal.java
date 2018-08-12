@@ -17,9 +17,9 @@
 package think.rpgitems.power.impl;
 
 import org.bukkit.attribute.Attribute;
-import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.entity.LivingEntity;
 import org.bukkit.entity.Player;
+import org.bukkit.event.entity.EntityDamageByEntityEvent;
 import org.bukkit.inventory.ItemStack;
 import think.rpgitems.I18n;
 import think.rpgitems.commands.Property;
@@ -50,8 +50,7 @@ public class PowerLifeSteal extends BasePower implements PowerHit {
     private Random random = new Random();
 
     @Override
-    public void hit(Player player, ItemStack stack, LivingEntity entity, double damage) {
-        if (!getItem().checkPermission(player, true)) return;
+    public void hit(Player player, ItemStack stack, LivingEntity entity, double damage, EntityDamageByEntityEvent event) {
         if (random.nextInt(chance) == 0) {
             if (!getItem().consumeDurability(stack, consumption)) return;
             if ((player.getHealth() + damage) >= player.getAttribute(Attribute.GENERIC_MAX_HEALTH).getValue()) {
@@ -70,17 +69,4 @@ public class PowerLifeSteal extends BasePower implements PowerHit {
     public String getName() {
         return "lifesteal";
     }
-
-    @Override
-    public void init(ConfigurationSection s) {
-        chance = s.getInt("chance");
-        consumption = s.getInt("consumption", 0);
-    }
-
-    @Override
-    public void save(ConfigurationSection s) {
-        s.set("chance", chance);
-        s.set("consumption", consumption);
-    }
-
 }

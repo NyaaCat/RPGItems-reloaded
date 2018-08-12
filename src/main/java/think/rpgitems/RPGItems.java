@@ -22,7 +22,8 @@ import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.plugin.java.JavaPlugin;
 import think.rpgitems.data.Font;
 import think.rpgitems.item.ItemManager;
-import think.rpgitems.power.impl.PowerTicker;
+import think.rpgitems.power.PowerManager;
+import think.rpgitems.power.PowerTicker;
 import think.rpgitems.support.WorldGuard;
 
 import java.util.logging.Logger;
@@ -38,6 +39,7 @@ public class RPGItems extends JavaPlugin {
     @Override
     public void onLoad() {
         plugin = this;
+        PowerManager.load();
         saveDefaultConfig();
         Font.load();
         WorldGuard.load();

@@ -1,10 +1,10 @@
 package think.rpgitems.power.impl;
 
 import org.bukkit.block.Block;
-import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.entity.LivingEntity;
 import org.bukkit.entity.Player;
 import org.bukkit.entity.ShulkerBullet;
+import org.bukkit.event.player.PlayerInteractEvent;
 import org.bukkit.inventory.ItemStack;
 import think.rpgitems.Events;
 import think.rpgitems.I18n;
@@ -29,7 +29,7 @@ public class PowerShulkerBullet extends BasePower implements PowerRightClick {
      * Cooldown time of this power
      */
     @Property(order = 0)
-    public long cooldownTime = 20;
+    public long cooldown = 20;
     /**
      * Cost of this power
      */
@@ -41,33 +41,19 @@ public class PowerShulkerBullet extends BasePower implements PowerRightClick {
     public double range = 10;
 
     @Override
-    public void init(ConfigurationSection s) {
-        cooldownTime = s.getLong("cooldownTime");
-        range = s.getDouble("range");
-        consumption = s.getInt("consumption", 1);
-    }
-
-    @Override
-    public void save(ConfigurationSection s) {
-        s.set("cooldownTime", cooldownTime);
-        s.set("consumption", consumption);
-        s.set("range", range);
-    }
-
-    @Override
     public String getName() {
         return "shulkerbullet";
     }
 
     @Override
     public String displayText() {
-        return I18n.format("power.shulkerbullet", (double) cooldownTime / 20d);
+        return I18n.format("power.shulkerbullet", (double) cooldown / 20d);
     }
 
     @Override
-    public void rightClick(Player player, ItemStack stack, Block clicked) {
-        if (!getItem().checkPermission(player, true)) return;
-        if (!checkCooldown(this, player, cooldownTime, true)) return;
+    @SuppressWarnings("deprecation")
+    public void rightClick(Player player, ItemStack stack, Block clicked, PlayerInteractEvent event) {
+        if (!checkCooldown(this, player, cooldown, true)) return;
         if (!getItem().consumeDurability(stack, consumption)) return;
         ShulkerBullet bullet = null;
         bullet = player.launchProjectile(ShulkerBullet.class);

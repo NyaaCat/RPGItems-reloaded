@@ -3,10 +3,10 @@ package think.rpgitems.power.impl;
 import org.bukkit.Bukkit;
 import org.bukkit.Location;
 import org.bukkit.block.Block;
-import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.entity.Entity;
 import org.bukkit.entity.LivingEntity;
 import org.bukkit.entity.Player;
+import org.bukkit.event.player.PlayerInteractEvent;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.util.Vector;
 import think.rpgitems.I18n;
@@ -47,7 +47,7 @@ public class PowerAttract extends BasePower implements PowerTick, PowerLeftClick
      * Duration of this power when triggered by click in tick
      */
     @Property
-    @Validator(value = "checkDuLeCd", message = "powers.attract.main_duration")
+    @Validator(value = "checkDuLeCd", message = "power.properties.attract.main_duration")
     public int duration = 5;
     /**
      * Cost of this power
@@ -73,8 +73,8 @@ public class PowerAttract extends BasePower implements PowerTick, PowerLeftClick
      * Cooldown time of this power
      */
     @Property
-    @Validator(value = "checkCdGeDu", message = "powers.attract.main_duration")
-    public long cooldownTime = 20;
+    @Validator(value = "checkCdGeDu", message = "power.properties.attract.main_duration")
+    public long cooldown = 20;
 
     /**
      * Whether allow attracting player
@@ -92,22 +92,10 @@ public class PowerAttract extends BasePower implements PowerTick, PowerLeftClick
 
     public boolean checkDuLeCd(String value) {
         try {
-            return Long.parseUnsignedLong(value) <= cooldownTime;
+            return Long.parseUnsignedLong(value) <= cooldown;
         } catch (Exception e) {
             return false;
         }
-    }
-
-    @Override
-    public void init(ConfigurationSection s) {
-        radius = s.getInt("radius");
-        maxSpeed = s.getDouble("maxSpeed");
-    }
-
-    @Override
-    public void save(ConfigurationSection s) {
-        s.set("radius", radius);
-        s.set("maxSpeed", maxSpeed);
     }
 
     @Override
@@ -132,7 +120,6 @@ public class PowerAttract extends BasePower implements PowerTick, PowerLeftClick
         if (triggerType != TriggerType.TICK && !stack.equals(player.getInventory().getItemInMainHand())) {
             return;
         }
-        if (!getItem().checkPermission(player, true)) return;
         double factor = Math.sqrt(radius - 1.0) / maxSpeed;
         List<Entity> entities = getNearbyEntities(this, player.getLocation(), player, radius);
         if (entities.isEmpty()) return;
@@ -153,18 +140,18 @@ public class PowerAttract extends BasePower implements PowerTick, PowerLeftClick
     }
 
     @Override
-    public void leftClick(Player player, ItemStack stack, Block clicked) {
+    public void leftClick(Player player, ItemStack stack, Block clicked, PlayerInteractEvent event) {
         if (triggerType.equals(TriggerType.LEFT_CLICK)) {
-            if (!checkCooldown(this, player, cooldownTime, true)) return;
+            if (!checkCooldown(this, player, cooldown, true)) return;
             if (!item.consumeDurability(stack, consumption)) return;
             Bukkit.getScheduler().scheduleSyncRepeatingTask(RPGItem.getPlugin(), () -> attract(player, stack), 0, duration);
         }
     }
 
     @Override
-    public void rightClick(Player player, ItemStack stack, Block clicked) {
+    public void rightClick(Player player, ItemStack stack, Block clicked, PlayerInteractEvent event) {
         if (triggerType.equals(TriggerType.RIGHT_CLICK)) {
-            if (!checkCooldown(this, player, cooldownTime, true)) return;
+            if (!checkCooldown(this, player, cooldown, true)) return;
             if (!item.consumeDurability(stack, consumption)) return;
             Bukkit.getScheduler().scheduleSyncRepeatingTask(RPGItem.getPlugin(), () -> attract(player, stack), 0, duration);
         }

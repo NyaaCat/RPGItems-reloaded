@@ -4,6 +4,7 @@ import org.bukkit.Effect;
 import org.bukkit.block.Block;
 import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.entity.Player;
+import org.bukkit.event.player.PlayerInteractEvent;
 import org.bukkit.inventory.ItemStack;
 import think.rpgitems.I18n;
 import think.rpgitems.RPGItems;
@@ -74,7 +75,7 @@ public class PowerParticle extends BasePower implements PowerRightClick {
     }
 
     @Override
-    public void rightClick(Player player, ItemStack stack, Block clicked) {
+    public void rightClick(Player player, ItemStack stack, Block clicked, PlayerInteractEvent event) {
         if (!getItem().consumeDurability(stack, consumption)) return;
         if (effect.equalsIgnoreCase("SMOKE")) {
             player.getWorld().playEffect(player.getLocation().add(0, 2, 0), Effect.valueOf(effect), 4);

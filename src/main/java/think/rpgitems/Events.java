@@ -206,7 +206,7 @@ public class Events implements Listener {
                             return;
                         }
                     }
-                    rItem.projectileHit(player, item, entity);
+                    rItem.projectileHit(player, item, entity, e);
                 }
             } finally {
                 Bukkit.getScheduler().runTask(plugin, () -> rpgProjectiles.remove(entity.getEntityId()));
@@ -250,7 +250,6 @@ public class Events implements Listener {
     public void onPlayerAction(PlayerInteractEvent e) {
         Player p = e.getPlayer();
         if (e.getAction() == Action.PHYSICAL) return;
-        if (e.getHand() == EquipmentSlot.OFF_HAND) return;
         RPGItem rItem = ItemManager.toRPGItem(e.getItem());
         if (rItem == null) return;
         Material im = e.getMaterial();
@@ -261,17 +260,45 @@ public class Events implements Listener {
         if (!rItem.checkPermission(p, true)) {
             return;
         }
-
         Action action = e.getAction();
-        if (action == Action.RIGHT_CLICK_AIR) {
-            rItem.rightClick(p, e.getItem(), e.getClickedBlock());
+
+        if (e.getHand() == EquipmentSlot.OFF_HAND) {
+            rItem.offhandClick(p, e.getItem(), e);
+        } else if (action == Action.RIGHT_CLICK_AIR) {
+            rItem.rightClick(p, e.getItem(), e.getClickedBlock(), e);
         } else if (action == Action.RIGHT_CLICK_BLOCK &&
                            !(e.getClickedBlock().getType().isInteractable() && !p.isSneaking())) {
-            rItem.rightClick(p, e.getItem(), e.getClickedBlock());
+            rItem.rightClick(p, e.getItem(), e.getClickedBlock(), e);
         } else if (action == Action.LEFT_CLICK_AIR || action == Action.LEFT_CLICK_BLOCK) {
-            rItem.leftClick(p, e.getItem(), e.getClickedBlock());
+            rItem.leftClick(p, e.getItem(), e.getClickedBlock(), e);
         }
         RPGItem.updateItem(e.getItem());
+    }
+
+    @EventHandler
+    public void onPlayerSneak(PlayerToggleSneakEvent e){
+        if(!e.isSneaking()){
+            return;
+        }
+        Player p = e.getPlayer();
+        ItemStack item = p.getInventory().getItemInMainHand();
+        RPGItem rItem = ItemManager.toRPGItem(item);
+        if (rItem == null) return;
+        rItem.sneak(p, item, e);
+        RPGItem.updateItem(item);
+    }
+
+    @EventHandler
+    public void onPlayerSprint(PlayerToggleSprintEvent e){
+        if(!e.isSprinting()){
+            return;
+        }
+        Player p = e.getPlayer();
+        ItemStack item = p.getInventory().getItemInMainHand();
+        RPGItem rItem = ItemManager.toRPGItem(item);
+        if (rItem == null) return;
+        rItem.sprint(p, item, e);
+        RPGItem.updateItem(item);
     }
 
     @EventHandler
@@ -480,7 +507,7 @@ public class Events implements Listener {
 
         }
         if (e.getEntity() instanceof LivingEntity) {
-            rItem.hit(player, item, (LivingEntity) e.getEntity(), damage);
+            rItem.hit(player, item, (LivingEntity) e.getEntity(), damage, e);
         }
         if (rItem.getDurability(item) <= 0) {
             player.getInventory().setItemInMainHand(null);
@@ -537,7 +564,7 @@ public class Events implements Listener {
         }
         if (e.getEntity() instanceof LivingEntity) {
             LivingEntity le = (LivingEntity) e.getEntity();
-            rItem.hit((Player) entity.getShooter(), item, le, damage);
+            rItem.hit((Player) entity.getShooter(), item, le, damage, e);
         }
         return damage;
     }

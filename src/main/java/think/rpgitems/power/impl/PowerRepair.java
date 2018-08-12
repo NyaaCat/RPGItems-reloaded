@@ -7,8 +7,8 @@ import net.md_5.bungee.api.chat.TextComponent;
 import org.bukkit.ChatColor;
 import org.bukkit.Material;
 import org.bukkit.block.Block;
-import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.entity.Player;
+import org.bukkit.event.player.PlayerInteractEvent;
 import org.bukkit.inventory.Inventory;
 import org.bukkit.inventory.ItemStack;
 import think.rpgitems.I18n;
@@ -28,25 +28,6 @@ public class PowerRepair extends BasePower implements PowerRightClick, PowerLeft
     @Property(order = 1)
     public ItemStack material;
 
-
-    @Override
-    public void init(ConfigurationSection s) {
-        material = s.getItemStack("material");
-        durability = s.getInt("durability", 20);
-        display = s.getString("display");
-        isRight = s.getBoolean("isRight", true);
-        isSneak = s.getBoolean("isSneak", true);
-    }
-
-    @Override
-    public void save(ConfigurationSection s) {
-        s.set("durability", durability);
-        s.set("material", material);
-        s.set("display", display);
-        s.set("isRight", isRight);
-        s.set("isSneak", isSneak);
-    }
-
     @Override
     public String getName() {
         return "repair";
@@ -58,14 +39,14 @@ public class PowerRepair extends BasePower implements PowerRightClick, PowerLeft
     }
 
     @Override
-    public void rightClick(Player player, ItemStack stack, Block clicked) {
+    public void rightClick(Player player, ItemStack stack, Block clicked, PlayerInteractEvent event) {
         if (isRight && player.isSneaking() == isSneak) {
             repair(player, stack, clicked);
         }
     }
 
     @Override
-    public void leftClick(Player player, ItemStack stack, Block clicked) {
+    public void leftClick(Player player, ItemStack stack, Block clicked, PlayerInteractEvent event) {
         if (!isRight && player.isSneaking() == isSneak) {
             repair(player, stack, clicked);
         }

@@ -5,16 +5,14 @@ import com.google.common.cache.CacheBuilder;
 import org.bukkit.block.Block;
 import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.entity.*;
+import org.bukkit.event.player.PlayerInteractEvent;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.scheduler.BukkitRunnable;
 import org.bukkit.util.Vector;
 import think.rpgitems.Events;
 import think.rpgitems.I18n;
 import think.rpgitems.RPGItems;
-import think.rpgitems.commands.AcceptedValue;
-import think.rpgitems.commands.Property;
-import think.rpgitems.commands.Setter;
-import think.rpgitems.commands.Validator;
+import think.rpgitems.commands.*;
 import think.rpgitems.power.PowerRightClick;
 
 import java.util.UUID;
@@ -51,7 +49,7 @@ public class PowerProjectile extends BasePower implements PowerRightClick {
      * Cooldown time of this power
      */
     @Property(order = 0)
-    public long cooldownTime = 20;
+    public long cooldown = 20;
     /**
      * Whether launch projectiles in cone
      */
@@ -105,12 +103,13 @@ public class PowerProjectile extends BasePower implements PowerRightClick {
     })
     @Validator(value = "acceptableType", message = "power.projectile.noFireball")
     @Setter("setType")
+    @Getter("getType")
     @Property(order = 2, required = true)
     public Class<? extends Projectile> projectileType = Snowball.class;
 
     @Override
     public void init(ConfigurationSection s) {
-        cooldownTime = s.getLong("cooldownTime");
+        cooldown = s.getLong("cooldown");
         setType(s.getString("projectileType"));
         cone = s.getBoolean("isCone");
         range = s.getInt("range");
@@ -124,7 +123,7 @@ public class PowerProjectile extends BasePower implements PowerRightClick {
 
     @Override
     public void save(ConfigurationSection s) {
-        s.set("cooldownTime", cooldownTime);
+        s.set("cooldown", cooldown);
         s.set("projectileType", getType());
         s.set("isCone", cone);
         s.set("range", range);
@@ -211,13 +210,12 @@ public class PowerProjectile extends BasePower implements PowerRightClick {
 
     @Override
     public String displayText() {
-        return I18n.format(cone ? "power.projectile.cone" : "power.projectile.display", getType(), (double) cooldownTime / 20d);
+        return I18n.format(cone ? "power.projectile.cone" : "power.projectile.display", getType(), (double) cooldown / 20d);
     }
 
     @Override
-    public void rightClick(Player player, ItemStack stack, Block clicked) {
-        if (!getItem().checkPermission(player, true)) return;
-        if (!checkCooldown(this, player, cooldownTime, true)) return;
+    public void rightClick(Player player, ItemStack stack, Block clicked, PlayerInteractEvent event) {
+        if (!checkCooldown(this, player, cooldown, true)) return;
         if (!getItem().consumeDurability(stack, consumption)) return;
         fire(player);
         if (burstCount > 1) {
@@ -240,6 +238,7 @@ public class PowerProjectile extends BasePower implements PowerRightClick {
         }
     }
 
+    @SuppressWarnings("deprecation")
     private void fire(Player player) {
         if (!cone) {
             Projectile projectile = player.launchProjectile(projectileType, player.getEyeLocation().getDirection().multiply(speed));

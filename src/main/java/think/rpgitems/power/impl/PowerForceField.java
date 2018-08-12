@@ -5,11 +5,11 @@ import org.bukkit.Location;
 import org.bukkit.Material;
 import org.bukkit.World;
 import org.bukkit.block.Block;
-import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.entity.Entity;
 import org.bukkit.entity.ItemFrame;
 import org.bukkit.entity.Painting;
 import org.bukkit.entity.Player;
+import org.bukkit.event.player.PlayerInteractEvent;
 import org.bukkit.inventory.ItemStack;
 import think.rpgitems.I18n;
 import think.rpgitems.RPGItems;
@@ -35,7 +35,7 @@ public class PowerForceField extends BasePower implements PowerRightClick {
      * Cooldown time of this power
      */
     @Property(order = 0)
-    public int cooldownTime = 200;
+    public int cooldown = 200;
     /**
      * Radius of force field
      */
@@ -63,39 +63,18 @@ public class PowerForceField extends BasePower implements PowerRightClick {
     public int consumption = 0;
 
     @Override
-    public void init(ConfigurationSection s) {
-        cooldownTime = s.getInt("cooldown");
-        radius = s.getInt("radius");
-        height = s.getInt("height");
-        base = s.getInt("base");
-        ttl = s.getInt("ttl");
-        consumption = s.getInt("consumption", 0);
-    }
-
-    @Override
-    public void save(ConfigurationSection s) {
-        s.set("cooldown", cooldownTime);
-        s.set("radius", radius);
-        s.set("height", height);
-        s.set("base", base);
-        s.set("ttl", ttl);
-        s.set("consumption", consumption);
-    }
-
-    @Override
     public String getName() {
         return "forcefield";
     }
 
     @Override
     public String displayText() {
-        return I18n.format("power.forcefield", radius, height, base, (double) ttl / 20d, (double) cooldownTime / 20d);
+        return I18n.format("power.forcefield", radius, height, base, (double) ttl / 20d, (double) cooldown / 20d);
     }
 
     @Override
-    public void rightClick(Player player, ItemStack stack, Block clicked) {
-        if (!getItem().checkPermission(player, true)) return;
-        if (!checkCooldown(this, player, cooldownTime, true)) return;
+    public void rightClick(Player player, ItemStack stack, Block clicked, PlayerInteractEvent event) {
+        if (!checkCooldown(this, player, cooldown, true)) return;
         if (!getItem().consumeDurability(stack, consumption)) return;
         World w = player.getWorld();
         int x = player.getLocation().getBlockX();

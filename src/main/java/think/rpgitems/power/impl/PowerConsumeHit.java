@@ -17,9 +17,9 @@
 package think.rpgitems.power.impl;
 
 import org.bukkit.Material;
-import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.entity.LivingEntity;
 import org.bukkit.entity.Player;
+import org.bukkit.event.entity.EntityDamageByEntityEvent;
 import org.bukkit.inventory.ItemStack;
 import think.rpgitems.I18n;
 import think.rpgitems.commands.Property;
@@ -30,7 +30,7 @@ import static think.rpgitems.utils.PowerUtils.checkCooldown;
 /**
  * Power consumehit.
  * <p>
- * The consume power will remove one item when player hit something. With {@link #cooldownTime cooldown} time (ticks).
+ * The consume power will remove one item when player hits something. With {@link #cooldown cooldown} time (ticks).
  * </p>
  */
 public class PowerConsumeHit extends BasePower implements PowerHit {
@@ -38,12 +38,11 @@ public class PowerConsumeHit extends BasePower implements PowerHit {
      * Cooldown time of this power
      */
     @Property(order = 0)
-    public int cooldownTime = 0;
+    public int cooldown = 0;
 
     @Override
-    public void hit(final Player player, ItemStack stack, LivingEntity entity, double damage) {
-        if (!checkCooldown(this, player, cooldownTime, false)) return;
-        if (!getItem().checkPermission(player, true)) return;
+    public void hit(final Player player, ItemStack stack, LivingEntity entity, double damage, EntityDamageByEntityEvent event) {
+        if (!checkCooldown(this, player, cooldown, false)) return;
         int count = stack.getAmount() - 1;
         if (count == 0) {
             stack.setAmount(0);
@@ -51,16 +50,6 @@ public class PowerConsumeHit extends BasePower implements PowerHit {
         } else {
             stack.setAmount(count);
         }
-    }
-
-    @Override
-    public void init(ConfigurationSection s) {
-        cooldownTime = s.getInt("cooldown", 0);
-    }
-
-    @Override
-    public void save(ConfigurationSection s) {
-        s.set("cooldown", cooldownTime);
     }
 
     @Override

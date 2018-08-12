@@ -22,7 +22,9 @@ import org.bukkit.block.Block;
 import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.entity.LivingEntity;
 import org.bukkit.entity.Player;
+import org.bukkit.event.entity.EntityDamageByEntityEvent;
 import org.bukkit.event.entity.EntityTeleportEvent;
+import org.bukkit.event.player.PlayerInteractEvent;
 import org.bukkit.event.player.PlayerTeleportEvent;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.potion.PotionEffect;
@@ -40,9 +42,7 @@ import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeUnit;
 import java.util.function.Consumer;
 
-import static think.rpgitems.utils.PowerUtils.checkCooldown;
-import static think.rpgitems.utils.PowerUtils.getLivingEntitiesInCone;
-import static think.rpgitems.utils.PowerUtils.getNearestLivingEntities;
+import static think.rpgitems.utils.PowerUtils.*;
 
 /**
  * + * Power Stuck.
@@ -92,7 +92,7 @@ public class PowerStuck extends BasePower implements PowerHit, PowerRightClick {
      * Cooldown time of this power
      */
     @Property(order = 0)
-    public long cooldownTime = 200;
+    public long cooldown = 200;
 
     /**
      * Whether allow aoe
@@ -114,10 +114,9 @@ public class PowerStuck extends BasePower implements PowerHit, PowerRightClick {
     private Cache<UUID, Long> stucked = CacheBuilder.newBuilder().expireAfterAccess(10, TimeUnit.MINUTES).concurrencyLevel(2).build();
 
     @Override
-    public void hit(Player player, ItemStack stack, LivingEntity entity, double damage) {
+    public void hit(Player player, ItemStack stack, LivingEntity entity, double damage, EntityDamageByEntityEvent event) {
         if (!allowHit) return;
-        if (!checkCooldown(this, player, cooldownTime, true)) return;
-        if (!getItem().checkPermission(player, true)) return;
+        if (!checkCooldown(this, player, cooldown, true)) return;
         if (random.nextInt(chance) == 0) {
             if (!getItem().consumeDurability(stack, consumption)) return;
             stucked.put(entity.getUniqueId(), System.currentTimeMillis());
@@ -127,10 +126,9 @@ public class PowerStuck extends BasePower implements PowerHit, PowerRightClick {
     }
 
     @Override
-    public void rightClick(Player player, ItemStack stack, Block clicked) {
+    public void rightClick(Player player, ItemStack stack, Block clicked, PlayerInteractEvent event) {
         if (!allowAoe) return;
-        if (!getItem().checkPermission(player, true)) return;
-        if (!checkCooldown(this, player, cooldownTime, true)) return;
+        if (!checkCooldown(this, player, cooldown, true)) return;
         if (!getItem().consumeDurability(stack, costAoe)) return;
         List<LivingEntity> entities = getLivingEntitiesInCone(getNearestLivingEntities(this, player.getEyeLocation(), player, range, 0), player.getLocation().toVector(), facing, player.getLocation().getDirection());
         entities.forEach(entity -> {
@@ -144,7 +142,7 @@ public class PowerStuck extends BasePower implements PowerHit, PowerRightClick {
 
     @Override
     public String displayText() {
-        return I18n.format("power.stuck", (int) ((1d / (double) chance) * 100d), duration, (double) cooldownTime / 20d);
+        return I18n.format("power.stuck", (int) ((1d / (double) chance) * 100d), duration, (double) cooldown / 20d);
     }
 
     @Override
@@ -157,7 +155,7 @@ public class PowerStuck extends BasePower implements PowerHit, PowerRightClick {
         facing = s.getDouble("facing", 30);
         chance = s.getInt("chance", 3);
         consumption = s.getInt("consumption", 0);
-        cooldownTime = s.getLong("cooldown", 200);
+        cooldown = s.getLong("cooldown", 200);
         duration = s.getInt("duration", 100);
         costAoe = s.getInt("costAOE", 0);
         range = s.getInt("range", 10);
@@ -192,7 +190,7 @@ public class PowerStuck extends BasePower implements PowerHit, PowerRightClick {
         s.set("chance", chance);
         s.set("consumption", consumption);
         s.set("duration", duration);
-        s.set("cooldown", cooldownTime);
+        s.set("cooldown", cooldown);
         s.set("range", range);
         s.set("facing", facing);
         s.set("costAoe", costAoe);
