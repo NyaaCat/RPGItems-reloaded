@@ -14,24 +14,38 @@ public class RgiPowersPreFireEvent extends Event implements Cancellable {
     private static final HandlerList handlers = new HandlerList();
     private boolean cancel;
 
+    private final ItemStack itemStack;
+    private final RPGItem rpgItem;
+    private final Player player;
+    private final TriggerType triggerType;
+    private final List<? extends Power> powers;
+
+    public RgiPowersPreFireEvent(ItemStack itemStack, RPGItem rpgItem, Player player, TriggerType triggerType, List<? extends Power> powers) {
+        this.itemStack = itemStack;
+        this.rpgItem = rpgItem;
+        this.player = player;
+        this.triggerType = triggerType;
+        this.powers = powers;
+    }
+
     public Player getPlayer() {
-        return null;
+        return player;
     }
 
     public ItemStack getItemStack() {
-        return null;
+        return itemStack;
     }
 
     public RPGItem getItem() {
-        return null;
+        return rpgItem;
     }
 
     public TriggerType getTriggerType() {
-        return null;
+        return triggerType;
     }
 
-    public List<Power> getPowers() {
-        return null;
+    public List<? extends Power> getPowers() {
+        return powers;
     }
 
     @Override

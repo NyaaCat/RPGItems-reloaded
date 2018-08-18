@@ -1,5 +1,6 @@
 package think.rpgitems.power.impl;
 
+import cat.nyaa.nyaacore.Message;
 import cat.nyaa.nyaacore.utils.ItemStackUtils;
 import net.md_5.bungee.api.chat.BaseComponent;
 import net.md_5.bungee.api.chat.HoverEvent;
@@ -74,7 +75,7 @@ public class PowerRepair extends BasePower implements PowerRightClick, PowerLeft
                 BaseComponent msg = new TextComponent(I18n.format("message.error.need_material", material.getType().name()));
                 HoverEvent hover = new HoverEvent(HoverEvent.Action.SHOW_ITEM, new BaseComponent[]{new TextComponent(ItemStackUtils.itemToJson(material))});
                 msg.setHoverEvent(hover);
-                player.spigot().sendMessage(msg);
+                new Message("").append(msg).send(player);
                 return PowerResult.fail();
             }
         }

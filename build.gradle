@@ -7,6 +7,10 @@ configurations.all {
     resolutionStrategy.cacheChangingModulesFor 0, 'seconds'
 }
 
+ext.majorVersion = 3
+ext.minorVersion = 6
+ext.minecraftVersion = "1.13"
+
 sourceCompatibility = 1.8
 targetCompatibility = 1.8
 
@@ -49,5 +53,21 @@ compileJava {
     options.compilerArgs += ["-Xplugin:NyaaUtilsLangAnnotationProcessor", "-Xlint:deprecation", "-Xlint:unchecked"]
     if (nyaaCoreLangDir != null) {
         options.compilerArgs += ["-ALANG_DIR_ADDITIONAL_PATH=" + nyaaCoreLangDir]
+    }
+}
+
+publishing {
+    publications {
+        mavenJava(MavenPublication) {
+            groupId "cat.nyaa"
+            artifactId "nyaacore"
+            version "$majorVersion.$minorVersion-SNAPSHOT"
+            from components.java
+        }
+    }
+    repositories {
+        maven {
+            url "$buildDir/repo"
+        }
     }
 }

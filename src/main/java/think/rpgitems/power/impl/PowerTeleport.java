@@ -24,6 +24,7 @@ import org.bukkit.event.entity.ProjectileHitEvent;
 import org.bukkit.event.player.PlayerInteractEvent;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.util.BlockIterator;
+import org.bukkit.util.Vector;
 import think.rpgitems.I18n;
 import think.rpgitems.RPGItems;
 import think.rpgitems.commands.Property;
@@ -65,31 +66,19 @@ public class PowerTeleport extends BasePower implements PowerRightClick, PowerPr
     public PowerResult<Void> rightClick(Player player, ItemStack stack, Block clicked, PlayerInteractEvent event) {
         if (!checkCooldown(this, player, cooldown, true)) return PowerResult.cd();
         if (!getItem().consumeDurability(stack, consumption)) return PowerResult.cost();
-        // float dist = 0;
         World world = player.getWorld();
         Location start = player.getLocation();
         start.setY(start.getY() + 1.6);
-        // Location current = new Location(world, 0, 0, 0);
         Block lastSafe = world.getBlockAt(start);
-        // Keeping the old method because BlockIterator could get removed (irc)
-        // double dir = Math.toRadians(start.getYaw()) + (Math.PI / 2d);
-        // double dirY = Math.toRadians(start.getPitch()) + (Math.PI / 2d);
         try {
             BlockIterator bi = new BlockIterator(player, distance);
-            // while (dist < distance) {
             while (bi.hasNext()) {
-                // current.setX(start.getX() + dist * Math.cos(dir) *
-                // Math.sin(dirY));
-                // current.setY(start.getY() + dist * Math.cos(dirY));
-                // current.setZ(start.getZ() + dist * Math.sin(dir) *
-                // Math.sin(dirY));
-                Block block = bi.next();// world.getBlockAt(current);
+                Block block = bi.next();
                 if (!block.getType().isSolid() || (block.getType() == Material.AIR)) {
                     lastSafe = block;
                 } else {
                     break;
                 }
-                // dist+= 0.5;
             }
         } catch (IllegalStateException ex) {
             ex.printStackTrace();
@@ -98,7 +87,12 @@ public class PowerTeleport extends BasePower implements PowerRightClick, PowerPr
         Location newLoc = lastSafe.getLocation();
         newLoc.setPitch(start.getPitch());
         newLoc.setYaw(start.getYaw());
+        Vector velocity = player.getVelocity();
+        boolean gliding = player.isGliding();
         player.teleport(newLoc);
+        if(gliding){
+            player.setVelocity(velocity);
+        }
         world.playEffect(newLoc, Effect.ENDER_SIGNAL, 0);
         world.playSound(newLoc, Sound.ENTITY_ENDERMAN_TELEPORT, 1.0f, 0.3f);
         return PowerResult.ok();

@@ -12,7 +12,12 @@ public enum TriggerType {
     TICK(PowerTick.class),
     OFFHAND_CLICK(PowerOffhandClick.class),
     SNEAK(PowerSneak.class),
-    SPRINT(PowerSprint.class);
+    SPRINT(PowerSprint.class),
+    SWAP_TO_OFFHAND(PowerSwapToOffhand.class),
+    SWAP_TO_MAINHAND(PowerSwapToMainhand.class),
+    PICKUP_OFF_HAND(PowerSwapToOffhand.class),
+    PLACE_OFF_HAND(PowerSwapToMainhand.class);
+
 
     Class<? extends Power> powerInterface;
 

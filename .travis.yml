@@ -2,14 +2,17 @@ language: java
 jdk: oraclejdk8
 
 before_install:
-- "sed -i \"s/^\\(version:.*\\)/\\1.$TRAVIS_BUILD_NUMBER/\" src/main/resources/plugin.yml"
+- export MAJOR_VERSION=`sed -n 's/^ext\.majorVersion = \(.*\)$/\1/p' build.gradle`
+- export MINOR_VERSION=`sed -n 's/^ext\.minorVersion = \(.*\)$/\1/p' build.gradle`
+- export MC_VERSION=`sed -n 's/^ext\.minecraftVersion = "\(.*\)"$/\1/p' build.gradle`
+- export VERSION_STRING=$MAJOR_VERSION.$MINOR_VERSION.$TRAVIS_BUILD_NUMBER-mc$MC_VERSION
+- 'sed -i "s/^\(version: \).*\$/\1$VERSION_STRING/g" src/main/resources/plugin.yml'
 - pushd ~/build/
 - git clone --depth=1 https://github.com/NyaaCat/NyaaCore NyaaCat/NyaaCore
 - export NYAACORE_LANG_DIR=`readlink -f ./NyaaCat/NyaaCore/src/main/resources/lang/`
-- export main_version=3.6
 - popd
 after_success:
-- 'cp build/libs/RPGitems-reloaded.jar ./rpgitem-reloaded-mc$TRAVIS_BRANCH-v$main_version.$TRAVIS_BUILD_NUMBER.jar'
+- 'cp build/libs/RPGitems-reloaded.jar ./rpgitem-reloaded-$VERSION_STRING.jar'
 
 before_deploy:
 - if echo "$TRAVIS_COMMIT_MESSAGE" | grep -F -q "[unstable]" ; then echo "skipping travis deploy" && exit 0 ; fi
@@ -26,7 +29,7 @@ deploy:
   provider: releases
   prerelease: true
   api_key: $GITHUB_KEY
-  file: './rpgitem-reloaded-mc$TRAVIS_BRANCH-v$main_version.$TRAVIS_BUILD_NUMBER.jar'
+  file: './rpgitem-reloaded-$VERSION_STRING.jar'
   body: 'RPGitems build $TRAVIS_BUILD_NUMBER for spigot $TRAVIS_BRANCH'
   on:
     tags: false

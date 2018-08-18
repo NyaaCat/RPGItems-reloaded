@@ -49,6 +49,7 @@ import think.rpgitems.item.LocaleInventory;
 import think.rpgitems.item.RPGItem;
 import think.rpgitems.power.impl.PowerRanged;
 import think.rpgitems.power.impl.PowerRangedOnly;
+import think.rpgitems.power.impl.PowerTranslocator;
 import think.rpgitems.support.WGHandler;
 import think.rpgitems.support.WorldGuard;
 
@@ -157,6 +158,9 @@ public class Events implements Listener {
     @EventHandler
     public void onEntityDeath(EntityDeathEvent e) {
         String type = e.getEntity().getType().toString();
+        if(PowerTranslocator.translocatorPlayerMap.getIfPresent(e.getEntity().getUniqueId()) != null) {
+            e.getDrops().clear();
+        }
         Random random = new Random();
         if (drops.containsKey(type)) {
             Set<Integer> items = drops.get(type);
@@ -361,6 +365,47 @@ public class Events implements Listener {
         if (rItem == null) return;
         rItem.sprint(p, item, e);
         RPGItem.updateItem(item);
+    }
+
+    @EventHandler
+    public void onSwapHand(PlayerSwapHandItemsEvent e) {
+        Player player = e.getPlayer();
+        ItemStack ois = e.getOffHandItem();
+        ItemStack mis = e.getMainHandItem();
+        RPGItem mitem = ItemManager.toRPGItem(mis);
+        RPGItem oitem = ItemManager.toRPGItem(ois);
+
+        if (mitem != null) {
+            mitem.swapToMainhand(player, mis, e);
+            RPGItem.updateItem(mis);
+        }
+
+        if (oitem != null) {
+            oitem.swapToOffhand(player, ois, e);
+            RPGItem.updateItem(ois);
+        }
+    }
+
+    @EventHandler
+    public void onOffhandInventoryClick(InventoryClickEvent e) {
+        if (e.getInventory().getType() != InventoryType.CRAFTING || e.getSlotType() != InventoryType.SlotType.QUICKBAR || e.getSlot() != 40)
+            return;
+        if (!(e.getWhoClicked() instanceof Player)) return;
+        Player player = (Player) e.getWhoClicked();
+        ItemStack currentIs = e.getCurrentItem();
+        ItemStack cursorIs = e.getCursor();
+        RPGItem currentItem = ItemManager.toRPGItem(currentIs);
+        RPGItem cursorItem = ItemManager.toRPGItem(cursorIs);
+
+        if (currentItem != null && (e.getAction() == InventoryAction.PICKUP_SOME || e.getAction() == InventoryAction.PICKUP_ALL || e.getAction() == InventoryAction.PICKUP_ONE || e.getAction() == InventoryAction.PICKUP_HALF)) {
+            currentItem.pickupOffhand(player, currentIs, e);
+            RPGItem.updateItem(currentIs);
+        }
+
+        if (cursorItem != null && (e.getAction() == InventoryAction.PLACE_SOME || e.getAction() == InventoryAction.PLACE_ONE || e.getAction() == InventoryAction.PLACE_ALL)) {
+            cursorItem.placeOffhand(player, cursorIs, e);
+            RPGItem.updateItem(cursorIs);
+        }
     }
 
     @EventHandler
@@ -609,7 +654,10 @@ public class Events implements Listener {
 
     private double projectileDamager(EntityDamageByEntityEvent e, double damage) {
         Projectile entity = (Projectile) e.getDamager();
-
+        if(PowerTranslocator.translocatorPlayerMap.getIfPresent(entity.getUniqueId()) != null){
+            e.setCancelled(true);
+            return 0;
+        }
         Integer projectileID = rpgProjectiles.get(entity.getEntityId());
         if (projectileID == null) return damage;
         RPGItem rItem = ItemManager.getItemById(projectileID);
