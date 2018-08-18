@@ -5,6 +5,8 @@ import org.bukkit.entity.Player;
 import org.bukkit.event.player.PlayerInteractEvent;
 import org.bukkit.inventory.ItemStack;
 
+import javax.annotation.CheckReturnValue;
+
 /**
  * Triggers when left click
  */
@@ -16,5 +18,6 @@ public interface PowerLeftClick extends Power {
      * @param stack   Item that triggered this power
      * @param clicked Block clicked
      */
-    void leftClick(Player player, ItemStack stack, Block clicked, PlayerInteractEvent event);
+    @CheckReturnValue
+    PowerResult<Void> leftClick(Player player, ItemStack stack, Block clicked, PlayerInteractEvent event);
 }

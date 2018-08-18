@@ -9,6 +9,7 @@ import org.bukkit.inventory.ItemStack;
 import think.rpgitems.I18n;
 import think.rpgitems.commands.Property;
 import think.rpgitems.power.PowerHit;
+import think.rpgitems.power.PowerResult;
 
 public class PowerCharge extends BasePower implements PowerHit {
 
@@ -32,9 +33,9 @@ public class PowerCharge extends BasePower implements PowerHit {
     }
 
     @Override
-    public void hit(Player player, ItemStack stack, LivingEntity entity, double damage, EntityDamageByEntityEvent event) {
+    public PowerResult<Double> hit(Player player, ItemStack stack, LivingEntity entity, double damage, EntityDamageByEntityEvent event) {
         if (!player.isSprinting())
-            return;
+            return PowerResult.noop();
         double originDamage = damage;
         damage = damage * (1 + percentage / 100.0);
         damage = damage + damage * (player.getAttribute(Attribute.GENERIC_MOVEMENT_SPEED).getValue() / 0.13 - 1) * (speedPercentage / 100.0);
@@ -43,5 +44,6 @@ public class PowerCharge extends BasePower implements PowerHit {
         if (damage > originDamage) {
             player.playSound(player.getLocation(), Sound.BLOCK_ANVIL_LAND, 0.1f, 0.1f);
         }
+        return PowerResult.ok(damage);
     }
 }

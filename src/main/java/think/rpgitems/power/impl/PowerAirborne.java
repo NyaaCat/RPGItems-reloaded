@@ -8,6 +8,7 @@ import org.bukkit.inventory.ItemStack;
 import think.rpgitems.I18n;
 import think.rpgitems.commands.Property;
 import think.rpgitems.power.PowerHit;
+import think.rpgitems.power.PowerResult;
 
 public class PowerAirborne extends BasePower implements PowerHit {
 
@@ -28,15 +29,15 @@ public class PowerAirborne extends BasePower implements PowerHit {
     }
 
     @Override
-    public void hit(Player player, ItemStack stack, LivingEntity entity, double damage, EntityDamageByEntityEvent event) {
+    public PowerResult<Double> hit(Player player, ItemStack stack, LivingEntity entity, double damage, EntityDamageByEntityEvent event) {
         if (!player.isGliding())
-            return;
+            return PowerResult.noop();
         double originDamage = damage;
         damage = damage * (1 + percentage / 100.0);
         damage = Math.max(Math.min(damage, cap), originDamage);
-        event.setDamage(damage);
         if (damage > originDamage) {
             player.playSound(player.getLocation(), Sound.ENTITY_BAT_TAKEOFF, 0.1f, 0.1f);
         }
+        return PowerResult.ok(damage);
     }
 }

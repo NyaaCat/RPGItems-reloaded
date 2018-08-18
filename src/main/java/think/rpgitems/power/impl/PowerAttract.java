@@ -3,6 +3,7 @@ package think.rpgitems.power.impl;
 import org.bukkit.Bukkit;
 import org.bukkit.Location;
 import org.bukkit.block.Block;
+import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.entity.Entity;
 import org.bukkit.entity.LivingEntity;
 import org.bukkit.entity.Player;
@@ -10,15 +11,12 @@ import org.bukkit.event.player.PlayerInteractEvent;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.util.Vector;
 import think.rpgitems.I18n;
-import think.rpgitems.commands.AcceptedValue;
 import think.rpgitems.commands.Property;
 import think.rpgitems.commands.Validator;
 import think.rpgitems.item.RPGItem;
-import think.rpgitems.power.PowerLeftClick;
-import think.rpgitems.power.PowerRightClick;
-import think.rpgitems.power.PowerTick;
-import think.rpgitems.power.TriggerType;
+import think.rpgitems.power.*;
 
+import java.util.Collections;
 import java.util.List;
 
 import static think.rpgitems.utils.PowerUtils.checkCooldown;
@@ -65,10 +63,6 @@ public class PowerAttract extends BasePower implements PowerTick, PowerLeftClick
     @Property
     public int attractingEntityTickCost = 0;
 
-    @Property
-    @AcceptedValue({"TICK", "LEFT_CLICK", "RIGHT_CLICK"})
-    public TriggerType triggerType = TriggerType.TICK;
-
     /**
      * Cooldown time of this power
      */
@@ -109,21 +103,28 @@ public class PowerAttract extends BasePower implements PowerTick, PowerLeftClick
     }
 
     @Override
-    public void tick(Player player, ItemStack stack) {
-        if (triggerType.equals(TriggerType.TICK)) attract(player, stack);
+    public void init(ConfigurationSection section){
+        triggers = Collections.singleton(TriggerType.LEFT_CLICK);
+        super.init(section);
     }
 
-    private void attract(Player player, ItemStack stack) {
+    @Override
+    public PowerResult<Void> tick(Player player, ItemStack stack) {
+        if (triggers.contains(TriggerType.TICK)) return attract(player, stack);
+        return PowerResult.noop();
+    }
+
+    private PowerResult<Void> attract(Player player, ItemStack stack) {
         if (!player.isOnline() || player.isDead()) {
-            return;
+            return PowerResult.noop();
         }
-        if (triggerType != TriggerType.TICK && !stack.equals(player.getInventory().getItemInMainHand())) {
-            return;
+        if (!triggers.contains(TriggerType.TICK) && !stack.equals(player.getInventory().getItemInMainHand())) {
+            return PowerResult.noop();
         }
         double factor = Math.sqrt(radius - 1.0) / maxSpeed;
         List<Entity> entities = getNearbyEntities(this, player.getLocation(), player, radius);
-        if (entities.isEmpty()) return;
-        if (!item.consumeDurability(stack, attractingTickCost)) return;
+        if (entities.isEmpty()) return null;
+        if (!item.consumeDurability(stack, attractingTickCost)) return null;
         for (Entity e : entities) {
             if (e instanceof LivingEntity
                         && (attractPlayer || !(e instanceof Player))) {
@@ -137,23 +138,22 @@ public class PowerAttract extends BasePower implements PowerTick, PowerLeftClick
                 e.setVelocity(direction.multiply(newVelocity));
             }
         }
+        return PowerResult.ok();
     }
 
     @Override
-    public void leftClick(Player player, ItemStack stack, Block clicked, PlayerInteractEvent event) {
-        if (triggerType.equals(TriggerType.LEFT_CLICK)) {
-            if (!checkCooldown(this, player, cooldown, true)) return;
-            if (!item.consumeDurability(stack, consumption)) return;
-            Bukkit.getScheduler().scheduleSyncRepeatingTask(RPGItem.getPlugin(), () -> attract(player, stack), 0, duration);
-        }
+    public PowerResult<Void> leftClick(Player player, ItemStack stack, Block clicked, PlayerInteractEvent event) {
+        if (!checkCooldown(this, player, cooldown, true)) return PowerResult.cd();
+        if (!item.consumeDurability(stack, consumption)) return PowerResult.cost();
+        Bukkit.getScheduler().scheduleSyncRepeatingTask(RPGItem.getPlugin(), () -> attract(player, stack), 0, duration);
+        return PowerResult.ok();
     }
 
     @Override
-    public void rightClick(Player player, ItemStack stack, Block clicked, PlayerInteractEvent event) {
-        if (triggerType.equals(TriggerType.RIGHT_CLICK)) {
-            if (!checkCooldown(this, player, cooldown, true)) return;
-            if (!item.consumeDurability(stack, consumption)) return;
-            Bukkit.getScheduler().scheduleSyncRepeatingTask(RPGItem.getPlugin(), () -> attract(player, stack), 0, duration);
-        }
+    public PowerResult<Void> rightClick(Player player, ItemStack stack, Block clicked, PlayerInteractEvent event) {
+        if (!checkCooldown(this, player, cooldown, true)) return PowerResult.cd();
+        if (!item.consumeDurability(stack, consumption)) return PowerResult.cost();
+        Bukkit.getScheduler().scheduleSyncRepeatingTask(RPGItem.getPlugin(), () -> attract(player, stack), 0, duration);
+        return PowerResult.ok();
     }
 }

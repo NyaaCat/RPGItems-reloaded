@@ -573,14 +573,19 @@ public class RPGItem {
 
     public void hit(Player damager, ItemStack i, LivingEntity target, double damage, EntityDamageByEntityEvent event) {
         if (!checkPermission(damager, true)) return;
+        double ret = -Double.MAX_VALUE;
         for (PowerHit power : powerHit) {
             if (!WorldGuard.canUsePowerNow(damager, power)) continue;
-            power.hit(damager, i, target, damage, event);
+            PowerResult<Double> d = power.hit(damager, i, target, damage, event);
+            if (d.isAbort()) break;
+            if (!d.isOK()) continue;
+            ret = d.getData() > ret ? d.getData() : ret;
         }
         if (getDurability(i) <= 0) {
             i.setAmount(0);
             i.setType(Material.AIR);
         }
+        event.setDamage(ret == -Double.MAX_VALUE ? damage : ret);
     }
 
     public double takeHit(Player target, ItemStack i, EntityDamageEvent ev) {
@@ -588,15 +593,16 @@ public class RPGItem {
         double ret = Double.MAX_VALUE;
         for (PowerHitTaken power : powerHitTaken) {
             if (!WorldGuard.canUsePowerNow(target, power)) continue;
-            double d = power.takeHit(target, i, ev);
-            if (d < 0) continue;
-            ret = d < ret ? d : ret;
+            PowerResult<Double> d = power.takeHit(target, i, ev.getDamage(), ev);
+            if (d.isAbort()) break;
+            if (!d.isOK()) continue;
+            ret = d.getData() < ret ? d.getData() : ret;
         }
         if (getDurability(i) <= 0) {
             i.setAmount(0);
             i.setType(Material.AIR);
         }
-        return ret == Double.MAX_VALUE ? -1 : ret;
+        return ret;
     }
 
     public void hurt(Player target, ItemStack i, EntityDamageEvent ev) {
@@ -612,6 +618,7 @@ public class RPGItem {
     }
 
     public void tick(Player player, ItemStack i) {
+        if (!checkPermission(player, true)) return;
         for (PowerTick power : powerTick) {
             if (!WorldGuard.canUsePowerNow(player, power)) continue;
             power.tick(player, i);

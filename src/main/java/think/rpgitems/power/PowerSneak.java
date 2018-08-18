@@ -4,6 +4,8 @@ import org.bukkit.entity.Player;
 import org.bukkit.event.player.PlayerToggleSneakEvent;
 import org.bukkit.inventory.ItemStack;
 
+import javax.annotation.CheckReturnValue;
+
 /**
  * Triggers when player sneaks
  */
@@ -11,8 +13,9 @@ public interface PowerSneak extends Power {
     /**
      * Calls when {@code player} using {@code stack} sneaks
      *
-     * @param player  Player
-     * @param stack   Item that triggered this power
+     * @param player Player
+     * @param stack  Item that triggered this power
      */
-    void sneak(Player player, ItemStack stack, PlayerToggleSneakEvent event);
+    @CheckReturnValue
+    PowerResult<Void> sneak(Player player, ItemStack stack, PlayerToggleSneakEvent event);
 }

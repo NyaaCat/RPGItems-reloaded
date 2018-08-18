@@ -7,6 +7,7 @@ import net.md_5.bungee.api.chat.TextComponent;
 import org.bukkit.ChatColor;
 import org.bukkit.Material;
 import org.bukkit.block.Block;
+import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.entity.Player;
 import org.bukkit.event.player.PlayerInteractEvent;
 import org.bukkit.inventory.Inventory;
@@ -14,19 +15,27 @@ import org.bukkit.inventory.ItemStack;
 import think.rpgitems.I18n;
 import think.rpgitems.commands.Property;
 import think.rpgitems.power.PowerLeftClick;
+import think.rpgitems.power.PowerResult;
 import think.rpgitems.power.PowerRightClick;
+import think.rpgitems.power.TriggerType;
+
+import java.util.Collections;
 
 public class PowerRepair extends BasePower implements PowerRightClick, PowerLeftClick {
     @Property(order = 2)
     public int durability = 20;
     @Property(order = 0)
     public String display = "";
-    @Property(order = 3)
-    public boolean isRight;
     @Property(order = 4)
     public boolean isSneak;
     @Property(order = 1)
     public ItemStack material;
+
+    @Override
+    public void init(ConfigurationSection section) {
+        triggers = section.getBoolean("isRight", false) ? Collections.singleton(TriggerType.RIGHT_CLICK) : Collections.singleton(TriggerType.LEFT_CLICK);
+        super.init(section);
+    }
 
     @Override
     public String getName() {
@@ -39,32 +48,37 @@ public class PowerRepair extends BasePower implements PowerRightClick, PowerLeft
     }
 
     @Override
-    public void rightClick(Player player, ItemStack stack, Block clicked, PlayerInteractEvent event) {
-        if (isRight && player.isSneaking() == isSneak) {
-            repair(player, stack, clicked);
+    public PowerResult<Void> rightClick(Player player, ItemStack stack, Block clicked, PlayerInteractEvent event) {
+        if (player.isSneaking() == isSneak) {
+            return repair(player, stack, clicked);
         }
+        return PowerResult.noop();
     }
 
     @Override
-    public void leftClick(Player player, ItemStack stack, Block clicked, PlayerInteractEvent event) {
-        if (!isRight && player.isSneaking() == isSneak) {
-            repair(player, stack, clicked);
+    public PowerResult<Void> leftClick(Player player, ItemStack stack, Block clicked, PlayerInteractEvent event) {
+        if (player.isSneaking() == isSneak) {
+            return repair(player, stack, clicked);
         }
+        return PowerResult.noop();
     }
 
-    private void repair(Player player, ItemStack stack, Block block) {
+    private PowerResult<Void> repair(Player player, ItemStack stack, Block block) {
         int max = getItem().getMaxDurability();
         int itemDurability = getItem().getDurability(stack);
         if (getItem().getMaxDurability() != -1 && max - this.durability >= itemDurability) {
             if (removeItem(player.getInventory(), material)) {
                 getItem().setDurability(stack, itemDurability + this.durability);
+                return PowerResult.ok();
             } else {
                 BaseComponent msg = new TextComponent(I18n.format("message.error.need_material", material.getType().name()));
                 HoverEvent hover = new HoverEvent(HoverEvent.Action.SHOW_ITEM, new BaseComponent[]{new TextComponent(ItemStackUtils.itemToJson(material))});
                 msg.setHoverEvent(hover);
                 player.spigot().sendMessage(msg);
+                return PowerResult.fail();
             }
         }
+        return PowerResult.noop();
     }
 
     private boolean removeItem(Inventory inventory, ItemStack item) {

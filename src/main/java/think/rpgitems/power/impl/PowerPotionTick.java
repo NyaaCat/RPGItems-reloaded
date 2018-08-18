@@ -8,6 +8,7 @@ import org.bukkit.potion.PotionEffect;
 import org.bukkit.potion.PotionEffectType;
 import think.rpgitems.I18n;
 import think.rpgitems.commands.Property;
+import think.rpgitems.power.PowerResult;
 import think.rpgitems.power.PowerTick;
 
 import static java.lang.Double.min;
@@ -54,9 +55,9 @@ public class PowerPotionTick extends BasePower implements PowerTick {
     public boolean clear = false;
 
     @Override
-    public void tick(Player player, ItemStack stack) {
-        if (!checkCooldownByString(player, getItem(), "potiontick." + effect.getName(), interval, false)) return;
-        if (!getItem().consumeDurability(stack, consumption)) return;
+    public PowerResult<Void> tick(Player player, ItemStack stack) {
+        if (!checkCooldownByString(player, getItem(), "potiontick." + effect.getName(), interval, false)) return PowerResult.cd();
+        if (!getItem().consumeDurability(stack, consumption)) return PowerResult.cost();
         double health = player.getHealth();
         boolean hasEffect = false;
         for (PotionEffect potionEffect : player.getActivePotionEffects()) {
@@ -76,6 +77,7 @@ public class PowerPotionTick extends BasePower implements PowerTick {
             health = min(health, player.getAttribute(Attribute.GENERIC_MAX_HEALTH).getValue());
             player.setHealth(health);
         }
+        return PowerResult.ok();
     }
 
     @Override

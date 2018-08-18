@@ -27,6 +27,7 @@ import think.rpgitems.RPGItems;
 import think.rpgitems.commands.BooleanChoice;
 import think.rpgitems.commands.Property;
 import think.rpgitems.power.PowerLeftClick;
+import think.rpgitems.power.PowerResult;
 import think.rpgitems.power.PowerRightClick;
 
 import static think.rpgitems.utils.PowerUtils.checkCooldown;
@@ -58,33 +59,32 @@ public class PowerConsume extends BasePower implements PowerRightClick, PowerLef
     public int consumption = 0;
 
     @Override
-    public void rightClick(final Player player, ItemStack stack, Block clicked, PlayerInteractEvent event) {
+    public PowerResult<Void> rightClick(final Player player, ItemStack stack, Block clicked, PlayerInteractEvent event) {
         if (isRight && checkCooldown(this, player, cooldown, false)) {
-            consume(player);
+            return consume(player);
         }
+        return PowerResult.cd();
     }
 
     @Override
-    public void leftClick(final Player player, ItemStack stack, Block clicked, PlayerInteractEvent event) {
+    public PowerResult<Void> leftClick(final Player player, ItemStack stack, Block clicked, PlayerInteractEvent event) {
         if (!isRight && checkCooldown(this, player, cooldown, false)) {
-            consume(player);
+            return consume(player);
         }
+        return PowerResult.cd();
     }
 
-    private void consume(final Player player) {
+    private PowerResult<Void> consume(final Player player) {
         ItemStack stack = player.getInventory().getItemInMainHand();
-        if (!getItem().consumeDurability(stack, consumption)) return;
+        if (!getItem().consumeDurability(stack, consumption)) return PowerResult.cost();
         int count = stack.getAmount() - 1;
         if (count == 0) {
-            Bukkit.getScheduler().scheduleSyncDelayedTask(RPGItems.plugin, new Runnable() {
-                @Override
-                public void run() {
-                    player.getInventory().setItemInMainHand(new ItemStack(Material.AIR));
-                }
-            }, 1L);
+            Bukkit.getScheduler().scheduleSyncDelayedTask(RPGItems.plugin, () -> player.getInventory().setItemInMainHand(new ItemStack(Material.AIR)), 1L);
         } else {
             stack.setAmount(count);
         }
+
+        return PowerResult.ok();
     }
 
     @Override

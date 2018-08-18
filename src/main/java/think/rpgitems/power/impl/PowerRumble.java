@@ -31,6 +31,7 @@ import org.bukkit.util.Vector;
 import think.rpgitems.I18n;
 import think.rpgitems.RPGItems;
 import think.rpgitems.commands.Property;
+import think.rpgitems.power.PowerResult;
 import think.rpgitems.power.PowerRightClick;
 
 import java.util.List;
@@ -72,9 +73,9 @@ public class PowerRumble extends BasePower implements PowerRightClick {
     public int consumption = 0;
 
     @Override
-    public void rightClick(final Player player, ItemStack stack, Block block, PlayerInteractEvent event) {
-        if (!checkCooldown(this, player, cooldown, true)) return;
-        if (!getItem().consumeDurability(stack, consumption)) return;
+    public PowerResult<Void> rightClick(final Player player, ItemStack stack, Block block, PlayerInteractEvent event) {
+        if (!checkCooldown(this, player, cooldown, true)) return PowerResult.cd();
+        if (!getItem().consumeDurability(stack, consumption)) return PowerResult.cost();
         final Location location = player.getLocation().add(0, -0.2, 0);
         final Vector direction = player.getLocation().getDirection();
         direction.setY(0);
@@ -131,6 +132,7 @@ public class PowerRumble extends BasePower implements PowerRightClick {
             }
         };
         task.runTaskTimer(RPGItems.plugin, 0, 3);
+        return PowerResult.ok();
     }
 
     @Override

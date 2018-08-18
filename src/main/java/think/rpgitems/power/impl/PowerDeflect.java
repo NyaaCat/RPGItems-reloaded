@@ -34,6 +34,7 @@ import think.rpgitems.commands.BooleanChoice;
 import think.rpgitems.commands.Property;
 import think.rpgitems.power.PowerHitTaken;
 import think.rpgitems.power.PowerLeftClick;
+import think.rpgitems.power.PowerResult;
 import think.rpgitems.power.PowerRightClick;
 
 import java.util.concurrent.ThreadLocalRandom;
@@ -124,16 +125,16 @@ public class PowerDeflect extends BasePower implements PowerHitTaken, PowerRight
     }
 
     @Override
-    public double takeHit(Player target, ItemStack stack, EntityDamageEvent event) {
-        if (!getItem().checkPermission(target, true)
-                    || !((System.currentTimeMillis() / 50 < time) || (passive && (ThreadLocalRandom.current().nextInt(0, 100) < chance) && checkCooldown(this, target, cooldownPassive, false)))
+    public PowerResult<Double> takeHit(Player target, ItemStack stack, double damage, EntityDamageEvent event) {
+        if (!((System.currentTimeMillis() / 50 < time)
+                      || (passive && (ThreadLocalRandom.current().nextInt(0, 100) < chance) && checkCooldown(this, target, cooldownPassive, false)))
                     || !getItem().consumeDurability(stack, consumption))
-            return event.getDamage();
+            return PowerResult.noop();
         if (event instanceof EntityDamageByEntityEvent) {
             EntityDamageByEntityEvent byEntityEvent = (EntityDamageByEntityEvent) event;
             if (byEntityEvent.getDamager() instanceof Projectile) {
                 Projectile p = (Projectile) byEntityEvent.getDamager();
-                if (!(p.getShooter() instanceof LivingEntity)) return event.getDamage();
+                if (!(p.getShooter() instanceof LivingEntity)) return PowerResult.noop();
                 LivingEntity source = (LivingEntity) p.getShooter();
                 Vector relativePosition = target.getEyeLocation().toVector();
                 relativePosition.subtract(source.getEyeLocation().toVector());
@@ -157,30 +158,32 @@ public class PowerDeflect extends BasePower implements PowerHitTaken, PowerRight
                         t.setMetadata("rpgitems.force", new FixedMetadataValue(RPGItems.plugin, 1));
                         Events.removeArrows.add(t.getEntityId());
                     }, 1);
-                    return 0;
+                    return PowerResult.ok(0.0);
                 }
             }
         }
-        return event.getDamage();
+        return PowerResult.noop();
     }
 
     @Override
-    public void rightClick(Player player, ItemStack stack, Block clicked, PlayerInteractEvent event) {
+    public PowerResult<Void> rightClick(Player player, ItemStack stack, Block clicked, PlayerInteractEvent event) {
         if (!isRight || !initiative
-                    || !getItem().checkPermission(player, true)
-                    || !checkCooldownByString(player, getItem(), "deflect.initiative", cooldown, true)
-                    || !getItem().consumeDurability(stack, consumption))
-            return;
+                    || !checkCooldownByString(player, getItem(), "deflect.initiative", cooldown, true))
+            return PowerResult.noop();
+        if (!getItem().consumeDurability(stack, consumption))
+            return PowerResult.cost();
         time = System.currentTimeMillis() / 50 + duration;
+        return PowerResult.ok();
     }
 
     @Override
-    public void leftClick(Player player, ItemStack stack, Block clicked, PlayerInteractEvent event) {
+    public PowerResult<Void> leftClick(Player player, ItemStack stack, Block clicked, PlayerInteractEvent event) {
         if (isRight || !initiative
-                    || !getItem().checkPermission(player, true)
-                    || !checkCooldownByString(player, getItem(), "deflect.initiative", cooldown, true)
-                    || !getItem().consumeDurability(stack, consumption))
-            return;
+                    || !checkCooldownByString(player, getItem(), "deflect.initiative", cooldown, true))
+            return PowerResult.noop();
+        if (!getItem().consumeDurability(stack, consumption))
+            return PowerResult.cost();
         time = System.currentTimeMillis() / 50 + duration;
+        return PowerResult.ok();
     }
 }

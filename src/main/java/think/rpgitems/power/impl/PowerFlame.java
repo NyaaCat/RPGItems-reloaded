@@ -23,6 +23,7 @@ import org.bukkit.inventory.ItemStack;
 import think.rpgitems.I18n;
 import think.rpgitems.commands.Property;
 import think.rpgitems.power.PowerHit;
+import think.rpgitems.power.PowerResult;
 
 /**
  * Power flame.
@@ -45,9 +46,10 @@ public class PowerFlame extends BasePower implements PowerHit {
     public int consumption = 0;
 
     @Override
-    public void hit(Player player, ItemStack stack, LivingEntity entity, double damage, EntityDamageByEntityEvent event) {
-        if (!getItem().consumeDurability(stack, consumption)) return;
+    public PowerResult<Double> hit(Player player, ItemStack stack, LivingEntity entity, double damage, EntityDamageByEntityEvent event) {
+        if (!getItem().consumeDurability(stack, consumption)) return PowerResult.cost();
         entity.setFireTicks(burnTime);
+        return PowerResult.ok(damage);
     }
 
     @Override

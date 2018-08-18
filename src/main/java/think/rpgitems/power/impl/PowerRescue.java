@@ -29,6 +29,7 @@ import think.rpgitems.I18n;
 import think.rpgitems.commands.Property;
 import think.rpgitems.power.PowerHitTaken;
 import think.rpgitems.power.PowerHurt;
+import think.rpgitems.power.PowerResult;
 
 import java.util.UUID;
 import java.util.concurrent.TimeUnit;
@@ -90,39 +91,37 @@ public class PowerRescue extends BasePower implements PowerHurt, PowerHitTaken {
 
     // shouldn't be called if takeHit works. leave it as-is now
     @Override
-    public void hurt(Player target, ItemStack stack, EntityDamageEvent event) {
-        if (!getItem().checkPermission(target, false)) return;
+    public PowerResult<Void> hurt(Player target, ItemStack stack, EntityDamageEvent event) {
         double health = target.getHealth() - event.getFinalDamage();
-        if (health > healthTrigger) return;
+        if (health > healthTrigger) return null;
         rescue(target, stack, event, false);
+        return PowerResult.ok();
     }
 
     @Override
-    public double takeHit(Player target, ItemStack stack, EntityDamageEvent event) {
-        if (!getItem().checkPermission(target, false))
-            return event.getDamage();
+    public PowerResult<Double> takeHit(Player target, ItemStack stack, double damage, EntityDamageEvent event) {
         double health = target.getHealth() - event.getFinalDamage();
-        if (health > healthTrigger && event.getFinalDamage() < damageTrigger) return event.getDamage();
+        if (health > healthTrigger && event.getFinalDamage() < damageTrigger) return PowerResult.noop();
         Long last = rescueTime.getIfPresent(target.getUniqueId());
         if (last != null && System.currentTimeMillis() - last < 3000) {
             event.setCancelled(true);
-            return 0;
+            return PowerResult.ok(0.0);
         } else {
             rescueTime.put(target.getUniqueId(), System.currentTimeMillis());
         }
-        rescue(target, stack, event, true);
-        event.setCancelled(true);
-        return 0;
+        return rescue(target, stack, event, true);
     }
 
-    private void rescue(Player target, ItemStack stack, EntityDamageEvent event, boolean canceled) {
-        if (!checkCooldown(this, target, cooldown, true)) return;
-        if (!getItem().consumeDurability(stack, consumption)) return;
+    private PowerResult<Double> rescue(Player target, ItemStack stack, EntityDamageEvent event, boolean canceled) {
+        if (!checkCooldown(this, target, cooldown, true)) return PowerResult.cd();
+        if (!getItem().consumeDurability(stack, consumption)) return PowerResult.cost();
         target.sendMessage(I18n.format("power.rescue.info"));
         DamageCause cause = event.getCause();
         if (!canceled) {
             target.addPotionEffect(new PotionEffect(PotionEffectType.HEALTH_BOOST, 2, 255));
             target.setHealth(healthTrigger + event.getDamage());
+        } else {
+            event.setCancelled(true);
         }
         target.addPotionEffect(new PotionEffect(PotionEffectType.DAMAGE_RESISTANCE, 200, 10), true);
         target.addPotionEffect(new PotionEffect(PotionEffectType.REGENERATION, 400, 2), true);
@@ -138,5 +137,7 @@ public class PowerRescue extends BasePower implements PowerHurt, PowerHitTaken {
             target.teleport(target.getBedSpawnLocation());
         else
             target.teleport(target.getWorld().getSpawnLocation());
+
+        return PowerResult.ok(0.0);
     }
 }

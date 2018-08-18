@@ -13,6 +13,7 @@ import think.rpgitems.Events;
 import think.rpgitems.I18n;
 import think.rpgitems.RPGItems;
 import think.rpgitems.commands.*;
+import think.rpgitems.power.PowerResult;
 import think.rpgitems.power.PowerRightClick;
 
 import java.util.UUID;
@@ -214,9 +215,9 @@ public class PowerProjectile extends BasePower implements PowerRightClick {
     }
 
     @Override
-    public void rightClick(Player player, ItemStack stack, Block clicked, PlayerInteractEvent event) {
-        if (!checkCooldown(this, player, cooldown, true)) return;
-        if (!getItem().consumeDurability(stack, consumption)) return;
+    public PowerResult<Void> rightClick(Player player, ItemStack stack, Block clicked, PlayerInteractEvent event) {
+        if (!checkCooldown(this, player, cooldown, true)) return PowerResult.cd();
+        if (!getItem().consumeDurability(stack, consumption)) return PowerResult.cost();
         fire(player);
         if (burstCount > 1) {
             burstCounter.put(player.getUniqueId(), burstCount - 1);
@@ -236,6 +237,7 @@ public class PowerProjectile extends BasePower implements PowerRightClick {
                 }
             }).runTaskTimer(RPGItems.plugin, 1, burstInterval);
         }
+        return PowerResult.ok();
     }
 
     @SuppressWarnings("deprecation")

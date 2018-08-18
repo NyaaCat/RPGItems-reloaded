@@ -12,6 +12,7 @@ import org.bukkit.event.player.PlayerInteractEvent;
 import org.bukkit.inventory.ItemStack;
 import think.rpgitems.commands.Property;
 import think.rpgitems.power.PowerLeftClick;
+import think.rpgitems.power.PowerResult;
 import think.rpgitems.power.PowerRightClick;
 
 import java.lang.reflect.InvocationTargetException;
@@ -35,6 +36,7 @@ public class PowerThrow extends BasePower implements PowerRightClick, PowerLeftC
     public boolean isRight;
     @Property(order = 6)
     public boolean isPersistent;
+    @Property
     public int consumption = 0;
 
     @Override
@@ -48,17 +50,21 @@ public class PowerThrow extends BasePower implements PowerRightClick, PowerLeftC
     }
 
     @Override
-    public void rightClick(Player player, ItemStack stack, Block clicked, PlayerInteractEvent event) {
+    public PowerResult<Void> rightClick(Player player, ItemStack stack, Block clicked, PlayerInteractEvent event) {
         if (isRight && checkCooldownByString(player, getItem(), entityName + entityData, cooldown, true) && getItem().consumeDurability(stack, consumption)) {
             summonEntity(player, stack, clicked);
+            return PowerResult.ok();
         }
+        return PowerResult.noop();
     }
 
     @Override
-    public void leftClick(Player player, ItemStack stack, Block clicked, PlayerInteractEvent event) {
+    public PowerResult<Void> leftClick(Player player, ItemStack stack, Block clicked, PlayerInteractEvent event) {
         if (!isRight && checkCooldownByString(player, getItem(), entityName + entityData, cooldown, true) && getItem().consumeDurability(stack, consumption)) {
             summonEntity(player, stack, clicked);
+            return PowerResult.ok();
         }
+        return PowerResult.noop();
     }
 
     @SuppressWarnings("deprecation")

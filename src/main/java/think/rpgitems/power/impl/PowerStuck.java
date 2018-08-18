@@ -33,6 +33,7 @@ import think.rpgitems.I18n;
 import think.rpgitems.RPGItems;
 import think.rpgitems.commands.Property;
 import think.rpgitems.power.PowerHit;
+import think.rpgitems.power.PowerResult;
 import think.rpgitems.power.PowerRightClick;
 
 import java.util.List;
@@ -114,22 +115,24 @@ public class PowerStuck extends BasePower implements PowerHit, PowerRightClick {
     private Cache<UUID, Long> stucked = CacheBuilder.newBuilder().expireAfterAccess(10, TimeUnit.MINUTES).concurrencyLevel(2).build();
 
     @Override
-    public void hit(Player player, ItemStack stack, LivingEntity entity, double damage, EntityDamageByEntityEvent event) {
-        if (!allowHit) return;
-        if (!checkCooldown(this, player, cooldown, true)) return;
+    public PowerResult<Double> hit(Player player, ItemStack stack, LivingEntity entity, double damage, EntityDamageByEntityEvent event) {
+        if (!allowHit) return PowerResult.noop();
+        if (!checkCooldown(this, player, cooldown, true)) return PowerResult.cd();
         if (random.nextInt(chance) == 0) {
-            if (!getItem().consumeDurability(stack, consumption)) return;
+            if (!getItem().consumeDurability(stack, consumption)) return PowerResult.cost();
             stucked.put(entity.getUniqueId(), System.currentTimeMillis());
             entity.addPotionEffect(new PotionEffect(PotionEffectType.SLOW, duration, 10), true);
             entity.addPotionEffect(new PotionEffect(PotionEffectType.JUMP, duration, 128), true);
+            return PowerResult.ok(damage);
         }
+        return PowerResult.noop();
     }
 
     @Override
-    public void rightClick(Player player, ItemStack stack, Block clicked, PlayerInteractEvent event) {
-        if (!allowAoe) return;
-        if (!checkCooldown(this, player, cooldown, true)) return;
-        if (!getItem().consumeDurability(stack, costAoe)) return;
+    public PowerResult<Void> rightClick(Player player, ItemStack stack, Block clicked, PlayerInteractEvent event) {
+        if (!allowAoe) return PowerResult.noop();
+        if (!checkCooldown(this, player, cooldown, true)) return PowerResult.cd();
+        if (!getItem().consumeDurability(stack, costAoe)) return PowerResult.cost();
         List<LivingEntity> entities = getLivingEntitiesInCone(getNearestLivingEntities(this, player.getEyeLocation(), player, range, 0), player.getLocation().toVector(), facing, player.getLocation().getDirection());
         entities.forEach(entity -> {
                     if (!getItem().consumeDurability(stack, costPerEntity)) return;
@@ -138,6 +141,7 @@ public class PowerStuck extends BasePower implements PowerHit, PowerRightClick {
                     entity.addPotionEffect(new PotionEffect(PotionEffectType.JUMP, duration, 128), true);
                 }
         );
+        return PowerResult.ok();
     }
 
     @Override

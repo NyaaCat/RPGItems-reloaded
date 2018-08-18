@@ -24,6 +24,7 @@ import org.bukkit.event.player.PlayerInteractEvent;
 import org.bukkit.inventory.ItemStack;
 import think.rpgitems.I18n;
 import think.rpgitems.commands.Property;
+import think.rpgitems.power.PowerResult;
 import think.rpgitems.power.PowerRightClick;
 
 import static think.rpgitems.utils.PowerUtils.checkCooldown;
@@ -48,12 +49,13 @@ public class PowerTNTCannon extends BasePower implements PowerRightClick {
     public int consumption = 0;
 
     @Override
-    public void rightClick(Player player, ItemStack stack, Block block, PlayerInteractEvent event) {
-        if (!checkCooldown(this, player, cooldown, true)) return;
-        if (!getItem().consumeDurability(stack, consumption)) return;
+    public PowerResult<Void> rightClick(Player player, ItemStack stack, Block block, PlayerInteractEvent event) {
+        if (!checkCooldown(this, player, cooldown, true)) return PowerResult.cd();
+        if (!getItem().consumeDurability(stack, consumption)) return PowerResult.cost();
         player.playSound(player.getLocation(), Sound.ENTITY_ARROW_SHOOT, 1.0f, 1.0f);
         TNTPrimed tnt = player.getWorld().spawn(player.getLocation().add(0, 1.8, 0), TNTPrimed.class);
         tnt.setVelocity(player.getLocation().getDirection().multiply(2d));
+        return PowerResult.ok();
     }
 
     @Override

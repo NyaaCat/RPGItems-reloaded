@@ -7,6 +7,7 @@ import org.bukkit.inventory.ItemStack;
 import org.bukkit.scheduler.BukkitRunnable;
 import think.rpgitems.RPGItems;
 import think.rpgitems.commands.Property;
+import think.rpgitems.power.PowerResult;
 import think.rpgitems.power.TriggerType;
 
 import static think.rpgitems.utils.PowerUtils.checkCooldownByString;
@@ -32,26 +33,28 @@ public class PowerDelayedCommand extends PowerCommand {
     }
 
     @Override
-    public void rightClick(final Player player, ItemStack stack, Block clicked, PlayerInteractEvent event) {
-        if (!triggers.contains(TriggerType.RIGHT_CLICK) || !checkCooldownByString(player, getItem(), command, cooldown, true)) return;
-        if (!getItem().consumeDurability(stack, consumption)) return;
+    public PowerResult<Void> rightClick(final Player player, ItemStack stack, Block clicked, PlayerInteractEvent event) {
+        if (!triggers.contains(TriggerType.RIGHT_CLICK) || !checkCooldownByString(player, getItem(), command, cooldown, true)) return PowerResult.cd();
+        if (!getItem().consumeDurability(stack, consumption)) return PowerResult.cost();
         (new BukkitRunnable() {
             @Override
             public void run() {
                 executeCommand(player);
             }
         }).runTaskLater(RPGItems.plugin, delay);
+        return PowerResult.ok();
     }
 
     @Override
-    public void leftClick(final Player player, ItemStack stack, Block clicked, PlayerInteractEvent event) {
-        if (!triggers.contains(TriggerType.LEFT_CLICK) || !checkCooldownByString(player, getItem(), command, cooldown, true)) return;
-        if (!getItem().consumeDurability(stack, consumption)) return;
+    public PowerResult<Void> leftClick(final Player player, ItemStack stack, Block clicked, PlayerInteractEvent event) {
+        if (!triggers.contains(TriggerType.LEFT_CLICK) || !checkCooldownByString(player, getItem(), command, cooldown, true)) return PowerResult.cd();
+        if (!getItem().consumeDurability(stack, consumption)) return PowerResult.cost();
         (new BukkitRunnable() {
             @Override
             public void run() {
                 executeCommand(player);
             }
         }).runTaskLater(RPGItems.plugin, delay);
+        return PowerResult.ok();
     }
 }

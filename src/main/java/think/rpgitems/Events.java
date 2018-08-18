@@ -16,6 +16,7 @@
  */
 package think.rpgitems;
 
+import cat.nyaa.nyaacore.utils.ReflectionUtils;
 import com.google.common.collect.MultimapBuilder;
 import com.google.common.collect.SetMultimap;
 import org.bukkit.Bukkit;
@@ -37,6 +38,7 @@ import org.bukkit.event.hanging.HangingBreakEvent.RemoveCause;
 import org.bukkit.event.inventory.*;
 import org.bukkit.event.player.*;
 import org.bukkit.inventory.*;
+import org.bukkit.inventory.meta.ItemMeta;
 import org.bukkit.metadata.FixedMetadataValue;
 import org.bukkit.potion.PotionEffect;
 import org.bukkit.potion.PotionEffectType;
@@ -50,6 +52,9 @@ import think.rpgitems.power.impl.PowerRangedOnly;
 import think.rpgitems.support.WGHandler;
 import think.rpgitems.support.WorldGuard;
 
+import java.lang.reflect.Field;
+import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.Method;
 import java.util.*;
 import java.util.function.Consumer;
 import java.util.stream.Collectors;
@@ -66,6 +71,7 @@ public class Events implements Listener {
     private HashSet<LocaleInventory> localeInventories = new HashSet<>();
     private Random random = new Random();
     private SetMultimap<Class<? extends Event>, Consumer<? extends Event>> eventMap = MultimapBuilder.SortedSetMultimapBuilder.hashKeys().hashSetValues().build();
+    private Map<UUID, ItemStack> tridentCache = new HashMap<>();
 
     @SuppressWarnings("unchecked")
     public <T extends Event> Events addEventListener(Class<T> clz, Consumer<T> listener) {
@@ -189,12 +195,19 @@ public class Events implements Listener {
                 if (player.isOnline() && !player.isDead()) {
                     ItemStack item = player.getInventory().getItemInMainHand();
                     RPGItem hItem = ItemManager.toRPGItem(item);
-                    if (rItem != hItem) {
-                        item = player.getInventory().getItemInOffHand();
-                        hItem = ItemManager.toRPGItem(item);
+                    if (rItem.getItem() != Material.TRIDENT) {
                         if (rItem != hItem) {
-                            return;
+                            item = player.getInventory().getItemInOffHand();
+                            hItem = ItemManager.toRPGItem(item);
+                            if (rItem != hItem) {
+                                return;
+                            }
                         }
+                    } else {
+                        item = tridentCache.get(entity.getUniqueId());
+                        if (item == null) return;
+                        rItem = ItemManager.toRPGItem(item);
+                        if (rItem == null) throw new IllegalStateException();
                     }
                     List<PowerRanged> ranged = rItem.getPower(PowerRanged.class, true);
                     if (!ranged.isEmpty()) {
@@ -218,17 +231,32 @@ public class Events implements Listener {
 
     @EventHandler
     public void onProjectileFire(ProjectileLaunchEvent e) {
-        ProjectileSource shooter = e.getEntity().getShooter();
+        Projectile entity = e.getEntity();
+        ProjectileSource shooter = entity.getShooter();
         if (shooter instanceof Player) {
             Player player = (Player) shooter;
             ItemStack item = player.getInventory().getItemInMainHand();
             RPGItem rItem = ItemManager.toRPGItem(item);
-
-            if (rItem == null) {
-                item = player.getInventory().getItemInOffHand();
+            if (entity instanceof Trident) {
+                item = getTridentItemStackFromEntity((Trident) entity);
                 rItem = ItemManager.toRPGItem(item);
+                if (rItem == null) return;
+                UUID uuid = entity.getUniqueId();
+                tridentCache.put(uuid, item);
+                ItemStack fakeItem = rItem.toItemStack();
+                List<String> fakeLore = new ArrayList<>(1);
+                fakeLore.add(uuid.toString());
+                ItemMeta fakeItemItemMeta = fakeItem.getItemMeta();
+                fakeItemItemMeta.setLore(fakeLore);
+                fakeItem.setItemMeta(fakeItemItemMeta);
+                setTridentItemStackToEntity((Trident) entity, fakeItem);
+            } else {
                 if (rItem == null) {
-                    return;
+                    item = player.getInventory().getItemInOffHand();
+                    rItem = ItemManager.toRPGItem(item);
+                    if (rItem == null) {
+                        return;
+                    }
                 }
             }
             if (!rItem.hasPower(PowerRanged.class) && !rItem.hasPower(PowerRangedOnly.class) && item.getType() != Material.BOW && item.getType() != Material.SNOWBALL && item.getType() != Material.EGG && item.getType() != Material.POTION) {
@@ -239,7 +267,43 @@ public class Events implements Listener {
             if (!rItem.checkPermission(player, true)) {
                 e.setCancelled(true);
             }
-            rpgProjectiles.put(e.getEntity().getEntityId(), rItem.getID());
+            rpgProjectiles.put(entity.getEntityId(), rItem.getID());
+        }
+    }
+
+    private ItemStack getTridentItemStackFromEntity(Trident entity) {
+        try {
+            Class<?> craftEntity = ReflectionUtils.getOBCClass("entity.CraftEntity");
+            Class<?> entityThrownTrident = ReflectionUtils.getNMSClass("EntityThrownTrident");
+            Field craftEntityFieldEntity = craftEntity.getDeclaredField("entity");
+            craftEntityFieldEntity.setAccessible(true);
+            Field entityThrownTridentFieldH = entityThrownTrident.getDeclaredField("h");
+            entityThrownTridentFieldH.setAccessible(true);
+            Object thrownTrident = craftEntityFieldEntity.get(entity);
+            Object nmsItemStack = entityThrownTridentFieldH.get(thrownTrident);
+            Class<?> craftItemStack = ReflectionUtils.getOBCClass("inventory.CraftItemStack");
+            Method asBukkitCopy = craftItemStack.getMethod("asBukkitCopy", nmsItemStack.getClass());
+            return (ItemStack) asBukkitCopy.invoke(null, nmsItemStack);
+        } catch (IllegalAccessException | NoSuchFieldException | NoSuchMethodException | InvocationTargetException e) {
+            throw new RuntimeException(e);
+        }
+    }
+
+    private void setTridentItemStackToEntity(Trident entity, ItemStack itemStack) {
+        try {
+            Class<?> craftEntity = ReflectionUtils.getOBCClass("entity.CraftEntity");
+            Class<?> entityThrownTrident = ReflectionUtils.getNMSClass("EntityThrownTrident");
+            Field craftEntityFieldEntity = craftEntity.getDeclaredField("entity");
+            craftEntityFieldEntity.setAccessible(true);
+            Field entityThrownTridentFieldH = entityThrownTrident.getDeclaredField("h");
+            entityThrownTridentFieldH.setAccessible(true);
+            Object thrownTrident = craftEntityFieldEntity.get(entity);
+            Class<?> craftItemStack = ReflectionUtils.getOBCClass("inventory.CraftItemStack");
+            Method asNMSCopy = craftItemStack.getMethod("asNMSCopy", ItemStack.class);
+            Object nmsFakeItem = asNMSCopy.invoke(null, itemStack);
+            entityThrownTridentFieldH.set(thrownTrident, nmsFakeItem);
+        } catch (IllegalAccessException | NoSuchFieldException | NoSuchMethodException | InvocationTargetException e) {
+            throw new RuntimeException(e);
         }
     }
 
@@ -274,8 +338,8 @@ public class Events implements Listener {
     }
 
     @EventHandler
-    public void onPlayerSneak(PlayerToggleSneakEvent e){
-        if(!e.isSneaking()){
+    public void onPlayerSneak(PlayerToggleSneakEvent e) {
+        if (!e.isSneaking()) {
             return;
         }
         Player p = e.getPlayer();
@@ -287,8 +351,8 @@ public class Events implements Listener {
     }
 
     @EventHandler
-    public void onPlayerSprint(PlayerToggleSprintEvent e){
-        if(!e.isSprinting()){
+    public void onPlayerSprint(PlayerToggleSprintEvent e) {
+        if (!e.isSprinting()) {
             return;
         }
         Player p = e.getPlayer();
@@ -331,6 +395,35 @@ public class Events implements Listener {
         }
         if (WorldGuard.isEnabled() && WorldGuard.useWorldGuard && WorldGuard.useCustomFlag) {
             WGHandler.onPlayerJoin(e);
+        }
+    }
+
+    @SuppressWarnings("deprecation")
+    @EventHandler(priority = EventPriority.HIGHEST, ignoreCancelled = true)
+    public void onPlayerPickupTrident(PlayerPickupArrowEvent e) {
+        if (e.getItem().getItemStack().getType() != Material.TRIDENT || !e.getItem().getItemStack().hasItemMeta()) {
+            return;
+        }
+        ItemStack tridentItem = e.getItem().getItemStack();
+        ItemMeta itemMeta = tridentItem.getItemMeta();
+        if (!itemMeta.hasLore() || itemMeta.getLore().isEmpty()) {
+            return;
+        }
+        try {
+            UUID uuid = UUID.fromString(itemMeta.getLore().get(0));
+            ItemStack realItem = tridentCache.get(uuid);
+            if (realItem != null) {
+                tridentCache.remove(uuid);
+                if (realItem.getType() == Material.AIR) {
+                    e.getArrow().setPickupStatus(Arrow.PickupStatus.DISALLOWED);
+                    e.getArrow().setPersistent(false);
+                    e.setCancelled(true);
+                    Bukkit.getScheduler().runTaskLater(RPGItems.plugin, () -> e.getArrow().remove(), 100L);
+                } else {
+                    e.getItem().setItemStack(realItem);
+                }
+            }
+        } catch (IllegalArgumentException ignored) {
         }
     }
 
@@ -623,15 +716,15 @@ public class Events implements Listener {
     }
 
     private double playerHitTaken(Player e, EntityDamageEvent ev) {
-        double ret = Double.MAX_VALUE;
+        double ret = ev.getDamage();
         for (ItemStack item : e.getInventory().getContents()) {
             RPGItem ri = ItemManager.toRPGItem(item);
             if (ri == null) continue;
             double d = ri.takeHit(e, item, ev);
-            if (d < 0) continue;
-            if (d < ret) ret = d;
+            if (d == Double.MAX_VALUE) continue;
+            ret = d < ret ? d : ret;
         }
-        return ret == Double.MAX_VALUE ? ev.getDamage() : ret;
+        return ret;
     }
 
     @EventHandler(priority = EventPriority.MONITOR, ignoreCancelled = true)

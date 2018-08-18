@@ -32,13 +32,13 @@ public class PowerRanged extends BasePower {
     /**
      * Maximum radius
      */
-    @Property(order = 6)
-    public int r = 10;
+    @Property(order = 1)
+    public int r = Integer.MAX_VALUE;
 
     /**
      * Minimum radius
      */
-    @Property(order = 5)
+    @Property(order = 0)
     public int rm = 0;
 
     @Override

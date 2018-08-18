@@ -5,6 +5,8 @@ import org.bukkit.entity.Projectile;
 import org.bukkit.event.entity.ProjectileHitEvent;
 import org.bukkit.inventory.ItemStack;
 
+import javax.annotation.CheckReturnValue;
+
 /**
  * Triggers when RPG Projectile hits
  */
@@ -16,5 +18,6 @@ public interface PowerProjectileHit extends Power {
      * @param stack  Item that triggered this power
      * @param arrow  Projectile
      */
-    void projectileHit(Player player, ItemStack stack, Projectile arrow, ProjectileHitEvent event);
+    @CheckReturnValue
+    PowerResult<Void> projectileHit(Player player, ItemStack stack, Projectile arrow, ProjectileHitEvent event);
 }

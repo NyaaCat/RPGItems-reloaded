@@ -24,6 +24,7 @@ import org.bukkit.inventory.ItemStack;
 import think.rpgitems.I18n;
 import think.rpgitems.commands.Property;
 import think.rpgitems.power.PowerHit;
+import think.rpgitems.power.PowerResult;
 
 import java.util.Random;
 
@@ -50,14 +51,16 @@ public class PowerLifeSteal extends BasePower implements PowerHit {
     private Random random = new Random();
 
     @Override
-    public void hit(Player player, ItemStack stack, LivingEntity entity, double damage, EntityDamageByEntityEvent event) {
+    public PowerResult<Double> hit(Player player, ItemStack stack, LivingEntity entity, double damage, EntityDamageByEntityEvent event) {
         if (random.nextInt(chance) == 0) {
-            if (!getItem().consumeDurability(stack, consumption)) return;
+            if (!getItem().consumeDurability(stack, consumption)) return PowerResult.cost();
             if ((player.getHealth() + damage) >= player.getAttribute(Attribute.GENERIC_MAX_HEALTH).getValue()) {
                 player.setHealth(player.getAttribute(Attribute.GENERIC_MAX_HEALTH).getValue());
             } else
                 player.setHealth(player.getHealth() + damage);
+            return PowerResult.ok(damage);
         }
+        return PowerResult.noop();
     }
 
     @Override

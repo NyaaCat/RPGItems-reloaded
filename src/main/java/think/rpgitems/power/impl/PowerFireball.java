@@ -25,6 +25,7 @@ import org.bukkit.inventory.ItemStack;
 import think.rpgitems.Events;
 import think.rpgitems.I18n;
 import think.rpgitems.commands.Property;
+import think.rpgitems.power.PowerResult;
 import think.rpgitems.power.PowerRightClick;
 
 import static think.rpgitems.utils.PowerUtils.checkCooldown;
@@ -50,13 +51,14 @@ public class PowerFireball extends BasePower implements PowerRightClick {
 
     @Override
     @SuppressWarnings("deprecation")
-    public void rightClick(Player player, ItemStack stack, Block clicked, PlayerInteractEvent event) {
-        if (!checkCooldown(this, player, cooldown, true)) return;
-        if (!getItem().consumeDurability(stack, consumption)) return;
+    public PowerResult<Void> rightClick(Player player, ItemStack stack, Block clicked, PlayerInteractEvent event) {
+        if (!checkCooldown(this, player, cooldown, true)) return PowerResult.cd();
+        if (!getItem().consumeDurability(stack, consumption)) return PowerResult.cost();
         player.playSound(player.getLocation(), Sound.ENTITY_GHAST_SHOOT, 1.0f, 1.0f);
         SmallFireball entity = player.launchProjectile(SmallFireball.class);
         Events.rpgProjectiles.put(entity.getEntityId(), getItem().getID());
         entity.setPersistent(false);
+        return PowerResult.ok();
     }
 
     @Override

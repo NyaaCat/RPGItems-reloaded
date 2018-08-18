@@ -27,6 +27,7 @@ import org.bukkit.potion.PotionEffectType;
 import think.rpgitems.I18n;
 import think.rpgitems.commands.Property;
 import think.rpgitems.power.PowerHit;
+import think.rpgitems.power.PowerResult;
 
 import static java.lang.Double.max;
 import static java.lang.Double.min;
@@ -64,19 +65,20 @@ public class PowerRealDamage extends BasePower implements PowerHit {
     public double minDamage = 0;
 
     @Override
-    public void hit(Player player, ItemStack stack, LivingEntity entity, double damage, EntityDamageByEntityEvent event) {
-        if (damage < minDamage) return;
-        if (!checkCooldown(this, player, cooldown, true)) return;
-        if (!getItem().consumeDurability(stack, consumption)) return;
+    public PowerResult<Double> hit(Player player, ItemStack stack, LivingEntity entity, double damage, EntityDamageByEntityEvent event) {
+        if (damage < minDamage) return PowerResult.noop();
+        if (!checkCooldown(this, player, cooldown, true)) return PowerResult.cd();
+        if (!getItem().consumeDurability(stack, consumption)) return PowerResult.cost();
         if (entity.hasPotionEffect(PotionEffectType.DAMAGE_RESISTANCE)) {
             PotionEffect e = entity.getPotionEffect(PotionEffectType.DAMAGE_RESISTANCE);
-            if (e.getAmplifier() >= 4) return;
+            if (e.getAmplifier() >= 4) return PowerResult.noop();
         }
         double health = entity.getHealth();
         double newHealth = health - realDamage;
         newHealth = max(newHealth, 0.1);//Bug workaround
         newHealth = min(newHealth, entity.getAttribute(Attribute.GENERIC_MAX_HEALTH).getValue());
         entity.setHealth(newHealth);
+        return PowerResult.ok(damage);
     }
 
     @Override
@@ -88,21 +90,4 @@ public class PowerRealDamage extends BasePower implements PowerHit {
     public String getName() {
         return "realdamage";
     }
-
-    @Override
-    public void init(ConfigurationSection s) {
-        cooldown = s.getLong("cooldown", 20);
-        consumption = s.getInt("consumption", 0);
-        minDamage = s.getInt("minDamage", 0);
-        realDamage = s.getInt("realDamage", 0);
-    }
-
-    @Override
-    public void save(ConfigurationSection s) {
-        s.set("cooldown", cooldown);
-        s.set("consumption", consumption);
-        s.set("minDamage", minDamage);
-        s.set("realDamage", realDamage);
-    }
-
 }

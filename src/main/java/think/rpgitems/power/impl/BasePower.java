@@ -3,20 +3,29 @@ package think.rpgitems.power.impl;
 import org.bukkit.Bukkit;
 import org.bukkit.configuration.ConfigurationSection;
 import think.rpgitems.Handler;
+import think.rpgitems.commands.AcceptedValue;
 import think.rpgitems.commands.PowerProperty;
+import think.rpgitems.commands.Preset;
+import think.rpgitems.commands.Property;
 import think.rpgitems.item.RPGItem;
 import think.rpgitems.power.Power;
 import think.rpgitems.power.PowerManager;
+import think.rpgitems.power.TriggerType;
 
 import java.io.Serializable;
 import java.lang.reflect.Field;
 import java.util.Collection;
+import java.util.Set;
 import java.util.SortedMap;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
 public abstract class BasePower implements Serializable, Power {
     RPGItem item;
+
+    @Property
+    @AcceptedValue(preset = Preset.TRIGGERS)
+    protected Set<TriggerType> triggers = Power.getTriggerTypes(this.getClass());
 
     @Override
     public RPGItem getItem() {
@@ -64,5 +73,10 @@ public abstract class BasePower implements Serializable, Power {
                     }
                 }
         );
+    }
+
+    @Override
+    public Set<TriggerType> getTriggers() {
+        return triggers;
     }
 }

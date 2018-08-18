@@ -4,6 +4,8 @@ import org.bukkit.entity.Player;
 import org.bukkit.event.player.PlayerInteractEvent;
 import org.bukkit.inventory.ItemStack;
 
+import javax.annotation.CheckReturnValue;
+
 /**
  * Triggers when player clicks an item in offhand
  */
@@ -14,5 +16,6 @@ public interface PowerOffhandClick extends Power {
      * @param player Player
      * @param stack  Item that triggered this power
      */
-    void offhandClick(Player player, ItemStack stack, PlayerInteractEvent event);
+    @CheckReturnValue
+    PowerResult<Void> offhandClick(Player player, ItemStack stack, PlayerInteractEvent event);
 }

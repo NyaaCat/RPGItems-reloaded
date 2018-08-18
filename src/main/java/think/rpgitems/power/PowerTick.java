@@ -3,6 +3,8 @@ package think.rpgitems.power;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
 
+import javax.annotation.CheckReturnValue;
+
 /**
  * Triggers per tick
  */
@@ -13,5 +15,6 @@ public interface PowerTick extends Power {
      * @param player Player
      * @param stack  Item that triggered this power
      */
-    void tick(Player player, ItemStack stack);
+    @CheckReturnValue
+    PowerResult<Void> tick(Player player, ItemStack stack);
 }

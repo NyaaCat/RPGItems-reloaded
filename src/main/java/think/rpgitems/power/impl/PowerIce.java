@@ -28,6 +28,7 @@ import org.bukkit.scheduler.BukkitRunnable;
 import think.rpgitems.I18n;
 import think.rpgitems.RPGItems;
 import think.rpgitems.commands.Property;
+import think.rpgitems.power.PowerResult;
 import think.rpgitems.power.PowerRightClick;
 
 import java.util.HashMap;
@@ -60,9 +61,9 @@ public class PowerIce extends BasePower implements PowerRightClick {
 
     @SuppressWarnings("deprecation")
     @Override
-    public void rightClick(final Player player, ItemStack stack, Block clicked, PlayerInteractEvent event) {
-        if (!checkCooldown(this, player, cooldown, true)) return;
-        if (!getItem().consumeDurability(stack, consumption)) return;
+    public PowerResult<Void> rightClick(final Player player, ItemStack stack, Block clicked, PlayerInteractEvent event) {
+        if (!checkCooldown(this, player, cooldown, true)) return PowerResult.cd();
+        if (!getItem().consumeDurability(stack, consumption)) return PowerResult.cost();
         player.playSound(player.getLocation(), Sound.ENTITY_EGG_THROW, 1.0f, 0.1f);
 
         // launch an ice block
@@ -136,6 +137,7 @@ public class PowerIce extends BasePower implements PowerRightClick {
             }
         };
         run.runTaskTimer(RPGItems.plugin, 0, 1);
+        return PowerResult.ok();
     }
 
     @Override

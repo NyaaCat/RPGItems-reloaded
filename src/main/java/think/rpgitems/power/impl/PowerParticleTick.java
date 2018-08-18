@@ -8,6 +8,7 @@ import think.rpgitems.I18n;
 import think.rpgitems.RPGItems;
 import think.rpgitems.commands.Property;
 import think.rpgitems.commands.Validator;
+import think.rpgitems.power.PowerResult;
 import think.rpgitems.power.PowerTick;
 
 import static think.rpgitems.utils.PowerUtils.checkCooldown;
@@ -84,13 +85,14 @@ public class PowerParticleTick extends BasePower implements PowerTick {
     }
 
     @Override
-    public void tick(Player player, ItemStack stack) {
-        if (!checkCooldown(this, player, interval, false)) return;
-        if (!getItem().consumeDurability(stack, consumption)) return;
+    public PowerResult<Void> tick(Player player, ItemStack stack) {
+        if (!checkCooldown(this, player, interval, false)) return PowerResult.cd();
+        if (!getItem().consumeDurability(stack, consumption)) return PowerResult.cost();
         if (effect.equalsIgnoreCase("SMOKE")) {
             player.getWorld().playEffect(player.getLocation().add(0, 2, 0), Effect.valueOf(effect), 4);
         } else {
             player.getWorld().playEffect(player.getLocation(), Effect.valueOf(effect), 0);
         }
+        return PowerResult.ok();
     }
 }

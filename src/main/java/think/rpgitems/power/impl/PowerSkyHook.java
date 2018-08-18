@@ -14,6 +14,7 @@ import think.rpgitems.I18n;
 import think.rpgitems.RPGItems;
 import think.rpgitems.commands.Property;
 import think.rpgitems.data.RPGValue;
+import think.rpgitems.power.PowerResult;
 import think.rpgitems.power.PowerRightClick;
 
 import java.util.Set;
@@ -54,9 +55,9 @@ public class PowerSkyHook extends BasePower implements PowerRightClick {
     public int hookDistance = 10;
 
     @Override
-    public void rightClick(final Player player, ItemStack stack, Block clicked, PlayerInteractEvent event) {
-        if (!checkCooldown(this, player, cooldown, true)) return;
-        if (!getItem().consumeDurability(stack, consumption)) return;
+    public PowerResult<Void> rightClick(final Player player, ItemStack stack, Block clicked, PlayerInteractEvent event) {
+        if (!checkCooldown(this, player, cooldown, true)) return PowerResult.cd();
+        if (!getItem().consumeDurability(stack, consumption)) return PowerResult.cost();
         RPGValue isHooking = RPGValue.get(player, getItem(), "skyhook.isHooking");
         if (isHooking == null) {
             isHooking = new RPGValue(player, getItem(), "skyhook.isHooking", false);
@@ -64,12 +65,12 @@ public class PowerSkyHook extends BasePower implements PowerRightClick {
         if (isHooking.asBoolean()) {
             player.setVelocity(player.getLocation().getDirection());
             isHooking.set(false);
-            return;
+            return PowerResult.noop();
         }
-        Block block = player.getTargetBlock((Set<Material>) null, hookDistance);
+        Block block = player.getTargetBlock(null, hookDistance);
         if (block.getType() != railMaterial) {
             player.sendMessage(I18n.format("message.skyhook.fail"));
-            return;
+            return PowerResult.fail();
         }
         isHooking.set(true);
         final Location location = player.getLocation();
@@ -118,6 +119,7 @@ public class PowerSkyHook extends BasePower implements PowerRightClick {
 
             }
         }).runTaskTimer(RPGItems.plugin, 0, 0);
+        return PowerResult.ok();
     }
 
     @Override

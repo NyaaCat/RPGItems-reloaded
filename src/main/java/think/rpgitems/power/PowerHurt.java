@@ -4,6 +4,8 @@ import org.bukkit.entity.Player;
 import org.bukkit.event.entity.EntityDamageEvent;
 import org.bukkit.inventory.ItemStack;
 
+import javax.annotation.CheckReturnValue;
+
 /**
  * Triggers when being hurt
  */
@@ -15,5 +17,6 @@ public interface PowerHurt extends Power {
      * @param stack  Item that triggered this power
      * @param event  Damage event
      */
-    void hurt(Player target, ItemStack stack, EntityDamageEvent event);
+    @CheckReturnValue
+    PowerResult<Void> hurt(Player target, ItemStack stack, EntityDamageEvent event);
 }

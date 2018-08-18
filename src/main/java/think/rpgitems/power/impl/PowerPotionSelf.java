@@ -26,6 +26,7 @@ import org.bukkit.potion.PotionEffectType;
 import think.rpgitems.I18n;
 import think.rpgitems.commands.Property;
 import think.rpgitems.commands.Setter;
+import think.rpgitems.power.PowerResult;
 import think.rpgitems.power.PowerRightClick;
 
 import static think.rpgitems.utils.PowerUtils.checkCooldown;
@@ -68,10 +69,11 @@ public class PowerPotionSelf extends BasePower implements PowerRightClick {
     public PotionEffectType type = PotionEffectType.HEAL;
 
     @Override
-    public void rightClick(Player player, ItemStack stack, Block clicked, PlayerInteractEvent event) {
-        if (!checkCooldown(this, player, cooldown, true)) return;
-        if (!getItem().consumeDurability(stack, consumption)) return;
+    public PowerResult<Void> rightClick(Player player, ItemStack stack, Block clicked, PlayerInteractEvent event) {
+        if (!checkCooldown(this, player, cooldown, true)) return PowerResult.cd();
+        if (!getItem().consumeDurability(stack, consumption)) return PowerResult.cost();
         player.addPotionEffect(new PotionEffect(type, duration, amplifier), true);
+        return PowerResult.ok();
     }
 
     @Override

@@ -28,6 +28,7 @@ import think.rpgitems.I18n;
 import think.rpgitems.RPGItems;
 import think.rpgitems.commands.Property;
 import think.rpgitems.power.PowerProjectileHit;
+import think.rpgitems.power.PowerResult;
 import think.rpgitems.power.PowerRightClick;
 
 import static think.rpgitems.utils.PowerUtils.checkCooldown;
@@ -61,9 +62,9 @@ public class PowerTeleport extends BasePower implements PowerRightClick, PowerPr
     public int consumption = 0;
 
     @Override
-    public void rightClick(Player player, ItemStack stack, Block clicked, PlayerInteractEvent event) {
-        if (!checkCooldown(this, player, cooldown, true)) return;
-        if (!getItem().consumeDurability(stack, consumption)) return;
+    public PowerResult<Void> rightClick(Player player, ItemStack stack, Block clicked, PlayerInteractEvent event) {
+        if (!checkCooldown(this, player, cooldown, true)) return PowerResult.cd();
+        if (!getItem().consumeDurability(stack, consumption)) return PowerResult.cost();
         // float dist = 0;
         World world = player.getWorld();
         Location start = player.getLocation();
@@ -100,24 +101,26 @@ public class PowerTeleport extends BasePower implements PowerRightClick, PowerPr
         player.teleport(newLoc);
         world.playEffect(newLoc, Effect.ENDER_SIGNAL, 0);
         world.playSound(newLoc, Sound.ENTITY_ENDERMAN_TELEPORT, 1.0f, 0.3f);
+        return PowerResult.ok();
     }
 
     @Override
-    public void projectileHit(Player player, ItemStack stack, Projectile p, ProjectileHitEvent event) {
-        if (!checkCooldown(this, player, cooldown, true)) return;
-        if (!getItem().consumeDurability(stack, consumption)) return;
+    public PowerResult<Void> projectileHit(Player player, ItemStack stack, Projectile p, ProjectileHitEvent event) {
+        if (!checkCooldown(this, player, cooldown, true)) return PowerResult.cd();
+        if (!getItem().consumeDurability(stack, consumption)) return PowerResult.cost();
         World world = player.getWorld();
         Location start = player.getLocation();
         Location newLoc = p.getLocation();
         if (start.distanceSquared(newLoc) >= distance * distance) {
             player.sendMessage(I18n.format("message.too.far"));
-            return;
+            return PowerResult.noop();
         }
         newLoc.setPitch(start.getPitch());
         newLoc.setYaw(start.getYaw());
         player.teleport(newLoc);
         world.playEffect(newLoc, Effect.ENDER_SIGNAL, 0);
         world.playSound(newLoc, Sound.ENTITY_ENDERMAN_TELEPORT, 1.0f, 0.3f);
+        return PowerResult.ok();
     }
 
     @Override

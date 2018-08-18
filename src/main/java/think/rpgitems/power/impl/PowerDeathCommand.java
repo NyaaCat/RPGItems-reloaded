@@ -9,6 +9,7 @@ import org.bukkit.inventory.ItemStack;
 import think.rpgitems.I18n;
 import think.rpgitems.commands.Property;
 import think.rpgitems.power.PowerHit;
+import think.rpgitems.power.PowerResult;
 
 import java.util.Random;
 
@@ -61,9 +62,9 @@ public class PowerDeathCommand extends BasePower implements PowerHit {
     }
 
     @Override
-    public void hit(Player player, ItemStack stack, LivingEntity entity, double damage, EntityDamageByEntityEvent event) {
+    public PowerResult<Double> hit(Player player, ItemStack stack, LivingEntity entity, double damage, EntityDamageByEntityEvent event) {
         if (rand.nextInt(chance) == 0) {
-            if (!getItem().consumeDurability(stack, consumption)) return;
+            if (!getItem().consumeDurability(stack, consumption)) return PowerResult.cost();
             Location loc = entity.getLocation();
             int x = (int) loc.getX();
             int y = (int) loc.getY();
@@ -71,7 +72,9 @@ public class PowerDeathCommand extends BasePower implements PowerHit {
             entity.setHealth(0);
             String cmd = command.replace("${x}", String.valueOf(x)).replace("${y}", String.valueOf(y)).replace("${z}", String.valueOf(z));
             for (int i = 0; i < count; i++) Bukkit.dispatchCommand(Bukkit.getConsoleSender(), cmd);
+            return PowerResult.ok(damage);
         }
+        return PowerResult.noop();
     }
 
 }

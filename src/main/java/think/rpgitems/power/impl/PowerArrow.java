@@ -25,6 +25,7 @@ import org.bukkit.inventory.ItemStack;
 import think.rpgitems.Events;
 import think.rpgitems.I18n;
 import think.rpgitems.commands.Property;
+import think.rpgitems.power.PowerResult;
 import think.rpgitems.power.PowerRightClick;
 
 import static think.rpgitems.utils.PowerUtils.checkCooldown;
@@ -50,15 +51,16 @@ public class PowerArrow extends BasePower implements PowerRightClick {
 
     @SuppressWarnings("deprecation")
     @Override
-    public void rightClick(Player player, ItemStack stack, Block clicked, PlayerInteractEvent event) {
-        if (!checkCooldown(this, player, cooldown, true)) return;
-        if (!getItem().consumeDurability(stack, consumption)) return;
+    public PowerResult<Void> rightClick(Player player, ItemStack stack, Block clicked, PlayerInteractEvent event) {
+        if (!checkCooldown(this, player, cooldown, true)) return PowerResult.cd();
+        if (!getItem().consumeDurability(stack, consumption)) return PowerResult.cost();
         player.playSound(player.getLocation(), Sound.ENTITY_ARROW_SHOOT, 1.0f, 1.0f);
         Arrow arrow = player.launchProjectile(Arrow.class);
         arrow.setPickupStatus(Arrow.PickupStatus.DISALLOWED);
         Events.rpgProjectiles.put(arrow.getEntityId(), getItem().getID());
         Events.removeArrows.add(arrow.getEntityId());
         arrow.setPersistent(false);
+        return PowerResult.ok();
     }
 
     @Override

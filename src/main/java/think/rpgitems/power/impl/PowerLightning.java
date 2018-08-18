@@ -26,6 +26,7 @@ import think.rpgitems.I18n;
 import think.rpgitems.commands.Property;
 import think.rpgitems.power.PowerHit;
 import think.rpgitems.power.PowerProjectileHit;
+import think.rpgitems.power.PowerResult;
 
 import java.util.Random;
 
@@ -50,19 +51,23 @@ public class PowerLightning extends BasePower implements PowerHit, PowerProjecti
     private Random random = new Random();
 
     @Override
-    public void hit(Player player, ItemStack stack, LivingEntity entity, double damage, EntityDamageByEntityEvent event) {
+    public PowerResult<Double> hit(Player player, ItemStack stack, LivingEntity entity, double damage, EntityDamageByEntityEvent event) {
         if (random.nextInt(chance) == 0) {
-            if (!getItem().consumeDurability(stack, consumption)) return;
+            if (!getItem().consumeDurability(stack, consumption)) return PowerResult.cost();
             entity.getWorld().strikeLightning(entity.getLocation());
+            return PowerResult.ok(damage);
         }
+        return PowerResult.noop();
     }
 
     @Override
-    public void projectileHit(Player player, ItemStack stack, Projectile p, ProjectileHitEvent event) {
+    public PowerResult<Void> projectileHit(Player player, ItemStack stack, Projectile p, ProjectileHitEvent event) {
         if (random.nextInt(chance) == 0) {
-            if (!getItem().consumeDurability(stack, consumption)) return;
+            if (!getItem().consumeDurability(stack, consumption)) return PowerResult.cost();
             p.getWorld().strikeLightning(p.getLocation());
+            return PowerResult.ok();
         }
+        return PowerResult.noop();
     }
 
     @Override

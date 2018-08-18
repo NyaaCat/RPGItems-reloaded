@@ -27,6 +27,7 @@ import think.rpgitems.I18n;
 import think.rpgitems.commands.Property;
 import think.rpgitems.commands.Setter;
 import think.rpgitems.power.PowerHit;
+import think.rpgitems.power.PowerResult;
 
 import java.util.Random;
 
@@ -69,11 +70,13 @@ public class PowerPotionHit extends BasePower implements PowerHit {
     private Random rand = new Random();
 
     @Override
-    public void hit(Player player, ItemStack stack, LivingEntity entity, double damage, EntityDamageByEntityEvent event) {
+    public PowerResult<Double> hit(Player player, ItemStack stack, LivingEntity entity, double damage, EntityDamageByEntityEvent event) {
         if (rand.nextInt(chance) == 0) {
-            if (!getItem().consumeDurability(stack, consumption)) return;
+            if (!getItem().consumeDurability(stack, consumption)) return PowerResult.cost();
             entity.addPotionEffect(new PotionEffect(type, duration, amplifier));
+            return PowerResult.ok(damage);
         }
+        return PowerResult.noop();
     }
 
     @Override

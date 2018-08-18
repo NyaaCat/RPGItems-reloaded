@@ -24,6 +24,7 @@ import org.bukkit.inventory.ItemStack;
 import think.rpgitems.I18n;
 import think.rpgitems.commands.Property;
 import think.rpgitems.power.PowerHit;
+import think.rpgitems.power.PowerResult;
 
 import static think.rpgitems.utils.PowerUtils.checkCooldown;
 
@@ -41,8 +42,8 @@ public class PowerConsumeHit extends BasePower implements PowerHit {
     public int cooldown = 0;
 
     @Override
-    public void hit(final Player player, ItemStack stack, LivingEntity entity, double damage, EntityDamageByEntityEvent event) {
-        if (!checkCooldown(this, player, cooldown, false)) return;
+    public PowerResult<Double> hit(final Player player, ItemStack stack, LivingEntity entity, double damage, EntityDamageByEntityEvent event) {
+        if (!checkCooldown(this, player, cooldown, false)) return PowerResult.cd();
         int count = stack.getAmount() - 1;
         if (count == 0) {
             stack.setAmount(0);
@@ -50,6 +51,7 @@ public class PowerConsumeHit extends BasePower implements PowerHit {
         } else {
             stack.setAmount(count);
         }
+        return PowerResult.ok(damage);
     }
 
     @Override

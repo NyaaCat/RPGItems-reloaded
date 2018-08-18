@@ -9,10 +9,12 @@ import org.bukkit.inventory.ItemStack;
 import think.rpgitems.Events;
 import think.rpgitems.I18n;
 import think.rpgitems.commands.Property;
+import think.rpgitems.power.PowerResult;
 import think.rpgitems.power.PowerRightClick;
 
 import java.util.List;
 
+import static think.rpgitems.power.PowerResult.ok;
 import static think.rpgitems.utils.PowerUtils.*;
 
 /**
@@ -52,9 +54,9 @@ public class PowerShulkerBullet extends BasePower implements PowerRightClick {
 
     @Override
     @SuppressWarnings("deprecation")
-    public void rightClick(Player player, ItemStack stack, Block clicked, PlayerInteractEvent event) {
-        if (!checkCooldown(this, player, cooldown, true)) return;
-        if (!getItem().consumeDurability(stack, consumption)) return;
+    public PowerResult<Void> rightClick(Player player, ItemStack stack, Block clicked, PlayerInteractEvent event) {
+        if (!checkCooldown(this, player, cooldown, true)) return PowerResult.cd();
+        if (!getItem().consumeDurability(stack, consumption)) return PowerResult.cost();
         ShulkerBullet bullet = null;
         bullet = player.launchProjectile(ShulkerBullet.class);
         bullet.setPersistent(false);
@@ -63,5 +65,6 @@ public class PowerShulkerBullet extends BasePower implements PowerRightClick {
         if (!entities.isEmpty()) {
             bullet.setTarget(entities.get(0));
         }
+        return ok();
     }
 }

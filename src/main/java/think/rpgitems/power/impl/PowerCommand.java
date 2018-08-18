@@ -31,7 +31,6 @@ import think.rpgitems.commands.Property;
 import think.rpgitems.power.*;
 
 import java.util.Collections;
-import java.util.List;
 import java.util.Set;
 
 import static think.rpgitems.utils.PowerUtils.AttachPermission;
@@ -73,13 +72,9 @@ public class PowerCommand extends BasePower implements PowerRightClick, PowerLef
     @Property
     public int consumption = 0;
 
-    @Property
-    @AcceptedValue(preset = Preset.TRIGGERS)
-    public Set<TriggerType> triggers = Collections.singleton(TriggerType.RIGHT_CLICK);
-
     @Override
     public void init(ConfigurationSection section) {
-        String isRight = section.getString("isRight");
+        String isRight = section.getString("isRight", "true");
         if (isRight != null) {
             triggers = Collections.singleton(isRight.equalsIgnoreCase("true") ? TriggerType.RIGHT_CLICK : TriggerType.LEFT_CLICK);
         }
@@ -91,8 +86,8 @@ public class PowerCommand extends BasePower implements PowerRightClick, PowerLef
      *
      * @param player player
      */
-    protected void executeCommand(Player player) {
-        if (!player.isOnline()) return;
+    protected PowerResult<Void> executeCommand(Player player) {
+        if (!player.isOnline()) return PowerResult.noop();
 
         AttachPermission(player, permission);
         boolean wasOp = player.isOp();
@@ -112,8 +107,6 @@ public class PowerCommand extends BasePower implements PowerRightClick, PowerLef
             try {
                 player.setOp(true);
                 run.run();
-            } catch (Exception e) {
-                e.printStackTrace();
             } finally {
                 if (!wasOp) {
                     player.setOp(false);
@@ -122,46 +115,47 @@ public class PowerCommand extends BasePower implements PowerRightClick, PowerLef
         } else {
             run.run();
         }
+        return PowerResult.ok();
     }
 
     @Override
-    public void rightClick(Player player, ItemStack stack, Block clicked, PlayerInteractEvent event) {
+    public PowerResult<Void> rightClick(Player player, ItemStack stack, Block clicked, PlayerInteractEvent event) {
         if (!triggers.contains(TriggerType.RIGHT_CLICK) || !checkCooldownByString(player, getItem(), command, cooldown, true))
-            return;
-        if (!getItem().consumeDurability(stack, consumption)) return;
-        executeCommand(player);
+            return PowerResult.cd();
+        if (!getItem().consumeDurability(stack, consumption)) return PowerResult.cost();
+        return executeCommand(player);
     }
 
     @Override
-    public void leftClick(Player player, ItemStack stack, Block clicked, PlayerInteractEvent event) {
+    public PowerResult<Void> leftClick(Player player, ItemStack stack, Block clicked, PlayerInteractEvent event) {
         if (!triggers.contains(TriggerType.LEFT_CLICK) || !checkCooldownByString(player, getItem(), command, cooldown, true))
-            return;
-        if (!getItem().consumeDurability(stack, consumption)) return;
-        executeCommand(player);
+            return PowerResult.cd();
+        if (!getItem().consumeDurability(stack, consumption)) return PowerResult.cost();
+        return executeCommand(player);
     }
 
     @Override
-    public void sneak(Player player, ItemStack stack, PlayerToggleSneakEvent event) {
+    public PowerResult<Void> sneak(Player player, ItemStack stack, PlayerToggleSneakEvent event) {
         if (!triggers.contains(TriggerType.SNEAK) || !checkCooldownByString(player, getItem(), command, cooldown, true))
-            return;
-        if (!getItem().consumeDurability(stack, consumption)) return;
-        executeCommand(player);
+            return PowerResult.cd();
+        if (!getItem().consumeDurability(stack, consumption)) return PowerResult.cost();
+        return executeCommand(player);
     }
 
     @Override
-    public void sprint(Player player, ItemStack stack, PlayerToggleSprintEvent event) {
+    public PowerResult<Void> sprint(Player player, ItemStack stack, PlayerToggleSprintEvent event) {
         if (!triggers.contains(TriggerType.SPRINT) || !checkCooldownByString(player, getItem(), command, cooldown, true))
-            return;
-        if (!getItem().consumeDurability(stack, consumption)) return;
-        executeCommand(player);
+            return PowerResult.cd();
+        if (!getItem().consumeDurability(stack, consumption)) return PowerResult.cost();
+        return executeCommand(player);
     }
 
     @Override
-    public void hurt(Player target, ItemStack stack, EntityDamageEvent event) {
+    public PowerResult<Void> hurt(Player target, ItemStack stack, EntityDamageEvent event) {
         if (!triggers.contains(TriggerType.HURT) || !checkCooldownByString(target, getItem(), command, cooldown, true))
-            return;
-        if (!getItem().consumeDurability(stack, consumption)) return;
-        executeCommand(target);
+            return PowerResult.cd();
+        if (!getItem().consumeDurability(stack, consumption)) return PowerResult.cost();
+        return executeCommand(target);
     }
 
     @Override
@@ -172,10 +166,5 @@ public class PowerCommand extends BasePower implements PowerRightClick, PowerLef
     @Override
     public String getName() {
         return "command";
-    }
-
-    @Override
-    public Set<TriggerType> getTriggers(){
-        return triggers;
     }
 }

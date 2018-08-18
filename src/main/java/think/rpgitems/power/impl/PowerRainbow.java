@@ -28,6 +28,7 @@ import org.bukkit.util.Vector;
 import think.rpgitems.I18n;
 import think.rpgitems.RPGItems;
 import think.rpgitems.commands.Property;
+import think.rpgitems.power.PowerResult;
 import think.rpgitems.power.PowerRightClick;
 
 import java.util.ArrayList;
@@ -70,9 +71,9 @@ public class PowerRainbow extends BasePower implements PowerRightClick {
     private Random random = new Random();
 
     @Override
-    public void rightClick(Player player, ItemStack stack, Block clicked, PlayerInteractEvent event) {
-        if (!checkCooldown(this, player, cooldown, true)) return;
-        if (!getItem().consumeDurability(stack, consumption)) return;
+    public PowerResult<Void> rightClick(Player player, ItemStack stack, Block clicked, PlayerInteractEvent event) {
+        if (!checkCooldown(this, player, cooldown, true)) return PowerResult.cd();
+        if (!getItem().consumeDurability(stack, consumption)) return PowerResult.cost();
         player.playSound(player.getLocation(), Sound.ENTITY_ARROW_SHOOT, 1.0f, 1.0f);
         final ArrayList<FallingBlock> blocks = new ArrayList<>();
         for (int i = 0; i < count; i++) {
@@ -124,6 +125,7 @@ public class PowerRainbow extends BasePower implements PowerRightClick {
 
             }
         }).runTaskTimer(RPGItems.plugin, 0, 5);
+        return PowerResult.ok();
     }
 
     @Override

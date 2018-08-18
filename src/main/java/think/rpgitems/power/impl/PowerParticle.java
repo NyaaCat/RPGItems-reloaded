@@ -10,6 +10,7 @@ import think.rpgitems.I18n;
 import think.rpgitems.RPGItems;
 import think.rpgitems.commands.Property;
 import think.rpgitems.commands.Validator;
+import think.rpgitems.power.PowerResult;
 import think.rpgitems.power.PowerRightClick;
 
 /**
@@ -75,13 +76,14 @@ public class PowerParticle extends BasePower implements PowerRightClick {
     }
 
     @Override
-    public void rightClick(Player player, ItemStack stack, Block clicked, PlayerInteractEvent event) {
-        if (!getItem().consumeDurability(stack, consumption)) return;
+    public PowerResult<Void> rightClick(Player player, ItemStack stack, Block clicked, PlayerInteractEvent event) {
+        if (!getItem().consumeDurability(stack, consumption)) return PowerResult.cost();
         if (effect.equalsIgnoreCase("SMOKE")) {
             player.getWorld().playEffect(player.getLocation().add(0, 2, 0), Effect.valueOf(effect), 4);
         } else {
             player.getWorld().playEffect(player.getLocation(), Effect.valueOf(effect), 0);
         }
+        return PowerResult.ok();
     }
 
 }

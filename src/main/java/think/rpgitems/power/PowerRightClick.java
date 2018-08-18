@@ -5,6 +5,8 @@ import org.bukkit.entity.Player;
 import org.bukkit.event.player.PlayerInteractEvent;
 import org.bukkit.inventory.ItemStack;
 
+import javax.annotation.CheckReturnValue;
+
 /**
  * Triggers when right click
  */
@@ -16,5 +18,6 @@ public interface PowerRightClick extends Power {
      * @param stack   Item that triggered this power
      * @param clicked Block clicked
      */
-    void rightClick(Player player, ItemStack stack, Block clicked, PlayerInteractEvent event);
+    @CheckReturnValue
+    PowerResult<Void> rightClick(Player player, ItemStack stack, Block clicked, PlayerInteractEvent event);
 }

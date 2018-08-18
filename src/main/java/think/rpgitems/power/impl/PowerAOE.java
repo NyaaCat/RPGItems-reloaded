@@ -18,7 +18,6 @@ package think.rpgitems.power.impl;
 
 import org.bukkit.Effect;
 import org.bukkit.block.Block;
-import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.entity.Entity;
 import org.bukkit.entity.LivingEntity;
 import org.bukkit.entity.Player;
@@ -28,7 +27,9 @@ import org.bukkit.potion.PotionEffect;
 import org.bukkit.potion.PotionEffectType;
 import think.rpgitems.I18n;
 import think.rpgitems.commands.*;
+import think.rpgitems.power.PowerResult;
 import think.rpgitems.power.PowerRightClick;
+import think.rpgitems.power.TriggerResult;
 
 import static think.rpgitems.utils.PowerUtils.checkCooldown;
 import static think.rpgitems.utils.PowerUtils.getNearbyEntities;
@@ -91,40 +92,20 @@ public class PowerAOE extends BasePower implements PowerRightClick {
     public int consumption = 0;
 
     @Override
-    public void init(ConfigurationSection s) {
-        cooldown = s.getLong("cooldown", 20);
-        duration = s.getInt("duration", 60);
-        amplifier = s.getInt("amplifier", 1);
-        range = s.getInt("range", 5);
-        selfapplication = s.getBoolean("selfapplication", true);
-        type = PotionEffectType.getByName(s.getString("type", "HARM"));
-        name = s.getString("name");
-        consumption = s.getInt("consumption", 0);
-    }
-
-    @Override
-    public void save(ConfigurationSection s) {
-        s.set("cooldown", cooldown);
-        s.set("range", range);
-        s.set("duration", duration);
-        s.set("amplifier", amplifier);
-        s.set("selfapplication", selfapplication);
-        s.set("type", type.getName());
-        s.set("name", name);
-        s.set("consumption", consumption);
-    }
-
-    @Override
-    public void rightClick(final Player player, ItemStack stack, Block clicked, PlayerInteractEvent event) {
-        if (!checkCooldown(this, player, cooldown, true)) return;
-        if (!getItem().consumeDurability(stack, consumption)) return;
+    public PowerResult<Void> rightClick(final Player player, ItemStack stack, Block clicked, PlayerInteractEvent event) {
+        if (!checkCooldown(this, player, cooldown, true)) return PowerResult.cd();
+        if (!getItem().consumeDurability(stack, consumption)) return PowerResult.cost();
         PotionEffect effect = new PotionEffect(type, duration, amplifier - 1);
-        if (selfapplication)
+        if (selfapplication) {
             player.addPotionEffect(effect);
+        }
         player.getWorld().playEffect(player.getLocation(), Effect.POTION_BREAK, type.getColor().asRGB());
-        for (Entity ent : getNearbyEntities(this, player.getLocation(), player, range))
-            if (ent instanceof LivingEntity && !player.equals(ent))
+        for (Entity ent : getNearbyEntities(this, player.getLocation(), player, range)) {
+            if (ent instanceof LivingEntity && !player.equals(ent)) {
                 ((LivingEntity) ent).addPotionEffect(effect);
+            }
+        }
+        return PowerResult.ok();
     }
 
     @Override

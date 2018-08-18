@@ -32,6 +32,7 @@ import org.bukkit.util.Vector;
 import think.rpgitems.I18n;
 import think.rpgitems.RPGItems;
 import think.rpgitems.commands.Property;
+import think.rpgitems.power.PowerResult;
 import think.rpgitems.power.PowerRightClick;
 
 import java.util.ArrayList;
@@ -74,9 +75,9 @@ public class PowerFire extends BasePower implements PowerRightClick {
     public int consumption = 0;
 
     @Override
-    public void rightClick(final Player player, ItemStack stack, Block clicked, PlayerInteractEvent event) {
-        if (!checkCooldown(this, player, cooldown, true)) return;
-        if (!getItem().consumeDurability(stack, consumption)) return;
+    public PowerResult<Void> rightClick(final Player player, ItemStack stack, Block clicked, PlayerInteractEvent event) {
+        if (!checkCooldown(this, player, cooldown, true)) return PowerResult.cd();
+        if (!getItem().consumeDurability(stack, consumption)) return PowerResult.cost();
         player.playSound(player.getLocation(), Sound.ITEM_FLINTANDSTEEL_USE, 1.0f, 1.2f);
         final List<Block> fireblocks = new ArrayList<>();
         final FallingBlock block = player.getWorld().spawnFallingBlock(player.getLocation().add(0, 1.8, 0), Material.FIRE.createBlockData());
@@ -153,6 +154,7 @@ public class PowerFire extends BasePower implements PowerRightClick {
             }
         };
         run.runTaskTimer(RPGItems.plugin, 0, 1);
+        return PowerResult.ok();
     }
 
     @Override

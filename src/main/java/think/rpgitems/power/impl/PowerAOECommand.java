@@ -9,6 +9,8 @@ import org.bukkit.event.player.PlayerInteractEvent;
 import org.bukkit.inventory.ItemStack;
 import think.rpgitems.commands.AcceptedValue;
 import think.rpgitems.commands.Property;
+import think.rpgitems.power.PowerResult;
+import think.rpgitems.power.TriggerResult;
 import think.rpgitems.power.TriggerType;
 
 import java.util.List;
@@ -76,8 +78,8 @@ public class PowerAOECommand extends PowerCommand {
         return "aoecommand";
     }
 
-    private void aoeCommand(Player player) {
-        if (!player.isOnline()) return;
+    private PowerResult<Void> aoeCommand(Player player) {
+        if (!player.isOnline()) return PowerResult.noop();
 
         AttachPermission(player, permission);
 
@@ -91,52 +93,56 @@ public class PowerAOECommand extends PowerCommand {
 
 
         boolean wasOp = player.isOp();
-        if (permission.equals("*"))
-            player.setOp(true);
-        boolean forPlayers = type.equalsIgnoreCase("player");
-        boolean forMobs = type.equalsIgnoreCase("mobs");
-
-        if (type.equalsIgnoreCase("entity") || forPlayers || forMobs) {
-            List<LivingEntity> nearbyEntities = getNearestLivingEntities(this, player.getLocation(), player, r, rm);
-            List<LivingEntity> ent = getLivingEntitiesInCone(nearbyEntities, player.getEyeLocation().toVector(), facing, player.getEyeLocation().getDirection());
-            LivingEntity[] entities = ent.toArray(new LivingEntity[ent.size()]);
-            for (int i = 0; i < c && i < entities.length; ++i) {
-                String cmd = usercmd;
-                LivingEntity e = entities[i];
-                if ((mustsee && !player.hasLineOfSight(e))
-                            || (!selfapplication && e == player)
-                            || (forPlayers && !(e instanceof Player))
-                            || (forMobs && e instanceof Player)
-                        ) {
-                    ++c;
-                    continue;
+        try {
+            if (permission.equals("*"))
+                player.setOp(true);
+            boolean forPlayers = type.equalsIgnoreCase("player");
+            boolean forMobs = type.equalsIgnoreCase("mobs");
+            int count = c;
+            if (type.equalsIgnoreCase("entity") || forPlayers || forMobs) {
+                List<LivingEntity> nearbyEntities = getNearestLivingEntities(this, player.getLocation(), player, r, rm);
+                List<LivingEntity> ent = getLivingEntitiesInCone(nearbyEntities, player.getEyeLocation().toVector(), facing, player.getEyeLocation().getDirection());
+                LivingEntity[] entities = ent.toArray(new LivingEntity[ent.size()]);
+                for (int i = 0; i < count && i < entities.length; ++i) {
+                    String cmd = usercmd;
+                    LivingEntity e = entities[i];
+                    if ((mustsee && !player.hasLineOfSight(e))
+                                || (!selfapplication && e == player)
+                                || (forPlayers && !(e instanceof Player))
+                                || (forMobs && e instanceof Player)
+                    ) {
+                        ++count;
+                        continue;
+                    }
+                    cmd = cmd.replaceAll("\\{entity}", e.getName());
+                    cmd = cmd.replaceAll("\\{entity.uuid}", e.getUniqueId().toString());
+                    cmd = cmd.replaceAll("\\{entity.x}", Float.toString(e.getLocation().getBlockX()));
+                    cmd = cmd.replaceAll("\\{entity.y}", Float.toString(e.getLocation().getBlockY()));
+                    cmd = cmd.replaceAll("\\{entity.z}", Float.toString(e.getLocation().getBlockZ()));
+                    cmd = cmd.replaceAll("\\{entity.yaw}", Float.toString(90 + e.getEyeLocation().getYaw()));
+                    cmd = cmd.replaceAll("\\{entity.pitch}", Float.toString(-e.getEyeLocation().getPitch()));
+                    Bukkit.getServer().dispatchCommand(player, cmd);
                 }
-                cmd = cmd.replaceAll("\\{entity}", e.getName());
-                cmd = cmd.replaceAll("\\{entity.uuid}", e.getUniqueId().toString());
-                cmd = cmd.replaceAll("\\{entity.x}", Float.toString(e.getLocation().getBlockX()));
-                cmd = cmd.replaceAll("\\{entity.y}", Float.toString(e.getLocation().getBlockY()));
-                cmd = cmd.replaceAll("\\{entity.z}", Float.toString(e.getLocation().getBlockZ()));
-                cmd = cmd.replaceAll("\\{entity.yaw}", Float.toString(90 + e.getEyeLocation().getYaw()));
-                cmd = cmd.replaceAll("\\{entity.pitch}", Float.toString(-e.getEyeLocation().getPitch()));
-                Bukkit.getServer().dispatchCommand(player, cmd);
             }
+        } finally {
+            if (permission.equals("*"))
+                player.setOp(wasOp);
         }
 
-        if (permission.equals("*"))
-            player.setOp(wasOp);
+        return PowerResult.ok();
     }
 
     @Override
-    public void rightClick(Player player, ItemStack stack, Block clicked, PlayerInteractEvent event) {
-        if (!triggers.contains(TriggerType.RIGHT_CLICK) || !checkCooldownByString(player, getItem(), command, cooldown, true)) return;
-        if (!getItem().consumeDurability(stack, consumption)) return;
-        aoeCommand(player);
+    public PowerResult<Void> rightClick(Player player, ItemStack stack, Block clicked, PlayerInteractEvent event) {
+        if (!triggers.contains(TriggerType.RIGHT_CLICK) || !checkCooldownByString(player, getItem(), command, cooldown, true)) return PowerResult.cd();
+        if (!getItem().consumeDurability(stack, consumption)) return PowerResult.cost();
+        return aoeCommand(player);
     }
 
     @Override
-    public void leftClick(Player player, ItemStack stack, Block clicked, PlayerInteractEvent event) {
-        if (!triggers.contains(TriggerType.LEFT_CLICK) || !checkCooldownByString(player, getItem(), command, cooldown, true)) return;
-        if (!getItem().consumeDurability(stack, consumption)) return;
-        aoeCommand(player);
+    public PowerResult<Void> leftClick(Player player, ItemStack stack, Block clicked, PlayerInteractEvent event) {
+        if (!triggers.contains(TriggerType.LEFT_CLICK) || !checkCooldownByString(player, getItem(), command, cooldown, true)) return PowerResult.cd();
+        if (!getItem().consumeDurability(stack, consumption)) return PowerResult.cost();
+        return aoeCommand(player);
     }
 }

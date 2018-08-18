@@ -23,6 +23,7 @@ import org.bukkit.inventory.ItemStack;
 import think.rpgitems.I18n;
 import think.rpgitems.commands.Property;
 import think.rpgitems.power.PowerHit;
+import think.rpgitems.power.PowerResult;
 
 import java.util.Random;
 
@@ -54,11 +55,12 @@ public class PowerKnockup extends BasePower implements PowerHit {
     private Random rand = new Random();
 
     @Override
-    public void hit(Player player, ItemStack stack, LivingEntity entity, double damage, EntityDamageByEntityEvent event) {
-        if (!getItem().consumeDurability(stack, consumption)) return;
+    public PowerResult<Double> hit(Player player, ItemStack stack, LivingEntity entity, double damage, EntityDamageByEntityEvent event) {
+        if (!getItem().consumeDurability(stack, consumption)) return PowerResult.cost();
         if (rand.nextInt(chance) == 0) {
             entity.setVelocity(player.getLocation().getDirection().setY(power));
         }
+        return PowerResult.ok(damage);
     }
 
     @Override

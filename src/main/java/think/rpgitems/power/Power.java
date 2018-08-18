@@ -48,9 +48,7 @@ public interface Power {
 
     void setItem(RPGItem item);
 
-    default Set<TriggerType> getTriggers() {
-        return getTriggerTypes(this.getClass());
-    }
+    Set<TriggerType> getTriggers();
 
     @SuppressWarnings("unchecked")
     static Set<TriggerType> getTriggerTypes(Class<? extends Power> cls) {

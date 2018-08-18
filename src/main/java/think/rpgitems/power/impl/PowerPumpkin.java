@@ -11,6 +11,7 @@ import org.bukkit.inventory.ItemStack;
 import think.rpgitems.I18n;
 import think.rpgitems.commands.Property;
 import think.rpgitems.power.PowerHit;
+import think.rpgitems.power.PowerResult;
 
 import java.util.Random;
 
@@ -66,14 +67,16 @@ public class PowerPumpkin extends BasePower implements PowerHit {
     }
 
     @Override
-    public void hit(Player player, ItemStack stack, LivingEntity entity, double damage, EntityDamageByEntityEvent event) {
-        if (!getItem().consumeDurability(stack, consumption)) return;
-        if (rand.nextInt(chance) != 0) return;
-        if (entity instanceof Skeleton || entity instanceof Zombie)
+    public PowerResult<Double> hit(Player player, ItemStack stack, LivingEntity entity, double damage, EntityDamageByEntityEvent event) {
+        if (!getItem().consumeDurability(stack, consumption)) return PowerResult.cost();
+        if (rand.nextInt(chance) != 0) return PowerResult.noop();
+        if (entity instanceof Skeleton || entity instanceof Zombie) {
             if (entity.getEquipment().getHelmet() == null || entity.getEquipment().getHelmet().getType() == Material.AIR) {
                 entity.getEquipment().setHelmet(new ItemStack(Material.PUMPKIN));
                 entity.getEquipment().setHelmetDropChance((float) drop);
             }
+        }
+        return PowerResult.ok(damage);
     }
 
 }

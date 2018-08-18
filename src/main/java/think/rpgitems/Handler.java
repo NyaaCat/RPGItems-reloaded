@@ -9,6 +9,7 @@ import org.bukkit.Material;
 import org.bukkit.command.CommandSender;
 import org.bukkit.enchantments.Enchantment;
 import org.bukkit.entity.EntityType;
+import org.bukkit.entity.LivingEntity;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.Inventory;
 import org.bukkit.inventory.ItemFlag;
@@ -211,14 +212,22 @@ public class Handler extends RPGCommandReceiver {
         Collection<RPGItem> items = ItemManager.itemByName.values();
         int perPage = RPGItems.plugin.getConfig().getInt("itemperpage", 9);
         Stream<RPGItem> stream = ItemManager.itemByName.values().stream();
-
+        String nameSearch = args.argString("n", args.argString("name", ""));
+        String displaySearch = args.argString("d", args.argString("display", ""));
+        String typeSearch = args.argString("t", args.argString("type", ""));
         if (args.length() != 1) {
             int max = (int) Math.ceil(items.size() / (double) perPage);
             int page = args.nextInt();
             if (!(0 < page || page <= max)) {
                 throw new BadCommandException("message.num_out_of_range", page, 0, max);
             }
-            stream = ItemManager.itemByName.values().stream().skip((page - 1) * perPage).limit(page);
+            stream = ItemManager.itemByName.values()
+                                           .stream()
+                                           .filter(i -> i.getName().contains(nameSearch))
+                                           .filter(i -> i.getDisplay().contains(displaySearch))
+                                           .filter(i -> i.getType().contains(typeSearch))
+                                           .skip((page - 1) * perPage)
+                                           .limit(page);
             sender.sendMessage(ChatColor.AQUA + "RPGItems: " + page + " / " + max);
         }
 
@@ -1049,4 +1058,10 @@ public class Handler extends RPGCommandReceiver {
         }
     }
 
+    @SubCommand("callback")
+    public void callback(CommandSender sender, Arguments args) {
+        System.out.println(sender);
+        System.out.println(sender.getName());
+        System.out.println(sender instanceof LivingEntity);
+    }
 }
