@@ -505,6 +505,7 @@ public class RPGItem {
 
     private boolean triggerPreCheck(Player player, ItemStack i, ArrayList<? extends Power> powers, TriggerType triggerType) {
         if (!checkPermission(player, true)) return false;
+        if (powers.isEmpty()) return false;
         if (powers.stream().anyMatch(power -> !WorldGuard.canUsePowerNow(player, power))) return false;
 
         RgiPowersPreFireEvent preFire = new RgiPowersPreFireEvent(i, this, player, triggerType, powers);

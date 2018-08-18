@@ -90,7 +90,7 @@ public class PowerTeleport extends BasePower implements PowerRightClick, PowerPr
         Vector velocity = player.getVelocity();
         boolean gliding = player.isGliding();
         player.teleport(newLoc);
-        if(gliding){
+        if (gliding) {
             player.setVelocity(velocity);
         }
         world.playEffect(newLoc, Effect.ENDER_SIGNAL, 0);
