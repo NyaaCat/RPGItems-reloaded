@@ -29,6 +29,7 @@ import org.bukkit.block.Block;
 import org.bukkit.command.CommandSender;
 import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.configuration.MemoryConfiguration;
+import org.bukkit.configuration.file.YamlConfiguration;
 import org.bukkit.enchantments.Enchantment;
 import org.bukkit.entity.LivingEntity;
 import org.bukkit.entity.Player;
@@ -101,9 +102,11 @@ public class RPGItem {
     public int hitCost = 1;
     public boolean hitCostByDamage = false;
     public DamageMode damageMode = DamageMode.FIXED;
+
     private ItemStack item;
     private ItemMeta localeMeta;
     private int id;
+    private int hashcode = 0;
     private String name;
     private String encodedID;
     private boolean haspermission;
@@ -115,6 +118,7 @@ public class RPGItem {
     private String loreText = "";
     private String type = RPGItems.plugin.getConfig().getString("defaults.sword", "Sword");
     private String hand = RPGItems.plugin.getConfig().getString("defaults.hand", "One handed");
+
     private ArrayList<PowerLeftClick> powerLeftClick = new ArrayList<>();
     private ArrayList<PowerRightClick> powerRightClick = new ArrayList<>();
     private ArrayList<PowerProjectileHit> powerProjectileHit = new ArrayList<>();
@@ -297,6 +301,9 @@ public class RPGItem {
             damageMode = DamageMode.FIXED;
         }
         rebuild();
+        if (hashcode == 0) {
+            updateHashCode();
+        }
     }
 
     public static RPGMetadata getMetadata(ItemStack item) {
@@ -308,48 +315,64 @@ public class RPGItem {
         return RPGMetadata.parseLoreline(item.getItemMeta().getLore().get(0));
     }
 
-    public static void updateItem(ItemStack item) {
-        updateItem(item, getMetadata(item));
+    public void updateHashCode() {
+        YamlConfiguration configuration = new YamlConfiguration();
+        save(configuration);
+        hashcode = Math.abs(configuration.saveToString().hashCode());
     }
 
-    public static void updateItem(ItemStack item, RPGMetadata rpgMeta) {
+    public static void updateItem(ItemStack item) {
         RPGItem rItem = ItemManager.toRPGItem(item);
         if (rItem == null)
             return;
-        List<String> reservedLores = filterLores(rItem, item);
-        item.setType(rItem.item.getType());
-        ItemMeta meta = rItem.getLocaleMeta();
-        List<String> lore = meta.getLore();
-        rItem.addExtra(rpgMeta, item, lore);
-        lore.set(0, meta.getLore().get(0) + rpgMeta.toMCString());
-        // Patch for mcMMO buff. See SkillUtils.java#removeAbilityBuff in mcMMO
-        if (item.hasItemMeta() && item.getItemMeta().hasLore() && item.getItemMeta().getLore().contains("mcMMO Ability Tool"))
-            lore.add("mcMMO Ability Tool");
-        lore.addAll(reservedLores);
-        meta.setLore(lore);
-        Map<Enchantment, Integer> enchs = item.getEnchantments();
-        if (enchs.size() > 0)
-            for (Enchantment ench : enchs.keySet())
-                meta.addEnchant(ench, enchs.get(ench), true);
-        item.setItemMeta(meta);
+        updateItem(rItem, item, getMetadata(item), false);
+    }
 
-        List<PowerAttributeModifier> attributeModifiers = rItem.getPower(PowerAttributeModifier.class);
-        if (!attributeModifiers.isEmpty()) {
-            NBTItem nbtItem = new NBTItem(item);
-            NBTList attribute = nbtItem.getList("AttributeModifiers", NBTType.NBTTagCompound);
-            for (PowerAttributeModifier attributeModifier : attributeModifiers) {
-                NBTListCompound mod = attribute.addCompound();
-                if (!Strings.isNullOrEmpty(attributeModifier.slot)) {
-                    mod.setString("Slot", attributeModifier.slot);
-                }
-                mod.setInteger("Amount", attributeModifier.amount);
-                mod.setString("AttributeName", attributeModifier.attributeName);
-                mod.setString("Name", attributeModifier.name);
-                mod.setInteger("Operation", attributeModifier.operation);
-                mod.setInteger("UUIDLeast", attributeModifier.uuidLeast);
-                mod.setInteger("UUIDMost", attributeModifier.uuidMost);
+    public static void updateItem(RPGItem rItem, ItemStack item, boolean force) {
+        updateItem(rItem, item, getMetadata(item), force);
+    }
+
+    public static void updateItem(RPGItem rItem, ItemStack item, RPGMetadata rpgMeta, boolean force) {
+        if (((Number) rpgMeta.getOrDefault(RPGMetadata.VERSION, -1)).intValue() != rItem.hashcode || force) {
+            List<String> reservedLores = filterLores(rItem, item);
+            item.setType(rItem.item.getType());
+            ItemMeta meta = rItem.getLocaleMeta();
+            List<String> lore = meta.getLore();
+            rItem.addExtra(rpgMeta, item, lore);
+            rpgMeta.put(RPGMetadata.VERSION, rItem.hashcode);
+            lore.set(0, meta.getLore().get(0) + rpgMeta.toMCString());
+            // Patch for mcMMO buff. See SkillUtils.java#removeAbilityBuff in mcMMO
+            if (item.hasItemMeta() && item.getItemMeta().hasLore() && item.getItemMeta().getLore().contains("mcMMO Ability Tool"))
+                lore.add("mcMMO Ability Tool");
+            lore.addAll(reservedLores);
+            meta.setLore(lore);
+            Map<Enchantment, Integer> enchs = item.getEnchantments();
+            if (enchs.size() > 0)
+                for (Enchantment ench : enchs.keySet())
+                    meta.addEnchant(ench, enchs.get(ench), true);
+            item.setItemMeta(meta);
+            item.setItemMeta(refreshAttributeModifiers(rItem, item).getItemMeta());
+        } else {
+            ItemMeta meta = rItem.getLocaleMeta();
+            List<String> lore = meta.getLore();
+            rItem.addExtra(rpgMeta, item, lore);
+            lore.set(0, meta.getLore().get(0) + rpgMeta.toMCString());
+            meta.setLore(lore);
+            item.setItemMeta(meta);
+        }
+        if (rItem.maxDurability > 0) {
+            int durability = ((Number) rpgMeta.get(RPGMetadata.DURABILITY)).intValue();
+            if (rItem.customItemModel) {
+                item.setDurability(item.getDurability());
+            } else {
+                item.setDurability((short) (item.getType().getMaxDurability() - ((short) ((double) item.getType().getMaxDurability() * ((double) durability / (double) rItem.maxDurability)))));
             }
-            item.setItemMeta(nbtItem.getItem().getItemMeta());
+        } else {
+            if (rItem.customItemModel) {
+                item.setDurability(item.getDurability());
+            } else {
+                item.setDurability(item.getType().getMaxDurability());
+            }
         }
     }
 
@@ -850,12 +873,16 @@ public class RPGItem {
 
         for (Player player : Bukkit.getOnlinePlayers()) {
             for (ItemStack item : player.getInventory()) {
-                if (ItemManager.toRPGItem(item) != null)
-                    updateItem(item);
+                RPGItem rpgItem = ItemManager.toRPGItem(item);
+                if (rpgItem != null) {
+                    updateItem(rpgItem, item, true);
+                }
             }
             for (ItemStack item : player.getInventory().getArmorContents()) {
-                if (ItemManager.toRPGItem(item) != null)
-                    updateItem(item);
+                RPGItem rpgItem = ItemManager.toRPGItem(item);
+                if (rpgItem != null) {
+                    updateItem(rpgItem, item, true);
+                }
 
             }
         }
@@ -887,17 +914,6 @@ public class RPGItem {
                 else
                     lore.set(lore.size() - 1, out.toString());
             }
-            if (customItemModel) {
-                stack.setDurability(item.getDurability());
-            } else {
-                stack.setDurability((short) (stack.getType().getMaxDurability() - ((short) ((double) stack.getType().getMaxDurability() * ((double) durability / (double) maxDurability)))));
-            }
-        } else if (maxDurability <= 0) {
-            if (customItemModel) {
-                stack.setDurability(item.getDurability());
-            } else {
-                stack.setDurability(hasBar ? (short) 0 : item.getDurability());
-            }
         }
     }
 
@@ -908,12 +924,7 @@ public class RPGItem {
         // add powerLores
         if (showPowerLore) {
             for (Power p : powers) {
-                String txt;
-                try {
-                    txt = p.displayText();
-                } catch (IllegalFormatConversionException ex) {
-                    txt = "Power " + p.getName() + ": bad description";
-                }
+                String txt = p.displayText();
                 if (txt != null && txt.length() > 0) {
                     output.add(txt);
                 }
@@ -1042,12 +1053,17 @@ public class RPGItem {
         RPGMetadata rpgMeta = new RPGMetadata();
         ItemMeta meta = getLocaleMeta();
         List<String> lore = meta.getLore();
+        rpgMeta.put(RPGMetadata.VERSION, hashcode);
         lore.set(0, meta.getLore().get(0) + rpgMeta.toMCString());
         addExtra(rpgMeta, rStack, lore);
         meta.setLore(lore);
         rStack.setItemMeta(meta);
+        rStack = refreshAttributeModifiers(this, rStack);
+        return rStack;
+    }
 
-        List<PowerAttributeModifier> attributeModifiers = this.getPower(PowerAttributeModifier.class);
+    public static ItemStack refreshAttributeModifiers(RPGItem item, ItemStack rStack) {
+        List<PowerAttributeModifier> attributeModifiers = item.getPower(PowerAttributeModifier.class);
         if (!attributeModifiers.isEmpty()) {
             NBTItem nbtItem = new NBTItem(rStack);
             NBTList attribute = nbtItem.getList("AttributeModifiers", NBTType.NBTTagCompound);
@@ -1056,7 +1072,7 @@ public class RPGItem {
                 if (!Strings.isNullOrEmpty(attributeModifier.slot)) {
                     mod.setString("Slot", attributeModifier.slot);
                 }
-                mod.setInteger("Amount", attributeModifier.amount);
+                mod.setDouble("Amount", attributeModifier.amount);
                 mod.setString("AttributeName", attributeModifier.attributeName);
                 mod.setString("Name", attributeModifier.name);
                 mod.setInteger("Operation", attributeModifier.operation);
@@ -1065,7 +1081,6 @@ public class RPGItem {
             }
             rStack = nbtItem.getItem();
         }
-
         return rStack;
     }
 
@@ -1324,7 +1339,7 @@ public class RPGItem {
         if (getMaxDurability() != -1) {
             meta.put(RPGMetadata.DURABILITY, val);
         }
-        updateItem(item, meta);
+        updateItem(this, item, meta, false);
     }
 
     public int getDurability(ItemStack item) {
@@ -1357,8 +1372,7 @@ public class RPGItem {
             }
             meta.put(RPGMetadata.DURABILITY, durability);
         }
-        updateItem(item, meta);
-
+        updateItem(this, item, meta, false);
         return true;
     }
 
@@ -1450,6 +1464,11 @@ public class RPGItem {
         powerRightClick.remove(power);
         powerProjectileHit.remove(power);
         powerTick.remove(power);
+        powerOffhandClick.remove(power);
+        powerSneak.remove(power);
+        powerSprint.remove(power);
+        powerSwapToOffhand.remove(power);
+        powerSwapToMainhand.remove(power);
         rebuild();
     }
 

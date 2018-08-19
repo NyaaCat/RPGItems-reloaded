@@ -119,6 +119,7 @@ public class ItemManager {
                 itemSection = newSection.createSection(item.getName().replace(".", "_"));
             }
             item.save(itemSection);
+            item.updateHashCode();
         }
 
         FileOutputStream out = null;

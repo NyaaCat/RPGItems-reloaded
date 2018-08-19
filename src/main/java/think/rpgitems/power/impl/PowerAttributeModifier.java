@@ -2,14 +2,12 @@ package think.rpgitems.power.impl;
 
 import think.rpgitems.commands.Property;
 
-import java.util.Collections;
-import java.util.Set;
 import java.util.UUID;
 
 public class PowerAttributeModifier extends BasePower {
 
     @Property(order = 0)
-    public int amount = 2;
+    public double amount = 2;
 
     @Property(order = 1)
     public String attributeName = "generic.maxHealth";

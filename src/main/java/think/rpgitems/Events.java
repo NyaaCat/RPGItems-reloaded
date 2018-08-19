@@ -152,13 +152,12 @@ public class Events implements Listener {
                 player.getInventory().setItemInMainHand(item);
             }
         }
-
     }
 
     @EventHandler
     public void onEntityDeath(EntityDeathEvent e) {
         String type = e.getEntity().getType().toString();
-        if(PowerTranslocator.translocatorPlayerMap.getIfPresent(e.getEntity().getUniqueId()) != null) {
+        if (PowerTranslocator.translocatorPlayerMap.getIfPresent(e.getEntity().getUniqueId()) != null) {
             e.getDrops().clear();
         }
         Random random = new Random();
@@ -338,7 +337,6 @@ public class Events implements Listener {
         } else if (action == Action.LEFT_CLICK_AIR || action == Action.LEFT_CLICK_BLOCK) {
             rItem.leftClick(p, e.getItem(), e.getClickedBlock(), e);
         }
-        RPGItem.updateItem(e.getItem());
     }
 
     @EventHandler
@@ -351,7 +349,6 @@ public class Events implements Listener {
         RPGItem rItem = ItemManager.toRPGItem(item);
         if (rItem == null) return;
         rItem.sneak(p, item, e);
-        RPGItem.updateItem(item);
     }
 
     @EventHandler
@@ -364,7 +361,6 @@ public class Events implements Listener {
         RPGItem rItem = ItemManager.toRPGItem(item);
         if (rItem == null) return;
         rItem.sprint(p, item, e);
-        RPGItem.updateItem(item);
     }
 
     @EventHandler
@@ -377,12 +373,10 @@ public class Events implements Listener {
 
         if (mitem != null) {
             mitem.swapToMainhand(player, mis, e);
-            RPGItem.updateItem(mis);
         }
 
         if (oitem != null) {
             oitem.swapToOffhand(player, ois, e);
-            RPGItem.updateItem(ois);
         }
     }
 
@@ -399,12 +393,10 @@ public class Events implements Listener {
 
         if (currentItem != null && (e.getAction() == InventoryAction.PICKUP_SOME || e.getAction() == InventoryAction.PICKUP_ALL || e.getAction() == InventoryAction.PICKUP_ONE || e.getAction() == InventoryAction.PICKUP_HALF)) {
             currentItem.pickupOffhand(player, currentIs, e);
-            RPGItem.updateItem(currentIs);
         }
 
         if (cursorItem != null && (e.getAction() == InventoryAction.PLACE_SOME || e.getAction() == InventoryAction.PLACE_ONE || e.getAction() == InventoryAction.PLACE_ALL)) {
             cursorItem.placeOffhand(player, cursorIs, e);
-            RPGItem.updateItem(cursorIs);
         }
     }
 
@@ -431,12 +423,16 @@ public class Events implements Listener {
         PlayerInventory in = player.getInventory();
         for (int i = 0; i < in.getSize(); i++) {
             ItemStack item = in.getItem(i);
-            if (ItemManager.toRPGItem(item) != null)
-                RPGItem.updateItem(item);
+            RPGItem rpgItem = ItemManager.toRPGItem(item);
+            if (rpgItem != null) {
+                RPGItem.updateItem(rpgItem, item, true);
+            }
         }
         for (ItemStack item : player.getInventory().getArmorContents()) {
-            if (ItemManager.toRPGItem(item) != null)
-                RPGItem.updateItem(item);
+            RPGItem rpgItem = ItemManager.toRPGItem(item);
+            if (rpgItem != null) {
+                RPGItem.updateItem(rpgItem, item, true);
+            }
         }
         if (WorldGuard.isEnabled() && WorldGuard.useWorldGuard && WorldGuard.useCustomFlag) {
             WGHandler.onPlayerJoin(e);
@@ -568,8 +564,9 @@ public class Events implements Listener {
             try {
                 while (it.hasNext()) {
                     ItemStack item = it.next();
-                    if (ItemManager.toRPGItem(item) != null)
-                        RPGItem.updateItem(item);
+                    RPGItem rpgItem = ItemManager.toRPGItem(item);
+                    if (rpgItem != null)
+                        RPGItem.updateItem(rpgItem, item, true);
                 }
             } catch (ArrayIndexOutOfBoundsException ex) {
                 // Fix for the bug with anvils in craftbukkit
@@ -654,7 +651,7 @@ public class Events implements Listener {
 
     private double projectileDamager(EntityDamageByEntityEvent e, double damage) {
         Projectile entity = (Projectile) e.getDamager();
-        if(PowerTranslocator.translocatorPlayerMap.getIfPresent(entity.getUniqueId()) != null){
+        if (PowerTranslocator.translocatorPlayerMap.getIfPresent(entity.getUniqueId()) != null) {
             e.setCancelled(true);
             return 0;
         }
