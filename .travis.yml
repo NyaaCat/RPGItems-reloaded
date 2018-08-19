@@ -50,10 +50,20 @@ jobs:
         on:
           tags: false
           all_branches: true
+      before_cache:
+      - rm -f  $HOME/.gradle/caches/modules-2/modules-2.lock
+      - rm -f  $HOME/.gradle/caches/*/fileHashes/fileHashes.bin
+      - rm -f  $HOME/.gradle/caches/*/fileHashes/fileHashes.lock
+      - rm -f  $HOME/.gradle/caches/transforms-1/transforms-1.lock
+      - rm -fr $HOME/.gradle/caches/*/plugin-resolution/
+      cache:
+        directories:
+        - $HOME/.gradle/caches/
+        - $HOME/.gradle/wrapper/
 
     - stage: javadoc
       language: java
-      jdk: openjdk11
+      jdk: oraclejdk10
       script:
       - export MC_VERSION=`sed -n 's/^ext\.minecraftVersion = "\(.*\)"$/\1/p' build.gradle`
       - if [ "$TRAVIS_PULL_REQUEST" != "false" ]; then exit 0; fi
