@@ -50,16 +50,6 @@ jobs:
         on:
           tags: false
           all_branches: true
-      before_cache:
-      - rm -f  $HOME/.gradle/caches/modules-2/modules-2.lock
-      - rm -f  $HOME/.gradle/caches/*/fileHashes/fileHashes.bin
-      - rm -f  $HOME/.gradle/caches/*/fileHashes/fileHashes.lock
-      - rm -f  $HOME/.gradle/caches/transforms-1/transforms-1.lock
-      - rm -fr $HOME/.gradle/caches/*/plugin-resolution/
-      cache:
-        directories:
-        - $HOME/.gradle/caches/
-        - $HOME/.gradle/wrapper/
 
     - stage: javadoc
       language: java
@@ -84,6 +74,16 @@ jobs:
           popd
         fi
 
+before_cache:
+- rm -f  $HOME/.gradle/caches/modules-2/modules-2.lock
+- rm -f  $HOME/.gradle/caches/*/fileHashes/fileHashes.bin
+- rm -f  $HOME/.gradle/caches/*/fileHashes/fileHashes.lock
+- rm -f  $HOME/.gradle/caches/transforms-1/transforms-1.lock
+- rm -fr $HOME/.gradle/caches/*/plugin-resolution/
+cache:
+  directories:
+  - $HOME/.gradle/caches/
+  - $HOME/.gradle/wrapper/
 branches:
   except:
   - "/^*-v[0-9]/"
