@@ -66,14 +66,14 @@ public class PowerRainbow extends BasePower implements PowerRightClick {
      * Cost of this power
      */
     @Property
-    public int consumption = 0;
+    public int cost = 0;
 
     private Random random = new Random();
 
     @Override
     public PowerResult<Void> rightClick(Player player, ItemStack stack, Block clicked, PlayerInteractEvent event) {
         if (!checkCooldown(this, player, cooldown, true)) return PowerResult.cd();
-        if (!getItem().consumeDurability(stack, consumption)) return PowerResult.cost();
+        if (!getItem().consumeDurability(stack, cost)) return PowerResult.cost();
         player.playSound(player.getLocation(), Sound.ENTITY_ARROW_SHOOT, 1.0f, 1.0f);
         final ArrayList<FallingBlock> blocks = new ArrayList<>();
         for (int i = 0; i < count; i++) {
@@ -143,7 +143,7 @@ public class PowerRainbow extends BasePower implements PowerRightClick {
         cooldown = s.getLong("cooldown", 20);
         count = s.getInt("count", 5);
         isFire = s.getBoolean("isFire");
-        consumption = s.getInt("consumption", 0);
+        cost = s.getInt("cost", s.getInt("consumption", 0));
     }
 
     @Override
@@ -151,7 +151,7 @@ public class PowerRainbow extends BasePower implements PowerRightClick {
         s.set("cooldown", cooldown);
         s.set("count", count);
         s.set("isFire", isFire);
-        s.set("consumption", consumption);
+        s.set("cost", cost);
     }
 
 }

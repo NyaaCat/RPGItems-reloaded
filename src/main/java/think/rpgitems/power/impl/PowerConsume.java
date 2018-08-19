@@ -56,7 +56,7 @@ public class PowerConsume extends BasePower implements PowerRightClick, PowerLef
      * Cost of this power
      */
     @Property
-    public int consumption = 0;
+    public int cost = 0;
 
     @Override
     public PowerResult<Void> rightClick(final Player player, ItemStack stack, Block clicked, PlayerInteractEvent event) {
@@ -76,7 +76,7 @@ public class PowerConsume extends BasePower implements PowerRightClick, PowerLef
 
     private PowerResult<Void> consume(final Player player) {
         ItemStack stack = player.getInventory().getItemInMainHand();
-        if (!getItem().consumeDurability(stack, consumption)) return PowerResult.cost();
+        if (!getItem().consumeDurability(stack, cost)) return PowerResult.cost();
         int count = stack.getAmount() - 1;
         if (count == 0) {
             Bukkit.getScheduler().scheduleSyncDelayedTask(RPGItems.plugin, () -> player.getInventory().setItemInMainHand(new ItemStack(Material.AIR)), 1L);

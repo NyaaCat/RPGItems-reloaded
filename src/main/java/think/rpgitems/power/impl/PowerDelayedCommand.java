@@ -35,7 +35,7 @@ public class PowerDelayedCommand extends PowerCommand {
     @Override
     public PowerResult<Void> rightClick(final Player player, ItemStack stack, Block clicked, PlayerInteractEvent event) {
         if (!triggers.contains(TriggerType.RIGHT_CLICK) || !checkCooldownByString(player, getItem(), command, cooldown, true)) return PowerResult.cd();
-        if (!getItem().consumeDurability(stack, consumption)) return PowerResult.cost();
+        if (!getItem().consumeDurability(stack, cost)) return PowerResult.cost();
         (new BukkitRunnable() {
             @Override
             public void run() {
@@ -48,7 +48,7 @@ public class PowerDelayedCommand extends PowerCommand {
     @Override
     public PowerResult<Void> leftClick(final Player player, ItemStack stack, Block clicked, PlayerInteractEvent event) {
         if (!triggers.contains(TriggerType.LEFT_CLICK) || !checkCooldownByString(player, getItem(), command, cooldown, true)) return PowerResult.cd();
-        if (!getItem().consumeDurability(stack, consumption)) return PowerResult.cost();
+        if (!getItem().consumeDurability(stack, cost)) return PowerResult.cost();
         (new BukkitRunnable() {
             @Override
             public void run() {

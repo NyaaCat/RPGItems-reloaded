@@ -61,7 +61,7 @@ public class PowerStuck extends BasePower implements PowerHit, PowerRightClick {
     /**
      * Cost of this power (hit)
      */
-    public int consumption = 0;
+    public int cost = 0;
 
     /**
      * Cost of this power (right click)
@@ -119,7 +119,7 @@ public class PowerStuck extends BasePower implements PowerHit, PowerRightClick {
         if (!allowHit) return PowerResult.noop();
         if (!checkCooldown(this, player, cooldown, true)) return PowerResult.cd();
         if (random.nextInt(chance) == 0) {
-            if (!getItem().consumeDurability(stack, consumption)) return PowerResult.cost();
+            if (!getItem().consumeDurability(stack, cost)) return PowerResult.cost();
             stucked.put(entity.getUniqueId(), System.currentTimeMillis());
             entity.addPotionEffect(new PotionEffect(PotionEffectType.SLOW, duration, 10), true);
             entity.addPotionEffect(new PotionEffect(PotionEffectType.JUMP, duration, 128), true);
@@ -158,7 +158,7 @@ public class PowerStuck extends BasePower implements PowerHit, PowerRightClick {
     public void init(ConfigurationSection s) {
         facing = s.getDouble("facing", 30);
         chance = s.getInt("chance", 3);
-        consumption = s.getInt("consumption", 0);
+        cost = s.getInt("cost", s.getInt("consumption", 0));
         cooldown = s.getLong("cooldown", 200);
         duration = s.getInt("duration", 100);
         costAoe = s.getInt("costAOE", 0);
@@ -192,7 +192,7 @@ public class PowerStuck extends BasePower implements PowerHit, PowerRightClick {
     @Override
     public void save(ConfigurationSection s) {
         s.set("chance", chance);
-        s.set("consumption", consumption);
+        s.set("cost", cost);
         s.set("duration", duration);
         s.set("cooldown", cooldown);
         s.set("range", range);

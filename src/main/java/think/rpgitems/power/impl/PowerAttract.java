@@ -51,7 +51,7 @@ public class PowerAttract extends BasePower implements PowerTick, PowerLeftClick
      * Cost of this power
      */
     @Property
-    public int consumption = 0;
+    public int cost = 0;
     /**
      * Hooking Cost Pre-Tick
      */
@@ -144,7 +144,7 @@ public class PowerAttract extends BasePower implements PowerTick, PowerLeftClick
     @Override
     public PowerResult<Void> leftClick(Player player, ItemStack stack, Block clicked, PlayerInteractEvent event) {
         if (!checkCooldown(this, player, cooldown, true)) return PowerResult.cd();
-        if (!item.consumeDurability(stack, consumption)) return PowerResult.cost();
+        if (!item.consumeDurability(stack, cost)) return PowerResult.cost();
         Bukkit.getScheduler().scheduleSyncRepeatingTask(RPGItem.getPlugin(), () -> attract(player, stack), 0, duration);
         return PowerResult.ok();
     }
@@ -152,7 +152,7 @@ public class PowerAttract extends BasePower implements PowerTick, PowerLeftClick
     @Override
     public PowerResult<Void> rightClick(Player player, ItemStack stack, Block clicked, PlayerInteractEvent event) {
         if (!checkCooldown(this, player, cooldown, true)) return PowerResult.cd();
-        if (!item.consumeDurability(stack, consumption)) return PowerResult.cost();
+        if (!item.consumeDurability(stack, cost)) return PowerResult.cost();
         Bukkit.getScheduler().scheduleSyncRepeatingTask(RPGItem.getPlugin(), () -> attract(player, stack), 0, duration);
         return PowerResult.ok();
     }

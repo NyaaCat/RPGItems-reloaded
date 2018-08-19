@@ -43,7 +43,7 @@ public class PowerTranslocator extends BasePower implements PowerSwapToOffhand, 
      * Cost of this power
      */
     @Property
-    public int setUpCost = 0;
+    public int setupCost = 0;
 
     /**
      * Cost of this power
@@ -54,8 +54,6 @@ public class PowerTranslocator extends BasePower implements PowerSwapToOffhand, 
     @Override
     public PowerResult<Boolean> swapToMainhand(Player player, ItemStack stack, PlayerSwapHandItemsEvent event) {
         checkCooldown(this, player, cooldown, false);
-        if (!getItem().consumeDurability(stack, tpCost)) return PowerResult.cost();
-
         UUID translocatorUUID = playerTranslocatorMap.getIfPresent(player.getUniqueId());
         if (translocatorUUID == null) {
             return PowerResult.fail();
@@ -71,6 +69,7 @@ public class PowerTranslocator extends BasePower implements PowerSwapToOffhand, 
             return PowerResult.fail();
         }
         translocator.remove();
+        if (!getItem().consumeDurability(stack, tpCost)) return PowerResult.cost();
         Location newLoc = translocator.getLocation();
         Vector direction = player.getLocation().getDirection();
         newLoc.setDirection(direction);
@@ -101,7 +100,7 @@ public class PowerTranslocator extends BasePower implements PowerSwapToOffhand, 
     @Override
     public PowerResult<Boolean> swapToOffhand(Player player, ItemStack stack, PlayerSwapHandItemsEvent event) {
         if (!checkCooldown(this, player, 0, true)) return PowerResult.ok(false);
-        if (!getItem().consumeDurability(stack, setUpCost)) return PowerResult.cost();
+        if (!getItem().consumeDurability(stack, setupCost)) return PowerResult.cost();
 
         SpectralArrow arrow = player.launchProjectile(SpectralArrow.class);
         arrow.setPickupStatus(Arrow.PickupStatus.DISALLOWED);

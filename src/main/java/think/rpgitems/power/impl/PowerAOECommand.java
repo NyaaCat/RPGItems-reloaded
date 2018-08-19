@@ -135,14 +135,14 @@ public class PowerAOECommand extends PowerCommand {
     @Override
     public PowerResult<Void> rightClick(Player player, ItemStack stack, Block clicked, PlayerInteractEvent event) {
         if (!triggers.contains(TriggerType.RIGHT_CLICK) || !checkCooldownByString(player, getItem(), command, cooldown, true)) return PowerResult.cd();
-        if (!getItem().consumeDurability(stack, consumption)) return PowerResult.cost();
+        if (!getItem().consumeDurability(stack, cost)) return PowerResult.cost();
         return aoeCommand(player);
     }
 
     @Override
     public PowerResult<Void> leftClick(Player player, ItemStack stack, Block clicked, PlayerInteractEvent event) {
         if (!triggers.contains(TriggerType.LEFT_CLICK) || !checkCooldownByString(player, getItem(), command, cooldown, true)) return PowerResult.cd();
-        if (!getItem().consumeDurability(stack, consumption)) return PowerResult.cost();
+        if (!getItem().consumeDurability(stack, cost)) return PowerResult.cost();
         return aoeCommand(player);
     }
 }

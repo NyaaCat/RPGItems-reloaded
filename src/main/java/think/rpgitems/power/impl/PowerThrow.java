@@ -37,7 +37,7 @@ public class PowerThrow extends BasePower implements PowerRightClick, PowerLeftC
     @Property(order = 6)
     public boolean isPersistent;
     @Property
-    public int consumption = 0;
+    public int cost = 0;
 
     @Override
     public String getName() {
@@ -51,7 +51,7 @@ public class PowerThrow extends BasePower implements PowerRightClick, PowerLeftC
 
     @Override
     public PowerResult<Void> rightClick(Player player, ItemStack stack, Block clicked, PlayerInteractEvent event) {
-        if (isRight && checkCooldownByString(player, getItem(), entityName + entityData, cooldown, true) && getItem().consumeDurability(stack, consumption)) {
+        if (isRight && checkCooldownByString(player, getItem(), entityName + entityData, cooldown, true) && getItem().consumeDurability(stack, cost)) {
             summonEntity(player, stack, clicked);
             return PowerResult.ok();
         }
@@ -60,7 +60,7 @@ public class PowerThrow extends BasePower implements PowerRightClick, PowerLeftC
 
     @Override
     public PowerResult<Void> leftClick(Player player, ItemStack stack, Block clicked, PlayerInteractEvent event) {
-        if (!isRight && checkCooldownByString(player, getItem(), entityName + entityData, cooldown, true) && getItem().consumeDurability(stack, consumption)) {
+        if (!isRight && checkCooldownByString(player, getItem(), entityName + entityData, cooldown, true) && getItem().consumeDurability(stack, cost)) {
             summonEntity(player, stack, clicked);
             return PowerResult.ok();
         }

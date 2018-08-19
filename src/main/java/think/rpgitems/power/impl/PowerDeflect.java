@@ -68,7 +68,7 @@ public class PowerDeflect extends BasePower implements PowerHitTaken, PowerRight
      * Cost of this power
      */
     @Property
-    public int consumption = 0;
+    public int cost = 0;
 
     /**
      * Chance in percentage of triggering this power in passive mode
@@ -128,7 +128,7 @@ public class PowerDeflect extends BasePower implements PowerHitTaken, PowerRight
     public PowerResult<Double> takeHit(Player target, ItemStack stack, double damage, EntityDamageEvent event) {
         if (!((System.currentTimeMillis() / 50 < time)
                       || (passive && (ThreadLocalRandom.current().nextInt(0, 100) < chance) && checkCooldown(this, target, cooldownPassive, false)))
-                    || !getItem().consumeDurability(stack, consumption))
+                    || !getItem().consumeDurability(stack, cost))
             return PowerResult.noop();
         if (event instanceof EntityDamageByEntityEvent) {
             EntityDamageByEntityEvent byEntityEvent = (EntityDamageByEntityEvent) event;
@@ -170,7 +170,7 @@ public class PowerDeflect extends BasePower implements PowerHitTaken, PowerRight
         if (!isRight || !initiative
                     || !checkCooldownByString(player, getItem(), "deflect.initiative", cooldown, true))
             return PowerResult.noop();
-        if (!getItem().consumeDurability(stack, consumption))
+        if (!getItem().consumeDurability(stack, cost))
             return PowerResult.cost();
         time = System.currentTimeMillis() / 50 + duration;
         return PowerResult.ok();
@@ -181,7 +181,7 @@ public class PowerDeflect extends BasePower implements PowerHitTaken, PowerRight
         if (isRight || !initiative
                     || !checkCooldownByString(player, getItem(), "deflect.initiative", cooldown, true))
             return PowerResult.noop();
-        if (!getItem().consumeDurability(stack, consumption))
+        if (!getItem().consumeDurability(stack, cost))
             return PowerResult.cost();
         time = System.currentTimeMillis() / 50 + duration;
         return PowerResult.ok();

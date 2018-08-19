@@ -63,7 +63,7 @@ public class PowerCommandHit extends BasePower implements PowerHit {
      * Cost of this power
      */
     @Property
-    public int consumption = 0;
+    public int cost = 0;
     /**
      * Minimum damage to trigger
      */
@@ -115,7 +115,7 @@ public class PowerCommandHit extends BasePower implements PowerHit {
     public PowerResult<Double> hit(Player player, ItemStack stack, LivingEntity entity, double damage, EntityDamageByEntityEvent event) {
         if (damage < minDamage) return PowerResult.noop();
         if (!checkCooldownByString(player, getItem(), command, cooldown, true)) return PowerResult.cd();
-        if (!getItem().consumeDurability(stack, consumption)) return PowerResult.cost();
+        if (!getItem().consumeDurability(stack, cost)) return PowerResult.cost();
 
         return executeCommand(player, entity, damage);
     }

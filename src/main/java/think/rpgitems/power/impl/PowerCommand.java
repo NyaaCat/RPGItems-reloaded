@@ -70,7 +70,7 @@ public class PowerCommand extends BasePower implements PowerRightClick, PowerLef
      * Cost of this power
      */
     @Property
-    public int consumption = 0;
+    public int cost = 0;
 
     @Override
     public void init(ConfigurationSection section) {
@@ -122,7 +122,7 @@ public class PowerCommand extends BasePower implements PowerRightClick, PowerLef
     public PowerResult<Void> rightClick(Player player, ItemStack stack, Block clicked, PlayerInteractEvent event) {
         if (!triggers.contains(TriggerType.RIGHT_CLICK) || !checkCooldownByString(player, getItem(), command, cooldown, true))
             return PowerResult.cd();
-        if (!getItem().consumeDurability(stack, consumption)) return PowerResult.cost();
+        if (!getItem().consumeDurability(stack, cost)) return PowerResult.cost();
         return executeCommand(player);
     }
 
@@ -130,7 +130,7 @@ public class PowerCommand extends BasePower implements PowerRightClick, PowerLef
     public PowerResult<Void> leftClick(Player player, ItemStack stack, Block clicked, PlayerInteractEvent event) {
         if (!triggers.contains(TriggerType.LEFT_CLICK) || !checkCooldownByString(player, getItem(), command, cooldown, true))
             return PowerResult.cd();
-        if (!getItem().consumeDurability(stack, consumption)) return PowerResult.cost();
+        if (!getItem().consumeDurability(stack, cost)) return PowerResult.cost();
         return executeCommand(player);
     }
 
@@ -138,7 +138,7 @@ public class PowerCommand extends BasePower implements PowerRightClick, PowerLef
     public PowerResult<Void> sneak(Player player, ItemStack stack, PlayerToggleSneakEvent event) {
         if (!triggers.contains(TriggerType.SNEAK) || !checkCooldownByString(player, getItem(), command, cooldown, true))
             return PowerResult.cd();
-        if (!getItem().consumeDurability(stack, consumption)) return PowerResult.cost();
+        if (!getItem().consumeDurability(stack, cost)) return PowerResult.cost();
         return executeCommand(player);
     }
 
@@ -146,7 +146,7 @@ public class PowerCommand extends BasePower implements PowerRightClick, PowerLef
     public PowerResult<Void> sprint(Player player, ItemStack stack, PlayerToggleSprintEvent event) {
         if (!triggers.contains(TriggerType.SPRINT) || !checkCooldownByString(player, getItem(), command, cooldown, true))
             return PowerResult.cd();
-        if (!getItem().consumeDurability(stack, consumption)) return PowerResult.cost();
+        if (!getItem().consumeDurability(stack, cost)) return PowerResult.cost();
         return executeCommand(player);
     }
 
@@ -154,7 +154,7 @@ public class PowerCommand extends BasePower implements PowerRightClick, PowerLef
     public PowerResult<Void> hurt(Player target, ItemStack stack, EntityDamageEvent event) {
         if (!triggers.contains(TriggerType.HURT) || !checkCooldownByString(target, getItem(), command, cooldown, true))
             return PowerResult.cd();
-        if (!getItem().consumeDurability(stack, consumption)) return PowerResult.cost();
+        if (!getItem().consumeDurability(stack, cost)) return PowerResult.cost();
         return executeCommand(target);
     }
 

@@ -72,7 +72,7 @@ public class PowerRescue extends BasePower implements PowerHurt, PowerHitTaken {
      * Cost of this power
      */
     @Property
-    public int consumption = 0;
+    public int cost = 0;
     /**
      * Damage trigger of rescue
      */
@@ -114,7 +114,7 @@ public class PowerRescue extends BasePower implements PowerHurt, PowerHitTaken {
 
     private PowerResult<Double> rescue(Player target, ItemStack stack, EntityDamageEvent event, boolean canceled) {
         if (!checkCooldown(this, target, cooldown, true)) return PowerResult.cd();
-        if (!getItem().consumeDurability(stack, consumption)) return PowerResult.cost();
+        if (!getItem().consumeDurability(stack, cost)) return PowerResult.cost();
         target.sendMessage(I18n.format("power.rescue.info"));
         DamageCause cause = event.getCause();
         if (!canceled) {

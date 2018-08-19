@@ -37,7 +37,7 @@ public class PowerPotionTick extends BasePower implements PowerTick {
     /**
      * Cost of this power
      */
-    public int consumption = 0;
+    public int cost = 0;
     /**
      * Interval of this power
      */
@@ -57,7 +57,7 @@ public class PowerPotionTick extends BasePower implements PowerTick {
     @Override
     public PowerResult<Void> tick(Player player, ItemStack stack) {
         if (!checkCooldownByString(player, getItem(), "potiontick." + effect.getName(), interval, false)) return PowerResult.cd();
-        if (!getItem().consumeDurability(stack, consumption)) return PowerResult.cost();
+        if (!getItem().consumeDurability(stack, cost)) return PowerResult.cost();
         double health = player.getHealth();
         boolean hasEffect = false;
         for (PotionEffect potionEffect : player.getActivePotionEffects()) {
@@ -84,7 +84,7 @@ public class PowerPotionTick extends BasePower implements PowerTick {
     public void init(ConfigurationSection s) {
         amplifier = s.getInt("amplifier");
         effect = PotionEffectType.getByName(s.getString("effect", "heal"));
-        consumption = s.getInt("consumption", 0);
+        cost = s.getInt("cost", s.getInt("consumption", 0));
         interval = s.getInt("interval", 0);
         duration = s.getInt("duration", 60);
         clear = s.getBoolean("clear", false);
@@ -94,7 +94,7 @@ public class PowerPotionTick extends BasePower implements PowerTick {
     public void save(ConfigurationSection s) {
         s.set("amplifier", amplifier);
         s.set("effect", effect.getName());
-        s.set("consumption", consumption);
+        s.set("cost", cost);
         s.set("interval", interval);
         s.set("duration", duration);
         s.set("clear", clear);

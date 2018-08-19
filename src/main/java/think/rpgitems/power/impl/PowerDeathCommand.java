@@ -49,7 +49,7 @@ public class PowerDeathCommand extends BasePower implements PowerHit {
      * Cost of this power
      */
     @Property
-    public int consumption = 0;
+    public int cost = 0;
 
     @Override
     public String getName() {
@@ -64,7 +64,7 @@ public class PowerDeathCommand extends BasePower implements PowerHit {
     @Override
     public PowerResult<Double> hit(Player player, ItemStack stack, LivingEntity entity, double damage, EntityDamageByEntityEvent event) {
         if (rand.nextInt(chance) == 0) {
-            if (!getItem().consumeDurability(stack, consumption)) return PowerResult.cost();
+            if (!getItem().consumeDurability(stack, cost)) return PowerResult.cost();
             Location loc = entity.getLocation();
             int x = (int) loc.getX();
             int y = (int) loc.getY();

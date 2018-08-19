@@ -43,11 +43,11 @@ public class PowerFlame extends BasePower implements PowerHit {
      * Cost of this power
      */
     @Property
-    public int consumption = 0;
+    public int cost = 0;
 
     @Override
     public PowerResult<Double> hit(Player player, ItemStack stack, LivingEntity entity, double damage, EntityDamageByEntityEvent event) {
-        if (!getItem().consumeDurability(stack, consumption)) return PowerResult.cost();
+        if (!getItem().consumeDurability(stack, cost)) return PowerResult.cost();
         entity.setFireTicks(burnTime);
         return PowerResult.ok(damage);
     }

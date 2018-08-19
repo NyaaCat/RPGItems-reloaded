@@ -47,13 +47,13 @@ public class PowerArrow extends BasePower implements PowerRightClick {
      * Cost of this power
      */
     @Property
-    public int consumption = 0;
+    public int cost = 0;
 
     @SuppressWarnings("deprecation")
     @Override
     public PowerResult<Void> rightClick(Player player, ItemStack stack, Block clicked, PlayerInteractEvent event) {
         if (!checkCooldown(this, player, cooldown, true)) return PowerResult.cd();
-        if (!getItem().consumeDurability(stack, consumption)) return PowerResult.cost();
+        if (!getItem().consumeDurability(stack, cost)) return PowerResult.cost();
         player.playSound(player.getLocation(), Sound.ENTITY_ARROW_SHOOT, 1.0f, 1.0f);
         Arrow arrow = player.launchProjectile(Arrow.class);
         arrow.setPickupStatus(Arrow.PickupStatus.DISALLOWED);

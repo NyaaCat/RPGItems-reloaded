@@ -80,7 +80,7 @@ public class PowerProjectile extends BasePower implements PowerRightClick {
      * Cost of this power
      */
     @Property
-    public int consumption = 1;
+    public int cost = 1;
     /**
      * burst count of one shoot
      */
@@ -115,7 +115,7 @@ public class PowerProjectile extends BasePower implements PowerRightClick {
         cone = s.getBoolean("isCone");
         range = s.getInt("range");
         amount = s.getInt("amount");
-        consumption = s.getInt("consumption", 1);
+        cost = s.getInt("cost", s.getInt("consumption", 1));
         speed = s.getDouble("speed", 1);
         gravity = s.getBoolean("gravity", true);
         burstCount = s.getInt("burstCount", 1);
@@ -129,7 +129,7 @@ public class PowerProjectile extends BasePower implements PowerRightClick {
         s.set("isCone", cone);
         s.set("range", range);
         s.set("amount", amount);
-        s.set("consumption", consumption);
+        s.set("cost", cost);
         s.set("speed", speed);
         s.set("gravity", gravity);
         s.set("burstCount", burstCount);
@@ -217,7 +217,7 @@ public class PowerProjectile extends BasePower implements PowerRightClick {
     @Override
     public PowerResult<Void> rightClick(Player player, ItemStack stack, Block clicked, PlayerInteractEvent event) {
         if (!checkCooldown(this, player, cooldown, true)) return PowerResult.cd();
-        if (!getItem().consumeDurability(stack, consumption)) return PowerResult.cost();
+        if (!getItem().consumeDurability(stack, cost)) return PowerResult.cost();
         fire(player);
         if (burstCount > 1) {
             burstCounter.put(player.getUniqueId(), burstCount - 1);

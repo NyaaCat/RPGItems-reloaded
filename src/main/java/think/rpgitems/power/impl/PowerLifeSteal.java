@@ -46,14 +46,14 @@ public class PowerLifeSteal extends BasePower implements PowerHit {
      * Cost of this power
      */
     @Property
-    public int consumption = 0;
+    public int cost = 0;
 
     private Random random = new Random();
 
     @Override
     public PowerResult<Double> hit(Player player, ItemStack stack, LivingEntity entity, double damage, EntityDamageByEntityEvent event) {
         if (random.nextInt(chance) == 0) {
-            if (!getItem().consumeDurability(stack, consumption)) return PowerResult.cost();
+            if (!getItem().consumeDurability(stack, cost)) return PowerResult.cost();
             if ((player.getHealth() + damage) >= player.getAttribute(Attribute.GENERIC_MAX_HEALTH).getValue()) {
                 player.setHealth(player.getAttribute(Attribute.GENERIC_MAX_HEALTH).getValue());
             } else

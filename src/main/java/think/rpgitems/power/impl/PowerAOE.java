@@ -89,12 +89,12 @@ public class PowerAOE extends BasePower implements PowerRightClick {
      * Cost of this power
      */
     @Property
-    public int consumption = 0;
+    public int cost = 0;
 
     @Override
     public PowerResult<Void> rightClick(final Player player, ItemStack stack, Block clicked, PlayerInteractEvent event) {
         if (!checkCooldown(this, player, cooldown, true)) return PowerResult.cd();
-        if (!getItem().consumeDurability(stack, consumption)) return PowerResult.cost();
+        if (!getItem().consumeDurability(stack, cost)) return PowerResult.cost();
         PotionEffect effect = new PotionEffect(type, duration, amplifier - 1);
         if (selfapplication) {
             player.addPotionEffect(effect);

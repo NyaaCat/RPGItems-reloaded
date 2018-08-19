@@ -40,20 +40,20 @@ public class PowerPumpkin extends BasePower implements PowerHit {
      * Cost of this power
      */
     @Property
-    public int consumption = 0;
+    public int cost = 0;
 
     @Override
     public void init(ConfigurationSection s) {
         chance = s.getInt("chance");
         drop = s.getDouble("drop");
-        consumption = s.getInt("consumption", 0);
+        cost = s.getInt("cost", s.getInt("consumption", 0));
     }
 
     @Override
     public void save(ConfigurationSection s) {
         s.set("chance", chance);
         s.set("drop", drop);
-        s.set("consumption", consumption);
+        s.set("cost", cost);
     }
 
     @Override
@@ -68,7 +68,7 @@ public class PowerPumpkin extends BasePower implements PowerHit {
 
     @Override
     public PowerResult<Double> hit(Player player, ItemStack stack, LivingEntity entity, double damage, EntityDamageByEntityEvent event) {
-        if (!getItem().consumeDurability(stack, consumption)) return PowerResult.cost();
+        if (!getItem().consumeDurability(stack, cost)) return PowerResult.cost();
         if (rand.nextInt(chance) != 0) return PowerResult.noop();
         if (entity instanceof Skeleton || entity instanceof Zombie) {
             if (entity.getEquipment().getHelmet() == null || entity.getEquipment().getHelmet().getType() == Material.AIR) {

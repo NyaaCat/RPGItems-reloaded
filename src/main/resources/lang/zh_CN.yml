@@ -175,6 +175,7 @@ message:
   cloneitem:
     success: 物品 %s 成功克隆为 %s
     fail: 物品 %s 克隆失败： %s 已存在
+  translocator: '%s 的传送信标'
   version: 'RPGItem v%s (1.12 branch)
 
 
@@ -245,11 +246,12 @@ power:
   arrow: 发射火箭 (%.1f 秒冷却时间)
   stuck: 攻击后 %d 几率敌人无法移动 %d tick (%.1f 秒冷却时间)
   shulkerbullet: 发射潜影贝子弹 (%.1f 秒冷却时间)
+  translocator: 切副手发射传送信标，切主手传送至信标，从副手拿出拆除信标 (%.1f 秒冷却时间)
   properties:
     base:
       cooldown: 技能的冷却时间，以游戏刻为单位
       display: 技能的提示文字
-      consumption: Durability consumption of the power.
+      cost: Durability cost of the power.
     aoe:
       main_description: ''
       cooldown: ''
@@ -258,7 +260,7 @@ power:
       duration: ''
       amplifier: ''
       selfapplication: ''
-      consumption: ''
+      cost: ''
       name: ''
     aoecommand:
       main_description: ''
@@ -273,11 +275,11 @@ power:
       c: ''
       type: ''
       mustsee: ''
-      consumption: ''
+      cost: ''
     arrow:
       main_description: ''
       cooldown: ''
-      consumption: ''
+      cost: ''
     attract:
       main_description: ''
       main_duration: 冷却时间应大于等于持续时间
@@ -288,7 +290,7 @@ power:
       attractingEntityTickCost: ''
       triggerType: ''
       attractPlayer: ''
-      consumption: ''
+      cost: ''
       cooldown: ''
     command:
       main_description: ''
@@ -297,7 +299,7 @@ power:
       display: ''
       command: ''
       permission: ''
-      consumption: ''
+      cost: ''
     commandhit:
       main_description: ''
       cooldown: ''
@@ -305,12 +307,12 @@ power:
       command: ''
       permission: ''
       minDamage: ''
-      consumption: ''
+      cost: ''
     consume:
       main_description: ''
       isRight: ''
       cooldown: ''
-      consumption: ''
+      cost: ''
     consumehit:
       main_description: ''
       cooldown: ''
@@ -320,7 +322,7 @@ power:
       command: ''
       count: ''
       desc: ''
-      consumption: ''
+      cost: ''
     deflect:
       main_description: ''
       facing: ''
@@ -328,7 +330,7 @@ power:
       cooldown: ''
       passive: ''
       cooldownPassive: ''
-      consumption: ''
+      cost: ''
       duration: ''
       chance: ''
     delayedcommand:
@@ -339,21 +341,21 @@ power:
       display: ''
       command: ''
       permission: ''
-      consumption: ''
+      cost: ''
     fire:
       main_description: ''
       cooldown: ''
       distance: ''
       burnduration: ''
-      consumption: ''
+      cost: ''
     fireball:
       main_description: ''
       cooldown: ''
-      consumption: ''
+      cost: ''
     flame:
       main_description: ''
       burnTime: ''
-      consumption: ''
+      cost: ''
     food:
       main_description: ''
       foodpoints: ''
@@ -364,24 +366,24 @@ power:
       height: ''
       base: ''
       ttl: ''
-      consumption: ''
+      cost: ''
     ice:
       main_description: ''
       cooldown: ''
-      consumption: ''
+      cost: ''
     knockup:
       main_description: ''
       chance: ''
       power: ''
-      consumption: ''
+      cost: ''
     lifesteal:
       main_description: ''
       chance: ''
-      consumption: ''
+      cost: ''
     lightning:
       main_description: ''
       chance: ''
-      consumption: ''
+      cost: ''
     lorefilter:
       main_description: ''
       regex: ''
@@ -391,26 +393,26 @@ power:
     particle:
       main_description: ''
       effect: ''
-      consumption: ''
+      cost: ''
     particletick:
       main_description: ''
       effect: ''
       interval: ''
-      consumption: ''
+      cost: ''
     potionhit:
       main_description: ''
       duration: ''
       amplifier: ''
       type: ''
       chance: ''
-      consumption: ''
+      cost: ''
     potionself:
       main_description: ''
       cooldown: ''
       duration: ''
       amplifier: ''
       type: ''
-      consumption: ''
+      cost: ''
     potiontick:
       main_description: ''
       amplifier: ''
@@ -427,18 +429,18 @@ power:
       amount: ''
       speed: ''
       gravity: ''
-      consumption: ''
+      cost: ''
     pumpkin:
       main_description: ''
       chance: ''
       drop: ''
-      consumption: ''
+      cost: ''
     rainbow:
       main_description: ''
       cooldown: ''
       count: ''
       isFire: ''
-      consumption: ''
+      cost: ''
     ranged:
       main_description: ''
       rm: ''
@@ -451,7 +453,7 @@ power:
       main_description: ''
       cooldown: ''
       realDamage: ''
-      consumption: ''
+      cost: ''
       minDamage: ''
     repair:
       main_description: ''
@@ -466,14 +468,14 @@ power:
       healthTrigger: ''
       useBed: ''
       inPlace: ''
-      consumption: ''
+      cost: ''
       damageTrigger: ''
     rumble:
       main_description: ''
       cooldown: ''
       power: ''
       distance: ''
-      consumption: ''
+      cost: ''
     selector:
       main_description: ''
     shulkerbullet:
@@ -491,12 +493,12 @@ power:
     tntcannon:
       main_description: ''
       cooldown: ''
-      consumption: ''
+      cost: ''
     teleport:
       main_description: ''
       cooldown: ''
       distance: ''
-      consumption: ''
+      cost: ''
     throw:
       main_description: ''
       display: ''
@@ -512,11 +514,16 @@ power:
       type: ''
       duration: ''
       amplifier: ''
-      consumption: ''
+      cost: ''
     torch:
       main_description: ''
       cooldown: ''
-      consumption: ''
+      cost: ''
+    translocator:
+      main_description: ''
+      cooldown: ''
+      tpCost: ''
+      setupCost: ''
     unbreakable:
       main_description: ''
 manual:

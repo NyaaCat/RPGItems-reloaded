@@ -43,7 +43,7 @@ public class PowerSkyHook extends BasePower implements PowerRightClick {
     /**
      * Cost of this power
      */
-    public int consumption = 0;
+    public int cost = 0;
     /**
      * Hooking Cost Pre-Tick
      */
@@ -57,7 +57,7 @@ public class PowerSkyHook extends BasePower implements PowerRightClick {
     @Override
     public PowerResult<Void> rightClick(final Player player, ItemStack stack, Block clicked, PlayerInteractEvent event) {
         if (!checkCooldown(this, player, cooldown, true)) return PowerResult.cd();
-        if (!getItem().consumeDurability(stack, consumption)) return PowerResult.cost();
+        if (!getItem().consumeDurability(stack, cost)) return PowerResult.cost();
         RPGValue isHooking = RPGValue.get(player, getItem(), "skyhook.isHooking");
         if (isHooking == null) {
             isHooking = new RPGValue(player, getItem(), "skyhook.isHooking", false);
@@ -126,14 +126,14 @@ public class PowerSkyHook extends BasePower implements PowerRightClick {
     public void init(ConfigurationSection s) {
         cooldown = s.getLong("cooldown", 20);
         hookingTickCost = s.getInt("hookingTickCost", 0);
-        consumption = s.getInt("consumption", 0);
+        cost = s.getInt("cost", s.getInt("consumption", 0));
         railMaterial = Material.valueOf(s.getString("railMaterial", "GLASS"));
         hookDistance = s.getInt("hookDistance", 10);
     }
 
     @Override
     public void save(ConfigurationSection s) {
-        s.set("consumption", consumption);
+        s.set("cost", cost);
         s.set("hookingTickCost", hookingTickCost);
         s.set("cooldown", cooldown);
         s.set("railMaterial", railMaterial.toString());

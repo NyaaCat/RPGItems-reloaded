@@ -70,12 +70,12 @@ public class PowerRumble extends BasePower implements PowerRightClick {
      * Cost of this power
      */
     @Property
-    public int consumption = 0;
+    public int cost = 0;
 
     @Override
     public PowerResult<Void> rightClick(final Player player, ItemStack stack, Block block, PlayerInteractEvent event) {
         if (!checkCooldown(this, player, cooldown, true)) return PowerResult.cd();
-        if (!getItem().consumeDurability(stack, consumption)) return PowerResult.cost();
+        if (!getItem().consumeDurability(stack, cost)) return PowerResult.cost();
         final Location location = player.getLocation().add(0, -0.2, 0);
         final Vector direction = player.getLocation().getDirection();
         direction.setY(0);

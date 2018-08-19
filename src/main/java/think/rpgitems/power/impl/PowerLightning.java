@@ -46,14 +46,14 @@ public class PowerLightning extends BasePower implements PowerHit, PowerProjecti
      * Cost of this power
      */
     @Property
-    public int consumption = 0;
+    public int cost = 0;
 
     private Random random = new Random();
 
     @Override
     public PowerResult<Double> hit(Player player, ItemStack stack, LivingEntity entity, double damage, EntityDamageByEntityEvent event) {
         if (random.nextInt(chance) == 0) {
-            if (!getItem().consumeDurability(stack, consumption)) return PowerResult.cost();
+            if (!getItem().consumeDurability(stack, cost)) return PowerResult.cost();
             entity.getWorld().strikeLightning(entity.getLocation());
             return PowerResult.ok(damage);
         }
@@ -63,7 +63,7 @@ public class PowerLightning extends BasePower implements PowerHit, PowerProjecti
     @Override
     public PowerResult<Void> projectileHit(Player player, ItemStack stack, Projectile p, ProjectileHitEvent event) {
         if (random.nextInt(chance) == 0) {
-            if (!getItem().consumeDurability(stack, consumption)) return PowerResult.cost();
+            if (!getItem().consumeDurability(stack, cost)) return PowerResult.cost();
             p.getWorld().strikeLightning(p.getLocation());
             return PowerResult.ok();
         }

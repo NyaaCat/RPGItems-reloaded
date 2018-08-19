@@ -3,10 +3,6 @@ plugins {
     id 'maven-publish'
 }
 
-configurations.all {
-    resolutionStrategy.cacheChangingModulesFor 0, 'seconds'
-}
-
 ext.majorVersion = 3
 ext.minorVersion = 6
 ext.minecraftVersion = "1.13"

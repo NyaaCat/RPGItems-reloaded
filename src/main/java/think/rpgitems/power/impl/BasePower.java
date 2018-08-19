@@ -68,6 +68,9 @@ public abstract class BasePower implements Serializable, Power {
         properties.forEach(
                 (property, field) -> {
                     String value = section.getString(property.name());
+                    if(property.name().equals("cost") && value == null){
+                        value = section.getString("consumption");
+                    }
                     if (value != null) {
                         Handler.setPowerProperty(Bukkit.getConsoleSender(), this, field, value);
                     }

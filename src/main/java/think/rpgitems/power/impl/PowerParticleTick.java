@@ -37,7 +37,7 @@ public class PowerParticleTick extends BasePower implements PowerTick {
      * Cost of this power
      */
     @Property
-    public int consumption = 0;
+    public int cost = 0;
 
     /**
      * Acceptable effect boolean.
@@ -64,14 +64,14 @@ public class PowerParticleTick extends BasePower implements PowerTick {
             effect = Effect.MOBSPAWNER_FLAMES.name();
         }
         interval = s.getInt("interval");
-        consumption = s.getInt("consumption", 0);
+        cost = s.getInt("cost", s.getInt("consumption", 0));
     }
 
     @Override
     public void save(ConfigurationSection s) {
         s.set("effect", effect);
         s.set("interval", interval);
-        s.set("consumption", consumption);
+        s.set("cost", cost);
     }
 
     @Override
@@ -87,7 +87,7 @@ public class PowerParticleTick extends BasePower implements PowerTick {
     @Override
     public PowerResult<Void> tick(Player player, ItemStack stack) {
         if (!checkCooldown(this, player, interval, false)) return PowerResult.cd();
-        if (!getItem().consumeDurability(stack, consumption)) return PowerResult.cost();
+        if (!getItem().consumeDurability(stack, cost)) return PowerResult.cost();
         if (effect.equalsIgnoreCase("SMOKE")) {
             player.getWorld().playEffect(player.getLocation().add(0, 2, 0), Effect.valueOf(effect), 4);
         } else {

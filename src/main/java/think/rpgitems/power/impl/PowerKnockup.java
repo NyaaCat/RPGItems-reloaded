@@ -50,13 +50,13 @@ public class PowerKnockup extends BasePower implements PowerHit {
      * Cost of this power
      */
     @Property
-    public int consumption = 0;
+    public int cost = 0;
 
     private Random rand = new Random();
 
     @Override
     public PowerResult<Double> hit(Player player, ItemStack stack, LivingEntity entity, double damage, EntityDamageByEntityEvent event) {
-        if (!getItem().consumeDurability(stack, consumption)) return PowerResult.cost();
+        if (!getItem().consumeDurability(stack, cost)) return PowerResult.cost();
         if (rand.nextInt(chance) == 0) {
             entity.setVelocity(player.getLocation().getDirection().setY(power));
         }

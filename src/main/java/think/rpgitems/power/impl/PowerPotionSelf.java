@@ -60,7 +60,7 @@ public class PowerPotionSelf extends BasePower implements PowerRightClick {
      * Cost of this power
      */
     @Property
-    public int consumption = 0;
+    public int cost = 0;
     /**
      * Type of potion effect
      */
@@ -71,7 +71,7 @@ public class PowerPotionSelf extends BasePower implements PowerRightClick {
     @Override
     public PowerResult<Void> rightClick(Player player, ItemStack stack, Block clicked, PlayerInteractEvent event) {
         if (!checkCooldown(this, player, cooldown, true)) return PowerResult.cd();
-        if (!getItem().consumeDurability(stack, consumption)) return PowerResult.cost();
+        if (!getItem().consumeDurability(stack, cost)) return PowerResult.cost();
         player.addPotionEffect(new PotionEffect(type, duration, amplifier), true);
         return PowerResult.ok();
     }
@@ -82,7 +82,7 @@ public class PowerPotionSelf extends BasePower implements PowerRightClick {
         amplifier = s.getInt("amp");
         duration = s.getInt("time");
         type = PotionEffectType.getByName(s.getString("type", "heal"));
-        consumption = s.getInt("consumption", 0);
+        cost = s.getInt("cost", s.getInt("consumption", 0));
     }
 
     @Override
@@ -91,7 +91,7 @@ public class PowerPotionSelf extends BasePower implements PowerRightClick {
         s.set("amp", amplifier);
         s.set("time", duration);
         s.set("type", type.getName());
-        s.set("consumption", consumption);
+        s.set("cost", cost);
     }
 
     @Override

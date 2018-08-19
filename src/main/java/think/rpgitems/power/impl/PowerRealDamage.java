@@ -52,7 +52,7 @@ public class PowerRealDamage extends BasePower implements PowerHit {
      * Cost of this power
      */
     @Property
-    public int consumption = 0;
+    public int cost = 0;
     /**
      * Damage of this power
      */
@@ -68,7 +68,7 @@ public class PowerRealDamage extends BasePower implements PowerHit {
     public PowerResult<Double> hit(Player player, ItemStack stack, LivingEntity entity, double damage, EntityDamageByEntityEvent event) {
         if (damage < minDamage) return PowerResult.noop();
         if (!checkCooldown(this, player, cooldown, true)) return PowerResult.cd();
-        if (!getItem().consumeDurability(stack, consumption)) return PowerResult.cost();
+        if (!getItem().consumeDurability(stack, cost)) return PowerResult.cost();
         if (entity.hasPotionEffect(PotionEffectType.DAMAGE_RESISTANCE)) {
             PotionEffect e = entity.getPotionEffect(PotionEffectType.DAMAGE_RESISTANCE);
             if (e.getAmplifier() >= 4) return PowerResult.noop();

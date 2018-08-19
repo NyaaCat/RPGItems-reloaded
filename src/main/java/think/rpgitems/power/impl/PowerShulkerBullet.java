@@ -35,7 +35,7 @@ public class PowerShulkerBullet extends BasePower implements PowerRightClick {
     /**
      * Cost of this power
      */
-    public int consumption = 0;
+    public int cost = 0;
     /**
      * Range of this power
      */
@@ -56,7 +56,7 @@ public class PowerShulkerBullet extends BasePower implements PowerRightClick {
     @SuppressWarnings("deprecation")
     public PowerResult<Void> rightClick(Player player, ItemStack stack, Block clicked, PlayerInteractEvent event) {
         if (!checkCooldown(this, player, cooldown, true)) return PowerResult.cd();
-        if (!getItem().consumeDurability(stack, consumption)) return PowerResult.cost();
+        if (!getItem().consumeDurability(stack, cost)) return PowerResult.cost();
         ShulkerBullet bullet = null;
         bullet = player.launchProjectile(ShulkerBullet.class);
         bullet.setPersistent(false);

@@ -65,14 +65,14 @@ public class PowerPotionHit extends BasePower implements PowerHit {
      * Cost of this power
      */
     @Property
-    public int consumption = 0;
+    public int cost = 0;
 
     private Random rand = new Random();
 
     @Override
     public PowerResult<Double> hit(Player player, ItemStack stack, LivingEntity entity, double damage, EntityDamageByEntityEvent event) {
         if (rand.nextInt(chance) == 0) {
-            if (!getItem().consumeDurability(stack, consumption)) return PowerResult.cost();
+            if (!getItem().consumeDurability(stack, cost)) return PowerResult.cost();
             entity.addPotionEffect(new PotionEffect(type, duration, amplifier));
             return PowerResult.ok(damage);
         }
@@ -95,7 +95,7 @@ public class PowerPotionHit extends BasePower implements PowerHit {
         duration = s.getInt("duration", 20);
         amplifier = s.getInt("amplifier", 1);
         type = PotionEffectType.getByName(s.getString("type", PotionEffectType.HARM.getName()));
-        consumption = s.getInt("consumption", 0);
+        cost = s.getInt("cost", s.getInt("consumption", 0));
     }
 
     @Override
@@ -104,7 +104,7 @@ public class PowerPotionHit extends BasePower implements PowerHit {
         s.set("duration", duration);
         s.set("amplifier", amplifier);
         s.set("type", type.getName());
-        s.set("consumption", consumption);
+        s.set("cost", cost);
     }
 
     public void setType(String effect) {

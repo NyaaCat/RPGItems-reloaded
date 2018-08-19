@@ -67,12 +67,12 @@ public class PowerTippedArrow extends BasePower implements PowerRightClick {
      * Cost of this power
      */
     @Property
-    public int consumption = 0;
+    public int cost = 0;
 
     @Override
     public PowerResult<Void> rightClick(Player player, ItemStack stack, Block clicked, PlayerInteractEvent event) {
         if (!checkCooldown(this, player, cooldown, true)) return PowerResult.cd();
-        if (!getItem().consumeDurability(stack, consumption)) return PowerResult.cost();
+        if (!getItem().consumeDurability(stack, cost)) return PowerResult.cost();
         player.playSound(player.getLocation(), Sound.ENTITY_ARROW_SHOOT, 1.0f, 1.0f);
         TippedArrow arrow = player.launchProjectile(TippedArrow.class);
         Events.rpgProjectiles.put(arrow.getEntityId(), getItem().getID());
@@ -98,7 +98,7 @@ public class PowerTippedArrow extends BasePower implements PowerRightClick {
         amplifier = s.getInt("amplifier", 15);
         String potionEffectName = s.getString("type", "HARM");
         type = PotionEffectType.getByName(potionEffectName);
-        consumption = s.getInt("consumption", 1);
+        cost = s.getInt("cost", s.getInt("consumption", 1));
     }
 
     @Override
@@ -107,7 +107,7 @@ public class PowerTippedArrow extends BasePower implements PowerRightClick {
         s.set("duration", duration);
         s.set("amplifier", amplifier);
         s.set("type", type.getName());
-        s.set("consumption", consumption);
+        s.set("cost", cost);
     }
 
 }
