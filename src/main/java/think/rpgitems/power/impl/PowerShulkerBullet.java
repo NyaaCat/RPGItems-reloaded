@@ -18,12 +18,11 @@ import static think.rpgitems.power.PowerResult.ok;
 import static think.rpgitems.utils.PowerUtils.*;
 
 /**
- * + * Power shulker bullet.
- * + * <p>
- * + * Launches shulker bullet when right clicked.
- * + * Target nearest entity
- * + * </p>
- * +
+ * Power shulker bullet.
+ * <p>
+ * Launches shulker bullet when right clicked.
+ * Target nearest entity
+ * </p>
  */
 public class PowerShulkerBullet extends BasePower implements PowerRightClick {
 

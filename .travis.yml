@@ -90,4 +90,4 @@ cache:
   - $HOME/.gradle/wrapper/
 branches:
   except:
-  - "/^*-v[0-9]/"
+  - "/^*-mc/"

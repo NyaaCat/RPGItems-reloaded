@@ -46,11 +46,10 @@ import java.util.function.Consumer;
 import static think.rpgitems.utils.PowerUtils.*;
 
 /**
- * + * Power Stuck.
- * + * <p>
- * + * The stuck power will make the hit target stuck with a chance of 1/{@link #chance}.
- * + * </p>
- * +
+ * Power Stuck.
+ * <p>
+ * The stuck power will make the hit target stuck with a chance of 1/{@link #chance}.
+ * </p>
  */
 public class PowerStuck extends BasePower implements PowerHit, PowerRightClick {
     /**
