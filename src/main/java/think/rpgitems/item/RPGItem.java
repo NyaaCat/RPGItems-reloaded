@@ -18,6 +18,7 @@ package think.rpgitems.item;
 
 import cat.nyaa.nyaacore.Message;
 import cat.nyaa.nyaacore.utils.ItemStackUtils;
+import com.google.common.base.Strings;
 import net.md_5.bungee.api.chat.BaseComponent;
 import net.md_5.bungee.api.chat.ClickEvent;
 import net.md_5.bungee.api.chat.HoverEvent;
@@ -54,10 +55,15 @@ import think.rpgitems.RPGItems;
 import think.rpgitems.data.Font;
 import think.rpgitems.data.RPGMetadata;
 import think.rpgitems.power.*;
+import think.rpgitems.power.impl.PowerAttributeModifier;
 import think.rpgitems.power.impl.PowerLoreFilter;
 import think.rpgitems.power.impl.PowerUnbreakable;
 import think.rpgitems.support.WorldGuard;
 import think.rpgitems.utils.MaterialUtils;
+import think.rpgitems.utils.itemnbtapi.NBTItem;
+import think.rpgitems.utils.itemnbtapi.NBTList;
+import think.rpgitems.utils.itemnbtapi.NBTListCompound;
+import think.rpgitems.utils.itemnbtapi.NBTType;
 
 import java.lang.reflect.InvocationTargetException;
 import java.util.*;
@@ -139,7 +145,6 @@ public class RPGItem {
         displayName = item.getType().toString();
 
         localeMeta = item.getItemMeta();
-        itemFlags.add(ItemFlag.HIDE_ATTRIBUTES);
         rebuild();
     }
 
@@ -327,6 +332,25 @@ public class RPGItem {
             for (Enchantment ench : enchs.keySet())
                 meta.addEnchant(ench, enchs.get(ench), true);
         item.setItemMeta(meta);
+
+        List<PowerAttributeModifier> attributeModifiers = rItem.getPower(PowerAttributeModifier.class);
+        if (!attributeModifiers.isEmpty()) {
+            NBTItem nbtItem = new NBTItem(item);
+            NBTList attribute = nbtItem.getList("AttributeModifiers", NBTType.NBTTagCompound);
+            for (PowerAttributeModifier attributeModifier : attributeModifiers) {
+                NBTListCompound mod = attribute.addCompound();
+                if (!Strings.isNullOrEmpty(attributeModifier.slot)) {
+                    mod.setString("Slot", attributeModifier.slot);
+                }
+                mod.setInteger("Amount", attributeModifier.amount);
+                mod.setString("AttributeName", attributeModifier.attributeName);
+                mod.setString("Name", attributeModifier.name);
+                mod.setInteger("Operation", attributeModifier.operation);
+                mod.setInteger("UUIDLeast", attributeModifier.uuidLeast);
+                mod.setInteger("UUIDMost", attributeModifier.uuidMost);
+            }
+            item.setItemMeta(nbtItem.getItem().getItemMeta());
+        }
     }
 
     private static List<String> filterLores(RPGItem r, ItemStack i) {
@@ -504,8 +528,8 @@ public class RPGItem {
     }
 
     private boolean triggerPreCheck(Player player, ItemStack i, ArrayList<? extends Power> powers, TriggerType triggerType) {
-        if (!checkPermission(player, true)) return false;
         if (powers.isEmpty()) return false;
+        if (!checkPermission(player, true)) return false;
         if (powers.stream().anyMatch(power -> !WorldGuard.canUsePowerNow(player, power))) return false;
 
         RgiPowersPreFireEvent preFire = new RgiPowersPreFireEvent(i, this, player, triggerType, powers);
@@ -1022,6 +1046,26 @@ public class RPGItem {
         addExtra(rpgMeta, rStack, lore);
         meta.setLore(lore);
         rStack.setItemMeta(meta);
+
+        List<PowerAttributeModifier> attributeModifiers = this.getPower(PowerAttributeModifier.class);
+        if (!attributeModifiers.isEmpty()) {
+            NBTItem nbtItem = new NBTItem(rStack);
+            NBTList attribute = nbtItem.getList("AttributeModifiers", NBTType.NBTTagCompound);
+            for (PowerAttributeModifier attributeModifier : attributeModifiers) {
+                NBTListCompound mod = attribute.addCompound();
+                if (!Strings.isNullOrEmpty(attributeModifier.slot)) {
+                    mod.setString("Slot", attributeModifier.slot);
+                }
+                mod.setInteger("Amount", attributeModifier.amount);
+                mod.setString("AttributeName", attributeModifier.attributeName);
+                mod.setString("Name", attributeModifier.name);
+                mod.setInteger("Operation", attributeModifier.operation);
+                mod.setInteger("UUIDLeast", attributeModifier.uuidLeast);
+                mod.setInteger("UUIDMost", attributeModifier.uuidMost);
+            }
+            rStack = nbtItem.getItem();
+        }
+
         return rStack;
     }
 

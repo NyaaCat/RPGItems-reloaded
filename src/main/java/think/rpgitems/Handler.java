@@ -904,7 +904,7 @@ public class Handler extends RPGCommandReceiver {
     @Attribute("item")
     public void addItemFlag(CommandSender sender, Arguments args) {
         RPGItem item = getItemByName(args.nextString());
-        think.rpgitems.item.ItemFlag flag = args.nextEnum(think.rpgitems.item.ItemFlag.class);
+        ItemFlag flag = args.nextEnum(ItemFlag.class);
         item.itemFlags.add(ItemFlag.valueOf(flag.name()));
         item.rebuild();
         ItemManager.save(RPGItems.plugin);
@@ -915,7 +915,7 @@ public class Handler extends RPGCommandReceiver {
     @Attribute("item")
     public void removeItemFlag(CommandSender sender, Arguments args) {
         RPGItem item = getItemByName(args.nextString());
-        think.rpgitems.item.ItemFlag flag = args.nextEnum(think.rpgitems.item.ItemFlag.class);
+        ItemFlag flag = args.nextEnum(ItemFlag.class);
         ItemFlag itemFlag = ItemFlag.valueOf(flag.name());
         if (item.itemFlags.contains(itemFlag)) {
             item.itemFlags.remove(itemFlag);
