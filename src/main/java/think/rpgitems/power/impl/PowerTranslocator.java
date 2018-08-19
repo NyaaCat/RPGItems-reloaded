@@ -97,6 +97,7 @@ public class PowerTranslocator extends BasePower implements PowerSwapToOffhand, 
         return PowerResult.fail();
     }
 
+    @SuppressWarnings("deprecation")
     @Override
     public PowerResult<Boolean> swapToOffhand(Player player, ItemStack stack, PlayerSwapHandItemsEvent event) {
         if (!checkCooldown(this, player, 0, true)) return PowerResult.ok(false);
@@ -111,6 +112,7 @@ public class PowerTranslocator extends BasePower implements PowerSwapToOffhand, 
         translocatorPlayerMap.put(arrow.getUniqueId(), player.getUniqueId());
         playerTranslocatorMap.put(player.getUniqueId(), arrow.getUniqueId());
         new BukkitRunnable() {
+            @SuppressWarnings("deprecation")
             @Override
             public void run() {
                 if (arrow.isDead() || !arrow.isValid()) {

@@ -6,8 +6,9 @@ import org.bukkit.event.HandlerList;
 import org.bukkit.inventory.ItemStack;
 import think.rpgitems.item.RPGItem;
 
-import java.util.List;
 import java.util.Map;
+import java.util.NavigableMap;
+import java.util.SortedMap;
 
 public class RgiPowersPostFireEvent extends Event {
 
@@ -17,9 +18,9 @@ public class RgiPowersPostFireEvent extends Event {
     private final RPGItem rpgItem;
     private final Player player;
     private final TriggerType triggerType;
-    private final Map<Power, PowerResult> powerResults;
+    private final NavigableMap<Power, PowerResult> powerResults;
 
-    public RgiPowersPostFireEvent(ItemStack itemStack, RPGItem rpgItem, Player player, TriggerType triggerType, Map<Power, PowerResult> powerResults) {
+    public RgiPowersPostFireEvent(ItemStack itemStack, RPGItem rpgItem, Player player, TriggerType triggerType, NavigableMap<Power, PowerResult> powerResults) {
         this.itemStack = itemStack;
         this.rpgItem = rpgItem;
         this.player = player;
@@ -43,7 +44,7 @@ public class RgiPowersPostFireEvent extends Event {
         return triggerType;
     }
 
-    public Map<Power, PowerResult> getPowerResults() {
+    public NavigableMap<Power, PowerResult> getPowerResults() {
         return powerResults;
     }
 
