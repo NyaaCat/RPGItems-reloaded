@@ -73,5 +73,6 @@ javadoc {
         links 'https://docs.oracle.com/javase/8/docs/api/'
         links 'https://hub.spigotmc.org/javadocs/bukkit/'
         links 'https://google.github.io/guava/releases/21.0/api/docs/'
+        links 'https://nyaacat.github.io/NyaaCentral/NyaaCore/6.1-mc1.13/javadoc/'
     }
 }

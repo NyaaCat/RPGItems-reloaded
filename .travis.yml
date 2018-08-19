@@ -55,7 +55,10 @@ jobs:
       language: java
       jdk: oraclejdk10
       script:
+      - export MAJOR_VERSION=`sed -n 's/^ext\.majorVersion = \(.*\)$/\1/p' build.gradle`
+      - export MINOR_VERSION=`sed -n 's/^ext\.minorVersion = \(.*\)$/\1/p' build.gradle`
       - export MC_VERSION=`sed -n 's/^ext\.minecraftVersion = "\(.*\)"$/\1/p' build.gradle`
+      - export VERSION_STRING=$MAJOR_VERSION.$MINOR_VERSION-mc$MC_VERSION
       - if [ "$TRAVIS_PULL_REQUEST" != "false" ]; then exit 0; fi
       - if [ "$TRAVIS_BRANCH" != "$MC_VERSION" ]; then exit 0; fi
       - |
@@ -63,8 +66,9 @@ jobs:
           ./gradlew javadoc
           pushd ..;
           git clone -b gh-pages $MAVEN_REPO_URL pages;
-          mkdir -p pages/RPGitems-reloaded/
-          cp -r RPGitems-reloaded/build/docs/javadoc pages/RPGitems-reloaded/;
+          rm -rf pages/RPGitems-reloaded/$VERSION_STRING/;
+          mkdir -p pages/RPGitems-reloaded/$VERSION_STRING/;
+          cp -r RPGitems-reloaded/build/docs/javadoc pages/RPGitems-reloaded/$VERSION_STRING/;
           cd pages;
           git config credential.helper "store --file=.git/credentials";
           echo "https://$GITHUB_KEY:@github.com" > .git/credentials;
