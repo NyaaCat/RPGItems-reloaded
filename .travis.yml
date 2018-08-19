@@ -53,8 +53,6 @@ jobs:
 
     - stage: javadoc
       language: java
-      sudo: false
-      dist: trusty
       jdk: openjdk11
       script:
       - export MC_VERSION=`sed -n 's/^ext\.minecraftVersion = "\(.*\)"$/\1/p' build.gradle`
