@@ -56,7 +56,7 @@ publishing {
     publications {
         mavenJava(MavenPublication) {
             groupId "cat.nyaa"
-            artifactId "nyaacore"
+            artifactId "rpgitems"
             version "$majorVersion.$minorVersion-SNAPSHOT"
             from components.java
         }
@@ -65,5 +65,13 @@ publishing {
         maven {
             url "$buildDir/repo"
         }
+    }
+}
+
+javadoc {
+    (options as StandardJavadocDocletOptions).with {
+        links 'https://docs.oracle.com/javase/8/docs/api/'
+        links 'https://hub.spigotmc.org/javadocs/bukkit/'
+        links 'https://google.github.io/guava/releases/21.0/api/docs/'
     }
 }
