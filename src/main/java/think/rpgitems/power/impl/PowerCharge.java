@@ -11,6 +11,12 @@ import think.rpgitems.commands.Property;
 import think.rpgitems.power.PowerHit;
 import think.rpgitems.power.PowerResult;
 
+/**
+ * Power charge.
+ * <p>
+ *
+ * </p>
+ */
 public class PowerCharge extends BasePower implements PowerHit {
 
     @Property

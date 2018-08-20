@@ -74,7 +74,7 @@ javadoc {
         links 'https://hub.spigotmc.org/javadocs/spigot/'
         links 'https://google.github.io/guava/releases/21.0/api/docs/'
         links 'https://nyaacat.github.io/NyaaCentral/NyaaCore/6.1-mc1.13/javadoc/'
-        links 'https://ci.md-5.net/job/BungeeCord/ws/api/target/apidocs/'
+        links 'https://ci.md-5.net/job/BungeeCord/ws/chat/target/apidocs/'
 
         locale 'en_US'
         encoding 'UTF-8'
