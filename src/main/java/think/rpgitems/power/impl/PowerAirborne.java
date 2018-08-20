@@ -10,6 +10,12 @@ import think.rpgitems.commands.Property;
 import think.rpgitems.power.PowerHit;
 import think.rpgitems.power.PowerResult;
 
+/**
+ * Power airborne.
+ * <p>
+ *
+ * </p>
+ */
 public class PowerAirborne extends BasePower implements PowerHit {
 
     @Property

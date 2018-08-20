@@ -4,6 +4,12 @@ import think.rpgitems.commands.Property;
 
 import java.util.UUID;
 
+/**
+ * Power attributemodifier.
+ * <p>
+ *
+ * </p>
+ */
 public class PowerAttributeModifier extends BasePower {
 
     @Property(order = 0)

@@ -21,6 +21,12 @@ import java.util.concurrent.TimeUnit;
 import static think.rpgitems.RPGItems.plugin;
 import static think.rpgitems.utils.PowerUtils.checkCooldown;
 
+/**
+ * Power translocator.
+ * <p>
+ *
+ * </p>
+ */
 public class PowerTranslocator extends BasePower implements PowerSwapToOffhand, PowerSwapToMainhand {
 
     private static Cache<UUID, UUID> playerTranslocatorMap = CacheBuilder.newBuilder().expireAfterAccess(10, TimeUnit.MINUTES).build();

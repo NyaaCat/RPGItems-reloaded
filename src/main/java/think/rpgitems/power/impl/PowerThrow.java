@@ -21,6 +21,12 @@ import java.util.UUID;
 
 import static think.rpgitems.utils.PowerUtils.checkCooldownByString;
 
+/**
+ * Power throw.
+ * <p>
+ *
+ * </p>
+ */
 public class PowerThrow extends BasePower implements PowerRightClick, PowerLeftClick {
     @Property(order = 5)
     public String entityData = "";

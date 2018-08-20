@@ -10,6 +10,12 @@ import think.rpgitems.RPGItems;
 import think.rpgitems.power.PowerHit;
 import think.rpgitems.power.PowerResult;
 
+/**
+ * Power noimmutabletick.
+ * <p>
+ *
+ * </p>
+ */
 public class PowerNoImmutableTick extends BasePower implements PowerHit {
 
     @Override

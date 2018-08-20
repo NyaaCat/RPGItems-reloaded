@@ -43,7 +43,7 @@ import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 /**
- * Base class for all powers
+ * Power Manager for registering and inspecting powers.
  */
 @SuppressWarnings("unchecked")
 public class PowerManager {

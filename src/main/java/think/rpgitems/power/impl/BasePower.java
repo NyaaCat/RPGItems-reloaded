@@ -20,6 +20,9 @@ import java.util.SortedMap;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
+/**
+ * Base class containing common methods and fields.
+ */
 public abstract class BasePower implements Serializable, Power {
     RPGItem item;
 

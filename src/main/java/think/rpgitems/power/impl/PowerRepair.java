@@ -22,6 +22,12 @@ import think.rpgitems.power.TriggerType;
 
 import java.util.Collections;
 
+/**
+ * Power repair.
+ * <p>
+ *
+ * </p>
+ */
 public class PowerRepair extends BasePower implements PowerRightClick, PowerLeftClick {
     @Property(order = 2)
     public int durability = 20;
