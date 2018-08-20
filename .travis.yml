@@ -59,11 +59,12 @@ jobs:
       - export MINOR_VERSION=`sed -n 's/^ext\.minorVersion = \(.*\)$/\1/p' build.gradle`
       - export MC_VERSION=`sed -n 's/^ext\.minecraftVersion = "\(.*\)"$/\1/p' build.gradle`
       - export VERSION_STRING=$MAJOR_VERSION.$MINOR_VERSION-mc$MC_VERSION
+      - export FULL_VERSION_STRING=$MAJOR_VERSION.$MINOR_VERSION.$TRAVIS_BUILD_NUMBER-mc$MC_VERSION
       - if [ "$TRAVIS_PULL_REQUEST" != "false" ]; then exit 0; fi
       - if [ "$TRAVIS_BRANCH" != "$MC_VERSION" ]; then exit 0; fi
       - |
         if [ $PUBLISH_JAVADOC ]; then
-          ./gradlew javadoc
+          ./gradlew javadoc;
           pushd ..;
           git clone -b gh-pages $MAVEN_REPO_URL pages;
           rm -rf pages/RPGitems-reloaded/$VERSION_STRING/;
@@ -75,7 +76,7 @@ jobs:
           git add .;
           git commit -m "auto generated javadoc";
           git push --follow-tags;
-          popd
+          popd;
         fi
 
 before_cache:
@@ -84,6 +85,8 @@ before_cache:
 - rm -f  $HOME/.gradle/caches/*/fileHashes/fileHashes.lock
 - rm -f  $HOME/.gradle/caches/transforms-1/transforms-1.lock
 - rm -fr $HOME/.gradle/caches/*/plugin-resolution/
+- rm -f  $HOME/.gradle/caches/*/fileContent/fileContent.lock
+
 cache:
   directories:
   - $HOME/.gradle/caches/
