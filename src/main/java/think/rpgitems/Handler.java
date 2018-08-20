@@ -22,7 +22,7 @@ import think.rpgitems.item.Quality;
 import think.rpgitems.item.RPGItem;
 import think.rpgitems.power.Power;
 import think.rpgitems.power.PowerManager;
-import think.rpgitems.support.WorldGuard;
+import think.rpgitems.support.WGSupport;
 import think.rpgitems.utils.MaterialUtils;
 
 import java.lang.reflect.Field;
@@ -198,7 +198,7 @@ public class Handler extends RPGCommandReceiver {
     public void reload(CommandSender sender, Arguments args) {
         plugin.reloadConfig();
         plugin.i18n.load();
-        WorldGuard.reload();
+        WGSupport.reload();
         ItemManager.reload();
         if (plugin.getConfig().getBoolean("localeInv", false)) {
             Events.useLocaleInv = true;
@@ -238,51 +238,51 @@ public class Handler extends RPGCommandReceiver {
     @SubCommand("worldguard")
     @Attribute("command")
     public void toggleWorldGuard(CommandSender sender, Arguments args) {
-        if (!WorldGuard.isEnabled()) {
+        if (!WGSupport.isEnabled()) {
             msg(sender, "message.worldguard.error");
             return;
         }
-        if (WorldGuard.useWorldGuard) {
+        if (WGSupport.useWorldGuard) {
             msg(sender, "message.worldguard.disable");
         } else {
             msg(sender, "message.worldguard.enable");
         }
-        WorldGuard.useWorldGuard = !WorldGuard.useWorldGuard;
-        RPGItems.plugin.getConfig().set("support.worldguard", WorldGuard.useWorldGuard);
+        WGSupport.useWorldGuard = !WGSupport.useWorldGuard;
+        RPGItems.plugin.getConfig().set("support.worldguard", WGSupport.useWorldGuard);
         RPGItems.plugin.saveConfig();
     }
 
     @SubCommand("wgcustomflag")
     @Attribute("command")
     public void toggleCustomFlag(CommandSender sender, Arguments args) {
-        if (!WorldGuard.isEnabled()) {
+        if (!WGSupport.isEnabled()) {
             msg(sender, "message.worldguard.error");
             return;
         }
-        if (WorldGuard.useCustomFlag) {
+        if (WGSupport.useCustomFlag) {
             msg(sender, "message.wgcustomflag.disable");
         } else {
             msg(sender, "message.wgcustomflag.enable");
         }
-        WorldGuard.useCustomFlag = !WorldGuard.useCustomFlag;
-        RPGItems.plugin.getConfig().set("support.wgcustomflag", WorldGuard.useCustomFlag);
+        WGSupport.useCustomFlag = !WGSupport.useCustomFlag;
+        RPGItems.plugin.getConfig().set("support.wgcustomflag", WGSupport.useCustomFlag);
         RPGItems.plugin.saveConfig();
     }
 
     @SubCommand("wgforcerefresh")
     @Attribute("command")
     public void toggleForceRefresh(CommandSender sender, Arguments args) {
-        if (!WorldGuard.isEnabled()) {
+        if (!WGSupport.isEnabled()) {
             msg(sender, "message.worldguard.error");
             return;
         }
-        if (WorldGuard.forceRefresh) {
+        if (WGSupport.forceRefresh) {
             msg(sender, "message.wgforcerefresh.disable");
         } else {
             msg(sender, "message.wgforcerefresh.enable");
         }
-        WorldGuard.forceRefresh = !WorldGuard.forceRefresh;
-        RPGItems.plugin.getConfig().set("support.wgforcerefresh", WorldGuard.forceRefresh);
+        WGSupport.forceRefresh = !WGSupport.forceRefresh;
+        RPGItems.plugin.getConfig().set("support.wgforcerefresh", WGSupport.forceRefresh);
         RPGItems.plugin.saveConfig();
     }
 
@@ -290,7 +290,7 @@ public class Handler extends RPGCommandReceiver {
     @Attribute("item")
     public void itemToggleWorldGuard(CommandSender sender, Arguments args) {
         RPGItem item = getItemByName(args.nextString());
-        if (!WorldGuard.isEnabled()) {
+        if (!WGSupport.isEnabled()) {
             msg(sender, "message.worldguard.error");
             return;
         }

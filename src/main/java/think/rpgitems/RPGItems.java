@@ -24,7 +24,7 @@ import think.rpgitems.data.Font;
 import think.rpgitems.item.ItemManager;
 import think.rpgitems.power.PowerManager;
 import think.rpgitems.power.PowerTicker;
-import think.rpgitems.support.WorldGuard;
+import think.rpgitems.support.WGSupport;
 
 import java.util.logging.Logger;
 
@@ -42,7 +42,7 @@ public class RPGItems extends JavaPlugin {
         PowerManager.load();
         saveDefaultConfig();
         Font.load();
-        WorldGuard.load();
+        WGSupport.load();
     }
 
     @Override
@@ -63,7 +63,7 @@ public class RPGItems extends JavaPlugin {
                 return true;
             });
         }
-        WorldGuard.init(this);
+        WGSupport.init(this);
         ConfigurationSection conf = getConfig();
         if (conf.getBoolean("localeInv", false)) {
             Events.useLocaleInv = true;
@@ -80,7 +80,7 @@ public class RPGItems extends JavaPlugin {
 
     @Override
     public void onDisable() {
-        WorldGuard.unload();
+        WGSupport.unload();
         getCommand("rpgitem").setExecutor(null);
         getCommand("rpgitem").setTabCompleter(null);
         this.getServer().getScheduler().cancelTasks(plugin);

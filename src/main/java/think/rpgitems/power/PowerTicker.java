@@ -7,7 +7,7 @@ import org.bukkit.inventory.ItemStack;
 import org.bukkit.scheduler.BukkitRunnable;
 import think.rpgitems.item.ItemManager;
 import think.rpgitems.item.RPGItem;
-import think.rpgitems.support.WorldGuard;
+import think.rpgitems.support.WGSupport;
 
 /**
  * BukkitRunnable that runs {@link RPGItem#tick(Player, ItemStack)}
@@ -17,7 +17,7 @@ public class PowerTicker extends BukkitRunnable {
     @Override
     public void run() {
         for (final Player player : Bukkit.getOnlinePlayers()) {
-            if (!WorldGuard.canPvP(player)) continue;
+            if (!WGSupport.canPvP(player)) continue;
             ItemStack[] armour = player.getInventory().getArmorContents();
             for (ItemStack part : armour) {
                 RPGItem item = ItemManager.toRPGItem(part);

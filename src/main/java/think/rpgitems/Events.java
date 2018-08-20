@@ -51,7 +51,7 @@ import think.rpgitems.power.impl.PowerRanged;
 import think.rpgitems.power.impl.PowerRangedOnly;
 import think.rpgitems.power.impl.PowerTranslocator;
 import think.rpgitems.support.WGHandler;
-import think.rpgitems.support.WorldGuard;
+import think.rpgitems.support.WGSupport;
 
 import java.lang.reflect.Field;
 import java.lang.reflect.InvocationTargetException;
@@ -265,7 +265,7 @@ public class Events implements Listener {
             if (!rItem.hasPower(PowerRanged.class) && !rItem.hasPower(PowerRangedOnly.class) && item.getType() != Material.BOW && item.getType() != Material.SNOWBALL && item.getType() != Material.EGG && item.getType() != Material.POTION) {
                 return;
             }
-            if (!WorldGuard.canPvP(player) && !rItem.ignoreWorldGuard)
+            if (!WGSupport.canPvP(player) && !rItem.ignoreWorldGuard)
                 return;
             if (!rItem.checkPermission(player, true)) {
                 e.setCancelled(true);
@@ -320,7 +320,7 @@ public class Events implements Listener {
         Material im = e.getMaterial();
         if (im == Material.BOW || im == Material.SNOWBALL || im == Material.EGG || im == Material.POTION || im == Material.TRIDENT || im == Material.AIR)
             return;
-        if (!WorldGuard.canPvP(p) && !rItem.ignoreWorldGuard)
+        if (!WGSupport.canPvP(p) && !rItem.ignoreWorldGuard)
             return;
         if (!rItem.checkPermission(p, true)) {
             return;
@@ -434,7 +434,7 @@ public class Events implements Listener {
                 RPGItem.updateItem(rpgItem, item, true);
             }
         }
-        if (WorldGuard.isEnabled() && WorldGuard.useWorldGuard && WorldGuard.useCustomFlag) {
+        if (WGSupport.isEnabled() && WGSupport.useWorldGuard && WGSupport.useCustomFlag) {
             WGHandler.onPlayerJoin(e);
         }
     }
@@ -590,7 +590,7 @@ public class Events implements Listener {
         RPGItem rItem = ItemManager.toRPGItem(item);
         if (rItem == null)
             return damage;
-        if (!WorldGuard.canPvP(player) && !rItem.ignoreWorldGuard)
+        if (!WGSupport.canPvP(player) && !rItem.ignoreWorldGuard)
             return damage;
         if (!rItem.checkPermission(player, true)) {
             e.setCancelled(true);
@@ -721,7 +721,7 @@ public class Events implements Listener {
 
     private double playerHit(EntityDamageByEntityEvent e, double damage) {
         Player p = (Player) e.getEntity();
-        if (e.isCancelled() || !WorldGuard.canPvP(p))
+        if (e.isCancelled() || !WGSupport.canPvP(p))
             return damage;
         ItemStack[] armour = p.getInventory().getArmorContents();
         boolean hasRPGItem = false;
@@ -732,7 +732,7 @@ public class Events implements Listener {
             } else {
                 hasRPGItem = true;
             }
-            if (!WorldGuard.canPvP(p) && !pRItem.ignoreWorldGuard)
+            if (!WGSupport.canPvP(p) && !pRItem.ignoreWorldGuard)
                 return damage;
             if (!pRItem.checkPermission(p, true)) {
                 continue;

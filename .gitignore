@@ -123,3 +123,5 @@ nbactions.xml
 nb-configuration.xml
 .nb-gradle/
 
+!/lib/worldedit-bukkit-7.0.0-SNAPSHOT-dist.jar
+!/lib/worldguard-legacy-7.0.0-SNAPSHOT-dist.jar

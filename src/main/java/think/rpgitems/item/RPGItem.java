@@ -59,7 +59,7 @@ import think.rpgitems.power.*;
 import think.rpgitems.power.impl.PowerAttributeModifier;
 import think.rpgitems.power.impl.PowerLoreFilter;
 import think.rpgitems.power.impl.PowerUnbreakable;
-import think.rpgitems.support.WorldGuard;
+import think.rpgitems.support.WGSupport;
 import think.rpgitems.utils.MaterialUtils;
 import think.rpgitems.utils.itemnbtapi.NBTItem;
 import think.rpgitems.utils.itemnbtapi.NBTList;
@@ -553,7 +553,7 @@ public class RPGItem {
     private boolean triggerPreCheck(Player player, ItemStack i, ArrayList<? extends Power> powers, TriggerType triggerType) {
         if (powers.isEmpty()) return false;
         if (!checkPermission(player, true)) return false;
-        if (powers.stream().anyMatch(power -> !WorldGuard.canUsePowerNow(player, power))) return false;
+        if (!WGSupport.check(player, this, powers)) return false;
 
         RgiPowersPreFireEvent preFire = new RgiPowersPreFireEvent(i, this, player, triggerType, powers);
         Bukkit.getServer().getPluginManager().callEvent(preFire);
@@ -674,7 +674,6 @@ public class RPGItem {
         double ret = -Double.MAX_VALUE;
         NavigableMap<Power, PowerResult> resultMap = new TreeMap<>();
         for (PowerHit power : powerHit) {
-            if (!WorldGuard.canUsePowerNow(damager, power)) continue;
             PowerResult<Double> result = power.hit(damager, i, target, damage, event);
             resultMap.put(power, result);
             if (result.isAbort()) break;

@@ -1,9 +1,7 @@
 package think.rpgitems.support;
 
+import com.sk89q.worldedit.util.Location;
 import com.sk89q.worldguard.LocalPlayer;
-import com.sk89q.worldguard.bukkit.BukkitUtil;
-import com.sk89q.worldguard.bukkit.RegionContainer;
-import com.sk89q.worldguard.bukkit.WorldGuardPlugin;
 import com.sk89q.worldguard.protection.ApplicableRegionSet;
 import com.sk89q.worldguard.protection.flags.SetFlag;
 import com.sk89q.worldguard.protection.flags.StringFlag;
@@ -11,24 +9,30 @@ import com.sk89q.worldguard.protection.flags.registry.FlagConflictException;
 import com.sk89q.worldguard.protection.flags.registry.FlagRegistry;
 import com.sk89q.worldguard.protection.managers.RegionManager;
 import com.sk89q.worldguard.protection.regions.ProtectedRegion;
+import com.sk89q.worldguard.protection.regions.RegionContainer;
 import com.sk89q.worldguard.session.MoveType;
 import com.sk89q.worldguard.session.Session;
 import com.sk89q.worldguard.session.SessionManager;
 import com.sk89q.worldguard.session.handler.Handler;
-import org.bukkit.Location;
 import org.bukkit.entity.Player;
 import org.bukkit.event.player.PlayerJoinEvent;
 import think.rpgitems.RPGItems;
 
 import java.util.Collection;
 import java.util.Set;
+import java.util.UUID;
 
-import static org.bukkit.Bukkit.getServer;
-import static think.rpgitems.support.WorldGuard.useCustomFlag;
+import static think.rpgitems.support.WGSupport.useCustomFlag;
+import static think.rpgitems.support.WGSupport.worldGuardInstance;
 
 public class WGHandler extends Handler {
 
     private static final SetFlag<String> disabledPower = new SetFlag<>("disabled-rpg-powers", new StringFlag(null));
+    private static final SetFlag<String> enabledPower = new SetFlag<>("enabled-rpg-powers", new StringFlag(null));
+    private static final SetFlag<String> disabledItem = new SetFlag<>("disabled-rpg-items", new StringFlag(null));
+    private static final SetFlag<String> enabledItem = new SetFlag<>("enabled-rpg-items", new StringFlag(null));
+    private static final SetFlag<String> disabledPlayer = new SetFlag<>("disabled-rpg-players", new StringFlag(null));
+    private static final SetFlag<String> enabledPlayer = new SetFlag<>("disabled-rpg-players", new StringFlag(null));
 
     private static final Factory FACTORY = new Factory();
 
@@ -37,18 +41,16 @@ public class WGHandler extends Handler {
     }
 
     public static void init() {
-        WorldGuardPlugin wg = (WorldGuardPlugin) getServer().getPluginManager().getPlugin("WorldGuard");
-        WorldGuard.majorVersion = Character.digit(wg.getDescription().getVersion().charAt(0), 9);
-        WorldGuard.minorVersion = Character.digit(wg.getDescription().getVersion().charAt(2), 9);
-        WorldGuard.pointVersion = Character.digit(wg.getDescription().getVersion().charAt(4), 9);
-        if (!(WorldGuard.majorVersion > 6 || (WorldGuard.majorVersion == 6 && WorldGuard.minorVersion >= 2) || (WorldGuard.majorVersion == 6 && WorldGuard.minorVersion == 1 && WorldGuard.pointVersion >= 3))) {
-            useCustomFlag = false;
-        }
         if (useCustomFlag) {
-            FlagRegistry registry = wg.getFlagRegistry();
+            FlagRegistry registry = worldGuardInstance.getFlagRegistry();
             try {
                 registry.register(disabledPower);
-                RPGItems.logger.info("[RPGItems] WorldGuard custom flag disabled-rpg-powers registered");
+                registry.register(enabledPower);
+                registry.register(disabledItem);
+                registry.register(enabledItem);
+                registry.register(disabledPlayer);
+                registry.register(enabledPlayer);
+                RPGItems.logger.info("[RPGItems] WorldGuard custom flags registered");
             } catch (FlagConflictException e) {
                 e.printStackTrace();
                 useCustomFlag = false;
@@ -62,31 +64,47 @@ public class WGHandler extends Handler {
     }
 
     public static void refreshPlayerWG(Player p) {
-        Location loc = p.getLocation();
-        RegionContainer container = WorldGuard.wgPlugin.getRegionContainer();
-        RegionManager regions = container.get(loc.getWorld());
+        LocalPlayer localPlayer = WGSupport.wgPlugin.wrapPlayer(p);
+        RegionContainer container = worldGuardInstance.getPlatform().getRegionContainer();
+        RegionManager regions = container.get(localPlayer.getWorld());
         if (regions == null) return;
-        ApplicableRegionSet set = regions.getApplicableRegions(BukkitUtil.toVector(loc));
-        LocalPlayer localPlayer = WorldGuard.wgPlugin.wrapPlayer(p);
-        Collection<String> disabled = set.queryValue(localPlayer, disabledPower);
-        WorldGuard.disabledNowByPlayer.put(p.getUniqueId(), disabled);
+        ApplicableRegionSet set = regions.getApplicableRegions(localPlayer.getLocation().toVector());
+        refresh(set, localPlayer);
     }
 
-    public static void registerHandler() {
-        SessionManager sessionManager = WorldGuard.wgPlugin.getSessionManager();
+    private static void refresh(ApplicableRegionSet set, LocalPlayer localPlayer) {
+        UUID uuid = localPlayer.getUniqueId();
+        Collection<String> dp = set.queryValue(localPlayer, disabledPower);
+        Collection<String> ep = set.queryValue(localPlayer, enabledPower);
+        Collection<String> di = set.queryValue(localPlayer, disabledItem);
+        Collection<String> ei = set.queryValue(localPlayer, enabledItem);
+        Collection<String> du = set.queryValue(localPlayer, disabledPlayer);
+        Collection<String> eu = set.queryValue(localPlayer, enabledPlayer);
+        WGSupport.disabledPowerByPlayer.put(uuid, dp);
+        WGSupport.enabledPowerByPlayer.put(uuid, ep);
+        WGSupport.disabledItemByPlayer.put(uuid, di);
+        WGSupport.enabledItemByPlayer.put(uuid, ei);
+        if (eu == null || eu.isEmpty()) {
+            WGSupport.disabledByPlayer.put(uuid, du != null && du.contains(uuid.toString()));
+        } else {
+            WGSupport.disabledByPlayer.put(uuid, !eu.contains(uuid.toString()));
+        }
+    }
+
+    static void registerHandler() {
+        SessionManager sessionManager = worldGuardInstance.getPlatform().getSessionManager();
         sessionManager.registerHandler(FACTORY, null);
     }
 
-    public static void unregisterHandler() {
-        SessionManager sessionManager = WorldGuard.wgPlugin.getSessionManager();
+    static void unregisterHandler() {
+        SessionManager sessionManager = worldGuardInstance.getPlatform().getSessionManager();
         sessionManager.unregisterHandler(FACTORY);
     }
 
     @Override
-    public boolean onCrossBoundary(Player player, Location from, Location to, ApplicableRegionSet toSet, Set<ProtectedRegion> entered, Set<ProtectedRegion> exited, MoveType moveType) {
+    public boolean onCrossBoundary(LocalPlayer player, Location from, Location to, ApplicableRegionSet toSet, Set<ProtectedRegion> entered, Set<ProtectedRegion> exited, MoveType moveType) {
         if (entered.isEmpty() && exited.isEmpty()) return true;
-        Collection<String> disabled = toSet.queryValue(getPlugin().wrapPlayer(player), disabledPower);
-        WorldGuard.disabledNowByPlayer.put(player.getUniqueId(), disabled);
+        refresh(toSet, player);
         return true;
     }
 
