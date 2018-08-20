@@ -17,7 +17,7 @@ public class PowerTicker extends BukkitRunnable {
     @Override
     public void run() {
         for (final Player player : Bukkit.getOnlinePlayers()) {
-            if (!WGSupport.canPvP(player)) continue;
+            if (WGSupport.canNotPvP(player)) continue;
             ItemStack[] armour = player.getInventory().getArmorContents();
             for (ItemStack part : armour) {
                 RPGItem item = ItemManager.toRPGItem(part);

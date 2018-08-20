@@ -63,7 +63,7 @@ public class WGHandler extends Handler {
         refreshPlayerWG(p);
     }
 
-    public static void refreshPlayerWG(Player p) {
+    static void refreshPlayerWG(Player p) {
         LocalPlayer localPlayer = WGSupport.wgPlugin.wrapPlayer(p);
         RegionContainer container = worldGuardInstance.getPlatform().getRegionContainer();
         RegionManager regions = container.get(localPlayer.getWorld());
