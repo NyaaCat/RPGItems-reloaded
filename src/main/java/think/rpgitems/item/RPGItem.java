@@ -363,15 +363,15 @@ public class RPGItem {
         if (rItem.maxDurability > 0) {
             int durability = ((Number) rpgMeta.get(RPGMetadata.DURABILITY)).intValue();
             if (rItem.customItemModel) {
-                item.setDurability(item.getDurability());
+                item.setDurability(rItem.item.getDurability());
             } else {
-                item.setDurability((short) (item.getType().getMaxDurability() - ((short) ((double) item.getType().getMaxDurability() * ((double) durability / (double) rItem.maxDurability)))));
+                item.setDurability((short) (rItem.item.getType().getMaxDurability() - ((short) ((double) rItem.item.getType().getMaxDurability() * ((double) durability / (double) rItem.maxDurability)))));
             }
         } else {
             if (rItem.customItemModel) {
-                item.setDurability(item.getDurability());
+                item.setDurability(rItem.item.getDurability());
             } else {
-                item.setDurability(item.getType().getMaxDurability());
+                item.setDurability(rItem.hasBar ? (short) 0 : rItem.item.getDurability());
             }
         }
     }
@@ -563,7 +563,7 @@ public class RPGItem {
     public void leftClick(Player player, ItemStack i, Block block, PlayerInteractEvent event) {
         if (!triggerPreCheck(player, i, this.powerLeftClick, TriggerType.LEFT_CLICK)) return;
 
-        NavigableMap<Power, PowerResult> resultMap = new TreeMap<>();
+        Map<Power, PowerResult> resultMap = new LinkedHashMap<>();
         for (PowerLeftClick power : powerLeftClick) {
             PowerResult<Void> result = power.leftClick(player, i, block, event);
             resultMap.put(power, result);
@@ -581,7 +581,7 @@ public class RPGItem {
     public void rightClick(Player player, ItemStack i, Block block, PlayerInteractEvent event) {
         if (!triggerPreCheck(player, i, this.powerRightClick, TriggerType.RIGHT_CLICK)) return;
 
-        NavigableMap<Power, PowerResult> resultMap = new TreeMap<>();
+        Map<Power, PowerResult> resultMap = new LinkedHashMap<>();
         for (PowerRightClick power : this.powerRightClick) {
             PowerResult<Void> result = power.rightClick(player, i, block, event);
             resultMap.put(power, result);
@@ -599,7 +599,7 @@ public class RPGItem {
     public void offhandClick(Player player, ItemStack i, PlayerInteractEvent event) {
         if (!triggerPreCheck(player, i, this.powerOffhandClick, TriggerType.OFFHAND_CLICK)) return;
 
-        NavigableMap<Power, PowerResult> resultMap = new TreeMap<>();
+        Map<Power, PowerResult> resultMap = new LinkedHashMap<>();
         for (PowerOffhandClick power : powerOffhandClick) {
             PowerResult<Void> result = power.offhandClick(player, i, event);
             resultMap.put(power, result);
@@ -617,7 +617,7 @@ public class RPGItem {
     public void sneak(Player player, ItemStack i, PlayerToggleSneakEvent event) {
         if (!triggerPreCheck(player, i, this.powerSneak, TriggerType.SNEAK)) return;
 
-        NavigableMap<Power, PowerResult> resultMap = new TreeMap<>();
+        Map<Power, PowerResult> resultMap = new LinkedHashMap<>();
         for (PowerSneak power : powerSneak) {
             PowerResult<Void> result = power.sneak(player, i, event);
             resultMap.put(power, result);
@@ -635,7 +635,7 @@ public class RPGItem {
     public void sprint(Player player, ItemStack i, PlayerToggleSprintEvent event) {
         if (!triggerPreCheck(player, i, this.powerSprint, TriggerType.SPRINT)) return;
 
-        NavigableMap<Power, PowerResult> resultMap = new TreeMap<>();
+        Map<Power, PowerResult> resultMap = new LinkedHashMap<>();
         for (PowerSprint power : powerSprint) {
             PowerResult<Void> result = power.sprint(player, i, event);
             resultMap.put(power, result);
@@ -653,7 +653,7 @@ public class RPGItem {
     public void projectileHit(Player player, ItemStack i, Projectile arrow, ProjectileHitEvent event) {
         if (!triggerPreCheck(player, i, this.powerProjectileHit, TriggerType.PROJECTILE_HIT)) return;
 
-        NavigableMap<Power, PowerResult> resultMap = new TreeMap<>();
+        Map<Power, PowerResult> resultMap = new LinkedHashMap<>();
         for (PowerProjectileHit power : powerProjectileHit) {
             PowerResult<Void> result = power.projectileHit(player, i, arrow, event);
             resultMap.put(power, result);
@@ -672,7 +672,7 @@ public class RPGItem {
         if (!triggerPreCheck(damager, i, this.powerHit, TriggerType.HIT)) return;
 
         double ret = -Double.MAX_VALUE;
-        NavigableMap<Power, PowerResult> resultMap = new TreeMap<>();
+        Map<Power, PowerResult> resultMap = new LinkedHashMap<>();
         for (PowerHit power : powerHit) {
             PowerResult<Double> result = power.hit(damager, i, target, damage, event);
             resultMap.put(power, result);
@@ -694,7 +694,7 @@ public class RPGItem {
         double ret = Double.MAX_VALUE;
         if (!triggerPreCheck(target, i, this.powerHitTaken, TriggerType.HIT_TAKEN)) return ret;
 
-        NavigableMap<Power, PowerResult> resultMap = new TreeMap<>();
+        Map<Power, PowerResult> resultMap = new LinkedHashMap<>();
         for (PowerHitTaken power : powerHitTaken) {
             PowerResult<Double> result = power.takeHit(target, i, ev.getDamage(), ev);
             resultMap.put(power, result);
@@ -715,7 +715,7 @@ public class RPGItem {
     public void hurt(Player target, ItemStack i, EntityDamageEvent ev) {
         if (!triggerPreCheck(target, i, this.powerHurt, TriggerType.HURT)) return;
 
-        NavigableMap<Power, PowerResult> resultMap = new TreeMap<>();
+        Map<Power, PowerResult> resultMap = new LinkedHashMap<>();
         for (PowerHurt power : powerHurt) {
             PowerResult<Void> result = power.hurt(target, i, ev);
             resultMap.put(power, result);
@@ -733,7 +733,7 @@ public class RPGItem {
     public void swapToOffhand(Player player, ItemStack i, PlayerSwapHandItemsEvent ev) {
         if (!triggerPreCheck(player, i, this.powerSwapToOffhand, TriggerType.SWAP_TO_OFFHAND)) return;
 
-        NavigableMap<Power, PowerResult> resultMap = new TreeMap<>();
+        Map<Power, PowerResult> resultMap = new LinkedHashMap<>();
         for (PowerSwapToOffhand power : powerSwapToOffhand) {
             PowerResult<Boolean> result = power.swapToOffhand(player, i, ev);
             resultMap.put(power, result);
@@ -755,7 +755,7 @@ public class RPGItem {
     public void swapToMainhand(Player player, ItemStack i, PlayerSwapHandItemsEvent ev) {
         if (!triggerPreCheck(player, i, this.powerSwapToMainhand, TriggerType.SWAP_TO_MAINHAND)) return;
 
-        NavigableMap<Power, PowerResult> resultMap = new TreeMap<>();
+        Map<Power, PowerResult> resultMap = new LinkedHashMap<>();
         for (PowerSwapToMainhand power : powerSwapToMainhand) {
             PowerResult<Boolean> result = power.swapToMainhand(player, i, ev);
             resultMap.put(power, result);
@@ -777,7 +777,7 @@ public class RPGItem {
     public void pickupOffhand(Player player, ItemStack i, InventoryClickEvent ev) {
         if (!triggerPreCheck(player, i, this.powerSwapToMainhand, TriggerType.PICKUP_OFF_HAND)) return;
 
-        NavigableMap<Power, PowerResult> resultMap = new TreeMap<>();
+        Map<Power, PowerResult> resultMap = new LinkedHashMap<>();
         for (PowerSwapToMainhand power : powerSwapToMainhand) {
             PowerResult<Boolean> result = power.pickupOffhand(player, i, ev);
             resultMap.put(power, result);
@@ -799,7 +799,7 @@ public class RPGItem {
     public void placeOffhand(Player player, ItemStack i, InventoryClickEvent ev) {
         if (!triggerPreCheck(player, i, this.powerSwapToOffhand, TriggerType.PLACE_OFF_HAND)) return;
 
-        NavigableMap<Power, PowerResult> resultMap = new TreeMap<>();
+        Map<Power, PowerResult> resultMap = new LinkedHashMap<>();
         for (PowerSwapToOffhand power : powerSwapToOffhand) {
             PowerResult<Boolean> result = power.placeOffhand(player, i, ev);
             resultMap.put(power, result);
@@ -821,7 +821,7 @@ public class RPGItem {
     public void tick(Player player, ItemStack i) {
         if (!triggerPreCheck(player, i, this.powerTick, TriggerType.TICK)) return;
 
-        NavigableMap<Power, PowerResult> resultMap = new TreeMap<>();
+        Map<Power, PowerResult> resultMap = new LinkedHashMap<>();
         for (PowerTick power : powerTick) {
             PowerResult<Void> result = power.tick(player, i);
             resultMap.put(power, result);

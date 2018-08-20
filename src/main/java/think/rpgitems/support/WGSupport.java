@@ -36,6 +36,7 @@ public class WGSupport {
             return;
         }
         try {
+            worldGuardInstance = WorldGuard.getInstance();
             WGHandler.init();
         } catch (NoClassDefFoundError ignored) {
         }
@@ -52,7 +53,6 @@ public class WGSupport {
         }
         hasSupport = true;
         WGSupport.wgPlugin = (WorldGuardPlugin) wgPlugin;
-        worldGuardInstance = WorldGuard.getInstance();
         RPGItems.logger.info("[RPGItems] WorldGuard version: " + WGSupport.wgPlugin.getDescription().getVersion() + " found");
         WGHandler.registerHandler();
         disabledPowerByPlayer = new HashMap<>();
