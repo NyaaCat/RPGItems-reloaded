@@ -242,6 +242,8 @@ power:
   stuck: '%d%% chance to stuck enemy %d tick (%.1fs cooldown)'
   shulkerbullet: Launches shulker bullet (%.1f cooldown)
   translocator: Shoot translocator when swapping to offhand, teleport to it when swapping to mainhand, destory it when pickup from offhand
+  glove: "Catch an entity (%.1fs cooldown)"
+  mount: "Ride an entity (%.1fs cooldown)"
   properties:
     base:
       cooldown: Cooldown of the power, in ticks.
@@ -504,6 +506,10 @@ power:
       setupCost: ''
     unbreakable:
       main_description: ''
+    glove:
+      main_description: "Catch an entity"
+    mount:
+      main_description: "Ride an entity"
 manual:
   reload:
     description: Reload the plugin
