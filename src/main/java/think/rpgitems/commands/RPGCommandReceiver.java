@@ -4,6 +4,7 @@ import cat.nyaa.nyaacore.CommandReceiver;
 import cat.nyaa.nyaacore.LanguageRepository;
 import cat.nyaa.nyaacore.Message;
 import org.bukkit.Bukkit;
+import org.bukkit.NamespacedKey;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
@@ -298,7 +299,7 @@ public abstract class RPGCommandReceiver extends CommandReceiver {
                             // four case below
                             switch (itemCommand.getValue()) {
                                 case "power":
-                                    return new ArrayList<>(powers.keySet()); // all powers
+                                    return powers.keySet().stream().map(NamespacedKey::toString).collect(Collectors.toList()); // all powers
                                 case "set":
                                 case "get":
                                 case "removepower":
@@ -358,7 +359,7 @@ public abstract class RPGCommandReceiver extends CommandReceiver {
                         case "power":
                             switch (itemCommand.getValue()) {
                                 case "power":
-                                    return powers.keySet().stream().filter(s -> s.startsWith(third)).collect(Collectors.toList()); // only case is `/rpgitem power item somepow`
+                                    return powers.keySet().stream().map(NamespacedKey::toString).filter(s -> s.startsWith(third)).collect(Collectors.toList()); // only case is `/rpgitem power item somepow`
                                 case "set":
                                 case "get":
                                 case "removepower":

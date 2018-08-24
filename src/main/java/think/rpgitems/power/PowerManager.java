@@ -17,13 +17,17 @@
 package think.rpgitems.power;
 
 import cat.nyaa.nyaacore.utils.ClassPathUtils;
-import com.google.common.base.Strings;
+import com.google.common.cache.CacheBuilder;
+import com.google.common.cache.CacheLoader;
+import com.google.common.cache.LoadingCache;
 import com.google.common.collect.BiMap;
 import com.google.common.collect.HashBasedTable;
 import com.google.common.collect.HashBiMap;
+import org.bukkit.Bukkit;
+import org.bukkit.NamespacedKey;
+import org.bukkit.plugin.Plugin;
 import think.rpgitems.RPGItems;
 import think.rpgitems.commands.*;
-import think.rpgitems.power.impl.BasePower;
 
 import java.lang.annotation.Annotation;
 import java.lang.invoke.LambdaMetafactory;
@@ -52,21 +56,23 @@ public class PowerManager {
     public static final HashBasedTable<Class<? extends Power>, String, BiConsumer<Object, String>> setters = HashBasedTable.create();
     public static final HashBasedTable<Class<? extends Power>, String, Function<Object, String>> getters = HashBasedTable.create();
     public static final Map<Class<? extends Power>, SortedMap<PowerProperty, Field>> propertyOrders = new HashMap<>();
+
+    public static final LoadingCache<String, Plugin> keyCache = CacheBuilder.newBuilder().concurrencyLevel(2).build(CacheLoader.from(Bukkit.getServer().getPluginManager()::getPlugin));
     /**
      * Power by name, and name by power
      */
-    public static BiMap<String, Class<? extends Power>> powers = HashBiMap.create();
+    public static BiMap<NamespacedKey, Class<? extends Power>> powers = HashBiMap.create();
 
     private static void registerPower(Class<? extends Power> clazz) {
-        String name = null;
+        NamespacedKey key;
         try {
             Power p = clazz.getConstructor().newInstance();
-            name = p.getName();
-            if (!Strings.isNullOrEmpty(name)) {
-                powers.put(name, clazz);
+            key = p.getNamespacedKey();
+            if (key != null) {
+                powers.put(key, clazz);
             }
         } catch (Exception e) {
-            RPGItems.plugin.getLogger().log(Level.WARNING, "Failed to add power:" + name, e);
+            RPGItems.plugin.getLogger().log(Level.WARNING, "Failed to add power", e);
             RPGItems.plugin.getLogger().log(Level.WARNING, "With {0}", clazz);
             return;
         }
@@ -233,8 +239,9 @@ public class PowerManager {
         };
     }
 
-    public static void load() {
-        Class<? extends Power>[] classes = ClassPathUtils.scanSubclasses(RPGItems.plugin, BasePower.class.getPackage().getName(), Power.class);
+    public static void load(Plugin plugin, String basePackage) {
+        keyCache.put(plugin.getName(), plugin);
+        Class<? extends Power>[] classes = ClassPathUtils.scanSubclasses(plugin, basePackage, Power.class);
         Stream.of(classes).filter(c -> !Modifier.isAbstract(c.getModifiers()) && !c.isInterface()).sorted(Comparator.comparing(Class::getCanonicalName)).forEach(PowerManager::registerPower);
     }
 }

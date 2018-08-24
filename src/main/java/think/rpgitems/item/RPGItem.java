@@ -196,11 +196,20 @@ public class RPGItem {
             for (String sectionKey : powerList.getKeys(false)) {
                 ConfigurationSection section = powerList.getConfigurationSection(sectionKey);
                 try {
-                    if (!PowerManager.powers.containsKey(section.getString("powerName"))) {
-                        // Invalid power
-                        continue;
+                    String powerName = section.getString("powerName");
+                    NamespacedKey key;
+                    if(powerName.contains(":")){
+                        String[] split = powerName.split(":", 2);
+                        String keyName = split[0];
+                        key = new NamespacedKey(PowerManager.keyCache.getUnchecked(keyName), split[1]);
+                    } else {
+                        key = new NamespacedKey(RPGItems.plugin, powerName);
                     }
-                    Power pow = PowerManager.powers.get(section.getString("powerName")).getConstructor().newInstance();
+                    if (!PowerManager.powers.containsKey(key)) {
+                        plugin.getLogger().warning("Unknown power:" + key + " on item " + this.name);
+                        Thread.dumpStack();
+                    }
+                    Power pow = PowerManager.powers.get(key).getConstructor().newInstance();
                     pow.init(section);
                     pow.setItem(this);
                     addPower(pow, false);

@@ -1,8 +1,10 @@
 package think.rpgitems.power.impl;
 
 import org.bukkit.Bukkit;
+import org.bukkit.NamespacedKey;
 import org.bukkit.configuration.ConfigurationSection;
 import think.rpgitems.Handler;
+import think.rpgitems.RPGItems;
 import think.rpgitems.commands.AcceptedValue;
 import think.rpgitems.commands.PowerProperty;
 import think.rpgitems.commands.Preset;
@@ -84,5 +86,10 @@ public abstract class BasePower implements Serializable, Power {
     @Override
     public Set<TriggerType> getTriggers() {
         return triggers;
+    }
+
+    @Override
+    public NamespacedKey getNamespacedKey() {
+        return new NamespacedKey(RPGItems.plugin, getName());
     }
 }

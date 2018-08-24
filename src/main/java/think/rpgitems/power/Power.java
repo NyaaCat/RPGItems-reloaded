@@ -1,5 +1,6 @@
 package think.rpgitems.power;
 
+import org.bukkit.NamespacedKey;
 import org.bukkit.configuration.ConfigurationSection;
 import think.rpgitems.item.RPGItem;
 
@@ -25,6 +26,13 @@ public interface Power {
      * @param s Configuration
      */
     void save(ConfigurationSection s);
+
+    /**
+     * NamespacedKey of this power
+     *
+     * @return namespacedKey
+     */
+    NamespacedKey getNamespacedKey();
 
     /**
      * Name of this power

@@ -16,6 +16,7 @@
  */
 package think.rpgitems.item;
 
+import org.apache.commons.lang.math.RandomUtils;
 import org.bukkit.ChatColor;
 import org.bukkit.Material;
 import org.bukkit.configuration.ConfigurationSection;
@@ -30,6 +31,7 @@ import think.rpgitems.RPGItems;
 import java.io.*;
 import java.util.Comparator;
 import java.util.HashMap;
+import java.util.concurrent.ThreadLocalRandom;
 
 public class ItemManager {
     public static HashMap<Integer, RPGItem> itemById = new HashMap<>();
@@ -161,7 +163,10 @@ public class ItemManager {
     public static RPGItem newItem(String name) {
         if (itemByName.containsKey(name))
             return null;
-        int free = itemById.keySet().parallelStream().max(Comparator.naturalOrder()).orElse(0) + 1;
+        int free;
+        do {
+            free = ThreadLocalRandom.current().nextInt(1000, Integer.MAX_VALUE) + 1;
+        } while (itemById.containsKey(free));
         RPGItem item = new RPGItem(name, free);
         itemById.put(free, item);
         itemByName.put(name, item);
@@ -171,7 +176,10 @@ public class ItemManager {
     public static RPGItem cloneItem(RPGItem item, String name) {
         if (itemByName.containsKey(name))
             return null;
-        int free = itemById.keySet().parallelStream().max(Comparator.naturalOrder()).orElse(0) + 1;
+        int free;
+        do {
+            free = ThreadLocalRandom.current().nextInt(1000, Integer.MAX_VALUE) + 1;
+        } while (itemById.containsKey(free));
         ConfigurationSection section = new MemoryConfiguration();
         item.save(section);
         RPGItem newItem = new RPGItem(section, name, free);

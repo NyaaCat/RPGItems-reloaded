@@ -24,6 +24,7 @@ import think.rpgitems.data.Font;
 import think.rpgitems.item.ItemManager;
 import think.rpgitems.power.PowerManager;
 import think.rpgitems.power.PowerTicker;
+import think.rpgitems.power.impl.BasePower;
 import think.rpgitems.support.WGSupport;
 
 import java.util.logging.Logger;
@@ -39,7 +40,7 @@ public class RPGItems extends JavaPlugin {
     @Override
     public void onLoad() {
         plugin = this;
-        PowerManager.load();
+        PowerManager.load(RPGItems.plugin, BasePower.class.getPackage().getName());
         saveDefaultConfig();
         Font.load();
         WGSupport.load();
