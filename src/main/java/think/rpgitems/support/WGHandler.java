@@ -22,7 +22,6 @@ import java.util.Collection;
 import java.util.Set;
 import java.util.UUID;
 
-import static think.rpgitems.support.WGSupport.useCustomFlag;
 import static think.rpgitems.support.WGSupport.worldGuardInstance;
 
 public class WGHandler extends Handler {
@@ -41,20 +40,17 @@ public class WGHandler extends Handler {
     }
 
     public static void init() {
-        if (useCustomFlag) {
-            FlagRegistry registry = worldGuardInstance.getFlagRegistry();
-            try {
-                registry.register(disabledPower);
-                registry.register(enabledPower);
-                registry.register(disabledItem);
-                registry.register(enabledItem);
-                registry.register(disabledPlayer);
-                registry.register(enabledPlayer);
-                RPGItems.logger.info("[RPGItems] WorldGuard custom flags registered");
-            } catch (FlagConflictException e) {
-                e.printStackTrace();
-                useCustomFlag = false;
-            }
+        FlagRegistry registry = worldGuardInstance.getFlagRegistry();
+        try {
+            registry.register(disabledPower);
+            registry.register(enabledPower);
+            registry.register(disabledItem);
+            registry.register(enabledItem);
+            registry.register(disabledPlayer);
+            registry.register(enabledPlayer);
+            RPGItems.logger.info("[RPGItems] WorldGuard custom flags registered");
+        } catch (FlagConflictException e) {
+            e.printStackTrace();
         }
     }
 

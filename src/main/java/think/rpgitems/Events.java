@@ -434,7 +434,7 @@ public class Events implements Listener {
                 RPGItem.updateItem(rpgItem, item, true);
             }
         }
-        if (WGSupport.isEnabled() && WGSupport.useWorldGuard && WGSupport.useCustomFlag) {
+        if (WGSupport.isEnabled() && WGSupport.useWorldGuard) {
             WGHandler.onPlayerJoin(e);
         }
     }
@@ -758,6 +758,7 @@ public class Events implements Listener {
         if (ev.getEntity() instanceof Player) {
             ev.setDamage(playerHitTaken((Player) ev.getEntity(), ev));
         }
+        getEventListener(EntityDamageEvent.class).forEach(l -> l.accept(ev));
     }
 
     private double playerHitTaken(Player e, EntityDamageEvent ev) {

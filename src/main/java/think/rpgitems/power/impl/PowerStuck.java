@@ -202,7 +202,7 @@ public class PowerStuck extends BasePower implements PowerHit, PowerRightClick {
     }
 
     @Override
-    protected void finalize() {
+    public void deinit() {
         RPGItems.listener.removeEventListener(EntityTeleportEvent.class, tpl).removeEventListener(PlayerTeleportEvent.class, pml);
     }
 }

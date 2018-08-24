@@ -1468,6 +1468,7 @@ public class RPGItem {
         powerSprint.remove(power);
         powerSwapToOffhand.remove(power);
         powerSwapToMainhand.remove(power);
+        power.deinit();
         rebuild();
     }
 

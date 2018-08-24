@@ -19,7 +19,6 @@ import java.util.UUID;
 public class WGSupport {
 
     public static boolean useWorldGuard = true;
-    public static boolean useCustomFlag = true;
     public static boolean forceRefresh = false;
     static Map<UUID, Collection<String>> disabledPowerByPlayer;
     static Map<UUID, Collection<String>> enabledPowerByPlayer;
@@ -32,9 +31,6 @@ public class WGSupport {
     private static boolean hasSupport = false;
 
     public static void load() {
-        if (!useWorldGuard || !useCustomFlag) {
-            return;
-        }
         try {
             worldGuardInstance = WorldGuard.getInstance();
             WGHandler.init();
@@ -46,7 +42,6 @@ public class WGSupport {
         plugin = pl;
         Plugin wgPlugin = plugin.getServer().getPluginManager().getPlugin("WorldGuard");
         useWorldGuard = plugin.getConfig().getBoolean("support.worldguard", false);
-        useCustomFlag = plugin.getConfig().getBoolean("support.wgcustomflag", true);
         forceRefresh = plugin.getConfig().getBoolean("support.wgforcerefresh", false);
         if (!(wgPlugin instanceof WorldGuardPlugin)) {
             return;
@@ -67,19 +62,17 @@ public class WGSupport {
 
     public static void reload() {
         hasSupport = false;
-        if (useCustomFlag) {
-            try {
-                WGHandler.unregisterHandler();
-            } catch (NoClassDefFoundError ignored) {
-            }
+        try {
+            WGHandler.unregisterHandler();
+        } catch (NoClassDefFoundError ignored) {
         }
         useWorldGuard = plugin.getConfig().getBoolean("support.worldguard", false);
-        useCustomFlag = plugin.getConfig().getBoolean("support.wgcustomflag", true);
         forceRefresh = plugin.getConfig().getBoolean("support.wgforcerefresh", false);
         if (wgPlugin == null) {
             return;
         }
         hasSupport = true;
+        worldGuardInstance = WorldGuard.getInstance();
         WGSupport.wgPlugin = (WorldGuardPlugin) plugin.getServer().getPluginManager().getPlugin("WorldGuard");
         RPGItems.logger.info("[RPGItems] WorldGuard version: " + WGSupport.wgPlugin.getDescription().getVersion() + " found");
 
@@ -94,7 +87,7 @@ public class WGSupport {
     }
 
     public static boolean canNotPvP(Player player) {
-        if (!hasSupport || !useWorldGuard || useCustomFlag)
+        if (!hasSupport || !useWorldGuard)
             return false;
 
         LocalPlayer localPlayer = wgPlugin.wrapPlayer(player);
@@ -133,7 +126,7 @@ public class WGSupport {
     }
 
     public static void unload() {
-        if (!hasSupport || !useWorldGuard || !useCustomFlag) {
+        if (!hasSupport) {
             return;
         }
         WGHandler.unregisterHandler();

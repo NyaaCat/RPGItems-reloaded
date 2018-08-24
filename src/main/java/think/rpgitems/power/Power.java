@@ -4,7 +4,6 @@ import org.bukkit.configuration.ConfigurationSection;
 import think.rpgitems.item.RPGItem;
 
 import java.util.Arrays;
-import java.util.List;
 import java.util.Objects;
 import java.util.Set;
 import java.util.stream.Collectors;
@@ -49,6 +48,9 @@ public interface Power {
     void setItem(RPGItem item);
 
     Set<TriggerType> getTriggers();
+
+    default void deinit() {
+    }
 
     @SuppressWarnings("unchecked")
     static Set<TriggerType> getTriggerTypes(Class<? extends Power> cls) {

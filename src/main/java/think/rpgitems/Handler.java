@@ -9,7 +9,6 @@ import org.bukkit.Material;
 import org.bukkit.command.CommandSender;
 import org.bukkit.enchantments.Enchantment;
 import org.bukkit.entity.EntityType;
-import org.bukkit.entity.LivingEntity;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.Inventory;
 import org.bukkit.inventory.ItemFlag;
@@ -135,7 +134,7 @@ public class Handler extends RPGCommandReceiver {
                     AcceptedValue as = field.getAnnotation(AcceptedValue.class);
                     if (as != null) {
                         List<String> acc = getAcceptedValue(cls, as);
-                        if (Arrays.stream(value.split(",")).anyMatch(v -> !acc.contains(v))){
+                        if (Arrays.stream(value.split(",")).anyMatch(v -> !acc.contains(v))) {
                             throw new BadCommandException("message.error.invalid_option", field.getName(), String.join(", ", acc));
                         }
                     }
@@ -151,7 +150,7 @@ public class Handler extends RPGCommandReceiver {
                         } else {
                             throw new BadCommandException("internal.error.command_exception");
                         }
-                    }else {
+                    } else {
                         if (listArg.isEnum()) {
                             Class<? extends Enum> enumClass = (Class<? extends Enum>) listArg;
                             Set<Enum> set = (Set<Enum>) values.map(v -> Enum.valueOf(enumClass, v)).collect(Collectors.toSet());
@@ -249,23 +248,6 @@ public class Handler extends RPGCommandReceiver {
         }
         WGSupport.useWorldGuard = !WGSupport.useWorldGuard;
         RPGItems.plugin.getConfig().set("support.worldguard", WGSupport.useWorldGuard);
-        RPGItems.plugin.saveConfig();
-    }
-
-    @SubCommand("wgcustomflag")
-    @Attribute("command")
-    public void toggleCustomFlag(CommandSender sender, Arguments args) {
-        if (!WGSupport.isEnabled()) {
-            msg(sender, "message.worldguard.error");
-            return;
-        }
-        if (WGSupport.useCustomFlag) {
-            msg(sender, "message.wgcustomflag.disable");
-        } else {
-            msg(sender, "message.wgcustomflag.enable");
-        }
-        WGSupport.useCustomFlag = !WGSupport.useCustomFlag;
-        RPGItems.plugin.getConfig().set("support.wgcustomflag", WGSupport.useCustomFlag);
         RPGItems.plugin.saveConfig();
     }
 
@@ -1056,12 +1038,5 @@ public class Handler extends RPGCommandReceiver {
         } else {
             msg(sender, "message.cloneitem.fail", item.getName(), name);
         }
-    }
-
-    @SubCommand("callback")
-    public void callback(CommandSender sender, Arguments args) {
-        System.out.println(sender);
-        System.out.println(sender.getName());
-        System.out.println(sender instanceof LivingEntity);
     }
 }
