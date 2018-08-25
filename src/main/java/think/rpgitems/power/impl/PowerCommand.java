@@ -25,13 +25,11 @@ import org.bukkit.event.player.PlayerInteractEvent;
 import org.bukkit.event.player.PlayerToggleSneakEvent;
 import org.bukkit.event.player.PlayerToggleSprintEvent;
 import org.bukkit.inventory.ItemStack;
-import think.rpgitems.commands.AcceptedValue;
-import think.rpgitems.commands.Preset;
+import think.rpgitems.commands.PowerMeta;
 import think.rpgitems.commands.Property;
 import think.rpgitems.power.*;
 
 import java.util.Collections;
-import java.util.Set;
 
 import static think.rpgitems.utils.PowerUtils.AttachPermission;
 import static think.rpgitems.utils.PowerUtils.checkCooldownByString;
@@ -44,6 +42,7 @@ import static think.rpgitems.utils.PowerUtils.checkCooldownByString;
  * </p>
  */
 @SuppressWarnings("WeakerAccess")
+@PowerMeta(defaultTrigger = TriggerType.RIGHT_CLICK)
 public class PowerCommand extends BasePower implements PowerRightClick, PowerLeftClick, PowerSprint, PowerSneak, PowerHurt {
 
     /**
@@ -74,10 +73,8 @@ public class PowerCommand extends BasePower implements PowerRightClick, PowerLef
 
     @Override
     public void init(ConfigurationSection section) {
-        String isRight = section.getString("isRight", "true");
-        if (isRight != null) {
-            triggers = Collections.singleton(isRight.equalsIgnoreCase("true") ? TriggerType.RIGHT_CLICK : TriggerType.LEFT_CLICK);
-        }
+        boolean isRight = section.getBoolean("isRight", true);
+        triggers = Collections.singleton(isRight ? TriggerType.RIGHT_CLICK : TriggerType.LEFT_CLICK);
         super.init(section);
     }
 
@@ -120,7 +117,7 @@ public class PowerCommand extends BasePower implements PowerRightClick, PowerLef
 
     @Override
     public PowerResult<Void> rightClick(Player player, ItemStack stack, Block clicked, PlayerInteractEvent event) {
-        if (!triggers.contains(TriggerType.RIGHT_CLICK) || !checkCooldownByString(player, getItem(), command, cooldown, true))
+        if (!checkCooldownByString(player, getItem(), command, cooldown, true))
             return PowerResult.cd();
         if (!getItem().consumeDurability(stack, cost)) return PowerResult.cost();
         return executeCommand(player);
@@ -128,7 +125,7 @@ public class PowerCommand extends BasePower implements PowerRightClick, PowerLef
 
     @Override
     public PowerResult<Void> leftClick(Player player, ItemStack stack, Block clicked, PlayerInteractEvent event) {
-        if (!triggers.contains(TriggerType.LEFT_CLICK) || !checkCooldownByString(player, getItem(), command, cooldown, true))
+        if (!checkCooldownByString(player, getItem(), command, cooldown, true))
             return PowerResult.cd();
         if (!getItem().consumeDurability(stack, cost)) return PowerResult.cost();
         return executeCommand(player);
@@ -136,7 +133,7 @@ public class PowerCommand extends BasePower implements PowerRightClick, PowerLef
 
     @Override
     public PowerResult<Void> sneak(Player player, ItemStack stack, PlayerToggleSneakEvent event) {
-        if (!triggers.contains(TriggerType.SNEAK) || !checkCooldownByString(player, getItem(), command, cooldown, true))
+        if (!checkCooldownByString(player, getItem(), command, cooldown, true))
             return PowerResult.cd();
         if (!getItem().consumeDurability(stack, cost)) return PowerResult.cost();
         return executeCommand(player);
@@ -144,7 +141,7 @@ public class PowerCommand extends BasePower implements PowerRightClick, PowerLef
 
     @Override
     public PowerResult<Void> sprint(Player player, ItemStack stack, PlayerToggleSprintEvent event) {
-        if (!triggers.contains(TriggerType.SPRINT) || !checkCooldownByString(player, getItem(), command, cooldown, true))
+        if (!checkCooldownByString(player, getItem(), command, cooldown, true))
             return PowerResult.cd();
         if (!getItem().consumeDurability(stack, cost)) return PowerResult.cost();
         return executeCommand(player);
@@ -152,7 +149,7 @@ public class PowerCommand extends BasePower implements PowerRightClick, PowerLef
 
     @Override
     public PowerResult<Void> hurt(Player target, ItemStack stack, EntityDamageEvent event) {
-        if (!triggers.contains(TriggerType.HURT) || !checkCooldownByString(target, getItem(), command, cooldown, true))
+        if (!checkCooldownByString(target, getItem(), command, cooldown, true))
             return PowerResult.cd();
         if (!getItem().consumeDurability(stack, cost)) return PowerResult.cost();
         return executeCommand(target);

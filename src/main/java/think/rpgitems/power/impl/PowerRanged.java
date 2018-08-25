@@ -18,6 +18,7 @@ package think.rpgitems.power.impl;
 
 import org.bukkit.configuration.ConfigurationSection;
 import think.rpgitems.I18n;
+import think.rpgitems.commands.PowerMeta;
 import think.rpgitems.commands.Property;
 
 
@@ -28,6 +29,7 @@ import think.rpgitems.commands.Property;
  * Mark this item as ranged.
  * </p>
  */
+@PowerMeta(marker = true)
 public class PowerRanged extends BasePower {
     /**
      * Maximum radius
@@ -40,18 +42,6 @@ public class PowerRanged extends BasePower {
      */
     @Property(order = 0)
     public int rm = 0;
-
-    @Override
-    public void init(ConfigurationSection s) {
-        r = s.getInt("r", Integer.MAX_VALUE);
-        rm = s.getInt("rm", 0);
-    }
-
-    @Override
-    public void save(ConfigurationSection s) {
-        s.set("r", r);
-        s.set("rm", rm);
-    }
 
     @Override
     public String getName() {

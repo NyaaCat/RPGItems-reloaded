@@ -5,18 +5,22 @@ import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
 import org.bukkit.Location;
 import org.bukkit.block.Block;
+import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.entity.Entity;
 import org.bukkit.entity.Player;
 import org.bukkit.entity.Projectile;
 import org.bukkit.event.player.PlayerInteractEvent;
 import org.bukkit.inventory.ItemStack;
+import think.rpgitems.commands.PowerMeta;
 import think.rpgitems.commands.Property;
 import think.rpgitems.power.PowerLeftClick;
 import think.rpgitems.power.PowerResult;
 import think.rpgitems.power.PowerRightClick;
+import think.rpgitems.power.TriggerType;
 
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
+import java.util.Collections;
 import java.util.UUID;
 
 import static think.rpgitems.utils.PowerUtils.checkCooldownByString;
@@ -27,6 +31,7 @@ import static think.rpgitems.utils.PowerUtils.checkCooldownByString;
  *
  * </p>
  */
+@PowerMeta(defaultTrigger = TriggerType.RIGHT_CLICK)
 public class PowerThrow extends BasePower implements PowerRightClick, PowerLeftClick {
     @Property(order = 5)
     public String entityData = "";
@@ -38,12 +43,17 @@ public class PowerThrow extends BasePower implements PowerRightClick, PowerLeftC
     public double speed = 3;
     @Property(order = 0)
     public String display = "throw entity";
-    @Property(order = 2)
-    public boolean isRight;
     @Property(order = 6)
     public boolean isPersistent;
     @Property
     public int cost = 0;
+
+    @Override
+    public void init(ConfigurationSection section) {
+        boolean isRight = section.getBoolean("isRight", true);
+        triggers = Collections.singleton(isRight ? TriggerType.RIGHT_CLICK : TriggerType.LEFT_CLICK);
+        super.init(section);
+    }
 
     @Override
     public String getName() {
@@ -57,7 +67,7 @@ public class PowerThrow extends BasePower implements PowerRightClick, PowerLeftC
 
     @Override
     public PowerResult<Void> rightClick(Player player, ItemStack stack, Block clicked, PlayerInteractEvent event) {
-        if (isRight && checkCooldownByString(player, getItem(), entityName + entityData, cooldown, true) && getItem().consumeDurability(stack, cost)) {
+        if (checkCooldownByString(player, getItem(), entityName + entityData, cooldown, true) && getItem().consumeDurability(stack, cost)) {
             summonEntity(player, stack, clicked);
             return PowerResult.ok();
         }
@@ -66,7 +76,7 @@ public class PowerThrow extends BasePower implements PowerRightClick, PowerLeftC
 
     @Override
     public PowerResult<Void> leftClick(Player player, ItemStack stack, Block clicked, PlayerInteractEvent event) {
-        if (!isRight && checkCooldownByString(player, getItem(), entityName + entityData, cooldown, true) && getItem().consumeDurability(stack, cost)) {
+        if (checkCooldownByString(player, getItem(), entityName + entityData, cooldown, true) && getItem().consumeDurability(stack, cost)) {
             summonEntity(player, stack, clicked);
             return PowerResult.ok();
         }

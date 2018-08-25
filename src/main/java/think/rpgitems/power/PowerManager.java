@@ -21,29 +21,18 @@ import com.google.common.cache.CacheBuilder;
 import com.google.common.cache.CacheLoader;
 import com.google.common.cache.LoadingCache;
 import com.google.common.collect.BiMap;
-import com.google.common.collect.HashBasedTable;
 import com.google.common.collect.HashBiMap;
 import org.bukkit.Bukkit;
 import org.bukkit.NamespacedKey;
 import org.bukkit.plugin.Plugin;
 import think.rpgitems.RPGItems;
-import think.rpgitems.commands.*;
+import think.rpgitems.commands.PowerProperty;
+import think.rpgitems.commands.Property;
 
-import java.lang.annotation.Annotation;
-import java.lang.invoke.LambdaMetafactory;
-import java.lang.invoke.MethodHandle;
-import java.lang.invoke.MethodHandles;
-import java.lang.invoke.MethodType;
 import java.lang.reflect.Field;
-import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
 import java.util.*;
-import java.util.function.BiConsumer;
-import java.util.function.BiFunction;
-import java.util.function.Consumer;
-import java.util.function.Function;
 import java.util.logging.Level;
-import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 /**
@@ -51,10 +40,6 @@ import java.util.stream.Stream;
  */
 @SuppressWarnings("unchecked")
 public class PowerManager {
-    public static final HashBasedTable<Class<? extends Power>, String, BiFunction<Object, String, String>> transformers = HashBasedTable.create();
-    public static final HashBasedTable<Class<? extends Power>, String, BiFunction<Object, String, Boolean>> validators = HashBasedTable.create();
-    public static final HashBasedTable<Class<? extends Power>, String, BiConsumer<Object, String>> setters = HashBasedTable.create();
-    public static final HashBasedTable<Class<? extends Power>, String, Function<Object, String>> getters = HashBasedTable.create();
     public static final Map<Class<? extends Power>, SortedMap<PowerProperty, Field>> propertyOrders = new HashMap<>();
 
     public static final LoadingCache<String, Plugin> keyCache = CacheBuilder.newBuilder().concurrencyLevel(2).build(CacheLoader.from(Bukkit.getServer().getPluginManager()::getPlugin));
@@ -76,71 +61,8 @@ public class PowerManager {
             RPGItems.plugin.getLogger().log(Level.WARNING, "With {0}", clazz);
             return;
         }
-        inspectPower(clazz);
-    }
-
-    private static void inspectPower(Class<? extends Power> cls) {
-        MethodHandles.Lookup lookup = MethodHandles.lookup();
-        Map<Class<? extends Annotation>, List<Annotation>> annos =
-                Arrays.stream(cls.getFields())
-                      .flatMap(field -> Arrays.stream(field.getAnnotations()))
-                      .distinct()
-                      .collect(Collectors.groupingBy(Annotation::annotationType, Collectors.toList()));
-
-        MethodType transformerType = MethodType.methodType(String.class, cls, String.class);
-        List<Transformer> transformerList;
-        if (annos.get(Transformer.class) == null) {
-            transformerList = new ArrayList<>();
-        } else {
-            transformerList = annos.get(Transformer.class)
-                                   .stream().map(i -> (Transformer) i)
-                                   .collect(Collectors.toList());
-        }
-        transformerList.forEach(
-                exactTransformers(cls, lookup, transformerType)
-        );
-
-        MethodType validatorType = MethodType.methodType(boolean.class, cls, String.class);
-        List<Validator> validatorList;
-        if (annos.get(Validator.class) == null) {
-            validatorList = new ArrayList<>();
-        } else {
-            validatorList = annos.get(Validator.class)
-                                 .stream().map(i -> (Validator) i)
-                                 .collect(Collectors.toList());
-        }
-        validatorList.forEach(
-                exactValidators(cls, lookup, validatorType)
-        );
-
-        MethodType setterType = MethodType.methodType(void.class, cls, String.class);
-        List<Setter> setterList;
-        if (annos.get(Setter.class) == null) {
-            setterList = new ArrayList<>();
-        } else {
-            setterList = annos.get(Setter.class)
-                              .stream().map(i -> (Setter) i)
-                              .collect(Collectors.toList());
-        }
-        setterList.forEach(
-                exactSetters(cls, lookup, setterType)
-        );
-
-        MethodType getterType = MethodType.methodType(String.class, cls);
-        List<Getter> getterList;
-        if (annos.get(Getter.class) == null) {
-            getterList = new ArrayList<>();
-        } else {
-            getterList = annos.get(Getter.class)
-                              .stream().map(i -> (Getter) i)
-                              .collect(Collectors.toList());
-        }
-        getterList.forEach(
-                exactGetters(cls, lookup, getterType)
-        );
-
-        SortedMap<PowerProperty, Field> argumentPriorityMap = getPowerProperties(cls);
-        propertyOrders.put(cls, argumentPriorityMap);
+        SortedMap<PowerProperty, Field> argumentPriorityMap = getPowerProperties(clazz);
+        propertyOrders.put(clazz, argumentPriorityMap);
     }
 
     private static SortedMap<PowerProperty, Field> getPowerProperties(Class<? extends Power> cls) {
@@ -149,94 +71,6 @@ public class PowerManager {
               .filter(field -> field.getAnnotation(Property.class) != null)
               .forEach(field -> argumentPriorityMap.put(new PowerProperty(field.getName(), field.getAnnotation(Property.class).required(), field.getAnnotation(Property.class).order()), field));
         return argumentPriorityMap;
-    }
-
-    private static Consumer<Setter> exactSetters(Class<? extends Power> cls, MethodHandles.Lookup lookup, MethodType setterType) {
-        return setterAnno -> {
-            String fname = setterAnno.value();
-            try {
-                Method m = cls.getMethod(fname, String.class);
-                MethodHandle mh = lookup.unreflect(m);
-                if (!mh.type().equals(setterType)) {
-                    return;
-                }
-                setters.put(cls, fname, (BiConsumer<Object, String>) LambdaMetafactory.metafactory(
-                        lookup,
-                        "accept",
-                        MethodType.methodType(BiConsumer.class),
-                        setterType.generic().changeReturnType(void.class),
-                        mh,
-                        setterType).getTarget().invokeExact());
-            } catch (Throwable e) {
-                e.printStackTrace();
-            }
-        };
-    }
-
-    private static Consumer<Getter> exactGetters(Class<? extends Power> cls, MethodHandles.Lookup lookup, MethodType getterType) {
-        return getterAnno -> {
-            String fname = getterAnno.value();
-            try {
-                Method m = cls.getMethod(fname);
-                MethodHandle mh = lookup.unreflect(m);
-                if (!mh.type().equals(getterType)) {
-                    return;
-                }
-                getters.put(cls, fname, (Function<Object, String>) LambdaMetafactory.metafactory(
-                        lookup,
-                        "accept",
-                        MethodType.methodType(Function.class),
-                        getterType.generic(),
-                        mh,
-                        getterType).getTarget().invokeExact());
-            } catch (Throwable e) {
-                e.printStackTrace();
-            }
-        };
-    }
-
-    private static Consumer<Validator> exactValidators(Class<? extends Power> cls, MethodHandles.Lookup lookup, MethodType validatorType) {
-        return valiAnno -> {
-            String fname = valiAnno.value();
-            try {
-                Method m = cls.getMethod(fname, String.class);
-                MethodHandle mh = lookup.unreflect(m);
-                if (!mh.type().equals(validatorType)) {
-                    return;
-                }
-                validators.put(cls, fname, (BiFunction<Object, String, Boolean>) LambdaMetafactory.metafactory(
-                        lookup,
-                        "apply",
-                        MethodType.methodType(BiFunction.class),
-                        validatorType.generic(),
-                        mh,
-                        validatorType).getTarget().invokeExact());
-            } catch (Throwable e) {
-                e.printStackTrace();
-            }
-        };
-    }
-
-    private static Consumer<Transformer> exactTransformers(Class<? extends Power> cls, MethodHandles.Lookup lookup, MethodType transformerType) {
-        return tranAnno -> {
-            String fname = tranAnno.value();
-            try {
-                Method m = cls.getMethod(fname, String.class);
-                MethodHandle mh = lookup.unreflect(m);
-                if (!mh.type().equals(transformerType)) {
-                    return;
-                }
-                transformers.put(cls, fname, (BiFunction<Object, String, String>) LambdaMetafactory.metafactory(
-                        lookup,
-                        "apply",
-                        MethodType.methodType(BiFunction.class),
-                        transformerType.generic(),
-                        mh,
-                        transformerType).getTarget().invokeExact());
-            } catch (Throwable e) {
-                e.printStackTrace();
-            }
-        };
     }
 
     public static void load(Plugin plugin, String basePackage) {

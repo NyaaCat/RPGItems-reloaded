@@ -23,6 +23,7 @@ import org.bukkit.entity.TNTPrimed;
 import org.bukkit.event.player.PlayerInteractEvent;
 import org.bukkit.inventory.ItemStack;
 import think.rpgitems.I18n;
+import think.rpgitems.commands.PowerMeta;
 import think.rpgitems.commands.Property;
 import think.rpgitems.power.PowerResult;
 import think.rpgitems.power.PowerRightClick;
@@ -35,6 +36,7 @@ import static think.rpgitems.utils.PowerUtils.checkCooldown;
  * The tntcannon power will fire active tnt on right click.
  * </p>
  */
+@PowerMeta(immutableTrigger = true)
 public class PowerTNTCannon extends BasePower implements PowerRightClick {
 
     /**

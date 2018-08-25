@@ -1,12 +1,23 @@
 package think.rpgitems.commands;
 
-import java.lang.annotation.ElementType;
-import java.lang.annotation.Retention;
-import java.lang.annotation.RetentionPolicy;
-import java.lang.annotation.Target;
+import think.rpgitems.power.Power;
 
-@Retention(RetentionPolicy.RUNTIME)
-@Target(ElementType.FIELD)
-public @interface Setter {
-    String value();
+import java.lang.reflect.InvocationTargetException;
+
+public interface Setter<T> {
+    T set(String value) throws IllegalArgumentException;
+
+    static Setter from(Power p, Class<? extends Setter> cls) {
+        try {
+            return cls.getConstructor().newInstance();
+        } catch (InstantiationException | IllegalAccessException | InvocationTargetException e) {
+            throw new RuntimeException(e);
+        } catch (NoSuchMethodException e) {
+            try {
+                return cls.getDeclaredConstructor(p.getClass()).newInstance(p);
+            } catch (InstantiationException | IllegalAccessException | InvocationTargetException | NoSuchMethodException ex) {
+                throw new RuntimeException(ex);
+            }
+        }
+    }
 }

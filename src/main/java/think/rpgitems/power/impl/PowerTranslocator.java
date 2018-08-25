@@ -11,6 +11,7 @@ import org.bukkit.scheduler.BukkitRunnable;
 import org.bukkit.util.Vector;
 import think.rpgitems.I18n;
 import think.rpgitems.commands.Property;
+import think.rpgitems.commands.PowerMeta;
 import think.rpgitems.power.PowerResult;
 import think.rpgitems.power.PowerSwapToMainhand;
 import think.rpgitems.power.PowerSwapToOffhand;
@@ -27,6 +28,7 @@ import static think.rpgitems.utils.PowerUtils.checkCooldown;
  *
  * </p>
  */
+@PowerMeta(immutableTrigger = true)
 public class PowerTranslocator extends BasePower implements PowerSwapToOffhand, PowerSwapToMainhand {
 
     private static Cache<UUID, UUID> playerTranslocatorMap = CacheBuilder.newBuilder().expireAfterAccess(10, TimeUnit.MINUTES).build();

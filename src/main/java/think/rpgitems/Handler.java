@@ -36,8 +36,6 @@ import java.util.*;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
-import static think.rpgitems.power.PowerManager.*;
-
 public class Handler extends RPGCommandReceiver {
     private final RPGItems plugin;
 
@@ -60,10 +58,6 @@ public class Handler extends RPGCommandReceiver {
     @SuppressWarnings("unchecked")
     private static void setPower(CommandSender sender, Power power, Field field, String value) throws BadCommandException, IllegalAccessException {
         Class<? extends Power> cls = power.getClass();
-        Transformer tf = field.getAnnotation(Transformer.class);
-        if (tf != null) {
-            value = transformers.get(cls, tf.value()).apply(power, value);
-        }
         BooleanChoice bc = field.getAnnotation(BooleanChoice.class);
         if (bc != null) {
             String trueChoice = bc.trueChoice();
@@ -82,24 +76,22 @@ public class Handler extends RPGCommandReceiver {
                 throw new BadCommandException("message.error.invalid_option", field.getName(), acc.stream().reduce(" ", (a, b) -> a + ", " + b));
             }
         }
-        Validator ck = field.getAnnotation(Validator.class);
-        if (ck != null) {
-            Boolean b = validators.get(cls, ck.value()).apply(power, value);
-            if (!b) {
-                throw new BadCommandException("message.error.invalid_option", field.getName(), I18n.format(ck.message(), value));
-            }
-        }
         setPowerProperty(sender, power, field, value);
     }
 
     @SuppressWarnings("unchecked")
     public static void setPowerProperty(CommandSender sender, Power power, Field field, String value) {
-        Setter st = field.getAnnotation(Setter.class);
-        Class<? extends Power> cls = power.getClass();
-        if (st != null) {
-            setters.get(cls, st.value()).accept(power, value);
-        } else {
-            try {
+        try {
+            Deserializer st = field.getAnnotation(Deserializer.class);
+            Class<? extends Power> cls = power.getClass();
+            if (st != null) {
+                try{
+                    Object v = Setter.from(power, st.value()).set(value);
+                    field.set(power, v);
+                } catch (IllegalArgumentException e){
+                    new Message(I18n.format(st.message())).send(sender);
+                }
+            } else {
                 if (field.getType().equals(int.class)) {
                     try {
                         field.set(power, Integer.parseInt(value));
@@ -186,9 +178,9 @@ public class Handler extends RPGCommandReceiver {
                 } else {
                     throw new BadCommandException("internal.error.invalid_command_arg");
                 }
-            } catch (IllegalAccessException e) {
-                throw new BadCommandException("internal.error.command_exception");
             }
+        } catch (IllegalAccessException e) {
+            throw new BadCommandException("internal.error.command_exception");
         }
     }
 

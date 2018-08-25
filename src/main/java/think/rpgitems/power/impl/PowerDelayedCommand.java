@@ -7,6 +7,7 @@ import org.bukkit.inventory.ItemStack;
 import org.bukkit.scheduler.BukkitRunnable;
 import think.rpgitems.RPGItems;
 import think.rpgitems.commands.Property;
+import think.rpgitems.commands.PowerMeta;
 import think.rpgitems.power.PowerResult;
 import think.rpgitems.power.TriggerType;
 
@@ -20,6 +21,7 @@ import static think.rpgitems.utils.PowerUtils.checkCooldownByString;
  * </p>
  */
 @SuppressWarnings("WeakerAccess")
+@PowerMeta(defaultTrigger = TriggerType.RIGHT_CLICK)
 public class PowerDelayedCommand extends PowerCommand {
     /**
      * Delay before executing command
@@ -34,7 +36,7 @@ public class PowerDelayedCommand extends PowerCommand {
 
     @Override
     public PowerResult<Void> rightClick(final Player player, ItemStack stack, Block clicked, PlayerInteractEvent event) {
-        if (!triggers.contains(TriggerType.RIGHT_CLICK) || !checkCooldownByString(player, getItem(), command, cooldown, true)) return PowerResult.cd();
+        if (!checkCooldownByString(player, getItem(), command, cooldown, true)) return PowerResult.cd();
         if (!getItem().consumeDurability(stack, cost)) return PowerResult.cost();
         (new BukkitRunnable() {
             @Override
@@ -47,7 +49,7 @@ public class PowerDelayedCommand extends PowerCommand {
 
     @Override
     public PowerResult<Void> leftClick(final Player player, ItemStack stack, Block clicked, PlayerInteractEvent event) {
-        if (!triggers.contains(TriggerType.LEFT_CLICK) || !checkCooldownByString(player, getItem(), command, cooldown, true)) return PowerResult.cd();
+        if (!checkCooldownByString(player, getItem(), command, cooldown, true)) return PowerResult.cd();
         if (!getItem().consumeDurability(stack, cost)) return PowerResult.cost();
         (new BukkitRunnable() {
             @Override

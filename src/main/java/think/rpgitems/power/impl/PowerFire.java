@@ -31,6 +31,7 @@ import org.bukkit.scheduler.BukkitRunnable;
 import org.bukkit.util.Vector;
 import think.rpgitems.I18n;
 import think.rpgitems.RPGItems;
+import think.rpgitems.commands.PowerMeta;
 import think.rpgitems.commands.Property;
 import think.rpgitems.power.PowerResult;
 import think.rpgitems.power.PowerRightClick;
@@ -51,6 +52,7 @@ import static think.rpgitems.utils.PowerUtils.getNearbyEntities;
  * </p>
  */
 @SuppressWarnings("WeakerAccess")
+@PowerMeta(immutableTrigger = true)
 public class PowerFire extends BasePower implements PowerRightClick {
 
     /**

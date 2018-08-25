@@ -29,6 +29,7 @@ import org.bukkit.metadata.FixedMetadataValue;
 import org.bukkit.scheduler.BukkitRunnable;
 import think.rpgitems.I18n;
 import think.rpgitems.RPGItems;
+import think.rpgitems.commands.PowerMeta;
 import think.rpgitems.commands.Property;
 import think.rpgitems.power.PowerResult;
 import think.rpgitems.power.PowerRightClick;
@@ -46,6 +47,7 @@ import static think.rpgitems.utils.PowerUtils.checkCooldown;
  * The torch power will shoots torches to light up an area.
  * </p>
  */
+@PowerMeta(immutableTrigger = true)
 public class PowerTorch extends BasePower implements PowerRightClick {
     /**
      * Cooldown time of this power

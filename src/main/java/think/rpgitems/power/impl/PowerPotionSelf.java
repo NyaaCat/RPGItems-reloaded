@@ -24,10 +24,13 @@ import org.bukkit.inventory.ItemStack;
 import org.bukkit.potion.PotionEffect;
 import org.bukkit.potion.PotionEffectType;
 import think.rpgitems.I18n;
+import think.rpgitems.commands.PowerMeta;
 import think.rpgitems.commands.Property;
-import think.rpgitems.commands.Setter;
+import think.rpgitems.commands.Deserializer;
+import think.rpgitems.commands.Serializer;
 import think.rpgitems.power.PowerResult;
 import think.rpgitems.power.PowerRightClick;
+import think.rpgitems.utils.PotionEffectUtils;
 
 import static think.rpgitems.utils.PowerUtils.checkCooldown;
 
@@ -39,6 +42,7 @@ import static think.rpgitems.utils.PowerUtils.checkCooldown;
  * </p>
  */
 @SuppressWarnings("WeakerAccess")
+@PowerMeta(immutableTrigger = true)
 public class PowerPotionSelf extends BasePower implements PowerRightClick {
 
     /**
@@ -64,7 +68,8 @@ public class PowerPotionSelf extends BasePower implements PowerRightClick {
     /**
      * Type of potion effect
      */
-    @Setter("setType")
+    @Deserializer(PotionEffectUtils.class)
+    @Serializer(PotionEffectUtils.class)
     @Property(order = 3, required = true)
     public PotionEffectType type = PotionEffectType.HEAL;
 
@@ -77,24 +82,6 @@ public class PowerPotionSelf extends BasePower implements PowerRightClick {
     }
 
     @Override
-    public void init(ConfigurationSection s) {
-        cooldown = s.getLong("cooldown");
-        amplifier = s.getInt("amp");
-        duration = s.getInt("time");
-        type = PotionEffectType.getByName(s.getString("type", "heal"));
-        cost = s.getInt("cost", s.getInt("consumption", 0));
-    }
-
-    @Override
-    public void save(ConfigurationSection s) {
-        s.set("cooldown", cooldown);
-        s.set("amp", amplifier);
-        s.set("time", duration);
-        s.set("type", type.getName());
-        s.set("cost", cost);
-    }
-
-    @Override
     public String getName() {
         return "potionself";
     }
@@ -102,9 +89,5 @@ public class PowerPotionSelf extends BasePower implements PowerRightClick {
     @Override
     public String displayText() {
         return I18n.format("power.potionself", type.getName().toLowerCase().replaceAll("_", " "), amplifier + 1, ((double) duration) / 20d);
-    }
-
-    public void setType(String effect) {
-        type = PotionEffectType.getByName(effect);
     }
 }

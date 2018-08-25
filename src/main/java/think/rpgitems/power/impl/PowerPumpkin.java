@@ -9,6 +9,7 @@ import org.bukkit.entity.Zombie;
 import org.bukkit.event.entity.EntityDamageByEntityEvent;
 import org.bukkit.inventory.ItemStack;
 import think.rpgitems.I18n;
+import think.rpgitems.commands.PowerMeta;
 import think.rpgitems.commands.Property;
 import think.rpgitems.power.PowerHit;
 import think.rpgitems.power.PowerResult;
@@ -24,6 +25,7 @@ import java.util.Random;
  * </p>
  */
 @SuppressWarnings("WeakerAccess")
+@PowerMeta(immutableTrigger = true)
 public class PowerPumpkin extends BasePower implements PowerHit {
     private static final Random rand = new Random();
     /**
@@ -41,20 +43,6 @@ public class PowerPumpkin extends BasePower implements PowerHit {
      */
     @Property
     public int cost = 0;
-
-    @Override
-    public void init(ConfigurationSection s) {
-        chance = s.getInt("chance");
-        drop = s.getDouble("drop");
-        cost = s.getInt("cost", s.getInt("consumption", 0));
-    }
-
-    @Override
-    public void save(ConfigurationSection s) {
-        s.set("chance", chance);
-        s.set("drop", drop);
-        s.set("cost", cost);
-    }
 
     @Override
     public String getName() {

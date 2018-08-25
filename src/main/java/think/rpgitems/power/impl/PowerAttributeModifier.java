@@ -1,5 +1,6 @@
 package think.rpgitems.power.impl;
 
+import think.rpgitems.commands.PowerMeta;
 import think.rpgitems.commands.Property;
 
 import java.util.UUID;
@@ -10,6 +11,7 @@ import java.util.UUID;
  *
  * </p>
  */
+@PowerMeta(marker = true)
 public class PowerAttributeModifier extends BasePower {
 
     @Property(order = 0)

@@ -19,16 +19,20 @@ package think.rpgitems.power.impl;
 import org.bukkit.Bukkit;
 import org.bukkit.Material;
 import org.bukkit.block.Block;
+import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.entity.Player;
 import org.bukkit.event.player.PlayerInteractEvent;
 import org.bukkit.inventory.ItemStack;
 import think.rpgitems.I18n;
 import think.rpgitems.RPGItems;
-import think.rpgitems.commands.BooleanChoice;
+import think.rpgitems.commands.PowerMeta;
 import think.rpgitems.commands.Property;
 import think.rpgitems.power.PowerLeftClick;
 import think.rpgitems.power.PowerResult;
 import think.rpgitems.power.PowerRightClick;
+import think.rpgitems.power.TriggerType;
+
+import java.util.Collections;
 
 import static think.rpgitems.utils.PowerUtils.checkCooldown;
 
@@ -40,18 +44,14 @@ import static think.rpgitems.utils.PowerUtils.checkCooldown;
  * </p>
  */
 @SuppressWarnings("WeakerAccess")
+@PowerMeta(defaultTrigger = TriggerType.RIGHT_CLICK)
 public class PowerConsume extends BasePower implements PowerRightClick, PowerLeftClick {
     /**
      * Cooldown time of this power
      */
     @Property(order = 1)
     public int cooldown = 0;
-    /**
-     * Whether triggers when right click.
-     */
-    @Property(order = 0)
-    @BooleanChoice(name = "mouse", falseChoice = "left", trueChoice = "right")
-    public boolean isRight = true;
+
     /**
      * Cost of this power
      */
@@ -59,8 +59,15 @@ public class PowerConsume extends BasePower implements PowerRightClick, PowerLef
     public int cost = 0;
 
     @Override
+    public void init(ConfigurationSection section) {
+        boolean isRight = section.getBoolean("isRight", true);
+        triggers = Collections.singleton(isRight ? TriggerType.RIGHT_CLICK : TriggerType.LEFT_CLICK);
+        super.init(section);
+    }
+
+    @Override
     public PowerResult<Void> rightClick(final Player player, ItemStack stack, Block clicked, PlayerInteractEvent event) {
-        if (isRight && checkCooldown(this, player, cooldown, false)) {
+        if (checkCooldown(this, player, cooldown, false)) {
             return consume(player);
         }
         return PowerResult.cd();
@@ -68,7 +75,7 @@ public class PowerConsume extends BasePower implements PowerRightClick, PowerLef
 
     @Override
     public PowerResult<Void> leftClick(final Player player, ItemStack stack, Block clicked, PlayerInteractEvent event) {
-        if (!isRight && checkCooldown(this, player, cooldown, false)) {
+        if (checkCooldown(this, player, cooldown, false)) {
             return consume(player);
         }
         return PowerResult.cd();

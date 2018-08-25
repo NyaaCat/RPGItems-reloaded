@@ -28,6 +28,7 @@ import org.bukkit.scheduler.BukkitRunnable;
 import think.rpgitems.I18n;
 import think.rpgitems.RPGItems;
 import think.rpgitems.commands.Property;
+import think.rpgitems.commands.PowerMeta;
 import think.rpgitems.power.PowerResult;
 import think.rpgitems.power.PowerRightClick;
 
@@ -46,6 +47,7 @@ import static think.rpgitems.utils.PowerUtils.getNearbyEntities;
  * the ice will slowly remove itself.
  * </p>
  */
+@PowerMeta(immutableTrigger = true)
 public class PowerIce extends BasePower implements PowerRightClick {
 
     /**

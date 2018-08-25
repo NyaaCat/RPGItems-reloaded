@@ -13,6 +13,7 @@ import org.bukkit.event.player.PlayerInteractEvent;
 import org.bukkit.inventory.ItemStack;
 import think.rpgitems.I18n;
 import think.rpgitems.RPGItems;
+import think.rpgitems.commands.PowerMeta;
 import think.rpgitems.commands.Property;
 import think.rpgitems.power.PowerResult;
 import think.rpgitems.power.PowerRightClick;
@@ -31,6 +32,7 @@ import static think.rpgitems.utils.PowerUtils.checkCooldown;
  * </p>
  */
 @SuppressWarnings("WeakerAccess")
+@PowerMeta(immutableTrigger = true)
 public class PowerForceField extends BasePower implements PowerRightClick {
     /**
      * Cooldown time of this power

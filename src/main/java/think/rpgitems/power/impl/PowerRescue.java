@@ -26,6 +26,7 @@ import org.bukkit.inventory.ItemStack;
 import org.bukkit.potion.PotionEffect;
 import org.bukkit.potion.PotionEffectType;
 import think.rpgitems.I18n;
+import think.rpgitems.commands.PowerMeta;
 import think.rpgitems.commands.Property;
 import think.rpgitems.power.PowerHitTaken;
 import think.rpgitems.power.PowerHurt;
@@ -46,6 +47,7 @@ import static think.rpgitems.utils.PowerUtils.checkCooldown;
  * </p>
  */
 @SuppressWarnings("WeakerAccess")
+@PowerMeta(immutableTrigger = true)
 public class PowerRescue extends BasePower implements PowerHurt, PowerHitTaken {
     private static Cache<UUID, Long> rescueTime = CacheBuilder.newBuilder().expireAfterWrite(5, TimeUnit.SECONDS).build();
     /**

@@ -24,10 +24,10 @@ import org.bukkit.inventory.ItemStack;
 import org.bukkit.potion.PotionEffect;
 import org.bukkit.potion.PotionEffectType;
 import think.rpgitems.I18n;
-import think.rpgitems.commands.Property;
-import think.rpgitems.commands.Setter;
+import think.rpgitems.commands.*;
 import think.rpgitems.power.PowerHit;
 import think.rpgitems.power.PowerResult;
+import think.rpgitems.utils.PotionEffectUtils;
 
 import java.util.Random;
 
@@ -38,6 +38,7 @@ import java.util.Random;
  * </p>
  */
 @SuppressWarnings("WeakerAccess")
+@PowerMeta(immutableTrigger = true)
 public class PowerPotionHit extends BasePower implements PowerHit {
 
     /**
@@ -48,7 +49,8 @@ public class PowerPotionHit extends BasePower implements PowerHit {
     /**
      * Type of potion effect
      */
-    @Setter("setType")
+    @Deserializer(PotionEffectUtils.class)
+    @Serializer(PotionEffectUtils.class)
     @Property(order = 3, required = true)
     public PotionEffectType type = PotionEffectType.HARM;
     /**
@@ -87,27 +89,5 @@ public class PowerPotionHit extends BasePower implements PowerHit {
     @Override
     public String getName() {
         return "potionhit";
-    }
-
-    @Override
-    public void init(ConfigurationSection s) {
-        chance = s.getInt("chance", 20);
-        duration = s.getInt("duration", 20);
-        amplifier = s.getInt("amplifier", 1);
-        type = PotionEffectType.getByName(s.getString("type", PotionEffectType.HARM.getName()));
-        cost = s.getInt("cost", s.getInt("consumption", 0));
-    }
-
-    @Override
-    public void save(ConfigurationSection s) {
-        s.set("chance", chance);
-        s.set("duration", duration);
-        s.set("amplifier", amplifier);
-        s.set("type", type.getName());
-        s.set("cost", cost);
-    }
-
-    public void setType(String effect) {
-        type = PotionEffectType.getByName(effect);
     }
 }

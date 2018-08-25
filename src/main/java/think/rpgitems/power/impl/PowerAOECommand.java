@@ -2,15 +2,14 @@ package think.rpgitems.power.impl;
 
 import org.bukkit.Bukkit;
 import org.bukkit.block.Block;
-import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.entity.LivingEntity;
 import org.bukkit.entity.Player;
 import org.bukkit.event.player.PlayerInteractEvent;
 import org.bukkit.inventory.ItemStack;
 import think.rpgitems.commands.AcceptedValue;
+import think.rpgitems.commands.PowerMeta;
 import think.rpgitems.commands.Property;
 import think.rpgitems.power.PowerResult;
-import think.rpgitems.power.TriggerResult;
 import think.rpgitems.power.TriggerType;
 
 import java.util.List;
@@ -27,6 +26,7 @@ import static think.rpgitems.utils.PowerUtils.*;
  * </p>
  */
 @SuppressWarnings("WeakerAccess")
+@PowerMeta(defaultTrigger = TriggerType.RIGHT_CLICK)
 public class PowerAOECommand extends PowerCommand {
     /**
      * Whether the command will be apply to the user

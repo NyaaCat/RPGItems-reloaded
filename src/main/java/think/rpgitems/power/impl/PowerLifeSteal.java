@@ -23,6 +23,7 @@ import org.bukkit.event.entity.EntityDamageByEntityEvent;
 import org.bukkit.inventory.ItemStack;
 import think.rpgitems.I18n;
 import think.rpgitems.commands.Property;
+import think.rpgitems.commands.PowerMeta;
 import think.rpgitems.power.PowerHit;
 import think.rpgitems.power.PowerResult;
 
@@ -35,6 +36,7 @@ import java.util.Random;
  * in a chance of 1/{@link #chance}
  * </p>
  */
+@PowerMeta(immutableTrigger = true)
 public class PowerLifeSteal extends BasePower implements PowerHit {
 
     /**

@@ -14,6 +14,7 @@ import org.bukkit.event.player.PlayerInteractEvent;
 import org.bukkit.inventory.Inventory;
 import org.bukkit.inventory.ItemStack;
 import think.rpgitems.I18n;
+import think.rpgitems.commands.PowerMeta;
 import think.rpgitems.commands.Property;
 import think.rpgitems.power.PowerLeftClick;
 import think.rpgitems.power.PowerResult;
@@ -28,6 +29,7 @@ import java.util.Collections;
  *
  * </p>
  */
+@PowerMeta(defaultTrigger = TriggerType.RIGHT_CLICK)
 public class PowerRepair extends BasePower implements PowerRightClick, PowerLeftClick {
     @Property(order = 2)
     public int durability = 20;
@@ -40,7 +42,7 @@ public class PowerRepair extends BasePower implements PowerRightClick, PowerLeft
 
     @Override
     public void init(ConfigurationSection section) {
-        triggers = section.getBoolean("isRight", false) ? Collections.singleton(TriggerType.RIGHT_CLICK) : Collections.singleton(TriggerType.LEFT_CLICK);
+        triggers = section.getBoolean("isRight", true) ? Collections.singleton(TriggerType.RIGHT_CLICK) : Collections.singleton(TriggerType.LEFT_CLICK);
         super.init(section);
     }
 

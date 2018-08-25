@@ -1,12 +1,16 @@
 package think.rpgitems.commands;
 
-import java.lang.annotation.ElementType;
-import java.lang.annotation.Retention;
-import java.lang.annotation.RetentionPolicy;
-import java.lang.annotation.Target;
+import java.lang.reflect.InvocationTargetException;
 
-@Retention(RetentionPolicy.RUNTIME)
-@Target(ElementType.FIELD)
-public @interface Getter {
-    String value();
+@FunctionalInterface
+public interface Getter<T> {
+    String get(T object);
+
+    static Getter from(Class<? extends Getter> cls) {
+        try {
+            return cls.getConstructor().newInstance();
+        } catch (InstantiationException | IllegalAccessException | InvocationTargetException | NoSuchMethodException e) {
+            throw new RuntimeException(e);
+        }
+    }
 }

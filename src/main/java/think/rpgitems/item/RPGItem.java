@@ -951,7 +951,7 @@ public class RPGItem {
             if (!hasBar || forceBar || customItemModel) {
                 StringBuilder out = new StringBuilder();
                 char boxChar = '\u25A0';
-                int boxCount = tooltipWidth / 4;
+                int boxCount = tooltipWidth / 6;
                 int mid = (int) ((double) boxCount * ((double) durability / (double) maxDurability));
                 for (int i = 0; i < boxCount; i++) {
                     out.append(i < mid ? ChatColor.GREEN : i == mid ? ChatColor.YELLOW : ChatColor.RED);

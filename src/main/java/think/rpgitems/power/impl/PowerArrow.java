@@ -24,9 +24,12 @@ import org.bukkit.event.player.PlayerInteractEvent;
 import org.bukkit.inventory.ItemStack;
 import think.rpgitems.Events;
 import think.rpgitems.I18n;
+import think.rpgitems.commands.PowerMeta;
 import think.rpgitems.commands.Property;
+import think.rpgitems.power.PowerLeftClick;
 import think.rpgitems.power.PowerResult;
 import think.rpgitems.power.PowerRightClick;
+import think.rpgitems.power.TriggerType;
 
 import static think.rpgitems.utils.PowerUtils.checkCooldown;
 
@@ -36,7 +39,8 @@ import static think.rpgitems.utils.PowerUtils.checkCooldown;
  * The arrow power will fire an arrow on right click.
  * </p>
  */
-public class PowerArrow extends BasePower implements PowerRightClick {
+@PowerMeta(defaultTrigger = TriggerType.RIGHT_CLICK)
+public class PowerArrow extends BasePower implements PowerRightClick, PowerLeftClick {
 
     /**
      * Cooldown time of this power
@@ -49,9 +53,18 @@ public class PowerArrow extends BasePower implements PowerRightClick {
     @Property
     public int cost = 0;
 
-    @SuppressWarnings("deprecation")
     @Override
     public PowerResult<Void> rightClick(Player player, ItemStack stack, Block clicked, PlayerInteractEvent event) {
+        return fire(player, stack);
+    }
+
+    @Override
+    public PowerResult<Void> leftClick(Player player, ItemStack stack, Block clicked, PlayerInteractEvent event) {
+        return fire(player, stack);
+    }
+
+    @SuppressWarnings("deprecation")
+    public PowerResult<Void> fire(Player player, ItemStack stack) {
         if (!checkCooldown(this, player, cooldown, true)) return PowerResult.cd();
         if (!getItem().consumeDurability(stack, cost)) return PowerResult.cost();
         player.playSound(player.getLocation(), Sound.ENTITY_ARROW_SHOOT, 1.0f, 1.0f);

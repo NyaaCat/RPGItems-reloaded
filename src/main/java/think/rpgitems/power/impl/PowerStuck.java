@@ -31,14 +31,14 @@ import org.bukkit.potion.PotionEffect;
 import org.bukkit.potion.PotionEffectType;
 import think.rpgitems.I18n;
 import think.rpgitems.RPGItems;
+import think.rpgitems.commands.PowerMeta;
 import think.rpgitems.commands.Property;
 import think.rpgitems.power.PowerHit;
 import think.rpgitems.power.PowerResult;
 import think.rpgitems.power.PowerRightClick;
+import think.rpgitems.power.TriggerType;
 
-import java.util.List;
-import java.util.Random;
-import java.util.UUID;
+import java.util.*;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeUnit;
 import java.util.function.Consumer;
@@ -51,6 +51,7 @@ import static think.rpgitems.utils.PowerUtils.*;
  * The stuck power will make the hit target stuck with a chance of 1/{@link #chance}.
  * </p>
  */
+@PowerMeta(defaultTrigger = TriggerType.HIT)
 public class PowerStuck extends BasePower implements PowerHit, PowerRightClick {
     /**
      * Chance of triggering this power
@@ -94,16 +95,6 @@ public class PowerStuck extends BasePower implements PowerHit, PowerRightClick {
     @Property(order = 0)
     public long cooldown = 200;
 
-    /**
-     * Whether allow aoe
-     */
-    public boolean allowAoe = false;
-
-    /**
-     * Whether allow hit
-     */
-    public boolean allowHit = true;
-
 
     private Random random = new Random();
 
@@ -115,7 +106,6 @@ public class PowerStuck extends BasePower implements PowerHit, PowerRightClick {
 
     @Override
     public PowerResult<Double> hit(Player player, ItemStack stack, LivingEntity entity, double damage, EntityDamageByEntityEvent event) {
-        if (!allowHit) return PowerResult.noop();
         if (!checkCooldown(this, player, cooldown, true)) return PowerResult.cd();
         if (random.nextInt(chance) == 0) {
             if (!getItem().consumeDurability(stack, cost)) return PowerResult.cost();
@@ -129,7 +119,6 @@ public class PowerStuck extends BasePower implements PowerHit, PowerRightClick {
 
     @Override
     public PowerResult<Void> rightClick(Player player, ItemStack stack, Block clicked, PlayerInteractEvent event) {
-        if (!allowAoe) return PowerResult.noop();
         if (!checkCooldown(this, player, cooldown, true)) return PowerResult.cd();
         if (!getItem().consumeDurability(stack, costAoe)) return PowerResult.cost();
         List<LivingEntity> entities = getLivingEntitiesInCone(getNearestLivingEntities(this, player.getEyeLocation(), player, range, 0), player.getLocation().toVector(), facing, player.getLocation().getDirection());
@@ -155,15 +144,17 @@ public class PowerStuck extends BasePower implements PowerHit, PowerRightClick {
 
     @Override
     public void init(ConfigurationSection s) {
-        facing = s.getDouble("facing", 30);
-        chance = s.getInt("chance", 3);
-        cost = s.getInt("cost", s.getInt("consumption", 0));
-        cooldown = s.getLong("cooldown", 200);
-        duration = s.getInt("duration", 100);
-        costAoe = s.getInt("costAOE", 0);
-        range = s.getInt("range", 10);
-        allowHit = s.getBoolean("allowHit", true);
-        allowAoe = s.getBoolean("allowAoe", false);
+        boolean allowHit = s.getBoolean("allowHit", true);
+        boolean allowAoe = s.getBoolean("allowAoe", false);
+        Set<TriggerType> triggerTypes = new HashSet<>();
+        if(allowHit){
+            triggerTypes.add(TriggerType.HIT);
+        }
+        if(allowAoe){
+            triggerTypes.add(TriggerType.RIGHT_CLICK);
+        }
+        triggers = triggerTypes;
+        super.init(s);
         tpl = e -> {
             try {
                 if (stucked.get(e.getEntity().getUniqueId(), () -> Long.MIN_VALUE) >= (System.currentTimeMillis() - duration * 50)) {
@@ -186,19 +177,6 @@ public class PowerStuck extends BasePower implements PowerHit, PowerRightClick {
             }
         };
         RPGItems.listener.addEventListener(EntityTeleportEvent.class, tpl).addEventListener(PlayerTeleportEvent.class, pml);
-    }
-
-    @Override
-    public void save(ConfigurationSection s) {
-        s.set("chance", chance);
-        s.set("cost", cost);
-        s.set("duration", duration);
-        s.set("cooldown", cooldown);
-        s.set("range", range);
-        s.set("facing", facing);
-        s.set("costAoe", costAoe);
-        s.set("allowHit", allowHit);
-        s.set("allowAoe", allowAoe);
     }
 
     @Override

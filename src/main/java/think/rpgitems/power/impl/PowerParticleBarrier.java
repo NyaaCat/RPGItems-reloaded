@@ -21,20 +21,17 @@ import org.bukkit.scheduler.BukkitRunnable;
 import org.bukkit.util.EulerAngle;
 import org.bukkit.util.Vector;
 import think.rpgitems.RPGItems;
+import think.rpgitems.commands.PowerMeta;
 import think.rpgitems.commands.Property;
-import think.rpgitems.power.PowerResult;
-import think.rpgitems.power.PowerRightClick;
-import think.rpgitems.power.PowerTick;
+import think.rpgitems.power.*;
 import think.rpgitems.utils.Pair;
 
-import java.util.Comparator;
-import java.util.List;
-import java.util.Optional;
-import java.util.UUID;
+import java.util.*;
 import java.util.concurrent.TimeUnit;
 import java.util.function.Consumer;
 
-public class PowerParticleBarrier extends BasePower implements PowerRightClick, PowerTick {
+@PowerMeta(defaultTrigger = {TriggerType.RIGHT_CLICK, TriggerType.TICK})
+public class PowerParticleBarrier extends BasePower implements PowerRightClick, PowerLeftClick, PowerTick {
 
     @Property
     public double energyPerBarrier = 40;
@@ -103,9 +100,18 @@ public class PowerParticleBarrier extends BasePower implements PowerRightClick, 
         return null;
     }
 
-    @SuppressWarnings("unchecked")
+    @Override
+    public PowerResult<Void> leftClick(Player player, ItemStack stack, Block clicked, PlayerInteractEvent event) {
+        return fire(player);
+    }
+
     @Override
     public PowerResult<Void> rightClick(Player player, ItemStack stack, Block clicked, PlayerInteractEvent event) {
+        return fire(player);
+    }
+
+    @SuppressWarnings("unchecked")
+    public PowerResult<Void> fire(Player player) {
         if (!projected) {
             barrier(player, player);
             return PowerResult.ok();

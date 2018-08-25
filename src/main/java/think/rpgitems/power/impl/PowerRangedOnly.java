@@ -18,6 +18,7 @@ package think.rpgitems.power.impl;
 
 import org.bukkit.configuration.ConfigurationSection;
 import think.rpgitems.I18n;
+import think.rpgitems.commands.PowerMeta;
 
 
 /**
@@ -27,6 +28,7 @@ import think.rpgitems.I18n;
  * Mark this item as ranged only.
  * </p>
  */
+@PowerMeta(marker = true)
 public class PowerRangedOnly extends PowerRanged {
     @Override
     public void init(ConfigurationSection s) {

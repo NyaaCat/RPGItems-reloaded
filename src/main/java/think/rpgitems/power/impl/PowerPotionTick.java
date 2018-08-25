@@ -7,9 +7,13 @@ import org.bukkit.inventory.ItemStack;
 import org.bukkit.potion.PotionEffect;
 import org.bukkit.potion.PotionEffectType;
 import think.rpgitems.I18n;
+import think.rpgitems.commands.Deserializer;
+import think.rpgitems.commands.PowerMeta;
 import think.rpgitems.commands.Property;
+import think.rpgitems.commands.Serializer;
 import think.rpgitems.power.PowerResult;
 import think.rpgitems.power.PowerTick;
+import think.rpgitems.utils.PotionEffectUtils;
 
 import static java.lang.Double.min;
 import static think.rpgitems.utils.PowerUtils.checkCooldownByString;
@@ -22,11 +26,14 @@ import static think.rpgitems.utils.PowerUtils.checkCooldownByString;
  * </p>
  */
 @SuppressWarnings("WeakerAccess")
+@PowerMeta(immutableTrigger = true)
 public class PowerPotionTick extends BasePower implements PowerTick {
 
     /**
      * Type of potion effect
      */
+    @Deserializer(PotionEffectUtils.class)
+    @Serializer(PotionEffectUtils.class)
     @Property(order = 1, required = true)
     public PotionEffectType effect = PotionEffectType.SPEED;
     /**
@@ -78,26 +85,6 @@ public class PowerPotionTick extends BasePower implements PowerTick {
             player.setHealth(health);
         }
         return PowerResult.ok();
-    }
-
-    @Override
-    public void init(ConfigurationSection s) {
-        amplifier = s.getInt("amplifier");
-        effect = PotionEffectType.getByName(s.getString("effect", "heal"));
-        cost = s.getInt("cost", s.getInt("consumption", 0));
-        interval = s.getInt("interval", 0);
-        duration = s.getInt("duration", 60);
-        clear = s.getBoolean("clear", false);
-    }
-
-    @Override
-    public void save(ConfigurationSection s) {
-        s.set("amplifier", amplifier);
-        s.set("effect", effect.getName());
-        s.set("cost", cost);
-        s.set("interval", interval);
-        s.set("duration", duration);
-        s.set("clear", clear);
     }
 
     @Override

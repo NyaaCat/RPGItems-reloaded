@@ -1,7 +1,9 @@
 package think.rpgitems.power;
 
+import com.google.common.collect.Sets;
 import org.bukkit.NamespacedKey;
 import org.bukkit.configuration.ConfigurationSection;
+import think.rpgitems.commands.PowerMeta;
 import think.rpgitems.item.RPGItem;
 
 import java.util.Arrays;
@@ -62,6 +64,10 @@ public interface Power {
 
     @SuppressWarnings("unchecked")
     static Set<TriggerType> getTriggerTypes(Class<? extends Power> cls) {
+        PowerMeta annotation = cls.getAnnotation(PowerMeta.class);
+        if (annotation != null && annotation.defaultTrigger().length > 0) {
+            return Sets.newHashSet(annotation.defaultTrigger());
+        }
         return Arrays.stream(cls.getInterfaces())
                      .filter(Power.class::isAssignableFrom)
                      .filter(i -> !Objects.equals(i, Power.class))

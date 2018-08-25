@@ -95,7 +95,7 @@ public abstract class RPGCommandReceiver extends CommandReceiver {
         }
         String incompleteValue = lastVaule;
 
-        if (Set.class.isAssignableFrom(propertyField.getType()) || (as != null && as.preset() == Preset.TRIGGERS)) {
+        if (Deserializer.class.isAssignableFrom(propertyField.getType()) || (as != null && as.preset() == Preset.TRIGGERS)) {
             enumValues.removeAll(currentVaules);
         }
         String base = incompleteValue.isEmpty() ? last : last.replaceAll(incompleteValue + "$", "");
@@ -141,10 +141,12 @@ public abstract class RPGCommandReceiver extends CommandReceiver {
                                                   .map(Map.Entry::getValue)
                                                   .collect(Collectors.toList())).orElse(new ArrayList<>());
 
+        PowerMeta powerMeta = power.getAnnotation(PowerMeta.class);
+
         for (Field field : argMap.values()) {
             String name = field.getName();
             String value = cmd.argString(name, null);
-            if (value != null) {
+            if (value != null || (powerMeta.immutableTrigger() && name.equals("triggers"))) {
                 required.remove(field);
                 settled.add(field);
             }

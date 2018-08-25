@@ -9,8 +9,7 @@ import java.lang.annotation.Target;
 
 @Retention(RetentionPolicy.RUNTIME)
 @Target(ElementType.FIELD)
-public @interface Validator {
-    String value();
-
-    @LangKey String message();
+public @interface Deserializer {
+    Class<? extends Setter> value();
+    @LangKey String message() default "";
 }

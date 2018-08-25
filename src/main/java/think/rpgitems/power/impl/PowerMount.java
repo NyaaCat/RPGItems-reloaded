@@ -10,6 +10,7 @@ import org.bukkit.inventory.ItemStack;
 import org.bukkit.scheduler.BukkitRunnable;
 import think.rpgitems.I18n;
 import think.rpgitems.RPGItems;
+import think.rpgitems.commands.PowerMeta;
 import think.rpgitems.commands.Property;
 import think.rpgitems.power.PowerResult;
 import think.rpgitems.power.PowerRightClick;
@@ -18,6 +19,7 @@ import java.util.List;
 
 import static think.rpgitems.utils.PowerUtils.*;
 
+@PowerMeta(immutableTrigger = true)
 public class PowerMount extends BasePower implements PowerRightClick {
     @Property(order = 0)
     public long cooldown = 20L;

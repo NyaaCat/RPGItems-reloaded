@@ -3,7 +3,6 @@ package think.rpgitems.power.impl;
 import org.bukkit.Bukkit;
 import org.bukkit.Location;
 import org.bukkit.block.Block;
-import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.entity.Entity;
 import org.bukkit.entity.LivingEntity;
 import org.bukkit.entity.Player;
@@ -11,12 +10,11 @@ import org.bukkit.event.player.PlayerInteractEvent;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.util.Vector;
 import think.rpgitems.I18n;
+import think.rpgitems.commands.PowerMeta;
 import think.rpgitems.commands.Property;
-import think.rpgitems.commands.Validator;
 import think.rpgitems.item.RPGItem;
 import think.rpgitems.power.*;
 
-import java.util.Collections;
 import java.util.List;
 
 import static think.rpgitems.utils.PowerUtils.checkCooldown;
@@ -30,6 +28,7 @@ import static think.rpgitems.utils.PowerUtils.getNearbyEntities;
  * </p>
  */
 @SuppressWarnings("WeakerAccess")
+@PowerMeta(defaultTrigger = TriggerType.RIGHT_CLICK)
 public class PowerAttract extends BasePower implements PowerTick, PowerLeftClick, PowerRightClick {
     /**
      * Maximum radius
@@ -45,7 +44,6 @@ public class PowerAttract extends BasePower implements PowerTick, PowerLeftClick
      * Duration of this power when triggered by click in tick
      */
     @Property
-    @Validator(value = "checkDuLeCd", message = "power.properties.attract.main_duration")
     public int duration = 5;
     /**
      * Cost of this power
@@ -67,7 +65,6 @@ public class PowerAttract extends BasePower implements PowerTick, PowerLeftClick
      * Cooldown time of this power
      */
     @Property
-    @Validator(value = "checkCdGeDu", message = "power.properties.attract.main_duration")
     public long cooldown = 20;
 
     /**
@@ -75,22 +72,6 @@ public class PowerAttract extends BasePower implements PowerTick, PowerLeftClick
      */
     @Property
     public boolean attractPlayer;
-
-    public boolean checkCdGeDu(String value) {
-        try {
-            return Long.parseUnsignedLong(value) >= duration;
-        } catch (Exception e) {
-            return false;
-        }
-    }
-
-    public boolean checkDuLeCd(String value) {
-        try {
-            return Long.parseUnsignedLong(value) <= cooldown;
-        } catch (Exception e) {
-            return false;
-        }
-    }
 
     @Override
     public String getName() {
@@ -103,15 +84,8 @@ public class PowerAttract extends BasePower implements PowerTick, PowerLeftClick
     }
 
     @Override
-    public void init(ConfigurationSection section){
-        triggers = Collections.singleton(TriggerType.LEFT_CLICK);
-        super.init(section);
-    }
-
-    @Override
     public PowerResult<Void> tick(Player player, ItemStack stack) {
-        if (triggers.contains(TriggerType.TICK)) return attract(player, stack);
-        return PowerResult.noop();
+        return attract(player, stack);
     }
 
     private PowerResult<Void> attract(Player player, ItemStack stack) {

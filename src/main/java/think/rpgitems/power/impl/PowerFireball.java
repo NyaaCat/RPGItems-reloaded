@@ -24,6 +24,7 @@ import org.bukkit.event.player.PlayerInteractEvent;
 import org.bukkit.inventory.ItemStack;
 import think.rpgitems.Events;
 import think.rpgitems.I18n;
+import think.rpgitems.commands.PowerMeta;
 import think.rpgitems.commands.Property;
 import think.rpgitems.power.PowerResult;
 import think.rpgitems.power.PowerRightClick;
@@ -36,6 +37,7 @@ import static think.rpgitems.utils.PowerUtils.checkCooldown;
  * The fireball power will fire an fireball on right click.
  * </p>
  */
+@PowerMeta(immutableTrigger = true)
 public class PowerFireball extends BasePower implements PowerRightClick {
 
     /**

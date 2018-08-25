@@ -30,13 +30,12 @@ import org.bukkit.util.Vector;
 import think.rpgitems.Events;
 import think.rpgitems.I18n;
 import think.rpgitems.RPGItems;
-import think.rpgitems.commands.BooleanChoice;
 import think.rpgitems.commands.Property;
-import think.rpgitems.power.PowerHitTaken;
-import think.rpgitems.power.PowerLeftClick;
-import think.rpgitems.power.PowerResult;
-import think.rpgitems.power.PowerRightClick;
+import think.rpgitems.commands.PowerMeta;
+import think.rpgitems.power.*;
 
+import java.util.HashSet;
+import java.util.Set;
 import java.util.concurrent.ThreadLocalRandom;
 
 import static think.rpgitems.utils.PowerUtils.*;
@@ -45,11 +44,12 @@ import static think.rpgitems.utils.PowerUtils.*;
  * Power deflect.
  * <p>
  * Deflect arrows or fireballs towards player within {@link #facing} when
- * 1. manual triggered when {@link #initiative} is enabled with a cooldown of {@link #cooldown} and duration {@link #duration}
- * 2. auto triggered when {@link #passive} is enabled with a chance of {@link #chance} and a cooldown of {@link #cooldownPassive}
+ * 1. manual triggered when some of initiative trigger are enabled with a cooldown of {@link #cooldown} and duration {@link #duration}
+ * 2. auto triggered when {@link TriggerType#HIT_TAKEN} is enabled with a chance of {@link #chance} and a cooldown of {@link #cooldownPassive}
  * </p>
  */
 @SuppressWarnings("WeakerAccess")
+@PowerMeta(defaultTrigger = TriggerType.RIGHT_CLICK)
 public class PowerDeflect extends BasePower implements PowerHitTaken, PowerRightClick, PowerLeftClick {
 
     /**
@@ -77,24 +77,6 @@ public class PowerDeflect extends BasePower implements PowerHitTaken, PowerRight
     public int chance = 50;
 
     /**
-     * Whether it is passive
-     */
-    @Property(order = 3)
-    public boolean passive = false;
-
-    /**
-     * Whether it is initiative
-     */
-    @Property(order = 1)
-    public boolean initiative = true;
-
-    /**
-     * Whether triggers when right click.
-     */
-    @BooleanChoice(name = "mouse", falseChoice = "left", trueChoice = "right")
-    public boolean isRight = true;
-
-    /**
      * Duration of this power
      */
     @Property
@@ -119,15 +101,25 @@ public class PowerDeflect extends BasePower implements PowerHitTaken, PowerRight
     }
 
     @Override
-    public void init(ConfigurationSection s) {
-        cooldownPassive = s.getInt("cooldownpassive", 20);
-        super.init(s);
+    public void init(ConfigurationSection section) {
+        cooldownPassive = section.getInt("cooldownpassive", 20);
+        boolean passive = section.getBoolean("passive", false);
+        boolean initiative = section.getBoolean("initiative", true);
+        boolean isRight = section.getBoolean("isRight", true);
+        Set<TriggerType> triggerTypes = new HashSet<>();
+        if(passive){
+            triggerTypes.add(TriggerType.HIT_TAKEN);
+        }
+        if(initiative){
+            triggerTypes.add(isRight ? TriggerType.RIGHT_CLICK : TriggerType.LEFT_CLICK);
+        }
+        super.init(section);
     }
 
     @Override
     public PowerResult<Double> takeHit(Player target, ItemStack stack, double damage, EntityDamageEvent event) {
         if (!((System.currentTimeMillis() / 50 < time)
-                      || (passive && (ThreadLocalRandom.current().nextInt(0, 100) < chance) && checkCooldown(this, target, cooldownPassive, false)))
+                      || (ThreadLocalRandom.current().nextInt(0, 100) < chance) && checkCooldown(this, target, cooldownPassive, false))
                     || !getItem().consumeDurability(stack, cost))
             return PowerResult.noop();
         if (event instanceof EntityDamageByEntityEvent) {
@@ -167,8 +159,7 @@ public class PowerDeflect extends BasePower implements PowerHitTaken, PowerRight
 
     @Override
     public PowerResult<Void> rightClick(Player player, ItemStack stack, Block clicked, PlayerInteractEvent event) {
-        if (!isRight || !initiative
-                    || !checkCooldownByString(player, getItem(), "deflect.initiative", cooldown, true))
+        if (!checkCooldownByString(player, getItem(), "deflect.initiative", cooldown, true))
             return PowerResult.noop();
         if (!getItem().consumeDurability(stack, cost))
             return PowerResult.cost();
@@ -178,8 +169,7 @@ public class PowerDeflect extends BasePower implements PowerHitTaken, PowerRight
 
     @Override
     public PowerResult<Void> leftClick(Player player, ItemStack stack, Block clicked, PlayerInteractEvent event) {
-        if (isRight || !initiative
-                    || !checkCooldownByString(player, getItem(), "deflect.initiative", cooldown, true))
+        if (!checkCooldownByString(player, getItem(), "deflect.initiative", cooldown, true))
             return PowerResult.noop();
         if (!getItem().consumeDurability(stack, cost))
             return PowerResult.cost();

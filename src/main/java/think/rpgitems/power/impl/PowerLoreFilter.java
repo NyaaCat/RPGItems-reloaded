@@ -1,5 +1,6 @@
 package think.rpgitems.power.impl;
 
+import think.rpgitems.commands.PowerMeta;
 import think.rpgitems.commands.Property;
 
 /**
@@ -10,6 +11,7 @@ import think.rpgitems.commands.Property;
  * </p>
  */
 @SuppressWarnings("WeakerAccess")
+@PowerMeta(marker = true)
 public class PowerLoreFilter extends BasePower {
     /**
      * Regex to filter the lore

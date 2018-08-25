@@ -27,9 +27,11 @@ import org.bukkit.potion.PotionEffect;
 import org.bukkit.potion.PotionEffectType;
 import think.rpgitems.I18n;
 import think.rpgitems.commands.*;
+import think.rpgitems.power.PowerLeftClick;
 import think.rpgitems.power.PowerResult;
 import think.rpgitems.power.PowerRightClick;
-import think.rpgitems.power.TriggerResult;
+import think.rpgitems.power.TriggerType;
+import think.rpgitems.utils.PotionEffectUtils;
 
 import static think.rpgitems.utils.PowerUtils.checkCooldown;
 import static think.rpgitems.utils.PowerUtils.getNearbyEntities;
@@ -45,7 +47,8 @@ import static think.rpgitems.utils.PowerUtils.getNearbyEntities;
  * </p>
  */
 @SuppressWarnings("WeakerAccess")
-public class PowerAOE extends BasePower implements PowerRightClick {
+@PowerMeta(defaultTrigger = TriggerType.RIGHT_CLICK)
+public class PowerAOE extends BasePower implements PowerRightClick, PowerLeftClick {
 
     /**
      * Cooldown time of this power
@@ -76,8 +79,8 @@ public class PowerAOE extends BasePower implements PowerRightClick {
      * Type of the potion
      */
     @Property(order = 2)
-    @Setter("setType")
-    @Getter("getType")
+    @Deserializer(PotionEffectUtils.class)
+    @Serializer(PotionEffectUtils.class)
     @AcceptedValue(preset = Preset.POTION_EFFECT_TYPE)
     public PotionEffectType type;
     /**
@@ -93,6 +96,15 @@ public class PowerAOE extends BasePower implements PowerRightClick {
 
     @Override
     public PowerResult<Void> rightClick(final Player player, ItemStack stack, Block clicked, PlayerInteractEvent event) {
+        return Aoe(player, stack);
+    }
+
+    @Override
+    public PowerResult<Void> leftClick(final Player player, ItemStack stack, Block clicked, PlayerInteractEvent event) {
+        return Aoe(player, stack);
+    }
+
+    public PowerResult<Void> Aoe(Player player, ItemStack stack) {
         if (!checkCooldown(this, player, cooldown, true)) return PowerResult.cd();
         if (!getItem().consumeDurability(stack, cost)) return PowerResult.cost();
         PotionEffect effect = new PotionEffect(type, duration, amplifier - 1);
@@ -116,13 +128,5 @@ public class PowerAOE extends BasePower implements PowerRightClick {
     @Override
     public String displayText() {
         return name != null ? name : I18n.format("power.aoe.display", type.getName(), amplifier, duration, selfapplication ? I18n.format("power.aoe.selfapplication.including") : I18n.format("power.aoe.selfapplication.excluding"), range, (double) cooldown / 20d);
-    }
-
-    public void setType(String effect) {
-        type = PotionEffectType.getByName(effect);
-    }
-
-    public String getType() {
-        return type.getName();
     }
 }

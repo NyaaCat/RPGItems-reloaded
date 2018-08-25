@@ -27,6 +27,7 @@ import org.bukkit.scoreboard.Score;
 import org.bukkit.scoreboard.Scoreboard;
 import org.bukkit.scoreboard.Team;
 import think.rpgitems.I18n;
+import think.rpgitems.commands.PowerMeta;
 import think.rpgitems.power.Power;
 import think.rpgitems.utils.Pair;
 
@@ -44,6 +45,7 @@ import static think.rpgitems.power.PowerManager.powers;
  * Provide a selector for some AOE power.
  * </p>
  */
+@PowerMeta(marker = true)
 public class PowerSelector extends BasePower {
 
     /**

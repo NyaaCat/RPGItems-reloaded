@@ -26,11 +26,12 @@ import static think.rpgitems.utils.PowerUtils.checkCooldown;
  * Power projectile.
  * <p>
  * Launches projectile of type {@link #projectileType} with {@link #gravity} when right clicked.
- * If use {@link #cone} mode, {@link #amount} of projectiles will randomly distributed in the cone
+ * If use {@link #isCone} mode, {@link #amount} of projectiles will randomly distributed in the cone
  * with angle {@link #range} centered with player's direction.
  * </p>
  */
 @SuppressWarnings("WeakerAccess")
+@PowerMeta(immutableTrigger = true)
 public class PowerProjectile extends BasePower implements PowerRightClick {
     /**
      * Z_axis.
@@ -55,7 +56,7 @@ public class PowerProjectile extends BasePower implements PowerRightClick {
      * Whether launch projectiles in cone
      */
     @Property(order = 1)
-    public boolean cone = false;
+    public boolean isCone = false;
     /**
      * Whether the projectile have gravity
      */
@@ -102,97 +103,10 @@ public class PowerProjectile extends BasePower implements PowerRightClick {
             "shulkerbullet",
             "dragonfireball"
     })
-    @Validator(value = "acceptableType", message = "power.projectile.noFireball")
-    @Setter("setType")
-    @Getter("getType")
+    @Deserializer(ProjectileType.class)
+    @Serializer(ProjectileType.class)
     @Property(order = 2, required = true)
     public Class<? extends Projectile> projectileType = Snowball.class;
-
-    @Override
-    public void init(ConfigurationSection s) {
-        cooldown = s.getLong("cooldown");
-        setType(s.getString("projectileType"));
-        cone = s.getBoolean("isCone");
-        range = s.getInt("range");
-        amount = s.getInt("amount");
-        cost = s.getInt("cost", s.getInt("consumption", 1));
-        speed = s.getDouble("speed", 1);
-        gravity = s.getBoolean("gravity", true);
-        burstCount = s.getInt("burstCount", 1);
-        burstInterval = s.getInt("burstInterval", 1);
-    }
-
-    @Override
-    public void save(ConfigurationSection s) {
-        s.set("cooldown", cooldown);
-        s.set("projectileType", getType());
-        s.set("isCone", cone);
-        s.set("range", range);
-        s.set("amount", amount);
-        s.set("cost", cost);
-        s.set("speed", speed);
-        s.set("gravity", gravity);
-        s.set("burstCount", burstCount);
-        s.set("burstInterval", burstInterval);
-    }
-
-    /**
-     * Gets type name
-     *
-     * @return Type name
-     */
-    public String getType() {
-        if (projectileType == WitherSkull.class)
-            return "skull";
-        else if (projectileType == Fireball.class)
-            return "fireball";
-        else if (projectileType == SmallFireball.class)
-            return "smallfireball";
-        else if (projectileType == Arrow.class)
-            return "arrow";
-        else if (projectileType == LlamaSpit.class)
-            return "llamaspit";
-        else if (projectileType == ShulkerBullet.class)
-            return "shulkerbullet";
-        else if (projectileType == DragonFireball.class)
-            return "dragonfireball";
-        else
-            return "snowball";
-    }
-
-    /**
-     * Sets type from type name
-     *
-     * @param type Type name
-     */
-    public void setType(String type) {
-        switch (type) {
-            case "skull":
-                projectileType = WitherSkull.class;
-                break;
-            case "fireball":
-                projectileType = Fireball.class;
-                break;
-            case "smallfireball":
-                projectileType = SmallFireball.class;
-                break;
-            case "arrow":
-                projectileType = Arrow.class;
-                break;
-            case "llamaspit":
-                projectileType = LlamaSpit.class;
-                break;
-            case "shulkerbullet":
-                projectileType = ShulkerBullet.class;
-                break;
-            case "dragonfireball":
-                projectileType = DragonFireball.class;
-                break;
-            default:
-                projectileType = Snowball.class;
-                break;
-        }
-    }
 
     /**
      * Check if the type is acceptable
@@ -201,7 +115,7 @@ public class PowerProjectile extends BasePower implements PowerRightClick {
      * @return If acceptable
      */
     public boolean acceptableType(String str) {
-        return !(cone && str.equalsIgnoreCase("fireball"));
+        return !(isCone && str.equalsIgnoreCase("fireball"));
     }
 
     @Override
@@ -211,7 +125,7 @@ public class PowerProjectile extends BasePower implements PowerRightClick {
 
     @Override
     public String displayText() {
-        return I18n.format(cone ? "power.projectile.cone" : "power.projectile.display", getType(), (double) cooldown / 20d);
+        return I18n.format(isCone ? "power.projectile.cone" : "power.projectile.display", getProjectileType(projectileType), (double) cooldown / 20d);
     }
 
     @Override
@@ -242,7 +156,7 @@ public class PowerProjectile extends BasePower implements PowerRightClick {
 
     @SuppressWarnings("deprecation")
     private void fire(Player player) {
-        if (!cone) {
+        if (!isCone) {
             Projectile projectile = player.launchProjectile(projectileType, player.getEyeLocation().getDirection().multiply(speed));
             projectile.setPersistent(false);
             Events.rpgProjectiles.put(projectile.getEntityId(), getItem().getUID());
@@ -297,4 +211,63 @@ public class PowerProjectile extends BasePower implements PowerRightClick {
         }
     }
 
+    static class ProjectileType implements Getter, Setter{
+        /**
+         * Gets type name
+         *
+         * @return Type name
+         */
+        @Override
+        @SuppressWarnings("unchecked")
+        public String get(Object pt) {
+            Class<? extends Projectile> projectileType = (Class<? extends Projectile>) pt;
+            return getProjectileType(projectileType);
+        }
+
+        /**
+         * Sets type from type name
+         *
+         * @param type Type name
+         */
+        @Override
+        public Class<? extends Projectile> set(String type) {
+            switch (type) {
+                case "skull":
+                    return WitherSkull.class;
+                case "fireball":
+                    return Fireball.class;
+                case "smallfireball":
+                    return SmallFireball.class;
+                case "arrow":
+                    return Arrow.class;
+                case "llamaspit":
+                    return LlamaSpit.class;
+                case "shulkerbullet":
+                    return ShulkerBullet.class;
+                case "dragonfireball":
+                    return DragonFireball.class;
+                default:
+                    return Snowball.class;
+            }
+        }
+    }
+
+    public static String getProjectileType(Class<? extends Projectile> projectileType) {
+        if (projectileType == WitherSkull.class)
+            return "skull";
+        else if (projectileType == Fireball.class)
+            return "fireball";
+        else if (projectileType == SmallFireball.class)
+            return "smallfireball";
+        else if (projectileType == Arrow.class)
+            return "arrow";
+        else if (projectileType == LlamaSpit.class)
+            return "llamaspit";
+        else if (projectileType == ShulkerBullet.class)
+            return "shulkerbullet";
+        else if (projectileType == DragonFireball.class)
+            return "dragonfireball";
+        else
+            return "snowball";
+    }
 }

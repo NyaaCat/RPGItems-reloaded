@@ -1,5 +1,6 @@
 package think.rpgitems.commands;
 
+import org.bukkit.Effect;
 import think.rpgitems.power.Power;
 import think.rpgitems.power.TriggerType;
 
@@ -11,7 +12,9 @@ import java.util.stream.Collectors;
 public enum Preset {
     NONE,
     POTION_EFFECT_TYPE,
-    TRIGGERS;
+    TRIGGERS,
+    VISUAL_EFFECT,
+    ;
 
     @SuppressWarnings("unchecked")
     public List<String> get(Class<? extends Power> cls) {
@@ -49,6 +52,8 @@ public enum Preset {
                         "DOLPHINS_GRACE");
             case TRIGGERS:
                 return Power.getTriggerTypes(cls).stream().map(TriggerType::name).collect(Collectors.toList());
+            case VISUAL_EFFECT:
+                return Arrays.stream(Effect.values()).filter(effect -> effect.getType() == Effect.Type.VISUAL).map(Enum::name).collect(Collectors.toList());
             case NONE:
             default:
                 throw new IllegalStateException();
