@@ -16,8 +16,6 @@
  */
 package think.rpgitems.item;
 
-import org.apache.commons.lang.math.RandomUtils;
-import org.bukkit.ChatColor;
 import org.bukkit.Material;
 import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.configuration.InvalidConfigurationException;
@@ -29,29 +27,79 @@ import org.bukkit.util.FileUtil;
 import think.rpgitems.RPGItems;
 
 import java.io.*;
-import java.util.Comparator;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.StandardCopyOption;
 import java.util.HashMap;
+import java.util.Objects;
 import java.util.concurrent.ThreadLocalRandom;
+import java.util.logging.Level;
 
 public class ItemManager {
     public static HashMap<Integer, RPGItem> itemById = new HashMap<>();
     public static HashMap<String, RPGItem> itemByName = new HashMap<>();
     private static RPGItems plugin;
 
-    public static void reload() {
+    public static void reload(RPGItems pl) {
         itemById = new HashMap<>();
         itemByName = new HashMap<>();
-        load(plugin);
+        load(pl);
     }
 
     public static void load(RPGItems pl) {
+        plugin = pl;
+        RPGItem.plugin = pl;
+        File items = new File(plugin.getDataFolder(), "items");
+        if (!items.exists() || !items.isDirectory()) {
+            File f = new File(plugin.getDataFolder(), "items.yml");
+            if(!f.exists()){
+                return;
+            }
+            plugin.getLogger().warning("loading items from legacy items.yml");
+            loadFromLegacyFile(f);
+            plugin.getLogger().warning("moving items to directory based storage");
+            save();
+            Path bak = f.toPath().resolveSibling("items.bak");
+            try {
+                Files.move(f.toPath(), bak);
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+            return;
+        }
+        File[] files = items.listFiles((d, n) -> n.endsWith("yml"));
+        for (File file : Objects.requireNonNull(files)) {
+            load(file);
+        }
+    }
+
+    private static void load(File file) {
         try {
-            plugin = pl;
-            RPGItem.plugin = pl;
+            YamlConfiguration itemStorage = new YamlConfiguration();
+            itemStorage.load(file);
+            RPGItem item = new RPGItem(itemStorage);
+            item.file = file.getCanonicalPath();
+            addItem(item);
+        } catch (Exception e) {
+            // Something went wrong
+            e.printStackTrace();
+            plugin.getLogger().severe("Error loading " + file + ".");
+        }
+    }
+
+    public static void addItem(RPGItem item) {
+        if (item.getID() != 0) {
+            itemById.put(item.getID(), item);
+        }
+        itemById.put(item.getUID(), item);
+        itemByName.put(item.getName(), item);
+    }
+
+    public static void loadFromLegacyFile(File f) {
+        try {
             FileInputStream in = null;
             YamlConfiguration itemStorage = null;
             try {
-                File f = new File(plugin.getDataFolder(), "items.yml");
                 in = new FileInputStream(f);
                 byte[] data = new byte[(int) f.length()];
                 in.read(data);
@@ -84,8 +132,7 @@ public class ItemManager {
             for (Object obj : section.getValues(false).values()) {
                 ConfigurationSection sec = (ConfigurationSection) obj;
                 RPGItem item = new RPGItem(sec);
-                itemById.put(item.getID(), item);
-                itemByName.put(item.getName(), item);
+                addItem(item);
             }
         } catch (Exception e) {
             // Something went wrong
@@ -102,42 +149,52 @@ public class ItemManager {
         FileUtil.copy(file, backup);
         File log = new File(plugin.getDataFolder(), time + "-log.txt");
         try (PrintStream ps = new PrintStream(log)) {
-            ps.printf("RPGItems (%s) ItemManager.load\r\n", plugin.getDescription().getVersion());
+            ps.printf("RPGItems (%s) ItemManager.loadFromLegacyFile\r\n", plugin.getDescription().getVersion());
             e.printStackTrace(ps);
         } catch (FileNotFoundException e1) {
             e1.printStackTrace();
         }
     }
 
-    public static void save(RPGItems plugin) {
-
-        YamlConfiguration itemStorage = new YamlConfiguration();
-
-        itemStorage.set("items", null);
-        ConfigurationSection newSection = itemStorage.createSection("items");
-        for (RPGItem item : itemById.values()) {
-            ConfigurationSection itemSection = newSection.getConfigurationSection(item.getName().replace(".", "_"));
-            if (itemSection == null) {
-                itemSection = newSection.createSection(item.getName().replace(".", "_"));
+    public static void save() {
+        File items = new File(plugin.getDataFolder(), "items");
+        if (!items.exists() || !items.isDirectory()) {
+            if (!items.mkdir()) {
+                throw new IllegalStateException();
             }
-            item.save(itemSection);
-            item.updateHashCode();
         }
 
-        FileOutputStream out = null;
+        for (RPGItem item : itemByName.values()) {
+            save(items, item);
+        }
+    }
+
+    private static void save(File items, RPGItem item) {
+        String itemName = item.getName();
+        String filename = getItemFilename(itemName);
+        File itemFile = new File(items, filename + ".yml");
+        File backup = new File(items, filename + "." + System.currentTimeMillis() + ".bak");
         try {
-            File f = new File(plugin.getDataFolder(), "items.yml");
-            out = new FileOutputStream(f);
-            out.write(itemStorage.saveToString().getBytes("UTF-8"));
-        } catch (IOException e) {
-            e.printStackTrace();
-        } finally {
-            try {
-                if (out != null)
-                    out.close();
-            } catch (IOException e) {
-                e.printStackTrace();
+            if (!backup.createNewFile()) throw new IllegalStateException();
+        } catch (Exception e) {
+            plugin.getLogger().log(Level.SEVERE, "Cannot create backup for" + itemName + ".", e);
+        }
+        try {
+            if (itemFile.exists()) {
+                Files.move(itemFile.toPath(), backup.toPath(), StandardCopyOption.REPLACE_EXISTING);
             }
+            YamlConfiguration configuration = new YamlConfiguration();
+            item.save(configuration);
+            configuration.save(itemFile);
+
+            String canonicalPath = itemFile.getCanonicalPath();
+            YamlConfiguration test = new YamlConfiguration();
+            test.load(canonicalPath);
+            new RPGItem(test);
+            backup.deleteOnExit();
+            item.file = canonicalPath;
+        } catch (IOException | InvalidConfigurationException e) {
+            throw new RuntimeException(e);
         }
     }
 
@@ -150,10 +207,7 @@ public class ItemManager {
         if (!meta.hasLore() || meta.getLore().size() <= 0)
             return null;
         try {
-            int id = ItemManager.decodeId(meta.getLore().get(0));
-            if (id == -1) {
-                return null;
-            }
+            int id = RPGItem.decodeId(meta.getLore().get(0));
             return ItemManager.getItemById(id);
         } catch (Exception e) {
             return null;
@@ -163,14 +217,19 @@ public class ItemManager {
     public static RPGItem newItem(String name) {
         if (itemByName.containsKey(name))
             return null;
-        int free;
-        do {
-            free = ThreadLocalRandom.current().nextInt(1000, Integer.MAX_VALUE) + 1;
-        } while (itemById.containsKey(free));
+        int free = nextUid();
         RPGItem item = new RPGItem(name, free);
         itemById.put(free, item);
         itemByName.put(name, item);
         return item;
+    }
+
+    public static int nextUid() {
+        int free;
+        do {
+            free = -ThreadLocalRandom.current().nextInt();
+        } while (itemById.containsKey(free));
+        return free;
     }
 
     public static RPGItem cloneItem(RPGItem item, String name) {
@@ -178,7 +237,7 @@ public class ItemManager {
             return null;
         int free;
         do {
-            free = ThreadLocalRandom.current().nextInt(1000, Integer.MAX_VALUE) + 1;
+            free = ThreadLocalRandom.current().nextInt(65536, Integer.MAX_VALUE) + 1;
         } while (itemById.containsKey(free));
         ConfigurationSection section = new MemoryConfiguration();
         item.save(section);
@@ -192,28 +251,41 @@ public class ItemManager {
         return itemById.get(id);
     }
 
-    public static RPGItem getItemByName(String uid) {
-        return itemByName.get(uid);
-    }
-
-    public static int decodeId(String str) throws NumberFormatException {
-        if (str.length() < 16) {
-            return -1;
-        }
-        StringBuilder out = new StringBuilder();
-        for (int i = 0; i < 16; i++) {
-            if (str.charAt(i) != ChatColor.COLOR_CHAR) {
-                return -1;
-            }
-            i++;
-            out.append(str.charAt(i));
-        }
-        return Integer.parseInt(out.toString(), 16);
+    public static RPGItem getItemByName(String name) {
+        return itemByName.get(name);
     }
 
     public static void remove(RPGItem item) {
         itemByName.remove(item.getName());
         itemById.remove(item.getID());
+        itemById.remove(item.getUID());
+        File file = new File(item.file);
+        Path path = file.toPath();
+        Path bak = path.resolveSibling(getItemFilename(item.getName()) + ".bak");
+        try {
+            File bakFile = Files.move(path, bak, StandardCopyOption.REPLACE_EXISTING).toFile();
+            bakFile.deleteOnExit();
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
     }
 
+    private static String getItemFilename(String itemName) {
+        // ensure Windows server don't blow up by CONs or NULs
+        // and escape some character that don't fit into a file name
+        return "item-" +
+                       itemName
+                               .replace("_", "__")
+                               .replace("/", "_f")
+                               .replace("\\", "_b")
+                               .replace("*", "_a")
+                               .replace("\"", "_o")
+                               .replace("\'", "_i")
+                               .replace("?", "_q")
+                               .replace("<", "_l")
+                               .replace(">", "_g")
+                               .replace("|", "_p")
+                               .replace(":", "_c")
+                               .replace(".", "_d");
+    }
 }

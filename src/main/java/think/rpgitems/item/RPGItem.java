@@ -103,12 +103,16 @@ public class RPGItem {
     public boolean hitCostByDamage = false;
     public DamageMode damageMode = DamageMode.FIXED;
 
+
+    String file;
+
     private ItemStack item;
     private ItemMeta localeMeta;
     private int id;
+    private int uid;
     private int hashcode = 0;
     private String name;
-    private String encodedID;
+    private String encodedUID;
     private boolean haspermission;
     private String permission;
     private String displayName;
@@ -118,6 +122,18 @@ public class RPGItem {
     private String loreText = "";
     private String type = RPGItems.plugin.getConfig().getString("defaults.sword", "Sword");
     private String hand = RPGItems.plugin.getConfig().getString("defaults.hand", "One handed");
+
+    private String author;
+    private String note;
+    private String license;
+
+    private int tooltipWidth = 150;
+    // Durability
+    private int maxDurability;
+    private boolean hasBar = false;
+    private boolean forceBar = false;
+    private int _loreMinLen = 0;
+
 
     private ArrayList<PowerLeftClick> powerLeftClick = new ArrayList<>();
     private ArrayList<PowerRightClick> powerRightClick = new ArrayList<>();
@@ -132,17 +148,10 @@ public class RPGItem {
     private ArrayList<PowerSwapToOffhand> powerSwapToOffhand = new ArrayList<>();
     private ArrayList<PowerSwapToMainhand> powerSwapToMainhand = new ArrayList<>();
 
-    private int tooltipWidth = 150;
-    // Durability
-    private int maxDurability;
-    private boolean hasBar = false;
-    private boolean forceBar = false;
-    private int _loreMinLen = 0;
-
-    public RPGItem(String name, int id) {
+    public RPGItem(String name, int uid) {
         this.name = name;
-        this.id = id;
-        encodedID = getMCEncodedID(id);
+        this.uid = uid;
+        encodedUID = getMCEncodedUID(id);
         item = new ItemStack(Material.WOODEN_SWORD);
         hasBar = true;
 
@@ -155,17 +164,26 @@ public class RPGItem {
     public RPGItem(ConfigurationSection s) {
         name = s.getString("name");
         id = s.getInt("id");
+        uid = s.getInt("uid");
+
+        if (uid == 0){
+            uid = ItemManager.nextUid();
+        }
         restore(s);
     }
 
-    public RPGItem(ConfigurationSection s, String name, int id) {
+    public RPGItem(ConfigurationSection s, String name, int uid) {
         this.name = name;
-        this.id = id;
+        this.uid = uid;
         restore(s);
     }
 
     @SuppressWarnings({"unchecked", "deprecation"})
     private void restore(ConfigurationSection s) {
+        author = s.getString("author", "");
+        note = s.getString("note", "");
+        license = s.getString("license", "");
+
         setDisplay(s.getString("display"), false);
         setType(s.getString("type", RPGItems.plugin.getConfig().getString("defaults.sword", "Sword")), false);
         setHand(s.getString("hand", RPGItems.plugin.getConfig().getString("defaults.hand", "One handed")), false);
@@ -214,12 +232,12 @@ public class RPGItem {
                     pow.setItem(this);
                     addPower(pow, false);
                 } catch (InstantiationException | IllegalAccessException | NoSuchMethodException | InvocationTargetException e) {
-                    e.printStackTrace();
+                    throw new RuntimeException(e);
                 }
             }
         }
 
-        encodedID = getMCEncodedID(id);
+        encodedUID = getMCEncodedUID(uid);
         haspermission = s.getBoolean("haspermission", false);
         permission = s.getString("permission", "a.default.permission");
         // Recipes
@@ -241,12 +259,12 @@ public class RPGItem {
                         Events.drops.put(key, new HashSet<>());
                     }
                     Set<Integer> set = Events.drops.get(key);
-                    set.add(getID());
+                    set.add(getUID());
                 } else {
                     dropChances.remove(key);
                     if (Events.drops.containsKey(key)) {
                         Set<Integer> set = Events.drops.get(key);
-                        set.remove(getID());
+                        set.remove(getUID());
                     }
                 }
                 dropChances.put(key, chance);
@@ -406,7 +424,7 @@ public class RPGItem {
         return ret;
     }
 
-    public static String getMCEncodedID(int id) {
+    public static String getMCEncodedUID(int id) {
         String hex = String.format("%08x", id);
         StringBuilder out = new StringBuilder();
         for (char h : hex.toCharArray()) {
@@ -417,6 +435,22 @@ public class RPGItem {
         if (str.length() != MC_ENCODED_ID_LENGTH)
             throw new RuntimeException("Bad RPGItem ID: " + str + " (" + id + ")");
         return out.toString();
+    }
+
+
+    public static int decodeId(String str) throws NumberFormatException {
+        if (str.length() < 16) {
+            return -1;
+        }
+        StringBuilder out = new StringBuilder();
+        for (int i = 0; i < 16; i++) {
+            if (str.charAt(i) != COLOR_CHAR) {
+                throw new IllegalArgumentException();
+            }
+            i++;
+            out.append(str.charAt(i));
+        }
+        return Integer.parseUnsignedInt(out.toString(), 16);
     }
 
     private static int getStringWidth(String str) {
@@ -435,6 +469,12 @@ public class RPGItem {
     public void save(ConfigurationSection s) {
         s.set("name", name);
         s.set("id", id);
+        s.set("uid", uid);
+
+        s.set("author", author);
+        s.set("note", note);
+        s.set("license", license);
+
         s.set("haspermission", haspermission);
         s.set("permission", permission);
         s.set("display", displayName.replaceAll("" + COLOR_CHAR, "&"));
@@ -524,7 +564,7 @@ public class RPGItem {
                 RPGItem rpgitem = ItemManager.toRPGItem(recipe.getResult());
                 if (rpgitem == null)
                     continue;
-                if (rpgitem.getID() == getID()) {
+                if (rpgitem.getUID() == getUID()) {
                     hasOldRecipe = true;
                 }
             }
@@ -847,9 +887,9 @@ public class RPGItem {
         meta.setDisplayName(lines.get(0));
         lines.remove(0);
         if (lines.size() > 0) {
-            lines.set(0, getMCEncodedID() + lines.get(0));
+            lines.set(0, getMCEncodedUID() + lines.get(0));
         } else {
-            lines.add(0, getMCEncodedID());
+            lines.add(0, getMCEncodedUID());
         }
         meta.setLore(lines);
         meta.setUnbreakable(false);
@@ -927,7 +967,7 @@ public class RPGItem {
 
     public List<String> getTooltipLines() {
         ArrayList<String> output = new ArrayList<>();
-        output.add(encodedID + quality.colour + ChatColor.BOLD + displayName);
+        output.add(getMCEncodedUID() + quality.colour + ChatColor.BOLD + displayName);
 
         // add powerLores
         if (showPowerLore) {
@@ -1100,8 +1140,12 @@ public class RPGItem {
         return id;
     }
 
-    public String getMCEncodedID() {
-        return encodedID;
+    public int getUID() {
+        return uid;
+    }
+
+    public String getMCEncodedUID() {
+        return encodedUID;
     }
 
     public void print(CommandSender sender) {

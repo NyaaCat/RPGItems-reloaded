@@ -49,14 +49,14 @@ public class RPGItems extends JavaPlugin {
     @Override
     public void onEnable() {
         plugin = this;
-        if (Bukkit.class.getPackage().getImplementationVersion().startsWith("git-Bukkit-")){
+        if (Bukkit.class.getPackage().getImplementationVersion().startsWith("git-Bukkit-")) {
             Bukkit.getConsoleSender().sendMessage(ChatColor.RED + "======================================");
             Bukkit.getConsoleSender().sendMessage(ChatColor.RED + "RPGItems plugin require Spigot API, Please make sure you are using Spigot.");
             Bukkit.getConsoleSender().sendMessage(ChatColor.RED + "======================================");
         }
         try {
             Bukkit.spigot();
-        }catch (NoSuchMethodError e){
+        } catch (NoSuchMethodError e) {
             getCommand("rpgitem").setExecutor((sender, command, label, args) -> {
                 sender.sendMessage(ChatColor.RED + "======================================");
                 sender.sendMessage(ChatColor.RED + "RPGItems plugin require Spigot API, Please make sure you are using Spigot.");

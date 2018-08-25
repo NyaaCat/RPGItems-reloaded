@@ -56,7 +56,7 @@ public class PowerFireball extends BasePower implements PowerRightClick {
         if (!getItem().consumeDurability(stack, cost)) return PowerResult.cost();
         player.playSound(player.getLocation(), Sound.ENTITY_GHAST_SHOOT, 1.0f, 1.0f);
         SmallFireball entity = player.launchProjectile(SmallFireball.class);
-        Events.rpgProjectiles.put(entity.getEntityId(), getItem().getID());
+        Events.rpgProjectiles.put(entity.getEntityId(), getItem().getUID());
         entity.setPersistent(false);
         return PowerResult.ok();
     }

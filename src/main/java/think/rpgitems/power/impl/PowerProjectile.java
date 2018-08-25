@@ -245,7 +245,7 @@ public class PowerProjectile extends BasePower implements PowerRightClick {
         if (!cone) {
             Projectile projectile = player.launchProjectile(projectileType, player.getEyeLocation().getDirection().multiply(speed));
             projectile.setPersistent(false);
-            Events.rpgProjectiles.put(projectile.getEntityId(), getItem().getID());
+            Events.rpgProjectiles.put(projectile.getEntityId(), getItem().getUID());
             projectile.setGravity(gravity);
             if (projectileType == Arrow.class) {
                 ((Arrow) projectile).setPickupStatus(Arrow.PickupStatus.DISALLOWED);
@@ -279,7 +279,7 @@ public class PowerProjectile extends BasePower implements PowerRightClick {
                 Vector v = a.clone().multiply(Math.cos(det)).add(b.clone().multiply(Math.sin(det))).multiply(Math.sin(theta)).add(loc.clone().multiply(Math.cos(theta)));
                 Projectile projectile = player.launchProjectile(projectileType, v.normalize().multiply(speed));
                 projectile.setPersistent(false);
-                Events.rpgProjectiles.put(projectile.getEntityId(), getItem().getID());
+                Events.rpgProjectiles.put(projectile.getEntityId(), getItem().getUID());
                 projectile.setGravity(gravity);
                 if (projectileType == Arrow.class) {
                     Events.removeArrows.add(projectile.getEntityId());

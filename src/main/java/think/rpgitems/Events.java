@@ -270,7 +270,7 @@ public class Events implements Listener {
             if (!rItem.checkPermission(player, true)) {
                 e.setCancelled(true);
             }
-            rpgProjectiles.put(entity.getEntityId(), rItem.getID());
+            rpgProjectiles.put(entity.getEntityId(), rItem.getUID());
         }
     }
 
@@ -510,7 +510,7 @@ public class Events implements Listener {
             }
             item.hasRecipe = true;
             item.resetRecipe(true);
-            ItemManager.save(plugin);
+            ItemManager.save();
             e.getPlayer().sendMessage(ChatColor.AQUA + "Recipe set for " + item.getName());
         } else if (useLocaleInv && e.getView() instanceof LocaleInventory) {
             localeInventories.remove(e.getView());

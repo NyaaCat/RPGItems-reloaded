@@ -28,11 +28,11 @@ public class RPGValue {
 
     public RPGValue(Player player, RPGItem item, String name, Object value) {
         this.value = value;
-        map.put(player.getName() + "." + item.getID() + "." + name, this);
+        map.put(player.getName() + "." + item.getUID() + "." + name, this);
     }
 
     public static RPGValue get(Player player, RPGItem item, String name) {
-        return map.get(player.getName() + "." + item.getID() + "." + name);
+        return map.get(player.getName() + "." + item.getUID() + "." + name);
     }
 
     public void set(Object value) {

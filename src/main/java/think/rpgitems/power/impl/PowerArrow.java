@@ -57,7 +57,7 @@ public class PowerArrow extends BasePower implements PowerRightClick {
         player.playSound(player.getLocation(), Sound.ENTITY_ARROW_SHOOT, 1.0f, 1.0f);
         Arrow arrow = player.launchProjectile(Arrow.class);
         arrow.setPickupStatus(Arrow.PickupStatus.DISALLOWED);
-        Events.rpgProjectiles.put(arrow.getEntityId(), getItem().getID());
+        Events.rpgProjectiles.put(arrow.getEntityId(), getItem().getUID());
         Events.removeArrows.add(arrow.getEntityId());
         arrow.setPersistent(false);
         return PowerResult.ok();
