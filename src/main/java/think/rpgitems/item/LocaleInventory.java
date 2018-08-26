@@ -7,6 +7,7 @@ import org.bukkit.event.inventory.InventoryType;
 import org.bukkit.inventory.Inventory;
 import org.bukkit.inventory.InventoryView;
 import org.bukkit.inventory.ItemStack;
+import org.bukkit.inventory.meta.Damageable;
 import org.bukkit.inventory.meta.ItemMeta;
 import org.bukkit.inventory.meta.LeatherArmorMeta;
 
@@ -38,7 +39,7 @@ public class LocaleInventory extends InventoryView {
             item.setType(rItem.getItem());
             ItemMeta meta = rItem.getLocaleMeta();
             if (!(meta instanceof LeatherArmorMeta) && rItem.getItem().isBlock())
-                item.setDurability(rItem.getDataValue());
+                ((Damageable)meta).setDamage(((Damageable)rItem.getLocaleMeta()).getDamage());
             item.setItemMeta(meta);
         }
         fake.setContents(fake.getContents());

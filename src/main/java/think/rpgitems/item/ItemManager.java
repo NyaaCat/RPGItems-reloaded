@@ -205,6 +205,10 @@ public class ItemManager {
         if (!item.hasItemMeta())
             return null;
         ItemMeta meta = item.getItemMeta();
+        return toRPGItem(meta);
+    }
+
+    public static RPGItem toRPGItem(ItemMeta meta) {
         if (!meta.hasLore() || meta.getLore().size() <= 0)
             return null;
         try {

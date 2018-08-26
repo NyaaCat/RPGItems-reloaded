@@ -15,6 +15,7 @@ import org.bukkit.entity.Player;
 import org.bukkit.inventory.Inventory;
 import org.bukkit.inventory.ItemFlag;
 import org.bukkit.inventory.ItemStack;
+import org.bukkit.inventory.meta.Damageable;
 import org.bukkit.inventory.meta.ItemMeta;
 import org.bukkit.inventory.meta.LeatherArmorMeta;
 import think.rpgitems.commands.*;
@@ -451,7 +452,7 @@ public class Handler extends RPGCommandReceiver {
         RPGItem item = getItemByName(args.nextString());
         if (args.length() == 2) {
             new Message("")
-                    .append(I18n.format("message.item.get", item.getName(), item.getItem().name(), (int) item.getDataValue()), new ItemStack(item.getItem()))
+                    .append(I18n.format("message.item.get", item.getName(), item.getItem().name(), item.getDataValue()), new ItemStack(item.getItem()))
                     .send(sender);
         } else if (args.length() >= 3) {
             String materialName = args.nextString();
@@ -479,14 +480,14 @@ public class Handler extends RPGCommandReceiver {
                 if (meta instanceof LeatherArmorMeta) {
                     ((LeatherArmorMeta) meta).setColor(Color.fromRGB(dam));
                 } else {
-                    item.setDataValue((short) dam);
+                    ((Damageable)meta).setDamage(dam);
                 }
                 item.updateLocaleMeta(meta);
             }
             item.rebuild();
 
             new Message("")
-                    .append(I18n.format("message.item.set", item.getName(), item.getItem().name(), (int) item.getDataValue()), new ItemStack(item.getItem()))
+                    .append(I18n.format("message.item.set", item.getName(), item.getItem().name(), item.getDataValue()), new ItemStack(item.getItem()))
                     .send(sender);
             ItemManager.save();
         }

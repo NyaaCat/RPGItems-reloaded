@@ -46,6 +46,7 @@ import org.bukkit.inventory.ItemFlag;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.Recipe;
 import org.bukkit.inventory.ShapedRecipe;
+import org.bukkit.inventory.meta.Damageable;
 import org.bukkit.inventory.meta.ItemMeta;
 import org.bukkit.inventory.meta.LeatherArmorMeta;
 import org.librazy.nclangchecker.LangKey;
@@ -390,20 +391,22 @@ public class RPGItem {
             meta.setLore(lore);
             item.setItemMeta(meta);
         }
+        Damageable meta = (Damageable) item.getItemMeta();
         if (rItem.maxDurability > 0) {
             int durability = ((Number) rpgMeta.get(RPGMetadata.DURABILITY)).intValue();
             if (rItem.customItemModel) {
-                item.setDurability(rItem.item.getDurability());
+                meta.setDamage(((Damageable)rItem.localeMeta).getDamage());
             } else {
-                item.setDurability((short) (rItem.item.getType().getMaxDurability() - ((short) ((double) rItem.item.getType().getMaxDurability() * ((double) durability / (double) rItem.maxDurability)))));
+                meta.setDamage((short) (rItem.item.getType().getMaxDurability() - ((short) ((double) rItem.item.getType().getMaxDurability() * ((double) durability / (double) rItem.maxDurability)))));
             }
         } else {
             if (rItem.customItemModel) {
-                item.setDurability(rItem.item.getDurability());
+                meta.setDamage(((Damageable)rItem.localeMeta).getDamage());
             } else {
-                item.setDurability(rItem.hasBar ? (short) 0 : rItem.item.getDurability());
+                meta.setDamage(rItem.hasBar ? (short) 0 : ((Damageable)rItem.localeMeta).getDamage());
             }
         }
+        item.setItemMeta((ItemMeta) meta);
     }
 
     private static List<String> filterLores(RPGItem r, ItemStack i) {
@@ -499,8 +502,8 @@ public class RPGItem {
         ItemMeta meta = localeMeta;
         if (meta instanceof LeatherArmorMeta) {
             s.set("item_colour", ((LeatherArmorMeta) meta).getColor().asRGB());
-        } else {
-            s.set("item_data", item.getDurability());
+        } else if(meta instanceof Damageable){
+            s.set("item_data", ((Damageable)localeMeta).getDamage());
         }
         ConfigurationSection powerConfigs = s.createSection("powers");
         int i = 0;
@@ -1164,7 +1167,7 @@ public class RPGItem {
         }
         sender.sendMessage(I18n.format("message.durability.info", getMaxDurability(), defaultDurability, durabilityLowerBound, durabilityUpperBound));
         if (customItemModel) {
-            sender.sendMessage(I18n.format("message.print.customitemmodel", item.getType().name() + ":" + item.getDurability()));
+            sender.sendMessage(I18n.format("message.print.customitemmodel", item.getType().name() + ":" + ((Damageable)localeMeta).getDamage()));
         }
         if (!itemFlags.isEmpty()) {
             StringBuilder str = new StringBuilder();
@@ -1341,18 +1344,9 @@ public class RPGItem {
             rebuild();
     }
 
-    public void setDataValue(short value, boolean update) {
-        item.setDurability(value);
-        if (update)
-            rebuild();
-    }
 
-    public short getDataValue() {
-        return item.getDurability();
-    }
-
-    public void setDataValue(short value) {
-        item.setDurability(value);
+    public int getDataValue() {
+        return ((Damageable)localeMeta).getDamage();
     }
 
     public Material getItem() {

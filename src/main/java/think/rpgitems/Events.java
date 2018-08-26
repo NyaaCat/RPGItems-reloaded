@@ -38,6 +38,7 @@ import org.bukkit.event.hanging.HangingBreakEvent.RemoveCause;
 import org.bukkit.event.inventory.*;
 import org.bukkit.event.player.*;
 import org.bukkit.inventory.*;
+import org.bukkit.inventory.meta.Damageable;
 import org.bukkit.inventory.meta.ItemMeta;
 import org.bukkit.metadata.FixedMetadataValue;
 import org.bukkit.potion.PotionEffect;
@@ -838,8 +839,10 @@ public class Events implements Listener {
 
     @EventHandler(ignoreCancelled = true, priority = EventPriority.NORMAL)
     public void onItemDamage(PlayerItemDamageEvent e) {
-        if (e.getItem().getType().getMaxDurability() - (e.getItem().getDurability() + e.getDamage()) <= 0) {
-            if (ItemManager.toRPGItem(e.getItem()) != null) {
+        ItemMeta itemMeta = e.getItem().getItemMeta();
+        if (itemMeta == null) return;
+        if (e.getItem().getType().getMaxDurability() - ((Damageable) itemMeta).getDamage() + e.getDamage() <= 0) {
+            if (ItemManager.toRPGItem(itemMeta) != null) {
                 e.setCancelled(true);
             }
         }
