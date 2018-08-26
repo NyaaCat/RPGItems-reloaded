@@ -2,10 +2,7 @@ package think.rpgitems;
 
 import cat.nyaa.nyaacore.LanguageRepository;
 import cat.nyaa.nyaacore.Message;
-import org.bukkit.Bukkit;
-import org.bukkit.ChatColor;
-import org.bukkit.Color;
-import org.bukkit.Material;
+import org.bukkit.*;
 import org.bukkit.command.CommandSender;
 import org.bukkit.configuration.InvalidConfigurationException;
 import org.bukkit.configuration.file.YamlConfiguration;
@@ -702,7 +699,7 @@ public class Handler extends RPGCommandReceiver {
         int nth = args.nextInt();
         String property = args.nextString();
         int i = nth;
-        Class<? extends Power> p = PowerManager.powers.get(power);
+        Class<? extends Power> p = PowerManager.powers.get(PowerManager.parseKey(power));
         if (p == null) {
             msg(sender, "message.power.unknown", power);
             return;
@@ -731,7 +728,7 @@ public class Handler extends RPGCommandReceiver {
         int nth = args.nextInt();
         String property = args.nextString();
         String val = args.nextString();
-        Class<? extends Power> p = PowerManager.powers.get(power);
+        Class<? extends Power> p = PowerManager.powers.get(PowerManager.parseKey(power));
         if (p == null) {
             msg(sender, "message.power.unknown", power);
             return;
@@ -953,7 +950,7 @@ public class Handler extends RPGCommandReceiver {
             return;
         }
         RPGItem item = getItemByName(itemStr);
-        Class<? extends Power> cls = PowerManager.powers.get(powerStr);
+        Class<? extends Power> cls = PowerManager.powers.get(PowerManager.parseKey(powerStr));
         if (cls == null) {
             msg(sender, "message.power.unknown", powerStr);
             return;

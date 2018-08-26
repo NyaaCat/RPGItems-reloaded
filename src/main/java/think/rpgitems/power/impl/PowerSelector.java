@@ -29,6 +29,7 @@ import org.bukkit.scoreboard.Team;
 import think.rpgitems.I18n;
 import think.rpgitems.commands.PowerMeta;
 import think.rpgitems.power.Power;
+import think.rpgitems.power.PowerManager;
 import think.rpgitems.utils.Pair;
 
 import java.util.*;
@@ -196,7 +197,7 @@ public class PowerSelector extends BasePower {
     }
 
     private static Set<Class<? extends Power>> parseApplyTo(String type) {
-        return Arrays.stream(type.split(",")).map(powers::get).collect(Collectors.toSet());
+        return Arrays.stream(type.split(",")).map(PowerManager::parseKey).map(powers::get).collect(Collectors.toSet());
     }
 
     private static Pair<Set<String>, Set<String>> parse(String limit) {

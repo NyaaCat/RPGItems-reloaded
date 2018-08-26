@@ -281,7 +281,7 @@ public class Events implements Listener {
             Class<?> entityThrownTrident = ReflectionUtils.getNMSClass("EntityThrownTrident");
             Field craftEntityFieldEntity = craftEntity.getDeclaredField("entity");
             craftEntityFieldEntity.setAccessible(true);
-            Field entityThrownTridentFieldH = entityThrownTrident.getDeclaredField("h");
+            Field entityThrownTridentFieldH = entityThrownTrident.getDeclaredField("aw");
             entityThrownTridentFieldH.setAccessible(true);
             Object thrownTrident = craftEntityFieldEntity.get(entity);
             Object nmsItemStack = entityThrownTridentFieldH.get(thrownTrident);
@@ -299,7 +299,7 @@ public class Events implements Listener {
             Class<?> entityThrownTrident = ReflectionUtils.getNMSClass("EntityThrownTrident");
             Field craftEntityFieldEntity = craftEntity.getDeclaredField("entity");
             craftEntityFieldEntity.setAccessible(true);
-            Field entityThrownTridentFieldH = entityThrownTrident.getDeclaredField("h");
+            Field entityThrownTridentFieldH = entityThrownTrident.getDeclaredField("aw");
             entityThrownTridentFieldH.setAccessible(true);
             Object thrownTrident = craftEntityFieldEntity.get(entity);
             Class<?> craftItemStack = ReflectionUtils.getOBCClass("inventory.CraftItemStack");

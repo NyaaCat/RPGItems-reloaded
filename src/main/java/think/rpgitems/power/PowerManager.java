@@ -32,6 +32,7 @@ import think.rpgitems.commands.Property;
 import java.lang.reflect.Field;
 import java.lang.reflect.Modifier;
 import java.util.*;
+import java.util.concurrent.ExecutionException;
 import java.util.logging.Level;
 import java.util.stream.Stream;
 
@@ -77,5 +78,19 @@ public class PowerManager {
         keyCache.put(plugin.getName(), plugin);
         Class<? extends Power>[] classes = ClassPathUtils.scanSubclasses(plugin, basePackage, Power.class);
         Stream.of(classes).filter(c -> !Modifier.isAbstract(c.getModifiers()) && !c.isInterface()).sorted(Comparator.comparing(Class::getCanonicalName)).forEach(PowerManager::registerPower);
+    }
+
+    public static NamespacedKey parseKey(String powerStr) {
+        if(!powerStr.contains(":")) return new NamespacedKey(RPGItems.plugin, powerStr);
+        String[] split = powerStr.split(":");
+        if(split.length != 2){
+            throw new IllegalArgumentException();
+        }
+        try {
+            Plugin key = keyCache.get(split[0]);
+            return new NamespacedKey(key, split[1]);
+        } catch (ExecutionException e) {
+            throw new RuntimeException(e);
+        }
     }
 }

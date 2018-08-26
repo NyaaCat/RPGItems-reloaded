@@ -126,7 +126,7 @@ public abstract class RPGCommandReceiver extends CommandReceiver {
 
     private List<String> resolvePowerProperties(CommandSender sender, String last, Arguments cmd) {
         @LangKey(skipCheck = true) String powName = cmd.next();
-        Class<? extends Power> power = powers.get(powName);
+        Class<? extends Power> power = powers.get(PowerManager.parseKey(powName));
         if (power == null) return Collections.emptyList();
         SortedMap<PowerProperty, Field> argMap = PowerManager.propertyOrders.get(power);
         Set<Field> settled = new HashSet<>();

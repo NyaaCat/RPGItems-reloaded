@@ -216,14 +216,7 @@ public class RPGItem {
                 ConfigurationSection section = powerList.getConfigurationSection(sectionKey);
                 try {
                     String powerName = section.getString("powerName");
-                    NamespacedKey key;
-                    if(powerName.contains(":")){
-                        String[] split = powerName.split(":", 2);
-                        String keyName = split[0];
-                        key = new NamespacedKey(PowerManager.keyCache.getUnchecked(keyName), split[1]);
-                    } else {
-                        key = new NamespacedKey(RPGItems.plugin, powerName);
-                    }
+                    NamespacedKey key = PowerManager.parseKey(powerName);
                     if (!PowerManager.powers.containsKey(key)) {
                         plugin.getLogger().warning("Unknown power:" + key + " on item " + this.name);
                         Thread.dumpStack();
@@ -328,7 +321,6 @@ public class RPGItem {
         } catch (IllegalArgumentException e) {
             damageMode = DamageMode.FIXED;
         }
-        rebuild();
         if (s instanceof YamlConfiguration) {
             YamlConfiguration configuration = (YamlConfiguration) s;
             hashcode = Math.abs(configuration.saveToString().hashCode());
