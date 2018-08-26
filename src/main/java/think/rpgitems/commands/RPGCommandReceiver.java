@@ -197,7 +197,7 @@ public abstract class RPGCommandReceiver extends CommandReceiver {
     private List<String> resolveGetSet(String last, Arguments cmd, Pair<RPGItem, String> itemCommand) {
         RPGItem item = itemCommand.getKey();
         String powerName = cmd.next();
-        List<Power> powers = item.powers.stream().filter(p -> p.getName().equals(powerName)).collect(Collectors.toList());
+        List<Power> powers = item.powers.stream().filter(p -> p.getNamespacedKey().equals(PowerManager.parseKey(powerName))).collect(Collectors.toList());
         if (powers.isEmpty()) return Collections.emptyList();
         Class<? extends Power> powerClass = powers.get(0).getClass();
         if (cmd.top() == null) {
@@ -305,7 +305,7 @@ public abstract class RPGCommandReceiver extends CommandReceiver {
                                 case "set":
                                 case "get":
                                 case "removepower":
-                                    return itemCommand.getKey().powers.stream().map(Power::getName).collect(Collectors.toList()); // current powers
+                                    return itemCommand.getKey().powers.stream().map(Power::getNamespacedKey).map(NamespacedKey::toString).collect(Collectors.toList()); // current powers
                                 default:
                                     return Collections.emptyList();
                             }
@@ -365,7 +365,7 @@ public abstract class RPGCommandReceiver extends CommandReceiver {
                                 case "set":
                                 case "get":
                                 case "removepower":
-                                    return itemCommand.getKey().powers.stream().map(Power::getName).filter(s -> s.startsWith(third)).collect(Collectors.toList()); // complete current powers
+                                    return itemCommand.getKey().powers.stream().map(Power::getNamespacedKey).map(NamespacedKey::toString).filter(s -> s.startsWith(third)).collect(Collectors.toList()); // complete current powers
                                 default:
                                     return Collections.emptyList();
                             }

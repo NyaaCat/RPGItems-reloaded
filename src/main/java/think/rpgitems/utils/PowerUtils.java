@@ -122,11 +122,11 @@ public class PowerUtils {
      */
     public static boolean checkCooldown(Power power, Player p, long cdTicks, boolean showWarn) {
         long cooldown;
-        RPGValue value = RPGValue.get(p, power.getItem(), power.getName() + ".cooldown");
+        RPGValue value = RPGValue.get(p, power.getItem(), power.getNamespacedKey().toString() + ".cooldown");
         long nowTick = System.currentTimeMillis() / 50;
         if (value == null) {
             cooldown = nowTick;
-            value = new RPGValue(p, power.getItem(), power.getName() + ".cooldown", cooldown);
+            value = new RPGValue(p, power.getItem(), power.getNamespacedKey().toString() + ".cooldown", cooldown);
         } else {
             cooldown = value.asLong();
         }

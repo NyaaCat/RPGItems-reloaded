@@ -321,6 +321,7 @@ public class RPGItem {
         } catch (IllegalArgumentException e) {
             damageMode = DamageMode.FIXED;
         }
+        rebuild();
         if (s instanceof YamlConfiguration) {
             YamlConfiguration configuration = (YamlConfiguration) s;
             hashcode = Math.abs(configuration.saveToString().hashCode());
@@ -501,7 +502,7 @@ public class RPGItem {
         int i = 0;
         for (Power p : powers) {
             MemoryConfiguration pConfig = new MemoryConfiguration();
-            pConfig.set("powerName", p.getName());
+            pConfig.set("powerName", p.getNamespacedKey().toString());
             p.save(pConfig);
             powerConfigs.set(Integer.toString(i), pConfig);
             i++;
@@ -916,22 +917,6 @@ public class RPGItem {
             }
         }
         updateLocaleMeta(meta);
-
-        for (Player player : Bukkit.getOnlinePlayers()) {
-            for (ItemStack item : player.getInventory()) {
-                RPGItem rpgItem = ItemManager.toRPGItem(item);
-                if (rpgItem != null) {
-                    updateItem(rpgItem, item, true);
-                }
-            }
-            for (ItemStack item : player.getInventory().getArmorContents()) {
-                RPGItem rpgItem = ItemManager.toRPGItem(item);
-                if (rpgItem != null) {
-                    updateItem(rpgItem, item, true);
-                }
-
-            }
-        }
         resetRecipe(true);
     }
 
@@ -1483,9 +1468,10 @@ public class RPGItem {
     public boolean removePower(String pow) {
         Iterator<Power> it = powers.iterator();
         Power power = null;
+        NamespacedKey key = PowerManager.parseKey(pow);
         while (it.hasNext()) {
             Power p = it.next();
-            if (p.getName().equalsIgnoreCase(pow)) {
+            if (p.getNamespacedKey().equals(key)) {
                 power = p;
                 break;
             }

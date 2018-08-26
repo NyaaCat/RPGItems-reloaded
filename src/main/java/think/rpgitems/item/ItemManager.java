@@ -16,11 +16,14 @@
  */
 package think.rpgitems.item;
 
+import org.bukkit.Bukkit;
 import org.bukkit.Material;
 import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.configuration.InvalidConfigurationException;
 import org.bukkit.configuration.MemoryConfiguration;
 import org.bukkit.configuration.file.YamlConfiguration;
+import org.bukkit.entity.Player;
+import org.bukkit.inventory.Inventory;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.ItemMeta;
 import org.bukkit.util.FileUtil;
@@ -35,6 +38,8 @@ import java.util.Objects;
 import java.util.concurrent.ThreadLocalRandom;
 import java.util.logging.Level;
 
+import static think.rpgitems.item.RPGItem.updateItem;
+
 public class ItemManager {
     public static HashMap<Integer, RPGItem> itemById = new HashMap<>();
     public static HashMap<String, RPGItem> itemByName = new HashMap<>();
@@ -44,6 +49,23 @@ public class ItemManager {
         itemById = new HashMap<>();
         itemByName = new HashMap<>();
         load(pl);
+    }
+
+    public static void refreshItem() {
+        for (Player player : Bukkit.getOnlinePlayers()) {
+            for (ItemStack item : player.getInventory()) {
+                RPGItem rpgItem = ItemManager.toRPGItem(item);
+                if (rpgItem != null) {
+                    updateItem(rpgItem, item, true);
+                }
+            }
+            for (ItemStack item : player.getInventory().getArmorContents()) {
+                RPGItem rpgItem = ItemManager.toRPGItem(item);
+                if (rpgItem != null) {
+                    updateItem(rpgItem, item, true);
+                }
+            }
+        }
     }
 
     public static void load(RPGItems pl) {

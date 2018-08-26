@@ -482,6 +482,7 @@ public class Handler extends RPGCommandReceiver {
                 item.updateLocaleMeta(meta);
             }
             item.rebuild();
+            ItemManager.refreshItem();
 
             new Message("")
                     .append(I18n.format("message.item.set", item.getName(), item.getItem().name(), item.getDataValue()), new ItemStack(item.getItem()))
@@ -530,6 +531,7 @@ public class Handler extends RPGCommandReceiver {
                             item.enchantMap = Collections.emptyMap();
                         }
                         item.rebuild();
+                        ItemManager.refreshItem();
                         ItemManager.save();
                         msg(sender, "message.enchantment.success");
                     }
@@ -541,6 +543,7 @@ public class Handler extends RPGCommandReceiver {
             case "clear": {
                 item.enchantMap = null;
                 item.rebuild();
+                ItemManager.refreshItem();
                 ItemManager.save();
                 msg(sender, "message.enchantment.removed");
             }
@@ -585,6 +588,7 @@ public class Handler extends RPGCommandReceiver {
                 }
                 item.description.set(lineNo, ChatColor.translateAlternateColorCodes('&', ChatColor.WHITE + line));
                 item.rebuild();
+                ItemManager.refreshItem();
                 msg(sender, "message.description.change");
                 ItemManager.save();
             }
@@ -597,6 +601,7 @@ public class Handler extends RPGCommandReceiver {
                 }
                 item.description.remove(lineNo);
                 item.rebuild();
+                ItemManager.refreshItem();
                 msg(sender, "message.description.remove");
                 ItemManager.save();
             }
@@ -744,6 +749,7 @@ public class Handler extends RPGCommandReceiver {
             return;
         }
         item.rebuild();
+        ItemManager.refreshItem();
         ItemManager.save();
         msg(sender, "message.power_property.change");
     }
@@ -863,6 +869,7 @@ public class Handler extends RPGCommandReceiver {
         RPGItem item = getItemByName(args.nextString());
         item.showPowerLore = !item.showPowerLore;
         item.rebuild();
+        ItemManager.refreshItem();
         ItemManager.save();
         msg(sender, "message.toggleLore." + (item.showPowerLore ? "show" : "hide"));
     }
@@ -873,6 +880,7 @@ public class Handler extends RPGCommandReceiver {
         RPGItem item = getItemByName(args.nextString());
         item.showArmourLore = !item.showArmourLore;
         item.rebuild();
+        ItemManager.refreshItem();
         ItemManager.save();
         msg(sender, "message.toggleLore." + (item.showArmourLore ? "show" : "hide"));
     }
@@ -884,6 +892,7 @@ public class Handler extends RPGCommandReceiver {
         ItemFlag flag = args.nextEnum(ItemFlag.class);
         item.itemFlags.add(ItemFlag.valueOf(flag.name()));
         item.rebuild();
+        ItemManager.refreshItem();
         ItemManager.save();
         msg(sender, "message.itemflag.add", flag.name());
     }
@@ -897,6 +906,7 @@ public class Handler extends RPGCommandReceiver {
         if (item.itemFlags.contains(itemFlag)) {
             item.itemFlags.remove(itemFlag);
             item.rebuild();
+            ItemManager.refreshItem();
             ItemManager.save();
             msg(sender, "message.itemflag.remove", flag.name());
         } else {
@@ -910,6 +920,7 @@ public class Handler extends RPGCommandReceiver {
         RPGItem item = getItemByName(args.nextString());
         item.customItemModel = !item.customItemModel;
         item.rebuild();
+        ItemManager.refreshItem();
         ItemManager.save();
         msg(sender, "message.customitemmodel." + (item.customItemModel ? "enable" : "disable"));
     }
@@ -927,6 +938,7 @@ public class Handler extends RPGCommandReceiver {
         if (args.top() != null) {
             item.damageMode = args.nextEnum(RPGItem.DamageMode.class);
             item.rebuild();
+            ItemManager.refreshItem();
             ItemManager.save();
         }
         msg(sender, "message.damagemode." + item.damageMode.name(), item.getName());

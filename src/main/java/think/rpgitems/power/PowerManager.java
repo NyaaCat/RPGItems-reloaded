@@ -43,7 +43,14 @@ import java.util.stream.Stream;
 public class PowerManager {
     public static final Map<Class<? extends Power>, SortedMap<PowerProperty, Field>> propertyOrders = new HashMap<>();
 
-    public static final LoadingCache<String, Plugin> keyCache = CacheBuilder.newBuilder().concurrencyLevel(2).build(CacheLoader.from(Bukkit.getServer().getPluginManager()::getPlugin));
+    public static final LoadingCache<String, Plugin> keyCache =
+            CacheBuilder.newBuilder().concurrencyLevel(2).build(
+                    CacheLoader.from(
+                            k -> Arrays.stream(Bukkit.getServer().getPluginManager().getPlugins()).filter(p -> p.getName().toLowerCase(Locale.ROOT).equals(k)).reduce((a, b) -> {
+                                throw new IllegalStateException("Multiple elements: " + a + ", " + b);
+                            }).orElse(null)
+                    )
+            );
     /**
      * Power by name, and name by power
      */
@@ -81,9 +88,9 @@ public class PowerManager {
     }
 
     public static NamespacedKey parseKey(String powerStr) {
-        if(!powerStr.contains(":")) return new NamespacedKey(RPGItems.plugin, powerStr);
+        if (!powerStr.contains(":")) return new NamespacedKey(RPGItems.plugin, powerStr);
         String[] split = powerStr.split(":");
-        if(split.length != 2){
+        if (split.length != 2) {
             throw new IllegalArgumentException();
         }
         try {
