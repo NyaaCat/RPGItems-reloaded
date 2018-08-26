@@ -52,7 +52,7 @@ public class ItemManager {
         File items = new File(plugin.getDataFolder(), "items");
         if (!items.exists() || !items.isDirectory()) {
             File f = new File(plugin.getDataFolder(), "items.yml");
-            if(!f.exists()){
+            if (!f.exists()) {
                 return;
             }
             plugin.getLogger().warning("loading items from legacy items.yml");
@@ -192,6 +192,7 @@ public class ItemManager {
             test.load(canonicalPath);
             new RPGItem(test);
             backup.deleteOnExit();
+            item.hashcode = Math.abs(configuration.saveToString().hashCode());
             item.file = canonicalPath;
         } catch (IOException | InvalidConfigurationException e) {
             throw new RuntimeException(e);

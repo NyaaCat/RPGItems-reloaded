@@ -105,12 +105,12 @@ public class RPGItem {
 
 
     String file;
+    int hashcode = 0;
 
     private ItemStack item;
     private ItemMeta localeMeta;
     private int id;
     private int uid;
-    private int hashcode = 0;
     private String name;
     private String encodedUID;
     private boolean haspermission;
@@ -151,7 +151,7 @@ public class RPGItem {
     public RPGItem(String name, int uid) {
         this.name = name;
         this.uid = uid;
-        encodedUID = getMCEncodedUID(id);
+        encodedUID = getMCEncodedUID(uid);
         item = new ItemStack(Material.WOODEN_SWORD);
         hasBar = true;
 
@@ -328,7 +328,10 @@ public class RPGItem {
             damageMode = DamageMode.FIXED;
         }
         rebuild();
-        if (hashcode == 0) {
+        if (s instanceof YamlConfiguration) {
+            YamlConfiguration configuration = (YamlConfiguration) s;
+            hashcode = Math.abs(configuration.saveToString().hashCode());
+        } else  {
             updateHashCode();
         }
     }
