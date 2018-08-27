@@ -21,12 +21,13 @@ import org.bukkit.scheduler.BukkitRunnable;
 import org.bukkit.util.EulerAngle;
 import org.bukkit.util.Vector;
 import think.rpgitems.RPGItems;
-import think.rpgitems.commands.PowerMeta;
-import think.rpgitems.commands.Property;
 import think.rpgitems.power.*;
 import think.rpgitems.utils.Pair;
 
-import java.util.*;
+import java.util.Comparator;
+import java.util.List;
+import java.util.Optional;
+import java.util.UUID;
 import java.util.concurrent.TimeUnit;
 import java.util.function.Consumer;
 

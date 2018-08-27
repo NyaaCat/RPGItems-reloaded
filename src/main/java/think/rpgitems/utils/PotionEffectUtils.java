@@ -1,8 +1,8 @@
 package think.rpgitems.utils;
 
 import org.bukkit.potion.PotionEffectType;
-import think.rpgitems.commands.Getter;
-import think.rpgitems.commands.Setter;
+import think.rpgitems.power.Getter;
+import think.rpgitems.power.Setter;
 
 public class PotionEffectUtils implements Setter, Getter {
 

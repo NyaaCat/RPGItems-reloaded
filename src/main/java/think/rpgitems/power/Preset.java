@@ -1,10 +1,7 @@
-package think.rpgitems.commands;
+package think.rpgitems.power;
 
 import org.bukkit.Effect;
-import think.rpgitems.power.Power;
-import think.rpgitems.power.TriggerType;
 
-import java.lang.reflect.Field;
 import java.util.Arrays;
 import java.util.List;
 import java.util.stream.Collectors;

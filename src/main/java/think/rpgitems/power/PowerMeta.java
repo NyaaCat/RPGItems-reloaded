@@ -1,6 +1,4 @@
-package think.rpgitems.commands;
-
-import think.rpgitems.power.TriggerType;
+package think.rpgitems.power;
 
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;

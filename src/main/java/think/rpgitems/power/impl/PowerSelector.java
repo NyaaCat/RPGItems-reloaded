@@ -27,9 +27,9 @@ import org.bukkit.scoreboard.Score;
 import org.bukkit.scoreboard.Scoreboard;
 import org.bukkit.scoreboard.Team;
 import think.rpgitems.I18n;
-import think.rpgitems.commands.PowerMeta;
 import think.rpgitems.power.Power;
 import think.rpgitems.power.PowerManager;
+import think.rpgitems.power.PowerMeta;
 import think.rpgitems.utils.Pair;
 
 import java.util.*;

@@ -1,4 +1,4 @@
-package think.rpgitems.commands;
+package think.rpgitems.power;
 
 import cat.nyaa.nyaacore.CommandReceiver;
 import cat.nyaa.nyaacore.LanguageRepository;
@@ -13,8 +13,6 @@ import org.librazy.nclangchecker.LangKey;
 import think.rpgitems.RPGItems;
 import think.rpgitems.item.ItemManager;
 import think.rpgitems.item.RPGItem;
-import think.rpgitems.power.Power;
-import think.rpgitems.power.PowerManager;
 import think.rpgitems.utils.Pair;
 
 import java.lang.reflect.Field;
@@ -130,7 +128,7 @@ public abstract class RPGCommandReceiver extends CommandReceiver {
         NamespacedKey powerKey = PowerManager.parseKey(powName);
         Class<? extends Power> power = powers.get(powerKey);
         if (power == null) return Collections.emptyList();
-        SortedMap<PowerProperty, Field> argMap = PowerManager.propertyOrders.get(power);
+        SortedMap<PowerProperty, Field> argMap = PowerManager.properties.get(power);
         Set<Field> settled = new HashSet<>();
         Optional<PowerProperty> req = argMap.keySet()
                                             .stream()
@@ -176,7 +174,7 @@ public abstract class RPGCommandReceiver extends CommandReceiver {
         if (sender instanceof Player) {
             Bukkit.getScheduler().runTask(RPGItems.plugin, () -> {
                 Plugin plugin = nameSpaceCache.getUnchecked(power.getNamespace());
-                String description = PowerManager.descriptionResolver.get(plugin).apply(power, property);
+                String description = PowerManager.descriptionResolvers.get(plugin).apply(power, property);
                 if (description == null) {
                     return;
                 }
@@ -200,7 +198,7 @@ public abstract class RPGCommandReceiver extends CommandReceiver {
         }
         if (cmd.top() == null) {
             // rpgitem item get/set power 1
-            return PowerManager.propertyOrders.get(powerClass).keySet().stream().map(PowerProperty::name).filter(s -> s.startsWith(last)).collect(Collectors.toList());
+            return PowerManager.properties.get(powerClass).keySet().stream().map(PowerProperty::name).filter(s -> s.startsWith(last)).collect(Collectors.toList());
         }
         if (itemCommand.getValue().equals("get")) return Collections.emptyList();
         // rpgitem item set power 1 property

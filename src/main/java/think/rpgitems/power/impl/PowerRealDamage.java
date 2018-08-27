@@ -17,7 +17,6 @@
 package think.rpgitems.power.impl;
 
 import org.bukkit.attribute.Attribute;
-import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.entity.LivingEntity;
 import org.bukkit.entity.Player;
 import org.bukkit.event.entity.EntityDamageByEntityEvent;
@@ -25,10 +24,10 @@ import org.bukkit.inventory.ItemStack;
 import org.bukkit.potion.PotionEffect;
 import org.bukkit.potion.PotionEffectType;
 import think.rpgitems.I18n;
-import think.rpgitems.commands.PowerMeta;
-import think.rpgitems.commands.Property;
 import think.rpgitems.power.PowerHit;
+import think.rpgitems.power.PowerMeta;
 import think.rpgitems.power.PowerResult;
+import think.rpgitems.power.Property;
 
 import static java.lang.Double.max;
 import static java.lang.Double.min;

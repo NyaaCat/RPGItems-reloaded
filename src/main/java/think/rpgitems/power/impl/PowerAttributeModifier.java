@@ -1,7 +1,7 @@
 package think.rpgitems.power.impl;
 
-import think.rpgitems.commands.PowerMeta;
-import think.rpgitems.commands.Property;
+import think.rpgitems.power.PowerMeta;
+import think.rpgitems.power.Property;
 
 import java.util.UUID;
 

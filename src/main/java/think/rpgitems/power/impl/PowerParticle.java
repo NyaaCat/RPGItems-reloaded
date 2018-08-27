@@ -2,15 +2,11 @@ package think.rpgitems.power.impl;
 
 import org.bukkit.Effect;
 import org.bukkit.block.Block;
-import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.entity.Player;
 import org.bukkit.event.player.PlayerInteractEvent;
 import org.bukkit.inventory.ItemStack;
 import think.rpgitems.I18n;
-import think.rpgitems.RPGItems;
-import think.rpgitems.commands.*;
-import think.rpgitems.power.PowerResult;
-import think.rpgitems.power.PowerRightClick;
+import think.rpgitems.power.*;
 
 /**
  * Power particle.

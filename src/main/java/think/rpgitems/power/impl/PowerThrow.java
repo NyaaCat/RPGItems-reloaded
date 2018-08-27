@@ -11,12 +11,7 @@ import org.bukkit.entity.Player;
 import org.bukkit.entity.Projectile;
 import org.bukkit.event.player.PlayerInteractEvent;
 import org.bukkit.inventory.ItemStack;
-import think.rpgitems.commands.PowerMeta;
-import think.rpgitems.commands.Property;
-import think.rpgitems.power.PowerLeftClick;
-import think.rpgitems.power.PowerResult;
-import think.rpgitems.power.PowerRightClick;
-import think.rpgitems.power.TriggerType;
+import think.rpgitems.power.*;
 
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;

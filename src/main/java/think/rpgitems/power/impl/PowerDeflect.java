@@ -30,8 +30,6 @@ import org.bukkit.util.Vector;
 import think.rpgitems.Events;
 import think.rpgitems.I18n;
 import think.rpgitems.RPGItems;
-import think.rpgitems.commands.Property;
-import think.rpgitems.commands.PowerMeta;
 import think.rpgitems.power.*;
 
 import java.util.HashSet;

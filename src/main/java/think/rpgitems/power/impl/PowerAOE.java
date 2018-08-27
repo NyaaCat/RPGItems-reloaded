@@ -26,11 +26,7 @@ import org.bukkit.inventory.ItemStack;
 import org.bukkit.potion.PotionEffect;
 import org.bukkit.potion.PotionEffectType;
 import think.rpgitems.I18n;
-import think.rpgitems.commands.*;
-import think.rpgitems.power.PowerLeftClick;
-import think.rpgitems.power.PowerResult;
-import think.rpgitems.power.PowerRightClick;
-import think.rpgitems.power.TriggerType;
+import think.rpgitems.power.*;
 import think.rpgitems.utils.PotionEffectUtils;
 
 import static think.rpgitems.utils.PowerUtils.checkCooldown;

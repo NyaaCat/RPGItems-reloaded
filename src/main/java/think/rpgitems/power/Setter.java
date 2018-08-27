@@ -1,6 +1,4 @@
-package think.rpgitems.commands;
-
-import think.rpgitems.power.Power;
+package think.rpgitems.power;
 
 import java.lang.reflect.InvocationTargetException;
 

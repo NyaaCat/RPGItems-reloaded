@@ -6,11 +6,7 @@ import org.bukkit.entity.LivingEntity;
 import org.bukkit.entity.Player;
 import org.bukkit.event.player.PlayerInteractEvent;
 import org.bukkit.inventory.ItemStack;
-import think.rpgitems.commands.AcceptedValue;
-import think.rpgitems.commands.PowerMeta;
-import think.rpgitems.commands.Property;
-import think.rpgitems.power.PowerResult;
-import think.rpgitems.power.TriggerType;
+import think.rpgitems.power.*;
 
 import java.util.List;
 

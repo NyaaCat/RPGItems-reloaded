@@ -20,6 +20,7 @@ import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
 import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.plugin.java.JavaPlugin;
+import org.librazy.nclangchecker.LangKey;
 import think.rpgitems.data.Font;
 import think.rpgitems.item.ItemManager;
 import think.rpgitems.power.PowerManager;
@@ -40,7 +41,22 @@ public class RPGItems extends JavaPlugin {
     @Override
     public void onLoad() {
         plugin = this;
-        PowerManager.load(RPGItems.plugin, BasePower.class.getPackage().getName());
+        PowerManager.registerPowers(RPGItems.plugin, BasePower.class.getPackage().getName());
+        PowerManager.addDescriptionResolver(RPGItems.plugin, (power, property) ->{
+            if(property == null){
+                @LangKey(skipCheck = true) String powerKey = "power.properties." + power.getKey() + ".main_description";
+                return I18n.format(powerKey);
+            }
+            @LangKey(skipCheck = true) String key = "power.properties." + power.getKey() + "." + property;
+            if (I18n.getInstance().hasKey(key)) {
+                return I18n.format(key);
+            }
+            @LangKey(skipCheck = true) String baseKey = "power.properties.base." + property;
+            if (I18n.getInstance().hasKey(baseKey)) {
+                return I18n.format(baseKey);
+            }
+            return null;
+        });
         saveDefaultConfig();
         Font.load();
         WGSupport.load();

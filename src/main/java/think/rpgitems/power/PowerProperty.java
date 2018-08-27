@@ -1,4 +1,4 @@
-package think.rpgitems.commands;
+package think.rpgitems.power;
 
 public class PowerProperty {
     private String name;

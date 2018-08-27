@@ -28,6 +28,7 @@ repositories {
         name 'sk89q'
         url "http://maven.sk89q.com/repo/"
     }
+
     maven {
         name 'NyaaCentral'
         url 'https://raw.githubusercontent.com/NyaaCat/NyaaCentral/maven-repo'

@@ -16,10 +16,9 @@
  */
 package think.rpgitems.power.impl;
 
-import org.bukkit.configuration.ConfigurationSection;
 import think.rpgitems.I18n;
-import think.rpgitems.commands.PowerMeta;
-import think.rpgitems.commands.Property;
+import think.rpgitems.power.PowerMeta;
+import think.rpgitems.power.Property;
 
 
 /**

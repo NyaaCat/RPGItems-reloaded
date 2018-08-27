@@ -7,8 +7,6 @@ import org.bukkit.inventory.ItemStack;
 import think.rpgitems.item.RPGItem;
 
 import java.util.Map;
-import java.util.Map;
-import java.util.SortedMap;
 
 public class RgiPowersPostFireEvent extends Event {
 

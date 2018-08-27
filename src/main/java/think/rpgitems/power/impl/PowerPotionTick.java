@@ -1,18 +1,12 @@
 package think.rpgitems.power.impl;
 
 import org.bukkit.attribute.Attribute;
-import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.potion.PotionEffect;
 import org.bukkit.potion.PotionEffectType;
 import think.rpgitems.I18n;
-import think.rpgitems.commands.Deserializer;
-import think.rpgitems.commands.PowerMeta;
-import think.rpgitems.commands.Property;
-import think.rpgitems.commands.Serializer;
-import think.rpgitems.power.PowerResult;
-import think.rpgitems.power.PowerTick;
+import think.rpgitems.power.*;
 import think.rpgitems.utils.PotionEffectUtils;
 
 import static java.lang.Double.min;

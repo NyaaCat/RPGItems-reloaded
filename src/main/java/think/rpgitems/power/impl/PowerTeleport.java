@@ -27,12 +27,7 @@ import org.bukkit.util.BlockIterator;
 import org.bukkit.util.Vector;
 import think.rpgitems.I18n;
 import think.rpgitems.RPGItems;
-import think.rpgitems.commands.PowerMeta;
-import think.rpgitems.commands.Property;
-import think.rpgitems.power.PowerProjectileHit;
-import think.rpgitems.power.PowerResult;
-import think.rpgitems.power.PowerRightClick;
-import think.rpgitems.power.TriggerType;
+import think.rpgitems.power.*;
 
 import static think.rpgitems.utils.PowerUtils.checkCooldown;
 

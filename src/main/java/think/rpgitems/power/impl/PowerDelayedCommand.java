@@ -6,9 +6,9 @@ import org.bukkit.event.player.PlayerInteractEvent;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.scheduler.BukkitRunnable;
 import think.rpgitems.RPGItems;
-import think.rpgitems.commands.Property;
-import think.rpgitems.commands.PowerMeta;
+import think.rpgitems.power.PowerMeta;
 import think.rpgitems.power.PowerResult;
+import think.rpgitems.power.Property;
 import think.rpgitems.power.TriggerType;
 
 import static think.rpgitems.utils.PowerUtils.checkCooldownByString;

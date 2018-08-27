@@ -25,8 +25,6 @@ import org.bukkit.event.player.PlayerInteractEvent;
 import org.bukkit.event.player.PlayerToggleSneakEvent;
 import org.bukkit.event.player.PlayerToggleSprintEvent;
 import org.bukkit.inventory.ItemStack;
-import think.rpgitems.commands.PowerMeta;
-import think.rpgitems.commands.Property;
 import think.rpgitems.power.*;
 
 import java.util.Collections;

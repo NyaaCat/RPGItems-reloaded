@@ -1,4 +1,6 @@
-package think.rpgitems.commands;
+package think.rpgitems.power;
+
+import org.librazy.nclangchecker.LangKey;
 
 import java.lang.annotation.ElementType;
 import java.lang.annotation.Retention;
@@ -7,7 +9,7 @@ import java.lang.annotation.Target;
 
 @Retention(RetentionPolicy.RUNTIME)
 @Target(ElementType.FIELD)
-public @interface AcceptedValue {
-    String[] value() default {};
-    Preset preset() default Preset.NONE;
+public @interface Deserializer {
+    Class<? extends Setter> value();
+    @LangKey String message() default "";
 }

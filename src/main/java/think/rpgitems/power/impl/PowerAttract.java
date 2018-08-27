@@ -10,8 +10,6 @@ import org.bukkit.event.player.PlayerInteractEvent;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.util.Vector;
 import think.rpgitems.I18n;
-import think.rpgitems.commands.PowerMeta;
-import think.rpgitems.commands.Property;
 import think.rpgitems.item.RPGItem;
 import think.rpgitems.power.*;
 

@@ -5,11 +5,8 @@ import org.bukkit.NamespacedKey;
 import org.bukkit.configuration.ConfigurationSection;
 import think.rpgitems.Handler;
 import think.rpgitems.RPGItems;
-import think.rpgitems.commands.*;
 import think.rpgitems.item.RPGItem;
-import think.rpgitems.power.Power;
-import think.rpgitems.power.PowerManager;
-import think.rpgitems.power.TriggerType;
+import think.rpgitems.power.*;
 
 import java.io.Serializable;
 import java.lang.reflect.Field;
@@ -42,7 +39,7 @@ public abstract class BasePower implements Serializable, Power {
     @SuppressWarnings("unchecked")
     @Override
     public void save(ConfigurationSection section) {
-        SortedMap<PowerProperty, Field> properties = PowerManager.propertyOrders.get(this.getClass());
+        SortedMap<PowerProperty, Field> properties = PowerManager.properties.get(this.getClass());
         PowerMeta powerMeta = this.getClass().getAnnotation(PowerMeta.class);
 
         for (Map.Entry<PowerProperty, Field> entry : properties.entrySet()) {
@@ -72,7 +69,7 @@ public abstract class BasePower implements Serializable, Power {
     @Override
     public void init(ConfigurationSection section) {
         PowerMeta powerMeta = this.getClass().getAnnotation(PowerMeta.class);
-        SortedMap<PowerProperty, Field> properties = PowerManager.propertyOrders.get(this.getClass());
+        SortedMap<PowerProperty, Field> properties = PowerManager.properties.get(this.getClass());
         for (Map.Entry<PowerProperty, Field> entry : properties.entrySet()) {
             PowerProperty property = entry.getKey();
             Field field = entry.getValue();

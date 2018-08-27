@@ -15,12 +15,10 @@ import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.Damageable;
 import org.bukkit.inventory.meta.ItemMeta;
 import org.bukkit.inventory.meta.LeatherArmorMeta;
-import think.rpgitems.commands.*;
 import think.rpgitems.item.ItemManager;
 import think.rpgitems.item.Quality;
 import think.rpgitems.item.RPGItem;
-import think.rpgitems.power.Power;
-import think.rpgitems.power.PowerManager;
+import think.rpgitems.power.*;
 import think.rpgitems.power.impl.PowerCommand;
 import think.rpgitems.power.impl.PowerDeathCommand;
 import think.rpgitems.support.WGSupport;
@@ -975,7 +973,7 @@ public class Handler extends RPGCommandReceiver {
             msg(sender, "internal.error.command_exception");
             return;
         }
-        SortedMap<PowerProperty, Field> argMap = PowerManager.propertyOrders.get(cls);
+        SortedMap<PowerProperty, Field> argMap = PowerManager.properties.get(cls);
         Set<Field> settled = new HashSet<>();
         Optional<PowerProperty> req = argMap.keySet()
                                             .stream()

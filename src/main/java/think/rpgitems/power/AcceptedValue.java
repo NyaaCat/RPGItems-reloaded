@@ -1,4 +1,4 @@
-package think.rpgitems.commands;
+package think.rpgitems.power;
 
 import java.lang.annotation.ElementType;
 import java.lang.annotation.Retention;
@@ -7,10 +7,7 @@ import java.lang.annotation.Target;
 
 @Retention(RetentionPolicy.RUNTIME)
 @Target(ElementType.FIELD)
-public @interface BooleanChoice {
-    String name() default "";
-
-    String falseChoice() default "false";
-
-    String trueChoice() default "true";
+public @interface AcceptedValue {
+    String[] value() default {};
+    Preset preset() default Preset.NONE;
 }

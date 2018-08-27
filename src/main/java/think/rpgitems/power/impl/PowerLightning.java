@@ -23,12 +23,7 @@ import org.bukkit.event.entity.EntityDamageByEntityEvent;
 import org.bukkit.event.entity.ProjectileHitEvent;
 import org.bukkit.inventory.ItemStack;
 import think.rpgitems.I18n;
-import think.rpgitems.commands.PowerMeta;
-import think.rpgitems.commands.Property;
-import think.rpgitems.power.PowerHit;
-import think.rpgitems.power.PowerProjectileHit;
-import think.rpgitems.power.PowerResult;
-import think.rpgitems.power.TriggerType;
+import think.rpgitems.power.*;
 
 import java.util.Random;
 
