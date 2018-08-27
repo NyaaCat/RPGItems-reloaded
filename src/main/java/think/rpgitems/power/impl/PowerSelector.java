@@ -27,17 +27,14 @@ import org.bukkit.scoreboard.Score;
 import org.bukkit.scoreboard.Scoreboard;
 import org.bukkit.scoreboard.Team;
 import think.rpgitems.I18n;
-import think.rpgitems.power.Power;
-import think.rpgitems.power.PowerManager;
 import think.rpgitems.power.PowerMeta;
+import think.rpgitems.power.Property;
 import think.rpgitems.utils.Pair;
 
 import java.util.*;
 import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
-
-import static think.rpgitems.power.PowerManager.powers;
 
 /**
  * Power selector.
@@ -49,69 +46,79 @@ import static think.rpgitems.power.PowerManager.powers;
 @PowerMeta(marker = true)
 public class PowerSelector extends BasePower {
 
+    @Property(order = 0, required = true)
+    public String id;
     /**
-     * Power(s) that it applies to
+     * Display message on item
      */
+    @Property
     public String display;
-    /**
-     * Power(s) that it applies to
-     */
-    public String applyTo;
 
     /**
      * Type(s) of target entities
      */
+    @Property
     public String type;
 
     /**
      * Count of target entities
      */
+    @Property
     public Integer count = -1;
 
     /**
      * X-coordinate of reference position, tilde notation is available. Use player's current position if empty
      */
+    @Property
     public String x;
 
     /**
      * Y-coordinate of reference position, tilde notation is available. Use player's current position if empty
      */
+    @Property
     public String y;
 
     /**
      * Z-coordinate of reference position, tilde notation is available. Use player's current position if empty
      */
+    @Property
     public String z;
 
     /**
      * Selects only targets less than r blocks from reference position
      */
+    @Property
     public Integer r = -1;
 
     /**
      * Selects only targets more than rm blocks from reference position
      */
+    @Property
     public Integer rm = -1;
 
     /**
      * Selects only targets less than dx blocks in X-axis from reference position
      */
+    @Property
     public Integer dx = -1;
 
     /**
      * Selects only targets less than dx blocks in Y-axis from reference position
      */
+    @Property
     public Integer dy = -1;
 
     /**
      * Selects only targets less than dx blocks in Z-axis from reference position
      */
+    @Property
     public Integer dz = -1;
 
     /**
      * Selecting targets by score(s), According to the following format
      * `score_name:min,max another_score_name:min,max`
      */
+    @Property
     public String score;
 
     /**
@@ -120,6 +127,7 @@ public class PowerSelector extends BasePower {
      * `` targets without any scoreboard tags
      * `!` targets with any scoreboard tags
      */
+    @Property
     public String tag;
 
     /**
@@ -129,6 +137,7 @@ public class PowerSelector extends BasePower {
      * `!` targets on any team
      * Only first MUST_ON has effect
      */
+    @Property
     public String team;
 
     public static LoadingCache<String, Map<String, Pair<Integer, Integer>>> scoreCache = CacheBuilder
@@ -154,12 +163,6 @@ public class PowerSelector extends BasePower {
                                                                             .concurrencyLevel(1)
                                                                             .expireAfterAccess(1, TimeUnit.DAYS)
                                                                             .build(CacheLoader.from(PowerSelector::parseType));
-
-    public static LoadingCache<String, Set<Class<? extends Power>>> applyToCache = CacheBuilder
-                                                                                           .newBuilder()
-                                                                                           .concurrencyLevel(1)
-                                                                                           .expireAfterAccess(1, TimeUnit.DAYS)
-                                                                                           .build(CacheLoader.from(PowerSelector::parseApplyTo));
 
     private double getCoordinate(String s, double base) {
         if (s == null) return base;
@@ -196,10 +199,6 @@ public class PowerSelector extends BasePower {
         return Arrays.stream(type.split(",")).map(String::toUpperCase).map(EntityType::valueOf).collect(Collectors.toSet());
     }
 
-    private static Set<Class<? extends Power>> parseApplyTo(String type) {
-        return Arrays.stream(type.split(",")).map(PowerManager::parseKey).map(powers::get).collect(Collectors.toSet());
-    }
-
     private static Pair<Set<String>, Set<String>> parse(String limit) {
         if (limit.isEmpty()) {
             return new Pair<>(Collections.emptySet(), null);
@@ -217,10 +216,6 @@ public class PowerSelector extends BasePower {
             }
         });
         return new Pair<>(must, mustNot);
-    }
-
-    public boolean canApplyTo(Class<? extends Power> power) {
-        return applyTo != null && applyToCache.getUnchecked(applyTo).contains(power);
     }
 
     private boolean matchTeam(Entity e, Scoreboard s, Pair<Set<String>, Set<String>> teamLimit) {

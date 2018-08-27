@@ -3,17 +3,13 @@ package think.rpgitems.power.impl;
 import org.bukkit.Bukkit;
 import org.bukkit.NamespacedKey;
 import org.bukkit.configuration.ConfigurationSection;
-import think.rpgitems.Handler;
 import think.rpgitems.RPGItems;
 import think.rpgitems.item.RPGItem;
 import think.rpgitems.power.*;
 
 import java.io.Serializable;
 import java.lang.reflect.Field;
-import java.util.Collection;
-import java.util.Map;
-import java.util.Set;
-import java.util.SortedMap;
+import java.util.*;
 import java.util.stream.Collectors;
 
 /**
@@ -24,7 +20,13 @@ public abstract class BasePower implements Serializable, Power {
 
     @Property
     @AcceptedValue(preset = Preset.TRIGGERS)
-    protected Set<TriggerType> triggers = Power.getTriggerTypes(this.getClass());
+    public Set<TriggerType> triggers = Power.getTriggerTypes(this.getClass());
+
+    @Property
+    public Set<String> selectors = new HashSet<>();
+
+    @Property
+    public Set<String> conditions = new HashSet<>();
 
     @Override
     public RPGItem getItem() {
@@ -39,7 +41,7 @@ public abstract class BasePower implements Serializable, Power {
     @SuppressWarnings("unchecked")
     @Override
     public void save(ConfigurationSection section) {
-        SortedMap<PowerProperty, Field> properties = PowerManager.properties.get(this.getClass());
+        SortedMap<PowerProperty, Field> properties = PowerManager.getProperties(this.getClass());
         PowerMeta powerMeta = this.getClass().getAnnotation(PowerMeta.class);
 
         for (Map.Entry<PowerProperty, Field> entry : properties.entrySet()) {
@@ -69,7 +71,7 @@ public abstract class BasePower implements Serializable, Power {
     @Override
     public void init(ConfigurationSection section) {
         PowerMeta powerMeta = this.getClass().getAnnotation(PowerMeta.class);
-        SortedMap<PowerProperty, Field> properties = PowerManager.properties.get(this.getClass());
+        SortedMap<PowerProperty, Field> properties = PowerManager.getProperties(this.getClass());
         for (Map.Entry<PowerProperty, Field> entry : properties.entrySet()) {
             PowerProperty property = entry.getKey();
             Field field = entry.getValue();
@@ -81,7 +83,11 @@ public abstract class BasePower implements Serializable, Power {
                 value = section.getString("consumption");
             }
             if (value != null) {
-                Handler.setPowerProperty(Bukkit.getConsoleSender(), this, field, value);
+                try {
+                    PowerManager.setPowerProperty(Bukkit.getConsoleSender(), this, field, value);
+                } catch (IllegalAccessException e) {
+                    throw new RuntimeException(e);
+                }
             }
         }
     }
@@ -89,6 +95,16 @@ public abstract class BasePower implements Serializable, Power {
     @Override
     public Set<TriggerType> getTriggers() {
         return triggers;
+    }
+
+    @Override
+    public Set<String> getConditions() {
+        return conditions;
+    }
+
+    @Override
+    public Set<String> getSelectors() {
+        return selectors;
     }
 
     @Override

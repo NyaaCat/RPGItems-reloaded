@@ -31,7 +31,7 @@ public class PowerUtils {
         }
         power.getItem().powers.stream().filter(pow -> pow instanceof PowerSelector).forEach(
                 selector -> {
-                    if (((PowerSelector) selector).canApplyTo(power.getClass())) {
+                    if (power.getSelectors().contains(((PowerSelector) selector).id)) {
                         ((PowerSelector) selector).inPlaceFilter(player, entities);
                     }
                 }

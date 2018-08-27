@@ -58,6 +58,10 @@ public interface Power {
 
     Set<TriggerType> getTriggers();
 
+    Set<String> getSelectors();
+
+    Set<String> getConditions();
+
     default void deinit() {
     }
 

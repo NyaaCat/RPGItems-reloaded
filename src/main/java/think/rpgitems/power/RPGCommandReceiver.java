@@ -61,7 +61,7 @@ public abstract class RPGCommandReceiver extends CommandReceiver {
         }
         AcceptedValue as = propertyField.getAnnotation(AcceptedValue.class);
         if (as != null) {
-            return getAcceptedValue(power, as).stream().map(s -> (hasNamePrefix ? propertyField.getName() + ":" : "") + s).filter(s -> s.startsWith(last)).collect(Collectors.toList());
+            return PowerManager.getAcceptedValue(power, as).stream().map(s -> (hasNamePrefix ? propertyField.getName() + ":" : "") + s).filter(s -> s.startsWith(last)).collect(Collectors.toList());
         }
         if (propertyField.getType().equals(boolean.class) || propertyField.getType().equals(Boolean.class)) {
             return Stream.of(true, false).map(s -> (hasNamePrefix ? propertyField.getName() + ":" : "") + s).filter(s -> s.startsWith(last)).collect(Collectors.toList());
@@ -89,7 +89,7 @@ public abstract class RPGCommandReceiver extends CommandReceiver {
         }
         AcceptedValue as = propertyField.getAnnotation(AcceptedValue.class);
         if (as != null) {
-            List<String> acceptedValue = getAcceptedValue(power, as);
+            List<String> acceptedValue = PowerManager.getAcceptedValue(power, as);
             enumValues.retainAll(acceptedValue);
         }
         String incompleteValue = lastVaule;
@@ -128,7 +128,7 @@ public abstract class RPGCommandReceiver extends CommandReceiver {
         NamespacedKey powerKey = PowerManager.parseKey(powName);
         Class<? extends Power> power = powers.get(powerKey);
         if (power == null) return Collections.emptyList();
-        SortedMap<PowerProperty, Field> argMap = PowerManager.properties.get(power);
+        SortedMap<PowerProperty, Field> argMap = PowerManager.getProperties(power);
         Set<Field> settled = new HashSet<>();
         Optional<PowerProperty> req = argMap.keySet()
                                             .stream()
@@ -198,7 +198,7 @@ public abstract class RPGCommandReceiver extends CommandReceiver {
         }
         if (cmd.top() == null) {
             // rpgitem item get/set power 1
-            return PowerManager.properties.get(powerClass).keySet().stream().map(PowerProperty::name).filter(s -> s.startsWith(last)).collect(Collectors.toList());
+            return PowerManager.getProperties(powerClass).keySet().stream().map(PowerProperty::name).filter(s -> s.startsWith(last)).collect(Collectors.toList());
         }
         if (itemCommand.getValue().equals("get")) return Collections.emptyList();
         // rpgitem item set power 1 property
@@ -369,14 +369,6 @@ public abstract class RPGCommandReceiver extends CommandReceiver {
             default: {
                 return resolvePowerOrPropertySuggestion(sender, args);
             }
-        }
-    }
-
-    public static List<String> getAcceptedValue(Class<? extends Power> cls, AcceptedValue anno) {
-        if (anno.preset() != Preset.NONE) {
-            return anno.preset().get(cls);
-        } else {
-            return Arrays.asList(anno.value());
         }
     }
 

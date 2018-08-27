@@ -57,9 +57,7 @@ import think.rpgitems.RPGItems;
 import think.rpgitems.data.Font;
 import think.rpgitems.data.RPGMetadata;
 import think.rpgitems.power.*;
-import think.rpgitems.power.impl.PowerAttributeModifier;
-import think.rpgitems.power.impl.PowerLoreFilter;
-import think.rpgitems.power.impl.PowerUnbreakable;
+import think.rpgitems.power.impl.*;
 import think.rpgitems.support.WGSupport;
 import think.rpgitems.utils.MaterialUtils;
 import think.rpgitems.utils.itemnbtapi.NBTItem;
@@ -212,21 +210,43 @@ public class RPGItem {
         // Powers
         ConfigurationSection powerList = s.getConfigurationSection("powers");
         if (powerList != null) {
+            Map<Power, ConfigurationSection> conf = new HashMap<>();
             for (String sectionKey : powerList.getKeys(false)) {
                 ConfigurationSection section = powerList.getConfigurationSection(sectionKey);
                 try {
                     String powerName = section.getString("powerName");
                     NamespacedKey key = PowerManager.parseKey(powerName);
-                    if (!PowerManager.powers.containsKey(key)) {
+                    if (!PowerManager.hasPower(key)) {
                         plugin.getLogger().warning("Unknown power:" + key + " on item " + this.name);
                         Thread.dumpStack();
+                        continue;
                     }
-                    Power pow = PowerManager.powers.get(key).getConstructor().newInstance();
+                    Power pow = PowerManager.getPower(key).getConstructor().newInstance();
                     pow.init(section);
                     pow.setItem(this);
                     addPower(pow, false);
+                    conf.put(pow, section);
                 } catch (InstantiationException | IllegalAccessException | NoSuchMethodException | InvocationTargetException e) {
                     throw new RuntimeException(e);
+                }
+            }
+            // 3.5 -> 3.6 conversion
+            List<PowerSelector> selectors = getPower(PowerSelector.class);
+            for (PowerSelector selector : selectors) {
+                ConfigurationSection section = conf.get(selector);
+                String applyTo = section.getString("applyTo");
+                if(Strings.isNullOrEmpty(applyTo)) {
+                    return;
+                }
+                selector.id = UUID.randomUUID().toString();
+                Set<? extends Class<? extends Power>> applicable = Arrays.stream(applyTo.split(",")).map(PowerManager::parseKey).map(PowerManager::getPower).collect(Collectors.toSet());
+                for (Class<? extends Power> pow : applicable) {
+                    List<? extends Power> app = getPower(pow);
+                    for (Power power : app) {
+                        if(power instanceof BasePower){
+                            ((BasePower) power).selectors.add(selector.id);
+                        }
+                    }
                 }
             }
         }
@@ -1422,7 +1442,7 @@ public class RPGItem {
         addPower(power, true);
     }
 
-    public void addPower(Power power, boolean update) {
+    private void addPower(Power power, boolean update) {
         powers.add(power);
         Set<TriggerType> triggers = power.getTriggers();
         if (triggers.contains(TriggerType.HIT)) {
