@@ -1,4 +1,4 @@
-package think.rpgitems.utils;
+package think.rpgitems.power;
 
 import org.bukkit.Location;
 import org.bukkit.entity.Entity;
@@ -17,7 +17,7 @@ import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
 
-public class PowerUtils {
+public class Utils {
     public static List<Entity> getNearbyEntities(Power power, Location l, Player player, double radius, double dx, double dy, double dz) {
         List<Entity> entities = new ArrayList<>();
         for (Entity e : l.getWorld().getNearbyEntities(l, dx, dy, dz)) {

@@ -15,8 +15,8 @@ import think.rpgitems.power.*;
 
 import java.util.List;
 
-import static think.rpgitems.utils.PowerUtils.checkCooldown;
-import static think.rpgitems.utils.PowerUtils.getNearbyEntities;
+import static think.rpgitems.power.Utils.checkCooldown;
+import static think.rpgitems.power.Utils.getNearbyEntities;
 
 /**
  * Power attract.

@@ -10,7 +10,7 @@ import think.rpgitems.power.*;
 import think.rpgitems.utils.PotionEffectUtils;
 
 import static java.lang.Double.min;
-import static think.rpgitems.utils.PowerUtils.checkCooldownByString;
+import static think.rpgitems.power.Utils.checkCooldownByString;
 
 /**
  * Power potiontick.

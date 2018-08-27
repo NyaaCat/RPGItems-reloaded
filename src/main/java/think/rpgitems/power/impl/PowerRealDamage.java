@@ -31,7 +31,7 @@ import think.rpgitems.power.Property;
 
 import static java.lang.Double.max;
 import static java.lang.Double.min;
-import static think.rpgitems.utils.PowerUtils.checkCooldown;
+import static think.rpgitems.power.Utils.checkCooldown;
 
 
 /**

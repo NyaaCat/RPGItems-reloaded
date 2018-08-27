@@ -29,7 +29,7 @@ import think.rpgitems.power.PowerResult;
 import think.rpgitems.power.PowerRightClick;
 import think.rpgitems.power.Property;
 
-import static think.rpgitems.utils.PowerUtils.checkCooldown;
+import static think.rpgitems.power.Utils.checkCooldown;
 
 /**
  * Power fireball.

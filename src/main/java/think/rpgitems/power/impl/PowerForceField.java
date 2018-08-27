@@ -21,7 +21,7 @@ import think.rpgitems.power.Property;
 import java.util.HashSet;
 import java.util.Set;
 
-import static think.rpgitems.utils.PowerUtils.checkCooldown;
+import static think.rpgitems.power.Utils.checkCooldown;
 
 /**
  * Power forcefield.

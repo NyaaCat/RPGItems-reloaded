@@ -17,7 +17,7 @@ import java.util.UUID;
 import java.util.concurrent.ThreadLocalRandom;
 import java.util.concurrent.TimeUnit;
 
-import static think.rpgitems.utils.PowerUtils.checkCooldown;
+import static think.rpgitems.power.Utils.checkCooldown;
 
 /**
  * Power projectile.

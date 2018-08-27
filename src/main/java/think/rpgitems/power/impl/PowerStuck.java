@@ -38,7 +38,7 @@ import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeUnit;
 import java.util.function.Consumer;
 
-import static think.rpgitems.utils.PowerUtils.*;
+import static think.rpgitems.power.Utils.*;
 
 /**
  * Power Stuck.

@@ -6,7 +6,7 @@ import org.bukkit.inventory.ItemStack;
 import think.rpgitems.I18n;
 import think.rpgitems.power.*;
 
-import static think.rpgitems.utils.PowerUtils.checkCooldown;
+import static think.rpgitems.power.Utils.checkCooldown;
 
 /**
  * Power particletick.

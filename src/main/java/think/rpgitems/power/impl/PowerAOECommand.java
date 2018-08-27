@@ -10,7 +10,7 @@ import think.rpgitems.power.*;
 
 import java.util.List;
 
-import static think.rpgitems.utils.PowerUtils.*;
+import static think.rpgitems.power.Utils.*;
 
 /**
  * Power aoecommand.

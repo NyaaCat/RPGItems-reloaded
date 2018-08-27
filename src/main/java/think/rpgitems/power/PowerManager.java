@@ -160,6 +160,7 @@ public class PowerManager {
     private static void setPowerPropertyInternal(CommandSender sender, Power power, Field field, String value) {
         try {
             Deserializer st = field.getAnnotation(Deserializer.class);
+            field.setAccessible(true);
             Class<? extends Power> cls = power.getClass();
             if (st != null) {
                 try {
@@ -257,7 +258,7 @@ public class PowerManager {
                 }
             }
         } catch (IllegalAccessException e) {
-            throw new Handler.CommandException("internal.error.command_exception");
+            throw new Handler.CommandException("internal.error.command_exception", e);
         }
     }
 

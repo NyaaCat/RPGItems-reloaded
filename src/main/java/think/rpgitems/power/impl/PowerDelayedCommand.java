@@ -11,7 +11,7 @@ import think.rpgitems.power.PowerResult;
 import think.rpgitems.power.Property;
 import think.rpgitems.power.TriggerType;
 
-import static think.rpgitems.utils.PowerUtils.checkCooldownByString;
+import static think.rpgitems.power.Utils.checkCooldownByString;
 
 /**
  * Power delayedcommand.

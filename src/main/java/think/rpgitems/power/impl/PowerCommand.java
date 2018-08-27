@@ -29,8 +29,8 @@ import think.rpgitems.power.*;
 
 import java.util.Collections;
 
-import static think.rpgitems.utils.PowerUtils.AttachPermission;
-import static think.rpgitems.utils.PowerUtils.checkCooldownByString;
+import static think.rpgitems.power.Utils.AttachPermission;
+import static think.rpgitems.power.Utils.checkCooldownByString;
 
 /**
  * Power command.

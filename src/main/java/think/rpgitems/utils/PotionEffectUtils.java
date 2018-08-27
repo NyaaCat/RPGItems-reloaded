@@ -16,4 +16,3 @@ public class PotionEffectUtils implements Setter, Getter {
         return ((PotionEffectType) object).getName();
     }
 }
-

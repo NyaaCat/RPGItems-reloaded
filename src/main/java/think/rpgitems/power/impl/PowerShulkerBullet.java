@@ -16,7 +16,7 @@ import think.rpgitems.power.Property;
 import java.util.List;
 
 import static think.rpgitems.power.PowerResult.ok;
-import static think.rpgitems.utils.PowerUtils.*;
+import static think.rpgitems.power.Utils.*;
 
 /**
  * Power shulker bullet.

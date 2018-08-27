@@ -36,8 +36,8 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Random;
 
-import static think.rpgitems.utils.PowerUtils.checkCooldown;
-import static think.rpgitems.utils.PowerUtils.getNearbyEntities;
+import static think.rpgitems.power.Utils.checkCooldown;
+import static think.rpgitems.power.Utils.getNearbyEntities;
 
 /**
  * Power ice.

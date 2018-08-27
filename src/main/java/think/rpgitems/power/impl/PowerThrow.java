@@ -18,7 +18,7 @@ import java.lang.reflect.Method;
 import java.util.Collections;
 import java.util.UUID;
 
-import static think.rpgitems.utils.PowerUtils.checkCooldownByString;
+import static think.rpgitems.power.Utils.checkCooldownByString;
 
 /**
  * Power throw.

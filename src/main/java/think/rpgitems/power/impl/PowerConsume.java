@@ -29,7 +29,7 @@ import think.rpgitems.power.*;
 
 import java.util.Collections;
 
-import static think.rpgitems.utils.PowerUtils.checkCooldown;
+import static think.rpgitems.power.Utils.checkCooldown;
 
 /**
  * Power consume.

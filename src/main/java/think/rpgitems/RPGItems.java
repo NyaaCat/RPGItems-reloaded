@@ -42,8 +42,8 @@ public class RPGItems extends JavaPlugin {
     public void onLoad() {
         plugin = this;
         PowerManager.registerPowers(RPGItems.plugin, BasePower.class.getPackage().getName());
-        PowerManager.addDescriptionResolver(RPGItems.plugin, (power, property) ->{
-            if(property == null){
+        PowerManager.addDescriptionResolver(RPGItems.plugin, (power, property) -> {
+            if (property == null) {
                 @LangKey(skipCheck = true) String powerKey = "power.properties." + power.getKey() + ".main_description";
                 return I18n.format(powerKey);
             }
@@ -89,10 +89,11 @@ public class RPGItems extends JavaPlugin {
         commandHandler = new Handler(this, i18n);
         getCommand("rpgitem").setExecutor(commandHandler);
         getCommand("rpgitem").setTabCompleter(commandHandler);
-
-        getServer().getPluginManager().registerEvents(listener = new Events(), this);
-        ItemManager.load(this);
-        new PowerTicker().runTaskTimer(this, 0, 1);
+        Bukkit.getScheduler().runTask(plugin, () -> {
+            getServer().getPluginManager().registerEvents(listener = new Events(), this);
+            ItemManager.load(this);
+            new PowerTicker().runTaskTimer(this, 0, 1);
+        });
     }
 
     @Override

@@ -26,7 +26,7 @@ import think.rpgitems.I18n;
 import think.rpgitems.power.*;
 import think.rpgitems.utils.PotionEffectUtils;
 
-import static think.rpgitems.utils.PowerUtils.checkCooldown;
+import static think.rpgitems.power.Utils.checkCooldown;
 
 /**
  * Power potionself.

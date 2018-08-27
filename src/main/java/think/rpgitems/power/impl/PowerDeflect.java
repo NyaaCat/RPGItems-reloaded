@@ -33,10 +33,9 @@ import think.rpgitems.RPGItems;
 import think.rpgitems.power.*;
 
 import java.util.HashSet;
-import java.util.Set;
 import java.util.concurrent.ThreadLocalRandom;
 
-import static think.rpgitems.utils.PowerUtils.*;
+import static think.rpgitems.power.Utils.*;
 
 /**
  * Power deflect.

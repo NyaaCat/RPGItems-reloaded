@@ -17,7 +17,7 @@ import think.rpgitems.power.Property;
 
 import java.util.List;
 
-import static think.rpgitems.utils.PowerUtils.*;
+import static think.rpgitems.power.Utils.*;
 
 @PowerMeta(immutableTrigger = true)
 public class PowerMount extends BasePower implements PowerRightClick {

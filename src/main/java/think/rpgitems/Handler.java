@@ -846,7 +846,7 @@ public class Handler extends RPGCommandReceiver {
                                                  .stream()
                                                  .filter(entry -> entry.getKey().order() <= r.order())
                                                  .map(Map.Entry::getValue)
-                                                 .collect(Collectors.toSet())).orElse(Collections.emptySet());
+                                                 .collect(Collectors.toSet())).orElse(new HashSet<>());
 
         for (Field field : argMap.values()) {
             String name = field.getName();
