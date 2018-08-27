@@ -79,6 +79,7 @@ jar {
 task apiJar(type: Jar) {
     includeEmptyDirs = false
     from sourceSets.main.output.classesDirs
+    include('**/think/rpgitems/Events.class')
     include('**/think/rpgitems/api/')
     include('**/think/rpgitems/item/')
     include('**/think/rpgitems/power/')
