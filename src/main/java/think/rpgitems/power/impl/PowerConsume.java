@@ -34,7 +34,7 @@ import static think.rpgitems.utils.PowerUtils.checkCooldown;
 /**
  * Power consume.
  * <p>
- * The consume power will remove one item on {@link #isRight click}.
+ * The consume power will remove one item on click.
  * With {@link #cooldown cooldown} time (ticks).
  * </p>
  */

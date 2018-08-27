@@ -16,7 +16,7 @@ jobs:
       after_success:
       - if [ "$TRAVIS_PULL_REQUEST" != "false" ]; then exit 0; fi
       - if [ "$TRAVIS_BRANCH" != "$MC_VERSION" ]; then exit 0; fi
-      - 'cp build/libs/RPGitems-reloaded.jar ./rpgitem-reloaded-$VERSION_STRING.jar'
+      - 'cp build/libs/RPGitems-reloaded-release.jar ./rpgitem-reloaded-$VERSION_STRING.jar'
       - |
         if [ $PUBLISH_MAVEN ]; then
           ./gradlew publish

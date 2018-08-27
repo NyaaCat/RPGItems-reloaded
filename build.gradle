@@ -58,10 +58,11 @@ compileJava {
 publishing {
     publications {
         mavenJava(MavenPublication) {
+            from components.java
+            artifacts = [apiJar,javadocJar,sourcesJar]
             groupId "cat.nyaa"
             artifactId "rpgitems"
             version "$majorVersion.$minorVersion-SNAPSHOT"
-            from components.java
         }
     }
     repositories {
@@ -69,6 +70,29 @@ publishing {
             url "$buildDir/repo"
         }
     }
+}
+
+jar {
+    classifier = 'release'
+}
+
+task apiJar(type: Jar) {
+    includeEmptyDirs = false
+    from sourceSets.main.output.classesDirs
+    include('**/think/rpgitems/api/')
+    include('**/think/rpgitems/item/')
+    include('**/think/rpgitems/power/')
+    exclude('**/think/rpgitems/power/impl/')
+}
+
+task sourcesJar(type: Jar) {
+    classifier = 'sources'
+    from sourceSets.main.java.srcDirs
+}
+
+task javadocJar(type: Jar, dependsOn: javadoc) {
+    classifier = 'javadoc'
+    from javadoc.destinationDir
 }
 
 javadoc {
