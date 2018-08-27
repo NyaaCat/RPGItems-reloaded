@@ -121,7 +121,7 @@ public class PowerManager {
         }
     }
 
-    public static void setPowerProperty(CommandSender sender, Power power, String field, String value) throws Handler.CommandException, IllegalAccessException {
+    public static void setPowerProperty(CommandSender sender, Power power, String field, String value) throws IllegalAccessException {
         Field f;
         Class<? extends Power> cls = power.getClass();
         try {
@@ -133,7 +133,7 @@ public class PowerManager {
     }
 
     @SuppressWarnings("unchecked")
-    public static void setPowerProperty(CommandSender sender, Power power, Field field, String value) throws Handler.CommandException, IllegalAccessException {
+    public static void setPowerProperty(CommandSender sender, Power power, Field field, String value) throws IllegalAccessException {
         Class<? extends Power> cls = power.getClass();
         BooleanChoice bc = field.getAnnotation(BooleanChoice.class);
         if (bc != null) {
@@ -157,7 +157,7 @@ public class PowerManager {
     }
 
     @SuppressWarnings("unchecked")
-    private static void setPowerPropertyInternal(CommandSender sender, Power power, Field field, String value) throws Handler.CommandException {
+    private static void setPowerPropertyInternal(CommandSender sender, Power power, Field field, String value) {
         try {
             Deserializer st = field.getAnnotation(Deserializer.class);
             Class<? extends Power> cls = power.getClass();
