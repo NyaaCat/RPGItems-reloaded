@@ -104,12 +104,12 @@ public class PowerDeflect extends BasePower implements PowerHitTaken, PowerRight
         boolean passive = section.getBoolean("passive", false);
         boolean initiative = section.getBoolean("initiative", true);
         boolean isRight = section.getBoolean("isRight", true);
-        Set<TriggerType> triggerTypes = new HashSet<>();
+        triggers = new HashSet<>();
         if(passive){
-            triggerTypes.add(TriggerType.HIT_TAKEN);
+            triggers.add(TriggerType.HIT_TAKEN);
         }
         if(initiative){
-            triggerTypes.add(isRight ? TriggerType.RIGHT_CLICK : TriggerType.LEFT_CLICK);
+            triggers.add(isRight ? TriggerType.RIGHT_CLICK : TriggerType.LEFT_CLICK);
         }
         super.init(section);
     }
