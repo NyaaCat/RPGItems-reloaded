@@ -31,14 +31,21 @@ import java.util.Collections;
  */
 @PowerMeta(defaultTrigger = TriggerType.RIGHT_CLICK)
 public class PowerRepair extends BasePower implements PowerRightClick, PowerLeftClick {
-    @Property(order = 2)
+
+    @Property(order = 2, required = true)
     public int durability = 20;
+
     @Property(order = 0)
     public String display = "";
+
     @Property(order = 4)
     public boolean isSneak;
+
     @Property(order = 1)
     public ItemStack material;
+
+    @Property
+    public boolean abortOnSuccess = false;
 
     @Override
     public void init(ConfigurationSection section) {
@@ -78,7 +85,7 @@ public class PowerRepair extends BasePower implements PowerRightClick, PowerLeft
         if (getItem().getMaxDurability() != -1 && max - this.durability >= itemDurability) {
             if (removeItem(player.getInventory(), material)) {
                 getItem().setDurability(stack, itemDurability + this.durability);
-                return PowerResult.ok();
+                return abortOnSuccess ? PowerResult.abort() : PowerResult.ok();
             } else {
                 BaseComponent msg = new TextComponent(I18n.format("message.error.need_material", material.getType().name()));
                 HoverEvent hover = new HoverEvent(HoverEvent.Action.SHOW_ITEM, new BaseComponent[]{new TextComponent(ItemStackUtils.itemToJson(material))});
