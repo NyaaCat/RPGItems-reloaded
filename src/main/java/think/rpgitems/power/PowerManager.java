@@ -25,6 +25,8 @@ import com.google.common.collect.HashBiMap;
 import org.bukkit.Bukkit;
 import org.bukkit.NamespacedKey;
 import org.bukkit.plugin.Plugin;
+import org.librazy.nclangchecker.LangKey;
+import think.rpgitems.I18n;
 import think.rpgitems.RPGItems;
 import think.rpgitems.commands.PowerProperty;
 import think.rpgitems.commands.Property;
@@ -33,6 +35,7 @@ import java.lang.reflect.Field;
 import java.lang.reflect.Modifier;
 import java.util.*;
 import java.util.concurrent.ExecutionException;
+import java.util.function.BiFunction;
 import java.util.logging.Level;
 import java.util.stream.Stream;
 
@@ -43,7 +46,7 @@ import java.util.stream.Stream;
 public class PowerManager {
     public static final Map<Class<? extends Power>, SortedMap<PowerProperty, Field>> propertyOrders = new HashMap<>();
 
-    public static final LoadingCache<String, Plugin> keyCache =
+    public static final LoadingCache<String, Plugin> nameSpaceCache =
             CacheBuilder.newBuilder().concurrencyLevel(2).build(
                     CacheLoader.from(
                             k -> Arrays.stream(Bukkit.getServer().getPluginManager().getPlugins()).filter(p -> p.getName().toLowerCase(Locale.ROOT).equals(k)).reduce((a, b) -> {
@@ -51,6 +54,8 @@ public class PowerManager {
                             }).orElse(null)
                     )
             );
+
+    public static final HashMap<Plugin, BiFunction<NamespacedKey, String, String>> descriptionResolver = new HashMap<>();
     /**
      * Power by name, and name by power
      */
@@ -82,9 +87,24 @@ public class PowerManager {
     }
 
     public static void load(Plugin plugin, String basePackage) {
-        keyCache.put(plugin.getName(), plugin);
+        nameSpaceCache.put(plugin.getName(), plugin);
         Class<? extends Power>[] classes = ClassPathUtils.scanSubclasses(plugin, basePackage, Power.class);
         Stream.of(classes).filter(c -> !Modifier.isAbstract(c.getModifiers()) && !c.isInterface()).sorted(Comparator.comparing(Class::getCanonicalName)).forEach(PowerManager::registerPower);
+        descriptionResolver.put(RPGItems.plugin, (power, property) ->{
+            if(property == null){
+                @LangKey(skipCheck = true) String powerKey = "power.properties." + power.getKey() + ".main_description";
+                return I18n.format(powerKey);
+            }
+            @LangKey(skipCheck = true) String key = "power.properties." + power.getKey() + "." + property;
+            if (I18n.getInstance().hasKey(key)) {
+                return I18n.format(key);
+            }
+            @LangKey(skipCheck = true) String baseKey = "power.properties.base." + property;
+            if (I18n.getInstance().hasKey(baseKey)) {
+                return I18n.format(baseKey);
+            }
+            return null;
+        });
     }
 
     public static NamespacedKey parseKey(String powerStr) {
@@ -94,8 +114,8 @@ public class PowerManager {
             throw new IllegalArgumentException();
         }
         try {
-            Plugin key = keyCache.get(split[0]);
-            return new NamespacedKey(key, split[1]);
+            Plugin namespace = nameSpaceCache.get(split[0]);
+            return new NamespacedKey(namespace, split[1]);
         } catch (ExecutionException e) {
             throw new RuntimeException(e);
         }

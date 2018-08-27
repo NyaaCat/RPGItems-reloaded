@@ -8,8 +8,8 @@ import org.bukkit.NamespacedKey;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
+import org.bukkit.plugin.Plugin;
 import org.librazy.nclangchecker.LangKey;
-import think.rpgitems.I18n;
 import think.rpgitems.RPGItems;
 import think.rpgitems.item.ItemManager;
 import think.rpgitems.item.RPGItem;
@@ -24,6 +24,7 @@ import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 import java.util.stream.Stream;
 
+import static think.rpgitems.power.PowerManager.nameSpaceCache;
 import static think.rpgitems.power.PowerManager.powers;
 
 public abstract class RPGCommandReceiver extends CommandReceiver {
@@ -126,7 +127,8 @@ public abstract class RPGCommandReceiver extends CommandReceiver {
 
     private List<String> resolvePowerProperties(CommandSender sender, String last, Arguments cmd) {
         @LangKey(skipCheck = true) String powName = cmd.next();
-        Class<? extends Power> power = powers.get(PowerManager.parseKey(powName));
+        NamespacedKey powerKey = PowerManager.parseKey(powName);
+        Class<? extends Power> power = powers.get(powerKey);
         if (power == null) return Collections.emptyList();
         SortedMap<PowerProperty, Field> argMap = PowerManager.propertyOrders.get(power);
         Set<Field> settled = new HashSet<>();
@@ -152,7 +154,7 @@ public abstract class RPGCommandReceiver extends CommandReceiver {
             }
         }
         if (settled.isEmpty()) {
-            actionBarTip(sender, powName);
+            actionBarTip(sender, powerKey, null);
         }
         return resolvePropertiesSuggestions(sender, last, power, argMap, settled, required);
     }
@@ -160,7 +162,7 @@ public abstract class RPGCommandReceiver extends CommandReceiver {
     private List<String> resolvePropertiesSuggestions(CommandSender sender, String last, Class<? extends Power> power, SortedMap<PowerProperty, Field> argMap, Set<Field> settled, List<Field> required) {
         if (argMap.values().stream().anyMatch(f -> last.startsWith(f.getName() + ":"))) {//we are suggesting a value as we have the complete property name
             String currentPropertyName = last.split(":")[0];
-            actionBarTip(sender, power, currentPropertyName);
+            actionBarTip(sender, powers.inverse().get(power), currentPropertyName);
             return resolvePropertyValueSuggestion(power, currentPropertyName, last, true);
         }
         List<String> suggestions;
@@ -170,27 +172,16 @@ public abstract class RPGCommandReceiver extends CommandReceiver {
         return suggestions; //unsettled property
     }
 
-    private void actionBarTip(CommandSender sender, @LangKey(skipCheck = true) String powName) {
-        if (sender instanceof Player) {
-            Bukkit.getScheduler().runTask(RPGItems.plugin, () -> new Message(I18n.format("power.properties." + powName + ".main_description")).send((Player) sender, Message.MessageType.ACTION_BAR));
-        }
-    }
-
-    private void actionBarTip(CommandSender sender, Class<? extends Power> power, String currentPropertyName) {
-        // TODO: config: enable/disable, rate limit, dup
+    private void actionBarTip(CommandSender sender, NamespacedKey power, String property) {
         if (sender instanceof Player) {
             Bukkit.getScheduler().runTask(RPGItems.plugin, () -> {
-                        @LangKey(skipCheck = true) String key = "power.properties." + powers.inverse().get(power) + "." + currentPropertyName;
-                        if (I18n.getInstance().hasKey(key)) {
-                            new Message(I18n.format(key)).send((Player) sender, Message.MessageType.ACTION_BAR);
-                            return;
-                        }
-                        @LangKey(skipCheck = true) String baseKey = "power.properties.base." + currentPropertyName;
-                        if (I18n.getInstance().hasKey(baseKey)) {
-                            new Message(I18n.format(baseKey)).send((Player) sender, Message.MessageType.ACTION_BAR);
-                        }
-                    }
-            );
+                Plugin plugin = nameSpaceCache.getUnchecked(power.getNamespace());
+                String description = PowerManager.descriptionResolver.get(plugin).apply(power, property);
+                if (description == null) {
+                    return;
+                }
+                new Message(description).send((Player) sender, Message.MessageType.ACTION_BAR);
+            });
         }
     }
 
@@ -361,11 +352,11 @@ public abstract class RPGCommandReceiver extends CommandReceiver {
                         case "power":
                             switch (itemCommand.getValue()) {
                                 case "power":
-                                    return powers.keySet().stream().map(NamespacedKey::toString).filter(s -> s.startsWith(third)).collect(Collectors.toList()); // only case is `/rpgitem power item somepow`
+                                    return powers.keySet().stream().filter(s -> s.getKey().startsWith(third) || s.toString().startsWith(third)).map(NamespacedKey::toString).collect(Collectors.toList()); // only case is `/rpgitem power item somepow`
                                 case "set":
                                 case "get":
                                 case "removepower":
-                                    return itemCommand.getKey().powers.stream().map(Power::getNamespacedKey).map(NamespacedKey::toString).filter(s -> s.startsWith(third)).collect(Collectors.toList()); // complete current powers
+                                    return itemCommand.getKey().powers.stream().map(Power::getNamespacedKey).filter(s -> s.getKey().startsWith(third) || s.toString().startsWith(third)).map(NamespacedKey::toString).collect(Collectors.toList()); // complete current powers
                                 default:
                                     return Collections.emptyList();
                             }
