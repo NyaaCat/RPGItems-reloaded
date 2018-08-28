@@ -17,6 +17,7 @@
 package think.rpgitems;
 
 import cat.nyaa.nyaacore.utils.ReflectionUtils;
+import cat.nyaa.nyaacore.utils.TridentUtils;
 import com.google.common.collect.MultimapBuilder;
 import com.google.common.collect.SetMultimap;
 import org.bukkit.Bukkit;
@@ -200,7 +201,7 @@ public class Events implements Listener {
                 if (player.isOnline() && !player.isDead()) {
                     ItemStack item = player.getInventory().getItemInMainHand();
                     RPGItem hItem = ItemManager.toRPGItem(item);
-                    if (rItem.getItem() != Material.TRIDENT) {
+                    if (entity.getType() != EntityType.TRIDENT) {
                         if (rItem != hItem) {
                             item = player.getInventory().getItemInOffHand();
                             hItem = ItemManager.toRPGItem(item);
@@ -243,7 +244,7 @@ public class Events implements Listener {
             ItemStack item = player.getInventory().getItemInMainHand();
             RPGItem rItem = ItemManager.toRPGItem(item);
             if (entity instanceof Trident) {
-                item = getTridentItemStackFromEntity((Trident) entity);
+                item = TridentUtils.getTridentItemStack((Trident) entity);
                 rItem = ItemManager.toRPGItem(item);
                 if (rItem == null) return;
                 UUID uuid = entity.getUniqueId();
@@ -254,7 +255,7 @@ public class Events implements Listener {
                 ItemMeta fakeItemItemMeta = fakeItem.getItemMeta();
                 fakeItemItemMeta.setLore(fakeLore);
                 fakeItem.setItemMeta(fakeItemItemMeta);
-                setTridentItemStackToEntity((Trident) entity, fakeItem);
+                TridentUtils.setTridentItemStack((Trident) entity, fakeItem);
             } else {
                 if (rItem == null) {
                     item = player.getInventory().getItemInOffHand();
@@ -273,42 +274,6 @@ public class Events implements Listener {
                 e.setCancelled(true);
             }
             rpgProjectiles.put(entity.getEntityId(), rItem.getUID());
-        }
-    }
-
-    private ItemStack getTridentItemStackFromEntity(Trident entity) {
-        try {
-            Class<?> craftEntity = ReflectionUtils.getOBCClass("entity.CraftEntity");
-            Class<?> entityThrownTrident = ReflectionUtils.getNMSClass("EntityThrownTrident");
-            Field craftEntityFieldEntity = craftEntity.getDeclaredField("entity");
-            craftEntityFieldEntity.setAccessible(true);
-            Field entityThrownTridentFieldH = entityThrownTrident.getDeclaredField("aw");
-            entityThrownTridentFieldH.setAccessible(true);
-            Object thrownTrident = craftEntityFieldEntity.get(entity);
-            Object nmsItemStack = entityThrownTridentFieldH.get(thrownTrident);
-            Class<?> craftItemStack = ReflectionUtils.getOBCClass("inventory.CraftItemStack");
-            Method asBukkitCopy = craftItemStack.getMethod("asBukkitCopy", nmsItemStack.getClass());
-            return (ItemStack) asBukkitCopy.invoke(null, nmsItemStack);
-        } catch (IllegalAccessException | NoSuchFieldException | NoSuchMethodException | InvocationTargetException e) {
-            throw new RuntimeException(e);
-        }
-    }
-
-    private void setTridentItemStackToEntity(Trident entity, ItemStack itemStack) {
-        try {
-            Class<?> craftEntity = ReflectionUtils.getOBCClass("entity.CraftEntity");
-            Class<?> entityThrownTrident = ReflectionUtils.getNMSClass("EntityThrownTrident");
-            Field craftEntityFieldEntity = craftEntity.getDeclaredField("entity");
-            craftEntityFieldEntity.setAccessible(true);
-            Field entityThrownTridentFieldH = entityThrownTrident.getDeclaredField("aw");
-            entityThrownTridentFieldH.setAccessible(true);
-            Object thrownTrident = craftEntityFieldEntity.get(entity);
-            Class<?> craftItemStack = ReflectionUtils.getOBCClass("inventory.CraftItemStack");
-            Method asNMSCopy = craftItemStack.getMethod("asNMSCopy", ItemStack.class);
-            Object nmsFakeItem = asNMSCopy.invoke(null, itemStack);
-            entityThrownTridentFieldH.set(thrownTrident, nmsFakeItem);
-        } catch (IllegalAccessException | NoSuchFieldException | NoSuchMethodException | InvocationTargetException e) {
-            throw new RuntimeException(e);
         }
     }
 
