@@ -20,7 +20,7 @@ public abstract class BasePower implements Serializable, Power {
 
     @Property
     @AcceptedValue(preset = Preset.TRIGGERS)
-    public Set<TriggerType> triggers = Power.getTriggerTypes(this.getClass());
+    public Set<TriggerType> triggers = Power.getDefaultTriggerTypes(this.getClass());
 
     @Property
     public Set<String> selectors = new HashSet<>();
