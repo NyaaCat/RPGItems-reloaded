@@ -16,7 +16,6 @@
  */
 package think.rpgitems;
 
-import cat.nyaa.nyaacore.utils.ReflectionUtils;
 import cat.nyaa.nyaacore.utils.TridentUtils;
 import com.google.common.collect.MultimapBuilder;
 import com.google.common.collect.SetMultimap;
@@ -55,9 +54,6 @@ import think.rpgitems.power.impl.PowerTranslocator;
 import think.rpgitems.support.WGHandler;
 import think.rpgitems.support.WGSupport;
 
-import java.lang.reflect.Field;
-import java.lang.reflect.InvocationTargetException;
-import java.lang.reflect.Method;
 import java.util.*;
 import java.util.function.Consumer;
 import java.util.stream.Collectors;
@@ -201,7 +197,12 @@ public class Events implements Listener {
                 if (player.isOnline() && !player.isDead()) {
                     ItemStack item = player.getInventory().getItemInMainHand();
                     RPGItem hItem = ItemManager.toRPGItem(item);
-                    if (entity.getType() != EntityType.TRIDENT) {
+
+                    if (tridentCache.containsKey(entity.getUniqueId())) {
+                        item = tridentCache.get(entity.getUniqueId());
+                        rItem = ItemManager.toRPGItem(item);
+                        if (rItem == null) throw new IllegalStateException();
+                    } else {
                         if (rItem != hItem) {
                             item = player.getInventory().getItemInOffHand();
                             hItem = ItemManager.toRPGItem(item);
@@ -209,12 +210,8 @@ public class Events implements Listener {
                                 return;
                             }
                         }
-                    } else {
-                        item = tridentCache.get(entity.getUniqueId());
-                        if (item == null) return;
-                        rItem = ItemManager.toRPGItem(item);
-                        if (rItem == null) throw new IllegalStateException();
                     }
+
                     List<PowerRanged> ranged = rItem.getPower(PowerRanged.class, true);
                     if (!ranged.isEmpty()) {
                         double distance = player.getLocation().distance(e.getEntity().getLocation());
