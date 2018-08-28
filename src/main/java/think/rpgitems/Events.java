@@ -67,13 +67,14 @@ public class Events implements Listener {
 
     public static HashSet<Integer> removeArrows = new HashSet<>();
     public static HashMap<Integer, Integer> rpgProjectiles = new HashMap<>();
+    public static Map<UUID, ItemStack> tridentCache = new HashMap<>();
+
     static HashMap<String, Integer> recipeWindows = new HashMap<>();
     public static HashMap<String, Set<Integer>> drops = new HashMap<>();
     static boolean useLocaleInv = false;
     private HashSet<LocaleInventory> localeInventories = new HashSet<>();
     private Random random = new Random();
     private SetMultimap<Class<? extends Event>, Consumer<? extends Event>> eventMap = MultimapBuilder.SortedSetMultimapBuilder.hashKeys().hashSetValues().build();
-    private Map<UUID, ItemStack> tridentCache = new HashMap<>();
 
     @SuppressWarnings("unchecked")
     public <T extends Event> Events addEventListener(Class<T> clz, Consumer<T> listener) {

@@ -420,6 +420,7 @@ public class Handler extends RPGCommandReceiver {
         String power = args.nextString();
         if (item.removePower(power)) {
             msg(sender, "message.power.removed", power);
+            ItemManager.refreshItem();
             ItemManager.save();
         } else {
             msg(sender, "message.power.unknown", power);
@@ -436,6 +437,7 @@ public class Handler extends RPGCommandReceiver {
                 String line = args.nextString();
                 item.addDescription(ChatColor.WHITE + line);
                 msg(sender, "message.description.ok");
+                ItemManager.refreshItem();
                 ItemManager.save();
             }
             break;
