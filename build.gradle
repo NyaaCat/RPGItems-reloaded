@@ -10,6 +10,10 @@ ext.minecraftVersion = "1.13.1"
 sourceCompatibility = 1.8
 targetCompatibility = 1.8
 
+configurations.all {
+    resolutionStrategy.cacheChangingModulesFor 0, 'seconds'
+}
+
 repositories {
     mavenLocal()
     jcenter()
