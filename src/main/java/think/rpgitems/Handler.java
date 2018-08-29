@@ -31,6 +31,8 @@ import think.rpgitems.utils.NetworkUtils;
 import java.lang.reflect.Field;
 import java.lang.reflect.InvocationTargetException;
 import java.util.*;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.TimeoutException;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -914,16 +916,38 @@ public class Handler extends RPGCommandReceiver {
     public void gist(CommandSender sender, Arguments args) {
         NetworkUtils.Location location = args.nextEnum(NetworkUtils.Location.class);
         String id = args.nextString();
-        String confirm = args.next();
+        boolean confirm = "confirm".equalsIgnoreCase(args.next());
+
         switch (location) {
             case GIST:
-                Map<String, String> gist = NetworkUtils.downloadGist(id, null);
-                loadGist(sender, id, gist, "confirm".equalsIgnoreCase(confirm), args);
+                downloadGist(sender, args, id, confirm);
                 break;
         }
     }
 
-    private void loadGist(CommandSender sender, String id, Map<String, String> gist, boolean force, Arguments args) {
+    public void downloadGist(CommandSender sender, Arguments args, String id, boolean confirm) {
+        new Message(I18n.format("message.download.ing")).send(sender);
+        Bukkit.getScheduler().runTaskAsynchronously(plugin, () -> {
+            Map<String, String> gist;
+            try {
+                gist = NetworkUtils.downloadGist(id, null);
+            } catch (InterruptedException|ExecutionException e) {
+                e.printStackTrace();
+                Bukkit.getScheduler().runTask(plugin, () -> new Message(I18n.format("message.download.failed")).send(sender));
+                return;
+            } catch (TimeoutException e) {
+                e.printStackTrace();
+                Bukkit.getScheduler().runTask(plugin, () -> new Message(I18n.format("message.download.timeout")).send(sender));
+                return;
+            }
+            Bukkit.getScheduler().runTask(plugin, () -> {
+                new Message(I18n.format("message.download.ed")).send(sender);
+                loadItems(sender, id, gist, confirm, args);
+            });
+        });
+    }
+
+    private void loadItems(CommandSender sender, String id, Map<String, String> gist, boolean force, Arguments args) {
         List<RPGItem> items = new ArrayList<>(gist.size());
         for (Map.Entry<String, String> entry : gist.entrySet()) {
             String k = entry.getKey();

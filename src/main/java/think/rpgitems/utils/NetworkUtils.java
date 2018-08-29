@@ -1,18 +1,19 @@
 package think.rpgitems.utils;
 
 
-import com.google.common.base.Strings;
+import cat.nyaa.nyaacore.http.client.HttpClient;
 import com.google.gson.Gson;
 import com.google.gson.internal.LinkedTreeMap;
+import io.netty.handler.codec.http.FullHttpResponse;
 
-import java.io.BufferedInputStream;
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.InputStreamReader;
-import java.net.HttpURLConnection;
-import java.net.URL;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.TimeoutException;
+
+import static java.nio.charset.StandardCharsets.UTF_8;
 
 public class NetworkUtils {
 
@@ -21,25 +22,22 @@ public class NetworkUtils {
     }
 
     @SuppressWarnings("unchecked")
-    public static Map<String, String> downloadGist(String id, String token) {
-        try {
-            Map<String, String> results = new HashMap<>();
-            HttpURLConnection urlConnection = (HttpURLConnection) new URL("https://api.github.com/gists/" + id).openConnection();
-            if (!Strings.isNullOrEmpty(token)) {
-                urlConnection.setRequestProperty("Authorization:", "token " + token);
+    public static Map<String, String> downloadGist(String id, String token) throws InterruptedException, ExecutionException, TimeoutException {
+        Map<String, String> headers = new HashMap<>();
+        headers.put("Authorization:", "token " + token);
+        CompletableFuture<FullHttpResponse> response = HttpClient.get("https://api.github.com/gists/" + id, headers);
+        FullHttpResponse httpResponse = response.get(10, TimeUnit.SECONDS);
+        String json = httpResponse.content().toString(UTF_8);
+
+        Map result = new Gson().fromJson(json, LinkedTreeMap.class);
+        Map files = (Map) result.get("files");
+        Map<String, String> results = new HashMap<>();
+        files.forEach((k, v) -> {
+            Map<String, String> map = (Map<String, String>) v;
+            if (map.get("filename").endsWith(".yml")) {
+                results.put(map.get("filename"), map.get("content"));
             }
-            InputStream in = new BufferedInputStream(urlConnection.getInputStream());
-            Map result = new Gson().fromJson(new InputStreamReader(in), LinkedTreeMap.class);
-            Map files = (Map) result.get("files");
-            files.forEach((k, v) -> {
-                Map<String, String> map = (Map<String, String>) v;
-                if (map.get("filename").endsWith(".yml")) {
-                    results.put(map.get("filename"), map.get("content"));
-                }
-            });
-            return results;
-        } catch (IOException e) {
-            throw new RuntimeException(e);
-        }
+        });
+        return results;
     }
 }

@@ -58,6 +58,10 @@ public class PowerResult<T> {
         return of(TriggerResult.ABORT, null);
     }
 
+    public static <T> PowerResult<T> condition() {
+        return of(TriggerResult.CONDITION, null);
+    }
+
     public boolean isOK(){
         return result == TriggerResult.OK;
     }

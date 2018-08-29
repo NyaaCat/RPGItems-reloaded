@@ -165,7 +165,7 @@ public class RPGItem {
         id = s.getInt("id");
         uid = s.getInt("uid");
 
-        if (uid == 0){
+        if (uid == 0) {
             uid = ItemManager.nextUid();
         }
         restore(s);
@@ -235,7 +235,7 @@ public class RPGItem {
             for (PowerSelector selector : selectors) {
                 ConfigurationSection section = conf.get(selector);
                 String applyTo = section.getString("applyTo");
-                if(Strings.isNullOrEmpty(applyTo)) {
+                if (Strings.isNullOrEmpty(applyTo)) {
                     return;
                 }
                 selector.id = UUID.randomUUID().toString();
@@ -243,7 +243,7 @@ public class RPGItem {
                 for (Class<? extends Power> pow : applicable) {
                     List<? extends Power> app = getPower(pow);
                     for (Power power : app) {
-                        if(power instanceof BasePower){
+                        if (power instanceof BasePower) {
                             ((BasePower) power).selectors.add(selector.id);
                         }
                     }
@@ -345,7 +345,7 @@ public class RPGItem {
         if (s instanceof YamlConfiguration) {
             YamlConfiguration configuration = (YamlConfiguration) s;
             hashcode = Math.abs(configuration.saveToString().hashCode());
-        } else  {
+        } else {
             updateHashCode();
         }
     }
@@ -408,15 +408,15 @@ public class RPGItem {
         if (rItem.maxDurability > 0) {
             int durability = ((Number) rpgMeta.get(RPGMetadata.DURABILITY)).intValue();
             if (rItem.customItemModel) {
-                meta.setDamage(((Damageable)rItem.localeMeta).getDamage());
+                meta.setDamage(((Damageable) rItem.localeMeta).getDamage());
             } else {
                 meta.setDamage((short) (rItem.item.getType().getMaxDurability() - ((short) ((double) rItem.item.getType().getMaxDurability() * ((double) durability / (double) rItem.maxDurability)))));
             }
         } else {
             if (rItem.customItemModel) {
-                meta.setDamage(((Damageable)rItem.localeMeta).getDamage());
+                meta.setDamage(((Damageable) rItem.localeMeta).getDamage());
             } else {
-                meta.setDamage(rItem.hasBar ? (short) 0 : ((Damageable)rItem.localeMeta).getDamage());
+                meta.setDamage(rItem.hasBar ? (short) 0 : ((Damageable) rItem.localeMeta).getDamage());
             }
         }
         item.setItemMeta((ItemMeta) meta);
@@ -515,8 +515,8 @@ public class RPGItem {
         ItemMeta meta = localeMeta;
         if (meta instanceof LeatherArmorMeta) {
             s.set("item_colour", ((LeatherArmorMeta) meta).getColor().asRGB());
-        } else if(meta instanceof Damageable){
-            s.set("item_data", ((Damageable)localeMeta).getDamage());
+        } else if (meta instanceof Damageable) {
+            s.set("item_data", ((Damageable) localeMeta).getDamage());
         }
         ConfigurationSection powerConfigs = s.createSection("powers");
         int i = 0;
@@ -623,9 +623,21 @@ public class RPGItem {
         if (!checkPermission(player, true)) return false;
         if (!WGSupport.check(player, this, powers)) return false;
 
+        Set<String> ids = powers.stream().flatMap(p -> p.getConditions().stream()).collect(Collectors.toSet());
+        List<PowerCondition> conds = getPower(PowerCondition.class);
+        List<PowerCondition> statics = conds.stream().filter(p -> p.isStatic).filter(p -> ids.contains(p.id)).collect(Collectors.toList());
+        if (statics.stream().anyMatch(p -> !p.check(player, i))) return false;
+
         RgiPowersPreFireEvent preFire = new RgiPowersPreFireEvent(i, this, player, triggerType, powers);
         Bukkit.getServer().getPluginManager().callEvent(preFire);
         return !preFire.isCancelled();
+    }
+
+    private boolean checkConditions(Player player, ItemStack i, Power power){
+        Set<String> ids = power.getConditions();
+        List<PowerCondition> conds = getPower(PowerCondition.class);
+        List<PowerCondition> dyns = conds.stream().filter(p -> !p.isStatic).filter(p -> ids.contains(p.id)).collect(Collectors.toList());
+        return dyns.stream().allMatch(p -> p.check(player, i));
     }
 
     public void leftClick(Player player, ItemStack i, Block block, PlayerInteractEvent event) {
@@ -633,6 +645,10 @@ public class RPGItem {
 
         Map<Power, PowerResult> resultMap = new LinkedHashMap<>();
         for (PowerLeftClick power : powerLeftClick) {
+            if (!checkConditions(player, i, power)) {
+                resultMap.put(power, PowerResult.condition());
+                continue;
+            }
             PowerResult<Void> result = power.leftClick(player, i, block, event);
             resultMap.put(power, result);
             if (result.isAbort()) break;
@@ -651,6 +667,10 @@ public class RPGItem {
 
         Map<Power, PowerResult> resultMap = new LinkedHashMap<>();
         for (PowerRightClick power : this.powerRightClick) {
+            if (!checkConditions(player, i, power)) {
+                resultMap.put(power, PowerResult.condition());
+                continue;
+            }
             PowerResult<Void> result = power.rightClick(player, i, block, event);
             resultMap.put(power, result);
             if (result.isAbort()) break;
@@ -669,6 +689,10 @@ public class RPGItem {
 
         Map<Power, PowerResult> resultMap = new LinkedHashMap<>();
         for (PowerOffhandClick power : powerOffhandClick) {
+            if (!checkConditions(player, i, power)) {
+                resultMap.put(power, PowerResult.condition());
+                continue;
+            }
             PowerResult<Void> result = power.offhandClick(player, i, event);
             resultMap.put(power, result);
             if (result.isAbort()) break;
@@ -687,6 +711,10 @@ public class RPGItem {
 
         Map<Power, PowerResult> resultMap = new LinkedHashMap<>();
         for (PowerSneak power : powerSneak) {
+            if (!checkConditions(player, i, power)) {
+                resultMap.put(power, PowerResult.condition());
+                continue;
+            }
             PowerResult<Void> result = power.sneak(player, i, event);
             resultMap.put(power, result);
             if (result.isAbort()) break;
@@ -705,6 +733,10 @@ public class RPGItem {
 
         Map<Power, PowerResult> resultMap = new LinkedHashMap<>();
         for (PowerSprint power : powerSprint) {
+            if (!checkConditions(player, i, power)) {
+                resultMap.put(power, PowerResult.condition());
+                continue;
+            }
             PowerResult<Void> result = power.sprint(player, i, event);
             resultMap.put(power, result);
             if (result.isAbort()) break;
@@ -723,6 +755,10 @@ public class RPGItem {
 
         Map<Power, PowerResult> resultMap = new LinkedHashMap<>();
         for (PowerProjectileHit power : powerProjectileHit) {
+            if (!checkConditions(player, i, power)) {
+                resultMap.put(power, PowerResult.condition());
+                continue;
+            }
             PowerResult<Void> result = power.projectileHit(player, i, arrow, event);
             resultMap.put(power, result);
             if (result.isAbort()) break;
@@ -736,19 +772,23 @@ public class RPGItem {
         }
     }
 
-    public void hit(Player damager, ItemStack i, LivingEntity target, double damage, EntityDamageByEntityEvent event) {
-        if (!triggerPreCheck(damager, i, this.powerHit, TriggerType.HIT)) return;
+    public void hit(Player player, ItemStack i, LivingEntity target, double damage, EntityDamageByEntityEvent event) {
+        if (!triggerPreCheck(player, i, this.powerHit, TriggerType.HIT)) return;
 
         double ret = -Double.MAX_VALUE;
         Map<Power, PowerResult> resultMap = new LinkedHashMap<>();
         for (PowerHit power : powerHit) {
-            PowerResult<Double> result = power.hit(damager, i, target, damage, event);
+            if (!checkConditions(player, i, power)) {
+                resultMap.put(power, PowerResult.condition());
+                continue;
+            }
+            PowerResult<Double> result = power.hit(player, i, target, damage, event);
             resultMap.put(power, result);
             if (result.isAbort()) break;
             if (!result.isOK()) continue;
             ret = result.getData() > ret ? result.getData() : ret;
         }
-        RgiPowersPostFireEvent postFire = new RgiPowersPostFireEvent(i, this, damager, TriggerType.HIT, resultMap);
+        RgiPowersPostFireEvent postFire = new RgiPowersPostFireEvent(i, this, player, TriggerType.HIT, resultMap);
         Bukkit.getServer().getPluginManager().callEvent(postFire);
 
         if (getDurability(i) <= 0) {
@@ -758,19 +798,23 @@ public class RPGItem {
         event.setDamage(ret == -Double.MAX_VALUE ? damage : ret);
     }
 
-    public double takeHit(Player target, ItemStack i, EntityDamageEvent ev) {
+    public double takeHit(Player player, ItemStack i, EntityDamageEvent ev) {
         double ret = Double.MAX_VALUE;
-        if (!triggerPreCheck(target, i, this.powerHitTaken, TriggerType.HIT_TAKEN)) return ret;
+        if (!triggerPreCheck(player, i, this.powerHitTaken, TriggerType.HIT_TAKEN)) return ret;
 
         Map<Power, PowerResult> resultMap = new LinkedHashMap<>();
         for (PowerHitTaken power : powerHitTaken) {
-            PowerResult<Double> result = power.takeHit(target, i, ev.getDamage(), ev);
+            if (!checkConditions(player, i, power)) {
+                resultMap.put(power, PowerResult.condition());
+                continue;
+            }
+            PowerResult<Double> result = power.takeHit(player, i, ev.getDamage(), ev);
             resultMap.put(power, result);
             if (result.isAbort()) break;
             if (!result.isOK()) continue;
             ret = result.getData() < ret ? result.getData() : ret;
         }
-        RgiPowersPostFireEvent postFire = new RgiPowersPostFireEvent(i, this, target, TriggerType.HIT_TAKEN, resultMap);
+        RgiPowersPostFireEvent postFire = new RgiPowersPostFireEvent(i, this, player, TriggerType.HIT_TAKEN, resultMap);
         Bukkit.getServer().getPluginManager().callEvent(postFire);
 
         if (getDurability(i) <= 0) {
@@ -780,16 +824,20 @@ public class RPGItem {
         return ret;
     }
 
-    public void hurt(Player target, ItemStack i, EntityDamageEvent ev) {
-        if (!triggerPreCheck(target, i, this.powerHurt, TriggerType.HURT)) return;
+    public void hurt(Player player, ItemStack i, EntityDamageEvent ev) {
+        if (!triggerPreCheck(player, i, this.powerHurt, TriggerType.HURT)) return;
 
         Map<Power, PowerResult> resultMap = new LinkedHashMap<>();
         for (PowerHurt power : powerHurt) {
-            PowerResult<Void> result = power.hurt(target, i, ev);
+            if (!checkConditions(player, i, power)) {
+                resultMap.put(power, PowerResult.condition());
+                continue;
+            }
+            PowerResult<Void> result = power.hurt(player, i, ev);
             resultMap.put(power, result);
             if (result.isAbort()) break;
         }
-        RgiPowersPostFireEvent postFire = new RgiPowersPostFireEvent(i, this, target, TriggerType.HURT, resultMap);
+        RgiPowersPostFireEvent postFire = new RgiPowersPostFireEvent(i, this, player, TriggerType.HURT, resultMap);
         Bukkit.getServer().getPluginManager().callEvent(postFire);
 
         if (getDurability(i) <= 0) {
@@ -803,6 +851,10 @@ public class RPGItem {
 
         Map<Power, PowerResult> resultMap = new LinkedHashMap<>();
         for (PowerSwapToOffhand power : powerSwapToOffhand) {
+            if (!checkConditions(player, i, power)) {
+                resultMap.put(power, PowerResult.condition());
+                continue;
+            }
             PowerResult<Boolean> result = power.swapToOffhand(player, i, ev);
             resultMap.put(power, result);
             if (result.isAbort()) break;
@@ -825,6 +877,10 @@ public class RPGItem {
 
         Map<Power, PowerResult> resultMap = new LinkedHashMap<>();
         for (PowerSwapToMainhand power : powerSwapToMainhand) {
+            if (!checkConditions(player, i, power)) {
+                resultMap.put(power, PowerResult.condition());
+                continue;
+            }
             PowerResult<Boolean> result = power.swapToMainhand(player, i, ev);
             resultMap.put(power, result);
             if (result.isAbort()) break;
@@ -847,6 +903,10 @@ public class RPGItem {
 
         Map<Power, PowerResult> resultMap = new LinkedHashMap<>();
         for (PowerSwapToMainhand power : powerSwapToMainhand) {
+            if (!checkConditions(player, i, power)) {
+                resultMap.put(power, PowerResult.condition());
+                continue;
+            }
             PowerResult<Boolean> result = power.pickupOffhand(player, i, ev);
             resultMap.put(power, result);
             if (result.isAbort()) break;
@@ -869,6 +929,10 @@ public class RPGItem {
 
         Map<Power, PowerResult> resultMap = new LinkedHashMap<>();
         for (PowerSwapToOffhand power : powerSwapToOffhand) {
+            if (!checkConditions(player, i, power)) {
+                resultMap.put(power, PowerResult.condition());
+                continue;
+            }
             PowerResult<Boolean> result = power.placeOffhand(player, i, ev);
             resultMap.put(power, result);
             if (result.isAbort()) break;
@@ -891,6 +955,10 @@ public class RPGItem {
 
         Map<Power, PowerResult> resultMap = new LinkedHashMap<>();
         for (PowerTick power : powerTick) {
+            if (!checkConditions(player, i, power)) {
+                resultMap.put(power, PowerResult.condition());
+                continue;
+            }
             PowerResult<Void> result = power.tick(player, i);
             resultMap.put(power, result);
             if (result.isAbort()) break;
@@ -1164,7 +1232,7 @@ public class RPGItem {
         }
         sender.sendMessage(I18n.format("message.durability.info", getMaxDurability(), defaultDurability, durabilityLowerBound, durabilityUpperBound));
         if (customItemModel) {
-            sender.sendMessage(I18n.format("message.print.customitemmodel", item.getType().name() + ":" + ((Damageable)localeMeta).getDamage()));
+            sender.sendMessage(I18n.format("message.print.customitemmodel", item.getType().name() + ":" + ((Damageable) localeMeta).getDamage()));
         }
         if (!itemFlags.isEmpty()) {
             StringBuilder str = new StringBuilder();
@@ -1343,7 +1411,7 @@ public class RPGItem {
 
 
     public int getDataValue() {
-        return ((Damageable)localeMeta).getDamage();
+        return ((Damageable) localeMeta).getDamage();
     }
 
     public Material getItem() {

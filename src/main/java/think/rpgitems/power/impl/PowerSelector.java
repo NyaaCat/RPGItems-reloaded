@@ -140,25 +140,25 @@ public class PowerSelector extends BasePower {
     @Property
     public String team;
 
-    public static LoadingCache<String, Map<String, Pair<Integer, Integer>>> scoreCache = CacheBuilder
+    private static LoadingCache<String, Map<String, Pair<Integer, Integer>>> scoreCache = CacheBuilder
                                                                                                  .newBuilder()
                                                                                                  .concurrencyLevel(1)
                                                                                                  .expireAfterAccess(1, TimeUnit.DAYS)
                                                                                                  .build(CacheLoader.from(PowerSelector::parseScore));
 
-    public static LoadingCache<String, Pair<Set<String>, Set<String>>> teamCache = CacheBuilder
+    private static LoadingCache<String, Pair<Set<String>, Set<String>>> teamCache = CacheBuilder
                                                                                            .newBuilder()
                                                                                            .concurrencyLevel(1)
                                                                                            .expireAfterAccess(1, TimeUnit.DAYS)
                                                                                            .build(CacheLoader.from(PowerSelector::parse));
 
-    public static LoadingCache<String, Pair<Set<String>, Set<String>>> tagCache = CacheBuilder
+    private static LoadingCache<String, Pair<Set<String>, Set<String>>> tagCache = CacheBuilder
                                                                                           .newBuilder()
                                                                                           .concurrencyLevel(1)
                                                                                           .expireAfterAccess(1, TimeUnit.DAYS)
                                                                                           .build(CacheLoader.from(PowerSelector::parse));
 
-    public static LoadingCache<String, Set<EntityType>> typeCache = CacheBuilder
+    private static LoadingCache<String, Set<EntityType>> typeCache = CacheBuilder
                                                                             .newBuilder()
                                                                             .concurrencyLevel(1)
                                                                             .expireAfterAccess(1, TimeUnit.DAYS)
@@ -181,7 +181,7 @@ public class PowerSelector extends BasePower {
                 getCoordinate(z, base.getZ()));
     }
 
-    private static Map<String, Pair<Integer, Integer>> parseScore(String limit) {
+    static Map<String, Pair<Integer, Integer>> parseScore(String limit) {
         Map<String, Pair<Integer, Integer>> result = new HashMap<>();
         Arrays.stream(limit.split("\\s")).forEach(s -> {
             String name = s.split(":")[0];
@@ -199,7 +199,7 @@ public class PowerSelector extends BasePower {
         return Arrays.stream(type.split(",")).map(String::toUpperCase).map(EntityType::valueOf).collect(Collectors.toSet());
     }
 
-    private static Pair<Set<String>, Set<String>> parse(String limit) {
+    static Pair<Set<String>, Set<String>> parse(String limit) {
         if (limit.isEmpty()) {
             return new Pair<>(Collections.emptySet(), null);
         }
@@ -218,7 +218,7 @@ public class PowerSelector extends BasePower {
         return new Pair<>(must, mustNot);
     }
 
-    private boolean matchTeam(Entity e, Scoreboard s, Pair<Set<String>, Set<String>> teamLimit) {
+    static boolean matchTeam(Entity e, Scoreboard s, Pair<Set<String>, Set<String>> teamLimit) {
         Team t = s.getEntryTeam(e.getUniqueId().toString());
         if (teamLimit.getValue() == null) return t == null;
         if (teamLimit.getKey() == null) return t != null;
@@ -226,7 +226,7 @@ public class PowerSelector extends BasePower {
                        && (t == null || !teamLimit.getValue().contains(t.getName()));
     }
 
-    private boolean matchScore(Entity e, Scoreboard s, Map<String, Pair<Integer, Integer>> scoreLimit) {
+    static boolean matchScore(Entity e, Scoreboard s, Map<String, Pair<Integer, Integer>> scoreLimit) {
         Set<Score> scores = s.getScores(e.getUniqueId().toString());
         Map<String, Integer> smap = new HashMap<>();
         scores.forEach(sc -> smap.put(sc.getObjective().getName(), sc.getScore()));
@@ -240,10 +240,10 @@ public class PowerSelector extends BasePower {
                 }).orElse(false));
     }
 
-    private boolean matchTag(Entity e, Pair<Set<String>, Set<String>> tagLimit) {
+    static boolean matchTag(Entity e, Pair<Set<String>, Set<String>> tagLimit) {
         if (tagLimit.getValue() == null) return e.getScoreboardTags().isEmpty();
         if (tagLimit.getKey() == null) return !e.getScoreboardTags().isEmpty();
-        return e.getScoreboardTags().stream().allMatch(t -> tagLimit.getKey().contains(t))
+        return tagLimit.getKey().containsAll(e.getScoreboardTags())
                        && e.getScoreboardTags().stream().noneMatch(t -> tagLimit.getValue().contains(t));
     }
 
