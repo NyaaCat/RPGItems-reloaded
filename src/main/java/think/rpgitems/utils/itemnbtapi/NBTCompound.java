@@ -29,10 +29,10 @@ public class NBTCompound {
         return parent;
     }
 
-    public void mergeCompound(NBTCompound comp){
+    public void mergeCompound(NBTCompound comp) {
         NBTReflectionUtil.addOtherNBTCompound(this, comp);
     }
-    
+
     public void setString(String key, String value) {
         NBTReflectionUtil.setData(this, ReflectionMethod.COMPOUND_SET_STRING, key, value);
     }
@@ -183,8 +183,8 @@ public class NBTCompound {
             return result + "-" + key + ": " + getContent(key) + System.lineSeparator();
         }
     }
-    
-    public String asNBTString(){
+
+    public String asNBTString() {
         return NBTReflectionUtil.gettoCompount(getCompound(), this).toString();
     }
 

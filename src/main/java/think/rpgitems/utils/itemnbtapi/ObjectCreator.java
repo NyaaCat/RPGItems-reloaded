@@ -8,21 +8,21 @@ public enum ObjectCreator {
 
     private Constructor<?> construct;
 
-    ObjectCreator(Class<?> clazz, Class<?>... args){
-        try{
+    ObjectCreator(Class<?> clazz, Class<?>... args) {
+        try {
             construct = clazz.getConstructor(args);
-        }catch(Exception ex){
+        } catch (Exception ex) {
             ex.printStackTrace();
         }
     }
-    
-    public Object getInstance(Object... args){
-        try{
+
+    public Object getInstance(Object... args) {
+        try {
             return construct.newInstance(args);
-        }catch(Exception ex){
+        } catch (Exception ex) {
             ex.printStackTrace();
         }
         return null;
     }
-    
+
 }

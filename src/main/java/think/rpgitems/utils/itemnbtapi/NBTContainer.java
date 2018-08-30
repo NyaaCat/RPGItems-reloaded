@@ -1,6 +1,6 @@
 package think.rpgitems.utils.itemnbtapi;
 
-public class NBTContainer extends NBTCompound{
+public class NBTContainer extends NBTCompound {
 
     private Object nbt;
 
@@ -8,17 +8,17 @@ public class NBTContainer extends NBTCompound{
         super(null, null);
         nbt = ObjectCreator.NMS_NBTTAGCOMPOUND.getInstance();
     }
-    
-    protected NBTContainer(Object nbt){
+
+    protected NBTContainer(Object nbt) {
         super(null, null);
         this.nbt = nbt;
     }
 
     public NBTContainer(String nbtString) throws IllegalArgumentException {
         super(null, null);
-        try{
+        try {
             nbt = ReflectionMethod.PARSE_NBT.run(null, nbtString);
-        }catch(Exception ex){
+        } catch (Exception ex) {
             ex.printStackTrace();
             throw new IllegalArgumentException("Malformed Json: " + ex.getMessage());
         }

@@ -8,10 +8,18 @@ public class NBTItem extends NBTCompound {
 
     public NBTItem(ItemStack item) {
         super(null, null);
-        if(item == null){
+        if (item == null) {
             throw new NullPointerException("ItemStack can't be null!");
         }
         bukkitItem = item.clone();
+    }
+
+    public static NBTContainer convertItemtoNBT(ItemStack item) {
+        return NBTReflectionUtil.convertNMSItemtoNBTCompound(ReflectionMethod.ITEMSTACK_NMSCOPY.run(null, item));
+    }
+
+    public static ItemStack convertNBTtoItem(NBTCompound comp) {
+        return (ItemStack) ReflectionMethod.ITEMSTACK_BUKKITMIRROR.run(null, NBTReflectionUtil.convertNBTCompoundtoNMSItem(comp));
     }
 
     protected Object getCompound() {
@@ -31,23 +39,14 @@ public class NBTItem extends NBTCompound {
     protected void setItem(ItemStack item) {
         bukkitItem = item;
     }
-    
-    
+
     /**
      * This may return true even when the NBT is empty.
-     * 
+     *
      * @return Does the ItemStack have a NBTCompound.
      */
-    public boolean hasNBTData(){
+    public boolean hasNBTData() {
         return getCompound() != null;
-    }
-    
-    public static NBTContainer convertItemtoNBT(ItemStack item){
-        return NBTReflectionUtil.convertNMSItemtoNBTCompound(ReflectionMethod.ITEMSTACK_NMSCOPY.run(null, item));
-    }
-    
-    public static ItemStack convertNBTtoItem(NBTCompound comp){
-        return (ItemStack) ReflectionMethod.ITEMSTACK_BUKKITMIRROR.run(null, NBTReflectionUtil.convertNBTCompoundtoNMSItem(comp));
     }
 
 }
