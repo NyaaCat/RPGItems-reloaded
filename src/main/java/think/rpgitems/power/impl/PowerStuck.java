@@ -36,6 +36,7 @@ import think.rpgitems.power.*;
 import java.util.*;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicInteger;
 import java.util.function.Consumer;
 
 import static think.rpgitems.power.Utils.*;
@@ -90,14 +91,15 @@ public class PowerStuck extends BasePower implements PowerHit, PowerRightClick {
     @Property(order = 0)
     public long cooldown = 200;
 
+    private static AtomicInteger rc = new AtomicInteger(0);
 
     private Random random = new Random();
 
-    private Consumer<EntityTeleportEvent> tpl;
+    private static Consumer<EntityTeleportEvent> tpl;
 
-    private Consumer<PlayerTeleportEvent> pml;
+    private static Consumer<PlayerTeleportEvent> pml;
 
-    private Cache<UUID, Long> stucked = CacheBuilder.newBuilder().expireAfterAccess(10, TimeUnit.MINUTES).concurrencyLevel(2).build();
+    private static Cache<UUID, Long> stucked = CacheBuilder.newBuilder().expireAfterAccess(10, TimeUnit.MINUTES).concurrencyLevel(2).build();
 
     @Override
     public PowerResult<Double> hit(Player player, ItemStack stack, LivingEntity entity, double damage, EntityDamageByEntityEvent event) {
@@ -139,43 +141,50 @@ public class PowerStuck extends BasePower implements PowerHit, PowerRightClick {
 
     @Override
     public void init(ConfigurationSection s) {
+        int orc = rc.getAndIncrement();
         boolean allowHit = s.getBoolean("allowHit", true);
         boolean allowAoe = s.getBoolean("allowAoe", false);
         Set<TriggerType> triggerTypes = new HashSet<>();
-        if(allowHit){
+        if (allowHit) {
             triggerTypes.add(TriggerType.HIT);
         }
-        if(allowAoe){
+        if (allowAoe) {
             triggerTypes.add(TriggerType.RIGHT_CLICK);
         }
         triggers = triggerTypes;
         super.init(s);
-        tpl = e -> {
-            try {
-                if (stucked.get(e.getEntity().getUniqueId(), () -> Long.MIN_VALUE) >= (System.currentTimeMillis() - duration * 50)) {
-                    e.setCancelled(true);
-                }
-            } catch (ExecutionException ex) {
-                ex.printStackTrace();
-            }
-        };
-        pml = e -> {
-            try {
-                if (stucked.get(e.getPlayer().getUniqueId(), () -> Long.MIN_VALUE) >= (System.currentTimeMillis() - duration * 50)) {
-                    if (e.getCause() != PlayerTeleportEvent.TeleportCause.COMMAND) {
-                        e.getPlayer().sendMessage(I18n.format("message.stuck"));
+        if (orc == 0) {
+            tpl = e -> {
+                try {
+                    if (stucked.get(e.getEntity().getUniqueId(), () -> Long.MIN_VALUE) >= (System.currentTimeMillis() - duration * 50)) {
                         e.setCancelled(true);
                     }
+                } catch (ExecutionException ex) {
+                    ex.printStackTrace();
                 }
-            } catch (ExecutionException ex) {
-                ex.printStackTrace();
-            }
-        };
-        RPGItems.listener.addEventListener(EntityTeleportEvent.class, tpl).addEventListener(PlayerTeleportEvent.class, pml);
+            };
+            RPGItems.listener.addEventListener(EntityTeleportEvent.class, tpl);
+            pml = e -> {
+                try {
+                    if (stucked.get(e.getPlayer().getUniqueId(), () -> Long.MIN_VALUE) >= (System.currentTimeMillis() - duration * 50)) {
+                        if (e.getCause() != PlayerTeleportEvent.TeleportCause.COMMAND) {
+                            e.getPlayer().sendMessage(I18n.format("message.stuck"));
+                            e.setCancelled(true);
+                        }
+                    }
+                } catch (ExecutionException ex) {
+                    ex.printStackTrace();
+                }
+            };
+            RPGItems.listener.addEventListener(PlayerTeleportEvent.class, pml);
+        }
     }
 
     @Override
     public void deinit() {
-        RPGItems.listener.removeEventListener(EntityTeleportEvent.class, tpl).removeEventListener(PlayerTeleportEvent.class, pml);
+        int nrc = rc.decrementAndGet();
+        if (nrc == 0) {
+            RPGItems.listener.removeEventListener(EntityTeleportEvent.class, tpl).removeEventListener(PlayerTeleportEvent.class, pml);
+        }
     }
 }

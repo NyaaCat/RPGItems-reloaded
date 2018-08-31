@@ -487,7 +487,9 @@ public class RPGItem {
 
     public void save(ConfigurationSection s) {
         s.set("name", name);
-        s.set("id", id);
+        if(id != 0) {
+            s.set("id", id);
+        }
         s.set("uid", uid);
 
         s.set("author", author);
@@ -628,7 +630,7 @@ public class RPGItem {
         List<PowerCondition> statics = conds.stream().filter(p -> p.isStatic).filter(p -> ids.contains(p.id)).collect(Collectors.toList());
         if (statics.stream().anyMatch(p -> !p.check(player, i))) return false;
 
-        RgiPowersPreFireEvent preFire = new RgiPowersPreFireEvent(i, this, player, triggerType, powers);
+        RPGItemsPowersPreFireEvent preFire = new RPGItemsPowersPreFireEvent(i, this, player, triggerType, powers);
         Bukkit.getServer().getPluginManager().callEvent(preFire);
         return !preFire.isCancelled();
     }
@@ -653,7 +655,7 @@ public class RPGItem {
             resultMap.put(power, result);
             if (result.isAbort()) break;
         }
-        RgiPowersPostFireEvent postFire = new RgiPowersPostFireEvent(i, this, player, TriggerType.LEFT_CLICK, resultMap);
+        RPGItemsPowersPostFireEvent postFire = new RPGItemsPowersPostFireEvent(i, this, player, TriggerType.LEFT_CLICK, resultMap);
         Bukkit.getServer().getPluginManager().callEvent(postFire);
 
         if (getDurability(i) <= 0) {
@@ -675,7 +677,7 @@ public class RPGItem {
             resultMap.put(power, result);
             if (result.isAbort()) break;
         }
-        RgiPowersPostFireEvent postFire = new RgiPowersPostFireEvent(i, this, player, TriggerType.RIGHT_CLICK, resultMap);
+        RPGItemsPowersPostFireEvent postFire = new RPGItemsPowersPostFireEvent(i, this, player, TriggerType.RIGHT_CLICK, resultMap);
         Bukkit.getServer().getPluginManager().callEvent(postFire);
 
         if (getDurability(i) <= 0) {
@@ -697,7 +699,7 @@ public class RPGItem {
             resultMap.put(power, result);
             if (result.isAbort()) break;
         }
-        RgiPowersPostFireEvent postFire = new RgiPowersPostFireEvent(i, this, player, TriggerType.OFFHAND_CLICK, resultMap);
+        RPGItemsPowersPostFireEvent postFire = new RPGItemsPowersPostFireEvent(i, this, player, TriggerType.OFFHAND_CLICK, resultMap);
         Bukkit.getServer().getPluginManager().callEvent(postFire);
 
         if (getDurability(i) <= 0) {
@@ -719,7 +721,7 @@ public class RPGItem {
             resultMap.put(power, result);
             if (result.isAbort()) break;
         }
-        RgiPowersPostFireEvent postFire = new RgiPowersPostFireEvent(i, this, player, TriggerType.SNEAK, resultMap);
+        RPGItemsPowersPostFireEvent postFire = new RPGItemsPowersPostFireEvent(i, this, player, TriggerType.SNEAK, resultMap);
         Bukkit.getServer().getPluginManager().callEvent(postFire);
 
         if (getDurability(i) <= 0) {
@@ -741,7 +743,7 @@ public class RPGItem {
             resultMap.put(power, result);
             if (result.isAbort()) break;
         }
-        RgiPowersPostFireEvent postFire = new RgiPowersPostFireEvent(i, this, player, TriggerType.SPRINT, resultMap);
+        RPGItemsPowersPostFireEvent postFire = new RPGItemsPowersPostFireEvent(i, this, player, TriggerType.SPRINT, resultMap);
         Bukkit.getServer().getPluginManager().callEvent(postFire);
 
         if (getDurability(i) <= 0) {
@@ -763,7 +765,7 @@ public class RPGItem {
             resultMap.put(power, result);
             if (result.isAbort()) break;
         }
-        RgiPowersPostFireEvent postFire = new RgiPowersPostFireEvent(i, this, player, TriggerType.PROJECTILE_HIT, resultMap);
+        RPGItemsPowersPostFireEvent postFire = new RPGItemsPowersPostFireEvent(i, this, player, TriggerType.PROJECTILE_HIT, resultMap);
         Bukkit.getServer().getPluginManager().callEvent(postFire);
 
         if (getDurability(i) <= 0) {
@@ -788,7 +790,7 @@ public class RPGItem {
             if (!result.isOK()) continue;
             ret = result.getData() > ret ? result.getData() : ret;
         }
-        RgiPowersPostFireEvent postFire = new RgiPowersPostFireEvent(i, this, player, TriggerType.HIT, resultMap);
+        RPGItemsPowersPostFireEvent postFire = new RPGItemsPowersPostFireEvent(i, this, player, TriggerType.HIT, resultMap);
         Bukkit.getServer().getPluginManager().callEvent(postFire);
 
         if (getDurability(i) <= 0) {
@@ -814,7 +816,7 @@ public class RPGItem {
             if (!result.isOK()) continue;
             ret = result.getData() < ret ? result.getData() : ret;
         }
-        RgiPowersPostFireEvent postFire = new RgiPowersPostFireEvent(i, this, player, TriggerType.HIT_TAKEN, resultMap);
+        RPGItemsPowersPostFireEvent postFire = new RPGItemsPowersPostFireEvent(i, this, player, TriggerType.HIT_TAKEN, resultMap);
         Bukkit.getServer().getPluginManager().callEvent(postFire);
 
         if (getDurability(i) <= 0) {
@@ -837,7 +839,7 @@ public class RPGItem {
             resultMap.put(power, result);
             if (result.isAbort()) break;
         }
-        RgiPowersPostFireEvent postFire = new RgiPowersPostFireEvent(i, this, player, TriggerType.HURT, resultMap);
+        RPGItemsPowersPostFireEvent postFire = new RPGItemsPowersPostFireEvent(i, this, player, TriggerType.HURT, resultMap);
         Bukkit.getServer().getPluginManager().callEvent(postFire);
 
         if (getDurability(i) <= 0) {
@@ -863,7 +865,7 @@ public class RPGItem {
                 ev.setCancelled(true);
             }
         }
-        RgiPowersPostFireEvent postFire = new RgiPowersPostFireEvent(i, this, player, TriggerType.SWAP_TO_OFFHAND, resultMap);
+        RPGItemsPowersPostFireEvent postFire = new RPGItemsPowersPostFireEvent(i, this, player, TriggerType.SWAP_TO_OFFHAND, resultMap);
         Bukkit.getServer().getPluginManager().callEvent(postFire);
 
         if (getDurability(i) <= 0) {
@@ -889,7 +891,7 @@ public class RPGItem {
                 ev.setCancelled(true);
             }
         }
-        RgiPowersPostFireEvent postFire = new RgiPowersPostFireEvent(i, this, player, TriggerType.SWAP_TO_MAINHAND, resultMap);
+        RPGItemsPowersPostFireEvent postFire = new RPGItemsPowersPostFireEvent(i, this, player, TriggerType.SWAP_TO_MAINHAND, resultMap);
         Bukkit.getServer().getPluginManager().callEvent(postFire);
 
         if (getDurability(i) <= 0) {
@@ -915,7 +917,7 @@ public class RPGItem {
                 ev.setCancelled(true);
             }
         }
-        RgiPowersPostFireEvent postFire = new RgiPowersPostFireEvent(i, this, player, TriggerType.PICKUP_OFF_HAND, resultMap);
+        RPGItemsPowersPostFireEvent postFire = new RPGItemsPowersPostFireEvent(i, this, player, TriggerType.PICKUP_OFF_HAND, resultMap);
         Bukkit.getServer().getPluginManager().callEvent(postFire);
 
         if (getDurability(i) <= 0) {
@@ -941,7 +943,7 @@ public class RPGItem {
                 ev.setCancelled(true);
             }
         }
-        RgiPowersPostFireEvent postFire = new RgiPowersPostFireEvent(i, this, player, TriggerType.PLACE_OFF_HAND, resultMap);
+        RPGItemsPowersPostFireEvent postFire = new RPGItemsPowersPostFireEvent(i, this, player, TriggerType.PLACE_OFF_HAND, resultMap);
         Bukkit.getServer().getPluginManager().callEvent(postFire);
 
         if (getDurability(i) <= 0) {
@@ -963,7 +965,7 @@ public class RPGItem {
             resultMap.put(power, result);
             if (result.isAbort()) break;
         }
-        RgiPowersPostFireEvent postFire = new RgiPowersPostFireEvent(i, this, player, TriggerType.TICK, resultMap);
+        RPGItemsPowersPostFireEvent postFire = new RPGItemsPowersPostFireEvent(i, this, player, TriggerType.TICK, resultMap);
         Bukkit.getServer().getPluginManager().callEvent(postFire);
     }
 

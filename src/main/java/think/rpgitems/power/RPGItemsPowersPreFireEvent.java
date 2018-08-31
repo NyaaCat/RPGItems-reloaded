@@ -9,7 +9,7 @@ import think.rpgitems.item.RPGItem;
 
 import java.util.List;
 
-public class RgiPowersPreFireEvent extends Event implements Cancellable {
+public class RPGItemsPowersPreFireEvent extends Event implements Cancellable {
 
     private static final HandlerList handlers = new HandlerList();
     private boolean cancel;
@@ -20,7 +20,7 @@ public class RgiPowersPreFireEvent extends Event implements Cancellable {
     private final TriggerType triggerType;
     private final List<? extends Power> powers;
 
-    public RgiPowersPreFireEvent(ItemStack itemStack, RPGItem rpgItem, Player player, TriggerType triggerType, List<? extends Power> powers) {
+    public RPGItemsPowersPreFireEvent(ItemStack itemStack, RPGItem rpgItem, Player player, TriggerType triggerType, List<? extends Power> powers) {
         this.itemStack = itemStack;
         this.rpgItem = rpgItem;
         this.player = player;

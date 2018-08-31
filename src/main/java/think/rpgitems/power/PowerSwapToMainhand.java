@@ -28,5 +28,7 @@ public interface PowerSwapToMainhand extends Power {
      * @param stack  Item that triggered this power
      */
     @CheckReturnValue
-    PowerResult<Boolean> pickupOffhand(Player player, ItemStack stack, InventoryClickEvent event);
+    default PowerResult<Boolean> pickupOffhand(Player player, ItemStack stack, InventoryClickEvent event) {
+        return PowerResult.noop();
+    }
 }

@@ -297,7 +297,7 @@ public class ItemManager {
         }
     }
 
-    private static String getItemFilename(String itemName) {
+    public static String getItemFilename(String itemName) {
         // ensure Windows server don't blow up by CONs or NULs
         // and escape some character that don't fit into a file name
         return "item-" +

@@ -28,5 +28,7 @@ public interface PowerSwapToOffhand extends Power {
      * @param stack  Item that triggered this power
      */
     @CheckReturnValue
-    PowerResult<Boolean> placeOffhand(Player player, ItemStack stack, InventoryClickEvent event);
+    default PowerResult<Boolean> placeOffhand(Player player, ItemStack stack, InventoryClickEvent event) {
+        return PowerResult.noop();
+    }
 }

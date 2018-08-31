@@ -30,6 +30,10 @@ public class PowerResult<T> {
         return this;
     }
 
+    public <TP> PowerResult<TP> with(TP data) {
+        return of(result, data);
+    }
+
     public static PowerResult<Void> ok() {
         return of(TriggerResult.OK);
     }
@@ -62,19 +66,22 @@ public class PowerResult<T> {
         return of(TriggerResult.CONDITION, null);
     }
 
-    public boolean isOK(){
+    public boolean isOK() {
         return result == TriggerResult.OK;
     }
 
-    public boolean isError(){
-        return result == TriggerResult.FAIL || result == TriggerResult.COST || result == TriggerResult.ABORT;
+    public boolean isError() {
+        return result == TriggerResult.CONDITION
+                       || result == TriggerResult.FAIL
+                       || result == TriggerResult.COST
+                       || result == TriggerResult.ABORT;
     }
 
-    public boolean notError(){
+    public boolean notError() {
         return result == TriggerResult.OK || result == TriggerResult.NOOP || result == TriggerResult.COOLDOWN;
     }
 
-    public boolean isAbort(){
+    public boolean isAbort() {
         return result == TriggerResult.ABORT;
     }
 }

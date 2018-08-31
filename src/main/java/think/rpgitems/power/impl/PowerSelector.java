@@ -20,6 +20,7 @@ import com.google.common.cache.CacheBuilder;
 import com.google.common.cache.CacheLoader;
 import com.google.common.cache.LoadingCache;
 import org.bukkit.Location;
+import org.bukkit.OfflinePlayer;
 import org.bukkit.entity.Entity;
 import org.bukkit.entity.EntityType;
 import org.bukkit.entity.Player;
@@ -219,7 +220,11 @@ public class PowerSelector extends BasePower {
     }
 
     static boolean matchTeam(Entity e, Scoreboard s, Pair<Set<String>, Set<String>> teamLimit) {
-        Team t = s.getEntryTeam(e.getUniqueId().toString());
+        String name = e.getUniqueId().toString();
+        if (e instanceof OfflinePlayer){
+            name = ((OfflinePlayer)e).getName();
+        }
+        Team t = s.getEntryTeam(name);
         if (teamLimit.getValue() == null) return t == null;
         if (teamLimit.getKey() == null) return t != null;
         return teamLimit.getKey().stream().findFirst().map(l -> t != null && l.equals(t.getName())).orElse(true)
@@ -227,7 +232,11 @@ public class PowerSelector extends BasePower {
     }
 
     static boolean matchScore(Entity e, Scoreboard s, Map<String, Pair<Integer, Integer>> scoreLimit) {
-        Set<Score> scores = s.getScores(e.getUniqueId().toString());
+        String name = e.getUniqueId().toString();
+        if (e instanceof OfflinePlayer){
+            name = ((OfflinePlayer)e).getName();
+        }
+        Set<Score> scores = s.getScores(name);
         Map<String, Integer> smap = new HashMap<>();
         scores.forEach(sc -> smap.put(sc.getObjective().getName(), sc.getScore()));
         return scoreLimit.entrySet().stream().allMatch(sl -> Optional.ofNullable(smap.get(sl.getKey())).map(

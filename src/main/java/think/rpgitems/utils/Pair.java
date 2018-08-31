@@ -1,5 +1,7 @@
 package think.rpgitems.utils;
 
+import think.rpgitems.item.RPGItem;
+
 public class Pair<K,V> {
 
     private K key;
@@ -40,5 +42,9 @@ public class Pair<K,V> {
             return value != null ? value.equals(pair.value) : pair.value == null;
         }
         return false;
+    }
+
+    public static <Ks,Vs> Pair<Ks,Vs> of(Ks key, Vs value) {
+        return new Pair<>(key, value);
     }
 }

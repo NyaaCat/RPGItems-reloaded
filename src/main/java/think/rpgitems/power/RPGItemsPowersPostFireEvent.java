@@ -8,7 +8,7 @@ import think.rpgitems.item.RPGItem;
 
 import java.util.Map;
 
-public class RgiPowersPostFireEvent extends Event {
+public class RPGItemsPowersPostFireEvent extends Event {
 
     private static final HandlerList handlers = new HandlerList();
 
@@ -18,7 +18,7 @@ public class RgiPowersPostFireEvent extends Event {
     private final TriggerType triggerType;
     private final Map<Power, PowerResult> powerResults;
 
-    public RgiPowersPostFireEvent(ItemStack itemStack, RPGItem rpgItem, Player player, TriggerType triggerType, Map<Power, PowerResult> powerResults) {
+    public RPGItemsPowersPostFireEvent(ItemStack itemStack, RPGItem rpgItem, Player player, TriggerType triggerType, Map<Power, PowerResult> powerResults) {
         this.itemStack = itemStack;
         this.rpgItem = rpgItem;
         this.player = player;

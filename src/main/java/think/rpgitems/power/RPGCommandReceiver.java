@@ -94,7 +94,7 @@ public abstract class RPGCommandReceiver extends CommandReceiver {
         }
         String incompleteValue = lastVaule;
 
-        if (Deserializer.class.isAssignableFrom(propertyField.getType()) || (as != null && as.preset() == Preset.TRIGGERS)) {
+        if (Set.class.isAssignableFrom(propertyField.getType()) || (as != null && as.preset() == Preset.TRIGGERS)) {
             enumValues.removeAll(currentVaules);
         }
         String base = incompleteValue.isEmpty() ? last : last.replaceAll(incompleteValue + "$", "");
@@ -217,6 +217,20 @@ public abstract class RPGCommandReceiver extends CommandReceiver {
         return null;
     }
 
+    private static List<String> resolveSet(Set<String> values, String last) {
+        List<String> currentVaules = Stream.of(last.split(",")).collect(Collectors.toList());
+        String lastVaule = currentVaules.get(currentVaules.size() - 1);
+        if (values.contains(lastVaule)) {
+            lastVaule = "";
+        } else {
+            currentVaules.remove(currentVaules.size() - 1);
+        }
+        String incompleteValue = lastVaule;
+        String base = incompleteValue.isEmpty() ? last : last.replaceAll(incompleteValue + "$", "");
+        boolean next = currentVaules.isEmpty() || base.endsWith(",");
+        return values.stream().filter(n -> n.startsWith(incompleteValue)).map(n -> base + (next ? "" : ",") + n).collect(Collectors.toList());
+    }
+
     @Override
     public boolean onCommand(CommandSender sender, Command command, String label, String[] args) {
         if (args.length > 0 && ItemManager.getItemByName(args[0]) != null) {
@@ -323,6 +337,9 @@ public abstract class RPGCommandReceiver extends CommandReceiver {
                             case "power":
                             case "item": {
                                 return ItemManager.itemByName.keySet().stream().filter(s -> s.startsWith(second)).collect(Collectors.toList()); // items
+                            }
+                            case "items": {
+                                return resolveSet(ItemManager.itemByName.keySet(), second); // items
                             }
                             case "command": {
                                 return att.length > 1 ? Arrays.stream(att[1].split(",")).filter(s -> s.startsWith(second)).collect(Collectors.toList()) : null; // bundled in attr

@@ -2,6 +2,7 @@ package think.rpgitems;
 
 import cat.nyaa.nyaacore.LanguageRepository;
 import cat.nyaa.nyaacore.Message;
+import think.rpgitems.utils.Pair;
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
 import org.bukkit.Color;
@@ -35,6 +36,8 @@ import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeoutException;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
+
+import static think.rpgitems.utils.NetworkUtils.Location.GIST;
 
 public class Handler extends RPGCommandReceiver {
     private final RPGItems plugin;
@@ -911,9 +914,9 @@ public class Handler extends RPGCommandReceiver {
         }
     }
 
-    @SubCommand("download")
-    @Attribute("command")
-    public void gist(CommandSender sender, Arguments args) {
+    @SubCommand("import")
+    @Attribute("command:GIST")
+    public void download(CommandSender sender, Arguments args) {
         NetworkUtils.Location location = args.nextEnum(NetworkUtils.Location.class);
         String id = args.nextString();
         boolean confirm = "confirm".equalsIgnoreCase(args.next());
@@ -925,25 +928,77 @@ public class Handler extends RPGCommandReceiver {
         }
     }
 
-    public void downloadGist(CommandSender sender, Arguments args, String id, boolean confirm) {
-        new Message(I18n.format("message.download.ing")).send(sender);
+    @SubCommand("export")
+    @Attribute("items:GIST")
+    public void publish(CommandSender sender, Arguments args) {
+        String itemsStr = args.nextString();
+        NetworkUtils.Location location = args.top() == null ? GIST : args.nextEnum(NetworkUtils.Location.class);
+        Set<String> items = Stream.of(itemsStr.split(",")).collect(Collectors.toSet());
+
+        switch (location) {
+            case GIST:
+                publishGist(sender, args, items);
+                break;
+        }
+    }
+
+    private void publishGist(CommandSender sender, Arguments args, Set<String> itemNames) {
+        List<Pair<String, RPGItem>> items = itemNames.stream().map(i -> Pair.of(i, ItemManager.getItemByName(i))).collect(Collectors.toList());
+        Optional<Pair<String, RPGItem>> unknown = items.stream().filter(p -> p.getValue() == null).findFirst();
+        if(unknown.isPresent()){
+            throw new BadCommandException("error.item", unknown.get().getKey());
+        }
+        String token = args.argString("token", plugin.getConfig().getString("githubToken"));
+        String description = args.argString("description", plugin.getConfig().getString("description", "RPGItems exported items"));
+        if(token == null){
+            throw new BadCommandException("message.export.token");
+        }
+        Map<String, Map<String, String>> result = new HashMap<>(items.size());
+        items.forEach(
+                pair -> {
+                    RPGItem item = pair.getValue();
+                    String name = pair.getKey();
+                    YamlConfiguration conf = new YamlConfiguration();
+                    item.save(conf);
+                    String itemConf = conf.saveToString();
+                    String filename = ItemManager.getItemFilename(name) + ".yml";
+                    Map<String, String> content = new HashMap<>();
+                    content.put("content", itemConf);
+                    result.put(filename, content);
+                }
+        );
+        Bukkit.getScheduler().runTaskAsynchronously(plugin, () -> {
+            try {
+                String id = NetworkUtils.publishGist(result, token, description);
+                Bukkit.getScheduler().runTask(plugin, () -> new Message(I18n.format("message.export.ed", id)).send(sender));
+            } catch (InterruptedException|ExecutionException e) {
+                e.printStackTrace();
+                Bukkit.getScheduler().runTask(plugin, () -> new Message(I18n.format("message.export.failed")).send(sender));
+            } catch (TimeoutException e) {
+                e.printStackTrace();
+                Bukkit.getScheduler().runTask(plugin, () -> new Message(I18n.format("message.export.timeout")).send(sender));
+            }
+        });
+    }
+
+    private void downloadGist(CommandSender sender, Arguments args, String id, boolean confirm) {
+        new Message(I18n.format("message.import.ing")).send(sender);
+        String token = args.argString("token", plugin.getConfig().getString("githubToken"));
         Bukkit.getScheduler().runTaskAsynchronously(plugin, () -> {
             Map<String, String> gist;
             try {
-                gist = NetworkUtils.downloadGist(id, null);
-            } catch (InterruptedException|ExecutionException e) {
+                gist = NetworkUtils.downloadGist(id, token);
+                Bukkit.getScheduler().runTask(plugin, () -> {
+                    loadItems(sender, id, gist, confirm, args);
+                    new Message(I18n.format("message.import.ed")).send(sender);
+                });
+            } catch (InterruptedException | ExecutionException e) {
                 e.printStackTrace();
-                Bukkit.getScheduler().runTask(plugin, () -> new Message(I18n.format("message.download.failed")).send(sender));
-                return;
+                Bukkit.getScheduler().runTask(plugin, () -> new Message(I18n.format("message.import.failed")).send(sender));
             } catch (TimeoutException e) {
                 e.printStackTrace();
-                Bukkit.getScheduler().runTask(plugin, () -> new Message(I18n.format("message.download.timeout")).send(sender));
-                return;
+                Bukkit.getScheduler().runTask(plugin, () -> new Message(I18n.format("message.import.timeout")).send(sender));
             }
-            Bukkit.getScheduler().runTask(plugin, () -> {
-                new Message(I18n.format("message.download.ed")).send(sender);
-                loadItems(sender, id, gist, confirm, args);
-            });
         });
     }
 
@@ -963,30 +1018,30 @@ public class Handler extends RPGCommandReceiver {
                 }
 
                 if (ItemManager.itemById.containsKey(uid)) {
-                    new Message(I18n.format("message.download.conflict_uid", id)).send(sender);
+                    new Message(I18n.format("message.import.conflict_uid", id)).send(sender);
                 }
                 if (ItemManager.itemByName.containsKey(origin)) {
-                    new Message(I18n.format("message.download.conflict_name", id)).send(sender);
+                    new Message(I18n.format("message.import.conflict_name", id)).send(sender);
                 }
 
                 String name = args.argString(origin, origin);
                 RPGItem item = new RPGItem(itemStorage, name, uid);
 
                 if (!force && (!item.getPower(PowerCommand.class, true).isEmpty() || !item.getPower(PowerDeathCommand.class, true).isEmpty())) {
-                    new Message(I18n.format("message.download.unsafe_command", id)).send(sender);
-                    new Message(I18n.format("message.download.confirm_required", id)).send(sender);
+                    new Message(I18n.format("message.import.unsafe_command", id)).send(sender);
+                    new Message(I18n.format("message.import.confirm_required", id)).send(sender);
                     return;
                 }
                 items.add(item);
             } catch (InvalidConfigurationException e) {
-                new Message(I18n.format("message.download.invalid_conf", id, k)).send(sender);
+                new Message(I18n.format("message.import.invalid_conf", id, k)).send(sender);
                 e.printStackTrace();
                 return;
             }
         }
         for (RPGItem item : items) {
             ItemManager.addItem(item);
-            new Message(I18n.format("message.download.success", id, item.getName())).send(sender);
+            new Message(I18n.format("message.import.success", id, item.getName())).send(sender);
         }
         ItemManager.save();
     }

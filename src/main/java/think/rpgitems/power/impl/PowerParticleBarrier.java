@@ -29,6 +29,7 @@ import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicInteger;
 import java.util.function.Consumer;
 
 @PowerMeta(defaultTrigger = {TriggerType.RIGHT_CLICK, TriggerType.TICK})
@@ -49,7 +50,9 @@ public class PowerParticleBarrier extends BasePower implements PowerRightClick, 
     @Property
     public boolean projected = false;
 
-    private Consumer<EntityDamageEvent> event;
+    private static AtomicInteger rc = new AtomicInteger(0);
+
+    private static Consumer<EntityDamageEvent> event;
 
     private static final Cache<UUID, Double> barriers = CacheBuilder.newBuilder()
                                                                     .expireAfterAccess(1, TimeUnit.MINUTES)
@@ -65,30 +68,33 @@ public class PowerParticleBarrier extends BasePower implements PowerRightClick, 
 
     @Override
     public void init(ConfigurationSection s) {
+        int orc = rc.getAndIncrement();
         super.init(s);
-        event = entityDamageEvent -> {
-            Entity entity = entityDamageEvent.getEntity();
-            UUID uuid = entity.getUniqueId();
-            Double barrierRemain = barriers.getIfPresent(uuid);
-            if (barrierRemain == null || barrierRemain <= 0) {
-                return;
-            }
-            double damage = entityDamageEvent.getDamage();
-            entityDamageEvent.setDamage(0);
-            barrierRemain = barrierRemain - damage;
-            barriers.put(uuid, barrierRemain);
-            double energyGain = damage * energyPerBarrier / barrierHealth;
-            UUID source = barrierSources.getIfPresent(uuid);
-            if (source == null) return;
-            Pair<Long, Double> pair = energys.getIfPresent(source);
-            long currentTime = System.currentTimeMillis();
-            boolean last = pair != null;
-            long lastTime = last ? pair.getKey() : currentTime;
-            double currentEnergy = last && pair.getValue() > 0 ? pair.getValue() : 0;
-            double energy = currentEnergy - (currentTime - lastTime) * energyDecay / 1000 + energyGain;
-            energys.put(source, new Pair<>(currentTime, Math.max(energy, 100.0d)));
-        };
-        RPGItems.listener.addEventListener(EntityDamageEvent.class, event);
+        if (orc == 0) {
+            event = entityDamageEvent -> {
+                Entity entity = entityDamageEvent.getEntity();
+                UUID uuid = entity.getUniqueId();
+                Double barrierRemain = barriers.getIfPresent(uuid);
+                if (barrierRemain == null || barrierRemain <= 0) {
+                    return;
+                }
+                double damage = entityDamageEvent.getDamage();
+                entityDamageEvent.setDamage(0);
+                barrierRemain = barrierRemain - damage;
+                barriers.put(uuid, barrierRemain);
+                double energyGain = damage * energyPerBarrier / barrierHealth;
+                UUID source = barrierSources.getIfPresent(uuid);
+                if (source == null) return;
+                Pair<Long, Double> pair = energys.getIfPresent(source);
+                long currentTime = System.currentTimeMillis();
+                boolean last = pair != null;
+                long lastTime = last ? pair.getKey() : currentTime;
+                double currentEnergy = last && pair.getValue() > 0 ? pair.getValue() : 0;
+                double energy = currentEnergy - (currentTime - lastTime) * energyDecay / 1000 + energyGain;
+                energys.put(source, new Pair<>(currentTime, Math.max(energy, 100.0d)));
+            };
+            RPGItems.listener.addEventListener(EntityDamageEvent.class, event);
+        }
     }
 
     @Override
@@ -133,7 +139,7 @@ public class PowerParticleBarrier extends BasePower implements PowerRightClick, 
     }
 
     @SuppressWarnings("deprecation")
-    public void barrier(Player source, LivingEntity target) {
+    private void barrier(Player source, LivingEntity target) {
         barriers.put(target.getUniqueId(), barrierHealth);
         barrierSources.put(target.getUniqueId(), source.getUniqueId());
         Location eyeLocation = target.getEyeLocation();
@@ -211,7 +217,10 @@ public class PowerParticleBarrier extends BasePower implements PowerRightClick, 
 
     @Override
     public void deinit() {
-        RPGItems.listener.removeEventListener(EntityDamageEvent.class, event);
+        int nrc = rc.decrementAndGet();
+        if (nrc == 0) {
+            RPGItems.listener.removeEventListener(EntityDamageEvent.class, event);
+        }
     }
 
     @Override
