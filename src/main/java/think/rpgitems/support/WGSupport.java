@@ -1,20 +1,27 @@
 package think.rpgitems.support;
 
+import com.sk89q.worldedit.world.World;
 import com.sk89q.worldguard.LocalPlayer;
 import com.sk89q.worldguard.WorldGuard;
 import com.sk89q.worldguard.bukkit.WorldGuardPlugin;
 import com.sk89q.worldguard.protection.flags.Flags;
 import com.sk89q.worldguard.protection.flags.StateFlag.State;
+import com.sk89q.worldguard.protection.managers.RegionManager;
+import com.sk89q.worldguard.protection.regions.ProtectedRegion;
+import org.bukkit.Bukkit;
+import org.bukkit.configuration.Configuration;
+import org.bukkit.configuration.file.YamlConfiguration;
 import org.bukkit.entity.Player;
 import org.bukkit.plugin.Plugin;
 import think.rpgitems.RPGItems;
 import think.rpgitems.item.RPGItem;
 import think.rpgitems.power.Power;
 
-import java.util.Collection;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.UUID;
+import java.io.File;
+import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.util.*;
 
 public class WGSupport {
 
@@ -57,6 +64,36 @@ public class WGSupport {
         disabledByPlayer = new HashMap<>();
         for (Player p : plugin.getServer().getOnlinePlayers()) {
             WGHandler.refreshPlayerWG(p);
+        }
+        File file = new File(plugin.getDataFolder(), "worldguard_region.yml");
+        if (!file.exists()) return;
+        Configuration legacyConfig = YamlConfiguration.loadConfiguration(file);
+        Map<String, Object> values = legacyConfig.getValues(false);
+        values.forEach(
+                (k, v) -> {
+                    String[] split = k.split("\\.", 2);
+                    String worldName = split[0];
+                    String regionName = split[1];
+                    boolean flag = Boolean.valueOf(v.toString());
+                    if (Bukkit.getServer().getWorld(worldName) == null) return;
+                    World world = worldGuardInstance.getPlatform().getWorldByName(worldName);
+                    RegionManager regionManager = worldGuardInstance.getPlatform().getRegionContainer().get(world);
+                    if (regionManager == null) return;
+                    ProtectedRegion region = regionManager.getRegion(regionName);
+                    if (region == null) return;
+                    if (!flag) {
+                        region.setFlag(WGHandler.disabledItem, Collections.singleton("*"));
+                    } else {
+                        region.setFlag(WGHandler.enabledItem, Collections.singleton("*"));
+                    }
+                }
+        );
+        Path path = file.toPath();
+        Path bak = path.resolveSibling("worldguard_region.bak");
+        try {
+            Files.move(path, bak);
+        } catch (IOException e) {
+            e.printStackTrace();
         }
     }
 
@@ -121,8 +158,8 @@ public class WGSupport {
 
     private static boolean notEnabled(Collection<String> disabled, Collection<String> enabled, String name) {
         if (enabled == null || enabled.isEmpty()) {
-            return disabled != null && disabled.contains(name);
-        } else return !enabled.contains(name);
+            return disabled != null && (disabled.contains(name) || disabled.contains("*") || disabled.contains("all"));
+        } else return !(enabled.contains(name) || enabled.contains("*"));
     }
 
     public static void unload() {

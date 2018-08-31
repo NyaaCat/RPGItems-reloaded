@@ -26,12 +26,12 @@ import static think.rpgitems.support.WGSupport.worldGuardInstance;
 
 public class WGHandler extends Handler {
 
-    private static final SetFlag<String> disabledPower = new SetFlag<>("disabled-rpg-powers", new StringFlag(null));
-    private static final SetFlag<String> enabledPower = new SetFlag<>("enabled-rpg-powers", new StringFlag(null));
-    private static final SetFlag<String> disabledItem = new SetFlag<>("disabled-rpg-items", new StringFlag(null));
-    private static final SetFlag<String> enabledItem = new SetFlag<>("enabled-rpg-items", new StringFlag(null));
-    private static final SetFlag<String> disabledPlayer = new SetFlag<>("disabled-rpg-players", new StringFlag(null));
-    private static final SetFlag<String> enabledPlayer = new SetFlag<>("enabled-rpg-players", new StringFlag(null));
+    static final SetFlag<String> disabledPower = new SetFlag<>("disabled-rpg-powers", new StringFlag(null));
+    static final SetFlag<String> enabledPower = new SetFlag<>("enabled-rpg-powers", new StringFlag(null));
+    static final SetFlag<String> disabledItem = new SetFlag<>("disabled-rpg-items", new StringFlag(null));
+    static final SetFlag<String> enabledItem = new SetFlag<>("enabled-rpg-items", new StringFlag(null));
+    static final SetFlag<String> disabledPlayer = new SetFlag<>("disabled-rpg-players", new StringFlag(null));
+    static final SetFlag<String> enabledPlayer = new SetFlag<>("enabled-rpg-players", new StringFlag(null));
 
     private static final Factory FACTORY = new Factory();
 
