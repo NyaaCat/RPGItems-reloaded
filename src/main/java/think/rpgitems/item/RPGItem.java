@@ -49,6 +49,7 @@ import org.bukkit.inventory.ShapedRecipe;
 import org.bukkit.inventory.meta.Damageable;
 import org.bukkit.inventory.meta.ItemMeta;
 import org.bukkit.inventory.meta.LeatherArmorMeta;
+import org.bukkit.plugin.Plugin;
 import org.librazy.nclangchecker.LangKey;
 import org.librazy.nclangchecker.LangKeyType;
 import think.rpgitems.Events;
@@ -160,7 +161,7 @@ public class RPGItem {
         rebuild();
     }
 
-    public RPGItem(ConfigurationSection s) {
+    public RPGItem(ConfigurationSection s) throws UnknownPowerException, UnknownExtensionException {
         name = s.getString("name");
         id = s.getInt("id");
         uid = s.getInt("uid");
@@ -171,14 +172,14 @@ public class RPGItem {
         restore(s);
     }
 
-    public RPGItem(ConfigurationSection s, String name, int uid) {
+    public RPGItem(ConfigurationSection s, String name, int uid) throws UnknownPowerException, UnknownExtensionException {
         this.name = name;
         this.uid = uid;
         restore(s);
     }
 
     @SuppressWarnings({"unchecked", "deprecation"})
-    private void restore(ConfigurationSection s) {
+    private void restore(ConfigurationSection s) throws UnknownPowerException, UnknownExtensionException {
         author = s.getString("author", "");
         note = s.getString("note", "");
         license = s.getString("license", "");
@@ -239,7 +240,7 @@ public class RPGItem {
                     return;
                 }
                 selector.id = UUID.randomUUID().toString();
-                Set<? extends Class<? extends Power>> applicable = Arrays.stream(applyTo.split(",")).map(PowerManager::parseKey).map(PowerManager::getPower).collect(Collectors.toSet());
+                Set<? extends Class<? extends Power>> applicable = Arrays.stream(applyTo.split(",")).map(PowerManager::parseLegacyKey).map(PowerManager::getPower).collect(Collectors.toSet());
                 for (Class<? extends Power> pow : applicable) {
                     List<? extends Power> app = getPower(pow);
                     for (Power power : app) {
@@ -1555,7 +1556,7 @@ public class RPGItem {
             rebuild();
     }
 
-    public boolean removePower(String pow) {
+    public boolean removePower(String pow) throws UnknownExtensionException {
         Iterator<Power> it = powers.iterator();
         Power power = null;
         NamespacedKey key = PowerManager.parseKey(pow);
@@ -1624,5 +1625,29 @@ public class RPGItem {
         VANILLA,
         ADDITIONAL,
         MULTIPLY,
+    }
+
+    public static class UnknownPowerException extends Exception {
+        private NamespacedKey key;
+
+        public UnknownPowerException(NamespacedKey key) {
+            this.key = key;
+        }
+
+        public NamespacedKey getKey() {
+            return key;
+        }
+    }
+
+    public static class UnknownExtensionException extends Exception {
+        private String name;
+
+        public UnknownExtensionException(String name) {
+            this.name = name;
+        }
+
+        public String getName() {
+            return name;
+        }
     }
 }

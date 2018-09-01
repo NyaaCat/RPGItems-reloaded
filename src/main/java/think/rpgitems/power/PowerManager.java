@@ -33,6 +33,7 @@ import org.bukkit.plugin.Plugin;
 import think.rpgitems.Handler;
 import think.rpgitems.I18n;
 import think.rpgitems.RPGItems;
+import think.rpgitems.item.RPGItem;
 import think.rpgitems.utils.MaterialUtils;
 
 import java.lang.reflect.Field;
@@ -107,7 +108,7 @@ public class PowerManager {
         descriptionResolvers.put(plugin, descriptionResolver);
     }
 
-    public static NamespacedKey parseKey(String powerStr) {
+    public static NamespacedKey parseKey(String powerStr) throws RPGItem.UnknownExtensionException {
         if (!powerStr.contains(":")) return new NamespacedKey(RPGItems.plugin, powerStr);
         String[] split = powerStr.split(":");
         if (split.length != 2) {
@@ -117,8 +118,15 @@ public class PowerManager {
             Plugin namespace = nameSpaceCache.get(split[0]);
             return new NamespacedKey(namespace, split[1]);
         } catch (ExecutionException e) {
-            throw new RuntimeException(e);
+            throw new RPGItem.UnknownExtensionException(split[0]);
         }
+    }
+
+    public static NamespacedKey parseLegacyKey(String powerStr) {
+        if (powerStr.contains(":")) {
+            throw new IllegalArgumentException();
+        }
+        return new NamespacedKey(RPGItems.plugin, powerStr);
     }
 
     public static void setPowerProperty(CommandSender sender, Power power, String field, String value) throws IllegalAccessException {
@@ -278,7 +286,7 @@ public class PowerManager {
         return powers.get(key);
     }
 
-    public static Class<? extends Power> getPower(String key) {
+    public static Class<? extends Power> getPower(String key) throws RPGItem.UnknownExtensionException {
         return getPower(parseKey(key));
     }
 

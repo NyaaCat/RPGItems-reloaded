@@ -2,7 +2,6 @@ package think.rpgitems;
 
 import cat.nyaa.nyaacore.LanguageRepository;
 import cat.nyaa.nyaacore.Message;
-import think.rpgitems.utils.Pair;
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
 import org.bukkit.Color;
@@ -28,6 +27,7 @@ import think.rpgitems.power.impl.PowerCommand;
 import think.rpgitems.power.impl.PowerDeathCommand;
 import think.rpgitems.support.WGSupport;
 import think.rpgitems.utils.NetworkUtils;
+import think.rpgitems.utils.Pair;
 
 import java.lang.reflect.Field;
 import java.lang.reflect.InvocationTargetException;
@@ -427,12 +427,16 @@ public class Handler extends RPGCommandReceiver {
     public void itemRemovePower(CommandSender sender, Arguments args) {
         RPGItem item = getItemByName(args.nextString());
         String power = args.nextString();
-        if (item.removePower(power)) {
-            msg(sender, "message.power.removed", power);
-            ItemManager.refreshItem();
-            ItemManager.save();
-        } else {
-            msg(sender, "message.power.unknown", power);
+        try {
+            if (item.removePower(power)) {
+                msg(sender, "message.power.removed", power);
+                ItemManager.refreshItem();
+                ItemManager.save();
+            } else {
+                msg(sender, "message.power.unknown", power);
+            }
+        } catch (RPGItem.UnknownExtensionException e) {
+            msg(sender, "message.error.unknown.extension", e.getName());
         }
     }
 
@@ -575,7 +579,13 @@ public class Handler extends RPGCommandReceiver {
         int nth = args.nextInt();
         String property = args.nextString();
         int i = nth;
-        Class<? extends Power> p = PowerManager.getPower(power);
+        Class<? extends Power> p;
+        try {
+            p = PowerManager.getPower(power);
+        } catch (RPGItem.UnknownExtensionException e) {
+            msg(sender, "message.error.unknown.extension", e.getName());
+            return;
+        }
         if (p == null) {
             msg(sender, "message.power.unknown", power);
             return;
@@ -604,19 +614,24 @@ public class Handler extends RPGCommandReceiver {
         int nth = args.nextInt();
         String property = args.nextString();
         String val = args.nextString();
-        Class<? extends Power> p = PowerManager.getPower(power);
-        if (p == null) {
-            msg(sender, "message.power.unknown", power);
-            return;
-        }
-        Optional<Power> op = item.powers.stream().filter(pwr -> pwr.getClass().equals(p)).skip(nth - 1).findFirst();
-        if (op.isPresent()) {
-            Power pow = op.get();
-            item.removePower(pow);
-            PowerManager.setPowerProperty(sender, pow, property, val);
-            item.addPower(pow);
-        } else {
-            msg(sender, "message.power_property.power_notfound");
+        try {
+            Class<? extends Power> p = PowerManager.getPower(power);
+            if (p == null) {
+                msg(sender, "message.power.unknown", power);
+                return;
+            }
+            Optional<Power> op = item.powers.stream().filter(pwr -> pwr.getClass().equals(p)).skip(nth - 1).findFirst();
+            if (op.isPresent()) {
+                Power pow = op.get();
+                item.removePower(pow);
+                PowerManager.setPowerProperty(sender, pow, property, val);
+                item.addPower(pow);
+            } else {
+                msg(sender, "message.power_property.power_notfound");
+                return;
+            }
+        } catch (RPGItem.UnknownExtensionException e) {
+            msg(sender, "message.error.unknown.extension", e.getName());
             return;
         }
         item.rebuild();
@@ -833,7 +848,13 @@ public class Handler extends RPGCommandReceiver {
             return;
         }
         RPGItem item = getItemByName(itemStr);
-        Class<? extends Power> cls = PowerManager.getPower(powerStr);
+        Class<? extends Power> cls;
+        try {
+            cls = PowerManager.getPower(powerStr);
+        } catch (RPGItem.UnknownExtensionException e) {
+            msg(sender, "message.error.unknown.extension", e.getName());
+            return;
+        }
         if (cls == null) {
             msg(sender, "message.power.unknown", powerStr);
             return;
@@ -923,11 +944,9 @@ public class Handler extends RPGCommandReceiver {
     public void download(CommandSender sender, Arguments args) {
         NetworkUtils.Location location = args.nextEnum(NetworkUtils.Location.class);
         String id = args.nextString();
-        boolean confirm = "confirm".equalsIgnoreCase(args.next());
-
         switch (location) {
             case GIST:
-                downloadGist(sender, args, id, confirm);
+                downloadGist(sender, args, id);
                 break;
         }
     }
@@ -949,13 +968,13 @@ public class Handler extends RPGCommandReceiver {
     private void publishGist(CommandSender sender, Arguments args, Set<String> itemNames) {
         List<Pair<String, RPGItem>> items = itemNames.stream().map(i -> Pair.of(i, ItemManager.getItemByName(i))).collect(Collectors.toList());
         Optional<Pair<String, RPGItem>> unknown = items.stream().filter(p -> p.getValue() == null).findFirst();
-        if(unknown.isPresent()){
-            throw new BadCommandException("error.item", unknown.get().getKey());
+        if (unknown.isPresent()) {
+            throw new BadCommandException("message.error.item", unknown.get().getKey());
         }
         String token = args.argString("token", plugin.getConfig().getString("githubToken"));
         String description = args.argString("description", plugin.getConfig().getString("description", "RPGItems exported items"));
-        if(token == null){
-            throw new BadCommandException("message.export.token");
+        if (token == null) {
+            throw new BadCommandException("message.export.gist.token");
         }
         Map<String, Map<String, String>> result = new HashMap<>(items.size());
         items.forEach(
@@ -964,6 +983,7 @@ public class Handler extends RPGCommandReceiver {
                     String name = pair.getKey();
                     YamlConfiguration conf = new YamlConfiguration();
                     item.save(conf);
+                    conf.set("id", null);
                     String itemConf = conf.saveToString();
                     String filename = ItemManager.getItemFilename(name) + ".yml";
                     Map<String, String> content = new HashMap<>();
@@ -974,78 +994,81 @@ public class Handler extends RPGCommandReceiver {
         Bukkit.getScheduler().runTaskAsynchronously(plugin, () -> {
             try {
                 String id = NetworkUtils.publishGist(result, token, description);
-                Bukkit.getScheduler().runTask(plugin, () -> new Message(I18n.format("message.export.ed", id)).send(sender));
-            } catch (InterruptedException|ExecutionException e) {
+                Bukkit.getScheduler().runTask(plugin, () -> new Message(I18n.format("message.export.gist.ed", id)).send(sender));
+            } catch (InterruptedException | ExecutionException e) {
                 e.printStackTrace();
-                Bukkit.getScheduler().runTask(plugin, () -> new Message(I18n.format("message.export.failed")).send(sender));
+                Bukkit.getScheduler().runTask(plugin, () -> new Message(I18n.format("message.export.gist.failed")).send(sender));
             } catch (TimeoutException e) {
                 e.printStackTrace();
-                Bukkit.getScheduler().runTask(plugin, () -> new Message(I18n.format("message.export.timeout")).send(sender));
+                Bukkit.getScheduler().runTask(plugin, () -> new Message(I18n.format("message.export.gist.timeout")).send(sender));
             }
         });
     }
 
-    private void downloadGist(CommandSender sender, Arguments args, String id, boolean confirm) {
-        new Message(I18n.format("message.import.ing")).send(sender);
+    private void downloadGist(CommandSender sender, Arguments args, String id) {
+        new Message(I18n.format("message.import.gist.ing")).send(sender);
         String token = args.argString("token", plugin.getConfig().getString("githubToken"));
         Bukkit.getScheduler().runTaskAsynchronously(plugin, () -> {
             Map<String, String> gist;
             try {
                 gist = NetworkUtils.downloadGist(id, token);
                 Bukkit.getScheduler().runTask(plugin, () -> {
-                    loadItems(sender, id, gist, confirm, args);
-                    new Message(I18n.format("message.import.ed")).send(sender);
+                    loadItems(sender, id, gist, args);
+                    new Message(I18n.format("message.import.gist.ed")).send(sender);
                 });
             } catch (InterruptedException | ExecutionException e) {
                 e.printStackTrace();
-                Bukkit.getScheduler().runTask(plugin, () -> new Message(I18n.format("message.import.failed")).send(sender));
+                Bukkit.getScheduler().runTask(plugin, () -> new Message(I18n.format("message.import.gist.failed")).send(sender));
             } catch (TimeoutException e) {
                 e.printStackTrace();
-                Bukkit.getScheduler().runTask(plugin, () -> new Message(I18n.format("message.import.timeout")).send(sender));
+                Bukkit.getScheduler().runTask(plugin, () -> new Message(I18n.format("message.import.gist.timeout")).send(sender));
             }
         });
     }
 
-    private void loadItems(CommandSender sender, String id, Map<String, String> gist, boolean force, Arguments args) {
+    private void loadItems(CommandSender sender, String id, Map<String, String> gist, Arguments args) {
         List<RPGItem> items = new ArrayList<>(gist.size());
         for (Map.Entry<String, String> entry : gist.entrySet()) {
             String k = entry.getKey();
             String v = entry.getValue();
             YamlConfiguration itemStorage = new YamlConfiguration();
             try {
+                itemStorage.set("id", null);
                 itemStorage.loadFromString(v);
                 String origin = itemStorage.getString("name");
                 int uid = itemStorage.getInt("uid");
 
-                if (uid >= 0) {
+                if (uid >= 0 || origin == null) {
                     throw new InvalidConfigurationException();
                 }
 
-                if (ItemManager.itemById.containsKey(uid)) {
-                    new Message(I18n.format("message.import.conflict_uid", id)).send(sender);
-                }
-                if (ItemManager.itemByName.containsKey(origin)) {
-                    new Message(I18n.format("message.import.conflict_name", id)).send(sender);
-                }
-
                 String name = args.argString(origin, origin);
-                RPGItem item = new RPGItem(itemStorage, name, uid);
 
-                if (!force && (!item.getPower(PowerCommand.class, true).isEmpty() || !item.getPower(PowerDeathCommand.class, true).isEmpty())) {
-                    new Message(I18n.format("message.import.unsafe_command", id)).send(sender);
-                    new Message(I18n.format("message.import.confirm_required", id)).send(sender);
-                    return;
+                if (ItemManager.itemById.containsKey(uid)) {
+                    RPGItem current = ItemManager.getItemById(uid);
+                    msg(sender, "message.import.conflict_uid", origin, current.getName(), uid);
                 }
+                if (ItemManager.itemByName.containsKey(name)) {
+                    msg(sender, "message.import.conflict_name", name);
+                }
+
+                RPGItem item = new RPGItem(itemStorage, name, uid);
                 items.add(item);
             } catch (InvalidConfigurationException e) {
-                new Message(I18n.format("message.import.invalid_conf", id, k)).send(sender);
+                msg(sender, "message.import.invalid_conf", k);
                 e.printStackTrace();
+                return;
+            } catch (RPGItem.UnknownPowerException e) {
+                msg(sender, "message.power.unknown", e.getKey().toString());
+                return;
+            } catch (RPGItem.UnknownExtensionException e) {
+                msg(sender, "message.error.unknown.extension", e.getName());
                 return;
             }
         }
         for (RPGItem item : items) {
             ItemManager.addItem(item);
-            new Message(I18n.format("message.import.success", id, item.getName())).send(sender);
+            msg(sender, "message.import.success", item.getName(), item.getUID());
         }
         ItemManager.save();
     }

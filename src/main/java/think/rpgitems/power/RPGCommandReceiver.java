@@ -125,7 +125,12 @@ public abstract class RPGCommandReceiver extends CommandReceiver {
 
     private List<String> resolvePowerProperties(CommandSender sender, String last, Arguments cmd) {
         @LangKey(skipCheck = true) String powName = cmd.next();
-        NamespacedKey powerKey = PowerManager.parseKey(powName);
+        NamespacedKey powerKey;
+        try {
+            powerKey = PowerManager.parseKey(powName);
+        } catch (RPGItem.UnknownExtensionException e) {
+            return Collections.emptyList();
+        }
         Class<? extends Power> power = powers.get(powerKey);
         if (power == null) return Collections.emptyList();
         SortedMap<PowerProperty, Field> argMap = PowerManager.getProperties(power);
@@ -186,7 +191,13 @@ public abstract class RPGCommandReceiver extends CommandReceiver {
     private List<String> resolveGetSet(String last, Arguments cmd, Pair<RPGItem, String> itemCommand) {
         RPGItem item = itemCommand.getKey();
         String powerName = cmd.next();
-        List<Power> powers = item.powers.stream().filter(p -> p.getNamespacedKey().equals(PowerManager.parseKey(powerName))).collect(Collectors.toList());
+        NamespacedKey key;
+        try {
+            key = PowerManager.parseKey(powerName);
+        } catch (RPGItem.UnknownExtensionException e) {
+            return Collections.emptyList();
+        }
+        List<Power> powers = item.powers.stream().filter(p -> p.getNamespacedKey().equals(key)).collect(Collectors.toList());
         if (powers.isEmpty()) return Collections.emptyList();
         Class<? extends Power> powerClass = powers.get(0).getClass();
         if (cmd.top() == null) {

@@ -23,13 +23,13 @@ import org.bukkit.configuration.InvalidConfigurationException;
 import org.bukkit.configuration.MemoryConfiguration;
 import org.bukkit.configuration.file.YamlConfiguration;
 import org.bukkit.entity.Player;
-import org.bukkit.inventory.Inventory;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.ItemMeta;
 import org.bukkit.util.FileUtil;
 import think.rpgitems.RPGItems;
 
 import java.io.*;
+import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.StandardCopyOption;
@@ -117,22 +117,21 @@ public class ItemManager {
         itemByName.put(item.getName(), item);
     }
 
-    public static void loadFromLegacyFile(File f) {
+    private static void loadFromLegacyFile(File f) {
         try {
             FileInputStream in = null;
-            YamlConfiguration itemStorage = null;
+            YamlConfiguration itemStorage;
             try {
                 in = new FileInputStream(f);
                 byte[] data = new byte[(int) f.length()];
-                in.read(data);
+                int read = in.read(data);
+                if (read < 0) throw new IllegalStateException();
                 itemStorage = new YamlConfiguration();
-                String str = new String(data, "UTF-8");
+                String str = new String(data, StandardCharsets.UTF_8);
                 itemStorage.loadFromString(str);
-            } catch (FileNotFoundException ignored) {
-            } catch (IOException e) {
+            } catch (IOException | InvalidConfigurationException e) {
                 e.printStackTrace();
-            } catch (InvalidConfigurationException e) {
-                e.printStackTrace();
+                return;
             } finally {
                 try {
                     if (in != null)
@@ -164,7 +163,7 @@ public class ItemManager {
         }
     }
 
-    public static void dump(Exception e) {
+    private static void dump(Exception e) {
         File file = new File(plugin.getDataFolder(), "items.yml");
         long time = System.currentTimeMillis();
         File backup = new File(plugin.getDataFolder(), time + "-items.yml");
@@ -216,7 +215,7 @@ public class ItemManager {
             backup.deleteOnExit();
             item.hashcode = Math.abs(configuration.saveToString().hashCode());
             item.file = canonicalPath;
-        } catch (IOException | InvalidConfigurationException e) {
+        } catch (IOException | InvalidConfigurationException | RPGItem.UnknownPowerException | RPGItem.UnknownExtensionException e) {
             throw new RuntimeException(e);
         }
     }
@@ -268,7 +267,12 @@ public class ItemManager {
         } while (itemById.containsKey(free));
         ConfigurationSection section = new MemoryConfiguration();
         item.save(section);
-        RPGItem newItem = new RPGItem(section, name, free);
+        RPGItem newItem;
+        try {
+            newItem = new RPGItem(section, name, free);
+        } catch (RPGItem.UnknownPowerException | RPGItem.UnknownExtensionException e) {
+            throw new RuntimeException(e);
+        }
         itemById.put(free, newItem);
         itemByName.put(name, newItem);
         return newItem;

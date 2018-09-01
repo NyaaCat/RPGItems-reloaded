@@ -47,6 +47,7 @@ message:
     player: Cannot find player %s
     unknown:
       command: 'Error: Unknown command %s'
+      extension: 'Unknown extension: %s'
     option: Invalid option '%s'
     iteminhand: 'No item in your hand'
     need_material: 'You need a %s to repair this item'
@@ -117,13 +118,11 @@ message:
   too:
     far: It landed too far away...
   version: |-
-    RPGItem v%s (1.11.2 branch)
+    RPGItem v%s (1.13.1 branch)
 
     Copyright © 2017 NyaaCat Developers
     Copyright © 2013 TheCreeperOfRedstone
-    License GPLv3+: GNU GPL version 3 or later <http://gnu.org/licenses/gpl.html>.
-    This is free software: you are free to change and redistribute it.
-    There is NO WARRANTY, to the extent permitted by law.
+    License MIT
 
     Report Bugs At: https://github.com/NyaaCat/RPGitems-reloaded/issues
   display:
@@ -185,6 +184,25 @@ message:
     success: 'Successfully cloned item %s as %s'
     fail: 'Failed to clone item %s : %s already exists'
   translocator: "%s's Translocator"
+  import:
+    gist:
+      notfound: 'Gist https://gist.github.com/%s not found'
+      code: 'Gist download failed: %d'
+      ing: Importing items from Gist
+      ed: Gist import success
+      timeout: Gist download timeout
+      failed: Gist download failed
+    success: 'Item %s (UID: %d) import success'
+    conflict_uid: "Item to import '%s' has same UID with '%s': %d , please check if you already have it."
+    conflict_name: "Item to import has a name conflict: '%s' , please specify a replacement with <old_name>:<new_name> in command"
+    invalid_conf: 'Item configuration is invalid: %s'
+  export:
+    gist:
+      token: Please specify Gist Token in command like 'token:<token>' or add 'githubToken:<token>' to config
+      ed: Gist export success
+      timeout: Gist upload timeout
+      failed: Gist upload failed
+      code: 'Gist upload failed: %d'
 
 power:
   airborne: 'Damage increase by %d%% when gliding'

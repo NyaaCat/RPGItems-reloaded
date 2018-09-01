@@ -30,7 +30,9 @@ message:
     player: 没有找到玩家 %s
     unknown:
       command: '错误: 未知指令 %s'
+      extension: 未知扩展： %s
     option: 无效项 '%s'
+    iteminhand: 手中没有物品
   wgcustomflag:
     disable: Worldguard 自定义标志已禁用
     enable: Worldguard 自定义标志已启用
@@ -176,19 +178,32 @@ message:
     success: 物品 %s 成功克隆为 %s
     fail: 物品 %s 克隆失败： %s 已存在
   translocator: '%s 的传送信标'
-  version: 'RPGItem v%s (1.12 branch)
+  import:
+    gist:
+      notfound: 未找到 https://gist.github.com/%s ，请检查 Gist ID 是否正确
+      code: Gist API 调用错误： %d
+      ing: 正在导入 Gist 中的物品
+      ed: Gist 导入成功
+      timeout: Gist 下载超时
+      failed: Gist 下载失败
+    success: 物品 %s （UID： %d）导入成功
+    conflict_uid: 待导入物品 %s 与现有物品 %s 有相同 UID： %d , 请检查是否已拥有该物品。
+    conflict_name: 待导入物品与现有物品有相同名称： %s ，请在命令中使用 <原名称>:<新名称> 指定新名称
+    invalid_conf: 物品配置无效： %s
+  export:
+    gist:
+      token: 未指定 Gist Token，请在命令中指定 token:<token> 或者配置中配置 githubToken
+      ed: 导出成功
+      timeout: Gist 上传超时
+      failed: Gist 上传失败
+  version: 'RPGItem v%s (1.13.1 branch)
 
 
     版权所有 © 2018 NyaaCat 开发组
 
     版权所有 © 2013 TheCreeperOfRedstone
 
-    以 GPLv3+ 授权: GNU GPL version 3 or later <http://gnu.org/licenses/gpl.html>.
-
-    This is free software: you are free to change and redistribute it.
-
-    There is NO WARRANTY, to the extent permitted by law.
-
+    以 MIT 授权
 
     Bug反馈: https://github.com/NyaaCat/RPGitems-reloaded/issues'
 power:

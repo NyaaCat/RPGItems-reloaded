@@ -32,9 +32,9 @@ public class NetworkUtils {
         FullHttpResponse httpResponse = response.get(10, TimeUnit.SECONDS);
 
         if (httpResponse.status().code() == 404) {
-            throw new Handler.CommandException("message.import.notfound");
+            throw new Handler.CommandException("message.import.gist.notfound", id);
         } else if(httpResponse.status().code() != 200){
-            throw new Handler.CommandException("message.import.code", httpResponse.status().code());
+            throw new Handler.CommandException("message.import.gist.code", httpResponse.status().code());
         }
 
         String json = httpResponse.content().toString(UTF_8);
@@ -64,7 +64,7 @@ public class NetworkUtils {
         FullHttpResponse httpResponse = response.get(10, TimeUnit.SECONDS);
         if(httpResponse.status().code() != 201){
             System.out.println(httpResponse.content().toString(UTF_8));
-            throw new Handler.CommandException("message.export.code", httpResponse.status().code());
+            throw new Handler.CommandException("message.export.gist.code", httpResponse.status().code());
         }
         String location = httpResponse.headers().get("Location");
         String[] split = location.split("/");
