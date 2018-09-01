@@ -225,6 +225,7 @@ public abstract class RPGCommandReceiver extends CommandReceiver {
         } else {
             currentVaules.remove(currentVaules.size() - 1);
         }
+        values.removeAll(currentVaules);
         String incompleteValue = lastVaule;
         String base = incompleteValue.isEmpty() ? last : last.replaceAll(incompleteValue + "$", "");
         boolean next = currentVaules.isEmpty() || base.endsWith(",");
