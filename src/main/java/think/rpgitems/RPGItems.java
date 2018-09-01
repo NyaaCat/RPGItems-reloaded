@@ -19,6 +19,9 @@ package think.rpgitems;
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
 import org.bukkit.configuration.ConfigurationSection;
+import org.bukkit.plugin.InvalidDescriptionException;
+import org.bukkit.plugin.InvalidPluginException;
+import org.bukkit.plugin.Plugin;
 import org.bukkit.plugin.java.JavaPlugin;
 import org.librazy.nclangchecker.LangKey;
 import think.rpgitems.data.Font;
@@ -28,19 +31,24 @@ import think.rpgitems.power.PowerTicker;
 import think.rpgitems.power.impl.BasePower;
 import think.rpgitems.support.WGSupport;
 
+import java.io.File;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.logging.Logger;
 
 public class RPGItems extends JavaPlugin {
 
-    public static Logger logger = Logger.getLogger("RPGItems");
+    public static Logger logger;
     public static RPGItems plugin;
     public static Events listener;
     public Handler commandHandler;
+    List<Plugin> managedPlugins = new ArrayList<>();
     public I18n i18n;
 
     @Override
     public void onLoad() {
         plugin = this;
+        logger = this.getLogger();
         PowerManager.registerPowers(RPGItems.plugin, BasePower.class.getPackage().getName());
         PowerManager.addDescriptionResolver(RPGItems.plugin, (power, property) -> {
             if (property == null) {
@@ -60,6 +68,26 @@ public class RPGItems extends JavaPlugin {
         saveDefaultConfig();
         Font.load();
         WGSupport.load();
+
+        loadExtensions();
+    }
+
+    public void loadExtensions() {
+        File extDir = new File(plugin.getDataFolder(), "ext");
+        if (extDir.isDirectory() || extDir.mkdirs()) {
+            File[] files = extDir.listFiles((d, n) -> n.endsWith(".jar"));
+            if (files == null) return;
+            for (File file : files) {
+                try {
+                    Plugin plugin = Bukkit.getPluginManager().loadPlugin(file);
+                    managedPlugins.add(plugin);
+                    logger.info("Loaded extension: " + plugin.getName());
+                } catch (InvalidPluginException | InvalidDescriptionException e) {
+                    logger.warning("Error loading extension: " + file.getName());
+                    e.printStackTrace();
+                }
+            }
+        }
     }
 
     @Override
@@ -94,6 +122,8 @@ public class RPGItems extends JavaPlugin {
             ItemManager.load(this);
             new PowerTicker().runTaskTimer(this, 0, 1);
         });
+
+        managedPlugins.forEach(Bukkit.getPluginManager()::enablePlugin);
     }
 
     @Override
@@ -102,5 +132,7 @@ public class RPGItems extends JavaPlugin {
         getCommand("rpgitem").setExecutor(null);
         getCommand("rpgitem").setTabCompleter(null);
         this.getServer().getScheduler().cancelTasks(plugin);
+
+        managedPlugins.forEach(Bukkit.getPluginManager()::disablePlugin);
     }
 }

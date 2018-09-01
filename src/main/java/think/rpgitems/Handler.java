@@ -62,6 +62,10 @@ public class Handler extends RPGCommandReceiver {
         if (plugin.getConfig().getBoolean("localeInv", false)) {
             Events.useLocaleInv = true;
         }
+        plugin.managedPlugins.forEach(Bukkit.getPluginManager()::disablePlugin);
+        plugin.managedPlugins.clear();
+        plugin.loadExtensions();
+        plugin.managedPlugins.forEach(Bukkit.getPluginManager()::enablePlugin);
         sender.sendMessage(ChatColor.GREEN + "[RPGItems] Reloaded RPGItems.");
     }
 
