@@ -81,11 +81,12 @@ public abstract class RPGCommandReceiver extends CommandReceiver {
         }
         List<String> enumValues = Stream.of(listArg.getEnumConstants()).map(Enum::name).collect(Collectors.toList());
         List<String> currentVaules = Stream.of(currentValuesStr.split(",")).collect(Collectors.toList());
-        String lastVaule = currentVaules.get(currentVaules.size() - 1);
+        int size = currentVaules.size();
+        String lastVaule = size > 0 ? currentVaules.get(size - 1) : "";
         if (enumValues.contains(lastVaule)) {
             lastVaule = "";
         } else {
-            currentVaules.remove(currentVaules.size() - 1);
+            currentVaules.remove(size - 1);
         }
         AcceptedValue as = propertyField.getAnnotation(AcceptedValue.class);
         if (as != null) {

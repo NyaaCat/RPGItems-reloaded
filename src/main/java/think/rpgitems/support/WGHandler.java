@@ -1,7 +1,9 @@
 package think.rpgitems.support;
 
 import com.sk89q.worldedit.util.Location;
+import com.sk89q.worldedit.world.World;
 import com.sk89q.worldguard.LocalPlayer;
+import com.sk89q.worldguard.WorldGuard;
 import com.sk89q.worldguard.protection.ApplicableRegionSet;
 import com.sk89q.worldguard.protection.flags.SetFlag;
 import com.sk89q.worldguard.protection.flags.StringFlag;
@@ -14,15 +16,18 @@ import com.sk89q.worldguard.session.MoveType;
 import com.sk89q.worldguard.session.Session;
 import com.sk89q.worldguard.session.SessionManager;
 import com.sk89q.worldguard.session.handler.Handler;
+import org.bukkit.Bukkit;
+import org.bukkit.configuration.Configuration;
+import org.bukkit.configuration.file.YamlConfiguration;
 import org.bukkit.entity.Player;
 import org.bukkit.event.player.PlayerJoinEvent;
 import think.rpgitems.RPGItems;
 
-import java.util.Collection;
-import java.util.Set;
-import java.util.UUID;
-
-import static think.rpgitems.support.WGSupport.worldGuardInstance;
+import java.io.File;
+import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.util.*;
 
 public class WGHandler extends Handler {
 
@@ -34,12 +39,14 @@ public class WGHandler extends Handler {
     static final SetFlag<String> enabledPlayer = new SetFlag<>("enabled-rpg-players", new StringFlag(null));
 
     private static final Factory FACTORY = new Factory();
+    static WorldGuard worldGuardInstance;
 
     private WGHandler(Session session) {
         super(session);
     }
 
     public static void init() {
+        worldGuardInstance = WorldGuard.getInstance();
         FlagRegistry registry = worldGuardInstance.getFlagRegistry();
         try {
             registry.register(disabledPower);
@@ -50,6 +57,37 @@ public class WGHandler extends Handler {
             registry.register(enabledPlayer);
             RPGItems.logger.info("[RPGItems] WorldGuard custom flags registered");
         } catch (FlagConflictException e) {
+            e.printStackTrace();
+        }
+    }
+
+    static void migrate(File file) {
+        Configuration legacyConfig = YamlConfiguration.loadConfiguration(file);
+        Map<String, Object> values = legacyConfig.getValues(false);
+        values.forEach(
+                (k, v) -> {
+                    String[] split = k.split("\\.", 2);
+                    String worldName = split[0];
+                    String regionName = split[1];
+                    boolean flag = Boolean.valueOf(v.toString());
+                    if (Bukkit.getServer().getWorld(worldName) == null) return;
+                    World world = worldGuardInstance.getPlatform().getWorldByName(worldName);
+                    RegionManager regionManager = worldGuardInstance.getPlatform().getRegionContainer().get(world);
+                    if (regionManager == null) return;
+                    ProtectedRegion region = regionManager.getRegion(regionName);
+                    if (region == null) return;
+                    if (!flag) {
+                        region.setFlag(WGHandler.disabledItem, Collections.singleton("*"));
+                    } else {
+                        region.setFlag(WGHandler.enabledItem, Collections.singleton("*"));
+                    }
+                }
+        );
+        Path path = file.toPath();
+        Path bak = path.resolveSibling("worldguard_region.bak");
+        try {
+            Files.move(path, bak);
+        } catch (IOException e) {
             e.printStackTrace();
         }
     }

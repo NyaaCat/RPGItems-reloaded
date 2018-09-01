@@ -52,14 +52,17 @@ public abstract class BasePower implements Serializable, Power {
             }
             try {
                 Serializer getter = field.getAnnotation(Serializer.class);
+                Object val = field.get(this);
+                if (val == null) continue;
                 if (getter != null) {
-                    section.set(property.name(), Getter.from(getter.value()).get(field.get(this)));
+                    section.set(property.name(), Getter.from(getter.value()).get(val));
                 } else {
                     if (Collection.class.isAssignableFrom(field.getType())) {
-                        Collection c = (Collection) field.get(this);
+                        Collection c = (Collection) val;
+                        if (c.isEmpty()) continue;
                         section.set(property.name(), c.stream().map(Object::toString).collect(Collectors.joining(",")));
                     } else {
-                        section.set(property.name(), field.get(this));
+                        section.set(property.name(), val);
                     }
                 }
             } catch (IllegalAccessException e) {

@@ -25,10 +25,10 @@ public class PowerCondition extends BasePower {
     public boolean isStatic = false;
 
     @Property
-    public int durabilityMin;
+    public int durabilityMin = Integer.MIN_VALUE;
 
     @Property
-    public int durabilityMax;
+    public int durabilityMax = Integer.MAX_VALUE;
 
     /**
      * Selecting targets by score(s), According to the following format
@@ -76,7 +76,7 @@ public class PowerCondition extends BasePower {
 
     public boolean check(Player player, ItemStack stack) {
         int durability = getItem().getDurability(stack);
-        if (durability > durabilityMax || durability <= durabilityMin) return false;
+        if (durability > durabilityMax || durability < durabilityMin) return false;
         if (tag != null) {
             Pair<Set<String>, Set<String>> t = tagCache.getUnchecked(tag);
             if (!matchTag(player, t)) {

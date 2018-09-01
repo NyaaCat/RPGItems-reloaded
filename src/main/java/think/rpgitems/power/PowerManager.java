@@ -213,15 +213,15 @@ public class PowerManager {
                 } else if (Collection.class.isAssignableFrom(field.getType())) {
                     ParameterizedType listType = (ParameterizedType) field.getGenericType();
                     Class<?> listArg = (Class<?>) listType.getActualTypeArguments()[0];
-
+                    String[] valueStrs = value.split(",");
                     AcceptedValue as = field.getAnnotation(AcceptedValue.class);
                     if (as != null) {
                         List<String> acc = getAcceptedValue(cls, as);
-                        if (Arrays.stream(value.split(",")).anyMatch(v -> !acc.contains(v))) {
+                        if (Arrays.stream(valueStrs).filter(s -> !s.isEmpty()).anyMatch(v -> !acc.contains(v))) {
                             throw new Handler.CommandException("message.error.invalid_option", field.getName(), String.join(", ", acc));
                         }
                     }
-                    Stream<String> values = Arrays.stream(value.split(","));
+                    Stream<String> values = Arrays.stream(valueStrs).filter(s -> !s.isEmpty());
                     if (field.getType().equals(List.class)) {
                         if (listArg.isEnum()) {
                             Class<? extends Enum> enumClass = (Class<? extends Enum>) listArg;

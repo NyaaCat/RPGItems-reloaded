@@ -912,8 +912,8 @@ public class Handler extends RPGCommandReceiver {
         }
         power.setItem(item);
         item.addPower(power);
-        msg(sender, "message.power.ok");
         ItemManager.save();
+        msg(sender, "message.power.ok");
     }
 
     private RPGItem getItemByName(String name) {

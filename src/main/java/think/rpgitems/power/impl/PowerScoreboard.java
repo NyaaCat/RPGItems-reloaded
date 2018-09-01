@@ -25,7 +25,7 @@ import java.util.concurrent.TimeUnit;
 import static think.rpgitems.power.Utils.checkCooldown;
 
 @PowerMeta(defaultTrigger = TriggerType.RIGHT_CLICK)
-public class PowerScoreboard extends BasePower implements AllTrigger {
+public class PowerScoreboard extends BasePower implements PowerHit, PowerHitTaken, PowerLeftClick, PowerRightClick, PowerOffhandClick, PowerProjectileHit, PowerSneak, PowerSprint, PowerSwapToMainhand, PowerSwapToOffhand, PowerTick {
 
     /**
      * Tag(s) to add and remove, according to the following format
@@ -53,6 +53,9 @@ public class PowerScoreboard extends BasePower implements AllTrigger {
     @Property
     public int cost = 0;
 
+    @Property
+    public boolean abortOnSuccess = false;
+
     private static LoadingCache<String, Pair<Set<String>, Set<String>>> teamCache = CacheBuilder
                                                                                             .newBuilder()
                                                                                             .concurrencyLevel(1)
@@ -71,14 +74,18 @@ public class PowerScoreboard extends BasePower implements AllTrigger {
 
         Scoreboard scoreboard = player.getScoreboard();
 
-        Pair<Set<String>, Set<String>> team = teamCache.getUnchecked(this.team);
-        team.getKey().stream().map(scoreboard::getTeam).forEach(t -> t.addEntry(player.getName()));
-        team.getValue().stream().map(scoreboard::getTeam).forEach(t -> t.removeEntry(player.getName()));
+        if (this.team != null) {
+            Pair<Set<String>, Set<String>> team = teamCache.getUnchecked(this.team);
+            team.getKey().stream().map(scoreboard::getTeam).forEach(t -> t.addEntry(player.getName()));
+            team.getValue().stream().map(scoreboard::getTeam).forEach(t -> t.removeEntry(player.getName()));
+        }
 
-        Pair<Set<String>, Set<String>> tag = tagCache.getUnchecked(this.tag);
-        tag.getKey().forEach(player::addScoreboardTag);
-        tag.getValue().forEach(player::removeScoreboardTag);
-        return PowerResult.ok();
+        if (this.tag != null) {
+            Pair<Set<String>, Set<String>> tag = tagCache.getUnchecked(this.tag);
+            tag.getKey().forEach(player::addScoreboardTag);
+            tag.getValue().forEach(player::removeScoreboardTag);
+        }
+        return abortOnSuccess? PowerResult.abort() : PowerResult.ok();
     }
 
     @Override

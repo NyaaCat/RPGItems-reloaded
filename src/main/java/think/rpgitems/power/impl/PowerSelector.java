@@ -250,10 +250,11 @@ public class PowerSelector extends BasePower {
     }
 
     static boolean matchTag(Entity e, Pair<Set<String>, Set<String>> tagLimit) {
-        if (tagLimit.getValue() == null) return e.getScoreboardTags().isEmpty();
-        if (tagLimit.getKey() == null) return !e.getScoreboardTags().isEmpty();
-        return tagLimit.getKey().containsAll(e.getScoreboardTags())
-                       && e.getScoreboardTags().stream().noneMatch(t -> tagLimit.getValue().contains(t));
+        Set<String> tags = e.getScoreboardTags();
+        if (tagLimit.getValue() == null) return tags.isEmpty();
+        if (tagLimit.getKey() == null) return !tags.isEmpty();
+        return tags.containsAll(tagLimit.getKey())
+                       && tags.stream().noneMatch(t -> tagLimit.getValue().contains(t));
     }
 
     private boolean inRadius(Entity e, Location l, Integer r, Integer rm) {
