@@ -545,7 +545,6 @@ public class Events implements Listener {
     }
 
     private double playerDamager(EntityDamageByEntityEvent e, double damage) {
-
         Player player = (Player) e.getDamager();
         ItemStack item = player.getInventory().getItemInMainHand();
 

@@ -4,7 +4,6 @@ import com.google.common.collect.Sets;
 import org.bukkit.NamespacedKey;
 import org.bukkit.configuration.ConfigurationSection;
 import think.rpgitems.item.RPGItem;
-import think.rpgitems.power.impl.BasePower;
 
 import java.util.Arrays;
 import java.util.Objects;

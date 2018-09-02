@@ -626,8 +626,11 @@ public class Handler extends RPGCommandReceiver {
             if (op.isPresent()) {
                 Power pow = op.get();
                 item.removePower(pow);
-                PowerManager.setPowerProperty(sender, pow, property, val);
-                item.addPower(pow);
+                try {
+                    PowerManager.setPowerProperty(sender, pow, property, val);
+                } finally {
+                    item.addPower(pow);
+                }
             } else {
                 msg(sender, "message.power_property.power_notfound");
                 return;
