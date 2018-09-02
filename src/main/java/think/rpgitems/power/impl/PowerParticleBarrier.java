@@ -145,9 +145,9 @@ public class PowerParticleBarrier extends BasePower implements PowerRightClick, 
         Location eyeLocation = target.getEyeLocation();
         Location base = eyeLocation.clone();
         Vector f = base.getDirection().setY(0).normalize();
-        base.setYaw(base.getYaw() + 50);
+        base.setYaw(base.getYaw() + 45);
         Vector r = base.getDirection().setY(0).normalize();
-        base.setYaw(base.getYaw() - 100);
+        base.setYaw(base.getYaw() - 90);
         Vector l = base.getDirection().setY(0).normalize();
 
         ArmorStand asL = eyeLocation.getWorld().spawn(eyeLocation.clone().add(l.multiply(2)), ArmorStand.class);
@@ -196,6 +196,7 @@ public class PowerParticleBarrier extends BasePower implements PowerRightClick, 
                     asR.remove();
                     asL.remove();
                     asB.remove();
+                    barriers.put(uuid, 0.0);
                     Location eyeLocation = target.getEyeLocation();
                     eyeLocation.getWorld().playSound(eyeLocation, Sound.BLOCK_GLASS_BREAK, 1.0f, 0.5f);
                     cancel();
@@ -204,9 +205,9 @@ public class PowerParticleBarrier extends BasePower implements PowerRightClick, 
                 Location eyeLocation = target.getEyeLocation();
                 Location base = eyeLocation.clone();
                 Vector f = base.getDirection().setY(0).normalize();
-                base.setYaw(base.getYaw() + 50);
+                base.setYaw(base.getYaw() + 45);
                 Vector r = base.getDirection().setY(0).normalize();
-                base.setYaw(base.getYaw() - 100);
+                base.setYaw(base.getYaw() - 90);
                 Vector l = base.getDirection().setY(0).normalize();
                 asR.teleport(eyeLocation.clone().add(r.multiply(1 + dur / 100.0)));
                 asL.teleport(eyeLocation.clone().add(l.multiply(1 + dur / 100.0)));
