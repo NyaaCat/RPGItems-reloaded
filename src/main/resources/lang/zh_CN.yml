@@ -193,7 +193,7 @@ message:
   export:
     gist:
       token: 未指定 Gist Token，请在命令中指定 token:<token> 或者配置中配置 githubToken
-      ed: 导出成功
+      ed: '导出成功 https://gist.github.com/%s'
       timeout: Gist 上传超时
       failed: Gist 上传失败
   version: 'RPGItem v%s (1.13.1 branch)

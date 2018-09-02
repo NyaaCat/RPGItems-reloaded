@@ -631,13 +631,21 @@ public class Events implements Listener {
         Player player = (Player) entity.getShooter();
         ItemStack item = player.getInventory().getItemInMainHand();
         RPGItem hItem = ItemManager.toRPGItem(item);
-        if (rItem != hItem) {
-            item = player.getInventory().getItemInOffHand();
-            hItem = ItemManager.toRPGItem(item);
+
+        if (tridentCache.containsKey(entity.getUniqueId())) {
+            item = tridentCache.get(entity.getUniqueId());
+            rItem = ItemManager.toRPGItem(item);
+            if (rItem == null) throw new IllegalStateException();
+        } else {
             if (rItem != hItem) {
-                return damage;
+                item = player.getInventory().getItemInOffHand();
+                hItem = ItemManager.toRPGItem(item);
+                if (rItem != hItem) {
+                    return damage;
+                }
             }
         }
+
         double originDamage = damage;
         switch (rItem.damageMode) {
             case FIXED:

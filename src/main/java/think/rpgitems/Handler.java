@@ -16,6 +16,7 @@ import org.bukkit.inventory.Inventory;
 import org.bukkit.inventory.ItemFlag;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.Damageable;
+import org.bukkit.inventory.meta.EnchantmentStorageMeta;
 import org.bukkit.inventory.meta.ItemMeta;
 import org.bukkit.inventory.meta.LeatherArmorMeta;
 import org.librazy.nclangchecker.LangKey;
@@ -23,8 +24,6 @@ import think.rpgitems.item.ItemManager;
 import think.rpgitems.item.Quality;
 import think.rpgitems.item.RPGItem;
 import think.rpgitems.power.*;
-import think.rpgitems.power.impl.PowerCommand;
-import think.rpgitems.power.impl.PowerDeathCommand;
 import think.rpgitems.support.WGSupport;
 import think.rpgitems.utils.NetworkUtils;
 import think.rpgitems.utils.Pair;
@@ -394,7 +393,10 @@ public class Handler extends RPGCommandReceiver {
                     if (hand == null || hand.getType() == Material.AIR) {
                         msg(sender, "message.enchantment.fail");
                     } else {
-                        if (hand.hasItemMeta()) {
+                        if (hand.getType() == Material.ENCHANTED_BOOK) {
+                            EnchantmentStorageMeta meta = (EnchantmentStorageMeta) hand.getItemMeta();
+                            item.enchantMap = meta.getStoredEnchants();
+                        } else if (hand.hasItemMeta()) {
                             item.enchantMap = new HashMap<>(hand.getItemMeta().getEnchants());
                         } else {
                             item.enchantMap = Collections.emptyMap();
@@ -994,13 +996,13 @@ public class Handler extends RPGCommandReceiver {
         Bukkit.getScheduler().runTaskAsynchronously(plugin, () -> {
             try {
                 String id = NetworkUtils.publishGist(result, token, description);
-                Bukkit.getScheduler().runTask(plugin, () -> new Message(I18n.format("message.export.gist.ed", id)).send(sender));
+                Bukkit.getScheduler().runTask(plugin, () -> msg(sender, "message.export.gist.ed", id));
             } catch (InterruptedException | ExecutionException e) {
                 e.printStackTrace();
-                Bukkit.getScheduler().runTask(plugin, () -> new Message(I18n.format("message.export.gist.failed")).send(sender));
+                Bukkit.getScheduler().runTask(plugin, () -> msg(sender, "message.export.gist.failed"));
             } catch (TimeoutException e) {
                 e.printStackTrace();
-                Bukkit.getScheduler().runTask(plugin, () -> new Message(I18n.format("message.export.gist.timeout")).send(sender));
+                Bukkit.getScheduler().runTask(plugin, () -> msg(sender, "message.export.gist.timeout"));
             }
         });
     }
@@ -1012,10 +1014,7 @@ public class Handler extends RPGCommandReceiver {
             Map<String, String> gist;
             try {
                 gist = NetworkUtils.downloadGist(id, token);
-                Bukkit.getScheduler().runTask(plugin, () -> {
-                    loadItems(sender, id, gist, args);
-                    new Message(I18n.format("message.import.gist.ed")).send(sender);
-                });
+                Bukkit.getScheduler().runTask(plugin, () -> loadItems(sender, gist, args));
             } catch (InterruptedException | ExecutionException e) {
                 e.printStackTrace();
                 Bukkit.getScheduler().runTask(plugin, () -> new Message(I18n.format("message.import.gist.failed")).send(sender));
@@ -1026,7 +1025,7 @@ public class Handler extends RPGCommandReceiver {
         });
     }
 
-    private void loadItems(CommandSender sender, String id, Map<String, String> gist, Arguments args) {
+    private void loadItems(CommandSender sender, Map<String, String> gist, Arguments args) {
         List<RPGItem> items = new ArrayList<>(gist.size());
         for (Map.Entry<String, String> entry : gist.entrySet()) {
             String k = entry.getKey();
@@ -1047,9 +1046,11 @@ public class Handler extends RPGCommandReceiver {
                 if (ItemManager.itemById.containsKey(uid)) {
                     RPGItem current = ItemManager.getItemById(uid);
                     msg(sender, "message.import.conflict_uid", origin, current.getName(), uid);
+                    return;
                 }
                 if (ItemManager.itemByName.containsKey(name)) {
                     msg(sender, "message.import.conflict_name", name);
+                    return;
                 }
 
                 RPGItem item = new RPGItem(itemStorage, name, uid);

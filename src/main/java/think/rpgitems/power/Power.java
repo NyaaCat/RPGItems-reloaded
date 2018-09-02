@@ -75,7 +75,7 @@ public interface Power {
                      .collect(Collectors.toSet());
     }
 
-    static Set<TriggerType> getDefaultTriggerTypes(Class<? extends BasePower> cls) {
+    static Set<TriggerType> getDefaultTriggerTypes(Class<? extends Power> cls) {
         PowerMeta annotation = cls.getAnnotation(PowerMeta.class);
         if (annotation != null && annotation.defaultTrigger().length > 0) {
             return Sets.newHashSet(annotation.defaultTrigger());

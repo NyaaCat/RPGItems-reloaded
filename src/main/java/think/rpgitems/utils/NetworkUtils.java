@@ -5,6 +5,7 @@ import cat.nyaa.nyaacore.http.client.HttpClient;
 import com.google.gson.Gson;
 import com.google.gson.internal.LinkedTreeMap;
 import io.netty.handler.codec.http.FullHttpResponse;
+import io.netty.util.ReferenceCountUtil;
 import think.rpgitems.Handler;
 
 import java.util.HashMap;
@@ -30,25 +31,29 @@ public class NetworkUtils {
         }
         CompletableFuture<FullHttpResponse> response = HttpClient.get("https://api.github.com/gists/" + id, headers);
         FullHttpResponse httpResponse = response.get(10, TimeUnit.SECONDS);
+        try {
 
-        if (httpResponse.status().code() == 404) {
-            throw new Handler.CommandException("message.import.gist.notfound", id);
-        } else if(httpResponse.status().code() != 200){
-            throw new Handler.CommandException("message.import.gist.code", httpResponse.status().code());
-        }
-
-        String json = httpResponse.content().toString(UTF_8);
-
-        Map result = new Gson().fromJson(json, LinkedTreeMap.class);
-        Map files = (Map) result.get("files");
-        Map<String, String> results = new HashMap<>();
-        files.forEach((k, v) -> {
-            Map<String, String> map = (Map<String, String>) v;
-            if (map.get("filename").endsWith(".yml")) {
-                results.put(map.get("filename"), map.get("content"));
+            if (httpResponse.status().code() == 404) {
+                throw new Handler.CommandException("message.import.gist.notfound", id);
+            } else if (httpResponse.status().code() != 200) {
+                throw new Handler.CommandException("message.import.gist.code", httpResponse.status().code());
             }
-        });
-        return results;
+
+            String json = httpResponse.content().toString(UTF_8);
+
+            Map result = new Gson().fromJson(json, LinkedTreeMap.class);
+            Map files = (Map) result.get("files");
+            Map<String, String> results = new HashMap<>();
+            files.forEach((k, v) -> {
+                Map<String, String> map = (Map<String, String>) v;
+                if (map.get("filename").endsWith(".yml")) {
+                    results.put(map.get("filename"), map.get("content"));
+                }
+            });
+            return results;
+        } finally {
+            ReferenceCountUtil.release(httpResponse);
+        }
     }
 
     public static String publishGist(Map<String, Map<String, String>> files, String token, String description) throws InterruptedException, ExecutionException, TimeoutException {
@@ -62,12 +67,12 @@ public class NetworkUtils {
         String json = new Gson().toJson(jsonMap);
         CompletableFuture<FullHttpResponse> response = HttpClient.postJson("https://api.github.com/gists", headers, json);
         FullHttpResponse httpResponse = response.get(10, TimeUnit.SECONDS);
-        if(httpResponse.status().code() != 201){
+        if (httpResponse.status().code() != 201) {
             System.out.println(httpResponse.content().toString(UTF_8));
             throw new Handler.CommandException("message.export.gist.code", httpResponse.status().code());
         }
         String location = httpResponse.headers().get("Location");
         String[] split = location.split("/");
-        return split[split.length -1];
+        return split[split.length - 1];
     }
 }

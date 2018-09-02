@@ -80,6 +80,9 @@ public class RPGItems extends JavaPlugin {
             for (File file : files) {
                 try {
                     Plugin plugin = Bukkit.getPluginManager().loadPlugin(file);
+                    String message = String.format("Loading %s", plugin.getDescription().getFullName());
+                    plugin.getLogger().info(message);
+                    plugin.onLoad();
                     managedPlugins.add(plugin);
                     logger.info("Loaded extension: " + plugin.getName());
                 } catch (InvalidPluginException | InvalidDescriptionException e) {

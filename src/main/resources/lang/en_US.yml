@@ -189,17 +189,16 @@ message:
       notfound: 'Gist https://gist.github.com/%s not found'
       code: 'Gist download failed: %d'
       ing: Importing items from Gist
-      ed: Gist import success
       timeout: Gist download timeout
       failed: Gist download failed
-    success: 'Item %s (UID: %d) import success'
+    success: 'Item %s (UID: %d) imported successfully'
     conflict_uid: "Item to import '%s' has same UID with '%s': %d , please check if you already have it."
     conflict_name: "Item to import has a name conflict: '%s' , please specify a replacement with <old_name>:<new_name> in command"
     invalid_conf: 'Item configuration is invalid: %s'
   export:
     gist:
       token: Please specify Gist Token in command like 'token:<token>' or add 'githubToken:<token>' to config
-      ed: Gist export success
+      ed: 'Gist exported successfully at https://gist.github.com/%s'
       timeout: Gist upload timeout
       failed: Gist upload failed
       code: 'Gist upload failed: %d'
