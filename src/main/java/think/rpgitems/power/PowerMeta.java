@@ -10,4 +10,6 @@ public @interface PowerMeta {
     TriggerType[] defaultTrigger() default {};
 
     boolean marker() default false;
+
+    boolean withSelectors() default false;
 }

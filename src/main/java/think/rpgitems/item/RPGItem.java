@@ -29,7 +29,6 @@ import org.bukkit.block.Block;
 import org.bukkit.command.CommandSender;
 import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.configuration.MemoryConfiguration;
-import org.bukkit.configuration.file.YamlConfiguration;
 import org.bukkit.enchantments.Enchantment;
 import org.bukkit.entity.LivingEntity;
 import org.bukkit.entity.Player;
@@ -49,7 +48,6 @@ import org.bukkit.inventory.ShapedRecipe;
 import org.bukkit.inventory.meta.Damageable;
 import org.bukkit.inventory.meta.ItemMeta;
 import org.bukkit.inventory.meta.LeatherArmorMeta;
-import org.bukkit.plugin.Plugin;
 import org.librazy.nclangchecker.LangKey;
 import org.librazy.nclangchecker.LangKeyType;
 import think.rpgitems.Events;
@@ -103,9 +101,7 @@ public class RPGItem {
     public boolean hitCostByDamage = false;
     public DamageMode damageMode = DamageMode.FIXED;
 
-
     String file;
-    int hashcode = 0;
 
     private ItemStack item;
     private ItemMeta localeMeta;
@@ -129,7 +125,7 @@ public class RPGItem {
 
     private int tooltipWidth = 150;
     // Durability
-    private int maxDurability;
+    private int maxDurability = -1;
     private boolean hasBar = false;
     private boolean forceBar = false;
     private int _loreMinLen = 0;
@@ -343,12 +339,6 @@ public class RPGItem {
             damageMode = DamageMode.FIXED;
         }
         rebuild();
-        if (s instanceof YamlConfiguration) {
-            YamlConfiguration configuration = (YamlConfiguration) s;
-            hashcode = Math.abs(configuration.saveToString().hashCode());
-        } else {
-            updateHashCode();
-        }
     }
 
     public static RPGMetadata getMetadata(ItemStack item) {
@@ -360,67 +350,53 @@ public class RPGItem {
         return RPGMetadata.parseLoreline(item.getItemMeta().getLore().get(0));
     }
 
-    public void updateHashCode() {
-        YamlConfiguration configuration = new YamlConfiguration();
-        save(configuration);
-        hashcode = Math.abs(configuration.saveToString().hashCode());
-    }
-
     public static void updateItem(ItemStack item) {
         RPGItem rItem = ItemManager.toRPGItem(item);
         if (rItem == null)
             return;
-        updateItem(rItem, item, getMetadata(item), false);
+        updateItem(rItem, item, getMetadata(item));
     }
 
-    public static void updateItem(RPGItem rItem, ItemStack item, boolean force) {
-        updateItem(rItem, item, getMetadata(item), force);
+    public static void updateItem(RPGItem rItem, ItemStack item) {
+        updateItem(rItem, item, getMetadata(item));
     }
 
-    public static void updateItem(RPGItem rItem, ItemStack item, RPGMetadata rpgMeta, boolean force) {
-        if (((Number) rpgMeta.getOrDefault(RPGMetadata.VERSION, -1)).intValue() != rItem.hashcode || force) {
-            List<String> reservedLores = filterLores(rItem, item);
-            item.setType(rItem.item.getType());
-            ItemMeta meta = rItem.getLocaleMeta();
-            List<String> lore = meta.getLore();
-            rItem.addExtra(rpgMeta, item, lore);
-            rpgMeta.put(RPGMetadata.VERSION, rItem.hashcode);
-            lore.set(0, meta.getLore().get(0) + rpgMeta.toMCString());
-            // Patch for mcMMO buff. See SkillUtils.java#removeAbilityBuff in mcMMO
-            if (item.hasItemMeta() && item.getItemMeta().hasLore() && item.getItemMeta().getLore().contains("mcMMO Ability Tool"))
-                lore.add("mcMMO Ability Tool");
-            lore.addAll(reservedLores);
-            meta.setLore(lore);
-            Map<Enchantment, Integer> enchs = item.getEnchantments();
-            if (enchs.size() > 0)
-                for (Enchantment ench : enchs.keySet())
-                    meta.addEnchant(ench, enchs.get(ench), true);
-            item.setItemMeta(meta);
-            item.setItemMeta(refreshAttributeModifiers(rItem, item).getItemMeta());
-        } else {
-            ItemMeta meta = rItem.getLocaleMeta();
-            List<String> lore = meta.getLore();
-            rItem.addExtra(rpgMeta, item, lore);
-            lore.set(0, meta.getLore().get(0) + rpgMeta.toMCString());
-            meta.setLore(lore);
-            item.setItemMeta(meta);
+    public static void updateItem(RPGItem rItem, ItemStack item, RPGMetadata rpgMeta) {
+        List<String> reservedLores = filterLores(rItem, item);
+        item.setType(rItem.item.getType());
+        ItemMeta meta = rItem.getLocaleMeta();
+        List<String> lore = meta.getLore();
+        rItem.addExtra(rpgMeta, item, lore);
+        lore.set(0, meta.getLore().get(0) + rpgMeta.toMCString());
+        // Patch for mcMMO buff. See SkillUtils.java#removeAbilityBuff in mcMMO
+        if (item.hasItemMeta() && item.getItemMeta().hasLore() && item.getItemMeta().getLore().contains("mcMMO Ability Tool"))
+            lore.add("mcMMO Ability Tool");
+        lore.addAll(reservedLores);
+        meta.setLore(lore);
+        Map<Enchantment, Integer> enchs = item.getEnchantments();
+        if (!enchs.isEmpty()) {
+            for (Enchantment ench : enchs.keySet()) {
+                meta.addEnchant(ench, enchs.get(ench), true);
+            }
         }
-        Damageable meta = (Damageable) item.getItemMeta();
+        item.setItemMeta(meta);
+        item.setItemMeta(refreshAttributeModifiers(rItem, item).getItemMeta());
+        Damageable damageable = (Damageable) item.getItemMeta();
         if (rItem.maxDurability > 0) {
             int durability = ((Number) rpgMeta.get(RPGMetadata.DURABILITY)).intValue();
             if (rItem.customItemModel) {
-                meta.setDamage(((Damageable) rItem.localeMeta).getDamage());
+                damageable.setDamage(((Damageable) rItem.localeMeta).getDamage());
             } else {
-                meta.setDamage((short) (rItem.item.getType().getMaxDurability() - ((short) ((double) rItem.item.getType().getMaxDurability() * ((double) durability / (double) rItem.maxDurability)))));
+                damageable.setDamage((short) (rItem.item.getType().getMaxDurability() - ((short) ((double) rItem.item.getType().getMaxDurability() * ((double) durability / (double) rItem.maxDurability)))));
             }
         } else {
             if (rItem.customItemModel) {
-                meta.setDamage(((Damageable) rItem.localeMeta).getDamage());
+                damageable.setDamage(((Damageable) rItem.localeMeta).getDamage());
             } else {
-                meta.setDamage(rItem.hasBar ? (short) 0 : ((Damageable) rItem.localeMeta).getDamage());
+                damageable.setDamage(rItem.hasBar ? (short) 0 : ((Damageable) rItem.localeMeta).getDamage());
             }
         }
-        item.setItemMeta((ItemMeta) meta);
+        item.setItemMeta((ItemMeta) damageable);
     }
 
     private static List<String> filterLores(RPGItem r, ItemStack i) {
@@ -488,7 +464,7 @@ public class RPGItem {
 
     public void save(ConfigurationSection s) {
         s.set("name", name);
-        if(id != 0) {
+        if (id != 0) {
             s.set("id", id);
         }
         s.set("uid", uid);
@@ -636,7 +612,7 @@ public class RPGItem {
         return !preFire.isCancelled();
     }
 
-    private boolean checkConditions(Player player, ItemStack i, Power power){
+    private boolean checkConditions(Player player, ItemStack i, Power power) {
         Set<String> ids = power.getConditions();
         List<PowerCondition> conds = getPower(PowerCondition.class);
         List<PowerCondition> dyns = conds.stream().filter(p -> !p.isStatic).filter(p -> ids.contains(p.id)).collect(Collectors.toList());
@@ -775,8 +751,8 @@ public class RPGItem {
         }
     }
 
-    public void hit(Player player, ItemStack i, LivingEntity target, double damage, EntityDamageByEntityEvent event) {
-        if (!triggerPreCheck(player, i, this.powerHit, TriggerType.HIT)) return;
+    public double hit(Player player, ItemStack i, LivingEntity target, double damage, EntityDamageByEntityEvent event) {
+        if (!triggerPreCheck(player, i, this.powerHit, TriggerType.HIT)) return damage;
 
         double ret = -Double.MAX_VALUE;
         Map<Power, PowerResult> resultMap = new LinkedHashMap<>();
@@ -798,7 +774,7 @@ public class RPGItem {
             i.setAmount(0);
             i.setType(Material.AIR);
         }
-        event.setDamage(ret == -Double.MAX_VALUE ? damage : ret);
+        return ret == -Double.MAX_VALUE ? damage : ret;
     }
 
     public double takeHit(Player player, ItemStack i, EntityDamageEvent ev) {
@@ -1175,7 +1151,6 @@ public class RPGItem {
         RPGMetadata rpgMeta = new RPGMetadata();
         ItemMeta meta = getLocaleMeta();
         List<String> lore = meta.getLore();
-        rpgMeta.put(RPGMetadata.VERSION, hashcode);
         lore.set(0, meta.getLore().get(0) + rpgMeta.toMCString());
         addExtra(rpgMeta, rStack, lore);
         meta.setLore(lore);
@@ -1456,7 +1431,7 @@ public class RPGItem {
         if (getMaxDurability() != -1) {
             meta.put(RPGMetadata.DURABILITY, val);
         }
-        updateItem(this, item, meta, false);
+        updateItem(this, item, meta);
     }
 
     public int getDurability(ItemStack item) {
@@ -1489,7 +1464,7 @@ public class RPGItem {
             }
             meta.put(RPGMetadata.DURABILITY, durability);
         }
-        updateItem(this, item, meta, false);
+        updateItem(this, item, meta);
         return true;
     }
 

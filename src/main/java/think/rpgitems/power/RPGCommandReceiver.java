@@ -152,7 +152,11 @@ public abstract class RPGCommandReceiver extends CommandReceiver {
         for (Field field : argMap.values()) {
             String name = field.getName();
             String value = cmd.argString(name, null);
-            if (value != null || (powerMeta.immutableTrigger() && name.equals("triggers"))) {
+            if (value != null
+                        || (powerMeta.immutableTrigger() && name.equals("triggers"))
+                        || (powerMeta.marker() && (name.equals("triggers") || name.equals("conditions")))
+                        || (!powerMeta.withSelectors() && name.equals("selectors"))
+            ) {
                 required.remove(field);
                 settled.add(field);
             }

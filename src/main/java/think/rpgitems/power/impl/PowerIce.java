@@ -47,7 +47,7 @@ import static think.rpgitems.power.Utils.getNearbyEntities;
  * the ice will slowly remove itself.
  * </p>
  */
-@PowerMeta(immutableTrigger = true)
+@PowerMeta(immutableTrigger = true, withSelectors = true)
 public class PowerIce extends BasePower implements PowerRightClick {
 
     /**

@@ -56,13 +56,13 @@ public class ItemManager {
             for (ItemStack item : player.getInventory()) {
                 RPGItem rpgItem = ItemManager.toRPGItem(item);
                 if (rpgItem != null) {
-                    updateItem(rpgItem, item, true);
+                    updateItem(rpgItem, item);
                 }
             }
             for (ItemStack item : player.getInventory().getArmorContents()) {
                 RPGItem rpgItem = ItemManager.toRPGItem(item);
                 if (rpgItem != null) {
-                    updateItem(rpgItem, item, true);
+                    updateItem(rpgItem, item);
                 }
             }
         }
@@ -213,7 +213,6 @@ public class ItemManager {
             test.load(canonicalPath);
             new RPGItem(test);
             backup.deleteOnExit();
-            item.hashcode = Math.abs(configuration.saveToString().hashCode());
             item.file = canonicalPath;
         } catch (IOException | InvalidConfigurationException | RPGItem.UnknownPowerException | RPGItem.UnknownExtensionException e) {
             throw new RuntimeException(e);

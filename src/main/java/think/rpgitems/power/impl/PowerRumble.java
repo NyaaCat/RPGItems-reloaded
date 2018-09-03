@@ -50,7 +50,7 @@ import static think.rpgitems.power.Utils.getNearbyEntities;
  * </p>
  */
 @SuppressWarnings("WeakerAccess")
-@PowerMeta(immutableTrigger = true)
+@PowerMeta(immutableTrigger = true, withSelectors = true)
 public class PowerRumble extends BasePower implements PowerRightClick {
 
     /**

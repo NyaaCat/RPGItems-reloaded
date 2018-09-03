@@ -16,11 +16,13 @@
  */
 package think.rpgitems.power.impl;
 
+import org.bukkit.Bukkit;
 import org.bukkit.entity.LivingEntity;
 import org.bukkit.entity.Player;
 import org.bukkit.event.entity.EntityDamageByEntityEvent;
 import org.bukkit.inventory.ItemStack;
 import think.rpgitems.I18n;
+import think.rpgitems.RPGItems;
 import think.rpgitems.power.PowerHit;
 import think.rpgitems.power.PowerMeta;
 import think.rpgitems.power.PowerResult;
@@ -60,7 +62,7 @@ public class PowerKnockup extends BasePower implements PowerHit {
     public PowerResult<Double> hit(Player player, ItemStack stack, LivingEntity entity, double damage, EntityDamageByEntityEvent event) {
         if (!getItem().consumeDurability(stack, cost)) return PowerResult.cost();
         if (rand.nextInt(chance) == 0) {
-            entity.setVelocity(player.getLocation().getDirection().setY(power));
+            Bukkit.getScheduler().runTask(RPGItems.plugin, () -> entity.setVelocity(player.getLocation().getDirection().setY(power)));
         }
         return PowerResult.ok(damage);
     }

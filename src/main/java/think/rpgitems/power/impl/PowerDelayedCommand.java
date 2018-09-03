@@ -2,7 +2,10 @@ package think.rpgitems.power.impl;
 
 import org.bukkit.block.Block;
 import org.bukkit.entity.Player;
+import org.bukkit.event.entity.EntityDamageEvent;
 import org.bukkit.event.player.PlayerInteractEvent;
+import org.bukkit.event.player.PlayerToggleSneakEvent;
+import org.bukkit.event.player.PlayerToggleSprintEvent;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.scheduler.BukkitRunnable;
 import think.rpgitems.RPGItems;
@@ -55,6 +58,45 @@ public class PowerDelayedCommand extends PowerCommand {
             @Override
             public void run() {
                 executeCommand(player);
+            }
+        }).runTaskLater(RPGItems.plugin, delay);
+        return PowerResult.ok();
+    }
+
+    @Override
+    public PowerResult<Void> sneak(Player player, ItemStack stack, PlayerToggleSneakEvent event) {
+        if (!checkCooldownByString(player, getItem(), command, cooldown, true)) return PowerResult.cd();
+        if (!getItem().consumeDurability(stack, cost)) return PowerResult.cost();
+        (new BukkitRunnable() {
+            @Override
+            public void run() {
+                executeCommand(player);
+            }
+        }).runTaskLater(RPGItems.plugin, delay);
+        return PowerResult.ok();
+    }
+
+    @Override
+    public PowerResult<Void> sprint(Player player, ItemStack stack, PlayerToggleSprintEvent event) {
+        if (!checkCooldownByString(player, getItem(), command, cooldown, true)) return PowerResult.cd();
+        if (!getItem().consumeDurability(stack, cost)) return PowerResult.cost();
+        (new BukkitRunnable() {
+            @Override
+            public void run() {
+                executeCommand(player);
+            }
+        }).runTaskLater(RPGItems.plugin, delay);
+        return PowerResult.ok();
+    }
+
+    @Override
+    public PowerResult<Void> hurt(Player target, ItemStack stack, EntityDamageEvent event) {
+        if (!checkCooldownByString(target, getItem(), command, cooldown, true)) return PowerResult.cd();
+        if (!getItem().consumeDurability(stack, cost)) return PowerResult.cost();
+        (new BukkitRunnable() {
+            @Override
+            public void run() {
+                executeCommand(target);
             }
         }).runTaskLater(RPGItems.plugin, delay);
         return PowerResult.ok();

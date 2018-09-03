@@ -8,6 +8,7 @@ import org.bukkit.entity.LivingEntity;
 import org.bukkit.entity.Player;
 import org.bukkit.event.player.PlayerInteractEvent;
 import org.bukkit.inventory.ItemStack;
+import org.bukkit.scheduler.BukkitRunnable;
 import org.bukkit.util.Vector;
 import think.rpgitems.I18n;
 import think.rpgitems.item.RPGItem;
@@ -26,7 +27,7 @@ import static think.rpgitems.power.Utils.getNearbyEntities;
  * </p>
  */
 @SuppressWarnings("WeakerAccess")
-@PowerMeta(defaultTrigger = TriggerType.RIGHT_CLICK)
+@PowerMeta(defaultTrigger = TriggerType.RIGHT_CLICK, withSelectors = true)
 public class PowerAttract extends BasePower implements PowerTick, PowerLeftClick, PowerRightClick {
     /**
      * Maximum radius
@@ -115,17 +116,29 @@ public class PowerAttract extends BasePower implements PowerTick, PowerLeftClick
 
     @Override
     public PowerResult<Void> leftClick(Player player, ItemStack stack, Block clicked, PlayerInteractEvent event) {
-        if (!checkCooldown(this, player, cooldown, true)) return PowerResult.cd();
-        if (!item.consumeDurability(stack, cost)) return PowerResult.cost();
-        Bukkit.getScheduler().scheduleSyncRepeatingTask(RPGItem.getPlugin(), () -> attract(player, stack), 0, duration);
-        return PowerResult.ok();
+        return fire(player, stack);
     }
 
     @Override
     public PowerResult<Void> rightClick(Player player, ItemStack stack, Block clicked, PlayerInteractEvent event) {
+        return fire(player, stack);
+    }
+
+    public PowerResult<Void> fire(Player player, ItemStack stack) {
         if (!checkCooldown(this, player, cooldown, true)) return PowerResult.cd();
         if (!item.consumeDurability(stack, cost)) return PowerResult.cost();
-        Bukkit.getScheduler().scheduleSyncRepeatingTask(RPGItem.getPlugin(), () -> attract(player, stack), 0, duration);
+        new BukkitRunnable(){
+            int dur = duration;
+            @Override
+            public void run() {
+                if(--dur <= 0) {
+                    this.cancel();
+                    return;
+                }
+                attract(player, stack);
+            }
+        }.runTaskTimer(RPGItem.getPlugin(), 0, 1);
+        ;
         return PowerResult.ok();
     }
 }

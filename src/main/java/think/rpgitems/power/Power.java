@@ -1,11 +1,11 @@
 package think.rpgitems.power;
 
 import com.google.common.collect.Sets;
+import com.google.common.reflect.TypeToken;
 import org.bukkit.NamespacedKey;
 import org.bukkit.configuration.ConfigurationSection;
 import think.rpgitems.item.RPGItem;
 
-import java.util.Arrays;
 import java.util.Objects;
 import java.util.Set;
 import java.util.stream.Collectors;
@@ -67,11 +67,12 @@ public interface Power {
 
     @SuppressWarnings("unchecked")
     static Set<TriggerType> getTriggerTypes(Class<? extends Power> cls) {
-        return Arrays.stream(cls.getInterfaces())
-                     .filter(Power.class::isAssignableFrom)
-                     .filter(i -> !Objects.equals(i, Power.class))
-                     .map(i -> TriggerType.fromInterface((Class<? extends Power>) i))
-                     .collect(Collectors.toSet());
+        return TypeToken.of(cls).getTypes().interfaces().stream()
+                        .map(TypeToken::getRawType)
+                        .filter(Power.class::isAssignableFrom)
+                        .filter(i -> !Objects.equals(i, Power.class))
+                        .map(i -> TriggerType.fromInterface((Class<? extends Power>) i))
+                        .collect(Collectors.toSet());
     }
 
     static Set<TriggerType> getDefaultTriggerTypes(Class<? extends Power> cls) {

@@ -25,6 +25,7 @@ import think.rpgitems.item.Quality;
 import think.rpgitems.item.RPGItem;
 import think.rpgitems.power.*;
 import think.rpgitems.support.WGSupport;
+import think.rpgitems.utils.MaterialUtils;
 import think.rpgitems.utils.NetworkUtils;
 import think.rpgitems.utils.Pair;
 
@@ -321,7 +322,7 @@ public class Handler extends RPGCommandReceiver {
                     .send(sender);
         } else if (args.length() >= 3) {
             String materialName = args.nextString();
-            Material material = Material.matchMaterial(materialName);
+            Material material = MaterialUtils.getMaterial(materialName, sender);
             if (material == null || !material.isItem()) {
                 msg(sender, "message.error.material", materialName);
                 return;
@@ -1074,6 +1075,13 @@ public class Handler extends RPGCommandReceiver {
             ItemManager.addItem(item);
             msg(sender, "message.import.success", item.getName(), item.getUID());
         }
+        ItemManager.save();
+    }
+
+    @SubCommand("save")
+    @Attribute("command")
+    public void save() {
+        ItemManager.refreshItem();
         ItemManager.save();
     }
 

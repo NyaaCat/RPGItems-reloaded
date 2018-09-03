@@ -389,13 +389,13 @@ public class Events implements Listener {
             ItemStack item = in.getItem(i);
             RPGItem rpgItem = ItemManager.toRPGItem(item);
             if (rpgItem != null) {
-                RPGItem.updateItem(rpgItem, item, true);
+                RPGItem.updateItem(rpgItem, item);
             }
         }
         for (ItemStack item : player.getInventory().getArmorContents()) {
             RPGItem rpgItem = ItemManager.toRPGItem(item);
             if (rpgItem != null) {
-                RPGItem.updateItem(rpgItem, item, true);
+                RPGItem.updateItem(rpgItem, item);
             }
         }
         if (WGSupport.isEnabled() && WGSupport.useWorldGuard) {
@@ -446,12 +446,16 @@ public class Events implements Listener {
                 PlayerInventory in = p.getInventory();
                 for (int i = 0; i < in.getSize(); i++) {
                     ItemStack item = in.getItem(i);
-                    if (ItemManager.toRPGItem(item) != null)
-                        RPGItem.updateItem(item);
+                    RPGItem rpgItem = ItemManager.toRPGItem(item);
+                    if (rpgItem != null) {
+                        RPGItem.updateItem(rpgItem, item);
+                    }
                 }
-                for (ItemStack item : p.getInventory().getArmorContents()) {
-                    if (ItemManager.toRPGItem(item) != null)
-                        RPGItem.updateItem(item);
+                for (ItemStack item : in.getArmorContents()) {
+                    RPGItem rpgItem = ItemManager.toRPGItem(item);
+                    if (rpgItem != null) {
+                        RPGItem.updateItem(rpgItem, item);
+                    }
                 }
             }
         }.runTaskLater(plugin, 1L);
@@ -531,7 +535,7 @@ public class Events implements Listener {
                     ItemStack item = it.next();
                     RPGItem rpgItem = ItemManager.toRPGItem(item);
                     if (rpgItem != null)
-                        RPGItem.updateItem(rpgItem, item, true);
+                        RPGItem.updateItem(rpgItem, item);
                 }
             } catch (ArrayIndexOutOfBoundsException ex) {
                 // Fix for the bug with anvils in craftbukkit
@@ -603,7 +607,7 @@ public class Events implements Listener {
 
         }
         if (e.getEntity() instanceof LivingEntity) {
-            rItem.hit(player, item, (LivingEntity) e.getEntity(), damage, e);
+            damage = rItem.hit(player, item, (LivingEntity) e.getEntity(), damage, e);
         }
         if (rItem.getDurability(item) <= 0) {
             player.getInventory().setItemInMainHand(null);
@@ -671,7 +675,7 @@ public class Events implements Listener {
         }
         if (e.getEntity() instanceof LivingEntity) {
             LivingEntity le = (LivingEntity) e.getEntity();
-            rItem.hit((Player) entity.getShooter(), item, le, damage, e);
+            damage = rItem.hit((Player) entity.getShooter(), item, le, damage, e);
         }
         return damage;
     }

@@ -25,7 +25,7 @@ import static think.rpgitems.power.Utils.*;
  * Target nearest entity
  * </p>
  */
-@PowerMeta(immutableTrigger = true)
+@PowerMeta(immutableTrigger = true, withSelectors = true)
 public class PowerShulkerBullet extends BasePower implements PowerRightClick {
 
     /**
@@ -58,8 +58,7 @@ public class PowerShulkerBullet extends BasePower implements PowerRightClick {
     public PowerResult<Void> rightClick(Player player, ItemStack stack, Block clicked, PlayerInteractEvent event) {
         if (!checkCooldown(this, player, cooldown, true)) return PowerResult.cd();
         if (!getItem().consumeDurability(stack, cost)) return PowerResult.cost();
-        ShulkerBullet bullet = null;
-        bullet = player.launchProjectile(ShulkerBullet.class);
+        ShulkerBullet bullet = player.launchProjectile(ShulkerBullet.class);
         bullet.setPersistent(false);
         Events.rpgProjectiles.put(bullet.getEntityId(), getItem().getUID());
         List<LivingEntity> entities = getLivingEntitiesInCone(getNearestLivingEntities(this, player.getEyeLocation(), player, range, 0), player.getLocation().toVector(), 30, player.getLocation().getDirection());

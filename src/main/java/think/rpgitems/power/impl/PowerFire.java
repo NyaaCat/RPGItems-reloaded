@@ -52,7 +52,7 @@ import static think.rpgitems.power.Utils.getNearbyEntities;
  * </p>
  */
 @SuppressWarnings("WeakerAccess")
-@PowerMeta(immutableTrigger = true)
+@PowerMeta(immutableTrigger = true, withSelectors = true)
 public class PowerFire extends BasePower implements PowerRightClick {
 
     /**

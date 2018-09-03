@@ -16,7 +16,6 @@ import java.util.List;
 public class RPGMetadata extends HashMap<Integer, Object> {
 
     public static final int DURABILITY = 0;
-    public static final int VERSION = 1;
     public static final int ID = 2;
     private final static String METADATA_PREFIX = ChatColor.COLOR_CHAR + "c" + ChatColor.COLOR_CHAR + "a" + ChatColor.COLOR_CHAR + "f" + ChatColor.COLOR_CHAR + "e";
 

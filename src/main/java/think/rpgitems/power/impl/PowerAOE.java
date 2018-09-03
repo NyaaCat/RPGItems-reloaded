@@ -43,7 +43,7 @@ import static think.rpgitems.power.Utils.getNearbyEntities;
  * </p>
  */
 @SuppressWarnings("WeakerAccess")
-@PowerMeta(defaultTrigger = TriggerType.RIGHT_CLICK)
+@PowerMeta(defaultTrigger = TriggerType.RIGHT_CLICK, withSelectors = true)
 public class PowerAOE extends BasePower implements PowerRightClick, PowerLeftClick {
 
     /**

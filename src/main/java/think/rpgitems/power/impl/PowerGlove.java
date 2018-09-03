@@ -20,7 +20,7 @@ import java.util.List;
 
 import static think.rpgitems.power.Utils.*;
 
-@PowerMeta(immutableTrigger = true)
+@PowerMeta(immutableTrigger = true, withSelectors = true)
 public class PowerGlove extends BasePower implements PowerRightClick {
     @Property(order = 0)
     public long cooldown = 20L;

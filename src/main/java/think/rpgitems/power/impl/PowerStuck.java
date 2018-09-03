@@ -47,7 +47,7 @@ import static think.rpgitems.power.Utils.*;
  * The stuck power will make the hit target stuck with a chance of 1/{@link #chance}.
  * </p>
  */
-@PowerMeta(defaultTrigger = TriggerType.HIT)
+@PowerMeta(defaultTrigger = TriggerType.HIT, withSelectors = true)
 public class PowerStuck extends BasePower implements PowerHit, PowerRightClick {
     /**
      * Chance of triggering this power
