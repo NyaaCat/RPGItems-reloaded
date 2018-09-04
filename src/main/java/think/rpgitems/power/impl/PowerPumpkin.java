@@ -59,7 +59,7 @@ public class PowerPumpkin extends BasePower implements PowerHit {
         if (rand.nextInt(chance) != 0) return PowerResult.noop();
         if (entity instanceof Skeleton || entity instanceof Zombie) {
             if (entity.getEquipment().getHelmet() == null || entity.getEquipment().getHelmet().getType() == Material.AIR) {
-                entity.getEquipment().setHelmet(new ItemStack(Material.PUMPKIN));
+                entity.getEquipment().setHelmet(new ItemStack(Material.CARVED_PUMPKIN));
                 entity.getEquipment().setHelmetDropChance((float) drop);
             }
         }

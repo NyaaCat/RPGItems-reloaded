@@ -208,7 +208,7 @@ public class PowerProjectile extends BasePower implements PowerRightClick {
         }
     }
 
-    static class ProjectileType implements Getter, Setter{
+    public static class ProjectileType implements Getter, Setter{
         /**
          * Gets type name
          *

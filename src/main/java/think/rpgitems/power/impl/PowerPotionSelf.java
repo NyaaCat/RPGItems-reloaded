@@ -65,6 +65,7 @@ public class PowerPotionSelf extends BasePower implements PowerRightClick {
     @Deserializer(PotionEffectUtils.class)
     @Serializer(PotionEffectUtils.class)
     @Property(order = 3, required = true)
+    @AcceptedValue(preset = Preset.POTION_EFFECT_TYPE)
     public PotionEffectType type = PotionEffectType.HEAL;
 
     @Override

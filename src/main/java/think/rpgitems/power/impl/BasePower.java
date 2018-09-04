@@ -55,7 +55,7 @@ public abstract class BasePower implements Serializable, Power {
                 Object val = field.get(this);
                 if (val == null) continue;
                 if (getter != null) {
-                    section.set(property.name(), Getter.from(getter.value()).get(val));
+                    section.set(property.name(), Getter.from(this, getter.value()).get(val));
                 } else {
                     if (Collection.class.isAssignableFrom(field.getType())) {
                         Collection c = (Collection) val;

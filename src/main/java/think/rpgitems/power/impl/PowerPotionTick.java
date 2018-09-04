@@ -29,6 +29,7 @@ public class PowerPotionTick extends BasePower implements PowerTick {
     @Deserializer(PotionEffectUtils.class)
     @Serializer(PotionEffectUtils.class)
     @Property(order = 1, required = true)
+    @AcceptedValue(preset = Preset.POTION_EFFECT_TYPE)
     public PotionEffectType effect = PotionEffectType.SPEED;
     /**
      * Amplifier of potion effect

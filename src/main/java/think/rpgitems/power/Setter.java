@@ -7,7 +7,7 @@ public interface Setter<T> {
 
     static Setter from(Power p, Class<? extends Setter> cls) {
         try {
-            return cls.getConstructor().newInstance();
+            return cls.getDeclaredConstructor().newInstance();
         } catch (InstantiationException | IllegalAccessException | InvocationTargetException e) {
             throw new RuntimeException(e);
         } catch (NoSuchMethodException e) {

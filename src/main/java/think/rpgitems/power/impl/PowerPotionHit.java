@@ -49,6 +49,7 @@ public class PowerPotionHit extends BasePower implements PowerHit {
     @Deserializer(PotionEffectUtils.class)
     @Serializer(PotionEffectUtils.class)
     @Property(order = 3, required = true)
+    @AcceptedValue(preset = Preset.POTION_EFFECT_TYPE)
     public PotionEffectType type = PotionEffectType.HARM;
     /**
      * Duration of potion effect

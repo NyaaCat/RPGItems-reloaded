@@ -51,7 +51,7 @@ public class PowerParticle extends BasePower implements PowerRightClick {
         return PowerResult.ok();
     }
 
-    static class EffectSetter implements Getter<Effect>, Setter<Effect> {
+    public static class EffectSetter implements Getter<Effect>, Setter<Effect> {
 
         @Override
         public String get(Effect effect) {
