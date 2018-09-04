@@ -27,10 +27,8 @@ import org.bukkit.potion.PotionEffect;
 import org.bukkit.potion.PotionEffectType;
 import think.rpgitems.Events;
 import think.rpgitems.I18n;
-import think.rpgitems.power.PowerMeta;
-import think.rpgitems.power.PowerResult;
-import think.rpgitems.power.PowerRightClick;
-import think.rpgitems.power.Property;
+import think.rpgitems.power.*;
+import think.rpgitems.utils.PotionEffectUtils;
 
 import static think.rpgitems.power.Utils.checkCooldown;
 
@@ -63,6 +61,9 @@ public class PowerTippedArrow extends BasePower implements PowerRightClick {
     /**
      * Type of potion effect
      */
+    @Deserializer(PotionEffectUtils.class)
+    @Serializer(PotionEffectUtils.class)
+    @AcceptedValue(preset = Preset.POTION_EFFECT_TYPE)
     @Property(order = 1)
     public PotionEffectType type = PotionEffectType.POISON;
     /**
@@ -92,24 +93,4 @@ public class PowerTippedArrow extends BasePower implements PowerRightClick {
     public String getName() {
         return "tippedarrow";
     }
-
-    @Override
-    public void init(ConfigurationSection s) {
-        cooldown = s.getLong("cooldown", 20);
-        duration = s.getInt("duration", 1);
-        amplifier = s.getInt("amplifier", 15);
-        String potionEffectName = s.getString("type", "HARM");
-        type = PotionEffectType.getByName(potionEffectName);
-        cost = s.getInt("cost", s.getInt("consumption", 1));
-    }
-
-    @Override
-    public void save(ConfigurationSection s) {
-        s.set("cooldown", cooldown);
-        s.set("duration", duration);
-        s.set("amplifier", amplifier);
-        s.set("type", type.getName());
-        s.set("cost", cost);
-    }
-
 }

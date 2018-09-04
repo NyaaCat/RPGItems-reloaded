@@ -3,6 +3,7 @@ package think.rpgitems.power.impl;
 import org.bukkit.Bukkit;
 import org.bukkit.NamespacedKey;
 import org.bukkit.configuration.ConfigurationSection;
+import org.bukkit.inventory.ItemStack;
 import think.rpgitems.RPGItems;
 import think.rpgitems.item.RPGItem;
 import think.rpgitems.power.*;
@@ -80,6 +81,17 @@ public abstract class BasePower implements Serializable, Power {
             Field field = entry.getValue();
             if (property.name().equals("triggers") && powerMeta.immutableTrigger()) {
                 continue;
+            }
+            if (field.getType().isAssignableFrom(ItemStack.class)){
+                ItemStack itemStack = section.getItemStack(property.name());
+                if(itemStack != null){
+                    try {
+                        field.set(this, itemStack);
+                        continue;
+                    } catch (IllegalAccessException e) {
+                        throw new RuntimeException(e);
+                    }
+                }
             }
             String value = section.getString(property.name());
             if (property.name().equals("cost") && value == null) {

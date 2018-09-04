@@ -26,7 +26,6 @@ import org.bukkit.inventory.ItemStack;
 import org.bukkit.util.BlockIterator;
 import org.bukkit.util.Vector;
 import think.rpgitems.I18n;
-import think.rpgitems.RPGItems;
 import think.rpgitems.power.*;
 
 import static think.rpgitems.power.Utils.checkCooldown;
@@ -68,20 +67,17 @@ public class PowerTeleport extends BasePower implements PowerRightClick, PowerPr
         Location start = player.getLocation();
         start.setY(start.getY() + 1.6);
         Block lastSafe = world.getBlockAt(start);
-        try {
-            BlockIterator bi = new BlockIterator(player, distance);
-            while (bi.hasNext()) {
-                Block block = bi.next();
-                if (!block.getType().isSolid() || (block.getType() == Material.AIR)) {
-                    lastSafe = block;
-                } else {
-                    break;
-                }
+
+        BlockIterator bi = new BlockIterator(player, distance);
+        while (bi.hasNext()) {
+            Block block = bi.next();
+            if (!block.getType().isSolid() || (block.getType() == Material.AIR)) {
+                lastSafe = block;
+            } else {
+                break;
             }
-        } catch (IllegalStateException ex) {
-            ex.printStackTrace();
-            RPGItems.logger.info("This exception may be harmless");
         }
+
         Location newLoc = lastSafe.getLocation();
         newLoc.setPitch(start.getPitch());
         newLoc.setYaw(start.getYaw());

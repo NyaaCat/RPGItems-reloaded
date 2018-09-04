@@ -28,7 +28,7 @@ import static think.rpgitems.power.Utils.checkCooldownByString;
  */
 @PowerMeta(defaultTrigger = TriggerType.RIGHT_CLICK)
 public class PowerThrow extends BasePower implements PowerRightClick, PowerLeftClick {
-    @Property(order = 5)
+    @Property(order = 5, required = true)
     public String entityData = "";
     @Property(order = 4)
     public String entityName = "";

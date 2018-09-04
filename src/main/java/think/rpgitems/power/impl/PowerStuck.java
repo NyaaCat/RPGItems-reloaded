@@ -52,31 +52,37 @@ public class PowerStuck extends BasePower implements PowerHit, PowerRightClick {
     /**
      * Chance of triggering this power
      */
+    @Property
     public int chance = 3;
 
     /**
      * Cost of this power (hit)
      */
+    @Property
     public int cost = 0;
 
     /**
      * Cost of this power (right click)
      */
+    @Property
     public int costAoe = 0;
 
     /**
      * Cost of this power (right click per entity)
      */
+    @Property
     public int costPerEntity = 0;
 
     /**
      * Range of this power
      */
+    @Property
     public int range = 10;
 
     /**
      * Maximum view angle
      */
+    @Property
     public double facing = 30;
 
     /**

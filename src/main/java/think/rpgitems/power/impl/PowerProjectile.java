@@ -82,10 +82,12 @@ public class PowerProjectile extends BasePower implements PowerRightClick {
     /**
      * burst count of one shoot
      */
+    @Property
     public int burstCount = 1;
     /**
      * Interval between bursts
      */
+    @Property
     public int burstInterval = 1;
     /**
      * Type of projectiles
