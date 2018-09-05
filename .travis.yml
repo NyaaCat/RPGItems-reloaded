@@ -1,83 +1,88 @@
 jobs:
   include:
-    - stage: main
-      language: java
-      jdk: oraclejdk8
-      before_install:
-      - export MAJOR_VERSION=`sed -n 's/^ext\.majorVersion = \(.*\)$/\1/p' build.gradle`
-      - export MINOR_VERSION=`sed -n 's/^ext\.minorVersion = \(.*\)$/\1/p' build.gradle`
-      - export MC_VERSION=`sed -n 's/^ext\.minecraftVersion = "\(.*\)"$/\1/p' build.gradle`
-      - export VERSION_STRING=$MAJOR_VERSION.$MINOR_VERSION.$TRAVIS_BUILD_NUMBER-mc$MC_VERSION
-      - 'sed -i "s/^\(version: \).*\$/\1$VERSION_STRING/g" src/main/resources/plugin.yml'
-      - pushd ~/build/
-      - git clone --depth=1 https://github.com/NyaaCat/NyaaCore NyaaCat/NyaaCore
-      - export NYAACORE_LANG_DIR=`readlink -f ./NyaaCat/NyaaCore/src/main/resources/lang/`
-      - popd
-      after_success:
-      - if [ "$TRAVIS_PULL_REQUEST" != "false" ]; then exit 0; fi
-      - if [ "$TRAVIS_BRANCH" != "$MC_VERSION" ]; then exit 0; fi
-      - 'cp build/libs/RPGitems-reloaded-release.jar ./rpgitem-reloaded-$VERSION_STRING.jar'
-      - |
-        if [ $PUBLISH_MAVEN ]; then
-          ./gradlew publish
-          pushd ..;
-          git clone -b maven-repo $MAVEN_REPO_URL mvn;
-          cp -r RPGitems-reloaded/build/repo/cat mvn/;
-          cd mvn;
-          git config credential.helper "store --file=.git/credentials";
-          echo "https://$GITHUB_KEY:@github.com" > .git/credentials;
-          git add .;
-          git commit -m "auto generated maven repo";
-          git push --follow-tags;
-          popd
-        fi
-      before_deploy:
-      - if echo "$TRAVIS_COMMIT_MESSAGE" | grep -F -q "[unstable]" ; then echo "skipping travis deploy" && exit 0 ; fi
-      - git config --global user.email "builds@travis-ci.com"
-      - git config --global user.name "Travis CI"
-      - export GIT_TAG=v$VERSION_STRING
-      - git tag $GIT_TAG -a -m "Generated tag from TravisCI for build $TRAVIS_BUILD_NUMBER"
-      - git config credential.helper "store --file=.git/credentials"
-      - echo "https://${GITHUB_KEY}:@github.com" > .git/credentials
-      - git push -q origin HEAD:$TRAVIS_BRANCH --follow-tags
-      deploy:
-        skip_cleanup: true
-        provider: releases
-        prerelease: true
-        api_key: $GITHUB_KEY
-        file: './rpgitem-reloaded-$VERSION_STRING.jar'
-        body: 'RPGitems build $TRAVIS_BUILD_NUMBER for spigot $TRAVIS_BRANCH'
-        on:
-          tags: false
-          all_branches: true
+  - stage: main
+    language: java
+    jdk: oraclejdk8
+    before_install:
+    - export MAJOR_VERSION=`sed -n 's/^ext\.majorVersion = \(.*\)$/\1/p' build.gradle`
+    - export MINOR_VERSION=`sed -n 's/^ext\.minorVersion = \(.*\)$/\1/p' build.gradle`
+    - export MC_VERSION=`sed -n 's/^ext\.minecraftVersion = "\(.*\)"$/\1/p' build.gradle`
+    - export VERSION_STRING=$MAJOR_VERSION.$MINOR_VERSION.$TRAVIS_BUILD_NUMBER-mc$MC_VERSION
+    - 'sed -i "s/^\(version: \).*\$/\1$VERSION_STRING/g" src/main/resources/plugin.yml'
+    - pushd ~/build/
+    - git clone --depth=1 https://github.com/NyaaCat/NyaaCore NyaaCat/NyaaCore
+    - export NYAACORE_LANG_DIR=`readlink -f ./NyaaCat/NyaaCore/src/main/resources/lang/`
+    - popd
+    after_success:
+    - if [ "$TRAVIS_PULL_REQUEST" != "false" ]; then exit 0; fi
+    - if [ "$TRAVIS_BRANCH" != "$MC_VERSION" ]; then exit 0; fi
+    - 'cp build/libs/RPGitems-reloaded-release.jar ./rpgitem-reloaded-$VERSION_STRING.jar'
+    - |
+      if [ $PUBLISH_MAVEN ]; then
+        ./gradlew publish
+        pushd ..;
+        git clone -b maven-repo $MAVEN_REPO_URL mvn;
+        cp -r RPGitems-reloaded/build/repo/cat mvn/;
+        cd mvn;
+        git config credential.helper "store --file=.git/credentials";
+        echo "https://$GITHUB_KEY:@github.com" > .git/credentials;
+        git add .;
+        git commit -m "auto generated maven repo";
+        git push --follow-tags;
+        popd
+      fi
+    before_deploy:
+    - if echo "$TRAVIS_COMMIT_MESSAGE" | grep -F -q "[unstable]" ; then echo "skipping travis deploy" && exit 0 ; fi
+    - git config --global user.email "builds@travis-ci.com"
+    - git config --global user.name "Travis CI"
+    - export GIT_TAG=v$VERSION_STRING
+    - git tag $GIT_TAG -a -m "Generated tag from TravisCI for build $TRAVIS_BUILD_NUMBER"
+    - git config credential.helper "store --file=.git/credentials"
+    - echo "https://${GITHUB_KEY}:@github.com" > .git/credentials
+    - git push -q origin HEAD:$TRAVIS_BRANCH --follow-tags
+    - if echo "$TRAVIS_COMMIT_MESSAGE" | grep -F -q "[recommended]" ;
+      then export GITHUB_DEPLOY_PRERELEASE=false;
+      else export GITHUB_DEPLOY_PRERELEASE=true;
+      fi
+    - echo $GITHUB_DEPLOY_PRERELEASE
+    deploy:
+      skip_cleanup: true
+      provider: releases
+      prerelease: $GITHUB_DEPLOY_PRERELEASE
+      api_key: $GITHUB_KEY
+      file: './rpgitem-reloaded-$VERSION_STRING.jar'
+      body: 'RPGitems build $TRAVIS_BUILD_NUMBER for spigot $TRAVIS_BRANCH'
+      on:
+        tags: false
+        all_branches: true
 
-    - stage: javadoc
-      language: java
-      jdk: oraclejdk10
-      script:
-      - export MAJOR_VERSION=`sed -n 's/^ext\.majorVersion = \(.*\)$/\1/p' build.gradle`
-      - export MINOR_VERSION=`sed -n 's/^ext\.minorVersion = \(.*\)$/\1/p' build.gradle`
-      - export MC_VERSION=`sed -n 's/^ext\.minecraftVersion = "\(.*\)"$/\1/p' build.gradle`
-      - export VERSION_STRING=$MAJOR_VERSION.$MINOR_VERSION-mc$MC_VERSION
-      - export FULL_VERSION_STRING=$MAJOR_VERSION.$MINOR_VERSION.$TRAVIS_BUILD_NUMBER-mc$MC_VERSION
-      - if [ "$TRAVIS_PULL_REQUEST" != "false" ]; then exit 0; fi
-      - if [ "$TRAVIS_BRANCH" != "$MC_VERSION" ]; then exit 0; fi
-      - |
-        if [ $PUBLISH_JAVADOC ]; then
-          ./gradlew javadoc;
-          pushd ..;
-          git clone -b gh-pages $MAVEN_REPO_URL pages;
-          rm -rf pages/RPGitems-reloaded/$VERSION_STRING/;
-          mkdir -p pages/RPGitems-reloaded/$VERSION_STRING/;
-          cp -r RPGitems-reloaded/build/docs/javadoc pages/RPGitems-reloaded/$VERSION_STRING/;
-          cd pages;
-          git config credential.helper "store --file=.git/credentials";
-          echo "https://$GITHUB_KEY:@github.com" > .git/credentials;
-          git add .;
-          git commit -m "auto generated javadoc";
-          git push --follow-tags;
-          popd;
-        fi
+  - stage: javadoc
+    language: java
+    jdk: oraclejdk10
+    script:
+    - export MAJOR_VERSION=`sed -n 's/^ext\.majorVersion = \(.*\)$/\1/p' build.gradle`
+    - export MINOR_VERSION=`sed -n 's/^ext\.minorVersion = \(.*\)$/\1/p' build.gradle`
+    - export MC_VERSION=`sed -n 's/^ext\.minecraftVersion = "\(.*\)"$/\1/p' build.gradle`
+    - export VERSION_STRING=$MAJOR_VERSION.$MINOR_VERSION-mc$MC_VERSION
+    - export FULL_VERSION_STRING=$MAJOR_VERSION.$MINOR_VERSION.$TRAVIS_BUILD_NUMBER-mc$MC_VERSION
+    - if [ "$TRAVIS_PULL_REQUEST" != "false" ]; then exit 0; fi
+    - if [ "$TRAVIS_BRANCH" != "$MC_VERSION" ]; then exit 0; fi
+    - |
+      if [ $PUBLISH_JAVADOC ]; then
+        ./gradlew javadoc;
+        pushd ..;
+        git clone -b gh-pages $MAVEN_REPO_URL pages;
+        rm -rf pages/RPGitems-reloaded/$VERSION_STRING/;
+        mkdir -p pages/RPGitems-reloaded/$VERSION_STRING/;
+        cp -r RPGitems-reloaded/build/docs/javadoc pages/RPGitems-reloaded/$VERSION_STRING/;
+        cd pages;
+        git config credential.helper "store --file=.git/credentials";
+        echo "https://$GITHUB_KEY:@github.com" > .git/credentials;
+        git add .;
+        git commit -m "auto generated javadoc";
+        git push --follow-tags;
+        popd;
+      fi
 
 before_cache:
 - rm -f  $HOME/.gradle/caches/modules-2/modules-2.lock
