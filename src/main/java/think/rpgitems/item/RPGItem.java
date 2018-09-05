@@ -169,6 +169,7 @@ public class RPGItem {
     }
 
     public RPGItem(ConfigurationSection s, String name, int uid) throws UnknownPowerException, UnknownExtensionException {
+        if (uid >= 0) throw new IllegalArgumentException();
         this.name = name;
         this.uid = uid;
         restore(s);

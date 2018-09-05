@@ -160,6 +160,7 @@ public class ItemManager {
             e.printStackTrace();
             plugin.getLogger().severe("Error loading items.yml. Creating backup");
             dump(e);
+            throw new RuntimeException(e);
         }
     }
 
@@ -194,27 +195,34 @@ public class ItemManager {
         String itemName = item.getName();
         String filename = getItemFilename(itemName);
         File itemFile = new File(items, filename + ".yml");
-        File backup = new File(items, filename + "." + System.currentTimeMillis() + ".bak");
         try {
-            if (!backup.createNewFile()) throw new IllegalStateException();
-        } catch (Exception e) {
-            plugin.getLogger().log(Level.SEVERE, "Cannot create backup for" + itemName + ".", e);
-        }
-        try {
+            File backup = new File(items, filename + "." + System.currentTimeMillis() + ".bak");
             if (itemFile.exists()) {
+                try {
+                    if (!backup.createNewFile()) throw new IllegalStateException();
+                } catch (Exception e) {
+                    plugin.getLogger().log(Level.SEVERE, "Cannot create backup for" + itemName + ".", e);
+                }
                 Files.move(itemFile.toPath(), backup.toPath(), StandardCopyOption.REPLACE_EXISTING);
             }
             YamlConfiguration configuration = new YamlConfiguration();
             item.save(configuration);
             configuration.save(itemFile);
 
-            String canonicalPath = itemFile.getCanonicalPath();
-            YamlConfiguration test = new YamlConfiguration();
-            test.load(canonicalPath);
-            new RPGItem(test);
-            backup.deleteOnExit();
-            item.file = canonicalPath;
-        } catch (IOException | InvalidConfigurationException | RPGItem.UnknownPowerException | RPGItem.UnknownExtensionException e) {
+            try {
+                String canonicalPath = itemFile.getCanonicalPath();
+                YamlConfiguration test = new YamlConfiguration();
+                test.load(canonicalPath);
+                new RPGItem(test);
+                if (backup.exists()) {
+                    backup.deleteOnExit();
+                }
+                item.file = canonicalPath;
+            } catch (Exception e) {
+                plugin.getLogger().log(Level.SEVERE, "Error verifying integrity for" + itemName + ".", e);
+                throw new RuntimeException(e);
+            }
+        } catch (IOException e) {
             throw new RuntimeException(e);
         }
     }
@@ -252,7 +260,7 @@ public class ItemManager {
     public static int nextUid() {
         int free;
         do {
-            free = -ThreadLocalRandom.current().nextInt();
+            free = ThreadLocalRandom.current().nextInt(Integer.MIN_VALUE, 0);
         } while (itemById.containsKey(free));
         return free;
     }
@@ -260,10 +268,7 @@ public class ItemManager {
     public static RPGItem cloneItem(RPGItem item, String name) {
         if (itemByName.containsKey(name))
             return null;
-        int free;
-        do {
-            free = ThreadLocalRandom.current().nextInt(65536, Integer.MAX_VALUE) + 1;
-        } while (itemById.containsKey(free));
+        int free = nextUid();
         ConfigurationSection section = new MemoryConfiguration();
         item.save(section);
         RPGItem newItem;
@@ -301,7 +306,7 @@ public class ItemManager {
     }
 
     public static String getItemFilename(String itemName) {
-        // ensure Windows server don't blow up by CONs or NULs
+        // ensure Windows servers won't be blown up by CONs or NULs
         // and escape some character that don't fit into a file name
         return "item-" +
                        itemName

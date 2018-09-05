@@ -1,5 +1,6 @@
 package think.rpgitems.power.impl;
 
+import org.bukkit.Bukkit;
 import org.bukkit.GameMode;
 import org.bukkit.Location;
 import org.bukkit.Material;
@@ -17,6 +18,7 @@ import think.rpgitems.power.PowerMeta;
 import think.rpgitems.power.PowerResult;
 import think.rpgitems.power.PowerRightClick;
 import think.rpgitems.power.Property;
+import think.rpgitems.utils.MaterialUtils;
 
 import static think.rpgitems.power.Utils.checkCooldown;
 
@@ -127,7 +129,7 @@ public class PowerSkyHook extends BasePower implements PowerRightClick {
         cooldown = s.getLong("cooldown", 20);
         hookingTickCost = s.getInt("hookingTickCost", 0);
         cost = s.getInt("cost", s.getInt("consumption", 0));
-        railMaterial = Material.valueOf(s.getString("railMaterial", "GLASS"));
+        railMaterial = MaterialUtils.getMaterial(s.getString("railMaterial", "GLASS"), Bukkit.getConsoleSender());
         hookDistance = s.getInt("hookDistance", 10);
     }
 

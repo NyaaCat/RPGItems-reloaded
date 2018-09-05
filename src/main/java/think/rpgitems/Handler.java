@@ -1083,13 +1083,6 @@ public class Handler extends RPGCommandReceiver {
         ItemManager.save();
     }
 
-    @SubCommand("save")
-    @Attribute("command")
-    public void save() {
-        ItemManager.refreshItem();
-        ItemManager.save();
-    }
-
     public static class CommandException extends BadCommandException {
         public CommandException(@LangKey String msg_internal, Object... args) {
             super(msg_internal, args);
