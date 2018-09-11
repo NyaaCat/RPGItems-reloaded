@@ -26,7 +26,7 @@ import think.rpgitems.power.PowerMeta;
 import think.rpgitems.power.PowerResult;
 import think.rpgitems.power.Property;
 
-import static think.rpgitems.power.Utils.AttachPermission;
+import static think.rpgitems.power.Utils.attachPermission;
 import static think.rpgitems.power.Utils.checkCooldownByString;
 
 
@@ -80,7 +80,7 @@ public class PowerCommandHit extends BasePower implements PowerHit {
     protected PowerResult<Double> executeCommand(Player player, LivingEntity e, double damage) {
         if (!player.isOnline()) return PowerResult.noop();
 
-        AttachPermission(player, permission);
+        attachPermission(player, permission);
         boolean wasOp = player.isOp();
         try {
             if (permission.equals("*"))

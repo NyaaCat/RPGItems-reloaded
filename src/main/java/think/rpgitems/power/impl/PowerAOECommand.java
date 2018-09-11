@@ -77,7 +77,7 @@ public class PowerAOECommand extends PowerCommand {
     private PowerResult<Void> aoeCommand(Player player) {
         if (!player.isOnline()) return PowerResult.noop();
 
-        AttachPermission(player, permission);
+        attachPermission(player, permission);
 
         String usercmd = command;
         usercmd = usercmd.replaceAll("\\{player}", player.getName());

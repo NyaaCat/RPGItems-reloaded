@@ -578,68 +578,77 @@ public class Handler extends RPGCommandReceiver {
     @Attribute("property")
     public void getItemPowerProperty(CommandSender sender, Arguments args) {
         RPGItem item = getItemByName(args.nextString());
-        String power = args.nextString();
+        String powerStr = args.nextString();
         int nth = args.nextInt();
-        String property = args.nextString();
-        int i = nth;
-        Class<? extends Power> p;
-        try {
-            p = PowerManager.getPower(power);
-        } catch (RPGItem.UnknownExtensionException e) {
-            msg(sender, "message.error.unknown.extension", e.getName());
+        String property = args.next();
+        Class<? extends Power> cls = getPowerClass(sender, powerStr);
+        if (cls == null) {
+            msg(sender, "message.power_property.power_notfound");
             return;
         }
-        if (p == null) {
-            msg(sender, "message.power.unknown", power);
-            return;
-        }
-        for (Power pow : item.powers) {
-            if (p.isInstance(pow) && --i == 0) {
+        Optional<? extends Power> power = item.getPower(cls).stream().skip(nth - 1).findFirst();
+        if (power.isPresent()) {
+            Power pow = power.get();
+            YamlConfiguration conf = new YamlConfiguration();
+            if (property != null) {
                 try {
-                    Field pro = p.getField(property);
-                    String val = pro.get(pow).toString();
-                    msg(sender, "message.power_property.get", nth, power, property, val);
+                    Field field = cls.getField(property);
+                    Utils.saveProperty(pow, conf, field.getName(), field);
+                    msg(sender, "message.power_property.get", nth, power, property, conf.getString(field.getName()));
                 } catch (Exception e) {
                     msg(sender, "message.power_property.property_notfound", property);
-                    return;
                 }
-                return;
+            } else {
+                pow.save(conf);
+                msg(sender, "message.power_property.all", nth, power, conf.saveToString());
             }
+        } else {
+            msg(sender, "message.power_property.power_notfound");
         }
-        msg(sender, "message.power_property.power_notfound");
+    }
+
+    private Class<? extends Power> getPowerClass(CommandSender sender, String powerStr) {
+        Class<? extends Power> cls;
+        try {
+            cls = PowerManager.getPower(powerStr);
+        } catch (RPGItem.UnknownExtensionException e) {
+            msg(sender, "message.error.unknown.extension", e.getName());
+            return null;
+        }
+        if (cls == null) {
+            msg(sender, "message.power.unknown", powerStr);
+            return null;
+        }
+        return cls;
     }
 
     @SubCommand("set")
     @Attribute("property")
-    public void setItemPowerProperty(CommandSender sender, Arguments args) throws IllegalAccessException {
+    public void setItemPowerProperty(CommandSender sender, Arguments args) throws IllegalAccessException, RPGItem.UnknownExtensionException {
         RPGItem item = getItemByName(args.nextString());
         String power = args.nextString();
         int nth = args.nextInt();
         String property = args.nextString();
         String val = args.nextString();
-        try {
-            Class<? extends Power> p = PowerManager.getPower(power);
-            if (p == null) {
-                msg(sender, "message.power.unknown", power);
-                return;
-            }
-            Optional<Power> op = item.powers.stream().filter(pwr -> pwr.getClass().equals(p)).skip(nth - 1).findFirst();
-            if (op.isPresent()) {
-                Power pow = op.get();
-                item.removePower(pow);
-                try {
-                    PowerManager.setPowerProperty(sender, pow, property, val);
-                } finally {
-                    item.addPower(pow);
-                }
-            } else {
-                msg(sender, "message.power_property.power_notfound");
-                return;
-            }
-        } catch (RPGItem.UnknownExtensionException e) {
-            msg(sender, "message.error.unknown.extension", e.getName());
+        Class<? extends Power> p = PowerManager.getPower(power);
+        if (p == null) {
+            msg(sender, "message.power.unknown", power);
             return;
         }
+        Optional<Power> op = item.powers.stream().filter(pwr -> pwr.getClass().equals(p)).skip(nth - 1).findFirst();
+        if (op.isPresent()) {
+            Power pow = op.get();
+            item.removePower(pow);
+            try {
+                PowerManager.setPowerProperty(sender, pow, property, val);
+            } finally {
+                item.addPower(pow);
+            }
+        } else {
+            msg(sender, "message.power_property.power_notfound");
+            return;
+        }
+
         item.rebuild();
         ItemManager.refreshItem();
         ItemManager.save();
@@ -859,17 +868,8 @@ public class Handler extends RPGCommandReceiver {
             return;
         }
         RPGItem item = getItemByName(itemStr);
-        Class<? extends Power> cls;
-        try {
-            cls = PowerManager.getPower(powerStr);
-        } catch (RPGItem.UnknownExtensionException e) {
-            msg(sender, "message.error.unknown.extension", e.getName());
-            return;
-        }
-        if (cls == null) {
-            msg(sender, "message.power.unknown", powerStr);
-            return;
-        }
+        Class<? extends Power> cls = getPowerClass(sender, powerStr);
+        if (cls == null) return;
         Power power;
         try {
             power = cls.getConstructor().newInstance();
@@ -910,8 +910,7 @@ public class Handler extends RPGCommandReceiver {
             if (value == null) {
                 if (!required.isEmpty()) {
                     throw new BadCommandException("message.power.required",
-                            String.join(", ",
-                                    required.stream().map(Field::getName).collect(Collectors.toList()))
+                            required.stream().map(Field::getName).collect(Collectors.joining(", "))
                     );
                 } else {
                     break;
@@ -974,6 +973,58 @@ public class Handler extends RPGCommandReceiver {
                 publishGist(sender, args, items);
                 break;
         }
+    }
+
+    @SubCommand("author")
+    @Attribute("item")
+    public void setAuthor(CommandSender sender, Arguments args) {
+        RPGItem item = getItemByName(args.nextString());
+        String author = args.next();
+        if (author != null) {
+            item.setAuthor(author);
+            msg(sender, "message.name.set", author);
+            ItemManager.save();
+        } else {
+            msg(sender, "message.name.get", item.getAuthor());
+        }
+    }
+
+    @SubCommand("note")
+    @Attribute("item")
+    public void setNote(CommandSender sender, Arguments args) {
+        RPGItem item = getItemByName(args.nextString());
+        String note = args.next();
+        if (note != null) {
+            item.setNote(note);
+            msg(sender, "message.note.set", note);
+            ItemManager.save();
+        } else {
+            msg(sender, "message.note.get", item.getNote());
+        }
+    }
+
+    @SubCommand("license")
+    @Attribute("item")
+    public void setLicense(CommandSender sender, Arguments args) {
+        RPGItem item = getItemByName(args.nextString());
+        String license = args.next();
+        if (license != null) {
+            item.setLicense(license);
+            msg(sender, "message.license.set", license);
+            ItemManager.save();
+        } else {
+            msg(sender, "message.license.get", item.getLicense());
+        }
+    }
+
+    @SubCommand("dump")
+    @Attribute("item")
+    public void dumpItem(CommandSender sender, Arguments args) {
+        RPGItem item = getItemByName(args.nextString());
+        YamlConfiguration yamlConfiguration = new YamlConfiguration();
+        item.save(yamlConfiguration);
+        String s = yamlConfiguration.saveToString();
+        msg(sender, "message.item.dump", s);
     }
 
     private void publishGist(CommandSender sender, Arguments args, Set<String> itemNames) {

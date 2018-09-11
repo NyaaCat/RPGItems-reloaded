@@ -154,6 +154,7 @@ public class RPGItem {
         displayName = item.getType().toString();
 
         localeMeta = item.getItemMeta();
+        itemFlags.add(ItemFlag.HIDE_ATTRIBUTES);
         rebuild();
     }
 
@@ -216,8 +217,7 @@ public class RPGItem {
                     NamespacedKey key = PowerManager.parseKey(powerName);
                     if (!PowerManager.hasPower(key)) {
                         plugin.getLogger().warning("Unknown power:" + key + " on item " + this.name);
-                        Thread.dumpStack();
-                        continue;
+                        throw new UnknownPowerException(key);
                     }
                     Power pow = PowerManager.getPower(key).getConstructor().newInstance();
                     pow.init(section);
@@ -367,7 +367,7 @@ public class RPGItem {
         item.setType(rItem.item.getType());
         ItemMeta meta = rItem.getLocaleMeta();
         List<String> lore = meta.getLore();
-        rItem.addExtra(rpgMeta, item, lore);
+        rItem.addExtra(rpgMeta, lore);
         lore.set(0, meta.getLore().get(0) + rpgMeta.toMCString());
         // Patch for mcMMO buff. See SkillUtils.java#removeAbilityBuff in mcMMO
         if (item.hasItemMeta() && item.getItemMeta().hasLore() && item.getItemMeta().getLore().contains("mcMMO Ability Tool"))
@@ -402,13 +402,12 @@ public class RPGItem {
 
     private static List<String> filterLores(RPGItem r, ItemStack i) {
         List<String> ret = new ArrayList<>();
-        List<Pattern> patterns = new ArrayList<>();
-        for (Power p : r.powers) {
-            if (p instanceof PowerLoreFilter && ((PowerLoreFilter) p).regex != null) {
-                patterns.add(Pattern.compile(((PowerLoreFilter) p).regex));
-            }
-        }
-        if (patterns.size() <= 0) return Collections.emptyList();
+        List<Pattern> patterns = r.getPower(PowerLoreFilter.class).stream()
+                                  .filter(p -> p.regex != null)
+                                  .map(p -> p.regex)
+                                  .map(Pattern::compile)
+                                  .collect(Collectors.toList());
+        if (patterns.isEmpty()) return Collections.emptyList();
         if (!i.hasItemMeta() || !i.getItemMeta().hasLore()) return Collections.emptyList();
         for (String str : i.getItemMeta().getLore()) {
             for (Pattern p : patterns) {
@@ -603,34 +602,42 @@ public class RPGItem {
         if (!checkPermission(player, true)) return false;
         if (!WGSupport.check(player, this, powers)) return false;
 
-        Set<String> ids = powers.stream().flatMap(p -> p.getConditions().stream()).collect(Collectors.toSet());
-        List<PowerCondition> conds = getPower(PowerCondition.class);
-        List<PowerCondition> statics = conds.stream().filter(p -> p.isStatic).filter(p -> ids.contains(p.id)).collect(Collectors.toList());
-        if (statics.stream().anyMatch(p -> !p.check(player, i))) return false;
-
         RPGItemsPowersPreFireEvent preFire = new RPGItemsPowersPreFireEvent(i, this, player, triggerType, powers);
         Bukkit.getServer().getPluginManager().callEvent(preFire);
         return !preFire.isCancelled();
     }
 
-    private boolean checkConditions(Player player, ItemStack i, Power power) {
+    private <T> PowerResult<T> checkConditions(Player player, ItemStack i, Power power, List<PowerCondition> conds, Map<PowerCondition, Boolean> staticCond) {
         Set<String> ids = power.getConditions();
-        List<PowerCondition> conds = getPower(PowerCondition.class);
-        List<PowerCondition> dyns = conds.stream().filter(p -> !p.isStatic).filter(p -> ids.contains(p.id)).collect(Collectors.toList());
-        return dyns.stream().allMatch(p -> p.check(player, i));
+        List<PowerCondition> conditions = conds.stream().filter(p -> ids.contains(p.id)).collect(Collectors.toList());
+        List<PowerCondition> failed = conditions.stream().filter(p -> p.isStatic ? !staticCond.get(p) : !p.check(player, i)).collect(Collectors.toList());
+        if (failed.isEmpty()) return null;
+        return failed.stream().anyMatch(f -> f.isCritical) ? PowerResult.abort() : PowerResult.condition();
+    }
+
+    private Map<PowerCondition, Boolean> checkStaticCondition(Player player, ItemStack i, List<PowerCondition> conds) {
+        Set<String> ids = powers.stream().flatMap(p -> p.getConditions().stream()).collect(Collectors.toSet());
+        List<PowerCondition> statics = conds.stream().filter(p -> p.isStatic).filter(p -> ids.contains(p.id)).collect(Collectors.toList());
+        return statics.stream().collect(Collectors.toMap(
+                s -> s,
+                s -> s.check(player, i)
+        ));
     }
 
     public void leftClick(Player player, ItemStack i, Block block, PlayerInteractEvent event) {
         if (!triggerPreCheck(player, i, this.powerLeftClick, TriggerType.LEFT_CLICK)) return;
+        List<PowerCondition> conds = getPower(PowerCondition.class);
+        Map<PowerCondition, Boolean> staticCond = checkStaticCondition(player, i, conds);
 
         Map<Power, PowerResult> resultMap = new LinkedHashMap<>();
         for (PowerLeftClick power : powerLeftClick) {
-            if (!checkConditions(player, i, power)) {
-                resultMap.put(power, PowerResult.condition());
-                continue;
+            PowerResult<Void> result = checkConditions(player, i, power, conds, staticCond);
+            if (result != null) {
+                resultMap.put(power, result);
+            } else {
+                result = power.leftClick(player, i, block, event);
+                resultMap.put(power, result);
             }
-            PowerResult<Void> result = power.leftClick(player, i, block, event);
-            resultMap.put(power, result);
             if (result.isAbort()) break;
         }
         RPGItemsPowersPostFireEvent postFire = new RPGItemsPowersPostFireEvent(i, this, player, TriggerType.LEFT_CLICK, resultMap);
@@ -644,15 +651,18 @@ public class RPGItem {
 
     public void rightClick(Player player, ItemStack i, Block block, PlayerInteractEvent event) {
         if (!triggerPreCheck(player, i, this.powerRightClick, TriggerType.RIGHT_CLICK)) return;
+        List<PowerCondition> conds = getPower(PowerCondition.class);
+        Map<PowerCondition, Boolean> staticCond = checkStaticCondition(player, i, conds);
 
         Map<Power, PowerResult> resultMap = new LinkedHashMap<>();
         for (PowerRightClick power : this.powerRightClick) {
-            if (!checkConditions(player, i, power)) {
-                resultMap.put(power, PowerResult.condition());
-                continue;
+            PowerResult<Void> result = checkConditions(player, i, power, conds, staticCond);
+            if (result != null) {
+                resultMap.put(power, result);
+            } else {
+                result = power.rightClick(player, i, block, event);
+                resultMap.put(power, result);
             }
-            PowerResult<Void> result = power.rightClick(player, i, block, event);
-            resultMap.put(power, result);
             if (result.isAbort()) break;
         }
         RPGItemsPowersPostFireEvent postFire = new RPGItemsPowersPostFireEvent(i, this, player, TriggerType.RIGHT_CLICK, resultMap);
@@ -666,14 +676,18 @@ public class RPGItem {
 
     public void offhandClick(Player player, ItemStack i, PlayerInteractEvent event) {
         if (!triggerPreCheck(player, i, this.powerOffhandClick, TriggerType.OFFHAND_CLICK)) return;
+        List<PowerCondition> conds = getPower(PowerCondition.class);
+        Map<PowerCondition, Boolean> staticCond = checkStaticCondition(player, i, conds);
 
         Map<Power, PowerResult> resultMap = new LinkedHashMap<>();
         for (PowerOffhandClick power : powerOffhandClick) {
-            if (!checkConditions(player, i, power)) {
-                resultMap.put(power, PowerResult.condition());
-                continue;
+            PowerResult<Void> result = checkConditions(player, i, power, conds, staticCond);
+            if (result != null) {
+                resultMap.put(power, result);
+            } else {
+                result = power.offhandClick(player, i, event);
+                resultMap.put(power, result);
             }
-            PowerResult<Void> result = power.offhandClick(player, i, event);
             resultMap.put(power, result);
             if (result.isAbort()) break;
         }
@@ -688,14 +702,18 @@ public class RPGItem {
 
     public void sneak(Player player, ItemStack i, PlayerToggleSneakEvent event) {
         if (!triggerPreCheck(player, i, this.powerSneak, TriggerType.SNEAK)) return;
+        List<PowerCondition> conds = getPower(PowerCondition.class);
+        Map<PowerCondition, Boolean> staticCond = checkStaticCondition(player, i, conds);
 
         Map<Power, PowerResult> resultMap = new LinkedHashMap<>();
         for (PowerSneak power : powerSneak) {
-            if (!checkConditions(player, i, power)) {
-                resultMap.put(power, PowerResult.condition());
-                continue;
+            PowerResult<Void> result = checkConditions(player, i, power, conds, staticCond);
+            if (result != null) {
+                resultMap.put(power, result);
+            } else {
+                result = power.sneak(player, i, event);
+                resultMap.put(power, result);
             }
-            PowerResult<Void> result = power.sneak(player, i, event);
             resultMap.put(power, result);
             if (result.isAbort()) break;
         }
@@ -710,14 +728,18 @@ public class RPGItem {
 
     public void sprint(Player player, ItemStack i, PlayerToggleSprintEvent event) {
         if (!triggerPreCheck(player, i, this.powerSprint, TriggerType.SPRINT)) return;
+        List<PowerCondition> conds = getPower(PowerCondition.class);
+        Map<PowerCondition, Boolean> staticCond = checkStaticCondition(player, i, conds);
 
         Map<Power, PowerResult> resultMap = new LinkedHashMap<>();
         for (PowerSprint power : powerSprint) {
-            if (!checkConditions(player, i, power)) {
-                resultMap.put(power, PowerResult.condition());
-                continue;
+            PowerResult<Void> result = checkConditions(player, i, power, conds, staticCond);
+            if (result != null) {
+                resultMap.put(power, result);
+            } else {
+                result = power.sprint(player, i, event);
+                resultMap.put(power, result);
             }
-            PowerResult<Void> result = power.sprint(player, i, event);
             resultMap.put(power, result);
             if (result.isAbort()) break;
         }
@@ -732,14 +754,18 @@ public class RPGItem {
 
     public void projectileHit(Player player, ItemStack i, Projectile arrow, ProjectileHitEvent event) {
         if (!triggerPreCheck(player, i, this.powerProjectileHit, TriggerType.PROJECTILE_HIT)) return;
+        List<PowerCondition> conds = getPower(PowerCondition.class);
+        Map<PowerCondition, Boolean> staticCond = checkStaticCondition(player, i, conds);
 
         Map<Power, PowerResult> resultMap = new LinkedHashMap<>();
         for (PowerProjectileHit power : powerProjectileHit) {
-            if (!checkConditions(player, i, power)) {
-                resultMap.put(power, PowerResult.condition());
-                continue;
+            PowerResult<Void> result = checkConditions(player, i, power, conds, staticCond);
+            if (result != null) {
+                resultMap.put(power, result);
+            } else {
+                result = power.projectileHit(player, i, arrow, event);
+                resultMap.put(power, result);
             }
-            PowerResult<Void> result = power.projectileHit(player, i, arrow, event);
             resultMap.put(power, result);
             if (result.isAbort()) break;
         }
@@ -754,16 +780,19 @@ public class RPGItem {
 
     public double hit(Player player, ItemStack i, LivingEntity target, double damage, EntityDamageByEntityEvent event) {
         if (!triggerPreCheck(player, i, this.powerHit, TriggerType.HIT)) return damage;
+        List<PowerCondition> conds = getPower(PowerCondition.class);
+        Map<PowerCondition, Boolean> staticCond = checkStaticCondition(player, i, conds);
 
         double ret = -Double.MAX_VALUE;
         Map<Power, PowerResult> resultMap = new LinkedHashMap<>();
         for (PowerHit power : powerHit) {
-            if (!checkConditions(player, i, power)) {
-                resultMap.put(power, PowerResult.condition());
-                continue;
+            PowerResult<Double> result = checkConditions(player, i, power, conds, staticCond);
+            if (result != null) {
+                resultMap.put(power, result);
+            } else {
+                result = power.hit(player, i, target, damage, event);
+                resultMap.put(power, result);
             }
-            PowerResult<Double> result = power.hit(player, i, target, damage, event);
-            resultMap.put(power, result);
             if (result.isAbort()) break;
             if (!result.isOK()) continue;
             ret = result.getData() > ret ? result.getData() : ret;
@@ -781,15 +810,18 @@ public class RPGItem {
     public double takeHit(Player player, ItemStack i, EntityDamageEvent ev) {
         double ret = Double.MAX_VALUE;
         if (!triggerPreCheck(player, i, this.powerHitTaken, TriggerType.HIT_TAKEN)) return ret;
+        List<PowerCondition> conds = getPower(PowerCondition.class);
+        Map<PowerCondition, Boolean> staticCond = checkStaticCondition(player, i, conds);
 
         Map<Power, PowerResult> resultMap = new LinkedHashMap<>();
         for (PowerHitTaken power : powerHitTaken) {
-            if (!checkConditions(player, i, power)) {
-                resultMap.put(power, PowerResult.condition());
-                continue;
+            PowerResult<Double> result = checkConditions(player, i, power, conds, staticCond);
+            if (result != null) {
+                resultMap.put(power, result);
+            } else {
+                result = power.takeHit(player, i, ev.getDamage(), ev);
+                resultMap.put(power, result);
             }
-            PowerResult<Double> result = power.takeHit(player, i, ev.getDamage(), ev);
-            resultMap.put(power, result);
             if (result.isAbort()) break;
             if (!result.isOK()) continue;
             ret = result.getData() < ret ? result.getData() : ret;
@@ -806,15 +838,18 @@ public class RPGItem {
 
     public void hurt(Player player, ItemStack i, EntityDamageEvent ev) {
         if (!triggerPreCheck(player, i, this.powerHurt, TriggerType.HURT)) return;
+        List<PowerCondition> conds = getPower(PowerCondition.class);
+        Map<PowerCondition, Boolean> staticCond = checkStaticCondition(player, i, conds);
 
         Map<Power, PowerResult> resultMap = new LinkedHashMap<>();
         for (PowerHurt power : powerHurt) {
-            if (!checkConditions(player, i, power)) {
-                resultMap.put(power, PowerResult.condition());
-                continue;
+            PowerResult<Void> result = checkConditions(player, i, power, conds, staticCond);
+            if (result != null) {
+                resultMap.put(power, result);
+            } else {
+                result = power.hurt(player, i, ev);
+                resultMap.put(power, result);
             }
-            PowerResult<Void> result = power.hurt(player, i, ev);
-            resultMap.put(power, result);
             if (result.isAbort()) break;
         }
         RPGItemsPowersPostFireEvent postFire = new RPGItemsPowersPostFireEvent(i, this, player, TriggerType.HURT, resultMap);
@@ -828,20 +863,22 @@ public class RPGItem {
 
     public void swapToOffhand(Player player, ItemStack i, PlayerSwapHandItemsEvent ev) {
         if (!triggerPreCheck(player, i, this.powerSwapToOffhand, TriggerType.SWAP_TO_OFFHAND)) return;
+        List<PowerCondition> conds = getPower(PowerCondition.class);
+        Map<PowerCondition, Boolean> staticCond = checkStaticCondition(player, i, conds);
 
         Map<Power, PowerResult> resultMap = new LinkedHashMap<>();
         for (PowerSwapToOffhand power : powerSwapToOffhand) {
-            if (!checkConditions(player, i, power)) {
-                resultMap.put(power, PowerResult.condition());
-                continue;
+            PowerResult<Boolean> result = checkConditions(player, i, power, conds, staticCond);
+            if (result != null) {
+                resultMap.put(power, result);
+            } else {
+                result = power.swapToOffhand(player, i, ev);
+                resultMap.put(power, result);
             }
-            PowerResult<Boolean> result = power.swapToOffhand(player, i, ev);
-            resultMap.put(power, result);
-            if (result.isAbort()) break;
-            if (!result.isOK()) continue;
             if (!result.getData()) {
                 ev.setCancelled(true);
             }
+            if (result.isAbort()) break;
         }
         RPGItemsPowersPostFireEvent postFire = new RPGItemsPowersPostFireEvent(i, this, player, TriggerType.SWAP_TO_OFFHAND, resultMap);
         Bukkit.getServer().getPluginManager().callEvent(postFire);
@@ -854,20 +891,23 @@ public class RPGItem {
 
     public void swapToMainhand(Player player, ItemStack i, PlayerSwapHandItemsEvent ev) {
         if (!triggerPreCheck(player, i, this.powerSwapToMainhand, TriggerType.SWAP_TO_MAINHAND)) return;
+        List<PowerCondition> conds = getPower(PowerCondition.class);
+        Map<PowerCondition, Boolean> staticCond = checkStaticCondition(player, i, conds);
 
         Map<Power, PowerResult> resultMap = new LinkedHashMap<>();
         for (PowerSwapToMainhand power : powerSwapToMainhand) {
-            if (!checkConditions(player, i, power)) {
-                resultMap.put(power, PowerResult.condition());
-                continue;
+            PowerResult<Boolean> result = checkConditions(player, i, power, conds, staticCond);
+            if (result != null) {
+                resultMap.put(power, result);
+            } else {
+                result = power.swapToMainhand(player, i, ev);
+                resultMap.put(power, result);
             }
-            PowerResult<Boolean> result = power.swapToMainhand(player, i, ev);
             resultMap.put(power, result);
-            if (result.isAbort()) break;
-            if (!result.isOK()) continue;
             if (!result.getData()) {
                 ev.setCancelled(true);
             }
+            if (result.isAbort()) break;
         }
         RPGItemsPowersPostFireEvent postFire = new RPGItemsPowersPostFireEvent(i, this, player, TriggerType.SWAP_TO_MAINHAND, resultMap);
         Bukkit.getServer().getPluginManager().callEvent(postFire);
@@ -880,20 +920,22 @@ public class RPGItem {
 
     public void pickupOffhand(Player player, ItemStack i, InventoryClickEvent ev) {
         if (!triggerPreCheck(player, i, this.powerSwapToMainhand, TriggerType.PICKUP_OFF_HAND)) return;
+        List<PowerCondition> conds = getPower(PowerCondition.class);
+        Map<PowerCondition, Boolean> staticCond = checkStaticCondition(player, i, conds);
 
         Map<Power, PowerResult> resultMap = new LinkedHashMap<>();
         for (PowerSwapToMainhand power : powerSwapToMainhand) {
-            if (!checkConditions(player, i, power)) {
-                resultMap.put(power, PowerResult.condition());
-                continue;
+            PowerResult<Boolean> result = checkConditions(player, i, power, conds, staticCond);
+            if (result != null) {
+                resultMap.put(power, result);
+            } else {
+                result = power.pickupOffhand(player, i, ev);
+                resultMap.put(power, result);
             }
-            PowerResult<Boolean> result = power.pickupOffhand(player, i, ev);
-            resultMap.put(power, result);
-            if (result.isAbort()) break;
-            if (!result.isOK()) continue;
             if (!result.getData()) {
                 ev.setCancelled(true);
             }
+            if (result.isAbort()) break;
         }
         RPGItemsPowersPostFireEvent postFire = new RPGItemsPowersPostFireEvent(i, this, player, TriggerType.PICKUP_OFF_HAND, resultMap);
         Bukkit.getServer().getPluginManager().callEvent(postFire);
@@ -906,20 +948,22 @@ public class RPGItem {
 
     public void placeOffhand(Player player, ItemStack i, InventoryClickEvent ev) {
         if (!triggerPreCheck(player, i, this.powerSwapToOffhand, TriggerType.PLACE_OFF_HAND)) return;
+        List<PowerCondition> conds = getPower(PowerCondition.class);
+        Map<PowerCondition, Boolean> staticCond = checkStaticCondition(player, i, conds);
 
         Map<Power, PowerResult> resultMap = new LinkedHashMap<>();
         for (PowerSwapToOffhand power : powerSwapToOffhand) {
-            if (!checkConditions(player, i, power)) {
-                resultMap.put(power, PowerResult.condition());
-                continue;
+            PowerResult<Boolean> result = checkConditions(player, i, power, conds, staticCond);
+            if (result != null) {
+                resultMap.put(power, result);
+            } else {
+                result = power.placeOffhand(player, i, ev);
+                resultMap.put(power, result);
             }
-            PowerResult<Boolean> result = power.placeOffhand(player, i, ev);
-            resultMap.put(power, result);
-            if (result.isAbort()) break;
             if (!result.getData()) {
-                if (!result.isOK()) continue;
                 ev.setCancelled(true);
             }
+            if (result.isAbort()) break;
         }
         RPGItemsPowersPostFireEvent postFire = new RPGItemsPowersPostFireEvent(i, this, player, TriggerType.PLACE_OFF_HAND, resultMap);
         Bukkit.getServer().getPluginManager().callEvent(postFire);
@@ -932,15 +976,18 @@ public class RPGItem {
 
     public void tick(Player player, ItemStack i) {
         if (!triggerPreCheck(player, i, this.powerTick, TriggerType.TICK)) return;
+        List<PowerCondition> conds = getPower(PowerCondition.class);
+        Map<PowerCondition, Boolean> staticCond = checkStaticCondition(player, i, conds);
 
         Map<Power, PowerResult> resultMap = new LinkedHashMap<>();
         for (PowerTick power : powerTick) {
-            if (!checkConditions(player, i, power)) {
-                resultMap.put(power, PowerResult.condition());
-                continue;
+            PowerResult<Void> result = checkConditions(player, i, power, conds, staticCond);
+            if (result != null) {
+                resultMap.put(power, result);
+            } else {
+                result = power.tick(player, i);
+                resultMap.put(power, result);
             }
-            PowerResult<Void> result = power.tick(player, i);
-            resultMap.put(power, result);
             if (result.isAbort()) break;
         }
         RPGItemsPowersPostFireEvent postFire = new RPGItemsPowersPostFireEvent(i, this, player, TriggerType.TICK, resultMap);
@@ -959,20 +1006,18 @@ public class RPGItem {
             lines.add(0, getMCEncodedUID());
         }
         meta.setLore(lines);
-        meta.setUnbreakable(false);
-        for (Power p : powers) {
-            if (p instanceof PowerUnbreakable) {
-                meta.setUnbreakable(true);
-                break;
-            }
-        }
-        if (customItemModel) {
+        if (customItemModel || hasPower(PowerUnbreakable.class)) {
             meta.setUnbreakable(true);
+        } else {
+            meta.setUnbreakable(false);
         }
         for (ItemFlag flag : meta.getItemFlags()) {
             meta.removeItemFlags(flag);
         }
         for (ItemFlag flag : itemFlags) {
+            if (flag == ItemFlag.HIDE_ATTRIBUTES && hasPower(PowerAttributeModifier.class)) {
+                continue;
+            }
             meta.addItemFlags(flag);
         }
         Set<Enchantment> enchs = meta.getEnchants().keySet();
@@ -992,7 +1037,7 @@ public class RPGItem {
         return localeMeta.clone();
     }
 
-    public void addExtra(RPGMetadata rpgMeta, ItemStack stack, List<String> lore) {
+    public void addExtra(RPGMetadata rpgMeta, List<String> lore) {
         if (maxDurability > 0) {
             if (!rpgMeta.containsKey(RPGMetadata.DURABILITY)) {
                 rpgMeta.put(RPGMetadata.DURABILITY, defaultDurability);
@@ -1153,7 +1198,7 @@ public class RPGItem {
         ItemMeta meta = getLocaleMeta();
         List<String> lore = meta.getLore();
         lore.set(0, meta.getLore().get(0) + rpgMeta.toMCString());
-        addExtra(rpgMeta, rStack, lore);
+        addExtra(rpgMeta, lore);
         meta.setLore(lore);
         rStack.setItemMeta(meta);
         rStack = refreshAttributeModifiers(this, rStack);
@@ -1593,6 +1638,30 @@ public class RPGItem {
                 new BaseComponent[]{new TextComponent(ItemStackUtils.itemToJson(toItemStack()))});
         msg.setHoverEvent(hover);
         return msg;
+    }
+
+    public String getAuthor() {
+        return author;
+    }
+
+    public void setAuthor(String author) {
+        this.author = author;
+    }
+
+    public String getNote() {
+        return note;
+    }
+
+    public void setNote(String note) {
+        this.note = note;
+    }
+
+    public String getLicense() {
+        return license;
+    }
+
+    public void setLicense(String license) {
+        this.license = license;
     }
 
     @LangKey(type = LangKeyType.SUFFIX)

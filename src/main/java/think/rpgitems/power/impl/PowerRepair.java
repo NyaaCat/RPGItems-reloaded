@@ -45,7 +45,6 @@ public class PowerRepair extends BasePower implements PowerRightClick, PowerLeft
     @Override
     public void init(ConfigurationSection section) {
         triggers = section.getBoolean("isRight", true) ? Collections.singleton(TriggerType.RIGHT_CLICK) : Collections.singleton(TriggerType.LEFT_CLICK);
-        material = section.getItemStack("material");
         super.init(section);
     }
 

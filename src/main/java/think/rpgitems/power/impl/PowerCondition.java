@@ -11,6 +11,7 @@ import think.rpgitems.utils.Pair;
 
 import java.util.Map;
 import java.util.Set;
+import java.util.concurrent.ThreadLocalRandom;
 import java.util.concurrent.TimeUnit;
 
 import static think.rpgitems.power.impl.PowerSelector.*;
@@ -23,6 +24,9 @@ public class PowerCondition extends BasePower {
 
     @Property
     public boolean isStatic = false;
+
+    @Property
+    public boolean isCritical = false;
 
     @Property
     public int durabilityMin = Integer.MIN_VALUE;
@@ -56,6 +60,9 @@ public class PowerCondition extends BasePower {
     @Property
     public String team;
 
+    @Property
+    public double chancePercentage;
+
     public static LoadingCache<String, Map<String, Pair<Integer, Integer>>> scoreCache = CacheBuilder
                                                                                                  .newBuilder()
                                                                                                  .concurrencyLevel(1)
@@ -75,6 +82,7 @@ public class PowerCondition extends BasePower {
                                                                                           .build(CacheLoader.from(PowerSelector::parse));
 
     public boolean check(Player player, ItemStack stack) {
+        if (ThreadLocalRandom.current().nextDouble(0, 100) > chancePercentage) return false;
         int durability = getItem().getDurability(stack);
         if (durability > durabilityMax || durability < durabilityMin) return false;
         if (tag != null) {

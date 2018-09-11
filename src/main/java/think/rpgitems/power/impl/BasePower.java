@@ -10,8 +10,10 @@ import think.rpgitems.power.*;
 
 import java.io.Serializable;
 import java.lang.reflect.Field;
-import java.util.*;
-import java.util.stream.Collectors;
+import java.util.HashSet;
+import java.util.Map;
+import java.util.Set;
+import java.util.SortedMap;
 
 /**
  * Base class containing common methods and fields.
@@ -39,7 +41,6 @@ public abstract class BasePower implements Serializable, Power {
         this.item = item;
     }
 
-    @SuppressWarnings("unchecked")
     @Override
     public void save(ConfigurationSection section) {
         SortedMap<PowerProperty, Field> properties = PowerManager.getProperties(this.getClass());
@@ -52,20 +53,7 @@ public abstract class BasePower implements Serializable, Power {
                 continue;
             }
             try {
-                Serializer getter = field.getAnnotation(Serializer.class);
-                Object val = field.get(this);
-                if (val == null) continue;
-                if (getter != null) {
-                    section.set(property.name(), Getter.from(this, getter.value()).get(val));
-                } else {
-                    if (Collection.class.isAssignableFrom(field.getType())) {
-                        Collection c = (Collection) val;
-                        if (c.isEmpty()) continue;
-                        section.set(property.name(), c.stream().map(Object::toString).collect(Collectors.joining(",")));
-                    } else {
-                        section.set(property.name(), val);
-                    }
-                }
+                Utils.saveProperty(this, section, property.name(), field);
             } catch (IllegalAccessException e) {
                 throw new RuntimeException(e);
             }
@@ -82,9 +70,9 @@ public abstract class BasePower implements Serializable, Power {
             if (property.name().equals("triggers") && powerMeta.immutableTrigger()) {
                 continue;
             }
-            if (field.getType().isAssignableFrom(ItemStack.class)){
+            if (field.getType().isAssignableFrom(ItemStack.class)) {
                 ItemStack itemStack = section.getItemStack(property.name());
-                if(itemStack != null){
+                if (itemStack != null) {
                     try {
                         field.set(this, itemStack);
                         continue;

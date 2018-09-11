@@ -29,7 +29,7 @@ import think.rpgitems.power.*;
 
 import java.util.Collections;
 
-import static think.rpgitems.power.Utils.AttachPermission;
+import static think.rpgitems.power.Utils.attachPermission;
 import static think.rpgitems.power.Utils.checkCooldownByString;
 
 /**
@@ -84,7 +84,7 @@ public class PowerCommand extends BasePower implements PowerRightClick, PowerLef
     protected PowerResult<Void> executeCommand(Player player) {
         if (!player.isOnline()) return PowerResult.noop();
 
-        AttachPermission(player, permission);
+        attachPermission(player, permission);
         boolean wasOp = player.isOp();
 
         Runnable run = () -> {

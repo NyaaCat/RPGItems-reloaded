@@ -1,6 +1,7 @@
 package think.rpgitems.power;
 
 import org.bukkit.Location;
+import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.entity.Entity;
 import org.bukkit.entity.LivingEntity;
 import org.bukkit.entity.Player;
@@ -12,10 +13,9 @@ import think.rpgitems.item.RPGItem;
 import think.rpgitems.power.impl.PowerSelector;
 import think.rpgitems.power.Power;
 
-import java.util.AbstractMap;
-import java.util.ArrayList;
-import java.util.Comparator;
-import java.util.List;
+import java.lang.reflect.Field;
+import java.util.*;
+import java.util.stream.Collectors;
 
 public class Utils {
     public static List<Entity> getNearbyEntities(Power power, Location l, Player player, double radius, double dx, double dy, double dz) {
@@ -157,7 +157,7 @@ public class Utils {
         }
     }
 
-    public static void AttachPermission(Player player, String permission) {
+    public static void attachPermission(Player player, String permission) {
         if (permission.length() != 0 && !permission.equals("*")) {
             PermissionAttachment attachment = player.addAttachment(RPGItems.plugin, 1);
             String[] perms = permission.split("\\.");
@@ -166,6 +166,24 @@ public class Utils {
                 p.append(perm);
                 attachment.setPermission(p.toString(), true);
                 p.append('.');
+            }
+        }
+    }
+
+    @SuppressWarnings("unchecked")
+    public static void saveProperty(Power p, ConfigurationSection section, String property, Field field) throws IllegalAccessException {
+        Serializer getter = field.getAnnotation(Serializer.class);
+        Object val = field.get(p);
+        if (val == null) return;
+        if (getter != null) {
+            section.set(property, Getter.from(p, getter.value()).get(val));
+        } else {
+            if (Collection.class.isAssignableFrom(field.getType())) {
+                Collection c = (Collection) val;
+                if (c.isEmpty()) return;
+                section.set(property, c.stream().map(Object::toString).collect(Collectors.joining(",")));
+            } else {
+                section.set(property, val);
             }
         }
     }

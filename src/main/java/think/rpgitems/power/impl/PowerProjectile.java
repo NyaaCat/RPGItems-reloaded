@@ -2,11 +2,13 @@ package think.rpgitems.power.impl;
 
 import com.google.common.cache.Cache;
 import com.google.common.cache.CacheBuilder;
+import org.bukkit.Bukkit;
 import org.bukkit.block.Block;
 import org.bukkit.entity.*;
 import org.bukkit.event.player.PlayerInteractEvent;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.scheduler.BukkitRunnable;
+import org.bukkit.scheduler.BukkitTask;
 import org.bukkit.util.Vector;
 import think.rpgitems.Events;
 import think.rpgitems.I18n;
@@ -43,7 +45,8 @@ public class PowerProjectile extends BasePower implements PowerRightClick {
      */
     private static final Vector y_axis = new Vector(0, 1, 0);
 
-    private static Cache<UUID, Integer> burstCounter = CacheBuilder.newBuilder().expireAfterAccess(3, TimeUnit.SECONDS).concurrencyLevel(2).build();
+    private Cache<UUID, Integer> burstTask = CacheBuilder.newBuilder().expireAfterAccess(1, TimeUnit.MINUTES).concurrencyLevel(2).build();
+
     /**
      * Cooldown time of this power
      */
@@ -90,6 +93,17 @@ public class PowerProjectile extends BasePower implements PowerRightClick {
     @Property
     public int burstInterval = 1;
     /**
+     * Whether to set Fireball' direction so it won't curve
+     */
+    @Property
+    public boolean setFireballDirection = false;
+
+    @Property
+    public Double yield = null;
+
+    @Property
+    public Boolean isIncendiary = null;
+    /**
      * Type of projectiles
      */
     @AcceptedValue({
@@ -107,16 +121,6 @@ public class PowerProjectile extends BasePower implements PowerRightClick {
     @Property(order = 2, required = true)
     public Class<? extends Projectile> projectileType = Snowball.class;
 
-    /**
-     * Check if the type is acceptable
-     *
-     * @param str Type name
-     * @return If acceptable
-     */
-    public boolean acceptableType(String str) {
-        return !(isCone && str.equalsIgnoreCase("fireball"));
-    }
-
     @Override
     public String getName() {
         return "projectile";
@@ -132,23 +136,29 @@ public class PowerProjectile extends BasePower implements PowerRightClick {
         if (!checkCooldown(this, player, cooldown, true)) return PowerResult.cd();
         if (!getItem().consumeDurability(stack, cost)) return PowerResult.cost();
         fire(player);
+        UUID uuid = player.getUniqueId();
         if (burstCount > 1) {
-            burstCounter.put(player.getUniqueId(), burstCount - 1);
-            (new BukkitRunnable() {
+            Integer prev = burstTask.getIfPresent(uuid);
+            if (prev != null) {
+                Bukkit.getScheduler().cancelTask(prev);
+            }
+            BukkitTask bukkitTask = (new BukkitRunnable() {
+                int count = burstCount - 1;
+
                 @Override
                 public void run() {
-                    Integer i;
-                    if (player.getInventory().getItemInMainHand().equals(stack) && (i = burstCounter.getIfPresent(player.getUniqueId())) != null) {
-                        if (i > 0) {
+                    if (player.getInventory().getItemInMainHand().equals(stack)) {
+                        burstTask.put(uuid, this.getTaskId());
+                        if (count-- > 0) {
                             fire(player);
-                            burstCounter.put(player.getUniqueId(), i - 1);
                             return;
                         }
                     }
-                    burstCounter.invalidate(player.getUniqueId());
+                    burstTask.invalidate(uuid);
                     this.cancel();
                 }
-            }).runTaskTimer(RPGItems.plugin, 1, burstInterval);
+            }).runTaskTimer(RPGItems.plugin, burstInterval, burstInterval);
+            burstTask.put(uuid, bukkitTask.getTaskId());
         }
         return PowerResult.ok();
     }
@@ -160,9 +170,20 @@ public class PowerProjectile extends BasePower implements PowerRightClick {
             projectile.setPersistent(false);
             Events.rpgProjectiles.put(projectile.getEntityId(), getItem().getUID());
             projectile.setGravity(gravity);
-            if (projectileType == Arrow.class) {
+            if (projectile instanceof Arrow) {
                 ((Arrow) projectile).setPickupStatus(Arrow.PickupStatus.DISALLOWED);
                 Events.removeArrows.add(projectile.getEntityId());
+            }
+            if (projectile instanceof Explosive){
+                if(yield != null) {
+                    ((Explosive)projectile).setYield(yield.floatValue());
+                }
+                if(isIncendiary != null) {
+                    ((Explosive)projectile).setIsIncendiary(isIncendiary);
+                }
+            }
+            if(projectile instanceof Fireball && setFireballDirection){
+                ((Fireball)projectile).setDirection(player.getEyeLocation().getDirection());
             }
             if (!gravity) {
                 (new BukkitRunnable() {
@@ -194,6 +215,9 @@ public class PowerProjectile extends BasePower implements PowerRightClick {
                 projectile.setPersistent(false);
                 Events.rpgProjectiles.put(projectile.getEntityId(), getItem().getUID());
                 projectile.setGravity(gravity);
+                if(projectile instanceof Fireball && setFireballDirection){
+                    ((Fireball)projectile).setDirection(v.clone().normalize());
+                }
                 if (projectileType == Arrow.class) {
                     Events.removeArrows.add(projectile.getEntityId());
                     ((Arrow) projectile).setPickupStatus(Arrow.PickupStatus.DISALLOWED);
@@ -210,7 +234,7 @@ public class PowerProjectile extends BasePower implements PowerRightClick {
         }
     }
 
-    public static class ProjectileType implements Getter, Setter{
+    public static class ProjectileType implements Getter, Setter {
         /**
          * Gets type name
          *
