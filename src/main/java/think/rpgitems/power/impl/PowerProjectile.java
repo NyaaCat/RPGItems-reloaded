@@ -114,7 +114,8 @@ public class PowerProjectile extends BasePower implements PowerRightClick {
             "llamaspit",
             "arrow",
             "shulkerbullet",
-            "dragonfireball"
+            "dragonfireball",
+            "trident",
     })
     @Deserializer(ProjectileType.class)
     @Serializer(ProjectileType.class)
@@ -269,6 +270,8 @@ public class PowerProjectile extends BasePower implements PowerRightClick {
                     return ShulkerBullet.class;
                 case "dragonfireball":
                     return DragonFireball.class;
+                case "trident":
+                    return Trident.class;
                 default:
                     return Snowball.class;
             }
@@ -290,6 +293,8 @@ public class PowerProjectile extends BasePower implements PowerRightClick {
             return "shulkerbullet";
         else if (projectileType == DragonFireball.class)
             return "dragonfireball";
+        else if (projectileType == Trident.class)
+            return "trident";
         else
             return "snowball";
     }
