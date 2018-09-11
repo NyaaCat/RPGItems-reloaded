@@ -1093,4 +1093,20 @@ public class PowerHandler implements CommandHandler {
         ItemManager.save(Plugin.plugin);
         sender.sendMessage(ChatColor.AQUA + Locale.get("message.power.ok"));
     }
+
+    @CommandString("rpgitem $n[] power sound $sound:s[] $display:s[] $clicktype:o[left,right] $pitch:f[] $volume:f[]")
+    @CommandDocumentation("$command.rpgitem.sound")
+    @CommandGroup("item_power_sound")
+    public void sound(CommandSender sender, RPGItem item, String sound, String display, String clicktype, double pitch, double volume) {
+        PowerSound pow = new PowerSound();
+        pow.item = item;
+        pow.display = display;
+        pow.sound = sound;
+        pow.isRight = clicktype.equals("right");
+        pow.pitch = (float) pitch;
+        pow.volume = (float) volume;
+        item.addPower(pow);
+        ItemManager.save(Plugin.plugin);
+        sender.sendMessage(ChatColor.AQUA + Locale.get("message.power.ok"));
+    }
 }

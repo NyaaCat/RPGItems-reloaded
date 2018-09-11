@@ -2,12 +2,14 @@ package think.rpgitems.power;
 
 import com.google.common.cache.Cache;
 import com.google.common.cache.CacheBuilder;
+import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
 import org.bukkit.block.Block;
 import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.entity.*;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.scheduler.BukkitRunnable;
+import org.bukkit.scheduler.BukkitTask;
 import org.bukkit.util.Vector;
 import think.rpgitems.Events;
 import think.rpgitems.Plugin;
@@ -41,7 +43,7 @@ public class PowerProjectile extends Power implements PowerRightClick {
      */
     private static final Vector y_axis = new Vector(0, 1, 0);
 
-    private static Cache<UUID, Integer> burstCounter = CacheBuilder.newBuilder().expireAfterAccess(3, TimeUnit.SECONDS).concurrencyLevel(2).build();
+    private Cache<UUID, Integer> burstTask = CacheBuilder.newBuilder().expireAfterAccess(1, TimeUnit.MINUTES).concurrencyLevel(2).build();
     /**
      * Cooldown time of this power
      */
@@ -193,23 +195,28 @@ public class PowerProjectile extends Power implements PowerRightClick {
         if (!checkCooldown(player, cooldownTime, true)) return;
         if (!item.consumeDurability(stack, consumption)) return;
         fire(player);
+        UUID uuid = player.getUniqueId();
         if (burstCount > 1) {
-            burstCounter.put(player.getUniqueId(), burstCount - 1);
-            (new BukkitRunnable() {
+            Integer prev = burstTask.getIfPresent(uuid);
+            if (prev != null){
+                Bukkit.getScheduler().cancelTask(prev);
+            }
+            BukkitTask bukkitTask = (new BukkitRunnable() {
+                int count = burstCount - 1;
                 @Override
                 public void run() {
-                    Integer i;
-                    if (player.getInventory().getItemInMainHand().equals(stack) && (i = burstCounter.getIfPresent(player.getUniqueId())) != null) {
-                        if (i > 0) {
+                    if (player.getInventory().getItemInMainHand().equals(stack)) {
+                        burstTask.put(uuid, this.getTaskId());
+                        if (count-- > 0) {
                             fire(player);
-                            burstCounter.put(player.getUniqueId(), i - 1);
                             return;
                         }
                     }
-                    burstCounter.invalidate(player.getUniqueId());
+                    burstTask.invalidate(uuid);
                     this.cancel();
                 }
-            }).runTaskTimer(Plugin.plugin, 1, burstInterval);
+            }).runTaskTimer(Plugin.plugin, burstInterval, burstInterval);
+            burstTask.put(uuid, bukkitTask.getTaskId());
         }
     }
 
