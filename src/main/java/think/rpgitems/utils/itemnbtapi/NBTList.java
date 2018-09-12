@@ -27,7 +27,7 @@ public class NBTList {
             return null;
         }
         try {
-            Object compound = ClassWrapper.NMS_NBTTAGCOMPOUND.getClazz().newInstance();
+            Object compound = ClassWrapper.NMS_NBTTAGCOMPOUND.getClazz().getConstructor().newInstance();
             ReflectionMethod.LIST_ADD.run(listObject, compound);
             return new NBTListCompound(this, compound);
         } catch (Exception ex) {

@@ -1,19 +1,3 @@
-/*
- *  This file is part of RPG Items.
- *
- *  RPG Items is free software: you can redistribute it and/or modify
- *  it under the terms of the GNU General Public License as published by
- *  the Free Software Foundation, either version 3 of the License, or
- *  (at your option) any later version.
- *
- *  RPG Items is distributed in the hope that it will be useful,
- *  but WITHOUT ANY WARRANTY; without even the implied warranty of
- *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- *  GNU General Public License for more details.
- *
- *  You should have received a copy of the GNU General Public License
- *  along with RPG Items.  If not, see <http://www.gnu.org/licenses/>.
- */
 package think.rpgitems.item;
 
 import org.bukkit.Bukkit;
@@ -27,6 +11,8 @@ import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.ItemMeta;
 import org.bukkit.util.FileUtil;
 import think.rpgitems.RPGItems;
+import think.rpgitems.power.UnknownExtensionException;
+import think.rpgitems.power.UnknownPowerException;
 
 import java.io.*;
 import java.nio.charset.StandardCharsets;
@@ -257,7 +243,7 @@ public class ItemManager {
         return item;
     }
 
-    public static int nextUid() {
+    static int nextUid() {
         int free;
         do {
             free = ThreadLocalRandom.current().nextInt(Integer.MIN_VALUE, 0);
@@ -274,7 +260,7 @@ public class ItemManager {
         RPGItem newItem;
         try {
             newItem = new RPGItem(section, name, free);
-        } catch (RPGItem.UnknownPowerException | RPGItem.UnknownExtensionException e) {
+        } catch (UnknownPowerException | UnknownExtensionException e) {
             throw new RuntimeException(e);
         }
         itemById.put(free, newItem);

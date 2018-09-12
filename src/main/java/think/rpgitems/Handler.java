@@ -438,7 +438,7 @@ public class Handler extends RPGCommandReceiver {
             } else {
                 msg(sender, "message.power.unknown", power);
             }
-        } catch (RPGItem.UnknownExtensionException e) {
+        } catch (UnknownExtensionException e) {
             msg(sender, "message.error.unknown.extension", e.getName());
         }
     }
@@ -611,7 +611,7 @@ public class Handler extends RPGCommandReceiver {
         Class<? extends Power> cls;
         try {
             cls = PowerManager.getPower(powerStr);
-        } catch (RPGItem.UnknownExtensionException e) {
+        } catch (UnknownExtensionException e) {
             msg(sender, "message.error.unknown.extension", e.getName());
             return null;
         }
@@ -624,7 +624,7 @@ public class Handler extends RPGCommandReceiver {
 
     @SubCommand("set")
     @Attribute("property")
-    public void setItemPowerProperty(CommandSender sender, Arguments args) throws IllegalAccessException, RPGItem.UnknownExtensionException {
+    public void setItemPowerProperty(CommandSender sender, Arguments args) throws IllegalAccessException, UnknownExtensionException {
         RPGItem item = getItemByName(args.nextString());
         String power = args.nextString();
         int nth = args.nextInt();
@@ -1119,10 +1119,10 @@ public class Handler extends RPGCommandReceiver {
                 msg(sender, "message.import.invalid_conf", k);
                 e.printStackTrace();
                 return;
-            } catch (RPGItem.UnknownPowerException e) {
+            } catch (UnknownPowerException e) {
                 msg(sender, "message.power.unknown", e.getKey().toString());
                 return;
-            } catch (RPGItem.UnknownExtensionException e) {
+            } catch (UnknownExtensionException e) {
                 msg(sender, "message.error.unknown.extension", e.getName());
                 return;
             }

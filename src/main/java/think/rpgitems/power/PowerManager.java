@@ -1,29 +1,9 @@
-/*
- *  This file is part of RPG Items.
- *
- *  RPG Items is free software: you can redistribute it and/or modify
- *  it under the terms of the GNU General Public License as published by
- *  the Free Software Foundation, either version 3 of the License, or
- *  (at your option) any later version.
- *
- *  RPG Items is distributed in the hope that it will be useful,
- *  but WITHOUT ANY WARRANTY; without even the implied warranty of
- *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- *  GNU General Public License for more details.
- *
- *  You should have received a copy of the GNU General Public License
- *  along with RPG Items.  If not, see <http://www.gnu.org/licenses/>.
- */
 package think.rpgitems.power;
 
 import cat.nyaa.nyaacore.Message;
 import cat.nyaa.nyaacore.utils.ClassPathUtils;
-import com.google.common.cache.CacheBuilder;
-import com.google.common.cache.CacheLoader;
-import com.google.common.cache.LoadingCache;
 import com.google.common.collect.BiMap;
 import com.google.common.collect.HashBiMap;
-import org.bukkit.Bukkit;
 import org.bukkit.Material;
 import org.bukkit.NamespacedKey;
 import org.bukkit.command.CommandSender;
@@ -36,11 +16,11 @@ import think.rpgitems.RPGItems;
 import think.rpgitems.item.RPGItem;
 import think.rpgitems.utils.MaterialUtils;
 
+import javax.annotation.CheckForNull;
 import java.lang.reflect.Field;
 import java.lang.reflect.Modifier;
 import java.lang.reflect.ParameterizedType;
 import java.util.*;
-import java.util.concurrent.ExecutionException;
 import java.util.function.BiFunction;
 import java.util.logging.Level;
 import java.util.stream.Collectors;
@@ -53,14 +33,7 @@ import java.util.stream.Stream;
 public class PowerManager {
     private static final Map<Class<? extends Power>, SortedMap<PowerProperty, Field>> properties = new HashMap<>();
 
-    static final LoadingCache<String, Plugin> nameSpaceCache =
-            CacheBuilder.newBuilder().concurrencyLevel(2).build(
-                    CacheLoader.from(
-                            k -> Arrays.stream(Bukkit.getServer().getPluginManager().getPlugins()).filter(p -> p.getName().toLowerCase(Locale.ROOT).equals(k)).reduce((a, b) -> {
-                                throw new IllegalStateException("Multiple elements: " + a + ", " + b);
-                            }).orElse(null)
-                    )
-            );
+    static final Map<String, Plugin> extensions = new HashMap<>();
 
     /**
      * Power by name, and name by power
@@ -99,8 +72,9 @@ public class PowerManager {
         registerPowers(plugin, classes);
     }
 
+    @SuppressWarnings({"WeakerAccess"})
     public static void registerPowers(Plugin plugin, Class<? extends Power>... powers) {
-        nameSpaceCache.put(plugin.getName().toLowerCase(Locale.ROOT), plugin);
+        extensions.put(plugin.getName().toLowerCase(Locale.ROOT), plugin);
         Stream.of(powers).filter(c -> !Modifier.isAbstract(c.getModifiers()) && !c.isInterface()).sorted(Comparator.comparing(Class::getCanonicalName)).forEach(PowerManager::registerPower);
     }
 
@@ -108,18 +82,18 @@ public class PowerManager {
         descriptionResolvers.put(plugin, descriptionResolver);
     }
 
-    public static NamespacedKey parseKey(String powerStr) throws RPGItem.UnknownExtensionException {
+    public static NamespacedKey parseKey(String powerStr) throws UnknownExtensionException {
         if (!powerStr.contains(":")) return new NamespacedKey(RPGItems.plugin, powerStr);
         String[] split = powerStr.split(":");
         if (split.length != 2) {
             throw new IllegalArgumentException();
         }
-        try {
-            Plugin namespace = nameSpaceCache.get(split[0]);
-            return new NamespacedKey(namespace, split[1]);
-        } catch (ExecutionException e) {
-            throw new RPGItem.UnknownExtensionException(split[0]);
+
+        Plugin namespace = extensions.get(split[0].toLowerCase(Locale.ROOT));
+        if (namespace == null) {
+            throw new UnknownExtensionException(split[0]);
         }
+        return new NamespacedKey(namespace, split[1]);
     }
 
     public static NamespacedKey parseLegacyKey(String powerStr) {
@@ -129,7 +103,8 @@ public class PowerManager {
         return new NamespacedKey(RPGItems.plugin, powerStr);
     }
 
-    public static void setPowerProperty(CommandSender sender, Power power, String field, String value) throws IllegalAccessException {
+    public static void setPowerProperty(CommandSender sender, Power power, String field, String value) throws
+            IllegalAccessException {
         Field f;
         Class<? extends Power> cls = power.getClass();
         try {
@@ -141,7 +116,8 @@ public class PowerManager {
     }
 
     @SuppressWarnings("unchecked")
-    public static void setPowerProperty(CommandSender sender, Power power, Field field, String value) throws IllegalAccessException {
+    public static void setPowerProperty(CommandSender sender, Power power, Field field, String value) throws
+            IllegalAccessException {
         Class<? extends Power> cls = power.getClass();
         BooleanChoice bc = field.getAnnotation(BooleanChoice.class);
         if (bc != null) {
@@ -278,15 +254,41 @@ public class PowerManager {
         }
     }
 
-    public static SortedMap<PowerProperty, Field> getProperties(Class<? extends Power> cls) {
-        return properties.get(cls);
+    /**
+     * @return All registered extensions mapped by theirs name
+     */
+    @SuppressWarnings("unused")
+    public static Map<String, Plugin> getExtensions() {
+        return Collections.unmodifiableMap(extensions);
     }
 
+    /**
+     * @return All registered powers' properties mapped by theirs class
+     */
+    @SuppressWarnings("unused")
+    public static Map<Class<? extends Power>, SortedMap<PowerProperty, Field>> getProperties() {
+        return Collections.unmodifiableMap(properties);
+    }
+
+    /**
+     * @return All registered powers mapped by theirs key
+     */
+    @SuppressWarnings("unused")
+    public static Map<NamespacedKey, Class<? extends Power>> getPowers() {
+        return Collections.unmodifiableMap(powers);
+    }
+
+    public static SortedMap<PowerProperty, Field> getProperties(Class<? extends Power> cls) {
+        return Collections.unmodifiableSortedMap(properties.get(cls));
+    }
+
+    @CheckForNull
     public static Class<? extends Power> getPower(NamespacedKey key) {
         return powers.get(key);
     }
 
-    public static Class<? extends Power> getPower(String key) throws RPGItem.UnknownExtensionException {
+    @CheckForNull
+    public static Class<? extends Power> getPower(String key) throws UnknownExtensionException {
         return getPower(parseKey(key));
     }
 

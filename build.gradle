@@ -46,6 +46,7 @@ dependencies {
     implementation files('lib/worldedit-bukkit-7.0.0-SNAPSHOT-dist.jar')
     implementation 'com.google.code.findbugs:jsr305:1.3.9'
     compileOnly 'org.librazy:NyaaUtilsLangChecker:2.0-SNAPSHOT'
+    annotationProcessor 'org.librazy:NyaaUtilsLangChecker:2.0-SNAPSHOT'
 }
 
 String nyaaCoreLangDir = System.getenv("NYAACORE_LANG_DIR")
@@ -61,7 +62,9 @@ publishing {
     publications {
         mavenJava(MavenPublication) {
             from components.java
-            artifacts = [apiJar,javadocJar,sourcesJar]
+            afterEvaluate {
+                artifacts = [apiJar, javadocJar, sourcesJar]
+            }
             groupId "cat.nyaa"
             artifactId "rpgitems"
             version "$majorVersion.$minorVersion-SNAPSHOT"
@@ -117,8 +120,8 @@ javadoc {
         }
 
         windowTitle = "RPGItems Javadoc"
-        String fullVersion = System.getenv("FULL_VERSION_STRING");
-        if (fullVersion != null){
+        String fullVersion = System.getenv("FULL_VERSION_STRING")
+        if (fullVersion != null) {
             docTitle = "<b>RPGItems</b> " + System.getenv("FULL_VERSION_STRING")
         } else {
             docTitle = "<b>RPGItems</b>"

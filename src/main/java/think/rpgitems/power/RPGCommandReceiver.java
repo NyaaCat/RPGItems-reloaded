@@ -22,7 +22,7 @@ import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 import java.util.stream.Stream;
 
-import static think.rpgitems.power.PowerManager.nameSpaceCache;
+import static think.rpgitems.power.PowerManager.extensions;
 import static think.rpgitems.power.PowerManager.powers;
 
 public abstract class RPGCommandReceiver extends CommandReceiver {
@@ -129,7 +129,7 @@ public abstract class RPGCommandReceiver extends CommandReceiver {
         NamespacedKey powerKey;
         try {
             powerKey = PowerManager.parseKey(powName);
-        } catch (RPGItem.UnknownExtensionException e) {
+        } catch (UnknownExtensionException e) {
             return Collections.emptyList();
         }
         Class<? extends Power> power = powers.get(powerKey);
@@ -183,7 +183,7 @@ public abstract class RPGCommandReceiver extends CommandReceiver {
     private void actionBarTip(CommandSender sender, NamespacedKey power, String property) {
         if (sender instanceof Player) {
             Bukkit.getScheduler().runTask(RPGItems.plugin, () -> {
-                Plugin plugin = nameSpaceCache.getUnchecked(power.getNamespace());
+                Plugin plugin = extensions.get(power.getNamespace());
                 String description = PowerManager.descriptionResolvers.get(plugin).apply(power, property);
                 if (description == null) {
                     return;
@@ -199,7 +199,7 @@ public abstract class RPGCommandReceiver extends CommandReceiver {
         NamespacedKey key;
         try {
             key = PowerManager.parseKey(powerName);
-        } catch (RPGItem.UnknownExtensionException e) {
+        } catch (UnknownExtensionException e) {
             return Collections.emptyList();
         }
         List<Power> powers = item.powers.stream().filter(p -> p.getNamespacedKey().equals(key)).collect(Collectors.toList());

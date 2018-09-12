@@ -1,19 +1,3 @@
-/*
- *  This file is part of RPG Items.
- *
- *  RPG Items is free software: you can redistribute it and/or modify
- *  it under the terms of the GNU General Public License as published by
- *  the Free Software Foundation, either version 3 of the License, or
- *  (at your option) any later version.
- *
- *  RPG Items is distributed in the hope that it will be useful,
- *  but WITHOUT ANY WARRANTY; without even the implied warranty of
- *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- *  GNU General Public License for more details.
- *
- *  You should have received a copy of the GNU General Public License
- *  along with RPG Items.  If not, see <http://www.gnu.org/licenses/>.
- */
 package think.rpgitems.item;
 
 import cat.nyaa.nyaacore.Message;
@@ -1670,29 +1654,5 @@ public class RPGItem {
         VANILLA,
         ADDITIONAL,
         MULTIPLY,
-    }
-
-    public static class UnknownPowerException extends Exception {
-        private NamespacedKey key;
-
-        public UnknownPowerException(NamespacedKey key) {
-            this.key = key;
-        }
-
-        public NamespacedKey getKey() {
-            return key;
-        }
-    }
-
-    public static class UnknownExtensionException extends Exception {
-        private String name;
-
-        public UnknownExtensionException(String name) {
-            this.name = name;
-        }
-
-        public String getName() {
-            return name;
-        }
     }
 }

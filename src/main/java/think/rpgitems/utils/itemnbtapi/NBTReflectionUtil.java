@@ -83,7 +83,7 @@ public class NBTReflectionUtil {
 
     public static Object getEntityNBTTagCompound(Object NMSEntity) {
         try {
-            Object nbt = ClassWrapper.NMS_NBTTAGCOMPOUND.getClazz().newInstance();
+            Object nbt = ClassWrapper.NMS_NBTTAGCOMPOUND.getClazz().getConstructor().newInstance();
             Object answer = ReflectionMethod.NMS_ENTITY_GET_NBT.run(NMSEntity, nbt);
             if (answer == null)
                 answer = nbt;
@@ -110,7 +110,7 @@ public class NBTReflectionUtil {
             Object cworld = ClassWrapper.CRAFT_WORLD.getClazz().cast(tile.getWorld());
             Object nmsworld = ReflectionMethod.CRAFT_WORLD_GET_HANDLE.run(cworld);
             Object o = ReflectionMethod.NMS_WORLD_GET_TILEENTITY.run(nmsworld, pos);
-            Object tag = ClassWrapper.NMS_NBTTAGCOMPOUND.getClazz().newInstance();
+            Object tag = ClassWrapper.NMS_NBTTAGCOMPOUND.getClazz().getConstructor().newInstance();
             Object answer = ReflectionMethod.TILEENTITY_GET_NBT.run(o, tag);
             if (answer == null)
                 answer = tag;
@@ -163,7 +163,7 @@ public class NBTReflectionUtil {
         Method method;
         try {
             method = workingtag.getClass().getMethod("set", String.class, ClassWrapper.NMS_NBTBASE.getClazz());
-            method.invoke(workingtag, name, ClassWrapper.NMS_NBTTAGCOMPOUND.getClazz().newInstance());
+            method.invoke(workingtag, name, ClassWrapper.NMS_NBTTAGCOMPOUND.getClazz().getConstructor().newInstance());
             comp.setCompound(nbttag);
             return;
         } catch (Exception ex) {
