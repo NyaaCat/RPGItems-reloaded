@@ -1,6 +1,7 @@
 package think.rpgitems.power.impl;
 
 import org.bukkit.block.Block;
+import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.entity.LivingEntity;
 import org.bukkit.entity.Player;
 import org.bukkit.entity.ShulkerBullet;
@@ -42,6 +43,12 @@ public class PowerShulkerBullet extends BasePower implements PowerRightClick {
      */
     @Property(order = 1)
     public double range = 10;
+
+    @Override
+    public void init(ConfigurationSection s) {
+        cooldown = s.getLong("cooldownTime");
+        super.init(s);
+    }
 
     @Override
     public String getName() {

@@ -5,6 +5,7 @@ import com.google.common.cache.CacheLoader;
 import com.google.common.cache.LoadingCache;
 import org.bukkit.Location;
 import org.bukkit.OfflinePlayer;
+import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.entity.Entity;
 import org.bukkit.entity.EntityType;
 import org.bukkit.entity.Player;
@@ -73,31 +74,31 @@ public class PowerSelector extends BasePower {
      * Selects only targets less than r blocks from reference position
      */
     @Property
-    public Integer r = -1;
+    public Integer r = null;
 
     /**
      * Selects only targets more than rm blocks from reference position
      */
     @Property
-    public Integer rm = -1;
+    public Integer rm = null;
 
     /**
      * Selects only targets less than dx blocks in X-axis from reference position
      */
     @Property
-    public Integer dx = -1;
+    public Integer dx = null;
 
     /**
      * Selects only targets less than dx blocks in Y-axis from reference position
      */
     @Property
-    public Integer dy = -1;
+    public Integer dy = null;
 
     /**
      * Selects only targets less than dx blocks in Z-axis from reference position
      */
     @Property
-    public Integer dz = -1;
+    public Integer dz = null;
 
     /**
      * Selecting targets by score(s), According to the following format
@@ -124,6 +125,17 @@ public class PowerSelector extends BasePower {
      */
     @Property
     public String team;
+
+    @Override
+    public void init(ConfigurationSection section) {
+        super.init(section);
+        if (count < 0) count = null;
+        if (dx < 0) dx = null;
+        if (dy < 0) dy = null;
+        if (dz < 0) dz = null;
+        if (r < 0) r = null;
+        if (rm < 0) rm = null;
+    }
 
     private static LoadingCache<String, Map<String, Pair<Integer, Integer>>> scoreCache = CacheBuilder
                                                                                                  .newBuilder()

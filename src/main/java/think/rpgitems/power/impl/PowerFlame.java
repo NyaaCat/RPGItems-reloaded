@@ -13,7 +13,7 @@ import think.rpgitems.power.Property;
 /**
  * Power flame.
  * <p>
- * The flame power will set the target on fire on hit in {@link #burnTime} ticks.
+ * The flame power will set the target on fire on hit in {@link #burntime} ticks.
  * </p>
  */
 @SuppressWarnings("WeakerAccess")
@@ -24,7 +24,7 @@ public class PowerFlame extends BasePower implements PowerHit {
      * Duration of the fire, in ticks
      */
     @Property(order = 0)
-    public int burnTime = 20;
+    public int burntime = 20;
     /**
      * Cost of this power
      */
@@ -34,13 +34,13 @@ public class PowerFlame extends BasePower implements PowerHit {
     @Override
     public PowerResult<Double> hit(Player player, ItemStack stack, LivingEntity entity, double damage, EntityDamageByEntityEvent event) {
         if (!getItem().consumeDurability(stack, cost)) return PowerResult.cost();
-        entity.setFireTicks(burnTime);
+        entity.setFireTicks(burntime);
         return PowerResult.ok(damage);
     }
 
     @Override
     public String displayText() {
-        return I18n.format("power.flame", (double) burnTime / 20d);
+        return I18n.format("power.flame", (double) burntime / 20d);
     }
 
     @Override

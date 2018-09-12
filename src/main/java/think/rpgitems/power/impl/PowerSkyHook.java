@@ -14,10 +14,7 @@ import org.bukkit.util.Vector;
 import think.rpgitems.I18n;
 import think.rpgitems.RPGItems;
 import think.rpgitems.data.RPGValue;
-import think.rpgitems.power.PowerMeta;
-import think.rpgitems.power.PowerResult;
-import think.rpgitems.power.PowerRightClick;
-import think.rpgitems.power.Property;
+import think.rpgitems.power.*;
 import think.rpgitems.utils.MaterialUtils;
 
 import static think.rpgitems.power.Utils.checkCooldown;
@@ -53,6 +50,7 @@ public class PowerSkyHook extends BasePower implements PowerRightClick {
     /**
      * Maximum distance.
      */
+    @Deserializer(MaterialUtils.class)
     @Property(order = 1, required = true)
     public int hookDistance = 10;
 
@@ -126,11 +124,7 @@ public class PowerSkyHook extends BasePower implements PowerRightClick {
 
     @Override
     public void init(ConfigurationSection s) {
-        cooldown = s.getLong("cooldown", 20);
-        hookingTickCost = s.getInt("hookingTickCost", 0);
-        cost = s.getInt("cost", s.getInt("consumption", 0));
         railMaterial = MaterialUtils.getMaterial(s.getString("railMaterial", "GLASS"), Bukkit.getConsoleSender());
-        hookDistance = s.getInt("hookDistance", 10);
     }
 
     @Override

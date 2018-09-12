@@ -4,8 +4,10 @@ import org.bukkit.Bukkit;
 import org.bukkit.Material;
 import org.bukkit.command.CommandSender;
 import think.rpgitems.I18n;
+import think.rpgitems.power.Getter;
+import think.rpgitems.power.Setter;
 
-public class MaterialUtils {
+public class MaterialUtils implements Setter<Material> {
 
     @SuppressWarnings("deprecation")
     public static Material getMaterial(String name, CommandSender sender) {
@@ -18,5 +20,10 @@ public class MaterialUtils {
             }
         }
         return m;
+    }
+
+    @Override
+    public Material set(String value) throws IllegalArgumentException {
+        return getMaterial(value, Bukkit.getConsoleSender());
     }
 }

@@ -26,7 +26,7 @@ import static think.rpgitems.power.Utils.*;
  * <p>
  * Deflect arrows or fireballs towards player within {@link #facing} when
  * 1. manual triggered when some of initiative trigger are enabled with a cooldown of {@link #cooldown} and duration {@link #duration}
- * 2. auto triggered when {@link TriggerType#HIT_TAKEN} is enabled with a chance of {@link #chance} and a cooldown of {@link #cooldownPassive}
+ * 2. auto triggered when {@link TriggerType#HIT_TAKEN} is enabled with a chance of {@link #chance} and a cooldown of {@link #cooldownpassive}
  * </p>
  */
 @SuppressWarnings("WeakerAccess")
@@ -43,7 +43,7 @@ public class PowerDeflect extends BasePower implements PowerHitTaken, PowerRight
      * Cooldown time of this power in passive mode
      */
     @Property(order = 4)
-    public int cooldownPassive = 20;
+    public int cooldownpassive = 20;
 
     /**
      * Cost of this power
@@ -83,7 +83,7 @@ public class PowerDeflect extends BasePower implements PowerHitTaken, PowerRight
 
     @Override
     public void init(ConfigurationSection section) {
-        cooldownPassive = section.getInt("cooldownpassive", 20);
+        cooldownpassive = section.getInt("cooldownpassive", 20);
         boolean passive = section.getBoolean("passive", false);
         boolean initiative = section.getBoolean("initiative", true);
         boolean isRight = section.getBoolean("isRight", true);
@@ -100,7 +100,7 @@ public class PowerDeflect extends BasePower implements PowerHitTaken, PowerRight
     @Override
     public PowerResult<Double> takeHit(Player target, ItemStack stack, double damage, EntityDamageEvent event) {
         if (!((System.currentTimeMillis() / 50 < time)
-                      || (ThreadLocalRandom.current().nextInt(0, 100) < chance) && checkCooldown(this, target, cooldownPassive, false))
+                      || (ThreadLocalRandom.current().nextInt(0, 100) < chance) && checkCooldown(this, target, cooldownpassive, false))
                     || !getItem().consumeDurability(stack, cost))
             return PowerResult.noop();
         if (event instanceof EntityDamageByEntityEvent) {

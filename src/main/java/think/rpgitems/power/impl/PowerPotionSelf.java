@@ -1,6 +1,7 @@
 package think.rpgitems.power.impl;
 
 import org.bukkit.block.Block;
+import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.entity.Player;
 import org.bukkit.event.player.PlayerInteractEvent;
 import org.bukkit.inventory.ItemStack;
@@ -58,6 +59,12 @@ public class PowerPotionSelf extends BasePower implements PowerRightClick {
         if (!getItem().consumeDurability(stack, cost)) return PowerResult.cost();
         player.addPotionEffect(new PotionEffect(type, duration, amplifier), true);
         return PowerResult.ok();
+    }
+
+    @Override
+    public void init(ConfigurationSection section) {
+        amplifier = section.getInt("amp");
+        super.init(section);
     }
 
     @Override

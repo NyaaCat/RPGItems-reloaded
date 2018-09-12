@@ -43,33 +43,6 @@ public class PowerSound extends BasePower implements PowerLeftClick, PowerRightC
      * Cooldown time of this power
      */
     public long cooldown = 20;
-    /**
-     * Whether triggers when right click
-     */
-    public boolean isRight = true;
-
-
-    @Override
-    public void init(ConfigurationSection s) {
-        display = s.getString("display");
-        sound = s.getString("sound");
-        cost = s.getInt("cost", 0);
-        cooldown = s.getLong("cooldown");
-        pitch = (float) s.getDouble("pitch");
-        volume = (float) s.getDouble("volume");
-        isRight = s.getBoolean("isRight", true);
-    }
-
-    @Override
-    public void save(ConfigurationSection s) {
-        s.set("isRight", isRight);
-        s.set("pitch", pitch);
-        s.set("volume", volume);
-        s.set("display", display);
-        s.set("sound", sound);
-        s.set("cooldown", cooldown);
-        s.set("cost", cost);
-    }
 
     @Override
     public String getName() {

@@ -4,15 +4,15 @@ import org.bukkit.potion.PotionEffectType;
 import think.rpgitems.power.Getter;
 import think.rpgitems.power.Setter;
 
-public class PotionEffectUtils implements Setter, Getter {
+public class PotionEffectUtils implements Setter<PotionEffectType>, Getter<PotionEffectType> {
 
     @Override
-    public Object set(String effect) {
+    public PotionEffectType set(String effect) {
         return PotionEffectType.getByName(effect);
     }
 
     @Override
-    public String get(Object object) {
-        return ((PotionEffectType) object).getName();
+    public String get(PotionEffectType object) {
+        return object.getName();
     }
 }
