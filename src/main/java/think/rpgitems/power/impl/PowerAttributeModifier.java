@@ -1,5 +1,8 @@
 package think.rpgitems.power.impl;
 
+import org.bukkit.attribute.Attribute;
+import org.bukkit.attribute.AttributeModifier;
+import org.bukkit.inventory.EquipmentSlot;
 import think.rpgitems.power.PowerMeta;
 import think.rpgitems.power.Property;
 
@@ -18,16 +21,16 @@ public class PowerAttributeModifier extends BasePower {
     public double amount = 2;
 
     @Property(order = 1)
-    public String attributeName = "generic.maxHealth";
+    public Attribute attribute = Attribute.GENERIC_MAX_HEALTH;
 
     @Property(order = 2)
     public String name = "generic.maxHealth";
 
     @Property(order = 3, required = true)
-    public int operation = 0;
+    public AttributeModifier.Operation operation = AttributeModifier.Operation.ADD_NUMBER;
 
     @Property
-    public String slot = null;
+    public EquipmentSlot slot = null;
 
     @Property
     public int uuidLeast = (int) UUID.randomUUID().getLeastSignificantBits();

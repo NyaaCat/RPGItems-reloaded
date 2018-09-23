@@ -9,6 +9,8 @@ import net.md_5.bungee.api.chat.HoverEvent;
 import net.md_5.bungee.api.chat.TextComponent;
 import org.apache.commons.lang.StringUtils;
 import org.bukkit.*;
+import org.bukkit.attribute.Attribute;
+import org.bukkit.attribute.AttributeModifier;
 import org.bukkit.block.Block;
 import org.bukkit.command.CommandSender;
 import org.bukkit.configuration.ConfigurationSection;
@@ -43,10 +45,6 @@ import think.rpgitems.power.*;
 import think.rpgitems.power.impl.*;
 import think.rpgitems.support.WGSupport;
 import think.rpgitems.utils.MaterialUtils;
-import think.rpgitems.utils.itemnbtapi.NBTItem;
-import think.rpgitems.utils.itemnbtapi.NBTList;
-import think.rpgitems.utils.itemnbtapi.NBTListCompound;
-import think.rpgitems.utils.itemnbtapi.NBTType;
 
 import java.lang.reflect.InvocationTargetException;
 import java.util.*;
@@ -1191,23 +1189,21 @@ public class RPGItem {
 
     public static ItemStack refreshAttributeModifiers(RPGItem item, ItemStack rStack) {
         List<PowerAttributeModifier> attributeModifiers = item.getPower(PowerAttributeModifier.class);
+        ItemMeta itemMeta = rStack.getItemMeta();
         if (!attributeModifiers.isEmpty()) {
-            NBTItem nbtItem = new NBTItem(rStack);
-            NBTList attribute = nbtItem.getList("AttributeModifiers", NBTType.NBTTagCompound);
             for (PowerAttributeModifier attributeModifier : attributeModifiers) {
-                NBTListCompound mod = attribute.addCompound();
-                if (!Strings.isNullOrEmpty(attributeModifier.slot)) {
-                    mod.setString("Slot", attributeModifier.slot);
-                }
-                mod.setDouble("Amount", attributeModifier.amount);
-                mod.setString("AttributeName", attributeModifier.attributeName);
-                mod.setString("Name", attributeModifier.name);
-                mod.setInteger("Operation", attributeModifier.operation);
-                mod.setInteger("UUIDLeast", attributeModifier.uuidLeast);
-                mod.setInteger("UUIDMost", attributeModifier.uuidMost);
+                Attribute attribute = attributeModifier.attribute;
+                AttributeModifier modifier = new AttributeModifier(
+                        new UUID(attributeModifier.uuidMost, attributeModifier.uuidLeast),
+                        attributeModifier.name,
+                        attributeModifier.amount,
+                        attributeModifier.operation,
+                        attributeModifier.slot
+                );
+                itemMeta.addAttributeModifier(attribute, modifier);
             }
-            rStack = nbtItem.getItem();
         }
+        rStack.setItemMeta(itemMeta);
         return rStack;
     }
 
@@ -1215,6 +1211,7 @@ public class RPGItem {
         return name;
     }
 
+    @Deprecated
     public int getID() {
         return id;
     }

@@ -95,6 +95,7 @@ public class ItemManager {
         }
     }
 
+    @SuppressWarnings("deprecation")
     public static void addItem(RPGItem item) {
         if (item.getID() != 0) {
             itemById.put(item.getID(), item);
@@ -276,6 +277,7 @@ public class ItemManager {
         return itemByName.get(name);
     }
 
+    @SuppressWarnings("deprecation")
     public static void remove(RPGItem item) {
         itemByName.remove(item.getName());
         itemById.remove(item.getID());
