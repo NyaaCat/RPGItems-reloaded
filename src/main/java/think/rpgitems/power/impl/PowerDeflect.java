@@ -16,7 +16,10 @@ import think.rpgitems.I18n;
 import think.rpgitems.RPGItems;
 import think.rpgitems.power.*;
 
+import java.util.HashMap;
 import java.util.HashSet;
+import java.util.Map;
+import java.util.UUID;
 import java.util.concurrent.ThreadLocalRandom;
 
 import static think.rpgitems.power.Utils.*;
@@ -69,7 +72,7 @@ public class PowerDeflect extends BasePower implements PowerHitTaken, PowerRight
     @Property(order = 0, required = true)
     public double facing = 30;
 
-    private long time = 0;
+    private static Map<UUID, Long> time = new HashMap<>();
 
     @Override
     public String displayText() {
@@ -99,7 +102,7 @@ public class PowerDeflect extends BasePower implements PowerHitTaken, PowerRight
 
     @Override
     public PowerResult<Double> takeHit(Player target, ItemStack stack, double damage, EntityDamageEvent event) {
-        if (!((System.currentTimeMillis() / 50 < time)
+        if (!((System.currentTimeMillis() / 50 < time.get(target.getUniqueId()))
                       || (ThreadLocalRandom.current().nextInt(0, 100) < chance) && checkCooldown(this, target, cooldownpassive, false))
                     || !getItem().consumeDurability(stack, cost))
             return PowerResult.noop();
@@ -144,7 +147,7 @@ public class PowerDeflect extends BasePower implements PowerHitTaken, PowerRight
             return PowerResult.noop();
         if (!getItem().consumeDurability(stack, cost))
             return PowerResult.cost();
-        time = System.currentTimeMillis() / 50 + duration;
+        time.put(player.getUniqueId(), System.currentTimeMillis() / 50 + duration);
         return PowerResult.ok();
     }
 
@@ -154,7 +157,7 @@ public class PowerDeflect extends BasePower implements PowerHitTaken, PowerRight
             return PowerResult.noop();
         if (!getItem().consumeDurability(stack, cost))
             return PowerResult.cost();
-        time = System.currentTimeMillis() / 50 + duration;
+        time.put(player.getUniqueId(), System.currentTimeMillis() / 50 + duration);
         return PowerResult.ok();
     }
 }

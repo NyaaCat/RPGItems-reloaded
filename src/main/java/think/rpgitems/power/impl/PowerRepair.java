@@ -21,7 +21,7 @@ import java.util.Collections;
 /**
  * Power repair.
  * <p>
- *
+ * Repair the item with some material
  * </p>
  */
 @PowerMeta(defaultTrigger = TriggerType.RIGHT_CLICK)

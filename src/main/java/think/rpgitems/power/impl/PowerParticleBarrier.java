@@ -82,7 +82,7 @@ public class PowerParticleBarrier extends BasePower implements PowerRightClick, 
                 entityDamageEvent.setDamage(0);
                 barrierRemain = barrierRemain - damage;
                 barriers.put(uuid, barrierRemain);
-                double energyGain = damage * energyPerBarrier / barrierHealth;
+                double energyGain = Math.min(energyPerBarrier, damage * energyPerBarrier / barrierHealth);
                 UUID source = barrierSources.getIfPresent(uuid);
                 if (source == null) return;
                 Pair<Long, Double> pair = energys.getIfPresent(source);
@@ -123,17 +123,13 @@ public class PowerParticleBarrier extends BasePower implements PowerRightClick, 
             barrier(player, player);
             return PowerResult.ok();
         } else {
-            try {
-                List<LivingEntity> livingEntities = RayTraceUtils.rayTraceEntites(player, 32, RayTraceUtils.isAPlayer().and(RayTraceUtils.notPlayer(player)));
-                Optional<LivingEntity> optionalPlayer = livingEntities.stream().min(Comparator.comparing(p -> p.getLocation().distanceSquared(player.getLocation())));
-                if (optionalPlayer.isPresent()) {
-                    barrier(player, optionalPlayer.get());
-                    return PowerResult.ok();
-                } else {
-                    return PowerResult.fail();
-                }
-            } catch (ReflectiveOperationException e) {
-                throw new RuntimeException(e);
+            List<LivingEntity> livingEntities = RayTraceUtils.rayTraceEntites(player, 32);
+            Optional<LivingEntity> optionalPlayer = livingEntities.stream().min(Comparator.comparing(p -> p.getLocation().distanceSquared(player.getLocation())));
+            if (optionalPlayer.isPresent()) {
+                barrier(player, optionalPlayer.get());
+                return PowerResult.ok();
+            } else {
+                return PowerResult.fail();
             }
         }
     }

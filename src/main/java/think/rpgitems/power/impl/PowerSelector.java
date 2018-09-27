@@ -50,7 +50,7 @@ public class PowerSelector extends BasePower {
      * Count of target entities
      */
     @Property
-    public Integer count = -1;
+    public Integer count = null;
 
     /**
      * X-coordinate of reference position, tilde notation is available. Use player's current position if empty

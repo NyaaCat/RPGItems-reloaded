@@ -15,7 +15,6 @@ configurations.all {
 }
 
 repositories {
-    mavenLocal()
     jcenter()
     mavenCentral()
     maven {

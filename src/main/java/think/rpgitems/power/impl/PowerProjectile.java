@@ -83,7 +83,7 @@ public class PowerProjectile extends BasePower implements PowerRightClick {
     @Property
     public int cost = 1;
     /**
-     * burst count of one shoot
+     * Burst count of one shoot
      */
     @Property
     public int burstCount = 1;
@@ -175,16 +175,16 @@ public class PowerProjectile extends BasePower implements PowerRightClick {
                 ((Arrow) projectile).setPickupStatus(Arrow.PickupStatus.DISALLOWED);
                 Events.removeArrows.add(projectile.getEntityId());
             }
-            if (projectile instanceof Explosive){
-                if(yield != null) {
-                    ((Explosive)projectile).setYield(yield.floatValue());
+            if (projectile instanceof Explosive) {
+                if (yield != null) {
+                    ((Explosive) projectile).setYield(yield.floatValue());
                 }
-                if(isIncendiary != null) {
-                    ((Explosive)projectile).setIsIncendiary(isIncendiary);
+                if (isIncendiary != null) {
+                    ((Explosive) projectile).setIsIncendiary(isIncendiary);
                 }
             }
-            if(projectile instanceof Fireball && setFireballDirection){
-                ((Fireball)projectile).setDirection(player.getEyeLocation().getDirection());
+            if (projectile instanceof Fireball && setFireballDirection) {
+                ((Fireball) projectile).setDirection(player.getEyeLocation().getDirection());
             }
             if (!gravity) {
                 (new BukkitRunnable() {
@@ -216,8 +216,8 @@ public class PowerProjectile extends BasePower implements PowerRightClick {
                 projectile.setPersistent(false);
                 Events.rpgProjectiles.put(projectile.getEntityId(), getItem().getUID());
                 projectile.setGravity(gravity);
-                if(projectile instanceof Fireball && setFireballDirection){
-                    ((Fireball)projectile).setDirection(v.clone().normalize());
+                if (projectile instanceof Fireball && setFireballDirection) {
+                    ((Fireball) projectile).setDirection(v.clone().normalize());
                 }
                 if (projectileType == Arrow.class) {
                     Events.removeArrows.add(projectile.getEntityId());

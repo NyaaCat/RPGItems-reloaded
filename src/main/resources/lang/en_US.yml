@@ -283,7 +283,7 @@ power:
       type: Type of entities
       r: Maximum range in blocks.
       rm: Minimum range in blocks.
-      facing: Maximum view angle in degrees.
+      facing: Maximum effective view angle in degrees.
       c: Maximum count of entities.
       mustsee: Whether only apply to the entities within line of sight
     arrow:
@@ -300,7 +300,6 @@ power:
       attractPlayer: Whether allow attracting player.
     command:
       main_description: Run a command on click.
-      isRight: Mouse button to trigger the power
       command: Command to be executed
       permission: Permission that will be given to user executing command
     commandhit:
@@ -314,219 +313,212 @@ power:
     consumehit:
       main_description: Remove one item when hits something.
     deathcommand:
-      main_description: ''
-      chance: ''
-      command: ''
-      count: ''
-      desc: ''
-      cost: ''
+      main_description: With a 1/chance to kill the target then execute the command for count times
+      chance: Chance of triggering this power, 1/n
+      command: Command to be executed
+      count: Times to run the command
+      desc: Description in display text
     deflect:
-      main_description: ''
-      facing: ''
-      initiative: ''
-      cooldown: ''
-      passive: ''
-      cooldownPassive: ''
-      cost: ''
-      duration: ''
-      chance: ''
+      main_description: Deflect arrows or fireballs towards player
+      facing: Maximum effective view angle in degrees
+      cooldownPassive: Cooldown time of this power in passive mode
+      duration: Duration of this power, in ticks
+      chance: Chance in percentage of triggering this power in passive mode
     delayedcommand:
-      main_description: ''
-      delay: ''
-      cooldown: ''
-      isRight: ''
-      display: ''
-      command: ''
-      permission: ''
-      cost: ''
+      main_description: Run command on click with a delay
+      delay: Delay before executing command
+      command: Command to be executed
+      permission: Permission that will be given to user executing command
     fire:
-      main_description: ''
-      cooldown: ''
-      distance: ''
-      burnduration: ''
-      cost: ''
+      main_description: Fire an fireblock that burns entities hit
+      distance: Maximum distance
+      burnduration: Duration of the fire, in ticks
     fireball:
-      main_description: ''
-      cooldown: ''
-      cost: ''
+      main_description: Fire an fireball
     flame:
-      main_description: ''
-      burnTime: ''
-      cost: ''
+      main_description: Set the target on fire on hit
+      burnTime: Duration of the fire, in ticks
     food:
-      main_description: ''
-      foodpoints: ''
+      main_description: Restore food points when eaten
+      foodpoints: Food Points
     forcefield:
-      main_description: ''
-      cooldown: ''
-      radius: ''
-      height: ''
-      base: ''
-      ttl: ''
-      cost: ''
-    ice:
-      main_description: ''
-      cooldown: ''
-      cost: ''
-    knockup:
-      main_description: ''
-      chance: ''
-      power: ''
-      cost: ''
-    lifesteal:
-      main_description: ''
-      chance: ''
-      cost: ''
-    lightning:
-      main_description: ''
-      chance: ''
-      cost: ''
-    lorefilter:
-      main_description: ''
-      regex: ''
-      desc: ''
-    noimmutabletick:
-      main_description: ''
-    particle:
-      main_description: ''
-      effect: ''
-      cost: ''
-    particletick:
-      main_description: ''
-      effect: ''
-      interval: ''
-      cost: ''
-    potionhit:
-      main_description: ''
-      duration: ''
-      amplifier: ''
-      type: ''
-      chance: ''
-      cost: ''
-    potionself:
-      main_description: ''
-      cooldown: ''
-      duration: ''
-      amplifier: ''
-      type: ''
-      cost: ''
-    potiontick:
-      main_description: ''
-      amplifier: ''
-      effect: ''
-      interval: ''
-      duration: ''
-      clear: ''
-    projectile:
-      main_description: ''
-      cooldown: ''
-      cone: ''
-      projectileType: ''
-      range: ''
-      amount: ''
-      speed: ''
-      gravity: ''
-      cost: ''
-    pumpkin:
-      main_description: ''
-      chance: ''
-      drop: ''
-      cost: ''
-    rainbow:
-      main_description: ''
-      cooldown: ''
-      count: ''
-      isFire: ''
-      cost: ''
-    ranged:
-      main_description: ''
-      rm: ''
-      r: ''
-    rangedonly:
-      main_description: ''
-      rm: ''
-      r: ''
-    realdamage:
-      main_description: ''
-      cooldown: ''
-      realDamage: ''
-      cost: ''
-      minDamage: ''
-    repair:
-      main_description: ''
-      display: ''
-      material: ''
-      durability: ''
-      isRight: ''
-      isSneak: ''
-    rescue:
-      main_description: ''
-      cooldown: ''
-      healthTrigger: ''
-      useBed: ''
-      inPlace: ''
-      cost: ''
-      damageTrigger: ''
-    rumble:
-      main_description: ''
-      cooldown: ''
-      power: ''
-      distance: ''
-      cost: ''
-    selector:
-      main_description: ''
-    shulkerbullet:
-      main_description: ''
-      cooldown: ''
-      range: ''
-    skyhook:
-      main_description: ''
-      railMaterial: ''
-      hookDistance: ''
-    stuck:
-      main_description: ''
-      cooldown: ''
-      duration: ''
-    tntcannon:
-      main_description: ''
-      cooldown: ''
-      cost: ''
-    teleport:
-      main_description: ''
-      cooldown: ''
-      distance: ''
-      cost: ''
-    throw:
-      main_description: ''
-      display: ''
-      cooldown: ''
-      isRight: ''
-      speed: ''
-      entityName: ''
-      entityData: ''
-      isPersistent: ''
-    tippedarrow:
-      main_description: ''
-      cooldown: ''
-      type: ''
-      duration: ''
-      amplifier: ''
-      cost: ''
-    torch:
-      main_description: ''
-      cooldown: ''
-      cost: ''
-    translocator:
-      main_description: ''
-      cooldown: ''
-      tpCost: ''
-      setupCost: ''
-    unbreakable:
-      main_description: ''
+      main_description: Creates a force field around the player
+      radius: Radius of force field
+      height: Height of force field
+      base: Base of force field
+      ttl: Time to live
     glove:
-      main_description: "Catch an entity"
+      main_description: Catch an entity
+      maxDistance: Maximum distance to catch
+      maxTicks: Maximum ticks catching
+      throwSpeed: Speed throwing entity
+    ice:
+      main_description: Fire an ice block, then create a box of ice on impact
+    knockup:
+      main_description: Send the hit target flying
+      chance: Chance of triggering this power
+      power: Power of knock up
+    lifesteal:
+      main_description: Steal enemy life
+      chance: Chance of triggering this power, in percentage
+    lightning:
+      main_description: Strike the hit target with lightning
+    lorefilter:
+      main_description: Preserve all lore lines match the regex
+      regex: Regex to filter the lore
+      desc: Display text
     mount:
-      main_description: "Ride an entity"
+      main_description: Ride an entity
+      maxDistance: Maximum distance to ride
+      maxTicks: Maximum ticks riding
+    noimmutabletick:
+      main_description: Cancel the damage delay (no-damage-tick)
+    particle:
+      main_description: Spawn some particles around the user
+      effect: Particle effect
+    particlebarrier:
+      main_description: Spawn a barrier that redirecting energy of incoming attacks to strength
+      energyPerBarrier: Total energy gained when a barrier was broken
+      barrierHealth: Health of a new barrier
+      energyPerLevel: Energy required per level of strength effect
+    particletick:
+      main_description: Spawn some particles around the user when equipped
+      effect: Name of particle effect
+      interval: Interval of particle effect
+    potionhit:
+      main_description: Apply effect to enemy when hit
+      duration: Duration of potion effect
+      amplifier: Amplifier of potion effect
+      type: Type of potion effect
+      chance: Chance of triggering this power
+    potionself:
+      main_description: Apply effect to player when used
+      duration: Time of potion effect, in ticks
+      amplifier: Amplifier of potion effect
+      type: Type of potion effect
+    potiontick:
+      main_description: Apply effect to player when equipped
+      duration: Time of potion effect, in ticks
+      amplifier: Amplifier of potion effect
+      effect: Type of potion effect
+      interval: Interval of this power
+      clear: Whether to remove the effect instead of adding it
+    projectile:
+      main_description: Launches projectile
+      isCone: Whether launch projectiles in cone
+      projectileType: Type of projectiles
+      range: Range will projectiles spread, in degree
+      amount: Amount of projectiles
+      speed: Speed of projectiles
+      gravity: Whether the projectile have gravity
+      burstCount: Burst count of one shoot
+      burstInterval: Interval between bursts
+      setFireballDirection: Whether to set Fireball' direction so it won't curve
+      yield: Radius affected by this Explosive's explosion
+      isIncendiary: Whether this Explosive's explosion causes fire
+    pumpkin:
+      main_description: When hit skeleton or zombie, make them wear pumpkin head
+      chance: Chance of triggering this power, in percentage
+      drop: Drop chance of the pumpkin, 0.0~1.0
+    rainbow:
+      main_description: Fire blocks of coloured wool
+      count: Count of blocks
+      isFire: Whether launch fire instead of wool
+    ranged:
+      main_description: Mark this item as ranged
+      rm: Minimum radius
+      r: Maximum radius
+    rangedonly:
+      main_description: Mark this item as ranged only
+      rm: Minimum radius
+      r: Maximum radius
+    realdamage:
+      main_description: Do real damage to entity hit
+      realDamage: Damage of this power
+      minDamage: Minimum damage to trigger
+    repair:
+      main_description: Repair the item with some material
+      material: Material to be consumed
+      durability: Durability to be repaired
+      isSneak: Whether require sneaking to trigger this power
+      abortOnSuccess: Abort subsequence execution of powers when success
+    rescue:
+      main_description: Rescue player on low health or receiving high damage
+      healthTrigger: Health trigger of rescue
+      useBed: Whether use bed instead of home
+      inPlace: Whether rescue in place instead of teleport
+      damageTrigger: Damage trigger of rescue
+    rumble:
+      main_description: Sends a shockwave through the ground and sends any hit entities flying
+      power: Power of rumble
+      distance: Maximum distance of rumble
+    scoreboard:
+      tag: Tag(s) to add and remove, `TO_ADD,!TO_REMOVE`
+      team: Team(s) to join and leave, `JOIN,!LEAVE`
+      abortOnSuccess: Abort subsequence execution of powers when success
+    selector:
+      main_description: Provide a selector for some AOE power
+      id: ID of this power, should be unique on this item
+      display: Display message on item
+      type: Type(s) of target entities
+      count: Count of target entities
+      x: X-coordinate of reference position, tilde notation is available. Use player's current position if empty
+      y: Y-coordinate of reference position, tilde notation is available. Use player's current position if empty
+      z: Z-coordinate of reference position, tilde notation is available. Use player's current position if empty
+      r: Selects only targets less than r blocks from reference position
+      rm: Selects only targets more than rm blocks from reference position
+      dx: Selects only targets less than dx blocks in X-axis from reference position
+      dy: Selects only targets less than dx blocks in Y-axis from reference position
+      dz: Selects only targets less than dx blocks in Z-axis from reference position
+      score: Selecting targets by score(s)
+      tag: Selecting targets by tag(s)
+      team: Selecting targets by team(s)
+    shulkerbullet:
+      main_description: Launches shulker bullet when right clicked, target nearest entity in front of player
+      range: Range of target finding
+    skyhook:
+      main_description: Hook on to some material
+      railMaterial: Material that can hooks on
+      hookDistance: Maximum distance
+      hookingTickCost: Cost per tick hooking
+    sound:
+      main_description: Play a sound
+      pitch: Pitch of sound
+      volume: Volume of sound
+      sound: Sound to be played
+    stuck:
+      main_description: Make target stuck
+      chance: Chance of triggering this power
+      cost: Cost of this power (hit)
+      costAoe: Cost of this power (right click)
+      costPerEntity: Cost of this power (right click per entity)
+      range: Range of AOE
+      facing: Maximum effective view angle in degrees
+      duration: Duration of this power in tick
+    teleport:
+      main_description: teleport you in the direction you're looking in or to the place where the projectile hit
+      distance: Maximum distance
+    throw:
+      main_description: Spawn and throw a entity
+      speed: Speed of entity thrown
+      entityName: Name of entity thrown
+      entityData: NBT data of entity
+      isPersistent: Whether to make entity persistent
+    tippedarrow:
+      main_description: Fire an tipped arrow
+      type: Type of potion effect
+      duration: Duration of potion effect, in ticks
+      amplifier: Amplifier of potion effect
+    tntcannon:
+      main_description: Fire active tnt
+    torch:
+      main_description: Shoots torches to light up an area
+    translocator:
+      main_description: Throw an translocator and teleport to it later
+      tpCost: Cost to teleport to the translocator
+      setupCost: Cost to setup an translocator
+    unbreakable:
+      main_description: Mark this item as unbreakable
 manual:
   reload:
     description: Reload the plugin

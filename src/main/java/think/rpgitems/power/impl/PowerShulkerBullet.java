@@ -39,7 +39,7 @@ public class PowerShulkerBullet extends BasePower implements PowerRightClick {
      */
     public int cost = 0;
     /**
-     * Range of this power
+     * Range of target finding
      */
     @Property(order = 1)
     public double range = 10;

@@ -38,14 +38,17 @@ public class PowerSkyHook extends BasePower implements PowerRightClick {
     /**
      * Cooldown time of this power
      */
+    @Property
     public long cooldown = 20;
     /**
      * Cost of this power
      */
+    @Property
     public int cost = 0;
     /**
-     * Hooking Cost Pre-Tick
+     * Hooking Cost Per-Tick
      */
+    @Property
     public int hookingTickCost = 0;
     /**
      * Maximum distance.

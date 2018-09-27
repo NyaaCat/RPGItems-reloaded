@@ -44,13 +44,13 @@ public class PowerTranslocator extends BasePower implements PowerSwapToOffhand, 
     @Property
     public long cooldown = 80;
     /**
-     * Cost of this power
+     * Cost to setup an translocator
      */
     @Property
     public int setupCost = 0;
 
     /**
-     * Cost of this power
+     * Cost to teleport to the translocator
      */
     @Property
     public int tpCost = 0;

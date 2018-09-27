@@ -14,7 +14,7 @@ import think.rpgitems.power.PowerResult;
 /**
  * Power noimmutabletick.
  * <p>
- *
+ * Cancel the damage delay (no-damage-tick)
  * </p>
  */
 @PowerMeta(immutableTrigger = true)
