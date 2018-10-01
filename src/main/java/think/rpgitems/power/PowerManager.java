@@ -33,14 +33,14 @@ import java.util.stream.Stream;
 public class PowerManager {
     private static final Map<Class<? extends Power>, SortedMap<PowerProperty, Field>> properties = new HashMap<>();
 
-    static final Map<String, Plugin> extensions = new HashMap<>();
+    private static final Map<String, Plugin> extensions = new HashMap<>();
 
     /**
      * Power by name, and name by power
      */
     static BiMap<NamespacedKey, Class<? extends Power>> powers = HashBiMap.create();
 
-    static final HashMap<Plugin, BiFunction<NamespacedKey, String, String>> descriptionResolvers = new HashMap<>();
+    private static final HashMap<Plugin, BiFunction<NamespacedKey, String, String>> descriptionResolvers = new HashMap<>();
 
     private static void registerPower(Class<? extends Power> clazz) {
         NamespacedKey key;
@@ -294,5 +294,10 @@ public class PowerManager {
 
     public static boolean hasPower(NamespacedKey key) {
         return powers.containsKey(key);
+    }
+
+    public static String getDescription(NamespacedKey power, String property) {
+        Plugin plugin = extensions.get(power.getNamespace());
+        return PowerManager.descriptionResolvers.get(plugin).apply(power, property);
     }
 }

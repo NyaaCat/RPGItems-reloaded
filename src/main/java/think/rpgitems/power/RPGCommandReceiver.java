@@ -8,7 +8,6 @@ import org.bukkit.NamespacedKey;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
-import org.bukkit.plugin.Plugin;
 import org.librazy.nclangchecker.LangKey;
 import think.rpgitems.RPGItems;
 import think.rpgitems.item.ItemManager;
@@ -22,7 +21,6 @@ import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 import java.util.stream.Stream;
 
-import static think.rpgitems.power.PowerManager.extensions;
 import static think.rpgitems.power.PowerManager.powers;
 
 public abstract class RPGCommandReceiver extends CommandReceiver {
@@ -183,8 +181,7 @@ public abstract class RPGCommandReceiver extends CommandReceiver {
     private void actionBarTip(CommandSender sender, NamespacedKey power, String property) {
         if (sender instanceof Player) {
             Bukkit.getScheduler().runTask(RPGItems.plugin, () -> {
-                Plugin plugin = extensions.get(power.getNamespace());
-                String description = PowerManager.descriptionResolvers.get(plugin).apply(power, property);
+                String description = PowerManager.getDescription(power, property);
                 if (description == null) {
                     return;
                 }

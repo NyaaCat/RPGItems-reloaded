@@ -13,9 +13,12 @@ import org.bukkit.scheduler.BukkitRunnable;
 import org.bukkit.util.Vector;
 import think.rpgitems.I18n;
 import think.rpgitems.RPGItems;
-import think.rpgitems.data.RPGValue;
 import think.rpgitems.power.*;
 import think.rpgitems.utils.MaterialUtils;
+
+import java.util.HashMap;
+import java.util.Map;
+import java.util.UUID;
 
 import static think.rpgitems.power.Utils.checkCooldown;
 
@@ -57,17 +60,19 @@ public class PowerSkyHook extends BasePower implements PowerRightClick {
     @Property(order = 1, required = true)
     public int hookDistance = 10;
 
+    private static Map<UUID, Boolean> hooking = new HashMap<>();
+
     @Override
     public PowerResult<Void> rightClick(final Player player, ItemStack stack, Block clicked, PlayerInteractEvent event) {
         if (!checkCooldown(this, player, cooldown, true)) return PowerResult.cd();
         if (!getItem().consumeDurability(stack, cost)) return PowerResult.cost();
-        RPGValue isHooking = RPGValue.get(player, getItem(), "skyhook.isHooking");
+        Boolean isHooking = hooking.get(player.getUniqueId());
         if (isHooking == null) {
-            isHooking = new RPGValue(player, getItem(), "skyhook.isHooking", false);
+            isHooking = false;
         }
-        if (isHooking.asBoolean()) {
+        if (isHooking) {
             player.setVelocity(player.getLocation().getDirection());
-            isHooking.set(false);
+            hooking.put(player.getUniqueId(), false);
             return PowerResult.noop();
         }
         Block block = player.getTargetBlock(null, hookDistance);
@@ -75,7 +80,7 @@ public class PowerSkyHook extends BasePower implements PowerRightClick {
             player.sendMessage(I18n.format("message.skyhook.fail"));
             return PowerResult.fail();
         }
-        isHooking.set(true);
+        hooking.put(player.getUniqueId(), true);
         final Location location = player.getLocation();
         player.setAllowFlight(true);
         player.setVelocity(location.getDirection().multiply(block.getLocation().distance(location) / 2d));
@@ -88,10 +93,11 @@ public class PowerSkyHook extends BasePower implements PowerRightClick {
             public void run() {
                 if (!(player.getAllowFlight() && getItem().consumeDurability(stack, hookingTickCost))) {
                     cancel();
-                    RPGValue.get(player, getItem(), "skyhook.isHooking").set(false);
+                    hooking.put(player.getUniqueId(), false);
                     return;
                 }
-                if (!RPGValue.get(player, getItem(), "skyhook.isHooking").asBoolean()) {
+                boolean isHooking = hooking.getOrDefault(player.getUniqueId(), false);
+                if (!isHooking) {
                     player.setFlying(false);
                     if (player.getGameMode() != GameMode.CREATIVE)
                         player.setAllowFlight(false);
@@ -115,7 +121,7 @@ public class PowerSkyHook extends BasePower implements PowerRightClick {
                     if (player.getGameMode() != GameMode.CREATIVE)
                         player.setAllowFlight(false);
                     cancel();
-                    RPGValue.get(player, PowerSkyHook.this.getItem(), "skyhook.isHooking").set(false);
+                    hooking.put(player.getUniqueId(), false);
                     return;
                 }
                 player.setVelocity(dir.multiply(0.5));

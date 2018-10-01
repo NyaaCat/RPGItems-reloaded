@@ -8,16 +8,17 @@ import org.bukkit.entity.Player;
 import org.bukkit.permissions.PermissionAttachment;
 import think.rpgitems.I18n;
 import think.rpgitems.RPGItems;
-import think.rpgitems.data.RPGValue;
 import think.rpgitems.item.RPGItem;
 import think.rpgitems.power.impl.PowerSelector;
-import think.rpgitems.power.Power;
 
 import java.lang.reflect.Field;
 import java.util.*;
 import java.util.stream.Collectors;
 
 public class Utils {
+
+    public static Map<String, Long> cooldowns = new HashMap<>();
+
     public static List<Entity> getNearbyEntities(Power power, Location l, Player player, double radius, double dx, double dy, double dz) {
         List<Entity> entities = new ArrayList<>();
         for (Entity e : l.getWorld().getNearbyEntities(l, dx, dy, dz)) {
@@ -122,33 +123,36 @@ public class Utils {
      */
     public static boolean checkCooldown(Power power, Player p, long cdTicks, boolean showWarn) {
         long cooldown;
-        RPGValue value = RPGValue.get(p, power.getItem(), power.getNamespacedKey().toString() + ".cooldown");
+
+        String key = p.getName() + "." + power.getItem().getUID() + "." + power.getNamespacedKey().toString() + ".cooldown";
+        Long value = cooldowns.get(key);
         long nowTick = System.currentTimeMillis() / 50;
         if (value == null) {
             cooldown = nowTick;
-            value = new RPGValue(p, power.getItem(), power.getNamespacedKey().toString() + ".cooldown", cooldown);
+            cooldowns.put(key, cooldown);
         } else {
-            cooldown = value.asLong();
+            cooldown = value;
         }
-        return checkAndSetCooldown(p, cdTicks, showWarn, cooldown, value, nowTick);
+        return checkAndSetCooldown(p, cdTicks, showWarn, cooldown, key, nowTick);
     }
 
     public static boolean checkCooldownByString(Player player, RPGItem item, String command, long cooldownTime, boolean showWarn) {
         long cooldown;
-        RPGValue value = RPGValue.get(player, item, "command." + command + ".cooldown");
+        String key = player.getName() + "." + item.getUID() + "." + "command." + command + ".cooldown";
+        Long value = cooldowns.get(key);
         long nowTick = System.currentTimeMillis() / 50;
         if (value == null) {
             cooldown = nowTick;
-            value = new RPGValue(player, item, "command." + command + ".cooldown", cooldown);
+            cooldowns.put(key, cooldown);
         } else {
-            cooldown = value.asLong();
+            cooldown = value;
         }
-        return checkAndSetCooldown(player, cooldownTime, showWarn, cooldown, value, nowTick);
+        return checkAndSetCooldown(player, cooldownTime, showWarn, cooldown, key, nowTick);
     }
 
-    public static boolean checkAndSetCooldown(Player player, long cooldownTime, boolean showWarn, long cooldown, RPGValue value, long nowTick) {
+    public static boolean checkAndSetCooldown(Player player, long cooldownTime, boolean showWarn, long cooldown, String key, long nowTick) {
         if (cooldown <= nowTick) {
-            value.set(nowTick + cooldownTime);
+            cooldowns.put(key, nowTick + cooldownTime);
             return true;
         } else {
             if (showWarn)

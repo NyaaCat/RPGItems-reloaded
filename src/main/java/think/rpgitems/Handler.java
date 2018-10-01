@@ -2,10 +2,7 @@ package think.rpgitems;
 
 import cat.nyaa.nyaacore.LanguageRepository;
 import cat.nyaa.nyaacore.Message;
-import org.bukkit.Bukkit;
-import org.bukkit.ChatColor;
-import org.bukkit.Color;
-import org.bukkit.Material;
+import org.bukkit.*;
 import org.bukkit.command.CommandSender;
 import org.bukkit.configuration.InvalidConfigurationException;
 import org.bukkit.configuration.file.YamlConfiguration;
@@ -429,14 +426,23 @@ public class Handler extends RPGCommandReceiver {
     @Attribute("power")
     public void itemRemovePower(CommandSender sender, Arguments args) {
         RPGItem item = getItemByName(args.nextString());
-        String power = args.nextString();
+        String powerStr = args.nextString();
+        int nth = args.top() == null ? 0 : args.nextInt();
         try {
-            if (item.removePower(power)) {
-                msg(sender, "message.power.removed", power);
+            Class<? extends Power> p = PowerManager.getPower(powerStr);
+            if (p == null) {
+                msg(sender, "message.power.unknown", powerStr);
+                return;
+            }
+            Optional<Power> op = item.powers.stream().filter(pwr -> pwr.getClass().equals(p)).skip(nth - 1).findFirst();
+
+            if (op.isPresent()) {
+                item.removePower(op.get());
+                msg(sender, "message.power.removed", powerStr);
                 ItemManager.refreshItem();
                 ItemManager.save();
             } else {
-                msg(sender, "message.power.unknown", power);
+                msg(sender, "message.power.unknown", powerStr);
             }
         } catch (UnknownExtensionException e) {
             msg(sender, "message.error.unknown.extension", e.getName());
@@ -594,13 +600,13 @@ public class Handler extends RPGCommandReceiver {
                 try {
                     Field field = cls.getField(property);
                     Utils.saveProperty(pow, conf, field.getName(), field);
-                    msg(sender, "message.power_property.get", nth, power, property, conf.getString(field.getName()));
+                    msg(sender, "message.power_property.get", nth, pow.getName(), property, conf.getString(field.getName()));
                 } catch (Exception e) {
                     msg(sender, "message.power_property.property_notfound", property);
                 }
             } else {
                 pow.save(conf);
-                msg(sender, "message.power_property.all", nth, power, conf.saveToString());
+                msg(sender, "message.power_property.all", nth, pow.getName(), conf.saveToString());
             }
         } else {
             msg(sender, "message.power_property.power_notfound");
@@ -624,35 +630,39 @@ public class Handler extends RPGCommandReceiver {
 
     @SubCommand("set")
     @Attribute("property")
-    public void setItemPowerProperty(CommandSender sender, Arguments args) throws IllegalAccessException, UnknownExtensionException {
+    public void setItemPowerProperty(CommandSender sender, Arguments args) throws IllegalAccessException {
         RPGItem item = getItemByName(args.nextString());
         String power = args.nextString();
         int nth = args.nextInt();
         String property = args.nextString();
         String val = args.nextString();
-        Class<? extends Power> p = PowerManager.getPower(power);
-        if (p == null) {
-            msg(sender, "message.power.unknown", power);
-            return;
-        }
-        Optional<Power> op = item.powers.stream().filter(pwr -> pwr.getClass().equals(p)).skip(nth - 1).findFirst();
-        if (op.isPresent()) {
-            Power pow = op.get();
-            item.removePower(pow);
-            try {
-                PowerManager.setPowerProperty(sender, pow, property, val);
-            } finally {
-                item.addPower(pow);
+        try {
+            Class<? extends Power> p = PowerManager.getPower(power);
+            if (p == null) {
+                msg(sender, "message.power.unknown", power);
+                return;
             }
-        } else {
-            msg(sender, "message.power_property.power_notfound");
-            return;
-        }
+            Optional<Power> op = item.powers.stream().filter(pwr -> pwr.getClass().equals(p)).skip(nth - 1).findFirst();
+            if (op.isPresent()) {
+                Power pow = op.get();
+                item.removePower(pow);
+                try {
+                    PowerManager.setPowerProperty(sender, pow, property, val);
+                } finally {
+                    item.addPower(pow);
+                }
+            } else {
+                msg(sender, "message.power_property.power_notfound");
+                return;
+            }
+            item.rebuild();
+            ItemManager.refreshItem();
+            ItemManager.save();
+            msg(sender, "message.power_property.change");
+        } catch (UnknownExtensionException e) {
+            msg(sender, "message.error.unknown.extension", e.getName());
 
-        item.rebuild();
-        ItemManager.refreshItem();
-        ItemManager.save();
-        msg(sender, "message.power_property.change");
+        }
     }
 
     @SubCommand("cost")
@@ -856,15 +866,19 @@ public class Handler extends RPGCommandReceiver {
         String itemStr = args.next();
         String powerStr = args.next();
         if (itemStr == null || (itemStr.equals("help") && ItemManager.getItemByName(itemStr) == null) || powerStr == null || powerStr.equals("help")) {
-            // TODO: List Available Power
             msg(sender, "manual.power.description");
             msg(sender, "manual.power.usage");
+            for (NamespacedKey power : PowerManager.getPowers().keySet()) {
+                msg(sender, "message.power.key", power.toString());
+                msg(sender, "message.power.description", PowerManager.getDescription(power, null));
+            }
             return;
         }
-        if ((itemStr.equals("list") && ItemManager.getItemByName(itemStr) == null) || powerStr.equals("list")) {
-            // TODO: List Item Power
-            msg(sender, "manual.power.description");
-            msg(sender, "manual.power.usage");
+        if (ItemManager.getItemByName(itemStr) != null || powerStr.equals("list")) {
+            RPGItem item = getItemByName(itemStr);
+            for (Power power : item.powers) {
+                msg(sender, "message.item.power", power.getNamespacedKey().toString(), power.displayText(), power.getTriggers().stream().map(TriggerType::name).collect(Collectors.joining(",")));
+            }
             return;
         }
         RPGItem item = getItemByName(itemStr);

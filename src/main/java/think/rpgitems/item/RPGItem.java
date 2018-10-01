@@ -112,20 +112,6 @@ public class RPGItem {
     private boolean forceBar = false;
     private int _loreMinLen = 0;
 
-
-    private ArrayList<PowerLeftClick> powerLeftClick = new ArrayList<>();
-    private ArrayList<PowerRightClick> powerRightClick = new ArrayList<>();
-    private ArrayList<PowerProjectileHit> powerProjectileHit = new ArrayList<>();
-    private ArrayList<PowerHit> powerHit = new ArrayList<>();
-    private ArrayList<PowerHitTaken> powerHitTaken = new ArrayList<>();
-    private ArrayList<PowerHurt> powerHurt = new ArrayList<>();
-    private ArrayList<PowerTick> powerTick = new ArrayList<>();
-    private ArrayList<PowerOffhandClick> powerOffhandClick = new ArrayList<>();
-    private ArrayList<PowerSneak> powerSneak = new ArrayList<>();
-    private ArrayList<PowerSprint> powerSprint = new ArrayList<>();
-    private ArrayList<PowerSwapToOffhand> powerSwapToOffhand = new ArrayList<>();
-    private ArrayList<PowerSwapToMainhand> powerSwapToMainhand = new ArrayList<>();
-
     public RPGItem(String name, int uid) {
         this.name = name;
         this.uid = uid;
@@ -579,7 +565,7 @@ public class RPGItem {
         }
     }
 
-    private boolean triggerPreCheck(Player player, ItemStack i, ArrayList<? extends Power> powers, TriggerType triggerType) {
+    private boolean triggerPreCheck(Player player, ItemStack i, List<? extends Power> powers, TriggerType triggerType) {
         if (powers.isEmpty()) return false;
         if (!checkPermission(player, true)) return false;
         if (!WGSupport.check(player, this, powers)) return false;
@@ -607,12 +593,12 @@ public class RPGItem {
     }
 
     public void leftClick(Player player, ItemStack i, Block block, PlayerInteractEvent event) {
-        if (!triggerPreCheck(player, i, this.powerLeftClick, TriggerType.LEFT_CLICK)) return;
+        if (!triggerPreCheck(player, i, this.getPowerLeftClick(), TriggerType.LEFT_CLICK)) return;
         List<PowerCondition> conds = getPower(PowerCondition.class);
         Map<PowerCondition, Boolean> staticCond = checkStaticCondition(player, i, conds);
 
         Map<Power, PowerResult> resultMap = new LinkedHashMap<>();
-        for (PowerLeftClick power : powerLeftClick) {
+        for (PowerLeftClick power : getPowerLeftClick()) {
             PowerResult<Void> result = checkConditions(player, i, power, conds, staticCond);
             if (result != null) {
                 resultMap.put(power, result);
@@ -632,12 +618,12 @@ public class RPGItem {
     }
 
     public void rightClick(Player player, ItemStack i, Block block, PlayerInteractEvent event) {
-        if (!triggerPreCheck(player, i, this.powerRightClick, TriggerType.RIGHT_CLICK)) return;
+        if (!triggerPreCheck(player, i, this.getPowerRightClick(), TriggerType.RIGHT_CLICK)) return;
         List<PowerCondition> conds = getPower(PowerCondition.class);
         Map<PowerCondition, Boolean> staticCond = checkStaticCondition(player, i, conds);
 
         Map<Power, PowerResult> resultMap = new LinkedHashMap<>();
-        for (PowerRightClick power : this.powerRightClick) {
+        for (PowerRightClick power : this.getPowerRightClick()) {
             PowerResult<Void> result = checkConditions(player, i, power, conds, staticCond);
             if (result != null) {
                 resultMap.put(power, result);
@@ -657,12 +643,12 @@ public class RPGItem {
     }
 
     public void offhandClick(Player player, ItemStack i, PlayerInteractEvent event) {
-        if (!triggerPreCheck(player, i, this.powerOffhandClick, TriggerType.OFFHAND_CLICK)) return;
+        if (!triggerPreCheck(player, i, this.getPowerOffhandClick(), TriggerType.OFFHAND_CLICK)) return;
         List<PowerCondition> conds = getPower(PowerCondition.class);
         Map<PowerCondition, Boolean> staticCond = checkStaticCondition(player, i, conds);
 
         Map<Power, PowerResult> resultMap = new LinkedHashMap<>();
-        for (PowerOffhandClick power : powerOffhandClick) {
+        for (PowerOffhandClick power : getPowerOffhandClick()) {
             PowerResult<Void> result = checkConditions(player, i, power, conds, staticCond);
             if (result != null) {
                 resultMap.put(power, result);
@@ -683,12 +669,12 @@ public class RPGItem {
     }
 
     public void sneak(Player player, ItemStack i, PlayerToggleSneakEvent event) {
-        if (!triggerPreCheck(player, i, this.powerSneak, TriggerType.SNEAK)) return;
+        if (!triggerPreCheck(player, i, this.getPowerSneak(), TriggerType.SNEAK)) return;
         List<PowerCondition> conds = getPower(PowerCondition.class);
         Map<PowerCondition, Boolean> staticCond = checkStaticCondition(player, i, conds);
 
         Map<Power, PowerResult> resultMap = new LinkedHashMap<>();
-        for (PowerSneak power : powerSneak) {
+        for (PowerSneak power : getPowerSneak()) {
             PowerResult<Void> result = checkConditions(player, i, power, conds, staticCond);
             if (result != null) {
                 resultMap.put(power, result);
@@ -709,12 +695,12 @@ public class RPGItem {
     }
 
     public void sprint(Player player, ItemStack i, PlayerToggleSprintEvent event) {
-        if (!triggerPreCheck(player, i, this.powerSprint, TriggerType.SPRINT)) return;
+        if (!triggerPreCheck(player, i, this.getPowerSprint(), TriggerType.SPRINT)) return;
         List<PowerCondition> conds = getPower(PowerCondition.class);
         Map<PowerCondition, Boolean> staticCond = checkStaticCondition(player, i, conds);
 
         Map<Power, PowerResult> resultMap = new LinkedHashMap<>();
-        for (PowerSprint power : powerSprint) {
+        for (PowerSprint power : getPowerSprint()) {
             PowerResult<Void> result = checkConditions(player, i, power, conds, staticCond);
             if (result != null) {
                 resultMap.put(power, result);
@@ -735,12 +721,12 @@ public class RPGItem {
     }
 
     public void projectileHit(Player player, ItemStack i, Projectile arrow, ProjectileHitEvent event) {
-        if (!triggerPreCheck(player, i, this.powerProjectileHit, TriggerType.PROJECTILE_HIT)) return;
+        if (!triggerPreCheck(player, i, this.getPowerProjectileHit(), TriggerType.PROJECTILE_HIT)) return;
         List<PowerCondition> conds = getPower(PowerCondition.class);
         Map<PowerCondition, Boolean> staticCond = checkStaticCondition(player, i, conds);
 
         Map<Power, PowerResult> resultMap = new LinkedHashMap<>();
-        for (PowerProjectileHit power : powerProjectileHit) {
+        for (PowerProjectileHit power : getPowerProjectileHit()) {
             PowerResult<Void> result = checkConditions(player, i, power, conds, staticCond);
             if (result != null) {
                 resultMap.put(power, result);
@@ -760,24 +746,24 @@ public class RPGItem {
         }
     }
 
-    public double hit(Player player, ItemStack i, LivingEntity target, double damage, EntityDamageByEntityEvent event) {
-        if (!triggerPreCheck(player, i, this.powerHit, TriggerType.HIT)) return damage;
+    public double hit(Player player, ItemStack i, LivingEntity target, EntityDamageByEntityEvent event) {
+        double ret = event.getDamage();
+        if (!triggerPreCheck(player, i, this.getPowerHit(), TriggerType.HIT)) return ret;
         List<PowerCondition> conds = getPower(PowerCondition.class);
         Map<PowerCondition, Boolean> staticCond = checkStaticCondition(player, i, conds);
 
-        double ret = -Double.MAX_VALUE;
         Map<Power, PowerResult> resultMap = new LinkedHashMap<>();
-        for (PowerHit power : powerHit) {
+        for (PowerHit power : getPowerHit()) {
             PowerResult<Double> result = checkConditions(player, i, power, conds, staticCond);
             if (result != null) {
                 resultMap.put(power, result);
             } else {
-                result = power.hit(player, i, target, damage, event);
+                result = power.hit(player, i, target, event.getDamage(), event);
                 resultMap.put(power, result);
             }
             if (result.isAbort()) break;
             if (!result.isOK()) continue;
-            ret = result.getData() > ret ? result.getData() : ret;
+            ret = Math.max(ret, result.getData());
         }
         RPGItemsPowersPostFireEvent postFire = new RPGItemsPowersPostFireEvent(i, this, player, TriggerType.HIT, resultMap);
         Bukkit.getServer().getPluginManager().callEvent(postFire);
@@ -786,17 +772,17 @@ public class RPGItem {
             i.setAmount(0);
             i.setType(Material.AIR);
         }
-        return ret == -Double.MAX_VALUE ? damage : ret;
+        return ret;
     }
 
     public double takeHit(Player player, ItemStack i, EntityDamageEvent ev) {
-        double ret = Double.MAX_VALUE;
-        if (!triggerPreCheck(player, i, this.powerHitTaken, TriggerType.HIT_TAKEN)) return ret;
+        double ret = ev.getDamage();
+        if (!triggerPreCheck(player, i, this.getPowerHitTaken(), TriggerType.HIT_TAKEN)) return ret;
         List<PowerCondition> conds = getPower(PowerCondition.class);
         Map<PowerCondition, Boolean> staticCond = checkStaticCondition(player, i, conds);
 
         Map<Power, PowerResult> resultMap = new LinkedHashMap<>();
-        for (PowerHitTaken power : powerHitTaken) {
+        for (PowerHitTaken power : getPowerHitTaken()) {
             PowerResult<Double> result = checkConditions(player, i, power, conds, staticCond);
             if (result != null) {
                 resultMap.put(power, result);
@@ -806,7 +792,7 @@ public class RPGItem {
             }
             if (result.isAbort()) break;
             if (!result.isOK()) continue;
-            ret = result.getData() < ret ? result.getData() : ret;
+            ret = Math.min(ret, result.getData());
         }
         RPGItemsPowersPostFireEvent postFire = new RPGItemsPowersPostFireEvent(i, this, player, TriggerType.HIT_TAKEN, resultMap);
         Bukkit.getServer().getPluginManager().callEvent(postFire);
@@ -819,12 +805,12 @@ public class RPGItem {
     }
 
     public void hurt(Player player, ItemStack i, EntityDamageEvent ev) {
-        if (!triggerPreCheck(player, i, this.powerHurt, TriggerType.HURT)) return;
+        if (!triggerPreCheck(player, i, this.getPowerHurt(), TriggerType.HURT)) return;
         List<PowerCondition> conds = getPower(PowerCondition.class);
         Map<PowerCondition, Boolean> staticCond = checkStaticCondition(player, i, conds);
 
         Map<Power, PowerResult> resultMap = new LinkedHashMap<>();
-        for (PowerHurt power : powerHurt) {
+        for (PowerHurt power : getPowerHurt()) {
             PowerResult<Void> result = checkConditions(player, i, power, conds, staticCond);
             if (result != null) {
                 resultMap.put(power, result);
@@ -844,12 +830,12 @@ public class RPGItem {
     }
 
     public void swapToOffhand(Player player, ItemStack i, PlayerSwapHandItemsEvent ev) {
-        if (!triggerPreCheck(player, i, this.powerSwapToOffhand, TriggerType.SWAP_TO_OFFHAND)) return;
+        if (!triggerPreCheck(player, i, this.getPowerSwapToOffhand(), TriggerType.SWAP_TO_OFFHAND)) return;
         List<PowerCondition> conds = getPower(PowerCondition.class);
         Map<PowerCondition, Boolean> staticCond = checkStaticCondition(player, i, conds);
 
         Map<Power, PowerResult> resultMap = new LinkedHashMap<>();
-        for (PowerSwapToOffhand power : powerSwapToOffhand) {
+        for (PowerSwapToOffhand power : getPowerSwapToOffhand()) {
             PowerResult<Boolean> result = checkConditions(player, i, power, conds, staticCond);
             if (result != null) {
                 resultMap.put(power, result);
@@ -872,12 +858,12 @@ public class RPGItem {
     }
 
     public void swapToMainhand(Player player, ItemStack i, PlayerSwapHandItemsEvent ev) {
-        if (!triggerPreCheck(player, i, this.powerSwapToMainhand, TriggerType.SWAP_TO_MAINHAND)) return;
+        if (!triggerPreCheck(player, i, this.getPowerSwapToMainhand(), TriggerType.SWAP_TO_MAINHAND)) return;
         List<PowerCondition> conds = getPower(PowerCondition.class);
         Map<PowerCondition, Boolean> staticCond = checkStaticCondition(player, i, conds);
 
         Map<Power, PowerResult> resultMap = new LinkedHashMap<>();
-        for (PowerSwapToMainhand power : powerSwapToMainhand) {
+        for (PowerSwapToMainhand power : getPowerSwapToMainhand()) {
             PowerResult<Boolean> result = checkConditions(player, i, power, conds, staticCond);
             if (result != null) {
                 resultMap.put(power, result);
@@ -901,12 +887,12 @@ public class RPGItem {
     }
 
     public void pickupOffhand(Player player, ItemStack i, InventoryClickEvent ev) {
-        if (!triggerPreCheck(player, i, this.powerSwapToMainhand, TriggerType.PICKUP_OFF_HAND)) return;
+        if (!triggerPreCheck(player, i, this.getPowerSwapToMainhand(), TriggerType.PICKUP_OFF_HAND)) return;
         List<PowerCondition> conds = getPower(PowerCondition.class);
         Map<PowerCondition, Boolean> staticCond = checkStaticCondition(player, i, conds);
 
         Map<Power, PowerResult> resultMap = new LinkedHashMap<>();
-        for (PowerSwapToMainhand power : powerSwapToMainhand) {
+        for (PowerSwapToMainhand power : getPowerSwapToMainhand()) {
             PowerResult<Boolean> result = checkConditions(player, i, power, conds, staticCond);
             if (result != null) {
                 resultMap.put(power, result);
@@ -929,12 +915,12 @@ public class RPGItem {
     }
 
     public void placeOffhand(Player player, ItemStack i, InventoryClickEvent ev) {
-        if (!triggerPreCheck(player, i, this.powerSwapToOffhand, TriggerType.PLACE_OFF_HAND)) return;
+        if (!triggerPreCheck(player, i, this.getPowerSwapToOffhand(), TriggerType.PLACE_OFF_HAND)) return;
         List<PowerCondition> conds = getPower(PowerCondition.class);
         Map<PowerCondition, Boolean> staticCond = checkStaticCondition(player, i, conds);
 
         Map<Power, PowerResult> resultMap = new LinkedHashMap<>();
-        for (PowerSwapToOffhand power : powerSwapToOffhand) {
+        for (PowerSwapToOffhand power : getPowerSwapToOffhand()) {
             PowerResult<Boolean> result = checkConditions(player, i, power, conds, staticCond);
             if (result != null) {
                 resultMap.put(power, result);
@@ -957,12 +943,12 @@ public class RPGItem {
     }
 
     public void tick(Player player, ItemStack i) {
-        if (!triggerPreCheck(player, i, this.powerTick, TriggerType.TICK)) return;
+        if (!triggerPreCheck(player, i, this.getPowerTick(), TriggerType.TICK)) return;
         List<PowerCondition> conds = getPower(PowerCondition.class);
         Map<PowerCondition, Boolean> staticCond = checkStaticCondition(player, i, conds);
 
         Map<Power, PowerResult> resultMap = new LinkedHashMap<>();
-        for (PowerTick power : powerTick) {
+        for (PowerTick power : getPowerTick()) {
             PowerResult<Void> result = checkConditions(player, i, power, conds, staticCond);
             if (result != null) {
                 resultMap.put(power, result);
@@ -1517,78 +1503,12 @@ public class RPGItem {
 
     private void addPower(Power power, boolean update) {
         powers.add(power);
-        Set<TriggerType> triggers = power.getTriggers();
-        if (triggers.contains(TriggerType.HIT)) {
-            powerHit.add((PowerHit) power);
-        }
-        if (triggers.contains(TriggerType.HIT_TAKEN)) {
-            powerHitTaken.add((PowerHitTaken) power);
-        }
-        if (triggers.contains(TriggerType.LEFT_CLICK)) {
-            powerLeftClick.add((PowerLeftClick) power);
-        }
-        if (triggers.contains(TriggerType.RIGHT_CLICK)) {
-            powerRightClick.add((PowerRightClick) power);
-        }
-        if (triggers.contains(TriggerType.PROJECTILE_HIT)) {
-            powerProjectileHit.add((PowerProjectileHit) power);
-        }
-        if (triggers.contains(TriggerType.HURT)) {
-            powerHurt.add((PowerHurt) power);
-        }
-        if (triggers.contains(TriggerType.TICK)) {
-            powerTick.add((PowerTick) power);
-        }
-        if (triggers.contains(TriggerType.OFFHAND_CLICK)) {
-            powerOffhandClick.add((PowerOffhandClick) power);
-        }
-        if (triggers.contains(TriggerType.SNEAK)) {
-            powerSneak.add((PowerSneak) power);
-        }
-        if (triggers.contains(TriggerType.SPRINT)) {
-            powerSprint.add((PowerSprint) power);
-        }
-        if (triggers.contains(TriggerType.SWAP_TO_MAINHAND)) {
-            powerSwapToMainhand.add((PowerSwapToMainhand) power);
-        }
-        if (triggers.contains(TriggerType.SWAP_TO_OFFHAND)) {
-            powerSwapToOffhand.add((PowerSwapToOffhand) power);
-        }
         if (update)
             rebuild();
     }
 
-    public boolean removePower(String pow) throws UnknownExtensionException {
-        Iterator<Power> it = powers.iterator();
-        Power power = null;
-        NamespacedKey key = PowerManager.parseKey(pow);
-        while (it.hasNext()) {
-            Power p = it.next();
-            if (p.getNamespacedKey().equals(key)) {
-                power = p;
-                break;
-            }
-        }
-        if (power != null) {
-            removePower(power);
-        }
-        return power != null;
-    }
-
     public void removePower(Power power) {
         powers.remove(power);
-        powerHit.remove(power);
-        powerHitTaken.remove(power);
-        powerHurt.remove(power);
-        powerLeftClick.remove(power);
-        powerRightClick.remove(power);
-        powerProjectileHit.remove(power);
-        powerTick.remove(power);
-        powerOffhandClick.remove(power);
-        powerSneak.remove(power);
-        powerSprint.remove(power);
-        powerSwapToOffhand.remove(power);
-        powerSwapToMainhand.remove(power);
         power.deinit();
         rebuild();
     }
@@ -1643,6 +1563,54 @@ public class RPGItem {
 
     public void setLicense(String license) {
         this.license = license;
+    }
+
+    private List<PowerLeftClick> getPowerLeftClick() {
+        return powers.stream().filter(p -> p.getTriggers().contains(TriggerType.LEFT_CLICK)).map(p -> (PowerLeftClick) p).collect(Collectors.toList());
+    }
+
+    private List<PowerRightClick> getPowerRightClick() {
+        return powers.stream().filter(p -> p.getTriggers().contains(TriggerType.RIGHT_CLICK)).map(p -> (PowerRightClick) p).collect(Collectors.toList());
+    }
+
+    private List<PowerProjectileHit> getPowerProjectileHit() {
+        return powers.stream().filter(p -> p.getTriggers().contains(TriggerType.PROJECTILE_HIT)).map(p -> (PowerProjectileHit) p).collect(Collectors.toList());
+    }
+
+    private List<PowerHit> getPowerHit() {
+        return powers.stream().filter(p -> p.getTriggers().contains(TriggerType.HIT)).map(p -> (PowerHit) p).collect(Collectors.toList());
+    }
+
+    private List<PowerHitTaken> getPowerHitTaken() {
+        return powers.stream().filter(p -> p.getTriggers().contains(TriggerType.HIT_TAKEN)).map(p -> (PowerHitTaken) p).collect(Collectors.toList());
+    }
+
+    private List<PowerHurt> getPowerHurt() {
+        return powers.stream().filter(p -> p.getTriggers().contains(TriggerType.HURT)).map(p -> (PowerHurt) p).collect(Collectors.toList());
+    }
+
+    private List<PowerTick> getPowerTick() {
+        return powers.stream().filter(p -> p.getTriggers().contains(TriggerType.TICK)).map(p -> (PowerTick) p).collect(Collectors.toList());
+    }
+
+    private List<PowerOffhandClick> getPowerOffhandClick() {
+        return powers.stream().filter(p -> p.getTriggers().contains(TriggerType.OFFHAND_CLICK)).map(p -> (PowerOffhandClick) p).collect(Collectors.toList());
+    }
+
+    private List<PowerSneak> getPowerSneak() {
+        return powers.stream().filter(p -> p.getTriggers().contains(TriggerType.SNEAK)).map(p -> (PowerSneak) p).collect(Collectors.toList());
+    }
+
+    private List<PowerSprint> getPowerSprint() {
+        return powers.stream().filter(p -> p.getTriggers().contains(TriggerType.SPRINT)).map(p -> (PowerSprint) p).collect(Collectors.toList());
+    }
+
+    private List<PowerSwapToOffhand> getPowerSwapToOffhand() {
+        return powers.stream().filter(p -> p.getTriggers().contains(TriggerType.SWAP_TO_OFFHAND)).map(p -> (PowerSwapToOffhand) p).collect(Collectors.toList());
+    }
+
+    private List<PowerSwapToMainhand> getPowerSwapToMainhand() {
+        return powers.stream().filter(p -> p.getTriggers().contains(TriggerType.SWAP_TO_MAINHAND)).map(p -> (PowerSwapToMainhand) p).collect(Collectors.toList());
     }
 
     @LangKey(type = LangKeyType.SUFFIX)
