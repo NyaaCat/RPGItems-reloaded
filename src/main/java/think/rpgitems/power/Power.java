@@ -6,6 +6,7 @@ import org.bukkit.NamespacedKey;
 import org.bukkit.configuration.ConfigurationSection;
 import think.rpgitems.item.RPGItem;
 
+import java.util.Collections;
 import java.util.Objects;
 import java.util.Set;
 import java.util.stream.Collectors;
@@ -77,8 +78,13 @@ public interface Power {
 
     static Set<TriggerType> getDefaultTriggerTypes(Class<? extends Power> cls) {
         PowerMeta annotation = cls.getAnnotation(PowerMeta.class);
-        if (annotation != null && annotation.defaultTrigger().length > 0) {
-            return Sets.newHashSet(annotation.defaultTrigger());
+        if (annotation != null) {
+            if (annotation.defaultTrigger().length > 0) {
+                return Sets.newHashSet(annotation.defaultTrigger());
+            }
+            if (annotation.marker()) {
+                return Collections.emptySet();
+            }
         }
         return getTriggerTypes(cls);
     }

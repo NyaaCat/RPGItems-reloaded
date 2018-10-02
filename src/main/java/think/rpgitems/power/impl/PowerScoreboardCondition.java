@@ -5,8 +5,7 @@ import com.google.common.cache.CacheLoader;
 import com.google.common.cache.LoadingCache;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
-import think.rpgitems.power.PowerMeta;
-import think.rpgitems.power.Property;
+import think.rpgitems.power.*;
 import think.rpgitems.utils.Pair;
 
 import java.util.Map;
@@ -17,7 +16,7 @@ import java.util.concurrent.TimeUnit;
 import static think.rpgitems.power.impl.PowerSelector.*;
 
 @PowerMeta(marker = true)
-public class PowerCondition extends BasePower {
+public class PowerScoreboardCondition extends BasePower implements PowerCondition<Void> {
 
     @Property(order = 0, required = true)
     public String id;
@@ -81,29 +80,45 @@ public class PowerCondition extends BasePower {
                                                                                           .expireAfterAccess(1, TimeUnit.DAYS)
                                                                                           .build(CacheLoader.from(PowerSelector::parse));
 
-    public boolean check(Player player, ItemStack stack) {
-        if (ThreadLocalRandom.current().nextDouble(0, 100) > chancePercentage) return false;
+    @Override
+    public String id() {
+        return id;
+    }
+
+    @Override
+    public boolean isStatic() {
+        return isStatic;
+    }
+
+    @Override
+    public boolean isCritical() {
+        return isCritical;
+    }
+
+    @Override
+    public PowerResult<Void> check(Player player, ItemStack stack, Map<Power, PowerResult> context) {
+        if (ThreadLocalRandom.current().nextDouble(0, 100) > chancePercentage) return PowerResult.fail();
         int durability = getItem().getDurability(stack);
-        if (durability > durabilityMax || durability < durabilityMin) return false;
+        if (durability > durabilityMax || durability < durabilityMin) return PowerResult.fail();
         if (tag != null) {
             Pair<Set<String>, Set<String>> t = tagCache.getUnchecked(tag);
             if (!matchTag(player, t)) {
-                return false;
+                return PowerResult.fail();
             }
         }
         if (team != null) {
             Pair<Set<String>, Set<String>> t = teamCache.getUnchecked(team);
             if (!matchTeam(player, player.getScoreboard(), t)) {
-                return false;
+                return PowerResult.fail();
             }
         }
         if (score != null) {
             Map<String, Pair<Integer, Integer>> t = scoreCache.getUnchecked(score);
             if (!matchScore(player, player.getScoreboard(), t)) {
-                return false;
+                return PowerResult.fail();
             }
         }
-        return true;
+        return PowerResult.ok();
     }
 
     @Override

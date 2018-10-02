@@ -575,31 +575,30 @@ public class RPGItem {
         return !preFire.isCancelled();
     }
 
-    private <T> PowerResult<T> checkConditions(Player player, ItemStack i, Power power, List<PowerCondition> conds, Map<PowerCondition, Boolean> staticCond) {
+    private <T> PowerResult<T> checkConditions(Player player, ItemStack i, Power power, List<PowerCondition> conds, Map<Power, PowerResult> context) {
         Set<String> ids = power.getConditions();
-        List<PowerCondition> conditions = conds.stream().filter(p -> ids.contains(p.id)).collect(Collectors.toList());
-        List<PowerCondition> failed = conditions.stream().filter(p -> p.isStatic ? !staticCond.get(p) : !p.check(player, i)).collect(Collectors.toList());
+        List<PowerCondition> conditions = conds.stream().filter(p -> ids.contains(p.id())).collect(Collectors.toList());
+        List<PowerCondition> failed = conditions.stream().filter(p -> p.isStatic() ? !context.get(p).isOK() : !p.check(player, i, context).isOK()).collect(Collectors.toList());
         if (failed.isEmpty()) return null;
-        return failed.stream().anyMatch(f -> f.isCritical) ? PowerResult.abort() : PowerResult.condition();
+        return failed.stream().anyMatch(PowerCondition::isCritical) ? PowerResult.abort() : PowerResult.condition();
     }
 
-    private Map<PowerCondition, Boolean> checkStaticCondition(Player player, ItemStack i, List<PowerCondition> conds) {
+    private Map<PowerCondition, PowerResult> checkStaticCondition(Player player, ItemStack i, List<PowerCondition> conds) {
         Set<String> ids = powers.stream().flatMap(p -> p.getConditions().stream()).collect(Collectors.toSet());
-        List<PowerCondition> statics = conds.stream().filter(p -> p.isStatic).filter(p -> ids.contains(p.id)).collect(Collectors.toList());
+        List<PowerCondition> statics = conds.stream().filter(PowerCondition::isStatic).filter(p -> ids.contains(p.id())).collect(Collectors.toList());
         return statics.stream().collect(Collectors.toMap(
                 s -> s,
-                s -> s.check(player, i)
+                s -> s.check(player, i, null)
         ));
     }
 
     public void leftClick(Player player, ItemStack i, Block block, PlayerInteractEvent event) {
         if (!triggerPreCheck(player, i, this.getPowerLeftClick(), TriggerType.LEFT_CLICK)) return;
         List<PowerCondition> conds = getPower(PowerCondition.class);
-        Map<PowerCondition, Boolean> staticCond = checkStaticCondition(player, i, conds);
-
-        Map<Power, PowerResult> resultMap = new LinkedHashMap<>();
+        Map<PowerCondition, PowerResult> staticCond = checkStaticCondition(player, i, conds);
+        Map<Power, PowerResult> resultMap = new LinkedHashMap<>(staticCond);
         for (PowerLeftClick power : getPowerLeftClick()) {
-            PowerResult<Void> result = checkConditions(player, i, power, conds, staticCond);
+            PowerResult<Void> result = checkConditions(player, i, power, conds, resultMap);
             if (result != null) {
                 resultMap.put(power, result);
             } else {
@@ -620,11 +619,10 @@ public class RPGItem {
     public void rightClick(Player player, ItemStack i, Block block, PlayerInteractEvent event) {
         if (!triggerPreCheck(player, i, this.getPowerRightClick(), TriggerType.RIGHT_CLICK)) return;
         List<PowerCondition> conds = getPower(PowerCondition.class);
-        Map<PowerCondition, Boolean> staticCond = checkStaticCondition(player, i, conds);
-
-        Map<Power, PowerResult> resultMap = new LinkedHashMap<>();
+        Map<PowerCondition, PowerResult> staticCond = checkStaticCondition(player, i, conds);
+        Map<Power, PowerResult> resultMap = new LinkedHashMap<>(staticCond);
         for (PowerRightClick power : this.getPowerRightClick()) {
-            PowerResult<Void> result = checkConditions(player, i, power, conds, staticCond);
+            PowerResult<Void> result = checkConditions(player, i, power, conds, resultMap);
             if (result != null) {
                 resultMap.put(power, result);
             } else {
@@ -645,11 +643,10 @@ public class RPGItem {
     public void offhandClick(Player player, ItemStack i, PlayerInteractEvent event) {
         if (!triggerPreCheck(player, i, this.getPowerOffhandClick(), TriggerType.OFFHAND_CLICK)) return;
         List<PowerCondition> conds = getPower(PowerCondition.class);
-        Map<PowerCondition, Boolean> staticCond = checkStaticCondition(player, i, conds);
-
-        Map<Power, PowerResult> resultMap = new LinkedHashMap<>();
+        Map<PowerCondition, PowerResult> staticCond = checkStaticCondition(player, i, conds);
+        Map<Power, PowerResult> resultMap = new LinkedHashMap<>(staticCond);
         for (PowerOffhandClick power : getPowerOffhandClick()) {
-            PowerResult<Void> result = checkConditions(player, i, power, conds, staticCond);
+            PowerResult<Void> result = checkConditions(player, i, power, conds, resultMap);
             if (result != null) {
                 resultMap.put(power, result);
             } else {
@@ -671,11 +668,10 @@ public class RPGItem {
     public void sneak(Player player, ItemStack i, PlayerToggleSneakEvent event) {
         if (!triggerPreCheck(player, i, this.getPowerSneak(), TriggerType.SNEAK)) return;
         List<PowerCondition> conds = getPower(PowerCondition.class);
-        Map<PowerCondition, Boolean> staticCond = checkStaticCondition(player, i, conds);
-
-        Map<Power, PowerResult> resultMap = new LinkedHashMap<>();
+        Map<PowerCondition, PowerResult> staticCond = checkStaticCondition(player, i, conds);
+        Map<Power, PowerResult> resultMap = new LinkedHashMap<>(staticCond);
         for (PowerSneak power : getPowerSneak()) {
-            PowerResult<Void> result = checkConditions(player, i, power, conds, staticCond);
+            PowerResult<Void> result = checkConditions(player, i, power, conds, resultMap);
             if (result != null) {
                 resultMap.put(power, result);
             } else {
@@ -697,11 +693,10 @@ public class RPGItem {
     public void sprint(Player player, ItemStack i, PlayerToggleSprintEvent event) {
         if (!triggerPreCheck(player, i, this.getPowerSprint(), TriggerType.SPRINT)) return;
         List<PowerCondition> conds = getPower(PowerCondition.class);
-        Map<PowerCondition, Boolean> staticCond = checkStaticCondition(player, i, conds);
-
-        Map<Power, PowerResult> resultMap = new LinkedHashMap<>();
+        Map<PowerCondition, PowerResult> staticCond = checkStaticCondition(player, i, conds);
+        Map<Power, PowerResult> resultMap = new LinkedHashMap<>(staticCond);
         for (PowerSprint power : getPowerSprint()) {
-            PowerResult<Void> result = checkConditions(player, i, power, conds, staticCond);
+            PowerResult<Void> result = checkConditions(player, i, power, conds, resultMap);
             if (result != null) {
                 resultMap.put(power, result);
             } else {
@@ -723,11 +718,10 @@ public class RPGItem {
     public void projectileHit(Player player, ItemStack i, Projectile arrow, ProjectileHitEvent event) {
         if (!triggerPreCheck(player, i, this.getPowerProjectileHit(), TriggerType.PROJECTILE_HIT)) return;
         List<PowerCondition> conds = getPower(PowerCondition.class);
-        Map<PowerCondition, Boolean> staticCond = checkStaticCondition(player, i, conds);
-
-        Map<Power, PowerResult> resultMap = new LinkedHashMap<>();
+        Map<PowerCondition, PowerResult> staticCond = checkStaticCondition(player, i, conds);
+        Map<Power, PowerResult> resultMap = new LinkedHashMap<>(staticCond);
         for (PowerProjectileHit power : getPowerProjectileHit()) {
-            PowerResult<Void> result = checkConditions(player, i, power, conds, staticCond);
+            PowerResult<Void> result = checkConditions(player, i, power, conds, resultMap);
             if (result != null) {
                 resultMap.put(power, result);
             } else {
@@ -750,11 +744,10 @@ public class RPGItem {
         double ret = event.getDamage();
         if (!triggerPreCheck(player, i, this.getPowerHit(), TriggerType.HIT)) return ret;
         List<PowerCondition> conds = getPower(PowerCondition.class);
-        Map<PowerCondition, Boolean> staticCond = checkStaticCondition(player, i, conds);
-
-        Map<Power, PowerResult> resultMap = new LinkedHashMap<>();
+        Map<PowerCondition, PowerResult> staticCond = checkStaticCondition(player, i, conds);
+        Map<Power, PowerResult> resultMap = new LinkedHashMap<>(staticCond);
         for (PowerHit power : getPowerHit()) {
-            PowerResult<Double> result = checkConditions(player, i, power, conds, staticCond);
+            PowerResult<Double> result = checkConditions(player, i, power, conds, resultMap);
             if (result != null) {
                 resultMap.put(power, result);
             } else {
@@ -779,11 +772,10 @@ public class RPGItem {
         double ret = ev.getDamage();
         if (!triggerPreCheck(player, i, this.getPowerHitTaken(), TriggerType.HIT_TAKEN)) return ret;
         List<PowerCondition> conds = getPower(PowerCondition.class);
-        Map<PowerCondition, Boolean> staticCond = checkStaticCondition(player, i, conds);
-
-        Map<Power, PowerResult> resultMap = new LinkedHashMap<>();
+        Map<PowerCondition, PowerResult> staticCond = checkStaticCondition(player, i, conds);
+        Map<Power, PowerResult> resultMap = new LinkedHashMap<>(staticCond);
         for (PowerHitTaken power : getPowerHitTaken()) {
-            PowerResult<Double> result = checkConditions(player, i, power, conds, staticCond);
+            PowerResult<Double> result = checkConditions(player, i, power, conds, resultMap);
             if (result != null) {
                 resultMap.put(power, result);
             } else {
@@ -807,11 +799,10 @@ public class RPGItem {
     public void hurt(Player player, ItemStack i, EntityDamageEvent ev) {
         if (!triggerPreCheck(player, i, this.getPowerHurt(), TriggerType.HURT)) return;
         List<PowerCondition> conds = getPower(PowerCondition.class);
-        Map<PowerCondition, Boolean> staticCond = checkStaticCondition(player, i, conds);
-
-        Map<Power, PowerResult> resultMap = new LinkedHashMap<>();
+        Map<PowerCondition, PowerResult> staticCond = checkStaticCondition(player, i, conds);
+        Map<Power, PowerResult> resultMap = new LinkedHashMap<>(staticCond);
         for (PowerHurt power : getPowerHurt()) {
-            PowerResult<Void> result = checkConditions(player, i, power, conds, staticCond);
+            PowerResult<Void> result = checkConditions(player, i, power, conds, resultMap);
             if (result != null) {
                 resultMap.put(power, result);
             } else {
@@ -832,11 +823,10 @@ public class RPGItem {
     public void swapToOffhand(Player player, ItemStack i, PlayerSwapHandItemsEvent ev) {
         if (!triggerPreCheck(player, i, this.getPowerSwapToOffhand(), TriggerType.SWAP_TO_OFFHAND)) return;
         List<PowerCondition> conds = getPower(PowerCondition.class);
-        Map<PowerCondition, Boolean> staticCond = checkStaticCondition(player, i, conds);
-
-        Map<Power, PowerResult> resultMap = new LinkedHashMap<>();
+        Map<PowerCondition, PowerResult> staticCond = checkStaticCondition(player, i, conds);
+        Map<Power, PowerResult> resultMap = new LinkedHashMap<>(staticCond);
         for (PowerSwapToOffhand power : getPowerSwapToOffhand()) {
-            PowerResult<Boolean> result = checkConditions(player, i, power, conds, staticCond);
+            PowerResult<Boolean> result = checkConditions(player, i, power, conds, resultMap);
             if (result != null) {
                 resultMap.put(power, result);
             } else {
@@ -860,11 +850,10 @@ public class RPGItem {
     public void swapToMainhand(Player player, ItemStack i, PlayerSwapHandItemsEvent ev) {
         if (!triggerPreCheck(player, i, this.getPowerSwapToMainhand(), TriggerType.SWAP_TO_MAINHAND)) return;
         List<PowerCondition> conds = getPower(PowerCondition.class);
-        Map<PowerCondition, Boolean> staticCond = checkStaticCondition(player, i, conds);
-
-        Map<Power, PowerResult> resultMap = new LinkedHashMap<>();
+        Map<PowerCondition, PowerResult> staticCond = checkStaticCondition(player, i, conds);
+        Map<Power, PowerResult> resultMap = new LinkedHashMap<>(staticCond);
         for (PowerSwapToMainhand power : getPowerSwapToMainhand()) {
-            PowerResult<Boolean> result = checkConditions(player, i, power, conds, staticCond);
+            PowerResult<Boolean> result = checkConditions(player, i, power, conds, resultMap);
             if (result != null) {
                 resultMap.put(power, result);
             } else {
@@ -889,11 +878,10 @@ public class RPGItem {
     public void pickupOffhand(Player player, ItemStack i, InventoryClickEvent ev) {
         if (!triggerPreCheck(player, i, this.getPowerSwapToMainhand(), TriggerType.PICKUP_OFF_HAND)) return;
         List<PowerCondition> conds = getPower(PowerCondition.class);
-        Map<PowerCondition, Boolean> staticCond = checkStaticCondition(player, i, conds);
-
-        Map<Power, PowerResult> resultMap = new LinkedHashMap<>();
+        Map<PowerCondition, PowerResult> staticCond = checkStaticCondition(player, i, conds);
+        Map<Power, PowerResult> resultMap = new LinkedHashMap<>(staticCond);
         for (PowerSwapToMainhand power : getPowerSwapToMainhand()) {
-            PowerResult<Boolean> result = checkConditions(player, i, power, conds, staticCond);
+            PowerResult<Boolean> result = checkConditions(player, i, power, conds, resultMap);
             if (result != null) {
                 resultMap.put(power, result);
             } else {
@@ -917,11 +905,10 @@ public class RPGItem {
     public void placeOffhand(Player player, ItemStack i, InventoryClickEvent ev) {
         if (!triggerPreCheck(player, i, this.getPowerSwapToOffhand(), TriggerType.PLACE_OFF_HAND)) return;
         List<PowerCondition> conds = getPower(PowerCondition.class);
-        Map<PowerCondition, Boolean> staticCond = checkStaticCondition(player, i, conds);
-
-        Map<Power, PowerResult> resultMap = new LinkedHashMap<>();
+        Map<PowerCondition, PowerResult> staticCond = checkStaticCondition(player, i, conds);
+        Map<Power, PowerResult> resultMap = new LinkedHashMap<>(staticCond);
         for (PowerSwapToOffhand power : getPowerSwapToOffhand()) {
-            PowerResult<Boolean> result = checkConditions(player, i, power, conds, staticCond);
+            PowerResult<Boolean> result = checkConditions(player, i, power, conds, resultMap);
             if (result != null) {
                 resultMap.put(power, result);
             } else {
@@ -945,11 +932,10 @@ public class RPGItem {
     public void tick(Player player, ItemStack i) {
         if (!triggerPreCheck(player, i, this.getPowerTick(), TriggerType.TICK)) return;
         List<PowerCondition> conds = getPower(PowerCondition.class);
-        Map<PowerCondition, Boolean> staticCond = checkStaticCondition(player, i, conds);
-
-        Map<Power, PowerResult> resultMap = new LinkedHashMap<>();
+        Map<PowerCondition, PowerResult> staticCond = checkStaticCondition(player, i, conds);
+        Map<Power, PowerResult> resultMap = new LinkedHashMap<>(staticCond);
         for (PowerTick power : getPowerTick()) {
-            PowerResult<Void> result = checkConditions(player, i, power, conds, staticCond);
+            PowerResult<Void> result = checkConditions(player, i, power, conds, resultMap);
             if (result != null) {
                 resultMap.put(power, result);
             } else {
