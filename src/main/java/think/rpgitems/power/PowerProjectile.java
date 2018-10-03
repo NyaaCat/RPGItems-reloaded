@@ -81,6 +81,15 @@ public class PowerProjectile extends Power implements PowerRightClick {
      */
     public int burstInterval = 1;
 
+    /**
+     * Whether to set Fireball' direction so it won't curve
+     */
+    public boolean setFireballDirection = false;
+
+    public Double yield = null;
+
+    public Boolean isIncendiary = null;
+
     private Class<? extends Projectile> projectileType = Snowball.class;
 
     @Override
@@ -95,6 +104,15 @@ public class PowerProjectile extends Power implements PowerRightClick {
         gravity = s.getBoolean("gravity", true);
         burstCount = s.getInt("burstCount", 1);
         burstInterval = s.getInt("burstInterval", 1);
+        setFireballDirection = s.getBoolean("setFireballDirection", false);
+        yield = s.getDouble("yield", -1);
+        if (yield < 0) yield = null;
+        String inc = s.getString("isIncendiary", "null");
+        if (inc.equals("null")) {
+            isIncendiary = null;
+        } else {
+            isIncendiary = Boolean.getBoolean(inc);
+        }
     }
 
     @Override
@@ -109,6 +127,9 @@ public class PowerProjectile extends Power implements PowerRightClick {
         s.set("gravity", gravity);
         s.set("burstCount", burstCount);
         s.set("burstInterval", burstInterval);
+        s.set("setFireballDirection", setFireballDirection);
+        s.set("yield", yield == null ? -1 : yield);
+        s.set("isIncendiary", isIncendiary == null ? "null" : isIncendiary.toString());
     }
 
     /**
@@ -176,7 +197,7 @@ public class PowerProjectile extends Power implements PowerRightClick {
      * @return If acceptable
      */
     public boolean acceptableType(String str) {
-        return str.equals("skull") || str.equals("fireball") || str.equals("snowball") || str.equals("smallfireball") || str.equals("llamaspit") || str.equals("arrow")|| str.equals("shulkerbullet")|| str.equals("dragonfireball");
+        return str.equals("skull") || str.equals("fireball") || str.equals("snowball") || str.equals("smallfireball") || str.equals("llamaspit") || str.equals("arrow") || str.equals("shulkerbullet") || str.equals("dragonfireball");
     }
 
     @Override
@@ -198,11 +219,12 @@ public class PowerProjectile extends Power implements PowerRightClick {
         UUID uuid = player.getUniqueId();
         if (burstCount > 1) {
             Integer prev = burstTask.getIfPresent(uuid);
-            if (prev != null){
+            if (prev != null) {
                 Bukkit.getScheduler().cancelTask(prev);
             }
             BukkitTask bukkitTask = (new BukkitRunnable() {
                 int count = burstCount - 1;
+
                 @Override
                 public void run() {
                     if (player.getInventory().getItemInMainHand().equals(stack)) {
@@ -222,27 +244,16 @@ public class PowerProjectile extends Power implements PowerRightClick {
 
     private void fire(Player player) {
         if (!cone) {
-            Projectile projectile = null;
+            Projectile projectile;
+            Vector v = player.getEyeLocation().getDirection().multiply(speed);
             if (projectileType.isAssignableFrom(ShulkerBullet.class) && ReflectionUtil.getVersion().startsWith("v1_11_")) {
                 projectile = player.getWorld().spawn(player.getEyeLocation(), ShulkerBullet.class);
                 projectile.setShooter(player);
-                projectile.setVelocity(player.getEyeLocation().getDirection().multiply(speed));
+                projectile.setVelocity(v);
             } else {
-                projectile = player.launchProjectile(projectileType, player.getEyeLocation().getDirection().multiply(speed));
+                projectile = player.launchProjectile(projectileType, v);
             }
-            Events.rpgProjectiles.put(projectile.getEntityId(), item.getID());
-            projectile.setGravity(gravity);
-            if (projectileType == Arrow.class)
-                Events.removeArrows.add(projectile.getEntityId());
-            if (!gravity) {
-                Projectile finalProjectile = projectile;
-                (new BukkitRunnable() {
-                    @Override
-                    public void run() {
-                        finalProjectile.remove();
-                    }
-                }).runTaskLater(Plugin.plugin, 80);
-            }
+            handleProjectile(v, projectile);
         } else {
             Vector loc = player.getEyeLocation().getDirection();
             range = Math.abs(range) % 360;
@@ -261,7 +272,7 @@ public class PowerProjectile extends Power implements PowerRightClick {
                 double det = ThreadLocalRandom.current().nextDouble(0, 2 * Math.PI);
                 double theta = Math.acos(z);
                 Vector v = a.clone().multiply(Math.cos(det)).add(b.clone().multiply(Math.sin(det))).multiply(Math.sin(theta)).add(loc.clone().multiply(Math.cos(theta)));
-                Projectile projectile = null;
+                Projectile projectile;
                 if (projectileType.isAssignableFrom(ShulkerBullet.class) && ReflectionUtil.getVersion().startsWith("v1_11_")) {
                     projectile = player.getWorld().spawn(player.getEyeLocation(), ShulkerBullet.class);
                     projectile.setShooter(player);
@@ -269,20 +280,35 @@ public class PowerProjectile extends Power implements PowerRightClick {
                 } else {
                     projectile = player.launchProjectile(projectileType, v.normalize().multiply(speed));
                 }
-                Events.rpgProjectiles.put(projectile.getEntityId(), item.getID());
-                projectile.setGravity(gravity);
-                if (projectileType == Arrow.class)
-                    Events.removeArrows.add(projectile.getEntityId());
-                if (!gravity) {
-                    Projectile finalProjectile = projectile;
-                    (new BukkitRunnable() {
-                        @Override
-                        public void run() {
-                            finalProjectile.remove();
-                        }
-                    }).runTaskLater(Plugin.plugin, 80);
-                }
+                handleProjectile(v, projectile);
             }
+        }
+    }
+
+    private void handleProjectile(Vector v, Projectile projectile) {
+        Events.rpgProjectiles.put(projectile.getEntityId(), item.getID());
+        projectile.setGravity(gravity);
+        if (projectile instanceof Explosive) {
+            if (yield != null) {
+                ((Explosive) projectile).setYield(yield.floatValue());
+            }
+            if (isIncendiary != null) {
+                ((Explosive) projectile).setIsIncendiary(isIncendiary);
+            }
+        }
+        if (projectile instanceof Fireball && setFireballDirection) {
+            ((Fireball) projectile).setDirection(v.clone().normalize());
+        }
+        if (projectileType == Arrow.class)
+            Events.removeArrows.add(projectile.getEntityId());
+        if (!gravity) {
+            Projectile finalProjectile = projectile;
+            (new BukkitRunnable() {
+                @Override
+                public void run() {
+                    finalProjectile.remove();
+                }
+            }).runTaskLater(Plugin.plugin, 80);
         }
     }
 

@@ -124,19 +124,19 @@ public class PowerRescue extends Power implements PowerHurt, PowerHitTaken {
         } else {
             rescueTime.put(target.getUniqueId(), System.currentTimeMillis());
         }
-        rescue(target, stack, event, true);
-        event.setCancelled(true);
-        return 0;
+        return rescue(target, stack, event, true);
     }
 
-    private void rescue(Player target, ItemStack stack, EntityDamageEvent event, boolean canceled) {
-        if (!checkCooldown(target, cooldownTime, true)) return;
-        if (!item.consumeDurability(stack, consumption)) return;
+    private double rescue(Player target, ItemStack stack, EntityDamageEvent event, boolean canceled) {
+        if (!checkCooldown(target, cooldownTime, true)) return event.getDamage();
+        if (!item.consumeDurability(stack, consumption)) return event.getDamage();
         target.sendMessage(ChatColor.AQUA + Locale.get("power.rescue.info"));
         DamageCause cause = event.getCause();
         if (!canceled) {
             target.addPotionEffect(new PotionEffect(PotionEffectType.HEALTH_BOOST, 2, 255));
             target.setHealth(healthTrigger + event.getDamage());
+        } else {
+            event.setCancelled(true);
         }
         target.addPotionEffect(new PotionEffect(PotionEffectType.DAMAGE_RESISTANCE, 200, 10), true);
         target.addPotionEffect(new PotionEffect(PotionEffectType.REGENERATION, 400, 2), true);
@@ -152,5 +152,6 @@ public class PowerRescue extends Power implements PowerHurt, PowerHitTaken {
             target.teleport(target.getBedSpawnLocation());
         else
             target.teleport(target.getWorld().getSpawnLocation());
+        return 0;
     }
 }
