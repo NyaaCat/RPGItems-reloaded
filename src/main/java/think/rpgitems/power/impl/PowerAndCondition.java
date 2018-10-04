@@ -36,6 +36,7 @@ public class PowerAndCondition extends BasePower implements PowerCondition<Map.E
         return isCritical;
     }
 
+    @SuppressWarnings("unchecked")
     @Override
     public PowerResult<Map.Entry<Power, PowerResult>> check(Player player, ItemStack stack, Map<Power, PowerResult> context) {
         Set<String> conditions = getConditions();

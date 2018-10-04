@@ -16,9 +16,14 @@ import think.rpgitems.power.*;
 
 import static think.rpgitems.power.Utils.checkCooldown;
 
+/**
+ * Power dummy.
+ * <p>
+ * Won't do anything but give you fine control.
+ * </p>
+ */
 @PowerMeta(defaultTrigger = TriggerType.RIGHT_CLICK)
 public class PowerDummy extends BasePower implements PowerHit, PowerHitTaken, PowerLeftClick, PowerRightClick, PowerOffhandClick, PowerProjectileHit, PowerSneak, PowerSprint, PowerSwapToMainhand, PowerSwapToOffhand, PowerTick {
-
 
     /**
      * Cooldown time of this power
@@ -31,6 +36,12 @@ public class PowerDummy extends BasePower implements PowerHit, PowerHitTaken, Po
      */
     @Property
     public int cost = 0;
+
+    /**
+     * Display message on item
+     */
+    @Property
+    public String display;
 
     @Property
     public TriggerResult successResult = TriggerResult.OK;
@@ -64,7 +75,7 @@ public class PowerDummy extends BasePower implements PowerHit, PowerHitTaken, Po
 
     @Override
     public String displayText() {
-        return null;
+        return display;
     }
 
     @Override

@@ -575,6 +575,7 @@ public class RPGItem {
         return !preFire.isCancelled();
     }
 
+    @SuppressWarnings("unchecked")
     private <T> PowerResult<T> checkConditions(Player player, ItemStack i, Power power, List<PowerCondition> conds, Map<Power, PowerResult> context) {
         Set<String> ids = power.getConditions();
         List<PowerCondition> conditions = conds.stream().filter(p -> ids.contains(p.id())).collect(Collectors.toList());
@@ -583,6 +584,7 @@ public class RPGItem {
         return failed.stream().anyMatch(PowerCondition::isCritical) ? PowerResult.abort() : PowerResult.condition();
     }
 
+    @SuppressWarnings("unchecked")
     private Map<PowerCondition, PowerResult> checkStaticCondition(Player player, ItemStack i, List<PowerCondition> conds) {
         Set<String> ids = powers.stream().flatMap(p -> p.getConditions().stream()).collect(Collectors.toSet());
         List<PowerCondition> statics = conds.stream().filter(PowerCondition::isStatic).filter(p -> ids.contains(p.id())).collect(Collectors.toList());
@@ -1088,7 +1090,7 @@ public class RPGItem {
         addExtra(rpgMeta, lore);
         meta.setLore(lore);
         rStack.setItemMeta(meta);
-        rStack = refreshAttributeModifiers(this, rStack);
+        refreshAttributeModifiers(this, rStack);
         return rStack;
     }
 

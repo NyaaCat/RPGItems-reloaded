@@ -996,10 +996,10 @@ public class Handler extends RPGCommandReceiver {
         String author = args.next();
         if (author != null) {
             item.setAuthor(author);
-            msg(sender, "message.name.set", author);
+            msg(sender, "message.item.author.set", author);
             ItemManager.save();
         } else {
-            msg(sender, "message.name.get", item.getAuthor());
+            msg(sender, "message.item.author.get", item.getAuthor());
         }
     }
 
@@ -1010,10 +1010,10 @@ public class Handler extends RPGCommandReceiver {
         String note = args.next();
         if (note != null) {
             item.setNote(note);
-            msg(sender, "message.note.set", note);
+            msg(sender, "message.item.note.set", note);
             ItemManager.save();
         } else {
-            msg(sender, "message.note.get", item.getNote());
+            msg(sender, "message.item.note.get", item.getNote());
         }
     }
 
@@ -1024,10 +1024,10 @@ public class Handler extends RPGCommandReceiver {
         String license = args.next();
         if (license != null) {
             item.setLicense(license);
-            msg(sender, "message.license.set", license);
+            msg(sender, "message.item.license.set", license);
             ItemManager.save();
         } else {
-            msg(sender, "message.license.get", item.getLicense());
+            msg(sender, "message.item.license.get", item.getLicense());
         }
     }
 
