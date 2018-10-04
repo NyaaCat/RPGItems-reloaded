@@ -41,25 +41,27 @@ public class Utils {
     }
 
     /**
-     * Get nearby entities entity [ ].
+     * Get nearby entities.
      *
-     * @param power
-     * @param l      the l
-     * @param radius the radius
-     * @return the entity [ ]
+     * @param power  power
+     * @param l      location
+     * @param player player
+     * @param radius radius
+     * @return nearby entities
      */
     public static List<Entity> getNearbyEntities(Power power, Location l, Player player, double radius) {
         return getNearbyEntities(power, l, player, radius, radius, radius, radius);
     }
 
     /**
-     * Get nearby living entities living entity [ ].
+     * Get nearby living entities ordered by distance.
      *
-     * @param power
-     * @param l      the l
-     * @param radius the radius
-     * @param min    the min
-     * @return the living entity [ ]
+     * @param power  power
+     * @param l      location
+     * @param player player
+     * @param radius radius
+     * @param min    min radius
+     * @return nearby living entities ordered by distance
      */
     public static List<LivingEntity> getNearestLivingEntities(Power power, Location l, Player player, double radius, double min) {
         final java.util.List<java.util.Map.Entry<LivingEntity, Double>> entities = new java.util.ArrayList<>();
@@ -115,7 +117,7 @@ public class Utils {
     /**
      * Check cooldown boolean.
      *
-     * @param power
+     * @param power    Power
      * @param p        the p
      * @param cdTicks  the cd ticks
      * @param showWarn whether to show warning to player

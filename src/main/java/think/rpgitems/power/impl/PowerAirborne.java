@@ -14,7 +14,7 @@ import think.rpgitems.power.Property;
 /**
  * Power airborne.
  * <p>
- *
+ *  Do more damage when gliding
  * </p>
  */
 @PowerMeta(immutableTrigger = true)

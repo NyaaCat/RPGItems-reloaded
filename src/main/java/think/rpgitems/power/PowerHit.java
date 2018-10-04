@@ -18,6 +18,9 @@ public interface PowerHit extends Power {
      * @param stack  ItemStack of this RPGItem
      * @param entity LivingEntity being hit
      * @param damage Damage of this event
+     * @param event  Event that triggered this power
+     *
+     * @return PowerResult with proposed damage
      */
     @CheckReturnValue
     PowerResult<Double> hit(Player player, ItemStack stack, LivingEntity entity, double damage, EntityDamageByEntityEvent event);

@@ -15,6 +15,9 @@ public interface PowerSprint extends Power {
      *
      * @param player Player
      * @param stack  Item that triggered this power
+     * @param event  Event that triggered this power
+     *
+     * @return PowerResult
      */
     @CheckReturnValue
     PowerResult<Void> sprint(Player player, ItemStack stack, PlayerToggleSprintEvent event);

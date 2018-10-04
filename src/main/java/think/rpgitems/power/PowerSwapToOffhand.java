@@ -17,6 +17,9 @@ public interface PowerSwapToOffhand extends Power {
      *
      * @param player Player
      * @param stack  Item that triggered this power
+     * @param event  Event that triggered this power
+     *
+     * @return PowerResult with proposed event cancellation
      */
     @CheckReturnValue
     PowerResult<Boolean> swapToOffhand(Player player, ItemStack stack, PlayerSwapHandItemsEvent event);
@@ -26,6 +29,9 @@ public interface PowerSwapToOffhand extends Power {
      *
      * @param player Player
      * @param stack  Item that triggered this power
+     * @param event  Event that triggered this power
+     *
+     * @return PowerResult with proposed event cancellation
      */
     @CheckReturnValue
     default PowerResult<Boolean> placeOffhand(Player player, ItemStack stack, InventoryClickEvent event) {

@@ -58,8 +58,11 @@ public class PowerCommandHit extends BasePower implements PowerHit {
 
     /**
      * Execute command
-     *  @param player player
+     * @param player player
      * @param e      entity
+     * @param damage damage
+     *
+     * @return PowerResult with proposed damage
      */
     protected PowerResult<Double> executeCommand(Player player, LivingEntity e, double damage) {
         if (!player.isOnline()) return PowerResult.noop();

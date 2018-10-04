@@ -14,6 +14,8 @@ public interface PowerTick extends Power {
      *
      * @param player Player
      * @param stack  Item that triggered this power
+     *
+     * @return PowerResult
      */
     @CheckReturnValue
     PowerResult<Void> tick(Player player, ItemStack stack);

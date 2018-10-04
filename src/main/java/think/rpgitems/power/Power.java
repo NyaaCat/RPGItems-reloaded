@@ -51,7 +51,7 @@ public interface Power {
     String displayText();
 
     /**
-     * Item it belongs to
+     * @return Item it belongs to
      */
     RPGItem getItem();
 

@@ -11,7 +11,7 @@ import java.util.UUID;
 /**
  * Power attributemodifier.
  * <p>
- *
+ *  Add attribute modifier to item
  * </p>
  */
 @PowerMeta(marker = true)

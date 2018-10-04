@@ -15,6 +15,9 @@ public interface PowerOffhandClick extends Power {
      *
      * @param player Player
      * @param stack  Item that triggered this power
+     * @param event  Event that triggered this power
+     *
+     * @return PowerResult with proposed damage
      */
     @CheckReturnValue
     PowerResult<Void> offhandClick(Player player, ItemStack stack, PlayerInteractEvent event);

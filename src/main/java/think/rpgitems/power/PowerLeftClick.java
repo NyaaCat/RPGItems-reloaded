@@ -17,6 +17,9 @@ public interface PowerLeftClick extends Power {
      * @param player  Player
      * @param stack   Item that triggered this power
      * @param clicked Block clicked
+     * @param event Event that triggered this power
+     *
+     * @return PowerResult
      */
     @CheckReturnValue
     PowerResult<Void> leftClick(Player player, ItemStack stack, Block clicked, PlayerInteractEvent event);

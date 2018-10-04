@@ -23,7 +23,7 @@ import static think.rpgitems.power.Utils.checkCooldownByString;
 /**
  * Power throw.
  * <p>
- *
+ *  Spawn and throw an entity
  * </p>
  */
 @PowerMeta(defaultTrigger = TriggerType.RIGHT_CLICK)

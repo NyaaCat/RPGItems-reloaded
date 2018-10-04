@@ -64,6 +64,8 @@ public class PowerCommand extends BasePower implements PowerRightClick, PowerLef
      * Execute command
      *
      * @param player player
+     *
+     * @return PowerResult
      */
     protected PowerResult<Void> executeCommand(Player player) {
         if (!player.isOnline()) return PowerResult.noop();

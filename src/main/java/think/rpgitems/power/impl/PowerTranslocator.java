@@ -21,7 +21,7 @@ import static think.rpgitems.power.Utils.checkCooldown;
 /**
  * Power translocator.
  * <p>
- *
+ *  Throw an translocator and teleport to it later
  * </p>
  */
 @PowerMeta(immutableTrigger = true)

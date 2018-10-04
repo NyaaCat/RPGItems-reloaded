@@ -15,8 +15,10 @@ public interface PowerHitTaken extends Power {
      *
      * @param target Player been hit
      * @param stack  Item that triggered this power
-     * @param event  Damage event
-     * @return New damage value, if nothing change, return a negative number.
+     * @param damage Damage of this event
+     * @param event  Event that triggered this power
+     *
+     * @return PowerResult with proposed damage
      */
     @CheckReturnValue
     PowerResult<Double> takeHit(Player target, ItemStack stack, double damage, EntityDamageEvent event);

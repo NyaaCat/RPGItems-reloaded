@@ -15,7 +15,7 @@ import think.rpgitems.power.Property;
 /**
  * Power charge.
  * <p>
- *
+ *  Do more damage when sprinting
  * </p>
  */
 @PowerMeta(immutableTrigger = true)
