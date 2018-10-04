@@ -164,36 +164,11 @@ public class PowerProjectile extends BasePower implements PowerRightClick {
         return PowerResult.ok();
     }
 
-    @SuppressWarnings("deprecation")
     private void fire(Player player) {
         if (!isCone) {
-            Projectile projectile = player.launchProjectile(projectileType, player.getEyeLocation().getDirection().multiply(speed));
-            projectile.setPersistent(false);
-            Events.rpgProjectiles.put(projectile.getEntityId(), getItem().getUID());
-            projectile.setGravity(gravity);
-            if (projectile instanceof Arrow) {
-                ((Arrow) projectile).setPickupStatus(Arrow.PickupStatus.DISALLOWED);
-                Events.removeArrows.add(projectile.getEntityId());
-            }
-            if (projectile instanceof Explosive) {
-                if (yield != null) {
-                    ((Explosive) projectile).setYield(yield.floatValue());
-                }
-                if (isIncendiary != null) {
-                    ((Explosive) projectile).setIsIncendiary(isIncendiary);
-                }
-            }
-            if (projectile instanceof Fireball && setFireballDirection) {
-                ((Fireball) projectile).setDirection(player.getEyeLocation().getDirection());
-            }
-            if (!gravity) {
-                (new BukkitRunnable() {
-                    @Override
-                    public void run() {
-                        projectile.remove();
-                    }
-                }).runTaskLater(RPGItems.plugin, 80);
-            }
+            Vector v = player.getEyeLocation().getDirection().multiply(speed);
+            Projectile projectile = player.launchProjectile(projectileType, v);
+            handleProjectile(v, projectile);
         } else {
             Vector loc = player.getEyeLocation().getDirection();
             range = Math.abs(range) % 360;
@@ -213,25 +188,38 @@ public class PowerProjectile extends BasePower implements PowerRightClick {
                 double theta = Math.acos(z);
                 Vector v = a.clone().multiply(Math.cos(det)).add(b.clone().multiply(Math.sin(det))).multiply(Math.sin(theta)).add(loc.clone().multiply(Math.cos(theta)));
                 Projectile projectile = player.launchProjectile(projectileType, v.normalize().multiply(speed));
-                projectile.setPersistent(false);
-                Events.rpgProjectiles.put(projectile.getEntityId(), getItem().getUID());
-                projectile.setGravity(gravity);
-                if (projectile instanceof Fireball && setFireballDirection) {
-                    ((Fireball) projectile).setDirection(v.clone().normalize());
-                }
-                if (projectileType == Arrow.class) {
-                    Events.removeArrows.add(projectile.getEntityId());
-                    ((Arrow) projectile).setPickupStatus(Arrow.PickupStatus.DISALLOWED);
-                }
-                if (!gravity) {
-                    (new BukkitRunnable() {
-                        @Override
-                        public void run() {
-                            projectile.remove();
-                        }
-                    }).runTaskLater(RPGItems.plugin, 80);
-                }
+                handleProjectile(v, projectile);
             }
+        }
+    }
+
+    @SuppressWarnings("deprecation")
+    private void handleProjectile(Vector v, Projectile projectile) {
+        projectile.setPersistent(false);
+        Events.rpgProjectiles.put(projectile.getEntityId(), getItem().getUID());
+        projectile.setGravity(gravity);
+        if (projectile instanceof Explosive) {
+            if (yield != null) {
+                ((Explosive) projectile).setYield(yield.floatValue());
+            }
+            if (isIncendiary != null) {
+                ((Explosive) projectile).setIsIncendiary(isIncendiary);
+            }
+        }
+        if (projectile instanceof Fireball && setFireballDirection) {
+            ((Fireball) projectile).setDirection(v.clone().normalize());
+        }
+        if (projectileType == Arrow.class) {
+            Events.removeArrows.add(projectile.getEntityId());
+            ((Arrow) projectile).setPickupStatus(Arrow.PickupStatus.DISALLOWED);
+        }
+        if (!gravity) {
+            (new BukkitRunnable() {
+                @Override
+                public void run() {
+                    projectile.remove();
+                }
+            }).runTaskLater(RPGItems.plugin, 80);
         }
     }
 

@@ -8,6 +8,7 @@ import org.bukkit.inventory.ItemStack;
 import think.rpgitems.power.*;
 import think.rpgitems.utils.Pair;
 
+import java.util.Collections;
 import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.ThreadLocalRandom;
@@ -26,12 +27,6 @@ public class PowerScoreboardCondition extends BasePower implements PowerConditio
 
     @Property
     public boolean isCritical = false;
-
-    @Property
-    public int durabilityMin = Integer.MIN_VALUE;
-
-    @Property
-    public int durabilityMax = Integer.MAX_VALUE;
 
     /**
      * Selecting targets by score(s), According to the following format
@@ -58,9 +53,6 @@ public class PowerScoreboardCondition extends BasePower implements PowerConditio
      */
     @Property
     public String team;
-
-    @Property
-    public double chancePercentage;
 
     public static LoadingCache<String, Map<String, Pair<Integer, Integer>>> scoreCache = CacheBuilder
                                                                                                  .newBuilder()
@@ -97,9 +89,6 @@ public class PowerScoreboardCondition extends BasePower implements PowerConditio
 
     @Override
     public PowerResult<Void> check(Player player, ItemStack stack, Map<Power, PowerResult> context) {
-        if (ThreadLocalRandom.current().nextDouble(0, 100) > chancePercentage) return PowerResult.fail();
-        int durability = getItem().getDurability(stack);
-        if (durability > durabilityMax || durability < durabilityMin) return PowerResult.fail();
         if (tag != null) {
             Pair<Set<String>, Set<String>> t = tagCache.getUnchecked(tag);
             if (!matchTag(player, t)) {
@@ -123,11 +112,16 @@ public class PowerScoreboardCondition extends BasePower implements PowerConditio
 
     @Override
     public String getName() {
-        return "condition";
+        return "scoreboardcondition";
     }
 
     @Override
     public String displayText() {
         return null;
+    }
+
+    @Override
+    public Set<String> getConditions() {
+        return Collections.emptySet();
     }
 }

@@ -586,15 +586,16 @@ public class RPGItem {
     private Map<PowerCondition, PowerResult> checkStaticCondition(Player player, ItemStack i, List<PowerCondition> conds) {
         Set<String> ids = powers.stream().flatMap(p -> p.getConditions().stream()).collect(Collectors.toSet());
         List<PowerCondition> statics = conds.stream().filter(PowerCondition::isStatic).filter(p -> ids.contains(p.id())).collect(Collectors.toList());
-        return statics.stream().collect(Collectors.toMap(
-                s -> s,
-                s -> s.check(player, i, null)
-        ));
+        Map<PowerCondition, PowerResult> result = new LinkedHashMap<>();
+        for (PowerCondition c : statics) {
+            result.put(c, c.check(player, i, result));
+        }
+        return result;
     }
 
     public void leftClick(Player player, ItemStack i, Block block, PlayerInteractEvent event) {
         if (!triggerPreCheck(player, i, this.getPowerLeftClick(), TriggerType.LEFT_CLICK)) return;
-        List<PowerCondition> conds = getPower(PowerCondition.class);
+        List<PowerCondition> conds = getPower(PowerCondition.class, true);
         Map<PowerCondition, PowerResult> staticCond = checkStaticCondition(player, i, conds);
         Map<Power, PowerResult> resultMap = new LinkedHashMap<>(staticCond);
         for (PowerLeftClick power : getPowerLeftClick()) {
@@ -607,18 +608,12 @@ public class RPGItem {
             }
             if (result.isAbort()) break;
         }
-        RPGItemsPowersPostFireEvent postFire = new RPGItemsPowersPostFireEvent(i, this, player, TriggerType.LEFT_CLICK, resultMap);
-        Bukkit.getServer().getPluginManager().callEvent(postFire);
-
-        if (getDurability(i) <= 0) {
-            i.setAmount(0);
-            i.setType(Material.AIR);
-        }
+        triggerPostFire(player, i, resultMap, TriggerType.LEFT_CLICK);
     }
 
     public void rightClick(Player player, ItemStack i, Block block, PlayerInteractEvent event) {
         if (!triggerPreCheck(player, i, this.getPowerRightClick(), TriggerType.RIGHT_CLICK)) return;
-        List<PowerCondition> conds = getPower(PowerCondition.class);
+        List<PowerCondition> conds = getPower(PowerCondition.class, true);
         Map<PowerCondition, PowerResult> staticCond = checkStaticCondition(player, i, conds);
         Map<Power, PowerResult> resultMap = new LinkedHashMap<>(staticCond);
         for (PowerRightClick power : this.getPowerRightClick()) {
@@ -631,18 +626,12 @@ public class RPGItem {
             }
             if (result.isAbort()) break;
         }
-        RPGItemsPowersPostFireEvent postFire = new RPGItemsPowersPostFireEvent(i, this, player, TriggerType.RIGHT_CLICK, resultMap);
-        Bukkit.getServer().getPluginManager().callEvent(postFire);
-
-        if (getDurability(i) <= 0) {
-            i.setAmount(0);
-            i.setType(Material.AIR);
-        }
+        triggerPostFire(player, i, resultMap, TriggerType.RIGHT_CLICK);
     }
 
     public void offhandClick(Player player, ItemStack i, PlayerInteractEvent event) {
         if (!triggerPreCheck(player, i, this.getPowerOffhandClick(), TriggerType.OFFHAND_CLICK)) return;
-        List<PowerCondition> conds = getPower(PowerCondition.class);
+        List<PowerCondition> conds = getPower(PowerCondition.class, true);
         Map<PowerCondition, PowerResult> staticCond = checkStaticCondition(player, i, conds);
         Map<Power, PowerResult> resultMap = new LinkedHashMap<>(staticCond);
         for (PowerOffhandClick power : getPowerOffhandClick()) {
@@ -656,18 +645,12 @@ public class RPGItem {
             resultMap.put(power, result);
             if (result.isAbort()) break;
         }
-        RPGItemsPowersPostFireEvent postFire = new RPGItemsPowersPostFireEvent(i, this, player, TriggerType.OFFHAND_CLICK, resultMap);
-        Bukkit.getServer().getPluginManager().callEvent(postFire);
-
-        if (getDurability(i) <= 0) {
-            i.setAmount(0);
-            i.setType(Material.AIR);
-        }
+        triggerPostFire(player, i, resultMap, TriggerType.OFFHAND_CLICK);
     }
 
     public void sneak(Player player, ItemStack i, PlayerToggleSneakEvent event) {
         if (!triggerPreCheck(player, i, this.getPowerSneak(), TriggerType.SNEAK)) return;
-        List<PowerCondition> conds = getPower(PowerCondition.class);
+        List<PowerCondition> conds = getPower(PowerCondition.class, true);
         Map<PowerCondition, PowerResult> staticCond = checkStaticCondition(player, i, conds);
         Map<Power, PowerResult> resultMap = new LinkedHashMap<>(staticCond);
         for (PowerSneak power : getPowerSneak()) {
@@ -681,18 +664,12 @@ public class RPGItem {
             resultMap.put(power, result);
             if (result.isAbort()) break;
         }
-        RPGItemsPowersPostFireEvent postFire = new RPGItemsPowersPostFireEvent(i, this, player, TriggerType.SNEAK, resultMap);
-        Bukkit.getServer().getPluginManager().callEvent(postFire);
-
-        if (getDurability(i) <= 0) {
-            i.setAmount(0);
-            i.setType(Material.AIR);
-        }
+        triggerPostFire(player, i, resultMap, TriggerType.SNEAK);
     }
 
     public void sprint(Player player, ItemStack i, PlayerToggleSprintEvent event) {
         if (!triggerPreCheck(player, i, this.getPowerSprint(), TriggerType.SPRINT)) return;
-        List<PowerCondition> conds = getPower(PowerCondition.class);
+        List<PowerCondition> conds = getPower(PowerCondition.class, true);
         Map<PowerCondition, PowerResult> staticCond = checkStaticCondition(player, i, conds);
         Map<Power, PowerResult> resultMap = new LinkedHashMap<>(staticCond);
         for (PowerSprint power : getPowerSprint()) {
@@ -706,18 +683,12 @@ public class RPGItem {
             resultMap.put(power, result);
             if (result.isAbort()) break;
         }
-        RPGItemsPowersPostFireEvent postFire = new RPGItemsPowersPostFireEvent(i, this, player, TriggerType.SPRINT, resultMap);
-        Bukkit.getServer().getPluginManager().callEvent(postFire);
-
-        if (getDurability(i) <= 0) {
-            i.setAmount(0);
-            i.setType(Material.AIR);
-        }
+        triggerPostFire(player, i, resultMap, TriggerType.SPRINT);
     }
 
     public void projectileHit(Player player, ItemStack i, Projectile arrow, ProjectileHitEvent event) {
         if (!triggerPreCheck(player, i, this.getPowerProjectileHit(), TriggerType.PROJECTILE_HIT)) return;
-        List<PowerCondition> conds = getPower(PowerCondition.class);
+        List<PowerCondition> conds = getPower(PowerCondition.class, true);
         Map<PowerCondition, PowerResult> staticCond = checkStaticCondition(player, i, conds);
         Map<Power, PowerResult> resultMap = new LinkedHashMap<>(staticCond);
         for (PowerProjectileHit power : getPowerProjectileHit()) {
@@ -731,19 +702,13 @@ public class RPGItem {
             resultMap.put(power, result);
             if (result.isAbort()) break;
         }
-        RPGItemsPowersPostFireEvent postFire = new RPGItemsPowersPostFireEvent(i, this, player, TriggerType.PROJECTILE_HIT, resultMap);
-        Bukkit.getServer().getPluginManager().callEvent(postFire);
-
-        if (getDurability(i) <= 0) {
-            i.setAmount(0);
-            i.setType(Material.AIR);
-        }
+        triggerPostFire(player, i, resultMap, TriggerType.PROJECTILE_HIT);
     }
 
     public double hit(Player player, ItemStack i, LivingEntity target, EntityDamageByEntityEvent event) {
         double ret = event.getDamage();
         if (!triggerPreCheck(player, i, this.getPowerHit(), TriggerType.HIT)) return ret;
-        List<PowerCondition> conds = getPower(PowerCondition.class);
+        List<PowerCondition> conds = getPower(PowerCondition.class, true);
         Map<PowerCondition, PowerResult> staticCond = checkStaticCondition(player, i, conds);
         Map<Power, PowerResult> resultMap = new LinkedHashMap<>(staticCond);
         for (PowerHit power : getPowerHit()) {
@@ -758,20 +723,14 @@ public class RPGItem {
             if (!result.isOK()) continue;
             ret = Math.max(ret, result.getData());
         }
-        RPGItemsPowersPostFireEvent postFire = new RPGItemsPowersPostFireEvent(i, this, player, TriggerType.HIT, resultMap);
-        Bukkit.getServer().getPluginManager().callEvent(postFire);
-
-        if (getDurability(i) <= 0) {
-            i.setAmount(0);
-            i.setType(Material.AIR);
-        }
+        triggerPostFire(player, i, resultMap, TriggerType.HIT);
         return ret;
     }
 
     public double takeHit(Player player, ItemStack i, EntityDamageEvent ev) {
         double ret = ev.getDamage();
         if (!triggerPreCheck(player, i, this.getPowerHitTaken(), TriggerType.HIT_TAKEN)) return ret;
-        List<PowerCondition> conds = getPower(PowerCondition.class);
+        List<PowerCondition> conds = getPower(PowerCondition.class, true);
         Map<PowerCondition, PowerResult> staticCond = checkStaticCondition(player, i, conds);
         Map<Power, PowerResult> resultMap = new LinkedHashMap<>(staticCond);
         for (PowerHitTaken power : getPowerHitTaken()) {
@@ -786,19 +745,13 @@ public class RPGItem {
             if (!result.isOK()) continue;
             ret = Math.min(ret, result.getData());
         }
-        RPGItemsPowersPostFireEvent postFire = new RPGItemsPowersPostFireEvent(i, this, player, TriggerType.HIT_TAKEN, resultMap);
-        Bukkit.getServer().getPluginManager().callEvent(postFire);
-
-        if (getDurability(i) <= 0) {
-            i.setAmount(0);
-            i.setType(Material.AIR);
-        }
+        triggerPostFire(player, i, resultMap, TriggerType.HIT_TAKEN);
         return ret;
     }
 
     public void hurt(Player player, ItemStack i, EntityDamageEvent ev) {
         if (!triggerPreCheck(player, i, this.getPowerHurt(), TriggerType.HURT)) return;
-        List<PowerCondition> conds = getPower(PowerCondition.class);
+        List<PowerCondition> conds = getPower(PowerCondition.class, true);
         Map<PowerCondition, PowerResult> staticCond = checkStaticCondition(player, i, conds);
         Map<Power, PowerResult> resultMap = new LinkedHashMap<>(staticCond);
         for (PowerHurt power : getPowerHurt()) {
@@ -811,18 +764,12 @@ public class RPGItem {
             }
             if (result.isAbort()) break;
         }
-        RPGItemsPowersPostFireEvent postFire = new RPGItemsPowersPostFireEvent(i, this, player, TriggerType.HURT, resultMap);
-        Bukkit.getServer().getPluginManager().callEvent(postFire);
-
-        if (getDurability(i) <= 0) {
-            i.setAmount(0);
-            i.setType(Material.AIR);
-        }
+        triggerPostFire(player, i, resultMap, TriggerType.HURT);
     }
 
     public void swapToOffhand(Player player, ItemStack i, PlayerSwapHandItemsEvent ev) {
         if (!triggerPreCheck(player, i, this.getPowerSwapToOffhand(), TriggerType.SWAP_TO_OFFHAND)) return;
-        List<PowerCondition> conds = getPower(PowerCondition.class);
+        List<PowerCondition> conds = getPower(PowerCondition.class, true);
         Map<PowerCondition, PowerResult> staticCond = checkStaticCondition(player, i, conds);
         Map<Power, PowerResult> resultMap = new LinkedHashMap<>(staticCond);
         for (PowerSwapToOffhand power : getPowerSwapToOffhand()) {
@@ -838,18 +785,12 @@ public class RPGItem {
             }
             if (result.isAbort()) break;
         }
-        RPGItemsPowersPostFireEvent postFire = new RPGItemsPowersPostFireEvent(i, this, player, TriggerType.SWAP_TO_OFFHAND, resultMap);
-        Bukkit.getServer().getPluginManager().callEvent(postFire);
-
-        if (getDurability(i) <= 0) {
-            i.setAmount(0);
-            i.setType(Material.AIR);
-        }
+        triggerPostFire(player, i, resultMap, TriggerType.SWAP_TO_OFFHAND);
     }
 
     public void swapToMainhand(Player player, ItemStack i, PlayerSwapHandItemsEvent ev) {
         if (!triggerPreCheck(player, i, this.getPowerSwapToMainhand(), TriggerType.SWAP_TO_MAINHAND)) return;
-        List<PowerCondition> conds = getPower(PowerCondition.class);
+        List<PowerCondition> conds = getPower(PowerCondition.class, true);
         Map<PowerCondition, PowerResult> staticCond = checkStaticCondition(player, i, conds);
         Map<Power, PowerResult> resultMap = new LinkedHashMap<>(staticCond);
         for (PowerSwapToMainhand power : getPowerSwapToMainhand()) {
@@ -866,7 +807,11 @@ public class RPGItem {
             }
             if (result.isAbort()) break;
         }
-        RPGItemsPowersPostFireEvent postFire = new RPGItemsPowersPostFireEvent(i, this, player, TriggerType.SWAP_TO_MAINHAND, resultMap);
+        triggerPostFire(player, i, resultMap, TriggerType.SWAP_TO_MAINHAND);
+    }
+
+    private void triggerPostFire(Player player, ItemStack i, Map<Power, PowerResult> resultMap, TriggerType swapToMainhand) {
+        RPGItemsPowersPostFireEvent postFire = new RPGItemsPowersPostFireEvent(i, this, player, swapToMainhand, resultMap);
         Bukkit.getServer().getPluginManager().callEvent(postFire);
 
         if (getDurability(i) <= 0) {
@@ -877,7 +822,7 @@ public class RPGItem {
 
     public void pickupOffhand(Player player, ItemStack i, InventoryClickEvent ev) {
         if (!triggerPreCheck(player, i, this.getPowerSwapToMainhand(), TriggerType.PICKUP_OFF_HAND)) return;
-        List<PowerCondition> conds = getPower(PowerCondition.class);
+        List<PowerCondition> conds = getPower(PowerCondition.class, true);
         Map<PowerCondition, PowerResult> staticCond = checkStaticCondition(player, i, conds);
         Map<Power, PowerResult> resultMap = new LinkedHashMap<>(staticCond);
         for (PowerSwapToMainhand power : getPowerSwapToMainhand()) {
@@ -893,18 +838,12 @@ public class RPGItem {
             }
             if (result.isAbort()) break;
         }
-        RPGItemsPowersPostFireEvent postFire = new RPGItemsPowersPostFireEvent(i, this, player, TriggerType.PICKUP_OFF_HAND, resultMap);
-        Bukkit.getServer().getPluginManager().callEvent(postFire);
-
-        if (getDurability(i) <= 0) {
-            i.setAmount(0);
-            i.setType(Material.AIR);
-        }
+        triggerPostFire(player, i, resultMap, TriggerType.PICKUP_OFF_HAND);
     }
 
     public void placeOffhand(Player player, ItemStack i, InventoryClickEvent ev) {
         if (!triggerPreCheck(player, i, this.getPowerSwapToOffhand(), TriggerType.PLACE_OFF_HAND)) return;
-        List<PowerCondition> conds = getPower(PowerCondition.class);
+        List<PowerCondition> conds = getPower(PowerCondition.class, true);
         Map<PowerCondition, PowerResult> staticCond = checkStaticCondition(player, i, conds);
         Map<Power, PowerResult> resultMap = new LinkedHashMap<>(staticCond);
         for (PowerSwapToOffhand power : getPowerSwapToOffhand()) {
@@ -920,18 +859,12 @@ public class RPGItem {
             }
             if (result.isAbort()) break;
         }
-        RPGItemsPowersPostFireEvent postFire = new RPGItemsPowersPostFireEvent(i, this, player, TriggerType.PLACE_OFF_HAND, resultMap);
-        Bukkit.getServer().getPluginManager().callEvent(postFire);
-
-        if (getDurability(i) <= 0) {
-            i.setAmount(0);
-            i.setType(Material.AIR);
-        }
+        triggerPostFire(player, i, resultMap, TriggerType.PLACE_OFF_HAND);
     }
 
     public void tick(Player player, ItemStack i) {
         if (!triggerPreCheck(player, i, this.getPowerTick(), TriggerType.TICK)) return;
-        List<PowerCondition> conds = getPower(PowerCondition.class);
+        List<PowerCondition> conds = getPower(PowerCondition.class, true);
         Map<PowerCondition, PowerResult> staticCond = checkStaticCondition(player, i, conds);
         Map<Power, PowerResult> resultMap = new LinkedHashMap<>(staticCond);
         for (PowerTick power : getPowerTick()) {

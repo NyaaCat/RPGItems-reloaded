@@ -1,12 +1,14 @@
 package think.rpgitems.utils;
 
-import think.rpgitems.item.RPGItem;
+import java.util.Map;
+import java.util.Objects;
 
-public class Pair<K,V> {
+public class Pair<K, V> implements Map.Entry<K, V> {
 
     private K key;
     private V value;
 
+    @Override
     public K getKey() {
         return key;
     }
@@ -15,12 +17,14 @@ public class Pair<K,V> {
         this.key = key;
     }
 
+    @Override
     public V getValue() {
         return value;
     }
 
-    public void setValue(V value) {
-        this.value = value;
+    @Override
+    public V setValue(V value) {
+        return this.value = value;
     }
 
     public Pair(K key, V value) {
@@ -38,13 +42,13 @@ public class Pair<K,V> {
         if (this == o) return true;
         if (o instanceof Pair) {
             Pair pair = (Pair) o;
-            if (key != null ? !key.equals(pair.key) : pair.key != null) return false;
-            return value != null ? value.equals(pair.value) : pair.value == null;
+            if (!Objects.equals(key, pair.key)) return false;
+            return Objects.equals(value, pair.value);
         }
         return false;
     }
 
-    public static <Ks,Vs> Pair<Ks,Vs> of(Ks key, Vs value) {
+    public static <Ks, Vs> Pair<Ks, Vs> of(Ks key, Vs value) {
         return new Pair<>(key, value);
     }
 }
