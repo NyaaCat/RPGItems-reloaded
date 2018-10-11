@@ -181,9 +181,7 @@ message:
     removed: 技能 %s 已移除
     required: '缺少必选参数: %s'
     key: 技能 %s
-    description: |-
-      说明：
-      %s
+    description: %s
   toggleLore:
     show: 文字已显示
     hide: 文字已隐藏

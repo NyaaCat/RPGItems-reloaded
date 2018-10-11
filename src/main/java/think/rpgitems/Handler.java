@@ -878,7 +878,7 @@ public class Handler extends RPGCommandReceiver {
         if (ItemManager.getItemByName(itemStr) != null && (powerStr == null || powerStr.equals("list"))) {
             RPGItem item = getItemByName(itemStr);
             for (Power power : item.powers) {
-                msg(sender, "message.item.power", power.getLocalizedName(plugin.cfg.language), power.getNamespacedKey().toString(), power.displayText(), power.getTriggers().stream().map(TriggerType::name).collect(Collectors.joining(",")));
+                msg(sender, "message.item.power", power.getLocalizedName(plugin.cfg.language), power.getNamespacedKey().toString(), power.displayText() == null ? "No Display" : power.displayText(), power.getTriggers().stream().map(TriggerType::name).collect(Collectors.joining(",")));
             }
             return;
         }

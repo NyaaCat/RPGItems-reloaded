@@ -196,11 +196,8 @@ message:
     unknown: Unknown power %s
     removed: Power %s removed
     required: "Missing required argument: %s"
-    key: Power %s
-    description: |-
-      Description:
-      %s
-
+    key: Power '%s'
+    description: "%s"
   toggleLore:
     show: Lore now been displayed
     hide: Lore now been hid
@@ -295,6 +292,14 @@ power:
       cooldown: Cooldown of the power, in ticks.
       display: Display text of this power
       cost: Durability cost of the power.
+    airborne:
+      main_name: Airborne
+      main_description: Do more damage when gliding
+      percentage: Damage increase in percentage when gliding
+      cap: Maximum damage done by this power
+    andcondition:
+      main_name: And Condition
+      main_description: Condition that requires all its Conditions are met
     aoe:
       main_name: AOE Effect
       main_description: Apply effect to entities in range. PowerSelector is applicable.
@@ -328,6 +333,12 @@ power:
       attractingTickCost: Durability cost per tick when attracting.
       attractingEntityTickCost: Durability cost per entity one tick when attracting.
       attractPlayer: Whether allow attracting player.
+    charge:
+      main_name: Charge
+      main_description: Do more damage when sprinting
+      percentage: Damage increase in percentage when sprinting
+      speedPercentage: Damage increase in percentage when faster than default
+      cap: Maximum damage done by this power
     command:
       main_name: Command
       main_description: Run a command on click.
@@ -366,6 +377,24 @@ power:
       delay: Delay before executing command
       command: Command to be executed
       permission: Permission that will be given to user executing command
+    dummy:
+      main_name: Dummy
+      main_description: Won't do anything but give you fine control
+      successResult: Result returned when success
+      costResult: Result returned when failed to comsume durability
+      cooldownResult: Result returned when in cooldown
+    durabilitycondition:
+      main_name: Durability Condition
+      main_description: Condition that requires item's durability in a range
+      durabilityMin: Durability should great than durabilityMin
+      durabilityMax: Durability should less than durabilityMax
+    equipmentcondition:
+      main_name: Equipment Condition
+      main_description: Condition that requires player wear some item
+      slot: Equipment slot
+      material: Material that player should wears
+      itemStack: Item that player should wears
+      rpgitem: RPGItem that player should wears
     fire:
       main_name: Fire
       main_description: Fire an fireblock that burns entities hit
@@ -423,6 +452,9 @@ power:
     noimmutabletick:
       main_name: No Immutable Tick
       main_description: Cancel the damage delay (no-damage-tick)
+    orcondition:
+      main_name: Or Condition
+      main_description: Condition that requires at least one of its Conditions are met
     particle:
       main_name: Particle
       main_description: Spawn some particles around the user
@@ -522,6 +554,12 @@ power:
       tag: Tag(s) to add and remove, `TO_ADD,!TO_REMOVE`
       team: Team(s) to join and leave, `JOIN,!LEAVE`
       abortOnSuccess: Abort subsequence execution of powers when success
+    scoreboardcondition:
+      main_name: Scoreboard Condition
+      main_description: Condition that add requirement of player's scoreboard
+      score: Selecting targets by score(s), `score_name:min,max another_score_name:min,max`
+      tag: Selecting targets by tag(s), `MUST_HAVE,!MUST_NOT_HAVE`
+      team: Selecting targets by team(s), `MUST_ON,!MUST_NOT_ON`
     selector:
       main_name: Selector
       main_description: Provide a selector for some AOE power
