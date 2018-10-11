@@ -2,6 +2,7 @@ package think.rpgitems.utils;
 
 
 import cat.nyaa.nyaacore.http.client.HttpClient;
+import com.google.common.base.Strings;
 import com.google.gson.Gson;
 import com.google.gson.internal.LinkedTreeMap;
 import io.netty.handler.codec.http.FullHttpResponse;
@@ -26,7 +27,7 @@ public class NetworkUtils {
     @SuppressWarnings("unchecked")
     public static Map<String, String> downloadGist(String id, String token) throws InterruptedException, ExecutionException, TimeoutException {
         Map<String, String> headers = new HashMap<>();
-        if (token != null) {
+        if (Strings.isNullOrEmpty(token)) {
             headers.put("Authorization", "token " + token);
         }
         CompletableFuture<FullHttpResponse> response = HttpClient.get("https://api.github.com/gists/" + id, headers);

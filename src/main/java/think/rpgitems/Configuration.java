@@ -34,9 +34,8 @@ public class Configuration extends PluginConfigure {
     public boolean givePerms = false;
 
     @Serializable(name = "githubToken")
-    public String githubToken;
+    public String githubToken = "";
 
     @Serializable(name = "publishGist")
-    public boolean publishGist;
-
+    public boolean publishGist = true;
 }

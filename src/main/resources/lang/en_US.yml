@@ -634,6 +634,10 @@ power:
     unbreakable:
       main_name: Unbreakable
       main_description: Mark this item as unbreakable
+    xorcondition:
+      main_name: Xor Condition
+      main_description: Condition that xor all its Conditions
+      init: Init value
 manual:
   reload:
     description: Reload the plugin

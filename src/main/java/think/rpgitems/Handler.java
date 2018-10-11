@@ -2,6 +2,7 @@ package think.rpgitems;
 
 import cat.nyaa.nyaacore.LanguageRepository;
 import cat.nyaa.nyaacore.Message;
+import com.google.common.base.Strings;
 import org.bukkit.*;
 import org.bukkit.command.CommandSender;
 import org.bukkit.configuration.InvalidConfigurationException;
@@ -1049,13 +1050,13 @@ public class Handler extends RPGCommandReceiver {
             throw new BadCommandException("message.error.item", unknown.get().getKey());
         }
         String token = args.argString("token", plugin.cfg.githubToken);
+        if (Strings.isNullOrEmpty(token)) {
+            throw new BadCommandException("message.export.gist.token");
+        }
         boolean isPublish = Boolean.parseBoolean(args.argString("publish", String.valueOf(plugin.cfg.publishGist)));
         String description = args.argString("description",
                 "RPGItems exported item: " + String.join(",", itemNames)
         );
-        if (token == null) {
-            throw new BadCommandException("message.export.gist.token");
-        }
         Map<String, Map<String, String>> result = new HashMap<>(items.size());
         items.forEach(
                 pair -> {
