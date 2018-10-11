@@ -1043,6 +1043,17 @@ public class Handler extends RPGCommandReceiver {
         msg(sender, "message.item.dump", item.getName(), s);
     }
 
+    @SubCommand("reorder")
+    @Attribute("item")
+    public void reorder(CommandSender sender, Arguments args) {
+        RPGItem item = getItemByName(args.nextString());
+        int origin = args.nextInt() - 1;
+        int next = args.nextInt() - 1;
+        Power remove = item.powers.remove(origin);
+        item.powers.add(next, remove);
+        msg(sender, "message.item.reorder", item.getName(), remove.getName());
+    }
+
     private void publishGist(CommandSender sender, Arguments args, Set<String> itemNames) {
         List<Pair<String, RPGItem>> items = itemNames.stream().map(i -> Pair.of(i, ItemManager.getItemByName(i))).collect(Collectors.toList());
         Optional<Pair<String, RPGItem>> unknown = items.stream().filter(p -> p.getValue() == null).findFirst();
