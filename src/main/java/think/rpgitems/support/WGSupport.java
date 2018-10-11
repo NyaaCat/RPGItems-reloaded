@@ -27,7 +27,7 @@ public class WGSupport {
     static Map<UUID, Collection<String>> enabledItemByPlayer;
     static Map<UUID, Boolean> disabledByPlayer;
     static WorldGuardPlugin wgPlugin;
-    private static Plugin plugin;
+    private static RPGItems plugin;
     private static boolean hasSupport = false;
 
     public static void load() {
@@ -40,8 +40,8 @@ public class WGSupport {
     public static void init(RPGItems pl) {
         plugin = pl;
         Plugin wgPlugin = plugin.getServer().getPluginManager().getPlugin("WorldGuard");
-        useWorldGuard = plugin.getConfig().getBoolean("support.worldguard", false);
-        forceRefresh = plugin.getConfig().getBoolean("support.wgforcerefresh", false);
+        useWorldGuard = plugin.cfg.useWorldGuard;
+        forceRefresh = plugin.cfg.wgForceRefresh;
         if (!(wgPlugin instanceof WorldGuardPlugin)) {
             return;
         }
@@ -69,8 +69,8 @@ public class WGSupport {
             WGHandler.unregisterHandler();
         } catch (NoClassDefFoundError ignored) {
         }
-        useWorldGuard = plugin.getConfig().getBoolean("support.worldguard", false);
-        forceRefresh = plugin.getConfig().getBoolean("support.wgforcerefresh", false);
+        useWorldGuard = plugin.cfg.useWorldGuard;
+        forceRefresh = plugin.cfg.wgForceRefresh;
         if (wgPlugin == null) {
             return;
         }

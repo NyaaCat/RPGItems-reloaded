@@ -7,6 +7,7 @@ import org.bukkit.configuration.ConfigurationSection;
 import think.rpgitems.item.RPGItem;
 
 import java.util.Collections;
+import java.util.Locale;
 import java.util.Objects;
 import java.util.Set;
 import java.util.stream.Collectors;
@@ -32,16 +33,36 @@ public interface Power {
     /**
      * NamespacedKey of this power
      *
-     * @return namespacedKey
+     * @return NamespacedKey
      */
     NamespacedKey getNamespacedKey();
 
     /**
-     * Name of this power
+     * Code name of this power
      *
-     * @return name
+     * @return Code name
      */
     String getName();
+
+    /**
+     * Localized name of this power
+     *
+     * @param locale Locale tag
+     * @return Localized name
+     */
+    default String getLocalizedName(String locale) {
+        return getName();
+    }
+
+    /**
+     * Localized name of this power
+     *
+     * @param locale Locale
+     * @return Localized name
+     */
+    default String getLocalizedName(Locale locale) {
+        return getLocalizedName(locale.toLanguageTag());
+    }
 
     /**
      * Display text of this power
@@ -49,6 +70,26 @@ public interface Power {
      * @return Display text
      */
     String displayText();
+
+    /**
+     * Localized name of this power
+     *
+     * @param locale Locale tag
+     * @return Localized name
+     */
+    default String localizedDisplayText(String locale) {
+        return displayText();
+    }
+
+    /**
+     * Localized name of this power
+     *
+     * @param locale Locale tag
+     * @return Localized name
+     */
+    default String localizedDisplayText(Locale locale) {
+        return localizedDisplayText(locale.toLanguageTag());
+    }
 
     /**
      * @return Item it belongs to

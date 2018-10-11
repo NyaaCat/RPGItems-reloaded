@@ -65,6 +65,7 @@ message:
     not_vaild_int: '''%s'' is not an valid integer'
     get: '%d th power ''%s''''s property %s is %s'
     change: Property set
+    all: "%d th power '%s''s properties: \n"
   drop:
     get: The chance that '%s' will drop from '%s' is %.2f%%
     set: The chance that '%s' will drop from '%s' was set to %.2f%%
@@ -143,6 +144,8 @@ message:
     get: 'Item ''%s'' item is {itemName} (%s): %d '
     list: '%s - {itemName}'
     print: '{itemName}'
+    power: 'Power %s (%s)：%s [%s]'
+    dump: 'Item %s: \n %s'
   damagemode:
     FIXED: Item '%s' damage mode set to fixed damage (default)
     ADDITIONAL: Item '%s' damage mode set to additional damage (vanilla minecraft damage plus RPGItem damage)
@@ -172,6 +175,8 @@ message:
     unknown: Unknown power %s
     removed: Power %s removed
     required: "Missing required argument: %s"
+    key: Power %s
+    description: "Description:\n%s\n"
   toggleLore:
     show: Lore now been displayed
     hide: Lore now been hid
@@ -747,3 +752,11 @@ manual:
   clone:
     description: Clone item as new item
     usage: "/rpgitem clone {item} <newItem>"
+
+item:
+  hand: One handed
+  type: Sword
+  armour: Armour
+  additionaldamage: "Additional %s Damage"
+  multiplydamage: "Times %s Damage"
+  damage: "%s Damage"

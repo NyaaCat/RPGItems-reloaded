@@ -28,6 +28,7 @@ public class RPGItems extends JavaPlugin {
     public Handler commandHandler;
     List<Plugin> managedPlugins = new ArrayList<>();
     public I18n i18n;
+    public Configuration cfg;
 
     @Override
     public void onLoad() {
@@ -80,6 +81,9 @@ public class RPGItems extends JavaPlugin {
     @Override
     public void onEnable() {
         plugin = this;
+        cfg = new Configuration(this);
+        cfg.load();
+
         if (Bukkit.class.getPackage().getImplementationVersion().startsWith("git-Bukkit-")) {
             Bukkit.getConsoleSender().sendMessage(ChatColor.RED + "======================================");
             Bukkit.getConsoleSender().sendMessage(ChatColor.RED + "RPGItems plugin require Spigot API, Please make sure you are using Spigot.");
@@ -96,11 +100,10 @@ public class RPGItems extends JavaPlugin {
             });
         }
         WGSupport.init(this);
-        ConfigurationSection conf = getConfig();
-        if (conf.getBoolean("localeInv", false)) {
+        if (cfg.localeInv) {
             Events.useLocaleInv = true;
         }
-        i18n = new I18n(this, conf.getString("language"));
+        i18n = new I18n(this, cfg.language);
         commandHandler = new Handler(this, i18n);
         getCommand("rpgitem").setExecutor(commandHandler);
         getCommand("rpgitem").setTabCompleter(commandHandler);

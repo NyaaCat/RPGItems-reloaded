@@ -4,16 +4,14 @@ import org.bukkit.Bukkit;
 import org.bukkit.NamespacedKey;
 import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.inventory.ItemStack;
+import think.rpgitems.I18n;
 import think.rpgitems.RPGItems;
 import think.rpgitems.item.RPGItem;
 import think.rpgitems.power.*;
 
 import java.io.Serializable;
 import java.lang.reflect.Field;
-import java.util.HashSet;
-import java.util.Map;
-import java.util.Set;
-import java.util.SortedMap;
+import java.util.*;
 
 /**
  * Base class containing common methods and fields.
@@ -97,21 +95,26 @@ public abstract class BasePower implements Serializable, Power {
 
     @Override
     public Set<TriggerType> getTriggers() {
-        return triggers;
+        return Collections.unmodifiableSet(triggers);
     }
 
     @Override
     public Set<String> getConditions() {
-        return conditions;
+        return Collections.unmodifiableSet(conditions);
     }
 
     @Override
     public Set<String> getSelectors() {
-        return selectors;
+        return Collections.unmodifiableSet(selectors);
     }
 
     @Override
     public NamespacedKey getNamespacedKey() {
         return new NamespacedKey(RPGItems.plugin, getName());
+    }
+
+    @Override
+    public String getLocalizedName(String locale) {
+        return I18n.format("power.properties." + getName() + ".main_name");
     }
 }

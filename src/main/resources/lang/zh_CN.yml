@@ -47,6 +47,7 @@ message:
     not_vaild_int: '''%s'' 不是一个有效的整数'
     get: 第 %d 个技能 '%s' 的技能属性 %s 为 %s
     change: 技能属性已设置
+    all: "第 %d 个技能 '%s'：\n"
   drop:
     get: 从 '%s' 掉落 '%s' 的几率为 %.2f%%
     set: 从 '%s' 掉落 '%s' 的几率设置为 %.2f%%
@@ -130,6 +131,8 @@ message:
     get: '物品 ''%s'' 材质为 {itemName} (%s): %d '
     list: '%s - {itemName}'
     print: '{itemName}'
+    power: '技能 %s (%s)：%s [%s]'
+    dump: '物品 %s: \n %s'
   damagemode:
     FIXED: 物品 '%s' 伤害模式设定为固定伤害（默认）
     MULTIPLY: 物品 '%s' 伤害模式设定为乘法伤害（原版伤害乘以RPG伤害）
@@ -155,6 +158,8 @@ message:
     unknown: 未知技能 %s
     removed: 技能 %s 已移除
     required: '缺少必选参数: %s'
+    key: 技能 %s
+    description: "说明:\n%s\n"
   toggleLore:
     show: 文字已显示
     hide: 文字已隐藏
@@ -262,6 +267,8 @@ power:
   stuck: 攻击后 %d 几率敌人无法移动 %d tick (%.1f 秒冷却时间)
   shulkerbullet: 发射潜影贝子弹 (%.1f 秒冷却时间)
   translocator: 切副手发射传送信标，切主手传送至信标，从副手拿出拆除信标 (%.1f 秒冷却时间)
+  glove: "捕获一个实体 (%.1fs 冷却)"
+  mount: "骑乘一个实体 (%.1fs 冷却)"
   properties:
     base:
       cooldown: 技能的冷却时间，以游戏刻为单位
@@ -566,5 +573,16 @@ manual:
     description: 重新读取配置文件
     usage: /rpgitem reload
   giveperms:
-    description: 给予所需权限
+    description: 切换 /rpgitem give 权限
     usage: /rpgitem giveperms
+  power:
+    description: 给物品添加技能
+    usage: "/rpgitem power {item} <power> <properties> [optionalProperties]"
+
+item:
+  hand: 单手
+  type: 剑
+  armour: 护甲
+  additionaldamage: "附加 %s 伤害"
+  multiplydamage: "%s 倍伤害"
+  damage: "%s 伤害"

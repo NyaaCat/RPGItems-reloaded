@@ -98,8 +98,8 @@ public class RPGItem {
     private int damageMin = 0, damageMax = 3;
     private int armour = 0;
     private String loreText = "";
-    private String type = RPGItems.plugin.getConfig().getString("defaults.sword", "Sword");
-    private String hand = RPGItems.plugin.getConfig().getString("defaults.hand", "One handed");
+    private String type = I18n.format("item.type");
+    private String hand = I18n.format("item.hand");
 
     private String author;
     private String note;
@@ -151,8 +151,8 @@ public class RPGItem {
         license = s.getString("license", "");
 
         setDisplay(s.getString("display"), false);
-        setType(s.getString("type", RPGItems.plugin.getConfig().getString("defaults.sword", "Sword")), false);
-        setHand(s.getString("hand", RPGItems.plugin.getConfig().getString("defaults.hand", "One handed")), false);
+        setType(s.getString("type", I18n.format("item.type")), false);
+        setHand(s.getString("hand", I18n.format("item.hand")), false);
         setLore(s.getString("lore"), false);
         description = (List<String>) s.getList("description", new ArrayList<String>());
         for (int i = 0; i < description.size(); i++) {
@@ -990,19 +990,16 @@ public class RPGItem {
             armorMinLen = getStringWidth(ChatColor.stripColor(hand + "     " + type));
 
             if (armour != 0) {
-                damageStr = armour + "% " + RPGItems.plugin.getConfig().getString("defaults.armour", "Armour");
+                damageStr = armour + "% " + I18n.format("item.armour");
             }
             if ((damageMin != 0 || damageMax != 0) && damageMode != DamageMode.VANILLA) {
                 damageStr = damageStr == null ? "" : damageStr + " & ";
                 if (damageMode == DamageMode.ADDITIONAL) {
-                    damageStr += RPGItems.plugin.getConfig().getString("defaults.additionaldamage", "Additional ");
+                    damageStr += I18n.format("item.additionaldamage", damageMin == damageMax ? damageMin : damageMin + "-" + damageMax);
                 } else if (damageMode == DamageMode.MULTIPLY) {
-                    damageStr += RPGItems.plugin.getConfig().getString("defaults.multiplydamage", "Times ");
-                }
-                if (damageMin == damageMax) {
-                    damageStr += damageMin + " " + RPGItems.plugin.getConfig().getString("defaults.damage", "Damage");
+                    damageStr += I18n.format("item.multiplydamage", damageMin == damageMax ? damageMin : damageMin + "-" + damageMax);
                 } else {
-                    damageStr += damageMin + "-" + damageMax + " " + RPGItems.plugin.getConfig().getString("defaults.damage", "Damage");
+                    damageStr += I18n.format("item.damage", damageMin == damageMax ? damageMin : damageMin + "-" + damageMax);
                 }
             }
             if (damageStr != null) {

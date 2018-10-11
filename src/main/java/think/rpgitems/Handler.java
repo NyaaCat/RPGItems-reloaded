@@ -52,11 +52,12 @@ public class Handler extends RPGCommandReceiver {
     @SubCommand("reload")
     @Attribute("command")
     public void reload(CommandSender sender, Arguments args) {
-        plugin.reloadConfig();
+        plugin.cfg = new Configuration(plugin);
+        plugin.cfg.load();
         plugin.i18n.load();
         WGSupport.reload();
         ItemManager.reload(plugin);
-        if (plugin.getConfig().getBoolean("localeInv", false)) {
+        if (plugin.cfg.localeInv) {
             Events.useLocaleInv = true;
         }
         plugin.managedPlugins.forEach(Bukkit.getPluginManager()::disablePlugin);
@@ -70,7 +71,7 @@ public class Handler extends RPGCommandReceiver {
     @Attribute("command")
     public void listItems(CommandSender sender, Arguments args) {
         Collection<RPGItem> items = ItemManager.itemByName.values();
-        int perPage = RPGItems.plugin.getConfig().getInt("itemperpage", 9);
+        int perPage = RPGItems.plugin.cfg.itemPerPage;
         Stream<RPGItem> stream = ItemManager.itemByName.values().stream();
         String nameSearch = args.argString("n", args.argString("name", ""));
         String displaySearch = args.argString("d", args.argString("display", ""));
@@ -108,8 +109,8 @@ public class Handler extends RPGCommandReceiver {
             msg(sender, "message.worldguard.enable");
         }
         WGSupport.useWorldGuard = !WGSupport.useWorldGuard;
-        RPGItems.plugin.getConfig().set("support.worldguard", WGSupport.useWorldGuard);
-        RPGItems.plugin.saveConfig();
+        RPGItems.plugin.cfg.useWorldGuard = WGSupport.useWorldGuard;
+        RPGItems.plugin.cfg.save();
     }
 
     @SubCommand("wgforcerefresh")
@@ -125,8 +126,8 @@ public class Handler extends RPGCommandReceiver {
             msg(sender, "message.wgforcerefresh.enable");
         }
         WGSupport.forceRefresh = !WGSupport.forceRefresh;
-        RPGItems.plugin.getConfig().set("support.wgforcerefresh", WGSupport.forceRefresh);
-        RPGItems.plugin.saveConfig();
+        RPGItems.plugin.cfg.wgForceRefresh = WGSupport.forceRefresh;
+        RPGItems.plugin.cfg.save();
     }
 
     @SubCommand("wgignore")
@@ -161,13 +162,13 @@ public class Handler extends RPGCommandReceiver {
     @SubCommand("giveperms")
     @Attribute("command")
     public void givePerms(CommandSender sender, Arguments args) {
-        RPGItems.plugin.getConfig().set("give-perms", !RPGItems.plugin.getConfig().getBoolean("give-perms", false));
-        if (RPGItems.plugin.getConfig().getBoolean("give-perms", false)) {
+        RPGItems.plugin.cfg.givePerms = !RPGItems.plugin.cfg.givePerms;
+        if (RPGItems.plugin.cfg.givePerms) {
             msg(sender, "message.giveperms.required");
         } else {
             msg(sender, "message.giveperms.canceled");
         }
-        RPGItems.plugin.saveConfig();
+        RPGItems.plugin.cfg.save();
     }
 
     @SubCommand("give")
@@ -176,7 +177,7 @@ public class Handler extends RPGCommandReceiver {
         RPGItem item = getItemByName(args.nextString());
         if (args.length() == 2) {
             if (sender instanceof Player) {
-                if ((!RPGItems.plugin.getConfig().getBoolean("give-perms", false) && sender.hasPermission("rpgitem")) || (RPGItems.plugin.getConfig().getBoolean("give-perms", false) && sender.hasPermission("rpgitem.give." + item.getName()))) {
+                if ((!plugin.cfg.givePerms && sender.hasPermission("rpgitem")) || (plugin.cfg.givePerms && sender.hasPermission("rpgitem.give." + item.getName()))) {
                     item.give((Player) sender);
                     msg(sender, "message.give.ok", item.getDisplay());
                 } else {
@@ -874,10 +875,10 @@ public class Handler extends RPGCommandReceiver {
             }
             return;
         }
-        if (ItemManager.getItemByName(itemStr) != null || powerStr.equals("list")) {
+        if (ItemManager.getItemByName(itemStr) != null && powerStr.equals("list")) {
             RPGItem item = getItemByName(itemStr);
             for (Power power : item.powers) {
-                msg(sender, "message.item.power", power.getNamespacedKey().toString(), power.displayText(), power.getTriggers().stream().map(TriggerType::name).collect(Collectors.joining(",")));
+                msg(sender, "message.item.power", power.getLocalizedName(plugin.cfg.language), power.getNamespacedKey().toString(), power.displayText(), power.getTriggers().stream().map(TriggerType::name).collect(Collectors.joining(",")));
             }
             return;
         }
@@ -1038,7 +1039,7 @@ public class Handler extends RPGCommandReceiver {
         YamlConfiguration yamlConfiguration = new YamlConfiguration();
         item.save(yamlConfiguration);
         String s = yamlConfiguration.saveToString();
-        msg(sender, "message.item.dump", s);
+        msg(sender, "message.item.dump", item.getName(), s);
     }
 
     private void publishGist(CommandSender sender, Arguments args, Set<String> itemNames) {
@@ -1047,8 +1048,8 @@ public class Handler extends RPGCommandReceiver {
         if (unknown.isPresent()) {
             throw new BadCommandException("message.error.item", unknown.get().getKey());
         }
-        String token = args.argString("token", plugin.getConfig().getString("githubToken"));
-        String description = args.argString("description", plugin.getConfig().getString("description", "RPGItems exported items"));
+        String token = args.argString("token", plugin.cfg.githubToken);
+        String description = args.argString("description");
         if (token == null) {
             throw new BadCommandException("message.export.gist.token");
         }
@@ -1083,7 +1084,7 @@ public class Handler extends RPGCommandReceiver {
 
     private void downloadGist(CommandSender sender, Arguments args, String id) {
         new Message(I18n.format("message.import.gist.ing")).send(sender);
-        String token = args.argString("token", plugin.getConfig().getString("githubToken"));
+        String token = args.argString("token", plugin.cfg.githubToken);
         Bukkit.getScheduler().runTaskAsynchronously(plugin, () -> {
             Map<String, String> gist;
             try {
