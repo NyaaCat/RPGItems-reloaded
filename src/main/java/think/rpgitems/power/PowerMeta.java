@@ -12,4 +12,6 @@ public @interface PowerMeta {
     boolean marker() default false;
 
     boolean withSelectors() default false;
+
+    boolean withConditions() default false;
 }

@@ -3,17 +3,19 @@ package think.rpgitems.power.impl;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
 import think.rpgitems.power.*;
-import think.rpgitems.utils.Pair;
 
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
 @PowerMeta(marker = true, withConditions = true)
-public class PowerAndCondition extends BasePower implements PowerCondition<Map.Entry<Power, PowerResult>> {
+public class PowerXorCondition extends BasePower implements PowerCondition<Void> {
 
     @Property(order = 0, required = true)
     public String id;
+
+    @Property
+    public boolean init = false;
 
     @Property
     public boolean isStatic = true;
@@ -38,13 +40,14 @@ public class PowerAndCondition extends BasePower implements PowerCondition<Map.E
 
     @SuppressWarnings("unchecked")
     @Override
-    public PowerResult<Map.Entry<Power, PowerResult>> check(Player player, ItemStack stack, Map<Power, PowerResult> context) {
+    public PowerResult<Void> check(Player player, ItemStack stack, Map<Power, PowerResult> context) {
         Set<String> conditions = getConditions();
+        boolean ans = init;
         for (Map.Entry<Power, PowerResult> entry : context.entrySet()) {
             Power power = entry.getKey();
             if (power instanceof PowerCondition && conditions.contains(((PowerCondition) power).id())) {
                 conditions.remove(((PowerCondition) power).id());
-                if (!entry.getValue().isOK()) return PowerResult.fail().with(entry);
+                ans = ans ^ entry.getValue().isOK();
             }
         }
         if (!isStatic) {
@@ -53,15 +56,15 @@ public class PowerAndCondition extends BasePower implements PowerCondition<Map.E
                 if (!conditions.contains(powerCondition.id())) continue;
                 assert !powerCondition.isStatic();
                 PowerResult result = powerCondition.check(player, stack, context);
-                if (!result.isOK()) return PowerResult.fail().with(Pair.of(powerCondition, result));
+                ans = ans ^ result.isOK();
             }
         }
-        return PowerResult.ok().with(null);
+        return ans ? PowerResult.ok() : PowerResult.fail();
     }
 
     @Override
     public String getName() {
-        return "andcondition";
+        return "xorcondition";
     }
 
     @Override

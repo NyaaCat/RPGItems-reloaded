@@ -10,7 +10,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
-@PowerMeta(marker = true)
+@PowerMeta(marker = true, withConditions = true)
 public class PowerOrCondition extends BasePower implements PowerCondition<Map.Entry<Power, PowerResult>> {
 
     @Property(order = 0, required = true)
