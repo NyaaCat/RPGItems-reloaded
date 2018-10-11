@@ -4,6 +4,7 @@ import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
 import think.rpgitems.power.*;
 
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -41,7 +42,7 @@ public class PowerXorCondition extends BasePower implements PowerCondition<Void>
     @SuppressWarnings("unchecked")
     @Override
     public PowerResult<Void> check(Player player, ItemStack stack, Map<Power, PowerResult> context) {
-        Set<String> conditions = getConditions();
+        Set<String> conditions = new HashSet<>(getConditions());
         boolean ans = init;
         for (Map.Entry<Power, PowerResult> entry : context.entrySet()) {
             Power power = entry.getKey();

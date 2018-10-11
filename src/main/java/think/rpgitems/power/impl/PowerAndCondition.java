@@ -5,6 +5,7 @@ import org.bukkit.inventory.ItemStack;
 import think.rpgitems.power.*;
 import think.rpgitems.utils.Pair;
 
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -39,7 +40,7 @@ public class PowerAndCondition extends BasePower implements PowerCondition<Map.E
     @SuppressWarnings("unchecked")
     @Override
     public PowerResult<Map.Entry<Power, PowerResult>> check(Player player, ItemStack stack, Map<Power, PowerResult> context) {
-        Set<String> conditions = getConditions();
+        Set<String> conditions = new HashSet<>(getConditions());
         for (Map.Entry<Power, PowerResult> entry : context.entrySet()) {
             Power power = entry.getKey();
             if (power instanceof PowerCondition && conditions.contains(((PowerCondition) power).id())) {
