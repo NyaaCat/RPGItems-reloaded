@@ -155,6 +155,7 @@ message:
       get: |-
         物品 %s 的说明为：
         %s
+    reorder: 物品 %s 的技能 %s 已调整顺序
   damagemode:
     FIXED: 物品 '%s' 伤害模式设定为固定伤害（默认）
     MULTIPLY: 物品 '%s' 伤害模式设定为乘法伤害（原版伤害乘以RPG伤害）
@@ -200,6 +201,9 @@ message:
   customitemmodel:
     disable: 自定义物品模型关闭
     enable: 自定义物品模型开启
+  numericbar:
+    disable: 数值耐久条关闭
+    enable: 数值耐久条开启
   stuck: 你已经被定身，无法传送！
   cloneitem:
     success: 物品 %s 成功克隆为 %s

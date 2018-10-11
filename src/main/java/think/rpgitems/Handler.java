@@ -847,7 +847,7 @@ public class Handler extends RPGCommandReceiver {
         item.rebuild();
         ItemManager.refreshItem();
         ItemManager.save(item);
-        msg(sender, "message.numericBar." + (item.numericBar ? "enable" : "disable"));
+        msg(sender, "message.numericbar." + (item.numericBar ? "enable" : "disable"));
     }
 
     @SubCommand("version")

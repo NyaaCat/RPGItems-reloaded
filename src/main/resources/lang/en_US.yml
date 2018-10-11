@@ -15,6 +15,9 @@ message:
   customitemmodel:
     disable: Custom item model disabled
     enable: Custom item model enabled
+  numericbar:
+    disable: Numeric durability bar disabled
+    enable: Numeric durability bar enabled
   enchantment:
     removed: Attached enchantments removed
     success: Success
@@ -167,6 +170,7 @@ message:
       get: |-
         Note of Item %s is:
         %s
+    reorder: Reordered item %s's power %s
   damagemode:
     FIXED: Item '%s' damage mode set to fixed damage (default)
     ADDITIONAL: Item '%s' damage mode set to additional damage (vanilla minecraft damage plus RPGItem damage)

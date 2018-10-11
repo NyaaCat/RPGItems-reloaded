@@ -939,17 +939,17 @@ public class RPGItem {
             if (!hasBar || forceBar || customItemModel) {
                 StringBuilder out = new StringBuilder();
                 char boxChar = '\u25A0';
+                double ratio = (double) durability / (double) maxDurability;
                 if (numericBar) {
-                    out.append(boxChar);
-                    out.append(" ");
+                    out.append(ChatColor.GREEN.toString()).append(boxChar).append(" ");
+                    out.append(ratio < 0.1 ? ChatColor.RED : ratio < 0.3 ? ChatColor.YELLOW : ChatColor.GREEN);
                     out.append(durability);
-                    out.append(" / ");
+                    out.append(ChatColor.RESET).append(" / ").append(ChatColor.AQUA);
                     out.append(maxDurability);
-                    out.append(" ");
-                    out.append(boxChar);
+                    out.append(ChatColor.GREEN).append(boxChar);
                 } else {
                     int boxCount = tooltipWidth / 6;
-                    int mid = (int) ((double) boxCount * ((double) durability / (double) maxDurability));
+                    int mid = (int) ((double) boxCount * (ratio));
                     for (int i = 0; i < boxCount; i++) {
                         out.append(i < mid ? ChatColor.GREEN : i == mid ? ChatColor.YELLOW : ChatColor.RED);
                         out.append(boxChar);
