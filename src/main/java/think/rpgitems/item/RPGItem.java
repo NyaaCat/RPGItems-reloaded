@@ -65,6 +65,7 @@ public class RPGItem {
     public Map<Enchantment, Integer> enchantMap = null;
     public List<ItemFlag> itemFlags = new ArrayList<>();
     public boolean customItemModel = false;
+    public boolean numericBar = plugin.cfg.numericBar;
     // Powers
     public List<Power> powers = new ArrayList<>();
     // Recipes
@@ -109,7 +110,7 @@ public class RPGItem {
     // Durability
     private int maxDurability = -1;
     private boolean hasBar = false;
-    private boolean forceBar = false;
+    private boolean forceBar = plugin.cfg.forceBar;
     private int _loreMinLen = 0;
 
     public RPGItem(String name, int uid) {
@@ -261,7 +262,7 @@ public class RPGItem {
         defaultDurability = s.getInt("defaultDurability", maxDurability > 0 ? maxDurability : -1);
         durabilityLowerBound = s.getInt("durabilityLowerBound", 0);
         durabilityUpperBound = s.getInt("durabilityUpperBound", item.getType().getMaxDurability());
-        forceBar = s.getBoolean("forceBar", false);
+        forceBar = s.getBoolean("forceBar", plugin.cfg.forceBar);
 
         if (maxDurability == 0) {
             maxDurability = -1;
@@ -301,6 +302,7 @@ public class RPGItem {
             }
         }
         customItemModel = s.getBoolean("customItemModel", false);
+        numericBar = s.getBoolean("numericBar", plugin.cfg.numericBar);
         String damageModeStr = s.getString("damageMode", "FIXED");
         try {
             damageMode = DamageMode.valueOf(damageModeStr);
@@ -519,6 +521,7 @@ public class RPGItem {
             s.set("itemFlags", null);
         }
         s.set("customItemModel", customItemModel);
+        s.set("numericBar", numericBar);
     }
 
     public void resetRecipe(boolean removeOld) {
@@ -936,11 +939,21 @@ public class RPGItem {
             if (!hasBar || forceBar || customItemModel) {
                 StringBuilder out = new StringBuilder();
                 char boxChar = '\u25A0';
-                int boxCount = tooltipWidth / 6;
-                int mid = (int) ((double) boxCount * ((double) durability / (double) maxDurability));
-                for (int i = 0; i < boxCount; i++) {
-                    out.append(i < mid ? ChatColor.GREEN : i == mid ? ChatColor.YELLOW : ChatColor.RED);
+                if (numericBar) {
                     out.append(boxChar);
+                    out.append(" ");
+                    out.append(durability);
+                    out.append(" / ");
+                    out.append(maxDurability);
+                    out.append(" ");
+                    out.append(boxChar);
+                } else {
+                    int boxCount = tooltipWidth / 6;
+                    int mid = (int) ((double) boxCount * ((double) durability / (double) maxDurability));
+                    for (int i = 0; i < boxCount; i++) {
+                        out.append(i < mid ? ChatColor.GREEN : i == mid ? ChatColor.YELLOW : ChatColor.RED);
+                        out.append(boxChar);
+                    }
                 }
                 if (!lore.get(lore.size() - 1).contains(boxChar + ""))
                     lore.add(out.toString());

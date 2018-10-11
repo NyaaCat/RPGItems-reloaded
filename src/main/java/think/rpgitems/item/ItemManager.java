@@ -166,24 +166,46 @@ public class ItemManager {
     }
 
     public static void save() {
+        File items = mkdir();
+        File backup = mkbkdir();
+
+        for (RPGItem item : itemByName.values()) {
+            save(items, backup, item);
+        }
+    }
+
+    public static void save(RPGItem item) {
+        File items = mkdir();
+        File backup = mkbkdir();
+        save(items, backup, item);
+    }
+
+    private static File mkdir() {
         File items = new File(plugin.getDataFolder(), "items");
         if (!items.exists() || !items.isDirectory()) {
             if (!items.mkdir()) {
                 throw new IllegalStateException();
             }
         }
-
-        for (RPGItem item : itemByName.values()) {
-            save(items, item);
-        }
+        return items;
     }
 
-    private static void save(File items, RPGItem item) {
+    private static File mkbkdir() {
+        File backup = new File(plugin.getDataFolder(), "backup");
+        if (!backup.exists() || !backup.isDirectory()) {
+            if (!backup.mkdir()) {
+                throw new IllegalStateException();
+            }
+        }
+        return backup;
+    }
+
+    private static void save(File items, File bkdir, RPGItem item) {
         String itemName = item.getName();
         String filename = getItemFilename(itemName);
         File itemFile = new File(items, filename + ".yml");
         try {
-            File backup = new File(items, filename + "." + System.currentTimeMillis() + ".bak");
+            File backup = new File(bkdir, filename + "." + System.currentTimeMillis() + ".bak");
             if (itemFile.exists()) {
                 try {
                     if (!backup.createNewFile()) throw new IllegalStateException();

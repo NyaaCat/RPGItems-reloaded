@@ -38,4 +38,10 @@ public class Configuration extends PluginConfigure {
 
     @Serializable(name = "publishGist")
     public boolean publishGist = true;
+
+    @Serializable
+    public boolean numericBar = false;
+
+    @Serializable
+    public boolean forceBar = false;
 }
