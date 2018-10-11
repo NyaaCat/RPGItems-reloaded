@@ -56,12 +56,12 @@ public class NetworkUtils {
         }
     }
 
-    public static String publishGist(Map<String, Map<String, String>> files, String token, String description) throws InterruptedException, ExecutionException, TimeoutException {
+    public static String publishGist(Map<String, Map<String, String>> files, String token, String description, boolean isPublic) throws InterruptedException, ExecutionException, TimeoutException {
         Map<String, String> headers = new HashMap<>();
         headers.put("Authorization", "token " + token);
         Map<String, Object> jsonMap = new HashMap<>();
         jsonMap.put("description", description);
-        jsonMap.put("public", true);
+        jsonMap.put("public", isPublic);
         jsonMap.put("files", files);
 
         String json = new Gson().toJson(jsonMap);

@@ -4,6 +4,7 @@ import com.google.common.collect.Sets;
 import com.google.common.reflect.TypeToken;
 import org.bukkit.NamespacedKey;
 import org.bukkit.configuration.ConfigurationSection;
+import org.librazy.nclangchecker.LangKey;
 import think.rpgitems.item.RPGItem;
 
 import java.util.Collections;
@@ -42,7 +43,7 @@ public interface Power {
      *
      * @return Code name
      */
-    String getName();
+    @LangKey(skipCheck = true) String getName();
 
     /**
      * Localized name of this power

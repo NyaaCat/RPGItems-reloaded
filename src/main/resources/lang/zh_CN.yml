@@ -33,6 +33,7 @@ message:
       extension: 未知扩展： %s
     option: 无效项 '%s'
     iteminhand: 手中没有物品
+    need_material: '你需要 %s 以修复此物品'
   wgcustomflag:
     disable: Worldguard 自定义标志已禁用
     enable: Worldguard 自定义标志已启用
@@ -47,7 +48,9 @@ message:
     not_vaild_int: '''%s'' 不是一个有效的整数'
     get: 第 %d 个技能 '%s' 的技能属性 %s 为 %s
     change: 技能属性已设置
-    all: "第 %d 个技能 '%s'：\n"
+    all: |-
+      第 %d 个技能 '%s'：
+      %s
   drop:
     get: 从 '%s' 掉落 '%s' 的几率为 %.2f%%
     set: 从 '%s' 掉落 '%s' 的几率设置为 %.2f%%
@@ -132,7 +135,26 @@ message:
     list: '%s - {itemName}'
     print: '{itemName}'
     power: '技能 %s (%s)：%s [%s]'
-    dump: '物品 %s: \n %s'
+    dump: |-
+      物品 %s:
+      %s
+    author:
+      set: 物品 %s 的作者已设置为 %s
+      get: 物品 %s 的作者为 %s
+    license:
+      set: |-
+        物品 %s 的协议已设置为：
+        %s
+      get: |-
+        物品 %s 的协议为：
+        %s
+    note:
+      set: |-
+        物品 %s 的说明已设置为：
+        %s
+      get: |-
+        物品 %s 的说明为：
+        %s
   damagemode:
     FIXED: 物品 '%s' 伤害模式设定为固定伤害（默认）
     MULTIPLY: 物品 '%s' 伤害模式设定为乘法伤害（原版伤害乘以RPG伤害）
@@ -159,7 +181,9 @@ message:
     removed: 技能 %s 已移除
     required: '缺少必选参数: %s'
     key: 技能 %s
-    description: "说明:\n%s\n"
+    description: |-
+      说明：
+      %s
   toggleLore:
     show: 文字已显示
     hide: 文字已隐藏
@@ -201,6 +225,7 @@ message:
       ed: '导出成功 https://gist.github.com/%s'
       timeout: Gist 上传超时
       failed: Gist 上传失败
+      code: Gist API 调用错误： %d
   version: 'RPGItem v%s (1.13.1 branch)
 
 

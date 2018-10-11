@@ -65,7 +65,9 @@ message:
     not_vaild_int: '''%s'' is not an valid integer'
     get: '%d th power ''%s''''s property %s is %s'
     change: Property set
-    all: "%d th power '%s''s properties: \n"
+    all: |-
+      %d th power '%s''s properties:
+      %s
   drop:
     get: The chance that '%s' will drop from '%s' is %.2f%%
     set: The chance that '%s' will drop from '%s' was set to %.2f%%
@@ -145,7 +147,26 @@ message:
     list: '%s - {itemName}'
     print: '{itemName}'
     power: 'Power %s (%s)：%s [%s]'
-    dump: 'Item %s: \n %s'
+    dump: |-
+      Item %s:
+      %s
+    author:
+      set: Author of Item %s set to %s
+      get: Author of Item %s is %s
+    license:
+      set: |-
+        License of Item %s set to:
+        %s
+      get: |-
+        License of Item %s is:
+        %s
+    note:
+      set: |-
+        Not of Item %s set to:
+        %s
+      get: |-
+        Note of Item %s is:
+        %s
   damagemode:
     FIXED: Item '%s' damage mode set to fixed damage (default)
     ADDITIONAL: Item '%s' damage mode set to additional damage (vanilla minecraft damage plus RPGItem damage)
@@ -176,7 +197,10 @@ message:
     removed: Power %s removed
     required: "Missing required argument: %s"
     key: Power %s
-    description: "Description:\n%s\n"
+    description: |-
+      Description:
+      %s
+
   toggleLore:
     show: Lore now been displayed
     hide: Lore now been hid

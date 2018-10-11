@@ -866,7 +866,7 @@ public class Handler extends RPGCommandReceiver {
     public void itemAddPower(CommandSender sender, Arguments args) throws IllegalAccessException {
         String itemStr = args.next();
         String powerStr = args.next();
-        if (itemStr == null || (itemStr.equals("help") && ItemManager.getItemByName(itemStr) == null) || powerStr == null || powerStr.equals("help")) {
+        if (itemStr == null || (itemStr.equals("help") && ItemManager.getItemByName(itemStr) == null)) {
             msg(sender, "manual.power.description");
             msg(sender, "manual.power.usage");
             for (NamespacedKey power : PowerManager.getPowers().keySet()) {
@@ -875,7 +875,7 @@ public class Handler extends RPGCommandReceiver {
             }
             return;
         }
-        if (ItemManager.getItemByName(itemStr) != null && powerStr.equals("list")) {
+        if (ItemManager.getItemByName(itemStr) != null && (powerStr == null || powerStr.equals("list"))) {
             RPGItem item = getItemByName(itemStr);
             for (Power power : item.powers) {
                 msg(sender, "message.item.power", power.getLocalizedName(plugin.cfg.language), power.getNamespacedKey().toString(), power.displayText(), power.getTriggers().stream().map(TriggerType::name).collect(Collectors.joining(",")));
@@ -997,10 +997,10 @@ public class Handler extends RPGCommandReceiver {
         String author = args.next();
         if (author != null) {
             item.setAuthor(author);
-            msg(sender, "message.item.author.set", author);
+            msg(sender, "message.item.author.set", item.getName(), author);
             ItemManager.save();
         } else {
-            msg(sender, "message.item.author.get", item.getAuthor());
+            msg(sender, "message.item.author.get", item.getName(), item.getAuthor());
         }
     }
 
@@ -1011,10 +1011,10 @@ public class Handler extends RPGCommandReceiver {
         String note = args.next();
         if (note != null) {
             item.setNote(note);
-            msg(sender, "message.item.note.set", note);
+            msg(sender, "message.item.note.set", item.getName(), note);
             ItemManager.save();
         } else {
-            msg(sender, "message.item.note.get", item.getNote());
+            msg(sender, "message.item.note.get", item.getName(), item.getNote());
         }
     }
 
@@ -1025,10 +1025,10 @@ public class Handler extends RPGCommandReceiver {
         String license = args.next();
         if (license != null) {
             item.setLicense(license);
-            msg(sender, "message.item.license.set", license);
+            msg(sender, "message.item.license.set", item.getName(), license);
             ItemManager.save();
         } else {
-            msg(sender, "message.item.license.get", item.getLicense());
+            msg(sender, "message.item.license.get", item.getName(), item.getLicense());
         }
     }
 
@@ -1049,7 +1049,10 @@ public class Handler extends RPGCommandReceiver {
             throw new BadCommandException("message.error.item", unknown.get().getKey());
         }
         String token = args.argString("token", plugin.cfg.githubToken);
-        String description = args.argString("description");
+        boolean isPublish = Boolean.parseBoolean(args.argString("publish", String.valueOf(plugin.cfg.publishGist)));
+        String description = args.argString("description",
+                "RPGItems exported item: " + String.join(",", itemNames)
+        );
         if (token == null) {
             throw new BadCommandException("message.export.gist.token");
         }
@@ -1070,7 +1073,7 @@ public class Handler extends RPGCommandReceiver {
         );
         Bukkit.getScheduler().runTaskAsynchronously(plugin, () -> {
             try {
-                String id = NetworkUtils.publishGist(result, token, description);
+                String id = NetworkUtils.publishGist(result, token, description, isPublish);
                 Bukkit.getScheduler().runTask(plugin, () -> msg(sender, "message.export.gist.ed", id));
             } catch (InterruptedException | ExecutionException e) {
                 e.printStackTrace();
