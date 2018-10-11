@@ -41,8 +41,8 @@ repositories {
 dependencies {
     api 'cat.nyaa:nyaacore:6.2-SNAPSHOT'
 
-    implementation files('lib/worldguard-legacy-7.0.0-SNAPSHOT-dist.jar')
-    implementation files('lib/worldedit-bukkit-7.0.0-SNAPSHOT-dist.jar')
+    implementation 'com.sk89q.worldguard:worldguard-legacy:7.0.0-SNAPSHOT'
+    implementation 'com.sk89q.worldedit:worldedit-bukkit:7.0.0-SNAPSHOT'
     implementation 'com.google.code.findbugs:jsr305:1.3.9'
     compileOnly 'org.librazy:NyaaUtilsLangChecker:2.0-SNAPSHOT'
     annotationProcessor 'org.librazy:NyaaUtilsLangChecker:2.0-SNAPSHOT'
