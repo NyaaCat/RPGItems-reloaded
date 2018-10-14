@@ -13,7 +13,6 @@ import org.bukkit.plugin.Plugin;
 import think.rpgitems.Handler;
 import think.rpgitems.I18n;
 import think.rpgitems.RPGItems;
-import think.rpgitems.item.RPGItem;
 import think.rpgitems.utils.MaterialUtils;
 
 import javax.annotation.CheckForNull;
@@ -126,7 +125,7 @@ public class PowerManager {
             if (value.equalsIgnoreCase(trueChoice) || value.equalsIgnoreCase(falseChoice)) {
                 field.set(power, value.equalsIgnoreCase(trueChoice));
             } else {
-                throw new Handler.CommandException("message.error.invalid_option", field.getName(), falseChoice + ", " + trueChoice);//TODO
+                throw new Handler.CommandException("message.error.invalid_option", value, field.getName(), falseChoice + ", " + trueChoice);//TODO
             }
             return;
         }
@@ -134,7 +133,7 @@ public class PowerManager {
         if (as != null) {
             List<String> acc = getAcceptedValue(cls, as);
             if (!acc.contains(value) && !Collection.class.isAssignableFrom(field.getType())) {
-                throw new Handler.CommandException("message.error.invalid_option", field.getName(), acc.stream().reduce(" ", (a, b) -> a + ", " + b));
+                throw new Handler.CommandException("message.error.invalid_option", value, field.getName(), String.join(", ", acc));
             }
         }
         setPowerPropertyInternal(sender, power, field, value);
@@ -154,19 +153,23 @@ public class PowerManager {
                     new Message(I18n.format(st.message())).send(sender);
                 }
             } else {
-                if (field.getType().equals(int.class)) {
+                if (value.equals("null")) {
+                    field.set(power, null);
+                    return;
+                }
+                if (field.getType().equals(int.class) || field.getType().equals(Integer.class)) {
                     try {
                         field.set(power, Integer.parseInt(value));
                     } catch (NumberFormatException e) {
                         throw new Handler.CommandException("internal.error.bad_int", value);
                     }
-                } else if (field.getType().equals(long.class)) {
+                } else if (field.getType().equals(long.class) || field.getType().equals(Long.class)) {
                     try {
                         field.set(power, Long.parseLong(value));
                     } catch (NumberFormatException e) {
                         throw new Handler.CommandException("internal.error.bad_int", value);
                     }
-                } else if (field.getType().equals(double.class)) {
+                } else if (field.getType().equals(double.class) || field.getType().equals(Double.class)) {
                     try {
                         field.set(power, Double.parseDouble(value));
                     } catch (NumberFormatException e) {
@@ -174,17 +177,17 @@ public class PowerManager {
                     }
                 } else if (field.getType().equals(String.class)) {
                     field.set(power, value);
-                } else if (field.getType().equals(boolean.class)) {
+                } else if (field.getType().equals(boolean.class) || field.getType().equals(Boolean.class)) {
                     if (value.equalsIgnoreCase("true") || value.equalsIgnoreCase("false")) {
                         field.set(power, Boolean.valueOf(value));
                     } else {
-                        throw new Handler.CommandException("message.error.invalid_option", field.getName(), "true, false");
+                        throw new Handler.CommandException("message.error.invalid_option", value, field.getName(), "true, false");
                     }
                 } else if (field.getType().isEnum()) {
                     try {
                         field.set(power, Enum.valueOf((Class<Enum>) field.getType(), value));
                     } catch (IllegalArgumentException e) {
-                        throw new Handler.CommandException("internal.error.bad_enum", field.getName(), Stream.of(field.getType().getEnumConstants()).map(Object::toString).reduce(" ", (a, b) -> a + ", " + b));
+                        throw new Handler.CommandException("internal.error.bad_enum", field.getName(), Stream.of(field.getType().getEnumConstants()).map(Object::toString).collect(Collectors.joining(", ")));
                     }
                 } else if (Collection.class.isAssignableFrom(field.getType())) {
                     ParameterizedType listType = (ParameterizedType) field.getGenericType();
@@ -194,7 +197,7 @@ public class PowerManager {
                     if (as != null) {
                         List<String> acc = getAcceptedValue(cls, as);
                         if (Arrays.stream(valueStrs).filter(s -> !s.isEmpty()).anyMatch(v -> !acc.contains(v))) {
-                            throw new Handler.CommandException("message.error.invalid_option", field.getName(), String.join(", ", acc));
+                            throw new Handler.CommandException("message.error.invalid_option", value, field.getName(), String.join(", ", acc));
                         }
                     }
                     Stream<String> values = Arrays.stream(valueStrs).filter(s -> !s.isEmpty());
@@ -248,7 +251,8 @@ public class PowerManager {
 
     public static List<String> getAcceptedValue(Class<? extends Power> cls, AcceptedValue anno) {
         if (anno.preset() != Preset.NONE) {
-            return anno.preset().get(cls);
+            return Stream.concat(Arrays.stream(anno.value()), anno.preset().get(cls).stream())
+                         .collect(Collectors.toList());
         } else {
             return Arrays.asList(anno.value());
         }

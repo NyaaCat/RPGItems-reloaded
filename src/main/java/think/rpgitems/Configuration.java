@@ -18,10 +18,10 @@ public class Configuration extends PluginConfigure {
     @Serializable
     public String language = "en_US";
 
-    @Serializable
+    @Serializable(name ="general.locale_inv", alias = "localeInv")
     public boolean localeInv = false;
 
-    @Serializable(name = "itemperpage")
+    @Serializable(name ="command.list.item_per_page", alias = "itemperpage")
     public int itemPerPage = 9;
 
     @Serializable(name = "support.worldguard")
@@ -33,15 +33,24 @@ public class Configuration extends PluginConfigure {
     @Serializable(name = "give-perms")
     public boolean givePerms = false;
 
-    @Serializable(name = "githubToken")
+    @Serializable(name = "gist.token", alias = "githubToken")
     public String githubToken = "";
 
-    @Serializable(name = "publishGist")
+    @Serializable(name = "gist.publish", alias = "publishGist")
     public boolean publishGist = true;
 
-    @Serializable
+    @Serializable(name = "item.defaults.numeric_bar", alias = "numericBar")
     public boolean numericBar = false;
 
-    @Serializable
+    @Serializable(name = "item.defaults.force_bar", alias = "forceBar")
     public boolean forceBar = false;
+
+    @Serializable(name = "item.defaults.license")
+    public String defaultLicense;
+
+    @Serializable(name = "item.defaults.note")
+    public String defaultNote;
+
+    @Serializable(name = "item.defaults.author")
+    public String defaultAuthor;
 }

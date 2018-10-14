@@ -1,7 +1,9 @@
 package think.rpgitems.item;
 
+import cat.nyaa.nyaacore.Message;
 import org.bukkit.Bukkit;
 import org.bukkit.Material;
+import org.bukkit.command.CommandSender;
 import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.configuration.InvalidConfigurationException;
 import org.bukkit.configuration.MemoryConfiguration;
@@ -10,6 +12,7 @@ import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.ItemMeta;
 import org.bukkit.util.FileUtil;
+import think.rpgitems.I18n;
 import think.rpgitems.RPGItems;
 import think.rpgitems.power.UnknownExtensionException;
 import think.rpgitems.power.UnknownPowerException;
@@ -19,6 +22,7 @@ import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.StandardCopyOption;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.Objects;
 import java.util.concurrent.ThreadLocalRandom;
@@ -138,16 +142,28 @@ public class ItemManager {
             if (section == null)
                 return;
             for (Object obj : section.getValues(false).values()) {
-                ConfigurationSection sec = (ConfigurationSection) obj;
-                RPGItem item = new RPGItem(sec);
-                addItem(item);
+                try {
+                    ConfigurationSection sec = (ConfigurationSection) obj;
+                    RPGItem item = new RPGItem(sec);
+                    addItem(item);
+                    //  Message message = new Message("").append(I18n.format("message.update.success"), Collections.singletonMap("{item}", item.getComponent()));
+                    //  Bukkit.getOperators().forEach(message::send);
+                    //  message.send(Bukkit.getConsoleSender());
+                } catch (Exception e){
+                    e.printStackTrace();
+                    Message message = new Message(I18n.format("message.update.fail", e.getLocalizedMessage()));
+                    Bukkit.getOperators().forEach(message::send);
+                    message.send(Bukkit.getConsoleSender());
+                }
             }
         } catch (Exception e) {
             // Something went wrong
             e.printStackTrace();
+            Message message = new Message(I18n.format("message.update.fail", e.getLocalizedMessage()));
+            Bukkit.getOperators().forEach(message::send);
             plugin.getLogger().severe("Error loading items.yml. Creating backup");
             dump(e);
-            throw new RuntimeException(e);
+            throw new RuntimeException(e); //TODO
         }
     }
 
@@ -228,7 +244,7 @@ public class ItemManager {
                 }
                 item.file = canonicalPath;
             } catch (Exception e) {
-                plugin.getLogger().log(Level.SEVERE, "Error verifying integrity for" + itemName + ".", e);
+                plugin.getLogger().log(Level.SEVERE, "Error verifying integrity for " + itemName + ".", e);
                 throw new RuntimeException(e);
             }
         } catch (IOException e) {
@@ -256,11 +272,11 @@ public class ItemManager {
         }
     }
 
-    public static RPGItem newItem(String name) {
+    public static RPGItem newItem(String name, CommandSender sender) {
         if (itemByName.containsKey(name))
             return null;
         int free = nextUid();
-        RPGItem item = new RPGItem(name, free);
+        RPGItem item = new RPGItem(name, free, sender);
         itemById.put(free, item);
         itemByName.put(name, item);
         return item;

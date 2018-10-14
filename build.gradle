@@ -39,12 +39,15 @@ repositories {
 }
 
 dependencies {
+    compileOnly files('lib/spigot-1.13.1.jar')
     api 'cat.nyaa:nyaacore:6.2-SNAPSHOT'
 
     implementation ('com.sk89q.worldguard:worldguard-legacy:7.0.0-SNAPSHOT') {
+        exclude group: 'io.papermc', module: 'paperlib'
         exclude group: 'org.bstats.bStats-Metrics', module: 'bstats-bukkit'
     }
     implementation ('com.sk89q.worldedit:worldedit-bukkit:7.0.0-SNAPSHOT') {
+        exclude group: 'io.papermc', module: 'paperlib'
         exclude group: 'org.bstats.bStats-Metrics', module: 'bstats-bukkit'
     }
     implementation 'com.google.code.findbugs:jsr305:1.3.9'
@@ -110,8 +113,9 @@ javadoc {
         links 'https://docs.oracle.com/javase/8/docs/api/'
         links 'https://hub.spigotmc.org/javadocs/spigot/'
         links 'https://google.github.io/guava/releases/21.0/api/docs/'
-        links 'https://nyaacat.github.io/NyaaCentral/NyaaCore/6.1-mc1.13/javadoc/'
+        links 'https://nyaacat.github.io/NyaaCentral/NyaaCore/6.2-mc1.13.1/javadoc/'
         links 'https://ci.md-5.net/job/BungeeCord/ws/chat/target/apidocs/'
+        links 'https://netty.io/4.1/api/index.html'
 
         locale 'en_US'
         encoding 'UTF-8'

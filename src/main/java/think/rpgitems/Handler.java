@@ -93,7 +93,7 @@ public class Handler extends RPGCommandReceiver {
             sender.sendMessage(ChatColor.AQUA + "RPGItems: " + page + " / " + max);
         }
 
-        stream.forEach(item -> new Message("").append(I18n.format("message.item.list", item.getName()), item.toItemStack()).send(sender)
+        stream.forEach(item -> new Message("").append(I18n.format("message.item.list", item.getName()), Collections.singletonMap("{item}", item.getComponent())).send(sender)
         );
     }
 
@@ -152,7 +152,7 @@ public class Handler extends RPGCommandReceiver {
     @Attribute("item")
     public void createItem(CommandSender sender, Arguments args) {
         String itemName = args.nextString();
-        if (ItemManager.newItem(itemName.toLowerCase()) != null) {
+        if (ItemManager.newItem(itemName.toLowerCase(), sender) != null) {
             msg(sender, "message.create.ok", itemName);
             ItemManager.save();
         } else {
@@ -419,7 +419,7 @@ public class Handler extends RPGCommandReceiver {
             }
             break;
             default:
-                throw new BadCommandException("message.error.invalid_option", "enchantment", "clone,clear");
+                throw new BadCommandException("message.error.invalid_option", command, "enchantment", "clone,clear");
         }
     }
 
@@ -492,7 +492,7 @@ public class Handler extends RPGCommandReceiver {
             }
             break;
             default:
-                throw new BadCommandException("message.error.invalid_option", "description", "add,set,remove");
+                throw new BadCommandException("message.error.invalid_option", command, "description", "add,set,remove");
         }
     }
 
@@ -646,12 +646,7 @@ public class Handler extends RPGCommandReceiver {
             Optional<Power> op = item.powers.stream().filter(pwr -> pwr.getClass().equals(p)).skip(nth - 1).findFirst();
             if (op.isPresent()) {
                 Power pow = op.get();
-                item.removePower(pow);
-                try {
-                    PowerManager.setPowerProperty(sender, pow, property, val);
-                } finally {
-                    item.addPower(pow);
-                }
+                PowerManager.setPowerProperty(sender, pow, property, val);
             } else {
                 msg(sender, "message.power_property.power_notfound");
                 return;
@@ -688,7 +683,7 @@ public class Handler extends RPGCommandReceiver {
                     msg(sender, "message.cost.hit_toggle." + (item.hitCostByDamage ? "enable" : "disable"));
                     break;
                 default:
-                    throw new BadCommandException("message.error.invalid_option", "cost", "breaking,hitting,hit,toggle");
+                    throw new BadCommandException("message.error.invalid_option", type, "cost", "breaking,hitting,hit,toggle");
             }
         } else {
             int newValue = args.nextInt();
@@ -703,7 +698,7 @@ public class Handler extends RPGCommandReceiver {
                     item.hitCost = newValue;
                     break;
                 default:
-                    throw new BadCommandException("message.error.invalid_option", "cost", "breaking,hitting,hit");
+                    throw new BadCommandException("message.error.invalid_option", type, "cost", "breaking,hitting,hit");
             }
 
             ItemManager.save(item);
@@ -760,7 +755,7 @@ public class Handler extends RPGCommandReceiver {
                 }
                 break;
                 default:
-                    throw new BadCommandException("message.error.invalid_option", "durability", "value,infinite,togglebar,default,bound");
+                    throw new BadCommandException("message.error.invalid_option", arg, "durability", "value,infinite,togglebar,default,bound");
             }
         }
     }
@@ -886,7 +881,7 @@ public class Handler extends RPGCommandReceiver {
         if (ItemManager.getItemByName(itemStr) != null && (powerStr == null || powerStr.equals("list"))) {
             RPGItem item = getItemByName(itemStr);
             for (Power power : item.powers) {
-                msg(sender, "message.item.power", power.getLocalizedName(plugin.cfg.language), power.getNamespacedKey().toString(), power.displayText() == null ? "No Display" : power.displayText(), power.getTriggers().stream().map(TriggerType::name).collect(Collectors.joining(",")));
+                msg(sender, "message.item.power", power.getLocalizedName(plugin.cfg.language), power.getNamespacedKey().toString(), power.displayText() == null ? I18n.format("message.power.no_display") : power.displayText(), power.getTriggers().stream().map(TriggerType::name).collect(Collectors.joining(",")));
             }
             return;
         }
@@ -1178,6 +1173,20 @@ public class Handler extends RPGCommandReceiver {
 
         public CommandException(@LangKey(varArgsPosition = 1) String msg_internal, Throwable cause, Object... args) {
             super(msg_internal, cause, args);
+        }
+
+        @Override
+        public String toString() {
+            StringBuilder keyBuilder = new StringBuilder("CommandException<" + getMessage() + ">");
+            for (Object obj : objs) {
+                keyBuilder.append("#<").append(obj.toString()).append(">");
+            }
+            return keyBuilder.toString();
+        }
+
+        @Override
+        public String getLocalizedMessage() {
+            return I18n.format(getMessage(), objs);
         }
     }
 }

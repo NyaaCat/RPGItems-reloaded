@@ -28,7 +28,7 @@ message:
     empty_ench: This item has an empty enchantment list
   error:
     legacy_name: '%s now have a new name in Minecraft 1.13: %s'
-    invalid_option: "Invalid option for %s. Available: %s"
+    invalid_option: "%s is not a valid option for %s. Available: %s"
     effect: '%s is not a valid effect'
     permission: You do not have permission for '%s'
     double:
@@ -114,13 +114,8 @@ message:
     get: Item '%s' lore is '%s'
     set: Item '%s' lore set to '%s'
   update:
-    fail: '>>> FAIL <<<'
-    noitem: You must take item in hand
-    notvalid: Not a valid RPGItem
-    noneed: Valid new RPGItem detected, no need to update
-    head: '>>> Update RPGItem <<<'
-    updating: Valid legacy RPGItem detected. Updating ...
-    success: '>>> SUCCESS <<<'
+    fail: 'Failed updating Item: %s, check console for more detail'
+    success: Successfully updated Item {item}
   too:
     far: It landed too far away...
   version: |-
@@ -147,7 +142,7 @@ message:
     cant:
       find: Cannot find item
     get: 'Item ''%s'' item is {itemName} (%s): %d '
-    list: '%s - {itemName}'
+    list: '%s - {item}'
     print: '{itemName}'
     power: 'Power %s (%s)：%s [%s]'
     dump: |-
@@ -187,6 +182,9 @@ message:
     itemflags: 'ItemFlags: '
     customitemmodel: 'Custom item model: %s'
     durability: 'Max durability: %d'
+    author: 'Author: {author}'
+    note: 'Note: %s'
+    license: 'License: %s'
   permission:
     booleanerror: Enabled must be boolean ! (true or false)
     success: Permission restriction successfully set !
@@ -202,6 +200,7 @@ message:
     required: "Missing required argument: %s"
     key: Power '%s'
     description: "%s"
+    no_display: No display text
   toggleLore:
     show: Lore now been displayed
     hide: Lore now been hid
@@ -296,6 +295,8 @@ power:
       cooldown: Cooldown of the power, in ticks.
       display: Display text of this power
       cost: Durability cost of the power.
+      isStatic: Whether only check this condition once
+      isCritical: Whether abort current trigger if this condition fails
     airborne:
       main_name: Airborne
       main_description: Do more damage when gliding
@@ -337,6 +338,10 @@ power:
       attractingTickCost: Durability cost per tick when attracting.
       attractingEntityTickCost: Durability cost per entity one tick when attracting.
       attractPlayer: Whether allow attracting player.
+    chancecondition:
+      main_name: Chance Condition
+      main_description: Condition that met by chance
+      chancePercentage: chance, in percentage
     charge:
       main_name: Charge
       main_description: Do more damage when sprinting

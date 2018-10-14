@@ -3,10 +3,7 @@ package think.rpgitems.item;
 import cat.nyaa.nyaacore.Message;
 import cat.nyaa.nyaacore.utils.ItemStackUtils;
 import com.google.common.base.Strings;
-import net.md_5.bungee.api.chat.BaseComponent;
-import net.md_5.bungee.api.chat.ClickEvent;
-import net.md_5.bungee.api.chat.HoverEvent;
-import net.md_5.bungee.api.chat.TextComponent;
+import net.md_5.bungee.api.chat.*;
 import org.apache.commons.lang.StringUtils;
 import org.bukkit.*;
 import org.bukkit.attribute.Attribute;
@@ -102,9 +99,9 @@ public class RPGItem {
     private String type = I18n.format("item.type");
     private String hand = I18n.format("item.hand");
 
-    private String author;
-    private String note;
-    private String license;
+    private String author = plugin.cfg.defaultAuthor;
+    private String note = plugin.cfg.defaultNote;
+    private String license = plugin.cfg.defaultLicense;
 
     private int tooltipWidth = 150;
     // Durability
@@ -113,9 +110,10 @@ public class RPGItem {
     private boolean forceBar = plugin.cfg.forceBar;
     private int _loreMinLen = 0;
 
-    public RPGItem(String name, int uid) {
+    public RPGItem(String name, int uid, CommandSender author) {
         this.name = name;
         this.uid = uid;
+        this.author = author instanceof Player ? ((Player) author).getUniqueId().toString() : plugin.cfg.defaultAuthor;
         encodedUID = getMCEncodedUID(uid);
         item = new ItemStack(Material.WOODEN_SWORD);
         hasBar = true;
@@ -1142,6 +1140,19 @@ public class RPGItem {
     }
 
     public void print(CommandSender sender) {
+        String author = this.author;
+        BaseComponent authorComponent = new TextComponent(author);
+        try {
+            UUID uuid = UUID.fromString(this.author);
+            OfflinePlayer authorPlayer = Bukkit.getOfflinePlayer(uuid);
+            author = authorPlayer.getName();
+            authorComponent = new TextComponent(author);
+            authorComponent.setHoverEvent(new HoverEvent(HoverEvent.Action.SHOW_ENTITY,
+                    new ComponentBuilder(Message.getPlayerJson(authorPlayer)).create()
+            ));
+        } catch (IllegalArgumentException ignored) {
+        }
+
         if (sender instanceof Player) {
             new Message("")
                     .append(I18n.format("message.item.print"), toItemStack())
@@ -1152,6 +1163,11 @@ public class RPGItem {
                 sender.sendMessage(lines.get(i));
             }
         }
+
+        new Message("").append(I18n.format("message.print.author"), Collections.singletonMap("{author}", authorComponent)).send(sender);
+        new Message(I18n.format("message.print.license", license)).send(sender);
+        new Message(I18n.format("message.print.note", note)).send(sender);
+
         sender.sendMessage(I18n.format("message.durability.info", getMaxDurability(), defaultDurability, durabilityLowerBound, durabilityUpperBound));
         if (customItemModel) {
             sender.sendMessage(I18n.format("message.print.customitemmodel", item.getType().name() + ":" + ((Damageable) localeMeta).getDamage()));

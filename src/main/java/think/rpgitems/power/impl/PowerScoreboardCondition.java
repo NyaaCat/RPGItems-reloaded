@@ -54,19 +54,19 @@ public class PowerScoreboardCondition extends BasePower implements PowerConditio
     @Property
     public String team;
 
-    public static LoadingCache<String, Map<String, Pair<Integer, Integer>>> scoreCache = CacheBuilder
+    private static LoadingCache<String, Map<String, Pair<Integer, Integer>>> scoreCache = CacheBuilder
                                                                                                  .newBuilder()
                                                                                                  .concurrencyLevel(1)
                                                                                                  .expireAfterAccess(1, TimeUnit.DAYS)
                                                                                                  .build(CacheLoader.from(PowerSelector::parseScore));
 
-    public static LoadingCache<String, Pair<Set<String>, Set<String>>> teamCache = CacheBuilder
+    private static LoadingCache<String, Pair<Set<String>, Set<String>>> teamCache = CacheBuilder
                                                                                            .newBuilder()
                                                                                            .concurrencyLevel(1)
                                                                                            .expireAfterAccess(1, TimeUnit.DAYS)
                                                                                            .build(CacheLoader.from(PowerSelector::parse));
 
-    public static LoadingCache<String, Pair<Set<String>, Set<String>>> tagCache = CacheBuilder
+    private static LoadingCache<String, Pair<Set<String>, Set<String>>> tagCache = CacheBuilder
                                                                                           .newBuilder()
                                                                                           .concurrencyLevel(1)
                                                                                           .expireAfterAccess(1, TimeUnit.DAYS)

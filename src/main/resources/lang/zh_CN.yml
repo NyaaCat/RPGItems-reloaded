@@ -8,7 +8,7 @@ message:
     '5': 进行放置
   error:
     legacy_name: '%s 在 Minecraft 1.13 有一个新名字：%s'
-    invalid_option: '无效输入 %s. 可选项: %s'
+    invalid_option: '输入 %s 对于 %s 无效. 可选项: %s'
     effect: '%s 不是一个有效的效果'
     permission: 你没有权限： '%s'
     double:
@@ -105,20 +105,13 @@ message:
     get: 物品 '%s' 描述为 '%s'
     set: 物品 '%s' 描述已设置为 '%s
   update:
-    fail: '>>> 失败 <<<'
-    noitem: 你需要将装备拿在手里
-    notvalid: 不是有效的装备
-    noneed: 这是新RPGItem，无需再更新
-    head: '>>> 更新RPGItem <<<'
-    updating: 正在更新旧装备...
-    success: '>>> 成功 <<<'
+    fail: 物品升级失败：%s，请查看后台输出
+    success: 成功升级物品 {item}
   too:
     far: 太远了...
   display:
     get: 物品 '%s' 展示名为 '%s'
     set: 物品 '%s' 展示名已设置为 '%s'
-  deprecation:
-    lore: '[注意] lore 是已弃用的特性，请使用 description 替代。'
   type:
     set: 物品 '%s' 类型已设置为 '%s'
     get: 物品 '%s' 类型为 '%s'
@@ -132,7 +125,7 @@ message:
     cant:
       find: 没有找到该物品
     get: '物品 ''%s'' 材质为 {itemName} (%s): %d '
-    list: '%s - {itemName}'
+    list: '%s - {item}'
     print: '{itemName}'
     power: '技能 %s (%s)：%s [%s]'
     dump: |-
@@ -183,6 +176,7 @@ message:
     required: '缺少必选参数: %s'
     key: 技能 %s
     description: "%s"
+    no_display: 无说明
   toggleLore:
     show: 文字已显示
     hide: 文字已隐藏
@@ -194,6 +188,9 @@ message:
     itemflags: 'ItemFlags: '
     durability: '最大耐久度: %d'
     customitemmodel: '自定义模型: %s'
+    author: '作者：{author}'
+    note: '说明：%s'
+    license: '授权：%s'
   itemflag:
     add: 成功添加ItemFlag %s
     remove: 已将ItemFlag %s从物品上移除
@@ -301,6 +298,8 @@ power:
       cooldown: 技能的冷却时间，以游戏刻为单位
       display: 技能的提示文字
       cost: 技能的耐久消耗量
+      isStatic: 是否仅在触发开始时测试条件
+      isCritical: 条件失败时是否中止当前触发
     aoe:
       main_name: 范围效果
       main_description: 对周围实体施放状态效果。可使用选择器。
