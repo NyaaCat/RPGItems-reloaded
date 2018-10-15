@@ -1,14 +1,19 @@
 package think.rpgitems.utils;
 
 import org.bukkit.potion.PotionEffectType;
+import think.rpgitems.Handler;
 import think.rpgitems.power.Getter;
 import think.rpgitems.power.Setter;
+
+import java.util.Optional;
 
 public class PotionEffectUtils implements Setter<PotionEffectType>, Getter<PotionEffectType> {
 
     @Override
-    public PotionEffectType set(String effect) {
-        return PotionEffectType.getByName(effect);
+    public Optional<PotionEffectType> set(String effect) {
+        PotionEffectType potionEffect = PotionEffectType.getByName(effect);
+        if (potionEffect == null) throw new IllegalArgumentException();
+        return Optional.of(potionEffect);
     }
 
     @Override

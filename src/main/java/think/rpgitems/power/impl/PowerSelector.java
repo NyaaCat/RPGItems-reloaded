@@ -129,12 +129,12 @@ public class PowerSelector extends BasePower {
     @Override
     public void init(ConfigurationSection section) {
         super.init(section);
-        if (count < 0) count = null;
-        if (dx < 0) dx = null;
-        if (dy < 0) dy = null;
-        if (dz < 0) dz = null;
-        if (r < 0) r = null;
-        if (rm < 0) rm = null;
+        if (count != null && count < 0) count = null;
+        if (dx != null && dx < 0) dx = null;
+        if (dy != null && dy < 0) dy = null;
+        if (dz != null && dz < 0) dz = null;
+        if (r != null && r < 0) r = null;
+        if (rm != null && rm < 0) rm = null;
     }
 
     private static LoadingCache<String, Map<String, Pair<Integer, Integer>>> scoreCache = CacheBuilder

@@ -1,21 +1,19 @@
 package think.rpgitems.power;
 
-import java.lang.reflect.InvocationTargetException;
+import java.util.Optional;
+
+import static think.rpgitems.power.Getter.getAccessor;
 
 public interface Setter<T> {
-    T set(String value) throws IllegalArgumentException;
+
+    /**
+     * @param value String representation of the object
+     * @return The object to be set to field, or empty if field are already set by this setter
+     * @throws IllegalArgumentException {@code value} is not a valid representation of the object
+     */
+    Optional<T> set(String value) throws IllegalArgumentException;
 
     static Setter from(Power p, Class<? extends Setter> cls) {
-        try {
-            return cls.getDeclaredConstructor().newInstance();
-        } catch (InstantiationException | IllegalAccessException | InvocationTargetException e) {
-            throw new RuntimeException(e);
-        } catch (NoSuchMethodException e) {
-            try {
-                return cls.getDeclaredConstructor(p.getClass()).newInstance(p);
-            } catch (InstantiationException | IllegalAccessException | InvocationTargetException | NoSuchMethodException ex) {
-                throw new RuntimeException(ex);
-            }
-        }
+        return getAccessor(p, cls);
     }
 }

@@ -15,6 +15,7 @@ import think.rpgitems.I18n;
 import think.rpgitems.RPGItems;
 import think.rpgitems.power.*;
 
+import java.util.Optional;
 import java.util.UUID;
 import java.util.concurrent.ThreadLocalRandom;
 import java.util.concurrent.TimeUnit;
@@ -242,26 +243,26 @@ public class PowerProjectile extends BasePower implements PowerRightClick {
          * @param type Type name
          */
         @Override
-        public Class<? extends Projectile> set(String type) {
+        public Optional<Class<? extends Projectile>> set(String type) {
             switch (type) {
                 case "skull":
-                    return WitherSkull.class;
+                    return Optional.of(WitherSkull.class);
                 case "fireball":
-                    return Fireball.class;
+                    return Optional.of(Fireball.class);
                 case "smallfireball":
-                    return SmallFireball.class;
+                    return Optional.of(SmallFireball.class);
                 case "arrow":
-                    return Arrow.class;
+                    return Optional.of(Arrow.class);
                 case "llamaspit":
-                    return LlamaSpit.class;
+                    return Optional.of(LlamaSpit.class);
                 case "shulkerbullet":
-                    return ShulkerBullet.class;
+                    return Optional.of(ShulkerBullet.class);
                 case "dragonfireball":
-                    return DragonFireball.class;
+                    return Optional.of(DragonFireball.class);
                 case "trident":
-                    return Trident.class;
+                    return Optional.of(Trident.class);
                 default:
-                    return Snowball.class;
+                    return Optional.of(Snowball.class);
             }
         }
     }

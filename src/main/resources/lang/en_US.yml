@@ -90,7 +90,7 @@ message:
     ok: Added line
   num_out_of_range: '%d is out of range (%d, %d]'
   durability:
-    info: 'Max: %d, Default: %d, Lower %d, Upper %d'
+    info: 'Durability Max: %d, Default: %d, Lower %d, Upper %d'
     change: Durability changed
     toggle: Durability bar toggled
   worldguard:
@@ -144,27 +144,32 @@ message:
     get: 'Item ''%s'' item is {itemName} (%s): %d '
     list: '%s - {item}'
     print: '{itemName}'
-    power: 'Power %s (%s)：%s [%s]'
+    power: 'Power %s (%s)：%s &r[%s]'
     dump: |-
       Item %s:
+
       %s
+
     author:
-      set: Author of Item %s set to %s
-      get: Author of Item %s is %s
+      set: Author of item %s set to {author}
+      get: Author of item %s is {author}
+      na: Author of item %s unknown
     license:
       set: |-
-        License of Item %s set to:
+        License of item %s set to:
         %s
       get: |-
-        License of Item %s is:
+        License of item %s is:
         %s
+      na: License of item %s unknown
     note:
       set: |-
-        Not of Item %s set to:
+        Not of item %s set to:
         %s
       get: |-
-        Note of Item %s is:
+        Note of item %s is:
         %s
+      na: No note available for item %s
     reorder: Reordered item %s's power %s
   damagemode:
     FIXED: Item '%s' damage mode set to fixed damage (default)

@@ -3,9 +3,11 @@ package think.rpgitems.utils;
 import org.bukkit.Bukkit;
 import org.bukkit.Material;
 import org.bukkit.command.CommandSender;
+import think.rpgitems.Handler;
 import think.rpgitems.I18n;
-import think.rpgitems.power.Getter;
 import think.rpgitems.power.Setter;
+
+import java.util.Optional;
 
 public class MaterialUtils implements Setter<Material> {
 
@@ -23,7 +25,9 @@ public class MaterialUtils implements Setter<Material> {
     }
 
     @Override
-    public Material set(String value) throws IllegalArgumentException {
-        return getMaterial(value, Bukkit.getConsoleSender());
+    public Optional<Material> set(String value) throws IllegalArgumentException {
+        Material material = getMaterial(value, Bukkit.getConsoleSender());
+        if (material == null) throw new IllegalArgumentException();
+        return Optional.of(material);
     }
 }

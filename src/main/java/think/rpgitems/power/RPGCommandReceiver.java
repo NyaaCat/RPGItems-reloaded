@@ -3,6 +3,7 @@ package think.rpgitems.power;
 import cat.nyaa.nyaacore.CommandReceiver;
 import cat.nyaa.nyaacore.LanguageRepository;
 import cat.nyaa.nyaacore.Message;
+import net.md_5.bungee.api.chat.BaseComponent;
 import org.bukkit.Bukkit;
 import org.bukkit.NamespacedKey;
 import org.bukkit.command.Command;
@@ -25,9 +26,11 @@ import static think.rpgitems.power.PowerManager.powers;
 
 public abstract class RPGCommandReceiver extends CommandReceiver {
     private final Map<String, String> subCommandAttribute = new HashMap<>();
+    private final LanguageRepository i18n;
 
     public RPGCommandReceiver(RPGItems plugin, LanguageRepository i18n) {
         super(plugin, i18n);
+        this.i18n = i18n;
         subCommands.forEach(
                 (s, method) -> {
                     Attribute attr = method.getAnnotation(Attribute.class);
@@ -402,6 +405,10 @@ public abstract class RPGCommandReceiver extends CommandReceiver {
                 return resolvePowerOrPropertySuggestion(sender, args);
             }
         }
+    }
+
+    protected void msg(CommandSender target, @LangKey(varArgsPosition = 1) String template, Map<String, BaseComponent> map, Object... args) {
+        new Message("").append(i18n.getFormatted(template, args), map).send(target);
     }
 
     @Override

@@ -26,7 +26,7 @@ message:
     material: 未知材质 '%s'
     command:
       format: 显示文本和指令必须用 | 这个符号分隔开
-    visualeffect: '%s 不是一个有效的粒子效果'
+    visualeffect: '%s 不是一个有效的视觉效果'
     player: 没有找到玩家 %s
     unknown:
       command: '错误: 未知指令 %s'
@@ -79,7 +79,7 @@ message:
     ok: 该行文本已增加
   num_out_of_range: '%d 已超出范围 (%d, %d]'
   durability:
-    info: '最大: %d, 默认: %d, 下限: %d, 上限: %d'
+    info: '耐久 最大: %d, 默认: %d, 下限: %d, 上限: %d'
     change: 耐久度已变更
     toggle: 耐久条已切换
   worldguard:
@@ -127,13 +127,14 @@ message:
     get: '物品 ''%s'' 材质为 {itemName} (%s): %d '
     list: '%s - {item}'
     print: '{itemName}'
-    power: '技能 %s (%s)：%s [%s]'
+    power: '技能 %s (%s)：%s &r[%s]'
     dump: |-
       物品 %s:
       %s
     author:
-      set: 物品 %s 的作者已设置为 %s
-      get: 物品 %s 的作者为 %s
+      set: 物品 %s 的作者已设置为 {author}
+      get: 物品 %s 的作者为 {author}
+      na: 物品 %s 的作者不详
     license:
       set: |-
         物品 %s 的协议已设置为：
@@ -141,6 +142,7 @@ message:
       get: |-
         物品 %s 的协议为：
         %s
+      na: 物品 %s 的协议不详
     note:
       set: |-
         物品 %s 的说明已设置为：
@@ -148,6 +150,7 @@ message:
       get: |-
         物品 %s 的说明为：
         %s
+      na: 物品 %s 无说明
     reorder: 物品 %s 的技能 %s 已调整顺序
   damagemode:
     FIXED: 物品 '%s' 伤害模式设定为固定伤害（默认）

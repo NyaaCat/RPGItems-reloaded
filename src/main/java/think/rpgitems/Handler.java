@@ -3,6 +3,11 @@ package think.rpgitems;
 import cat.nyaa.nyaacore.LanguageRepository;
 import cat.nyaa.nyaacore.Message;
 import com.google.common.base.Strings;
+import net.md_5.bungee.api.chat.BaseComponent;
+import net.md_5.bungee.api.chat.ComponentBuilder;
+import net.md_5.bungee.api.chat.HoverEvent;
+import net.md_5.bungee.api.chat.TextComponent;
+import net.md_5.bungee.chat.ComponentSerializer;
 import org.bukkit.*;
 import org.bukkit.command.CommandSender;
 import org.bukkit.configuration.InvalidConfigurationException;
@@ -71,25 +76,25 @@ public class Handler extends RPGCommandReceiver {
     @SubCommand("list")
     @Attribute("command")
     public void listItems(CommandSender sender, Arguments args) {
-        Collection<RPGItem> items = ItemManager.itemByName.values();
         int perPage = RPGItems.plugin.cfg.itemPerPage;
-        Stream<RPGItem> stream = ItemManager.itemByName.values().stream();
         String nameSearch = args.argString("n", args.argString("name", ""));
         String displaySearch = args.argString("d", args.argString("display", ""));
         String typeSearch = args.argString("t", args.argString("type", ""));
-        if (args.length() != 1) {
+        List<RPGItem> items = ItemManager.itemByName.values()
+                                                    .stream()
+                                                    .filter(i -> i.getName().contains(nameSearch))
+                                                    .filter(i -> i.getDisplay().contains(displaySearch))
+                                                    .filter(i -> i.getType().contains(typeSearch)).collect(Collectors.toList());
+        Stream<RPGItem> stream = items.stream();
+        if (args.top() != null) {
             int max = (int) Math.ceil(items.size() / (double) perPage);
             int page = args.nextInt();
-            if (!(0 < page || page <= max)) {
+            if (!(0 < page && page <= max)) {
                 throw new BadCommandException("message.num_out_of_range", page, 0, max);
             }
-            stream = ItemManager.itemByName.values()
-                                           .stream()
-                                           .filter(i -> i.getName().contains(nameSearch))
-                                           .filter(i -> i.getDisplay().contains(displaySearch))
-                                           .filter(i -> i.getType().contains(typeSearch))
-                                           .skip((page - 1) * perPage)
-                                           .limit(page);
+            stream = stream
+                             .skip((page - 1) * perPage)
+                             .limit(perPage);
             sender.sendMessage(ChatColor.AQUA + "RPGItems: " + page + " / " + max);
         }
 
@@ -999,11 +1004,42 @@ public class Handler extends RPGCommandReceiver {
         RPGItem item = getItemByName(args.nextString());
         String author = args.next();
         if (author != null) {
+            BaseComponent authorComponent = new TextComponent(author);
+            if (author.startsWith("@")) {
+                String authorName = author.substring(1);
+                Optional<OfflinePlayer> maybeAuthor = Arrays.stream(Bukkit.getOfflinePlayers()).filter(p -> p.getName().startsWith(authorName)).sorted(Comparator.comparing(OfflinePlayer::getLastPlayed).reversed()).findFirst();
+                if (maybeAuthor.isPresent()) {
+                    OfflinePlayer authorPlayer = maybeAuthor.get();
+                    author = authorPlayer.getUniqueId().toString();
+                    authorComponent = new TextComponent(authorPlayer.getName());
+                    authorComponent.setHoverEvent(new HoverEvent(HoverEvent.Action.SHOW_ENTITY,
+                            new ComponentBuilder(Message.getPlayerJson(authorPlayer)).create()
+                    ));
+                }
+            }
             item.setAuthor(author);
-            msg(sender, "message.item.author.set", item.getName(), author);
+            msg(sender, "message.item.author.set", Collections.singletonMap("{author}", authorComponent), item.getName());
             ItemManager.save(item);
         } else {
-            msg(sender, "message.item.author.get", item.getName(), item.getAuthor());
+            String authorText = item.getAuthor();
+            if (Strings.isNullOrEmpty(authorText)) {
+                msg(sender, "message.item.author.na", item.getName());
+            }
+            BaseComponent authorComponent = new TextComponent(authorText);
+            try {
+                UUID uuid = UUID.fromString(authorText);
+                OfflinePlayer authorPlayer = Bukkit.getOfflinePlayer(uuid);
+                String authorName = authorPlayer.getName();
+                if(authorName == null){
+                    authorName = uuid.toString();
+                }
+                authorComponent = new TextComponent(authorName);
+                authorComponent.setHoverEvent(new HoverEvent(HoverEvent.Action.SHOW_ENTITY,
+                        new ComponentBuilder(Message.getPlayerJson(authorPlayer)).create()
+                ));
+            } catch (IllegalArgumentException ignored) {
+            }
+            msg(sender, "message.item.author.get", Collections.singletonMap("{author}", authorComponent), item.getName());
         }
     }
 
@@ -1042,7 +1078,7 @@ public class Handler extends RPGCommandReceiver {
         YamlConfiguration yamlConfiguration = new YamlConfiguration();
         item.save(yamlConfiguration);
         String s = yamlConfiguration.saveToString();
-        msg(sender, "message.item.dump", item.getName(), s);
+        msg(sender, "message.item.dump", item.getName(), s.replace(ChatColor.COLOR_CHAR + "", "\\u00A7"));
     }
 
     @SubCommand("reorder")
@@ -1167,17 +1203,22 @@ public class Handler extends RPGCommandReceiver {
     }
 
     public static class CommandException extends BadCommandException {
+        @LangKey
+        private final String msg_internal;
+
         public CommandException(@LangKey String msg_internal, Object... args) {
             super(msg_internal, args);
+            this.msg_internal = msg_internal;
         }
 
         public CommandException(@LangKey(varArgsPosition = 1) String msg_internal, Throwable cause, Object... args) {
             super(msg_internal, cause, args);
+            this.msg_internal = msg_internal;
         }
 
         @Override
         public String toString() {
-            StringBuilder keyBuilder = new StringBuilder("CommandException<" + getMessage() + ">");
+            StringBuilder keyBuilder = new StringBuilder("CommandException<" + msg_internal + ">");
             for (Object obj : objs) {
                 keyBuilder.append("#<").append(obj.toString()).append(">");
             }
@@ -1186,7 +1227,7 @@ public class Handler extends RPGCommandReceiver {
 
         @Override
         public String getLocalizedMessage() {
-            return I18n.format(getMessage(), objs);
+            return I18n.format(msg_internal, objs);
         }
     }
 }

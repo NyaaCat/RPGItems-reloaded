@@ -1,10 +1,12 @@
 package think.rpgitems.power;
 
 import org.bukkit.Effect;
+import think.rpgitems.power.impl.PowerParticle;
 
 import java.util.Arrays;
 import java.util.List;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 public enum Preset {
     NONE,
@@ -50,7 +52,12 @@ public enum Preset {
             case TRIGGERS:
                 return Power.getTriggerTypes(cls).stream().map(TriggerType::name).collect(Collectors.toList());
             case VISUAL_EFFECT:
-                return Arrays.stream(Effect.values()).filter(effect -> effect.getType() == Effect.Type.VISUAL).map(Enum::name).collect(Collectors.toList());
+                return
+                        Stream.concat(
+                                Arrays.stream(Effect.values()).filter(effect -> effect.getType() == Effect.Type.VISUAL),
+                                Arrays.stream(PowerParticle.DeprecatedEffect.values())
+                        )
+                              .map(Enum::name).collect(Collectors.toList());
             case NONE:
             default:
                 throw new IllegalStateException();

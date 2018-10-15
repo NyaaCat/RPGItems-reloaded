@@ -50,7 +50,6 @@ import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
 import static org.bukkit.ChatColor.COLOR_CHAR;
-import static org.bukkit.ChatColor.getByChar;
 
 public class RPGItem {
     public static final int MC_ENCODED_ID_LENGTH = 16;
@@ -95,7 +94,6 @@ public class RPGItem {
     private Quality quality = Quality.TRASH;
     private int damageMin = 0, damageMax = 3;
     private int armour = 0;
-    private String loreText = "";
     private String type = I18n.format("item.type");
     private String hand = I18n.format("item.hand");
 
@@ -108,7 +106,6 @@ public class RPGItem {
     private int maxDurability = -1;
     private boolean hasBar = false;
     private boolean forceBar = plugin.cfg.forceBar;
-    private int _loreMinLen = 0;
 
     public RPGItem(String name, int uid, CommandSender author) {
         this.name = name;
@@ -152,8 +149,11 @@ public class RPGItem {
         setDisplay(s.getString("display"), false);
         setType(s.getString("type", I18n.format("item.type")), false);
         setHand(s.getString("hand", I18n.format("item.hand")), false);
-        setLore(s.getString("lore"), false);
+        String lore = s.getString("lore");
         description = (List<String>) s.getList("description", new ArrayList<String>());
+        if (!Strings.isNullOrEmpty(lore)) {
+            description.add(0, lore);
+        }
         for (int i = 0; i < description.size(); i++) {
             description.set(i, ChatColor.translateAlternateColorCodes('&', description.get(i)));
         }
@@ -182,11 +182,12 @@ public class RPGItem {
                 try {
                     String powerName = section.getString("powerName");
                     NamespacedKey key = PowerManager.parseKey(powerName);
-                    if (!PowerManager.hasPower(key)) {
+                    Class<? extends Power> power = PowerManager.getPower(key);
+                    if (power == null) {
                         plugin.getLogger().warning("Unknown power:" + key + " on item " + this.name);
                         throw new UnknownPowerException(key);
                     }
-                    Power pow = PowerManager.getPower(key).getConstructor().newInstance();
+                    Power pow = power.getConstructor().newInstance();
                     pow.init(section);
                     pow.setItem(this);
                     addPower(pow, false);
@@ -201,10 +202,10 @@ public class RPGItem {
                 ConfigurationSection section = conf.get(selector);
                 String applyTo = section.getString("applyTo");
                 if (Strings.isNullOrEmpty(applyTo)) {
-                    return;
+                    continue;
                 }
                 selector.id = UUID.randomUUID().toString();
-                Set<? extends Class<? extends Power>> applicable = Arrays.stream(applyTo.split(",")).map(PowerManager::parseLegacyKey).map(PowerManager::getPower).collect(Collectors.toSet());
+                Set<? extends Class<? extends Power>> applicable = Arrays.stream(applyTo.split(",")).map(p -> p.split(" ", 2)[0]).map(PowerManager::parseLegacyKey).map(PowerManager::getPower).collect(Collectors.toSet());
                 for (Class<? extends Power> pow : applicable) {
                     List<? extends Power> app = getPower(pow);
                     for (Power power : app) {
@@ -450,7 +451,6 @@ public class RPGItem {
         s.set("armour", armour);
         s.set("type", type.replaceAll("" + COLOR_CHAR, "&"));
         s.set("hand", hand.replaceAll("" + COLOR_CHAR, "&"));
-        s.set("lore", loreText.replaceAll("" + COLOR_CHAR, "&"));
         ArrayList<String> descriptionConv = new ArrayList<>(description);
         for (int i = 0; i < descriptionConv.size(); i++) {
             descriptionConv.set(i, descriptionConv.get(i).replaceAll("" + COLOR_CHAR, "&"));
@@ -975,16 +975,6 @@ public class RPGItem {
             }
         }
 
-        // compute loreMinLen
-        int loreIndex = output.size();
-        if (loreText.length() > 0) {
-            wrapLines(String.format("%s%s\"%s\"",
-                    ChatColor.YELLOW, ChatColor.ITALIC,
-                    ChatColor.translateAlternateColorCodes('&', loreText)), 0);
-        } else {
-            _loreMinLen = 0;
-        }
-
         // add descriptions
         output.addAll(description);
 
@@ -1017,14 +1007,7 @@ public class RPGItem {
                 armorMinLen = Math.max(armorMinLen, getStringWidth(ChatColor.stripColor(damageStr)));
             }
         }
-        tooltipWidth = width = Math.max(width, Math.max(_loreMinLen, armorMinLen));
-
-        if (loreText.length() > 0) {
-            for (String str : wrapLines(String.format("%s%s\"%s\"", ChatColor.YELLOW, ChatColor.ITALIC,
-                    ChatColor.translateAlternateColorCodes('&', loreText)), tooltipWidth)) {
-                output.add(loreIndex++, str);
-            }
-        }
+        tooltipWidth = width = Math.max(width, armorMinLen);
 
         if (showArmourLore) {
             if (damageStr != null) {
@@ -1034,59 +1017,6 @@ public class RPGItem {
         }
 
         return output;
-    }
-
-    private List<String> wrapLines(String txt, int maxwidth) {
-        List<String> words = new ArrayList<>();
-        for (String word : txt.split(" ")) {
-            if (word.length() > 0)
-                words.add(word);
-        }
-        if (words.size() <= 0) return Collections.emptyList();
-
-        for (String str : words) {
-            int len = getStringWidth(ChatColor.stripColor(str));
-            _loreMinLen = len;
-            if (len > maxwidth) maxwidth = len;
-        }
-
-        List<String> ans = new ArrayList<>();
-        int idx = 0, currlen = getStringWidth(ChatColor.stripColor(words.get(0)));
-        ans.add(words.remove(0));
-        while (words.size() > 0) {
-            String tmp = words.remove(0);
-            int word_len = getStringWidth(ChatColor.stripColor(tmp));
-            if (currlen + 4 + word_len <= maxwidth) {
-                currlen += 4 + word_len;
-                ans.set(idx, ans.get(idx) + " " + tmp);
-            } else {
-                currlen = word_len;
-                ans.add(tmp);
-                idx++;
-            }
-        }
-        for (int i = 1; i < ans.size(); i++) {
-            ans.set(i, getLastFormat(ans.get(i - 1)) + ans.get(i));
-        }
-        return ans;
-    }
-
-    private String getLastFormat(String str) {
-        String format = null;
-        int length = str.length();
-
-        for (int index = length - 2; index > -1; index--) {
-            char chr = str.charAt(index);
-            if (chr == COLOR_CHAR) {
-                char c = str.charAt(index + 1);
-                ChatColor style = getByChar(c);
-                if (style == null) continue;
-                if (style.isColor()) return style.toString() + (format == null ? "" : format);
-                if (style.isFormat() && format == null) format = style.toString();
-            }
-        }
-
-        return (format == null ? "" : format);
     }
 
     public ItemStack toItemStack() {
@@ -1146,6 +1076,9 @@ public class RPGItem {
             UUID uuid = UUID.fromString(this.author);
             OfflinePlayer authorPlayer = Bukkit.getOfflinePlayer(uuid);
             author = authorPlayer.getName();
+            if(author == null){
+                author = uuid.toString();
+            }
             authorComponent = new TextComponent(author);
             authorComponent.setHoverEvent(new HoverEvent(HoverEvent.Action.SHOW_ENTITY,
                     new ComponentBuilder(Message.getPlayerJson(authorPlayer)).create()
@@ -1309,20 +1242,6 @@ public class RPGItem {
         setArmour(a, true);
     }
 
-    public void setLore(String str, boolean update) {
-        loreText = ChatColor.translateAlternateColorCodes('&', str);
-        if (update)
-            rebuild();
-    }
-
-    public String getLore() {
-        return loreText;
-    }
-
-    public void setLore(String str) {
-        setLore(str, true);
-    }
-
     public void setQuality(Quality q, boolean update) {
         quality = q;
         if (update)
@@ -1346,7 +1265,6 @@ public class RPGItem {
         if (update)
             rebuild();
     }
-
 
     public int getDataValue() {
         return ((Damageable) localeMeta).getDamage();

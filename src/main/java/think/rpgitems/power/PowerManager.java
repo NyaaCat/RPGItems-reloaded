@@ -96,6 +96,7 @@ public class PowerManager {
     }
 
     public static NamespacedKey parseLegacyKey(String powerStr) {
+        powerStr = powerStr.trim();
         if (powerStr.contains(":")) {
             throw new IllegalArgumentException();
         }
@@ -142,21 +143,22 @@ public class PowerManager {
     @SuppressWarnings("unchecked")
     private static void setPowerPropertyInternal(CommandSender sender, Power power, Field field, String value) {
         try {
+            if (value.equals("null")) {
+                field.set(power, null);
+                return;
+            }
             Deserializer st = field.getAnnotation(Deserializer.class);
             field.setAccessible(true);
             Class<? extends Power> cls = power.getClass();
             if (st != null) {
                 try {
-                    Object v = Setter.from(power, st.value()).set(value);
-                    field.set(power, v);
+                    Optional<Object> v = Setter.from(power, st.value()).set(value);
+                    if (!v.isPresent()) return;
+                    field.set(power, v.get());
                 } catch (IllegalArgumentException e) {
-                    new Message(I18n.format(st.message())).send(sender);
+                    new Message(I18n.format(st.message(), value)).send(sender);
                 }
             } else {
-                if (value.equals("null")) {
-                    field.set(power, null);
-                    return;
-                }
                 if (field.getType().equals(int.class) || field.getType().equals(Integer.class)) {
                     try {
                         field.set(power, Integer.parseInt(value));

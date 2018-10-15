@@ -146,10 +146,10 @@ public class ItemManager {
                     ConfigurationSection sec = (ConfigurationSection) obj;
                     RPGItem item = new RPGItem(sec);
                     addItem(item);
-                    //  Message message = new Message("").append(I18n.format("message.update.success"), Collections.singletonMap("{item}", item.getComponent()));
-                    //  Bukkit.getOperators().forEach(message::send);
-                    //  message.send(Bukkit.getConsoleSender());
-                } catch (Exception e){
+                    Message message = new Message("").append(I18n.format("message.update.success"), Collections.singletonMap("{item}", item.getComponent()));
+                    // Bukkit.getOperators().forEach(message::send);
+                    message.send(Bukkit.getConsoleSender());
+                } catch (Exception e) {
                     e.printStackTrace();
                     Message message = new Message(I18n.format("message.update.fail", e.getLocalizedMessage()));
                     Bukkit.getOperators().forEach(message::send);

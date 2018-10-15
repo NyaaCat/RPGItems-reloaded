@@ -17,25 +17,12 @@ import static think.rpgitems.power.Utils.checkCooldown;
  */
 @SuppressWarnings("WeakerAccess")
 @PowerMeta(immutableTrigger = true)
-public class PowerParticleTick extends BasePower implements PowerTick {
-    /**
-     * Name of particle effect
-     */
-    @Property(order = 0, required = true)
-    @Serializer(PowerParticle.EffectSetter.class)
-    @Deserializer(value = PowerParticle.EffectSetter.class, message = "message.error.visualeffect")
-    @AcceptedValue(preset = Preset.VISUAL_EFFECT)
-    public Effect effect = Effect.MOBSPAWNER_FLAMES;
+public class PowerParticleTick extends PowerParticle implements PowerTick {
     /**
      * Interval of particle effect
      */
     @Property(order = 1)
     public int interval = 15;
-    /**
-     * Cost of this power
-     */
-    @Property
-    public int cost = 0;
 
     @Override
     public String getName() {
@@ -51,11 +38,7 @@ public class PowerParticleTick extends BasePower implements PowerTick {
     public PowerResult<Void> tick(Player player, ItemStack stack) {
         if (!checkCooldown(this, player, interval, false)) return PowerResult.cd();
         if (!getItem().consumeDurability(stack, cost)) return PowerResult.cost();
-        if (effect == Effect.SMOKE) {
-            player.getWorld().playEffect(player.getLocation().add(0, 2, 0), effect, 4);
-        } else {
-            player.getWorld().playEffect(player.getLocation(), effect, 0);
-        }
+        spawnParticle(player);
         return PowerResult.ok();
     }
 }
