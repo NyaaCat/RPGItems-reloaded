@@ -39,6 +39,7 @@ public class PowerPotionTick extends BasePower implements PowerTick {
     /**
      * Cost of this power
      */
+    @Property
     public int cost = 0;
     /**
      * Interval of this power

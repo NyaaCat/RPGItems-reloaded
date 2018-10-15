@@ -27,6 +27,7 @@ public class PowerAOECommand extends PowerCommand {
     /**
      * Whether the command will be apply to the user
      */
+    @Property
     public boolean selfapplication = false;
 
     /**

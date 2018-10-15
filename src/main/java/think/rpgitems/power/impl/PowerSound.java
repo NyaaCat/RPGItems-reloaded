@@ -22,26 +22,32 @@ public class PowerSound extends BasePower implements PowerLeftClick, PowerRightC
     /**
      * Pitch of sound
      */
+    @Property
     public float pitch = 1.0f;
     /**
      * Volume of sound
      */
+    @Property
     public float volume = 1.0f;
     /**
      * Sound to be played
      */
+    @Property
     public String sound = "";
     /**
      * Cost of this power
      */
+    @Property
     public int cost = 0;
     /**
      * Display text of this power
      */
+    @Property
     public String display = "Plays sound";
     /**
      * Cooldown time of this power
      */
+    @Property
     public long cooldown = 20;
 
     @Override

@@ -22,22 +22,27 @@ public class PowerColor extends BasePower implements PowerRightClick, PowerLeftC
     /**
      * Cooldown time of this power
      */
+    @Property
     public long cooldown = 0;
     /**
      * Whether enabled on glass.
      */
+    @Property
     public boolean glass = true;
     /**
      * Whether enabled on clay.
      */
+    @Property
     public boolean clay = true;
     /**
      * Whether enabled on wool.
      */
+    @Property
     public boolean wool = true;
     /**
      * Cost of this power
      */
+    @Property
     public int cost = 0;
 
     @SuppressWarnings("deprecation")

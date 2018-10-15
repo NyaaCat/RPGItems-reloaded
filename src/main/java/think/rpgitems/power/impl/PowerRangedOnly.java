@@ -15,16 +15,6 @@ import think.rpgitems.power.PowerMeta;
 @PowerMeta(marker = true)
 public class PowerRangedOnly extends PowerRanged {
     @Override
-    public void init(ConfigurationSection s) {
-
-    }
-
-    @Override
-    public void save(ConfigurationSection s) {
-
-    }
-
-    @Override
     public String getName() {
         return "rangedonly";
     }
