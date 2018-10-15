@@ -1029,6 +1029,7 @@ public class RPGItem {
         meta.setLore(lore);
         rStack.setItemMeta(meta);
         refreshAttributeModifiers(this, rStack);
+        updateItem(this, rStack);
         return rStack;
     }
 

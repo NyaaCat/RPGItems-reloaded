@@ -4,6 +4,7 @@ import com.google.common.cache.Cache;
 import com.google.common.cache.CacheBuilder;
 import org.bukkit.Bukkit;
 import org.bukkit.block.Block;
+import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.entity.*;
 import org.bukkit.event.player.PlayerInteractEvent;
 import org.bukkit.inventory.ItemStack;
@@ -286,5 +287,13 @@ public class PowerProjectile extends BasePower implements PowerRightClick {
             return "trident";
         else
             return "snowball";
+    }
+
+    @Override
+    public void init(ConfigurationSection section) {
+        super.init(section);
+        if (yield != null && yield == -1) {
+            yield = null;
+        }
     }
 }
