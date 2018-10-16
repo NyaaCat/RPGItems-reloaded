@@ -98,7 +98,10 @@ public class Handler extends RPGCommandReceiver {
             sender.sendMessage(ChatColor.AQUA + "RPGItems: " + page + " / " + max);
         }
 
-        stream.forEach(item -> new Message("").append(I18n.format("message.item.list", item.getName()), Collections.singletonMap("{item}", item.getComponent())).send(sender)
+        stream.forEach(
+                item -> new Message("")
+                                .append(I18n.format("message.item.list", item.getName()), Collections.singletonMap("{item}", item.getComponent()))
+                                .send(sender)
         );
     }
 

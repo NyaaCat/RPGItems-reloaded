@@ -18,8 +18,14 @@ public class Configuration extends PluginConfigure {
     @Serializable
     public String language = "en_US";
 
+    @Serializable
+    public String version = "1.0";
+
     @Serializable(name ="general.locale_inv", alias = "localeInv")
     public boolean localeInv = false;
+
+    @Serializable(name ="general.pid_compat", alias = "pidCompat")
+    public boolean pidCompat = false;
 
     @Serializable(name ="command.list.item_per_page", alias = "itemperpage")
     public int itemPerPage = 9;

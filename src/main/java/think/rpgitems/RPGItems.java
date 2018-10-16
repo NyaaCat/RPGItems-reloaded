@@ -2,7 +2,9 @@ package think.rpgitems;
 
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
-import org.bukkit.configuration.ConfigurationSection;
+import org.bukkit.event.EventHandler;
+import org.bukkit.event.HandlerList;
+import org.bukkit.event.Listener;
 import org.bukkit.plugin.InvalidDescriptionException;
 import org.bukkit.plugin.InvalidPluginException;
 import org.bukkit.plugin.Plugin;
@@ -75,6 +77,8 @@ public class RPGItems extends JavaPlugin {
                     e.printStackTrace();
                 }
             }
+        } else {
+            logger.severe("Error creating extension directory ./ext");
         }
     }
 
@@ -83,10 +87,19 @@ public class RPGItems extends JavaPlugin {
         plugin = this;
         cfg = new Configuration(this);
         cfg.load();
+        if (plugin.cfg.version.startsWith("0.") && Double.parseDouble(plugin.cfg.version) < 0.5) {
+            Bukkit.getConsoleSender().sendMessage(ChatColor.RED + "======================================");
+            Bukkit.getConsoleSender().sendMessage(ChatColor.RED + "You current version of RPGItems config is not supported.");
+            Bukkit.getConsoleSender().sendMessage(ChatColor.RED + "Please run your server with latest version of RPGItems 3.5 before update.");
+            Bukkit.getConsoleSender().sendMessage(ChatColor.RED + "======================================");
+            throw new IllegalStateException();
+        } else if(plugin.cfg.version.equals("0.5")) {
+            cfg.pidCompat = true;
+        }
 
         if (Bukkit.class.getPackage().getImplementationVersion().startsWith("git-Bukkit-")) {
             Bukkit.getConsoleSender().sendMessage(ChatColor.RED + "======================================");
-            Bukkit.getConsoleSender().sendMessage(ChatColor.RED + "RPGItems plugin require Spigot API, Please make sure you are using Spigot.");
+            Bukkit.getConsoleSender().sendMessage(ChatColor.RED + "RPGItems plugin requires Spigot API, Please make sure you are using Spigot.");
             Bukkit.getConsoleSender().sendMessage(ChatColor.RED + "======================================");
         }
         try {
@@ -94,12 +107,11 @@ public class RPGItems extends JavaPlugin {
         } catch (NoSuchMethodError e) {
             getCommand("rpgitem").setExecutor((sender, command, label, args) -> {
                 sender.sendMessage(ChatColor.RED + "======================================");
-                sender.sendMessage(ChatColor.RED + "RPGItems plugin require Spigot API, Please make sure you are using Spigot.");
+                sender.sendMessage(ChatColor.RED + "RPGItems plugin requires Spigot API, Please make sure you are using Spigot.");
                 sender.sendMessage(ChatColor.RED + "======================================");
                 return true;
             });
         }
-        WGSupport.init(this);
         if (cfg.localeInv) {
             Events.useLocaleInv = true;
         }
@@ -107,13 +119,20 @@ public class RPGItems extends JavaPlugin {
         commandHandler = new Handler(this, i18n);
         getCommand("rpgitem").setExecutor(commandHandler);
         getCommand("rpgitem").setTabCompleter(commandHandler);
-        Bukkit.getScheduler().runTask(plugin, () -> {
-            getServer().getPluginManager().registerEvents(listener = new Events(), this);
-            ItemManager.load(this);
-            new PowerTicker().runTaskTimer(this, 0, 1);
-        });
-
+        getServer().getPluginManager().registerEvents(new ServerLoadListener(), this);
         managedPlugins.forEach(Bukkit.getPluginManager()::enablePlugin);
+    }
+
+    private class ServerLoadListener implements Listener {
+        @EventHandler
+        public void onServerLoad(@SuppressWarnings("deprecation") org.bukkit.event.server.ServerLoadEvent event) {
+            HandlerList.unregisterAll(this);
+            getServer().getPluginManager().registerEvents(listener = new Events(), RPGItems.this);
+            WGSupport.init(RPGItems.this);
+            logger.info("Loading RPGItems...");
+            ItemManager.load(RPGItems.this);
+            new PowerTicker().runTaskTimer(RPGItems.this, 0, 1);
+        }
     }
 
     @Override

@@ -216,16 +216,20 @@ public class RPGItem {
                 }
             }
         }
+        if (plugin.cfg.pidCompat && id > 0) {
+            encodedUID = getMCEncodedUID(id);
+        } else {
+            encodedUID = getMCEncodedUID(uid);
+        }
 
-        encodedUID = getMCEncodedUID(uid);
         haspermission = s.getBoolean("haspermission", false);
-        permission = s.getString("permission", "a.default.permission");
+        permission = s.getString("permission", "rpgitem.item." + name);
         // Recipes
         recipechance = s.getInt("recipechance", 6);
         hasRecipe = s.getBoolean("hasRecipe", false);
         if (hasRecipe) {
             recipe = (List<ItemStack>) s.getList("recipe");
-            namespacedKey = new NamespacedKey(RPGItems.plugin, s.getString("namespacedKey", name + "_" + System.currentTimeMillis()));
+            namespacedKey = new NamespacedKey(RPGItems.plugin, s.getString("namespacedKey", name + "_" + uid));
         }
 
         ConfigurationSection drops = s.getConfigurationSection("dropChances");
@@ -278,7 +282,7 @@ public class RPGItem {
             ConfigurationSection ench = s.getConfigurationSection("enchantments");
             enchantMap = new HashMap<>();
             for (String enchName : ench.getKeys(false)) {
-                Enchantment tmp = null;
+                Enchantment tmp;
                 try {
                     tmp = Enchantment.getByKey(NamespacedKey.minecraft(enchName));
                 } catch (IllegalArgumentException e) {
@@ -1077,7 +1081,7 @@ public class RPGItem {
             UUID uuid = UUID.fromString(this.author);
             OfflinePlayer authorPlayer = Bukkit.getOfflinePlayer(uuid);
             author = authorPlayer.getName();
-            if(author == null){
+            if (author == null) {
                 author = uuid.toString();
             }
             authorComponent = new TextComponent(author);
