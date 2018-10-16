@@ -290,20 +290,20 @@ public class Events implements Listener {
     @EventHandler
     public void onPlayerAction(PlayerInteractEvent e) {
         Player p = e.getPlayer();
-        if (e.getAction() == Action.PHYSICAL) return;
+        Action action = e.getAction();
+        Material im = e.getMaterial();
+        if (action == Action.PHYSICAL || im == Material.AIR) return;
+        if ((action == Action.RIGHT_CLICK_AIR || action == Action.RIGHT_CLICK_BLOCK) && (im == Material.BOW || im == Material.SNOW_BALL || im == Material.EGG || im == Material.POTION))
+            return;
         if (e.getHand() == EquipmentSlot.OFF_HAND) return;
         RPGItem rItem = ItemManager.toRPGItem(e.getItem());
         if (rItem == null) return;
-        Material im = e.getMaterial();
-        if (im == Material.BOW || im == Material.SNOW_BALL || im == Material.EGG || im == Material.POTION || im == Material.AIR)
-            return;
         if (!WorldGuard.canPvP(p) && !rItem.ignoreWorldGuard)
             return;
         if (!rItem.checkPermission(p, true)) {
             return;
         }
 
-        Action action = e.getAction();
         if (action == Action.RIGHT_CLICK_AIR) {
             rItem.rightClick(p, e.getItem(), e.getClickedBlock());
         } else if (action == Action.RIGHT_CLICK_BLOCK &&
