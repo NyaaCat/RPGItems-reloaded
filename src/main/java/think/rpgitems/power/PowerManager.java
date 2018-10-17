@@ -171,6 +171,12 @@ public class PowerManager {
                     } catch (NumberFormatException e) {
                         throw new Handler.CommandException("internal.error.bad_int", value);
                     }
+                } else if (field.getType().equals(float.class) || field.getType().equals(Float.class)) {
+                    try {
+                        field.set(power, Float.parseFloat(value));
+                    } catch (NumberFormatException e) {
+                        throw new Handler.CommandException("internal.error.bad_double", value);
+                    }
                 } else if (field.getType().equals(double.class) || field.getType().equals(Double.class)) {
                     try {
                         field.set(power, Double.parseDouble(value));
@@ -243,7 +249,7 @@ public class PowerManager {
                     }
                     field.set(power, item.clone());
                 } else {
-                    throw new Handler.CommandException("internal.error.invalid_command_arg");
+                    throw new Handler.CommandException("internal.error.invalid_command_arg", power.getName(), field.getName());
                 }
             }
         } catch (IllegalAccessException e) {

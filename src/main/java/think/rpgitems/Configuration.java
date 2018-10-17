@@ -36,7 +36,7 @@ public class Configuration extends PluginConfigure {
     @Serializable(name = "support.wgforcerefresh")
     public boolean wgForceRefresh = false;
 
-    @Serializable(name = "give-perms")
+    @Serializable(name ="general.give_perms", alias = "give-perms")
     public boolean givePerms = false;
 
     @Serializable(name = "gist.token", alias = "githubToken")
