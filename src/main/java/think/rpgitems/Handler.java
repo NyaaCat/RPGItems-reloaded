@@ -436,14 +436,15 @@ public class Handler extends RPGCommandReceiver {
     public void itemRemovePower(CommandSender sender, Arguments args) {
         RPGItem item = getItemByName(args.nextString());
         String powerStr = args.nextString();
-        int nth = args.top() == null ? 0 : args.nextInt();
+        int nth = args.top() == null ? 1 : args.nextInt();
         try {
             Class<? extends Power> p = PowerManager.getPower(powerStr);
             if (p == null) {
                 msg(sender, "message.power.unknown", powerStr);
                 return;
             }
-            Optional<Power> op = item.powers.stream().filter(pwr -> pwr.getClass().equals(p)).skip(nth - 1).findFirst();
+            List<? extends Power> powers = item.getPower(p);
+            Optional<? extends Power> op = powers.stream().skip(nth - 1).findFirst();
 
             if (op.isPresent()) {
                 item.removePower(op.get());
@@ -451,7 +452,7 @@ public class Handler extends RPGCommandReceiver {
                 ItemManager.refreshItem();
                 ItemManager.save(item);
             } else {
-                msg(sender, "message.power.unknown", powerStr);
+                msg(sender, "message.num_out_of_range", nth, 1, powers.size());
             }
         } catch (UnknownExtensionException e) {
             msg(sender, "message.error.unknown.extension", e.getName());
