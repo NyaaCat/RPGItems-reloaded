@@ -58,7 +58,7 @@ jobs:
 
   - stage: javadoc
     language: java
-    jdk: oraclejdk10
+    jdk: oraclejdk11
     script:
     - export MAJOR_VERSION=`sed -n 's/^ext\.majorVersion = \(.*\)$/\1/p' build.gradle`
     - export MINOR_VERSION=`sed -n 's/^ext\.minorVersion = \(.*\)$/\1/p' build.gradle`
