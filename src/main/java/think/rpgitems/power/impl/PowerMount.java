@@ -1,7 +1,6 @@
 package think.rpgitems.power.impl;
 
 import org.bukkit.Sound;
-import org.bukkit.block.Block;
 import org.bukkit.entity.EntityType;
 import org.bukkit.entity.LivingEntity;
 import org.bukkit.entity.Player;
@@ -29,7 +28,7 @@ public class PowerMount extends BasePower implements PowerRightClick {
     public int maxTicks = 200;
 
     @Override
-    public PowerResult<Void> rightClick(Player player, ItemStack stack, Block clicked, PlayerInteractEvent event) {
+    public PowerResult<Void> rightClick(Player player, ItemStack stack, PlayerInteractEvent event) {
         if (!checkCooldown(this, player, cooldown, true)) return PowerResult.cd();
         if (player.isInsideVehicle()) {
             return PowerResult.fail();

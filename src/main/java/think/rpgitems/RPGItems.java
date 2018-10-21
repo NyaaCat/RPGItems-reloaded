@@ -14,6 +14,7 @@ import think.rpgitems.data.Font;
 import think.rpgitems.item.ItemManager;
 import think.rpgitems.power.PowerManager;
 import think.rpgitems.power.PowerTicker;
+import think.rpgitems.power.Trigger;
 import think.rpgitems.power.impl.BasePower;
 import think.rpgitems.support.WGSupport;
 
@@ -55,7 +56,6 @@ public class RPGItems extends JavaPlugin {
         saveDefaultConfig();
         Font.load();
         WGSupport.load();
-
         loadExtensions();
     }
 
@@ -84,6 +84,7 @@ public class RPGItems extends JavaPlugin {
 
     @Override
     public void onEnable() {
+        Trigger.stopAcceptingRegistrations();
         plugin = this;
         cfg = new Configuration(this);
         cfg.load();

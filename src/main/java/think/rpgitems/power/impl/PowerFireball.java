@@ -17,7 +17,6 @@
 package think.rpgitems.power.impl;
 
 import org.bukkit.Sound;
-import org.bukkit.block.Block;
 import org.bukkit.entity.Player;
 import org.bukkit.entity.SmallFireball;
 import org.bukkit.event.player.PlayerInteractEvent;
@@ -53,7 +52,7 @@ public class PowerFireball extends BasePower implements PowerRightClick {
 
     @Override
     @SuppressWarnings("deprecation")
-    public PowerResult<Void> rightClick(Player player, ItemStack stack, Block clicked, PlayerInteractEvent event) {
+    public PowerResult<Void> rightClick(Player player, ItemStack stack, PlayerInteractEvent event) {
         if (!checkCooldown(this, player, cooldown, true)) return PowerResult.cd();
         if (!getItem().consumeDurability(stack, cost)) return PowerResult.cost();
         player.playSound(player.getLocation(), Sound.ENTITY_GHAST_SHOOT, 1.0f, 1.0f);

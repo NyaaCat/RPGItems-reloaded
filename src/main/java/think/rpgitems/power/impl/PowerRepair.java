@@ -24,7 +24,7 @@ import java.util.Collections;
  * Repair the item with some material
  * </p>
  */
-@PowerMeta(defaultTrigger = TriggerType.RIGHT_CLICK)
+@PowerMeta(defaultTrigger = "RIGHT_CLICK")
 public class PowerRepair extends BasePower implements PowerRightClick, PowerLeftClick {
 
     @Property(order = 2, required = true)
@@ -44,7 +44,7 @@ public class PowerRepair extends BasePower implements PowerRightClick, PowerLeft
 
     @Override
     public void init(ConfigurationSection section) {
-        triggers = section.getBoolean("isRight", true) ? Collections.singleton(TriggerType.RIGHT_CLICK) : Collections.singleton(TriggerType.LEFT_CLICK);
+        triggers = section.getBoolean("isRight", true) ? Collections.singleton(Trigger.RIGHT_CLICK) : Collections.singleton(Trigger.LEFT_CLICK);
         super.init(section);
     }
 
@@ -59,22 +59,22 @@ public class PowerRepair extends BasePower implements PowerRightClick, PowerLeft
     }
 
     @Override
-    public PowerResult<Void> rightClick(Player player, ItemStack stack, Block clicked, PlayerInteractEvent event) {
+    public PowerResult<Void> rightClick(Player player, ItemStack stack, PlayerInteractEvent event) {
         if (player.isSneaking() == isSneak) {
-            return repair(player, stack, clicked);
+            return repair(player, stack);
         }
         return PowerResult.noop();
     }
 
     @Override
-    public PowerResult<Void> leftClick(Player player, ItemStack stack, Block clicked, PlayerInteractEvent event) {
+    public PowerResult<Void> leftClick(Player player, ItemStack stack, PlayerInteractEvent event) {
         if (player.isSneaking() == isSneak) {
-            return repair(player, stack, clicked);
+            return repair(player, stack);
         }
         return PowerResult.noop();
     }
 
-    private PowerResult<Void> repair(Player player, ItemStack stack, Block block) {
+    private PowerResult<Void> repair(Player player, ItemStack stack) {
         int max = getItem().getMaxDurability();
         int itemDurability = getItem().getDurability(stack);
         if (getItem().getMaxDurability() != -1 && max - this.durability >= itemDurability) {

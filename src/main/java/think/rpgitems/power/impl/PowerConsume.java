@@ -18,7 +18,6 @@ package think.rpgitems.power.impl;
 
 import org.bukkit.Bukkit;
 import org.bukkit.Material;
-import org.bukkit.block.Block;
 import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.entity.Player;
 import org.bukkit.event.player.PlayerInteractEvent;
@@ -39,7 +38,7 @@ import static think.rpgitems.power.Utils.checkCooldown;
  * </p>
  */
 @SuppressWarnings("WeakerAccess")
-@PowerMeta(defaultTrigger = TriggerType.RIGHT_CLICK)
+@PowerMeta(defaultTrigger = "RIGHT_CLICK")
 public class PowerConsume extends BasePower implements PowerRightClick, PowerLeftClick {
     /**
      * Cooldown time of this power
@@ -56,12 +55,12 @@ public class PowerConsume extends BasePower implements PowerRightClick, PowerLef
     @Override
     public void init(ConfigurationSection section) {
         boolean isRight = section.getBoolean("isRight", true);
-        triggers = Collections.singleton(isRight ? TriggerType.RIGHT_CLICK : TriggerType.LEFT_CLICK);
+        triggers = Collections.singleton(isRight ? Trigger.RIGHT_CLICK : Trigger.LEFT_CLICK);
         super.init(section);
     }
 
     @Override
-    public PowerResult<Void> rightClick(final Player player, ItemStack stack, Block clicked, PlayerInteractEvent event) {
+    public PowerResult<Void> rightClick(final Player player, ItemStack stack, PlayerInteractEvent event) {
         if (checkCooldown(this, player, cooldown, false)) {
             return consume(player);
         }
@@ -69,7 +68,7 @@ public class PowerConsume extends BasePower implements PowerRightClick, PowerLef
     }
 
     @Override
-    public PowerResult<Void> leftClick(final Player player, ItemStack stack, Block clicked, PlayerInteractEvent event) {
+    public PowerResult<Void> leftClick(final Player player, ItemStack stack, PlayerInteractEvent event) {
         if (checkCooldown(this, player, cooldown, false)) {
             return consume(player);
         }

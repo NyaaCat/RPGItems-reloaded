@@ -1,7 +1,6 @@
 package think.rpgitems.power.impl;
 
 import org.bukkit.Effect;
-import org.bukkit.block.Block;
 import org.bukkit.entity.Entity;
 import org.bukkit.entity.LivingEntity;
 import org.bukkit.entity.Player;
@@ -27,7 +26,7 @@ import static think.rpgitems.power.Utils.getNearbyEntities;
  * </p>
  */
 @SuppressWarnings("WeakerAccess")
-@PowerMeta(defaultTrigger = TriggerType.RIGHT_CLICK, withSelectors = true)
+@PowerMeta(defaultTrigger = "RIGHT_CLICK", withSelectors = true)
 public class PowerAOE extends BasePower implements PowerRightClick, PowerLeftClick {
 
     /**
@@ -75,12 +74,12 @@ public class PowerAOE extends BasePower implements PowerRightClick, PowerLeftCli
     public int cost = 0;
 
     @Override
-    public PowerResult<Void> rightClick(final Player player, ItemStack stack, Block clicked, PlayerInteractEvent event) {
+    public PowerResult<Void> rightClick(final Player player, ItemStack stack, PlayerInteractEvent event) {
         return Aoe(player, stack);
     }
 
     @Override
-    public PowerResult<Void> leftClick(final Player player, ItemStack stack, Block clicked, PlayerInteractEvent event) {
+    public PowerResult<Void> leftClick(final Player player, ItemStack stack, PlayerInteractEvent event) {
         return Aoe(player, stack);
     }
 

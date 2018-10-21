@@ -50,7 +50,7 @@ public enum Preset {
                         "CONDUIT_POWER",
                         "DOLPHINS_GRACE");
             case TRIGGERS:
-                return Power.getTriggerTypes(cls).stream().map(TriggerType::name).collect(Collectors.toList());
+                return Power.getTriggerTypes(cls).stream().map(Trigger::name).collect(Collectors.toList());
             case VISUAL_EFFECT:
                 return
                         Stream.concat(

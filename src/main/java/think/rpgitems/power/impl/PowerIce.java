@@ -47,7 +47,7 @@ public class PowerIce extends BasePower implements PowerRightClick {
 
     @SuppressWarnings("deprecation")
     @Override
-    public PowerResult<Void> rightClick(final Player player, ItemStack stack, Block clicked, PlayerInteractEvent event) {
+    public PowerResult<Void> rightClick(final Player player, ItemStack stack, PlayerInteractEvent event) {
         if (!checkCooldown(this, player, cooldown, true)) return PowerResult.cd();
         if (!getItem().consumeDurability(stack, cost)) return PowerResult.cost();
         player.playSound(player.getLocation(), Sound.ENTITY_EGG_THROW, 1.0f, 0.1f);

@@ -1,7 +1,6 @@
 package think.rpgitems.power.impl;
 
 import org.bukkit.Sound;
-import org.bukkit.block.Block;
 import org.bukkit.entity.Entity;
 import org.bukkit.entity.EntityType;
 import org.bukkit.entity.LivingEntity;
@@ -32,7 +31,7 @@ public class PowerGlove extends BasePower implements PowerRightClick {
     public double throwSpeed = 0.0D;
 
     @Override
-    public PowerResult<Void> rightClick(Player player, ItemStack stack, Block clicked, PlayerInteractEvent event) {
+    public PowerResult<Void> rightClick(Player player, ItemStack stack, PlayerInteractEvent event) {
         if (!player.getPassengers().isEmpty()) {
             Entity entity = player.getPassengers().get(0);
             entity.leaveVehicle();

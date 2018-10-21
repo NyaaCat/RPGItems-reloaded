@@ -3,10 +3,8 @@ package think.rpgitems.power.impl;
 import com.google.common.cache.CacheBuilder;
 import com.google.common.cache.CacheLoader;
 import com.google.common.cache.LoadingCache;
-import org.bukkit.block.Block;
 import org.bukkit.entity.LivingEntity;
 import org.bukkit.entity.Player;
-import org.bukkit.entity.Projectile;
 import org.bukkit.event.entity.EntityDamageByEntityEvent;
 import org.bukkit.event.entity.EntityDamageEvent;
 import org.bukkit.event.entity.ProjectileHitEvent;
@@ -24,8 +22,8 @@ import java.util.concurrent.TimeUnit;
 
 import static think.rpgitems.power.Utils.checkCooldown;
 
-@PowerMeta(defaultTrigger = TriggerType.RIGHT_CLICK)
-public class PowerScoreboard extends BasePower implements PowerHit, PowerHitTaken, PowerLeftClick, PowerRightClick, PowerOffhandClick, PowerProjectileHit, PowerSneak, PowerSprint, PowerSwapToMainhand, PowerSwapToOffhand, PowerTick {
+@PowerMeta(defaultTrigger = "RIGHT_CLICK")
+public class PowerScoreboard extends BasePower implements PowerHit, PowerHitTaken, PowerLeftClick, PowerRightClick, PowerOffhandClick, PowerProjectileHit, PowerSneak, PowerSprint, PowerOffhandItem, PowerMainhandItem, PowerTick {
 
     /**
      * Tag(s) to add and remove, according to the following format
@@ -89,12 +87,12 @@ public class PowerScoreboard extends BasePower implements PowerHit, PowerHitTake
     }
 
     @Override
-    public PowerResult<Void> leftClick(Player player, ItemStack stack, Block clicked, PlayerInteractEvent event) {
+    public PowerResult<Void> leftClick(Player player, ItemStack stack, PlayerInteractEvent event) {
         return fire(player, stack);
     }
 
     @Override
-    public PowerResult<Void> rightClick(Player player, ItemStack stack, Block clicked, PlayerInteractEvent event) {
+    public PowerResult<Void> rightClick(Player player, ItemStack stack, PlayerInteractEvent event) {
         return fire(player, stack);
     }
 
@@ -124,7 +122,7 @@ public class PowerScoreboard extends BasePower implements PowerHit, PowerHitTake
     }
 
     @Override
-    public PowerResult<Void> projectileHit(Player player, ItemStack stack, Projectile arrow, ProjectileHitEvent event) {
+    public PowerResult<Void> projectileHit(Player player, ItemStack stack, ProjectileHitEvent event) {
         return fire(player, stack);
     }
 

@@ -10,31 +10,31 @@ import javax.annotation.CheckReturnValue;
 /**
  * Triggers when player swap offhand item to main hand
  */
-public interface PowerSwapToOffhand extends Power {
+public interface PowerOffhandItem extends Power {
 
     /**
-     * Calls when {@code player} swap mainhand item to offhand
+     * Calls when {@code player} swap offhand item to mainhand
      *
      * @param player Player
      * @param stack  Item that triggered this power
      * @param event  Event that triggered this power
      *
-     * @return PowerResult with proposed event cancellation
+     * @return PowerResult with proposed event continuation
      */
     @CheckReturnValue
-    PowerResult<Boolean> swapToOffhand(Player player, ItemStack stack, PlayerSwapHandItemsEvent event);
+    PowerResult<Boolean> swapToMainhand(Player player, ItemStack stack, PlayerSwapHandItemsEvent event);
 
     /**
-     * Calls when {@code player} place item to offhand in inventory
+     * Calls when {@code player} click offhand item in inventory
      *
      * @param player Player
      * @param stack  Item that triggered this power
      * @param event  Event that triggered this power
      *
-     * @return PowerResult with proposed event cancellation
+     * @return PowerResult with proposed event continuation
      */
     @CheckReturnValue
-    default PowerResult<Boolean> placeOffhand(Player player, ItemStack stack, InventoryClickEvent event) {
+    default PowerResult<Boolean> pickupOffhand(Player player, ItemStack stack, InventoryClickEvent event) {
         return PowerResult.noop();
     }
 }

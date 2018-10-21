@@ -26,7 +26,7 @@ import static think.rpgitems.power.Utils.checkCooldownByString;
  *  Spawn and throw an entity
  * </p>
  */
-@PowerMeta(defaultTrigger = TriggerType.RIGHT_CLICK)
+@PowerMeta(defaultTrigger = "RIGHT_CLICK")
 public class PowerThrow extends BasePower implements PowerRightClick, PowerLeftClick {
     @Property(order = 5, required = true)
     public String entityData = "";
@@ -46,7 +46,7 @@ public class PowerThrow extends BasePower implements PowerRightClick, PowerLeftC
     @Override
     public void init(ConfigurationSection section) {
         boolean isRight = section.getBoolean("isRight", true);
-        triggers = Collections.singleton(isRight ? TriggerType.RIGHT_CLICK : TriggerType.LEFT_CLICK);
+        triggers = Collections.singleton(isRight ? Trigger.RIGHT_CLICK : Trigger.LEFT_CLICK);
         super.init(section);
     }
 
@@ -61,25 +61,25 @@ public class PowerThrow extends BasePower implements PowerRightClick, PowerLeftC
     }
 
     @Override
-    public PowerResult<Void> rightClick(Player player, ItemStack stack, Block clicked, PlayerInteractEvent event) {
+    public PowerResult<Void> rightClick(Player player, ItemStack stack, PlayerInteractEvent event) {
         if (checkCooldownByString(player, getItem(), entityName + entityData, cooldown, true) && getItem().consumeDurability(stack, cost)) {
-            summonEntity(player, stack, clicked);
+            summonEntity(player, stack);
             return PowerResult.ok();
         }
         return PowerResult.noop();
     }
 
     @Override
-    public PowerResult<Void> leftClick(Player player, ItemStack stack, Block clicked, PlayerInteractEvent event) {
+    public PowerResult<Void> leftClick(Player player, ItemStack stack, PlayerInteractEvent event) {
         if (checkCooldownByString(player, getItem(), entityName + entityData, cooldown, true) && getItem().consumeDurability(stack, cost)) {
-            summonEntity(player, stack, clicked);
+            summonEntity(player, stack);
             return PowerResult.ok();
         }
         return PowerResult.noop();
     }
 
     @SuppressWarnings("deprecation")
-    private void summonEntity(Player player, ItemStack stack, Block block) {
+    private void summonEntity(Player player, ItemStack stack) {
         try {
             Location loc = player.getEyeLocation().clone();
             Class craftWorld = ReflectionUtils.getOBCClass("CraftWorld");

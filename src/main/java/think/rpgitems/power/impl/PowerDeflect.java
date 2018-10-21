@@ -2,7 +2,6 @@ package think.rpgitems.power.impl;
 
 import org.bukkit.Bukkit;
 import org.bukkit.Sound;
-import org.bukkit.block.Block;
 import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.entity.*;
 import org.bukkit.event.entity.EntityDamageByEntityEvent;
@@ -33,7 +32,7 @@ import static think.rpgitems.power.Utils.*;
  * </p>
  */
 @SuppressWarnings("WeakerAccess")
-@PowerMeta(defaultTrigger = TriggerType.RIGHT_CLICK)
+@PowerMeta(defaultTrigger = "RIGHT_CLICK")
 public class PowerDeflect extends BasePower implements PowerHitTaken, PowerRightClick, PowerLeftClick {
 
     /**
@@ -92,10 +91,10 @@ public class PowerDeflect extends BasePower implements PowerHitTaken, PowerRight
         boolean isRight = section.getBoolean("isRight", true);
         triggers = new HashSet<>();
         if(passive){
-            triggers.add(TriggerType.HIT_TAKEN);
+            triggers.add(Trigger.HIT_TAKEN);
         }
         if(initiative){
-            triggers.add(isRight ? TriggerType.RIGHT_CLICK : TriggerType.LEFT_CLICK);
+            triggers.add(isRight ? Trigger.RIGHT_CLICK : Trigger.LEFT_CLICK);
         }
         super.init(section);
     }
@@ -142,7 +141,7 @@ public class PowerDeflect extends BasePower implements PowerHitTaken, PowerRight
     }
 
     @Override
-    public PowerResult<Void> rightClick(Player player, ItemStack stack, Block clicked, PlayerInteractEvent event) {
+    public PowerResult<Void> rightClick(Player player, ItemStack stack, PlayerInteractEvent event) {
         if (!checkCooldownByString(player, getItem(), "deflect.initiative", cooldown, true))
             return PowerResult.noop();
         if (!getItem().consumeDurability(stack, cost))
@@ -152,7 +151,7 @@ public class PowerDeflect extends BasePower implements PowerHitTaken, PowerRight
     }
 
     @Override
-    public PowerResult<Void> leftClick(Player player, ItemStack stack, Block clicked, PlayerInteractEvent event) {
+    public PowerResult<Void> leftClick(Player player, ItemStack stack, PlayerInteractEvent event) {
         if (!checkCooldownByString(player, getItem(), "deflect.initiative", cooldown, true))
             return PowerResult.noop();
         if (!getItem().consumeDurability(stack, cost))

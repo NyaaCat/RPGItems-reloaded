@@ -6,7 +6,6 @@ import com.google.common.cache.CacheBuilder;
 import org.bukkit.Location;
 import org.bukkit.Material;
 import org.bukkit.Sound;
-import org.bukkit.block.Block;
 import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.entity.ArmorStand;
 import org.bukkit.entity.Entity;
@@ -32,7 +31,7 @@ import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.function.Consumer;
 
-@PowerMeta(defaultTrigger = {TriggerType.RIGHT_CLICK, TriggerType.TICK})
+@PowerMeta(defaultTrigger = {"RIGHT_CLICK", "TICK"})
 public class PowerParticleBarrier extends BasePower implements PowerRightClick, PowerLeftClick, PowerTick {
 
     @Property
@@ -108,12 +107,12 @@ public class PowerParticleBarrier extends BasePower implements PowerRightClick, 
     }
 
     @Override
-    public PowerResult<Void> leftClick(Player player, ItemStack stack, Block clicked, PlayerInteractEvent event) {
+    public PowerResult<Void> leftClick(Player player, ItemStack stack, PlayerInteractEvent event) {
         return fire(player);
     }
 
     @Override
-    public PowerResult<Void> rightClick(Player player, ItemStack stack, Block clicked, PlayerInteractEvent event) {
+    public PowerResult<Void> rightClick(Player player, ItemStack stack, PlayerInteractEvent event) {
         return fire(player);
     }
 

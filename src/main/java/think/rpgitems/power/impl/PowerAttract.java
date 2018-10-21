@@ -1,8 +1,6 @@
 package think.rpgitems.power.impl;
 
-import org.bukkit.Bukkit;
 import org.bukkit.Location;
-import org.bukkit.block.Block;
 import org.bukkit.entity.Entity;
 import org.bukkit.entity.LivingEntity;
 import org.bukkit.entity.Player;
@@ -27,7 +25,7 @@ import static think.rpgitems.power.Utils.getNearbyEntities;
  * </p>
  */
 @SuppressWarnings("WeakerAccess")
-@PowerMeta(defaultTrigger = TriggerType.RIGHT_CLICK, withSelectors = true)
+@PowerMeta(defaultTrigger = "RIGHT_CLICK", withSelectors = true)
 public class PowerAttract extends BasePower implements PowerTick, PowerLeftClick, PowerRightClick {
     /**
      * Maximum radius
@@ -91,7 +89,7 @@ public class PowerAttract extends BasePower implements PowerTick, PowerLeftClick
         if (!player.isOnline() || player.isDead()) {
             return PowerResult.noop();
         }
-        if (!triggers.contains(TriggerType.TICK) && !stack.equals(player.getInventory().getItemInMainHand())) {
+        if (!triggers.contains(Trigger.TICK) && !stack.equals(player.getInventory().getItemInMainHand())) {
             return PowerResult.noop();
         }
         double factor = Math.sqrt(radius - 1.0) / maxSpeed;
@@ -115,30 +113,30 @@ public class PowerAttract extends BasePower implements PowerTick, PowerLeftClick
     }
 
     @Override
-    public PowerResult<Void> leftClick(Player player, ItemStack stack, Block clicked, PlayerInteractEvent event) {
+    public PowerResult<Void> leftClick(Player player, ItemStack stack, PlayerInteractEvent event) {
         return fire(player, stack);
     }
 
     @Override
-    public PowerResult<Void> rightClick(Player player, ItemStack stack, Block clicked, PlayerInteractEvent event) {
+    public PowerResult<Void> rightClick(Player player, ItemStack stack, PlayerInteractEvent event) {
         return fire(player, stack);
     }
 
     public PowerResult<Void> fire(Player player, ItemStack stack) {
         if (!checkCooldown(this, player, cooldown, true)) return PowerResult.cd();
         if (!item.consumeDurability(stack, cost)) return PowerResult.cost();
-        new BukkitRunnable(){
+        new BukkitRunnable() {
             int dur = duration;
+
             @Override
             public void run() {
-                if(--dur <= 0) {
+                if (--dur <= 0) {
                     this.cancel();
                     return;
                 }
                 attract(player, stack);
             }
         }.runTaskTimer(RPGItem.getPlugin(), 0, 1);
-        ;
         return PowerResult.ok();
     }
 }

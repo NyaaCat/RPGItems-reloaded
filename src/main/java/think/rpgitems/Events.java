@@ -30,6 +30,7 @@ import org.bukkit.scheduler.BukkitRunnable;
 import think.rpgitems.item.ItemManager;
 import think.rpgitems.item.LocaleInventory;
 import think.rpgitems.item.RPGItem;
+import think.rpgitems.power.Trigger;
 import think.rpgitems.power.impl.PowerRanged;
 import think.rpgitems.power.impl.PowerRangedOnly;
 import think.rpgitems.power.impl.PowerTranslocator;
@@ -200,7 +201,7 @@ public class Events implements Listener {
                             return;
                         }
                     }
-                    rItem.projectileHit(player, item, entity, e);
+                    rItem.power(player, item, e, Trigger.PROJECTILE_HIT);
                 }
             } finally {
                 Bukkit.getScheduler().runTask(plugin, () -> rpgProjectiles.remove(entity.getEntityId()));
@@ -273,14 +274,14 @@ public class Events implements Listener {
         }
 
         if (e.getHand() == EquipmentSlot.OFF_HAND) {
-            rItem.offhandClick(p, e.getItem(), e);
+            rItem.power(p, e.getItem(), e, Trigger.OFFHAND_CLICK);
         } else if (action == Action.RIGHT_CLICK_AIR) {
-            rItem.rightClick(p, e.getItem(), e.getClickedBlock(), e);
+            rItem.power(p, e.getItem(), e, Trigger.RIGHT_CLICK);
         } else if (action == Action.RIGHT_CLICK_BLOCK &&
                            !(e.getClickedBlock().getType().isInteractable() && !p.isSneaking())) {
-            rItem.rightClick(p, e.getItem(), e.getClickedBlock(), e);
+            rItem.power(p, e.getItem(), e, Trigger.RIGHT_CLICK);
         } else if (action == Action.LEFT_CLICK_AIR || action == Action.LEFT_CLICK_BLOCK) {
-            rItem.leftClick(p, e.getItem(), e.getClickedBlock(), e);
+            rItem.power(p, e.getItem(), e, Trigger.LEFT_CLICK);
         }
     }
 
@@ -293,7 +294,7 @@ public class Events implements Listener {
         ItemStack item = p.getInventory().getItemInMainHand();
         RPGItem rItem = ItemManager.toRPGItem(item);
         if (rItem == null) return;
-        rItem.sneak(p, item, e);
+        rItem.power(p, item, e, Trigger.SNEAK);
     }
 
     @EventHandler
@@ -305,7 +306,7 @@ public class Events implements Listener {
         ItemStack item = p.getInventory().getItemInMainHand();
         RPGItem rItem = ItemManager.toRPGItem(item);
         if (rItem == null) return;
-        rItem.sprint(p, item, e);
+        rItem.power(p, item, e, Trigger.SPRINT);
     }
 
     @EventHandler
@@ -317,11 +318,13 @@ public class Events implements Listener {
         RPGItem oitem = ItemManager.toRPGItem(ois);
 
         if (mitem != null) {
-            mitem.swapToMainhand(player, mis, e);
+            Boolean cont = mitem.power(player, mis, e, Trigger.SWAP_TO_MAINHAND);
+            if (!cont) e.setCancelled(true);
         }
 
         if (oitem != null) {
-            oitem.swapToOffhand(player, ois, e);
+            Boolean cont = oitem.power(player, ois, e, Trigger.SWAP_TO_OFFHAND);
+            if (!cont) e.setCancelled(true);
         }
     }
 
@@ -336,12 +339,14 @@ public class Events implements Listener {
         RPGItem currentItem = ItemManager.toRPGItem(currentIs);
         RPGItem cursorItem = ItemManager.toRPGItem(cursorIs);
 
-        if (currentItem != null && (e.getAction() == InventoryAction.PICKUP_SOME || e.getAction() == InventoryAction.PICKUP_ALL || e.getAction() == InventoryAction.PICKUP_ONE || e.getAction() == InventoryAction.PICKUP_HALF)) {
-            currentItem.pickupOffhand(player, currentIs, e);
+        if (currentItem != null && (e.getAction() == InventoryAction.PICKUP_SOME || e.getAction() == InventoryAction.PICKUP_ALL || e.getAction() == InventoryAction.PICKUP_ONE || e.getAction() == InventoryAction.PICKUP_HALF || e.getAction() == InventoryAction.DROP_ALL_SLOT || e.getAction() == InventoryAction.DROP_ONE_CURSOR)) {
+            Boolean cont = currentItem.power(player, currentIs, e, Trigger.PICKUP_OFF_HAND);
+            if (!cont) e.setCancelled(true);
         }
 
         if (cursorItem != null && (e.getAction() == InventoryAction.PLACE_SOME || e.getAction() == InventoryAction.PLACE_ONE || e.getAction() == InventoryAction.PLACE_ALL)) {
-            cursorItem.placeOffhand(player, cursorIs, e);
+            Boolean cont = cursorItem.power(player, cursorIs, e, Trigger.PLACE_OFF_HAND);
+            if (!cont) e.setCancelled(true);
         }
     }
 
@@ -556,7 +561,7 @@ public class Events implements Listener {
         }
         double damage = rItem.meleeDamage(e, player);
         if (e.getEntity() instanceof LivingEntity) {
-            damage = rItem.hit(player, item, (LivingEntity) e.getEntity(), e);
+            damage = rItem.power(player, item, e, Trigger.HIT);
         }
         if (rItem.getDurability(item) <= 0) {
             player.getInventory().setItemInMainHand(null);
@@ -600,8 +605,7 @@ public class Events implements Listener {
 
         double damage = rItem.projectileDamage(e);
         if (e.getEntity() instanceof LivingEntity) {
-            LivingEntity le = (LivingEntity) e.getEntity();
-            damage = rItem.hit((Player) entity.getShooter(), item, le, e);
+            damage = rItem.power((Player) entity.getShooter(), item, e, Trigger.HIT);
         }
         e.setDamage(damage);
     }
@@ -666,7 +670,7 @@ public class Events implements Listener {
         for (ItemStack item : e.getInventory().getContents()) {
             RPGItem ri = ItemManager.toRPGItem(item);
             if (ri == null) continue;
-            double d = ri.takeHit(e, item, ev);
+            double d = ri.power(e, item, ev, Trigger.HIT_TAKEN);
             if (d == Double.MAX_VALUE) continue;
             ret = d < ret ? d : ret;
         }
@@ -680,7 +684,7 @@ public class Events implements Listener {
             for (ItemStack item : e.getInventory().getContents()) {
                 RPGItem ri = ItemManager.toRPGItem(item);
                 if (ri == null) continue;
-                ri.hurt(e, item, ev);
+                ri.power(e, item, ev, Trigger.HURT);
             }
         }
     }

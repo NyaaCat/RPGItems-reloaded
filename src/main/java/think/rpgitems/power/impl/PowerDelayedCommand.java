@@ -1,6 +1,5 @@
 package think.rpgitems.power.impl;
 
-import org.bukkit.block.Block;
 import org.bukkit.entity.Player;
 import org.bukkit.event.entity.EntityDamageEvent;
 import org.bukkit.event.player.PlayerInteractEvent;
@@ -12,7 +11,6 @@ import think.rpgitems.RPGItems;
 import think.rpgitems.power.PowerMeta;
 import think.rpgitems.power.PowerResult;
 import think.rpgitems.power.Property;
-import think.rpgitems.power.TriggerType;
 
 import static think.rpgitems.power.Utils.checkCooldownByString;
 
@@ -24,7 +22,7 @@ import static think.rpgitems.power.Utils.checkCooldownByString;
  * </p>
  */
 @SuppressWarnings("WeakerAccess")
-@PowerMeta(defaultTrigger = TriggerType.RIGHT_CLICK)
+@PowerMeta(defaultTrigger = "RIGHT_CLICK")
 public class PowerDelayedCommand extends PowerCommand {
     /**
      * Delay before executing command
@@ -38,7 +36,7 @@ public class PowerDelayedCommand extends PowerCommand {
     }
 
     @Override
-    public PowerResult<Void> rightClick(final Player player, ItemStack stack, Block clicked, PlayerInteractEvent event) {
+    public PowerResult<Void> rightClick(final Player player, ItemStack stack, PlayerInteractEvent event) {
         if (!checkCooldownByString(player, getItem(), command, cooldown, true)) return PowerResult.cd();
         if (!getItem().consumeDurability(stack, cost)) return PowerResult.cost();
         (new BukkitRunnable() {
@@ -51,7 +49,7 @@ public class PowerDelayedCommand extends PowerCommand {
     }
 
     @Override
-    public PowerResult<Void> leftClick(final Player player, ItemStack stack, Block clicked, PlayerInteractEvent event) {
+    public PowerResult<Void> leftClick(final Player player, ItemStack stack, PlayerInteractEvent event) {
         if (!checkCooldownByString(player, getItem(), command, cooldown, true)) return PowerResult.cd();
         if (!getItem().consumeDurability(stack, cost)) return PowerResult.cost();
         (new BukkitRunnable() {

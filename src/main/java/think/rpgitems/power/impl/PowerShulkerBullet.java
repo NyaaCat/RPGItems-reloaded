@@ -1,6 +1,5 @@
 package think.rpgitems.power.impl;
 
-import org.bukkit.block.Block;
 import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.entity.LivingEntity;
 import org.bukkit.entity.Player;
@@ -63,7 +62,7 @@ public class PowerShulkerBullet extends BasePower implements PowerRightClick {
 
     @Override
     @SuppressWarnings("deprecation")
-    public PowerResult<Void> rightClick(Player player, ItemStack stack, Block clicked, PlayerInteractEvent event) {
+    public PowerResult<Void> rightClick(Player player, ItemStack stack, PlayerInteractEvent event) {
         if (!checkCooldown(this, player, cooldown, true)) return PowerResult.cd();
         if (!getItem().consumeDurability(stack, cost)) return PowerResult.cost();
         ShulkerBullet bullet = player.launchProjectile(ShulkerBullet.class);

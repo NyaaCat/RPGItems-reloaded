@@ -10,7 +10,7 @@ import think.rpgitems.item.RPGItem;
 import think.rpgitems.support.WGSupport;
 
 /**
- * BukkitRunnable that runs {@link RPGItem#tick(Player, ItemStack)}
+ * BukkitRunnable that runs {@link PowerTick#tick(Player, ItemStack)}
  */
 public class PowerTicker extends BukkitRunnable {
 
@@ -23,7 +23,7 @@ public class PowerTicker extends BukkitRunnable {
                 RPGItem item = ItemManager.toRPGItem(part);
                 if (item == null)
                     continue;
-                item.tick(player, part);
+                item.power(player, part, null, Trigger.TICK);
                 if (item.getDurability(part) <= 0) {
                     part.setType(Material.AIR);
                 }
@@ -35,7 +35,7 @@ public class PowerTicker extends BukkitRunnable {
             if (item.getDurability(part) <= 0) {
                 player.getInventory().setItemInMainHand(new ItemStack(Material.AIR));
             }
-            item.tick(player, part);
+            item.power(player, part, null, Trigger.TICK);
         }
     }
 

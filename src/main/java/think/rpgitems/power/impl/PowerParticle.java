@@ -4,7 +4,6 @@ import org.bukkit.Color;
 import org.bukkit.Effect;
 import org.bukkit.Material;
 import org.bukkit.Particle;
-import org.bukkit.block.Block;
 import org.bukkit.block.data.BlockData;
 import org.bukkit.entity.Player;
 import org.bukkit.event.player.PlayerInteractEvent;
@@ -68,7 +67,7 @@ public class PowerParticle extends BasePower implements PowerRightClick {
     }
 
     @Override
-    public PowerResult<Void> rightClick(Player player, ItemStack stack, Block clicked, PlayerInteractEvent event) {
+    public PowerResult<Void> rightClick(Player player, ItemStack stack, PlayerInteractEvent event) {
         if (!getItem().consumeDurability(stack, cost)) return PowerResult.cost();
         spawnParticle(player);
         return PowerResult.ok();

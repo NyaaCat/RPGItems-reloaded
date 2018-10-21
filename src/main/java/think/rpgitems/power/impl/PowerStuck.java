@@ -2,7 +2,6 @@ package think.rpgitems.power.impl;
 
 import com.google.common.cache.Cache;
 import com.google.common.cache.CacheBuilder;
-import org.bukkit.block.Block;
 import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.entity.LivingEntity;
 import org.bukkit.entity.Player;
@@ -31,7 +30,7 @@ import static think.rpgitems.power.Utils.*;
  * The stuck power will make the hit target stuck with a chance of 1/{@link #chance}.
  * </p>
  */
-@PowerMeta(defaultTrigger = TriggerType.HIT, withSelectors = true)
+@PowerMeta(defaultTrigger = "HIT", withSelectors = true)
 public class PowerStuck extends BasePower implements PowerHit, PowerRightClick {
     /**
      * Chance of triggering this power
@@ -105,7 +104,7 @@ public class PowerStuck extends BasePower implements PowerHit, PowerRightClick {
     }
 
     @Override
-    public PowerResult<Void> rightClick(Player player, ItemStack stack, Block clicked, PlayerInteractEvent event) {
+    public PowerResult<Void> rightClick(Player player, ItemStack stack, PlayerInteractEvent event) {
         if (!checkCooldown(this, player, cooldown, true)) return PowerResult.cd();
         if (!getItem().consumeDurability(stack, costAoe)) return PowerResult.cost();
         List<LivingEntity> entities = getLivingEntitiesInCone(getNearestLivingEntities(this, player.getEyeLocation(), player, range, 0), player.getLocation().toVector(), facing, player.getLocation().getDirection());
@@ -134,12 +133,12 @@ public class PowerStuck extends BasePower implements PowerHit, PowerRightClick {
         int orc = rc.getAndIncrement();
         boolean allowHit = s.getBoolean("allowHit", true);
         boolean allowAoe = s.getBoolean("allowAoe", false);
-        Set<TriggerType> triggerTypes = new HashSet<>();
+        Set<Trigger> triggerTypes = new HashSet<>();
         if (allowHit) {
-            triggerTypes.add(TriggerType.HIT);
+            triggerTypes.add(Trigger.HIT);
         }
         if (allowAoe) {
-            triggerTypes.add(TriggerType.RIGHT_CLICK);
+            triggerTypes.add(Trigger.RIGHT_CLICK);
         }
         triggers = triggerTypes;
         super.init(s);

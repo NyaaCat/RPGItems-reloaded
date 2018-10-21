@@ -17,7 +17,7 @@ import java.util.Random;
  * The lightning power will strike the hit target with lightning with a chance of 1/{@link #chance}.
  * </p>
  */
-@PowerMeta(defaultTrigger = {TriggerType.HIT, TriggerType.PROJECTILE_HIT})
+@PowerMeta(defaultTrigger = {"HIT", "PROJECTILE_HIT"})
 public class PowerLightning extends BasePower implements PowerHit, PowerProjectileHit {
     /**
      * Chance of triggering this power
@@ -43,10 +43,11 @@ public class PowerLightning extends BasePower implements PowerHit, PowerProjecti
     }
 
     @Override
-    public PowerResult<Void> projectileHit(Player player, ItemStack stack, Projectile p, ProjectileHitEvent event) {
+    public PowerResult<Void> projectileHit(Player player, ItemStack stack, ProjectileHitEvent event) {
         if (random.nextInt(chance) == 0) {
             if (!getItem().consumeDurability(stack, cost)) return PowerResult.cost();
-            p.getWorld().strikeLightning(p.getLocation());
+            Projectile hit = event.getEntity();
+            hit.getWorld().strikeLightning(hit.getLocation());
             return PowerResult.ok();
         }
         return PowerResult.noop();

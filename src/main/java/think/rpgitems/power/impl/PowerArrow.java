@@ -1,7 +1,6 @@
 package think.rpgitems.power.impl;
 
 import org.bukkit.Sound;
-import org.bukkit.block.Block;
 import org.bukkit.entity.Arrow;
 import org.bukkit.entity.Player;
 import org.bukkit.event.player.PlayerInteractEvent;
@@ -18,7 +17,7 @@ import static think.rpgitems.power.Utils.checkCooldown;
  * The arrow power will fire an arrow on right click.
  * </p>
  */
-@PowerMeta(defaultTrigger = TriggerType.RIGHT_CLICK)
+@PowerMeta(defaultTrigger = "RIGHT_CLICK")
 public class PowerArrow extends BasePower implements PowerRightClick, PowerLeftClick {
 
     /**
@@ -33,12 +32,12 @@ public class PowerArrow extends BasePower implements PowerRightClick, PowerLeftC
     public int cost = 0;
 
     @Override
-    public PowerResult<Void> rightClick(Player player, ItemStack stack, Block clicked, PlayerInteractEvent event) {
+    public PowerResult<Void> rightClick(Player player, ItemStack stack, PlayerInteractEvent event) {
         return fire(player, stack);
     }
 
     @Override
-    public PowerResult<Void> leftClick(Player player, ItemStack stack, Block clicked, PlayerInteractEvent event) {
+    public PowerResult<Void> leftClick(Player player, ItemStack stack, PlayerInteractEvent event) {
         return fire(player, stack);
     }
 

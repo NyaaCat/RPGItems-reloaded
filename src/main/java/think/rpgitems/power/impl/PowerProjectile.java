@@ -3,7 +3,6 @@ package think.rpgitems.power.impl;
 import com.google.common.cache.Cache;
 import com.google.common.cache.CacheBuilder;
 import org.bukkit.Bukkit;
-import org.bukkit.block.Block;
 import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.entity.*;
 import org.bukkit.event.player.PlayerInteractEvent;
@@ -135,7 +134,7 @@ public class PowerProjectile extends BasePower implements PowerRightClick {
     }
 
     @Override
-    public PowerResult<Void> rightClick(Player player, ItemStack stack, Block clicked, PlayerInteractEvent event) {
+    public PowerResult<Void> rightClick(Player player, ItemStack stack, PlayerInteractEvent event) {
         if (!checkCooldown(this, player, cooldown, true)) return PowerResult.cd();
         if (!getItem().consumeDurability(stack, cost)) return PowerResult.cost();
         fire(player);

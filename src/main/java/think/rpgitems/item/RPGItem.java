@@ -8,22 +8,13 @@ import org.apache.commons.lang.StringUtils;
 import org.bukkit.*;
 import org.bukkit.attribute.Attribute;
 import org.bukkit.attribute.AttributeModifier;
-import org.bukkit.block.Block;
 import org.bukkit.command.CommandSender;
 import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.configuration.MemoryConfiguration;
 import org.bukkit.enchantments.Enchantment;
-import org.bukkit.entity.LivingEntity;
 import org.bukkit.entity.Player;
-import org.bukkit.entity.Projectile;
+import org.bukkit.event.Event;
 import org.bukkit.event.entity.EntityDamageByEntityEvent;
-import org.bukkit.event.entity.EntityDamageEvent;
-import org.bukkit.event.entity.ProjectileHitEvent;
-import org.bukkit.event.inventory.InventoryClickEvent;
-import org.bukkit.event.player.PlayerInteractEvent;
-import org.bukkit.event.player.PlayerSwapHandItemsEvent;
-import org.bukkit.event.player.PlayerToggleSneakEvent;
-import org.bukkit.event.player.PlayerToggleSprintEvent;
 import org.bukkit.inventory.ItemFlag;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.Recipe;
@@ -71,7 +62,6 @@ public class RPGItem {
     public int recipechance = 6;
     public boolean hasRecipe = false;
     public List<ItemStack> recipe = null;
-    public NamespacedKey namespacedKey;
     // Drops
     public Map<String, Double> dropChances = new HashMap<>();
     public int defaultDurability;
@@ -85,6 +75,7 @@ public class RPGItem {
 
     String file;
 
+    private NamespacedKey namespacedKey;
     private ItemStack item;
     private ItemMeta localeMeta;
     private int id;
@@ -641,12 +632,12 @@ public class RPGItem {
         return damage;
     }
 
-    private boolean triggerPreCheck(Player player, ItemStack i, List<? extends Power> powers, TriggerType triggerType) {
+    private <TEvent extends Event, TPower extends Power, TResult, TReturn> boolean triggerPreCheck(Player player, ItemStack i, TEvent event, Trigger<TEvent, TPower, TResult, TReturn> trigger, List<TPower> powers) {
         if (powers.isEmpty()) return false;
         if (!checkPermission(player, true)) return false;
         if (!WGSupport.check(player, this, powers)) return false;
 
-        RPGItemsPowersPreFireEvent preFire = new RPGItemsPowersPreFireEvent(i, this, player, triggerType, powers);
+        RPGItemsPowersPreFireEvent<TEvent, TPower, TResult, TReturn> preFire = new RPGItemsPowersPreFireEvent<>(player, i, event, this, trigger, powers);
         Bukkit.getServer().getPluginManager().callEvent(preFire);
         return !preFire.isCancelled();
     }
@@ -671,292 +662,36 @@ public class RPGItem {
         return result;
     }
 
-    public void leftClick(Player player, ItemStack i, Block block, PlayerInteractEvent event) {
-        if (!triggerPreCheck(player, i, this.getPowerLeftClick(), TriggerType.LEFT_CLICK)) return;
+    public <TEvent extends Event, TPower extends Power, TResult, TReturn> TReturn power(Player player, ItemStack i, TEvent event, Trigger<TEvent, TPower, TResult, TReturn> trigger) {
+        List<TPower> powers = this.getPower(trigger);
+        TReturn ret = trigger.def(player, i, event);
+        if (!triggerPreCheck(player, i, event, trigger, powers)) return ret;
         List<PowerCondition> conds = getPower(PowerCondition.class, true);
         Map<PowerCondition, PowerResult> staticCond = checkStaticCondition(player, i, conds);
         Map<Power, PowerResult> resultMap = new LinkedHashMap<>(staticCond);
-        for (PowerLeftClick power : getPowerLeftClick()) {
-            PowerResult<Void> result = checkConditions(player, i, power, conds, resultMap);
+        for (TPower power : powers) {
+            PowerResult<TResult> result = checkConditions(player, i, power, conds, resultMap);
             if (result != null) {
                 resultMap.put(power, result);
             } else {
-                result = power.leftClick(player, i, block, event);
+                result = trigger.run(power, player, i, event);
                 resultMap.put(power, result);
             }
+            ret = trigger.next(ret, result);
             if (result.isAbort()) break;
         }
-        triggerPostFire(player, i, resultMap, TriggerType.LEFT_CLICK);
-    }
-
-    public void rightClick(Player player, ItemStack i, Block block, PlayerInteractEvent event) {
-        if (!triggerPreCheck(player, i, this.getPowerRightClick(), TriggerType.RIGHT_CLICK)) return;
-        List<PowerCondition> conds = getPower(PowerCondition.class, true);
-        Map<PowerCondition, PowerResult> staticCond = checkStaticCondition(player, i, conds);
-        Map<Power, PowerResult> resultMap = new LinkedHashMap<>(staticCond);
-        for (PowerRightClick power : this.getPowerRightClick()) {
-            PowerResult<Void> result = checkConditions(player, i, power, conds, resultMap);
-            if (result != null) {
-                resultMap.put(power, result);
-            } else {
-                result = power.rightClick(player, i, block, event);
-                resultMap.put(power, result);
-            }
-            if (result.isAbort()) break;
-        }
-        triggerPostFire(player, i, resultMap, TriggerType.RIGHT_CLICK);
-    }
-
-    public void offhandClick(Player player, ItemStack i, PlayerInteractEvent event) {
-        if (!triggerPreCheck(player, i, this.getPowerOffhandClick(), TriggerType.OFFHAND_CLICK)) return;
-        List<PowerCondition> conds = getPower(PowerCondition.class, true);
-        Map<PowerCondition, PowerResult> staticCond = checkStaticCondition(player, i, conds);
-        Map<Power, PowerResult> resultMap = new LinkedHashMap<>(staticCond);
-        for (PowerOffhandClick power : getPowerOffhandClick()) {
-            PowerResult<Void> result = checkConditions(player, i, power, conds, resultMap);
-            if (result != null) {
-                resultMap.put(power, result);
-            } else {
-                result = power.offhandClick(player, i, event);
-                resultMap.put(power, result);
-            }
-            resultMap.put(power, result);
-            if (result.isAbort()) break;
-        }
-        triggerPostFire(player, i, resultMap, TriggerType.OFFHAND_CLICK);
-    }
-
-    public void sneak(Player player, ItemStack i, PlayerToggleSneakEvent event) {
-        if (!triggerPreCheck(player, i, this.getPowerSneak(), TriggerType.SNEAK)) return;
-        List<PowerCondition> conds = getPower(PowerCondition.class, true);
-        Map<PowerCondition, PowerResult> staticCond = checkStaticCondition(player, i, conds);
-        Map<Power, PowerResult> resultMap = new LinkedHashMap<>(staticCond);
-        for (PowerSneak power : getPowerSneak()) {
-            PowerResult<Void> result = checkConditions(player, i, power, conds, resultMap);
-            if (result != null) {
-                resultMap.put(power, result);
-            } else {
-                result = power.sneak(player, i, event);
-                resultMap.put(power, result);
-            }
-            resultMap.put(power, result);
-            if (result.isAbort()) break;
-        }
-        triggerPostFire(player, i, resultMap, TriggerType.SNEAK);
-    }
-
-    public void sprint(Player player, ItemStack i, PlayerToggleSprintEvent event) {
-        if (!triggerPreCheck(player, i, this.getPowerSprint(), TriggerType.SPRINT)) return;
-        List<PowerCondition> conds = getPower(PowerCondition.class, true);
-        Map<PowerCondition, PowerResult> staticCond = checkStaticCondition(player, i, conds);
-        Map<Power, PowerResult> resultMap = new LinkedHashMap<>(staticCond);
-        for (PowerSprint power : getPowerSprint()) {
-            PowerResult<Void> result = checkConditions(player, i, power, conds, resultMap);
-            if (result != null) {
-                resultMap.put(power, result);
-            } else {
-                result = power.sprint(player, i, event);
-                resultMap.put(power, result);
-            }
-            resultMap.put(power, result);
-            if (result.isAbort()) break;
-        }
-        triggerPostFire(player, i, resultMap, TriggerType.SPRINT);
-    }
-
-    public void projectileHit(Player player, ItemStack i, Projectile arrow, ProjectileHitEvent event) {
-        if (!triggerPreCheck(player, i, this.getPowerProjectileHit(), TriggerType.PROJECTILE_HIT)) return;
-        List<PowerCondition> conds = getPower(PowerCondition.class, true);
-        Map<PowerCondition, PowerResult> staticCond = checkStaticCondition(player, i, conds);
-        Map<Power, PowerResult> resultMap = new LinkedHashMap<>(staticCond);
-        for (PowerProjectileHit power : getPowerProjectileHit()) {
-            PowerResult<Void> result = checkConditions(player, i, power, conds, resultMap);
-            if (result != null) {
-                resultMap.put(power, result);
-            } else {
-                result = power.projectileHit(player, i, arrow, event);
-                resultMap.put(power, result);
-            }
-            resultMap.put(power, result);
-            if (result.isAbort()) break;
-        }
-        triggerPostFire(player, i, resultMap, TriggerType.PROJECTILE_HIT);
-    }
-
-    public double hit(Player player, ItemStack i, LivingEntity target, EntityDamageByEntityEvent event) {
-        double ret = event.getDamage();
-        if (!triggerPreCheck(player, i, this.getPowerHit(), TriggerType.HIT)) return ret;
-        List<PowerCondition> conds = getPower(PowerCondition.class, true);
-        Map<PowerCondition, PowerResult> staticCond = checkStaticCondition(player, i, conds);
-        Map<Power, PowerResult> resultMap = new LinkedHashMap<>(staticCond);
-        for (PowerHit power : getPowerHit()) {
-            PowerResult<Double> result = checkConditions(player, i, power, conds, resultMap);
-            if (result != null) {
-                resultMap.put(power, result);
-            } else {
-                result = power.hit(player, i, target, event.getDamage(), event);
-                resultMap.put(power, result);
-            }
-            if (result.isAbort()) break;
-            if (!result.isOK()) continue;
-            ret = Math.max(ret, result.getData());
-        }
-        triggerPostFire(player, i, resultMap, TriggerType.HIT);
+        triggerPostFire(player, i, event, trigger, resultMap, ret);
         return ret;
     }
 
-    public double takeHit(Player player, ItemStack i, EntityDamageEvent ev) {
-        double ret = ev.getDamage();
-        if (!triggerPreCheck(player, i, this.getPowerHitTaken(), TriggerType.HIT_TAKEN)) return ret;
-        List<PowerCondition> conds = getPower(PowerCondition.class, true);
-        Map<PowerCondition, PowerResult> staticCond = checkStaticCondition(player, i, conds);
-        Map<Power, PowerResult> resultMap = new LinkedHashMap<>(staticCond);
-        for (PowerHitTaken power : getPowerHitTaken()) {
-            PowerResult<Double> result = checkConditions(player, i, power, conds, resultMap);
-            if (result != null) {
-                resultMap.put(power, result);
-            } else {
-                result = power.takeHit(player, i, ev.getDamage(), ev);
-                resultMap.put(power, result);
-            }
-            if (result.isAbort()) break;
-            if (!result.isOK()) continue;
-            ret = Math.min(ret, result.getData());
-        }
-        triggerPostFire(player, i, resultMap, TriggerType.HIT_TAKEN);
-        return ret;
-    }
-
-    public void hurt(Player player, ItemStack i, EntityDamageEvent ev) {
-        if (!triggerPreCheck(player, i, this.getPowerHurt(), TriggerType.HURT)) return;
-        List<PowerCondition> conds = getPower(PowerCondition.class, true);
-        Map<PowerCondition, PowerResult> staticCond = checkStaticCondition(player, i, conds);
-        Map<Power, PowerResult> resultMap = new LinkedHashMap<>(staticCond);
-        for (PowerHurt power : getPowerHurt()) {
-            PowerResult<Void> result = checkConditions(player, i, power, conds, resultMap);
-            if (result != null) {
-                resultMap.put(power, result);
-            } else {
-                result = power.hurt(player, i, ev);
-                resultMap.put(power, result);
-            }
-            if (result.isAbort()) break;
-        }
-        triggerPostFire(player, i, resultMap, TriggerType.HURT);
-    }
-
-    public void swapToOffhand(Player player, ItemStack i, PlayerSwapHandItemsEvent ev) {
-        if (!triggerPreCheck(player, i, this.getPowerSwapToOffhand(), TriggerType.SWAP_TO_OFFHAND)) return;
-        List<PowerCondition> conds = getPower(PowerCondition.class, true);
-        Map<PowerCondition, PowerResult> staticCond = checkStaticCondition(player, i, conds);
-        Map<Power, PowerResult> resultMap = new LinkedHashMap<>(staticCond);
-        for (PowerSwapToOffhand power : getPowerSwapToOffhand()) {
-            PowerResult<Boolean> result = checkConditions(player, i, power, conds, resultMap);
-            if (result != null) {
-                resultMap.put(power, result);
-            } else {
-                result = power.swapToOffhand(player, i, ev);
-                resultMap.put(power, result);
-            }
-            if (!result.getData()) {
-                ev.setCancelled(true);
-            }
-            if (result.isAbort()) break;
-        }
-        triggerPostFire(player, i, resultMap, TriggerType.SWAP_TO_OFFHAND);
-    }
-
-    public void swapToMainhand(Player player, ItemStack i, PlayerSwapHandItemsEvent ev) {
-        if (!triggerPreCheck(player, i, this.getPowerSwapToMainhand(), TriggerType.SWAP_TO_MAINHAND)) return;
-        List<PowerCondition> conds = getPower(PowerCondition.class, true);
-        Map<PowerCondition, PowerResult> staticCond = checkStaticCondition(player, i, conds);
-        Map<Power, PowerResult> resultMap = new LinkedHashMap<>(staticCond);
-        for (PowerSwapToMainhand power : getPowerSwapToMainhand()) {
-            PowerResult<Boolean> result = checkConditions(player, i, power, conds, resultMap);
-            if (result != null) {
-                resultMap.put(power, result);
-            } else {
-                result = power.swapToMainhand(player, i, ev);
-                resultMap.put(power, result);
-            }
-            resultMap.put(power, result);
-            if (!result.getData()) {
-                ev.setCancelled(true);
-            }
-            if (result.isAbort()) break;
-        }
-        triggerPostFire(player, i, resultMap, TriggerType.SWAP_TO_MAINHAND);
-    }
-
-    private void triggerPostFire(Player player, ItemStack i, Map<Power, PowerResult> resultMap, TriggerType swapToMainhand) {
-        RPGItemsPowersPostFireEvent postFire = new RPGItemsPowersPostFireEvent(i, this, player, swapToMainhand, resultMap);
+    private <TEvent extends Event, TPower extends Power, TResult, TReturn> void triggerPostFire(Player player, ItemStack i, TEvent event, Trigger<TEvent, TPower, TResult, TReturn> trigger, Map<Power, PowerResult> resultMap, TReturn ret) {
+        RPGItemsPowersPostFireEvent<TEvent, TPower, TResult, TReturn> postFire = new RPGItemsPowersPostFireEvent<>(player, i, event, this, trigger, resultMap, ret);
         Bukkit.getServer().getPluginManager().callEvent(postFire);
 
         if (getDurability(i) <= 0) {
             i.setAmount(0);
             i.setType(Material.AIR);
         }
-    }
-
-    public void pickupOffhand(Player player, ItemStack i, InventoryClickEvent ev) {
-        if (!triggerPreCheck(player, i, this.getPowerSwapToMainhand(), TriggerType.PICKUP_OFF_HAND)) return;
-        List<PowerCondition> conds = getPower(PowerCondition.class, true);
-        Map<PowerCondition, PowerResult> staticCond = checkStaticCondition(player, i, conds);
-        Map<Power, PowerResult> resultMap = new LinkedHashMap<>(staticCond);
-        for (PowerSwapToMainhand power : getPowerSwapToMainhand()) {
-            PowerResult<Boolean> result = checkConditions(player, i, power, conds, resultMap);
-            if (result != null) {
-                resultMap.put(power, result);
-            } else {
-                result = power.pickupOffhand(player, i, ev);
-                resultMap.put(power, result);
-            }
-            if (!result.getData()) {
-                ev.setCancelled(true);
-            }
-            if (result.isAbort()) break;
-        }
-        triggerPostFire(player, i, resultMap, TriggerType.PICKUP_OFF_HAND);
-    }
-
-    public void placeOffhand(Player player, ItemStack i, InventoryClickEvent ev) {
-        if (!triggerPreCheck(player, i, this.getPowerSwapToOffhand(), TriggerType.PLACE_OFF_HAND)) return;
-        List<PowerCondition> conds = getPower(PowerCondition.class, true);
-        Map<PowerCondition, PowerResult> staticCond = checkStaticCondition(player, i, conds);
-        Map<Power, PowerResult> resultMap = new LinkedHashMap<>(staticCond);
-        for (PowerSwapToOffhand power : getPowerSwapToOffhand()) {
-            PowerResult<Boolean> result = checkConditions(player, i, power, conds, resultMap);
-            if (result != null) {
-                resultMap.put(power, result);
-            } else {
-                result = power.placeOffhand(player, i, ev);
-                resultMap.put(power, result);
-            }
-            if (!result.getData()) {
-                ev.setCancelled(true);
-            }
-            if (result.isAbort()) break;
-        }
-        triggerPostFire(player, i, resultMap, TriggerType.PLACE_OFF_HAND);
-    }
-
-    public void tick(Player player, ItemStack i) {
-        if (!triggerPreCheck(player, i, this.getPowerTick(), TriggerType.TICK)) return;
-        List<PowerCondition> conds = getPower(PowerCondition.class, true);
-        Map<PowerCondition, PowerResult> staticCond = checkStaticCondition(player, i, conds);
-        Map<Power, PowerResult> resultMap = new LinkedHashMap<>(staticCond);
-        for (PowerTick power : getPowerTick()) {
-            PowerResult<Void> result = checkConditions(player, i, power, conds, resultMap);
-            if (result != null) {
-                resultMap.put(power, result);
-            } else {
-                result = power.tick(player, i);
-                resultMap.put(power, result);
-            }
-            if (result.isAbort()) break;
-        }
-        RPGItemsPowersPostFireEvent postFire = new RPGItemsPowersPostFireEvent(i, this, player, TriggerType.TICK, resultMap);
-        Bukkit.getServer().getPluginManager().callEvent(postFire);
     }
 
     public void rebuild() {
@@ -1506,52 +1241,8 @@ public class RPGItem {
         this.license = license;
     }
 
-    private List<PowerLeftClick> getPowerLeftClick() {
-        return powers.stream().filter(p -> p.getTriggers().contains(TriggerType.LEFT_CLICK)).map(p -> (PowerLeftClick) p).collect(Collectors.toList());
-    }
-
-    private List<PowerRightClick> getPowerRightClick() {
-        return powers.stream().filter(p -> p.getTriggers().contains(TriggerType.RIGHT_CLICK)).map(p -> (PowerRightClick) p).collect(Collectors.toList());
-    }
-
-    private List<PowerProjectileHit> getPowerProjectileHit() {
-        return powers.stream().filter(p -> p.getTriggers().contains(TriggerType.PROJECTILE_HIT)).map(p -> (PowerProjectileHit) p).collect(Collectors.toList());
-    }
-
-    private List<PowerHit> getPowerHit() {
-        return powers.stream().filter(p -> p.getTriggers().contains(TriggerType.HIT)).map(p -> (PowerHit) p).collect(Collectors.toList());
-    }
-
-    private List<PowerHitTaken> getPowerHitTaken() {
-        return powers.stream().filter(p -> p.getTriggers().contains(TriggerType.HIT_TAKEN)).map(p -> (PowerHitTaken) p).collect(Collectors.toList());
-    }
-
-    private List<PowerHurt> getPowerHurt() {
-        return powers.stream().filter(p -> p.getTriggers().contains(TriggerType.HURT)).map(p -> (PowerHurt) p).collect(Collectors.toList());
-    }
-
-    private List<PowerTick> getPowerTick() {
-        return powers.stream().filter(p -> p.getTriggers().contains(TriggerType.TICK)).map(p -> (PowerTick) p).collect(Collectors.toList());
-    }
-
-    private List<PowerOffhandClick> getPowerOffhandClick() {
-        return powers.stream().filter(p -> p.getTriggers().contains(TriggerType.OFFHAND_CLICK)).map(p -> (PowerOffhandClick) p).collect(Collectors.toList());
-    }
-
-    private List<PowerSneak> getPowerSneak() {
-        return powers.stream().filter(p -> p.getTriggers().contains(TriggerType.SNEAK)).map(p -> (PowerSneak) p).collect(Collectors.toList());
-    }
-
-    private List<PowerSprint> getPowerSprint() {
-        return powers.stream().filter(p -> p.getTriggers().contains(TriggerType.SPRINT)).map(p -> (PowerSprint) p).collect(Collectors.toList());
-    }
-
-    private List<PowerSwapToOffhand> getPowerSwapToOffhand() {
-        return powers.stream().filter(p -> p.getTriggers().contains(TriggerType.SWAP_TO_OFFHAND)).map(p -> (PowerSwapToOffhand) p).collect(Collectors.toList());
-    }
-
-    private List<PowerSwapToMainhand> getPowerSwapToMainhand() {
-        return powers.stream().filter(p -> p.getTriggers().contains(TriggerType.SWAP_TO_MAINHAND)).map(p -> (PowerSwapToMainhand) p).collect(Collectors.toList());
+    private <TEvent extends Event, T extends Power, TResult, TReturn> List<T> getPower(Trigger<TEvent, T, TResult, TReturn> trigger) {
+        return powers.stream().filter(p -> p.getTriggers().contains(trigger)).map(trigger.getPowerClass()::cast).collect(Collectors.toList());
     }
 
     @LangKey(type = LangKeyType.SUFFIX)

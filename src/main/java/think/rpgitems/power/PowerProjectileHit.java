@@ -16,11 +16,10 @@ public interface PowerProjectileHit extends Power {
      *
      * @param player Player
      * @param stack  Item that triggered this power
-     * @param arrow  Projectile
      * @param event  Event that triggered this power
      *
      * @return PowerResult
      */
     @CheckReturnValue
-    PowerResult<Void> projectileHit(Player player, ItemStack stack, Projectile arrow, ProjectileHitEvent event);
+    PowerResult<Void> projectileHit(Player player, ItemStack stack, ProjectileHitEvent event);
 }

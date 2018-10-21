@@ -208,7 +208,7 @@ public class PowerManager {
                             throw new Handler.CommandException("message.error.invalid_option", value, field.getName(), String.join(", ", acc));
                         }
                     }
-                    Stream<String> values = Arrays.stream(valueStrs).filter(s -> !s.isEmpty());
+                    Stream<String> values = Arrays.stream(valueStrs).filter(s -> !s.isEmpty()).map(String::trim);
                     if (field.getType().equals(List.class)) {
                         if (listArg.isEnum()) {
                             Class<? extends Enum> enumClass = (Class<? extends Enum>) listArg;
@@ -217,7 +217,10 @@ public class PowerManager {
                         } else if (listArg.equals(String.class)) {
                             List<String> list = values.collect(Collectors.toList());
                             field.set(power, list);
-                        } else {
+                        } else if (listArg.equals(Trigger.class)) {
+                            List<Trigger> set = Trigger.valueOf(values).collect(Collectors.toList());
+                            field.set(power, set);
+                        }  else {
                             throw new Handler.CommandException("internal.error.command_exception");
                         }
                     } else {
@@ -227,6 +230,9 @@ public class PowerManager {
                             field.set(power, set);
                         } else if (listArg.equals(String.class)) {
                             Set<String> set = values.collect(Collectors.toSet());
+                            field.set(power, set);
+                        } else if (listArg.equals(Trigger.class)) {
+                            Set<Trigger> set = Trigger.valueOf(values).collect(Collectors.toSet());
                             field.set(power, set);
                         } else {
                             throw new Handler.CommandException("internal.error.command_exception");

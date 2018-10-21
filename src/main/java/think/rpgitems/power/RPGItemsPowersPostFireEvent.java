@@ -8,22 +8,35 @@ import think.rpgitems.item.RPGItem;
 
 import java.util.Map;
 
-public class RPGItemsPowersPostFireEvent extends Event {
+public class RPGItemsPowersPostFireEvent<TEvent extends Event, TPower extends Power, TResult, TReturn> extends Event {
 
     private static final HandlerList handlers = new HandlerList();
 
+    @Override
+    public HandlerList getHandlers() {
+        return handlers;
+    }
+
+    public static HandlerList getHandlerList() {
+        return handlers;
+    }
+
+    private final TEvent event;
     private final ItemStack itemStack;
     private final RPGItem rpgItem;
     private final Player player;
-    private final TriggerType triggerType;
-    private final Map<Power, PowerResult> powerResults;
+    private final Trigger<TEvent, TPower, TResult, TReturn> trigger;
+    private final Map<Power, PowerResult> results;
+    private final TReturn ret;
 
-    public RPGItemsPowersPostFireEvent(ItemStack itemStack, RPGItem rpgItem, Player player, TriggerType triggerType, Map<Power, PowerResult> powerResults) {
+    public RPGItemsPowersPostFireEvent(Player player, ItemStack itemStack, TEvent event, RPGItem rpgItem, Trigger<TEvent, TPower, TResult, TReturn> trigger, Map<Power, PowerResult> powerResults, TReturn ret) {
+        this.event = event;
         this.itemStack = itemStack;
         this.rpgItem = rpgItem;
         this.player = player;
-        this.triggerType = triggerType;
-        this.powerResults = powerResults;
+        this.trigger = trigger;
+        this.results = powerResults;
+        this.ret = ret;
     }
 
     public Player getPlayer() {
@@ -38,20 +51,19 @@ public class RPGItemsPowersPostFireEvent extends Event {
         return rpgItem;
     }
 
-    public TriggerType getTriggerType() {
-        return triggerType;
+    public Trigger<TEvent, TPower, TResult, TReturn> getTrigger() {
+        return trigger;
     }
 
-    public Map<Power, PowerResult> getPowerResults() {
-        return powerResults;
+    public Map<Power, PowerResult> getResults() {
+        return results;
     }
 
-    @Override
-    public HandlerList getHandlers() {
-        return handlers;
+    public TEvent getEvent() {
+        return event;
     }
 
-    public static HandlerList getHandlerList() {
-        return handlers;
+    public TReturn getRet() {
+        return ret;
     }
 }

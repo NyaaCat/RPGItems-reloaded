@@ -9,22 +9,24 @@ import think.rpgitems.item.RPGItem;
 
 import java.util.List;
 
-public class RPGItemsPowersPreFireEvent extends Event implements Cancellable {
+public class RPGItemsPowersPreFireEvent<TEvent extends Event, TPower extends Power, TResult, TReturn> extends Event implements Cancellable {
 
     private static final HandlerList handlers = new HandlerList();
     private boolean cancel;
 
     private final ItemStack itemStack;
+    private final TEvent event;
     private final RPGItem rpgItem;
     private final Player player;
-    private final TriggerType triggerType;
-    private final List<? extends Power> powers;
+    private final Trigger<TEvent, TPower, TResult, TReturn> trigger;
+    private final List<TPower> powers;
 
-    public RPGItemsPowersPreFireEvent(ItemStack itemStack, RPGItem rpgItem, Player player, TriggerType triggerType, List<? extends Power> powers) {
+    public RPGItemsPowersPreFireEvent(Player player, ItemStack itemStack, TEvent event, RPGItem rpgItem, Trigger<TEvent, TPower, TResult, TReturn> trigger, List<TPower> powers) {
         this.itemStack = itemStack;
+        this.event = event;
         this.rpgItem = rpgItem;
         this.player = player;
-        this.triggerType = triggerType;
+        this.trigger = trigger;
         this.powers = powers;
     }
 
@@ -40,8 +42,8 @@ public class RPGItemsPowersPreFireEvent extends Event implements Cancellable {
         return rpgItem;
     }
 
-    public TriggerType getTriggerType() {
-        return triggerType;
+    public Trigger getTrigger() {
+        return trigger;
     }
 
     public List<? extends Power> getPowers() {
@@ -65,5 +67,9 @@ public class RPGItemsPowersPreFireEvent extends Event implements Cancellable {
     @Override
     public void setCancelled(boolean cancel) {
         this.cancel = cancel;
+    }
+
+    public TEvent getEvent() {
+        return event;
     }
 }

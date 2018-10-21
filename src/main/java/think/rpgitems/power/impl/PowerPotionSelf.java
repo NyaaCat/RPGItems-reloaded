@@ -1,6 +1,5 @@
 package think.rpgitems.power.impl;
 
-import org.bukkit.block.Block;
 import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.entity.Player;
 import org.bukkit.event.player.PlayerInteractEvent;
@@ -54,7 +53,7 @@ public class PowerPotionSelf extends BasePower implements PowerRightClick {
     public PotionEffectType type = PotionEffectType.HEAL;
 
     @Override
-    public PowerResult<Void> rightClick(Player player, ItemStack stack, Block clicked, PlayerInteractEvent event) {
+    public PowerResult<Void> rightClick(Player player, ItemStack stack, PlayerInteractEvent event) {
         if (!checkCooldown(this, player, cooldown, true)) return PowerResult.cd();
         if (!getItem().consumeDurability(stack, cost)) return PowerResult.cost();
         player.addPotionEffect(new PotionEffect(type, duration, amplifier), true);

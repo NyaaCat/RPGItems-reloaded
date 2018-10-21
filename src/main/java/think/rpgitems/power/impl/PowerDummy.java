@@ -1,9 +1,7 @@
 package think.rpgitems.power.impl;
 
-import org.bukkit.block.Block;
 import org.bukkit.entity.LivingEntity;
 import org.bukkit.entity.Player;
-import org.bukkit.entity.Projectile;
 import org.bukkit.event.entity.EntityDamageByEntityEvent;
 import org.bukkit.event.entity.EntityDamageEvent;
 import org.bukkit.event.entity.ProjectileHitEvent;
@@ -22,8 +20,8 @@ import static think.rpgitems.power.Utils.checkCooldown;
  * Won't do anything but give you fine control.
  * </p>
  */
-@PowerMeta(defaultTrigger = TriggerType.RIGHT_CLICK)
-public class PowerDummy extends BasePower implements PowerHit, PowerHitTaken, PowerLeftClick, PowerRightClick, PowerOffhandClick, PowerProjectileHit, PowerSneak, PowerSprint, PowerSwapToMainhand, PowerSwapToOffhand, PowerTick {
+@PowerMeta(defaultTrigger = "RIGHT_CLICK")
+public class PowerDummy extends BasePower implements PowerHit, PowerHitTaken, PowerLeftClick, PowerRightClick, PowerOffhandClick, PowerProjectileHit, PowerSneak, PowerSprint, PowerOffhandItem, PowerMainhandItem, PowerTick {
 
     /**
      * Cooldown time of this power
@@ -59,12 +57,12 @@ public class PowerDummy extends BasePower implements PowerHit, PowerHitTaken, Po
     }
 
     @Override
-    public PowerResult<Void> leftClick(Player player, ItemStack stack, Block clicked, PlayerInteractEvent event) {
+    public PowerResult<Void> leftClick(Player player, ItemStack stack, PlayerInteractEvent event) {
         return fire(player, stack);
     }
 
     @Override
-    public PowerResult<Void> rightClick(Player player, ItemStack stack, Block clicked, PlayerInteractEvent event) {
+    public PowerResult<Void> rightClick(Player player, ItemStack stack, PlayerInteractEvent event) {
         return fire(player, stack);
     }
 
@@ -94,7 +92,7 @@ public class PowerDummy extends BasePower implements PowerHit, PowerHitTaken, Po
     }
 
     @Override
-    public PowerResult<Void> projectileHit(Player player, ItemStack stack, Projectile arrow, ProjectileHitEvent event) {
+    public PowerResult<Void> projectileHit(Player player, ItemStack stack, ProjectileHitEvent event) {
         return fire(player, stack);
     }
 

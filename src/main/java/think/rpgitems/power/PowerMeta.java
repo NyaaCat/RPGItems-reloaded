@@ -7,7 +7,7 @@ import java.lang.annotation.RetentionPolicy;
 public @interface PowerMeta {
     boolean immutableTrigger() default false;
 
-    TriggerType[] defaultTrigger() default {};
+    String[] defaultTrigger() default {};
 
     boolean marker() default false;
 

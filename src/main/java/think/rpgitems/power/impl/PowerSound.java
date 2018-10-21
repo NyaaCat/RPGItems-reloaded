@@ -2,8 +2,6 @@ package think.rpgitems.power.impl;
 
 import org.bukkit.ChatColor;
 import org.bukkit.Location;
-import org.bukkit.block.Block;
-import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.entity.Player;
 import org.bukkit.event.player.PlayerInteractEvent;
 import org.bukkit.inventory.ItemStack;
@@ -17,7 +15,7 @@ import static think.rpgitems.power.Utils.checkCooldown;
  * Play a sound
  * </p>
  */
-@PowerMeta(defaultTrigger = TriggerType.RIGHT_CLICK)
+@PowerMeta(defaultTrigger = "RIGHT_CLICK")
 public class PowerSound extends BasePower implements PowerLeftClick, PowerRightClick {
     /**
      * Pitch of sound
@@ -61,12 +59,12 @@ public class PowerSound extends BasePower implements PowerLeftClick, PowerRightC
     }
 
     @Override
-    public PowerResult<Void> leftClick(Player player, ItemStack stack, Block clicked, PlayerInteractEvent event) {
+    public PowerResult<Void> leftClick(Player player, ItemStack stack, PlayerInteractEvent event) {
         return fire(player, stack);
     }
 
     @Override
-    public PowerResult<Void> rightClick(Player player, ItemStack stack, Block clicked, PlayerInteractEvent event) {
+    public PowerResult<Void> rightClick(Player player, ItemStack stack, PlayerInteractEvent event) {
         return fire(player, stack);
     }
 

@@ -7,7 +7,6 @@ import net.md_5.bungee.api.chat.BaseComponent;
 import net.md_5.bungee.api.chat.ComponentBuilder;
 import net.md_5.bungee.api.chat.HoverEvent;
 import net.md_5.bungee.api.chat.TextComponent;
-import net.md_5.bungee.chat.ComponentSerializer;
 import org.bukkit.*;
 import org.bukkit.command.CommandSender;
 import org.bukkit.configuration.InvalidConfigurationException;
@@ -890,7 +889,7 @@ public class Handler extends RPGCommandReceiver {
         if (ItemManager.getItemByName(itemStr) != null && (powerStr == null || powerStr.equals("list"))) {
             RPGItem item = getItemByName(itemStr);
             for (Power power : item.powers) {
-                msg(sender, "message.item.power", power.getLocalizedName(plugin.cfg.language), power.getNamespacedKey().toString(), power.displayText() == null ? I18n.format("message.power.no_display") : power.displayText(), power.getTriggers().stream().map(TriggerType::name).collect(Collectors.joining(",")));
+                msg(sender, "message.item.power", power.getLocalizedName(plugin.cfg.language), power.getNamespacedKey().toString(), power.displayText() == null ? I18n.format("message.power.no_display") : power.displayText(), power.getTriggers().stream().map(Trigger::name).collect(Collectors.joining(",")));
             }
             return;
         }
@@ -1034,7 +1033,7 @@ public class Handler extends RPGCommandReceiver {
                 UUID uuid = UUID.fromString(authorText);
                 OfflinePlayer authorPlayer = Bukkit.getOfflinePlayer(uuid);
                 String authorName = authorPlayer.getName();
-                if(authorName == null){
+                if (authorName == null) {
                     authorName = uuid.toString();
                 }
                 authorComponent = new TextComponent(authorName);

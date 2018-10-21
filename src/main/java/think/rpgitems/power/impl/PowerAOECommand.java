@@ -1,7 +1,6 @@
 package think.rpgitems.power.impl;
 
 import org.bukkit.Bukkit;
-import org.bukkit.block.Block;
 import org.bukkit.entity.LivingEntity;
 import org.bukkit.entity.Player;
 import org.bukkit.event.player.PlayerInteractEvent;
@@ -22,7 +21,7 @@ import static think.rpgitems.power.Utils.*;
  * </p>
  */
 @SuppressWarnings("WeakerAccess")
-@PowerMeta(defaultTrigger = TriggerType.RIGHT_CLICK, withSelectors = true)
+@PowerMeta(defaultTrigger = "RIGHT_CLICK", withSelectors = true)
 public class PowerAOECommand extends PowerCommand {
     /**
      * Whether the command will be apply to the user
@@ -130,15 +129,15 @@ public class PowerAOECommand extends PowerCommand {
     }
 
     @Override
-    public PowerResult<Void> rightClick(Player player, ItemStack stack, Block clicked, PlayerInteractEvent event) {
-        if (!triggers.contains(TriggerType.RIGHT_CLICK) || !checkCooldownByString(player, getItem(), command, cooldown, true)) return PowerResult.cd();
+    public PowerResult<Void> rightClick(Player player, ItemStack stack, PlayerInteractEvent event) {
+        if (!triggers.contains(Trigger.RIGHT_CLICK) || !checkCooldownByString(player, getItem(), command, cooldown, true)) return PowerResult.cd();
         if (!getItem().consumeDurability(stack, cost)) return PowerResult.cost();
         return aoeCommand(player);
     }
 
     @Override
-    public PowerResult<Void> leftClick(Player player, ItemStack stack, Block clicked, PlayerInteractEvent event) {
-        if (!triggers.contains(TriggerType.LEFT_CLICK) || !checkCooldownByString(player, getItem(), command, cooldown, true)) return PowerResult.cd();
+    public PowerResult<Void> leftClick(Player player, ItemStack stack, PlayerInteractEvent event) {
+        if (!triggers.contains(Trigger.LEFT_CLICK) || !checkCooldownByString(player, getItem(), command, cooldown, true)) return PowerResult.cd();
         if (!getItem().consumeDurability(stack, cost)) return PowerResult.cost();
         return aoeCommand(player);
     }

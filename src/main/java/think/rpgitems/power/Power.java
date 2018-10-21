@@ -99,7 +99,7 @@ public interface Power {
 
     void setItem(RPGItem item);
 
-    Set<TriggerType> getTriggers();
+    Set<Trigger> getTriggers();
 
     Set<String> getSelectors();
 
@@ -109,20 +109,20 @@ public interface Power {
     }
 
     @SuppressWarnings("unchecked")
-    static Set<TriggerType> getTriggerTypes(Class<? extends Power> cls) {
+    static Set<Trigger> getTriggerTypes(Class<? extends Power> cls) {
         return TypeToken.of(cls).getTypes().interfaces().stream()
                         .map(TypeToken::getRawType)
                         .filter(Power.class::isAssignableFrom)
                         .filter(i -> !Objects.equals(i, Power.class))
-                        .map(i -> TriggerType.fromInterface((Class<? extends Power>) i))
+                        .flatMap(i -> Trigger.fromInterface((Class<? extends Power>) i))
                         .collect(Collectors.toSet());
     }
 
-    static Set<TriggerType> getDefaultTriggerTypes(Class<? extends Power> cls) {
+    static Set<Trigger> getDefaultTriggerTypes(Class<? extends Power> cls) {
         PowerMeta annotation = cls.getAnnotation(PowerMeta.class);
         if (annotation != null) {
             if (annotation.defaultTrigger().length > 0) {
-                return Sets.newHashSet(annotation.defaultTrigger());
+                return Trigger.valueOf(annotation.defaultTrigger());
             }
             if (annotation.marker()) {
                 return Collections.emptySet();

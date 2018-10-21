@@ -1,7 +1,6 @@
 package think.rpgitems.power.impl;
 
 import org.bukkit.ChatColor;
-import org.bukkit.block.Block;
 import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.entity.Player;
 import org.bukkit.event.entity.EntityDamageEvent;
@@ -24,7 +23,7 @@ import static think.rpgitems.power.Utils.checkCooldownByString;
  * </p>
  */
 @SuppressWarnings("WeakerAccess")
-@PowerMeta(defaultTrigger = TriggerType.RIGHT_CLICK)
+@PowerMeta(defaultTrigger = "RIGHT_CLICK")
 public class PowerCommand extends BasePower implements PowerRightClick, PowerLeftClick, PowerSprint, PowerSneak, PowerHurt {
 
     /**
@@ -56,7 +55,7 @@ public class PowerCommand extends BasePower implements PowerRightClick, PowerLef
     @Override
     public void init(ConfigurationSection section) {
         boolean isRight = section.getBoolean("isRight", true);
-        triggers = Collections.singleton(isRight ? TriggerType.RIGHT_CLICK : TriggerType.LEFT_CLICK);
+        triggers = Collections.singleton(isRight ? Trigger.RIGHT_CLICK : Trigger.LEFT_CLICK);
         super.init(section);
     }
 
@@ -100,7 +99,7 @@ public class PowerCommand extends BasePower implements PowerRightClick, PowerLef
     }
 
     @Override
-    public PowerResult<Void> rightClick(Player player, ItemStack stack, Block clicked, PlayerInteractEvent event) {
+    public PowerResult<Void> rightClick(Player player, ItemStack stack, PlayerInteractEvent event) {
         if (!checkCooldownByString(player, getItem(), command, cooldown, true))
             return PowerResult.cd();
         if (!getItem().consumeDurability(stack, cost)) return PowerResult.cost();
@@ -108,7 +107,7 @@ public class PowerCommand extends BasePower implements PowerRightClick, PowerLef
     }
 
     @Override
-    public PowerResult<Void> leftClick(Player player, ItemStack stack, Block clicked, PlayerInteractEvent event) {
+    public PowerResult<Void> leftClick(Player player, ItemStack stack, PlayerInteractEvent event) {
         if (!checkCooldownByString(player, getItem(), command, cooldown, true))
             return PowerResult.cd();
         if (!getItem().consumeDurability(stack, cost)) return PowerResult.cost();

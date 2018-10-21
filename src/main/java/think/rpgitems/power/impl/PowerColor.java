@@ -1,6 +1,5 @@
 package think.rpgitems.power.impl;
 
-import org.bukkit.block.Block;
 import org.bukkit.entity.Player;
 import org.bukkit.event.player.PlayerInteractEvent;
 import org.bukkit.inventory.ItemStack;
@@ -16,7 +15,7 @@ import static think.rpgitems.power.Utils.checkCooldown;
  * for the order: glass, clay, wool.
  * </p>
  */
-@PowerMeta(defaultTrigger = {TriggerType.LEFT_CLICK, TriggerType.RIGHT_CLICK})
+@PowerMeta(defaultTrigger = {"LEFT_CLICK", "RIGHT_CLICK"})
 public class PowerColor extends BasePower implements PowerRightClick, PowerLeftClick {
 
     /**
@@ -47,7 +46,7 @@ public class PowerColor extends BasePower implements PowerRightClick, PowerLeftC
 
     @SuppressWarnings("deprecation")
     @Override
-    public PowerResult<Void> rightClick(Player player, ItemStack stack, Block clicked, PlayerInteractEvent event) {
+    public PowerResult<Void> rightClick(Player player, ItemStack stack, PlayerInteractEvent event) {
         if (!checkCooldown(this, player, cooldown, true)) return PowerResult.cd();
         if (!getItem().consumeDurability(stack, cost)) return PowerResult.cost();
         // TODO
@@ -55,7 +54,7 @@ public class PowerColor extends BasePower implements PowerRightClick, PowerLeftC
     }
 
     @Override
-    public PowerResult<Void> leftClick(Player player, ItemStack stack, Block clicked, PlayerInteractEvent event) {
+    public PowerResult<Void> leftClick(Player player, ItemStack stack, PlayerInteractEvent event) {
         return PowerResult.noop();
     }
 

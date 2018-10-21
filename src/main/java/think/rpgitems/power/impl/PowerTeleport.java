@@ -3,7 +3,6 @@ package think.rpgitems.power.impl;
 import org.bukkit.*;
 import org.bukkit.block.Block;
 import org.bukkit.entity.Player;
-import org.bukkit.entity.Projectile;
 import org.bukkit.event.entity.ProjectileHitEvent;
 import org.bukkit.event.player.PlayerInteractEvent;
 import org.bukkit.inventory.ItemStack;
@@ -24,7 +23,7 @@ import static think.rpgitems.power.Utils.checkCooldown;
  * </p>
  */
 @SuppressWarnings("WeakerAccess")
-@PowerMeta(defaultTrigger = {TriggerType.RIGHT_CLICK, TriggerType.PROJECTILE_HIT})
+@PowerMeta(defaultTrigger = {"RIGHT_CLICK", "PROJECTILE_HIT"})
 public class PowerTeleport extends BasePower implements PowerRightClick, PowerProjectileHit {
 
     /**
@@ -44,7 +43,7 @@ public class PowerTeleport extends BasePower implements PowerRightClick, PowerPr
     public int cost = 0;
 
     @Override
-    public PowerResult<Void> rightClick(Player player, ItemStack stack, Block clicked, PlayerInteractEvent event) {
+    public PowerResult<Void> rightClick(Player player, ItemStack stack, PlayerInteractEvent event) {
         if (!checkCooldown(this, player, cooldown, true)) return PowerResult.cd();
         if (!getItem().consumeDurability(stack, cost)) return PowerResult.cost();
         World world = player.getWorld();
@@ -77,12 +76,12 @@ public class PowerTeleport extends BasePower implements PowerRightClick, PowerPr
     }
 
     @Override
-    public PowerResult<Void> projectileHit(Player player, ItemStack stack, Projectile p, ProjectileHitEvent event) {
+    public PowerResult<Void> projectileHit(Player player, ItemStack stack, ProjectileHitEvent event) {
         if (!checkCooldown(this, player, cooldown, true)) return PowerResult.cd();
         if (!getItem().consumeDurability(stack, cost)) return PowerResult.cost();
         World world = player.getWorld();
         Location start = player.getLocation();
-        Location newLoc = p.getLocation();
+        Location newLoc = event.getEntity().getLocation();
         if (start.distanceSquared(newLoc) >= distance * distance) {
             player.sendMessage(I18n.format("message.too.far"));
             return PowerResult.noop();

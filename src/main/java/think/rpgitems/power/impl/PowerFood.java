@@ -18,7 +18,6 @@ package think.rpgitems.power.impl;
 
 import org.bukkit.Bukkit;
 import org.bukkit.Material;
-import org.bukkit.block.Block;
 import org.bukkit.entity.Player;
 import org.bukkit.event.player.PlayerInteractEvent;
 import org.bukkit.inventory.ItemStack;
@@ -45,7 +44,7 @@ public class PowerFood extends BasePower implements PowerRightClick {
     public int foodpoints;
 
     @Override
-    public PowerResult<Void> rightClick(final Player player, ItemStack stack, Block clicked, PlayerInteractEvent event) {
+    public PowerResult<Void> rightClick(final Player player, ItemStack stack, PlayerInteractEvent event) {
         ItemStack item = player.getInventory().getItemInMainHand();
         int count = item.getAmount() - 1;
         if (count == 0) {
