@@ -563,11 +563,6 @@ public class Events implements Listener {
         if (e.getEntity() instanceof LivingEntity) {
             damage = rItem.power(player, item, e, Trigger.HIT);
         }
-        if (rItem.getDurability(item) <= 0) {
-            player.getInventory().setItemInMainHand(null);
-        } else {
-            player.getInventory().setItemInMainHand(item);
-        }
         e.setDamage(damage);
     }
 
@@ -633,23 +628,9 @@ public class Events implements Listener {
             RPGItem pRItem = ItemManager.toRPGItem(pArmour);
             if (pRItem == null) {
                 continue;
-            } else {
-                hasRPGItem = true;
             }
-            if (WGSupport.canNotPvP(p) && !pRItem.ignoreWorldGuard)
-                return;
-            if (!pRItem.checkPermission(p, true)) {
-                continue;
-            }
-            boolean can;
-            if (!pRItem.hitCostByDamage) {
-                can = pRItem.consumeDurability(pArmour, pRItem.hitCost);
-            } else {
-                can = pRItem.consumeDurability(pArmour, (int) (pRItem.hitCost * damage / 100d));
-            }
-            if (can && pRItem.getArmour() > 0) {
-                damage -= Math.round(damage * (((double) pRItem.getArmour()) / 100d));
-            }
+            hasRPGItem = true;
+            damage = pRItem.takeDamage(p, damage, pArmour);
         }
         if (hasRPGItem) {
             p.getInventory().setArmorContents(armour);
@@ -671,7 +652,6 @@ public class Events implements Listener {
             RPGItem ri = ItemManager.toRPGItem(item);
             if (ri == null) continue;
             double d = ri.power(e, item, ev, Trigger.HIT_TAKEN);
-            if (d == Double.MAX_VALUE) continue;
             ret = d < ret ? d : ret;
         }
         return ret;

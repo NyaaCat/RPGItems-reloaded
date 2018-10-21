@@ -632,6 +632,24 @@ public class RPGItem {
         return damage;
     }
 
+    public double takeDamage(Player p, double damage, ItemStack pArmour) {
+        if (WGSupport.check(p, this, null))
+            return damage;
+        if (!checkPermission(p, true)) {
+            return damage;
+        }
+        boolean can;
+        if (!hitCostByDamage) {
+            can = consumeDurability(pArmour, hitCost);
+        } else {
+            can = consumeDurability(pArmour, (int) (hitCost * damage / 100d));
+        }
+        if (can && getArmour() > 0) {
+            damage -= Math.round(damage * (((double) getArmour()) / 100d));
+        }
+        return damage;
+    }
+
     private <TEvent extends Event, TPower extends Power, TResult, TReturn> boolean triggerPreCheck(Player player, ItemStack i, TEvent event, Trigger<TEvent, TPower, TResult, TReturn> trigger, List<TPower> powers) {
         if (powers.isEmpty()) return false;
         if (!checkPermission(player, true)) return false;

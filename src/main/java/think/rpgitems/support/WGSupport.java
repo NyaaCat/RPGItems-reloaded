@@ -104,7 +104,7 @@ public class WGSupport {
     }
 
     public static boolean check(Player player, RPGItem item, Collection<? extends Power> powers) {
-        if (!hasSupport || !useWorldGuard) {
+        if (!hasSupport || !useWorldGuard || item.ignoreWorldGuard) {
             return true;
         }
         if (forceRefresh) WGHandler.refreshPlayerWG(player);
@@ -119,7 +119,7 @@ public class WGSupport {
 
         String itemName = item.getName();
         if (notEnabled(disabledItem, enabledItem, itemName)) return false;
-
+        if (powers == null) return true;
         for (Power power : powers) {
             String powerName = power.getNamespacedKey().toString();
             if (notEnabled(disabledPower, enabledPower, powerName)) return false;
