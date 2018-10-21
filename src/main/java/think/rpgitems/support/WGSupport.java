@@ -38,28 +38,33 @@ public class WGSupport {
     }
 
     public static void init(RPGItems pl) {
-        plugin = pl;
-        Plugin wgPlugin = plugin.getServer().getPluginManager().getPlugin("WorldGuard");
-        useWorldGuard = plugin.cfg.useWorldGuard;
-        forceRefresh = plugin.cfg.wgForceRefresh;
-        if (!(wgPlugin instanceof WorldGuardPlugin)) {
-            return;
-        }
-        hasSupport = true;
-        WGSupport.wgPlugin = (WorldGuardPlugin)wgPlugin;
-        RPGItems.logger.info("[RPGItems] WorldGuard version: " + WGSupport.wgPlugin.getDescription().getVersion() + " found");
-        WGHandler.registerHandler();
-        disabledPowerByPlayer = new HashMap<>();
-        enabledPowerByPlayer = new HashMap<>();
-        disabledItemByPlayer = new HashMap<>();
-        enabledItemByPlayer = new HashMap<>();
-        disabledByPlayer = new HashMap<>();
-        for (Player p : plugin.getServer().getOnlinePlayers()) {
-            WGHandler.refreshPlayerWG(p);
-        }
-        File file = new File(plugin.getDataFolder(), "worldguard_region.yml");
-        if (file.exists() && !file.isDirectory()) {
-            WGHandler.migrate(file);
+        try {
+            plugin = pl;
+            Plugin wgPlugin = plugin.getServer().getPluginManager().getPlugin("WorldGuard");
+            useWorldGuard = plugin.cfg.useWorldGuard;
+            forceRefresh = plugin.cfg.wgForceRefresh;
+            if (!(wgPlugin instanceof WorldGuardPlugin)) {
+                return;
+            }
+            hasSupport = true;
+            WGSupport.wgPlugin = (WorldGuardPlugin) wgPlugin;
+            RPGItems.logger.info("[RPGItems] WorldGuard version: " + WGSupport.wgPlugin.getDescription().getVersion() + " found");
+            WGHandler.registerHandler();
+            disabledPowerByPlayer = new HashMap<>();
+            enabledPowerByPlayer = new HashMap<>();
+            disabledItemByPlayer = new HashMap<>();
+            enabledItemByPlayer = new HashMap<>();
+            disabledByPlayer = new HashMap<>();
+            for (Player p : plugin.getServer().getOnlinePlayers()) {
+                WGHandler.refreshPlayerWG(p);
+            }
+            File file = new File(plugin.getDataFolder(), "worldguard_region.yml");
+            if (file.exists() && !file.isDirectory()) {
+                WGHandler.migrate(file);
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+            RPGItems.logger.info("[RPGItems] Error enabling WorldGuard support");
         }
     }
 

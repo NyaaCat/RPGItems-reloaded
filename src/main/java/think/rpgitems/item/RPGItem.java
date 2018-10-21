@@ -31,6 +31,8 @@ import org.bukkit.inventory.ShapedRecipe;
 import org.bukkit.inventory.meta.Damageable;
 import org.bukkit.inventory.meta.ItemMeta;
 import org.bukkit.inventory.meta.LeatherArmorMeta;
+import org.bukkit.potion.PotionEffect;
+import org.bukkit.potion.PotionEffectType;
 import org.librazy.nclangchecker.LangKey;
 import org.librazy.nclangchecker.LangKeyType;
 import think.rpgitems.Events;
@@ -46,6 +48,7 @@ import think.rpgitems.utils.MaterialUtils;
 import java.lang.reflect.InvocationTargetException;
 import java.util.*;
 import java.util.Map.Entry;
+import java.util.concurrent.ThreadLocalRandom;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
@@ -568,6 +571,74 @@ public class RPGItem {
             }
             Bukkit.addRecipe(shapedRecipe);
         }
+    }
+
+    public double meleeDamage(EntityDamageByEntityEvent e, Player player) {
+        double originDamage = e.getDamage();
+        double damage = originDamage;
+        switch (damageMode) {
+            case MULTIPLY:
+            case FIXED:
+            case ADDITIONAL:
+                damage = getDamageMin() != getDamageMax() ? (getDamageMin() + ThreadLocalRandom.current().nextInt(getDamageMax() - getDamageMin() + 1)) : getDamageMin();
+
+                if (damageMode == DamageMode.MULTIPLY) {
+                    damage *= originDamage;
+                    break;
+                }
+
+                Collection<PotionEffect> potionEffects = player.getActivePotionEffects();
+                double strength = 0, weak = 0;
+                for (PotionEffect pe : potionEffects) {
+                    if (pe.getType().equals(PotionEffectType.INCREASE_DAMAGE)) {
+                        strength = 3 * (pe.getAmplifier() + 1);//MC 1.9+
+                    }
+                    if (pe.getType().equals(PotionEffectType.WEAKNESS)) {
+                        weak = 4 * (pe.getAmplifier() + 1);//MC 1.9+
+                    }
+                }
+                damage = damage + strength - weak;
+
+                if (damageMode == DamageMode.ADDITIONAL) {
+                    damage += originDamage;
+                }
+                break;
+            case VANILLA:
+                //no-op
+                break;
+        }
+        e.setDamage(damage);
+        return damage;
+    }
+
+    public double projectileDamage(EntityDamageByEntityEvent e) {
+        double originDamage = e.getDamage();
+        double damage = originDamage;
+        switch (damageMode) {
+            case FIXED:
+            case ADDITIONAL:
+            case MULTIPLY:
+                damage = getDamageMin() != getDamageMax() ? (getDamageMin() + ThreadLocalRandom.current().nextInt(getDamageMax() - getDamageMin() + 1)) : getDamageMin();
+
+                if (damageMode == DamageMode.MULTIPLY) {
+                    damage *= originDamage;
+                    break;
+                }
+
+                //Apply force adjustments
+                if (e.getDamager().hasMetadata("rpgitems.force")) {
+                    damage *= e.getDamager().getMetadata("rpgitems.force").get(0).asFloat();
+                }
+                if (damageMode == DamageMode.ADDITIONAL) {
+                    damage += originDamage;
+                }
+                break;
+            case VANILLA:
+                //no-op
+                break;
+        }
+        e.setDamage(damage);
+        return damage;
     }
 
     private boolean triggerPreCheck(Player player, ItemStack i, List<? extends Power> powers, TriggerType triggerType) {

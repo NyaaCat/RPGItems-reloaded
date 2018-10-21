@@ -25,8 +25,6 @@ import org.bukkit.inventory.*;
 import org.bukkit.inventory.meta.Damageable;
 import org.bukkit.inventory.meta.ItemMeta;
 import org.bukkit.metadata.FixedMetadataValue;
-import org.bukkit.potion.PotionEffect;
-import org.bukkit.potion.PotionEffectType;
 import org.bukkit.projectiles.ProjectileSource;
 import org.bukkit.scheduler.BukkitRunnable;
 import think.rpgitems.item.ItemManager;
@@ -54,7 +52,6 @@ public class Events implements Listener {
     public static HashMap<String, Set<Integer>> drops = new HashMap<>();
     static boolean useLocaleInv = false;
     private HashSet<LocaleInventory> localeInventories = new HashSet<>();
-    private Random random = new Random();
     private SetMultimap<Class<? extends Event>, Consumer<? extends Event>> eventMap = MultimapBuilder.SortedSetMultimapBuilder.hashKeys().hashSetValues().build();
 
     @SuppressWarnings("unchecked")
@@ -557,40 +554,7 @@ public class Events implements Listener {
             e.setCancelled(true);
             return;
         }
-        double originDamage = e.getDamage();
-        double damage = originDamage;
-        switch (rItem.damageMode) {
-            case MULTIPLY:
-            case FIXED:
-            case ADDITIONAL:
-                damage = rItem.getDamageMin() != rItem.getDamageMax() ? (rItem.getDamageMin() + random.nextInt(rItem.getDamageMax() - rItem.getDamageMin() + 1)) : rItem.getDamageMin();
-
-                if (rItem.damageMode == RPGItem.DamageMode.MULTIPLY) {
-                    damage *= originDamage;
-                    break;
-                }
-
-                Collection<PotionEffect> potionEffects = player.getActivePotionEffects();
-                double strength = 0, weak = 0;
-                for (PotionEffect pe : potionEffects) {
-                    if (pe.getType().equals(PotionEffectType.INCREASE_DAMAGE)) {
-                        strength = 3 * (pe.getAmplifier() + 1);//MC 1.9+
-                    }
-                    if (pe.getType().equals(PotionEffectType.WEAKNESS)) {
-                        weak = 4 * (pe.getAmplifier() + 1);//MC 1.9+
-                    }
-                }
-                damage = damage + strength - weak;
-
-                if (rItem.damageMode == RPGItem.DamageMode.ADDITIONAL) {
-                    damage += originDamage;
-                }
-                break;
-            case VANILLA:
-                //no-op
-                break;
-
-        }
+        double damage = rItem.meleeDamage(e, player);
         if (e.getEntity() instanceof LivingEntity) {
             damage = rItem.hit(player, item, (LivingEntity) e.getEntity(), e);
         }
@@ -634,31 +598,7 @@ public class Events implements Listener {
             }
         }
 
-        double originDamage = e.getDamage();
-        double damage = originDamage;
-        switch (rItem.damageMode) {
-            case FIXED:
-            case ADDITIONAL:
-            case MULTIPLY:
-                damage = rItem.getDamageMin() != rItem.getDamageMax() ? (rItem.getDamageMin() + random.nextInt(rItem.getDamageMax() - rItem.getDamageMin() + 1)) : rItem.getDamageMin();
-
-                if (rItem.damageMode == RPGItem.DamageMode.MULTIPLY) {
-                    damage *= originDamage;
-                    break;
-                }
-
-                //Apply force adjustments
-                if (e.getDamager().hasMetadata("rpgitems.force")) {
-                    damage *= e.getDamager().getMetadata("rpgitems.force").get(0).asFloat();
-                }
-                if (rItem.damageMode == RPGItem.DamageMode.ADDITIONAL) {
-                    damage += originDamage;
-                }
-                break;
-            case VANILLA:
-                //no-op
-                break;
-        }
+        double damage = rItem.projectileDamage(e);
         if (e.getEntity() instanceof LivingEntity) {
             LivingEntity le = (LivingEntity) e.getEntity();
             damage = rItem.hit((Player) entity.getShooter(), item, le, e);
