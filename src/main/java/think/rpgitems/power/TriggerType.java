@@ -15,9 +15,8 @@ public enum TriggerType {
     SPRINT(PowerSprint.class),
     SWAP_TO_OFFHAND(PowerSwapToOffhand.class),
     SWAP_TO_MAINHAND(PowerSwapToMainhand.class),
-    PICKUP_OFF_HAND(PowerSwapToOffhand.class),
-    PLACE_OFF_HAND(PowerSwapToMainhand.class);
-
+    PLACE_OFF_HAND(PowerSwapToOffhand.class),
+    PICKUP_OFF_HAND(PowerSwapToMainhand.class);
 
     Class<? extends Power> powerInterface;
 
