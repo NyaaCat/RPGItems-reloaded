@@ -3,6 +3,8 @@ package think.rpgitems.power.impl;
 import think.rpgitems.power.PowerMeta;
 import think.rpgitems.power.Property;
 
+import java.util.regex.Pattern;
+
 /**
  * Power lorefilter.
  * <p>
@@ -23,6 +25,23 @@ public class PowerLoreFilter extends BasePower {
      */
     @Property(order = 1, required = true)
     public String desc = "";
+
+    /**
+     * Whether use .find() instead of .match()
+     */
+    @Property
+    public boolean find = false;
+
+    private Pattern pattern;
+
+    public PowerLoreFilter compile(){
+        pattern = Pattern.compile(regex);
+        return this;
+    }
+
+    public Pattern pattern(){
+        return pattern;
+    }
 
     @Override
     public String getName() {
