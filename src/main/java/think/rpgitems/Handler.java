@@ -74,7 +74,7 @@ public class Handler extends RPGCommandReceiver {
     }
 
     @SubCommand("list")
-    @Attribute("command")
+    @Attribute("command:name:,display:,type:")
     public void listItems(CommandSender sender, Arguments args) {
         int perPage = RPGItems.plugin.cfg.itemPerPage;
         String nameSearch = args.argString("n", args.argString("name", ""));
@@ -86,17 +86,15 @@ public class Handler extends RPGCommandReceiver {
                                                     .filter(i -> i.getDisplay().contains(displaySearch))
                                                     .filter(i -> i.getType().contains(typeSearch)).collect(Collectors.toList());
         Stream<RPGItem> stream = items.stream();
-        if (args.top() != null) {
-            int max = (int) Math.ceil(items.size() / (double) perPage);
-            int page = args.nextInt();
-            if (!(0 < page && page <= max)) {
-                throw new BadCommandException("message.num_out_of_range", page, 0, max);
-            }
-            stream = stream
-                             .skip((page - 1) * perPage)
-                             .limit(perPage);
-            sender.sendMessage(ChatColor.AQUA + "RPGItems: " + page + " / " + max);
+        int max = (int) Math.ceil(items.size() / (double) perPage);
+        int page = args.top() == null ? 1 : args.nextInt();
+        if (!(0 < page && page <= max)) {
+            throw new BadCommandException("message.num_out_of_range", page, 0, max);
         }
+        stream = stream
+                         .skip((page - 1) * perPage)
+                         .limit(perPage);
+        sender.sendMessage(ChatColor.AQUA + "RPGItems: " + page + " / " + max);
 
         stream.forEach(
                 item -> new Message("")

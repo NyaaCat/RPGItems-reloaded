@@ -49,7 +49,7 @@ import java.lang.reflect.InvocationTargetException;
 import java.util.*;
 import java.util.Map.Entry;
 import java.util.concurrent.ThreadLocalRandom;
-import java.util.regex.Pattern;
+import java.util.regex.Matcher;
 import java.util.stream.Collectors;
 
 import static org.bukkit.ChatColor.COLOR_CHAR;
@@ -378,16 +378,16 @@ public class RPGItem {
 
     private static List<String> filterLores(RPGItem r, ItemStack i) {
         List<String> ret = new ArrayList<>();
-        List<Pattern> patterns = r.getPower(PowerLoreFilter.class).stream()
-                                  .filter(p -> p.regex != null)
-                                  .map(p -> p.regex)
-                                  .map(Pattern::compile)
-                                  .collect(Collectors.toList());
+        List<PowerLoreFilter> patterns = r.getPower(PowerLoreFilter.class).stream()
+                                          .filter(p -> !Strings.isNullOrEmpty(p.regex))
+                                          .map(PowerLoreFilter::compile)
+                                          .collect(Collectors.toList());
         if (patterns.isEmpty()) return Collections.emptyList();
         if (!i.hasItemMeta() || !i.getItemMeta().hasLore()) return Collections.emptyList();
         for (String str : i.getItemMeta().getLore()) {
-            for (Pattern p : patterns) {
-                if (p.matcher(ChatColor.stripColor(str)).matches()) {
+            for (PowerLoreFilter p : patterns) {
+                Matcher matcher = p.pattern().matcher(ChatColor.stripColor(str));
+                if (p.find ? matcher.find() : matcher.matches()) {
                     ret.add(str);
                     break;
                 }
