@@ -289,7 +289,7 @@ public abstract class RPGCommandReceiver extends CommandReceiver {
                         if (attr == null) return Collections.emptyList();
                         if (attr.startsWith("command")) {
                             // it's a global command and we have suggestion in attr
-                            String[] att = attr.split(":");
+                            String[] att = attr.split(":", 2);
                             if (att.length > 1) {
                                 return Arrays.asList(att[1].split(","));
                             }
@@ -315,7 +315,7 @@ public abstract class RPGCommandReceiver extends CommandReceiver {
                     if (itemCommand == null) return Collections.emptyList(); // neither
                     String attr = subCommandAttribute.get(itemCommand.getValue());
                     if (attr == null) return Collections.emptyList();
-                    String[] att = attr.split(":");
+                    String[] att = attr.split(":", 2);
                     switch (att[0]) {
                         case "property":
                         case "power":
@@ -349,7 +349,7 @@ public abstract class RPGCommandReceiver extends CommandReceiver {
                         // trying to complete `/rpgitem commmand argu`
                         String attr = subCommandAttribute.get(first);
                         if (attr == null) return Collections.emptyList();
-                        String[] att = attr.split(":");
+                        String[] att = attr.split(":", 2);
                         switch (att[0]) {
                             case "property":
                             case "power":
@@ -376,7 +376,7 @@ public abstract class RPGCommandReceiver extends CommandReceiver {
                 if (itemCommand == null) return Collections.emptyList();
                 String attr = subCommandAttribute.get(itemCommand.getValue());
                 if (attr == null) return Collections.emptyList();
-                String[] att = attr.split(":");
+                String[] att = attr.split(":", 2);
                 if (suggestion) {
                     return resolvePowerOrPropertySuggestion(sender, args); // only case is `/rpgitem power item somepower`
                 } else {
