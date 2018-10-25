@@ -1,5 +1,6 @@
 package think.rpgitems.power.impl;
 
+import org.bukkit.Location;
 import org.bukkit.entity.LivingEntity;
 import org.bukkit.entity.Player;
 import org.bukkit.entity.Projectile;
@@ -18,7 +19,7 @@ import java.util.Random;
  * </p>
  */
 @PowerMeta(defaultTrigger = {"HIT", "PROJECTILE_HIT"})
-public class PowerLightning extends BasePower implements PowerHit, PowerProjectileHit {
+public class PowerLightning extends BasePower implements PowerHit, PowerProjectileHit, PowerLocation {
     /**
      * Chance of triggering this power
      */
@@ -34,23 +35,25 @@ public class PowerLightning extends BasePower implements PowerHit, PowerProjecti
 
     @Override
     public PowerResult<Double> hit(Player player, ItemStack stack, LivingEntity entity, double damage, EntityDamageByEntityEvent event) {
+        Location location = entity.getLocation();
+        return fire(player, stack, location).with(damage);
+    }
+
+    @Override
+    public PowerResult<Void> fire(Player player, ItemStack stack, Location location) {
         if (random.nextInt(chance) == 0) {
             if (!getItem().consumeDurability(stack, cost)) return PowerResult.cost();
-            entity.getWorld().strikeLightning(entity.getLocation());
-            return PowerResult.ok(damage);
+            location.getWorld().strikeLightning(location);
+            return PowerResult.ok();
         }
         return PowerResult.noop();
     }
 
     @Override
     public PowerResult<Void> projectileHit(Player player, ItemStack stack, ProjectileHitEvent event) {
-        if (random.nextInt(chance) == 0) {
-            if (!getItem().consumeDurability(stack, cost)) return PowerResult.cost();
-            Projectile hit = event.getEntity();
-            hit.getWorld().strikeLightning(hit.getLocation());
-            return PowerResult.ok();
-        }
-        return PowerResult.noop();
+        Projectile hit = event.getEntity();
+        Location location = hit.getLocation();
+        return fire(player, stack, location);
     }
 
     @Override

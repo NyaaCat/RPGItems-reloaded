@@ -31,10 +31,7 @@ import org.bukkit.scheduler.BukkitRunnable;
 import org.bukkit.util.Vector;
 import think.rpgitems.I18n;
 import think.rpgitems.RPGItems;
-import think.rpgitems.power.PowerMeta;
-import think.rpgitems.power.PowerResult;
-import think.rpgitems.power.PowerRightClick;
-import think.rpgitems.power.Property;
+import think.rpgitems.power.*;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -53,7 +50,7 @@ import static think.rpgitems.power.Utils.getNearbyEntities;
  */
 @SuppressWarnings("WeakerAccess")
 @PowerMeta(immutableTrigger = true, withSelectors = true)
-public class PowerFire extends BasePower implements PowerRightClick {
+public class PowerFire extends BasePower implements PowerRightClick, PowerLeftClick, PowerPlain {
 
     /**
      * Cooldown time of this power
@@ -78,6 +75,16 @@ public class PowerFire extends BasePower implements PowerRightClick {
 
     @Override
     public PowerResult<Void> rightClick(final Player player, ItemStack stack, PlayerInteractEvent event) {
+        return fire(player, stack);
+    }
+
+    @Override
+    public PowerResult<Void> leftClick(final Player player, ItemStack stack, PlayerInteractEvent event) {
+        return fire(player, stack);
+    }
+
+    @Override
+    public PowerResult<Void> fire(Player player, ItemStack stack) {
         if (!checkCooldown(this, player, cooldown, true)) return PowerResult.cd();
         if (!getItem().consumeDurability(stack, cost)) return PowerResult.cost();
         player.playSound(player.getLocation(), Sound.ITEM_FLINTANDSTEEL_USE, 1.0f, 1.2f);

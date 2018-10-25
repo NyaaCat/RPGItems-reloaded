@@ -23,10 +23,7 @@ import org.bukkit.event.player.PlayerInteractEvent;
 import org.bukkit.inventory.ItemStack;
 import think.rpgitems.Events;
 import think.rpgitems.I18n;
-import think.rpgitems.power.PowerMeta;
-import think.rpgitems.power.PowerResult;
-import think.rpgitems.power.PowerRightClick;
-import think.rpgitems.power.Property;
+import think.rpgitems.power.*;
 
 import static think.rpgitems.power.Utils.checkCooldown;
 
@@ -37,7 +34,7 @@ import static think.rpgitems.power.Utils.checkCooldown;
  * </p>
  */
 @PowerMeta(immutableTrigger = true)
-public class PowerFireball extends BasePower implements PowerRightClick {
+public class PowerFireball extends BasePower implements PowerRightClick, PowerLeftClick, PowerPlain {
 
     /**
      * Cooldown time of this power
@@ -51,8 +48,18 @@ public class PowerFireball extends BasePower implements PowerRightClick {
     public int cost = 0;
 
     @Override
-    @SuppressWarnings("deprecation")
     public PowerResult<Void> rightClick(Player player, ItemStack stack, PlayerInteractEvent event) {
+        return fire(player, stack);
+    }
+
+    @Override
+    public PowerResult<Void> leftClick(Player player, ItemStack stack, PlayerInteractEvent event) {
+        return fire(player, stack);
+    }
+
+    @Override
+    @SuppressWarnings("deprecation")
+    public PowerResult<Void> fire(Player player, ItemStack stack) {
         if (!checkCooldown(this, player, cooldown, true)) return PowerResult.cd();
         if (!getItem().consumeDurability(stack, cost)) return PowerResult.cost();
         player.playSound(player.getLocation(), Sound.ENTITY_GHAST_SHOOT, 1.0f, 1.0f);

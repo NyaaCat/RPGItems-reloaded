@@ -16,7 +16,7 @@ import static think.rpgitems.power.Utils.checkCooldown;
  * </p>
  */
 @PowerMeta(defaultTrigger = "RIGHT_CLICK")
-public class PowerSound extends BasePower implements PowerLeftClick, PowerRightClick {
+public class PowerSound extends BasePower implements PowerLeftClick, PowerRightClick, PowerPlain {
     /**
      * Pitch of sound
      */
@@ -68,6 +68,7 @@ public class PowerSound extends BasePower implements PowerLeftClick, PowerRightC
         return fire(player, stack);
     }
 
+    @Override
     public PowerResult<Void> fire(Player player, ItemStack stack) {
         if (!checkCooldown(this, player, cooldown, true)) return PowerResult.cd();
         if (!getItem().consumeDurability(stack, cost)) return PowerResult.cost();

@@ -32,7 +32,7 @@ import static think.rpgitems.power.Utils.checkCooldown;
  */
 @SuppressWarnings("WeakerAccess")
 @PowerMeta(immutableTrigger = true)
-public class PowerProjectile extends BasePower implements PowerRightClick {
+public class PowerProjectile extends BasePower implements PowerRightClick, PowerLeftClick, PowerPlain {
     /**
      * Z_axis.
      */
@@ -135,6 +135,16 @@ public class PowerProjectile extends BasePower implements PowerRightClick {
 
     @Override
     public PowerResult<Void> rightClick(Player player, ItemStack stack, PlayerInteractEvent event) {
+        return fire(player, stack);
+    }
+
+    @Override
+    public PowerResult<Void> leftClick(Player player, ItemStack stack, PlayerInteractEvent event) {
+        return fire(player, stack);
+    }
+
+    @Override
+    public PowerResult<Void> fire(Player player, ItemStack stack) {
         if (!checkCooldown(this, player, cooldown, true)) return PowerResult.cd();
         if (!getItem().consumeDurability(stack, cost)) return PowerResult.cost();
         fire(player);

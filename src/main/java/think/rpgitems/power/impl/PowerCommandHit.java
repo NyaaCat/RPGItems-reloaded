@@ -5,10 +5,7 @@ import org.bukkit.entity.LivingEntity;
 import org.bukkit.entity.Player;
 import org.bukkit.event.entity.EntityDamageByEntityEvent;
 import org.bukkit.inventory.ItemStack;
-import think.rpgitems.power.PowerHit;
-import think.rpgitems.power.PowerMeta;
-import think.rpgitems.power.PowerResult;
-import think.rpgitems.power.Property;
+import think.rpgitems.power.*;
 
 import static think.rpgitems.power.Utils.attachPermission;
 import static think.rpgitems.power.Utils.checkCooldownByString;
@@ -23,7 +20,7 @@ import static think.rpgitems.power.Utils.checkCooldownByString;
  */
 @SuppressWarnings("WeakerAccess")
 @PowerMeta(immutableTrigger = true)
-public class PowerCommandHit extends BasePower implements PowerHit {
+public class PowerCommandHit extends BasePower implements PowerHit, PowerLivingEntity {
 
     /**
      * Command to be executed
@@ -64,7 +61,7 @@ public class PowerCommandHit extends BasePower implements PowerHit {
      *
      * @return PowerResult with proposed damage
      */
-    protected PowerResult<Double> executeCommand(Player player, LivingEntity e, double damage) {
+    protected PowerResult<Void> executeCommand(Player player, LivingEntity e, double damage) {
         if (!player.isOnline()) return PowerResult.noop();
 
         attachPermission(player, permission);
@@ -93,7 +90,7 @@ public class PowerCommandHit extends BasePower implements PowerHit {
             cmd = cmd.replaceAll("\\{damage}", String.valueOf(damage));
 
             boolean result = player.performCommand(cmd);
-            return result ? PowerResult.ok(damage) : PowerResult.fail();
+            return result ? PowerResult.ok() : PowerResult.fail();
         } finally {
             if (permission.equals("*"))
                 player.setOp(wasOp);
@@ -102,6 +99,11 @@ public class PowerCommandHit extends BasePower implements PowerHit {
 
     @Override
     public PowerResult<Double> hit(Player player, ItemStack stack, LivingEntity entity, double damage, EntityDamageByEntityEvent event) {
+        return fire(player, stack, entity, damage).with(damage);
+    }
+
+    @Override
+    public PowerResult<Void> fire(Player player, ItemStack stack, LivingEntity entity, double damage) {
         if (damage < minDamage) return PowerResult.noop();
         if (!checkCooldownByString(player, getItem(), command, cooldown, true)) return PowerResult.cd();
         if (!getItem().consumeDurability(stack, cost)) return PowerResult.cost();

@@ -23,7 +23,7 @@ import java.util.concurrent.TimeUnit;
 import static think.rpgitems.power.Utils.checkCooldown;
 
 @PowerMeta(defaultTrigger = "RIGHT_CLICK")
-public class PowerScoreboard extends BasePower implements PowerHit, PowerHitTaken, PowerLeftClick, PowerRightClick, PowerOffhandClick, PowerProjectileHit, PowerSneak, PowerSprint, PowerOffhandItem, PowerMainhandItem, PowerTick {
+public class PowerScoreboard extends BasePower implements PowerHit, PowerHitTaken, PowerLeftClick, PowerRightClick, PowerOffhandClick, PowerProjectileHit, PowerSneak, PowerSprint, PowerOffhandItem, PowerMainhandItem, PowerTick, PowerPlain {
 
     /**
      * Tag(s) to add and remove, according to the following format
@@ -66,7 +66,8 @@ public class PowerScoreboard extends BasePower implements PowerHit, PowerHitTake
                                                                                            .expireAfterAccess(1, TimeUnit.DAYS)
                                                                                            .build(CacheLoader.from(PowerSelector::parse));
 
-    private PowerResult<Void> fire(Player player, ItemStack stack) {
+    @Override
+    public PowerResult<Void> fire(Player player, ItemStack stack) {
         if (!checkCooldown(this, player, cooldown, true)) return PowerResult.cd();
         if (!getItem().consumeDurability(stack, cost)) return PowerResult.cost();
 

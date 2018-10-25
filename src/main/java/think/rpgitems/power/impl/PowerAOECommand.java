@@ -74,7 +74,10 @@ public class PowerAOECommand extends PowerCommand {
         return "aoecommand";
     }
 
-    private PowerResult<Void> aoeCommand(Player player) {
+    @Override
+    public PowerResult<Void> fire(Player player, ItemStack stack) {
+        if (!checkCooldownByString(player, getItem(), command, cooldown, true)) return PowerResult.cd();
+        if (!getItem().consumeDurability(stack, cost)) return PowerResult.cost();
         if (!player.isOnline()) return PowerResult.noop();
 
         attachPermission(player, permission);
@@ -98,7 +101,7 @@ public class PowerAOECommand extends PowerCommand {
             if (type.equalsIgnoreCase("entity") || forPlayers || forMobs) {
                 List<LivingEntity> nearbyEntities = getNearestLivingEntities(this, player.getLocation(), player, r, rm);
                 List<LivingEntity> ent = getLivingEntitiesInCone(nearbyEntities, player.getEyeLocation().toVector(), facing, player.getEyeLocation().getDirection());
-                LivingEntity[] entities = ent.toArray(new LivingEntity[ent.size()]);
+                LivingEntity[] entities = ent.toArray(new LivingEntity[0]);
                 for (int i = 0; i < count && i < entities.length; ++i) {
                     String cmd = usercmd;
                     LivingEntity e = entities[i];
@@ -130,15 +133,11 @@ public class PowerAOECommand extends PowerCommand {
 
     @Override
     public PowerResult<Void> rightClick(Player player, ItemStack stack, PlayerInteractEvent event) {
-        if (!triggers.contains(Trigger.RIGHT_CLICK) || !checkCooldownByString(player, getItem(), command, cooldown, true)) return PowerResult.cd();
-        if (!getItem().consumeDurability(stack, cost)) return PowerResult.cost();
-        return aoeCommand(player);
+        return fire(player, stack);
     }
 
     @Override
     public PowerResult<Void> leftClick(Player player, ItemStack stack, PlayerInteractEvent event) {
-        if (!triggers.contains(Trigger.LEFT_CLICK) || !checkCooldownByString(player, getItem(), command, cooldown, true)) return PowerResult.cd();
-        if (!getItem().consumeDurability(stack, cost)) return PowerResult.cost();
-        return aoeCommand(player);
+        return fire(player, stack);
     }
 }

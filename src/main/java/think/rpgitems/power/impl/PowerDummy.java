@@ -21,7 +21,7 @@ import static think.rpgitems.power.Utils.checkCooldown;
  * </p>
  */
 @PowerMeta(defaultTrigger = "RIGHT_CLICK")
-public class PowerDummy extends BasePower implements PowerHit, PowerHitTaken, PowerLeftClick, PowerRightClick, PowerOffhandClick, PowerProjectileHit, PowerSneak, PowerSprint, PowerOffhandItem, PowerMainhandItem, PowerTick {
+public class PowerDummy extends BasePower implements PowerHit, PowerHitTaken, PowerLeftClick, PowerRightClick, PowerOffhandClick, PowerProjectileHit, PowerSneak, PowerSprint, PowerOffhandItem, PowerMainhandItem, PowerTick, PowerPlain {
 
     /**
      * Cooldown time of this power
@@ -50,7 +50,8 @@ public class PowerDummy extends BasePower implements PowerHit, PowerHitTaken, Po
     @Property
     public TriggerResult cooldownResult = TriggerResult.COOLDOWN;
 
-    private PowerResult<Void> fire(Player player, ItemStack stack) {
+    @Override
+    public PowerResult<Void> fire(Player player, ItemStack stack) {
         if (!checkCooldown(this, player, cooldown, true)) return PowerResult.of(cooldownResult);
         if (!getItem().consumeDurability(stack, cost)) PowerResult.of(costResult);
         return PowerResult.of(successResult);

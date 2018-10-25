@@ -26,7 +26,7 @@ import static think.rpgitems.power.Utils.getNearbyEntities;
  */
 @SuppressWarnings("WeakerAccess")
 @PowerMeta(defaultTrigger = "RIGHT_CLICK", withSelectors = true)
-public class PowerAttract extends BasePower implements PowerTick, PowerLeftClick, PowerRightClick {
+public class PowerAttract extends BasePower implements PowerTick, PowerLeftClick, PowerRightClick, PowerPlain {
     /**
      * Maximum radius
      */
@@ -122,6 +122,7 @@ public class PowerAttract extends BasePower implements PowerTick, PowerLeftClick
         return fire(player, stack);
     }
 
+    @Override
     public PowerResult<Void> fire(Player player, ItemStack stack) {
         if (!checkCooldown(this, player, cooldown, true)) return PowerResult.cd();
         if (!item.consumeDurability(stack, cost)) return PowerResult.cost();

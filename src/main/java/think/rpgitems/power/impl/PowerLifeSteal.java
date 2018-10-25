@@ -22,10 +22,7 @@ import org.bukkit.entity.Player;
 import org.bukkit.event.entity.EntityDamageByEntityEvent;
 import org.bukkit.inventory.ItemStack;
 import think.rpgitems.I18n;
-import think.rpgitems.power.PowerHit;
-import think.rpgitems.power.PowerMeta;
-import think.rpgitems.power.PowerResult;
-import think.rpgitems.power.Property;
+import think.rpgitems.power.*;
 
 import java.util.Random;
 
@@ -37,7 +34,7 @@ import java.util.Random;
  * </p>
  */
 @PowerMeta(immutableTrigger = true)
-public class PowerLifeSteal extends BasePower implements PowerHit {
+public class PowerLifeSteal extends BasePower implements PowerHit, PowerLivingEntity {
 
     /**
      * Chance of triggering this power
@@ -54,13 +51,18 @@ public class PowerLifeSteal extends BasePower implements PowerHit {
 
     @Override
     public PowerResult<Double> hit(Player player, ItemStack stack, LivingEntity entity, double damage, EntityDamageByEntityEvent event) {
+        return fire(player, stack, entity, damage).with(damage);
+    }
+
+    @Override
+    public PowerResult<Void> fire(Player player, ItemStack stack, LivingEntity entity, double damage) {
         if (random.nextInt(chance) == 0) {
             if (!getItem().consumeDurability(stack, cost)) return PowerResult.cost();
             if ((player.getHealth() + damage) >= player.getAttribute(Attribute.GENERIC_MAX_HEALTH).getValue()) {
                 player.setHealth(player.getAttribute(Attribute.GENERIC_MAX_HEALTH).getValue());
             } else
                 player.setHealth(player.getHealth() + damage);
-            return PowerResult.ok(damage);
+            return PowerResult.ok();
         }
         return PowerResult.noop();
     }

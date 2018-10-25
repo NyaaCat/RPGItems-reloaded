@@ -60,23 +60,19 @@ public class PowerConsume extends BasePower implements PowerRightClick, PowerLef
 
     @Override
     public PowerResult<Void> rightClick(final Player player, ItemStack stack, PlayerInteractEvent event) {
-        if (checkCooldown(this, player, cooldown, false)) {
-            return consume(player);
-        }
-        return PowerResult.cd();
+        return fire(player, stack);
     }
 
     @Override
     public PowerResult<Void> leftClick(final Player player, ItemStack stack, PlayerInteractEvent event) {
-        if (checkCooldown(this, player, cooldown, false)) {
-            return consume(player);
-        }
-        return PowerResult.cd();
+        return fire(player, stack);
     }
 
-    private PowerResult<Void> consume(final Player player) {
+    // TODO: Directly use ItemStack from param
+    public PowerResult<Void> fire(final Player player, ItemStack s) {
+        if (!checkCooldown(this, player, cooldown, false)) return PowerResult.cd();
+        if (!getItem().consumeDurability(s, cost)) return PowerResult.cost();
         ItemStack stack = player.getInventory().getItemInMainHand();
-        if (!getItem().consumeDurability(stack, cost)) return PowerResult.cost();
         int count = stack.getAmount() - 1;
         if (count == 0) {
             Bukkit.getScheduler().scheduleSyncDelayedTask(RPGItems.plugin, () -> player.getInventory().setItemInMainHand(new ItemStack(Material.AIR)), 1L);

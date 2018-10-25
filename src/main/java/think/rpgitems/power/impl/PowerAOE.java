@@ -27,7 +27,7 @@ import static think.rpgitems.power.Utils.getNearbyEntities;
  */
 @SuppressWarnings("WeakerAccess")
 @PowerMeta(defaultTrigger = "RIGHT_CLICK", withSelectors = true)
-public class PowerAOE extends BasePower implements PowerRightClick, PowerLeftClick {
+public class PowerAOE extends BasePower implements PowerRightClick, PowerLeftClick, PowerPlain {
 
     /**
      * Cooldown time of this power
@@ -75,15 +75,16 @@ public class PowerAOE extends BasePower implements PowerRightClick, PowerLeftCli
 
     @Override
     public PowerResult<Void> rightClick(final Player player, ItemStack stack, PlayerInteractEvent event) {
-        return Aoe(player, stack);
+        return fire(player, stack);
     }
 
     @Override
     public PowerResult<Void> leftClick(final Player player, ItemStack stack, PlayerInteractEvent event) {
-        return Aoe(player, stack);
+        return fire(player, stack);
     }
 
-    public PowerResult<Void> Aoe(Player player, ItemStack stack) {
+    @Override
+    public PowerResult<Void> fire(Player player, ItemStack stack) {
         if (!checkCooldown(this, player, cooldown, true)) return PowerResult.cd();
         if (!getItem().consumeDurability(stack, cost)) return PowerResult.cost();
         PotionEffect effect = new PotionEffect(type, duration, amplifier - 1);

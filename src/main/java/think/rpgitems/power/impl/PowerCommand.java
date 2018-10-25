@@ -24,7 +24,7 @@ import static think.rpgitems.power.Utils.checkCooldownByString;
  */
 @SuppressWarnings("WeakerAccess")
 @PowerMeta(defaultTrigger = "RIGHT_CLICK")
-public class PowerCommand extends BasePower implements PowerRightClick, PowerLeftClick, PowerSprint, PowerSneak, PowerHurt {
+public class PowerCommand extends BasePower implements PowerRightClick, PowerLeftClick, PowerSprint, PowerSneak, PowerHurt, PowerPlain {
 
     /**
      * Command to be executed
@@ -100,38 +100,31 @@ public class PowerCommand extends BasePower implements PowerRightClick, PowerLef
 
     @Override
     public PowerResult<Void> rightClick(Player player, ItemStack stack, PlayerInteractEvent event) {
-        if (!checkCooldownByString(player, getItem(), command, cooldown, true))
-            return PowerResult.cd();
-        if (!getItem().consumeDurability(stack, cost)) return PowerResult.cost();
-        return executeCommand(player);
+        return fire(player, stack);
     }
 
     @Override
     public PowerResult<Void> leftClick(Player player, ItemStack stack, PlayerInteractEvent event) {
-        if (!checkCooldownByString(player, getItem(), command, cooldown, true))
-            return PowerResult.cd();
-        if (!getItem().consumeDurability(stack, cost)) return PowerResult.cost();
-        return executeCommand(player);
+        return fire(player, stack);
     }
 
     @Override
     public PowerResult<Void> sneak(Player player, ItemStack stack, PlayerToggleSneakEvent event) {
-        if (!checkCooldownByString(player, getItem(), command, cooldown, true))
-            return PowerResult.cd();
-        if (!getItem().consumeDurability(stack, cost)) return PowerResult.cost();
-        return executeCommand(player);
+        return fire(player, stack);
     }
 
     @Override
     public PowerResult<Void> sprint(Player player, ItemStack stack, PlayerToggleSprintEvent event) {
-        if (!checkCooldownByString(player, getItem(), command, cooldown, true))
-            return PowerResult.cd();
-        if (!getItem().consumeDurability(stack, cost)) return PowerResult.cost();
-        return executeCommand(player);
+        return fire(player, stack);
     }
 
     @Override
     public PowerResult<Void> hurt(Player target, ItemStack stack, EntityDamageEvent event) {
+        return fire(target, stack);
+    }
+
+    @Override
+    public PowerResult<Void> fire(Player target, ItemStack stack) {
         if (!checkCooldownByString(target, getItem(), command, cooldown, true))
             return PowerResult.cd();
         if (!getItem().consumeDurability(stack, cost)) return PowerResult.cost();
