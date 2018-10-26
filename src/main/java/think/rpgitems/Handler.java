@@ -83,7 +83,9 @@ public class Handler extends RPGCommandReceiver {
                                                     .stream()
                                                     .filter(i -> i.getName().contains(nameSearch))
                                                     .filter(i -> i.getDisplay().contains(displaySearch))
-                                                    .filter(i -> i.getType().contains(typeSearch)).collect(Collectors.toList());
+                                                    .filter(i -> i.getType().contains(typeSearch))
+                                                    .sorted(Comparator.comparing(RPGItem::getName))
+                                                    .collect(Collectors.toList());
         Stream<RPGItem> stream = items.stream();
         int max = (int) Math.ceil(items.size() / (double) perPage);
         int page = args.top() == null ? 1 : args.nextInt();
