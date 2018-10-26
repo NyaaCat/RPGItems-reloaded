@@ -33,7 +33,7 @@ import static think.rpgitems.power.Utils.checkCooldown;
  * The fireball power will fire an fireball on right click.
  * </p>
  */
-@PowerMeta(immutableTrigger = true)
+@PowerMeta(defaultTrigger = "RIGHT_CLICK")
 public class PowerFireball extends BasePower implements PowerRightClick, PowerLeftClick, PowerPlain {
 
     /**

@@ -769,7 +769,7 @@ manual:
       Set power property of item to value.
       E.g, set the second aoecommand power command attribute, to spawn a ignited creeper at each entity location:
       /rpgitem test_item set aoecommand 2 command summon creeper {entity.x} {entity.y} {entity.y} {ignited:1,Fuse:5}
-    usage: "/rpgitem get {item} <power> <index> <property> <value>"
+    usage: "/rpgitem set {item} <power> <index> <property> <value>"
 
   cost:
     description: |-
