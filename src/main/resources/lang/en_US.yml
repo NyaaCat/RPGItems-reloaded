@@ -371,6 +371,13 @@ power:
     consumehit:
       main_name: Consume Hit
       main_description: Remove one item when hits something.
+    criticalhit:
+      main_name: Critical Hit and Backstab
+      main_description: With a chance% to deal more damage. With a backstabChance% to deal more damage when backstabing.
+      backstabChance: Chance of triggering backstab, in percentage
+      backstabFactor: Factor of backstab damage.E.g. deals (damage * backstabFactor) damage
+      chance: Chance of triggering critical hit, in percentage
+      factor: Factor of critical hit damage.E.g. deals (damage * factor) damage
     deathcommand:
       main_name: Death Command
       main_description: With a 1/chance to kill the target then execute the command for count times
