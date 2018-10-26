@@ -35,6 +35,9 @@ public class PowerDummy extends BasePower implements PowerHit, PowerHitTaken, Po
     @Property
     public int cost = 0;
 
+    @Property
+    public boolean ignoreDurabilityBound = false;
+
     /**
      * Display message on item
      */
@@ -53,7 +56,7 @@ public class PowerDummy extends BasePower implements PowerHit, PowerHitTaken, Po
     @Override
     public PowerResult<Void> fire(Player player, ItemStack stack) {
         if (!checkCooldown(this, player, cooldown, true)) return PowerResult.of(cooldownResult);
-        if (!getItem().consumeDurability(stack, cost)) PowerResult.of(costResult);
+        if (!getItem().consumeDurability(stack, cost, ignoreDurabilityBound)) PowerResult.of(costResult);
         return PowerResult.of(successResult);
     }
 

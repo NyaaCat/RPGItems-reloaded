@@ -7,7 +7,6 @@ import net.md_5.bungee.api.chat.HoverEvent;
 import net.md_5.bungee.api.chat.TextComponent;
 import org.bukkit.ChatColor;
 import org.bukkit.Material;
-import org.bukkit.block.Block;
 import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.entity.Player;
 import org.bukkit.event.player.PlayerInteractEvent;
@@ -40,7 +39,16 @@ public class PowerRepair extends BasePower implements PowerRightClick, PowerLeft
     public ItemStack material;
 
     @Property
+    public RepairMode mode = RepairMode.DEFAULT;
+
+    @Property
     public boolean abortOnSuccess = false;
+
+    @Property
+    public boolean abortOnFailure = false;
+
+    @Property
+    public String customMessage;
 
     @Override
     public void init(ConfigurationSection section) {
@@ -77,19 +85,27 @@ public class PowerRepair extends BasePower implements PowerRightClick, PowerLeft
     private PowerResult<Void> repair(Player player, ItemStack stack) {
         int max = getItem().getMaxDurability();
         int itemDurability = getItem().getDurability(stack);
-        if (getItem().getMaxDurability() != -1 && max - this.durability >= itemDurability) {
-            if (removeItem(player.getInventory(), material)) {
-                getItem().setDurability(stack, itemDurability + this.durability);
-                return abortOnSuccess ? PowerResult.abort() : PowerResult.ok();
-            } else {
-                BaseComponent msg = new TextComponent(I18n.format("message.error.need_material", material.getType().name()));
-                HoverEvent hover = new HoverEvent(HoverEvent.Action.SHOW_ITEM, new BaseComponent[]{new TextComponent(ItemStackUtils.itemToJson(material))});
-                msg.setHoverEvent(hover);
-                new Message("").append(msg).send(player);
-                return PowerResult.fail();
+        int delta = max - itemDurability;
+        if (mode != RepairMode.ALWAYS) {
+            if (getItem().getMaxDurability() == -1 || delta == 0) {
+                return PowerResult.noop();
+            }
+            if (delta < this.durability && mode != RepairMode.ALLOW_OVER) {
+                return PowerResult.noop();
             }
         }
-        return PowerResult.noop();
+        if (removeItem(player.getInventory(), material)) {
+            getItem().setDurability(stack, itemDurability + this.durability);
+            return abortOnSuccess ? PowerResult.abort() : PowerResult.ok();
+        } else {
+            BaseComponent msg = customMessage == null ?
+                                        new TextComponent(I18n.format("message.error.need_material", material.getType().name())) :
+                                        new TextComponent(customMessage);
+            HoverEvent hover = new HoverEvent(HoverEvent.Action.SHOW_ITEM, new BaseComponent[]{new TextComponent(ItemStackUtils.itemToJson(material))});
+            msg.setHoverEvent(hover);
+            new Message("").append(msg).send(player);
+            return abortOnFailure ? PowerResult.abort() : PowerResult.fail();
+        }
     }
 
     private boolean removeItem(Inventory inventory, ItemStack item) {
@@ -107,5 +123,11 @@ public class PowerRepair extends BasePower implements PowerRightClick, PowerLeft
             }
         }
         return false;
+    }
+
+    public enum RepairMode {
+        DEFAULT,
+        ALLOW_OVER,
+        ALWAYS,
     }
 }

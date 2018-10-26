@@ -1151,13 +1151,19 @@ public class RPGItem {
     }
 
     public boolean consumeDurability(ItemStack item, int val) {
+        return consumeDurability(item, val, true);
+    }
+
+    public boolean consumeDurability(ItemStack item, int val, boolean checkbound) {
         if (val == 0) return true;
         RPGMetadata meta = getMetadata(item);
         int durability;
         if (getMaxDurability() != -1) {
             durability = meta.containsKey(RPGMetadata.DURABILITY) ? ((Number) meta.get(RPGMetadata.DURABILITY)).intValue() : defaultDurability;
-            if ((val > 0 && durability < durabilityLowerBound)
-                        || (val < 0 && durability > durabilityUpperBound)) {
+            if (checkbound && (
+                    (val > 0 && durability < durabilityLowerBound) ||
+                            (val < 0 && durability > durabilityUpperBound)
+            )) {
                 return false;
             }
             if (durability <= val
