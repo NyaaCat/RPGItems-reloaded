@@ -36,6 +36,7 @@ import think.rpgitems.power.impl.*;
 import think.rpgitems.support.WGSupport;
 import think.rpgitems.utils.MaterialUtils;
 
+import java.io.File;
 import java.lang.reflect.InvocationTargetException;
 import java.util.*;
 import java.util.Map.Entry;
@@ -73,7 +74,7 @@ public class RPGItem {
     public boolean hitCostByDamage = false;
     public DamageMode damageMode = DamageMode.FIXED;
 
-    String file;
+    private File file;
 
     private NamespacedKey namespacedKey;
     private ItemStack item;
@@ -116,7 +117,8 @@ public class RPGItem {
         rebuild();
     }
 
-    public RPGItem(ConfigurationSection s) throws UnknownPowerException, UnknownExtensionException {
+    public RPGItem(ConfigurationSection s, File f) throws UnknownPowerException, UnknownExtensionException {
+        file = f;
         name = s.getString("name");
         id = s.getInt("id");
         uid = s.getInt("uid");
@@ -1267,6 +1269,18 @@ public class RPGItem {
 
     private <TEvent extends Event, T extends Power, TResult, TReturn> List<T> getPower(Trigger<TEvent, T, TResult, TReturn> trigger) {
         return powers.stream().filter(p -> p.getTriggers().contains(trigger)).map(trigger.getPowerClass()::cast).collect(Collectors.toList());
+    }
+
+    public void deinit() {
+        powers.forEach(Power::deinit);
+    }
+
+    public File getFile() {
+        return file;
+    }
+
+    void setFile(File itemFile) {
+        file = itemFile;
     }
 
     @LangKey(type = LangKeyType.SUFFIX)

@@ -94,7 +94,7 @@ public class RPGItems extends JavaPlugin {
             Bukkit.getConsoleSender().sendMessage(ChatColor.RED + "Please run your server with latest version of RPGItems 3.5 before update.");
             Bukkit.getConsoleSender().sendMessage(ChatColor.RED + "======================================");
             throw new IllegalStateException();
-        } else if(plugin.cfg.version.equals("0.5")) {
+        } else if (plugin.cfg.version.equals("0.5")) {
             cfg.pidCompat = true;
         }
 
@@ -142,7 +142,7 @@ public class RPGItems extends JavaPlugin {
         getCommand("rpgitem").setExecutor(null);
         getCommand("rpgitem").setTabCompleter(null);
         this.getServer().getScheduler().cancelTasks(plugin);
-
+        ItemManager.unload();
         managedPlugins.forEach(Bukkit.getPluginManager()::disablePlugin);
     }
 }

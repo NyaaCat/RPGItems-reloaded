@@ -34,6 +34,10 @@ message:
     option: 无效项 '%s'
     iteminhand: 手中没有物品
     need_material: '你需要 %s 以修复此物品'
+    file_not_exists: '文件不存在：%s'
+    reloading_locked: 无法重载一个尚未解锁的物品
+    recovering: 恢复失败。建议停止服务器并手动检查物品配置及其备份。
+    item_unlocked: 无法编辑已解锁的物品%s。请重载它再编辑。
   wgcustomflag:
     disable: Worldguard 自定义标志已禁用
     enable: Worldguard 自定义标志已启用
@@ -151,7 +155,12 @@ message:
         物品 %s 的说明为：
         %s
       na: 物品 %s 无说明
-    reorder: 物品 %s 的技能 %s 已调整顺序
+    load: 已载入物品 %s {item}
+    empty_dir: 跳过空目录 %s
+    file_deleted: 物品配置已删除。
+    recovering: 重载物品失败，恢复中。您的修改已保存至 %s。
+    unlocked: 物品已结束，备份至 %s。
+    cleanbackup: 已清理备份。
   damagemode:
     FIXED: 物品 '%s' 伤害模式设定为固定伤害（默认）
     MULTIPLY: 物品 '%s' 伤害模式设定为乘法伤害（原版伤害乘以RPG伤害）
@@ -180,6 +189,7 @@ message:
     key: 技能 %s
     description: "%s"
     no_display: 无说明
+    reorder: 物品 %s 的技能 %s 已调整顺序
   toggleLore:
     show: 文字已显示
     hide: 文字已隐藏
@@ -238,6 +248,7 @@ message:
     以 MIT 授权
 
     Bug反馈: https://github.com/NyaaCat/RPGitems-reloaded/issues'
+  no_item: 暂无物品
 power:
   airborne: 攻击在滑翔时增加 %d%%
   charge: 攻击随速度增加，并在疾跑时增加 %d%%
@@ -297,9 +308,9 @@ power:
   glove: "捕获一个实体 (%.1fs 冷却)"
   mount: "骑乘一个实体 (%.1fs 冷却)"
   criticalhit:
-    both: 百分之 %d 的几率暴击 %f 倍，百分之 %d 的几率背刺 %f 倍
-    critical: 百分之 %d 的几率暴击 %f 倍
-    backstab: 百分之 %d 的几率背刺 %f 倍
+    both: 百分之 %f 的几率暴击 %f 倍，百分之 %f 的几率背刺 %f 倍
+    critical: 百分之 %f 的几率暴击 %f 倍
+    backstab: 百分之 %f 的几率背刺 %f 倍
   properties:
     base:
       cooldown: 技能的冷却时间，以游戏刻为单位
@@ -358,7 +369,7 @@ power:
       main_description: 击中目标时移除一份当前物品
     criticalhit:
       main_name: 背刺暴击
-      main_description: 暴击几率%让攻击乘以暴击倍率。在背刺情况下，额外背刺几率%让攻击乘以背刺倍率
+      main_description: 暴击几率%%让攻击乘以暴击倍率。在背刺情况下，额外背刺几率%%让攻击乘以背刺倍率
       backstabChance: 背刺几率
       backstabFactor: 背刺倍率
       chance: 暴击几率

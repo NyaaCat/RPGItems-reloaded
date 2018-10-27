@@ -54,6 +54,10 @@ message:
     option: Invalid option '%s'
     iteminhand: 'No item in your hand'
     need_material: 'You need a %s to repair this item'
+    file_not_exists: 'File not exist: %s'
+    reloading_locked: Cannot reload a item that is not unlocked!
+    recovering: Error recovering. We suggest you stop the server and check item files and backups manually.
+    item_unlocked: You cannot edit unlocked %s. Reload it before editing.
   wgcustomflag:
     disable: Worldguard custom flag disabled
     enable: Worldguard custom flag enabled
@@ -170,7 +174,12 @@ message:
         Note of item %s is:
         %s
       na: No note available for item %s
-    reorder: Reordered item %s's power %s
+    load: Loaded item %s {item}
+    empty_dir: Skipping empty directory %s
+    file_deleted: Item file deleted
+    recovering: Failed when reloading, recovering. Your edits saved to %s
+    unlocked: Item unlocked. Backing up to %s.
+    cleanbackup: Cleaned up backup dictory.
   damagemode:
     FIXED: Item '%s' damage mode set to fixed damage (default)
     ADDITIONAL: Item '%s' damage mode set to additional damage (vanilla minecraft damage plus RPGItem damage)
@@ -206,6 +215,7 @@ message:
     key: Power '%s'
     description: "%s"
     no_display: No display text
+    reorder: Reordered item %s's power %s
   toggleLore:
     show: Lore now been displayed
     hide: Lore now been hid
@@ -236,7 +246,7 @@ message:
       timeout: Gist upload timeout
       failed: Gist upload failed
       code: 'Gist upload failed: %d'
-
+  no_item: No item.
 power:
   airborne: 'Damage increase by %d%% when gliding'
   charge: 'Damage increase with speed, by %d%% when sprinting'
@@ -295,6 +305,10 @@ power:
   translocator: Shoot translocator when swapping to offhand, teleport to it when swapping to mainhand, destory it when pickup from offhand
   glove: "Catch an entity (%.1fs cooldown)"
   mount: "Ride an entity (%.1fs cooldown)"
+  criticalhit:
+    both: '%f %% chance to deal a * %f crit hit, %f %% chance to deal a * %f backstab'
+    critical: '%f %% chance to deal a * %f crit hit'
+    backstab: '%f %% chance to deal a * %f backstab'
   properties:
     base:
       cooldown: Cooldown of the power, in ticks.
@@ -373,7 +387,7 @@ power:
       main_description: Remove one item when hits something.
     criticalhit:
       main_name: Critical Hit and Backstab
-      main_description: With a chance% to deal more damage. With a backstabChance% to deal more damage when backstabing.
+      main_description: With a chance%% to deal more damage. With a backstabChance%% to deal more damage when backstabing.
       backstabChance: Chance of triggering backstab, in percentage
       backstabFactor: Factor of backstab damage.E.g. deals (damage * backstabFactor) damage
       chance: Chance of triggering critical hit, in percentage

@@ -1,6 +1,7 @@
 package think.rpgitems.item;
 
 import cat.nyaa.nyaacore.Message;
+import com.sun.nio.file.ExtendedOpenOption;
 import org.bukkit.Bukkit;
 import org.bukkit.Material;
 import org.bukkit.command.CommandSender;
@@ -16,12 +17,16 @@ import think.rpgitems.I18n;
 import think.rpgitems.RPGItems;
 import think.rpgitems.power.UnknownExtensionException;
 import think.rpgitems.power.UnknownPowerException;
+import think.rpgitems.utils.Pair;
 
 import java.io.*;
+import java.nio.channels.FileChannel;
+import java.nio.channels.FileLock;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.StandardCopyOption;
+import java.nio.file.StandardOpenOption;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.Objects;
@@ -33,12 +38,38 @@ import static think.rpgitems.item.RPGItem.updateItem;
 public class ItemManager {
     public static HashMap<Integer, RPGItem> itemById = new HashMap<>();
     public static HashMap<String, RPGItem> itemByName = new HashMap<>();
+    public static HashMap<String, FileLock> itemFileLocks = new HashMap<>();
+    public static HashMap<RPGItem, Pair<File, FileLock>> unlockedItem = new HashMap<>();
     private static RPGItems plugin;
+    private static File itemsDir;
+    private static File backupsDir;
+
+    public static File getItemsDir() {
+        return itemsDir;
+    }
+
+    private static void setItemsDir(File itemsDir) {
+        ItemManager.itemsDir = itemsDir;
+    }
+
+    public static File getBackupsDir() {
+        return backupsDir;
+    }
+
+    private static void setBackupsDir(File backupsDir) {
+        ItemManager.backupsDir = backupsDir;
+    }
 
     public static void reload(RPGItems pl) {
+        unload();
+        load(pl);
+    }
+
+    public static void unload() {
+        itemByName.values().forEach(RPGItem::deinit);
         itemById = new HashMap<>();
         itemByName = new HashMap<>();
-        load(pl);
+        resetLock();
     }
 
     public static void refreshItem() {
@@ -61,8 +92,10 @@ public class ItemManager {
     public static void load(RPGItems pl) {
         plugin = pl;
         RPGItem.plugin = pl;
-        File items = new File(plugin.getDataFolder(), "items");
-        if (!items.exists() || !items.isDirectory()) {
+        File dirItems = new File(plugin.getDataFolder(), "items");
+        if (!dirItems.exists() || !dirItems.isDirectory()) {
+            setItemsDir(mkdir());
+            setBackupsDir(mkbkdir());
             File f = new File(plugin.getDataFolder(), "items.yml");
             if (!f.exists()) {
                 return;
@@ -79,24 +112,67 @@ public class ItemManager {
             }
             return;
         }
-        File[] files = items.listFiles((d, n) -> n.endsWith("yml"));
+        setItemsDir(mkdir());
+        setBackupsDir(mkbkdir());
+        File[] files = getItemsDir().listFiles((d, n) -> n.endsWith("yml"));
         for (File file : Objects.requireNonNull(files)) {
-            load(file);
+            load(file, null);
         }
     }
 
-    private static void load(File file) {
+    public static boolean load(File file, CommandSender sender) {
         try {
+            if (!file.exists()) {
+                plugin.getLogger().severe("Trying to load " + file + " that does not exist.");
+                throw new IllegalStateException("Trying to load " + file + " that does not exist.");
+            }
+            if (file.isDirectory()) {
+                File[] subFiles = file.listFiles((d, n) -> n.endsWith("yml"));
+                if (Objects.requireNonNull(subFiles).length == 0) {
+                    new Message(I18n.format("message.item.empty_dir", file.getPath())).send(sender);
+                    return false;
+                }
+                for (File subFile : subFiles) {
+                    if (subFile.isFile()) {
+                        load(subFile, sender);
+                    }
+                }
+                return false;
+            }
+            String canonicalPath = file.getCanonicalPath();
+            if (itemFileLocks.containsKey(canonicalPath) && itemFileLocks.get(canonicalPath).isValid()) {
+                plugin.getLogger().severe("Trying to load " + file + " that already loaded.");
+                throw new IllegalStateException("Trying to load " + file + " that already loaded.");
+            }
+            Path path = file.toPath().toRealPath();
+            Path base = getItemsDir().toPath().toRealPath();
+            if (!path.startsWith(base)) {
+                plugin.getLogger().info("Copying " + file + " to " + getItemsDir() + ".");
+                File newFile = createFile(getItemsDir(), file.getName(), false);
+                plugin.getLogger().info("As " + newFile + ".");
+                Files.copy(file.toPath(), newFile.toPath(), StandardCopyOption.REPLACE_EXISTING);
+                file = newFile;
+            }
             YamlConfiguration itemStorage = new YamlConfiguration();
             itemStorage.load(file);
-            RPGItem item = new RPGItem(itemStorage);
-            item.file = file.getCanonicalPath();
+            RPGItem item = new RPGItem(itemStorage, file);
+            lock(file);
             addItem(item);
+            if (sender != null) {
+                new Message("")
+                        .append(I18n.format("message.item.load", item.getName()), Collections.singletonMap("{item}", item.getComponent()))
+                        .send(sender);
+            }
+            return true;
         } catch (Exception e) {
             // Something went wrong
             e.printStackTrace();
             plugin.getLogger().severe("Error loading " + file + ".");
+            if (sender != null) {
+                sender.sendMessage("Error loading " + file + ". " + e.getLocalizedMessage());
+            }
         }
+        return false;
     }
 
     @SuppressWarnings("deprecation")
@@ -144,7 +220,7 @@ public class ItemManager {
             for (Object obj : section.getValues(false).values()) {
                 try {
                     ConfigurationSection sec = (ConfigurationSection) obj;
-                    RPGItem item = new RPGItem(sec);
+                    RPGItem item = new RPGItem(sec, null);
                     addItem(item);
                     Message message = new Message("").append(I18n.format("message.update.success"), Collections.singletonMap("{item}", item.getComponent()));
                     // Bukkit.getOperators().forEach(message::send);
@@ -163,7 +239,7 @@ public class ItemManager {
             Bukkit.getOperators().forEach(message::send);
             plugin.getLogger().severe("Error loading items.yml. Creating backup");
             dump(e);
-            throw new RuntimeException(e); //TODO
+            throw new RuntimeException(e);
         }
     }
 
@@ -182,18 +258,9 @@ public class ItemManager {
     }
 
     public static void save() {
-        File items = mkdir();
-        File backup = mkbkdir();
-
         for (RPGItem item : itemByName.values()) {
-            save(items, backup, item);
+            save(item);
         }
-    }
-
-    public static void save(RPGItem item) {
-        File items = mkdir();
-        File backup = mkbkdir();
-        save(items, backup, item);
     }
 
     private static File mkdir() {
@@ -216,40 +283,138 @@ public class ItemManager {
         return backup;
     }
 
-    private static void save(File items, File bkdir, RPGItem item) {
+    public static void save(RPGItem item) {
         String itemName = item.getName();
-        String filename = getItemFilename(itemName);
-        File itemFile = new File(items, filename + ".yml");
+        File itemFile = item.getFile() == null ? createFile(getItemsDir(), item.getName(), true) : item.getFile();
+        boolean exist = itemFile.exists();
+        String cfgStr = "";
+        File backup = null;
         try {
-            File backup = new File(bkdir, filename + "." + System.currentTimeMillis() + ".bak");
-            if (itemFile.exists()) {
-                try {
-                    if (!backup.createNewFile()) throw new IllegalStateException();
-                } catch (Exception e) {
-                    plugin.getLogger().log(Level.SEVERE, "Cannot create backup for" + itemName + ".", e);
-                }
-                Files.move(itemFile.toPath(), backup.toPath(), StandardCopyOption.REPLACE_EXISTING);
-            }
             YamlConfiguration configuration = new YamlConfiguration();
             item.save(configuration);
+            cfgStr = configuration.saveToString();
+            if (exist) {
+                backup = unlockAndBackup(item, false);
+            }
             configuration.save(itemFile);
 
             try {
                 String canonicalPath = itemFile.getCanonicalPath();
                 YamlConfiguration test = new YamlConfiguration();
                 test.load(canonicalPath);
-                new RPGItem(test);
-                if (backup.exists()) {
+                RPGItem testItem = new RPGItem(test, null);
+                testItem.deinit();
+                if (backup != null && backup.exists()) {
                     backup.deleteOnExit();
                 }
-                item.file = canonicalPath;
+                item.setFile(itemFile);
+                lock(itemFile);
             } catch (Exception e) {
                 plugin.getLogger().log(Level.SEVERE, "Error verifying integrity for " + itemName + ".", e);
                 throw new RuntimeException(e);
             }
-        } catch (IOException e) {
+        } catch (Exception e) {
+            plugin.getLogger().log(Level.SEVERE, "Error saving" + itemName + ".", e);
+            plugin.getLogger().severe("Dumping current item");
+            plugin.getLogger().severe("===============");
+            plugin.getLogger().severe(cfgStr);
+            plugin.getLogger().severe("===============");
+            if (exist && backup != null && backup.exists()) {
+                try {
+                    plugin.getLogger().severe("Recovering backup: " + backup);
+                    Files.copy(backup.toPath(), itemFile.toPath(), StandardCopyOption.REPLACE_EXISTING);
+                    lock(itemFile);
+                } catch (Exception exRec) {
+                    exRec.printStackTrace();
+                }
+            }
             throw new RuntimeException(e);
         }
+    }
+
+    public static void lock(File file) throws IOException {
+        FileLock oldLock = itemFileLocks.get(file.getCanonicalPath());
+        if (oldLock != null) {
+            if (oldLock.isValid()) {
+                plugin.getLogger().severe("Trying to lock a already locked file " + file + ".");
+                throw new IllegalStateException();
+            }
+            oldLock.channel().close();
+            itemFileLocks.remove(file.getCanonicalPath());
+        }
+
+        FileLock lock = FileChannel.open(file.toPath(), StandardOpenOption.WRITE, StandardOpenOption.READ, ExtendedOpenOption.NOSHARE_WRITE, ExtendedOpenOption.NOSHARE_DELETE).tryLock(0L, Long.MAX_VALUE, true);
+        if (lock == null) {
+            plugin.getLogger().severe("Error locking " + file + ".");
+            throw new IllegalStateException();
+        }
+        itemFileLocks.put(file.getCanonicalPath(), lock);
+    }
+
+    private static void unlock(File itemFile, boolean remove) throws IOException {
+        FileLock fileLock = remove ? itemFileLocks.remove(itemFile.getCanonicalPath()) : itemFileLocks.get(itemFile.getCanonicalPath());
+        if (fileLock != null) {
+            if (fileLock.isValid()) {
+                fileLock.release();
+            }
+            fileLock.channel().close();
+        } else {
+            plugin.getLogger().warning("Lock for " + itemFile + " does not exist? If you are reloading a item, that's OK.");
+        }
+    }
+
+    private static File createFile(File items, String itemName, boolean tran) {
+        String filename = tran ? getItemFilename(itemName) + ".yml" : itemName;
+        File file = new File(items, filename);
+        while (file.exists()) {
+            file = new File(items, ThreadLocalRandom.current().nextInt() + "." + filename);
+        }
+        return file;
+    }
+
+
+    public static void resetLock() {
+        for (FileLock fileLock : itemFileLocks.values()) {
+            try {
+                fileLock.release();
+            } catch (IOException e) {
+                e.printStackTrace();
+            } finally {
+                try {
+                    fileLock.channel().close();
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
+            }
+        }
+        itemFileLocks = new HashMap<>();
+        for (Pair<File, FileLock> lockPair : unlockedItem.values()) {
+            try {
+                lockPair.getValue().release();
+            } catch (IOException e) {
+                e.printStackTrace();
+            } finally {
+                try {
+                    lockPair.getValue().channel().close();
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
+            }
+        }
+        unlockedItem = new HashMap<>();
+    }
+
+    public static File unlockAndBackup(RPGItem item, boolean remove) throws IOException {
+        File itemFile = item.getFile();
+        File backup = new File(getBackupsDir(), itemFile.getName().replaceAll("\\.yml$", "") + "." + System.currentTimeMillis() + ".bak");
+        unlock(itemFile, remove);
+        try {
+            if (!backup.createNewFile()) throw new IllegalStateException();
+            Files.copy(itemFile.toPath(), backup.toPath(), StandardCopyOption.REPLACE_EXISTING);
+        } catch (Exception e) {
+            plugin.getLogger().log(Level.SEVERE, "Cannot create backup for" + item.getName() + ".", e);
+        }
+        return backup;
     }
 
     public static RPGItem toRPGItem(ItemStack item) {
@@ -316,18 +481,19 @@ public class ItemManager {
     }
 
     @SuppressWarnings("deprecation")
-    public static void remove(RPGItem item) {
+    public static void remove(RPGItem item, boolean delete) {
+        item.deinit();
         itemByName.remove(item.getName());
         itemById.remove(item.getID());
         itemById.remove(item.getUID());
-        File file = new File(item.file);
-        Path path = file.toPath();
-        Path bak = path.resolveSibling(getItemFilename(item.getName()) + ".bak");
-        try {
-            File bakFile = Files.move(path, bak, StandardCopyOption.REPLACE_EXISTING).toFile();
-            bakFile.deleteOnExit();
-        } catch (IOException e) {
-            throw new RuntimeException(e);
+        if (delete) {
+            try {
+                File backup = unlockAndBackup(item, true);
+                Files.delete(item.getFile().toPath());
+                backup.deleteOnExit();
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
         }
     }
 
