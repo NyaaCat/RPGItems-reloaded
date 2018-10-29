@@ -70,9 +70,9 @@ publishing {
     publications {
         mavenJava(MavenPublication) {
             from components.java
-            afterEvaluate {
+            // afterEvaluate {
                 artifacts = [apiJar, javadocJar, sourcesJar]
-            }
+            // }
             groupId "cat.nyaa"
             artifactId "rpgitems"
             version "$majorVersion.$minorVersion-SNAPSHOT"

@@ -28,7 +28,7 @@ import static think.rpgitems.power.Utils.*;
  * <p>
  * Deflect arrows or fireballs towards player within {@link #facing} when
  * 1. manual triggered when some of initiative trigger are enabled with a cooldown of {@link #cooldown} and duration {@link #duration}
- * 2. auto triggered when {@link TriggerType#HIT_TAKEN} is enabled with a chance of {@link #chance} and a cooldown of {@link #cooldownpassive}
+ * 2. auto triggered when {@link Trigger#HIT_TAKEN} is enabled with a chance of {@link #chance} and a cooldown of {@link #cooldownpassive}
  * </p>
  */
 @SuppressWarnings("WeakerAccess")
