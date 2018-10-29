@@ -21,7 +21,7 @@ import static java.nio.charset.StandardCharsets.UTF_8;
 public class NetworkUtils {
 
     public enum Location {
-        GIST
+        URL, GIST
     }
 
     @SuppressWarnings("unchecked")

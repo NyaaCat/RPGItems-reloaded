@@ -7,6 +7,7 @@ import net.md_5.bungee.api.chat.BaseComponent;
 import net.md_5.bungee.api.chat.ComponentBuilder;
 import net.md_5.bungee.api.chat.HoverEvent;
 import net.md_5.bungee.api.chat.TextComponent;
+import org.apache.commons.lang.NotImplementedException;
 import org.bukkit.*;
 import org.bukkit.command.CommandSender;
 import org.bukkit.configuration.InvalidConfigurationException;
@@ -499,6 +500,22 @@ public class Handler extends RPGCommandReceiver {
                 ItemManager.save(item);
             }
             break;
+            case "wrap": {
+                int lineNo = args.nextInt();
+                if (lineNo < 0 || lineNo >= item.description.size()) {
+                    msg(sender, "message.num_out_of_range", lineNo, 0, item.description.size());
+                    return;
+                }
+                String line = item.description.remove(lineNo);
+                item.getTooltipLines();
+                @SuppressWarnings("deprecation") List<String> wrapLines = Utils.wrapLines(line, item.tooltipWidth);
+                item.description.addAll(lineNo, wrapLines);
+                item.rebuild();
+                ItemManager.refreshItem();
+                msg(sender, "message.description.change");
+                ItemManager.save(item);
+            }
+            break;
             default:
                 throw new BadCommandException("message.error.invalid_option", command, "description", "add,set,remove");
         }
@@ -984,6 +1001,11 @@ public class Handler extends RPGCommandReceiver {
             case GIST:
                 downloadGist(sender, args, id);
                 break;
+            case URL:
+                downloadUrl(sender, id);
+                break;
+            default:
+                msg(sender, "message.import.nut_supported", location);
         }
     }
 
@@ -998,6 +1020,8 @@ public class Handler extends RPGCommandReceiver {
             case GIST:
                 publishGist(sender, args, items);
                 break;
+            default:
+                msg(sender, "message.export.nut_supported", location);
         }
     }
 
@@ -1153,6 +1177,14 @@ public class Handler extends RPGCommandReceiver {
                 e.printStackTrace();
                 Bukkit.getScheduler().runTask(plugin, () -> new Message(I18n.format("message.import.gist.timeout")).send(sender));
             }
+        });
+    }
+
+
+    private void downloadUrl(CommandSender sender, String url) {
+        new Message(I18n.format("message.import.url.ing")).send(sender);
+        Bukkit.getScheduler().runTaskAsynchronously(plugin, () -> {
+            throw new NotImplementedException(url);
         });
     }
 

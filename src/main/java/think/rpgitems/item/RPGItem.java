@@ -95,7 +95,7 @@ public class RPGItem {
     private String note = plugin.cfg.defaultNote;
     private String license = plugin.cfg.defaultLicense;
 
-    private int tooltipWidth = 150;
+    public int tooltipWidth = 150;
     // Durability
     private int maxDurability = -1;
     private boolean hasBar = false;
@@ -143,11 +143,7 @@ public class RPGItem {
         setDisplay(s.getString("display"), false);
         setType(s.getString("type", I18n.format("item.type")), false);
         setHand(s.getString("hand", I18n.format("item.hand")), false);
-        String lore = s.getString("lore");
         description = (List<String>) s.getList("description", new ArrayList<String>());
-        if (!Strings.isNullOrEmpty(lore)) {
-            description.add(0, lore);
-        }
         for (int i = 0; i < description.size(); i++) {
             description.set(i, ChatColor.translateAlternateColorCodes('&', description.get(i)));
         }
@@ -307,6 +303,13 @@ public class RPGItem {
             damageMode = DamageMode.FIXED;
         }
         rebuild();
+        String lore = s.getString("lore");
+        if (!Strings.isNullOrEmpty(lore)) {
+            getTooltipLines();
+            List<String> lores = Utils.wrapLines(String.format("%s%s\"%s\"", ChatColor.YELLOW, ChatColor.ITALIC,
+                    ChatColor.translateAlternateColorCodes('&', lore)), tooltipWidth);
+            description.addAll(0, lores);
+        }
     }
 
     public static RPGMetadata getMetadata(ItemStack item) {
@@ -414,15 +417,6 @@ public class RPGItem {
             out.append(str.charAt(i));
         }
         return Integer.parseUnsignedInt(out.toString(), 16);
-    }
-
-    private static int getStringWidth(String str) {
-        int width = 0;
-        for (int i = 0; i < str.length(); i++) {
-            char c = str.charAt(i);
-            width += Font.widths[c] + 1;
-        }
-        return width;
     }
 
     public static RPGItems getPlugin() {
@@ -789,6 +783,7 @@ public class RPGItem {
         }
     }
 
+    @SuppressWarnings("deprecation")
     public List<String> getTooltipLines() {
         ArrayList<String> output = new ArrayList<>();
         output.add(getMCEncodedUID() + quality.colour + ChatColor.BOLD + displayName);
@@ -809,14 +804,14 @@ public class RPGItem {
         // compute width
         int width = 0;
         for (String str : output) {
-            width = Math.max(width, getStringWidth(ChatColor.stripColor(str)));
+            width = Math.max(width, Utils.getStringWidth(ChatColor.stripColor(str)));
         }
 
         // compute armorMinLen
         int armorMinLen = 0;
         String damageStr = null;
         if (showArmourLore) {
-            armorMinLen = getStringWidth(ChatColor.stripColor(hand + "     " + type));
+            armorMinLen = Utils.getStringWidth(ChatColor.stripColor(hand + "     " + type));
 
             if (armour != 0) {
                 damageStr = armour + "% " + I18n.format("item.armour");
@@ -832,7 +827,7 @@ public class RPGItem {
                 }
             }
             if (damageStr != null) {
-                armorMinLen = Math.max(armorMinLen, getStringWidth(ChatColor.stripColor(damageStr)));
+                armorMinLen = Math.max(armorMinLen, Utils.getStringWidth(ChatColor.stripColor(damageStr)));
             }
         }
         tooltipWidth = width = Math.max(width, armorMinLen);
@@ -841,7 +836,7 @@ public class RPGItem {
             if (damageStr != null) {
                 output.add(1, ChatColor.WHITE + damageStr);
             }
-            output.add(1, ChatColor.WHITE + hand + StringUtils.repeat(" ", (width - getStringWidth(ChatColor.stripColor(hand + type))) / 4) + type);
+            output.add(1, ChatColor.WHITE + hand + StringUtils.repeat(" ", (width - Utils.getStringWidth(ChatColor.stripColor(hand + type))) / 4) + type);
         }
 
         return output;

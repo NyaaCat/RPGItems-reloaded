@@ -295,6 +295,10 @@ power:
   translocator: Shoot translocator when swapping to offhand, teleport to it when swapping to mainhand, destory it when pickup from offhand
   glove: "Catch an entity (%.1fs cooldown)"
   mount: "Ride an entity (%.1fs cooldown)"
+  criticalhit:
+    both: '%f %% chance to deal a * %f crit hit, %f %% chance to deal a * %f backstab'
+    critical: '%f %% chance to deal a * %f crit hit'
+    backstab: '%f %% chance to deal a * %f backstab'
   properties:
     base:
       cooldown: Cooldown of the power, in ticks.
@@ -373,7 +377,7 @@ power:
       main_description: Remove one item when hits something.
     criticalhit:
       main_name: Critical Hit and Backstab
-      main_description: With a chance% to deal more damage. With a backstabChance% to deal more damage when backstabing.
+      main_description: With a chance%% to deal more damage. With a backstabChance%% to deal more damage when backstabing.
       backstabChance: Chance of triggering backstab, in percentage
       backstabFactor: Factor of backstab damage.E.g. deals (damage * backstabFactor) damage
       chance: Chance of triggering critical hit, in percentage

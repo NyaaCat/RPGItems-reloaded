@@ -5,7 +5,7 @@ plugins {
 
 ext.majorVersion = 3
 ext.minorVersion = 6
-ext.minecraftVersion = "1.13.1"
+ext.minecraftVersion = "1.13.2"
 
 sourceCompatibility = 1.8
 targetCompatibility = 1.8
@@ -39,7 +39,7 @@ repositories {
 }
 
 dependencies {
-    // compileOnly files('lib/spigot-1.13.1.jar')
+    // compileOnly files('lib/spigot-1.13.2.jar')
     api "org.spigotmc:spigot-api:$minecraftVersion-R0.1-SNAPSHOT"
     api 'cat.nyaa:nyaacore:6.2-SNAPSHOT'
 
@@ -114,7 +114,7 @@ javadoc {
         links 'https://docs.oracle.com/javase/8/docs/api/'
         links 'https://hub.spigotmc.org/javadocs/spigot/'
         links 'https://google.github.io/guava/releases/21.0/api/docs/'
-        links 'https://nyaacat.github.io/NyaaCentral/NyaaCore/6.2-mc1.13.1/javadoc/'
+        links 'https://nyaacat.github.io/NyaaCentral/NyaaCore/6.3-mc1.13.2/javadoc/'
         links 'https://ci.md-5.net/job/BungeeCord/ws/chat/target/apidocs/'
         links 'https://netty.io/4.1/api/index.html'
 
