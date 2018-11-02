@@ -15,6 +15,7 @@ configurations.all {
 }
 
 repositories {
+    mavenLocal()
     jcenter()
     mavenCentral()
     maven {
@@ -36,23 +37,31 @@ repositories {
         name 'NyaaCentral'
         url 'https://raw.githubusercontent.com/NyaaCat/NyaaCentral/maven-repo'
     }
+
+    maven {
+        name 'vault-repo'
+        url 'http://nexus.hc.to/content/repositories/pub_releases'
+    }
 }
 
 dependencies {
     // compileOnly files('lib/spigot-1.13.2.jar')
     api "org.spigotmc:spigot-api:$minecraftVersion-R0.1-SNAPSHOT"
-    api 'cat.nyaa:nyaacore:6.2-SNAPSHOT'
+    api 'cat.nyaa:nyaacore:6.3-SNAPSHOT'
 
-    implementation ('com.sk89q.worldguard:worldguard-legacy:7.0.0-SNAPSHOT') {
+    implementation('com.sk89q.worldguard:worldguard-legacy:7.0.0-SNAPSHOT') {
         exclude group: 'io.papermc', module: 'paperlib'
         exclude group: 'org.bstats.bStats-Metrics', module: 'bstats-bukkit'
     }
-    implementation ('com.sk89q.worldedit:worldedit-bukkit:7.0.0-SNAPSHOT') {
+    implementation('com.sk89q.worldedit:worldedit-bukkit:7.0.0-SNAPSHOT') {
         exclude group: 'io.papermc', module: 'paperlib'
         exclude group: 'org.bstats.bStats-Metrics', module: 'bstats-bukkit'
     }
     implementation 'com.google.code.findbugs:jsr305:1.3.9'
-    compileOnly 'org.librazy:NyaaUtilsLangChecker:2.0-SNAPSHOT'
+    implementation('net.milkbowl.vault:VaultAPI:1.7') {
+        transitive = false
+    }
+    implementation 'org.librazy:NyaaUtilsLangChecker:2.0-SNAPSHOT'
     annotationProcessor 'org.librazy:NyaaUtilsLangChecker:2.0-SNAPSHOT'
     annotationProcessor "org.spigotmc:spigot-api:$minecraftVersion-R0.1-SNAPSHOT"
 }
@@ -71,7 +80,7 @@ publishing {
         mavenJava(MavenPublication) {
             from components.java
             // afterEvaluate {
-                artifacts = [apiJar, javadocJar, sourcesJar]
+            artifacts = [jar, apiJar, javadocJar, sourcesJar]
             // }
             groupId "cat.nyaa"
             artifactId "rpgitems"

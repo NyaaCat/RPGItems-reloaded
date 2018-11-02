@@ -22,6 +22,7 @@ import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 import java.util.stream.Stream;
 
+import static think.rpgitems.power.PowerManager.getPower;
 import static think.rpgitems.power.PowerManager.powers;
 
 public abstract class RPGCommandReceiver extends CommandReceiver {
@@ -57,8 +58,14 @@ public abstract class RPGCommandReceiver extends CommandReceiver {
         if (Collection.class.isAssignableFrom(propertyField.getType())) {
             ParameterizedType listType = (ParameterizedType) propertyField.getGenericType();
             Class<?> listArg = (Class<?>) listType.getActualTypeArguments()[0];
-            if (!listArg.isEnum()) return Collections.emptyList();
-            return resolveEnumListValue(power, propertyField, (Class<? extends Enum>) listArg, last, hasNamePrefix);
+            if (listArg.equals(Trigger.class)) {
+                return resolveEnumListValue(power, propertyField, new ArrayList<>(Trigger.keySet()), last, hasNamePrefix);
+            }
+            if (!listArg.isEnum()) {
+                return Collections.emptyList();
+            }
+            List<String> enumValues = Stream.of(((Class<? extends Enum>) listArg).getEnumConstants()).map(Enum::name).collect(Collectors.toList());
+            return resolveEnumListValue(power, propertyField, enumValues, last, hasNamePrefix);
         }
         AcceptedValue as = propertyField.getAnnotation(AcceptedValue.class);
         if (as != null) {
@@ -73,14 +80,13 @@ public abstract class RPGCommandReceiver extends CommandReceiver {
         return Collections.emptyList();
     }
 
-    private static List<String> resolveEnumListValue(Class<? extends Power> power, Field propertyField, Class<? extends Enum> listArg, String last, boolean hasNamePrefix) {
+    private static List<String> resolveEnumListValue(Class<? extends Power> power, Field propertyField, List<String> enumValues, String last, boolean hasNamePrefix) {
         String currentValuesStr;
         if (hasNamePrefix) {
             currentValuesStr = last.replace(propertyField.getName() + ":", "");
         } else {
             currentValuesStr = last;
         }
-        List<String> enumValues = Stream.of(listArg.getEnumConstants()).map(Enum::name).collect(Collectors.toList());
         List<String> currentVaules = Stream.of(currentValuesStr.split(",")).collect(Collectors.toList());
         int size = currentVaules.size();
         String lastVaule = size > 0 ? currentVaules.get(size - 1) : "";
@@ -251,7 +257,11 @@ public abstract class RPGCommandReceiver extends CommandReceiver {
 
     @Override
     public boolean onCommand(CommandSender sender, Command command, String label, String[] args) {
-        if (args.length > 0 && ItemManager.getItemByName(args[0]) != null) {
+        if (
+                (args.length > 0 && ItemManager.getItemByName(args[0]) != null)
+                        ||
+                        (args.length > 1 && args[1].equals("create") && ItemManager.getItemByName(args[0]) == null)
+        ) {
             if (args.length > 1) {
                 String cmd = args[1];
                 args[1] = args[0];
@@ -322,11 +332,11 @@ public abstract class RPGCommandReceiver extends CommandReceiver {
                             // four case below
                             switch (itemCommand.getValue()) {
                                 case "power":
-                                    return powers.keySet().stream().map(NamespacedKey::toString).collect(Collectors.toList()); // all powers
+                                    return powers.keySet().stream().map(s -> PowerManager.hasExtension() ? s : s.getKey()).map(Object::toString).collect(Collectors.toList()); // all powers
                                 case "set":
                                 case "get":
                                 case "removepower":
-                                    return itemCommand.getKey().powers.stream().map(Power::getNamespacedKey).map(NamespacedKey::toString).collect(Collectors.toList()); // current powers
+                                    return itemCommand.getKey().powers.stream().map(Power::getNamespacedKey).map(s -> PowerManager.hasExtension() ? s : s.getKey()).map(Object::toString).collect(Collectors.toList()); // current powers
                                 default:
                                     return Collections.emptyList();
                             }
@@ -385,11 +395,21 @@ public abstract class RPGCommandReceiver extends CommandReceiver {
                         case "power":
                             switch (itemCommand.getValue()) {
                                 case "power":
-                                    return powers.keySet().stream().filter(s -> s.getKey().startsWith(third) || s.toString().startsWith(third)).map(NamespacedKey::toString).collect(Collectors.toList()); // only case is `/rpgitem power item somepow`
+                                    return powers.keySet().stream()
+                                                 .filter(s -> s.getKey().startsWith(third) || s.toString().startsWith(third))
+                                                 .map(s -> PowerManager.hasExtension() ? s : s.getKey())
+                                                 .map(Object::toString).collect(Collectors.toList()); // only case is `/rpgitem power item somepow`
                                 case "set":
                                 case "get":
                                 case "removepower":
-                                    return itemCommand.getKey().powers.stream().map(Power::getNamespacedKey).filter(s -> s.getKey().startsWith(third) || s.toString().startsWith(third)).map(NamespacedKey::toString).collect(Collectors.toList()); // complete current powers
+                                    return itemCommand.getKey()
+                                                   .powers
+                                                   .stream()
+                                                   .map(Power::getNamespacedKey)
+                                                   .filter(s -> s.getKey().startsWith(third) || s.toString().startsWith(third))
+                                                   .map(s -> PowerManager.hasExtension() ? s : s.getKey())
+                                                   .map(Object::toString)
+                                                   .collect(Collectors.toList()); // complete current powers
                                 default:
                                     return Collections.emptyList();
                             }

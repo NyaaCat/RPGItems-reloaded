@@ -68,7 +68,7 @@ public class PowerPotionTick extends BasePower implements PowerTick {
                 hasEffect = true;
                 if (clear) {
                     player.removePotionEffect(effect);
-                } else if (potionEffect.getDuration() <= 5 || potionEffect.getAmplifier() < amplifier)
+                } else if (potionEffect.getDuration() <= duration || potionEffect.getAmplifier() < amplifier)
                     player.addPotionEffect(new PotionEffect(effect, duration, amplifier, true), true);
                 break;
             }

@@ -17,6 +17,8 @@ import think.rpgitems.power.*;
 
 import java.util.Collections;
 
+import static think.rpgitems.power.Utils.checkCooldown;
+
 /**
  * Power repair.
  * <p>
@@ -25,6 +27,12 @@ import java.util.Collections;
  */
 @PowerMeta(defaultTrigger = "RIGHT_CLICK")
 public class PowerRepair extends BasePower implements PowerRightClick, PowerLeftClick {
+
+    /**
+     * Cooldown time of this power
+     */
+    @Property
+    public int cooldown = 0;
 
     @Property(order = 2, required = true)
     public int durability = 20;
@@ -49,6 +57,9 @@ public class PowerRepair extends BasePower implements PowerRightClick, PowerLeft
 
     @Property
     public String customMessage;
+    
+    @Property
+    public int amount;
 
     @Override
     public void init(ConfigurationSection section) {
@@ -83,18 +94,19 @@ public class PowerRepair extends BasePower implements PowerRightClick, PowerLeft
     }
 
     private PowerResult<Void> repair(Player player, ItemStack stack) {
+        if (!checkCooldown(this, player, cooldown, true)) PowerResult.cd();
         int max = getItem().getMaxDurability();
         int itemDurability = getItem().getDurability(stack);
         int delta = max - itemDurability;
         if (mode != RepairMode.ALWAYS) {
-            if (getItem().getMaxDurability() == -1 || delta == 0) {
+            if (max == -1 || delta == 0) {
                 return PowerResult.noop();
             }
             if (delta < this.durability && mode != RepairMode.ALLOW_OVER) {
                 return PowerResult.noop();
             }
         }
-        if (removeItem(player.getInventory(), material)) {
+        if (removeItem(player.getInventory(), material, amount)) {
             getItem().setDurability(stack, Math.max(itemDurability + this.durability, max));
             return abortOnSuccess ? PowerResult.abort() : PowerResult.ok();
         } else {
@@ -108,12 +120,12 @@ public class PowerRepair extends BasePower implements PowerRightClick, PowerLeft
         }
     }
 
-    private boolean removeItem(Inventory inventory, ItemStack item) {
+    private boolean removeItem(Inventory inventory, ItemStack item, int amount) {
         for (int slot = 0; slot < inventory.getSize(); slot++) {
             ItemStack tmp = inventory.getItem(slot);
-            if (tmp != null && tmp.getType() != Material.AIR && tmp.getAmount() > 0 && tmp.isSimilar(item)) {
-                if (tmp.getAmount() > 1) {
-                    tmp.setAmount(tmp.getAmount() - 1);
+            if (tmp != null && tmp.getType() != Material.AIR && tmp.getAmount() >= amount && tmp.isSimilar(item)) {
+                if (tmp.getAmount() > amount) {
+                    tmp.setAmount(tmp.getAmount() - amount);
                     inventory.setItem(slot, tmp);
                     return true;
                 } else {

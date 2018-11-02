@@ -1,5 +1,6 @@
 package think.rpgitems.power;
 
+import com.google.common.base.Strings;
 import org.bukkit.entity.LivingEntity;
 import org.bukkit.entity.Player;
 import org.bukkit.event.Event;
@@ -13,10 +14,8 @@ import org.bukkit.event.player.PlayerToggleSneakEvent;
 import org.bukkit.event.player.PlayerToggleSprintEvent;
 import org.bukkit.inventory.ItemStack;
 
-import java.util.Arrays;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
+import java.util.function.Predicate;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -41,7 +40,7 @@ public abstract class Trigger<TEvent extends Event, TPower extends Power, TResul
     }
 
     public static Stream<Trigger> valueOf(Stream<String> name) {
-        return name.map(Trigger::valueOf);
+        return name.filter(((Predicate<String>) Strings::isNullOrEmpty).negate()).map(Trigger::valueOf);
     }
 
     public static void register(String name, Trigger trigger) {
@@ -316,6 +315,15 @@ public abstract class Trigger<TEvent extends Event, TPower extends Power, TResul
         this.powerClass = powerClass;
         this.returnClass = returnClass;
         this.name = name;
+    }
+
+
+    public static Set<String> keySet() {
+        return registry.keySet();
+    }
+
+    public static Collection<Trigger> values() {
+        return registry.values();
     }
 
     public abstract TReturn def(Player player, ItemStack i, TEvent event);

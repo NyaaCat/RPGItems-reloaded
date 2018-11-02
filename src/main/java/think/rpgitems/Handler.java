@@ -105,6 +105,45 @@ public class Handler extends RPGCommandReceiver {
         );
     }
 
+    @SubCommand("listpower")
+    @Attribute("command:name:")
+    public void listPower(CommandSender sender, Arguments args) {
+        int perPage = RPGItems.plugin.cfg.itemPerPage;
+        String nameSearch = args.argString("n", args.argString("name", ""));
+        List<NamespacedKey> powers = PowerManager.getPowers()
+                                                 .keySet()
+                                                 .stream()
+                                                 .filter(i -> i.getKey().contains(nameSearch))
+                                                 .sorted(Comparator.comparing(NamespacedKey::getKey))
+                                                 .collect(Collectors.toList());
+        Stream<NamespacedKey> stream = powers.stream();
+        int max = (int) Math.ceil(powers.size() / (double) perPage);
+        int page = args.top() == null ? 1 : args.nextInt();
+
+        if (!(0 < page && page <= max)) {
+            throw new BadCommandException("message.num_out_of_range", page, 0, max);
+        }
+        stream = stream
+                         .skip((page - 1) * perPage)
+                         .limit(perPage);
+        sender.sendMessage(ChatColor.AQUA + "Powers: " + page + " / " + max);
+
+        stream.forEach(
+                power -> {
+                    msg(sender, "message.power.key", power.toString());
+                    msg(sender, "message.power.description", PowerManager.getDescription(power, null));
+                    PowerManager.getProperties(power).forEach(
+                            (prop, f) ->{
+                                String desc = PowerManager.getDescription(power, prop.name());
+                                msg(sender, "message.power.property", prop.name(), Strings.isNullOrEmpty(desc) ? I18n.format("message.power.no_description") : desc);
+                            }
+                    );
+                    msg(sender, "message.line_separator");
+
+                });
+        sender.sendMessage(ChatColor.AQUA + "Powers: " + page + " / " + max);
+    }
+
     @SubCommand("worldguard")
     @Attribute("command")
     public void toggleWorldGuard(CommandSender sender, Arguments args) {
@@ -916,6 +955,7 @@ public class Handler extends RPGCommandReceiver {
         Power power;
         try {
             power = cls.getConstructor().newInstance();
+            power.init(new YamlConfiguration());
         } catch (InstantiationException | IllegalAccessException | NoSuchMethodException | InvocationTargetException e) {
             e.printStackTrace();
             msg(sender, "internal.error.command_exception");
@@ -1005,7 +1045,7 @@ public class Handler extends RPGCommandReceiver {
                 downloadUrl(sender, id);
                 break;
             default:
-                msg(sender, "message.import.nut_supported", location);
+                msg(sender, "message.import.not_supported", location.name());
         }
     }
 
@@ -1021,7 +1061,7 @@ public class Handler extends RPGCommandReceiver {
                 publishGist(sender, args, items);
                 break;
             default:
-                msg(sender, "message.export.nut_supported", location);
+                msg(sender, "message.export.not_supported", location.name());
         }
     }
 

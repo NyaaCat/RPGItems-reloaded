@@ -220,7 +220,7 @@ public class PowerManager {
                         } else if (listArg.equals(Trigger.class)) {
                             List<Trigger> set = Trigger.valueOf(values).collect(Collectors.toList());
                             field.set(power, set);
-                        }  else {
+                        } else {
                             throw new Handler.CommandException("internal.error.command_exception");
                         }
                     } else {
@@ -300,6 +300,10 @@ public class PowerManager {
         return Collections.unmodifiableSortedMap(properties.get(cls));
     }
 
+    public static SortedMap<PowerProperty, Field> getProperties(NamespacedKey key) {
+        return Collections.unmodifiableSortedMap(properties.get(getPower(key)));
+    }
+
     @CheckForNull
     public static Class<? extends Power> getPower(NamespacedKey key) {
         return powers.get(key);
@@ -317,5 +321,9 @@ public class PowerManager {
     public static String getDescription(NamespacedKey power, String property) {
         Plugin plugin = extensions.get(power.getNamespace());
         return PowerManager.descriptionResolvers.get(plugin).apply(power, property);
+    }
+
+    static boolean hasExtension() {
+        return extensions.size() > 1;
     }
 }

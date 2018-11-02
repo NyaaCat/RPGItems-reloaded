@@ -1,4 +1,5 @@
 message:
+  line_separator: ' '
   cost:
     hit_toggle:
       enable: cost on being hit set to percentage of damage
@@ -54,6 +55,7 @@ message:
     option: Invalid option '%s'
     iteminhand: 'No item in your hand'
     need_material: 'You need a %s to repair this item'
+    economy: No economy provider found
   wgcustomflag:
     disable: Worldguard custom flag disabled
     enable: Worldguard custom flag enabled
@@ -203,9 +205,11 @@ message:
     unknown: Unknown power %s
     removed: Power %s removed
     required: "Missing required argument: %s"
-    key: Power '%s'
-    description: "%s"
+    key: "&3&lPower '&r%s&3&l'"
+    description: '&3&l-| &r%s'
+    property: '&b-| %s: &r%s'
     no_display: No display text
+    no_description: No description yet
   toggleLore:
     show: Lore now been displayed
     hide: Lore now been hid
@@ -222,13 +226,16 @@ message:
     gist:
       notfound: 'Gist https://gist.github.com/%s not found'
       code: 'Gist download failed: %d'
-      ing: Importing items from Gist
+      ing: Importing item(s) from Gist
       timeout: Gist download timeout
       failed: Gist download failed
+    url:
+      ing: Importing item from url
     success: 'Item %s (UID: %d) imported successfully'
     conflict_uid: "Item to import '%s' has same UID with '%s': %d , please check if you already have it."
     conflict_name: "Item to import has a name conflict: '%s' , please specify a replacement with <old_name>:<new_name> in command"
     invalid_conf: 'Item configuration is invalid: %s'
+    not_supported: Import from %s is not supported
   export:
     gist:
       token: Please specify Gist Token in command like 'token:<token>' or add 'githubToken:<token>' to config
@@ -236,6 +243,7 @@ message:
       timeout: Gist upload timeout
       failed: Gist upload failed
       code: 'Gist upload failed: %d'
+    not_supported: Export to %s is not supported
 
 power:
   airborne: 'Damage increase by %d%% when gliding'
@@ -296,9 +304,14 @@ power:
   glove: "Catch an entity (%.1fs cooldown)"
   mount: "Ride an entity (%.1fs cooldown)"
   criticalhit:
-    both: '%f %% chance to deal a * %f crit hit, %f %% chance to deal a * %f backstab'
-    critical: '%f %% chance to deal a * %f crit hit'
-    backstab: '%f %% chance to deal a * %f backstab'
+    both: '%.1f %% chance to deal %.1f crit hit, %.1f %% chance to deal %.1f backstab'
+    critical: '%.1f %% chance to deal %.1f crit hit'
+    backstab: '%.1f %% chance to deal %.1f backstab'
+  economy:
+    deposit: "Deposit %s (%.1fs cooldown)"
+    withdraw: "Withdraw %s (%.1fs cooldown)"
+  explosion: '%.1f%% chance to create a explosion of power %.1f'
+  headshot: 'Deal %.1f damage when headshot'
   properties:
     base:
       cooldown: Cooldown of the power, in ticks.
@@ -306,6 +319,8 @@ power:
       cost: Durability cost of the power.
       isStatic: Whether only check this condition once
       isCritical: Whether abort current trigger if this condition fails
+      triggers: Triggers of this power
+      conditions: Conditions of this power
     airborne:
       main_name: Airborne
       main_description: Do more damage when gliding
@@ -347,6 +362,16 @@ power:
       attractingTickCost: Durability cost per tick when attracting.
       attractingEntityTickCost: Durability cost per entity one tick when attracting.
       attractPlayer: Whether allow attracting player.
+    attributemodifier:
+      main_name: Attribute Modifier
+      main_description: Add Attribute Modifier
+      amount: Amount
+      attribute: Attribute
+      name: Name
+      operation: Operation
+      slot: Slot
+      uuidLeast: UUID least
+      uuidMost: UUID most
     chancecondition:
       main_name: Chance Condition
       main_description: Condition that met by chance
