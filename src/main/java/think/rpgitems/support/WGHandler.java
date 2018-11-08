@@ -102,7 +102,7 @@ public class WGHandler extends Handler {
         RegionContainer container = worldGuardInstance.getPlatform().getRegionContainer();
         RegionManager regions = container.get(localPlayer.getWorld());
         if (regions == null) return;
-        ApplicableRegionSet set = regions.getApplicableRegions(localPlayer.getLocation().toVector());
+        ApplicableRegionSet set = regions.getApplicableRegions(localPlayer.getLocation().toVector().toBlockPoint());
         refresh(set, localPlayer);
     }
 

@@ -208,6 +208,7 @@ message:
     key: "&3&lPower '&r%s&3&l'"
     description: '&3&l-| &r%s'
     property: '&b-| %s: &r%s'
+    property_value: '&b-| &r%s'
     no_display: No display text
     no_description: No description yet
   toggleLore:
@@ -314,13 +315,15 @@ power:
   headshot: 'Deal %.1f damage when headshot'
   properties:
     base:
+      id: ID of this condition/selector.
       cooldown: Cooldown of the power, in ticks.
-      display: Display text of this power
+      display: Display text of this power.
       cost: Durability cost of the power.
-      isStatic: Whether only check this condition once
-      isCritical: Whether abort current trigger if this condition fails
-      triggers: Triggers of this power
-      conditions: Conditions of this power
+      isStatic: Whether only check this condition once.
+      isCritical: Whether abort current trigger if this condition fails.
+      triggers: Triggers of this power.
+      conditions: Conditions of this power.
+      selectors: Selectors for this power.
     airborne:
       main_name: Airborne
       main_description: Do more damage when gliding
@@ -350,6 +353,7 @@ power:
       facing: Maximum effective view angle in degrees.
       c: Maximum count of entities.
       mustsee: Whether only apply to the entities within line of sight
+      selfapplication: Whether to apply command on triggering player.
     arrow:
       main_name: Arrow
       main_description: Fire an arrow.
@@ -382,6 +386,12 @@ power:
       percentage: Damage increase in percentage when sprinting
       speedPercentage: Damage increase in percentage when faster than default
       cap: Maximum damage done by this power
+    color:
+      main_name: Color
+      main_description: NOT AVAILABLE YET
+      wool: N/A
+      clay: N/A
+      glass: N/A
     command:
       main_name: Command
       main_description: Run a command on click.
@@ -404,9 +414,9 @@ power:
       main_name: Critical Hit and Backstab
       main_description: With a chance%% to deal more damage. With a backstabChance%% to deal more damage when backstabing.
       backstabChance: Chance of triggering backstab, in percentage
-      backstabFactor: Factor of backstab damage.E.g. deals (damage * backstabFactor) damage
+      backstabFactor: Factor of backstab damage. E.g. deals (damage * backstabFactor) damage
       chance: Chance of triggering critical hit, in percentage
-      factor: Factor of critical hit damage.E.g. deals (damage * factor) damage
+      factor: Factor of critical hit damage. E.g. deals (damage * factor) damage
     deathcommand:
       main_name: Death Command
       main_description: With a 1/chance to kill the target then execute the command for count times
@@ -418,7 +428,7 @@ power:
       main_name: Deflect
       main_description: Deflect arrows or fireballs towards player
       facing: Maximum effective view angle in degrees
-      cooldownPassive: Cooldown time of this power in passive mode
+      cooldownpassive: Cooldown time of this power in passive mode
       duration: Duration of this power, in ticks
       chance: Chance in percentage of triggering this power in passive mode
     delayedcommand:
@@ -433,11 +443,18 @@ power:
       successResult: Result returned when success
       costResult: Result returned when failed to comsume durability
       cooldownResult: Result returned when in cooldown
+      ignoreDurabilityBound: Ignore durability bound of this item
     durabilitycondition:
       main_name: Durability Condition
       main_description: Condition that requires item's durability in a range
       durabilityMin: Durability should great than durabilityMin
       durabilityMax: Durability should less than durabilityMax
+    economy:
+      main_name: Economy
+      main_description: Deposit to or withdraw from player
+      amountToPlayer: Amount of money will transfer to player (can be negative)
+      showFailMessage: Show fail message from economy provider
+      abortOnFailure: Abort on failure
     equipmentcondition:
       main_name: Equipment Condition
       main_description: Condition that requires player wear some item
@@ -445,6 +462,12 @@ power:
       material: Material that player should wears
       itemStack: Item that player should wears
       rpgitem: RPGItem that player should wears
+    explosion:
+      main_name: Explosion
+      main_description: Make a explosion that caused by the player
+      chance: Chance of triggering this power, in percentage
+      power: Power of explosion. 4 for TNT
+      distance: Maximum distance
     fire:
       main_name: Fire
       main_description: Fire an fireblock that burns entities hit
@@ -456,7 +479,7 @@ power:
     flame:
       main_name: Flame
       main_description: Set the target on fire on hit
-      burnTime: Duration of the fire, in ticks
+      burntime: Duration of the fire, in ticks
     food:
       main_name: Food
       main_description: Restore food points when eaten
@@ -474,6 +497,10 @@ power:
       maxDistance: Maximum distance to catch
       maxTicks: Maximum ticks catching
       throwSpeed: Speed throwing entity
+    headshot:
+      main_name: Headshot
+      main_description: Increase damage when headshot
+      factor: Factor of headshot damage. E.g. deals (damage * factor) damage
     ice:
       main_name: Ice
       main_description: Fire an ice block, then create a box of ice on impact
@@ -482,6 +509,11 @@ power:
       main_description: Send the hit target flying
       chance: Chance of triggering this power, 1/n
       power: Power of knock up
+    lastresultcondition:
+      main_name: Last Result Condition
+      main_description: Requires result of last power is in a set
+      okResults: Allowed result
+      failOnNoResult: Whether fails when no power
     lifesteal:
       main_name: Lifesteal
       main_description: Restore health by damage dealt
@@ -489,11 +521,13 @@ power:
     lightning:
       main_name: Lightning
       main_description: Strike the hit target with lightning
+      chance: Chance of triggering this power, 1/n
     lorefilter:
       main_name: Lore Filter
       main_description: Preserve all lore lines match the regex
       regex: Regex to filter the lore
       desc: Display text
+      find: Only requires the regex finds in lore line (instead of matches).
     mount:
       main_name: Mount
       main_description: Ride an entity
@@ -508,18 +542,30 @@ power:
     particle:
       main_name: Particle
       main_description: Spawn some particles around the user
-      effect: Particle effect
+      effect: Name of visual effect
+      particle: Name of particle effect
+      particleCount: Count of particle
+      material: Material of dust particle
+      dustColor: Color of dust particle
+      dustSize: Size of dust particle
     particlebarrier:
       main_name: Particle Barrier
       main_description: Spawn a barrier that redirecting energy of incoming attacks to strength
+      projected: Whether this barrier can be projected
+      energyDecay: Decay of energy per second
       energyPerBarrier: Total energy gained when a barrier was broken
       barrierHealth: Health of a new barrier
       energyPerLevel: Energy required per level of strength effect
     particletick:
       main_name: Particle Tick
       main_description: Spawn some particles around the user when equipped
-      effect: Name of particle effect
       interval: Interval of particle effect
+      effect: Name of visual effect
+      particle: Name of particle effect
+      particleCount: Count of particle
+      material: Material of dust particle
+      dustColor: Color of dust particle
+      dustSize: Size of dust particle
     potionhit:
       main_name: Potion Hit
       main_description: Apply effect to enemy when hit
@@ -587,6 +633,10 @@ power:
       durability: Durability to be repaired
       isSneak: Whether require sneaking to trigger this power
       abortOnSuccess: Abort subsequence execution of powers when success
+      abortOnFailure: Abort subsequence execution of powers when fail
+      amount: Amount of material required
+      mode: Whether allow repairing when durability would overflow
+      customMessage: Custom message when not enought material
     rescue:
       main_name: Rescue
       main_description: Rescue player on low health or receiving high damage
@@ -601,12 +651,13 @@ power:
       distance: Maximum distance of rumble
     scoreboard:
       main_name: Scoreboard
+      main_description: Add/remove tag/team to/from player's scoreboard
       tag: Tag(s) to add and remove, `TO_ADD,!TO_REMOVE`
       team: Team(s) to join and leave, `JOIN,!LEAVE`
       abortOnSuccess: Abort subsequence execution of powers when success
     scoreboardcondition:
       main_name: Scoreboard Condition
-      main_description: Condition that add requirement of player's scoreboard
+      main_description: Condition that add requirements of player's scoreboard
       score: Selecting targets by score(s), `score_name:min,max another_score_name:min,max`
       tag: Selecting targets by tag(s), `MUST_HAVE,!MUST_NOT_HAVE`
       team: Selecting targets by team(s), `MUST_ON,!MUST_NOT_ON`
@@ -657,6 +708,7 @@ power:
       main_name: Teleport
       main_description: teleport you in the direction you're looking in or to the place where the projectile hit
       distance: Maximum distance
+      targetMode: Mode of finding teleport target
     throw:
       main_name: Throw
       main_description: Spawn and throw a entity

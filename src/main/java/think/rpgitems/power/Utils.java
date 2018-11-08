@@ -3,6 +3,7 @@ package think.rpgitems.power;
 import org.bukkit.ChatColor;
 import org.bukkit.Location;
 import org.bukkit.configuration.ConfigurationSection;
+import org.bukkit.configuration.file.YamlConfiguration;
 import org.bukkit.entity.Entity;
 import org.bukkit.entity.LivingEntity;
 import org.bukkit.entity.Player;
@@ -198,6 +199,17 @@ public class Utils {
                 section.set(property, val);
             }
         }
+    }
+
+    public static String getProperty(Power p, String property, Field field) {
+        YamlConfiguration configuration = new YamlConfiguration();
+        try {
+            saveProperty(p, configuration, property, field);
+        } catch (IllegalAccessException e) {
+            e.printStackTrace();
+            return null;
+        }
+        return configuration.getString(property);
     }
 
     public static Vector distance(BoundingBox bb, Vector vec) {

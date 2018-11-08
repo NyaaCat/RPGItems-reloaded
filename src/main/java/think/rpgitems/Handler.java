@@ -108,7 +108,7 @@ public class Handler extends RPGCommandReceiver {
     @SubCommand("listpower")
     @Attribute("command:name:")
     public void listPower(CommandSender sender, Arguments args) {
-        int perPage = RPGItems.plugin.cfg.itemPerPage;
+        int perPage = RPGItems.plugin.cfg.powerPerPage;
         String nameSearch = args.argString("n", args.argString("name", ""));
         List<NamespacedKey> powers = PowerManager.getPowers()
                                                  .keySet()
@@ -133,13 +133,20 @@ public class Handler extends RPGCommandReceiver {
                     msg(sender, "message.power.key", power.toString());
                     msg(sender, "message.power.description", PowerManager.getDescription(power, null));
                     PowerManager.getProperties(power).forEach(
-                            (prop, f) ->{
-                                String desc = PowerManager.getDescription(power, prop.name());
-                                msg(sender, "message.power.property", prop.name(), Strings.isNullOrEmpty(desc) ? I18n.format("message.power.no_description") : desc);
+                            (prop, f) -> {
+                                String name = prop.name();
+                                PowerMeta powerMeta = PowerManager.getMeta(power);
+                                if ((powerMeta.immutableTrigger() && name.equals("triggers"))
+                                            || (powerMeta.marker() && name.equals("triggers"))
+                                            || (powerMeta.marker() && name.equals("conditions") && !powerMeta.withConditions())
+                                            || (!powerMeta.withSelectors() && name.equals("selectors"))) {
+                                    return;
+                                }
+                                String desc = PowerManager.getDescription(power, name);
+                                msg(sender, "message.power.property", name, Strings.isNullOrEmpty(desc) ? I18n.format("message.power.no_description") : desc);
                             }
                     );
                     msg(sender, "message.line_separator");
-
                 });
         sender.sendMessage(ChatColor.AQUA + "Powers: " + page + " / " + max);
     }
@@ -936,16 +943,29 @@ public class Handler extends RPGCommandReceiver {
         if (itemStr == null || (itemStr.equals("help") && ItemManager.getItemByName(itemStr) == null)) {
             msg(sender, "manual.power.description");
             msg(sender, "manual.power.usage");
-            for (NamespacedKey power : PowerManager.getPowers().keySet()) {
-                msg(sender, "message.power.key", power.toString());
-                msg(sender, "message.power.description", PowerManager.getDescription(power, null));
-            }
             return;
         }
         if (ItemManager.getItemByName(itemStr) != null && (powerStr == null || powerStr.equals("list"))) {
             RPGItem item = getItemByName(itemStr);
             for (Power power : item.powers) {
                 msg(sender, "message.item.power", power.getLocalizedName(plugin.cfg.language), power.getNamespacedKey().toString(), power.displayText() == null ? I18n.format("message.power.no_display") : power.displayText(), power.getTriggers().stream().map(Trigger::name).collect(Collectors.joining(",")));
+                if ("list".equals(powerStr)) {
+                    PowerManager.getProperties(power.getNamespacedKey()).forEach(
+                            (prop, f) -> {
+                                String name = prop.name();
+                                PowerMeta powerMeta = PowerManager.getMeta(power.getClass());
+                                if ((powerMeta.immutableTrigger() && name.equals("triggers"))
+                                            || (powerMeta.marker() && name.equals("triggers"))
+                                            || (powerMeta.marker() && name.equals("conditions") && !powerMeta.withConditions())
+                                            || (!powerMeta.withSelectors() && name.equals("selectors"))) {
+                                    return;
+                                }
+                                String desc = PowerManager.getDescription(power.getNamespacedKey(), name);
+                                msg(sender, "message.power.property", name, Strings.isNullOrEmpty(desc) ? I18n.format("message.power.no_description") : desc);
+                                msg(sender, "message.power.property_value", Utils.getProperty(power, prop.name(), f));
+                            }
+                    );
+                }
             }
             return;
         }

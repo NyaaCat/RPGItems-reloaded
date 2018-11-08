@@ -30,6 +30,9 @@ public class Configuration extends PluginConfigure {
     @Serializable(name ="command.list.item_per_page", alias = "itemperpage")
     public int itemPerPage = 9;
 
+    @Serializable(name ="command.list.power_per_page")
+    public int powerPerPage = 5;
+
     @Serializable(name = "support.worldguard")
     public boolean useWorldGuard = true;
 

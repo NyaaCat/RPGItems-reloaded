@@ -32,6 +32,8 @@ import java.util.stream.Stream;
 public class PowerManager {
     private static final Map<Class<? extends Power>, SortedMap<PowerProperty, Field>> properties = new HashMap<>();
 
+    private static final Map<Class<? extends Power>, PowerMeta> metas = new HashMap<>();
+
     private static final Map<String, Plugin> extensions = new HashMap<>();
 
     /**
@@ -56,6 +58,7 @@ public class PowerManager {
         }
         SortedMap<PowerProperty, Field> argumentPriorityMap = getPowerProperties(clazz);
         properties.put(clazz, argumentPriorityMap);
+        metas.put(clazz, clazz.getAnnotation(PowerMeta.class));
     }
 
     private static SortedMap<PowerProperty, Field> getPowerProperties(Class<? extends Power> cls) {
@@ -325,5 +328,13 @@ public class PowerManager {
 
     static boolean hasExtension() {
         return extensions.size() > 1;
+    }
+
+    public static PowerMeta getMeta(NamespacedKey key) {
+        return getMeta(getPower(key));
+    }
+
+    public static PowerMeta getMeta(Class<? extends Power> cls) {
+        return metas.get(cls);
     }
 }

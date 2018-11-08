@@ -182,6 +182,7 @@ message:
     key: "&3&l技能 &r%s"
     description: '&3&l-| &r%s'
     property: '&b-| %s： &r%s'
+    property_value: '&b-| &r%s'
     no_display: 无说明
     no_description: 暂无说明
   toggleLore:
@@ -317,6 +318,7 @@ power:
     backstab: 百分之 %.1f 的几率背刺 %.1f 倍
   properties:
     base:
+      id: 此条件/选择器的ID
       cooldown: 技能的冷却时间，以游戏刻为单位
       display: 技能的提示文字
       cost: 技能的耐久消耗量
@@ -324,6 +326,7 @@ power:
       isCritical: 条件失败时是否中止当前触发
       triggers: 技能的触发
       conditions: 技能的条件
+      selectors: 应用到本技能的选择器
     aoe:
       main_name: 范围效果
       main_description: 对周围实体施放状态效果。可使用选择器。
@@ -366,6 +369,22 @@ power:
       slot: 物品栏位
       uuidLeast: UUID 后半部分
       uuidMost: UUID 前半部分
+    chancecondition:
+      main_name: 概率条件
+      main_description: 一定概率成功的条件
+      chancePercentage: 成功率
+    charge:
+      main_name: 勇气绝杀
+      main_description: 冲刺时增加伤害
+      percentage: 冲刺时伤害提升的比例
+      speedPercentage: 速度高于默认速度时，每一倍速度的伤害提升
+      cap: 最大伤害
+    color:
+      main_name: 颜色
+      main_description: 暂时不可用
+      wool: 暂时不可用
+      clay: 暂时不可用
+      glass: 暂时不可用
     command:
       main_name: 命令
       main_description: 执行一条命令
@@ -401,7 +420,7 @@ power:
       main_name: 弹反
       main_description: 弹反射来的箭矢或火球
       facing: 最大有效视角，度
-      cooldownPassive: 被动弹反的冷却时间
+      cooldownpassive: 被动弹反的冷却时间
       duration: 持续时间
       chance: 被动弹反的百分比几率
     delayedcommand:
@@ -410,6 +429,37 @@ power:
       delay: 执行命令前的延迟
       command: 执行的命令
       permission: 执行指令所需的临时权限
+    dummy:
+      main_name: 空
+      main_description: 什么都不做
+      successResult: 成功时的结果
+      costResult: 无法消耗耐久时的结果
+      cooldownResult: 冷却时的结果
+      ignoreDurabilityBound: 忽略物品的耐久边界
+    durabilitycondition:
+      main_name: 耐久条件
+      main_description: 要求耐久在一定范围内
+      durabilityMin: 耐久需大于该值
+      durabilityMax: 耐久需小于该值
+    economy:
+      main_name: 经济
+      main_description: 向玩家付款或扣款
+      amountToPlayer: 向玩家支付的数量（可为负）
+      showFailMessage: 失败时显示经济插件的消息
+      abortOnFailure: 失败时中止
+    equipmentcondition:
+      main_name: 装备条件
+      main_description: 要求玩家穿特定装备
+      slot: 装备栏
+      material: 玩家需要装备的材质
+      itemStack: 玩家需要装备的物品
+      rpgitem: 玩家需要装备的 RPGItem
+    explosion:
+      main_name: 爆炸
+      main_description: 制造一个玩家产生的爆炸
+      chance: 触发几率，百分比
+      power: 爆炸威力。 4 为 TNT 的爆炸威力。
+      distance: 最远距离
     fire:
       main_name: 喷火
       main_description: 发射一个火焰方块，点燃击中的实体
@@ -421,7 +471,7 @@ power:
     flame:
       main_name: 火焰附加
       main_description: 点燃被击中的目标
-      burnTime: 火焰持续时间
+      burntime: 火焰持续时间
     food:
       main_name: 食用
       main_description: 食用后回复饱食度
@@ -439,6 +489,10 @@ power:
       maxDistance: 最大距离
       maxTicks: 捕获的最长时间
       throwSpeed: 捕获结束后实体投掷速度
+    headshot:
+      main_name: 爆头
+      main_description: 弹射物爆头时增加伤害
+      factor: 伤害倍率。造成 factor * damage 伤害
     ice:
       main_name: 冰冻
       main_description: 发射一个冰方块，在击中处生成一个大冰块
@@ -447,6 +501,11 @@ power:
       main_description: 将目标击飞到空中
       chance: 触发几率， 1/n
       power: 击飞的力度
+    lastresultcondition:
+      main_name: 结果条件
+      main_description: 要求上一个执行的技能返回特定的结果
+      okResults: 允许的结果
+      failOnNoResult: 是否在不存在上一个执行的技能时失败
     lifesteal:
       main_name: 吸血
       main_description: 按造成的攻击伤害回血
@@ -454,12 +513,13 @@ power:
     lightning:
       main_name: 闪电
       main_description: 在击中处降下一道闪电
-      chance: 触发几率，百分比
+      chance: 触发几率，1/n
     lorefilter:
       main_name: Lore 过滤
       main_description: 保留指定的 Lore
       regex: 正则表达式
       desc: 技能的提示文字
+      find: 是否只需要在lore中找到该正则表达式
     noimmutabletick:
       main_name: 取消无敌时间
       main_description: 取消被攻击怪物的无敌时间
@@ -471,18 +531,30 @@ power:
     particle:
       main_name: 粒子效果
       main_description: 触发后生成粒子效果
-      effect: 粒子效果
+      effect: 视觉效果
+      particle: 粒子效果
+      particleCount: 粒子效果的数量
+      material: 粒子效果的材质
+      dustColor: 尘埃粒子效果的颜色
+      dustSize: 尘埃粒子效果的大小
     particlebarrier:
       main_name: 粒子屏障
       main_description: 将受到的攻击转化为力量效果
+      projected: 是否为投射屏障
+      energyDecay: 能量每秒的衰减
       energyPerBarrier: 满盾能提供的能量
       barrierHealth: 满盾的生命值
       energyPerLevel: 每级力量效果所需要的能量
     particletick:
       main_name: 佩戴粒子效果
       main_description: 佩戴后按照一定间隔生成粒子效果
-      effect: 粒子效果
       interval: 间隔时间，游戏刻
+      effect: 视觉效果
+      particle: 粒子效果
+      particleCount: 粒子效果的数量
+      material: 粒子效果的材质
+      dustColor: 尘埃粒子效果的颜色
+      dustSize: 尘埃粒子效果的大小
     potionhit:
       main_name: 击中效果
       main_description: 击中后对目标施放状态效果
@@ -550,6 +622,10 @@ power:
       durability: 修复耐久值
       isSneak: 修理时是否需要潜行
       abortOnSuccess: 修理成功后中止后续技能
+      abortOnFailure: 修理失败时中止后续技能
+      amount: 所需材料数量
+      mode: 是否允许耐久溢出
+      customMessage: 材料不足时的自定义提示
     rescue:
       main_name: 拯救
       main_description: 受到过量伤害或者血量即将低于指定值时拯救玩家
@@ -562,6 +638,18 @@ power:
       main_description: 沿着地面发射冲击波，击飞击中的实体
       power: 击飞力度
       distance: 最大距离
+    scoreboard:
+      main_name: 计分板
+      main_description: 添加或移除玩家的计分板标签或队伍
+      tag: 需要添加或移除的标签，`TO_ADD,!TO_REMOVE`
+      team: 需要加入或离开的队伍，`JOIN,!LEAVE`
+      abortOnSuccess: 成功后中止后续技能
+    scoreboardcondition:
+      main_name: 计分板条件
+      main_description: 玩家的计分板需满足的条件
+      score: 计分板分数范围，`score_name:min,max another_score_name:min,max`
+      tag: 计分板标签，`MUST_HAVE,!MUST_NOT_HAVE`
+      team: 计分板队伍，`MUST_ON,!MUST_NOT_ON`
     selector:
       main_name: 选择器
       main_description: 对AOE技能的选择器
@@ -576,9 +664,9 @@ power:
       dx: 距基准位置最大x轴偏移量
       dy: 距基准位置最大y轴偏移量
       dz: 距基准位置最大z轴偏移量
-      score: 计分板分数范围： `score_name:min,max another_score_name:min,max`
-      tag: 计分板标签：`MUST_HAVE,!MUST_NOT_HAVE`
-      team: 计分板队伍：`MUST_ON,!MUST_NOT_ON`
+      score: 计分板分数范围，`score_name:min,max another_score_name:min,max`
+      tag: 计分板标签，`MUST_HAVE,!MUST_NOT_HAVE`
+      team: 计分板队伍，`MUST_ON,!MUST_NOT_ON`
     shulkerbullet:
       main_name: 潜影子弹
       main_description: 发射一枚潜影子弹，
@@ -602,6 +690,7 @@ power:
       main_name: 传送
       main_description: 传送到视线方向或者弹射物击中位置
       distance: 最大距离
+      targetMode: 寻找传送点的模式
     throw:
       main_name: 投掷实体
       main_description: 生成并投掷实体

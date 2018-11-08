@@ -19,7 +19,7 @@ public class PowerLastResultCondition extends BasePower implements PowerConditio
     public boolean isCritical = false;
 
     @Property
-    public Set<TriggerResult> okResult = Collections.singleton(TriggerResult.OK);
+    public Set<TriggerResult> okResults = Collections.singleton(TriggerResult.OK);
 
     @Property
     public boolean failOnNoResult = true;
@@ -43,7 +43,7 @@ public class PowerLastResultCondition extends BasePower implements PowerConditio
     public PowerResult<Map.Entry<Power, PowerResult>> check(Player player, ItemStack stack, Map<Power, PowerResult> context) {
         Optional<Map.Entry<Power, PowerResult>> last = context.entrySet().stream().skip(context.size() - 1).findFirst();
         return last
-                       .map(r -> okResult.contains(r.getValue().getResult()) ? PowerResult.ok() : PowerResult.fail())
+                       .map(r -> okResults.contains(r.getValue().getResult()) ? PowerResult.ok() : PowerResult.fail())
                        .orElse(failOnNoResult ? PowerResult.fail() : PowerResult.ok())
                        .with(last.orElse(null));
     }

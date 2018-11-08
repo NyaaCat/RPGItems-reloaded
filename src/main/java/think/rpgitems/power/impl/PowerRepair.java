@@ -2,6 +2,7 @@ package think.rpgitems.power.impl;
 
 import cat.nyaa.nyaacore.Message;
 import cat.nyaa.nyaacore.utils.ItemStackUtils;
+import com.google.common.base.Strings;
 import net.md_5.bungee.api.chat.BaseComponent;
 import net.md_5.bungee.api.chat.HoverEvent;
 import net.md_5.bungee.api.chat.TextComponent;
@@ -59,7 +60,7 @@ public class PowerRepair extends BasePower implements PowerRightClick, PowerLeft
     public String customMessage;
     
     @Property
-    public int amount;
+    public int amount = 1;
 
     @Override
     public void init(ConfigurationSection section) {
@@ -110,7 +111,7 @@ public class PowerRepair extends BasePower implements PowerRightClick, PowerLeft
             getItem().setDurability(stack, Math.max(itemDurability + this.durability, max));
             return abortOnSuccess ? PowerResult.abort() : PowerResult.ok();
         } else {
-            BaseComponent msg = customMessage == null ?
+            BaseComponent msg = Strings.isNullOrEmpty(customMessage) ?
                                         new TextComponent(I18n.format("message.error.need_material", material.getType().name())) :
                                         new TextComponent(customMessage);
             HoverEvent hover = new HoverEvent(HoverEvent.Action.SHOW_ITEM, new BaseComponent[]{new TextComponent(ItemStackUtils.itemToJson(material))});

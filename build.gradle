@@ -49,10 +49,13 @@ dependencies {
     api "org.spigotmc:spigot-api:$minecraftVersion-R0.1-SNAPSHOT"
     api 'cat.nyaa:nyaacore:6.3-SNAPSHOT'
 
+    implementation('com.sk89q.worldguard:worldguard-core:7.0.0-SNAPSHOT')
     implementation('com.sk89q.worldguard:worldguard-legacy:7.0.0-SNAPSHOT') {
         exclude group: 'io.papermc', module: 'paperlib'
         exclude group: 'org.bstats.bStats-Metrics', module: 'bstats-bukkit'
     }
+    
+    implementation('com.sk89q.worldedit:worldedit-core:7.0.0-SNAPSHOT')
     implementation('com.sk89q.worldedit:worldedit-bukkit:7.0.0-SNAPSHOT') {
         exclude group: 'io.papermc', module: 'paperlib'
         exclude group: 'org.bstats.bStats-Metrics', module: 'bstats-bukkit'
