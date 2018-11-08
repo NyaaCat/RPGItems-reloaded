@@ -94,16 +94,6 @@ public abstract class Trigger<TEvent extends Event, TPower extends Power, TResul
 
     public static final Trigger<ProjectileHitEvent, PowerProjectileHit, Void, Void> PROJECTILE_HIT = new Trigger<ProjectileHitEvent, PowerProjectileHit, Void, Void>(Void.class, ProjectileHitEvent.class, PowerProjectileHit.class, Void.class, "PROJECTILE_HIT") {
         @Override
-        public Void def(Player player, ItemStack i, ProjectileHitEvent event) {
-            return null;
-        }
-
-        @Override
-        public Void next(Void a, PowerResult<Void> b) {
-            return null;
-        }
-
-        @Override
         public PowerResult<Void> run(PowerProjectileHit power, Player player, ItemStack i, ProjectileHitEvent event) {
             return power.projectileHit(player, i, event);
         }
@@ -128,32 +118,12 @@ public abstract class Trigger<TEvent extends Event, TPower extends Power, TResul
 
     public static final Trigger<EntityDamageEvent, PowerHurt, Void, Void> HURT = new Trigger<EntityDamageEvent, PowerHurt, Void, Void>(Void.class, EntityDamageEvent.class, PowerHurt.class, Void.class, "HURT") {
         @Override
-        public Void def(Player player, ItemStack i, EntityDamageEvent event) {
-            return null;
-        }
-
-        @Override
-        public Void next(Void a, PowerResult<Void> b) {
-            return null;
-        }
-
-        @Override
         public PowerResult<Void> run(PowerHurt power, Player player, ItemStack i, EntityDamageEvent event) {
             return power.hurt(player, i, event);
         }
     };
 
     public static final Trigger<PlayerInteractEvent, PowerLeftClick, Void, Void> LEFT_CLICK = new Trigger<PlayerInteractEvent, PowerLeftClick, Void, Void>(Void.class, PlayerInteractEvent.class, PowerLeftClick.class, Void.class, "LEFT_CLICK") {
-        @Override
-        public Void def(Player player, ItemStack i, PlayerInteractEvent event) {
-            return null;
-        }
-
-        @Override
-        public Void next(Void a, PowerResult<Void> b) {
-            return null;
-        }
-
         @Override
         public PowerResult<Void> run(PowerLeftClick power, Player player, ItemStack i, PlayerInteractEvent event) {
             return power.leftClick(player, i, event);
@@ -162,32 +132,12 @@ public abstract class Trigger<TEvent extends Event, TPower extends Power, TResul
 
     public static final Trigger<PlayerInteractEvent, PowerRightClick, Void, Void> RIGHT_CLICK = new Trigger<PlayerInteractEvent, PowerRightClick, Void, Void>(Void.class, PlayerInteractEvent.class, PowerRightClick.class, Void.class, "RIGHT_CLICK") {
         @Override
-        public Void def(Player player, ItemStack i, PlayerInteractEvent event) {
-            return null;
-        }
-
-        @Override
-        public Void next(Void a, PowerResult<Void> b) {
-            return null;
-        }
-
-        @Override
         public PowerResult<Void> run(PowerRightClick power, Player player, ItemStack i, PlayerInteractEvent event) {
             return power.rightClick(player, i, event);
         }
     };
 
     public static final Trigger<PlayerInteractEvent, PowerOffhandClick, Void, Void> OFFHAND_CLICK = new Trigger<PlayerInteractEvent, PowerOffhandClick, Void, Void>(Void.class, PlayerInteractEvent.class, PowerOffhandClick.class, Void.class, "OFFHAND_CLICK") {
-        @Override
-        public Void def(Player player, ItemStack i, PlayerInteractEvent event) {
-            return null;
-        }
-
-        @Override
-        public Void next(Void a, PowerResult<Void> b) {
-            return null;
-        }
-
         @Override
         public PowerResult<Void> run(PowerOffhandClick power, Player player, ItemStack i, PlayerInteractEvent event) {
             return power.offhandClick(player, i, event);
@@ -196,32 +146,12 @@ public abstract class Trigger<TEvent extends Event, TPower extends Power, TResul
 
     public static final Trigger<PlayerToggleSneakEvent, PowerSneak, Void, Void> SNEAK = new Trigger<PlayerToggleSneakEvent, PowerSneak, Void, Void>(Void.class, PlayerToggleSneakEvent.class, PowerSneak.class, Void.class, "SNEAK") {
         @Override
-        public Void def(Player player, ItemStack i, PlayerToggleSneakEvent event) {
-            return null;
-        }
-
-        @Override
-        public Void next(Void a, PowerResult<Void> b) {
-            return null;
-        }
-
-        @Override
         public PowerResult<Void> run(PowerSneak power, Player player, ItemStack i, PlayerToggleSneakEvent event) {
             return power.sneak(player, i, event);
         }
     };
 
     public static final Trigger<PlayerToggleSprintEvent, PowerSprint, Void, Void> SPRINT = new Trigger<PlayerToggleSprintEvent, PowerSprint, Void, Void>(Void.class, PlayerToggleSprintEvent.class, PowerSprint.class, Void.class, "SPRINT") {
-        @Override
-        public Void def(Player player, ItemStack i, PlayerToggleSprintEvent event) {
-            return null;
-        }
-
-        @Override
-        public Void next(Void a, PowerResult<Void> b) {
-            return null;
-        }
-
         @Override
         public PowerResult<Void> run(PowerSprint power, Player player, ItemStack i, PlayerToggleSprintEvent event) {
             return power.sprint(player, i, event);
@@ -341,9 +271,13 @@ public abstract class Trigger<TEvent extends Event, TPower extends Power, TResul
         return registry.values();
     }
 
-    public abstract TReturn def(Player player, ItemStack i, TEvent event);
+    public TReturn def(Player player, ItemStack i, TEvent event) {
+        return null;
+    }
 
-    public abstract TReturn next(TReturn a, PowerResult<TResult> b);
+    public TReturn next(TReturn a, PowerResult<TResult> b) {
+        return null;
+    }
 
     public abstract PowerResult<TResult> run(TPower power, Player player, ItemStack i, TEvent event);
 
