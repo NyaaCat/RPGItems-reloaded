@@ -15,7 +15,7 @@ import static think.rpgitems.power.Utils.checkCooldown;
  * Play a sound
  * </p>
  */
-@PowerMeta(defaultTrigger = "RIGHT_CLICK")
+@PowerMeta(defaultTrigger = "RIGHT_CLICK", generalInterface = PowerPlain.class)
 public class PowerSound extends BasePower implements PowerLeftClick, PowerRightClick, PowerPlain {
     /**
      * Pitch of sound

@@ -17,7 +17,7 @@ import static think.rpgitems.power.Utils.checkCooldown;
  * The arrow power will fire an arrow on right click.
  * </p>
  */
-@PowerMeta(defaultTrigger = "RIGHT_CLICK")
+@PowerMeta(defaultTrigger = "RIGHT_CLICK", generalInterface = PowerPlain.class)
 public class PowerArrow extends BasePower implements PowerRightClick, PowerLeftClick, PowerPlain {
 
     /**

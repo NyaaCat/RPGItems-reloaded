@@ -1261,7 +1261,7 @@ public class RPGItem {
     }
 
     private <TEvent extends Event, T extends Power, TResult, TReturn> List<T> getPower(Trigger<TEvent, T, TResult, TReturn> trigger) {
-        return powers.stream().filter(p -> p.getTriggers().contains(trigger)).map(trigger.getPowerClass()::cast).collect(Collectors.toList());
+        return powers.stream().filter(p -> p.getTriggers().contains(trigger)).map(p -> p.cast(trigger.getPowerClass())).collect(Collectors.toList());
     }
 
     @LangKey(type = LangKeyType.SUFFIX)

@@ -998,7 +998,7 @@ public class Handler extends RPGCommandReceiver {
             String name = field.getName();
             String value = args.argString(name, null);
             if (value != null) {
-                PowerManager.setPowerProperty(sender, power, field, value);
+                Utils.setPowerProperty(sender, power, field, value);
                 required.remove(field);
                 settled.add(field);
             }
@@ -1019,7 +1019,7 @@ public class Handler extends RPGCommandReceiver {
                     break;
                 }
             }
-            PowerManager.setPowerProperty(sender, power, field, value);
+            Utils.setPowerProperty(sender, power, field, value);
             required.remove(field);
             settled.add(field);
         }

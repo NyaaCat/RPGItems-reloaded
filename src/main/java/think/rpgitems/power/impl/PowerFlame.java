@@ -5,10 +5,7 @@ import org.bukkit.entity.Player;
 import org.bukkit.event.entity.EntityDamageByEntityEvent;
 import org.bukkit.inventory.ItemStack;
 import think.rpgitems.I18n;
-import think.rpgitems.power.PowerHit;
-import think.rpgitems.power.PowerMeta;
-import think.rpgitems.power.PowerResult;
-import think.rpgitems.power.Property;
+import think.rpgitems.power.*;
 
 /**
  * Power flame.
@@ -17,8 +14,8 @@ import think.rpgitems.power.Property;
  * </p>
  */
 @SuppressWarnings("WeakerAccess")
-@PowerMeta(immutableTrigger = true)
-public class PowerFlame extends BasePower implements PowerHit {
+@PowerMeta(immutableTrigger = true, generalInterface = PowerLivingEntity.class)
+public class PowerFlame extends BasePower implements PowerHit, PowerLivingEntity {
 
     /**
      * Duration of the fire, in ticks
@@ -33,9 +30,7 @@ public class PowerFlame extends BasePower implements PowerHit {
 
     @Override
     public PowerResult<Double> hit(Player player, ItemStack stack, LivingEntity entity, double damage, EntityDamageByEntityEvent event) {
-        if (!getItem().consumeDurability(stack, cost)) return PowerResult.cost();
-        entity.setFireTicks(burntime);
-        return PowerResult.ok(damage);
+        return fire(player, stack, entity, damage).with(damage);
     }
 
     @Override
@@ -46,5 +41,12 @@ public class PowerFlame extends BasePower implements PowerHit {
     @Override
     public String getName() {
         return "flame";
+    }
+
+    @Override
+    public PowerResult<Void> fire(Player player, ItemStack stack, LivingEntity entity, double value) {
+        if (!getItem().consumeDurability(stack, cost)) return PowerResult.cost();
+        entity.setFireTicks(burntime);
+        return PowerResult.ok();
     }
 }

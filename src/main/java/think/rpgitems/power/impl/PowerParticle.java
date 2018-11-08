@@ -20,8 +20,8 @@ import java.util.Optional;
  * When right clicked, spawn some particles around the user.
  * </p>
  */
-@PowerMeta(immutableTrigger = true)
-public class PowerParticle extends BasePower implements PowerRightClick {
+@PowerMeta(immutableTrigger = true, generalInterface = PowerPlain.class)
+public class PowerParticle extends BasePower implements PowerRightClick, PowerLeftClick, PowerPlain {
     /**
      * Name of particle effect
      */
@@ -68,9 +68,7 @@ public class PowerParticle extends BasePower implements PowerRightClick {
 
     @Override
     public PowerResult<Void> rightClick(Player player, ItemStack stack, PlayerInteractEvent event) {
-        if (!getItem().consumeDurability(stack, cost)) return PowerResult.cost();
-        spawnParticle(player);
-        return PowerResult.ok();
+        return fire(player, stack);
     }
 
     void spawnParticle(Player player) {
@@ -96,6 +94,18 @@ public class PowerParticle extends BasePower implements PowerRightClick {
             data = new Particle.DustOptions(Color.fromRGB(dustColor), (float) dustSize);
         }
         return data;
+    }
+
+    @Override
+    public PowerResult<Void> leftClick(Player player, ItemStack stack, PlayerInteractEvent event) {
+        return fire(player, stack);
+    }
+
+    @Override
+    public PowerResult<Void> fire(Player player, ItemStack stack) {
+        if (!getItem().consumeDurability(stack, cost)) return PowerResult.cost();
+        spawnParticle(player);
+        return PowerResult.ok();
     }
 
     @SuppressWarnings("unused")

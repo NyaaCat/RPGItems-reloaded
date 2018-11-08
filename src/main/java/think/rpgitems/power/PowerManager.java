@@ -1,26 +1,21 @@
 package think.rpgitems.power;
 
-import cat.nyaa.nyaacore.Message;
 import cat.nyaa.nyaacore.utils.ClassPathUtils;
 import com.google.common.collect.BiMap;
+import com.google.common.collect.HashBasedTable;
 import com.google.common.collect.HashBiMap;
-import org.bukkit.Material;
 import org.bukkit.NamespacedKey;
 import org.bukkit.command.CommandSender;
-import org.bukkit.entity.Player;
-import org.bukkit.inventory.ItemStack;
 import org.bukkit.plugin.Plugin;
 import think.rpgitems.Handler;
-import think.rpgitems.I18n;
 import think.rpgitems.RPGItems;
-import think.rpgitems.utils.MaterialUtils;
 
 import javax.annotation.CheckForNull;
 import java.lang.reflect.Field;
 import java.lang.reflect.Modifier;
-import java.lang.reflect.ParameterizedType;
 import java.util.*;
 import java.util.function.BiFunction;
+import java.util.function.Function;
 import java.util.logging.Level;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
@@ -42,6 +37,8 @@ public class PowerManager {
     static BiMap<NamespacedKey, Class<? extends Power>> powers = HashBiMap.create();
 
     private static final HashMap<Plugin, BiFunction<NamespacedKey, String, String>> descriptionResolvers = new HashMap<>();
+
+    static final HashBasedTable<Class<? extends Power>, Class<? extends Power>, Function> adapters = HashBasedTable.create();
 
     private static void registerPower(Class<? extends Power> clazz) {
         NamespacedKey key;
@@ -115,155 +112,7 @@ public class PowerManager {
         } catch (NoSuchFieldException e) {
             throw new Handler.CommandException("internal.error.invalid_command_arg", e);//TODO
         }
-        setPowerProperty(sender, power, f, value);
-    }
-
-    @SuppressWarnings("unchecked")
-    public static void setPowerProperty(CommandSender sender, Power power, Field field, String value) throws
-            IllegalAccessException {
-        Class<? extends Power> cls = power.getClass();
-        BooleanChoice bc = field.getAnnotation(BooleanChoice.class);
-        if (bc != null) {
-            String trueChoice = bc.trueChoice();
-            String falseChoice = bc.falseChoice();
-            if (value.equalsIgnoreCase(trueChoice) || value.equalsIgnoreCase(falseChoice)) {
-                field.set(power, value.equalsIgnoreCase(trueChoice));
-            } else {
-                throw new Handler.CommandException("message.error.invalid_option", value, field.getName(), falseChoice + ", " + trueChoice);//TODO
-            }
-            return;
-        }
-        AcceptedValue as = field.getAnnotation(AcceptedValue.class);
-        if (as != null) {
-            List<String> acc = getAcceptedValue(cls, as);
-            if (!acc.contains(value) && !Collection.class.isAssignableFrom(field.getType())) {
-                throw new Handler.CommandException("message.error.invalid_option", value, field.getName(), String.join(", ", acc));
-            }
-        }
-        setPowerPropertyInternal(sender, power, field, value);
-    }
-
-    @SuppressWarnings("unchecked")
-    private static void setPowerPropertyInternal(CommandSender sender, Power power, Field field, String value) {
-        try {
-            if (value.equals("null")) {
-                field.set(power, null);
-                return;
-            }
-            Deserializer st = field.getAnnotation(Deserializer.class);
-            field.setAccessible(true);
-            Class<? extends Power> cls = power.getClass();
-            if (st != null) {
-                try {
-                    Optional<Object> v = Setter.from(power, st.value()).set(value);
-                    if (!v.isPresent()) return;
-                    field.set(power, v.get());
-                } catch (IllegalArgumentException e) {
-                    new Message(I18n.format(st.message(), value)).send(sender);
-                }
-            } else {
-                if (field.getType().equals(int.class) || field.getType().equals(Integer.class)) {
-                    try {
-                        field.set(power, Integer.parseInt(value));
-                    } catch (NumberFormatException e) {
-                        throw new Handler.CommandException("internal.error.bad_int", value);
-                    }
-                } else if (field.getType().equals(long.class) || field.getType().equals(Long.class)) {
-                    try {
-                        field.set(power, Long.parseLong(value));
-                    } catch (NumberFormatException e) {
-                        throw new Handler.CommandException("internal.error.bad_int", value);
-                    }
-                } else if (field.getType().equals(float.class) || field.getType().equals(Float.class)) {
-                    try {
-                        field.set(power, Float.parseFloat(value));
-                    } catch (NumberFormatException e) {
-                        throw new Handler.CommandException("internal.error.bad_double", value);
-                    }
-                } else if (field.getType().equals(double.class) || field.getType().equals(Double.class)) {
-                    try {
-                        field.set(power, Double.parseDouble(value));
-                    } catch (NumberFormatException e) {
-                        throw new Handler.CommandException("internal.error.bad_double", value);
-                    }
-                } else if (field.getType().equals(String.class)) {
-                    field.set(power, value);
-                } else if (field.getType().equals(boolean.class) || field.getType().equals(Boolean.class)) {
-                    if (value.equalsIgnoreCase("true") || value.equalsIgnoreCase("false")) {
-                        field.set(power, Boolean.valueOf(value));
-                    } else {
-                        throw new Handler.CommandException("message.error.invalid_option", value, field.getName(), "true, false");
-                    }
-                } else if (field.getType().isEnum()) {
-                    try {
-                        field.set(power, Enum.valueOf((Class<Enum>) field.getType(), value));
-                    } catch (IllegalArgumentException e) {
-                        throw new Handler.CommandException("internal.error.bad_enum", field.getName(), Stream.of(field.getType().getEnumConstants()).map(Object::toString).collect(Collectors.joining(", ")));
-                    }
-                } else if (Collection.class.isAssignableFrom(field.getType())) {
-                    ParameterizedType listType = (ParameterizedType) field.getGenericType();
-                    Class<?> listArg = (Class<?>) listType.getActualTypeArguments()[0];
-                    String[] valueStrs = value.split(",");
-                    AcceptedValue as = field.getAnnotation(AcceptedValue.class);
-                    if (as != null) {
-                        List<String> acc = getAcceptedValue(cls, as);
-                        if (Arrays.stream(valueStrs).filter(s -> !s.isEmpty()).anyMatch(v -> !acc.contains(v))) {
-                            throw new Handler.CommandException("message.error.invalid_option", value, field.getName(), String.join(", ", acc));
-                        }
-                    }
-                    Stream<String> values = Arrays.stream(valueStrs).filter(s -> !s.isEmpty()).map(String::trim);
-                    if (field.getType().equals(List.class)) {
-                        if (listArg.isEnum()) {
-                            Class<? extends Enum> enumClass = (Class<? extends Enum>) listArg;
-                            List<Enum> list = (List<Enum>) values.map(v -> Enum.valueOf(enumClass, v)).collect(Collectors.toList());
-                            field.set(power, list);
-                        } else if (listArg.equals(String.class)) {
-                            List<String> list = values.collect(Collectors.toList());
-                            field.set(power, list);
-                        } else if (listArg.equals(Trigger.class)) {
-                            List<Trigger> set = Trigger.get(values).collect(Collectors.toList());
-                            field.set(power, set);
-                        } else {
-                            throw new Handler.CommandException("internal.error.command_exception");
-                        }
-                    } else {
-                        if (listArg.isEnum()) {
-                            Class<? extends Enum> enumClass = (Class<? extends Enum>) listArg;
-                            Set<Enum> set = (Set<Enum>) values.map(v -> Enum.valueOf(enumClass, v)).collect(Collectors.toSet());
-                            field.set(power, set);
-                        } else if (listArg.equals(String.class)) {
-                            Set<String> set = values.collect(Collectors.toSet());
-                            field.set(power, set);
-                        } else if (listArg.equals(Trigger.class)) {
-                            Set<Trigger> set = Trigger.get(values).collect(Collectors.toSet());
-                            field.set(power, set);
-                        } else {
-                            throw new Handler.CommandException("internal.error.command_exception");
-                        }
-                    }
-                } else if (field.getType() == ItemStack.class) {
-                    Material m = MaterialUtils.getMaterial(value, sender);
-                    ItemStack item;
-                    if (sender instanceof Player && value.equalsIgnoreCase("HAND")) {
-                        ItemStack hand = ((Player) sender).getInventory().getItemInMainHand();
-                        if (hand == null || hand.getType() == Material.AIR) {
-                            throw new Handler.CommandException("message.error.iteminhand");
-                        }
-                        item = hand.clone();
-                        item.setAmount(1);
-                    } else if (m == null || m == Material.AIR || !m.isItem()) {
-                        throw new Handler.CommandException("message.error.material", value);
-                    } else {
-                        item = new ItemStack(m);
-                    }
-                    field.set(power, item.clone());
-                } else {
-                    throw new Handler.CommandException("internal.error.invalid_command_arg", power.getName(), field.getName());
-                }
-            }
-        } catch (IllegalAccessException e) {
-            throw new Handler.CommandException("internal.error.command_exception", e);
-        }
+        Utils.setPowerProperty(sender, power, f, value);
     }
 
     public static List<String> getAcceptedValue(Class<? extends Power> cls, AcceptedValue anno) {
@@ -336,5 +185,22 @@ public class PowerManager {
 
     public static PowerMeta getMeta(Class<? extends Power> cls) {
         return metas.get(cls);
+    }
+
+    public static <G extends Power, S extends Power> void registAdapter(Class<G> general, Class<S> specified, Function<G, S> adapter) {
+        adapters.put(general, specified, adapter);
+    }
+
+    public static <T extends Power> T adaptPower(Power power, Class<T> specified) {
+        List<Class<? extends Power>> generals = Arrays.asList(power.getClass().getAnnotation(PowerMeta.class).generalInterface());
+        Set<Class<? extends Power>> statics = Power.getStaticInterfaces(power.getClass());
+        List<Class<? extends Power>> preferences = generals.stream().filter(statics::contains).collect(Collectors.toList());
+
+        for (Class<? extends Power> general : preferences) {
+            if (adapters.contains(general, specified)) {
+                return (T) adapters.get(general, specified).apply(power);
+            }
+        }
+        throw new ClassCastException();
     }
 }

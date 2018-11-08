@@ -11,6 +11,7 @@ import java.util.Locale;
 import java.util.Objects;
 import java.util.Set;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 /**
  * Base interface for all powers
@@ -107,14 +108,39 @@ public interface Power {
     default void deinit() {
     }
 
-    @SuppressWarnings("unchecked")
     static Set<Trigger> getTriggers(Class<? extends Power> cls) {
+        return getDynamicInterfaces(cls)
+                       .stream()
+                       .flatMap(Trigger::fromInterface)
+                       .collect(Collectors.toSet());
+    }
+
+    /**
+     * @param cls Class of Power
+     * @return All static implemented interfaces
+     */
+    @SuppressWarnings("unchecked")
+    static Set<Class<? extends Power>> getStaticInterfaces(Class<? extends Power> cls) {
         return TypeToken.of(cls).getTypes().interfaces().stream()
                         .map(TypeToken::getRawType)
                         .filter(Power.class::isAssignableFrom)
                         .filter(i -> !Objects.equals(i, Power.class))
-                        .flatMap(i -> Trigger.fromInterface((Class<? extends Power>) i))
+                        .map(i -> (Class<? extends Power>) i)
                         .collect(Collectors.toSet());
+    }
+
+    /**
+     * @param cls Class of Power
+     * @return All static and dynamic implemented interfaces
+     */
+    static Set<Class<? extends Power>> getDynamicInterfaces(Class<? extends Power> cls) {
+        return getStaticInterfaces(cls)
+                       .stream()
+                       .flatMap(i -> Stream.concat(
+                               Stream.of(i),
+                               PowerManager.adapters.row(i).keySet().stream()
+                       ))
+                       .collect(Collectors.toSet());
     }
 
     static Set<Trigger> getDefaultTriggers(Class<? extends Power> cls) {
@@ -128,5 +154,12 @@ public interface Power {
             }
         }
         return getTriggers(cls);
+    }
+
+    default <T extends Power> T cast(Class<T> powerClass) {
+        if (powerClass.isInstance(this)) {
+            return powerClass.cast(this);
+        }
+        return PowerManager.adaptPower(this, powerClass);
     }
 }

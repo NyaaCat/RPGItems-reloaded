@@ -26,8 +26,8 @@ import static think.rpgitems.power.Utils.checkCooldown;
  * Repair the item with some material
  * </p>
  */
-@PowerMeta(defaultTrigger = "RIGHT_CLICK")
-public class PowerRepair extends BasePower implements PowerRightClick, PowerLeftClick {
+@PowerMeta(defaultTrigger = "RIGHT_CLICK", generalInterface = PowerPlain.class)
+public class PowerRepair extends BasePower implements PowerRightClick, PowerLeftClick, PowerPlain {
 
     /**
      * Cooldown time of this power
@@ -81,7 +81,7 @@ public class PowerRepair extends BasePower implements PowerRightClick, PowerLeft
     @Override
     public PowerResult<Void> rightClick(Player player, ItemStack stack, PlayerInteractEvent event) {
         if (player.isSneaking() == isSneak) {
-            return repair(player, stack);
+            return fire(player, stack);
         }
         return PowerResult.noop();
     }
@@ -89,12 +89,13 @@ public class PowerRepair extends BasePower implements PowerRightClick, PowerLeft
     @Override
     public PowerResult<Void> leftClick(Player player, ItemStack stack, PlayerInteractEvent event) {
         if (player.isSneaking() == isSneak) {
-            return repair(player, stack);
+            return fire(player, stack);
         }
         return PowerResult.noop();
     }
 
-    private PowerResult<Void> repair(Player player, ItemStack stack) {
+    @Override
+    public PowerResult<Void> fire(Player player, ItemStack stack) {
         if (!checkCooldown(this, player, cooldown, true)) PowerResult.cd();
         int max = getItem().getMaxDurability();
         int itemDurability = getItem().getDurability(stack);

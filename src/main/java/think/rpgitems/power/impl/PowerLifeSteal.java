@@ -33,7 +33,7 @@ import java.util.Random;
  * in a chance of 1/{@link #chance}
  * </p>
  */
-@PowerMeta(defaultTrigger = "HIT")
+@PowerMeta(defaultTrigger = "HIT", generalInterface = PowerLivingEntity.class)
 public class PowerLifeSteal extends BasePower implements PowerHit, PowerLivingEntity {
 
     /**

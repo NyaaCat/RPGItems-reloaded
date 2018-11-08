@@ -17,7 +17,7 @@ import think.rpgitems.power.*;
 
 import static think.rpgitems.power.Utils.checkCooldown;
 
-@PowerMeta
+@PowerMeta(generalInterface = PowerPlain.class)
 public class PowerEconomy extends BasePower implements PowerRightClick, PowerLeftClick, PowerPlain, PowerHit {
 
     private static Economy eco;

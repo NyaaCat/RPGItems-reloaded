@@ -19,7 +19,7 @@ import static think.rpgitems.power.Utils.checkCooldownByString;
  * </p>
  */
 @SuppressWarnings("WeakerAccess")
-@PowerMeta(defaultTrigger = "HIT")
+@PowerMeta(defaultTrigger = "HIT", generalInterface = PowerLivingEntity.class)
 public class PowerCommandHit extends BasePower implements PowerHit, PowerLivingEntity {
 
     /**

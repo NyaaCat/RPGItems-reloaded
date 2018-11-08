@@ -26,8 +26,8 @@ import static think.rpgitems.power.Utils.checkCooldownByString;
  *  Spawn and throw an entity
  * </p>
  */
-@PowerMeta(defaultTrigger = "RIGHT_CLICK")
-public class PowerThrow extends BasePower implements PowerRightClick, PowerLeftClick {
+@PowerMeta(defaultTrigger = "RIGHT_CLICK", generalInterface = PowerPlain.class)
+public class PowerThrow extends BasePower implements PowerRightClick, PowerLeftClick, PowerPlain {
     @Property(order = 5, required = true)
     public String entityData = "";
     @Property(order = 4)
@@ -62,6 +62,11 @@ public class PowerThrow extends BasePower implements PowerRightClick, PowerLeftC
 
     @Override
     public PowerResult<Void> rightClick(Player player, ItemStack stack, PlayerInteractEvent event) {
+        return fire(player, stack);
+    }
+
+    @Override
+    public PowerResult<Void> fire(Player player, ItemStack stack) {
         if (checkCooldownByString(player, getItem(), entityName + entityData, cooldown, true) && getItem().consumeDurability(stack, cost)) {
             summonEntity(player, stack);
             return PowerResult.ok();
@@ -71,11 +76,7 @@ public class PowerThrow extends BasePower implements PowerRightClick, PowerLeftC
 
     @Override
     public PowerResult<Void> leftClick(Player player, ItemStack stack, PlayerInteractEvent event) {
-        if (checkCooldownByString(player, getItem(), entityName + entityData, cooldown, true) && getItem().consumeDurability(stack, cost)) {
-            summonEntity(player, stack);
-            return PowerResult.ok();
-        }
-        return PowerResult.noop();
+        return fire(player, stack);
     }
 
     @SuppressWarnings("deprecation")

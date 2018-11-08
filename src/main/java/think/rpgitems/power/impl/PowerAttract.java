@@ -25,7 +25,7 @@ import static think.rpgitems.power.Utils.getNearbyEntities;
  * </p>
  */
 @SuppressWarnings("WeakerAccess")
-@PowerMeta(defaultTrigger = "RIGHT_CLICK", withSelectors = true)
+@PowerMeta(defaultTrigger = "RIGHT_CLICK", withSelectors = true, generalInterface = PowerPlain.class)
 public class PowerAttract extends BasePower implements PowerTick, PowerLeftClick, PowerRightClick, PowerPlain {
     /**
      * Maximum radius
