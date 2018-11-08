@@ -221,7 +221,7 @@ public class PowerManager {
                             List<String> list = values.collect(Collectors.toList());
                             field.set(power, list);
                         } else if (listArg.equals(Trigger.class)) {
-                            List<Trigger> set = Trigger.valueOf(values).collect(Collectors.toList());
+                            List<Trigger> set = Trigger.get(values).collect(Collectors.toList());
                             field.set(power, set);
                         } else {
                             throw new Handler.CommandException("internal.error.command_exception");
@@ -235,7 +235,7 @@ public class PowerManager {
                             Set<String> set = values.collect(Collectors.toSet());
                             field.set(power, set);
                         } else if (listArg.equals(Trigger.class)) {
-                            Set<Trigger> set = Trigger.valueOf(values).collect(Collectors.toSet());
+                            Set<Trigger> set = Trigger.get(values).collect(Collectors.toSet());
                             field.set(power, set);
                         } else {
                             throw new Handler.CommandException("internal.error.command_exception");

@@ -1,6 +1,5 @@
 package think.rpgitems.power;
 
-import com.google.common.collect.Sets;
 import com.google.common.reflect.TypeToken;
 import org.bukkit.NamespacedKey;
 import org.bukkit.configuration.ConfigurationSection;
@@ -109,7 +108,7 @@ public interface Power {
     }
 
     @SuppressWarnings("unchecked")
-    static Set<Trigger> getTriggerTypes(Class<? extends Power> cls) {
+    static Set<Trigger> getTriggers(Class<? extends Power> cls) {
         return TypeToken.of(cls).getTypes().interfaces().stream()
                         .map(TypeToken::getRawType)
                         .filter(Power.class::isAssignableFrom)
@@ -118,7 +117,7 @@ public interface Power {
                         .collect(Collectors.toSet());
     }
 
-    static Set<Trigger> getDefaultTriggerTypes(Class<? extends Power> cls) {
+    static Set<Trigger> getDefaultTriggers(Class<? extends Power> cls) {
         PowerMeta annotation = cls.getAnnotation(PowerMeta.class);
         if (annotation != null) {
             if (annotation.defaultTrigger().length > 0) {
@@ -128,6 +127,6 @@ public interface Power {
                 return Collections.emptySet();
             }
         }
-        return getTriggerTypes(cls);
+        return getTriggers(cls);
     }
 }

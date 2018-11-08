@@ -1,6 +1,8 @@
 package think.rpgitems.power;
 
-public class UnknownExtensionException extends Exception {
+import org.bukkit.plugin.UnknownDependencyException;
+
+public class UnknownExtensionException extends UnknownDependencyException {
     private String name;
 
     UnknownExtensionException(String name) {
