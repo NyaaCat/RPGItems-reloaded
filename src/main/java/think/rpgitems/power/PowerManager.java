@@ -103,8 +103,7 @@ public class PowerManager {
         return new NamespacedKey(RPGItems.plugin, powerStr);
     }
 
-    public static void setPowerProperty(CommandSender sender, Power power, String field, String value) throws
-            IllegalAccessException {
+    public static void setPowerProperty(CommandSender sender, Power power, String field, String value) throws IllegalAccessException {
         Field f;
         Class<? extends Power> cls = power.getClass();
         try {

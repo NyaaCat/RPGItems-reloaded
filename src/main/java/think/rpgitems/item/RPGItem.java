@@ -627,7 +627,7 @@ public class RPGItem {
     }
 
     public double takeDamage(Player p, double damage, ItemStack pArmour) {
-        if (WGSupport.check(p, this, null))
+        if (!WGSupport.check(p, this, null))
             return damage;
         if (!checkPermission(p, true)) {
             return damage;

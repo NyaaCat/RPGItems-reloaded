@@ -300,6 +300,7 @@ public class PowerProjectile extends BasePower implements PowerRightClick, Power
 
     @Override
     public void init(ConfigurationSection section) {
+        cooldown = section.getInt("cooldownTime");
         super.init(section);
         if (yield != null && yield == -1) {
             yield = null;
