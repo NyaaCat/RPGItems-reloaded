@@ -8,13 +8,14 @@ import org.apache.commons.lang.StringUtils;
 import org.bukkit.*;
 import org.bukkit.attribute.Attribute;
 import org.bukkit.attribute.AttributeModifier;
+import org.bukkit.block.Block;
 import org.bukkit.command.CommandSender;
 import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.configuration.MemoryConfiguration;
 import org.bukkit.enchantments.Enchantment;
+import org.bukkit.entity.Entity;
 import org.bukkit.entity.Player;
 import org.bukkit.event.Event;
-import org.bukkit.event.entity.EntityDamageByEntityEvent;
 import org.bukkit.inventory.ItemFlag;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.Recipe;
@@ -29,7 +30,6 @@ import org.librazy.nclangchecker.LangKeyType;
 import think.rpgitems.Events;
 import think.rpgitems.I18n;
 import think.rpgitems.RPGItems;
-import think.rpgitems.data.Font;
 import think.rpgitems.data.RPGMetadata;
 import think.rpgitems.power.*;
 import think.rpgitems.power.impl.*;
@@ -67,13 +67,14 @@ public class RPGItem {
     public int defaultDurability;
     public int durabilityLowerBound;
     public int durabilityUpperBound;
+
+    String file;
+
     public int blockBreakingCost = 1;
     public int hittingCost = 1;
     public int hitCost = 1;
     public boolean hitCostByDamage = false;
     public DamageMode damageMode = DamageMode.FIXED;
-
-    String file;
 
     private NamespacedKey namespacedKey;
     private ItemStack item;
@@ -558,9 +559,24 @@ public class RPGItem {
         }
     }
 
-    public double meleeDamage(EntityDamageByEntityEvent e, Player player) {
-        double originDamage = e.getDamage();
+    /**
+     * Event-type independent melee damage event
+     *
+     * @param p            Player who launched the damager
+     * @param originDamage Origin damage value
+     * @param stack        ItemStack of this item
+     * @param entity       Victim of this damage event
+     * @return Final damage or -1 if should cancel this event
+     */
+    public double meleeDamage(Player p, double originDamage, ItemStack stack, Entity entity) {
         double damage = originDamage;
+        if (ItemManager.canNotUse(p, this) || hasPower(PowerRangedOnly.class)) {
+            return -1;
+        }
+        boolean can = consumeDurability(item, hittingCost);
+        if (!can) {
+            return -1;
+        }
         switch (damageMode) {
             case MULTIPLY:
             case FIXED:
@@ -572,7 +588,7 @@ public class RPGItem {
                     break;
                 }
 
-                Collection<PotionEffect> potionEffects = player.getActivePotionEffects();
+                Collection<PotionEffect> potionEffects = p.getActivePotionEffects();
                 double strength = 0, weak = 0;
                 for (PotionEffect pe : potionEffects) {
                     if (pe.getType().equals(PotionEffectType.INCREASE_DAMAGE)) {
@@ -592,13 +608,31 @@ public class RPGItem {
                 //no-op
                 break;
         }
-        e.setDamage(damage);
         return damage;
     }
 
-    public double projectileDamage(EntityDamageByEntityEvent e) {
-        double originDamage = e.getDamage();
+    /**
+     * Event-type independent projectile damage event
+     *
+     * @param p            Player who launched the damager
+     * @param originDamage Origin damage value
+     * @param stack        ItemStack of this item
+     * @param damager      Projectile of this damage event
+     * @param entity       Victim of this damage event
+     * @return Final damage or -1 if should cancel this event
+     */
+    public double projectileDamage(Player p, double originDamage, ItemStack stack, Entity damager, Entity entity) {
         double damage = originDamage;
+        if (ItemManager.canNotUse(p, this)) {
+            return originDamage;
+        }
+        List<PowerRanged> ranged = getPower(PowerRanged.class, true);
+        if (!ranged.isEmpty()) {
+            double distance = p.getLocation().distance(entity.getLocation());
+            if (ranged.get(0).rm > distance || distance > ranged.get(0).r) {
+                return -1;
+            }
+        }
         switch (damageMode) {
             case FIXED:
             case ADDITIONAL:
@@ -611,8 +645,8 @@ public class RPGItem {
                 }
 
                 //Apply force adjustments
-                if (e.getDamager().hasMetadata("rpgitems.force")) {
-                    damage *= e.getDamager().getMetadata("rpgitems.force").get(0).asFloat();
+                if (damager.hasMetadata("rpgitems.force")) {
+                    damage *= damager.getMetadata("rpgitems.force").get(0).asFloat();
                 }
                 if (damageMode == DamageMode.ADDITIONAL) {
                     damage += originDamage;
@@ -622,32 +656,50 @@ public class RPGItem {
                 //no-op
                 break;
         }
-        e.setDamage(damage);
         return damage;
     }
 
-    public double takeDamage(Player p, double damage, ItemStack pArmour) {
-        if (!WGSupport.check(p, this, null))
-            return damage;
-        if (!checkPermission(p, true)) {
-            return damage;
+    /**
+     * Event-type independent take damage event
+     *
+     * @param p            Player taking damage
+     * @param originDamage Origin damage value
+     * @param stack        ItemStack of this item
+     * @param damager      Cause of this damage. May be null
+     * @return Final damage or -1 if should cancel this event
+     */
+    public double takeDamage(Player p, double originDamage, ItemStack stack, Entity damager) {
+        if (ItemManager.canNotUse(p, this)) {
+            return originDamage;
         }
         boolean can;
         if (!hitCostByDamage) {
-            can = consumeDurability(pArmour, hitCost);
+            can = consumeDurability(stack, hitCost);
         } else {
-            can = consumeDurability(pArmour, (int) (hitCost * damage / 100d));
+            can = consumeDurability(stack, (int) (hitCost * originDamage / 100d));
         }
         if (can && getArmour() > 0) {
-            damage -= Math.round(damage * (((double) getArmour()) / 100d));
+            originDamage -= Math.round(originDamage * (((double) getArmour()) / 100d));
         }
-        return damage;
+        return originDamage;
+    }
+
+    /**
+     * Event-type independent take damage event
+     *
+     * @param p     Player taking damage
+     * @param stack ItemStack of this item
+     * @param block Block
+     * @return If should process this event
+     */
+    public boolean breakBlock(Player p, ItemStack stack, Block block) {
+        return consumeDurability(stack, blockBreakingCost);
     }
 
     private <TEvent extends Event, TPower extends Power, TResult, TReturn> boolean triggerPreCheck(Player player, ItemStack i, TEvent event, Trigger<TEvent, TPower, TResult, TReturn> trigger, List<TPower> powers) {
         if (powers.isEmpty()) return false;
         if (!checkPermission(player, true)) return false;
-        if (!WGSupport.check(player, this, powers)) return false;
+        if (!WGSupport.canUse(player, this, powers)) return false;
 
         RPGItemsPowersPreFireEvent<TEvent, TPower, TResult, TReturn> preFire = new RPGItemsPowersPreFireEvent<>(player, i, event, this, trigger, powers);
         Bukkit.getServer().getPluginManager().callEvent(preFire);

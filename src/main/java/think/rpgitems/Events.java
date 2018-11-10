@@ -6,6 +6,7 @@ import com.google.common.collect.SetMultimap;
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
 import org.bukkit.Material;
+import org.bukkit.block.Block;
 import org.bukkit.entity.*;
 import org.bukkit.event.Event;
 import org.bukkit.event.EventHandler;
@@ -41,6 +42,7 @@ import java.util.*;
 import java.util.function.Consumer;
 import java.util.stream.Collectors;
 
+import static think.rpgitems.RPGItems.logger;
 import static think.rpgitems.RPGItems.plugin;
 
 public class Events implements Listener {
@@ -115,23 +117,26 @@ public class Events implements Listener {
 
     @EventHandler(ignoreCancelled = true)
     public void onBlockBreak(BlockBreakEvent e) {
-        if (e.getBlock().getType().equals(Material.TORCH))
-            if (e.getBlock().hasMetadata("RPGItems.Torch"))
+        Block block = e.getBlock();
+        if (block.getType().equals(Material.TORCH))
+            if (block.hasMetadata("RPGItems.Torch"))
                 e.setCancelled(true);
 
         Player player = e.getPlayer();
         ItemStack item = player.getInventory().getItemInMainHand();
         RPGItem rItem;
-        if ((rItem = ItemManager.toRPGItem(item)) != null) {
-            boolean can = rItem.consumeDurability(item, rItem.blockBreakingCost);
-            if (!can) {
-                e.setCancelled(true);
-            }
-            if (rItem.getDurability(item) <= 0) {
-                player.getInventory().setItemInMainHand(null);
-            } else {
-                player.getInventory().setItemInMainHand(item);
-            }
+        if ((rItem = ItemManager.toRPGItem(item)) == null) {
+            return;
+        }
+
+        boolean can = rItem.breakBlock(player, item, block);
+        if (!can) {
+            e.setCancelled(true);
+        }
+        if (rItem.getDurability(item) <= 0) {
+            player.getInventory().setItemInMainHand(null);
+        } else {
+            player.getInventory().setItemInMainHand(item);
         }
     }
 
@@ -218,47 +223,44 @@ public class Events implements Listener {
     public void onProjectileFire(ProjectileLaunchEvent e) {
         Projectile entity = e.getEntity();
         ProjectileSource shooter = entity.getShooter();
-        if (shooter instanceof Player) {
-            Player player = (Player) shooter;
-            ItemStack item = player.getInventory().getItemInMainHand();
-            RPGItem rItem = ItemManager.toRPGItem(item);
-            if (entity instanceof Trident) {
-                item = TridentUtils.getTridentItemStack((Trident) entity);
+        if (!(shooter instanceof Player)) return;
+        Player player = (Player) shooter;
+        ItemStack item = player.getInventory().getItemInMainHand();
+        RPGItem rItem = ItemManager.toRPGItem(item);
+        if (entity instanceof Trident) {
+            item = TridentUtils.getTridentItemStack((Trident) entity);
+            rItem = ItemManager.toRPGItem(item);
+            if (rItem == null) return;
+            UUID uuid = entity.getUniqueId();
+            tridentCache.put(uuid, item);
+            ItemStack fakeItem = rItem.toItemStack();
+            List<String> fakeLore = new ArrayList<>(1);
+            fakeLore.add(uuid.toString());
+            ItemMeta fakeItemItemMeta = fakeItem.getItemMeta();
+            fakeItemItemMeta.setLore(fakeLore);
+            fakeItem.setItemMeta(fakeItemItemMeta);
+            TridentUtils.setTridentItemStack((Trident) entity, fakeItem);
+        } else {
+            if (rItem == null) {
+                item = player.getInventory().getItemInOffHand();
                 rItem = ItemManager.toRPGItem(item);
-                if (rItem == null) return;
-                UUID uuid = entity.getUniqueId();
-                tridentCache.put(uuid, item);
-                ItemStack fakeItem = rItem.toItemStack();
-                List<String> fakeLore = new ArrayList<>(1);
-                fakeLore.add(uuid.toString());
-                ItemMeta fakeItemItemMeta = fakeItem.getItemMeta();
-                fakeItemItemMeta.setLore(fakeLore);
-                fakeItem.setItemMeta(fakeItemItemMeta);
-                TridentUtils.setTridentItemStack((Trident) entity, fakeItem);
-            } else {
                 if (rItem == null) {
-                    item = player.getInventory().getItemInOffHand();
-                    rItem = ItemManager.toRPGItem(item);
-                    if (rItem == null) {
-                        return;
-                    }
+                    return;
                 }
             }
-            if (!rItem.hasPower(PowerRanged.class) && !rItem.hasPower(PowerRangedOnly.class) && item.getType() != Material.BOW && item.getType() != Material.SNOWBALL && item.getType() != Material.EGG && item.getType() != Material.POTION && item.getType() != Material.TRIDENT) {
-                return;
-            }
-            if (WGSupport.canNotPvP(player) && !rItem.ignoreWorldGuard)
-                return;
-            if (!rItem.checkPermission(player, true)) {
-                e.setCancelled(true);
-            }
-            rpgProjectiles.put(entity.getEntityId(), rItem.getUID());
         }
+        if (!rItem.hasPower(PowerRanged.class) && !rItem.hasPower(PowerRangedOnly.class) && item.getType() != Material.BOW && item.getType() != Material.SNOWBALL && item.getType() != Material.EGG && item.getType() != Material.POTION && item.getType() != Material.TRIDENT) {
+            return;
+        }
+        if (ItemManager.canNotUse(player, rItem)) {
+            return;
+        }
+        rpgProjectiles.put(entity.getEntityId(), rItem.getUID());
     }
 
     @EventHandler
     public void onPlayerAction(PlayerInteractEvent e) {
-        Player p = e.getPlayer();
+        Player player = e.getPlayer();
         Action action = e.getAction();
         Material im = e.getMaterial();
         if (action == Action.PHYSICAL || im == Material.AIR) return;
@@ -266,22 +268,15 @@ public class Events implements Listener {
             return;
         RPGItem rItem = ItemManager.toRPGItem(e.getItem());
         if (rItem == null) return;
-
-        if (WGSupport.canNotPvP(p) && !rItem.ignoreWorldGuard)
-            return;
-        if (!rItem.checkPermission(p, true)) {
-            return;
-        }
-
         if (e.getHand() == EquipmentSlot.OFF_HAND) {
-            rItem.power(p, e.getItem(), e, Trigger.OFFHAND_CLICK);
+            rItem.power(player, e.getItem(), e, Trigger.OFFHAND_CLICK);
         } else if (action == Action.RIGHT_CLICK_AIR) {
-            rItem.power(p, e.getItem(), e, Trigger.RIGHT_CLICK);
+            rItem.power(player, e.getItem(), e, Trigger.RIGHT_CLICK);
         } else if (action == Action.RIGHT_CLICK_BLOCK &&
-                           !(e.getClickedBlock().getType().isInteractable() && !p.isSneaking())) {
-            rItem.power(p, e.getItem(), e, Trigger.RIGHT_CLICK);
+                           !(e.getClickedBlock().getType().isInteractable() && !player.isSneaking())) {
+            rItem.power(player, e.getItem(), e, Trigger.RIGHT_CLICK);
         } else if (action == Action.LEFT_CLICK_AIR || action == Action.LEFT_CLICK_BLOCK) {
-            rItem.power(p, e.getItem(), e, Trigger.LEFT_CLICK);
+            rItem.power(player, e.getItem(), e, Trigger.LEFT_CLICK);
         }
     }
 
@@ -415,7 +410,9 @@ public class Events implements Listener {
                     e.getItem().setItemStack(realItem);
                 }
             }
-        } catch (IllegalArgumentException ignored) {
+        } catch (IllegalArgumentException ex) {
+            ex.printStackTrace();
+            logger.warning("Exception when PlayerPickupArrowEvent. May be harmless.");
         }
     }
 
@@ -524,6 +521,8 @@ public class Events implements Listener {
                         RPGItem.updateItem(rpgItem, item);
                 }
             } catch (ArrayIndexOutOfBoundsException ex) {
+                ex.printStackTrace();
+                logger.warning("Exception when InventoryOpenEvent. May be harmless.");
                 // Fix for the bug with anvils in craftbukkit
             }
         } else {
@@ -536,6 +535,7 @@ public class Events implements Listener {
 
     private void playerDamager(EntityDamageByEntityEvent e) {
         Player player = (Player) e.getDamager();
+        Entity entity = e.getEntity();
         ItemStack item = player.getInventory().getItemInMainHand();
 
         if (item.getType() == Material.BOW || item.getType() == Material.SNOWBALL || item.getType() == Material.EGG || item.getType() == Material.POTION)
@@ -544,48 +544,39 @@ public class Events implements Listener {
         RPGItem rItem = ItemManager.toRPGItem(item);
         if (rItem == null)
             return;
-        if (WGSupport.canNotPvP(player) && !rItem.ignoreWorldGuard)
-            return;
-        if (!rItem.checkPermission(player, true)) {
+        double originDamage = e.getDamage();
+        double damage = rItem.meleeDamage(player, originDamage, item, entity);
+        if (damage == -1) {
             e.setCancelled(true);
             return;
         }
-        if (rItem.hasPower(PowerRangedOnly.class)) {
-            e.setCancelled(true);
-            return;
-        }
-        boolean can = rItem.consumeDurability(item, rItem.hittingCost);
-        if (!can) {
-            e.setCancelled(true);
-            return;
-        }
-        double damage = rItem.meleeDamage(e, player);
-        if (e.getEntity() instanceof LivingEntity) {
+        e.setDamage(damage);
+        if (entity instanceof LivingEntity) {
             damage = rItem.power(player, item, e, Trigger.HIT);
         }
         e.setDamage(damage);
     }
 
     private void projectileDamager(EntityDamageByEntityEvent e) {
-        Projectile entity = (Projectile) e.getDamager();
-        if (PowerTranslocator.translocatorPlayerMap.getIfPresent(entity.getUniqueId()) != null) {
+        Projectile projectile = (Projectile) e.getDamager();
+        if (PowerTranslocator.translocatorPlayerMap.getIfPresent(projectile.getUniqueId()) != null) {
             e.setCancelled(true);
             return;
         }
-        Integer projectileID = rpgProjectiles.get(entity.getEntityId());
+        Integer projectileID = rpgProjectiles.get(projectile.getEntityId());
         if (projectileID == null) return;
         RPGItem rItem = ItemManager.getItemById(projectileID);
-        if (rItem == null || !(entity.getShooter() instanceof Player))
+        if (rItem == null || !(projectile.getShooter() instanceof Player))
             return;
-        if (!((Player) entity.getShooter()).isOnline()) {
+        if (!((Player) projectile.getShooter()).isOnline()) {
             return;
         }
-        Player player = (Player) entity.getShooter();
+        Player player = (Player) projectile.getShooter();
         ItemStack item = player.getInventory().getItemInMainHand();
         RPGItem hItem = ItemManager.toRPGItem(item);
 
-        if (tridentCache.containsKey(entity.getUniqueId())) {
-            item = tridentCache.get(entity.getUniqueId());
+        if (tridentCache.containsKey(projectile.getUniqueId())) {
+            item = tridentCache.get(projectile.getUniqueId());
             rItem = ItemManager.toRPGItem(item);
             if (rItem == null) throw new IllegalStateException();
         } else {
@@ -598,9 +589,11 @@ public class Events implements Listener {
             }
         }
 
-        double damage = rItem.projectileDamage(e);
+        double originDamage = e.getDamage();
+        double damage = rItem.projectileDamage(player, originDamage, item, projectile, e.getEntity());
+        e.setDamage(damage);
         if (e.getEntity() instanceof LivingEntity) {
-            damage = rItem.power((Player) entity.getShooter(), item, e, Trigger.HIT);
+            damage = rItem.power((Player) projectile.getShooter(), item, e, Trigger.HIT);
         }
         e.setDamage(damage);
     }
@@ -618,10 +611,8 @@ public class Events implements Listener {
     }
 
     private void playerHit(EntityDamageByEntityEvent e) {
-        Player p = (Player) e.getEntity();
-        if (e.isCancelled() || WGSupport.canNotPvP(p))
-            return;
-        ItemStack[] armour = p.getInventory().getArmorContents();
+        Player player = (Player) e.getEntity();
+        ItemStack[] armour = player.getInventory().getArmorContents();
         boolean hasRPGItem = false;
         double damage = e.getDamage();
         for (ItemStack pArmour : armour) {
@@ -630,10 +621,10 @@ public class Events implements Listener {
                 continue;
             }
             hasRPGItem = true;
-            damage = pRItem.takeDamage(p, damage, pArmour);
+            damage = pRItem.takeDamage(player, damage, pArmour, e.getDamager());
         }
         if (hasRPGItem) {
-            p.getInventory().setArmorContents(armour);
+            player.getInventory().setArmorContents(armour);
         }
         e.setDamage(damage);
     }

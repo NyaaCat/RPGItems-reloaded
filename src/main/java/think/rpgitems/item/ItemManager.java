@@ -16,6 +16,7 @@ import think.rpgitems.I18n;
 import think.rpgitems.RPGItems;
 import think.rpgitems.power.UnknownExtensionException;
 import think.rpgitems.power.UnknownPowerException;
+import think.rpgitems.support.WGSupport;
 
 import java.io.*;
 import java.nio.charset.StandardCharsets;
@@ -348,5 +349,11 @@ public class ItemManager {
                                .replace("|", "_p")
                                .replace(":", "_c")
                                .replace(".", "_d");
+    }
+
+    public static boolean canNotUse(Player p, RPGItem rItem) {
+        if (!WGSupport.canUse(p, rItem, null))
+            return true;
+        return rItem != null && !rItem.checkPermission(p, true);
     }
 }

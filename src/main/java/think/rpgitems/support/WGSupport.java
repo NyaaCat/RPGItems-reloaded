@@ -94,7 +94,7 @@ public class WGSupport {
         return hasSupport;
     }
 
-    public static boolean canNotPvP(Player player) {
+    private static boolean canNotPvP(Player player) {
         if (!hasSupport || !useWorldGuard)
             return false;
 
@@ -103,7 +103,9 @@ public class WGSupport {
         return stat != null && !stat.equals(State.ALLOW);
     }
 
-    public static boolean check(Player player, RPGItem item, Collection<? extends Power> powers) {
+    public static boolean canUse(Player player, RPGItem item, Collection<? extends Power> powers) {
+        if (canNotPvP(player)) return false;
+        if (item == null) return true;
         if (!hasSupport || !useWorldGuard || item.ignoreWorldGuard) {
             return true;
         }
