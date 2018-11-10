@@ -7,8 +7,10 @@ import com.google.gson.Gson;
 import com.google.gson.internal.LinkedTreeMap;
 import io.netty.handler.codec.http.FullHttpResponse;
 import io.netty.util.ReferenceCountUtil;
+import org.bukkit.configuration.InvalidConfigurationException;
 import think.rpgitems.Handler;
 
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.CompletableFuture;
@@ -52,6 +54,24 @@ public class NetworkUtils {
                 }
             });
             return results;
+        } finally {
+            ReferenceCountUtil.release(httpResponse);
+        }
+    }
+
+    public static Map<String, String> downloadUrl(String url) throws InterruptedException, ExecutionException, TimeoutException {
+        CompletableFuture<FullHttpResponse> response = HttpClient.get(url, null);
+        FullHttpResponse httpResponse = response.get(10, TimeUnit.SECONDS);
+        try {
+
+            if (httpResponse.status().code() == 404) {
+                throw new Handler.CommandException("message.import.url.notfound", url);
+            } else if (httpResponse.status().code() != 200) {
+                throw new Handler.CommandException("message.import.url.code", httpResponse.status().code());
+            }
+
+            String yamlStr = httpResponse.content().toString(UTF_8);
+            return Collections.singletonMap(null, yamlStr);
         } finally {
             ReferenceCountUtil.release(httpResponse);
         }

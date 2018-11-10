@@ -1062,7 +1062,7 @@ public class Handler extends RPGCommandReceiver {
                 downloadGist(sender, args, id);
                 break;
             case URL:
-                downloadUrl(sender, id);
+                downloadUrl(sender, args, id);
                 break;
             default:
                 msg(sender, "message.import.not_supported", location.name());
@@ -1241,16 +1241,26 @@ public class Handler extends RPGCommandReceiver {
     }
 
 
-    private void downloadUrl(CommandSender sender, String url) {
+    private void downloadUrl(CommandSender sender, Arguments args, String url) {
         new Message(I18n.format("message.import.url.ing")).send(sender);
         Bukkit.getScheduler().runTaskAsynchronously(plugin, () -> {
+            try {
+                Map<String, String> itemConf = NetworkUtils.downloadUrl(url);
+                Bukkit.getScheduler().runTask(plugin, () -> loadItems(sender, itemConf, args));
+            } catch (InterruptedException | ExecutionException e) {
+                e.printStackTrace();
+                Bukkit.getScheduler().runTask(plugin, () -> new Message(I18n.format("message.import.url.failed")).send(sender));
+            } catch (TimeoutException e) {
+                e.printStackTrace();
+                Bukkit.getScheduler().runTask(plugin, () -> new Message(I18n.format("message.import.url.timeout")).send(sender));
+            }
             throw new NotImplementedException(url);
         });
     }
 
-    private void loadItems(CommandSender sender, Map<String, String> gist, Arguments args) {
-        List<RPGItem> items = new ArrayList<>(gist.size());
-        for (Map.Entry<String, String> entry : gist.entrySet()) {
+    private void loadItems(CommandSender sender, Map<String, String> confs, Arguments args) {
+        List<RPGItem> items = new ArrayList<>(confs.size());
+        for (Map.Entry<String, String> entry : confs.entrySet()) {
             String k = entry.getKey();
             String v = entry.getValue();
             YamlConfiguration itemStorage = new YamlConfiguration();
