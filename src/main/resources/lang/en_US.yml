@@ -56,6 +56,10 @@ message:
     iteminhand: 'No item in your hand'
     need_material: 'You need a %s to repair this item'
     economy: No economy provider found
+    file_not_exists: 'File not exist: %s'
+    reloading_locked: Cannot reload a item that is locked!
+    recovering: Error recovering. We suggest you stop the server and check item files and backups manually.
+    item_unlocked: You cannot edit unlocked %s. Reload it before editing.
   wgcustomflag:
     disable: Worldguard custom flag disabled
     enable: Worldguard custom flag enabled
@@ -172,7 +176,12 @@ message:
         Note of item %s is:
         %s
       na: No note available for item %s
-    reorder: Reordered item %s's power %s
+    load: Loaded item %s {item}
+    empty_dir: Skipping empty directory %s
+    file_deleted: Item file deleted
+    recovering: Failed when reloading, recovering. Your edits saved to %s
+    unlocked: Item unlocked. Backing up to %s.
+    cleanbackup: Cleaned up backup dictory.
   damagemode:
     FIXED: Item '%s' damage mode set to fixed damage (default)
     ADDITIONAL: Item '%s' damage mode set to additional damage (vanilla minecraft damage plus RPGItem damage)
@@ -211,6 +220,7 @@ message:
     property_value: '&b-| &r%s'
     no_display: No display text
     no_description: No description yet
+    reorder: Reordered item %s's power %s
   toggleLore:
     show: Lore now been displayed
     hide: Lore now been hid
@@ -232,6 +242,10 @@ message:
       failed: Gist download failed
     url:
       ing: Importing item from url
+      notfound: 'Url %s not found'
+      code: 'Url download failed: %d'
+      timeout: Url download timeout
+      failed: Url download failed
     success: 'Item %s (UID: %d) imported successfully'
     conflict_uid: "Item to import '%s' has same UID with '%s': %d , please check if you already have it."
     conflict_name: "Item to import has a name conflict: '%s' , please specify a replacement with <old_name>:<new_name> in command"
@@ -245,7 +259,7 @@ message:
       failed: Gist upload failed
       code: 'Gist upload failed: %d'
     not_supported: Export to %s is not supported
-
+  no_item: No item.
 power:
   airborne: 'Damage increase by %d%% when gliding'
   charge: 'Damage increase with speed, by %d%% when sprinting'
