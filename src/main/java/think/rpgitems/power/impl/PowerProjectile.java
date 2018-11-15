@@ -5,7 +5,11 @@ import com.google.common.cache.CacheBuilder;
 import org.bukkit.Bukkit;
 import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.entity.*;
+import org.bukkit.event.entity.EntityDamageByEntityEvent;
+import org.bukkit.event.entity.EntityDamageEvent;
 import org.bukkit.event.player.PlayerInteractEvent;
+import org.bukkit.event.player.PlayerToggleSneakEvent;
+import org.bukkit.event.player.PlayerToggleSprintEvent;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.scheduler.BukkitRunnable;
 import org.bukkit.scheduler.BukkitTask;
@@ -32,7 +36,7 @@ import static think.rpgitems.power.Utils.checkCooldown;
  */
 @SuppressWarnings("WeakerAccess")
 @PowerMeta(defaultTrigger = "RIGHT_CLICK", generalInterface = PowerPlain.class)
-public class PowerProjectile extends BasePower implements PowerRightClick, PowerLeftClick, PowerPlain {
+public class PowerProjectile extends BasePower implements PowerRightClick, PowerLeftClick, PowerSneak, PowerSprint, PowerHitTaken, PowerHit, PowerLivingEntity, PowerPlain {
     /**
      * Z_axis.
      */
@@ -144,10 +148,30 @@ public class PowerProjectile extends BasePower implements PowerRightClick, Power
     }
 
     @Override
+    public PowerResult<Double> hit(Player player, ItemStack stack, LivingEntity entity, double damage, EntityDamageByEntityEvent event) {
+        return fire(player, stack).with(damage);
+    }
+
+    @Override
+    public PowerResult<Double> takeHit(Player target, ItemStack stack, double damage, EntityDamageEvent event) {
+        return fire(target, stack).with(damage);
+    }
+
+    @Override
+    public PowerResult<Void> sneak(Player player, ItemStack stack, PlayerToggleSneakEvent event) {
+        return fire(player, stack);
+    }
+
+    @Override
+    public PowerResult<Void> sprint(Player player, ItemStack stack, PlayerToggleSprintEvent event) {
+        return fire(player, stack);
+    }
+
+    @Override
     public PowerResult<Void> fire(Player player, ItemStack stack) {
         if (!checkCooldown(this, player, cooldown, true)) return PowerResult.cd();
         if (!getItem().consumeDurability(stack, cost)) return PowerResult.cost();
-        fire(player);
+        fire(player, player.getEyeLocation().getDirection());
         UUID uuid = player.getUniqueId();
         if (burstCount > 1) {
             Integer prev = burstTask.getIfPresent(uuid);
@@ -162,7 +186,7 @@ public class PowerProjectile extends BasePower implements PowerRightClick, Power
                     if (player.getInventory().getItemInMainHand().equals(stack)) {
                         burstTask.put(uuid, this.getTaskId());
                         if (count-- > 0) {
-                            fire(player);
+                            fire(player, player.getEyeLocation().getDirection());
                             return;
                         }
                     }
@@ -175,29 +199,28 @@ public class PowerProjectile extends BasePower implements PowerRightClick, Power
         return PowerResult.ok();
     }
 
-    private void fire(Player player) {
+    private void fire(Player player, Vector direction) {
         if (!isCone) {
-            Vector v = player.getEyeLocation().getDirection().multiply(speed);
+            Vector v = direction.multiply(speed);
             Projectile projectile = player.launchProjectile(projectileType, v);
             handleProjectile(v, projectile);
         } else {
-            Vector loc = player.getEyeLocation().getDirection();
             range = Math.abs(range) % 360;
             double phi = range / 180f * Math.PI;
             Vector a, b;
-            Vector ax1 = loc.getCrossProduct(z_axis);
+            Vector ax1 = direction.getCrossProduct(z_axis);
             if (ax1.length() < 0.01) {
                 a = x_axis.clone();
                 b = y_axis.clone();
             } else {
                 a = ax1.normalize();
-                b = loc.getCrossProduct(a).normalize();
+                b = direction.getCrossProduct(a).normalize();
             }
             for (int i = 0; i < amount; i++) {
                 double z = range == 0 ? 1 : ThreadLocalRandom.current().nextDouble(Math.cos(phi), 1);
                 double det = ThreadLocalRandom.current().nextDouble(0, 2 * Math.PI);
                 double theta = Math.acos(z);
-                Vector v = a.clone().multiply(Math.cos(det)).add(b.clone().multiply(Math.sin(det))).multiply(Math.sin(theta)).add(loc.clone().multiply(Math.cos(theta)));
+                Vector v = a.clone().multiply(Math.cos(det)).add(b.clone().multiply(Math.sin(det))).multiply(Math.sin(theta)).add(direction.clone().multiply(Math.cos(theta)));
                 Projectile projectile = player.launchProjectile(projectileType, v.normalize().multiply(speed));
                 handleProjectile(v, projectile);
             }
@@ -232,6 +255,39 @@ public class PowerProjectile extends BasePower implements PowerRightClick, Power
                 }
             }).runTaskLater(RPGItems.plugin, 80);
         }
+    }
+
+    @Override
+    public PowerResult<Void> fire(Player player, ItemStack stack, LivingEntity entity, double value) {
+        if (!checkCooldown(this, player, cooldown, true)) return PowerResult.cd();
+        if (!getItem().consumeDurability(stack, cost)) return PowerResult.cost();
+        Vector direction = player.getEyeLocation().toVector().subtract(entity.getLocation().toVector()).normalize();
+        fire(player, direction);
+        UUID uuid = player.getUniqueId();
+        if (burstCount > 1) {
+            Integer prev = burstTask.getIfPresent(uuid);
+            if (prev != null) {
+                Bukkit.getScheduler().cancelTask(prev);
+            }
+            BukkitTask bukkitTask = (new BukkitRunnable() {
+                int count = burstCount - 1;
+
+                @Override
+                public void run() {
+                    if (player.getInventory().getItemInMainHand().equals(stack)) {
+                        burstTask.put(uuid, this.getTaskId());
+                        if (count-- > 0) {
+                            fire(player, direction);
+                            return;
+                        }
+                    }
+                    burstTask.invalidate(uuid);
+                    this.cancel();
+                }
+            }).runTaskTimer(RPGItems.plugin, burstInterval, burstInterval);
+            burstTask.put(uuid, bukkitTask.getTaskId());
+        }
+        return PowerResult.ok();
     }
 
     public static class ProjectileType implements Getter, Setter {

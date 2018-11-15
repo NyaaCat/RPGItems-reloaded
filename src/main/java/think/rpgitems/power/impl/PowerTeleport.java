@@ -1,5 +1,6 @@
 package think.rpgitems.power.impl;
 
+import cat.nyaa.nyaacore.Pair;
 import org.bukkit.*;
 import org.bukkit.block.Block;
 import org.bukkit.entity.Player;
@@ -13,9 +14,6 @@ import org.bukkit.util.Vector;
 import think.rpgitems.I18n;
 import think.rpgitems.RPGItems;
 import think.rpgitems.power.*;
-import think.rpgitems.utils.Pair;
-
-import java.util.Objects;
 
 import static think.rpgitems.power.Utils.checkCooldown;
 

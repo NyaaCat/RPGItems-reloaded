@@ -1,5 +1,6 @@
 package think.rpgitems.power.impl;
 
+import cat.nyaa.nyaacore.Pair;
 import org.bukkit.Color;
 import org.bukkit.Particle;
 import org.bukkit.Sound;
@@ -12,7 +13,6 @@ import org.bukkit.util.BoundingBox;
 import org.bukkit.util.Vector;
 import think.rpgitems.I18n;
 import think.rpgitems.power.*;
-import think.rpgitems.utils.Pair;
 
 @PowerMeta(immutableTrigger = true)
 public class PowerHeadshot extends BasePower implements PowerHit {

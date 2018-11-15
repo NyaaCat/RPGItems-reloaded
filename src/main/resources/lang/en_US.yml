@@ -57,9 +57,10 @@ message:
     need_material: 'You need a %s to repair this item'
     economy: No economy provider found
     file_not_exists: 'File not exist: %s'
-    reloading_locked: Cannot reload a item that is locked!
+    reloading_locked: Cannot reload a item that is locked! Use `/rpgitem backupitem` to backup and unlock it first.
     recovering: Error recovering. We suggest you stop the server and check item files and backups manually.
     item_unlocked: You cannot edit unlocked %s. Reload it before editing.
+    loading: 'Error loading item from %s. %s'
   wgcustomflag:
     disable: Worldguard custom flag disabled
     enable: Worldguard custom flag enabled
@@ -180,8 +181,10 @@ message:
     empty_dir: Skipping empty directory %s
     file_deleted: Item file deleted
     recovering: Failed when reloading, recovering. Your edits saved to %s
-    unlocked: Item unlocked. Backing up to %s.
+    unlocked: Item %s unlocked. Backed up to %s.
+    backedup: Item %s backed up to %s.
     cleanbackup: Cleaned up backup dictory.
+    no_backup: Backup for %s not found.
   damagemode:
     FIXED: Item '%s' damage mode set to fixed damage (default)
     ADDITIONAL: Item '%s' damage mode set to additional damage (vanilla minecraft damage plus RPGItem damage)
@@ -221,6 +224,7 @@ message:
     no_display: No display text
     no_description: No description yet
     reorder: Reordered item %s's power %s
+    ignored_trigger: Ignoring unknown trigger %s on power %s for item %s
   toggleLore:
     show: Lore now been displayed
     hide: Lore now been hid

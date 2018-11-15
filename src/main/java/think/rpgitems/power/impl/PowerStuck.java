@@ -2,9 +2,13 @@ package think.rpgitems.power.impl;
 
 import com.google.common.cache.Cache;
 import com.google.common.cache.CacheBuilder;
+import org.bukkit.Bukkit;
 import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.entity.LivingEntity;
 import org.bukkit.entity.Player;
+import org.bukkit.event.EventHandler;
+import org.bukkit.event.HandlerList;
+import org.bukkit.event.Listener;
 import org.bukkit.event.entity.EntityDamageByEntityEvent;
 import org.bukkit.event.entity.EntityTeleportEvent;
 import org.bukkit.event.player.PlayerInteractEvent;
@@ -20,7 +24,6 @@ import java.util.*;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
-import java.util.function.Consumer;
 
 import static think.rpgitems.power.Utils.*;
 
@@ -84,9 +87,7 @@ public class PowerStuck extends BasePower implements PowerHit, PowerRightClick {
 
     private Random random = new Random();
 
-    private static Consumer<EntityTeleportEvent> tpl;
-
-    private static Consumer<PlayerTeleportEvent> pml;
+    private static Listener listener;
 
     private static Cache<UUID, Long> stucked = CacheBuilder.newBuilder().expireAfterAccess(10, TimeUnit.MINUTES).concurrencyLevel(2).build();
 
@@ -143,29 +144,33 @@ public class PowerStuck extends BasePower implements PowerHit, PowerRightClick {
         triggers = triggerTypes;
         super.init(s);
         if (orc == 0) {
-            tpl = e -> {
-                try {
-                    if (stucked.get(e.getEntity().getUniqueId(), () -> Long.MIN_VALUE) >= (System.currentTimeMillis() - duration * 50)) {
-                        e.setCancelled(true);
-                    }
-                } catch (ExecutionException ex) {
-                    ex.printStackTrace();
-                }
-            };
-            RPGItems.listener.addEventListener(EntityTeleportEvent.class, tpl);
-            pml = e -> {
-                try {
-                    if (stucked.get(e.getPlayer().getUniqueId(), () -> Long.MIN_VALUE) >= (System.currentTimeMillis() - duration * 50)) {
-                        if (e.getCause() != PlayerTeleportEvent.TeleportCause.COMMAND) {
-                            e.getPlayer().sendMessage(I18n.format("message.stuck"));
+            listener = new Listener() {
+                @EventHandler
+                void onEntityTeleport(EntityTeleportEvent e) {
+                    try {
+                        if (stucked.get(e.getEntity().getUniqueId(), () -> Long.MIN_VALUE) >= (System.currentTimeMillis() - duration * 50)) {
                             e.setCancelled(true);
                         }
+                    } catch (ExecutionException ex) {
+                        ex.printStackTrace();
                     }
-                } catch (ExecutionException ex) {
-                    ex.printStackTrace();
+                }
+
+                @EventHandler
+                void onPlayerTeleport(PlayerTeleportEvent e) {
+                    try {
+                        if (stucked.get(e.getPlayer().getUniqueId(), () -> Long.MIN_VALUE) >= (System.currentTimeMillis() - duration * 50)) {
+                            if (e.getCause() != PlayerTeleportEvent.TeleportCause.COMMAND) {
+                                e.getPlayer().sendMessage(I18n.format("message.stuck"));
+                                e.setCancelled(true);
+                            }
+                        }
+                    } catch (ExecutionException ex) {
+                        ex.printStackTrace();
+                    }
                 }
             };
-            RPGItems.listener.addEventListener(PlayerTeleportEvent.class, pml);
+            Bukkit.getPluginManager().registerEvents(listener, RPGItems.plugin);
         }
     }
 
@@ -173,7 +178,7 @@ public class PowerStuck extends BasePower implements PowerHit, PowerRightClick {
     public void deinit() {
         int nrc = rc.decrementAndGet();
         if (nrc == 0) {
-            RPGItems.listener.removeEventListener(EntityTeleportEvent.class, tpl).removeEventListener(PlayerTeleportEvent.class, pml);
+            HandlerList.unregisterAll(listener);
         }
     }
 }

@@ -84,11 +84,7 @@ public abstract class BasePower implements Serializable, Power {
                 value = section.getString("consumption");
             }
             if (value != null) {
-                try {
-                    Utils.setPowerProperty(Bukkit.getConsoleSender(), this, field, value);
-                } catch (IllegalAccessException e) {
-                    throw new RuntimeException(e);
-                }
+                Utils.setPowerPropertyUnchecked(Bukkit.getConsoleSender(), this, field, value);
             }
         }
     }

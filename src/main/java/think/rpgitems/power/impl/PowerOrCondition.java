@@ -1,9 +1,9 @@
 package think.rpgitems.power.impl;
 
+import cat.nyaa.nyaacore.Pair;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
 import think.rpgitems.power.*;
-import think.rpgitems.utils.Pair;
 
 import java.util.HashSet;
 import java.util.List;

@@ -2,16 +2,17 @@ package think.rpgitems.power;
 
 import org.bukkit.entity.Player;
 import org.bukkit.event.entity.ProjectileHitEvent;
+import org.bukkit.event.entity.ProjectileLaunchEvent;
 import org.bukkit.inventory.ItemStack;
 
 import javax.annotation.CheckReturnValue;
 
 /**
- * Triggers when RPG Projectile hits
+ * Triggers when RPG Projectile launches
  */
-public interface PowerProjectileHit extends Power {
+public interface PowerProjectileLaunch extends Power {
     /**
-     * Calls when {@code player} using {@code stack} has launched a projectile {@code arrow} and it hit something
+     * Calls when {@code player} using {@code stack} launching a projectile {@code arrow}
      *
      * @param player Player
      * @param stack  Item that triggered this power
@@ -20,5 +21,5 @@ public interface PowerProjectileHit extends Power {
      * @return PowerResult
      */
     @CheckReturnValue
-    PowerResult<Void> projectileHit(Player player, ItemStack stack, ProjectileHitEvent event);
+    PowerResult<Void> projectileLaunch(Player player, ItemStack stack, ProjectileLaunchEvent event);
 }

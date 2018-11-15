@@ -7,14 +7,13 @@ import org.bukkit.entity.Entity;
 import org.bukkit.entity.FallingBlock;
 import org.bukkit.entity.Player;
 import org.bukkit.event.player.PlayerInteractEvent;
+import org.bukkit.event.player.PlayerToggleSneakEvent;
+import org.bukkit.event.player.PlayerToggleSprintEvent;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.scheduler.BukkitRunnable;
 import think.rpgitems.I18n;
 import think.rpgitems.RPGItems;
-import think.rpgitems.power.PowerMeta;
-import think.rpgitems.power.PowerResult;
-import think.rpgitems.power.PowerRightClick;
-import think.rpgitems.power.Property;
+import think.rpgitems.power.*;
 
 import java.util.HashMap;
 import java.util.List;
@@ -32,7 +31,7 @@ import static think.rpgitems.power.Utils.getNearbyEntities;
  * </p>
  */
 @PowerMeta(immutableTrigger = true, withSelectors = true)
-public class PowerIce extends BasePower implements PowerRightClick {
+public class PowerIce extends BasePower implements PowerRightClick, PowerLeftClick, PowerSprint, PowerSneak, PowerPlain {
 
     /**
      * Cooldown time of this power
@@ -45,9 +44,18 @@ public class PowerIce extends BasePower implements PowerRightClick {
     @Property
     public int cost = 0;
 
-    @SuppressWarnings("deprecation")
     @Override
     public PowerResult<Void> rightClick(final Player player, ItemStack stack, PlayerInteractEvent event) {
+        return fire(player, stack);
+    }
+
+    @Override
+    public PowerResult<Void> leftClick(Player player, ItemStack stack, PlayerInteractEvent event) {
+        return fire(player, stack);
+    }
+
+    @Override
+    public PowerResult<Void> fire(Player player, ItemStack stack) {
         if (!checkCooldown(this, player, cooldown, true)) return PowerResult.cd();
         if (!getItem().consumeDurability(stack, cost)) return PowerResult.cost();
         player.playSound(player.getLocation(), Sound.ENTITY_EGG_THROW, 1.0f, 0.1f);
@@ -88,7 +96,7 @@ public class PowerIce extends BasePower implements PowerRightClick {
                                 Location loc = landingLoc.clone().add(x, y, z);
                                 Block b = world.getBlockAt(loc);
                                 if (!b.getType().isSolid() &&
-                                        !(b.getType() == Material.PLAYER_HEAD || b.getType() == Material.PLAYER_WALL_HEAD)) {
+                                            !(b.getType() == Material.PLAYER_HEAD || b.getType() == Material.PLAYER_WALL_HEAD)) {
                                     changedBlocks.put(b.getLocation(), b.getBlockData());
                                     b.setType(Material.PACKED_ICE);
                                 }
@@ -124,6 +132,16 @@ public class PowerIce extends BasePower implements PowerRightClick {
         };
         run.runTaskTimer(RPGItems.plugin, 0, 1);
         return PowerResult.ok();
+    }
+
+    @Override
+    public PowerResult<Void> sneak(Player player, ItemStack stack, PlayerToggleSneakEvent event) {
+        return fire(player, stack);
+    }
+
+    @Override
+    public PowerResult<Void> sprint(Player player, ItemStack stack, PlayerToggleSprintEvent event) {
+        return fire(player, stack);
     }
 
     @Override

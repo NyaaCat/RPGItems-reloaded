@@ -1,5 +1,6 @@
 package think.rpgitems.power.impl;
 
+import cat.nyaa.nyaacore.Pair;
 import com.google.common.cache.CacheBuilder;
 import com.google.common.cache.CacheLoader;
 import com.google.common.cache.LoadingCache;
@@ -15,7 +16,6 @@ import org.bukkit.scoreboard.Team;
 import think.rpgitems.I18n;
 import think.rpgitems.power.PowerMeta;
 import think.rpgitems.power.Property;
-import think.rpgitems.utils.Pair;
 
 import java.util.*;
 import java.util.concurrent.TimeUnit;

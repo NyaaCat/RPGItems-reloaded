@@ -5,7 +5,10 @@ import org.bukkit.entity.LivingEntity;
 import org.bukkit.entity.Player;
 import org.bukkit.event.player.PlayerInteractEvent;
 import org.bukkit.inventory.ItemStack;
-import think.rpgitems.power.*;
+import think.rpgitems.power.AcceptedValue;
+import think.rpgitems.power.PowerMeta;
+import think.rpgitems.power.PowerResult;
+import think.rpgitems.power.Property;
 
 import java.util.List;
 

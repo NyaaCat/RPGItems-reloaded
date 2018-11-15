@@ -5,6 +5,7 @@ import org.bukkit.ChatColor;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.HandlerList;
 import org.bukkit.event.Listener;
+import org.bukkit.event.server.ServerLoadEvent;
 import org.bukkit.plugin.InvalidDescriptionException;
 import org.bukkit.plugin.InvalidPluginException;
 import org.bukkit.plugin.Plugin;
@@ -126,12 +127,13 @@ public class RPGItems extends JavaPlugin {
 
     private class ServerLoadListener implements Listener {
         @EventHandler
-        public void onServerLoad(@SuppressWarnings("deprecation") org.bukkit.event.server.ServerLoadEvent event) {
+        public void onServerLoad(ServerLoadEvent event) {
             HandlerList.unregisterAll(this);
             getServer().getPluginManager().registerEvents(listener = new Events(), RPGItems.this);
             WGSupport.init(RPGItems.this);
             logger.info("Loading RPGItems...");
             ItemManager.load(RPGItems.this);
+            logger.info("Done");
             new PowerTicker().runTaskTimer(RPGItems.this, 0, 1);
         }
     }

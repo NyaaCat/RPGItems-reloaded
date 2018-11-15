@@ -41,6 +41,7 @@ import java.lang.reflect.InvocationTargetException;
 import java.util.*;
 import java.util.Map.Entry;
 import java.util.concurrent.ThreadLocalRandom;
+import java.util.logging.Level;
 import java.util.regex.Matcher;
 import java.util.stream.Collectors;
 
@@ -86,7 +87,6 @@ public class RPGItem {
     private boolean haspermission;
     private String permission;
     private String displayName;
-    private Quality quality = Quality.TRASH;
     private int damageMin = 0, damageMax = 3;
     private int armour = 0;
     private String type = I18n.format("item.type");
@@ -141,15 +141,19 @@ public class RPGItem {
         author = s.getString("author", "");
         note = s.getString("note", "");
         license = s.getString("license", "");
+        String display = s.getString("display");
+        Quality quality = s.isString("quality") ? Quality.valueOf(s.getString("quality")) : null;
+        if (quality != null) {
+            display = quality.colour + ChatColor.BOLD + display;
+        }
 
-        setDisplay(s.getString("display"), false);
+        displayName = ChatColor.translateAlternateColorCodes('&', display);
         setType(s.getString("type", I18n.format("item.type")), false);
         setHand(s.getString("hand", I18n.format("item.hand")), false);
         description = (List<String>) s.getList("description", new ArrayList<String>());
         for (int i = 0; i < description.size(); i++) {
             description.set(i, ChatColor.translateAlternateColorCodes('&', description.get(i)));
         }
-        quality = Quality.valueOf(s.getString("quality"));
         damageMin = s.getInt("damageMin");
         damageMax = s.getInt("damageMax");
         armour = s.getInt("armour", 0);
@@ -180,8 +184,8 @@ public class RPGItem {
                         throw new UnknownPowerException(key);
                     }
                     Power pow = power.getConstructor().newInstance();
-                    pow.init(section);
                     pow.setItem(this);
+                    pow.init(section);
                     addPower(pow, false);
                     conf.put(pow, section);
                 } catch (InstantiationException | IllegalAccessException | NoSuchMethodException | InvocationTargetException e) {
@@ -439,7 +443,6 @@ public class RPGItem {
         s.set("haspermission", haspermission);
         s.set("permission", permission);
         s.set("display", displayName.replaceAll("" + COLOR_CHAR, "&"));
-        s.set("quality", quality.toString());
         s.set("damageMin", damageMin);
         s.set("damageMax", damageMax);
         s.set("armour", armour);
@@ -556,7 +559,11 @@ public class RPGItem {
                     shapedRecipe.setIngredient(e.getValue(), e.getKey().getData());
                 }
             }
-            Bukkit.addRecipe(shapedRecipe);
+            try {
+                Bukkit.addRecipe(shapedRecipe);
+            } catch (IllegalStateException exception) {
+                plugin.getLogger().log(Level.INFO, "Error adding recipe. It's ok when reloading plugin", exception);
+            }
         }
     }
 
@@ -839,7 +846,7 @@ public class RPGItem {
     @SuppressWarnings("deprecation")
     public List<String> getTooltipLines() {
         ArrayList<String> output = new ArrayList<>();
-        output.add(getMCEncodedUID() + quality.colour + ChatColor.BOLD + displayName);
+        output.add(getMCEncodedUID() + displayName);
 
         // add powerLores
         if (showPowerLore) {
@@ -994,18 +1001,13 @@ public class RPGItem {
         }
     }
 
-    public void setDisplay(String str, boolean update) {
-        displayName = ChatColor.translateAlternateColorCodes('&', str);
-        if (update)
-            rebuild();
-    }
-
     public String getDisplay() {
-        return quality.colour + ChatColor.BOLD + displayName;
+        return displayName;
     }
 
     public void setDisplay(String str) {
-        setDisplay(str, true);
+        displayName = ChatColor.translateAlternateColorCodes('&', str);
+        rebuild();
     }
 
     public void setType(String str, boolean update) {
@@ -1117,20 +1119,6 @@ public class RPGItem {
 
     public void setArmour(int a) {
         setArmour(a, true);
-    }
-
-    public void setQuality(Quality q, boolean update) {
-        quality = q;
-        if (update)
-            rebuild();
-    }
-
-    public Quality getQuality() {
-        return quality;
-    }
-
-    public void setQuality(Quality q) {
-        setQuality(q, true);
     }
 
     public void setItem(Material mat, boolean update) {

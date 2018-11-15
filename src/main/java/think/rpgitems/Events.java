@@ -55,24 +55,6 @@ public class Events implements Listener {
     public static HashMap<String, Set<Integer>> drops = new HashMap<>();
     static boolean useLocaleInv = false;
     private HashSet<LocaleInventory> localeInventories = new HashSet<>();
-    private SetMultimap<Class<? extends Event>, Consumer<? extends Event>> eventMap = MultimapBuilder.SortedSetMultimapBuilder.hashKeys().hashSetValues().build();
-
-    @SuppressWarnings("unchecked")
-    public <T extends Event> Events addEventListener(Class<T> clz, Consumer<T> listener) {
-        eventMap.put(clz, listener);
-        return this;
-    }
-
-    @SuppressWarnings("unchecked")
-    public <T extends Event> Events removeEventListener(Class<T> clz, Consumer<T> listener) {
-        eventMap.remove(clz, listener);
-        return this;
-    }
-
-    @SuppressWarnings("unchecked")
-    private <T extends Event> Set<Consumer<T>> getEventListener(Class<T> clz) {
-        return eventMap.get(clz).stream().map(l -> (Consumer<T>) l).collect(Collectors.toSet());
-    }
 
     static private boolean canStack(ItemStack a, ItemStack b) {
         if (a != null && a.getType() == Material.AIR) a = null;
@@ -634,7 +616,6 @@ public class Events implements Listener {
         if (ev.getEntity() instanceof Player) {
             ev.setDamage(playerHitTaken((Player) ev.getEntity(), ev));
         }
-        getEventListener(EntityDamageEvent.class).forEach(l -> l.accept(ev));
     }
 
     private double playerHitTaken(Player e, EntityDamageEvent ev) {
@@ -691,24 +672,6 @@ public class Events implements Listener {
                 e.getInventory().setResult(new ItemStack(Material.AIR));
             }
         }
-    }
-
-    @SuppressWarnings("unchecked")
-    @EventHandler(ignoreCancelled = true, priority = EventPriority.NORMAL)
-    public void onEntityTeleport(EntityTeleportEvent e) {
-        getEventListener(EntityTeleportEvent.class).forEach(l -> l.accept(e));
-    }
-
-    @SuppressWarnings("unchecked")
-    @EventHandler(ignoreCancelled = true, priority = EventPriority.NORMAL)
-    public void onPlayerMove(PlayerMoveEvent e) {
-        getEventListener(PlayerMoveEvent.class).forEach(l -> l.accept(e));
-    }
-
-    @SuppressWarnings("unchecked")
-    @EventHandler(ignoreCancelled = true, priority = EventPriority.NORMAL)
-    public void onPlayerMove(PlayerTeleportEvent e) {
-        getEventListener(PlayerTeleportEvent.class).forEach(l -> l.accept(e));
     }
 
     @EventHandler(ignoreCancelled = true, priority = EventPriority.NORMAL)

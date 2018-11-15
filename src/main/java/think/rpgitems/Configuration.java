@@ -55,11 +55,14 @@ public class Configuration extends PluginConfigure {
     public boolean forceBar = false;
 
     @Serializable(name = "item.defaults.license")
-    public String defaultLicense;
+    public String defaultLicense = "All Right Reserved";
 
     @Serializable(name = "item.defaults.note")
     public String defaultNote;
 
     @Serializable(name = "item.defaults.author")
     public String defaultAuthor;
+
+    @Serializable(name = "general.item.fs_lock")
+    public boolean itemFsLock = true;
 }

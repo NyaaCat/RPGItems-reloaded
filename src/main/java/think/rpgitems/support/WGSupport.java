@@ -46,9 +46,13 @@ public class WGSupport {
             if (!(wgPlugin instanceof WorldGuardPlugin)) {
                 return;
             }
-            hasSupport = true;
             WGSupport.wgPlugin = (WorldGuardPlugin) wgPlugin;
-            RPGItems.logger.info("[RPGItems] WorldGuard version: " + WGSupport.wgPlugin.getDescription().getVersion() + " found");
+            String wgVersion = WGSupport.wgPlugin.getDescription().getVersion();
+            RPGItems.logger.info("[RPGItems] WorldGuard version: " + wgVersion + " found");
+            if (!wgVersion.startsWith("7.")){
+                RPGItems.logger.warning("[RPGItems] Requires WorldGuard 7.x, disabling integration");
+            }
+            hasSupport = true;
             WGHandler.registerHandler();
             disabledPowerByPlayer = new HashMap<>();
             enabledPowerByPlayer = new HashMap<>();

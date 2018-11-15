@@ -1,10 +1,12 @@
 package think.rpgitems.item;
 
 import cat.nyaa.nyaacore.Message;
+import cat.nyaa.nyaacore.Pair;
 import com.sun.nio.file.ExtendedOpenOption;
 import org.bukkit.Bukkit;
 import org.bukkit.Material;
 import org.bukkit.command.CommandSender;
+import org.bukkit.command.ConsoleCommandSender;
 import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.configuration.InvalidConfigurationException;
 import org.bukkit.configuration.MemoryConfiguration;
@@ -18,7 +20,6 @@ import think.rpgitems.RPGItems;
 import think.rpgitems.power.UnknownExtensionException;
 import think.rpgitems.power.UnknownPowerException;
 import think.rpgitems.support.WGSupport;
-import think.rpgitems.utils.Pair;
 
 import java.io.*;
 import java.nio.channels.FileChannel;
@@ -140,25 +141,7 @@ public class ItemManager {
                 }
                 return false;
             }
-            String canonicalPath = file.getCanonicalPath();
-            if (itemFileLocks.containsKey(canonicalPath) && itemFileLocks.get(canonicalPath).isValid()) {
-                plugin.getLogger().severe("Trying to load " + file + " that already loaded.");
-                throw new IllegalStateException("Trying to load " + file + " that already loaded.");
-            }
-            Path path = file.toPath().toRealPath();
-            Path base = getItemsDir().toPath().toRealPath();
-            if (!path.startsWith(base)) {
-                plugin.getLogger().info("Copying " + file + " to " + getItemsDir() + ".");
-                File newFile = createFile(getItemsDir(), file.getName(), false);
-                plugin.getLogger().info("As " + newFile + ".");
-                Files.copy(file.toPath(), newFile.toPath(), StandardCopyOption.REPLACE_EXISTING);
-                file = newFile;
-            }
-            YamlConfiguration itemStorage = new YamlConfiguration();
-            itemStorage.load(file);
-            RPGItem item = new RPGItem(itemStorage, file);
-            lock(file);
-            addItem(item);
+            RPGItem item = load(file);
             if (sender != null) {
                 new Message("")
                         .append(I18n.format("message.item.load", item.getName()), Collections.singletonMap("{item}", item.getComponent()))
@@ -166,23 +149,69 @@ public class ItemManager {
             }
             return true;
         } catch (Exception e) {
-            // Something went wrong
-            e.printStackTrace();
-            plugin.getLogger().severe("Error loading " + file + ".");
+            if (e instanceof UnknownExtensionException || e instanceof UnknownPowerException) {
+                plugin.getLogger().log(Level.WARNING, "Missing dependency when loading " + file + ". ", e);
+            } else {
+                plugin.getLogger().log(Level.SEVERE, "Error loading " + file + ".", e);
+            }
+
+            Message message = new Message(I18n.format("message.error.loading", file.getPath(), e.getLocalizedMessage()));
             if (sender != null) {
-                sender.sendMessage("Error loading " + file + ". " + e.getLocalizedMessage());
+                message.send(sender);
+            } else {
+                message.send(Bukkit.getConsoleSender());
+            }
+
+            if (sender == null || sender instanceof ConsoleCommandSender) {
+                Bukkit.getOperators().forEach(message::send);
             }
         }
         return false;
     }
 
+    private static RPGItem load(File file) throws Exception {
+        String canonicalPath = file.getCanonicalPath();
+        if (itemFileLocks.containsKey(canonicalPath) && itemFileLocks.get(canonicalPath).isValid()) {
+            plugin.getLogger().severe("Trying to load " + file + " that already loaded.");
+            throw new IllegalStateException("Trying to load " + file + " that already loaded.");
+        }
+        Path path = file.toPath().toRealPath();
+        Path base = getItemsDir().toPath().toRealPath();
+        if (!path.startsWith(base)) {
+            plugin.getLogger().info("Copying " + file + " to " + getItemsDir() + ".");
+            File newFile = createFile(getItemsDir(), file.getName(), false);
+            plugin.getLogger().info("As " + newFile + ".");
+            Files.copy(file.toPath(), newFile.toPath(), StandardCopyOption.REPLACE_EXISTING);
+            file = newFile;
+        }
+        YamlConfiguration itemStorage = new YamlConfiguration();
+        itemStorage.load(file);
+        RPGItem item = new RPGItem(itemStorage, file);
+        addItem(item);
+        lock(file);
+        return item;
+    }
+
     @SuppressWarnings("deprecation")
     public static void addItem(RPGItem item) {
-        if (item.getID() != 0) {
-            itemById.put(item.getID(), item);
+        try {
+            if (item.getID() != 0) {
+                if(itemById.putIfAbsent(item.getID(), item) != null) {
+                    throw new IllegalArgumentException("Duplicated item id:" + item.getID());
+                }
+            }
+            if(itemById.putIfAbsent(item.getUID(), item) != null) {
+                throw new IllegalArgumentException("Duplicated item uid:" + item.getUID());
+            }
+            if(itemByName.putIfAbsent(item.getName(), item) != null) {
+                throw new IllegalArgumentException("Duplicated item name:" + item.getUID());
+            }
+        } catch (Exception e) {
+            itemById.remove(item.getID(), item);
+            itemById.remove(item.getUID(), item);
+            itemByName.remove(item.getName(), item);
+            throw e;
         }
-        itemById.put(item.getUID(), item);
-        itemByName.put(item.getName(), item);
     }
 
     private static void loadFromLegacyFile(File f) {
@@ -334,6 +363,7 @@ public class ItemManager {
     }
 
     public static void lock(File file) throws IOException {
+        if (!plugin.cfg.itemFsLock) return;
         FileLock oldLock = itemFileLocks.get(file.getCanonicalPath());
         if (oldLock != null) {
             if (oldLock.isValid()) {
@@ -353,6 +383,7 @@ public class ItemManager {
     }
 
     private static void unlock(File itemFile, boolean remove) throws IOException {
+        if (!plugin.cfg.itemFsLock) return;
         FileLock fileLock = remove ? itemFileLocks.remove(itemFile.getCanonicalPath()) : itemFileLocks.get(itemFile.getCanonicalPath());
         if (fileLock != null) {
             if (fileLock.isValid()) {

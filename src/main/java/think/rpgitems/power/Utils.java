@@ -1,6 +1,7 @@
 package think.rpgitems.power;
 
 import cat.nyaa.nyaacore.Message;
+import cat.nyaa.nyaacore.Pair;
 import org.bukkit.ChatColor;
 import org.bukkit.Location;
 import org.bukkit.Material;
@@ -21,7 +22,6 @@ import think.rpgitems.data.Font;
 import think.rpgitems.item.RPGItem;
 import think.rpgitems.power.impl.PowerSelector;
 import think.rpgitems.utils.MaterialUtils;
-import think.rpgitems.utils.Pair;
 
 import java.lang.reflect.Field;
 import java.lang.reflect.ParameterizedType;
@@ -203,7 +203,7 @@ public class Utils {
                 if (c.isEmpty()) return;
                 section.set(property, c.stream().map(Object::toString).collect(Collectors.joining(",")));
             } else {
-                val = field.getType().isEnum() ? ((Enum<?>)val).name() : val;
+                val = field.getType().isEnum() ? ((Enum<?>) val).name() : val;
                 section.set(property, val);
             }
         }
@@ -421,7 +421,7 @@ public class Utils {
     }
 
     @SuppressWarnings("unchecked")
-    static void setPowerPropertyInternal(CommandSender sender, Power power, Field field, String value) {
+    public static void setPowerPropertyUnchecked(CommandSender sender, Power power, Field field, String value) {
         try {
             if (value.equals("null")) {
                 field.set(power, null);
@@ -429,7 +429,6 @@ public class Utils {
             }
             Deserializer st = field.getAnnotation(Deserializer.class);
             field.setAccessible(true);
-            Class<? extends Power> cls = power.getClass();
             if (st != null) {
                 try {
                     Optional<Object> v = Setter.from(power, st.value()).set(value);
@@ -481,13 +480,6 @@ public class Utils {
                     ParameterizedType listType = (ParameterizedType) field.getGenericType();
                     Class<?> listArg = (Class<?>) listType.getActualTypeArguments()[0];
                     String[] valueStrs = value.split(",");
-                    AcceptedValue as = field.getAnnotation(AcceptedValue.class);
-                    if (as != null) {
-                        List<String> acc = PowerManager.getAcceptedValue(cls, as);
-                        if (Arrays.stream(valueStrs).filter(s -> !s.isEmpty()).anyMatch(v -> !acc.contains(v))) {
-                            throw new Handler.CommandException("message.error.invalid_option", value, field.getName(), String.join(", ", acc));
-                        }
-                    }
                     Stream<String> values = Arrays.stream(valueStrs).filter(s -> !s.isEmpty()).map(String::trim);
                     if (field.getType().equals(List.class)) {
                         if (listArg.isEnum()) {
@@ -497,9 +489,6 @@ public class Utils {
                         } else if (listArg.equals(String.class)) {
                             List<String> list = values.collect(Collectors.toList());
                             field.set(power, list);
-                        } else if (listArg.equals(Trigger.class)) {
-                            List<Trigger> set = Trigger.get(values).collect(Collectors.toList());
-                            field.set(power, set);
                         } else {
                             throw new Handler.CommandException("internal.error.command_exception");
                         }
@@ -512,7 +501,11 @@ public class Utils {
                             Set<String> set = values.collect(Collectors.toSet());
                             field.set(power, set);
                         } else if (listArg.equals(Trigger.class)) {
-                            Set<Trigger> set = Trigger.get(values).collect(Collectors.toSet());
+                            Set<String> ignored = new LinkedHashSet<>();
+                            Set<Trigger> set = Trigger.getValid(values.collect(Collectors.toList()), ignored);
+                            if (!ignored.isEmpty()) {
+                                new Message(I18n.format("message.power.ignored_trigger", String.join(", ", ignored), power.getName(), power.getItem().getName())).send(sender);
+                            }
                             field.set(power, set);
                         } else {
                             throw new Handler.CommandException("internal.error.command_exception");
@@ -561,10 +554,17 @@ public class Utils {
         AcceptedValue as = field.getAnnotation(AcceptedValue.class);
         if (as != null) {
             List<String> acc = PowerManager.getAcceptedValue(cls, as);
-            if (!acc.contains(value) && !Collection.class.isAssignableFrom(field.getType())) {
-                throw new Handler.CommandException("message.error.invalid_option", value, field.getName(), String.join(", ", acc));
+            if (!Collection.class.isAssignableFrom(field.getType())) {
+                if (!acc.contains(value))
+                    throw new Handler.CommandException("message.error.invalid_option", value, field.getName(), String.join(", ", acc));
+            } else {
+                String[] valueStrs = value.split(",");
+                List<String> values = Arrays.stream(valueStrs).filter(s -> !s.isEmpty()).map(String::trim).collect(Collectors.toList());
+                if (values.stream().filter(s -> !s.isEmpty()).anyMatch(v -> !acc.contains(v))) {
+                    throw new Handler.CommandException("message.error.invalid_option", value, field.getName(), String.join(", ", acc));
+                }
             }
         }
-        setPowerPropertyInternal(sender, power, field, value);
+        setPowerPropertyUnchecked(sender, power, field, value);
     }
 }

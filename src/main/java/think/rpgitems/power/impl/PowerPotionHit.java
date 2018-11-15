@@ -19,8 +19,8 @@ import java.util.Random;
  * </p>
  */
 @SuppressWarnings("WeakerAccess")
-@PowerMeta(immutableTrigger = true)
-public class PowerPotionHit extends BasePower implements PowerHit {
+@PowerMeta(immutableTrigger = true, generalInterface = PowerLivingEntity.class)
+public class PowerPotionHit extends BasePower implements PowerHit, PowerLivingEntity {
 
     /**
      * Chance of triggering this power
@@ -55,12 +55,7 @@ public class PowerPotionHit extends BasePower implements PowerHit {
 
     @Override
     public PowerResult<Double> hit(Player player, ItemStack stack, LivingEntity entity, double damage, EntityDamageByEntityEvent event) {
-        if (rand.nextInt(chance) == 0) {
-            if (!getItem().consumeDurability(stack, cost)) return PowerResult.cost();
-            entity.addPotionEffect(new PotionEffect(type, duration, amplifier));
-            return PowerResult.ok(damage);
-        }
-        return PowerResult.noop();
+        return fire(player, stack, entity, damage).with(damage);
     }
 
     @Override
@@ -71,5 +66,15 @@ public class PowerPotionHit extends BasePower implements PowerHit {
     @Override
     public String getName() {
         return "potionhit";
+    }
+
+    @Override
+    public PowerResult<Void> fire(Player player, ItemStack stack, LivingEntity entity, double value) {
+        if (rand.nextInt(chance) != 0) {
+            return PowerResult.noop();
+        }
+        if (!getItem().consumeDurability(stack, cost)) return PowerResult.cost();
+        entity.addPotionEffect(new PotionEffect(type, duration, amplifier));
+        return PowerResult.ok();
     }
 }

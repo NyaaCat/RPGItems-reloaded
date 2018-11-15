@@ -3,7 +3,6 @@ package think.rpgitems.utils;
 import org.bukkit.Bukkit;
 import org.bukkit.Material;
 import org.bukkit.command.CommandSender;
-import think.rpgitems.Handler;
 import think.rpgitems.I18n;
 import think.rpgitems.power.Setter;
 

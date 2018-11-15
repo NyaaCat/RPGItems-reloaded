@@ -1,5 +1,6 @@
 package think.rpgitems.power;
 
+import cat.nyaa.nyaacore.Pair;
 import com.google.common.base.Strings;
 import org.bukkit.entity.LivingEntity;
 import org.bukkit.entity.Player;
@@ -7,6 +8,7 @@ import org.bukkit.event.Event;
 import org.bukkit.event.entity.EntityDamageByEntityEvent;
 import org.bukkit.event.entity.EntityDamageEvent;
 import org.bukkit.event.entity.ProjectileHitEvent;
+import org.bukkit.event.entity.ProjectileLaunchEvent;
 import org.bukkit.event.inventory.InventoryClickEvent;
 import org.bukkit.event.player.PlayerInteractEvent;
 import org.bukkit.event.player.PlayerSwapHandItemsEvent;
@@ -35,11 +37,21 @@ public abstract class Trigger<TEvent extends Event, TPower extends Power, TResul
         return registry.get(name);
     }
 
-    public static Set<Trigger> get(String[] name) {
-        return get(Arrays.stream(name)).collect(Collectors.toSet());
+    public static Set<Trigger> getValid(List<String> name, Set<String> ignored) {
+        Set<Trigger> triggers = new HashSet<>();
+        name.stream().filter(((Predicate<String>) Strings::isNullOrEmpty).negate()).map(s -> Pair.of(s, Trigger.get(s))).forEach(
+                p -> {
+                    if (p.getValue() == null) {
+                        ignored.add(p.getKey());
+                    } else {
+                        triggers.add(p.getValue());
+                    }
+                }
+        );
+        return triggers;
     }
 
-    public static Stream<Trigger> get(Stream<String> name) {
+    public static Stream<Trigger> getValid(Stream<String> name) {
         return name.filter(((Predicate<String>) Strings::isNullOrEmpty).negate()).map(Trigger::get).filter(Objects::nonNull);
     }
 
@@ -75,7 +87,7 @@ public abstract class Trigger<TEvent extends Event, TPower extends Power, TResul
         acceptingNew = false;
     }
 
-    public static final Trigger<EntityDamageByEntityEvent, PowerHit, Double, Double> HIT = new Trigger<EntityDamageByEntityEvent, PowerHit, Double, Double>(Double.class, EntityDamageByEntityEvent.class, PowerHit.class, Double.class, "HIT") {
+    public static final Trigger<EntityDamageByEntityEvent, PowerHit, Double, Double> HIT = new Trigger<EntityDamageByEntityEvent, PowerHit, Double, Double>(EntityDamageByEntityEvent.class, PowerHit.class, Double.class, Double.class, "HIT") {
         @Override
         public Double def(Player player, ItemStack i, EntityDamageByEntityEvent event) {
             return event.getDamage();
@@ -92,14 +104,14 @@ public abstract class Trigger<TEvent extends Event, TPower extends Power, TResul
         }
     };
 
-    public static final Trigger<ProjectileHitEvent, PowerProjectileHit, Void, Void> PROJECTILE_HIT = new Trigger<ProjectileHitEvent, PowerProjectileHit, Void, Void>(Void.class, ProjectileHitEvent.class, PowerProjectileHit.class, Void.class, "PROJECTILE_HIT") {
+    public static final Trigger<ProjectileHitEvent, PowerProjectileHit, Void, Void> PROJECTILE_HIT = new Trigger<ProjectileHitEvent, PowerProjectileHit, Void, Void>(ProjectileHitEvent.class, PowerProjectileHit.class, Void.class, Void.class, "PROJECTILE_HIT") {
         @Override
         public PowerResult<Void> run(PowerProjectileHit power, Player player, ItemStack i, ProjectileHitEvent event) {
             return power.projectileHit(player, i, event);
         }
     };
 
-    public static final Trigger<EntityDamageEvent, PowerHitTaken, Double, Double> HIT_TAKEN = new Trigger<EntityDamageEvent, PowerHitTaken, Double, Double>(Double.class, EntityDamageEvent.class, PowerHitTaken.class, Double.class, "HIT_TAKEN") {
+    public static final Trigger<EntityDamageEvent, PowerHitTaken, Double, Double> HIT_TAKEN = new Trigger<EntityDamageEvent, PowerHitTaken, Double, Double>(EntityDamageEvent.class, PowerHitTaken.class, Double.class, Double.class, "HIT_TAKEN") {
         @Override
         public Double def(Player player, ItemStack i, EntityDamageEvent event) {
             return event.getDamage();
@@ -116,49 +128,49 @@ public abstract class Trigger<TEvent extends Event, TPower extends Power, TResul
         }
     };
 
-    public static final Trigger<EntityDamageEvent, PowerHurt, Void, Void> HURT = new Trigger<EntityDamageEvent, PowerHurt, Void, Void>(Void.class, EntityDamageEvent.class, PowerHurt.class, Void.class, "HURT") {
+    public static final Trigger<EntityDamageEvent, PowerHurt, Void, Void> HURT = new Trigger<EntityDamageEvent, PowerHurt, Void, Void>(EntityDamageEvent.class, PowerHurt.class, Void.class, Void.class, "HURT") {
         @Override
         public PowerResult<Void> run(PowerHurt power, Player player, ItemStack i, EntityDamageEvent event) {
             return power.hurt(player, i, event);
         }
     };
 
-    public static final Trigger<PlayerInteractEvent, PowerLeftClick, Void, Void> LEFT_CLICK = new Trigger<PlayerInteractEvent, PowerLeftClick, Void, Void>(Void.class, PlayerInteractEvent.class, PowerLeftClick.class, Void.class, "LEFT_CLICK") {
+    public static final Trigger<PlayerInteractEvent, PowerLeftClick, Void, Void> LEFT_CLICK = new Trigger<PlayerInteractEvent, PowerLeftClick, Void, Void>(PlayerInteractEvent.class, PowerLeftClick.class, Void.class, Void.class, "LEFT_CLICK") {
         @Override
         public PowerResult<Void> run(PowerLeftClick power, Player player, ItemStack i, PlayerInteractEvent event) {
             return power.leftClick(player, i, event);
         }
     };
 
-    public static final Trigger<PlayerInteractEvent, PowerRightClick, Void, Void> RIGHT_CLICK = new Trigger<PlayerInteractEvent, PowerRightClick, Void, Void>(Void.class, PlayerInteractEvent.class, PowerRightClick.class, Void.class, "RIGHT_CLICK") {
+    public static final Trigger<PlayerInteractEvent, PowerRightClick, Void, Void> RIGHT_CLICK = new Trigger<PlayerInteractEvent, PowerRightClick, Void, Void>(PlayerInteractEvent.class, PowerRightClick.class, Void.class, Void.class, "RIGHT_CLICK") {
         @Override
         public PowerResult<Void> run(PowerRightClick power, Player player, ItemStack i, PlayerInteractEvent event) {
             return power.rightClick(player, i, event);
         }
     };
 
-    public static final Trigger<PlayerInteractEvent, PowerOffhandClick, Void, Void> OFFHAND_CLICK = new Trigger<PlayerInteractEvent, PowerOffhandClick, Void, Void>(Void.class, PlayerInteractEvent.class, PowerOffhandClick.class, Void.class, "OFFHAND_CLICK") {
+    public static final Trigger<PlayerInteractEvent, PowerOffhandClick, Void, Void> OFFHAND_CLICK = new Trigger<PlayerInteractEvent, PowerOffhandClick, Void, Void>(PlayerInteractEvent.class, PowerOffhandClick.class, Void.class, Void.class, "OFFHAND_CLICK") {
         @Override
         public PowerResult<Void> run(PowerOffhandClick power, Player player, ItemStack i, PlayerInteractEvent event) {
             return power.offhandClick(player, i, event);
         }
     };
 
-    public static final Trigger<PlayerToggleSneakEvent, PowerSneak, Void, Void> SNEAK = new Trigger<PlayerToggleSneakEvent, PowerSneak, Void, Void>(Void.class, PlayerToggleSneakEvent.class, PowerSneak.class, Void.class, "SNEAK") {
+    public static final Trigger<PlayerToggleSneakEvent, PowerSneak, Void, Void> SNEAK = new Trigger<PlayerToggleSneakEvent, PowerSneak, Void, Void>(PlayerToggleSneakEvent.class, PowerSneak.class, Void.class, Void.class, "SNEAK") {
         @Override
         public PowerResult<Void> run(PowerSneak power, Player player, ItemStack i, PlayerToggleSneakEvent event) {
             return power.sneak(player, i, event);
         }
     };
 
-    public static final Trigger<PlayerToggleSprintEvent, PowerSprint, Void, Void> SPRINT = new Trigger<PlayerToggleSprintEvent, PowerSprint, Void, Void>(Void.class, PlayerToggleSprintEvent.class, PowerSprint.class, Void.class, "SPRINT") {
+    public static final Trigger<PlayerToggleSprintEvent, PowerSprint, Void, Void> SPRINT = new Trigger<PlayerToggleSprintEvent, PowerSprint, Void, Void>(PlayerToggleSprintEvent.class, PowerSprint.class, Void.class, Void.class, "SPRINT") {
         @Override
         public PowerResult<Void> run(PowerSprint power, Player player, ItemStack i, PlayerToggleSprintEvent event) {
             return power.sprint(player, i, event);
         }
     };
 
-    public static final Trigger<PlayerSwapHandItemsEvent, PowerMainhandItem, Boolean, Boolean> SWAP_TO_OFFHAND = new Trigger<PlayerSwapHandItemsEvent, PowerMainhandItem, Boolean, Boolean>(Boolean.class, PlayerSwapHandItemsEvent.class, PowerMainhandItem.class, Boolean.class, "SWAP_TO_OFFHAND") {
+    public static final Trigger<PlayerSwapHandItemsEvent, PowerMainhandItem, Boolean, Boolean> SWAP_TO_OFFHAND = new Trigger<PlayerSwapHandItemsEvent, PowerMainhandItem, Boolean, Boolean>(PlayerSwapHandItemsEvent.class, PowerMainhandItem.class, Boolean.class, Boolean.class, "SWAP_TO_OFFHAND") {
         @Override
         public Boolean def(Player player, ItemStack i, PlayerSwapHandItemsEvent event) {
             return true;
@@ -175,7 +187,7 @@ public abstract class Trigger<TEvent extends Event, TPower extends Power, TResul
         }
     };
 
-    public static final Trigger<PlayerSwapHandItemsEvent, PowerOffhandItem, Boolean, Boolean> SWAP_TO_MAINHAND = new Trigger<PlayerSwapHandItemsEvent, PowerOffhandItem, Boolean, Boolean>(Boolean.class, PlayerSwapHandItemsEvent.class, PowerOffhandItem.class, Boolean.class, "SWAP_TO_MAINHAND") {
+    public static final Trigger<PlayerSwapHandItemsEvent, PowerOffhandItem, Boolean, Boolean> SWAP_TO_MAINHAND = new Trigger<PlayerSwapHandItemsEvent, PowerOffhandItem, Boolean, Boolean>(PlayerSwapHandItemsEvent.class, PowerOffhandItem.class, Boolean.class, Boolean.class, "SWAP_TO_MAINHAND") {
         @Override
         public Boolean def(Player player, ItemStack i, PlayerSwapHandItemsEvent event) {
             return true;
@@ -192,7 +204,7 @@ public abstract class Trigger<TEvent extends Event, TPower extends Power, TResul
         }
     };
 
-    public static final Trigger<InventoryClickEvent, PowerMainhandItem, Boolean, Boolean> PLACE_OFF_HAND = new Trigger<InventoryClickEvent, PowerMainhandItem, Boolean, Boolean>(Boolean.class, InventoryClickEvent.class, PowerMainhandItem.class, Boolean.class, "PLACE_OFF_HAND") {
+    public static final Trigger<InventoryClickEvent, PowerMainhandItem, Boolean, Boolean> PLACE_OFF_HAND = new Trigger<InventoryClickEvent, PowerMainhandItem, Boolean, Boolean>(InventoryClickEvent.class, PowerMainhandItem.class, Boolean.class, Boolean.class, "PLACE_OFF_HAND") {
         @Override
         public Boolean def(Player player, ItemStack i, InventoryClickEvent event) {
             return true;
@@ -209,7 +221,7 @@ public abstract class Trigger<TEvent extends Event, TPower extends Power, TResul
         }
     };
 
-    public static final Trigger<InventoryClickEvent, PowerOffhandItem, Boolean, Boolean> PICKUP_OFF_HAND = new Trigger<InventoryClickEvent, PowerOffhandItem, Boolean, Boolean>(Boolean.class, InventoryClickEvent.class, PowerOffhandItem.class, Boolean.class, "PICKUP_OFF_HAND") {
+    public static final Trigger<InventoryClickEvent, PowerOffhandItem, Boolean, Boolean> PICKUP_OFF_HAND = new Trigger<InventoryClickEvent, PowerOffhandItem, Boolean, Boolean>(InventoryClickEvent.class, PowerOffhandItem.class, Boolean.class, Boolean.class, "PICKUP_OFF_HAND") {
         @Override
         public Boolean def(Player player, ItemStack i, InventoryClickEvent event) {
             return true;
@@ -226,19 +238,17 @@ public abstract class Trigger<TEvent extends Event, TPower extends Power, TResul
         }
     };
 
-    public static final Trigger<Event, PowerTick, Void, Void> TICK = new Trigger<Event, PowerTick, Void, Void>(Void.class, Event.class, PowerTick.class, Void.class, "TICK") {
-        @Override
-        public Void def(Player player, ItemStack i, Event event) {
-            return null;
-        }
-
-        @Override
-        public Void next(Void a, PowerResult<Void> b) {
-            return null;
-        }
-
+    public static final Trigger<Event, PowerTick, Void, Void> TICK = new Trigger<Event, PowerTick, Void, Void>(Event.class, PowerTick.class, Void.class, Void.class, "TICK") {
         @Override
         public PowerResult<Void> run(PowerTick power, Player player, ItemStack i, Event event) {
+            return power.tick(player, i);
+        }
+    };
+
+
+    public static final Trigger<ProjectileLaunchEvent, PowerTick, Void, Void> LAUNCH_PROJECTILE = new Trigger<ProjectileLaunchEvent, PowerTick, Void, Void>(ProjectileLaunchEvent.class, PowerTick.class, Void.class, Void.class, "PROJECTILE_LAUNCH") {
+        @Override
+        public PowerResult<Void> run(PowerTick power, Player player, ItemStack i, ProjectileLaunchEvent event) {
             return power.tick(player, i);
         }
     };
@@ -249,7 +259,7 @@ public abstract class Trigger<TEvent extends Event, TPower extends Power, TResul
     private final Class<TReturn> returnClass;
     private final String name;
 
-    private Trigger(Class<TReturn> returnClass, Class<TEvent> eventClass, Class<TPower> powerClass, Class<TResult> resultClass, String name) {
+    private Trigger(Class<TEvent> eventClass, Class<TPower> powerClass, Class<TResult> resultClass, Class<TReturn> returnClass, String name) {
         this(name, eventClass, powerClass, resultClass, returnClass);
         register(this);
     }

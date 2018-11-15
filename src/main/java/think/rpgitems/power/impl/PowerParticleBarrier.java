@@ -1,8 +1,10 @@
 package think.rpgitems.power.impl;
 
+import cat.nyaa.nyaacore.Pair;
 import cat.nyaa.nyaacore.utils.RayTraceUtils;
 import com.google.common.cache.Cache;
 import com.google.common.cache.CacheBuilder;
+import org.bukkit.Bukkit;
 import org.bukkit.Location;
 import org.bukkit.Material;
 import org.bukkit.Sound;
@@ -11,6 +13,9 @@ import org.bukkit.entity.ArmorStand;
 import org.bukkit.entity.Entity;
 import org.bukkit.entity.LivingEntity;
 import org.bukkit.entity.Player;
+import org.bukkit.event.EventHandler;
+import org.bukkit.event.HandlerList;
+import org.bukkit.event.Listener;
 import org.bukkit.event.entity.EntityDamageEvent;
 import org.bukkit.event.player.PlayerInteractEvent;
 import org.bukkit.inventory.ItemStack;
@@ -21,7 +26,6 @@ import org.bukkit.util.EulerAngle;
 import org.bukkit.util.Vector;
 import think.rpgitems.RPGItems;
 import think.rpgitems.power.*;
-import think.rpgitems.utils.Pair;
 
 import java.util.Comparator;
 import java.util.List;
@@ -29,7 +33,6 @@ import java.util.Optional;
 import java.util.UUID;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
-import java.util.function.Consumer;
 
 @PowerMeta(defaultTrigger = {"RIGHT_CLICK", "TICK"})
 public class PowerParticleBarrier extends BasePower implements PowerRightClick, PowerLeftClick, PowerTick {
@@ -51,7 +54,7 @@ public class PowerParticleBarrier extends BasePower implements PowerRightClick, 
 
     private static AtomicInteger rc = new AtomicInteger(0);
 
-    private static Consumer<EntityDamageEvent> event;
+    private static Listener event;
 
     private static final Cache<UUID, Double> barriers = CacheBuilder.newBuilder()
                                                                     .expireAfterAccess(1, TimeUnit.MINUTES)
@@ -70,29 +73,32 @@ public class PowerParticleBarrier extends BasePower implements PowerRightClick, 
         int orc = rc.getAndIncrement();
         super.init(s);
         if (orc == 0) {
-            event = entityDamageEvent -> {
-                Entity entity = entityDamageEvent.getEntity();
-                UUID uuid = entity.getUniqueId();
-                Double barrierRemain = barriers.getIfPresent(uuid);
-                if (barrierRemain == null || barrierRemain <= 0) {
-                    return;
+            event = new Listener() {
+                @EventHandler
+                public void onEntityDamage(EntityDamageEvent entityDamageEvent) {
+                    Entity entity = entityDamageEvent.getEntity();
+                    UUID uuid = entity.getUniqueId();
+                    Double barrierRemain = barriers.getIfPresent(uuid);
+                    if (barrierRemain == null || barrierRemain <= 0) {
+                        return;
+                    }
+                    double damage = entityDamageEvent.getDamage();
+                    entityDamageEvent.setDamage(0);
+                    barrierRemain = barrierRemain - damage;
+                    barriers.put(uuid, barrierRemain);
+                    double energyGain = Math.min(energyPerBarrier, damage * energyPerBarrier / barrierHealth);
+                    UUID source = barrierSources.getIfPresent(uuid);
+                    if (source == null) return;
+                    Pair<Long, Double> pair = energys.getIfPresent(source);
+                    long currentTime = System.currentTimeMillis();
+                    boolean last = pair != null;
+                    long lastTime = last ? pair.getKey() : currentTime;
+                    double currentEnergy = last && pair.getValue() > 0 ? pair.getValue() : 0;
+                    double energy = currentEnergy - (currentTime - lastTime) * energyDecay / 1000 + energyGain;
+                    energys.put(source, new Pair<>(currentTime, Math.max(energy, 100.0d)));
                 }
-                double damage = entityDamageEvent.getDamage();
-                entityDamageEvent.setDamage(0);
-                barrierRemain = barrierRemain - damage;
-                barriers.put(uuid, barrierRemain);
-                double energyGain = Math.min(energyPerBarrier, damage * energyPerBarrier / barrierHealth);
-                UUID source = barrierSources.getIfPresent(uuid);
-                if (source == null) return;
-                Pair<Long, Double> pair = energys.getIfPresent(source);
-                long currentTime = System.currentTimeMillis();
-                boolean last = pair != null;
-                long lastTime = last ? pair.getKey() : currentTime;
-                double currentEnergy = last && pair.getValue() > 0 ? pair.getValue() : 0;
-                double energy = currentEnergy - (currentTime - lastTime) * energyDecay / 1000 + energyGain;
-                energys.put(source, new Pair<>(currentTime, Math.max(energy, 100.0d)));
             };
-            RPGItems.listener.addEventListener(EntityDamageEvent.class, event);
+            Bukkit.getPluginManager().registerEvents(event, RPGItems.plugin);
         }
     }
 
@@ -215,7 +221,7 @@ public class PowerParticleBarrier extends BasePower implements PowerRightClick, 
     public void deinit() {
         int nrc = rc.decrementAndGet();
         if (nrc == 0) {
-            RPGItems.listener.removeEventListener(EntityDamageEvent.class, event);
+            HandlerList.unregisterAll(event);
         }
     }
 

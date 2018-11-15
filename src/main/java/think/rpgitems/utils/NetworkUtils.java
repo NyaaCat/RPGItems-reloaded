@@ -1,13 +1,11 @@
 package think.rpgitems.utils;
 
-
 import cat.nyaa.nyaacore.http.client.HttpClient;
 import com.google.common.base.Strings;
 import com.google.gson.Gson;
 import com.google.gson.internal.LinkedTreeMap;
 import io.netty.handler.codec.http.FullHttpResponse;
 import io.netty.util.ReferenceCountUtil;
-import org.bukkit.configuration.InvalidConfigurationException;
 import think.rpgitems.Handler;
 
 import java.util.Collections;

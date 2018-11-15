@@ -1,10 +1,12 @@
 package think.rpgitems.power.impl;
 
-import org.bukkit.Effect;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
 import think.rpgitems.I18n;
-import think.rpgitems.power.*;
+import think.rpgitems.power.PowerMeta;
+import think.rpgitems.power.PowerResult;
+import think.rpgitems.power.PowerTick;
+import think.rpgitems.power.Property;
 
 import static think.rpgitems.power.Utils.checkCooldown;
 

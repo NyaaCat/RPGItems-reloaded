@@ -40,6 +40,7 @@ message:
     reloading_locked: 无法重载一个尚未解锁的物品
     recovering: 恢复失败。建议停止服务器并手动检查物品配置及其备份。
     item_unlocked: 无法编辑已解锁的物品%s。请重载它再编辑。
+    loading: 从%s加载物品时出错。%s
   wgcustomflag:
     disable: Worldguard 自定义标志已禁用
     enable: Worldguard 自定义标志已启用
@@ -161,8 +162,10 @@ message:
     empty_dir: 跳过空目录 %s
     file_deleted: 物品配置已删除。
     recovering: 重载物品失败，恢复中。您的修改已保存至 %s。
-    unlocked: 物品已结束，备份至 %s。
+    unlocked: 物品 %s 已解锁，备份至 %s。
+    backedup: 物品 %s 已备份至 %s。
     cleanbackup: 已清理备份。
+    no_backup: 未找到物品 %s 的备份。
   damagemode:
     FIXED: 物品 '%s' 伤害模式设定为固定伤害（默认）
     MULTIPLY: 物品 '%s' 伤害模式设定为乘法伤害（原版伤害乘以RPG伤害）
@@ -195,6 +198,7 @@ message:
     no_display: 无说明
     no_description: 暂无说明
     reorder: 物品 %s 的技能 %s 已调整顺序
+    ignored_trigger: 忽略物品%3$s技能%2$s的未知触发%1$s
   toggleLore:
     show: 文字已显示
     hide: 文字已隐藏

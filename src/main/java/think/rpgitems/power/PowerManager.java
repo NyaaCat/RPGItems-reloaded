@@ -40,6 +40,8 @@ public class PowerManager {
 
     static final HashBasedTable<Class<? extends Power>, Class<? extends Power>, Function> adapters = HashBasedTable.create();
 
+    private static final HashMap<NamespacedKey, NamespacedKey> overrides = new HashMap<>();
+
     private static void registerPower(Class<? extends Power> clazz) {
         NamespacedKey key;
         try {
@@ -157,7 +159,7 @@ public class PowerManager {
 
     @CheckForNull
     public static Class<? extends Power> getPower(NamespacedKey key) {
-        return powers.get(key);
+        return powers.get(overrides.computeIfAbsent(key, Function.identity()));
     }
 
     @CheckForNull
@@ -191,7 +193,7 @@ public class PowerManager {
     }
 
     public static <T extends Power> T adaptPower(Power power, Class<T> specified) {
-        List<Class<? extends Power>> generals = Arrays.asList(power.getClass().getAnnotation(PowerMeta.class).generalInterface());
+        List<Class<? extends Power>> generals = Arrays.asList(getMeta(power.getNamespacedKey()).generalInterface());
         Set<Class<? extends Power>> statics = Power.getStaticInterfaces(power.getClass());
         List<Class<? extends Power>> preferences = generals.stream().filter(statics::contains).collect(Collectors.toList());
 
@@ -201,5 +203,23 @@ public class PowerManager {
             }
         }
         throw new ClassCastException();
+    }
+
+    public static void registerOverride(NamespacedKey origin, NamespacedKey override) {
+        if (overrides.containsKey(origin)) {
+            throw new IllegalArgumentException("Cannot override a already overridden power: " + origin + " " + override);
+        }
+        Class<? extends Power> originPower = getPower(origin);
+        Class<? extends Power> overridePower = getPower(override);
+        if (originPower == null) {
+            throw new IllegalArgumentException("Overriding not registered power: " + origin);
+        }
+        if (overridePower == null) {
+            throw new IllegalArgumentException("Override not found: " + override);
+        }
+        if (!originPower.isAssignableFrom(overridePower)) {
+            throw new IllegalArgumentException("Not overrideable: " + origin + "@" + originPower.toGenericString() + " " + override + "@" + overridePower.toGenericString());
+        }
+        overrides.put(origin, override);
     }
 }

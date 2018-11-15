@@ -20,6 +20,8 @@ import org.bukkit.Sound;
 import org.bukkit.entity.Player;
 import org.bukkit.entity.SmallFireball;
 import org.bukkit.event.player.PlayerInteractEvent;
+import org.bukkit.event.player.PlayerToggleSneakEvent;
+import org.bukkit.event.player.PlayerToggleSprintEvent;
 import org.bukkit.inventory.ItemStack;
 import think.rpgitems.Events;
 import think.rpgitems.I18n;
@@ -34,7 +36,7 @@ import static think.rpgitems.power.Utils.checkCooldown;
  * </p>
  */
 @PowerMeta(defaultTrigger = "RIGHT_CLICK", generalInterface = PowerPlain.class)
-public class PowerFireball extends BasePower implements PowerRightClick, PowerLeftClick, PowerPlain {
+public class PowerFireball extends BasePower implements PowerRightClick, PowerLeftClick, PowerSprint, PowerSneak, PowerPlain {
 
     /**
      * Cooldown time of this power
@@ -67,6 +69,16 @@ public class PowerFireball extends BasePower implements PowerRightClick, PowerLe
         Events.rpgProjectiles.put(entity.getEntityId(), getItem().getUID());
         entity.setPersistent(false);
         return PowerResult.ok();
+    }
+
+    @Override
+    public PowerResult<Void> sneak(Player player, ItemStack stack, PlayerToggleSneakEvent event) {
+        return fire(player, stack);
+    }
+
+    @Override
+    public PowerResult<Void> sprint(Player player, ItemStack stack, PlayerToggleSprintEvent event) {
+        return fire(player, stack);
     }
 
     @Override

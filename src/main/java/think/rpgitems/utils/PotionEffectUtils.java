@@ -1,7 +1,6 @@
 package think.rpgitems.utils;
 
 import org.bukkit.potion.PotionEffectType;
-import think.rpgitems.Handler;
 import think.rpgitems.power.Getter;
 import think.rpgitems.power.Setter;
 
