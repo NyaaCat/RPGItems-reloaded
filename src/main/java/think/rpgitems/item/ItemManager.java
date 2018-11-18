@@ -116,10 +116,7 @@ public class ItemManager {
         }
         setItemsDir(mkdir());
         setBackupsDir(mkbkdir());
-        File[] files = getItemsDir().listFiles((d, n) -> n.endsWith("yml"));
-        for (File file : Objects.requireNonNull(files)) {
-            load(file, null);
-        }
+        load(getItemsDir(), plugin.cfg.itemShowLoaded ? Bukkit.getConsoleSender() : null);
     }
 
     public static boolean load(File file, CommandSender sender) {
@@ -196,14 +193,14 @@ public class ItemManager {
     public static void addItem(RPGItem item) {
         try {
             if (item.getID() != 0) {
-                if(itemById.putIfAbsent(item.getID(), item) != null) {
+                if (itemById.putIfAbsent(item.getID(), item) != null) {
                     throw new IllegalArgumentException("Duplicated item id:" + item.getID());
                 }
             }
-            if(itemById.putIfAbsent(item.getUID(), item) != null) {
+            if (itemById.putIfAbsent(item.getUID(), item) != null) {
                 throw new IllegalArgumentException("Duplicated item uid:" + item.getUID());
             }
-            if(itemByName.putIfAbsent(item.getName(), item) != null) {
+            if (itemByName.putIfAbsent(item.getName(), item) != null) {
                 throw new IllegalArgumentException("Duplicated item name:" + item.getUID());
             }
         } catch (Exception e) {

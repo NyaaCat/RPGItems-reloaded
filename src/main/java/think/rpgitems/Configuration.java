@@ -21,16 +21,16 @@ public class Configuration extends PluginConfigure {
     @Serializable
     public String version = "1.0";
 
-    @Serializable(name ="general.locale_inv", alias = "localeInv")
+    @Serializable(name = "general.locale_inv", alias = "localeInv")
     public boolean localeInv = false;
 
-    @Serializable(name ="general.pid_compat", alias = "pidCompat")
+    @Serializable(name = "general.pid_compat", alias = "pidCompat")
     public boolean pidCompat = false;
 
-    @Serializable(name ="command.list.item_per_page", alias = "itemperpage")
+    @Serializable(name = "command.list.item_per_page", alias = "itemperpage")
     public int itemPerPage = 9;
 
-    @Serializable(name ="command.list.power_per_page")
+    @Serializable(name = "command.list.power_per_page")
     public int powerPerPage = 5;
 
     @Serializable(name = "support.worldguard")
@@ -39,7 +39,7 @@ public class Configuration extends PluginConfigure {
     @Serializable(name = "support.wgforcerefresh")
     public boolean wgForceRefresh = false;
 
-    @Serializable(name ="general.give_perms", alias = "give-perms")
+    @Serializable(name = "general.give_perms", alias = "give-perms")
     public boolean givePerms = false;
 
     @Serializable(name = "gist.token", alias = "githubToken")
@@ -65,4 +65,7 @@ public class Configuration extends PluginConfigure {
 
     @Serializable(name = "general.item.fs_lock")
     public boolean itemFsLock = true;
+
+    @Serializable(name = "general.item.show_loaded")
+    public boolean itemShowLoaded = false;
 }
