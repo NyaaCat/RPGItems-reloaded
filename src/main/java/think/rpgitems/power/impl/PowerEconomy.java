@@ -25,7 +25,7 @@ public class PowerEconomy extends BasePower implements PowerRightClick, PowerLef
     /**
      * Cooldown time of this power
      */
-    @Property(order = 2)
+    @Property
     public int cooldown = 20;
 
     @Property
@@ -35,7 +35,7 @@ public class PowerEconomy extends BasePower implements PowerRightClick, PowerLef
     public boolean showFailMessage;
 
     @Property
-    public boolean abortOnFailure;
+    public boolean abortOnFailure = true;
 
     @Override
     public PowerResult<Void> leftClick(Player player, ItemStack stack, PlayerInteractEvent event) {
@@ -55,7 +55,7 @@ public class PowerEconomy extends BasePower implements PowerRightClick, PowerLef
 
     @Override
     public PowerResult<Void> fire(Player player, ItemStack stack) {
-        if (!checkCooldown(this, player, cooldown, true)) return PowerResult.cd();
+        if (!checkCooldown(this, player, cooldown, true)) return abortOnFailure ? PowerResult.abort() : PowerResult.cd();
         EconomyResponse economyResponse;
         if (amountToPlayer > 0) {
             economyResponse = eco.depositPlayer(player, amountToPlayer);

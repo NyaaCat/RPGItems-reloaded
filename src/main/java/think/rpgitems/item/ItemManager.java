@@ -212,6 +212,8 @@ public class ItemManager {
     }
 
     private static void loadFromLegacyFile(File f) {
+        plugin.cfg.pidCompat = true;
+        plugin.cfg.save();
         try {
             FileInputStream in = null;
             YamlConfiguration itemStorage;
