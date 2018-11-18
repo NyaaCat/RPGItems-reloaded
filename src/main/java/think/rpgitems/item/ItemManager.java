@@ -29,19 +29,23 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.StandardCopyOption;
 import java.nio.file.StandardOpenOption;
+import java.util.Arrays;
 import java.util.Collections;
-import java.util.HashMap;
 import java.util.Objects;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ConcurrentMap;
+import java.util.concurrent.ForkJoinPool;
 import java.util.concurrent.ThreadLocalRandom;
 import java.util.logging.Level;
 
 import static think.rpgitems.item.RPGItem.updateItem;
 
 public class ItemManager {
-    public static HashMap<Integer, RPGItem> itemById = new HashMap<>();
-    public static HashMap<String, RPGItem> itemByName = new HashMap<>();
-    public static HashMap<String, FileLock> itemFileLocks = new HashMap<>();
-    public static HashMap<RPGItem, Pair<File, FileLock>> unlockedItem = new HashMap<>();
+    public static ConcurrentMap<Integer, RPGItem> itemById = new ConcurrentHashMap<>();
+    public static ConcurrentMap<String, RPGItem> itemByName = new ConcurrentHashMap<>();
+    public static ConcurrentMap<String, FileLock> itemFileLocks = new ConcurrentHashMap<>();
+    public static ConcurrentMap<RPGItem, Pair<File, FileLock>> unlockedItem = new ConcurrentHashMap<>();
+    public static final ForkJoinPool loadingPool = new ForkJoinPool();
     private static RPGItems plugin;
     private static File itemsDir;
     private static File backupsDir;
@@ -69,8 +73,8 @@ public class ItemManager {
 
     public static void unload() {
         itemByName.values().forEach(RPGItem::deinit);
-        itemById = new HashMap<>();
-        itemByName = new HashMap<>();
+        itemById = new ConcurrentHashMap<>();
+        itemByName = new ConcurrentHashMap<>();
         resetLock();
     }
 
@@ -116,10 +120,7 @@ public class ItemManager {
         }
         setItemsDir(mkdir());
         setBackupsDir(mkbkdir());
-        File[] files = getItemsDir().listFiles((d, n) -> n.endsWith("yml"));
-        for (File file : Objects.requireNonNull(files)) {
-            load(file, null);
-        }
+        load(getItemsDir(), plugin.cfg.itemShowLoaded ? Bukkit.getConsoleSender() : null);
     }
 
     public static boolean load(File file, CommandSender sender) {
@@ -134,11 +135,7 @@ public class ItemManager {
                     new Message(I18n.format("message.item.empty_dir", file.getPath())).send(sender);
                     return false;
                 }
-                for (File subFile : subFiles) {
-                    if (subFile.isFile()) {
-                        load(subFile, sender);
-                    }
-                }
+                loadingPool.submit(() -> Arrays.stream(subFiles).parallel().filter(File::isFile).filter(File::canRead).forEach(subFile -> load(subFile, sender))).get();
                 return false;
             }
             RPGItem item = load(file);
@@ -186,7 +183,10 @@ public class ItemManager {
         }
         YamlConfiguration itemStorage = new YamlConfiguration();
         itemStorage.load(file);
-        RPGItem item = new RPGItem(itemStorage, file);
+        RPGItem item;
+        synchronized (loadingPool) {
+            item = new RPGItem(itemStorage, file);
+        }
         addItem(item);
         lock(file);
         return item;
@@ -196,14 +196,14 @@ public class ItemManager {
     public static void addItem(RPGItem item) {
         try {
             if (item.getID() != 0) {
-                if(itemById.putIfAbsent(item.getID(), item) != null) {
+                if (itemById.putIfAbsent(item.getID(), item) != null) {
                     throw new IllegalArgumentException("Duplicated item id:" + item.getID());
                 }
             }
-            if(itemById.putIfAbsent(item.getUID(), item) != null) {
+            if (itemById.putIfAbsent(item.getUID(), item) != null) {
                 throw new IllegalArgumentException("Duplicated item uid:" + item.getUID());
             }
-            if(itemByName.putIfAbsent(item.getName(), item) != null) {
+            if (itemByName.putIfAbsent(item.getName(), item) != null) {
                 throw new IllegalArgumentException("Duplicated item name:" + item.getUID());
             }
         } catch (Exception e) {
@@ -419,7 +419,7 @@ public class ItemManager {
                 }
             }
         }
-        itemFileLocks = new HashMap<>();
+        itemFileLocks = new ConcurrentHashMap<>();
         for (Pair<File, FileLock> lockPair : unlockedItem.values()) {
             try {
                 lockPair.getValue().release();
@@ -433,7 +433,7 @@ public class ItemManager {
                 }
             }
         }
-        unlockedItem = new HashMap<>();
+        unlockedItem = new ConcurrentHashMap<>();
     }
 
     public static File unlockAndBackup(RPGItem item, boolean remove) throws IOException {

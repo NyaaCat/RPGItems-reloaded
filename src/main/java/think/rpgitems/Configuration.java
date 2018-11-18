@@ -65,4 +65,7 @@ public class Configuration extends PluginConfigure {
 
     @Serializable(name = "general.item.fs_lock")
     public boolean itemFsLock = true;
+
+    @Serializable(name = "general.item.show_loaded")
+    public boolean itemShowLoaded = true;
 }

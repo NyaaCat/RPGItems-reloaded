@@ -1305,7 +1305,7 @@ public class RPGItem {
         return powers.stream().filter(p -> p.getTriggers().contains(trigger)).map(p -> p.cast(trigger.getPowerClass())).collect(Collectors.toList());
     }
 
-    public void deinit() {
+    void deinit() {
         powers.forEach(Power::deinit);
     }
 
