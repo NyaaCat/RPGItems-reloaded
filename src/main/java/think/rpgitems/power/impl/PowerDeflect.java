@@ -15,10 +15,7 @@ import think.rpgitems.I18n;
 import think.rpgitems.RPGItems;
 import think.rpgitems.power.*;
 
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.Map;
-import java.util.UUID;
+import java.util.*;
 import java.util.concurrent.ThreadLocalRandom;
 
 import static think.rpgitems.power.Utils.*;
@@ -33,7 +30,7 @@ import static think.rpgitems.power.Utils.*;
  */
 @SuppressWarnings("WeakerAccess")
 @PowerMeta(defaultTrigger = "RIGHT_CLICK")
-public class PowerDeflect extends BasePower implements PowerHitTaken, PowerRightClick, PowerLeftClick {
+public class PowerDeflect extends BasePower implements PowerHitTaken, PowerRightClick, PowerLeftClick, PowerPlain {
 
     /**
      * Cooldown time of this power
@@ -90,10 +87,10 @@ public class PowerDeflect extends BasePower implements PowerHitTaken, PowerRight
         boolean initiative = section.getBoolean("initiative", true);
         boolean isRight = section.getBoolean("isRight", true);
         triggers = new HashSet<>();
-        if(passive){
+        if (passive) {
             triggers.add(Trigger.HIT_TAKEN);
         }
-        if(initiative){
+        if (initiative) {
             triggers.add(isRight ? Trigger.RIGHT_CLICK : Trigger.LEFT_CLICK);
         }
         super.init(section);
@@ -101,10 +98,20 @@ public class PowerDeflect extends BasePower implements PowerHitTaken, PowerRight
 
     @Override
     public PowerResult<Double> takeHit(Player target, ItemStack stack, double damage, EntityDamageEvent event) {
-        if (!((System.currentTimeMillis() / 50 < time.get(target.getUniqueId()))
-                      || (ThreadLocalRandom.current().nextInt(0, 100) < chance) && checkCooldown(this, target, cooldownpassive, false))
-                    || !getItem().consumeDurability(stack, cost))
+        if (!(target.getInventory().getItemInMainHand().equals(stack) || target.getInventory().getItemInOffHand().equals(stack))) {
             return PowerResult.noop();
+        }
+        boolean activated = System.currentTimeMillis() / 50 < time.getOrDefault(target.getUniqueId(), 0L);
+
+        if (!activated) {
+            if (!triggers.contains(Trigger.HIT_TAKEN)
+                        || ThreadLocalRandom.current().nextInt(0, 100) >= chance)
+                return PowerResult.noop();
+            if (!checkCooldown(this, target, cooldownpassive, false)) return PowerResult.cd();
+        }
+
+        if (!getItem().consumeDurability(stack, cost)) return PowerResult.cost();
+
         if (event instanceof EntityDamageByEntityEvent) {
             EntityDamageByEntityEvent byEntityEvent = (EntityDamageByEntityEvent) event;
             if (byEntityEvent.getDamager() instanceof Projectile) {
@@ -142,6 +149,11 @@ public class PowerDeflect extends BasePower implements PowerHitTaken, PowerRight
 
     @Override
     public PowerResult<Void> rightClick(Player player, ItemStack stack, PlayerInteractEvent event) {
+        return fire(player, stack);
+    }
+
+    @Override
+    public PowerResult<Void> fire(Player player, ItemStack stack) {
         if (!checkCooldownByString(player, getItem(), "deflect.initiative", cooldown, true))
             return PowerResult.noop();
         if (!getItem().consumeDurability(stack, cost))
@@ -152,11 +164,13 @@ public class PowerDeflect extends BasePower implements PowerHitTaken, PowerRight
 
     @Override
     public PowerResult<Void> leftClick(Player player, ItemStack stack, PlayerInteractEvent event) {
-        if (!checkCooldownByString(player, getItem(), "deflect.initiative", cooldown, true))
-            return PowerResult.noop();
-        if (!getItem().consumeDurability(stack, cost))
-            return PowerResult.cost();
-        time.put(player.getUniqueId(), System.currentTimeMillis() / 50 + duration);
-        return PowerResult.ok();
+        return fire(player, stack);
+    }
+
+    @Override
+    public Set<Trigger> getTriggers() {
+        HashSet<Trigger> triggers = new HashSet<>(super.getTriggers());
+        triggers.add(Trigger.HIT_TAKEN);
+        return triggers;
     }
 }
