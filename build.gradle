@@ -72,6 +72,8 @@ dependencies {
 String nyaaCoreLangDir = System.getenv("NYAACORE_LANG_DIR")
 
 tasks.withType(JavaCompile) {
+    options.fork = true
+    options.forkOptions.jvmArgs += ["-Duser.language=en"]
     options.compilerArgs += ["-Xplugin:NyaaUtilsLangAnnotationProcessor", "-Xlint:deprecation", "-Xlint:unchecked"]
     if (nyaaCoreLangDir != null) {
         options.compilerArgs += ["-ALANG_DIR_ADDITIONAL_PATH=" + nyaaCoreLangDir]

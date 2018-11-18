@@ -26,22 +26,19 @@ import think.rpgitems.utils.MaterialUtils;
 import java.lang.reflect.Field;
 import java.lang.reflect.ParameterizedType;
 import java.util.*;
+import java.util.logging.Level;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 public class Utils {
 
-    public static Map<String, Long> cooldowns = new HashMap<>();
+    private static Map<String, Long> cooldowns = new HashMap<>();
 
     public static List<Entity> getNearbyEntities(Power power, Location l, Player player, double radius, double dx, double dy, double dz) {
         List<Entity> entities = new ArrayList<>();
         for (Entity e : l.getWorld().getNearbyEntities(l, dx, dy, dz)) {
-            try {
-                if (l.distance(e.getLocation()) <= radius) {
-                    entities.add(e);
-                }
-            } catch (RuntimeException ex) {
-                ex.printStackTrace();
+            if (l.distance(e.getLocation()) <= radius) {
+                entities.add(e);
             }
         }
         power.getItem().powers.stream().filter(pow -> pow instanceof PowerSelector).forEach(
@@ -78,21 +75,17 @@ public class Utils {
      * @return nearby living entities ordered by distance
      */
     public static List<LivingEntity> getNearestLivingEntities(Power power, Location l, Player player, double radius, double min) {
-        final java.util.List<java.util.Map.Entry<LivingEntity, Double>> entities = new java.util.ArrayList<>();
+        final List<Map.Entry<LivingEntity, Double>> entities = new ArrayList<>();
         for (Entity e : getNearbyEntities(power, l, player, radius)) {
-            try {
-                if (e instanceof LivingEntity && !player.equals(e)) {
-                    double d = l.distance(e.getLocation());
-                    if (d <= radius && d >= min) {
-                        entities.add(new AbstractMap.SimpleImmutableEntry<>((LivingEntity) e, d));
-                    }
+            if (e instanceof LivingEntity && !player.equals(e)) {
+                double d = l.distance(e.getLocation());
+                if (d <= radius && d >= min) {
+                    entities.add(new AbstractMap.SimpleImmutableEntry<>((LivingEntity) e, d));
                 }
-            } catch (RuntimeException ex) {
-                ex.printStackTrace();
             }
         }
-        java.util.List<LivingEntity> entity = new java.util.ArrayList<>();
-        entities.sort(Comparator.comparing(java.util.Map.Entry::getValue));
+        List<LivingEntity> entity = new ArrayList<>();
+        entities.sort(Comparator.comparing(Map.Entry::getValue));
         entities.forEach((k) -> entity.add(k.getKey()));
         return entity;
     }
@@ -138,23 +131,17 @@ public class Utils {
      * @return the boolean
      */
     public static boolean checkCooldown(Power power, Player p, long cdTicks, boolean showWarn) {
-        long cooldown;
-
         String key = p.getName() + "." + power.getItem().getUID() + "." + power.getNamespacedKey().toString() + ".cooldown";
-        Long value = cooldowns.get(key);
-        long nowTick = System.currentTimeMillis() / 50;
-        if (value == null) {
-            cooldown = nowTick;
-            cooldowns.put(key, cooldown);
-        } else {
-            cooldown = value;
-        }
-        return checkAndSetCooldown(p, cdTicks, showWarn, cooldown, key, nowTick);
+        return checkAndSetCooldown(p, cdTicks, showWarn, key);
     }
 
     public static boolean checkCooldownByString(Player player, RPGItem item, String command, long cooldownTime, boolean showWarn) {
-        long cooldown;
         String key = player.getName() + "." + item.getUID() + "." + "command." + command + ".cooldown";
+        return checkAndSetCooldown(player, cooldownTime, showWarn, key);
+    }
+
+    private static boolean checkAndSetCooldown(Player player, long cooldownTime, boolean showWarn, String key) {
+        long cooldown;
         Long value = cooldowns.get(key);
         long nowTick = System.currentTimeMillis() / 50;
         if (value == null) {
@@ -163,10 +150,6 @@ public class Utils {
         } else {
             cooldown = value;
         }
-        return checkAndSetCooldown(player, cooldownTime, showWarn, cooldown, key, nowTick);
-    }
-
-    public static boolean checkAndSetCooldown(Player player, long cooldownTime, boolean showWarn, long cooldown, String key, long nowTick) {
         if (cooldown <= nowTick) {
             cooldowns.put(key, nowTick + cooldownTime);
             return true;
@@ -214,7 +197,7 @@ public class Utils {
         try {
             saveProperty(p, configuration, property, field);
         } catch (IllegalAccessException e) {
-            e.printStackTrace();
+            RPGItems.plugin.getLogger().log(Level.WARNING, "Error getting property " + property + " from " + field + " in " + p, e);
             return null;
         }
         return configuration.getString(property);
@@ -484,7 +467,8 @@ public class Utils {
                     if (field.getType().equals(List.class)) {
                         if (listArg.isEnum()) {
                             Class<? extends Enum> enumClass = (Class<? extends Enum>) listArg;
-                            List<Enum> list = (List<Enum>) values.map(v -> Enum.valueOf(enumClass, v)).collect(Collectors.toList());
+                            Stream<Enum> enumStream = values.map(v -> Enum.valueOf(enumClass, v));
+                            List<Enum> list = enumStream.collect(Collectors.toList());
                             field.set(power, list);
                         } else if (listArg.equals(String.class)) {
                             List<String> list = values.collect(Collectors.toList());
@@ -495,7 +479,8 @@ public class Utils {
                     } else {
                         if (listArg.isEnum()) {
                             Class<? extends Enum> enumClass = (Class<? extends Enum>) listArg;
-                            Set<Enum> set = (Set<Enum>) values.map(v -> Enum.valueOf(enumClass, v)).collect(Collectors.toSet());
+                            Stream<Enum> enumStream = values.map(v -> Enum.valueOf(enumClass, v));
+                            Set<Enum> set = enumStream.collect(Collectors.toSet());
                             field.set(power, set);
                         } else if (listArg.equals(String.class)) {
                             Set<String> set = values.collect(Collectors.toSet());
@@ -536,7 +521,6 @@ public class Utils {
         }
     }
 
-    @SuppressWarnings("unchecked")
     public static void setPowerProperty(CommandSender sender, Power power, Field field, String value) throws
             IllegalAccessException {
         Class<? extends Power> cls = power.getClass();

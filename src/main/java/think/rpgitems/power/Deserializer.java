@@ -11,5 +11,6 @@ import java.lang.annotation.Target;
 @Target(ElementType.FIELD)
 public @interface Deserializer {
     Class<? extends Setter> value();
+
     @LangKey String message() default "";
 }
