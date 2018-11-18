@@ -536,6 +536,7 @@ power:
       main_name: Lifesteal
       main_description: Restore health by damage dealt
       chance: Chance of triggering this power, in percentage
+      factor: Factor of life steal
     lightning:
       main_name: Lightning
       main_description: Strike the hit target with lightning

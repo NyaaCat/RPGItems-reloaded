@@ -46,6 +46,11 @@ public class PowerLifeSteal extends BasePower implements PowerHit, PowerLivingEn
      */
     @Property
     public int cost = 0;
+    /**
+     * Factor of life steal
+     */
+    @Property
+    public double factor = 1;
 
     private Random random = new Random();
 
@@ -58,10 +63,7 @@ public class PowerLifeSteal extends BasePower implements PowerHit, PowerLivingEn
     public PowerResult<Void> fire(Player player, ItemStack stack, LivingEntity entity, double damage) {
         if (random.nextInt(chance) == 0) {
             if (!getItem().consumeDurability(stack, cost)) return PowerResult.cost();
-            if ((player.getHealth() + damage) >= player.getAttribute(Attribute.GENERIC_MAX_HEALTH).getValue()) {
-                player.setHealth(player.getAttribute(Attribute.GENERIC_MAX_HEALTH).getValue());
-            } else
-                player.setHealth(player.getHealth() + damage);
+            player.setHealth(Math.max(Math.min(player.getHealth() + damage * factor, player.getAttribute(Attribute.GENERIC_MAX_HEALTH).getValue()), 0.01));
             return PowerResult.ok();
         }
         return PowerResult.noop();

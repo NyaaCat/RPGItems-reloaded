@@ -530,6 +530,7 @@ power:
       main_name: 吸血
       main_description: 按造成的攻击伤害回血
       chance: 触发几率，百分比
+      factor: 吸血量的系数
     lightning:
       main_name: 闪电
       main_description: 在击中处降下一道闪电
