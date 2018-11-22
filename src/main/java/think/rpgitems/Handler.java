@@ -401,6 +401,7 @@ public class Handler extends RPGCommandReceiver {
         if (value != null) {
             item.setDisplay(value);
             msg(sender, "message.display.set", item.getName(), item.getDisplay());
+            ItemManager.refreshItem();
             ItemManager.save(item);
         } else {
             msg(sender, "message.display.get", item.getName(), item.getDisplay());
@@ -429,6 +430,7 @@ public class Handler extends RPGCommandReceiver {
             } else {
                 msg(sender, "message.damage.set.value", item.getName(), item.getDamageMin());
             }
+            ItemManager.refreshItem();
             ItemManager.save(item);
         } catch (BadCommandException e) {
             msg(sender, "message.damage.get", item.getName(), item.getDamageMin(), item.getDamageMax());
@@ -443,6 +445,7 @@ public class Handler extends RPGCommandReceiver {
             int armour = args.nextInt();
             item.setArmour(armour);
             msg(sender, "message.armour.set", item.getName(), item.getArmour());
+            ItemManager.refreshItem();
             ItemManager.save(item);
         } catch (BadCommandException e) {
             msg(sender, "message.armour.get", item.getName(), item.getArmour());
@@ -457,6 +460,7 @@ public class Handler extends RPGCommandReceiver {
         if (type != null) {
             item.setType(type);
             msg(sender, "message.type.set", item.getName(), item.getType());
+            ItemManager.refreshItem();
             ItemManager.save(item);
         } else {
             msg(sender, "message.type.get", item.getName(), item.getType());
@@ -471,6 +475,7 @@ public class Handler extends RPGCommandReceiver {
         if (type != null) {
             item.setHand(type);
             msg(sender, "message.hand.set", item.getName(), item.getType());
+            ItemManager.refreshItem();
             ItemManager.save(item);
         } else {
             msg(sender, "message.hand.get", item.getName(), item.getType());
@@ -1149,7 +1154,7 @@ public class Handler extends RPGCommandReceiver {
         RPGItem item = getItem(args.nextString(), sender, true);
         String name = args.nextString();
         RPGItem i = ItemManager.cloneItem(item, name);
-        ItemManager.save(item);
+        ItemManager.save(i);
         if (i != null) {
             msg(sender, "message.cloneitem.success", item.getName(), i.getName());
         } else {

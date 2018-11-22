@@ -498,8 +498,7 @@ public class ItemManager {
         } catch (UnknownPowerException | UnknownExtensionException e) {
             throw new RuntimeException(e);
         }
-        itemById.put(free, newItem);
-        itemByName.put(name, newItem);
+        addItem(newItem);
         return newItem;
     }
 
