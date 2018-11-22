@@ -44,6 +44,7 @@ import java.nio.file.attribute.BasicFileAttributes;
 import java.util.*;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeoutException;
+import java.util.logging.Level;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -1090,7 +1091,7 @@ public class Handler extends RPGCommandReceiver {
             power.setItem(item);
             power.init(new YamlConfiguration());
         } catch (InstantiationException | IllegalAccessException | NoSuchMethodException | InvocationTargetException e) {
-            e.printStackTrace();
+            plugin.getLogger().log(Level.WARNING, "Error adding power " + powerStr + " to item " + itemStr + " " + item, e);
             msg(sender, "internal.error.command_exception");
             return;
         }
@@ -1137,6 +1138,7 @@ public class Handler extends RPGCommandReceiver {
             settled.add(field);
         }
         item.addPower(power);
+        ItemManager.refreshItem();
         ItemManager.save(item);
         msg(sender, "message.power.ok");
     }
@@ -1279,6 +1281,8 @@ public class Handler extends RPGCommandReceiver {
         int next = args.nextInt() - 1;
         Power remove = item.powers.remove(origin);
         item.powers.add(next, remove);
+        ItemManager.refreshItem();
+        ItemManager.save(item);
         msg(sender, "message.power.reorder", item.getName(), remove.getName());
     }
 
