@@ -21,6 +21,9 @@ public class Configuration extends PluginConfigure {
     @Serializable
     public String version = "1.0";
 
+    @Serializable(name = "general.spu_endpoint")
+    public String spuEndpoint = null;
+
     @Serializable(name = "general.locale_inv", alias = "localeInv")
     public boolean localeInv = false;
 

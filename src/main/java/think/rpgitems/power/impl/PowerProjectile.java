@@ -230,7 +230,7 @@ public class PowerProjectile extends BasePower implements PowerRightClick, Power
     @SuppressWarnings("deprecation")
     private void handleProjectile(Vector v, Projectile projectile) {
         projectile.setPersistent(false);
-        Events.rpgProjectiles.put(projectile.getEntityId(), getItem().getUID());
+        Events.registerProjectile(projectile.getEntityId(), getItem().getUID());
         projectile.setGravity(gravity);
         if (projectile instanceof Explosive) {
             if (yield != null) {
@@ -244,7 +244,7 @@ public class PowerProjectile extends BasePower implements PowerRightClick, Power
             ((Fireball) projectile).setDirection(v.clone().normalize().multiply(speed));
         }
         if (projectileType == Arrow.class) {
-            Events.removeArrows.add(projectile.getEntityId());
+            Events.autoRemoveProjectile(projectile.getEntityId());
             ((Arrow) projectile).setPickupStatus(Arrow.PickupStatus.DISALLOWED);
         }
         if (!gravity) {

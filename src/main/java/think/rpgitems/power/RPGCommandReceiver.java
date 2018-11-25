@@ -130,6 +130,13 @@ public abstract class RPGCommandReceiver extends CommandReceiver {
         }
     }
 
+    protected Optional<PowerProperty> getLastRequired(SortedMap<PowerProperty, Field> argMap) {
+        return argMap.keySet()
+                     .stream()
+                     .filter(PowerProperty::required)
+                     .reduce((first, second) -> second);
+    }
+
     private List<String> resolvePowerProperties(CommandSender sender, String last, Arguments cmd) {
         @LangKey(skipCheck = true) String powName = cmd.next();
         NamespacedKey powerKey;
@@ -142,10 +149,7 @@ public abstract class RPGCommandReceiver extends CommandReceiver {
         if (power == null) return Collections.emptyList();
         SortedMap<PowerProperty, Field> argMap = PowerManager.getProperties(power);
         Set<Field> settled = new HashSet<>();
-        Optional<PowerProperty> req = argMap.keySet()
-                                            .stream()
-                                            .filter(PowerProperty::required)
-                                            .reduce((first, second) -> second); //findLast
+        Optional<PowerProperty> req = getLastRequired(argMap);
 
         List<Field> required = req.map(r -> argMap.entrySet()
                                                   .stream()
@@ -159,10 +163,7 @@ public abstract class RPGCommandReceiver extends CommandReceiver {
             String name = field.getName();
             String value = cmd.argString(name, null);
             if (value != null
-                        || (powerMeta.immutableTrigger() && name.equals("triggers"))
-                        || (powerMeta.marker() && name.equals("triggers"))
-                        || (powerMeta.marker() && name.equals("conditions") && !powerMeta.withConditions())
-                        || (!powerMeta.withSelectors() && name.equals("selectors"))
+                        || isTrivialProperty(powerMeta, name)
             ) {
                 required.remove(field);
                 settled.add(field);
@@ -172,6 +173,13 @@ public abstract class RPGCommandReceiver extends CommandReceiver {
             actionBarTip(sender, powerKey, null);
         }
         return resolvePropertiesSuggestions(sender, last, power, argMap, settled, required);
+    }
+
+    protected boolean isTrivialProperty(PowerMeta powerMeta, String name) {
+        return (powerMeta.immutableTrigger() && name.equals("triggers"))
+                       || (powerMeta.marker() && name.equals("triggers"))
+                       || (powerMeta.marker() && name.equals("conditions") && !powerMeta.withConditions())
+                       || (!powerMeta.withSelectors() && name.equals("selectors"));
     }
 
     private List<String> resolvePropertiesSuggestions(CommandSender sender, String last, Class<? extends Power> power, SortedMap<PowerProperty, Field> argMap, Set<Field> settled, List<Field> required) {
@@ -208,7 +216,7 @@ public abstract class RPGCommandReceiver extends CommandReceiver {
         } catch (UnknownExtensionException e) {
             return Collections.emptyList();
         }
-        List<Power> powers = item.powers.stream().filter(p -> p.getNamespacedKey().equals(key)).collect(Collectors.toList());
+        List<Power> powers = item.getPowers().stream().filter(p -> p.getNamespacedKey().equals(key)).collect(Collectors.toList());
         if (powers.isEmpty()) return Collections.emptyList();
         Class<? extends Power> powerClass = powers.get(0).getClass();
         if (cmd.top() == null) {
@@ -335,7 +343,7 @@ public abstract class RPGCommandReceiver extends CommandReceiver {
                                 case "set":
                                 case "get":
                                 case "removepower":
-                                    return itemCommand.getKey().powers.stream().map(Power::getNamespacedKey).map(s -> PowerManager.hasExtension() ? s : s.getKey()).map(Object::toString).collect(Collectors.toList()); // current powers
+                                    return itemCommand.getKey().getPowers().stream().map(Power::getNamespacedKey).map(s -> PowerManager.hasExtension() ? s : s.getKey()).map(Object::toString).collect(Collectors.toList()); // current powers
                                 default:
                                     return Collections.emptyList();
                             }
@@ -402,13 +410,13 @@ public abstract class RPGCommandReceiver extends CommandReceiver {
                                 case "get":
                                 case "removepower":
                                     return itemCommand.getKey()
-                                                   .powers
-                                                   .stream()
-                                                   .map(Power::getNamespacedKey)
-                                                   .filter(s -> s.getKey().startsWith(third) || s.toString().startsWith(third))
-                                                   .map(s -> PowerManager.hasExtension() ? s : s.getKey())
-                                                   .map(Object::toString)
-                                                   .collect(Collectors.toList()); // complete current powers
+                                                      .getPowers()
+                                                      .stream()
+                                                      .map(Power::getNamespacedKey)
+                                                      .filter(s -> s.getKey().startsWith(third) || s.toString().startsWith(third))
+                                                      .map(s -> PowerManager.hasExtension() ? s : s.getKey())
+                                                      .map(Object::toString)
+                                                      .collect(Collectors.toList()); // complete current powers
                                 default:
                                     return Collections.emptyList();
                             }

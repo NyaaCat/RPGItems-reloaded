@@ -3,7 +3,10 @@ package think.rpgitems.item;
 import cat.nyaa.nyaacore.Message;
 import cat.nyaa.nyaacore.utils.ItemStackUtils;
 import com.google.common.base.Strings;
-import net.md_5.bungee.api.chat.*;
+import net.md_5.bungee.api.chat.BaseComponent;
+import net.md_5.bungee.api.chat.ClickEvent;
+import net.md_5.bungee.api.chat.HoverEvent;
+import net.md_5.bungee.api.chat.TextComponent;
 import org.apache.commons.lang.StringUtils;
 import org.bukkit.*;
 import org.bukkit.attribute.Attribute;
@@ -28,6 +31,7 @@ import org.bukkit.potion.PotionEffectType;
 import org.librazy.nclangchecker.LangKey;
 import org.librazy.nclangchecker.LangKeyType;
 import think.rpgitems.Events;
+import think.rpgitems.Handler;
 import think.rpgitems.I18n;
 import think.rpgitems.RPGItems;
 import think.rpgitems.data.RPGMetadata;
@@ -50,31 +54,31 @@ import static org.bukkit.ChatColor.COLOR_CHAR;
 public class RPGItem {
     public static final int MC_ENCODED_ID_LENGTH = 16;
     static RPGItems plugin;
-    public boolean ignoreWorldGuard = false;
-    public List<String> description = new ArrayList<>();
-    public boolean showPowerLore = true;
-    public boolean showArmourLore = true;
-    public Map<Enchantment, Integer> enchantMap = null;
-    public List<ItemFlag> itemFlags = new ArrayList<>();
-    public boolean customItemModel = false;
-    public boolean numericBar = plugin.cfg.numericBar;
+    private boolean ignoreWorldGuard = false;
+    private List<String> description = new ArrayList<>();
+    private boolean showPowerLore = true;
+    private boolean showArmourLore = true;
+    private Map<Enchantment, Integer> enchantMap = null;
+    private List<ItemFlag> itemFlags = new ArrayList<>();
+    private boolean customItemModel = false;
+    private boolean numericBar = plugin.cfg.numericBar;
     // Powers
-    public List<Power> powers = new ArrayList<>();
+    private List<Power> powers = new ArrayList<>();
     // Recipes
-    public int recipechance = 6;
-    public boolean hasRecipe = false;
-    public List<ItemStack> recipe = null;
+    private int recipechance = 6;
+    private boolean hasRecipe = false;
+    private List<ItemStack> recipe = null;
     // Drops
-    public Map<String, Double> dropChances = new HashMap<>();
-    public int defaultDurability;
-    public int durabilityLowerBound;
-    public int durabilityUpperBound;
+    private Map<String, Double> dropChances = new HashMap<>();
+    private int defaultDurability;
+    private int durabilityLowerBound;
+    private int durabilityUpperBound;
 
-    public int blockBreakingCost = 1;
-    public int hittingCost = 1;
-    public int hitCost = 1;
-    public boolean hitCostByDamage = false;
-    public DamageMode damageMode = DamageMode.FIXED;
+    private int blockBreakingCost = 1;
+    private int hittingCost = 1;
+    private int hitCost = 1;
+    private boolean hitCostByDamage = false;
+    private DamageMode damageMode = DamageMode.FIXED;
     private File file;
 
     private NamespacedKey namespacedKey;
@@ -96,11 +100,13 @@ public class RPGItem {
     private String note = plugin.cfg.defaultNote;
     private String license = plugin.cfg.defaultLicense;
 
-    public int tooltipWidth = 150;
+    private int tooltipWidth = 150;
     // Durability
     private int maxDurability = -1;
     private boolean hasBar = false;
     private boolean forceBar = plugin.cfg.forceBar;
+    private String mcVersion;
+    private int pluginSerial;
 
     public RPGItem(String name, int uid, CommandSender author) {
         this.name = name;
@@ -114,6 +120,8 @@ public class RPGItem {
 
         localeMeta = item.getItemMeta();
         itemFlags.add(ItemFlag.HIDE_ATTRIBUTES);
+        mcVersion = RPGItems.getServerMCVersion();
+        pluginSerial = RPGItems.getSerial();
         rebuild();
     }
 
@@ -136,11 +144,144 @@ public class RPGItem {
         restore(s);
     }
 
+    private static RPGMetadata getMetadata(ItemStack item) {
+        // Check for broken item
+        if (!item.hasItemMeta() || !item.getItemMeta().hasLore() || item.getItemMeta().getLore().size() == 0) {
+            // Broken item
+            return new RPGMetadata();
+        }
+        return RPGMetadata.parseLoreline(item.getItemMeta().getLore().get(0));
+    }
+
+    public static void updateItem(ItemStack item) {
+        RPGItem rItem = ItemManager.toRPGItem(item);
+        if (rItem == null)
+            return;
+        updateItem(rItem, item, getMetadata(item));
+    }
+
+    public static void updateItem(RPGItem rItem, ItemStack item) {
+        updateItem(rItem, item, getMetadata(item));
+    }
+
+    public static void updateItem(RPGItem rItem, ItemStack item, RPGMetadata rpgMeta) {
+        List<String> reservedLores = filterLores(rItem, item);
+        item.setType(rItem.item.getType());
+        ItemMeta meta = rItem.getLocaleMeta();
+        List<String> lore = meta.getLore();
+        rItem.addExtra(rpgMeta, lore);
+        lore.set(0, meta.getLore().get(0) + rpgMeta.toMCString());
+        // Patch for mcMMO buff. See SkillUtils.java#removeAbilityBuff in mcMMO
+        if (item.hasItemMeta() && item.getItemMeta().hasLore() && item.getItemMeta().getLore().contains("mcMMO Ability Tool"))
+            lore.add("mcMMO Ability Tool");
+        lore.addAll(reservedLores);
+        meta.setLore(lore);
+        Map<Enchantment, Integer> enchs = item.getEnchantments();
+        if (!enchs.isEmpty()) {
+            for (Enchantment ench : enchs.keySet()) {
+                meta.addEnchant(ench, enchs.get(ench), true);
+            }
+        }
+        item.setItemMeta(meta);
+        item.setItemMeta(refreshAttributeModifiers(rItem, item).getItemMeta());
+        Damageable damageable = (Damageable) item.getItemMeta();
+        if (rItem.maxDurability > 0) {
+            int durability = ((Number) rpgMeta.get(RPGMetadata.DURABILITY)).intValue();
+            if (rItem.isCustomItemModel()) {
+                damageable.setDamage(((Damageable) rItem.localeMeta).getDamage());
+            } else {
+                damageable.setDamage((short) (rItem.item.getType().getMaxDurability() - ((short) ((double) rItem.item.getType().getMaxDurability() * ((double) durability / (double) rItem.maxDurability)))));
+            }
+        } else {
+            if (rItem.isCustomItemModel()) {
+                damageable.setDamage(((Damageable) rItem.localeMeta).getDamage());
+            } else {
+                damageable.setDamage(rItem.hasBar ? (short) 0 : ((Damageable) rItem.localeMeta).getDamage());
+            }
+        }
+        item.setItemMeta((ItemMeta) damageable);
+    }
+
+    private static List<String> filterLores(RPGItem r, ItemStack i) {
+        List<String> ret = new ArrayList<>();
+        List<PowerLoreFilter> patterns = r.getPower(PowerLoreFilter.class).stream()
+                                          .filter(p -> !Strings.isNullOrEmpty(p.regex))
+                                          .map(PowerLoreFilter::compile)
+                                          .collect(Collectors.toList());
+        if (patterns.isEmpty()) return Collections.emptyList();
+        if (!i.hasItemMeta() || !i.getItemMeta().hasLore()) return Collections.emptyList();
+        for (String str : i.getItemMeta().getLore()) {
+            for (PowerLoreFilter p : patterns) {
+                Matcher matcher = p.pattern().matcher(ChatColor.stripColor(str));
+                if (p.find ? matcher.find() : matcher.matches()) {
+                    ret.add(str);
+                    break;
+                }
+            }
+        }
+        return ret;
+    }
+
+    private static String getMCEncodedUID(int id) {
+        String hex = String.format("%08x", id);
+        StringBuilder out = new StringBuilder();
+        for (char h : hex.toCharArray()) {
+            out.append(COLOR_CHAR);
+            out.append(h);
+        }
+        String str = out.toString();
+        if (str.length() != MC_ENCODED_ID_LENGTH)
+            throw new RuntimeException("Bad RPGItem ID: " + str + " (" + id + ")");
+        return out.toString();
+    }
+
+    public static int decodeId(String str) throws NumberFormatException {
+        if (str.length() < 16) {
+            return -1;
+        }
+        StringBuilder out = new StringBuilder();
+        for (int i = 0; i < 16; i++) {
+            if (str.charAt(i) != COLOR_CHAR) {
+                throw new IllegalArgumentException();
+            }
+            i++;
+            out.append(str.charAt(i));
+        }
+        return Integer.parseUnsignedInt(out.toString(), 16);
+    }
+
+    public static RPGItems getPlugin() {
+        return plugin;
+    }
+
+    private static ItemStack refreshAttributeModifiers(RPGItem item, ItemStack rStack) {
+        List<PowerAttributeModifier> attributeModifiers = item.getPower(PowerAttributeModifier.class);
+        ItemMeta itemMeta = rStack.getItemMeta();
+        if (!attributeModifiers.isEmpty()) {
+            for (PowerAttributeModifier attributeModifier : attributeModifiers) {
+                Attribute attribute = attributeModifier.attribute;
+                AttributeModifier modifier = new AttributeModifier(
+                        new UUID(attributeModifier.uuidMost, attributeModifier.uuidLeast),
+                        attributeModifier.name,
+                        attributeModifier.amount,
+                        attributeModifier.operation,
+                        attributeModifier.slot
+                );
+                itemMeta.addAttributeModifier(attribute, modifier);
+            }
+        }
+        rStack.setItemMeta(itemMeta);
+        return rStack;
+    }
+
     @SuppressWarnings({"unchecked", "deprecation"})
     private void restore(ConfigurationSection s) throws UnknownPowerException, UnknownExtensionException {
         author = s.getString("author", "");
         note = s.getString("note", "");
         license = s.getString("license", "");
+        pluginSerial = s.getInt("pluginSerial", 0);
+        mcVersion = s.getString("mcVersion", "");
+
         String display = s.getString("display");
 
         Quality quality = s.isString("quality") ? Quality.valueOf(s.getString("quality")) : null;
@@ -150,7 +291,7 @@ public class RPGItem {
 
         displayName = ChatColor.translateAlternateColorCodes('&', display);
         setType(s.getString("type", I18n.format("item.type")), false);
-        setHand(s.getString("hand", I18n.format("item.hand")), false);
+        hand = ChatColor.translateAlternateColorCodes('&', s.getString("hand", I18n.format("item.hand")));
         description = (List<String>) s.getList("description", new ArrayList<String>());
         for (int i = 0; i < description.size(); i++) {
             description.set(i, ChatColor.translateAlternateColorCodes('&', description.get(i)));
@@ -297,7 +438,7 @@ public class RPGItem {
                 try {
                     itemFlags.add(ItemFlag.valueOf(flagName));
                 } catch (IllegalArgumentException e) {
-                    e.printStackTrace();
+                    plugin.getLogger().log(Level.WARNING, "Ignoring unknown item flags", e);
                 }
             }
         }
@@ -319,117 +460,6 @@ public class RPGItem {
         }
     }
 
-    public static RPGMetadata getMetadata(ItemStack item) {
-        // Check for broken item
-        if (!item.hasItemMeta() || !item.getItemMeta().hasLore() || item.getItemMeta().getLore().size() == 0) {
-            // Broken item
-            return new RPGMetadata();
-        }
-        return RPGMetadata.parseLoreline(item.getItemMeta().getLore().get(0));
-    }
-
-    public static void updateItem(ItemStack item) {
-        RPGItem rItem = ItemManager.toRPGItem(item);
-        if (rItem == null)
-            return;
-        updateItem(rItem, item, getMetadata(item));
-    }
-
-    public static void updateItem(RPGItem rItem, ItemStack item) {
-        updateItem(rItem, item, getMetadata(item));
-    }
-
-    public static void updateItem(RPGItem rItem, ItemStack item, RPGMetadata rpgMeta) {
-        List<String> reservedLores = filterLores(rItem, item);
-        item.setType(rItem.item.getType());
-        ItemMeta meta = rItem.getLocaleMeta();
-        List<String> lore = meta.getLore();
-        rItem.addExtra(rpgMeta, lore);
-        lore.set(0, meta.getLore().get(0) + rpgMeta.toMCString());
-        // Patch for mcMMO buff. See SkillUtils.java#removeAbilityBuff in mcMMO
-        if (item.hasItemMeta() && item.getItemMeta().hasLore() && item.getItemMeta().getLore().contains("mcMMO Ability Tool"))
-            lore.add("mcMMO Ability Tool");
-        lore.addAll(reservedLores);
-        meta.setLore(lore);
-        Map<Enchantment, Integer> enchs = item.getEnchantments();
-        if (!enchs.isEmpty()) {
-            for (Enchantment ench : enchs.keySet()) {
-                meta.addEnchant(ench, enchs.get(ench), true);
-            }
-        }
-        item.setItemMeta(meta);
-        item.setItemMeta(refreshAttributeModifiers(rItem, item).getItemMeta());
-        Damageable damageable = (Damageable) item.getItemMeta();
-        if (rItem.maxDurability > 0) {
-            int durability = ((Number) rpgMeta.get(RPGMetadata.DURABILITY)).intValue();
-            if (rItem.customItemModel) {
-                damageable.setDamage(((Damageable) rItem.localeMeta).getDamage());
-            } else {
-                damageable.setDamage((short) (rItem.item.getType().getMaxDurability() - ((short) ((double) rItem.item.getType().getMaxDurability() * ((double) durability / (double) rItem.maxDurability)))));
-            }
-        } else {
-            if (rItem.customItemModel) {
-                damageable.setDamage(((Damageable) rItem.localeMeta).getDamage());
-            } else {
-                damageable.setDamage(rItem.hasBar ? (short) 0 : ((Damageable) rItem.localeMeta).getDamage());
-            }
-        }
-        item.setItemMeta((ItemMeta) damageable);
-    }
-
-    private static List<String> filterLores(RPGItem r, ItemStack i) {
-        List<String> ret = new ArrayList<>();
-        List<PowerLoreFilter> patterns = r.getPower(PowerLoreFilter.class).stream()
-                                          .filter(p -> !Strings.isNullOrEmpty(p.regex))
-                                          .map(PowerLoreFilter::compile)
-                                          .collect(Collectors.toList());
-        if (patterns.isEmpty()) return Collections.emptyList();
-        if (!i.hasItemMeta() || !i.getItemMeta().hasLore()) return Collections.emptyList();
-        for (String str : i.getItemMeta().getLore()) {
-            for (PowerLoreFilter p : patterns) {
-                Matcher matcher = p.pattern().matcher(ChatColor.stripColor(str));
-                if (p.find ? matcher.find() : matcher.matches()) {
-                    ret.add(str);
-                    break;
-                }
-            }
-        }
-        return ret;
-    }
-
-    public static String getMCEncodedUID(int id) {
-        String hex = String.format("%08x", id);
-        StringBuilder out = new StringBuilder();
-        for (char h : hex.toCharArray()) {
-            out.append(COLOR_CHAR);
-            out.append(h);
-        }
-        String str = out.toString();
-        if (str.length() != MC_ENCODED_ID_LENGTH)
-            throw new RuntimeException("Bad RPGItem ID: " + str + " (" + id + ")");
-        return out.toString();
-    }
-
-
-    public static int decodeId(String str) throws NumberFormatException {
-        if (str.length() < 16) {
-            return -1;
-        }
-        StringBuilder out = new StringBuilder();
-        for (int i = 0; i < 16; i++) {
-            if (str.charAt(i) != COLOR_CHAR) {
-                throw new IllegalArgumentException();
-            }
-            i++;
-            out.append(str.charAt(i));
-        }
-        return Integer.parseUnsignedInt(out.toString(), 16);
-    }
-
-    public static RPGItems getPlugin() {
-        return plugin;
-    }
-
     public void save(ConfigurationSection s) {
         s.set("name", name);
         if (id != 0) {
@@ -440,6 +470,9 @@ public class RPGItem {
         s.set("author", author);
         s.set("note", note);
         s.set("license", license);
+
+        s.set("mcVersion", mcVersion);
+        s.set("pluginSerial", pluginSerial);
 
         s.set("haspermission", haspermission);
         s.set("permission", permission);
@@ -779,7 +812,7 @@ public class RPGItem {
             lines.add(0, getMCEncodedUID());
         }
         meta.setLore(lines);
-        if (customItemModel || hasPower(PowerUnbreakable.class)) {
+        if (isCustomItemModel() || hasPower(PowerUnbreakable.class)) {
             meta.setUnbreakable(true);
         } else {
             meta.setUnbreakable(false);
@@ -810,14 +843,14 @@ public class RPGItem {
         return localeMeta.clone();
     }
 
-    public void addExtra(RPGMetadata rpgMeta, List<String> lore) {
+    private void addExtra(RPGMetadata rpgMeta, List<String> lore) {
         if (maxDurability > 0) {
             if (!rpgMeta.containsKey(RPGMetadata.DURABILITY)) {
                 rpgMeta.put(RPGMetadata.DURABILITY, defaultDurability);
             }
             int durability = ((Number) rpgMeta.get(RPGMetadata.DURABILITY)).intValue();
 
-            if (!hasBar || forceBar || customItemModel) {
+            if (!hasBar || forceBar || isCustomItemModel()) {
                 StringBuilder out = new StringBuilder();
                 char boxChar = '\u25A0';
                 double ratio = (double) durability / (double) maxDurability;
@@ -917,26 +950,6 @@ public class RPGItem {
         return rStack;
     }
 
-    public static ItemStack refreshAttributeModifiers(RPGItem item, ItemStack rStack) {
-        List<PowerAttributeModifier> attributeModifiers = item.getPower(PowerAttributeModifier.class);
-        ItemMeta itemMeta = rStack.getItemMeta();
-        if (!attributeModifiers.isEmpty()) {
-            for (PowerAttributeModifier attributeModifier : attributeModifiers) {
-                Attribute attribute = attributeModifier.attribute;
-                AttributeModifier modifier = new AttributeModifier(
-                        new UUID(attributeModifier.uuidMost, attributeModifier.uuidLeast),
-                        attributeModifier.name,
-                        attributeModifier.amount,
-                        attributeModifier.operation,
-                        attributeModifier.slot
-                );
-                itemMeta.addAttributeModifier(attribute, modifier);
-            }
-        }
-        rStack.setItemMeta(itemMeta);
-        return rStack;
-    }
-
     public String getName() {
         return name;
     }
@@ -961,13 +974,7 @@ public class RPGItem {
             UUID uuid = UUID.fromString(this.author);
             OfflinePlayer authorPlayer = Bukkit.getOfflinePlayer(uuid);
             author = authorPlayer.getName();
-            if (author == null) {
-                author = uuid.toString();
-            }
-            authorComponent = new TextComponent(author);
-            authorComponent.setHoverEvent(new HoverEvent(HoverEvent.Action.SHOW_ENTITY,
-                    new ComponentBuilder(Message.getPlayerJson(authorPlayer)).create()
-            ));
+            authorComponent = Handler.getAuthorComponent(uuid, authorPlayer, author);
         } catch (IllegalArgumentException ignored) {
         }
 
@@ -977,8 +984,8 @@ public class RPGItem {
                     .send(sender);
         } else {
             List<String> lines = getTooltipLines();
-            for (int i = 0; i < lines.size(); i++) {
-                sender.sendMessage(lines.get(i));
+            for (String line : lines) {
+                sender.sendMessage(line);
             }
         }
 
@@ -987,7 +994,7 @@ public class RPGItem {
         new Message(I18n.format("message.print.note", note)).send(sender);
 
         sender.sendMessage(I18n.format("message.durability.info", getMaxDurability(), defaultDurability, durabilityLowerBound, durabilityUpperBound));
-        if (customItemModel) {
+        if (isCustomItemModel()) {
             sender.sendMessage(I18n.format("message.print.customitemmodel", item.getType().name() + ":" + ((Damageable) localeMeta).getDamage()));
         }
         if (!itemFlags.isEmpty()) {
@@ -1025,29 +1032,19 @@ public class RPGItem {
         setType(str, true);
     }
 
-    public void setHand(String h, boolean update) {
-        hand = ChatColor.translateAlternateColorCodes('&', h);
-        if (update)
-            rebuild();
-    }
-
     public String getHand() {
         return hand;
     }
 
     public void setHand(String h) {
-        setHand(h, true);
+        hand = ChatColor.translateAlternateColorCodes('&', h);
+        rebuild();
     }
 
     public void setDamage(int min, int max) {
-        setDamage(min, max, true);
-    }
-
-    public void setDamage(int min, int max, boolean update) {
         damageMin = min;
         damageMax = max;
-        if (update)
-            rebuild();
+        rebuild();
     }
 
     public int getDamageMin() {
@@ -1063,13 +1060,8 @@ public class RPGItem {
     }
 
     public void setRecipeChance(int p) {
-        setRecipeChance(p, true);
-    }
-
-    public void setRecipeChance(int p, boolean update) {
         recipechance = p;
-        if (update)
-            rebuild();
+        rebuild();
     }
 
     public String getPermission() {
@@ -1077,27 +1069,17 @@ public class RPGItem {
     }
 
     public void setPermission(String p) {
-        setPermission(p, true);
+        permission = p;
+        rebuild();
     }
 
     public boolean getHasPermission() {
         return haspermission;
     }
 
-    public void setPermission(String p, boolean update) {
-        permission = p;
-        if (update)
-            rebuild();
-    }
-
     public void setHaspermission(boolean b) {
-        setHaspermission(b, true);
-    }
-
-    public void setHaspermission(boolean b, boolean update) {
         haspermission = b;
-        if (update)
-            rebuild();
+        rebuild();
     }
 
     public boolean checkPermission(Player p, boolean showWarn) {
@@ -1108,18 +1090,13 @@ public class RPGItem {
         return true;
     }
 
-    public void setArmour(int a, boolean update) {
-        armour = a;
-        if (update)
-            rebuild();
-    }
-
     public int getArmour() {
         return armour;
     }
 
     public void setArmour(int a) {
-        setArmour(a, true);
+        armour = a;
+        rebuild();
     }
 
     public void setItem(Material mat, boolean update) {
@@ -1148,10 +1125,6 @@ public class RPGItem {
         maxDurability = newVal;
         if (update)
             rebuild();
-    }
-
-    public void setDefaultDurability(int newVal) {
-        defaultDurability = newVal;
     }
 
     public void setDurabilityBound(int min, int max) {
@@ -1205,7 +1178,7 @@ public class RPGItem {
             }
             if (durability <= val
                         && getLocaleMeta().isUnbreakable()
-                        && !customItemModel) {
+                        && !isCustomItemModel()) {
                 return false;
             }
             durability -= val;
@@ -1278,6 +1251,14 @@ public class RPGItem {
         return msg;
     }
 
+    private <TEvent extends Event, T extends Power, TResult, TReturn> List<T> getPower(Trigger<TEvent, T, TResult, TReturn> trigger) {
+        return powers.stream().filter(p -> p.getTriggers().contains(trigger)).map(p -> p.cast(trigger.getPowerClass())).collect(Collectors.toList());
+    }
+
+    public void deinit() {
+        powers.forEach(Power::deinit);
+    }
+
     public String getAuthor() {
         return author;
     }
@@ -1302,20 +1283,200 @@ public class RPGItem {
         this.license = license;
     }
 
-    private <TEvent extends Event, T extends Power, TResult, TReturn> List<T> getPower(Trigger<TEvent, T, TResult, TReturn> trigger) {
-        return powers.stream().filter(p -> p.getTriggers().contains(trigger)).map(p -> p.cast(trigger.getPowerClass())).collect(Collectors.toList());
-    }
-
-    public void deinit() {
-        powers.forEach(Power::deinit);
-    }
-
     public File getFile() {
         return file;
     }
 
     void setFile(File itemFile) {
         file = itemFile;
+    }
+
+    public int getTooltipWidth() {
+        return tooltipWidth;
+    }
+
+    public boolean isCustomItemModel() {
+        return customItemModel;
+    }
+
+    public void setCustomItemModel(boolean customItemModel) {
+        this.customItemModel = customItemModel;
+    }
+
+    public boolean isIgnoreWorldGuard() {
+        return ignoreWorldGuard;
+    }
+
+    public void setIgnoreWorldGuard(boolean ignoreWorldGuard) {
+        this.ignoreWorldGuard = ignoreWorldGuard;
+    }
+
+    public List<String> getDescription() {
+        return description;
+    }
+
+    public void setDescription(List<String> description) {
+        this.description = description;
+    }
+
+    public boolean isShowPowerLore() {
+        return showPowerLore;
+    }
+
+    public void setShowPowerLore(boolean showPowerLore) {
+        this.showPowerLore = showPowerLore;
+    }
+
+    public boolean isShowArmourLore() {
+        return showArmourLore;
+    }
+
+    public void setShowArmourLore(boolean showArmourLore) {
+        this.showArmourLore = showArmourLore;
+    }
+
+    public Map<Enchantment, Integer> getEnchantMap() {
+        return enchantMap;
+    }
+
+    public void setEnchantMap(Map<Enchantment, Integer> enchantMap) {
+        this.enchantMap = enchantMap;
+    }
+
+    public List<ItemFlag> getItemFlags() {
+        return itemFlags;
+    }
+
+    public void setItemFlags(List<ItemFlag> itemFlags) {
+        this.itemFlags = itemFlags;
+    }
+
+    public boolean isNumericBar() {
+        return numericBar;
+    }
+
+    public void setNumericBar(boolean numericBar) {
+        this.numericBar = numericBar;
+    }
+
+    public List<Power> getPowers() {
+        return powers;
+    }
+
+    public void setPowers(List<Power> powers) {
+        this.powers = powers;
+    }
+
+    public int getRecipechance() {
+        return recipechance;
+    }
+
+    public void setRecipechance(int recipechance) {
+        this.recipechance = recipechance;
+    }
+
+    public boolean isHasRecipe() {
+        return hasRecipe;
+    }
+
+    public void setHasRecipe(boolean hasRecipe) {
+        this.hasRecipe = hasRecipe;
+    }
+
+    public List<ItemStack> getRecipe() {
+        return recipe;
+    }
+
+    public void setRecipe(List<ItemStack> recipe) {
+        this.recipe = recipe;
+    }
+
+    public Map<String, Double> getDropChances() {
+        return dropChances;
+    }
+
+    public void setDropChances(Map<String, Double> dropChances) {
+        this.dropChances = dropChances;
+    }
+
+    public int getDefaultDurability() {
+        return defaultDurability;
+    }
+
+    public void setDefaultDurability(int newVal) {
+        defaultDurability = newVal;
+    }
+
+    public int getDurabilityLowerBound() {
+        return durabilityLowerBound;
+    }
+
+    public void setDurabilityLowerBound(int durabilityLowerBound) {
+        this.durabilityLowerBound = durabilityLowerBound;
+    }
+
+    public int getDurabilityUpperBound() {
+        return durabilityUpperBound;
+    }
+
+    public void setDurabilityUpperBound(int durabilityUpperBound) {
+        this.durabilityUpperBound = durabilityUpperBound;
+    }
+
+    public int getBlockBreakingCost() {
+        return blockBreakingCost;
+    }
+
+    public void setBlockBreakingCost(int blockBreakingCost) {
+        this.blockBreakingCost = blockBreakingCost;
+    }
+
+    public int getHittingCost() {
+        return hittingCost;
+    }
+
+    public void setHittingCost(int hittingCost) {
+        this.hittingCost = hittingCost;
+    }
+
+    public int getHitCost() {
+        return hitCost;
+    }
+
+    public void setHitCost(int hitCost) {
+        this.hitCost = hitCost;
+    }
+
+    public boolean isHitCostByDamage() {
+        return hitCostByDamage;
+    }
+
+    public void setHitCostByDamage(boolean hitCostByDamage) {
+        this.hitCostByDamage = hitCostByDamage;
+    }
+
+    public DamageMode getDamageMode() {
+        return damageMode;
+    }
+
+    public void setDamageMode(DamageMode damageMode) {
+        this.damageMode = damageMode;
+    }
+
+    public String getMCVersion() {
+        return mcVersion;
+    }
+
+    public void setMCVersion(String mcVersion) {
+        this.mcVersion = mcVersion;
+    }
+
+    public int getPluginSerial() {
+        return pluginSerial;
+    }
+
+    public void setPluginSerial(int pluginSerial) {
+        this.pluginSerial = pluginSerial;
     }
 
     @LangKey(type = LangKeyType.SUFFIX)

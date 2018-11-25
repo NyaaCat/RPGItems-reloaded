@@ -138,7 +138,7 @@ public class PowerDeflect extends BasePower implements PowerHitTaken, PowerRight
                         }
                         t.setShooter(target);
                         t.setMetadata("rpgitems.force", new FixedMetadataValue(RPGItems.plugin, 1));
-                        Events.removeArrows.add(t.getEntityId());
+                        Events.autoRemoveProjectile(t.getEntityId());
                     }, 1);
                     return PowerResult.ok(0.0);
                 }

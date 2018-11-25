@@ -58,7 +58,7 @@ message:
     economy: No economy provider found
     file_not_exists: 'File not exist: %s'
     reloading_locked: Cannot reload a item that is locked! Use `/rpgitem backupitem` to backup and unlock it first.
-    recovering: Error recovering. We suggest you stop the server and check item files and backups manually.
+    recovering: Error recovering %s from %s, %s. We suggest you stop the server and check item files and backups manually.
     item_unlocked: You cannot edit unlocked %s. Reload it before editing.
     loading: 'Error loading item from %s. %s'
   wgcustomflag:
@@ -121,7 +121,7 @@ message:
     get: Item '%s' lore is '%s'
     set: Item '%s' lore set to '%s'
   update:
-    fail: 'Failed updating Item: %s, check console for more detail'
+    fail: 'Failed updating Item %s: %s, check console for more detail'
     success: Successfully updated Item {item}
   too:
     far: It landed too far away...
@@ -264,6 +264,30 @@ message:
       code: 'Gist upload failed: %d'
     not_supported: Export to %s is not supported
   no_item: No item.
+  spu:
+    no_endpoint: SPU endpoint not set
+    finish: Data update finished
+    command:
+      code: '%s &rCommand update failed: %d, %s
+
+        %s
+        '
+      updated: '%s &rCommand updated:
+
+        %s ->
+
+        %s'
+      warn: 'Warn: %s'
+      failed: '%s &rCommand update failed: %s
+
+        %s
+        '
+      timeout: '%s &rCommand update timeout'
+    entity:
+      code: '%s &rEntity update failed: %d, %s %s'
+      updated: '%s &rEntity updated: %s -> %s'
+      failed: '%s &rEntity update failed: %s %s'
+      timeout: '%s &rEntity update timeout'
 power:
   airborne: 'Damage increase by %d%% when gliding'
   charge: 'Damage increase with speed, by %d%% when sprinting'

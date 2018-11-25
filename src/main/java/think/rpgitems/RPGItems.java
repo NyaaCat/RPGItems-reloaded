@@ -1,5 +1,6 @@
 package think.rpgitems;
 
+import cat.nyaa.nyaacore.Pair;
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
 import org.bukkit.event.EventHandler;
@@ -18,18 +19,27 @@ import think.rpgitems.power.PowerTicker;
 import think.rpgitems.power.Trigger;
 import think.rpgitems.power.impl.BasePower;
 import think.rpgitems.support.WGSupport;
+import think.rpgitems.utils.NetworkUtils;
 
 import java.io.File;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.TimeoutException;
+import java.util.logging.Level;
 import java.util.logging.Logger;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 public class RPGItems extends JavaPlugin {
 
+    private static int serial;
+    private static String pluginMCVersion;
+    private static String serverMCVersion;
+
     public static Logger logger;
     public static RPGItems plugin;
-    public static Events listener;
-    public Handler commandHandler;
+    private static Events listener;
     List<Plugin> managedPlugins = new ArrayList<>();
     public I18n i18n;
     public Configuration cfg;
@@ -38,6 +48,26 @@ public class RPGItems extends JavaPlugin {
     public void onLoad() {
         plugin = this;
         logger = this.getLogger();
+
+        String version = getDescription().getVersion();
+        Pattern serialPattern = Pattern.compile("\\d+\\.\\d+\\.(\\d+)-mc([\\d.]+)");
+        Matcher serialMatcher = serialPattern.matcher(version);
+
+        if (serialMatcher.matches()) {
+            serial = Integer.parseInt(serialMatcher.group(1));
+            pluginMCVersion = serialMatcher.group(2);
+        }
+
+        String serverVersion = Bukkit.getVersion();
+        Pattern mcVersionPattern = Pattern.compile("\\(MC:\\s+([\\d.]+)\\)");
+        Matcher mcVersionMatcher = mcVersionPattern.matcher(serverVersion);
+
+        if (mcVersionMatcher.find()) {
+            serverMCVersion = mcVersionMatcher.group(1);
+        }
+
+        logger.log(Level.INFO, "Plugin serial: '" + serial + "', native version: '" + pluginMCVersion + "', server version: '" + serverMCVersion + "'.");
+
         PowerManager.registerPowers(RPGItems.plugin, BasePower.class.getPackage().getName());
         PowerManager.addDescriptionResolver(RPGItems.plugin, (power, property) -> {
             if (property == null) {
@@ -74,8 +104,7 @@ public class RPGItems extends JavaPlugin {
                     managedPlugins.add(plugin);
                     logger.info("Loaded extension: " + plugin.getName());
                 } catch (InvalidPluginException | InvalidDescriptionException e) {
-                    logger.warning("Error loading extension: " + file.getName());
-                    e.printStackTrace();
+                    logger.log(Level.SEVERE, "Error loading extension: " + file.getName(), e);
                 }
             }
         } else {
@@ -118,11 +147,23 @@ public class RPGItems extends JavaPlugin {
             Events.useLocaleInv = true;
         }
         i18n = new I18n(this, cfg.language);
-        commandHandler = new Handler(this, i18n);
+        Handler commandHandler = new Handler(this, i18n);
         getCommand("rpgitem").setExecutor(commandHandler);
         getCommand("rpgitem").setTabCompleter(commandHandler);
         getServer().getPluginManager().registerEvents(new ServerLoadListener(), this);
         managedPlugins.forEach(Bukkit.getPluginManager()::enablePlugin);
+    }
+
+    public static int getSerial() {
+        return serial;
+    }
+
+    public static String getPluginMCVersion() {
+        return pluginMCVersion;
+    }
+
+    public static String getServerMCVersion() {
+        return serverMCVersion;
     }
 
     private class ServerLoadListener implements Listener {
@@ -141,6 +182,7 @@ public class RPGItems extends JavaPlugin {
     @Override
     public void onDisable() {
         WGSupport.unload();
+        HandlerList.unregisterAll(listener);
         getCommand("rpgitem").setExecutor(null);
         getCommand("rpgitem").setTabCompleter(null);
         this.getServer().getScheduler().cancelTasks(plugin);

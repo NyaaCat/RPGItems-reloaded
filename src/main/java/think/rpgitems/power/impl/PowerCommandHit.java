@@ -20,33 +20,8 @@ import static think.rpgitems.power.Utils.checkCooldownByString;
  */
 @SuppressWarnings("WeakerAccess")
 @PowerMeta(defaultTrigger = "HIT", generalInterface = PowerLivingEntity.class)
-public class PowerCommandHit extends BasePower implements PowerHit, PowerLivingEntity {
+public class PowerCommandHit extends PowerCommand implements PowerHit, PowerLivingEntity {
 
-    /**
-     * Command to be executed
-     */
-    @Property(order = 2, required = true)
-    public String command = "";
-    /**
-     * Display text of this power
-     */
-    @Property(order = 1)
-    public String display = "Runs command";
-    /**
-     * Permission will be given to user executing the {@link #command}
-     */
-    @Property(order = 3)
-    public String permission = "";
-    /**
-     * Cooldown time of this power
-     */
-    @Property(order = 0)
-    public long cooldown = 20;
-    /**
-     * Cost of this power
-     */
-    @Property
-    public int cost = 0;
     /**
      * Minimum damage to trigger
      */

@@ -38,7 +38,7 @@ message:
     economy: 未找到经济支持插件
     file_not_exists: 文件不存在：%s
     reloading_locked: 无法重载一个尚未解锁的物品
-    recovering: 恢复失败。建议停止服务器并手动检查物品配置及其备份。
+    recovering: 恢复 %s 自 %s 失败：%s。建议停止服务器并手动检查物品配置及其备份。
     item_unlocked: 无法编辑已解锁的物品%s。请重载它再编辑。
     loading: 从%s加载物品时出错。%s
   wgcustomflag:
@@ -112,7 +112,7 @@ message:
     get: 物品 '%s' 描述为 '%s'
     set: 物品 '%s' 描述已设置为 '%s
   update:
-    fail: 物品升级失败：%s，请查看后台输出
+    fail: 物品 '%s' 升级失败：%s，请查看后台输出
     success: 成功升级物品 {item}
   too:
     far: 太远了...
@@ -269,6 +269,30 @@ message:
 
     Bug反馈: https://github.com/NyaaCat/RPGitems-reloaded/issues'
   no_item: 暂无物品
+  spu:
+    no_endpoint: 未设置 SPU 服务器地址
+    finish: 数据升级完成
+    command:
+      code: '%s &r命令升级失败：%d, %s
+
+        %s
+        '
+      updated: '%s &r命令已升级:
+
+        %s ->
+
+        %s'
+      warn: '警告: %s'
+      failed: '%s &r命令升级失败：%s
+
+       %s
+       '
+      timeout: '%s &r命令升级超时'
+    entity:
+      code: '%s &r实体升级失败：%d, %s %s'
+      updated: '%s &r实体已升级：%s -> %s'
+      failed: '%s &r命令升级失败：%s %s'
+      timeout: '%s &r命令升级超时'
 power:
   airborne: 攻击在滑翔时增加 %d%%
   charge: 攻击随速度增加，并在疾跑时增加 %d%%

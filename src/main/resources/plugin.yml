@@ -1,7 +1,7 @@
 name: RPGItems
 main: think.rpgitems.RPGItems
 description: "RPGItems"
-version: 3.6
+version: 3.6.686986-mc1.13.2
 depend: [NyaaCore,LangUtils]
 softdepend: [WorldGuard,NyaaUtils]
 authors: [Taiterio,cyilin,RecursiveG,Librazy]
@@ -20,4 +20,6 @@ permissions:
   rpgitem.allowenchant.new:
     default: op
   rpgitem.allowenchant.old:
+    default: op
+  rpgitem.updateitem:
     default: op

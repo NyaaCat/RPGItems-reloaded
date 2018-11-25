@@ -110,7 +110,7 @@ public class WGSupport {
     public static boolean canUse(Player player, RPGItem item, Collection<? extends Power> powers) {
         if (canNotPvP(player)) return false;
         if (item == null) return true;
-        if (!hasSupport || !useWorldGuard || item.ignoreWorldGuard) {
+        if (!hasSupport || !useWorldGuard || item.isIgnoreWorldGuard()) {
             return true;
         }
         if (forceRefresh) WGHandler.refreshPlayerWG(player);

@@ -1,14 +1,11 @@
 package think.rpgitems;
 
 import cat.nyaa.nyaacore.utils.TridentUtils;
-import com.google.common.collect.MultimapBuilder;
-import com.google.common.collect.SetMultimap;
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
 import org.bukkit.Material;
 import org.bukkit.block.Block;
 import org.bukkit.entity.*;
-import org.bukkit.event.Event;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.EventPriority;
 import org.bukkit.event.Listener;
@@ -39,21 +36,20 @@ import think.rpgitems.support.WGHandler;
 import think.rpgitems.support.WGSupport;
 
 import java.util.*;
-import java.util.function.Consumer;
-import java.util.stream.Collectors;
 
 import static think.rpgitems.RPGItems.logger;
 import static think.rpgitems.RPGItems.plugin;
 
 public class Events implements Listener {
 
-    public static HashSet<Integer> removeArrows = new HashSet<>();
-    public static HashMap<Integer, Integer> rpgProjectiles = new HashMap<>();
-    public static Map<UUID, ItemStack> tridentCache = new HashMap<>();
+    public static HashMap<String, Set<Integer>> drops = new HashMap<>();
 
     static HashMap<String, Integer> recipeWindows = new HashMap<>();
-    public static HashMap<String, Set<Integer>> drops = new HashMap<>();
     static boolean useLocaleInv = false;
+
+    private static HashSet<Integer> removeProjectiles = new HashSet<>();
+    private static HashMap<Integer, Integer> rpgProjectiles = new HashMap<>();
+    private static Map<UUID, ItemStack> tridentCache = new HashMap<>();
     private HashSet<LocaleInventory> localeInventories = new HashSet<>();
 
     static private boolean canStack(ItemStack a, ItemStack b) {
@@ -68,6 +64,14 @@ public class Events implements Listener {
         } else {
             return false;
         }
+    }
+
+    public static void registerProjectile(int entityId, int uid) {
+        rpgProjectiles.put(entityId, uid);
+    }
+
+    public static void autoRemoveProjectile(int entityId) {
+        removeProjectiles.add(entityId);
     }
 
     @EventHandler
@@ -139,7 +143,7 @@ public class Events implements Listener {
                     it.remove();
                     continue;
                 }
-                double chance = item.dropChances.get(type);
+                double chance = item.getDropChances().get(type);
                 if (random.nextDouble() < chance / 100d) {
                     e.getDrops().add(item.toItemStack());
                 }
@@ -150,9 +154,9 @@ public class Events implements Listener {
     @EventHandler
     public void onProjectileHit(ProjectileHitEvent e) {
         final Projectile entity = e.getEntity();
-        if (removeArrows.contains(entity.getEntityId())) {
+        if (removeProjectiles.contains(entity.getEntityId())) {
             Bukkit.getScheduler().runTask(plugin, () -> {
-                removeArrows.remove(entity.getEntityId());
+                removeProjectiles.remove(entity.getEntityId());
                 entity.remove();
             });
         }
@@ -431,18 +435,18 @@ public class Events implements Listener {
         if (recipeWindows.containsKey(e.getPlayer().getName())) {
             int id = recipeWindows.remove(e.getPlayer().getName());
             RPGItem item = ItemManager.getItemById(id);
-            if (item.recipe == null) {
-                item.recipe = new ArrayList<>();
+            if (item.getRecipe() == null) {
+                item.setRecipe(new ArrayList<>());
             }
-            item.recipe.clear();
+            item.getRecipe().clear();
             for (int y = 0; y < 3; y++) {
                 for (int x = 0; x < 3; x++) {
                     int i = x + y * 9;
                     ItemStack it = e.getInventory().getItem(i);
-                    item.recipe.add(it);
+                    item.getRecipe().add(it);
                 }
             }
-            item.hasRecipe = true;
+            item.setHasRecipe(true);
             item.resetRecipe(true);
             ItemManager.save();
             e.getPlayer().sendMessage(ChatColor.AQUA + "Recipe set for " + item.getName());
@@ -645,11 +649,11 @@ public class Events implements Listener {
     public void onItemCraft(PrepareItemCraftEvent e) {
         RPGItem rpg = ItemManager.toRPGItem(e.getInventory().getResult());
         if (rpg != null) {
-            if (!rpg.hasRecipe) {
+            if (!rpg.isHasRecipe()) {
                 e.getInventory().setResult(new ItemStack(Material.AIR));
                 return;
             }
-            List<ItemStack> temp = rpg.recipe;
+            List<ItemStack> temp = rpg.getRecipe();
             if (temp != null && temp.size() == 9) {
                 int idx = 0;
                 for (ItemStack s : temp) {
@@ -663,7 +667,7 @@ public class Events implements Listener {
                     e.getInventory().setResult(new ItemStack(Material.AIR));
                 } else {
                     Random random = new Random();
-                    if (random.nextInt(ItemManager.toRPGItem(e.getInventory().getResult()).recipechance) != 0) {
+                    if (random.nextInt(ItemManager.toRPGItem(e.getInventory().getResult()).getRecipechance()) != 0) {
                         ItemStack baseitem = new ItemStack(e.getInventory().getResult().getType());
                         e.getInventory().setResult(baseitem);
                     }

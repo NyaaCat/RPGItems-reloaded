@@ -110,7 +110,7 @@ public class ItemManager {
             try {
                 Files.move(f.toPath(), bak);
             } catch (IOException e) {
-                e.printStackTrace();
+                plugin.getLogger().log(Level.WARNING, "Error moving items.yml to items.bak", e);
             }
             return;
         }
@@ -215,10 +215,8 @@ public class ItemManager {
         plugin.cfg.pidCompat = true;
         plugin.cfg.save();
         try {
-            FileInputStream in = null;
             YamlConfiguration itemStorage;
-            try {
-                in = new FileInputStream(f);
+            try (FileInputStream in = new FileInputStream(f)) {
                 byte[] data = new byte[(int) f.length()];
                 int read = in.read(data);
                 if (read < 0) throw new IllegalStateException();
@@ -226,15 +224,8 @@ public class ItemManager {
                 String str = new String(data, StandardCharsets.UTF_8);
                 itemStorage.loadFromString(str);
             } catch (IOException | InvalidConfigurationException e) {
-                e.printStackTrace();
+                plugin.getLogger().log(Level.SEVERE, "Error opening " + f.getPath(), e);
                 return;
-            } finally {
-                try {
-                    if (in != null)
-                        in.close();
-                } catch (IOException e) {
-                    e.printStackTrace();
-                }
             }
             ConfigurationSection section;
             try {
@@ -247,24 +238,26 @@ public class ItemManager {
             if (section == null)
                 return;
             for (Object obj : section.getValues(false).values()) {
+                String current = null;
                 try {
                     ConfigurationSection sec = (ConfigurationSection) obj;
+                    current = sec.getString("name");
                     RPGItem item = new RPGItem(sec, null);
                     addItem(item);
                     Message message = new Message("").append(I18n.format("message.update.success"), Collections.singletonMap("{item}", item.getComponent()));
                     // Bukkit.getOperators().forEach(message::send);
                     message.send(Bukkit.getConsoleSender());
                 } catch (Exception e) {
-                    e.printStackTrace();
-                    Message message = new Message(I18n.format("message.update.fail", e.getLocalizedMessage()));
+                    plugin.getLogger().log(Level.SEVERE, "Error updating " + current, e);
+                    Message message = new Message(I18n.format("message.update.fail", current, e.getLocalizedMessage()));
                     Bukkit.getOperators().forEach(message::send);
                     message.send(Bukkit.getConsoleSender());
                 }
             }
         } catch (Exception e) {
             // Something went wrong
-            e.printStackTrace();
-            Message message = new Message(I18n.format("message.update.fail", e.getLocalizedMessage()));
+            plugin.getLogger().log(Level.SEVERE, "Error handling " + f.getPath(), e);
+            Message message = new Message(I18n.format("message.update.fail", f.getPath(), e.getLocalizedMessage()));
             Bukkit.getOperators().forEach(message::send);
             plugin.getLogger().severe("Error loading items.yml. Creating backup");
             dump(e);
@@ -282,7 +275,7 @@ public class ItemManager {
             ps.printf("RPGItems (%s) ItemManager.loadFromLegacyFile\r\n", plugin.getDescription().getVersion());
             e.printStackTrace(ps);
         } catch (FileNotFoundException e1) {
-            e1.printStackTrace();
+            plugin.getLogger().log(Level.SEVERE, "Error creating +" + log.getPath(), e1);
         }
     }
 
@@ -318,6 +311,7 @@ public class ItemManager {
         boolean exist = itemFile.exists();
         String cfgStr = "";
         File backup = null;
+        item.setPluginSerial(RPGItems.getSerial());
         try {
             YamlConfiguration configuration = new YamlConfiguration();
             item.save(configuration);
@@ -354,7 +348,7 @@ public class ItemManager {
                     Files.copy(backup.toPath(), itemFile.toPath(), StandardCopyOption.REPLACE_EXISTING);
                     lock(itemFile);
                 } catch (Exception exRec) {
-                    exRec.printStackTrace();
+                    plugin.getLogger().log(Level.SEVERE, "Error recovering backup: " + backup, exRec);
                 }
             }
             throw new RuntimeException(e);
@@ -409,12 +403,12 @@ public class ItemManager {
             try {
                 fileLock.release();
             } catch (IOException e) {
-                e.printStackTrace();
+                plugin.getLogger().log(Level.WARNING, "Error releasing " + fileLock + ".", e);
             } finally {
                 try {
                     fileLock.channel().close();
                 } catch (IOException e) {
-                    e.printStackTrace();
+                    plugin.getLogger().log(Level.WARNING, "Error closing channel " + fileLock.channel() + ".", e);
                 }
             }
         }
@@ -423,12 +417,12 @@ public class ItemManager {
             try {
                 lockPair.getValue().release();
             } catch (IOException e) {
-                e.printStackTrace();
+                plugin.getLogger().log(Level.WARNING, "Error releasing " + lockPair.getValue() + " for " + lockPair.getKey() + ".", e);
             } finally {
                 try {
                     lockPair.getValue().channel().close();
                 } catch (IOException e) {
-                    e.printStackTrace();
+                    plugin.getLogger().log(Level.WARNING, "Error closing channel " + lockPair.getValue().channel() + " for " + lockPair.getKey() + ".", e);
                 }
             }
         }
@@ -522,7 +516,7 @@ public class ItemManager {
                 Files.delete(item.getFile().toPath());
                 backup.deleteOnExit();
             } catch (IOException e) {
-                e.printStackTrace();
+                plugin.getLogger().log(Level.WARNING, "Error deleting file " + item.getFile() + ".", e);
             }
         }
     }
@@ -530,20 +524,21 @@ public class ItemManager {
     public static String getItemFilename(String itemName) {
         // ensure Windows servers won't be blown up by CONs or NULs
         // and escape some character that don't fit into a file name
-        return "item-" +
-                       itemName
-                               .replace("_", "__")
-                               .replace("/", "_f")
-                               .replace("\\", "_b")
-                               .replace("*", "_a")
-                               .replace("\"", "_o")
-                               .replace("\'", "_i")
-                               .replace("?", "_q")
-                               .replace("<", "_l")
-                               .replace(">", "_g")
-                               .replace("|", "_p")
-                               .replace(":", "_c")
-                               .replace(".", "_d");
+        return
+                itemName
+                        .replace("_", "__")
+                        .replace("/", "_f")
+                        .replace("\\", "_b")
+                        .replace("*", "_a")
+                        .replace("\"", "_o")
+                        .replace("\'", "_i")
+                        .replace("?", "_q")
+                        .replace("<", "_l")
+                        .replace(">", "_g")
+                        .replace("|", "_p")
+                        .replace(":", "_c")
+                        .replace(".", "_d")
+                        + "-item";
     }
 
     public static boolean canNotUse(Player p, RPGItem rItem) {
