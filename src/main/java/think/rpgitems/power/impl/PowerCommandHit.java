@@ -1,11 +1,14 @@
 package think.rpgitems.power.impl;
 
 import org.bukkit.ChatColor;
+import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.entity.LivingEntity;
 import org.bukkit.entity.Player;
 import org.bukkit.event.entity.EntityDamageByEntityEvent;
 import org.bukkit.inventory.ItemStack;
 import think.rpgitems.power.*;
+
+import java.util.Collections;
 
 import static think.rpgitems.power.Utils.attachPermission;
 import static think.rpgitems.power.Utils.checkCooldownByString;
@@ -48,19 +51,19 @@ public class PowerCommandHit extends PowerCommand implements PowerHit, PowerLivi
             String cmd = command;
 
             cmd = cmd.replaceAll("\\{entity}", e.getName());
-            cmd = cmd.replaceAll("\\{entity.uuid}", e.getUniqueId().toString());
-            cmd = cmd.replaceAll("\\{entity.x}", Float.toString(e.getLocation().getBlockX()));
-            cmd = cmd.replaceAll("\\{entity.y}", Float.toString(e.getLocation().getBlockY()));
-            cmd = cmd.replaceAll("\\{entity.z}", Float.toString(e.getLocation().getBlockZ()));
-            cmd = cmd.replaceAll("\\{entity.yaw}", Float.toString(90 + e.getEyeLocation().getYaw()));
-            cmd = cmd.replaceAll("\\{entity.pitch}", Float.toString(-e.getEyeLocation().getPitch()));
+            cmd = cmd.replaceAll("\\{entity\\.uuid}", e.getUniqueId().toString());
+            cmd = cmd.replaceAll("\\{entity\\.x}", Float.toString(e.getLocation().getBlockX()));
+            cmd = cmd.replaceAll("\\{entity\\.y}", Float.toString(e.getLocation().getBlockY()));
+            cmd = cmd.replaceAll("\\{entity\\.z}", Float.toString(e.getLocation().getBlockZ()));
+            cmd = cmd.replaceAll("\\{entity\\.yaw}", Float.toString(90 + e.getEyeLocation().getYaw()));
+            cmd = cmd.replaceAll("\\{entity\\.pitch}", Float.toString(-e.getEyeLocation().getPitch()));
 
             cmd = cmd.replaceAll("\\{player}", player.getName());
-            cmd = cmd.replaceAll("\\{player.x}", Float.toString(-player.getLocation().getBlockX()));
-            cmd = cmd.replaceAll("\\{player.y}", Float.toString(-player.getLocation().getBlockY()));
-            cmd = cmd.replaceAll("\\{player.z}", Float.toString(-player.getLocation().getBlockZ()));
-            cmd = cmd.replaceAll("\\{player.yaw}", Float.toString(90 + player.getEyeLocation().getYaw()));
-            cmd = cmd.replaceAll("\\{player.pitch}", Float.toString(-player.getEyeLocation().getPitch()));
+            cmd = cmd.replaceAll("\\{player\\.x}", Float.toString(-player.getLocation().getBlockX()));
+            cmd = cmd.replaceAll("\\{player\\.y}", Float.toString(-player.getLocation().getBlockY()));
+            cmd = cmd.replaceAll("\\{player\\.z}", Float.toString(-player.getLocation().getBlockZ()));
+            cmd = cmd.replaceAll("\\{player\\.yaw}", Float.toString(90 + player.getEyeLocation().getYaw()));
+            cmd = cmd.replaceAll("\\{player\\.pitch}", Float.toString(-player.getEyeLocation().getPitch()));
 
             cmd = cmd.replaceAll("\\{damage}", String.valueOf(damage));
 

@@ -45,6 +45,7 @@ public class ItemManager {
     private static RPGItems plugin;
     private static File itemsDir;
     private static File backupsDir;
+    private static boolean noShareLock = true;
 
     public static File getItemsDir() {
         return itemsDir;
@@ -94,6 +95,25 @@ public class ItemManager {
     public static void load(RPGItems pl) {
         plugin = pl;
         RPGItem.plugin = pl;
+
+        try {
+            File testFile = new File(plugin.getDataFolder(), "lock_test" + System.currentTimeMillis() + ".tmp");
+            if (!testFile.createNewFile()) {
+                throw new IllegalStateException("No writable data folder!");
+            }
+            try (FileChannel channel = FileChannel.open(testFile.toPath(), StandardOpenOption.WRITE, StandardOpenOption.READ, ExtendedOpenOption.NOSHARE_WRITE, ExtendedOpenOption.NOSHARE_DELETE)) {
+                FileLock fileLock = channel.tryLock();
+                fileLock.release();
+            } catch (Exception e) {
+                plugin.getLogger().log(Level.FINER, "Disabling NOSHARE lock", e);
+                noShareLock = false;
+            }
+            Files.delete(testFile.toPath());
+        } catch (IOException e) {
+            noShareLock = false;
+            plugin.getLogger().log(Level.WARNING, "No writable data folder!", e);
+        }
+
         File dirItems = new File(plugin.getDataFolder(), "items");
         if (!dirItems.exists() || !dirItems.isDirectory()) {
             setItemsDir(mkdir());
@@ -367,12 +387,20 @@ public class ItemManager {
             itemFileLocks.remove(file.getCanonicalPath());
         }
 
-        FileLock lock = FileChannel.open(file.toPath(), StandardOpenOption.WRITE, StandardOpenOption.READ, ExtendedOpenOption.NOSHARE_WRITE, ExtendedOpenOption.NOSHARE_DELETE).tryLock(0L, Long.MAX_VALUE, true);
+        FileLock lock = lockFile(file);
         if (lock == null) {
             plugin.getLogger().severe("Error locking " + file + ".");
             throw new IllegalStateException();
         }
         itemFileLocks.put(file.getCanonicalPath(), lock);
+    }
+
+    public static FileLock lockFile(File file) throws IOException {
+        if (noShareLock) {
+            return new RandomAccessFile(file, "rw").getChannel().tryLock();
+        } else {
+            return FileChannel.open(file.toPath(), StandardOpenOption.WRITE, StandardOpenOption.READ).tryLock();
+        }
     }
 
     private static void unlock(File itemFile, boolean remove) throws IOException {

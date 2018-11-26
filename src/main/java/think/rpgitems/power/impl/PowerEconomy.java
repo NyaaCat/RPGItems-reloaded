@@ -13,7 +13,10 @@ import org.bukkit.inventory.ItemStack;
 import org.librazy.nclangchecker.LangKey;
 import think.rpgitems.Handler;
 import think.rpgitems.I18n;
+import think.rpgitems.RPGItems;
 import think.rpgitems.power.*;
+
+import java.util.logging.Level;
 
 import static think.rpgitems.power.Utils.checkCooldown;
 
@@ -88,7 +91,7 @@ public class PowerEconomy extends BasePower implements PowerRightClick, PowerLef
             try {
                 eco = VaultUtils.getVaultEconomy();
             } catch (RuntimeException e) {
-                e.printStackTrace();
+                RPGItems.plugin.getLogger().log(Level.SEVERE, "Vault Economy not found", e);
                 throw new Handler.CommandException("message.error.economy");
             }
         }

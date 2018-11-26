@@ -54,8 +54,10 @@ public class PowerCommand extends BasePower implements PowerRightClick, PowerLef
 
     @Override
     public void init(ConfigurationSection section) {
-        boolean isRight = section.getBoolean("isRight", true);
-        triggers = Collections.singleton(isRight ? Trigger.RIGHT_CLICK : Trigger.LEFT_CLICK);
+        if (section.isBoolean("isRight")) {
+            boolean isRight = section.getBoolean("isRight", true);
+            triggers = Collections.singleton(isRight ? Trigger.RIGHT_CLICK : Trigger.LEFT_CLICK);
+        }
         super.init(section);
     }
 
@@ -63,7 +65,6 @@ public class PowerCommand extends BasePower implements PowerRightClick, PowerLef
      * Execute command
      *
      * @param player player
-     *
      * @return PowerResult
      */
     protected PowerResult<Void> executeCommand(Player player) {
@@ -75,9 +76,9 @@ public class PowerCommand extends BasePower implements PowerRightClick, PowerLef
         Runnable run = () -> {
             String cmd = command;
             cmd = cmd.replaceAll("\\{player}", player.getName());
-            cmd = cmd.replaceAll("\\{player.x}", Float.toString(-player.getLocation().getBlockX()));
-            cmd = cmd.replaceAll("\\{player.y}", Float.toString(-player.getLocation().getBlockY()));
-            cmd = cmd.replaceAll("\\{player.z}", Float.toString(-player.getLocation().getBlockZ()));
+            cmd = cmd.replaceAll("\\{player\\.x}", Float.toString(-player.getLocation().getBlockX()));
+            cmd = cmd.replaceAll("\\{player\\.y}", Float.toString(-player.getLocation().getBlockY()));
+            cmd = cmd.replaceAll("\\{player\\.z}", Float.toString(-player.getLocation().getBlockZ()));
             cmd = cmd.replaceAll("\\{yaw}", Float.toString(player.getLocation().getYaw() + 90));
             cmd = cmd.replaceAll("\\{pitch}", Float.toString(-player.getLocation().getPitch()));
             player.performCommand(cmd);

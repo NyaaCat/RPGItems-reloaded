@@ -124,20 +124,4 @@ public class PowerRainbow extends BasePower implements PowerRightClick {
         return "rainbow";
     }
 
-    @Override
-    public void init(ConfigurationSection s) {
-        cooldown = s.getLong("cooldown", 20);
-        count = s.getInt("count", 5);
-        isFire = s.getBoolean("isFire");
-        cost = s.getInt("cost", s.getInt("consumption", 0));
-    }
-
-    @Override
-    public void save(ConfigurationSection s) {
-        s.set("cooldown", cooldown);
-        s.set("count", count);
-        s.set("isFire", isFire);
-        s.set("cost", cost);
-    }
-
 }

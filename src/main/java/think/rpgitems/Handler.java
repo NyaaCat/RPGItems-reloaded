@@ -4,7 +4,6 @@ import cat.nyaa.nyaacore.LanguageRepository;
 import cat.nyaa.nyaacore.Message;
 import cat.nyaa.nyaacore.Pair;
 import com.google.common.base.Strings;
-import com.sun.nio.file.ExtendedOpenOption;
 import net.md_5.bungee.api.chat.BaseComponent;
 import net.md_5.bungee.api.chat.ComponentBuilder;
 import net.md_5.bungee.api.chat.HoverEvent;
@@ -41,7 +40,10 @@ import java.lang.reflect.Field;
 import java.lang.reflect.InvocationTargetException;
 import java.nio.channels.FileChannel;
 import java.nio.channels.FileLock;
-import java.nio.file.*;
+import java.nio.file.FileVisitResult;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.SimpleFileVisitor;
 import java.nio.file.attribute.BasicFileAttributes;
 import java.util.*;
 import java.util.concurrent.CompletableFuture;
@@ -168,7 +170,8 @@ public class Handler extends RPGCommandReceiver {
         RPGItem item = getItem(args.nextString(), sender);
         File backup = ItemManager.unlockAndBackup(item, false);
         boolean itemFsLock = plugin.cfg.itemFsLock;
-        FileLock lock = FileChannel.open(backup.toPath(), StandardOpenOption.READ, StandardOpenOption.WRITE, ExtendedOpenOption.NOSHARE_WRITE, ExtendedOpenOption.NOSHARE_DELETE).tryLock(0L, Long.MAX_VALUE, true);
+
+        FileLock lock = ItemManager.lockFile(backup);
         if (itemFsLock && lock == null) {
             plugin.getLogger().severe("Error locking " + backup + ".");
             ItemManager.lock(item.getFile());
@@ -1360,7 +1363,6 @@ public class Handler extends RPGCommandReceiver {
                     sender.sendMessage(e.getLocalizedMessage());
                 }
             }
-            item.setMCVersion(RPGItems.getServerMCVersion());
             Bukkit.getScheduler().runTask(plugin, () -> {
                 ItemManager.save(item);
                 cmdFuture.complete(null);
@@ -1371,29 +1373,31 @@ public class Handler extends RPGCommandReceiver {
     private void updateItemEntityData(CommandSender sender, RPGItem item, CompletableFuture<Void> entFuture) {
         Bukkit.getScheduler().runTaskAsynchronously(plugin, () -> {
             List<PowerThrow> powers = item.getPower(PowerThrow.class, true);
-            for (PowerThrow p : powers) {
-                String entityData = p.entityData;
-                String entityName = p.entityName;
-                try {
-                    String updatedData = NetworkUtils.updateEntity(item.getName(), entityData, false);
-                    String updatedName = NetworkUtils.updateEntity(item.getName(), entityName, true);
-                    p.entityData = updatedData;
-                    p.entityName = updatedName;
-                    Bukkit.getScheduler().runTask(plugin, () -> {
-                        msg(sender, "message.spu.entity.updated", item.getDisplay(), entityName, updatedName);
-                        msg(sender, "message.spu.entity.updated", item.getDisplay(), entityData, updatedData);
-                    });
-                } catch (InterruptedException | ExecutionException e) {
-                    plugin.getLogger().log(Level.WARNING, "Error updating command", e);
-                    Bukkit.getScheduler().runTask(plugin, () -> msg(sender, "message.spu.entity.failed", item.getName(), e.getLocalizedMessage(), entityName + " " + entityData));
-                } catch (TimeoutException e) {
-                    plugin.getLogger().log(Level.WARNING, "Timeout updating command", e);
-                    Bukkit.getScheduler().runTask(plugin, () -> msg(sender, "message.spu.entity.timeout", item.getName()));
-                } catch (BadCommandException e) {
-                    sender.sendMessage(e.getLocalizedMessage());
+            try {
+                for (PowerThrow p : powers) {
+                    String entityData = p.entityData;
+                    String entityName = p.entityName;
+                    try {
+                        String updatedData = NetworkUtils.updateEntity(item.getName(), entityData, false);
+                        String updatedName = NetworkUtils.updateEntity(item.getName(), entityName, true);
+                        p.entityData = updatedData;
+                        p.entityName = updatedName;
+                        Bukkit.getScheduler().runTask(plugin, () -> {
+                            msg(sender, "message.spu.entity.updated", item.getDisplay(), entityName, updatedName);
+                            msg(sender, "message.spu.entity.updated", item.getDisplay(), entityData, updatedData);
+                        });
+                    } catch (InterruptedException | ExecutionException e) {
+                        plugin.getLogger().log(Level.WARNING, "Error updating command", e);
+                        Bukkit.getScheduler().runTask(plugin, () -> msg(sender, "message.spu.entity.failed", item.getName(), e.getLocalizedMessage(), entityName + " " + entityData));
+                    } catch (TimeoutException e) {
+                        plugin.getLogger().log(Level.WARNING, "Timeout updating command", e);
+                        Bukkit.getScheduler().runTask(plugin, () -> msg(sender, "message.spu.entity.timeout", item.getName()));
+                    }
                 }
+                item.setMCVersion(RPGItems.getServerMCVersion());
+            } catch (BadCommandException e) {
+                sender.sendMessage(e.getLocalizedMessage());
             }
-            item.setMCVersion(RPGItems.getServerMCVersion());
             Bukkit.getScheduler().runTask(plugin, () -> {
                 ItemManager.save(item);
                 entFuture.complete(null);

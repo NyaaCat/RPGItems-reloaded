@@ -97,8 +97,13 @@ public class PowerPotionSelf extends BasePower implements PowerRightClick, Power
 
     @Override
     public void init(ConfigurationSection section) {
-        amplifier = section.getInt("amp");
-        duration = section.getInt("time");
+        if (section.isInt("amp")) {
+            amplifier = section.getInt("amp");
+        }
+        if (section.isInt("time")) {
+            duration = section.getInt("time");
+        }
+
         super.init(section);
     }
 
