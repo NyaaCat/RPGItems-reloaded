@@ -16,6 +16,7 @@ import java.util.Collection;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.UUID;
+import java.util.logging.Level;
 
 public class WGSupport {
 
@@ -67,8 +68,7 @@ public class WGSupport {
                 WGHandler.migrate(file);
             }
         } catch (Exception e) {
-            e.printStackTrace();
-            RPGItems.logger.info("[RPGItems] Error enabling WorldGuard support");
+            RPGItems.logger.log(Level.WARNING, "[RPGItems] Error enabling WorldGuard support", e);
         }
     }
 

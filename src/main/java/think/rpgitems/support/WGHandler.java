@@ -28,15 +28,16 @@ import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.*;
+import java.util.logging.Level;
 
 public class WGHandler extends Handler {
 
-    static final SetFlag<String> disabledPower = new SetFlag<>("disabled-rpg-powers", new StringFlag(null));
-    static final SetFlag<String> enabledPower = new SetFlag<>("enabled-rpg-powers", new StringFlag(null));
-    static final SetFlag<String> disabledItem = new SetFlag<>("disabled-rpg-items", new StringFlag(null));
-    static final SetFlag<String> enabledItem = new SetFlag<>("enabled-rpg-items", new StringFlag(null));
-    static final SetFlag<String> disabledPlayer = new SetFlag<>("disabled-rpg-players", new StringFlag(null));
-    static final SetFlag<String> enabledPlayer = new SetFlag<>("enabled-rpg-players", new StringFlag(null));
+    private static final SetFlag<String> disabledPower = new SetFlag<>("disabled-rpg-powers", new StringFlag(null));
+    private static final SetFlag<String> enabledPower = new SetFlag<>("enabled-rpg-powers", new StringFlag(null));
+    private static final SetFlag<String> disabledItem = new SetFlag<>("disabled-rpg-items", new StringFlag(null));
+    private static final SetFlag<String> enabledItem = new SetFlag<>("enabled-rpg-items", new StringFlag(null));
+    private static final SetFlag<String> disabledPlayer = new SetFlag<>("disabled-rpg-players", new StringFlag(null));
+    private static final SetFlag<String> enabledPlayer = new SetFlag<>("enabled-rpg-players", new StringFlag(null));
 
     private static final Factory FACTORY = new Factory();
     static WorldGuard worldGuardInstance;
@@ -57,7 +58,8 @@ public class WGHandler extends Handler {
             registry.register(enabledPlayer);
             RPGItems.logger.info("[RPGItems] WorldGuard custom flags registered");
         } catch (FlagConflictException e) {
-            e.printStackTrace();
+            WGSupport.useWorldGuard = false;
+            RPGItems.plugin.getLogger().log(Level.SEVERE, "Error WorldGuard registering custom flags", e);
         }
     }
 
@@ -88,7 +90,7 @@ public class WGHandler extends Handler {
         try {
             Files.move(path, bak);
         } catch (IOException e) {
-            e.printStackTrace();
+            RPGItems.plugin.getLogger().log(Level.WARNING, "Error moving worldguard_region to backup", e);
         }
     }
 
