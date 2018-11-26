@@ -99,10 +99,10 @@ public class ItemManager {
         try {
             File testFile = new File(plugin.getDataFolder(), "lock_test" + System.currentTimeMillis() + ".tmp");
             if (!testFile.createNewFile()) {
-                throw new IllegalStateException("No writable data folder!");
+                throw new IllegalStateException("Not writable data folder!");
             }
             try (FileChannel channel = FileChannel.open(testFile.toPath(), StandardOpenOption.WRITE, StandardOpenOption.READ, ExtendedOpenOption.NOSHARE_WRITE, ExtendedOpenOption.NOSHARE_DELETE)) {
-                FileLock fileLock = channel.tryLock();
+                FileLock fileLock = channel.tryLock(0L, Long.MAX_VALUE, true);
                 fileLock.release();
             } catch (Exception e) {
                 plugin.getLogger().log(Level.FINER, "Disabling NOSHARE lock", e);
@@ -111,7 +111,7 @@ public class ItemManager {
             Files.delete(testFile.toPath());
         } catch (IOException e) {
             noShareLock = false;
-            plugin.getLogger().log(Level.WARNING, "No writable data folder!", e);
+            plugin.getLogger().log(Level.WARNING, "Not writable data folder!", e);
         }
 
         File dirItems = new File(plugin.getDataFolder(), "items");
@@ -399,7 +399,7 @@ public class ItemManager {
         if (noShareLock) {
             return new RandomAccessFile(file, "rw").getChannel().tryLock();
         } else {
-            return FileChannel.open(file.toPath(), StandardOpenOption.WRITE, StandardOpenOption.READ).tryLock();
+            return FileChannel.open(file.toPath(), StandardOpenOption.WRITE, StandardOpenOption.READ).tryLock(0L, Long.MAX_VALUE, true);
         }
     }
 

@@ -1378,7 +1378,9 @@ public class Handler extends RPGCommandReceiver {
                     String entityData = p.entityData;
                     String entityName = p.entityName;
                     try {
-                        String updatedData = NetworkUtils.updateEntity(item.getName(), entityData, false);
+                        String escapedData = escapePlaceholders(entityData);
+                        String rawupdtData = NetworkUtils.updateEntity(item.getName(), escapedData, false);
+                        String updatedData = unescapePlaceholders(rawupdtData);
                         String updatedName = NetworkUtils.updateEntity(item.getName(), entityName, true);
                         p.entityData = updatedData;
                         p.entityName = updatedName;
@@ -1408,6 +1410,7 @@ public class Handler extends RPGCommandReceiver {
     private String unescapePlaceholders(String updated) {
         String cmd = updated;
         cmd = cmd.replaceAll("FakeRGIPlayer", "{player}");
+        cmd = cmd.replaceAll("3ac39513-f55c-4147-93f9-efab77fa8c25", "{playerUUID}");
         cmd = cmd.replaceAll("725709", "{player.x}");
         cmd = cmd.replaceAll("985982", "{player.y}");
         cmd = cmd.replaceAll("608151", "{player.z}");
@@ -1432,22 +1435,23 @@ public class Handler extends RPGCommandReceiver {
     private String escapePlaceholders(String origin) {
         String cmd = origin;
         cmd = cmd.replaceAll("\\{player}", "FakeRGIPlayer");
-        cmd = cmd.replaceAll("\\{player.x}", "725709");
-        cmd = cmd.replaceAll("\\{player.y}", "985982");
-        cmd = cmd.replaceAll("\\{player.z}", "608151");
+        cmd = cmd.replaceAll("\\{playerUUID}", "4ec39513-a43c-7433-93f9-efab77fa8c25");
+        cmd = cmd.replaceAll("\\{player\\.x}", "725709");
+        cmd = cmd.replaceAll("\\{player\\.y}", "985982");
+        cmd = cmd.replaceAll("\\{player\\.z}", "608151");
         cmd = cmd.replaceAll("\\{yaw}", "248.271");
         cmd = cmd.replaceAll("\\{pitch}", "335.815");
 
         cmd = cmd.replaceAll("\\{entity}", "FakeRGIEntity");
-        cmd = cmd.replaceAll("\\{entity.uuid}", "3ac39513-f55c-4147-93f9-efab05fa8c95");
-        cmd = cmd.replaceAll("\\{entity.x}", "979663");
-        cmd = cmd.replaceAll("\\{entity.y}", "611131");
-        cmd = cmd.replaceAll("\\{entity.z}", "454436");
-        cmd = cmd.replaceAll("\\{entity.yaw}", "56.151");
-        cmd = cmd.replaceAll("\\{entity.pitch}", "295.229");
+        cmd = cmd.replaceAll("\\{entity\\.uuid}", "3ac39513-f55c-4147-93f9-efab05fa8c95");
+        cmd = cmd.replaceAll("\\{entity\\.x}", "979663");
+        cmd = cmd.replaceAll("\\{entity\\.y}", "611131");
+        cmd = cmd.replaceAll("\\{entity\\.z}", "454436");
+        cmd = cmd.replaceAll("\\{entity\\.yaw}", "56.151");
+        cmd = cmd.replaceAll("\\{entity\\.pitch}", "295.229");
 
-        cmd = cmd.replaceAll("\\{player.yaw}", "276.61");
-        cmd = cmd.replaceAll("\\{player.pitch}", "179.119");
+        cmd = cmd.replaceAll("\\{player\\.yaw}", "276.61");
+        cmd = cmd.replaceAll("\\{player\\.pitch}", "179.119");
 
         cmd = cmd.replaceAll("\\{damage}", "6424030");
         return cmd;

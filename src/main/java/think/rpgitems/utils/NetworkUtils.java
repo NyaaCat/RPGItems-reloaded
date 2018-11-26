@@ -142,13 +142,7 @@ public class NetworkUtils {
                 RPGItems.plugin.getLogger().warning(result);
                 throw new Handler.CommandException("message.spu.entity.code", item, httpResponse.status().code(), result, entity);
             }
-            if (result.startsWith("\"")) {
-                result = result.substring(1);
-            }
-            if (result.endsWith("\"")) {
-                result = result.substring(0, result.length() - 1);
-            }
-            return result;
+            return new Gson().fromJson(result, String.class);
         } finally {
             ReferenceCountUtil.release(httpResponse);
         }
