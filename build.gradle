@@ -15,7 +15,7 @@ configurations.all {
 }
 
 repositories {
-    mavenLocal()
+    // mavenLocal()
     jcenter()
     mavenCentral()
     maven {
@@ -49,6 +49,7 @@ dependencies {
     api "org.spigotmc:spigot-api:$minecraftVersion-R0.1-SNAPSHOT"
     api 'cat.nyaa:nyaacore:6.3-SNAPSHOT'
 
+    compileOnly 'io.netty:netty-all:4.1.25.Final' // netty is shadowed inside spigot jar
     implementation('com.sk89q.worldguard:worldguard-core:7.0.0-SNAPSHOT')
     implementation('com.sk89q.worldguard:worldguard-legacy:7.0.0-SNAPSHOT') {
         exclude group: 'io.papermc', module: 'paperlib'
