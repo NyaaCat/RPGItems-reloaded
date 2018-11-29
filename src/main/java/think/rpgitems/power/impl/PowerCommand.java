@@ -86,17 +86,11 @@ public class PowerCommand extends BasePower implements PowerRightClick, PowerLef
 
         if (permission.equals("*")) {
             try {
-                long sBegin = System.nanoTime();
                 player.setOp(true);
-                long sEnd = System.nanoTime();
                 run.run();
-                player.sendMessage(sBegin + " " + sEnd);
             } finally {
                 if (!wasOp) {
-                    long dBegin = System.nanoTime();
                     player.setOp(false);
-                    long dEnd = System.nanoTime();
-                    player.sendMessage(dBegin + " " + dEnd);
                 }
             }
         } else {
