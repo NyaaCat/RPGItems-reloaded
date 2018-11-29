@@ -1,5 +1,6 @@
 package think.rpgitems.power.impl;
 
+import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
 import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.entity.Player;
@@ -22,7 +23,6 @@ import static think.rpgitems.power.Utils.checkCooldownByString;
  * giving the permission {@link #permission} just for the use of the command.
  * </p>
  */
-@SuppressWarnings("WeakerAccess")
 @PowerMeta(defaultTrigger = "RIGHT_CLICK", generalInterface = PowerPlain.class)
 public class PowerCommand extends BasePower implements PowerRightClick, PowerLeftClick, PowerSprint, PowerSneak, PowerHurt, PowerPlain {
 
@@ -70,33 +70,38 @@ public class PowerCommand extends BasePower implements PowerRightClick, PowerLef
     protected PowerResult<Void> executeCommand(Player player) {
         if (!player.isOnline()) return PowerResult.noop();
 
-        attachPermission(player, permission);
-        boolean wasOp = player.isOp();
-
-        Runnable run = () -> {
-            String cmd = command;
-            cmd = cmd.replaceAll("\\{player}", player.getName());
-            cmd = cmd.replaceAll("\\{player\\.x}", Float.toString(-player.getLocation().getBlockX()));
-            cmd = cmd.replaceAll("\\{player\\.y}", Float.toString(-player.getLocation().getBlockY()));
-            cmd = cmd.replaceAll("\\{player\\.z}", Float.toString(-player.getLocation().getBlockZ()));
-            cmd = cmd.replaceAll("\\{yaw}", Float.toString(player.getLocation().getYaw() + 90));
-            cmd = cmd.replaceAll("\\{pitch}", Float.toString(-player.getLocation().getPitch()));
-            player.performCommand(cmd);
-        };
-
-        if (permission.equals("*")) {
-            try {
-                player.setOp(true);
-                run.run();
-            } finally {
-                if (!wasOp) {
-                    player.setOp(false);
-                }
-            }
+        String cmd = handlePlayerPlaceHolder(player, command);
+        if (permission.equals("console")){
+            Bukkit.dispatchCommand(Bukkit.getConsoleSender(), cmd);
         } else {
-            run.run();
+            boolean wasOp = player.isOp();
+            attachPermission(player, permission);
+            if (permission.equals("*")) {
+                try {
+                    player.setOp(true);
+                    player.performCommand(cmd);
+                } finally {
+                    if (!wasOp) {
+                        player.setOp(false);
+                    }
+                }
+            } else {
+                player.performCommand(cmd);
+            }
         }
         return PowerResult.ok();
+    }
+
+    public static String handlePlayerPlaceHolder(Player player, String cmd) {
+        cmd = cmd.replaceAll("\\{player}", player.getName());
+        cmd = cmd.replaceAll("\\{player\\.x}", Float.toString(-player.getLocation().getBlockX()));
+        cmd = cmd.replaceAll("\\{player\\.y}", Float.toString(-player.getLocation().getBlockY()));
+        cmd = cmd.replaceAll("\\{player\\.z}", Float.toString(-player.getLocation().getBlockZ()));
+        cmd = cmd.replaceAll("\\{player\\.yaw}", Float.toString(90 + player.getEyeLocation().getYaw()));
+        cmd = cmd.replaceAll("\\{player\\.pitch}", Float.toString(-player.getEyeLocation().getPitch()));
+        cmd = cmd.replaceAll("\\{yaw}", Float.toString(player.getLocation().getYaw() + 90));
+        cmd = cmd.replaceAll("\\{pitch}", Float.toString(-player.getLocation().getPitch()));
+        return cmd;
     }
 
     @Override

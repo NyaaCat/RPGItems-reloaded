@@ -85,14 +85,7 @@ public class PowerAOECommand extends PowerCommand {
 
         attachPermission(player, permission);
 
-        String usercmd = command;
-        usercmd = usercmd.replaceAll("\\{player}", player.getName());
-        usercmd = usercmd.replaceAll("\\{player\\.x}", Float.toString(-player.getLocation().getBlockX()));
-        usercmd = usercmd.replaceAll("\\{player\\.y}", Float.toString(-player.getLocation().getBlockY()));
-        usercmd = usercmd.replaceAll("\\{player\\.z}", Float.toString(-player.getLocation().getBlockZ()));
-        usercmd = usercmd.replaceAll("\\{player\\.yaw}", Float.toString(90 + player.getEyeLocation().getYaw()));
-        usercmd = usercmd.replaceAll("\\{player\\.pitch}", Float.toString(-player.getEyeLocation().getPitch()));
-
+        String usercmd = handlePlayerPlaceHolder(player, command);
 
         boolean wasOp = player.isOp();
         try {
@@ -116,13 +109,7 @@ public class PowerAOECommand extends PowerCommand {
                         ++count;
                         continue;
                     }
-                    cmd = cmd.replaceAll("\\{entity}", e.getName());
-                    cmd = cmd.replaceAll("\\{entity\\.uuid}", e.getUniqueId().toString());
-                    cmd = cmd.replaceAll("\\{entity\\.x}", Float.toString(e.getLocation().getBlockX()));
-                    cmd = cmd.replaceAll("\\{entity\\.y}", Float.toString(e.getLocation().getBlockY()));
-                    cmd = cmd.replaceAll("\\{entity\\.z}", Float.toString(e.getLocation().getBlockZ()));
-                    cmd = cmd.replaceAll("\\{entity\\.yaw}", Float.toString(90 + e.getEyeLocation().getYaw()));
-                    cmd = cmd.replaceAll("\\{entity\\.pitch}", Float.toString(-e.getEyeLocation().getPitch()));
+                    cmd = PowerCommandHit.handleEntityPlaceHolder(e, cmd);
                     Bukkit.getServer().dispatchCommand(player, cmd);
                 }
             }
