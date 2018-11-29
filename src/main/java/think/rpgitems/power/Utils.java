@@ -2,6 +2,9 @@ package think.rpgitems.power;
 
 import cat.nyaa.nyaacore.Message;
 import cat.nyaa.nyaacore.Pair;
+import com.google.common.cache.CacheBuilder;
+import com.google.common.cache.CacheLoader;
+import com.google.common.cache.LoadingCache;
 import org.bukkit.ChatColor;
 import org.bukkit.Location;
 import org.bukkit.Material;
@@ -33,6 +36,16 @@ import java.util.stream.Stream;
 public class Utils {
 
     private static Map<String, Long> cooldowns = new HashMap<>();
+
+    private static LoadingCache<String, List<String>> permissionCache = CacheBuilder
+                                                                                .newBuilder()
+                                                                                .concurrencyLevel(1)
+                                                                                .maximumSize(1000)
+                                                                                .build(CacheLoader.from(Utils::parsePermission));
+
+    private static List<String> parsePermission(String str) {
+        return Arrays.asList(str.split(";"));
+    }
 
     public static List<Entity> getNearbyEntities(Power power, Location l, Player player, double radius, double dx, double dy, double dz) {
         List<Entity> entities = new ArrayList<>();
@@ -160,15 +173,21 @@ public class Utils {
         }
     }
 
-    public static void attachPermission(Player player, String permission) {
-        if (permission.length() != 0 && !permission.equals("*")) {
-            PermissionAttachment attachment = player.addAttachment(RPGItems.plugin, 1);
-            String[] perms = permission.split("\\.");
-            StringBuilder p = new StringBuilder();
-            for (String perm : perms) {
-                p.append(perm);
-                attachment.setPermission(p.toString(), true);
-                p.append('.');
+    public static void attachPermission(Player player, String permissions) {
+        if (permissions.length() != 0 && !permissions.equals("*")) {
+            List<String> permissionList = permissionCache.getUnchecked(permissions);
+            for (String permission : permissionList) {
+                if (player.hasPermission(permission)) {
+                    return;
+                }
+                PermissionAttachment attachment = player.addAttachment(RPGItems.plugin, 1);
+                String[] perms = permission.split("\\.");
+                StringBuilder p = new StringBuilder();
+                for (String perm : perms) {
+                    p.append(perm);
+                    attachment.setPermission(p.toString(), true);
+                    p.append('.');
+                }
             }
         }
     }
