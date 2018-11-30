@@ -394,11 +394,7 @@ public class Events implements Listener {
                     Bukkit.getScheduler().runTaskLater(RPGItems.plugin, () -> e.getArrow().remove(), 100L);
                 } else {
                     RPGItem.updateItem(realItem);
-                    // e.getItem().setItemStack(realItem);
-                    e.setCancelled(true);
-                    e.getArrow().setPickupStatus(Arrow.PickupStatus.DISALLOWED);
-                    e.getArrow().remove();
-                    e.getPlayer().getInventory().addItem(realItem);
+                    e.getItem().setItemStack(realItem);
                 }
             }
         } catch (IllegalArgumentException ex) {
