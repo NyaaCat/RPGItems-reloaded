@@ -615,7 +615,7 @@ public class RPGItem {
         if (ItemManager.canNotUse(p, this) || hasPower(PowerRangedOnly.class)) {
             return -1;
         }
-        boolean can = consumeDurability(item, hittingCost);
+        boolean can = consumeDurability(stack, hittingCost);
         if (!can) {
             return -1;
         }
