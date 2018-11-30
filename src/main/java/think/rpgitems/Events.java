@@ -36,6 +36,7 @@ import think.rpgitems.support.WGHandler;
 import think.rpgitems.support.WGSupport;
 
 import java.util.*;
+import java.util.logging.Level;
 
 import static think.rpgitems.RPGItems.logger;
 import static think.rpgitems.RPGItems.plugin;
@@ -393,12 +394,15 @@ public class Events implements Listener {
                     Bukkit.getScheduler().runTaskLater(RPGItems.plugin, () -> e.getArrow().remove(), 100L);
                 } else {
                     RPGItem.updateItem(realItem);
-                    e.getItem().setItemStack(realItem);
+                    // e.getItem().setItemStack(realItem);
+                    e.setCancelled(true);
+                    e.getArrow().setPickupStatus(Arrow.PickupStatus.DISALLOWED);
+                    e.getArrow().remove();
+                    e.getPlayer().getInventory().addItem(realItem);
                 }
             }
         } catch (IllegalArgumentException ex) {
-            ex.printStackTrace();
-            logger.warning("Exception when PlayerPickupArrowEvent. May be harmless.");
+            logger.log(Level.WARNING, "Exception when PlayerPickupArrowEvent. May be harmless.", ex);
         }
     }
 
@@ -507,8 +511,7 @@ public class Events implements Listener {
                         RPGItem.updateItem(rpgItem, item);
                 }
             } catch (ArrayIndexOutOfBoundsException ex) {
-                ex.printStackTrace();
-                logger.warning("Exception when InventoryOpenEvent. May be harmless.");
+                logger.log(Level.WARNING, "Exception when InventoryOpenEvent. May be harmless.", ex);
                 // Fix for the bug with anvils in craftbukkit
             }
         } else {
