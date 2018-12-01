@@ -56,7 +56,7 @@ public class WGHandler extends Handler {
             registry.register(enabledItem);
             registry.register(disabledPlayer);
             registry.register(enabledPlayer);
-            RPGItems.logger.info("[RPGItems] WorldGuard custom flags registered");
+            RPGItems.logger.info("WorldGuard custom flags registered");
         } catch (FlagConflictException e) {
             WGSupport.useWorldGuard = false;
             RPGItems.plugin.getLogger().log(Level.SEVERE, "Error WorldGuard registering custom flags", e);

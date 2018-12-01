@@ -49,9 +49,9 @@ public class WGSupport {
             }
             WGSupport.wgPlugin = (WorldGuardPlugin) wgPlugin;
             String wgVersion = WGSupport.wgPlugin.getDescription().getVersion();
-            RPGItems.logger.info("[RPGItems] WorldGuard version: " + wgVersion + " found");
+            RPGItems.logger.info("WorldGuard version: " + wgVersion + " found");
             if (!wgVersion.startsWith("7.")){
-                RPGItems.logger.warning("[RPGItems] Requires WorldGuard 7.x, disabling integration");
+                RPGItems.logger.warning("Requires WorldGuard 7.x, disabling integration");
             }
             hasSupport = true;
             WGHandler.registerHandler();
@@ -68,7 +68,7 @@ public class WGSupport {
                 WGHandler.migrate(file);
             }
         } catch (Exception e) {
-            RPGItems.logger.log(Level.WARNING, "[RPGItems] Error enabling WorldGuard support", e);
+            RPGItems.logger.log(Level.WARNING, "Error enabling WorldGuard support", e);
         }
     }
 
@@ -86,7 +86,7 @@ public class WGSupport {
         hasSupport = true;
         WGHandler.worldGuardInstance = WorldGuard.getInstance();
         WGSupport.wgPlugin = (WorldGuardPlugin) plugin.getServer().getPluginManager().getPlugin("WorldGuard");
-        RPGItems.logger.info("[RPGItems] WorldGuard version: " + WGSupport.wgPlugin.getDescription().getVersion() + " found");
+        RPGItems.logger.info("WorldGuard version: " + WGSupport.wgPlugin.getDescription().getVersion() + " found");
 
         WGHandler.registerHandler();
         for (Player p : plugin.getServer().getOnlinePlayers()) {
