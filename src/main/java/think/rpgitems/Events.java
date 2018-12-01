@@ -50,7 +50,7 @@ public class Events implements Listener {
 
     private static HashSet<Integer> removeProjectiles = new HashSet<>();
     private static HashMap<Integer, Integer> rpgProjectiles = new HashMap<>();
-    private static Map<UUID, ItemStack> tridentCache = new HashMap<>();
+    private static Map<UUID, ItemStack> localItemStacks = new HashMap<>();
     private HashSet<LocaleInventory> localeInventories = new HashSet<>();
 
     static private boolean canStack(ItemStack a, ItemStack b) {
@@ -65,6 +65,22 @@ public class Events implements Listener {
         } else {
             return false;
         }
+    }
+
+    public static void registerLocalItemStack(UUID entityId, ItemStack item) {
+        localItemStacks.put(entityId, item);
+    }
+
+    public static boolean hasLocalItemStack(UUID entityId) {
+       return localItemStacks.containsKey(entityId);
+    }
+
+    public static ItemStack getLocalItemStack(UUID entityId) {
+        return localItemStacks.get(entityId);
+    }
+
+    public static ItemStack removeLocalItemStack(UUID entityId) {
+        return localItemStacks.remove(entityId);
     }
 
     public static void registerProjectile(int entityId, int uid) {
@@ -172,8 +188,8 @@ public class Events implements Listener {
                     ItemStack item = player.getInventory().getItemInMainHand();
                     RPGItem hItem = ItemManager.toRPGItem(item);
 
-                    if (tridentCache.containsKey(entity.getUniqueId())) {
-                        item = tridentCache.get(entity.getUniqueId());
+                    if (hasLocalItemStack(entity.getUniqueId())) {
+                        item = getLocalItemStack(entity.getUniqueId());
                         rItem = ItemManager.toRPGItem(item);
                         if (rItem == null) throw new IllegalStateException();
                     } else {
@@ -219,7 +235,7 @@ public class Events implements Listener {
             rItem = ItemManager.toRPGItem(item);
             if (rItem == null) return;
             UUID uuid = entity.getUniqueId();
-            tridentCache.put(uuid, item);
+            registerLocalItemStack(uuid, item);
             ItemStack fakeItem = rItem.toItemStack();
             List<String> fakeLore = new ArrayList<>(1);
             fakeLore.add(uuid.toString());
@@ -384,9 +400,8 @@ public class Events implements Listener {
         }
         try {
             UUID uuid = UUID.fromString(itemMeta.getLore().get(0));
-            ItemStack realItem = tridentCache.get(uuid);
+            ItemStack realItem = removeLocalItemStack(uuid);
             if (realItem != null) {
-                tridentCache.remove(uuid);
                 if (realItem.getType() == Material.AIR) {
                     e.getArrow().setPickupStatus(Arrow.PickupStatus.DISALLOWED);
                     e.getArrow().setPersistent(false);
@@ -560,8 +575,8 @@ public class Events implements Listener {
         ItemStack item = player.getInventory().getItemInMainHand();
         RPGItem hItem = ItemManager.toRPGItem(item);
 
-        if (tridentCache.containsKey(projectile.getUniqueId())) {
-            item = tridentCache.get(projectile.getUniqueId());
+        if (hasLocalItemStack(projectile.getUniqueId())) {
+            item = getLocalItemStack(projectile.getUniqueId());
             rItem = ItemManager.toRPGItem(item);
             if (rItem == null) throw new IllegalStateException();
         } else {

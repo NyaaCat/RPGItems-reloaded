@@ -100,7 +100,7 @@ publishing {
             artifactId "rpgitems"
             version "$majorVersion.$minorVersion-mc$minecraftVersion-SNAPSHOT"
         }
-        mavenVersion(MavenPublication) {
+        mavenRelease(MavenPublication) {
             from components.java
             // afterEvaluate {
             artifacts = [jar, apiJar, javadocJar, sourcesJar]
@@ -120,7 +120,7 @@ publishing {
 tasks.withType(PublishToMavenRepository) {
     onlyIf {
         (publication == publishing.publications.mavenSnapshot) ||
-                (releasing && (publication == publishing.publications.mavenVersion))
+                (releasing && (publication == publishing.publications.mavenRelease))
     }
 }
 
@@ -155,7 +155,7 @@ javadoc {
         links 'https://google.github.io/guava/releases/21.0/api/docs/'
         links 'https://nyaacat.github.io/NyaaCentral/NyaaCore/6.3-mc1.13.2/javadoc/'
         links 'https://ci.md-5.net/job/BungeeCord/ws/chat/target/apidocs/'
-        links 'https://netty.io/4.1/api/index.html'
+        links 'https://netty.io/4.1/api/'
 
         locale 'en_US'
         encoding 'UTF-8'
