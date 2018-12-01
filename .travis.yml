@@ -80,7 +80,10 @@ jobs:
         rm -rf pages/RPGitems-reloaded/$VERSION_STRING/;
         mkdir -p pages/RPGitems-reloaded/$VERSION_STRING/;
         cp -vr RPGitems-reloaded/build/docs/javadoc pages/RPGitems-reloaded/$VERSION_STRING/;
-        if $RELEASING ; then cp -vr RPGitems-reloaded/build/docs/javadoc pages/RPGitems-reloaded/$FULL_VERSION_STRING/; fi;
+        if $RELEASING ;  then
+            mkdir -p pages/RPGitems-reloaded/$FULL_VERSION_STRING/;
+            cp -vr RPGitems-reloaded/build/docs/javadoc pages/RPGitems-reloaded/$FULL_VERSION_STRING/;
+        fi;
         cd pages;
         git config credential.helper "store --file=.git/credentials";
         echo "https://$GITHUB_KEY:@github.com" > .git/credentials;

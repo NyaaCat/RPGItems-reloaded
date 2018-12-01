@@ -1,5 +1,6 @@
 package think.rpgitems.power.impl;
 
+import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.entity.LivingEntity;
 import org.bukkit.entity.Player;
 import org.bukkit.event.entity.EntityDamageByEntityEvent;
@@ -36,7 +37,7 @@ public class PowerDummy extends BasePower implements PowerHit, PowerHitTaken, Po
     public int cost = 0;
 
     @Property
-    public boolean ignoreDurabilityBound = false;
+    public boolean checkDurabilityBound = true;
 
     /**
      * Display message on item
@@ -56,7 +57,7 @@ public class PowerDummy extends BasePower implements PowerHit, PowerHitTaken, Po
     @Override
     public PowerResult<Void> fire(Player player, ItemStack stack) {
         if (!checkCooldown(this, player, cooldown, true)) return PowerResult.of(cooldownResult);
-        if (!getItem().consumeDurability(stack, cost, ignoreDurabilityBound)) PowerResult.of(costResult);
+        if (!getItem().consumeDurability(stack, cost, checkDurabilityBound)) PowerResult.of(costResult);
         return PowerResult.of(successResult);
     }
 
@@ -123,5 +124,13 @@ public class PowerDummy extends BasePower implements PowerHit, PowerHitTaken, Po
     @Override
     public PowerResult<Void> tick(Player player, ItemStack stack) {
         return fire(player, stack);
+    }
+
+    @Override
+    public void init(ConfigurationSection section) {
+        if (section.isBoolean("ignoreDurabilityBound")) {
+            checkDurabilityBound = section.isBoolean("ignoreDurabilityBound");
+        }
+        super.init(section);
     }
 }

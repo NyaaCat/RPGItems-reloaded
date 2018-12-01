@@ -27,16 +27,29 @@ import static think.rpgitems.power.Utils.checkCooldown;
 @PowerMeta(immutableTrigger = true)
 public class PowerTranslocator extends BasePower implements PowerMainhandItem, PowerOffhandItem {
 
-    private static Cache<UUID, UUID> playerTranslocatorMap = CacheBuilder.newBuilder().expireAfterAccess(10, TimeUnit.MINUTES).build();
-    public static Cache<UUID, UUID> translocatorPlayerMap = CacheBuilder.newBuilder().expireAfterAccess(10, TimeUnit.MINUTES).removalListener(n -> {
-        UUID armorStandUUID = (UUID) n.getKey();
-        Bukkit.getScheduler().runTask(plugin, () -> {
-            Entity translocator = Bukkit.getServer().getEntity(armorStandUUID);
-            if (translocator != null) {
-                translocator.remove();
-            }
-        });
-    }).build();
+    private static Cache<UUID, UUID> playerTranslocatorMap = CacheBuilder.newBuilder()
+                                                                         .expireAfterAccess(10, TimeUnit.MINUTES)
+                                                                         .removalListener(n -> {
+                                                                             UUID armorStandUUID = (UUID) n.getValue();
+                                                                             Bukkit.getScheduler().runTask(plugin, () -> {
+                                                                                 Entity translocator = Bukkit.getServer().getEntity(armorStandUUID);
+                                                                                 if (translocator != null) {
+                                                                                     translocator.remove();
+                                                                                 }
+                                                                             });
+                                                                         }).build();
+
+    public static Cache<UUID, UUID> translocatorPlayerMap = CacheBuilder.newBuilder()
+                                                                        .expireAfterAccess(10, TimeUnit.MINUTES)
+                                                                        .removalListener(n -> {
+                                                                            UUID armorStandUUID = (UUID) n.getKey();
+                                                                            Bukkit.getScheduler().runTask(plugin, () -> {
+                                                                                Entity translocator = Bukkit.getServer().getEntity(armorStandUUID);
+                                                                                if (translocator != null) {
+                                                                                    translocator.remove();
+                                                                                }
+                                                                            });
+                                                                        }).build();
 
     /**
      * Cooldown time of this power
