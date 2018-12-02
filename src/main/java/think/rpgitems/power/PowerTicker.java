@@ -23,18 +23,16 @@ public class PowerTicker extends BukkitRunnable {
                 if (item == null)
                     continue;
                 item.power(player, part, null, Trigger.TICK);
-                if (item.getDurability(part) <= 0) {
-                    part.setType(Material.AIR);
-                }
             }
-            ItemStack part = player.getInventory().getItemInMainHand();
-            RPGItem item = ItemManager.toRPGItem(part);
+            ItemStack mainHand = player.getInventory().getItemInMainHand();
+            RPGItem item = ItemManager.toRPGItem(mainHand);
             if (item == null)
                 continue;
-            if (item.getDurability(part) <= 0) {
-                player.getInventory().setItemInMainHand(new ItemStack(Material.AIR));
+            item.power(player, mainHand, null, Trigger.TICK);
+
+            if (player.isSneaking()) {
+                item.power(player, mainHand, null, Trigger.SNEAKING);
             }
-            item.power(player, part, null, Trigger.TICK);
         }
     }
 

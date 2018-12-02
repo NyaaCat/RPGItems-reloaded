@@ -72,9 +72,9 @@ public abstract class Trigger<TEvent extends Event, TPower extends Power, TResul
     public static void register(Trigger trigger) {
         String name = trigger.name();
         if (registry.containsKey(name)) {
-            throw new IllegalArgumentException("Cannot set already-set trigger");
+            throw new IllegalArgumentException("Cannot set already-set trigger: " + trigger.name);
         } else if (!isAcceptingRegistrations()) {
-            throw new IllegalStateException("No longer accepting new triggers (can only be done when loading)");
+            throw new IllegalStateException("No longer accepting new triggers (can only be done when loading): " + trigger.name);
         }
         registry.put(name, trigger);
     }
@@ -245,11 +245,17 @@ public abstract class Trigger<TEvent extends Event, TPower extends Power, TResul
         }
     };
 
-
-    public static final Trigger<ProjectileLaunchEvent, PowerTick, Void, Void> LAUNCH_PROJECTILE = new Trigger<ProjectileLaunchEvent, PowerTick, Void, Void>(ProjectileLaunchEvent.class, PowerTick.class, Void.class, Void.class, "PROJECTILE_LAUNCH") {
+    public static final Trigger<Event, PowerSneaking, Void, Void> SNEAKING = new Trigger<Event, PowerSneaking, Void, Void>(Event.class, PowerSneaking.class, Void.class, Void.class, "SNEAKING") {
         @Override
-        public PowerResult<Void> run(PowerTick power, Player player, ItemStack i, ProjectileLaunchEvent event) {
-            return power.tick(player, i);
+        public PowerResult<Void> run(PowerSneaking power, Player player, ItemStack i, Event event) {
+            return power.sneaking(player, i);
+        }
+    };
+
+    public static final Trigger<ProjectileLaunchEvent, PowerProjectileLaunch, Void, Void> LAUNCH_PROJECTILE = new Trigger<ProjectileLaunchEvent, PowerProjectileLaunch, Void, Void>(ProjectileLaunchEvent.class, PowerProjectileLaunch.class, Void.class, Void.class, "PROJECTILE_LAUNCH") {
+        @Override
+        public PowerResult<Void> run(PowerProjectileLaunch power, Player player, ItemStack i, ProjectileLaunchEvent event) {
+            return power.projectileLaunch(player, i, event);
         }
     };
 

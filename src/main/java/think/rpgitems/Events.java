@@ -252,13 +252,14 @@ public class Events implements Listener {
                 }
             }
         }
+        rItem.power(player, item, e, Trigger.LAUNCH_PROJECTILE);
         if (!rItem.hasPower(PowerRanged.class) && !rItem.hasPower(PowerRangedOnly.class) && item.getType() != Material.BOW && item.getType() != Material.SNOWBALL && item.getType() != Material.EGG && item.getType() != Material.POTION && item.getType() != Material.TRIDENT) {
             return;
         }
         if (ItemManager.canNotUse(player, rItem)) {
             return;
         }
-        rpgProjectiles.put(entity.getEntityId(), rItem.getUID());
+        registerProjectile(e.getEntity().getEntityId(), rItem.getUID());
     }
 
     @EventHandler

@@ -739,6 +739,7 @@ public class RPGItem {
     }
 
     private <TEvent extends Event, TPower extends Power, TResult, TReturn> boolean triggerPreCheck(Player player, ItemStack i, TEvent event, Trigger<TEvent, TPower, TResult, TReturn> trigger, List<TPower> powers) {
+        if (i.getType().equals(Material.AIR)) return false;
         if (powers.isEmpty()) return false;
         if (!checkPermission(player, true)) return false;
         if (!WGSupport.canUse(player, this, powers)) return false;
