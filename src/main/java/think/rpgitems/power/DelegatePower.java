@@ -43,6 +43,11 @@ public abstract class DelegatePower<T extends Power> implements Power {
     }
 
     @Override
+    public String displayName() {
+        return instance.displayName();
+    }
+
+    @Override
     public String getLocalizedName(String locale) {
         throw new NotImplementedException();
     }
