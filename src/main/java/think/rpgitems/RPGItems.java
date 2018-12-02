@@ -1,6 +1,5 @@
 package think.rpgitems;
 
-import cat.nyaa.nyaacore.Pair;
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
 import org.bukkit.event.EventHandler;
@@ -19,13 +18,10 @@ import think.rpgitems.power.PowerTicker;
 import think.rpgitems.power.Trigger;
 import think.rpgitems.power.impl.BasePower;
 import think.rpgitems.support.WGSupport;
-import think.rpgitems.utils.NetworkUtils;
 
 import java.io.File;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.concurrent.ExecutionException;
-import java.util.concurrent.TimeoutException;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.regex.Matcher;
@@ -68,7 +64,10 @@ public class RPGItems extends JavaPlugin {
 
         logger.log(Level.INFO, "Plugin serial: '" + serial + "', native version: '" + pluginMCVersion + "', server version: '" + serverMCVersion + "'.");
 
-        PowerManager.registerPowers(RPGItems.plugin, BasePower.class.getPackage().getName());
+        cfg = new Configuration(this);
+        cfg.load();
+        i18n = new I18n(this, cfg.language);
+
         PowerManager.addDescriptionResolver(RPGItems.plugin, (power, property) -> {
             if (property == null) {
                 @LangKey(skipCheck = true) String powerKey = "power.properties." + power.getKey() + ".main_description";
@@ -84,6 +83,7 @@ public class RPGItems extends JavaPlugin {
             }
             return null;
         });
+        PowerManager.registerPowers(RPGItems.plugin, BasePower.class.getPackage().getName());
         saveDefaultConfig();
         Font.load();
         WGSupport.load();
@@ -116,8 +116,6 @@ public class RPGItems extends JavaPlugin {
     public void onEnable() {
         Trigger.stopAcceptingRegistrations();
         plugin = this;
-        cfg = new Configuration(this);
-        cfg.load();
         if (plugin.cfg.version.startsWith("0.") && Double.parseDouble(plugin.cfg.version) < 0.5) {
             Bukkit.getConsoleSender().sendMessage(ChatColor.RED + "======================================");
             Bukkit.getConsoleSender().sendMessage(ChatColor.RED + "You current version of RPGItems config is not supported.");
@@ -146,7 +144,6 @@ public class RPGItems extends JavaPlugin {
         if (cfg.localeInv) {
             Events.useLocaleInv = true;
         }
-        i18n = new I18n(this, cfg.language);
         Handler commandHandler = new Handler(this, i18n);
         getCommand("rpgitem").setExecutor(commandHandler);
         getCommand("rpgitem").setTabCompleter(commandHandler);
