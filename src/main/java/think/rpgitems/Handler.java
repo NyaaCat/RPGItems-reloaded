@@ -601,13 +601,7 @@ public class Handler extends RPGCommandReceiver {
         String powerStr = args.nextString();
         int nth = args.top() == null ? 1 : args.nextInt();
         try {
-            Class<? extends Power> p = PowerManager.getPower(PowerManager.parseKey(powerStr));
-            if (p == null) {
-                msg(sender, "message.power.unknown", powerStr);
-                return;
-            }
-            List<? extends Power> powers = item.getPower(p);
-            Optional<? extends Power> op = powers.stream().skip(nth - 1).findFirst();
+            Optional<? extends Power> op = getNthPower(sender, item, powerStr, nth);
 
             if (op.isPresent()) {
                 item.removePower(op.get());
@@ -615,7 +609,7 @@ public class Handler extends RPGCommandReceiver {
                 ItemManager.refreshItem();
                 ItemManager.save(item);
             } else {
-                msg(sender, "message.num_out_of_range", nth, 1, powers.size());
+                msg(sender, "message.power_property.power_notfound", powerStr, nth);
             }
         } catch (UnknownExtensionException e) {
             msg(sender, "message.error.unknown.extension", e.getName());
@@ -776,29 +770,25 @@ public class Handler extends RPGCommandReceiver {
         String powerStr = args.nextString();
         int nth = args.nextInt();
         String property = args.next();
-        Class<? extends Power> cls = getPowerClass(sender, powerStr).getValue();
-        if (cls == null) {
-            msg(sender, "message.power_property.power_notfound");
+        Optional<? extends Power> power = getNthPower(sender, item, powerStr, nth);
+        if (!power.isPresent()) {
+            msg(sender, "message.power_property.power_notfound", powerStr, nth);
             return;
         }
-        Optional<? extends Power> power = item.getPower(cls).stream().skip(nth - 1).findFirst();
-        if (power.isPresent()) {
-            Power pow = power.get();
-            YamlConfiguration conf = new YamlConfiguration();
-            if (property != null) {
-                try {
-                    Field field = cls.getField(property);
-                    Utils.saveProperty(pow, conf, field.getName(), field);
-                    msg(sender, "message.power_property.get", nth, pow.getName(), property, conf.getString(field.getName()));
-                } catch (Exception e) {
-                    msg(sender, "message.power_property.property_notfound", property);
-                }
-            } else {
-                pow.save(conf);
-                msg(sender, "message.power_property.all", nth, pow.getName(), conf.saveToString());
+        Power pow = power.get();
+        YamlConfiguration conf = new YamlConfiguration();
+        if (property != null) {
+            Optional<Map.Entry<PowerProperty, Field>> prop = PowerManager.getProperties(item.getPowerKey(pow)).entrySet().stream().filter((pf) -> pf.getKey().name().equals(property)).findAny();
+            if (!prop.isPresent()) {
+                msg(sender, "message.power_property.property_notfound", property);
+                return;
             }
+            Field field = prop.get().getValue();
+            String value = Utils.getProperty(pow, property, field);
+            msg(sender, "message.power_property.get", nth, pow.getName(), property, value);
         } else {
-            msg(sender, "message.power_property.power_notfound");
+            pow.save(conf);
+            msg(sender, "message.power_property.all", nth, pow.getName(), conf.saveToString());
         }
     }
 
@@ -820,22 +810,17 @@ public class Handler extends RPGCommandReceiver {
     @Attribute("property")
     public void setItemPowerProperty(CommandSender sender, Arguments args) throws IllegalAccessException {
         RPGItem item = getItem(args.nextString(), sender);
-        String power = args.nextString();
+        String powerStr = args.nextString();
         int nth = args.nextInt();
         String property = args.nextString();
         String val = args.nextString();
         try {
-            Class<? extends Power> p = PowerManager.getPower(PowerManager.parseKey(power));
-            if (p == null) {
-                msg(sender, "message.power.unknown", power);
-                return;
-            }
-            Optional<Power> op = item.getPowers().stream().filter(pwr -> pwr.getClass().equals(p)).skip(nth - 1).findFirst();
+            Optional<? extends Power> op = getNthPower(sender, item, powerStr, nth);
             if (op.isPresent()) {
                 Power pow = op.get();
                 PowerManager.setPowerProperty(sender, pow, property, val);
             } else {
-                msg(sender, "message.power_property.power_notfound");
+                msg(sender, "message.power_property.power_notfound", powerStr, nth);
                 return;
             }
             item.rebuild();
@@ -846,6 +831,18 @@ public class Handler extends RPGCommandReceiver {
             msg(sender, "message.error.unknown.extension", e.getName());
 
         }
+    }
+
+    public Optional<? extends Power> getNthPower(CommandSender sender, RPGItem item, String power, int nth) {
+        Pair<NamespacedKey, Class<? extends Power>> powerClass = getPowerClass(sender, power);
+        if (powerClass == null || powerClass.getValue() == null) {
+            return Optional.empty();
+        }
+        NamespacedKey key = powerClass.getKey();
+        Class<? extends Power> cls = powerClass.getValue();
+        return item.getPower(key, cls).stream()
+                   .skip(nth - 1)
+                   .findFirst();
     }
 
     @SubCommand("cost")

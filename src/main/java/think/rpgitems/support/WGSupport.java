@@ -127,7 +127,7 @@ public class WGSupport {
         if (notEnabled(disabledItem, enabledItem, itemName)) return false;
         if (powers == null) return true;
         for (Power power : powers) {
-            String powerName = power.getNamespacedKey().toString();
+            String powerName = item.getPowerKey(power).toString();
             if (notEnabled(disabledPower, enabledPower, powerName)) return false;
         }
         return true;

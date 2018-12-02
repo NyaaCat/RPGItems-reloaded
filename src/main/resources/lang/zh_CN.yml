@@ -50,7 +50,7 @@ message:
   power_property:
     property_notfound: 未知技能属性 %s
     not_vaild_bool: '''%s'' 不是一个有效的布尔值'
-    power_notfound: 物品无此技能
+    power_notfound: 物品无此技能：%s %d
     property_unsupporttype: '''%s'' 不属于类型 int/double/String/boolean'
     not_vaild_int: '''%s'' 不是一个有效的整数'
     get: 第 %d 个技能 '%s' 的技能属性 %s 为 %s

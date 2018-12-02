@@ -216,7 +216,7 @@ public abstract class RPGCommandReceiver extends CommandReceiver {
         } catch (UnknownExtensionException e) {
             return Collections.emptyList();
         }
-        List<Power> powers = item.getPowers().stream().filter(p -> p.getNamespacedKey().equals(key)).collect(Collectors.toList());
+        List<Power> powers = item.getPowers().stream().filter(p -> item.getPowerKey(p).equals(key)).collect(Collectors.toList());
         if (powers.isEmpty()) return Collections.emptyList();
         Class<? extends Power> powerClass = powers.get(0).getClass();
         if (cmd.top() == null) {
@@ -343,7 +343,7 @@ public abstract class RPGCommandReceiver extends CommandReceiver {
                                 case "set":
                                 case "get":
                                 case "removepower":
-                                    return itemCommand.getKey().getPowers().stream().map(Power::getNamespacedKey).map(s -> PowerManager.hasExtension() ? s : s.getKey()).map(Object::toString).collect(Collectors.toList()); // current powers
+                                    return itemCommand.getKey().getPowers().stream().map(itemCommand.getKey()::getPowerKey).map(s -> PowerManager.hasExtension() ? s : s.getKey()).map(Object::toString).collect(Collectors.toList()); // current powers
                                 default:
                                     return Collections.emptyList();
                             }
@@ -412,7 +412,7 @@ public abstract class RPGCommandReceiver extends CommandReceiver {
                                     return itemCommand.getKey()
                                                       .getPowers()
                                                       .stream()
-                                                      .map(Power::getNamespacedKey)
+                                                      .map(itemCommand.getKey()::getPowerKey)
                                                       .filter(s -> s.getKey().startsWith(third) || s.toString().startsWith(third))
                                                       .map(s -> PowerManager.hasExtension() ? s : s.getKey())
                                                       .map(Object::toString)

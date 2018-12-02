@@ -69,7 +69,7 @@ public class PowerDeflect extends BasePower implements PowerHitTaken, PowerRight
     @Property(order = 0, required = true)
     public double facing = 30;
 
-    private static Map<UUID, Long> time = new HashMap<>();
+    protected static Map<UUID, Long> time = new HashMap<>();
 
     @Override
     public String displayText() {
@@ -135,7 +135,7 @@ public class PowerDeflect extends BasePower implements PowerHitTaken, PowerRight
             if (p instanceof Trident) {
                 TridentUtils.setTridentDealtDamage((Trident) p, false);
             }
-            p.setVelocity(target.getEyeLocation().getDirection());
+            p.setVelocity(target.getEyeLocation().getDirection().multiply(p.getVelocity().length()));
             if (p instanceof Fireball) {
                 ((Fireball) p).setDirection(target.getEyeLocation().getDirection());
             }

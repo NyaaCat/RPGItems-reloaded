@@ -158,7 +158,7 @@ public class PowerManager {
     }
 
     public static SortedMap<PowerProperty, Field> getProperties(NamespacedKey key) {
-        return Collections.unmodifiableSortedMap(properties.get(getPower(key)));
+        return getProperties(powers.get(key));
     }
 
     @CheckForNull
@@ -187,7 +187,7 @@ public class PowerManager {
     }
 
     public static PowerMeta getMeta(NamespacedKey key) {
-        return getMeta(getPower(key));
+        return getMeta(powers.get(key));
     }
 
     public static PowerMeta getMeta(Class<? extends Power> cls) {

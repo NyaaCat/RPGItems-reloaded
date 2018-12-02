@@ -70,7 +70,7 @@ message:
   power_property:
     property_notfound: Unknown property  %s
     not_vaild_bool: '''%s'' is not an valid boolean'
-    power_notfound: Unknown power on this item
+    power_notfound: Power %s %d not found on this item
     property_unsupporttype: '''%s'' if of type other than int/double/String/boolean'
     not_vaild_int: '''%s'' is not an valid integer'
     get: '%d th power ''%s''''s property %s is %s'

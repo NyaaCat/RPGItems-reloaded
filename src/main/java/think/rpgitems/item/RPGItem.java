@@ -501,7 +501,7 @@ public class RPGItem {
         int i = 0;
         for (Power p : powers) {
             MemoryConfiguration pConfig = new MemoryConfiguration();
-            pConfig.set("powerName", Objects.requireNonNull(powerKeys.get(p)));
+            pConfig.set("powerName", getPowerKey(p).toString());
             p.save(pConfig);
             powerConfigs.set(Integer.toString(i), pConfig);
             i++;
@@ -1205,6 +1205,10 @@ public class RPGItem {
         return powers.stream().filter(p -> p.getClass().equals(power)).map(power::cast).collect(Collectors.toList());
     }
 
+    public <T extends Power> List<T> getPower(NamespacedKey key, Class<T> power) {
+        return powers.stream().filter(p -> p.getClass().equals(power) && getPowerKey(p).equals(key)).map(power::cast).collect(Collectors.toList());
+    }
+
     public <T extends Power> List<T> getPower(Class<T> power, boolean subclass) {
         return subclass ? powers.stream().filter(power::isInstance).map(power::cast).collect(Collectors.toList()) : getPower(power);
     }
@@ -1215,6 +1219,7 @@ public class RPGItem {
 
     private void addPower(NamespacedKey key, Power power, boolean update) {
         powers.add(power);
+        powerKeys.put(power, key);
         if (update)
             rebuild();
     }
@@ -1480,6 +1485,10 @@ public class RPGItem {
 
     public void setPluginSerial(int pluginSerial) {
         this.pluginSerial = pluginSerial;
+    }
+
+    public NamespacedKey getPowerKey(Power power) {
+        return Objects.requireNonNull(powerKeys.get(power));
     }
 
     @LangKey(type = LangKeyType.SUFFIX)
