@@ -64,6 +64,7 @@ public class RPGItem {
     private boolean numericBar = plugin.cfg.numericBar;
     // Powers
     private List<Power> powers = new ArrayList<>();
+    private HashMap<Power, NamespacedKey> powerKeys = new HashMap<>();
     // Recipes
     private int recipechance = 6;
     private boolean hasRecipe = false;
@@ -328,7 +329,7 @@ public class RPGItem {
                     Power pow = power.getConstructor().newInstance();
                     pow.setItem(this);
                     pow.init(section);
-                    addPower(pow, false);
+                    addPower(key, pow, false);
                     conf.put(pow, section);
                 } catch (InstantiationException | IllegalAccessException | NoSuchMethodException | InvocationTargetException e) {
                     throw new RuntimeException(e);
@@ -500,7 +501,7 @@ public class RPGItem {
         int i = 0;
         for (Power p : powers) {
             MemoryConfiguration pConfig = new MemoryConfiguration();
-            pConfig.set("powerName", p.getNamespacedKey().toString());
+            pConfig.set("powerName", Objects.requireNonNull(powerKeys.get(p)));
             p.save(pConfig);
             powerConfigs.set(Integer.toString(i), pConfig);
             i++;
@@ -1208,11 +1209,11 @@ public class RPGItem {
         return subclass ? powers.stream().filter(power::isInstance).map(power::cast).collect(Collectors.toList()) : getPower(power);
     }
 
-    public void addPower(Power power) {
-        addPower(power, true);
+    public void addPower(NamespacedKey key, Power power) {
+        addPower(key, power, true);
     }
 
-    private void addPower(Power power, boolean update) {
+    private void addPower(NamespacedKey key, Power power, boolean update) {
         powers.add(power);
         if (update)
             rebuild();
@@ -1220,6 +1221,7 @@ public class RPGItem {
 
     public void removePower(Power power) {
         powers.remove(power);
+        powerKeys.remove(power);
         power.deinit();
         rebuild();
     }

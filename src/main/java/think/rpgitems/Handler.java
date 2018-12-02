@@ -601,7 +601,7 @@ public class Handler extends RPGCommandReceiver {
         String powerStr = args.nextString();
         int nth = args.top() == null ? 1 : args.nextInt();
         try {
-            Class<? extends Power> p = PowerManager.getPower(powerStr);
+            Class<? extends Power> p = PowerManager.getPower(PowerManager.parseKey(powerStr));
             if (p == null) {
                 msg(sender, "message.power.unknown", powerStr);
                 return;
@@ -776,7 +776,7 @@ public class Handler extends RPGCommandReceiver {
         String powerStr = args.nextString();
         int nth = args.nextInt();
         String property = args.next();
-        Class<? extends Power> cls = getPowerClass(sender, powerStr);
+        Class<? extends Power> cls = getPowerClass(sender, powerStr).getValue();
         if (cls == null) {
             msg(sender, "message.power_property.power_notfound");
             return;
@@ -802,19 +802,18 @@ public class Handler extends RPGCommandReceiver {
         }
     }
 
-    private Class<? extends Power> getPowerClass(CommandSender sender, String powerStr) {
-        Class<? extends Power> cls;
+    private Pair<NamespacedKey, Class<? extends Power>> getPowerClass(CommandSender sender, String powerStr) {
         try {
-            cls = PowerManager.getPower(powerStr);
+            NamespacedKey key = PowerManager.parseKey(powerStr);
+            Class<? extends Power> cls = PowerManager.getPower(key);
+            if (cls == null) {
+                msg(sender, "message.power.unknown", powerStr);
+            }
+            return Pair.of(key, cls);
         } catch (UnknownExtensionException e) {
             msg(sender, "message.error.unknown.extension", e.getName());
             return null;
         }
-        if (cls == null) {
-            msg(sender, "message.power.unknown", powerStr);
-            return null;
-        }
-        return cls;
     }
 
     @SubCommand("set")
@@ -826,7 +825,7 @@ public class Handler extends RPGCommandReceiver {
         String property = args.nextString();
         String val = args.nextString();
         try {
-            Class<? extends Power> p = PowerManager.getPower(power);
+            Class<? extends Power> p = PowerManager.getPower(PowerManager.parseKey(power));
             if (p == null) {
                 msg(sender, "message.power.unknown", power);
                 return;
@@ -1075,9 +1074,11 @@ public class Handler extends RPGCommandReceiver {
             return;
         }
         RPGItem item = getItem(itemStr, sender);
-        Class<? extends Power> cls = getPowerClass(sender, powerStr);
-        if (cls == null) return;
+        Pair<NamespacedKey, Class<? extends Power>> keyClass = getPowerClass(sender, powerStr);
+        if (keyClass == null || keyClass.getValue() == null) return;
         Power power;
+        Class<? extends Power> cls = keyClass.getValue();
+        NamespacedKey key = keyClass.getKey();
         try {
             power = cls.getConstructor().newInstance();
             power.setItem(item);
@@ -1126,7 +1127,7 @@ public class Handler extends RPGCommandReceiver {
             required.remove(field);
             settled.add(field);
         }
-        item.addPower(power);
+        item.addPower(key, power);
         ItemManager.refreshItem();
         ItemManager.save(item);
         msg(sender, "message.power.ok");

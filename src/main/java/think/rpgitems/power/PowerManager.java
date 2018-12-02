@@ -166,11 +166,6 @@ public class PowerManager {
         return powers.get(overrides.computeIfAbsent(key, Function.identity()));
     }
 
-    @CheckForNull
-    public static Class<? extends Power> getPower(String key) throws UnknownExtensionException {
-        return getPower(parseKey(key));
-    }
-
     public static boolean hasPower(NamespacedKey key) {
         return powers.containsKey(key);
     }

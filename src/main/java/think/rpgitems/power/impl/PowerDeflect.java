@@ -1,5 +1,6 @@
 package think.rpgitems.power.impl;
 
+import cat.nyaa.nyaacore.utils.TridentUtils;
 import org.bukkit.Bukkit;
 import org.bukkit.Location;
 import org.bukkit.Sound;
@@ -9,7 +10,6 @@ import org.bukkit.event.entity.EntityDamageByEntityEvent;
 import org.bukkit.event.entity.EntityDamageEvent;
 import org.bukkit.event.player.PlayerInteractEvent;
 import org.bukkit.inventory.ItemStack;
-import org.bukkit.metadata.FixedMetadataValue;
 import org.bukkit.util.Vector;
 import think.rpgitems.Events;
 import think.rpgitems.I18n;
@@ -125,14 +125,16 @@ public class PowerDeflect extends BasePower implements PowerHitTaken, PowerRight
         LivingEntity source = (LivingEntity) p.getShooter();
         Vector relativePosition = target.getEyeLocation().toVector();
         relativePosition.subtract(source.getEyeLocation().toVector());
-        if(getAngleBetweenVectors(target.getEyeLocation().getDirection(), relativePosition.multiply(-1)) >= facing) {
+        if (getAngleBetweenVectors(target.getEyeLocation().getDirection(), relativePosition.multiply(-1)) >= facing) {
             return PowerResult.noop();
         }
         event.setCancelled(true);
         p.setShooter(target);
         Events.registerProjectile(p.getEntityId(), getItem().getUID());
-        Location location = p.getLocation();
-        Bukkit.getScheduler().runTaskLater(RPGItems.plugin, ()->{
+        Bukkit.getScheduler().runTaskLater(RPGItems.plugin, () -> {
+            if (p instanceof Trident) {
+                TridentUtils.setTridentDealtDamage((Trident) p, false);
+            }
             p.setVelocity(target.getEyeLocation().getDirection());
             if (p instanceof Fireball) {
                 ((Fireball) p).setDirection(target.getEyeLocation().getDirection());
@@ -150,7 +152,7 @@ public class PowerDeflect extends BasePower implements PowerHitTaken, PowerRight
 
     @Override
     public PowerResult<Void> fire(Player player, ItemStack stack) {
-        if (!checkCooldownByString(this, player,"deflect.initiative", cooldown, true, true))
+        if (!checkCooldownByString(this, player, "deflect.initiative", cooldown, true, true))
             return PowerResult.noop();
         if (!getItem().consumeDurability(stack, cost))
             return PowerResult.cost();

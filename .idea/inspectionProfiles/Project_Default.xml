@@ -1081,7 +1081,7 @@
     <inspection_tool class="IncompleteProperty" enabled="true" level="ERROR" enabled_by_default="true" />
     <inspection_tool class="InconsistentJavaDoc" enabled="false" level="WARNING" enabled_by_default="false" />
     <inspection_tool class="InconsistentLanguageLevel" enabled="false" level="WARNING" enabled_by_default="false" />
-    <inspection_tool class="InconsistentLineSeparators" enabled="false" level="WARNING" enabled_by_default="false" />
+    <inspection_tool class="InconsistentLineSeparators" enabled="true" level="WARNING" enabled_by_default="true" />
     <inspection_tool class="InconsistentListItems" enabled="true" level="WEAK WARNING" enabled_by_default="true" />
     <inspection_tool class="InconsistentResourceBundle" enabled="true" level="ERROR" enabled_by_default="true" />
     <inspection_tool class="IncorrectOnMessageMethodsInspection" enabled="true" level="ERROR" enabled_by_default="true" />
@@ -1799,7 +1799,7 @@
     <inspection_tool class="PrimitiveArrayArgumentToVariableArgMethod" enabled="true" level="WARNING" enabled_by_default="true" />
     <inspection_tool class="PrivateMemberAccessBetweenOuterAndInnerClass" enabled="false" level="WARNING" enabled_by_default="false" />
     <inspection_tool class="ProblematicVarargsMethodOverride" enabled="false" level="WARNING" enabled_by_default="false" />
-    <inspection_tool class="ProblematicWhitespace" enabled="false" level="WARNING" enabled_by_default="false" />
+    <inspection_tool class="ProblematicWhitespace" enabled="true" level="WARNING" enabled_by_default="true" />
     <inspection_tool class="PropertyValueSetToItself" enabled="false" level="WARNING" enabled_by_default="false" />
     <inspection_tool class="ProtectedField" enabled="false" level="WARNING" enabled_by_default="false" />
     <inspection_tool class="ProtectedInnerClass" enabled="false" level="WARNING" enabled_by_default="false">
@@ -1867,7 +1867,7 @@
     <inspection_tool class="RedundantStreamOptionalCall" enabled="true" level="WARNING" enabled_by_default="true" />
     <inspection_tool class="RedundantStringFormatCall" enabled="true" level="WARNING" enabled_by_default="true" />
     <inspection_tool class="RedundantStringOperation" enabled="true" level="WARNING" enabled_by_default="true" />
-    <inspection_tool class="RedundantSuppression" enabled="true" level="WARNING" enabled_by_default="true" />
+    <inspection_tool class="RedundantSuppression" enabled="true" level="TYPO" enabled_by_default="true" />
     <inspection_tool class="RedundantThrows" enabled="true" level="WARNING" enabled_by_default="true" />
     <inspection_tool class="RedundantToBinding" enabled="true" level="WARNING" enabled_by_default="true" />
     <inspection_tool class="RedundantToProviderBinding" enabled="true" level="WARNING" enabled_by_default="true" />
