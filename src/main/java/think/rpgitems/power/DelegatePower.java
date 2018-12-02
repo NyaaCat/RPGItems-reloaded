@@ -34,7 +34,7 @@ public abstract class DelegatePower<T extends Power> implements Power {
 
     @Override
     public NamespacedKey getNamespacedKey() {
-        throw new NotImplementedException();
+        return instance.getNamespacedKey();
     }
 
     @Override
