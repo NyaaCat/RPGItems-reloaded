@@ -4,6 +4,7 @@ import org.bukkit.Effect;
 import org.bukkit.entity.Entity;
 import org.bukkit.entity.LivingEntity;
 import org.bukkit.entity.Player;
+import org.bukkit.event.entity.EntityDamageByEntityEvent;
 import org.bukkit.event.player.PlayerInteractEvent;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.potion.PotionEffect;
@@ -27,7 +28,7 @@ import static think.rpgitems.power.Utils.getNearbyEntities;
  */
 @SuppressWarnings("WeakerAccess")
 @PowerMeta(defaultTrigger = "RIGHT_CLICK", withSelectors = true, generalInterface = PowerPlain.class)
-public class PowerAOE extends BasePower implements PowerRightClick, PowerLeftClick, PowerPlain {
+public class PowerAOE extends BasePower implements PowerRightClick, PowerLeftClick, PowerPlain, PowerHit {
 
     /**
      * Cooldown time of this power
@@ -81,6 +82,11 @@ public class PowerAOE extends BasePower implements PowerRightClick, PowerLeftCli
     @Override
     public PowerResult<Void> leftClick(final Player player, ItemStack stack, PlayerInteractEvent event) {
         return fire(player, stack);
+    }
+
+    @Override
+    public PowerResult<Double> hit(Player player, ItemStack stack, LivingEntity entity, double damage, EntityDamageByEntityEvent event) {
+        return fire(player, stack).with(damage);
     }
 
     @Override

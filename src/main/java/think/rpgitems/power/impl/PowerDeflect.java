@@ -1,6 +1,7 @@
 package think.rpgitems.power.impl;
 
 import org.bukkit.Bukkit;
+import org.bukkit.Location;
 import org.bukkit.Sound;
 import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.entity.*;
@@ -112,39 +113,34 @@ public class PowerDeflect extends BasePower implements PowerHitTaken, PowerRight
 
         if (!getItem().consumeDurability(stack, cost)) return PowerResult.cost();
 
-        if (event instanceof EntityDamageByEntityEvent) {
-            EntityDamageByEntityEvent byEntityEvent = (EntityDamageByEntityEvent) event;
-            if (byEntityEvent.getDamager() instanceof Projectile) {
-                Projectile p = (Projectile) byEntityEvent.getDamager();
-                if (!(p.getShooter() instanceof LivingEntity)) return PowerResult.noop();
-                LivingEntity source = (LivingEntity) p.getShooter();
-                Vector relativePosition = target.getEyeLocation().toVector();
-                relativePosition.subtract(source.getEyeLocation().toVector());
-                if (getAngleBetweenVectors(target.getEyeLocation().getDirection(), relativePosition.multiply(-1)) < facing
-                            && (p instanceof SmallFireball || p instanceof LargeFireball || p instanceof Arrow)) {
-                    event.setCancelled(true);
-                    p.remove();
-                    target.getLocation().getWorld().playSound(target.getLocation(), Sound.ITEM_SHIELD_BLOCK, 1.0f, 3.0f);
-                    Bukkit.getScheduler().runTaskLater(RPGItems.plugin, () -> {
-                        if (!target.isOnline() || target.isDead()) {
-                            return;
-                        }
-                        Projectile t = target.launchProjectile(p.getClass());
-                        if (p instanceof TippedArrow) {
-                            TippedArrow tippedArrowP = (TippedArrow) p;
-                            TippedArrow tippedArrowT = (TippedArrow) t;
-                            tippedArrowT.setBasePotionData(tippedArrowP.getBasePotionData());
-                            tippedArrowP.getCustomEffects().forEach(potionEffect -> tippedArrowT.addCustomEffect(potionEffect, true));
-                        }
-                        t.setShooter(target);
-                        t.setMetadata("rpgitems.force", new FixedMetadataValue(RPGItems.plugin, 1));
-                        Events.autoRemoveProjectile(t.getEntityId());
-                    }, 1);
-                    return PowerResult.ok(0.0);
-                }
-            }
+        if (!(event instanceof EntityDamageByEntityEvent)) {
+            return PowerResult.noop();
         }
-        return PowerResult.noop();
+        EntityDamageByEntityEvent byEntityEvent = (EntityDamageByEntityEvent) event;
+        if (!(byEntityEvent.getDamager() instanceof Projectile)) {
+            return PowerResult.noop();
+        }
+        Projectile p = (Projectile) byEntityEvent.getDamager();
+        if (!(p.getShooter() instanceof LivingEntity)) return PowerResult.noop();
+        LivingEntity source = (LivingEntity) p.getShooter();
+        Vector relativePosition = target.getEyeLocation().toVector();
+        relativePosition.subtract(source.getEyeLocation().toVector());
+        if(getAngleBetweenVectors(target.getEyeLocation().getDirection(), relativePosition.multiply(-1)) >= facing) {
+            return PowerResult.noop();
+        }
+        event.setCancelled(true);
+        p.setShooter(target);
+        Events.registerProjectile(p.getEntityId(), getItem().getUID());
+        Location location = p.getLocation();
+        Bukkit.getScheduler().runTaskLater(RPGItems.plugin, ()->{
+            p.setVelocity(target.getEyeLocation().getDirection());
+            if (p instanceof Fireball) {
+                ((Fireball) p).setDirection(target.getEyeLocation().getDirection());
+            }
+        }, 1);
+
+        target.getLocation().getWorld().playSound(target.getLocation(), Sound.ITEM_SHIELD_BLOCK, 1.0f, 3.0f);
+        return PowerResult.ok(0.0);
     }
 
     @Override
