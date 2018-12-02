@@ -20,7 +20,7 @@ public abstract class BasePower implements Serializable, Power {
     RPGItem item;
 
     @Property
-    public String displayName = PowerManager.getDescription(getNamespacedKey(), "main_name");
+    public String displayName = getLocalizedName(RPGItems.plugin.cfg.language);
 
     @Property
     @AcceptedValue(preset = Preset.TRIGGERS)

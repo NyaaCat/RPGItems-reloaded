@@ -36,7 +36,7 @@ public class PowerManager {
      */
     static BiMap<NamespacedKey, Class<? extends Power>> powers = HashBiMap.create();
 
-    private static final HashMap<Plugin, BiFunction<NamespacedKey, String, String>> descriptionResolvers = new HashMap<>();
+    private static final HashBasedTable<Plugin, String, BiFunction<NamespacedKey, String, String>> descriptionResolvers = HashBasedTable.create();
 
     static final HashBasedTable<Class<? extends Power>, Class<? extends Power>, Function> adapters = HashBasedTable.create();
 
@@ -80,7 +80,11 @@ public class PowerManager {
     }
 
     public static void addDescriptionResolver(Plugin plugin, BiFunction<NamespacedKey, String, String> descriptionResolver) {
-        descriptionResolvers.put(plugin, descriptionResolver);
+        addDescriptionResolver(plugin, RPGItems.plugin.cfg.language, descriptionResolver);
+    }
+
+    public static void addDescriptionResolver(Plugin plugin, String locale, BiFunction<NamespacedKey, String, String> descriptionResolver) {
+        descriptionResolvers.put(plugin, locale, descriptionResolver);
     }
 
     public static NamespacedKey parseKey(String powerStr) throws UnknownExtensionException {
@@ -171,9 +175,16 @@ public class PowerManager {
         return powers.containsKey(key);
     }
 
-    public static String getDescription(NamespacedKey power, String property) {
+    public static String getDescription(String locale, NamespacedKey power, String property) {
         Plugin plugin = extensions.get(power.getNamespace());
-        return PowerManager.descriptionResolvers.get(plugin).apply(power, property);
+        if (!PowerManager.descriptionResolvers.contains(plugin, locale)) {
+            return null;
+        }
+        return PowerManager.descriptionResolvers.get(plugin, locale).apply(power, property);
+    }
+
+    public static String getDescription(NamespacedKey power, String property) {
+        return getDescription(RPGItems.plugin.cfg.language, power, property);
     }
 
     static boolean hasExtension() {
@@ -188,7 +199,7 @@ public class PowerManager {
         return metas.get(cls);
     }
 
-    public static <G extends Power, S extends Power> void registAdapter(Class<G> general, Class<S> specified, Function<G, S> adapter) {
+    public static <G extends Power, S extends Power> void registerAdapter(Class<G> general, Class<S> specified, Function<G, S> adapter) {
         adapters.put(general, specified, adapter);
     }
 
