@@ -62,7 +62,7 @@ public class PowerDelayedCommand extends PowerCommand {
 
     @Override
     public PowerResult<Void> fire(Player target, ItemStack stack) {
-        if (!checkCooldownByString(target, getItem(), command, cooldown, true)) return PowerResult.cd();
+        if (!checkCooldownByString(this, target, command, cooldown, true)) return PowerResult.cd();
         if (!getItem().consumeDurability(stack, cost)) return PowerResult.cost();
         (new BukkitRunnable() {
             @Override

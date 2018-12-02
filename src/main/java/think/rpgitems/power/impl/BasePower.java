@@ -20,6 +20,9 @@ public abstract class BasePower implements Serializable, Power {
     RPGItem item;
 
     @Property
+    public String displayName = PowerManager.getDescription(getNamespacedKey(), "main_name");
+
+    @Property
     @AcceptedValue(preset = Preset.TRIGGERS)
     public Set<Trigger> triggers = Power.getDefaultTriggers(this.getClass());
 
@@ -87,6 +90,11 @@ public abstract class BasePower implements Serializable, Power {
                 Utils.setPowerPropertyUnchecked(Bukkit.getConsoleSender(), this, field, value);
             }
         }
+    }
+
+    @Override
+    public String displayName() {
+        return displayName;
     }
 
     @Override

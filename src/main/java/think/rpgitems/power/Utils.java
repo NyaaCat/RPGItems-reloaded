@@ -138,22 +138,22 @@ public class Utils {
      * Check cooldown boolean.
      *
      * @param power    Power
-     * @param p        the p
+     * @param player        the player
      * @param cdTicks  the cd ticks
      * @param showWarn whether to show warning to player
      * @return the boolean
      */
-    public static boolean checkCooldown(Power power, Player p, long cdTicks, boolean showWarn) {
-        String key = p.getName() + "." + power.getItem().getUID() + "." + power.getNamespacedKey().toString() + ".cooldown";
-        return checkAndSetCooldown(p, cdTicks, showWarn, key);
+    public static boolean checkCooldown(Power power, Player player, long cdTicks, boolean showWarn) {
+        String key = player.getName() + "." + power.getItem().getUID() + "." + power.getNamespacedKey().toString() + ".cooldown";
+        return checkAndSetCooldown(power, player, cdTicks, showWarn, key);
     }
 
-    public static boolean checkCooldownByString(Player player, RPGItem item, String command, long cooldownTime, boolean showWarn) {
-        String key = player.getName() + "." + item.getUID() + "." + "command." + command + ".cooldown";
-        return checkAndSetCooldown(player, cooldownTime, showWarn, key);
+    public static boolean checkCooldownByString(Power power, Player player, String key, long cdTicks, boolean showWarn) {
+        String cdKey = player.getName() + "." + power.getItem().getUID() + "." + "key." + key + ".cooldown";
+        return checkAndSetCooldown(power, player, cdTicks, showWarn, cdKey);
     }
 
-    private static boolean checkAndSetCooldown(Player player, long cooldownTime, boolean showWarn, String key) {
+    private static boolean checkAndSetCooldown(Power power, Player player, long cooldownTime, boolean showWarn, String key) {
         long cooldown;
         Long value = cooldowns.get(key);
         long nowTick = System.currentTimeMillis() / 50;
@@ -168,7 +168,7 @@ public class Utils {
             return true;
         } else {
             if (showWarn)
-                player.sendMessage(I18n.format("message.cooldown", ((double) (cooldown - nowTick)) / 20d));
+                player.sendMessage(I18n.format("message.cooldown", ((double) (cooldown - nowTick)) / 20d, power.displayName()));
             return false;
         }
     }

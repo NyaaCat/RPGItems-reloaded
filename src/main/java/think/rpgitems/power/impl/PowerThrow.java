@@ -10,19 +10,21 @@ import org.bukkit.entity.Player;
 import org.bukkit.entity.Projectile;
 import org.bukkit.event.player.PlayerInteractEvent;
 import org.bukkit.inventory.ItemStack;
+import think.rpgitems.RPGItems;
 import think.rpgitems.power.*;
 
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.util.Collections;
 import java.util.UUID;
+import java.util.logging.Level;
 
 import static think.rpgitems.power.Utils.checkCooldownByString;
 
 /**
  * Power throw.
  * <p>
- *  Spawn and throw an entity
+ * Spawn and throw an entity
  * </p>
  */
 @PowerMeta(defaultTrigger = "RIGHT_CLICK", generalInterface = PowerPlain.class)
@@ -66,8 +68,8 @@ public class PowerThrow extends BasePower implements PowerRightClick, PowerLeftC
 
     @Override
     public PowerResult<Void> fire(Player player, ItemStack stack) {
-        if (checkCooldownByString(player, getItem(), entityName + entityData, cooldown, true) && getItem().consumeDurability(stack, cost)) {
-            summonEntity(player, stack);
+        if (checkCooldownByString(this, player, entityName + entityData, cooldown, true) && getItem().consumeDurability(stack, cost)) {
+            summonEntity(player);
             return PowerResult.ok();
         }
         return PowerResult.noop();
@@ -79,7 +81,7 @@ public class PowerThrow extends BasePower implements PowerRightClick, PowerLeftC
     }
 
     @SuppressWarnings("deprecation")
-    private void summonEntity(Player player, ItemStack stack) {
+    private void summonEntity(Player player) {
         try {
             Location loc = player.getEyeLocation().clone();
             Class craftWorld = ReflectionUtils.getOBCClass("CraftWorld");
@@ -116,7 +118,7 @@ public class PowerThrow extends BasePower implements PowerRightClick, PowerLeftC
                 }
             }
         } catch (IllegalAccessException | InvocationTargetException | NoSuchMethodException e) {
-            e.printStackTrace();
+            RPGItems.plugin.getLogger().log(Level.WARNING, "Execption spawning entity in " + getItem().getName(), e);
         }
     }
 }

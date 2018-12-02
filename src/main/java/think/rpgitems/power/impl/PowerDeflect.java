@@ -154,7 +154,7 @@ public class PowerDeflect extends BasePower implements PowerHitTaken, PowerRight
 
     @Override
     public PowerResult<Void> fire(Player player, ItemStack stack) {
-        if (!checkCooldownByString(player, getItem(), "deflect.initiative", cooldown, true))
+        if (!checkCooldownByString(this, player,"deflect.initiative", cooldown, true))
             return PowerResult.noop();
         if (!getItem().consumeDurability(stack, cost))
             return PowerResult.cost();

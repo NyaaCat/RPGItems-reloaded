@@ -66,6 +66,13 @@ public interface Power {
     }
 
     /**
+     * Display name of this power
+     *
+     * @return Display name
+     */
+    String displayName();
+
+    /**
      * Display text of this power
      *
      * @return Display text

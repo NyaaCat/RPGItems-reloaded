@@ -60,7 +60,7 @@ public class PowerDummy extends BasePower implements PowerHit, PowerHitTaken, Po
 
     @Override
     public PowerResult<Void> fire(Player player, ItemStack stack) {
-        if (!checkCooldownByString(player, this.getItem(), cooldownKey, cooldown, true)) return PowerResult.of(cooldownResult);
+        if (!checkCooldownByString(this, player, cooldownKey, cooldown, true)) return PowerResult.of(cooldownResult);
         if (!getItem().consumeDurability(stack, cost, checkDurabilityBound)) PowerResult.of(costResult);
         return PowerResult.of(successResult);
     }
