@@ -63,7 +63,7 @@ public class PowerShulkerBullet extends BasePower implements PowerRightClick {
     @Override
     @SuppressWarnings("deprecation")
     public PowerResult<Void> rightClick(Player player, ItemStack stack, PlayerInteractEvent event) {
-        if (!checkCooldown(this, player, cooldown, true)) return PowerResult.cd();
+        if (!checkCooldown(this, player, cooldown, true, true)) return PowerResult.cd();
         if (!getItem().consumeDurability(stack, cost)) return PowerResult.cost();
         ShulkerBullet bullet = player.launchProjectile(ShulkerBullet.class);
         bullet.setPersistent(false);

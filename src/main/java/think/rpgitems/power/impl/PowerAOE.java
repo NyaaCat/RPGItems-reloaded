@@ -85,7 +85,7 @@ public class PowerAOE extends BasePower implements PowerRightClick, PowerLeftCli
 
     @Override
     public PowerResult<Void> fire(Player player, ItemStack stack) {
-        if (!checkCooldown(this, player, cooldown, true)) return PowerResult.cd();
+        if (!checkCooldown(this, player, cooldown, true, true)) return PowerResult.cd();
         if (!getItem().consumeDurability(stack, cost)) return PowerResult.cost();
         PotionEffect effect = new PotionEffect(type, duration, amplifier - 1);
         if (selfapplication) {

@@ -79,7 +79,7 @@ public class PowerAOECommand extends PowerCommand {
 
     @Override
     public PowerResult<Void> fire(Player player, ItemStack stack) {
-        if (!checkCooldownByString(this, player, command, cooldown, true)) return PowerResult.cd();
+        if (!checkCooldownByString(this, player, command, cooldown, true, true)) return PowerResult.cd();
         if (!getItem().consumeDurability(stack, cost)) return PowerResult.cost();
         if (!player.isOnline()) return PowerResult.noop();
 

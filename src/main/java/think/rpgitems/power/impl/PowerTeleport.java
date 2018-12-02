@@ -52,7 +52,7 @@ public class PowerTeleport extends BasePower implements PowerRightClick, PowerPr
 
     @Override
     public PowerResult<Void> rightClick(Player player, ItemStack stack, PlayerInteractEvent event) {
-        if (!checkCooldown(this, player, cooldown, true)) return PowerResult.cd();
+        if (!checkCooldown(this, player, cooldown, true, true)) return PowerResult.cd();
         if (!getItem().consumeDurability(stack, cost)) return PowerResult.cost();
         World world = player.getWorld();
         Location location = player.getLocation();
@@ -123,7 +123,7 @@ public class PowerTeleport extends BasePower implements PowerRightClick, PowerPr
 
     @Override
     public PowerResult<Void> projectileHit(Player player, ItemStack stack, ProjectileHitEvent event) {
-        if (!checkCooldown(this, player, cooldown, true)) return PowerResult.cd();
+        if (!checkCooldown(this, player, cooldown, true, true)) return PowerResult.cd();
         if (!getItem().consumeDurability(stack, cost)) return PowerResult.cost();
         World world = player.getWorld();
         Location start = player.getLocation();

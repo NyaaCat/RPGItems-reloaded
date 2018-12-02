@@ -64,7 +64,7 @@ public class PowerSkyHook extends BasePower implements PowerRightClick {
 
     @Override
     public PowerResult<Void> rightClick(final Player player, ItemStack stack, PlayerInteractEvent event) {
-        if (!checkCooldown(this, player, cooldown, true)) return PowerResult.cd();
+        if (!checkCooldown(this, player, cooldown, true, true)) return PowerResult.cd();
         if (!getItem().consumeDurability(stack, cost)) return PowerResult.cost();
         Boolean isHooking = hooking.get(player.getUniqueId());
         if (isHooking == null) {

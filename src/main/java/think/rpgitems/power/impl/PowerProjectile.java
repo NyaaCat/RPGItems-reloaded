@@ -169,7 +169,7 @@ public class PowerProjectile extends BasePower implements PowerRightClick, Power
 
     @Override
     public PowerResult<Void> fire(Player player, ItemStack stack) {
-        if (!checkCooldown(this, player, cooldown, true)) return PowerResult.cd();
+        if (!checkCooldown(this, player, cooldown, true, true)) return PowerResult.cd();
         if (!getItem().consumeDurability(stack, cost)) return PowerResult.cost();
         fire(player, player.getEyeLocation().getDirection());
         UUID uuid = player.getUniqueId();
@@ -259,7 +259,7 @@ public class PowerProjectile extends BasePower implements PowerRightClick, Power
 
     @Override
     public PowerResult<Void> fire(Player player, ItemStack stack, LivingEntity entity, double value) {
-        if (!checkCooldown(this, player, cooldown, true)) return PowerResult.cd();
+        if (!checkCooldown(this, player, cooldown, true, true)) return PowerResult.cd();
         if (!getItem().consumeDurability(stack, cost)) return PowerResult.cost();
         Vector direction = player.getEyeLocation().toVector().subtract(entity.getLocation().toVector()).normalize();
         fire(player, direction);

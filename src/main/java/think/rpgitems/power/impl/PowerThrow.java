@@ -68,7 +68,7 @@ public class PowerThrow extends BasePower implements PowerRightClick, PowerLeftC
 
     @Override
     public PowerResult<Void> fire(Player player, ItemStack stack) {
-        if (checkCooldownByString(this, player, entityName + entityData, cooldown, true) && getItem().consumeDurability(stack, cost)) {
+        if (checkCooldownByString(this, player, entityName + entityData, cooldown, true, true) && getItem().consumeDurability(stack, cost)) {
             summonEntity(player);
             return PowerResult.ok();
         }

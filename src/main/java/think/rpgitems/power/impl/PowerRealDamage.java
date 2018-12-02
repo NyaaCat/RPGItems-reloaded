@@ -52,7 +52,7 @@ public class PowerRealDamage extends BasePower implements PowerHit {
     @Override
     public PowerResult<Double> hit(Player player, ItemStack stack, LivingEntity entity, double damage, EntityDamageByEntityEvent event) {
         if (damage < minDamage) return PowerResult.noop();
-        if (!checkCooldown(this, player, cooldown, true)) return PowerResult.cd();
+        if (!checkCooldown(this, player, cooldown, true, true)) return PowerResult.cd();
         if (!getItem().consumeDurability(stack, cost)) return PowerResult.cost();
         if (entity.hasPotionEffect(PotionEffectType.DAMAGE_RESISTANCE)) {
             PotionEffect e = entity.getPotionEffect(PotionEffectType.DAMAGE_RESISTANCE);

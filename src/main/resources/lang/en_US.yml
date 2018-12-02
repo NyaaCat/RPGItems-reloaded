@@ -86,7 +86,9 @@ message:
     info: More detailed help on http://rpgitems2.webs.com/ or /rpgitem help [terms]
   help:
     for: Showing help for '%s'
-  cooldown: You must wait %.1f seconds to use %s
+  cooldown:
+    general: You must wait %.1f seconds
+    power: You must wait %.1f seconds before using %s
   give:
     ok: You were given %s
     to: Gave %s to %s

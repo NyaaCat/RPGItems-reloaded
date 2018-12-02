@@ -47,7 +47,7 @@ public class PowerColor extends BasePower implements PowerRightClick, PowerLeftC
     @SuppressWarnings("deprecation")
     @Override
     public PowerResult<Void> rightClick(Player player, ItemStack stack, PlayerInteractEvent event) {
-        if (!checkCooldown(this, player, cooldown, true)) return PowerResult.cd();
+        if (!checkCooldown(this, player, cooldown, true, true)) return PowerResult.cd();
         if (!getItem().consumeDurability(stack, cost)) return PowerResult.cost();
         // TODO
         return PowerResult.noop();

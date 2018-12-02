@@ -124,7 +124,7 @@ public class PowerAttract extends BasePower implements PowerTick, PowerLeftClick
 
     @Override
     public PowerResult<Void> fire(Player player, ItemStack stack) {
-        if (!checkCooldown(this, player, cooldown, true)) return PowerResult.cd();
+        if (!checkCooldown(this, player, cooldown, true, true)) return PowerResult.cd();
         if (!item.consumeDurability(stack, cost)) return PowerResult.cost();
         new BukkitRunnable() {
             int dur = duration;

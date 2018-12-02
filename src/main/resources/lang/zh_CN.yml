@@ -67,7 +67,9 @@ message:
       help [关键词]
   help:
     for: 显示 '%s' 的帮助信息
-  cooldown: 冷却时间还没有结束, 请等待 %.1f 秒再使用 %s
+  cooldown:
+    general: 冷却时间还没有结束, 请等待 %.1f 秒
+    power: 冷却时间还没有结束, 请等待 %.1f 秒再使用%s
   give:
     ok: 你被赠予 %s
     to: 把 %s 给 %s

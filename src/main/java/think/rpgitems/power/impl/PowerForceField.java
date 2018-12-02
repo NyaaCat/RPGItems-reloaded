@@ -76,7 +76,7 @@ public class PowerForceField extends BasePower implements PowerRightClick {
 
     @Override
     public PowerResult<Void> rightClick(Player player, ItemStack stack, PlayerInteractEvent event) {
-        if (!checkCooldown(this, player, cooldown, true)) return PowerResult.cd();
+        if (!checkCooldown(this, player, cooldown, true, true)) return PowerResult.cd();
         if (!getItem().consumeDurability(stack, cost)) return PowerResult.cost();
         World w = player.getWorld();
         int x = player.getLocation().getBlockX();

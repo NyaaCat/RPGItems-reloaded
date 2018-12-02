@@ -1,14 +1,11 @@
 package think.rpgitems.power.impl;
 
 import org.bukkit.ChatColor;
-import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.entity.LivingEntity;
 import org.bukkit.entity.Player;
 import org.bukkit.event.entity.EntityDamageByEntityEvent;
 import org.bukkit.inventory.ItemStack;
 import think.rpgitems.power.*;
-
-import java.util.Collections;
 
 import static think.rpgitems.power.Utils.attachPermission;
 import static think.rpgitems.power.Utils.checkCooldownByString;
@@ -83,7 +80,7 @@ public class PowerCommandHit extends PowerCommand implements PowerHit, PowerLivi
     @Override
     public PowerResult<Void> fire(Player player, ItemStack stack, LivingEntity entity, double damage) {
         if (damage < minDamage) return PowerResult.noop();
-        if (!checkCooldownByString(this, player, command, cooldown, true)) return PowerResult.cd();
+        if (!checkCooldownByString(this, player, command, cooldown, true, true)) return PowerResult.cd();
         if (!getItem().consumeDurability(stack, cost)) return PowerResult.cost();
 
         return executeCommand(player, entity, damage);

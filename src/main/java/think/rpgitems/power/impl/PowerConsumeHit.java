@@ -29,7 +29,7 @@ public class PowerConsumeHit extends BasePower implements PowerHit {
 
     @Override
     public PowerResult<Double> hit(final Player player, ItemStack stack, LivingEntity entity, double damage, EntityDamageByEntityEvent event) {
-        if (!checkCooldown(this, player, cooldown, false)) return PowerResult.cd();
+        if (!checkCooldown(this, player, cooldown, false, true)) return PowerResult.cd();
         int count = stack.getAmount() - 1;
         if (count == 0) {
             stack.setAmount(0);

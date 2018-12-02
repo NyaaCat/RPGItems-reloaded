@@ -22,7 +22,6 @@ import think.rpgitems.Handler;
 import think.rpgitems.I18n;
 import think.rpgitems.RPGItems;
 import think.rpgitems.data.Font;
-import think.rpgitems.item.RPGItem;
 import think.rpgitems.power.impl.PowerSelector;
 import think.rpgitems.utils.MaterialUtils;
 
@@ -137,23 +136,24 @@ public class Utils {
     /**
      * Check cooldown boolean.
      *
-     * @param power    Power
-     * @param player        the player
-     * @param cdTicks  the cd ticks
-     * @param showWarn whether to show warning to player
+     * @param power     Power
+     * @param player    the player
+     * @param cdTicks   the cd ticks
+     * @param showWarn  whether to show warning to player
+     * @param showPower whether to show power name in warning
      * @return the boolean
      */
-    public static boolean checkCooldown(Power power, Player player, long cdTicks, boolean showWarn) {
+    public static boolean checkCooldown(Power power, Player player, long cdTicks, boolean showWarn, boolean showPower) {
         String key = player.getName() + "." + power.getItem().getUID() + "." + power.getNamespacedKey().toString() + ".cooldown";
-        return checkAndSetCooldown(power, player, cdTicks, showWarn, key);
+        return checkAndSetCooldown(power, player, cdTicks, showWarn, showPower, key);
     }
 
-    public static boolean checkCooldownByString(Power power, Player player, String key, long cdTicks, boolean showWarn) {
+    public static boolean checkCooldownByString(Power power, Player player, String key, long cdTicks, boolean showWarn, boolean showPower) {
         String cdKey = player.getName() + "." + power.getItem().getUID() + "." + "key." + key + ".cooldown";
-        return checkAndSetCooldown(power, player, cdTicks, showWarn, cdKey);
+        return checkAndSetCooldown(power, player, cdTicks, showWarn, showPower, cdKey);
     }
 
-    private static boolean checkAndSetCooldown(Power power, Player player, long cooldownTime, boolean showWarn, String key) {
+    private static boolean checkAndSetCooldown(Power power, Player player, long cooldownTime, boolean showWarn, boolean showPower, String key) {
         long cooldown;
         Long value = cooldowns.get(key);
         long nowTick = System.currentTimeMillis() / 50;
@@ -167,8 +167,11 @@ public class Utils {
             cooldowns.put(key, nowTick + cooldownTime);
             return true;
         } else {
-            if (showWarn)
-                player.sendMessage(I18n.format("message.cooldown", ((double) (cooldown - nowTick)) / 20d, power.displayName()));
+            if (showWarn) {
+                if (showPower) {
+                    player.sendMessage(I18n.format("message.cooldown.power", ((double) (cooldown - nowTick)) / 20d, power.displayName()));
+                }
+            }
             return false;
         }
     }

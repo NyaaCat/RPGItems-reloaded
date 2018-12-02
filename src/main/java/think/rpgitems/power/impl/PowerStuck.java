@@ -93,7 +93,7 @@ public class PowerStuck extends BasePower implements PowerHit, PowerRightClick {
 
     @Override
     public PowerResult<Double> hit(Player player, ItemStack stack, LivingEntity entity, double damage, EntityDamageByEntityEvent event) {
-        if (!checkCooldown(this, player, cooldown, true)) return PowerResult.cd();
+        if (!checkCooldown(this, player, cooldown, true, true)) return PowerResult.cd();
         if (random.nextInt(chance) == 0) {
             if (!getItem().consumeDurability(stack, cost)) return PowerResult.cost();
             stucked.put(entity.getUniqueId(), System.currentTimeMillis());
@@ -106,7 +106,7 @@ public class PowerStuck extends BasePower implements PowerHit, PowerRightClick {
 
     @Override
     public PowerResult<Void> rightClick(Player player, ItemStack stack, PlayerInteractEvent event) {
-        if (!checkCooldown(this, player, cooldown, true)) return PowerResult.cd();
+        if (!checkCooldown(this, player, cooldown, true, true)) return PowerResult.cd();
         if (!getItem().consumeDurability(stack, costAoe)) return PowerResult.cost();
         List<LivingEntity> entities = getLivingEntitiesInCone(getNearestLivingEntities(this, player.getEyeLocation(), player, range, 0), player.getLocation().toVector(), facing, player.getLocation().getDirection());
         entities.forEach(entity -> {

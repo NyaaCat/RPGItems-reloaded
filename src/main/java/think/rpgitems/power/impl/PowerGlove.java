@@ -41,7 +41,7 @@ public class PowerGlove extends BasePower implements PowerRightClick {
             }
             return PowerResult.ok();
         }
-        if (!checkCooldown(this, player, cooldown, true)) return PowerResult.cd();
+        if (!checkCooldown(this, player, cooldown, true, true)) return PowerResult.cd();
 
         List<LivingEntity> entities = getLivingEntitiesInCone(getNearestLivingEntities(this, player.getEyeLocation(), player, maxDistance, 0), player.getLocation().toVector(), 30, player.getLocation().getDirection());
         for (LivingEntity entity : entities) {

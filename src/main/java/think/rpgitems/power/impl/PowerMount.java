@@ -29,7 +29,7 @@ public class PowerMount extends BasePower implements PowerRightClick {
 
     @Override
     public PowerResult<Void> rightClick(Player player, ItemStack stack, PlayerInteractEvent event) {
-        if (!checkCooldown(this, player, cooldown, true)) return PowerResult.cd();
+        if (!checkCooldown(this, player, cooldown, true, true)) return PowerResult.cd();
         if (player.isInsideVehicle()) {
             return PowerResult.fail();
         }

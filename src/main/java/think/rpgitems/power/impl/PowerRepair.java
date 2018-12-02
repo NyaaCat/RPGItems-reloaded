@@ -98,7 +98,7 @@ public class PowerRepair extends BasePower implements PowerRightClick, PowerLeft
 
     @Override
     public PowerResult<Void> fire(Player player, ItemStack stack) {
-        if (!checkCooldown(this, player, cooldown, true)) PowerResult.cd();
+        if (!checkCooldown(this, player, cooldown, true, true)) PowerResult.cd();
         int max = getItem().getMaxDurability();
         int itemDurability = getItem().getDurability(stack);
         int delta = max - itemDurability;

@@ -44,7 +44,7 @@ public class PowerArrow extends BasePower implements PowerRightClick, PowerLeftC
     @SuppressWarnings("deprecation")
     @Override
     public PowerResult<Void> fire(Player player, ItemStack stack) {
-        if (!checkCooldown(this, player, cooldown, true)) return PowerResult.cd();
+        if (!checkCooldown(this, player, cooldown, true, true)) return PowerResult.cd();
         if (!getItem().consumeDurability(stack, cost)) return PowerResult.cost();
         player.playSound(player.getLocation(), Sound.ENTITY_ARROW_SHOOT, 1.0f, 1.0f);
         Arrow arrow = player.launchProjectile(Arrow.class);

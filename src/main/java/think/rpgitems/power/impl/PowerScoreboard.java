@@ -68,7 +68,7 @@ public class PowerScoreboard extends BasePower implements PowerHit, PowerHitTake
 
     @Override
     public PowerResult<Void> fire(Player player, ItemStack stack) {
-        if (!checkCooldown(this, player, cooldown, true)) return PowerResult.cd();
+        if (!checkCooldown(this, player, cooldown, true, true)) return PowerResult.cd();
         if (!getItem().consumeDurability(stack, cost)) return PowerResult.cost();
 
         Scoreboard scoreboard = player.getScoreboard();

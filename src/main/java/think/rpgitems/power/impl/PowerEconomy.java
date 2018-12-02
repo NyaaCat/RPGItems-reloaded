@@ -58,7 +58,7 @@ public class PowerEconomy extends BasePower implements PowerRightClick, PowerLef
 
     @Override
     public PowerResult<Void> fire(Player player, ItemStack stack) {
-        if (!checkCooldown(this, player, cooldown, true)) return abortOnFailure ? PowerResult.abort() : PowerResult.cd();
+        if (!checkCooldown(this, player, cooldown, true, true)) return abortOnFailure ? PowerResult.abort() : PowerResult.cd();
         EconomyResponse economyResponse;
         if (amountToPlayer > 0) {
             economyResponse = eco.depositPlayer(player, amountToPlayer);

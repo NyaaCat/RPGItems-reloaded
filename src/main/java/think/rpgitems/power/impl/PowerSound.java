@@ -70,7 +70,7 @@ public class PowerSound extends BasePower implements PowerLeftClick, PowerRightC
 
     @Override
     public PowerResult<Void> fire(Player player, ItemStack stack) {
-        if (!checkCooldown(this, player, cooldown, true)) return PowerResult.cd();
+        if (!checkCooldown(this, player, cooldown, true, true)) return PowerResult.cd();
         if (!getItem().consumeDurability(stack, cost)) return PowerResult.cost();
         Location location = player.getLocation();
         location.getWorld().playSound(location, sound, volume, pitch);

@@ -70,7 +70,7 @@ public class PowerTranslocator extends BasePower implements PowerMainhandItem, P
 
     @Override
     public PowerResult<Boolean> swapToMainhand(Player player, ItemStack stack, PlayerSwapHandItemsEvent event) {
-        checkCooldown(this, player, cooldown, false);
+        checkCooldown(this, player, cooldown, false, true);
         UUID translocatorUUID = playerTranslocatorMap.getIfPresent(player.getUniqueId());
         if (translocatorUUID == null) {
             return PowerResult.fail();
@@ -99,7 +99,7 @@ public class PowerTranslocator extends BasePower implements PowerMainhandItem, P
 
     @Override
     public PowerResult<Boolean> pickupOffhand(Player player, ItemStack stack, InventoryClickEvent event) {
-        checkCooldown(this, player, cooldown, false);
+        checkCooldown(this, player, cooldown, false, true);
         UUID armorStandUUID = playerTranslocatorMap.getIfPresent(player.getUniqueId());
         if (armorStandUUID == null) {
             return PowerResult.fail();
@@ -117,7 +117,7 @@ public class PowerTranslocator extends BasePower implements PowerMainhandItem, P
     @SuppressWarnings("deprecation")
     @Override
     public PowerResult<Boolean> swapToOffhand(Player player, ItemStack stack, PlayerSwapHandItemsEvent event) {
-        if (!checkCooldown(this, player, 0, true)) return PowerResult.ok(false);
+        if (!checkCooldown(this, player, 0, true, true)) return PowerResult.ok(false);
         if (!getItem().consumeDurability(stack, setupCost)) return PowerResult.cost();
 
         SpectralArrow arrow = player.launchProjectile(SpectralArrow.class);

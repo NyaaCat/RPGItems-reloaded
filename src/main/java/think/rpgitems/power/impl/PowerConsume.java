@@ -70,7 +70,7 @@ public class PowerConsume extends BasePower implements PowerRightClick, PowerLef
 
     // TODO: Directly use ItemStack from param
     public PowerResult<Void> fire(final Player player, ItemStack s) {
-        if (!checkCooldown(this, player, cooldown, false)) return PowerResult.cd();
+        if (!checkCooldown(this, player, cooldown, false, true)) return PowerResult.cd();
         if (!getItem().consumeDurability(s, cost)) return PowerResult.cost();
         ItemStack stack = player.getInventory().getItemInMainHand();
         int count = stack.getAmount() - 1;

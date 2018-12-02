@@ -69,7 +69,7 @@ public class PowerPotionSelf extends BasePower implements PowerRightClick, Power
 
     @Override
     public PowerResult<Void> fire(Player player, ItemStack stack) {
-        if (!checkCooldown(this, player, cooldown, true)) return PowerResult.cd();
+        if (!checkCooldown(this, player, cooldown, true, true)) return PowerResult.cd();
         if (!getItem().consumeDurability(stack, cost)) return PowerResult.cost();
         player.addPotionEffect(new PotionEffect(type, duration, amplifier), true);
         return PowerResult.ok();

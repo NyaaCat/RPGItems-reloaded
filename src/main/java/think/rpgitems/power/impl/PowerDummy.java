@@ -13,7 +13,6 @@ import org.bukkit.event.player.PlayerToggleSprintEvent;
 import org.bukkit.inventory.ItemStack;
 import think.rpgitems.power.*;
 
-import static think.rpgitems.power.Utils.checkCooldown;
 import static think.rpgitems.power.Utils.checkCooldownByString;
 
 /**
@@ -60,7 +59,7 @@ public class PowerDummy extends BasePower implements PowerHit, PowerHitTaken, Po
 
     @Override
     public PowerResult<Void> fire(Player player, ItemStack stack) {
-        if (!checkCooldownByString(this, player, cooldownKey, cooldown, true)) return PowerResult.of(cooldownResult);
+        if (!checkCooldownByString(this, player, cooldownKey, cooldown, true, false)) return PowerResult.of(cooldownResult);
         if (!getItem().consumeDurability(stack, cost, checkDurabilityBound)) PowerResult.of(costResult);
         return PowerResult.of(successResult);
     }

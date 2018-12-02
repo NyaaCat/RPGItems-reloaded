@@ -38,7 +38,7 @@ public class PowerParticleTick extends PowerParticle implements PowerTick {
 
     @Override
     public PowerResult<Void> tick(Player player, ItemStack stack) {
-        if (!checkCooldown(this, player, interval, false)) return PowerResult.cd();
+        if (!checkCooldown(this, player, interval, false, true)) return PowerResult.cd();
         if (!getItem().consumeDurability(stack, cost)) return PowerResult.cost();
         spawnParticle(player);
         return PowerResult.ok();
