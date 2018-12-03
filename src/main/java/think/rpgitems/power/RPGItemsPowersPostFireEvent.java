@@ -8,7 +8,7 @@ import think.rpgitems.item.RPGItem;
 
 import java.util.Map;
 
-public class RPGItemsPowersPostFireEvent<TEvent extends Event, TPower extends Power, TResult, TReturn> extends Event {
+public class RPGItemsPowersPostFireEvent<TEvent extends Event, TPower extends Pimpl, TResult, TReturn> extends Event {
 
     private static final HandlerList handlers = new HandlerList();
 
@@ -26,10 +26,10 @@ public class RPGItemsPowersPostFireEvent<TEvent extends Event, TPower extends Po
     private final RPGItem rpgItem;
     private final Player player;
     private final Trigger<TEvent, TPower, TResult, TReturn> trigger;
-    private final Map<Power, PowerResult> results;
+    private final Map<Pimpl, PowerResult> results;
     private final TReturn ret;
 
-    public RPGItemsPowersPostFireEvent(Player player, ItemStack itemStack, TEvent event, RPGItem rpgItem, Trigger<TEvent, TPower, TResult, TReturn> trigger, Map<Power, PowerResult> powerResults, TReturn ret) {
+    public RPGItemsPowersPostFireEvent(Player player, ItemStack itemStack, TEvent event, RPGItem rpgItem, Trigger<TEvent, TPower, TResult, TReturn> trigger, Map<Pimpl, PowerResult> powerResults, TReturn ret) {
         this.event = event;
         this.itemStack = itemStack;
         this.rpgItem = rpgItem;
@@ -55,7 +55,7 @@ public class RPGItemsPowersPostFireEvent<TEvent extends Event, TPower extends Po
         return trigger;
     }
 
-    public Map<Power, PowerResult> getResults() {
+    public Map<Pimpl, PowerResult> getResults() {
         return results;
     }
 

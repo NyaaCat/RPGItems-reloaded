@@ -7,7 +7,7 @@ import org.bukkit.inventory.ItemStack;
 import javax.annotation.CheckReturnValue;
 
 @PowerMeta
-public interface PowerLocation extends Power {
+public interface PowerLocation extends Pimpl {
 
     /**
      * A trigger that fire a power with an location

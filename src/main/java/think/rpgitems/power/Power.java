@@ -115,7 +115,7 @@ public interface Power {
     default void deinit() {
     }
 
-    static Set<Trigger> getTriggers(Class<? extends Power> cls) {
+    static Set<Trigger> getTriggers(Class<? extends Pimpl> cls) {
         return getDynamicInterfaces(cls)
                        .stream()
                        .flatMap(Trigger::fromInterface)
@@ -127,12 +127,12 @@ public interface Power {
      * @return All static implemented interfaces
      */
     @SuppressWarnings("unchecked")
-    static Set<Class<? extends Power>> getStaticInterfaces(Class<? extends Power> cls) {
+    static Set<Class<? extends Pimpl>> getStaticInterfaces(Class<? extends Pimpl> cls) {
         return TypeToken.of(cls).getTypes().interfaces().stream()
                         .map(TypeToken::getRawType)
-                        .filter(Power.class::isAssignableFrom)
-                        .filter(i -> !Objects.equals(i, Power.class))
-                        .map(i -> (Class<? extends Power>) i)
+                        .filter(Pimpl.class::isAssignableFrom)
+                        .filter(i -> !Objects.equals(i, Pimpl.class))
+                        .map(i -> (Class<? extends Pimpl>) i)
                         .collect(Collectors.toSet());
     }
 
@@ -140,7 +140,7 @@ public interface Power {
      * @param cls Class of Power
      * @return All static and dynamic implemented interfaces
      */
-    static Set<Class<? extends Power>> getDynamicInterfaces(Class<? extends Power> cls) {
+    static Set<Class<? extends Pimpl>> getDynamicInterfaces(Class<? extends Pimpl> cls) {
         return getStaticInterfaces(cls)
                        .stream()
                        .flatMap(i -> Stream.concat(
@@ -151,22 +151,28 @@ public interface Power {
     }
 
     static Set<Trigger> getDefaultTriggers(Class<? extends Power> cls) {
-        PowerMeta annotation = cls.getAnnotation(PowerMeta.class);
-        if (annotation != null) {
-            if (annotation.defaultTrigger().length > 0) {
-                return Trigger.valueOf(annotation.defaultTrigger());
-            }
-            if (annotation.marker()) {
-                return Collections.emptySet();
-            }
+        cls = getUserClass(cls);
+        PowerMeta annotation = Objects.requireNonNull(cls.getAnnotation(PowerMeta.class));
+        if (annotation.defaultTrigger().length > 0) {
+            return Trigger.valueOf(annotation.defaultTrigger());
         }
-        return getTriggers(cls);
+        if (annotation.marker()) {
+            return Collections.emptySet();
+        }
+
+        return getTriggers(annotation.implClass());
     }
 
-    default <T extends Power> T cast(Class<T> powerClass) {
-        if (powerClass.isInstance(this)) {
-            return powerClass.cast(this);
+    String CGLIB_CLASS_SEPARATOR = "$$";
+
+    @SuppressWarnings("unchecked")
+    static <T> Class<T> getUserClass(Class<T> clazz) {
+        if (clazz.getName().contains(CGLIB_CLASS_SEPARATOR)) {
+            Class<T> superclass = (Class<T>) clazz.getSuperclass();
+            if (superclass != null && superclass != Object.class) {
+                return superclass;
+            }
         }
-        return PowerManager.adaptPower(this, powerClass);
+        return clazz;
     }
 }

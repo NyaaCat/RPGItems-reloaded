@@ -1,6 +1,7 @@
 plugins {
     id 'java-library'
     id 'maven-publish'
+    id 'com.github.johnrengelman.shadow' version '4.0.3'
 }
 
 ext.majorVersion = 3
@@ -44,6 +45,10 @@ repositories {
     }
 }
 
+shadowJar {
+    configurations = [project.configurations.shadow]
+}
+
 dependencies {
     // compileOnly files('lib/spigot-1.13.2.jar')
     // compileOnly files('lib/patched_1.13.2.jar')
@@ -51,6 +56,9 @@ dependencies {
     api 'cat.nyaa:nyaacore:6.3-SNAPSHOT'
 
     compileOnly 'io.netty:netty-all:4.1.25.Final' // netty is shadowed inside spigot jar
+    compileOnly 'cglib:cglib-nodep:3.2.9'
+
+    shadow 'cglib:cglib-nodep:3.2.9'
 
     // implementation files('lib/worldedit-bukkit-7.0.0-SNAPSHOT-dist.jar')
     // implementation files('lib/worldguard-legacy-7.0.0-SNAPSHOT-dist.jar')
@@ -125,7 +133,14 @@ tasks.withType(PublishToMavenRepository) {
 }
 
 jar {
+    classifier = 'core'
+    dependsOn shadowJar
+}
+
+shadowJar {
     classifier = 'release'
+    // relocate 'net.sf.cglib', 'cat.nyaa.cglib'
+    configurations = [project.configurations.shadow]
 }
 
 task apiJar(type: Jar) {

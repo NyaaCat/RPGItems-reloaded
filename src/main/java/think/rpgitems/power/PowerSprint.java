@@ -9,7 +9,7 @@ import javax.annotation.CheckReturnValue;
 /**
  * Triggers when player sprints
  */
-public interface PowerSprint extends Power {
+public interface PowerSprint extends Pimpl {
     /**
      * Calls when {@code player} using {@code stack} sprints
      *

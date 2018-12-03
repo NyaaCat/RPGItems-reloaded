@@ -11,7 +11,11 @@ import think.rpgitems.Handler;
 import think.rpgitems.RPGItems;
 
 import javax.annotation.CheckForNull;
+import java.beans.Introspector;
+import java.beans.PropertyDescriptor;
+import java.beans.PropertyEditor;
 import java.lang.reflect.Field;
+import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Modifier;
 import java.util.*;
 import java.util.function.BiFunction;
@@ -38,7 +42,7 @@ public class PowerManager {
 
     private static final HashBasedTable<Plugin, String, BiFunction<NamespacedKey, String, String>> descriptionResolvers = HashBasedTable.create();
 
-    static final HashBasedTable<Class<? extends Power>, Class<? extends Power>, Function> adapters = HashBasedTable.create();
+    static final HashBasedTable<Class<? extends Pimpl>, Class<? extends Pimpl>, Function> adapters = HashBasedTable.create();
 
     private static final HashMap<NamespacedKey, NamespacedKey> overrides = new HashMap<>();
 
@@ -70,13 +74,14 @@ public class PowerManager {
 
     public static void registerPowers(Plugin plugin, String basePackage) {
         Class<? extends Power>[] classes = ClassPathUtils.scanSubclasses(plugin, basePackage, Power.class);
-        registerPowers(plugin, classes);
+        List<Class<? extends Power>> classList = Arrays.stream(classes).filter(c -> c.getAnnotation(PowerMeta.class) != null).collect(Collectors.toList());
+        registerPowers(plugin, classList);
     }
 
     @SuppressWarnings({"WeakerAccess"})
-    public static void registerPowers(Plugin plugin, Class<? extends Power>... powers) {
+    public static void registerPowers(Plugin plugin, List<Class<? extends Power>> powers) {
         extensions.put(plugin.getName().toLowerCase(Locale.ROOT), plugin);
-        Stream.of(powers).filter(c -> !Modifier.isAbstract(c.getModifiers()) && !c.isInterface()).sorted(Comparator.comparing(Class::getCanonicalName)).forEach(PowerManager::registerPower);
+        powers.stream().filter(c -> !Modifier.isAbstract(c.getModifiers()) && !c.isInterface()).sorted(Comparator.comparing(Class::getCanonicalName)).forEach(PowerManager::registerPower);
     }
 
     public static void addDescriptionResolver(Plugin plugin, BiFunction<NamespacedKey, String, String> descriptionResolver) {
@@ -194,18 +199,18 @@ public class PowerManager {
         return metas.get(cls);
     }
 
-    public static <G extends Power, S extends Power> void registerAdapter(Class<G> general, Class<S> specified, Function<G, S> adapter) {
+    public static <G extends Pimpl, S extends Pimpl> void registerAdapter(Class<G> general, Class<S> specified, Function<G, S> adapter) {
         adapters.put(general, specified, adapter);
     }
 
-    public static <T extends Power> T adaptPower(Power power, Class<T> specified) {
-        List<Class<? extends Power>> generals = Arrays.asList(getMeta(power.getNamespacedKey()).generalInterface());
-        Set<Class<? extends Power>> statics = Power.getStaticInterfaces(power.getClass());
-        List<Class<? extends Power>> preferences = generals.stream().filter(statics::contains).collect(Collectors.toList());
+    public static <T extends Pimpl> T adaptPower(Pimpl pimpl, Class<T> specified) {
+        List<Class<? extends Pimpl>> generals = Arrays.asList(getMeta(pimpl.getPower().getNamespacedKey()).generalInterface());
+        Set<Class<? extends Pimpl>> statics = Power.getStaticInterfaces(pimpl.getClass());
+        List<Class<? extends Pimpl>> preferences = generals.stream().filter(statics::contains).collect(Collectors.toList());
 
-        for (Class<? extends Power> general : preferences) {
+        for (Class<? extends Pimpl> general : preferences) {
             if (adapters.contains(general, specified)) {
-                return (T) adapters.get(general, specified).apply(power);
+                return (T) adapters.get(general, specified).apply(pimpl);
             }
         }
         throw new ClassCastException();
@@ -227,5 +232,17 @@ public class PowerManager {
             throw new IllegalArgumentException("Not overrideable: " + origin + "@" + originPower.toGenericString() + " " + override + "@" + overridePower.toGenericString());
         }
         overrides.put(origin, override);
+    }
+
+    public static Pimpl createImpl(Class<? extends Power> cls, Power p) {
+        if (!cls.isInstance(p)) throw new IllegalArgumentException();
+        Class<? extends Pimpl> pimpl = getMeta(cls).implClass();
+        if (pimpl.equals(Pimpl.class)) throw new IllegalStateException();
+        try {
+            return pimpl.getConstructor(cls).newInstance(p);
+        } catch (InstantiationException | IllegalAccessException | InvocationTargetException | NoSuchMethodException e) {
+            RPGItems.logger.log(Level.SEVERE, "Invalid impl: " + pimpl + " for " + cls, e);
+            throw new RuntimeException(e);
+        }
     }
 }

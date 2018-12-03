@@ -8,7 +8,7 @@ import javax.annotation.CheckReturnValue;
 /**
  * Plain triggers for powers that do not requires a event
  */
-public interface PowerPlain extends Power {
+public interface PowerPlain extends Pimpl {
     /**
      * Simply trigger this power
      *

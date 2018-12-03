@@ -9,7 +9,7 @@ import org.bukkit.entity.Player;
 import org.bukkit.plugin.Plugin;
 import think.rpgitems.RPGItems;
 import think.rpgitems.item.RPGItem;
-import think.rpgitems.power.Power;
+import think.rpgitems.power.Pimpl;
 
 import java.io.File;
 import java.util.Collection;
@@ -50,7 +50,7 @@ public class WGSupport {
             WGSupport.wgPlugin = (WorldGuardPlugin) wgPlugin;
             String wgVersion = WGSupport.wgPlugin.getDescription().getVersion();
             RPGItems.logger.info("WorldGuard version: " + wgVersion + " found");
-            if (!wgVersion.startsWith("7.")){
+            if (!wgVersion.startsWith("7.")) {
                 RPGItems.logger.warning("Requires WorldGuard 7.x, disabling integration");
             }
             hasSupport = true;
@@ -107,7 +107,7 @@ public class WGSupport {
         return stat != null && !stat.equals(State.ALLOW);
     }
 
-    public static boolean canUse(Player player, RPGItem item, Collection<? extends Power> powers) {
+    public static boolean canUse(Player player, RPGItem item, Collection<? extends Pimpl> powers) {
         if (canNotPvP(player)) return false;
         if (item == null) return true;
         if (!hasSupport || !useWorldGuard || item.isIgnoreWorldGuard()) {
@@ -126,8 +126,8 @@ public class WGSupport {
         String itemName = item.getName();
         if (notEnabled(disabledItem, enabledItem, itemName)) return false;
         if (powers == null) return true;
-        for (Power power : powers) {
-            String powerName = item.getPowerKey(power).toString();
+        for (Pimpl power : powers) {
+            String powerName = item.getPowerKey(power.getPower()).toString();
             if (notEnabled(disabledPower, enabledPower, powerName)) return false;
         }
         return true;

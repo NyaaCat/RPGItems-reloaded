@@ -148,7 +148,9 @@ public class ItemManager {
             if (file.isDirectory()) {
                 File[] subFiles = file.listFiles((d, n) -> n.endsWith("yml"));
                 if (Objects.requireNonNull(subFiles).length == 0) {
-                    new Message(I18n.format("message.item.empty_dir", file.getPath())).send(sender);
+                    if (sender != null) {
+                        new Message(I18n.format("message.item.empty_dir", file.getPath())).send(sender);
+                    }
                     return false;
                 }
                 for (File subFile : subFiles) {

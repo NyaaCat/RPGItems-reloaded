@@ -10,7 +10,7 @@ import javax.annotation.CheckReturnValue;
 /**
  * Triggers when hit some LivingEntity
  */
-public interface PowerHit extends Power {
+public interface PowerHit extends Pimpl {
     /**
      * Calls when {@code player} using {@code stack} hits an {@code entity} with {@code damage}
      *

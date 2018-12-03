@@ -27,8 +27,6 @@ import org.librazy.nclangchecker.LangKey;
 import think.rpgitems.item.ItemManager;
 import think.rpgitems.item.RPGItem;
 import think.rpgitems.power.*;
-import think.rpgitems.power.impl.PowerCommand;
-import think.rpgitems.power.impl.PowerThrow;
 import think.rpgitems.support.WGSupport;
 import think.rpgitems.utils.MaterialUtils;
 import think.rpgitems.utils.NetworkUtils;
@@ -46,7 +44,6 @@ import java.nio.file.Path;
 import java.nio.file.SimpleFileVisitor;
 import java.nio.file.attribute.BasicFileAttributes;
 import java.util.*;
-import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeoutException;
 import java.util.logging.Level;
@@ -1291,168 +1288,6 @@ public class Handler extends RPGCommandReceiver {
         ItemManager.refreshItem();
         ItemManager.save(item);
         msg(sender, "message.power.reorder", item.getName(), remove.getName());
-    }
-
-    @SubCommand(value = "updatecmdandentity", permission = "rpgitem.updateitem")
-    @Attribute("item")
-    public void updateCommand(CommandSender sender, Arguments args) {
-        String s = args.nextString();
-        if (s.equalsIgnoreCase("all")) {
-            List<CompletableFuture<Void>> futures = new LinkedList<>();
-            for (RPGItem item : ItemManager.itemByName.values()) {
-                if (!item.getMCVersion().startsWith("1.13")) {
-                    CompletableFuture<Void> cmdFuture = new CompletableFuture<>();
-                    updateItemCommand(sender, item, cmdFuture);
-                    CompletableFuture<Void> entFuture = new CompletableFuture<>();
-                    updateItemEntityData(sender, item, entFuture);
-                    futures.add(cmdFuture);
-                    futures.add(entFuture);
-                }
-            }
-            CompletableFuture<Void> all = CompletableFuture.allOf(futures.toArray(new CompletableFuture[0]));
-            all.whenComplete((v, e) -> {
-                if (e != null) {
-                    plugin.getLogger().log(Level.WARNING, "Update command and entity failed:", e);
-                }
-                msg(sender, "message.spu.finish");
-            });
-        } else {
-            RPGItem item = getItem(s, sender);
-            CompletableFuture<Void> cmdFuture = new CompletableFuture<>();
-            updateItemCommand(sender, item, cmdFuture);
-            CompletableFuture<Void> entFuture = new CompletableFuture<>();
-            updateItemEntityData(sender, item, entFuture);
-            CompletableFuture<Void> all = CompletableFuture.allOf(cmdFuture, entFuture);
-            all.whenComplete((v, e) -> {
-                if (e != null) {
-                    plugin.getLogger().log(Level.WARNING, "Update command and entity for " + item + " failed:", e);
-                }
-                msg(sender, "message.spu.finish");
-            });
-        }
-    }
-
-    private void updateItemCommand(CommandSender sender, RPGItem item, CompletableFuture<Void> cmdFuture) {
-        Bukkit.getScheduler().runTaskAsynchronously(plugin, () -> {
-            List<PowerCommand> powers = item.getPower(PowerCommand.class, true);
-            for (PowerCommand p : powers) {
-                String origin = p.command;
-                try {
-                    String escaped = escapePlaceholders(origin);
-                    Pair<String, List<String>> resultAndWarn = NetworkUtils.updateCommand(item.getName(), escaped);
-                    String updated = resultAndWarn.getKey();
-                    String result = unescapePlaceholders(updated);
-                    p.command = result;
-                    Bukkit.getScheduler().runTask(plugin, () -> {
-                        msg(sender, "message.spu.command.updated", item.getDisplay(), origin, result);
-                        for (String warn : resultAndWarn.getValue()) {
-                            if (!Strings.isNullOrEmpty(warn)) {
-                                msg(sender, "message.spu.command.warn", warn);
-                            }
-                        }
-                    });
-                } catch (InterruptedException | ExecutionException e) {
-                    plugin.getLogger().log(Level.WARNING, "Error updating command for " + item.getName(), e);
-                    Bukkit.getScheduler().runTask(plugin, () -> msg(sender, "message.spu.command.failed", item.getName(), e.getLocalizedMessage(), origin));
-                } catch (TimeoutException e) {
-                    plugin.getLogger().log(Level.WARNING, "Timeout updating command" + item.getName(), e);
-                    Bukkit.getScheduler().runTask(plugin, () -> msg(sender, "message.spu.command.timeout", item.getName()));
-                } catch (BadCommandException e) {
-                    sender.sendMessage(e.getLocalizedMessage());
-                }
-            }
-            Bukkit.getScheduler().runTask(plugin, () -> {
-                ItemManager.save(item);
-                cmdFuture.complete(null);
-            });
-        });
-    }
-
-    private void updateItemEntityData(CommandSender sender, RPGItem item, CompletableFuture<Void> entFuture) {
-        Bukkit.getScheduler().runTaskAsynchronously(plugin, () -> {
-            List<PowerThrow> powers = item.getPower(PowerThrow.class, true);
-            try {
-                for (PowerThrow p : powers) {
-                    String entityData = p.entityData;
-                    String entityName = p.entityName;
-                    try {
-                        String escapedData = escapePlaceholders(entityData);
-                        String rawupdtData = NetworkUtils.updateEntity(item.getName(), escapedData, false);
-                        String updatedData = unescapePlaceholders(rawupdtData);
-                        String updatedName = NetworkUtils.updateEntity(item.getName(), entityName, true);
-                        p.entityData = updatedData;
-                        p.entityName = updatedName;
-                        Bukkit.getScheduler().runTask(plugin, () -> {
-                            msg(sender, "message.spu.entity.updated", item.getDisplay(), entityName, updatedName);
-                            msg(sender, "message.spu.entity.updated", item.getDisplay(), entityData, updatedData);
-                        });
-                    } catch (InterruptedException | ExecutionException e) {
-                        plugin.getLogger().log(Level.WARNING, "Error updating command", e);
-                        Bukkit.getScheduler().runTask(plugin, () -> msg(sender, "message.spu.entity.failed", item.getName(), e.getLocalizedMessage(), entityName + " " + entityData));
-                    } catch (TimeoutException e) {
-                        plugin.getLogger().log(Level.WARNING, "Timeout updating command", e);
-                        Bukkit.getScheduler().runTask(plugin, () -> msg(sender, "message.spu.entity.timeout", item.getName()));
-                    }
-                }
-                item.setMCVersion(RPGItems.getServerMCVersion());
-            } catch (BadCommandException e) {
-                sender.sendMessage(e.getLocalizedMessage());
-            }
-            Bukkit.getScheduler().runTask(plugin, () -> {
-                ItemManager.save(item);
-                entFuture.complete(null);
-            });
-        });
-    }
-
-    private String unescapePlaceholders(String updated) {
-        String cmd = updated;
-        cmd = cmd.replaceAll("FakeRGIPlayer", "{player}");
-        cmd = cmd.replaceAll("3ac39513-f55c-4147-93f9-efab77fa8c25", "{playerUUID}");
-        cmd = cmd.replaceAll("725709", "{player.x}");
-        cmd = cmd.replaceAll("985982", "{player.y}");
-        cmd = cmd.replaceAll("608151", "{player.z}");
-        cmd = cmd.replaceAll("248\\.271", "{yaw}");
-        cmd = cmd.replaceAll("335\\.815", "{pitch}");
-
-        cmd = cmd.replaceAll("FakeRGIEntity", "{entity}");
-        cmd = cmd.replaceAll("3ac39513-f55c-4147-93f9-efab05fa8c95", "{entity.uuid}");
-        cmd = cmd.replaceAll("979663", "{entity.x}");
-        cmd = cmd.replaceAll("611131", "{entity.y}");
-        cmd = cmd.replaceAll("454436", "{entity.z}");
-        cmd = cmd.replaceAll("56\\.151", "{entity.yaw}");
-        cmd = cmd.replaceAll("295\\.229", "{entity.pitch}");
-
-        cmd = cmd.replaceAll("276\\.61", "{player.yaw}");
-        cmd = cmd.replaceAll("179\\.119", "{player.pitch}");
-
-        cmd = cmd.replaceAll("6424030", "{damage}");
-        return cmd;
-    }
-
-    private String escapePlaceholders(String origin) {
-        String cmd = origin;
-        cmd = cmd.replaceAll("\\{player}", "FakeRGIPlayer");
-        cmd = cmd.replaceAll("\\{playerUUID}", "4ec39513-a43c-7433-93f9-efab77fa8c25");
-        cmd = cmd.replaceAll("\\{player\\.x}", "725709");
-        cmd = cmd.replaceAll("\\{player\\.y}", "985982");
-        cmd = cmd.replaceAll("\\{player\\.z}", "608151");
-        cmd = cmd.replaceAll("\\{yaw}", "248.271");
-        cmd = cmd.replaceAll("\\{pitch}", "335.815");
-
-        cmd = cmd.replaceAll("\\{entity}", "FakeRGIEntity");
-        cmd = cmd.replaceAll("\\{entity\\.uuid}", "3ac39513-f55c-4147-93f9-efab05fa8c95");
-        cmd = cmd.replaceAll("\\{entity\\.x}", "979663");
-        cmd = cmd.replaceAll("\\{entity\\.y}", "611131");
-        cmd = cmd.replaceAll("\\{entity\\.z}", "454436");
-        cmd = cmd.replaceAll("\\{entity\\.yaw}", "56.151");
-        cmd = cmd.replaceAll("\\{entity\\.pitch}", "295.229");
-
-        cmd = cmd.replaceAll("\\{player\\.yaw}", "276.61");
-        cmd = cmd.replaceAll("\\{player\\.pitch}", "179.119");
-
-        cmd = cmd.replaceAll("\\{damage}", "6424030");
-        return cmd;
     }
 
     private RPGItem getItem(String str, CommandSender sender) {

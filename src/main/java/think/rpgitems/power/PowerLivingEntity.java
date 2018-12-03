@@ -6,7 +6,7 @@ import org.bukkit.inventory.ItemStack;
 
 import javax.annotation.CheckReturnValue;
 
-public interface PowerLivingEntity extends Power {
+public interface PowerLivingEntity extends Pimpl {
 
     /**
      * A trigger that fire a power with an entity and an double value (usually the damage)

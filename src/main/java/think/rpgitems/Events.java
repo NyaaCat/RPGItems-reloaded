@@ -31,7 +31,6 @@ import think.rpgitems.item.RPGItem;
 import think.rpgitems.power.Trigger;
 import think.rpgitems.power.impl.PowerRanged;
 import think.rpgitems.power.impl.PowerRangedOnly;
-import think.rpgitems.power.impl.PowerTranslocator;
 import think.rpgitems.support.WGHandler;
 import think.rpgitems.support.WGSupport;
 
@@ -146,9 +145,6 @@ public class Events implements Listener {
     @EventHandler
     public void onEntityDeath(EntityDeathEvent e) {
         String type = e.getEntity().getType().toString();
-        if (PowerTranslocator.translocatorPlayerMap.getIfPresent(e.getEntity().getUniqueId()) != null) {
-            e.getDrops().clear();
-        }
         Random random = new Random();
         if (drops.containsKey(type)) {
             Set<Integer> items = drops.get(type);
@@ -560,10 +556,6 @@ public class Events implements Listener {
 
     private void projectileDamager(EntityDamageByEntityEvent e) {
         Projectile projectile = (Projectile) e.getDamager();
-        if (PowerTranslocator.translocatorPlayerMap.getIfPresent(projectile.getUniqueId()) != null) {
-            e.setCancelled(true);
-            return;
-        }
         Integer projectileID = rpgProjectiles.get(projectile.getEntityId());
         if (projectileID == null) return;
         RPGItem rItem = ItemManager.getItemById(projectileID);

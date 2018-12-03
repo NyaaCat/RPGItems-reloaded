@@ -46,7 +46,8 @@ public class Utils {
         return Arrays.asList(str.split(";"));
     }
 
-    public static List<Entity> getNearbyEntities(Power power, Location l, Player player, double radius, double dx, double dy, double dz) {
+    public static List<Entity> getNearbyEntities(Pimpl pimpl, Location l, Player player, double radius, double dx, double dy, double dz) {
+        Power power = pimpl.getPower();
         List<Entity> entities = new ArrayList<>();
         for (Entity e : l.getWorld().getNearbyEntities(l, dx, dy, dz)) {
             if (l.distance(e.getLocation()) <= radius) {
@@ -72,7 +73,7 @@ public class Utils {
      * @param radius radius
      * @return nearby entities
      */
-    public static List<Entity> getNearbyEntities(Power power, Location l, Player player, double radius) {
+    public static List<Entity> getNearbyEntities(Pimpl power, Location l, Player player, double radius) {
         return getNearbyEntities(power, l, player, radius, radius, radius, radius);
     }
 
@@ -86,7 +87,7 @@ public class Utils {
      * @param min    min radius
      * @return nearby living entities ordered by distance
      */
-    public static List<LivingEntity> getNearestLivingEntities(Power power, Location l, Player player, double radius, double min) {
+    public static List<LivingEntity> getNearestLivingEntities(Pimpl power, Location l, Player player, double radius, double min) {
         final List<Map.Entry<LivingEntity, Double>> entities = new ArrayList<>();
         for (Entity e : getNearbyEntities(power, l, player, radius)) {
             if (e instanceof LivingEntity && !player.equals(e)) {

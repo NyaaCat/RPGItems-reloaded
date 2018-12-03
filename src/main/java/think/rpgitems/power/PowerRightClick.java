@@ -9,7 +9,7 @@ import javax.annotation.CheckReturnValue;
 /**
  * Triggers when right click
  */
-public interface PowerRightClick extends Power {
+public interface PowerRightClick extends Pimpl {
     /**
      * Calls when {@code player} using {@code stack} right clicks {@code clicked}
      *
