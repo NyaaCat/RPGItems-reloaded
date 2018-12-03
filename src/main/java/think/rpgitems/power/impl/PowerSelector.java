@@ -304,4 +304,8 @@ public class PowerSelector extends BasePower {
     public String displayText() {
         return display == null ? I18n.format("power.selector") : display;
     }
+
+    public String id() {
+        return id;
+    }
 }

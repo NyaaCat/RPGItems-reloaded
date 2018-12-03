@@ -397,9 +397,9 @@ public class ItemManager {
 
     public static FileLock lockFile(File file) throws IOException {
         if (noShareLock) {
-            return new RandomAccessFile(file, "rw").getChannel().tryLock();
+            return FileChannel.open(file.toPath(), StandardOpenOption.WRITE, StandardOpenOption.READ, ExtendedOpenOption.NOSHARE_WRITE, ExtendedOpenOption.NOSHARE_DELETE).tryLock(0L, Long.MAX_VALUE, true);
         } else {
-            return FileChannel.open(file.toPath(), StandardOpenOption.WRITE, StandardOpenOption.READ).tryLock(0L, Long.MAX_VALUE, true);
+            return new RandomAccessFile(file, "rw").getChannel().tryLock();
         }
     }
 

@@ -55,7 +55,7 @@ public class Utils {
         }
         power.getItem().getPowers().stream().filter(pow -> pow instanceof PowerSelector).forEach(
                 selector -> {
-                    if (power.getSelectors().contains(((PowerSelector) selector).id)) {
+                    if (power.getSelectors().contains(((PowerSelector) selector).id())) {
                         ((PowerSelector) selector).inPlaceFilter(player, entities);
                     }
                 }

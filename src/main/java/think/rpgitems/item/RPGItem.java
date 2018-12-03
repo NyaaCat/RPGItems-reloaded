@@ -349,7 +349,7 @@ public class RPGItem {
                     List<? extends Power> app = getPower(pow);
                     for (Power power : app) {
                         if (power instanceof BasePower) {
-                            ((BasePower) power).selectors.add(selector.id);
+                            ((BasePower) power).selectors.add(selector.id());
                         }
                     }
                 }

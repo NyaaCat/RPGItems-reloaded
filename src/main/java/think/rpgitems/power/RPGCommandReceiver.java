@@ -14,6 +14,7 @@ import org.librazy.nclangchecker.LangKey;
 import think.rpgitems.RPGItems;
 import think.rpgitems.item.ItemManager;
 import think.rpgitems.item.RPGItem;
+import think.rpgitems.power.impl.PowerSelector;
 
 import java.lang.reflect.Field;
 import java.lang.reflect.ParameterizedType;
@@ -40,16 +41,16 @@ public abstract class RPGCommandReceiver extends CommandReceiver {
         );
     }
 
-    private static List<String> resolvePropertyValueSuggestion(Class<? extends Power> power, String propertyName, String last, boolean hasNamePrefix) {
+    private static List<String> resolvePropertyValueSuggestion(RPGItem item, Class<? extends Power> power, String propertyName, String last, boolean hasNamePrefix) {
         try {
-            return resolvePropertyValueSuggestion(power, power.getField(propertyName), last, hasNamePrefix);
+            return resolvePropertyValueSuggestion(item, power, power.getField(propertyName), last, hasNamePrefix);
         } catch (NoSuchFieldException e) {
             return Collections.emptyList();
         }
     }
 
     @SuppressWarnings("unchecked")
-    private static List<String> resolvePropertyValueSuggestion(Class<? extends Power> power, Field propertyField, String last, boolean hasNamePrefix) {
+    private static List<String> resolvePropertyValueSuggestion(RPGItem item, Class<? extends Power> power, Field propertyField, String last, boolean hasNamePrefix) {
         BooleanChoice bc = propertyField.getAnnotation(BooleanChoice.class);
         if (bc != null) {
             return Stream.of(bc.trueChoice(), bc.falseChoice()).map(s -> (hasNamePrefix ? propertyField.getName() + ":" : "") + s).filter(s -> s.startsWith(last)).collect(Collectors.toList());
@@ -61,6 +62,16 @@ public abstract class RPGCommandReceiver extends CommandReceiver {
                 return resolveEnumListValue(power, propertyField, new ArrayList<>(Trigger.keySet()), last, hasNamePrefix);
             }
             if (!listArg.isEnum()) {
+                if (propertyField.getName().equalsIgnoreCase("conditions")) {
+                    List<PowerCondition> conditions = item.getPower(PowerCondition.class, true);
+                    List<String> conditionIds = conditions.stream().map(PowerCondition::id).collect(Collectors.toList());
+                    return resolveEnumListValue(power, propertyField, conditionIds, last, hasNamePrefix);
+                }
+                if (propertyField.getName().equalsIgnoreCase("selectors")) {
+                    List<PowerSelector> selectors = item.getPower(PowerSelector.class);
+                    List<String> selectorIds = selectors.stream().map(PowerSelector::id).collect(Collectors.toList());
+                    return resolveEnumListValue(power, propertyField, selectorIds, last, hasNamePrefix);
+                }
                 return Collections.emptyList();
             }
             List<String> enumValues = Stream.of(((Class<? extends Enum>) listArg).getEnumConstants()).map(Enum::name).collect(Collectors.toList());
@@ -123,7 +134,7 @@ public abstract class RPGCommandReceiver extends CommandReceiver {
                 return resolveGetSet(last, cmd, itemCommand);
             }
             case "power": {
-                return resolvePowerProperties(sender, last, cmd);
+                return resolvePowerProperties(sender, itemCommand.getKey(), last, cmd);
             }
             default:
                 return Collections.emptyList();
@@ -137,7 +148,7 @@ public abstract class RPGCommandReceiver extends CommandReceiver {
                      .reduce((first, second) -> second);
     }
 
-    private List<String> resolvePowerProperties(CommandSender sender, String last, Arguments cmd) {
+    private List<String> resolvePowerProperties(CommandSender sender, RPGItem item, String last, Arguments cmd) {
         @LangKey(skipCheck = true) String powName = cmd.next();
         NamespacedKey powerKey;
         try {
@@ -172,7 +183,7 @@ public abstract class RPGCommandReceiver extends CommandReceiver {
         if (settled.isEmpty()) {
             actionBarTip(sender, powerKey, null);
         }
-        return resolvePropertiesSuggestions(sender, last, power, argMap, settled, required);
+        return resolvePropertiesSuggestions(sender, item, last, power, argMap, settled, required);
     }
 
     protected boolean isTrivialProperty(PowerMeta powerMeta, String name) {
@@ -182,11 +193,11 @@ public abstract class RPGCommandReceiver extends CommandReceiver {
                        || (!powerMeta.withSelectors() && name.equals("selectors"));
     }
 
-    private List<String> resolvePropertiesSuggestions(CommandSender sender, String last, Class<? extends Power> power, SortedMap<PowerProperty, Field> argMap, Set<Field> settled, List<Field> required) {
+    private List<String> resolvePropertiesSuggestions(CommandSender sender, RPGItem item, String last, Class<? extends Power> power, SortedMap<PowerProperty, Field> argMap, Set<Field> settled, List<Field> required) {
         if (argMap.values().stream().anyMatch(f -> last.startsWith(f.getName() + ":"))) {//we are suggesting a value as we have the complete property name
             String currentPropertyName = last.split(":")[0];
             actionBarTip(sender, powers.inverse().get(power), currentPropertyName);
-            return resolvePropertyValueSuggestion(power, currentPropertyName, last, true);
+            return resolvePropertyValueSuggestion(item, power, currentPropertyName, last, true);
         }
         List<String> suggestions;
         suggestions = required.stream().map(s -> s.getName() + ":").filter(s -> s.startsWith(last)).collect(Collectors.toList());
@@ -232,7 +243,7 @@ public abstract class RPGCommandReceiver extends CommandReceiver {
         }
         if (itemCommand.getValue().equals("get")) return Collections.emptyList();
         // rpgitem item set power 1 property
-        return resolvePropertyValueSuggestion(powerClass, cmd.next(), last, false);
+        return resolvePropertyValueSuggestion(item, powerClass, cmd.next(), last, false);
     }
 
     private static Pair<RPGItem, String> resolveItemCommand(String f, String s) {
