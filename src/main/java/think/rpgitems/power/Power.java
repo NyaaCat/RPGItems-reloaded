@@ -70,7 +70,7 @@ public interface Power {
      *
      * @return Display name
      */
-    String displayName();
+    String getDisplayName();
 
     /**
      * Display text of this power

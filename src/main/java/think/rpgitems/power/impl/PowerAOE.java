@@ -43,27 +43,27 @@ public class PowerAOE extends BasePower {
      * Cooldown time of this power
      */
     @Property(order = 0)
-    protected long cooldown = 20;
+    public long cooldown = 20;
     /**
      * Amplifier of the potion
      */
     @Property(order = 4, required = true)
-    protected int amplifier = 1;
+    public int amplifier = 1;
     /**
      * Duration of the potion
      */
     @Property(order = 3)
-    protected int duration = 15;
+    public int duration = 15;
     /**
      * Range of the potion
      */
     @Property(order = 1)
-    protected int range = 5;
+    public int range = 5;
     /**
      * Whether the potion will be apply to the user
      */
     @Property(order = 5)
-    protected boolean selfapplication = true;
+    public boolean selfapplication = true;
     /**
      * Type of the potion
      */
@@ -71,17 +71,17 @@ public class PowerAOE extends BasePower {
     @Deserializer(PotionEffectUtils.class)
     @Serializer(PotionEffectUtils.class)
     @AcceptedValue(preset = Preset.POTION_EFFECT_TYPE)
-    protected PotionEffectType type;
+    public PotionEffectType type;
     /**
      * Display text of this power. Will use default text in case of null
      */
     @Property
-    protected String display = null;
+    public String display;
     /**
      * Cost of this power
      */
     @Property
-    protected int cost = 0;
+    public int cost = 0;
 
     @Override
     public String getName() {
@@ -90,7 +90,7 @@ public class PowerAOE extends BasePower {
 
     @Override
     public String displayText() {
-        return display != null ? display : I18n.format("power.aoe.display", getType().getName(), getAmplifier(), getDuration(), isSelfapplication() ? I18n.format("power.aoe.selfapplication.including") : I18n.format("power.aoe.selfapplication.excluding"), getRange(), (double) getCooldown() / 20d);
+        return getDisplay() != null ? getDisplay() : I18n.format("power.aoe.display", getType().getName(), getAmplifier(), getDuration(), isSelfapplication() ? I18n.format("power.aoe.selfapplication.including") : I18n.format("power.aoe.selfapplication.excluding"), getRange(), (double) getCooldown() / 20d);
     }
 
     public long getCooldown() {
@@ -119,6 +119,10 @@ public class PowerAOE extends BasePower {
 
     public int getCost() {
         return cost;
+    }
+
+    public String getDisplay() {
+        return display;
     }
 
     public class Impl implements PowerRightClick, PowerLeftClick, PowerPlain, PowerHit {

@@ -36,6 +36,7 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.lang.reflect.Field;
 import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.Method;
 import java.nio.channels.FileChannel;
 import java.nio.channels.FileLock;
 import java.nio.file.FileVisitResult;
@@ -267,7 +268,7 @@ public class Handler extends RPGCommandReceiver {
                     msg(sender, "message.power.key", power.toString());
                     msg(sender, "message.power.description", PowerManager.getDescription(power, null));
                     PowerManager.getProperties(power).forEach(
-                            (prop, f) -> showPowerProp(sender, power, prop, f, null)
+                            (prop, f) -> showPowerProp(sender, power, prop, f.getValue(), null)
                     );
                     msg(sender, "message.line_separator");
                 });
@@ -775,12 +776,12 @@ public class Handler extends RPGCommandReceiver {
         Power pow = power.get();
         YamlConfiguration conf = new YamlConfiguration();
         if (property != null) {
-            Optional<Map.Entry<PowerProperty, Field>> prop = PowerManager.getProperties(item.getPowerKey(pow)).entrySet().stream().filter((pf) -> pf.getKey().name().equals(property)).findAny();
+            Optional<Map.Entry<PowerProperty, Pair<Method, Field>>> prop = PowerManager.getProperties(item.getPowerKey(pow)).entrySet().stream().filter((pf) -> pf.getKey().name().equals(property)).findAny();
             if (!prop.isPresent()) {
                 msg(sender, "message.power_property.property_notfound", property);
                 return;
             }
-            Field field = prop.get().getValue();
+            Field field = prop.get().getValue().getValue();
             String value = Utils.getProperty(pow, property, field);
             msg(sender, "message.power_property.get", nth, pow.getName(), property, value);
         } else {
@@ -1061,7 +1062,7 @@ public class Handler extends RPGCommandReceiver {
                 msg(sender, "message.item.power", power.getLocalizedName(plugin.cfg.language), power.getNamespacedKey().toString(), power.displayText() == null ? I18n.format("message.power.no_display") : power.displayText(), power.getTriggers().stream().map(Trigger::name).collect(Collectors.joining(",")));
                 if ("list".equals(powerStr)) {
                     PowerManager.getProperties(power.getNamespacedKey()).forEach(
-                            (prop, f) -> showPowerProp(sender, power.getNamespacedKey(), prop, f, power)
+                            (prop, f) -> showPowerProp(sender, power.getNamespacedKey(), prop, f.getValue(), power)
                     );
                 }
             }
@@ -1082,7 +1083,7 @@ public class Handler extends RPGCommandReceiver {
             msg(sender, "internal.error.command_exception");
             return;
         }
-        SortedMap<PowerProperty, Field> argMap = PowerManager.getProperties(cls);
+        SortedMap<PowerProperty, Pair<Method, Field>> argMap = PowerManager.getProperties(cls);
         Set<Field> settled = new HashSet<>();
         Optional<PowerProperty> req = getLastRequired(argMap);
 
@@ -1090,9 +1091,11 @@ public class Handler extends RPGCommandReceiver {
                                                  .stream()
                                                  .filter(entry -> entry.getKey().order() <= r.order())
                                                  .map(Map.Entry::getValue)
+                                                 .map(Map.Entry::getValue)
                                                  .collect(Collectors.toSet())).orElse(new HashSet<>());
 
-        for (Field field : argMap.values()) {
+        for (Pair<Method, Field> mf : argMap.values()) {
+            Field field = mf.getValue();
             String name = field.getName();
             String value = args.argString(name, null);
             if (value != null) {
@@ -1101,11 +1104,12 @@ public class Handler extends RPGCommandReceiver {
                 settled.add(field);
             }
         }
-        for (Field field : argMap.entrySet()
-                                 .stream()
-                                 .filter(p -> p.getKey().order() != Integer.MAX_VALUE)
-                                 .map(Map.Entry::getValue)
-                                 .collect(Collectors.toList())) {
+        for (Pair<Method, Field> mf : argMap.entrySet()
+                                            .stream()
+                                            .filter(p -> p.getKey().order() != Integer.MAX_VALUE)
+                                            .map(Map.Entry::getValue)
+                                            .collect(Collectors.toList())) {
+            Field field = mf.getValue();
             if (settled.contains(field)) continue;
             String value = args.next();
             if (value == null) {

@@ -170,7 +170,7 @@ public class Utils {
         } else {
             if (showWarn) {
                 if (showPower) {
-                    player.sendMessage(I18n.format("message.cooldown.power", ((double) (cooldown - nowTick)) / 20d, power.displayName()));
+                    player.sendMessage(I18n.format("message.cooldown.power", ((double) (cooldown - nowTick)) / 20d, power.getDisplayName()));
                 }
             }
             return false;

@@ -1,5 +1,6 @@
 package think.rpgitems.power.impl;
 
+import cat.nyaa.nyaacore.Pair;
 import org.bukkit.Bukkit;
 import org.bukkit.NamespacedKey;
 import org.bukkit.configuration.ConfigurationSection;
@@ -11,6 +12,7 @@ import think.rpgitems.power.*;
 
 import java.io.Serializable;
 import java.lang.reflect.Field;
+import java.lang.reflect.Method;
 import java.util.*;
 
 /**
@@ -44,12 +46,12 @@ public abstract class BasePower implements Serializable, Power {
 
     @Override
     public void save(ConfigurationSection section) {
-        SortedMap<PowerProperty, Field> properties = PowerManager.getProperties(this.getClass());
+        SortedMap<PowerProperty, Pair<Method, Field>> properties = PowerManager.getProperties(this.getClass());
         PowerMeta powerMeta = this.getClass().getAnnotation(PowerMeta.class);
 
-        for (Map.Entry<PowerProperty, Field> entry : properties.entrySet()) {
+        for (Map.Entry<PowerProperty, Pair<Method, Field>> entry : properties.entrySet()) {
             PowerProperty property = entry.getKey();
-            Field field = entry.getValue();
+            Field field = entry.getValue().getValue();
             if (property.name().equals("triggers") && powerMeta.immutableTrigger()) {
                 continue;
             }
@@ -64,10 +66,10 @@ public abstract class BasePower implements Serializable, Power {
     @Override
     public void init(ConfigurationSection section) {
         PowerMeta powerMeta = this.getClass().getAnnotation(PowerMeta.class);
-        SortedMap<PowerProperty, Field> properties = PowerManager.getProperties(this.getClass());
-        for (Map.Entry<PowerProperty, Field> entry : properties.entrySet()) {
+        SortedMap<PowerProperty, Pair<Method, Field>> properties = PowerManager.getProperties(this.getClass());
+        for (Map.Entry<PowerProperty, Pair<Method, Field>> entry : properties.entrySet()) {
             PowerProperty property = entry.getKey();
-            Field field = entry.getValue();
+            Field field = entry.getValue().getValue();
             if (property.name().equals("triggers") && powerMeta.immutableTrigger()) {
                 continue;
             }
@@ -93,7 +95,7 @@ public abstract class BasePower implements Serializable, Power {
     }
 
     @Override
-    public String displayName() {
+    public String getDisplayName() {
         return displayName;
     }
 

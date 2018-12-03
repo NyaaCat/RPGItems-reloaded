@@ -1,5 +1,6 @@
 package think.rpgitems.power;
 
+import cat.nyaa.nyaacore.Pair;
 import cat.nyaa.nyaacore.utils.ClassPathUtils;
 import com.google.common.collect.BiMap;
 import com.google.common.collect.HashBasedTable;
@@ -11,11 +12,9 @@ import think.rpgitems.Handler;
 import think.rpgitems.RPGItems;
 
 import javax.annotation.CheckForNull;
-import java.beans.Introspector;
-import java.beans.PropertyDescriptor;
-import java.beans.PropertyEditor;
 import java.lang.reflect.Field;
 import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
 import java.util.*;
 import java.util.function.BiFunction;
@@ -29,7 +28,7 @@ import java.util.stream.Stream;
  */
 @SuppressWarnings("unchecked")
 public class PowerManager {
-    private static final Map<Class<? extends Power>, SortedMap<PowerProperty, Field>> properties = new HashMap<>();
+    private static final Map<Class<? extends Power>, SortedMap<PowerProperty, Pair<Method, Field>>> properties = new HashMap<>();
 
     private static final Map<Class<? extends Power>, PowerMeta> metas = new HashMap<>();
 
@@ -59,16 +58,37 @@ public class PowerManager {
             RPGItems.plugin.getLogger().log(Level.WARNING, "With {0}", clazz);
             return;
         }
-        SortedMap<PowerProperty, Field> argumentPriorityMap = getPowerProperties(clazz);
-        properties.put(clazz, argumentPriorityMap);
         metas.put(clazz, clazz.getAnnotation(PowerMeta.class));
+        SortedMap<PowerProperty, Pair<Method, Field>> argumentPriorityMap = getPowerProperties(clazz);
+        properties.put(clazz, argumentPriorityMap);
     }
 
-    private static SortedMap<PowerProperty, Field> getPowerProperties(Class<? extends Power> cls) {
-        SortedMap<PowerProperty, Field> argumentPriorityMap = new TreeMap<>(Comparator.comparing(PowerProperty::order).thenComparing(PowerProperty::hashCode));
-        Arrays.stream(cls.getFields())
-              .filter(field -> field.getAnnotation(Property.class) != null)
-              .forEach(field -> argumentPriorityMap.put(new PowerProperty(field.getName(), field.getAnnotation(Property.class).required(), field.getAnnotation(Property.class).order()), field));
+    private static SortedMap<PowerProperty, Pair<Method, Field>> getPowerProperties(Class<? extends Power> cls) {
+        RPGItems.logger.severe("Scanning class " + cls.toGenericString());
+        List<Method> methods = Arrays.stream(cls.getMethods()).collect(Collectors.toList());
+        SortedMap<PowerProperty, Pair<Method, Field>> argumentPriorityMap = new TreeMap<>(Comparator.comparing(PowerProperty::order).thenComparing(PowerProperty::hashCode));
+        for (Field field : cls.getFields()) {
+            if (field.getAnnotation(Property.class) != null) {
+                String name = field.getName();
+                RPGItems.logger.warning("Field " + name + " @ " + field.getType().toGenericString());
+                Method getter = metas.get(cls).marker() ? null :
+                                        methods.stream()
+                                               .filter(
+                                                       m -> m.getParameterCount() == 0 &&
+                                                                    (m.getName().toLowerCase(Locale.ROOT).equals("get" + name.toLowerCase(Locale.ROOT))
+                                                                             || m.getName().toLowerCase(Locale.ROOT).equals("is" + name.toLowerCase(Locale.ROOT))
+                                                                             || m.getName().toLowerCase(Locale.ROOT).equals(name.toLowerCase(Locale.ROOT))
+                                                                    )
+                                               )
+                                               .reduce((a, b) -> {
+                                                   throw new IllegalArgumentException(name + " " + a.toString() + " " + b.toString());
+                                               })
+                                               .orElseThrow(() -> new IllegalArgumentException(name));
+                RPGItems.logger.info("getter " + getter);
+                PowerProperty powerProperty = new PowerProperty(name, field.getAnnotation(Property.class).required(), field.getAnnotation(Property.class).order());
+                argumentPriorityMap.put(powerProperty, Pair.of(getter, field));
+            }
+        }
         return argumentPriorityMap;
     }
 
@@ -146,7 +166,7 @@ public class PowerManager {
      * @return All registered powers' properties mapped by theirs class
      */
     @SuppressWarnings("unused")
-    public static Map<Class<? extends Power>, SortedMap<PowerProperty, Field>> getProperties() {
+    public static Map<Class<? extends Power>, SortedMap<PowerProperty, Pair<Method, Field>>> getProperties() {
         return Collections.unmodifiableMap(properties);
     }
 
@@ -158,11 +178,11 @@ public class PowerManager {
         return Collections.unmodifiableMap(powers);
     }
 
-    public static SortedMap<PowerProperty, Field> getProperties(Class<? extends Power> cls) {
+    public static SortedMap<PowerProperty, Pair<Method, Field>> getProperties(Class<? extends Power> cls) {
         return Collections.unmodifiableSortedMap(properties.get(cls));
     }
 
-    public static SortedMap<PowerProperty, Field> getProperties(NamespacedKey key) {
+    public static SortedMap<PowerProperty, Pair<Method, Field>> getProperties(NamespacedKey key) {
         return getProperties(powers.get(key));
     }
 

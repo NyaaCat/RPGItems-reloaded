@@ -336,6 +336,7 @@ public class RPGItem {
                     addPower(key, pow, false);
                     conf.put(pow, section);
                 } catch (InstantiationException | IllegalAccessException | NoSuchMethodException | InvocationTargetException e) {
+                    RPGItems.logger.log(Level.WARNING, "Error loading power", e);
                     throw new RuntimeException(e);
                 }
             }
@@ -1269,33 +1270,57 @@ public class RPGItem {
                      .filter(p -> p.getTriggers().contains(trigger))
                      .map(p -> {
                          Class<? extends Power> cls = p.getClass();
-                         Enhancer enhancer = new Enhancer();
-                         enhancer.setSuperclass(cls);
-                         enhancer.setInterfaces(new Class[]{trigger.getPowerClass()});
-                         enhancer.setCallback(new DynamicMethodInterceptor(p, player));
-                         Power proxy = (Power) enhancer.create();
+                         Power proxy = DynamicMethodInterceptor.create(p, player, cls, trigger);
                          return PowerManager.createImpl(cls, proxy);
                      })
                      .map(p -> p.cast(trigger.getPowerClass()))
                      .collect(Collectors.toList());
     }
 
-    public class DynamicMethodInterceptor implements MethodInterceptor {
+    public static class DynamicMethodInterceptor implements MethodInterceptor {
+        private static WeakHashMap<Power, WeakHashMap<Player, Power>> cache = new WeakHashMap<>();
+
+        private static Power makeProxy(Power orig, Player player, Class<? extends Power> cls, Trigger trigger) {
+            Enhancer enhancer = new Enhancer();
+            enhancer.setSuperclass(cls);
+            enhancer.setInterfaces(new Class[]{trigger.getPowerClass()});
+            enhancer.setCallback(new DynamicMethodInterceptor(orig, player));
+            return (Power) enhancer.create();
+        }
+
+        protected static Power create(Power orig, Player player, Class<? extends Power> cls, Trigger trigger) {
+            return cache.computeIfAbsent(orig, (k) -> new WeakHashMap<>())
+                        .computeIfAbsent(player, (p) -> makeProxy(orig, player, cls, trigger));
+        }
 
         private final Power orig;
         private final Player player;
+        private final Map<Method, PowerProperty> getters;
 
         protected DynamicMethodInterceptor(Power orig, Player player) {
+            RPGItems.logger.info("new DynamicMethodInterceptor with " + orig + "@" + orig.hashCode() + " " + player.getName());
+
             this.orig = orig;
             this.player = player;
+            this.getters = PowerManager.getProperties(orig.getClass())
+                                       .entrySet()
+                                       .stream()
+                                       .collect(Collectors.toMap(e -> e.getValue().getKey(), Entry::getKey));
         }
 
         @Override
         public Object intercept(Object proxy, Method method, Object[] args, MethodProxy methodProxy)
                 throws Throwable {
-            RPGItems.logger.info("Proxying " + method.getDeclaringClass() + "@" + method.getName() + ". " + method.toGenericString());
-            RPGItems.logger.info("To " + orig + ". " + orig.getClass().toGenericString());
-            RPGItems.logger.info("");
+            if (getters.containsKey(method)) {
+                RPGItems.logger.info("Proxying " + method.getDeclaringClass() + "@" + method.getName() + ". " + method.toGenericString());
+                RPGItems.logger.info("To " + orig + ". " + orig.getClass().toGenericString());
+                RPGItems.logger.info("With player " + player.getName());
+                PowerProperty powerProperty = getters.get(method);
+                if (powerProperty.name().equals("cooldown")) {
+                    return 0;
+                }
+
+            }
             return methodProxy.invoke(orig, args);
         }
     }
