@@ -23,6 +23,8 @@ import org.bukkit.inventory.meta.Damageable;
 import org.bukkit.inventory.meta.EnchantmentStorageMeta;
 import org.bukkit.inventory.meta.ItemMeta;
 import org.bukkit.inventory.meta.LeatherArmorMeta;
+import org.bukkit.inventory.meta.tags.CustomItemTagContainer;
+import org.bukkit.inventory.meta.tags.ItemTagType;
 import org.librazy.nclangchecker.LangKey;
 import think.rpgitems.item.ItemManager;
 import think.rpgitems.item.RPGItem;
@@ -53,6 +55,8 @@ import java.util.logging.Level;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
+import static think.rpgitems.utils.ItemTagUtils.makeTag;
+import static think.rpgitems.utils.ItemTagUtils.set;
 import static think.rpgitems.utils.NetworkUtils.Location.GIST;
 
 public class Handler extends RPGCommandReceiver {
@@ -67,6 +71,29 @@ public class Handler extends RPGCommandReceiver {
     public String getHelpPrefix() {
         return "";
     }
+
+    @SubCommand("debug")
+    @Attribute("command")
+    public void debug(CommandSender sender, Arguments args) {
+        Player player = asPlayer(sender);
+        ItemStack itemInMainHand = player.getInventory().getItemInMainHand();
+        boolean hasItemMeta = itemInMainHand.hasItemMeta();
+        player.sendMessage("hasItemMeta " + hasItemMeta);
+        ItemMeta itemMeta = itemInMainHand.getItemMeta();
+        player.sendMessage("itemMeta " + itemMeta.toString());
+        CustomItemTagContainer tagContainer = itemMeta.getCustomTagContainer();
+        boolean hasCustomTag = tagContainer.hasCustomTag(RPGItem.TAG_META, ItemTagType.TAG_CONTAINER);
+        player.sendMessage("hasCustomTag " + hasCustomTag);
+        CustomItemTagContainer rpgTag = makeTag(tagContainer, RPGItem.TAG_META);
+        boolean hasCustomTag2 = tagContainer.hasCustomTag(RPGItem.TAG_META, ItemTagType.TAG_CONTAINER);
+        player.sendMessage("hasCustomTag2 " + hasCustomTag2);
+        set(rpgTag, RPGItem.TAG_DURABILITY, 1);
+        player.sendMessage("itemMeta " + itemMeta.toString());
+        itemInMainHand.setItemMeta(itemMeta);
+        boolean hasItemMeta2 = itemInMainHand.hasItemMeta();
+        player.sendMessage("hasItemMeta2 " + hasItemMeta);
+    }
+
 
     @SubCommand("reload")
     @Attribute("command")

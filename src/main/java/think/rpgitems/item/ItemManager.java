@@ -14,6 +14,8 @@ import org.bukkit.configuration.file.YamlConfiguration;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.ItemMeta;
+import org.bukkit.inventory.meta.tags.CustomItemTagContainer;
+import org.bukkit.inventory.meta.tags.ItemTagType;
 import org.bukkit.util.FileUtil;
 import think.rpgitems.I18n;
 import think.rpgitems.RPGItems;
@@ -35,7 +37,9 @@ import java.util.Objects;
 import java.util.concurrent.ThreadLocalRandom;
 import java.util.logging.Level;
 
-import static think.rpgitems.item.RPGItem.updateItem;
+import static think.rpgitems.item.RPGItem.*;
+import static think.rpgitems.utils.ItemTagUtils.getInt;
+import static think.rpgitems.utils.ItemTagUtils.makeTag;
 
 public class ItemManager {
     public static HashMap<Integer, RPGItem> itemById = new HashMap<>();
@@ -148,7 +152,11 @@ public class ItemManager {
             if (file.isDirectory()) {
                 File[] subFiles = file.listFiles((d, n) -> n.endsWith("yml"));
                 if (Objects.requireNonNull(subFiles).length == 0) {
-                    new Message(I18n.format("message.item.empty_dir", file.getPath())).send(sender);
+                    if (sender != null) {
+                        new Message(I18n.format("message.item.empty_dir", file.getPath())).send(sender);
+                    } else {
+                        new Message(I18n.format("message.item.empty_dir", file.getPath())).send(Bukkit.getConsoleSender());
+                    }
                     return false;
                 }
                 for (File subFile : subFiles) {
@@ -476,13 +484,18 @@ public class ItemManager {
         if (!item.hasItemMeta())
             return null;
         ItemMeta meta = item.getItemMeta();
-        return toRPGItem(meta);
-    }
-
-    public static RPGItem toRPGItem(ItemMeta meta) {
+        CustomItemTagContainer tagContainer = meta.getCustomTagContainer();
+        if (tagContainer.hasCustomTag(TAG_META, ItemTagType.TAG_CONTAINER)) {
+            Integer uid = getInt(makeTag(tagContainer, TAG_META), TAG_ITEM_UID);
+            if (uid == null) return null;
+            return ItemManager.getItemById(uid);
+        }
+        // Old
         if (!meta.hasLore() || meta.getLore().size() <= 0)
             return null;
         try {
+            if (!meta.hasLore() || meta.getLore().size() <= 0)
+                return null;
             int id = RPGItem.decodeId(meta.getLore().get(0));
             return ItemManager.getItemById(id);
         } catch (Exception e) {

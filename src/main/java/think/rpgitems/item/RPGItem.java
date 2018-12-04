@@ -57,6 +57,7 @@ import static think.rpgitems.utils.ItemTagUtils.*;
 public class RPGItem {
     @Deprecated
     public static final int MC_ENCODED_ID_LENGTH = 16;
+    public static final NamespacedKey TAG_ITEM_UID = new NamespacedKey(RPGItems.plugin, "item_uid");
     public static final NamespacedKey TAG_META = new NamespacedKey(RPGItems.plugin, "meta");
     public static final NamespacedKey TAG_DURABILITY = new NamespacedKey(RPGItems.plugin, "durability");
 
