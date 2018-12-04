@@ -27,6 +27,7 @@ import think.rpgitems.utils.MaterialUtils;
 
 import java.lang.reflect.Field;
 import java.lang.reflect.ParameterizedType;
+import java.nio.ByteBuffer;
 import java.util.*;
 import java.util.logging.Level;
 import java.util.stream.Collectors;
@@ -572,5 +573,19 @@ public class Utils {
             }
         }
         setPowerPropertyUnchecked(sender, power, field, value);
+    }
+
+    public static byte[] decodeUUID(UUID complex) {
+        ByteBuffer bb = ByteBuffer.wrap(new byte[16]);
+        bb.putLong(complex.getMostSignificantBits());
+        bb.putLong(complex.getLeastSignificantBits());
+        return bb.array();
+    }
+
+    public static UUID encodeUUID(byte[] primitive) {
+        ByteBuffer bb = ByteBuffer.wrap(primitive);
+        long firstLong = bb.getLong();
+        long secondLong = bb.getLong();
+        return new UUID(firstLong, secondLong);
     }
 }

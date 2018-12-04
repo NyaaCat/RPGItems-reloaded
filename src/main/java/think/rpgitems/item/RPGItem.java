@@ -27,6 +27,8 @@ import org.bukkit.inventory.ShapedRecipe;
 import org.bukkit.inventory.meta.Damageable;
 import org.bukkit.inventory.meta.ItemMeta;
 import org.bukkit.inventory.meta.LeatherArmorMeta;
+import org.bukkit.inventory.meta.tags.CustomItemTagContainer;
+import org.bukkit.inventory.meta.tags.ItemTagType;
 import org.bukkit.potion.PotionEffect;
 import org.bukkit.potion.PotionEffectType;
 import org.librazy.nclangchecker.LangKey;
@@ -35,7 +37,6 @@ import think.rpgitems.Events;
 import think.rpgitems.Handler;
 import think.rpgitems.I18n;
 import think.rpgitems.RPGItems;
-import think.rpgitems.data.RPGMetadata;
 import think.rpgitems.power.*;
 import think.rpgitems.power.impl.*;
 import think.rpgitems.support.WGSupport;
@@ -51,9 +52,14 @@ import java.util.regex.Matcher;
 import java.util.stream.Collectors;
 
 import static org.bukkit.ChatColor.COLOR_CHAR;
+import static think.rpgitems.utils.ItemTagUtils.*;
 
 public class RPGItem {
+    @Deprecated
     public static final int MC_ENCODED_ID_LENGTH = 16;
+    public static final NamespacedKey TAG_META = new NamespacedKey(RPGItems.plugin, "meta");
+    public static final NamespacedKey TAG_DURABILITY = new NamespacedKey(RPGItems.plugin, "durability");
+
     static RPGItems plugin;
     private boolean ignoreWorldGuard = false;
     private List<String> description = new ArrayList<>();
@@ -89,6 +95,7 @@ public class RPGItem {
     private int id;
     private int uid;
     private String name;
+    @Deprecated
     private String encodedUID;
     private boolean haspermission;
     private String permission;
@@ -146,33 +153,22 @@ public class RPGItem {
         restore(s);
     }
 
-    private static RPGMetadata getMetadata(ItemStack item) {
-        // Check for broken item
-        if (!item.hasItemMeta() || !item.getItemMeta().hasLore() || item.getItemMeta().getLore().size() == 0) {
-            // Broken item
-            return new RPGMetadata();
-        }
-        return RPGMetadata.parseLoreline(item.getItemMeta().getLore().get(0));
-    }
-
     public static void updateItem(ItemStack item) {
         RPGItem rItem = ItemManager.toRPGItem(item);
         if (rItem == null)
             return;
-        updateItem(rItem, item, getMetadata(item));
+        updateItem(rItem, item);
     }
 
     public static void updateItem(RPGItem rItem, ItemStack item) {
-        updateItem(rItem, item, getMetadata(item));
-    }
-
-    public static void updateItem(RPGItem rItem, ItemStack item, RPGMetadata rpgMeta) {
         List<String> reservedLores = filterLores(rItem, item);
         item.setType(rItem.item.getType());
         ItemMeta meta = rItem.getLocaleMeta();
         List<String> lore = meta.getLore();
-        rItem.addExtra(rpgMeta, lore);
-        lore.set(0, meta.getLore().get(0) + rpgMeta.toMCString());
+        @SuppressWarnings("deprecation")
+        CustomItemTagContainer itemTagContainer = item.getItemMeta().getCustomTagContainer();
+        CustomItemTagContainer rpgitemsTagContainer = makeTag(itemTagContainer, TAG_META);
+        rItem.addExtra(rpgitemsTagContainer, lore);
         // Patch for mcMMO buff. See SkillUtils.java#removeAbilityBuff in mcMMO
         if (item.hasItemMeta() && item.getItemMeta().hasLore() && item.getItemMeta().getLore().contains("mcMMO Ability Tool"))
             lore.add("mcMMO Ability Tool");
@@ -188,7 +184,7 @@ public class RPGItem {
         item.setItemMeta(refreshAttributeModifiers(rItem, item).getItemMeta());
         Damageable damageable = (Damageable) item.getItemMeta();
         if (rItem.maxDurability > 0) {
-            int durability = ((Number) rpgMeta.get(RPGMetadata.DURABILITY)).intValue();
+            int durability = itemTagContainer.getCustomTag(TAG_DURABILITY, ItemTagType.INTEGER);
             if (rItem.isCustomItemModel()) {
                 damageable.setDamage(((Damageable) rItem.localeMeta).getDamage());
             } else {
@@ -224,6 +220,7 @@ public class RPGItem {
         return ret;
     }
 
+    @Deprecated
     private static String getMCEncodedUID(int id) {
         String hex = String.format("%08x", id);
         StringBuilder out = new StringBuilder();
@@ -237,6 +234,7 @@ public class RPGItem {
         return out.toString();
     }
 
+    @Deprecated
     public static int decodeId(String str) throws NumberFormatException {
         if (str.length() < 16) {
             return -1;
@@ -372,7 +370,6 @@ public class RPGItem {
                       .map(p -> Optional.ofNullable(p.getValue())
                                         .orElseThrow(() -> new IllegalArgumentException("Bad itemstack " + p.getKey())))
                       .collect(Collectors.toList());
-            namespacedKey = new NamespacedKey(RPGItems.plugin, s.getString("namespacedKey", name + "_" + uid));
         }
 
         ConfigurationSection drops = s.getConfigurationSection("dropChances");
@@ -521,7 +518,7 @@ public class RPGItem {
         s.set("hasRecipe", hasRecipe);
         if (hasRecipe) {
             s.set("recipe", recipe);
-            s.set("namespacedKey", namespacedKey.getKey());
+            s.set("namespacedKey", getNamespacedKey().getKey());
         }
 
         ConfigurationSection drops = s.createSection("dropChances");
@@ -578,11 +575,11 @@ public class RPGItem {
             }
         }
         if (hasRecipe) {
-            if (namespacedKey == null || hasOldRecipe) {
-                namespacedKey = new NamespacedKey(RPGItems.plugin, name + "_" + System.currentTimeMillis());
+            if (getNamespacedKey() == null || hasOldRecipe) {
+                setNamespacedKey(new NamespacedKey(RPGItems.plugin, "item_" + getUID()));
             }
             item.setItemMeta(localeMeta);
-            ShapedRecipe shapedRecipe = new ShapedRecipe(namespacedKey, toItemStack());
+            ShapedRecipe shapedRecipe = new ShapedRecipe(getNamespacedKey(), toItemStack());
 
             Map<ItemStack, Character> charMap = new HashMap<>();
             int i = 0;
@@ -854,12 +851,9 @@ public class RPGItem {
         return localeMeta.clone();
     }
 
-    private void addExtra(RPGMetadata rpgMeta, List<String> lore) {
+    private void addExtra(CustomItemTagContainer meta, List<String> lore) {
         if (maxDurability > 0) {
-            if (!rpgMeta.containsKey(RPGMetadata.DURABILITY)) {
-                rpgMeta.put(RPGMetadata.DURABILITY, defaultDurability);
-            }
-            int durability = ((Number) rpgMeta.get(RPGMetadata.DURABILITY)).intValue();
+            int durability = computeIfAbsent(meta, TAG_DURABILITY, ItemTagType.INTEGER, this::getDefaultDurability);
 
             if (!hasBar || forceBar || isCustomItemModel()) {
                 StringBuilder out = new StringBuilder();
@@ -949,11 +943,11 @@ public class RPGItem {
 
     public ItemStack toItemStack() {
         ItemStack rStack = item.clone();
-        RPGMetadata rpgMeta = new RPGMetadata();
         ItemMeta meta = getLocaleMeta();
         List<String> lore = meta.getLore();
-        lore.set(0, meta.getLore().get(0) + rpgMeta.toMCString());
-        addExtra(rpgMeta, lore);
+        CustomItemTagContainer itemTagContainer = meta.getCustomTagContainer();
+        CustomItemTagContainer rpgitemsTagContainer = makeTag(itemTagContainer, TAG_META);
+        addExtra(rpgitemsTagContainer, lore);
         meta.setLore(lore);
         rStack.setItemMeta(meta);
         refreshAttributeModifiers(this, rStack);
@@ -1155,19 +1149,23 @@ public class RPGItem {
     }
 
     public void setDurability(ItemStack item, int val) {
-        RPGMetadata meta = getMetadata(item);
+        ItemMeta itemMeta = item.getItemMeta();
+        CustomItemTagContainer tagContainer = makeTag(itemMeta.getCustomTagContainer(), TAG_META);
         if (getMaxDurability() != -1) {
-            meta.put(RPGMetadata.DURABILITY, val);
+            set(tagContainer, TAG_DURABILITY, val);
         }
-        updateItem(this, item, meta);
+        item.setItemMeta(itemMeta);
+        updateItem(this, item);
     }
 
     public int getDurability(ItemStack item) {
-        RPGMetadata meta = getMetadata(item);
+        ItemMeta itemMeta = item.getItemMeta();
+        CustomItemTagContainer tagContainer = makeTag(itemMeta.getCustomTagContainer(), TAG_META);
         int durability = Integer.MAX_VALUE;
         if (getMaxDurability() != -1) {
-            durability = meta.containsKey(RPGMetadata.DURABILITY) ? ((Number) meta.get(RPGMetadata.DURABILITY)).intValue() : getMaxDurability();
+            durability = computeIfAbsent(tagContainer, TAG_DURABILITY, ItemTagType.INTEGER, this::getDefaultDurability);
         }
+        item.setItemMeta(itemMeta);
         return durability;
     }
 
@@ -1177,10 +1175,11 @@ public class RPGItem {
 
     public boolean consumeDurability(ItemStack item, int val, boolean checkbound) {
         if (val == 0) return true;
-        RPGMetadata meta = getMetadata(item);
         int durability;
+        ItemMeta itemMeta = item.getItemMeta();
         if (getMaxDurability() != -1) {
-            durability = meta.containsKey(RPGMetadata.DURABILITY) ? ((Number) meta.get(RPGMetadata.DURABILITY)).intValue() : defaultDurability;
+            CustomItemTagContainer tagContainer = makeTag(itemMeta.getCustomTagContainer(), TAG_META);
+            durability = computeIfAbsent(tagContainer, TAG_DURABILITY, ItemTagType.INTEGER, this::getDefaultDurability);
             if (checkbound && (
                     (val > 0 && durability < durabilityLowerBound) ||
                             (val < 0 && durability > durabilityUpperBound)
@@ -1196,9 +1195,10 @@ public class RPGItem {
             if (durability > getMaxDurability()) {
                 durability = getMaxDurability();
             }
-            meta.put(RPGMetadata.DURABILITY, durability);
+            set(tagContainer, TAG_DURABILITY, durability);
         }
-        updateItem(this, item, meta);
+        item.setItemMeta(itemMeta);
+        updateItem(this, item);
         return true;
     }
 
@@ -1498,6 +1498,14 @@ public class RPGItem {
 
     public NamespacedKey getPowerKey(Power power) {
         return Objects.requireNonNull(powerKeys.get(power));
+    }
+
+    public NamespacedKey getNamespacedKey() {
+        return namespacedKey;
+    }
+
+    public void setNamespacedKey(NamespacedKey namespacedKey) {
+        this.namespacedKey = namespacedKey;
     }
 
     @LangKey(type = LangKeyType.SUFFIX)
