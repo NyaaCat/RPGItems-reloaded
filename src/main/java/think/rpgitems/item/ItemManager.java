@@ -45,7 +45,7 @@ public class ItemManager {
     private static RPGItems plugin;
     private static File itemsDir;
     private static File backupsDir;
-    private static boolean noShareLock = true;
+    private static boolean extendedLock = true;
 
     public static File getItemsDir() {
         return itemsDir;
@@ -105,12 +105,12 @@ public class ItemManager {
                 FileLock fileLock = channel.tryLock(0L, Long.MAX_VALUE, true);
                 fileLock.release();
             } catch (Exception e) {
-                plugin.getLogger().log(Level.FINER, "Disabling NOSHARE lock", e);
-                noShareLock = false;
+                plugin.getLogger().log(Level.FINER, "Disabling extended lock", e);
+                extendedLock = false;
             }
             Files.delete(testFile.toPath());
         } catch (IOException e) {
-            noShareLock = false;
+            extendedLock = false;
             plugin.getLogger().log(Level.WARNING, "Not writable data folder!", e);
         }
 
@@ -396,7 +396,7 @@ public class ItemManager {
     }
 
     public static FileLock lockFile(File file) throws IOException {
-        if (noShareLock) {
+        if (extendedLock) {
             return FileChannel.open(file.toPath(), StandardOpenOption.WRITE, StandardOpenOption.READ, ExtendedOpenOption.NOSHARE_WRITE, ExtendedOpenOption.NOSHARE_DELETE).tryLock(0L, Long.MAX_VALUE, true);
         } else {
             return new RandomAccessFile(file, "rw").getChannel().tryLock();

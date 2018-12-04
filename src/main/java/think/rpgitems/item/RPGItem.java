@@ -1,6 +1,7 @@
 package think.rpgitems.item;
 
 import cat.nyaa.nyaacore.Message;
+import cat.nyaa.nyaacore.Pair;
 import cat.nyaa.nyaacore.utils.ItemStackUtils;
 import com.google.common.base.Strings;
 import net.md_5.bungee.api.chat.BaseComponent;
@@ -191,13 +192,13 @@ public class RPGItem {
             if (rItem.isCustomItemModel()) {
                 damageable.setDamage(((Damageable) rItem.localeMeta).getDamage());
             } else {
-                damageable.setDamage((short) (rItem.item.getType().getMaxDurability() - ((short) ((double) rItem.item.getType().getMaxDurability() * ((double) durability / (double) rItem.maxDurability)))));
+                damageable.setDamage((rItem.item.getType().getMaxDurability() - ((short) ((double) rItem.item.getType().getMaxDurability() * ((double) durability / (double) rItem.maxDurability)))));
             }
         } else {
             if (rItem.isCustomItemModel()) {
                 damageable.setDamage(((Damageable) rItem.localeMeta).getDamage());
             } else {
-                damageable.setDamage(rItem.hasBar ? (short) 0 : ((Damageable) rItem.localeMeta).getDamage());
+                damageable.setDamage(rItem.hasBar ? 0 : ((Damageable) rItem.localeMeta).getDamage());
             }
         }
         item.setItemMeta((ItemMeta) damageable);
@@ -275,7 +276,6 @@ public class RPGItem {
         return rStack;
     }
 
-    @SuppressWarnings({"unchecked", "deprecation"})
     private void restore(ConfigurationSection s) throws UnknownPowerException, UnknownExtensionException {
         author = s.getString("author", "");
         note = s.getString("note", "");
@@ -285,7 +285,7 @@ public class RPGItem {
 
         String display = s.getString("display");
 
-        Quality quality = s.isString("quality") ? Quality.valueOf(s.getString("quality")) : null;
+        @SuppressWarnings("deprecation") Quality quality = s.isString("quality") ? Quality.valueOf(s.getString("quality")) : null;
         if (quality != null) {
             display = quality.colour + ChatColor.BOLD + display;
         }
@@ -293,7 +293,7 @@ public class RPGItem {
         displayName = ChatColor.translateAlternateColorCodes('&', display);
         setType(s.getString("type", I18n.format("item.type")), false);
         hand = ChatColor.translateAlternateColorCodes('&', s.getString("hand", I18n.format("item.hand")));
-        description = (List<String>) s.getList("description", new ArrayList<String>());
+        description = s.getStringList("description");
         for (int i = 0; i < description.size(); i++) {
             description.set(i, ChatColor.translateAlternateColorCodes('&', description.get(i)));
         }
@@ -307,7 +307,7 @@ public class RPGItem {
         if (meta instanceof LeatherArmorMeta) {
             ((LeatherArmorMeta) meta).setColor(Color.fromRGB(s.getInt("item_colour", 0)));
         } else {
-            item.setDurability((short) s.getInt("item_data", 0));
+            ((Damageable) meta).setDamage(s.getInt("item_data", 0));
         }
         localeMeta = meta.clone();
         ignoreWorldGuard = s.getBoolean("ignoreWorldGuard", false);
@@ -367,7 +367,11 @@ public class RPGItem {
         recipechance = s.getInt("recipechance", 6);
         hasRecipe = s.getBoolean("hasRecipe", false);
         if (hasRecipe) {
-            recipe = (List<ItemStack>) s.getList("recipe");
+            recipe = s.getList("recipe").stream()
+                      .map(i -> i instanceof ItemStack ? Pair.of(null, (ItemStack) i) : Pair.of(i, (ItemStack) null))
+                      .map(p -> Optional.ofNullable(p.getValue())
+                                        .orElseThrow(() -> new IllegalArgumentException("Bad itemstack " + p.getKey())))
+                      .collect(Collectors.toList());
             namespacedKey = new NamespacedKey(RPGItems.plugin, s.getString("namespacedKey", name + "_" + uid));
         }
 
@@ -418,17 +422,22 @@ public class RPGItem {
         showArmourLore = s.getBoolean("showArmourLore", true);
 
         if (s.isConfigurationSection("enchantments")) {
-            ConfigurationSection ench = s.getConfigurationSection("enchantments");
+            ConfigurationSection enchConf = s.getConfigurationSection("enchantments");
             enchantMap = new HashMap<>();
-            for (String enchName : ench.getKeys(false)) {
-                Enchantment tmp;
+            for (String enchName : enchConf.getKeys(false)) {
+                Enchantment ench;
                 try {
-                    tmp = Enchantment.getByKey(NamespacedKey.minecraft(enchName));
+                    ench = Enchantment.getByKey(NamespacedKey.minecraft(enchName));
                 } catch (IllegalArgumentException e) {
-                    tmp = Enchantment.getByName(enchName);
+                    @SuppressWarnings("deprecation")
+                    Enchantment old = Enchantment.getByName(enchName);
+                    if (old == null) {
+                        throw new IllegalArgumentException("Unknown enchantment " + enchName);
+                    }
+                    ench = old;
                 }
-                if (tmp != null) {
-                    enchantMap.put(tmp, ench.getInt(enchName));
+                if (ench != null) {
+                    enchantMap.put(ench, enchConf.getInt(enchName));
                 }
             }
         }
@@ -455,7 +464,7 @@ public class RPGItem {
         String lore = s.getString("lore");
         if (!Strings.isNullOrEmpty(lore)) {
             getTooltipLines();
-            List<String> lores = Utils.wrapLines(String.format("%s%s\"%s\"", ChatColor.YELLOW, ChatColor.ITALIC,
+            @SuppressWarnings("deprecation") List<String> lores = Utils.wrapLines(String.format("%s%s\"%s\"", ChatColor.YELLOW, ChatColor.ITALIC,
                     ChatColor.translateAlternateColorCodes('&', lore)), tooltipWidth);
             description.addAll(0, lores);
         }

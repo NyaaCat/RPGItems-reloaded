@@ -26,7 +26,6 @@ import static think.rpgitems.power.Utils.getNearbyEntities;
  * as well if not set via {@link #selfapplication selfapplication}.
  * </p>
  */
-@SuppressWarnings("WeakerAccess")
 @PowerMeta(defaultTrigger = "RIGHT_CLICK", withSelectors = true, generalInterface = PowerPlain.class)
 public class PowerAOE extends BasePower implements PowerRightClick, PowerLeftClick, PowerPlain, PowerHit {
 
