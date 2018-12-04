@@ -697,7 +697,7 @@ public class Events implements Listener {
     public void onItemDamage(PlayerItemDamageEvent e) {
         ItemMeta itemMeta = e.getItem().getItemMeta();
         if (itemMeta == null) return;
-        if (e.getItem().getType().getMaxDurability() - ((Damageable) itemMeta).getDamage() + e.getDamage() <= 0) {
+        if (e.getItem().getType().getMaxDurability() - (((Damageable) itemMeta).getDamage() + e.getDamage()) <= 0) {
             if (ItemManager.toRPGItem(itemMeta) != null) {
                 e.setCancelled(true);
             }

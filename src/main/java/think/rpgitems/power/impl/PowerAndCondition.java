@@ -45,19 +45,19 @@ public class PowerAndCondition extends BasePower implements PowerCondition<Map.E
             Power power = entry.getKey();
             if (power instanceof PowerCondition && conditions.contains(((PowerCondition) power).id())) {
                 conditions.remove(((PowerCondition) power).id());
-                if (!entry.getValue().isOK()) return PowerResult.fail().with(entry);
+                if (!entry.getValue().isOK()) return PowerResult.fail(entry);
             }
         }
         if (!isStatic) {
             List<PowerCondition> powerConditions = getItem().getPower(PowerCondition.class, true);
             for (PowerCondition powerCondition : powerConditions) {
                 if (!conditions.contains(powerCondition.id())) continue;
-                assert !powerCondition.isStatic();
+                if (powerCondition.isStatic()) throw new IllegalStateException();
                 PowerResult result = powerCondition.check(player, stack, context);
-                if (!result.isOK()) return PowerResult.fail().with(Pair.of(powerCondition, result));
+                if (!result.isOK()) return PowerResult.fail(Pair.of(powerCondition, result));
             }
         }
-        return PowerResult.ok().with(null);
+        return PowerResult.ok(null);
     }
 
     @Override

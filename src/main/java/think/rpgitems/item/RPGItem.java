@@ -414,8 +414,8 @@ public class RPGItem {
             maxDurability = -1;
         }
 
-        if (defaultDurability == 0) {
-            defaultDurability = maxDurability > 0 ? maxDurability : -1;
+        if (defaultDurability <= 0) {
+            defaultDurability = maxDurability > 0 ? maxDurability : 0;
         }
 
         showPowerLore = s.getBoolean("showPowerText", true);
@@ -1148,7 +1148,7 @@ public class RPGItem {
     }
 
     public void setMaxDurability(int newVal) {
-        if (defaultDurability == 0) {
+        if (defaultDurability <= 0 && newVal > 0) {
             setDefaultDurability(newVal);
         }
         setMaxDurability(newVal, true);
@@ -1164,9 +1164,9 @@ public class RPGItem {
 
     public int getDurability(ItemStack item) {
         RPGMetadata meta = getMetadata(item);
-        int durability = Integer.MAX_VALUE;
-        if (getMaxDurability() != -1) {
-            durability = meta.containsKey(RPGMetadata.DURABILITY) ? ((Number) meta.get(RPGMetadata.DURABILITY)).intValue() : getMaxDurability();
+        int durability = getDefaultDurability();
+        if (getMaxDurability() != -1 && meta.containsKey(RPGMetadata.DURABILITY)) {
+            durability = ((Number) meta.get(RPGMetadata.DURABILITY)).intValue();
         }
         return durability;
     }
@@ -1180,7 +1180,7 @@ public class RPGItem {
         RPGMetadata meta = getMetadata(item);
         int durability;
         if (getMaxDurability() != -1) {
-            durability = meta.containsKey(RPGMetadata.DURABILITY) ? ((Number) meta.get(RPGMetadata.DURABILITY)).intValue() : defaultDurability;
+            durability = meta.containsKey(RPGMetadata.DURABILITY) ? ((Number) meta.get(RPGMetadata.DURABILITY)).intValue() : getDefaultDurability();
             if (checkbound && (
                     (val > 0 && durability < durabilityLowerBound) ||
                             (val < 0 && durability > durabilityUpperBound)
