@@ -45,7 +45,7 @@ public class PowerOrCondition extends BasePower implements PowerCondition<Map.En
             Power power = entry.getKey();
             if (power instanceof PowerCondition && conditions.contains(((PowerCondition) power).id())) {
                 conditions.remove(((PowerCondition) power).id());
-                if (entry.getValue().isOK()) return PowerResult.ok().with(entry);
+                if (entry.getValue().isOK()) return PowerResult.ok(entry);
             }
         }
         if (!isStatic) {
@@ -54,7 +54,7 @@ public class PowerOrCondition extends BasePower implements PowerCondition<Map.En
                 if (!conditions.contains(powerCondition.id())) continue;
                 assert !powerCondition.isStatic();
                 PowerResult result = powerCondition.check(player, stack, context);
-                if (result.isOK()) return PowerResult.ok().with(Pair.of(powerCondition, result));
+                if (result.isOK()) return PowerResult.ok(Pair.of(powerCondition, result));
             }
         }
         return PowerResult.fail();

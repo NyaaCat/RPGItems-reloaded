@@ -131,7 +131,7 @@ public class PowerCommand extends BasePower implements PowerRightClick, PowerLef
 
     @Override
     public PowerResult<Void> fire(Player target, ItemStack stack) {
-        if (!checkCooldownByString(this, target, command, cooldown, true, true))
+        if (!checkCooldownByString(this, target, command, cooldown, true, false))
             return PowerResult.cd();
         if (!getItem().consumeDurability(stack, cost)) return PowerResult.cost();
         return executeCommand(target);

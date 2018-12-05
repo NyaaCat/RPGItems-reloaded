@@ -169,7 +169,7 @@ public class Utils {
             return true;
         } else {
             if (showWarn) {
-                if (showPower) {
+                if (showPower || !power.displayName().equals(power.getLocalizedName(RPGItems.plugin.cfg.language))) {
                     player.sendMessage(I18n.format("message.cooldown.power", ((double) (cooldown - nowTick)) / 20d, power.displayName()));
                 }
             }

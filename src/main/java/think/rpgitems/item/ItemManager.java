@@ -150,7 +150,7 @@ public class ItemManager {
                 throw new IllegalStateException("Trying to load " + file + " that does not exist.");
             }
             if (file.isDirectory()) {
-                File[] subFiles = file.listFiles((d, n) -> n.endsWith("yml"));
+                File[] subFiles = file.listFiles((d, n) ->(d.isFile() && n.endsWith("yml")) || d.isDirectory());
                 if (Objects.requireNonNull(subFiles).length == 0) {
                     if (sender != null) {
                         new Message(I18n.format("message.item.empty_dir", file.getPath())).send(sender);
@@ -160,9 +160,7 @@ public class ItemManager {
                     return false;
                 }
                 for (File subFile : subFiles) {
-                    if (subFile.isFile()) {
-                        load(subFile, sender);
-                    }
+                    load(subFile, sender);
                 }
                 return false;
             }

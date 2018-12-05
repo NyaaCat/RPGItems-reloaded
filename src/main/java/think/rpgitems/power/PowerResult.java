@@ -1,37 +1,58 @@
 package think.rpgitems.power;
 
+import org.bukkit.command.CommandSender;
+
 public class PowerResult<T> {
     private TriggerResult result;
     private T data;
+    private String message;
 
     public static PowerResult<Void> of(TriggerResult result) {
-        return new PowerResult<Void>().setResult(result);
+        return new PowerResult<Void>().result(result);
     }
 
     public static <T> PowerResult<T> of(TriggerResult result, T data) {
-        return new PowerResult<T>().setResult(result).setData(data);
+        return new PowerResult<T>().result(result).data(data);
     }
 
-    public TriggerResult getResult() {
+    public static <T> PowerResult<T> of(TriggerResult result, T data, String message) {
+        return new PowerResult<T>().result(result).data(data).message(message);
+    }
+
+    public TriggerResult result() {
         return result;
     }
 
-    public T getData() {
+    public T data() {
         return data;
     }
 
-    protected PowerResult<T> setResult(TriggerResult result) {
+    public String message() {
+        return message;
+    }
+
+    protected PowerResult<T> result(TriggerResult result) {
         this.result = result;
         return this;
     }
 
-    protected PowerResult<T> setData(T data) {
+    protected PowerResult<T> data(T data) {
         this.data = data;
         return this;
     }
 
+    protected PowerResult<T> message(String message) {
+        this.message = message;
+        return this;
+    }
+
+    public PowerResult<T> sendMessage(CommandSender sender) {
+        sender.sendMessage(message);
+        return this;
+    }
+
     public <TP> PowerResult<TP> with(TP data) {
-        return of(result, data);
+        return of(result, data, message);
     }
 
     public static PowerResult<Void> ok() {
@@ -52,6 +73,10 @@ public class PowerResult<T> {
 
     public static <T> PowerResult<T> fail() {
         return of(TriggerResult.FAIL, null);
+    }
+
+    public static <T> PowerResult<T> fail(T value) {
+        return of(TriggerResult.FAIL, value);
     }
 
     public static <T> PowerResult<T> cost() {

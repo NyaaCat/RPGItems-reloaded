@@ -95,7 +95,7 @@ public abstract class Trigger<TEvent extends Event, TPower extends Power, TResul
 
         @Override
         public Double next(Double a, PowerResult<Double> b) {
-            return b.isOK() ? Math.max(a, b.getData()) : a;
+            return b.isOK() ? Math.max(a, b.data()) : a;
         }
 
         @Override
@@ -119,7 +119,7 @@ public abstract class Trigger<TEvent extends Event, TPower extends Power, TResul
 
         @Override
         public Double next(Double a, PowerResult<Double> b) {
-            return b.isOK() ? Math.min(a, b.getData()) : a;
+            return b.isOK() ? Math.min(a, b.data()) : a;
         }
 
         @Override
@@ -178,7 +178,7 @@ public abstract class Trigger<TEvent extends Event, TPower extends Power, TResul
 
         @Override
         public Boolean next(Boolean a, PowerResult<Boolean> b) {
-            return b.isOK() ? b.getData() && a : a;
+            return b.isOK() ? b.data() && a : a;
         }
 
         @Override
@@ -195,7 +195,7 @@ public abstract class Trigger<TEvent extends Event, TPower extends Power, TResul
 
         @Override
         public Boolean next(Boolean a, PowerResult<Boolean> b) {
-            return b.isOK() ? b.getData() && a : a;
+            return b.isOK() ? b.data() && a : a;
         }
 
         @Override
@@ -212,7 +212,7 @@ public abstract class Trigger<TEvent extends Event, TPower extends Power, TResul
 
         @Override
         public Boolean next(Boolean a, PowerResult<Boolean> b) {
-            return b.isOK() ? b.getData() && a : a;
+            return b.isOK() ? b.data() && a : a;
         }
 
         @Override
@@ -229,7 +229,7 @@ public abstract class Trigger<TEvent extends Event, TPower extends Power, TResul
 
         @Override
         public Boolean next(Boolean a, PowerResult<Boolean> b) {
-            return b.isOK() ? b.getData() && a : a;
+            return b.isOK() ? b.data() && a : a;
         }
 
         @Override
