@@ -763,9 +763,13 @@ public class RPGItem {
     private <T> PowerResult<T> checkConditions(Player player, ItemStack i, Power power, List<PowerCondition> conds, Map<Power, PowerResult> context) {
         Set<String> ids = power.getConditions();
         List<PowerCondition> conditions = conds.stream().filter(p -> ids.contains(p.id())).collect(Collectors.toList());
-        List<PowerCondition> failed = conditions.stream().filter(p -> p.isStatic() ? !context.get(p).isOK() : !p.check(player, i, context).isOK()).collect(Collectors.toList());
-        if (failed.isEmpty()) return null;
-        return failed.stream().anyMatch(PowerCondition::isCritical) ? PowerResult.abort() : PowerResult.condition();
+        List<Pair<PowerCondition, PowerResult>> results = conditions.stream().map(p -> p.isStatic() ? Pair.of(p, context.get(p)) : Pair.of(p, p.check(player, i, context))).collect(Collectors.toList());
+        List<Pair<PowerCondition, PowerResult>> faileds = results.stream().filter(p -> !p.getValue().isOK()).collect(Collectors.toList());
+        if (faileds.isEmpty()) return null;
+        for (Pair<PowerCondition, PowerResult> failed : faileds) {
+            failed.getValue().sendMessage(player);
+        }
+        return faileds.stream().map(Pair::getKey).anyMatch(PowerCondition::isCritical) ? PowerResult.abort() : PowerResult.condition();
     }
 
     @SuppressWarnings("unchecked")

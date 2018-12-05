@@ -1,6 +1,7 @@
 package think.rpgitems.power.impl;
 
 import org.bukkit.Material;
+import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.EquipmentSlot;
 import org.bukkit.inventory.ItemStack;
@@ -22,7 +23,7 @@ public class PowerEquipmentCondition extends BasePower implements PowerCondition
     public boolean isCritical = false;
 
     @Property
-    public Set<EquipmentSlot> slot;
+    public Set<EquipmentSlot> slots;
 
     @Property
     public Material material;
@@ -52,8 +53,16 @@ public class PowerEquipmentCondition extends BasePower implements PowerCondition
     }
 
     @Override
+    public void init(ConfigurationSection section) {
+        if (section.isString("slot") && !section.isString("slots")) {
+            section.set("slots", section.get("slot"));
+        }
+        super.init(section);
+    }
+
+    @Override
     public PowerResult<Void> check(Player player, ItemStack stack, Map<Power, PowerResult> context) {
-        if (slot.isEmpty()) {
+        if (slots.isEmpty()) {
             List<ItemStack> itemStacks = Stream.concat(
                     Arrays.stream(player.getInventory().getArmorContents()),
                     Stream.of(player.getInventory().getItemInMainHand(), player.getInventory().getItemInOffHand())
@@ -65,7 +74,7 @@ public class PowerEquipmentCondition extends BasePower implements PowerCondition
             }
         } else {
             int matches = 0;
-            for (EquipmentSlot sl : slot) {
+            for (EquipmentSlot sl : slots) {
                 ItemStack s;
                 switch (sl) {
                     case HAND:
@@ -91,7 +100,7 @@ public class PowerEquipmentCondition extends BasePower implements PowerCondition
                 }
                 if (match(s)) matches += 1;
             }
-            if (matchAllSlot && matches == slot.size()) {
+            if (matchAllSlot && matches == slots.size()) {
                 return PowerResult.ok();
             } else if (!matchAllSlot && matches > 0) {
                 return PowerResult.ok();

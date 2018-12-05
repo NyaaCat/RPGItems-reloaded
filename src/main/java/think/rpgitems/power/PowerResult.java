@@ -27,6 +27,10 @@ public class PowerResult<T> {
         return data;
     }
 
+    public String message() {
+        return message;
+    }
+
     protected PowerResult<T> result(TriggerResult result) {
         this.result = result;
         return this;
