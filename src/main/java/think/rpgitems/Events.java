@@ -26,7 +26,6 @@ import org.bukkit.metadata.FixedMetadataValue;
 import org.bukkit.projectiles.ProjectileSource;
 import org.bukkit.scheduler.BukkitRunnable;
 import think.rpgitems.item.ItemManager;
-import think.rpgitems.item.LocaleInventory;
 import think.rpgitems.item.RPGItem;
 import think.rpgitems.power.Trigger;
 import think.rpgitems.power.impl.PowerRanged;
@@ -46,12 +45,11 @@ public class Events implements Listener {
     public static HashMap<String, Set<Integer>> drops = new HashMap<>();
 
     static HashMap<String, Integer> recipeWindows = new HashMap<>();
-    static boolean useLocaleInv = false;
+    static final boolean useLocaleInv = false;
 
     private static HashSet<Integer> removeProjectiles = new HashSet<>();
     private static HashMap<Integer, Integer> rpgProjectiles = new HashMap<>();
     private static Map<UUID, ItemStack> localItemStacks = new HashMap<>();
-    private HashSet<LocaleInventory> localeInventories = new HashSet<>();
 
     static private boolean canStack(ItemStack a, ItemStack b) {
         if (a != null && a.getType() == Material.AIR) a = null;
@@ -72,7 +70,7 @@ public class Events implements Listener {
     }
 
     public static boolean hasLocalItemStack(UUID entityId) {
-       return localItemStacks.containsKey(entityId);
+        return localItemStacks.containsKey(entityId);
     }
 
     public static ItemStack getLocalItemStack(UUID entityId) {
@@ -466,35 +464,11 @@ public class Events implements Listener {
             item.resetRecipe(true);
             ItemManager.save();
             e.getPlayer().sendMessage(ChatColor.AQUA + "Recipe set for " + item.getName());
-        } else if (useLocaleInv && e.getView() instanceof LocaleInventory) {
-            localeInventories.remove(e.getView());
-            ((LocaleInventory) e.getView()).getView().close();
         }
     }
 
     @EventHandler(ignoreCancelled = true, priority = EventPriority.HIGHEST)
     public void onInventoryClick(InventoryClickEvent e) {
-        if (useLocaleInv && e.getView() instanceof LocaleInventory) {
-            LocaleInventory inv = (LocaleInventory) e.getView();
-            InventoryClickEvent clickEvent = new InventoryClickEvent(inv.getView(), e.getSlotType(), e.getSlot(), e.getClick(), e.getAction());
-            Bukkit.getServer().getPluginManager().callEvent(clickEvent);
-            if (clickEvent.isCancelled()) {
-                e.setCancelled(true);
-            } else {
-                switch (clickEvent.getResult()) {
-                    case DEFAULT: // Can't really do this with current events
-                    case ALLOW:
-                        inv.getView().setItem(e.getRawSlot(), clickEvent.getCursor());
-                        break;
-                    case DENY:
-                        break;
-                }
-            }
-            for (LocaleInventory localeInv : localeInventories) {
-                if (localeInv != inv)
-                    localeInv.reload();
-            }
-        }
         if (e.getClickedInventory() instanceof AnvilInventory) {
             if (e.getRawSlot() == 2) {
                 HumanEntity p = e.getWhoClicked();
@@ -510,9 +484,9 @@ public class Events implements Listener {
 
     @EventHandler(ignoreCancelled = true, priority = EventPriority.HIGHEST)
     public void onInventoryOpen(final InventoryOpenEvent e) {
-        if (e.getView() instanceof LocaleInventory || e.getInventory().getHolder() == null || e.getInventory().getLocation() == null)
+        if (e.getInventory().getHolder() == null || e.getInventory().getLocation() == null)
             return;
-        if (e.getInventory().getType() != InventoryType.CHEST || !useLocaleInv) {
+        if (e.getInventory().getType() != InventoryType.CHEST) {
             Inventory in = e.getInventory();
             Iterator<ItemStack> it = in.iterator();
             try {
@@ -526,11 +500,6 @@ public class Events implements Listener {
                 logger.log(Level.WARNING, "Exception when InventoryOpenEvent. May be harmless.", ex);
                 // Fix for the bug with anvils in craftbukkit
             }
-        } else {
-            LocaleInventory localeInv = new LocaleInventory((Player) e.getPlayer(), e.getView());
-            e.setCancelled(true);
-            e.getPlayer().openInventory(localeInv);
-            localeInventories.add(localeInv);
         }
     }
 

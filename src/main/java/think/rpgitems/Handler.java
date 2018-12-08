@@ -72,29 +72,6 @@ public class Handler extends RPGCommandReceiver {
         return "";
     }
 
-    @SubCommand("debug")
-    @Attribute("command")
-    public void debug(CommandSender sender, Arguments args) {
-        Player player = asPlayer(sender);
-        ItemStack itemInMainHand = player.getInventory().getItemInMainHand();
-        boolean hasItemMeta = itemInMainHand.hasItemMeta();
-        player.sendMessage("hasItemMeta " + hasItemMeta);
-        ItemMeta itemMeta = itemInMainHand.getItemMeta();
-        player.sendMessage("itemMeta " + itemMeta.toString());
-        CustomItemTagContainer tagContainer = itemMeta.getCustomTagContainer();
-        boolean hasCustomTag = tagContainer.hasCustomTag(RPGItem.TAG_META, ItemTagType.TAG_CONTAINER);
-        player.sendMessage("hasCustomTag " + hasCustomTag);
-        CustomItemTagContainer rpgTag = makeTag(tagContainer, RPGItem.TAG_META);
-        boolean hasCustomTag2 = tagContainer.hasCustomTag(RPGItem.TAG_META, ItemTagType.TAG_CONTAINER);
-        player.sendMessage("hasCustomTag2 " + hasCustomTag2);
-        set(rpgTag, RPGItem.TAG_DURABILITY, 1);
-        player.sendMessage("itemMeta " + itemMeta.toString());
-        itemInMainHand.setItemMeta(itemMeta);
-        boolean hasItemMeta2 = itemInMainHand.hasItemMeta();
-        player.sendMessage("hasItemMeta2 " + hasItemMeta);
-    }
-
-
     @SubCommand("reload")
     @Attribute("command")
     public void reload(CommandSender sender, Arguments args) {
@@ -103,9 +80,6 @@ public class Handler extends RPGCommandReceiver {
         plugin.i18n.load();
         WGSupport.reload();
         ItemManager.reload(plugin);
-        if (plugin.cfg.localeInv) {
-            Events.useLocaleInv = true;
-        }
         plugin.managedPlugins.forEach(Bukkit.getPluginManager()::disablePlugin);
         plugin.managedPlugins.clear();
         plugin.loadExtensions();
@@ -525,26 +499,20 @@ public class Handler extends RPGCommandReceiver {
             }
             item.setItem(material, false);
             if (args.length() == 4) {
-                int dam;
+                int dataValue;
                 try {
-                    dam = Integer.parseInt(args.top());
+                    dataValue = Integer.parseInt(args.top());
                 } catch (Exception e) {
                     String hexColour = "";
                     try {
                         hexColour = args.nextString();
-                        dam = Integer.parseInt(hexColour, 16);
+                        dataValue = Integer.parseInt(hexColour, 16);
                     } catch (NumberFormatException e2) {
                         sender.sendMessage(ChatColor.RED + "Failed to parse " + hexColour);
                         return;
                     }
                 }
-                ItemMeta meta = item.getLocaleMeta();
-                if (meta instanceof LeatherArmorMeta) {
-                    ((LeatherArmorMeta) meta).setColor(Color.fromRGB(dam));
-                } else {
-                    ((Damageable) meta).setDamage(dam);
-                }
-                item.updateLocaleMeta(meta);
+                item.setDataValue(dataValue);
             }
             item.rebuild();
             ItemManager.refreshItem();

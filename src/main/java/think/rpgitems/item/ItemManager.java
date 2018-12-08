@@ -34,12 +34,12 @@ import java.nio.file.StandardOpenOption;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.Objects;
+import java.util.Optional;
 import java.util.concurrent.ThreadLocalRandom;
 import java.util.logging.Level;
 
 import static think.rpgitems.item.RPGItem.*;
-import static think.rpgitems.utils.ItemTagUtils.getInt;
-import static think.rpgitems.utils.ItemTagUtils.makeTag;
+import static think.rpgitems.utils.ItemTagUtils.*;
 
 public class ItemManager {
     public static HashMap<Integer, RPGItem> itemById = new HashMap<>();
@@ -150,7 +150,7 @@ public class ItemManager {
                 throw new IllegalStateException("Trying to load " + file + " that does not exist.");
             }
             if (file.isDirectory()) {
-                File[] subFiles = file.listFiles((d, n) ->(d.isFile() && n.endsWith("yml")) || d.isDirectory());
+                File[] subFiles = file.listFiles((d, n) -> (d.isFile() && n.endsWith("yml")) || d.isDirectory());
                 if (Objects.requireNonNull(subFiles).length == 0) {
                     if (sender != null) {
                         new Message(I18n.format("message.item.empty_dir", file.getPath())).send(sender);
@@ -482,9 +482,9 @@ public class ItemManager {
         if (!item.hasItemMeta())
             return null;
         ItemMeta meta = item.getItemMeta();
-        CustomItemTagContainer tagContainer = meta.getCustomTagContainer();
+        @SuppressWarnings("deprecation") CustomItemTagContainer tagContainer = meta.getCustomTagContainer();
         if (tagContainer.hasCustomTag(TAG_META, ItemTagType.TAG_CONTAINER)) {
-            Integer uid = getInt(makeTag(tagContainer, TAG_META), TAG_ITEM_UID);
+            Integer uid = getInt(getTag(tagContainer, TAG_META), TAG_ITEM_UID);
             if (uid == null) return null;
             return ItemManager.getItemById(uid);
         }
@@ -494,9 +494,20 @@ public class ItemManager {
         try {
             if (!meta.hasLore() || meta.getLore().size() <= 0)
                 return null;
-            int id = RPGItem.decodeId(meta.getLore().get(0));
-            return ItemManager.getItemById(id);
+            @SuppressWarnings("deprecation") Optional<Integer> id = decodeId(meta.getLore().get(0));
+            if (!id.isPresent()) return null;
+            RPGItem rpgItem = ItemManager.getItemById(id.get());
+            @SuppressWarnings("deprecation") think.rpgitems.data.RPGMetadata rpgMetadata = think.rpgitems.data.RPGMetadata.parseLoreline(item.getItemMeta().getLore().get(0));
+            @SuppressWarnings("deprecation") int durabilityKey = think.rpgitems.data.RPGMetadata.DURABILITY;
+            if (rpgMetadata.containsKey(durabilityKey)) {
+                int durability = ((Number) rpgMetadata.get(durabilityKey)).intValue();
+                set(makeTag(tagContainer, TAG_META), TAG_DURABILITY, durability);
+            }
+            item.setItemMeta(meta);
+            updateItem(rpgItem, item);
+            return rpgItem;
         } catch (Exception e) {
+            RPGItems.logger.log(Level.WARNING, "Error migrating old item", e);
             return null;
         }
     }

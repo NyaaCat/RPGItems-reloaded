@@ -141,9 +141,6 @@ public class RPGItems extends JavaPlugin {
                 return true;
             });
         }
-        if (cfg.localeInv) {
-            Events.useLocaleInv = true;
-        }
         Handler commandHandler = new Handler(this, i18n);
         getCommand("rpgitem").setExecutor(commandHandler);
         getCommand("rpgitem").setTabCompleter(commandHandler);

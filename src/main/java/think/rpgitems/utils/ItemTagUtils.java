@@ -3,6 +3,7 @@ package think.rpgitems.utils;
 import org.bukkit.Bukkit;
 import org.bukkit.NamespacedKey;
 import org.bukkit.OfflinePlayer;
+import org.bukkit.inventory.meta.ItemMeta;
 import org.bukkit.inventory.meta.tags.CustomItemTagContainer;
 import org.bukkit.inventory.meta.tags.ItemTagAdapterContext;
 import org.bukkit.inventory.meta.tags.ItemTagType;
@@ -153,6 +154,11 @@ public final class ItemTagUtils {
 
     public static CustomItemTagContainer makeTag(CustomItemTagContainer container, NamespacedKey key) {
         return computeIfAbsent(container, key, ItemTagType.TAG_CONTAINER, (k) -> container.getAdapterContext().newTagContainer());
+    }
+
+    public static CustomItemTagContainer makeTag(ItemMeta itemMeta, NamespacedKey key) {
+        @SuppressWarnings("deprecation") CustomItemTagContainer container = itemMeta.getCustomTagContainer();
+        return makeTag(container, key);
     }
 
     public static class UUIDItemTagType implements ItemTagType<byte[], UUID> {

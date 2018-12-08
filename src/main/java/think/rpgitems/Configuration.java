@@ -25,7 +25,7 @@ public class Configuration extends PluginConfigure {
     public String spuEndpoint = null;
 
     @Serializable(name = "general.locale_inv", alias = "localeInv")
-    public boolean localeInv = false;
+    public boolean oldLocaleInv = false;
 
     @Serializable(name = "general.pid_compat", alias = "pidCompat")
     public boolean pidCompat = false;
