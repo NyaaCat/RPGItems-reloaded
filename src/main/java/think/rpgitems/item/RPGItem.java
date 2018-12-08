@@ -1155,11 +1155,15 @@ public class RPGItem {
                     (val > 0 && durability < durabilityLowerBound) ||
                             (val < 0 && durability > durabilityUpperBound)
             )) {
+                tagContainer.commit();
+                item.setItemMeta(itemMeta);
                 return false;
             }
             if (durability <= val
                         && hasPower(PowerUnbreakable.class)
                         && !isCustomItemModel()) {
+                tagContainer.commit();
+                item.setItemMeta(itemMeta);
                 return false;
             }
             durability -= val;
