@@ -3,10 +3,10 @@ package think.rpgitems.power.impl;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
 import think.rpgitems.I18n;
-import think.rpgitems.power.PowerMeta;
-import think.rpgitems.power.PowerResult;
-import think.rpgitems.power.PowerTick;
-import think.rpgitems.power.Property;
+import think.rpgitems.power.*;
+
+import java.util.Collections;
+import java.util.Set;
 
 import static think.rpgitems.power.Utils.checkCooldown;
 
@@ -42,5 +42,10 @@ public class PowerParticleTick extends PowerParticle implements PowerTick {
         if (!getItem().consumeDurability(stack, cost)) return PowerResult.cost();
         spawnParticle(player);
         return PowerResult.ok();
+    }
+
+    @Override
+    public Set<Trigger> getTriggers(){
+        return Collections.singleton(Trigger.TICK);
     }
 }
