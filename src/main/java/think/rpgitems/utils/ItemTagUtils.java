@@ -1,5 +1,8 @@
 package think.rpgitems.utils;
 
+import com.google.common.base.FinalizablePhantomReference;
+import com.google.common.base.FinalizableReferenceQueue;
+import com.google.common.collect.Sets;
 import org.bukkit.Bukkit;
 import org.bukkit.NamespacedKey;
 import org.bukkit.OfflinePlayer;
@@ -7,11 +10,17 @@ import org.bukkit.inventory.meta.ItemMeta;
 import org.bukkit.inventory.meta.tags.CustomItemTagContainer;
 import org.bukkit.inventory.meta.tags.ItemTagAdapterContext;
 import org.bukkit.inventory.meta.tags.ItemTagType;
+import think.rpgitems.RPGItems;
 import think.rpgitems.power.Utils;
 
+import java.lang.ref.PhantomReference;
+import java.lang.ref.Reference;
+import java.lang.ref.WeakReference;
+import java.util.Set;
 import java.util.UUID;
 import java.util.function.Function;
 import java.util.function.Supplier;
+import java.util.logging.Level;
 
 public final class ItemTagUtils {
 
@@ -144,6 +153,10 @@ public final class ItemTagUtils {
         container.setCustomTag(key, ItemTagType.LONG_ARRAY, value);
     }
 
+    public static void set(CustomItemTagContainer container, NamespacedKey key, CustomItemTagContainer value) {
+        container.setCustomTag(key, ItemTagType.TAG_CONTAINER, value);
+    }
+
     public static void set(CustomItemTagContainer container, NamespacedKey key, UUID value) {
         container.setCustomTag(key, BA_UUID, value);
     }
@@ -152,11 +165,28 @@ public final class ItemTagUtils {
         container.setCustomTag(key, BA_OFFLINE_PLAYER, value);
     }
 
-    public static CustomItemTagContainer makeTag(CustomItemTagContainer container, NamespacedKey key) {
-        return computeIfAbsent(container, key, ItemTagType.TAG_CONTAINER, (k) -> container.getAdapterContext().newTagContainer());
+    public static SubItemTagContainer makeTag(CustomItemTagContainer container, NamespacedKey key) {
+        SubItemTagContainer subItemTagContainer = new SubItemTagContainer(container, key, computeIfAbsent(container, key, ItemTagType.TAG_CONTAINER, (k) -> container.getAdapterContext().newTagContainer()));
+        WeakReference<CustomItemTagContainer> weakParent = new WeakReference<>(container);
+        FinalizablePhantomReference<SubItemTagContainer> reference = new FinalizablePhantomReference<SubItemTagContainer>(subItemTagContainer, SubItemTagContainer.frq) {
+
+            StackTraceElement[] stackTrace = Thread.currentThread().getStackTrace();
+
+            public void finalizeReferent() {
+                if (SubItemTagContainer.references.remove(this)) {
+                    RPGItems.logger.severe("Unhandled SubItemTagContainer found: " + key + "@" + weakParent.get());
+                    for (StackTraceElement stackTraceElement : stackTrace) {
+                        RPGItems.logger.warning(stackTraceElement.toString());
+                    }
+                }
+            }
+        };
+        subItemTagContainer.setReference(reference);
+        SubItemTagContainer.references.add(reference);
+        return subItemTagContainer;
     }
 
-    public static CustomItemTagContainer makeTag(ItemMeta itemMeta, NamespacedKey key) {
+    public static SubItemTagContainer makeTag(ItemMeta itemMeta, NamespacedKey key) {
         @SuppressWarnings("deprecation") CustomItemTagContainer container = itemMeta.getCustomTagContainer();
         return makeTag(container, key);
     }
@@ -202,6 +232,71 @@ public final class ItemTagUtils {
         @Override
         public OfflinePlayer fromPrimitive(byte[] primitive, ItemTagAdapterContext context) {
             return Bukkit.getOfflinePlayer(Utils.encodeUUID(primitive));
+        }
+    }
+
+    public static class SubItemTagContainer implements CustomItemTagContainer {
+        private CustomItemTagContainer parent;
+        private CustomItemTagContainer self;
+        private NamespacedKey key;
+        private PhantomReference<SubItemTagContainer> reference;
+
+        private static FinalizableReferenceQueue frq = new FinalizableReferenceQueue();
+        private static final Set<Reference<?>> references = Sets.newConcurrentHashSet();
+
+        private SubItemTagContainer(CustomItemTagContainer parent, NamespacedKey key, CustomItemTagContainer self) {
+            this.parent = parent;
+            this.self = self;
+            this.key = key;
+        }
+
+        @Override
+        public <T, Z> void setCustomTag(NamespacedKey namespacedKey, ItemTagType<T, Z> itemTagType, Z z) {
+            self.setCustomTag(namespacedKey, itemTagType, z);
+        }
+
+        @Override
+        public <T, Z> boolean hasCustomTag(NamespacedKey namespacedKey, ItemTagType<T, Z> itemTagType) {
+            return self.hasCustomTag(namespacedKey, itemTagType);
+        }
+
+        @Override
+        public <T, Z> Z getCustomTag(NamespacedKey namespacedKey, ItemTagType<T, Z> itemTagType) {
+            return self.getCustomTag(namespacedKey, itemTagType);
+        }
+
+        @Override
+        public void removeCustomTag(NamespacedKey namespacedKey) {
+            self.removeCustomTag(namespacedKey);
+        }
+
+        @Override
+        public boolean isEmpty() {
+            return self.isEmpty();
+        }
+
+        @Override
+        public ItemTagAdapterContext getAdapterContext() {
+            return self.getAdapterContext();
+        }
+
+        public void commit() {
+            set(parent, key, self);
+            if (parent instanceof SubItemTagContainer) {
+                ((SubItemTagContainer) parent).commit();
+            }
+            dispose();
+        }
+
+        public void dispose() {
+            self = null;
+            if (!SubItemTagContainer.references.remove(reference)) {
+                RPGItems.logger.log(Level.SEVERE, "Double handled SubItemTagContainer found: " + this + ": " + key + "@" + parent);
+            }
+        }
+
+        private void setReference(FinalizablePhantomReference<SubItemTagContainer> reference) {
+            this.reference = reference;
         }
     }
 }

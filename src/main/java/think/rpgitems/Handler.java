@@ -19,12 +19,8 @@ import org.bukkit.entity.Player;
 import org.bukkit.inventory.Inventory;
 import org.bukkit.inventory.ItemFlag;
 import org.bukkit.inventory.ItemStack;
-import org.bukkit.inventory.meta.Damageable;
 import org.bukkit.inventory.meta.EnchantmentStorageMeta;
 import org.bukkit.inventory.meta.ItemMeta;
-import org.bukkit.inventory.meta.LeatherArmorMeta;
-import org.bukkit.inventory.meta.tags.CustomItemTagContainer;
-import org.bukkit.inventory.meta.tags.ItemTagType;
 import org.librazy.nclangchecker.LangKey;
 import think.rpgitems.item.ItemManager;
 import think.rpgitems.item.RPGItem;
@@ -55,8 +51,6 @@ import java.util.logging.Level;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
-import static think.rpgitems.utils.ItemTagUtils.makeTag;
-import static think.rpgitems.utils.ItemTagUtils.set;
 import static think.rpgitems.utils.NetworkUtils.Location.GIST;
 
 public class Handler extends RPGCommandReceiver {
@@ -70,6 +64,13 @@ public class Handler extends RPGCommandReceiver {
     @Override
     public String getHelpPrefix() {
         return "";
+    }
+
+
+    @SubCommand("debug")
+    @Attribute("command")
+    public void debug(CommandSender sender, Arguments args) {
+        System.gc();
     }
 
     @SubCommand("reload")
@@ -900,7 +901,7 @@ public class Handler extends RPGCommandReceiver {
             ItemManager.refreshItem();
             ItemManager.save(item);
             msg(sender, "message.durability.change");
-        } catch (Exception e) {
+        } catch (NumberFormatException e) {
             switch (arg) {
                 case "infinite": {
                     item.setMaxDurability(-1);

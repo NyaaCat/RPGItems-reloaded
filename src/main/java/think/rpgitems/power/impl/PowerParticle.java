@@ -54,6 +54,21 @@ public class PowerParticle extends BasePower implements PowerRightClick, PowerLe
     @Property
     public int particleCount = 1;
 
+    @Property
+    public double offsetX = 0;
+
+    @Property
+    public double offsetY = 0;
+
+    @Property
+    public double offsetZ = 0;
+
+    @Property
+    public double extra = 1;
+
+    @Property
+    public boolean force = false;
+
     private Object data = null;
 
     @Override
@@ -79,7 +94,7 @@ public class PowerParticle extends BasePower implements PowerRightClick, PowerLe
                 player.getWorld().playEffect(player.getLocation(), effect, 0);
             }
         } else {
-            player.getWorld().spawnParticle(particle, player.getLocation(), particleCount, getData());
+            player.getWorld().spawnParticle(particle, player.getLocation(), particleCount, offsetX, offsetY, offsetZ, extra, getData(), force);
         }
     }
 

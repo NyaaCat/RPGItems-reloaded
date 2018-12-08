@@ -83,9 +83,9 @@ public class RPGItem {
     private int durabilityLowerBound;
     private int durabilityUpperBound;
 
-    private int blockBreakingCost = 1;
-    private int hittingCost = 1;
-    private int hitCost = 1;
+    private int blockBreakingCost = 0;
+    private int hittingCost = 0;
+    private int hitCost = 0;
     private boolean hitCostByDamage = false;
     private DamageMode damageMode = DamageMode.FIXED;
     private File file;
@@ -163,7 +163,7 @@ public class RPGItem {
         List<String> lore = rItem.getLore();
         @SuppressWarnings("deprecation")
         CustomItemTagContainer itemTagContainer = item.getItemMeta().getCustomTagContainer();
-        CustomItemTagContainer rpgitemsTagContainer = makeTag(itemTagContainer, TAG_META);
+        SubItemTagContainer rpgitemsTagContainer = makeTag(itemTagContainer, TAG_META);
         rItem.addExtra(rpgitemsTagContainer, lore);
         // Patch for mcMMO buff. See SkillUtils.java#removeAbilityBuff in mcMMO
         if (item.hasItemMeta() && item.getItemMeta().hasLore() && item.getItemMeta().getLore().contains("mcMMO Ability Tool"))
@@ -193,11 +193,14 @@ public class RPGItem {
                 meta.addEnchant(e, enchantMap.get(e), true);
             }
         }
+        rpgitemsTagContainer.commit();
         item.setItemMeta(meta);
         item.setItemMeta(refreshAttributeModifiers(rItem, item).getItemMeta());
         Damageable damageable = (Damageable) item.getItemMeta();
         if (rItem.maxDurability > 0) {
-            int durability = itemTagContainer.getCustomTag(TAG_DURABILITY, ItemTagType.INTEGER);
+            SubItemTagContainer subItemTagContainer = makeTag(meta, TAG_META);
+            int durability = computeIfAbsent(subItemTagContainer, TAG_DURABILITY, ItemTagType.INTEGER, rItem::getDefaultDurability);
+            subItemTagContainer.commit();
             if (rItem.isCustomItemModel()) {
                 damageable.setDamage(rItem.getDataValue());
             } else {
@@ -313,9 +316,10 @@ public class RPGItem {
         armour = s.getInt("armour", 0);
         String materialName = s.getString("item");
         item = MaterialUtils.getMaterial(materialName, Bukkit.getConsoleSender());
-        if (LeatherArmorMeta.class.isAssignableFrom(item.getData())) {
+        ItemMeta itemMeta = Bukkit.getItemFactory().getItemMeta(item);
+        if (itemMeta instanceof LeatherArmorMeta) {
             setDataValue(s.getInt("item_colour"));
-        } else if (Damageable.class.isAssignableFrom(item.getData())) {
+        } else if (itemMeta instanceof Damageable) {
             setDataValue(s.getInt("item_data"));
         }
         ignoreWorldGuard = s.getBoolean("ignoreWorldGuard", false);
@@ -502,9 +506,11 @@ public class RPGItem {
         s.set("item", item.toString());
         s.set("ignoreWorldGuard", ignoreWorldGuard);
 
-        if (LeatherArmorMeta.class.isAssignableFrom(item.getData())) {
+        ItemMeta itemMeta = Bukkit.getItemFactory().getItemMeta(item);
+
+        if (itemMeta instanceof LeatherArmorMeta) {
             s.set("item_colour", getDataValue());
-        } else if (Damageable.class.isAssignableFrom(item.getData())) {
+        } else if (itemMeta instanceof Damageable) {
             s.set("item_data", getDataValue());
         }
         ConfigurationSection powerConfigs = s.createSection("powers");
@@ -912,9 +918,11 @@ public class RPGItem {
         ItemMeta meta = rStack.getItemMeta();
         List<String> lore = getLore();
         @SuppressWarnings("deprecation") CustomItemTagContainer itemTagContainer = meta.getCustomTagContainer();
-        CustomItemTagContainer rpgitemsTagContainer = makeTag(itemTagContainer, TAG_META);
+        SubItemTagContainer rpgitemsTagContainer = makeTag(itemTagContainer, TAG_META);
+        set(rpgitemsTagContainer, TAG_ITEM_UID, getUID());
         addExtra(rpgitemsTagContainer, lore);
         meta.setLore(lore);
+        rpgitemsTagContainer.commit();
         rStack.setItemMeta(meta);
         refreshAttributeModifiers(this, rStack);
         updateItem(this, rStack);
@@ -1111,21 +1119,23 @@ public class RPGItem {
 
     public void setDurability(ItemStack item, int val) {
         ItemMeta itemMeta = item.getItemMeta();
-        CustomItemTagContainer tagContainer = makeTag(itemMeta, TAG_META);
+        SubItemTagContainer tagContainer = makeTag(itemMeta, TAG_META);
         if (getMaxDurability() != -1) {
             set(tagContainer, TAG_DURABILITY, val);
         }
+        tagContainer.commit();
         item.setItemMeta(itemMeta);
         updateItem(this, item);
     }
 
     public int getDurability(ItemStack item) {
         ItemMeta itemMeta = item.getItemMeta();
-        CustomItemTagContainer tagContainer = makeTag(itemMeta, TAG_META);
+        SubItemTagContainer tagContainer = makeTag(itemMeta, TAG_META);
         int durability = Integer.MAX_VALUE;
         if (getMaxDurability() != -1) {
             durability = computeIfAbsent(tagContainer, TAG_DURABILITY, ItemTagType.INTEGER, this::getDefaultDurability);
         }
+        tagContainer.commit();
         item.setItemMeta(itemMeta);
         return durability;
     }
@@ -1139,7 +1149,7 @@ public class RPGItem {
         int durability;
         ItemMeta itemMeta = item.getItemMeta();
         if (getMaxDurability() != -1) {
-            CustomItemTagContainer tagContainer = makeTag(itemMeta, TAG_META);
+            SubItemTagContainer tagContainer = makeTag(itemMeta, TAG_META);
             durability = computeIfAbsent(tagContainer, TAG_DURABILITY, ItemTagType.INTEGER, this::getDefaultDurability);
             if (checkbound && (
                     (val > 0 && durability < durabilityLowerBound) ||
@@ -1157,6 +1167,7 @@ public class RPGItem {
                 durability = getMaxDurability();
             }
             set(tagContainer, TAG_DURABILITY, durability);
+            tagContainer.commit();
         }
         item.setItemMeta(itemMeta);
         updateItem(this, item);

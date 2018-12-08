@@ -363,7 +363,7 @@ public class ItemManager {
                 throw new RuntimeException(e);
             }
         } catch (Exception e) {
-            plugin.getLogger().log(Level.SEVERE, "Error saving" + itemName + ".", e);
+            plugin.getLogger().log(Level.SEVERE, "Error saving " + itemName + ".", e);
             plugin.getLogger().severe("Dumping current item");
             plugin.getLogger().severe("===============");
             plugin.getLogger().severe(cfgStr);
@@ -484,8 +484,7 @@ public class ItemManager {
         ItemMeta meta = item.getItemMeta();
         @SuppressWarnings("deprecation") CustomItemTagContainer tagContainer = meta.getCustomTagContainer();
         if (tagContainer.hasCustomTag(TAG_META, ItemTagType.TAG_CONTAINER)) {
-            Integer uid = getInt(getTag(tagContainer, TAG_META), TAG_ITEM_UID);
-            if (uid == null) return null;
+            int uid = getInt(getTag(tagContainer, TAG_META), TAG_ITEM_UID);
             return ItemManager.getItemById(uid);
         }
         // Old
@@ -501,7 +500,10 @@ public class ItemManager {
             @SuppressWarnings("deprecation") int durabilityKey = think.rpgitems.data.RPGMetadata.DURABILITY;
             if (rpgMetadata.containsKey(durabilityKey)) {
                 int durability = ((Number) rpgMetadata.get(durabilityKey)).intValue();
-                set(makeTag(tagContainer, TAG_META), TAG_DURABILITY, durability);
+                SubItemTagContainer subItemTagContainer = makeTag(tagContainer, TAG_META);
+                set(subItemTagContainer, TAG_DURABILITY, durability);
+                set(subItemTagContainer, TAG_ITEM_UID, rpgItem.getUID());
+                subItemTagContainer.commit();
             }
             item.setItemMeta(meta);
             updateItem(rpgItem, item);
