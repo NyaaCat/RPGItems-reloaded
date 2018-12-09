@@ -51,6 +51,7 @@ import java.util.logging.Level;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
+import static think.rpgitems.power.Utils.rethrow;
 import static think.rpgitems.utils.NetworkUtils.Location.GIST;
 
 public class Handler extends RPGCommandReceiver {
@@ -162,7 +163,7 @@ public class Handler extends RPGCommandReceiver {
         } catch (IOException e) {
             msg(sender, "message.error.recovering", item.getName(), file.getPath(), e.getLocalizedMessage());
             plugin.getLogger().log(Level.SEVERE, "Error recovering backup for " + item.getName() + "." + file.getPath(), e);
-            throw new RuntimeException(e);
+            rethrow(e);
         }
     }
 

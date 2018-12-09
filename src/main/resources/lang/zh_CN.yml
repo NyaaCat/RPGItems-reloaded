@@ -41,6 +41,7 @@ message:
     recovering: 恢复 %s 自 %s 失败：%s。建议停止服务器并手动检查物品配置及其备份。
     item_unlocked: 无法编辑已解锁的物品%s。请重载它再编辑。
     loading: 从%s加载物品时出错。%s
+    verifying: '验证%s完整性出错。%s'
   wgcustomflag:
     disable: Worldguard 自定义标志已禁用
     enable: Worldguard 自定义标志已启用

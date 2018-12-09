@@ -17,10 +17,12 @@ import org.bukkit.inventory.meta.ItemMeta;
 import org.bukkit.inventory.meta.tags.CustomItemTagContainer;
 import org.bukkit.inventory.meta.tags.ItemTagType;
 import org.bukkit.util.FileUtil;
+import think.rpgitems.Handler;
 import think.rpgitems.I18n;
 import think.rpgitems.RPGItems;
 import think.rpgitems.power.UnknownExtensionException;
 import think.rpgitems.power.UnknownPowerException;
+import think.rpgitems.power.Utils;
 import think.rpgitems.support.WGSupport;
 
 import java.io.*;
@@ -39,6 +41,7 @@ import java.util.concurrent.ThreadLocalRandom;
 import java.util.logging.Level;
 
 import static think.rpgitems.item.RPGItem.*;
+import static think.rpgitems.power.Utils.rethrow;
 import static think.rpgitems.utils.ItemTagUtils.*;
 
 public class ItemManager {
@@ -287,7 +290,7 @@ public class ItemManager {
             Bukkit.getOperators().forEach(message::send);
             plugin.getLogger().severe("Error loading items.yml. Creating backup");
             dump(e);
-            throw new RuntimeException(e);
+            rethrow(e);
         }
     }
 
@@ -360,7 +363,7 @@ public class ItemManager {
                 lock(itemFile);
             } catch (Exception e) {
                 plugin.getLogger().log(Level.SEVERE, "Error verifying integrity for " + itemName + ".", e);
-                throw new RuntimeException(e);
+                throw new Handler.CommandException("message.error.verifying", e, itemName, e.getLocalizedMessage());
             }
         } catch (Exception e) {
             plugin.getLogger().log(Level.SEVERE, "Error saving " + itemName + ".", e);
@@ -375,9 +378,10 @@ public class ItemManager {
                     lock(itemFile);
                 } catch (Exception exRec) {
                     plugin.getLogger().log(Level.SEVERE, "Error recovering backup: " + backup, exRec);
+                    throw new Handler.CommandException("message.error.recovering", exRec, itemName, backup.getPath(), exRec.getLocalizedMessage());
                 }
             }
-            throw new RuntimeException(e);
+            rethrow(e);
         }
     }
 
@@ -542,7 +546,7 @@ public class ItemManager {
         try {
             newItem = new RPGItem(section, name, free);
         } catch (UnknownPowerException | UnknownExtensionException e) {
-            throw new RuntimeException(e);
+            throw new IllegalStateException(e);
         }
         addItem(newItem);
         return newItem;

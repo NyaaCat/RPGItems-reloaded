@@ -590,4 +590,12 @@ public class Utils {
         long secondLong = bb.getLong();
         return new UUID(firstLong, secondLong);
     }
+
+    public static void rethrow(Exception e) {
+        if (e instanceof RuntimeException) {
+            throw (RuntimeException) e;
+        } else {
+            throw new RuntimeException(e);
+        }
+    }
 }

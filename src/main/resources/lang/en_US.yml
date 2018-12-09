@@ -61,6 +61,7 @@ message:
     recovering: Error recovering %s from %s, %s. We suggest you stop the server and check item files and backups manually.
     item_unlocked: You cannot edit unlocked %s. Reload it before editing.
     loading: 'Error loading item from %s. %s'
+    verifying: 'Error verifying integrity for %s. %s'
   wgcustomflag:
     disable: Worldguard custom flag disabled
     enable: Worldguard custom flag enabled

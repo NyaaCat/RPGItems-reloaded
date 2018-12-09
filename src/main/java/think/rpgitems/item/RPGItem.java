@@ -4,6 +4,7 @@ import cat.nyaa.nyaacore.Message;
 import cat.nyaa.nyaacore.Pair;
 import cat.nyaa.nyaacore.utils.ItemStackUtils;
 import com.google.common.base.Strings;
+import com.google.common.collect.Multimap;
 import net.md_5.bungee.api.chat.BaseComponent;
 import net.md_5.bungee.api.chat.ClickEvent;
 import net.md_5.bungee.api.chat.HoverEvent;
@@ -194,8 +195,7 @@ public class RPGItem {
             }
         }
         rpgitemsTagContainer.commit();
-        item.setItemMeta(meta);
-        item.setItemMeta(refreshAttributeModifiers(rItem, item).getItemMeta());
+        item.setItemMeta(refreshAttributeModifiers(rItem, meta));
         Damageable damageable = (Damageable) item.getItemMeta();
         if (rItem.maxDurability > 0) {
             SubItemTagContainer subItemTagContainer = makeTag(meta, TAG_META);
@@ -270,24 +270,27 @@ public class RPGItem {
         return plugin;
     }
 
-    private static ItemStack refreshAttributeModifiers(RPGItem item, ItemStack rStack) {
+    private static ItemMeta refreshAttributeModifiers(RPGItem item, ItemMeta itemMeta) {
         List<PowerAttributeModifier> attributeModifiers = item.getPower(PowerAttributeModifier.class);
-        ItemMeta itemMeta = rStack.getItemMeta();
         if (!attributeModifiers.isEmpty()) {
+            Multimap<Attribute, AttributeModifier> old = itemMeta.getAttributeModifiers();
             for (PowerAttributeModifier attributeModifier : attributeModifiers) {
                 Attribute attribute = attributeModifier.attribute;
+                UUID uuid = new UUID(attributeModifier.uuidMost, attributeModifier.uuidLeast);
                 AttributeModifier modifier = new AttributeModifier(
-                        new UUID(attributeModifier.uuidMost, attributeModifier.uuidLeast),
+                        uuid,
                         attributeModifier.name,
                         attributeModifier.amount,
                         attributeModifier.operation,
                         attributeModifier.slot
                 );
+                old.entries().stream().filter(m -> m.getValue().getUniqueId().equals(uuid)).findAny().ifPresent(
+                        e -> itemMeta.removeAttributeModifier(e.getKey(), e.getValue())
+                );
                 itemMeta.addAttributeModifier(attribute, modifier);
             }
         }
-        rStack.setItemMeta(itemMeta);
-        return rStack;
+        return itemMeta;
     }
 
     private void restore(ConfigurationSection s) throws UnknownPowerException, UnknownExtensionException {
@@ -304,7 +307,7 @@ public class RPGItem {
             display = quality.colour + ChatColor.BOLD + display;
         }
 
-        displayName = ChatColor.translateAlternateColorCodes('&', display);
+        setDisplay(ChatColor.translateAlternateColorCodes('&', display));
         setType(s.getString("type", I18n.format("item.type")), false);
         hand = ChatColor.translateAlternateColorCodes('&', s.getString("hand", I18n.format("item.hand")));
         description = s.getStringList("description");
@@ -923,8 +926,8 @@ public class RPGItem {
         addExtra(rpgitemsTagContainer, lore);
         meta.setLore(lore);
         rpgitemsTagContainer.commit();
-        rStack.setItemMeta(meta);
-        refreshAttributeModifiers(this, rStack);
+        meta.setDisplayName(getDisplay());
+        rStack.setItemMeta(refreshAttributeModifiers(this, meta));
         updateItem(this, rStack);
         return rStack;
     }
