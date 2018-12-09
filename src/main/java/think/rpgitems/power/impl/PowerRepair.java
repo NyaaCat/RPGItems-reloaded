@@ -111,7 +111,7 @@ public class PowerRepair extends BasePower implements PowerRightClick, PowerLeft
             }
         }
         if (removeItem(player.getInventory(), material, amount)) {
-            getItem().setDurability(stack, Math.min(itemDurability + this.durability, max));
+            getItem().setItemStackDurability(stack, Math.min(itemDurability + this.durability, max));
             return abortOnSuccess ? PowerResult.abort() : PowerResult.ok();
         } else {
             BaseComponent msg = Strings.isNullOrEmpty(customMessage) ?

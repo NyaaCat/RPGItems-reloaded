@@ -923,7 +923,7 @@ manual:
         [value] - Set maximum durability to value - /rpgitem test_item durability 100
         infinite - Set durability to infinite - /rpgitem test_item durability infinite
         default - Set default durability to value - /rpgitem test_item durability default 100
-        togglebar - Set durability bar to force show/hide - /rpgitem test_item durability togglebar
+        togglebar - Set durability bar to show/hide - /rpgitem test_item durability togglebar
         bound - Set item durability lower and upper bounds - /rpgitem test_item durability bound 10 100
     usage: "/rpgitem durability {item} <option>"
 

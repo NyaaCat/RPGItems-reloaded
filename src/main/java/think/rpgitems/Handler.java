@@ -948,7 +948,7 @@ public class Handler extends RPGCommandReceiver {
         String permission = args.next();
         boolean enabled = args.nextBoolean();
         item.setPermission(permission);
-        item.setHaspermission(enabled);
+        item.setHasPermission(enabled);
         ItemManager.save(item);
         msg(sender, "message.permission.success");
     }
@@ -957,11 +957,11 @@ public class Handler extends RPGCommandReceiver {
     @Attribute("item")
     public void togglePowerLore(CommandSender sender, Arguments args) {
         RPGItem item = getItem(args.nextString(), sender);
-        item.setShowPowerLore(!item.isShowPowerLore());
+        item.setShowPowerText(!item.isShowPowerText());
         item.rebuild();
         ItemManager.refreshItem();
         ItemManager.save(item);
-        msg(sender, "message.toggleLore." + (item.isShowPowerLore() ? "show" : "hide"));
+        msg(sender, "message.toggleLore." + (item.isShowPowerText() ? "show" : "hide"));
     }
 
     @SubCommand("togglearmorlore")
@@ -1297,7 +1297,7 @@ public class Handler extends RPGCommandReceiver {
         if (s.equalsIgnoreCase("all")) {
             List<CompletableFuture<Void>> futures = new LinkedList<>();
             for (RPGItem item : ItemManager.itemByName.values()) {
-                if (!item.getMCVersion().startsWith("1.13")) {
+                if (!item.getMcVersion().startsWith("1.13")) {
                     CompletableFuture<Void> cmdFuture = new CompletableFuture<>();
                     updateItemCommand(sender, item, cmdFuture);
                     CompletableFuture<Void> entFuture = new CompletableFuture<>();
@@ -1391,7 +1391,7 @@ public class Handler extends RPGCommandReceiver {
                         Bukkit.getScheduler().runTask(plugin, () -> msg(sender, "message.spu.entity.timeout", item.getName()));
                     }
                 }
-                item.setMCVersion(RPGItems.getServerMCVersion());
+                item.setMcVersion(RPGItems.getServerMCVersion());
             } catch (BadCommandException e) {
                 sender.sendMessage(e.getLocalizedMessage());
             }
