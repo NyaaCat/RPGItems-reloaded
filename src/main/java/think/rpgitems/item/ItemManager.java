@@ -22,7 +22,6 @@ import think.rpgitems.I18n;
 import think.rpgitems.RPGItems;
 import think.rpgitems.power.UnknownExtensionException;
 import think.rpgitems.power.UnknownPowerException;
-import think.rpgitems.power.Utils;
 import think.rpgitems.support.WGSupport;
 
 import java.io.*;
@@ -87,13 +86,13 @@ public class ItemManager {
             for (ItemStack item : player.getInventory()) {
                 RPGItem rpgItem = ItemManager.toRPGItem(item);
                 if (rpgItem != null) {
-                    updateItem(rpgItem, item);
+                    rpgItem.updateItem(item);
                 }
             }
             for (ItemStack item : player.getInventory().getArmorContents()) {
                 RPGItem rpgItem = ItemManager.toRPGItem(item);
                 if (rpgItem != null) {
-                    updateItem(rpgItem, item);
+                    rpgItem.updateItem(item);
                 }
             }
         }
@@ -221,20 +220,20 @@ public class ItemManager {
     @SuppressWarnings("deprecation")
     public static void addItem(RPGItem item) {
         try {
-            if (item.getID() != 0) {
-                if (itemById.putIfAbsent(item.getID(), item) != null) {
-                    throw new IllegalArgumentException("Duplicated item id:" + item.getID());
+            if (item.getId() != 0) {
+                if (itemById.putIfAbsent(item.getId(), item) != null) {
+                    throw new IllegalArgumentException("Duplicated item id:" + item.getId());
                 }
             }
-            if (itemById.putIfAbsent(item.getUID(), item) != null) {
-                throw new IllegalArgumentException("Duplicated item uid:" + item.getUID());
+            if (itemById.putIfAbsent(item.getUid(), item) != null) {
+                throw new IllegalArgumentException("Duplicated item uid:" + item.getUid());
             }
             if (itemByName.putIfAbsent(item.getName(), item) != null) {
-                throw new IllegalArgumentException("Duplicated item name:" + item.getUID());
+                throw new IllegalArgumentException("Duplicated item name:" + item.getUid());
             }
         } catch (Exception e) {
-            itemById.remove(item.getID(), item);
-            itemById.remove(item.getUID(), item);
+            itemById.remove(item.getId(), item);
+            itemById.remove(item.getUid(), item);
             itemByName.remove(item.getName(), item);
             throw e;
         }
@@ -506,11 +505,11 @@ public class ItemManager {
                 int durability = ((Number) rpgMetadata.get(durabilityKey)).intValue();
                 SubItemTagContainer subItemTagContainer = makeTag(tagContainer, TAG_META);
                 set(subItemTagContainer, TAG_DURABILITY, durability);
-                set(subItemTagContainer, TAG_ITEM_UID, rpgItem.getUID());
+                set(subItemTagContainer, TAG_ITEM_UID, rpgItem.getUid());
                 subItemTagContainer.commit();
             }
             item.setItemMeta(meta);
-            updateItem(rpgItem, item);
+            rpgItem.updateItem(item);
             return rpgItem;
         } catch (Exception e) {
             RPGItems.logger.log(Level.WARNING, "Error migrating old item", e);
@@ -564,8 +563,8 @@ public class ItemManager {
     public static void remove(RPGItem item, boolean delete) {
         item.deinit();
         itemByName.remove(item.getName());
-        itemById.remove(item.getID());
-        itemById.remove(item.getUID());
+        itemById.remove(item.getId());
+        itemById.remove(item.getUid());
         if (delete) {
             try {
                 File backup = unlockAndBackup(item, true);

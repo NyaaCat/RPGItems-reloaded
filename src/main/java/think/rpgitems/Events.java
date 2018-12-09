@@ -134,7 +134,7 @@ public class Events implements Listener {
         if (!can) {
             e.setCancelled(true);
         }
-        if (rItem.getDurability(item) <= 0) {
+        if (rItem.getItemStackDurability(item) <= 0) {
             player.getInventory().setItemInMainHand(null);
         } else {
             player.getInventory().setItemInMainHand(item);
@@ -257,7 +257,7 @@ public class Events implements Listener {
         if (ItemManager.canNotUse(player, rItem)) {
             return;
         }
-        registerProjectile(e.getEntity().getEntityId(), rItem.getUID());
+        registerProjectile(e.getEntity().getEntityId(), rItem.getUid());
     }
 
     @EventHandler
@@ -372,13 +372,13 @@ public class Events implements Listener {
             ItemStack item = in.getItem(i);
             RPGItem rpgItem = ItemManager.toRPGItem(item);
             if (rpgItem != null) {
-                RPGItem.updateItem(rpgItem, item);
+                rpgItem.updateItem(item);
             }
         }
         for (ItemStack item : player.getInventory().getArmorContents()) {
             RPGItem rpgItem = ItemManager.toRPGItem(item);
             if (rpgItem != null) {
-                RPGItem.updateItem(rpgItem, item);
+                rpgItem.updateItem(item);
             }
         }
         if (WGSupport.isEnabled() && WGSupport.useWorldGuard) {
@@ -407,7 +407,7 @@ public class Events implements Listener {
                     e.setCancelled(true);
                     Bukkit.getScheduler().runTaskLater(RPGItems.plugin, () -> e.getArrow().remove(), 100L);
                 } else {
-                    RPGItem.updateItem(realItem);
+                    RPGItem.updateItemStack(realItem);
                     e.getItem().setItemStack(realItem);
                 }
             }
@@ -431,13 +431,13 @@ public class Events implements Listener {
                     ItemStack item = in.getItem(i);
                     RPGItem rpgItem = ItemManager.toRPGItem(item);
                     if (rpgItem != null) {
-                        RPGItem.updateItem(rpgItem, item);
+                        rpgItem.updateItem(item);
                     }
                 }
                 for (ItemStack item : in.getArmorContents()) {
                     RPGItem rpgItem = ItemManager.toRPGItem(item);
                     if (rpgItem != null) {
-                        RPGItem.updateItem(rpgItem, item);
+                        rpgItem.updateItem(item);
                     }
                 }
             }
@@ -494,7 +494,7 @@ public class Events implements Listener {
                     ItemStack item = it.next();
                     RPGItem rpgItem = ItemManager.toRPGItem(item);
                     if (rpgItem != null)
-                        RPGItem.updateItem(rpgItem, item);
+                        rpgItem.updateItem(item);
                 }
             } catch (ArrayIndexOutOfBoundsException ex) {
                 logger.log(Level.WARNING, "Exception when InventoryOpenEvent. May be harmless.", ex);
@@ -651,7 +651,7 @@ public class Events implements Listener {
                     e.getInventory().setResult(new ItemStack(Material.AIR));
                 } else {
                     Random random = new Random();
-                    if (random.nextInt(ItemManager.toRPGItem(e.getInventory().getResult()).getRecipechance()) != 0) {
+                    if (random.nextInt(ItemManager.toRPGItem(e.getInventory().getResult()).getRecipeChance()) != 0) {
                         ItemStack baseitem = new ItemStack(e.getInventory().getResult().getType());
                         e.getInventory().setResult(baseitem);
                     }

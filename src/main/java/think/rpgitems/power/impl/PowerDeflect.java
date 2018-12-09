@@ -2,7 +2,6 @@ package think.rpgitems.power.impl;
 
 import cat.nyaa.nyaacore.utils.TridentUtils;
 import org.bukkit.Bukkit;
-import org.bukkit.Location;
 import org.bukkit.Sound;
 import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.entity.*;
@@ -130,7 +129,7 @@ public class PowerDeflect extends BasePower implements PowerHitTaken, PowerRight
         }
         event.setCancelled(true);
         p.setShooter(target);
-        Events.registerProjectile(p.getEntityId(), getItem().getUID());
+        Events.registerProjectile(p.getEntityId(), getItem().getUid());
         Bukkit.getScheduler().runTaskLater(RPGItems.plugin, () -> {
             if (p instanceof Trident) {
                 TridentUtils.setTridentDealtDamage((Trident) p, false);

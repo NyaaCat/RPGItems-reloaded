@@ -118,7 +118,7 @@ public class PowerEquipmentCondition extends BasePower implements PowerCondition
             return false;
         }
         RPGItem rpgItem = ItemManager.toRPGItem(stack);
-        if (rpgitem != null && (rpgItem == null || !(rpgItem.getName().equals(rpgitem) || String.valueOf(rpgItem.getUID()).equals(rpgitem)))) {
+        if (rpgitem != null && (rpgItem == null || !(rpgItem.getName().equals(rpgitem) || String.valueOf(rpgItem.getUid()).equals(rpgitem)))) {
             return false;
         }
         return true;

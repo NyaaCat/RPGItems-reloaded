@@ -43,7 +43,7 @@ public class PowerDurabilityCondition extends BasePower implements PowerConditio
 
     @Override
     public PowerResult<Void> check(Player player, ItemStack stack, Map<Power, PowerResult> context) {
-        int durability = getItem().getDurability(stack);
+        int durability = getItem().getItemStackDurability(stack);
         if ((durabilityMax > 0 && durability > durabilityMax) || durability < durabilityMin) return PowerResult.fail();
         return PowerResult.ok();
     }

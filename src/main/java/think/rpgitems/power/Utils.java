@@ -145,12 +145,12 @@ public class Utils {
      * @return the boolean
      */
     public static boolean checkCooldown(Power power, Player player, long cdTicks, boolean showWarn, boolean showPower) {
-        String key = player.getName() + "." + power.getItem().getUID() + "." + power.getNamespacedKey().toString() + ".cooldown";
+        String key = player.getName() + "." + power.getItem().getUid() + "." + power.getNamespacedKey().toString() + ".cooldown";
         return checkAndSetCooldown(power, player, cdTicks, showWarn, showPower, key);
     }
 
     public static boolean checkCooldownByString(Power power, Player player, String key, long cdTicks, boolean showWarn, boolean showPower) {
-        String cdKey = player.getName() + "." + power.getItem().getUID() + "." + "key." + key + ".cooldown";
+        String cdKey = player.getName() + "." + power.getItem().getUid() + "." + "key." + key + ".cooldown";
         return checkAndSetCooldown(power, player, cdTicks, showWarn, showPower, cdKey);
     }
 
