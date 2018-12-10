@@ -283,7 +283,7 @@ public class Handler extends RPGCommandReceiver {
     @SubCommand("worldguard")
     @Attribute("command")
     public void toggleWorldGuard(CommandSender sender, Arguments args) {
-        if (!WGSupport.isEnabled()) {
+        if (!WGSupport.hasSupport()) {
             msg(sender, "message.worldguard.error");
             return;
         }
@@ -300,7 +300,7 @@ public class Handler extends RPGCommandReceiver {
     @SubCommand("wgforcerefresh")
     @Attribute("command")
     public void toggleForceRefresh(CommandSender sender, Arguments args) {
-        if (!WGSupport.isEnabled()) {
+        if (!WGSupport.hasSupport()) {
             msg(sender, "message.worldguard.error");
             return;
         }
@@ -318,7 +318,7 @@ public class Handler extends RPGCommandReceiver {
     @Attribute("item")
     public void itemToggleWorldGuard(CommandSender sender, Arguments args) {
         RPGItem item = getItem(args.nextString(), sender);
-        if (!WGSupport.isEnabled()) {
+        if (!WGSupport.hasSupport()) {
             msg(sender, "message.worldguard.error");
             return;
         }

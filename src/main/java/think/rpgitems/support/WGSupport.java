@@ -41,17 +41,24 @@ public class WGSupport {
     public static void init(RPGItems pl) {
         try {
             plugin = pl;
-            Plugin wgPlugin = plugin.getServer().getPluginManager().getPlugin("WorldGuard");
             useWorldGuard = plugin.cfg.useWorldGuard;
             forceRefresh = plugin.cfg.wgForceRefresh;
-            if (!(wgPlugin instanceof WorldGuardPlugin)) {
+            Plugin wgPlugin = plugin.getServer().getPluginManager().getPlugin("WorldGuard");
+            if (!useWorldGuard || !(wgPlugin instanceof WorldGuardPlugin)) {
                 return;
             }
             WGSupport.wgPlugin = (WorldGuardPlugin) wgPlugin;
             String wgVersion = WGSupport.wgPlugin.getDescription().getVersion();
             RPGItems.logger.info("WorldGuard version: " + wgVersion + " found");
-            if (!wgVersion.startsWith("7.")){
-                RPGItems.logger.warning("Requires WorldGuard 7.x, disabling integration");
+            if (!wgVersion.startsWith("7.")) {
+                RPGItems.logger.warning("Requires WorldGuard 7.0.0-beta2 or later, disabling integration");
+                hasSupport = false;
+                return;
+            }
+            if (wgVersion.contains("0dc5781") && plugin.getServer().getPluginManager().getPlugin("FastAsyncWorldEdit") != null) {
+                RPGItems.logger.warning("FastAsyncWorldEdit's WorldGuard is not supported, disabling integration");
+                hasSupport = false;
+                return;
             }
             hasSupport = true;
             WGHandler.registerHandler();
@@ -75,26 +82,13 @@ public class WGSupport {
     public static void reload() {
         hasSupport = false;
         try {
-            WGHandler.unregisterHandler();
+            unload();
         } catch (NoClassDefFoundError ignored) {
         }
-        useWorldGuard = plugin.cfg.useWorldGuard;
-        forceRefresh = plugin.cfg.wgForceRefresh;
-        if (wgPlugin == null) {
-            return;
-        }
-        hasSupport = true;
-        WGHandler.worldGuardInstance = WorldGuard.getInstance();
-        WGSupport.wgPlugin = (WorldGuardPlugin) plugin.getServer().getPluginManager().getPlugin("WorldGuard");
-        RPGItems.logger.info("WorldGuard version: " + WGSupport.wgPlugin.getDescription().getVersion() + " found");
-
-        WGHandler.registerHandler();
-        for (Player p : plugin.getServer().getOnlinePlayers()) {
-            WGHandler.refreshPlayerWG(p);
-        }
+        init(plugin);
     }
 
-    public static boolean isEnabled() {
+    public static boolean hasSupport() {
         return hasSupport;
     }
 

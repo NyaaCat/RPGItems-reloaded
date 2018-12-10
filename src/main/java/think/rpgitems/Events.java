@@ -381,7 +381,7 @@ public class Events implements Listener {
                 rpgItem.updateItem(item);
             }
         }
-        if (WGSupport.isEnabled() && WGSupport.useWorldGuard) {
+        if (WGSupport.hasSupport() && WGSupport.useWorldGuard) {
             WGHandler.onPlayerJoin(e);
         }
     }
