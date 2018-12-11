@@ -5,7 +5,9 @@ import com.sk89q.worldguard.WorldGuard;
 import com.sk89q.worldguard.bukkit.WorldGuardPlugin;
 import com.sk89q.worldguard.protection.flags.Flags;
 import com.sk89q.worldguard.protection.flags.StateFlag.State;
+import org.bukkit.ChatColor;
 import org.bukkit.entity.Player;
+import org.bukkit.event.Event;
 import org.bukkit.plugin.Plugin;
 import think.rpgitems.RPGItems;
 import think.rpgitems.item.RPGItem;
@@ -22,6 +24,7 @@ public class WGSupport {
 
     public static boolean useWorldGuard = true;
     public static boolean forceRefresh = false;
+    static Map<UUID, String> warningMessageByPlayer;
     static Map<UUID, Collection<String>> disabledPowerByPlayer;
     static Map<UUID, Collection<String>> enabledPowerByPlayer;
     static Map<UUID, Collection<String>> disabledItemByPlayer;
@@ -62,6 +65,7 @@ public class WGSupport {
             }
             hasSupport = true;
             WGHandler.registerHandler();
+            warningMessageByPlayer = new HashMap<>();
             disabledPowerByPlayer = new HashMap<>();
             enabledPowerByPlayer = new HashMap<>();
             disabledItemByPlayer = new HashMap<>();
@@ -76,6 +80,7 @@ public class WGSupport {
             }
         } catch (Exception e) {
             RPGItems.logger.log(Level.WARNING, "Error enabling WorldGuard support", e);
+            hasSupport = false;
         }
     }
 
@@ -92,39 +97,57 @@ public class WGSupport {
         return hasSupport;
     }
 
-    private static boolean canNotPvP(Player player) {
+    private static Event.Result canPvP(Player player) {
         if (!hasSupport || !useWorldGuard)
-            return false;
+            return Event.Result.ALLOW;
 
         LocalPlayer localPlayer = wgPlugin.wrapPlayer(player);
         State stat = WorldGuard.getInstance().getPlatform().getRegionContainer().createQuery().queryState(localPlayer.getLocation(), localPlayer, Flags.PVP);
-        return stat != null && !stat.equals(State.ALLOW);
+        return (stat == null || stat.equals(State.ALLOW)) ? Event.Result.ALLOW : Event.Result.DENY;
     }
 
-    public static boolean canUse(Player player, RPGItem item, Collection<? extends Power> powers) {
-        if (canNotPvP(player)) return false;
-        if (item == null) return true;
-        if (!hasSupport || !useWorldGuard || item.isIgnoreWorldGuard()) {
-            return true;
+    private static Event.Result canUse(Player player, RPGItem item, Collection<? extends Power> powers) {
+        if (!hasSupport || !useWorldGuard) {
+            return Event.Result.DEFAULT;
         }
+        if (plugin.cfg.wgNoPvP && canPvP(player) == Event.Result.DENY) return Event.Result.DENY;
         if (forceRefresh) WGHandler.refreshPlayerWG(player);
         Boolean disabled = disabledByPlayer.get(player.getUniqueId());
         if (disabled != null && disabled) {
-            return false;
+            return Event.Result.DENY;
         }
-        Collection<String> disabledPower = disabledPowerByPlayer.get(player.getUniqueId());
-        Collection<String> enabledPower = enabledPowerByPlayer.get(player.getUniqueId());
         Collection<String> disabledItem = disabledItemByPlayer.get(player.getUniqueId());
         Collection<String> enabledItem = enabledItemByPlayer.get(player.getUniqueId());
 
+        if (disabledItem != null && disabledItem.contains("*")) {
+            return Event.Result.DENY;
+        }
+        if (item == null || item.isIgnoreWorldGuard()) {
+            return Event.Result.ALLOW;
+        }
         String itemName = item.getName();
-        if (notEnabled(disabledItem, enabledItem, itemName)) return false;
-        if (powers == null) return true;
+        if (notEnabled(disabledItem, enabledItem, itemName)) return Event.Result.DENY;
+
+        Collection<String> disabledPower = disabledPowerByPlayer.get(player.getUniqueId());
+        Collection<String> enabledPower = enabledPowerByPlayer.get(player.getUniqueId());
+
+        if (powers == null) return Event.Result.ALLOW;
         for (Power power : powers) {
             String powerName = item.getPowerKey(power).toString();
-            if (notEnabled(disabledPower, enabledPower, powerName)) return false;
+            if (notEnabled(disabledPower, enabledPower, powerName)) return Event.Result.DENY;
         }
-        return true;
+        return Event.Result.ALLOW;
+    }
+
+    public static Event.Result canUse(Player player, RPGItem item, Collection<? extends Power> powers, boolean showWarn) {
+        Event.Result result = canUse(player, item, powers);
+        if (result == Event.Result.DENY && showWarn) {
+            String message = warningMessageByPlayer.get(player.getUniqueId());
+            if (message != null) {
+                player.sendMessage(ChatColor.translateAlternateColorCodes('&', message));
+            }
+        }
+        return result;
     }
 
     private static boolean notEnabled(Collection<String> disabled, Collection<String> enabled, String name) {

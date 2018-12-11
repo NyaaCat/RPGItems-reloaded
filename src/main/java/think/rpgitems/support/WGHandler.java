@@ -32,6 +32,7 @@ import java.util.logging.Level;
 
 public class WGHandler extends Handler {
 
+    private static final StringFlag warningMessage = new StringFlag("rpgitems-warning");
     private static final SetFlag<String> disabledPower = new SetFlag<>("disabled-rpg-powers", new StringFlag(null));
     private static final SetFlag<String> enabledPower = new SetFlag<>("enabled-rpg-powers", new StringFlag(null));
     private static final SetFlag<String> disabledItem = new SetFlag<>("disabled-rpg-items", new StringFlag(null));
@@ -50,6 +51,7 @@ public class WGHandler extends Handler {
         worldGuardInstance = WorldGuard.getInstance();
         FlagRegistry registry = worldGuardInstance.getFlagRegistry();
         try {
+            registry.register(warningMessage);
             registry.register(disabledPower);
             registry.register(enabledPower);
             registry.register(disabledItem);
@@ -110,12 +112,14 @@ public class WGHandler extends Handler {
 
     private static void refresh(ApplicableRegionSet set, LocalPlayer localPlayer) {
         UUID uuid = localPlayer.getUniqueId();
+        String wm = set.queryValue(localPlayer, warningMessage);
         Collection<String> dp = set.queryValue(localPlayer, disabledPower);
         Collection<String> ep = set.queryValue(localPlayer, enabledPower);
         Collection<String> di = set.queryValue(localPlayer, disabledItem);
         Collection<String> ei = set.queryValue(localPlayer, enabledItem);
         Collection<String> du = set.queryValue(localPlayer, disabledPlayer);
         Collection<String> eu = set.queryValue(localPlayer, enabledPlayer);
+        WGSupport.warningMessageByPlayer.put(uuid, wm);
         WGSupport.disabledPowerByPlayer.put(uuid, dp);
         WGSupport.enabledPowerByPlayer.put(uuid, ep);
         WGSupport.disabledItemByPlayer.put(uuid, di);

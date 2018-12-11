@@ -2,6 +2,7 @@ package think.rpgitems.power;
 
 import cat.nyaa.nyaacore.Message;
 import cat.nyaa.nyaacore.Pair;
+import com.google.common.base.Strings;
 import com.google.common.cache.CacheBuilder;
 import com.google.common.cache.CacheLoader;
 import com.google.common.cache.LoadingCache;
@@ -169,8 +170,8 @@ public class Utils {
             return true;
         } else {
             if (showWarn) {
-                if (showPower || !power.displayName().equals(power.getLocalizedName(RPGItems.plugin.cfg.language))) {
-                    player.sendMessage(I18n.format("message.cooldown.power", ((double) (cooldown - nowTick)) / 20d, power.displayName()));
+                if (showPower || (!Strings.isNullOrEmpty(power.displayName()) && !power.displayName().equals(power.getLocalizedName(RPGItems.plugin.cfg.language)))) {
+                    player.sendMessage(I18n.format("message.cooldown.power", ((double) (cooldown - nowTick)) / 20d, power.getDisplayName()));
                 } else {
                     player.sendMessage(I18n.format("message.cooldown.general", ((double) (cooldown - nowTick)) / 20d));
                 }

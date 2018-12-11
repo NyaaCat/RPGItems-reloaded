@@ -169,15 +169,9 @@ public final class ItemTagUtils {
         SubItemTagContainer subItemTagContainer = new SubItemTagContainer(container, key, computeIfAbsent(container, key, ItemTagType.TAG_CONTAINER, (k) -> container.getAdapterContext().newTagContainer()));
         WeakReference<CustomItemTagContainer> weakParent = new WeakReference<>(container);
         FinalizablePhantomReference<SubItemTagContainer> reference = new FinalizablePhantomReference<SubItemTagContainer>(subItemTagContainer, SubItemTagContainer.frq) {
-
-            StackTraceElement[] stackTrace = Thread.currentThread().getStackTrace();
-
             public void finalizeReferent() {
                 if (SubItemTagContainer.references.remove(this)) {
                     RPGItems.logger.severe("Unhandled SubItemTagContainer found: " + key + "@" + weakParent.get());
-                    for (StackTraceElement stackTraceElement : stackTrace) {
-                        RPGItems.logger.warning(stackTraceElement.toString());
-                    }
                 }
             }
         };

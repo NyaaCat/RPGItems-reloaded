@@ -1,5 +1,6 @@
 package think.rpgitems.power;
 
+import cat.nyaa.nyaacore.Pair;
 import cat.nyaa.nyaacore.utils.ClassPathUtils;
 import com.google.common.collect.BiMap;
 import com.google.common.collect.HashBasedTable;
@@ -63,8 +64,9 @@ public class PowerManager {
     private static SortedMap<PowerProperty, Field> getPowerProperties(Class<? extends Power> cls) {
         SortedMap<PowerProperty, Field> argumentPriorityMap = new TreeMap<>(Comparator.comparing(PowerProperty::order).thenComparing(PowerProperty::hashCode));
         Arrays.stream(cls.getFields())
-              .filter(field -> field.getAnnotation(Property.class) != null)
-              .forEach(field -> argumentPriorityMap.put(new PowerProperty(field.getName(), field.getAnnotation(Property.class).required(), field.getAnnotation(Property.class).order()), field));
+              .map(field -> Pair.of(field, field.getAnnotation(Property.class)))
+              .filter(pair -> pair.getValue() != null)
+              .forEach(pair -> argumentPriorityMap.put(new PowerProperty(pair.getKey().getName(), pair.getValue().required(), pair.getValue().order(), pair.getValue().alias()), pair.getKey()));
         return argumentPriorityMap;
     }
 

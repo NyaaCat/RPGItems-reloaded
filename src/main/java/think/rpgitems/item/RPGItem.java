@@ -80,15 +80,6 @@ public class RPGItem {
     private List<ItemStack> recipe = null;
     // Drops
     private Map<String, Double> dropChances = new HashMap<>();
-    private int defaultDurability;
-    private int durabilityLowerBound;
-    private int durabilityUpperBound;
-
-    private int blockBreakingCost = 0;
-    private int hittingCost = 0;
-    private int hitCost = 0;
-    private boolean hitCostByDamage = false;
-    private DamageMode damageMode = DamageMode.FIXED;
     private File file;
 
     private NamespacedKey namespacedKey;
@@ -102,6 +93,7 @@ public class RPGItem {
     private String displayName;
     private int damageMin = 0;
     private int damageMax = 3;
+    private DamageMode damageMode = DamageMode.FIXED;
     private int armour = 0;
     private String type = I18n.format("item.type");
     private String hand = I18n.format("item.hand");
@@ -114,6 +106,14 @@ public class RPGItem {
     // Durability
     private int maxDurability = -1;
     private boolean hasDurabilityBar = plugin.cfg.forceBar;
+    private int defaultDurability;
+    private int durabilityLowerBound;
+    private int durabilityUpperBound;
+
+    private int blockBreakingCost = 0;
+    private int hittingCost = 0;
+    private int hitCost = 0;
+    private boolean hitCostByDamage = false;
     private String mcVersion;
     private int pluginSerial;
     private List<String> lore;
@@ -504,13 +504,9 @@ public class RPGItem {
                 meta.addEnchant(e, enchantMap.get(e), true);
             }
         }
-        rpgitemsTagContainer.commit();
-        item.setItemMeta(this.refreshAttributeModifiers(meta));
-        Damageable damageable = (Damageable) item.getItemMeta();
+        Damageable damageable = (Damageable) meta;
         if (getMaxDurability() > 0) {
-            SubItemTagContainer subItemTagContainer = makeTag(meta, TAG_META);
-            int durability = computeIfAbsent(subItemTagContainer, TAG_DURABILITY, ItemTagType.INTEGER, this::getDefaultDurability);
-            subItemTagContainer.commit();
+            int durability = computeIfAbsent(rpgitemsTagContainer, TAG_DURABILITY, ItemTagType.INTEGER, this::getDefaultDurability);
             if (isCustomItemModel()) {
                 damageable.setDamage(getDataValue());
             } else {
@@ -523,7 +519,8 @@ public class RPGItem {
                 damageable.setDamage(getItem().getMaxDurability() != 0 ? 0 : getDataValue());
             }
         }
-        item.setItemMeta((ItemMeta) damageable);
+        rpgitemsTagContainer.commit();
+        item.setItemMeta(refreshAttributeModifiers(meta));
     }
 
     private void addDurabilityBar(CustomItemTagContainer meta, List<String> lore) {
@@ -590,9 +587,11 @@ public class RPGItem {
                         attributeModifier.operation,
                         attributeModifier.slot
                 );
-                old.entries().stream().filter(m -> m.getValue().getUniqueId().equals(uuid)).findAny().ifPresent(
-                        e -> itemMeta.removeAttributeModifier(e.getKey(), e.getValue())
-                );
+                if (old != null) {
+                    old.entries().stream().filter(m -> m.getValue().getUniqueId().equals(uuid)).findAny().ifPresent(
+                            e -> itemMeta.removeAttributeModifier(e.getKey(), e.getValue())
+                    );
+                }
                 itemMeta.addAttributeModifier(attribute, modifier);
             }
         }
@@ -657,7 +656,7 @@ public class RPGItem {
      */
     public double meleeDamage(Player p, double originDamage, ItemStack stack, Entity entity) {
         double damage = originDamage;
-        if (ItemManager.canNotUse(p, this) || hasPower(PowerRangedOnly.class)) {
+        if (ItemManager.canUse(p, this) == Event.Result.DENY|| hasPower(PowerRangedOnly.class)) {
             return -1;
         }
         boolean can = consumeDurability(stack, getHittingCost());
@@ -710,7 +709,7 @@ public class RPGItem {
      */
     public double projectileDamage(Player p, double originDamage, ItemStack stack, Entity damager, Entity entity) {
         double damage = originDamage;
-        if (ItemManager.canNotUse(p, this)) {
+        if (ItemManager.canUse(p, this) == Event.Result.DENY) {
             return originDamage;
         }
         List<PowerRanged> ranged = getPower(PowerRanged.class, true);
@@ -756,7 +755,7 @@ public class RPGItem {
      * @return Final damage or -1 if should cancel this event
      */
     public double takeDamage(Player p, double originDamage, ItemStack stack, Entity damager) {
-        if (ItemManager.canNotUse(p, this)) {
+        if (ItemManager.canUse(p, this) == Event.Result.DENY) {
             return originDamage;
         }
         boolean can;
@@ -786,8 +785,8 @@ public class RPGItem {
     private <TEvent extends Event, TPower extends Power, TResult, TReturn> boolean triggerPreCheck(Player player, ItemStack i, TEvent event, Trigger<TEvent, TPower, TResult, TReturn> trigger, List<TPower> powers) {
         if (i.getType().equals(Material.AIR)) return false;
         if (powers.isEmpty()) return false;
-        if (!checkPermission(player, true)) return false;
-        if (!WGSupport.canUse(player, this, powers)) return false;
+        if (checkPermission(player, true) == Event.Result.DENY) return false;
+        if (WGSupport.canUse(player, this, powers, plugin.cfg.wgShowWarning) == Event.Result.DENY) return false;
 
         RPGItemsPowersPreFireEvent<TEvent, TPower, TResult, TReturn> preFire = new RPGItemsPowersPreFireEvent<>(player, i, event, this, trigger, powers);
         Bukkit.getServer().getPluginManager().callEvent(preFire);
@@ -915,24 +914,22 @@ public class RPGItem {
     public ItemStack toItemStack() {
         ItemStack rStack = new ItemStack(getItem());
         ItemMeta meta = rStack.getItemMeta();
-        List<String> lore = getLore();
         @SuppressWarnings("deprecation") CustomItemTagContainer itemTagContainer = meta.getCustomTagContainer();
         SubItemTagContainer rpgitemsTagContainer = makeTag(itemTagContainer, TAG_META);
         set(rpgitemsTagContainer, TAG_ITEM_UID, getUid());
         rpgitemsTagContainer.commit();
-        meta.setLore(lore);
         meta.setDisplayName(getDisplayName());
-        rStack.setItemMeta(this.refreshAttributeModifiers(meta));
-        this.updateItem(rStack);
+        rStack.setItemMeta(meta);
+        updateItem(rStack);
         return rStack;
     }
 
-    public boolean checkPermission(Player p, boolean showWarn) {
+    public Event.Result checkPermission(Player p, boolean showWarn) {
         if (isHasPermission() && !p.hasPermission(getPermission())) {
             if (showWarn) p.sendMessage(I18n.format("message.error.permission", getDisplayName()));
-            return false;
+            return Event.Result.DENY;
         }
-        return true;
+        return Event.Result.ALLOW;
     }
 
     public void print(CommandSender sender) {
@@ -1348,7 +1345,7 @@ public class RPGItem {
     }
 
     public String getPermission() {
-        return permission;
+        return Strings.isNullOrEmpty(permission) ? "rpgitems.item.use." + getName() : permission;
     }
 
     public void setPermission(String p) {

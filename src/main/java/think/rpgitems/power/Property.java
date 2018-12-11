@@ -6,7 +6,10 @@ import java.lang.annotation.*;
 @Target(ElementType.FIELD)
 @Documented
 public @interface Property {
+
     int order() default Integer.MAX_VALUE;
 
     boolean required() default false;
+
+    String[] alias() default {};
 }

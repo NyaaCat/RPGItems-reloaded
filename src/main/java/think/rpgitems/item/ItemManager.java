@@ -12,6 +12,7 @@ import org.bukkit.configuration.InvalidConfigurationException;
 import org.bukkit.configuration.MemoryConfiguration;
 import org.bukkit.configuration.file.YamlConfiguration;
 import org.bukkit.entity.Player;
+import org.bukkit.event.Event;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.ItemMeta;
 import org.bukkit.inventory.meta.tags.CustomItemTagContainer;
@@ -32,10 +33,7 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.StandardCopyOption;
 import java.nio.file.StandardOpenOption;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.Objects;
-import java.util.Optional;
+import java.util.*;
 import java.util.concurrent.ThreadLocalRandom;
 import java.util.logging.Level;
 
@@ -522,8 +520,7 @@ public class ItemManager {
             return null;
         int free = nextUid();
         RPGItem item = new RPGItem(name, free, sender);
-        itemById.put(free, item);
-        itemByName.put(name, item);
+        addItem(item);
         return item;
     }
 
@@ -596,9 +593,13 @@ public class ItemManager {
                         + "-item";
     }
 
-    public static boolean canNotUse(Player p, RPGItem rItem) {
-        if (!WGSupport.canUse(p, rItem, null))
-            return true;
-        return rItem != null && !rItem.checkPermission(p, true);
+    public static Event.Result canUse(Player p, RPGItem rItem) {
+        return canUse(p, rItem, true);
+    }
+
+    public static Event.Result canUse(Player p, RPGItem rItem, boolean showWarn) {
+        if (WGSupport.canUse(p, rItem, null, showWarn) == Event.Result.DENY)
+            return Event.Result.DENY;
+        return (rItem == null || rItem.checkPermission(p, showWarn) == Event.Result.ALLOW) ? Event.Result.ALLOW : Event.Result.DENY;
     }
 }

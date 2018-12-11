@@ -16,14 +16,12 @@
  */
 package think.rpgitems.power.impl;
 
-import org.bukkit.Bukkit;
 import org.bukkit.Material;
 import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.entity.Player;
 import org.bukkit.event.player.PlayerInteractEvent;
 import org.bukkit.inventory.ItemStack;
 import think.rpgitems.I18n;
-import think.rpgitems.RPGItems;
 import think.rpgitems.power.*;
 
 import java.util.Collections;
@@ -68,16 +66,15 @@ public class PowerConsume extends BasePower implements PowerRightClick, PowerLef
         return fire(player, stack);
     }
 
-    // TODO: Directly use ItemStack from param
     public PowerResult<Void> fire(final Player player, ItemStack s) {
         if (!checkCooldown(this, player, cooldown, false, true)) return PowerResult.cd();
         if (!getItem().consumeDurability(s, cost)) return PowerResult.cost();
-        ItemStack stack = player.getInventory().getItemInMainHand();
-        int count = stack.getAmount() - 1;
+        int count = s.getAmount() - 1;
         if (count == 0) {
-            Bukkit.getScheduler().scheduleSyncDelayedTask(RPGItems.plugin, () -> player.getInventory().setItemInMainHand(new ItemStack(Material.AIR)), 1L);
+            s.setAmount(0);
+            s.setType(Material.AIR);
         } else {
-            stack.setAmount(count);
+            s.setAmount(count);
         }
 
         return PowerResult.ok();

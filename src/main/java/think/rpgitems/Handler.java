@@ -328,16 +328,17 @@ public class Handler extends RPGCommandReceiver {
         } else {
             msg(sender, "message.worldguard.override.disabled");
         }
-        ItemManager.save();
+        ItemManager.save(item);
     }
 
     @SubCommand("create")
     @Attribute("item")
     public void createItem(CommandSender sender, Arguments args) {
         String itemName = args.nextString();
-        if (ItemManager.newItem(itemName.toLowerCase(), sender) != null) {
+        RPGItem newItem = ItemManager.newItem(itemName.toLowerCase(), sender);
+        if (newItem != null) {
             msg(sender, "message.create.ok", itemName);
-            ItemManager.save();
+            ItemManager.save(newItem);
         } else {
             msg(sender, "message.create.fail");
         }

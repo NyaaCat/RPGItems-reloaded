@@ -6,6 +6,7 @@ import org.bukkit.ChatColor;
 import org.bukkit.Material;
 import org.bukkit.block.Block;
 import org.bukkit.entity.*;
+import org.bukkit.event.Event;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.EventPriority;
 import org.bukkit.event.Listener;
@@ -250,14 +251,14 @@ public class Events implements Listener {
                 }
             }
         }
-        rItem.power(player, item, e, Trigger.LAUNCH_PROJECTILE);
         if (!rItem.hasPower(PowerRanged.class) && !rItem.hasPower(PowerRangedOnly.class) && item.getType() != Material.BOW && item.getType() != Material.SNOWBALL && item.getType() != Material.EGG && item.getType() != Material.POTION && item.getType() != Material.TRIDENT) {
             return;
         }
-        if (ItemManager.canNotUse(player, rItem)) {
+        if (ItemManager.canUse(player, rItem) == Event.Result.DENY) {
             return;
         }
         registerProjectile(e.getEntity().getEntityId(), rItem.getUid());
+        rItem.power(player, item, e, Trigger.LAUNCH_PROJECTILE);
     }
 
     @EventHandler

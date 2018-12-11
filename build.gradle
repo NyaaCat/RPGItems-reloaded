@@ -11,7 +11,7 @@ sourceCompatibility = 1.8
 targetCompatibility = 1.8
 
 configurations.all {
-    resolutionStrategy.cacheChangingModulesFor 0, 'seconds'
+    // resolutionStrategy.cacheChangingModulesFor 0, 'seconds'
 }
 
 repositories {
