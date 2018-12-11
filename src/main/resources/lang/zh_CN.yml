@@ -260,7 +260,7 @@ message:
       code: Gist API 调用错误： %d
     not_supported: 不支持从 %s 导出
 
-  version: 'RPGItem v%s (1.13.1 branch)
+  version: 'RPGItem v%s （{GIT_BRANCH} 分支）
 
 
     版权所有 © 2018 NyaaCat 开发组

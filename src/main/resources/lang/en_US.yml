@@ -28,7 +28,7 @@ message:
     no_ench: No attached enchantments
     empty_ench: This item has an empty enchantment list
   error:
-    legacy_name: '%s now have a new name in Minecraft 1.13: %s'
+    legacy_name: '%s now have a new name in Spigot 1.13+: %s'
     invalid_option: "%s is not a valid option for %s. Available: %s"
     effect: '%s is not a valid effect'
     permission: You do not have permission for '%s'
@@ -128,7 +128,7 @@ message:
   too:
     far: It landed too far away...
   version: |-
-    RPGItem v%s (1.13.1 branch)
+    RPGItem v%s ({GIT_BRANCH} branch)
 
     Copyright © 2017 NyaaCat Developers
     Copyright © 2013 TheCreeperOfRedstone
