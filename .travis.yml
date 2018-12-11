@@ -4,9 +4,9 @@ jobs:
     language: java
     jdk: oraclejdk8
     before_install:
-    - export MAJOR_VERSION=`sed -n 's/^ext\.majorVersion = \(.*\)$/\1/p' build.gradle`
-    - export MINOR_VERSION=`sed -n 's/^ext\.minorVersion = \(.*\)$/\1/p' build.gradle`
-    - export MC_VERSION=`sed -n 's/^ext\.minecraftVersion = "\(.*\)"$/\1/p' build.gradle`
+    - export MAJOR_VERSION=`sed -n 's/^String majorVersion = \(.*\)$/\1/p' build.gradle`
+    - export MINOR_VERSION=`sed -n 's/^String minorVersion = \(.*\)$/\1/p' build.gradle`
+    - export MC_VERSION=`sed -n 's/^String minecraftVersion = "\(.*\)"$/\1/p' build.gradle`
     - export FULL_VERSION_STRING=$MAJOR_VERSION.$MINOR_VERSION.$TRAVIS_BUILD_NUMBER-mc$MC_VERSION
     - |
       if [[ $TRAVIS_COMMIT_MESSAGE == \[release\]* ]]
@@ -20,11 +20,13 @@ jobs:
     - popd
     after_success:
     - if [ "$TRAVIS_PULL_REQUEST" != "false" ]; then exit 0; fi
-    - if [ "$TRAVIS_BRANCH" != "$MC_VERSION" ]; then exit 0; fi
-    - 'cp build/libs/RPGitems-reloaded-release.jar ./rpgitem-reloaded-$FULL_VERSION_STRING.jar'
+    - |
+      if [ "$TRAVIS_BRANCH" != "$MC_VERSION" ]; then
+        if ! [[ $RELEASING && $PUBLISH_MAVEN ]]; then exit 0; fi
+      fi
     - |
       if [ $PUBLISH_MAVEN ]; then
-        ./gradlew publish
+        ./gradlew publish;
         pushd ..;
         git clone -b maven-repo $MAVEN_REPO_URL mvn;
         cp -r RPGitems-reloaded/build/repo/cat mvn/;
@@ -34,8 +36,10 @@ jobs:
         git add .;
         git commit -m "auto generated maven repo";
         git push --follow-tags;
-        popd
+        popd;
       fi
+    - if [ "$TRAVIS_BRANCH" != "$MC_VERSION" ]; then exit 0; fi
+    - cp build/libs/RPGitems-reloaded-release.jar ./rpgitem-reloaded-$FULL_VERSION_STRING.jar
     before_deploy:
     - if $RELEASING ; then echo "releasing "$FULL_VERSION_STRING ; else echo "skipping travis deploy" && exit 0 ; fi
     - git config --global user.email "builds@travis-ci.com"
@@ -60,9 +64,9 @@ jobs:
     language: java
     jdk: openjdk10
     script:
-    - export MAJOR_VERSION=`sed -n 's/^ext\.majorVersion = \(.*\)$/\1/p' build.gradle`
-    - export MINOR_VERSION=`sed -n 's/^ext\.minorVersion = \(.*\)$/\1/p' build.gradle`
-    - export MC_VERSION=`sed -n 's/^ext\.minecraftVersion = "\(.*\)"$/\1/p' build.gradle`
+    - export MAJOR_VERSION=`sed -n 's/^String majorVersion = \(.*\)$/\1/p' build.gradle`
+    - export MINOR_VERSION=`sed -n 's/^String minorVersion = \(.*\)$/\1/p' build.gradle`
+    - export MC_VERSION=`sed -n 's/^String minecraftVersion = "\(.*\)"$/\1/p' build.gradle`
     - export VERSION_STRING=$MAJOR_VERSION.$MINOR_VERSION-mc$MC_VERSION
     - export FULL_VERSION_STRING=$MAJOR_VERSION.$MINOR_VERSION.$TRAVIS_BUILD_NUMBER-mc$MC_VERSION
     - |
@@ -71,7 +75,10 @@ jobs:
         else export RELEASING=false
       fi
     - if [ "$TRAVIS_PULL_REQUEST" != "false" ]; then exit 0; fi
-    - if [ "$TRAVIS_BRANCH" != "$MC_VERSION" ]; then exit 0; fi
+    - |
+      if [ "$TRAVIS_BRANCH" != "$MC_VERSION" ]; then
+        if ! [[ $RELEASING && $PUBLISH_JAVADOC ]]; then exit 0; fi
+      fi
     - |
       if [ $PUBLISH_JAVADOC ]; then
         ./gradlew javadoc;

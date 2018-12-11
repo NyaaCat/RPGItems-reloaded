@@ -1,11 +1,24 @@
 plugins {
     id 'java-library'
     id 'maven-publish'
+    id 'org.ajoberstar.grgit' version '3.0.0'
 }
 
-ext.majorVersion = 3
-ext.minorVersion = 6
-ext.minecraftVersion = "1.13.2"
+import org.ajoberstar.grgit.Grgit
+import org.apache.tools.ant.filters.ReplaceTokens
+
+String majorVersion = 3
+String minorVersion = 7
+String minecraftVersion = "1.13.2"
+Grgit repo = Grgit.open()
+
+String branchArtifactId = "rpgitems"
+
+String branch = System.getenv("TRAVIS_BRANCH") == null ? repo.branch.current().name : System.getenv("TRAVIS_BRANCH")
+String commit = repo.head().abbreviatedId
+if (minecraftVersion != branch) {
+    branchArtifactId += branch.replace(minecraftVersion, "")
+}
 
 sourceCompatibility = 1.8
 targetCompatibility = 1.8
@@ -85,6 +98,13 @@ tasks.withType(JavaCompile) {
 String fullVersionString = System.getenv("FULL_VERSION_STRING")
 boolean releasing = fullVersionString == null ? false : Boolean.parseBoolean(System.getenv("RELEASING"))
 
+tasks.withType(ProcessResources) {
+    with copySpec {
+        from 'src/main/resources'
+        filter(ReplaceTokens, tokens: ['GIT_BRANCH': branch, 'GIT_HASH': commit], beginToken: '{', endToken: '}')
+    }
+}
+
 publishing {
     publications {
         mavenSnapshot(MavenPublication) {
@@ -93,7 +113,7 @@ publishing {
             artifacts = [jar, apiJar, javadocJar, sourcesJar]
             // }
             groupId "cat.nyaa"
-            artifactId "rpgitems"
+            artifactId branchArtifactId
             version "$majorVersion.$minorVersion-mc$minecraftVersion-SNAPSHOT"
         }
         mavenRelease(MavenPublication) {
@@ -102,7 +122,7 @@ publishing {
             artifacts = [jar, apiJar, javadocJar, sourcesJar]
             // }
             groupId "cat.nyaa"
-            artifactId "rpgitems"
+            artifactId branchArtifactId
             version "$fullVersionString"
         }
     }
@@ -166,7 +186,10 @@ javadoc {
         windowTitle = "RPGItems Javadoc"
         String fullVersion = System.getenv("FULL_VERSION_STRING")
         if (fullVersion != null) {
-            docTitle = "<b>RPGItems</b> " + System.getenv("FULL_VERSION_STRING")
+            if (minecraftVersion != branch) {
+                fullVersion += " (" + branch + ")"
+            }
+            docTitle = "<b>RPGItems</b> " + fullVersion
         } else {
             docTitle = "<b>RPGItems</b>"
         }
