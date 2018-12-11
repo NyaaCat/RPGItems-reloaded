@@ -128,7 +128,7 @@ message:
   too:
     far: It landed too far away...
   version: |-
-    RPGItem v%s ({GIT_BRANCH} branch)
+    RPGItem v%s ({GIT_BRANCH} branch, {GIT_HASH})
 
     Copyright © 2017 NyaaCat Developers
     Copyright © 2013 TheCreeperOfRedstone

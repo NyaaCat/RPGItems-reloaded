@@ -22,7 +22,10 @@ jobs:
     - if [ "$TRAVIS_PULL_REQUEST" != "false" ]; then exit 0; fi
     - |
       if [ "$TRAVIS_BRANCH" != "$MC_VERSION" ]; then
+        export MAIN_BRANCH=false
         if ! [[ $RELEASING && $PUBLISH_MAVEN ]]; then exit 0; fi
+      else
+        export MAIN_BRANCH=true
       fi
     - |
       if [ $PUBLISH_MAVEN ]; then
@@ -38,8 +41,8 @@ jobs:
         git push --follow-tags;
         popd;
       fi
-      - if [ "$TRAVIS_BRANCH" != "$MC_VERSION" ]; then exit 0; fi
-      - cp build/libs/RPGitems-reloaded-release.jar ./rpgitem-reloaded-$FULL_VERSION_STRING.jar
+    - if [ "$TRAVIS_BRANCH" != "$MC_VERSION" ]; then exit 0; fi
+    - cp build/libs/RPGitems-reloaded-release.jar ./rpgitem-reloaded-$FULL_VERSION_STRING.jar
     before_deploy:
     - if $RELEASING ; then echo "releasing "$FULL_VERSION_STRING ; else echo "skipping travis deploy" && exit 0 ; fi
     - git config --global user.email "builds@travis-ci.com"
@@ -75,10 +78,7 @@ jobs:
         else export RELEASING=false
       fi
     - if [ "$TRAVIS_PULL_REQUEST" != "false" ]; then exit 0; fi
-    - |
-      if [ "$TRAVIS_BRANCH" != "$MC_VERSION" ]; then
-        if ! [[ $RELEASING && $PUBLISH_JAVADOC ]]; then exit 0; fi
-      fi
+    - if [ "$TRAVIS_BRANCH" != "$MC_VERSION" ]; then exit 0; fi
     - |
       if [ $PUBLISH_JAVADOC ]; then
         ./gradlew javadoc;
@@ -87,7 +87,7 @@ jobs:
         rm -rf pages/RPGitems-reloaded/$VERSION_STRING/;
         mkdir -p pages/RPGitems-reloaded/$VERSION_STRING/;
         cp -vr RPGitems-reloaded/build/docs/javadoc pages/RPGitems-reloaded/$VERSION_STRING/;
-        if $RELEASING ;  then
+        if [[ $RELEASING ]] ;  then
             mkdir -p pages/RPGitems-reloaded/$FULL_VERSION_STRING/;
             cp -vr RPGitems-reloaded/build/docs/javadoc pages/RPGitems-reloaded/$FULL_VERSION_STRING/;
         fi;

@@ -14,8 +14,9 @@ Grgit repo = Grgit.open()
 
 String branchArtifactId = "rpgitems"
 
-String branch = repo.branch.current().name
-
+String branch = System.getenv("TRAVIS_BRANCH") == null ? repo.branch.current().name : System.getenv("TRAVIS_BRANCH")
+boolean mainBranch = System.getenv("MAIN_BRANCH") == null ? false : Boolean.parseBoolean(System.getenv("MAIN_BRANCH"))
+String commit = repo.head().abbreviatedId
 if (minecraftVersion != branch) {
     branchArtifactId += branch.replace(minecraftVersion, "")
 }
@@ -72,13 +73,9 @@ dependencies {
     implementation('com.sk89q.worldguard:worldguard-legacy:7.0.0-SNAPSHOT') {
         exclude group: 'io.papermc', module: 'paperlib'
         exclude group: 'org.bstats', module: 'bstats-bukkit'
+        exclude group: 'org.bukkit', module: 'bukkit'
     }
 
-    implementation('com.sk89q.worldedit:worldedit-core:7.0.0-SNAPSHOT')
-    implementation('com.sk89q.worldedit:worldedit-bukkit:7.0.0-SNAPSHOT') {
-        exclude group: 'io.papermc', module: 'paperlib'
-        exclude group: 'org.bstats', module: 'bstats-bukkit'
-    }
     implementation 'com.google.code.findbugs:jsr305:1.3.9'
     implementation('net.milkbowl.vault:VaultAPI:1.7') {
         transitive = false
@@ -105,7 +102,7 @@ boolean releasing = fullVersionString == null ? false : Boolean.parseBoolean(Sys
 tasks.withType(ProcessResources) {
     with copySpec {
         from 'src/main/resources'
-        filter(ReplaceTokens, tokens: ['GIT_BRANCH': branch], beginToken: '{', endToken: '}')
+        filter(ReplaceTokens, tokens: ['GIT_BRANCH': branch, 'GIT_HASH': commit], beginToken: '{', endToken: '}')
     }
 }
 
@@ -140,7 +137,7 @@ publishing {
 tasks.withType(PublishToMavenRepository) {
     onlyIf {
         (publication == publishing.publications.mavenSnapshot) ||
-                (releasing && (publication == publishing.publications.mavenRelease))
+                (releasing && mainBranch && (publication == publishing.publications.mavenRelease))
     }
 }
 
