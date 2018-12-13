@@ -22,7 +22,7 @@ public class PowerEquipmentCondition extends BasePower implements PowerCondition
     @Property
     public boolean isCritical = false;
 
-    @Property
+    @Property(alias = "slot")
     public Set<EquipmentSlot> slots;
 
     @Property
@@ -50,14 +50,6 @@ public class PowerEquipmentCondition extends BasePower implements PowerCondition
     @Override
     public boolean isCritical() {
         return isCritical;
-    }
-
-    @Override
-    public void init(ConfigurationSection section) {
-        if (section.isString("slot") && !section.isString("slots")) {
-            section.set("slots", section.get("slot"));
-        }
-        super.init(section);
     }
 
     @Override
@@ -118,7 +110,7 @@ public class PowerEquipmentCondition extends BasePower implements PowerCondition
             return false;
         }
         RPGItem rpgItem = ItemManager.toRPGItem(stack);
-        if (rpgitem != null && (rpgItem == null || !(rpgItem.getName().equals(rpgitem) || String.valueOf(rpgItem.getUID()).equals(rpgitem)))) {
+        if (rpgitem != null && (rpgItem == null || !(rpgItem.getName().equals(rpgitem) || String.valueOf(rpgItem.getUid()).equals(rpgitem)))) {
             return false;
         }
         return true;

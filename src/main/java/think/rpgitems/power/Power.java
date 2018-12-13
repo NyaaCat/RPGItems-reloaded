@@ -1,11 +1,17 @@
 package think.rpgitems.power;
 
+import com.google.common.base.Strings;
 import com.google.common.reflect.TypeToken;
+import net.md_5.bungee.api.chat.BaseComponent;
+import net.md_5.bungee.api.chat.TextComponent;
+import net.md_5.bungee.chat.BaseComponentSerializer;
 import org.bukkit.NamespacedKey;
 import org.bukkit.configuration.ConfigurationSection;
 import org.librazy.nclangchecker.LangKey;
+import think.rpgitems.RPGItems;
 import think.rpgitems.item.RPGItem;
 
+import javax.annotation.Nullable;
 import java.util.Collections;
 import java.util.Locale;
 import java.util.Objects;
@@ -70,7 +76,17 @@ public interface Power {
      *
      * @return Display name
      */
+    @Nullable
     String displayName();
+
+    /**
+     * Display name or default name of this power
+     *
+     * @return Display name or default name
+     */
+    default String getDisplayName() {
+        return Strings.isNullOrEmpty(displayName()) ? getLocalizedName(RPGItems.plugin.cfg.language) : displayName();
+    }
 
     /**
      * Display text of this power

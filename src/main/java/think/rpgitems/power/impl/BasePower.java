@@ -20,7 +20,7 @@ public abstract class BasePower implements Serializable, Power {
     RPGItem item;
 
     @Property
-    public String displayName = getLocalizedName(RPGItems.plugin.cfg.language);
+    public String displayName;
 
     @Property
     @AcceptedValue(preset = Preset.TRIGGERS)
@@ -83,6 +83,12 @@ public abstract class BasePower implements Serializable, Power {
                 }
             }
             String value = section.getString(property.name());
+            if (value == null) {
+                for (String alias : property.alias()) {
+                    value = section.getString(alias);
+                    if (value != null) break;
+                }
+            }
             if (property.name().equals("cost") && value == null) {
                 value = section.getString("consumption");
             }

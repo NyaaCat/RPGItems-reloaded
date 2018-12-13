@@ -45,7 +45,7 @@ public class PowerParticleTick extends PowerParticle implements PowerTick {
     }
 
     @Override
-    public Set<Trigger> getTriggers(){
+    public Set<Trigger> getTriggers() {
         return Collections.singleton(Trigger.TICK);
     }
 }

@@ -1,8 +1,8 @@
 package think.rpgitems.power;
 
 import org.bukkit.Bukkit;
-import org.bukkit.Material;
 import org.bukkit.entity.Player;
+import org.bukkit.event.Event;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.scheduler.BukkitRunnable;
 import think.rpgitems.item.ItemManager;
@@ -16,7 +16,7 @@ public class PowerTicker extends BukkitRunnable {
     @Override
     public void run() {
         for (final Player player : Bukkit.getOnlinePlayers()) {
-            if (ItemManager.canNotUse(player, null)) continue;
+            if (ItemManager.canUse(player, null, false) == Event.Result.DENY) continue;
             ItemStack[] armour = player.getInventory().getArmorContents();
             for (ItemStack part : armour) {
                 RPGItem item = ItemManager.toRPGItem(part);

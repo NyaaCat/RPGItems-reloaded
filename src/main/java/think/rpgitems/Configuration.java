@@ -24,9 +24,6 @@ public class Configuration extends PluginConfigure {
     @Serializable(name = "general.spu_endpoint")
     public String spuEndpoint = null;
 
-    @Serializable(name = "general.locale_inv", alias = "localeInv")
-    public boolean localeInv = false;
-
     @Serializable(name = "general.pid_compat", alias = "pidCompat")
     public boolean pidCompat = false;
 
@@ -36,11 +33,17 @@ public class Configuration extends PluginConfigure {
     @Serializable(name = "command.list.power_per_page")
     public int powerPerPage = 5;
 
-    @Serializable(name = "support.worldguard")
+    @Serializable(name = "support.world_guard.enable", alias = "support.worldguard")
     public boolean useWorldGuard = true;
 
-    @Serializable(name = "support.wgforcerefresh")
+    @Serializable(name = "support.world_guard.force_refresh", alias = "support.wgforcerefresh")
     public boolean wgForceRefresh = false;
+
+    @Serializable(name = "support.world_guard.disable_in_no_pvp")
+    public boolean wgNoPvP = true;
+
+    @Serializable(name = "support.world_guard.show_warning")
+    public boolean wgShowWarning = true;
 
     @Serializable(name = "general.give_perms", alias = "give-perms")
     public boolean givePerms = false;
@@ -71,4 +74,8 @@ public class Configuration extends PluginConfigure {
 
     @Serializable(name = "general.item.show_loaded")
     public boolean itemShowLoaded = false;
+
+    @SuppressWarnings("unused")
+    @Serializable(name = "unused.locale_inv", alias = {"general.locale_inv", "localeInv"})
+    public boolean oldLocaleInv = false;
 }

@@ -7,10 +7,13 @@ public class PowerProperty {
 
     private int order;
 
-    public PowerProperty(String name, boolean required, int order) {
+    private String[] alias;
+
+    public PowerProperty(String name, boolean required, int order, String[] alias) {
         this.name = name;
         this.required = required;
         this.order = order;
+        this.alias = alias;
     }
 
     public String name() {
@@ -23,5 +26,9 @@ public class PowerProperty {
 
     public int order() {
         return order;
+    }
+
+    public String[] alias() {
+        return alias;
     }
 }

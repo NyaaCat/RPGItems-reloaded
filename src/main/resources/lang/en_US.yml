@@ -61,6 +61,7 @@ message:
     recovering: Error recovering %s from %s, %s. We suggest you stop the server and check item files and backups manually.
     item_unlocked: You cannot edit unlocked %s. Reload it before editing.
     loading: 'Error loading item from %s. %s'
+    verifying: 'Error verifying integrity for %s. %s'
   wgcustomflag:
     disable: Worldguard custom flag disabled
     enable: Worldguard custom flag enabled
@@ -922,7 +923,7 @@ manual:
         [value] - Set maximum durability to value - /rpgitem test_item durability 100
         infinite - Set durability to infinite - /rpgitem test_item durability infinite
         default - Set default durability to value - /rpgitem test_item durability default 100
-        togglebar - Set durability bar to force show/hide - /rpgitem test_item durability togglebar
+        togglebar - Set durability bar to show/hide - /rpgitem test_item durability togglebar
         bound - Set item durability lower and upper bounds - /rpgitem test_item durability bound 10 100
     usage: "/rpgitem durability {item} <option>"
 

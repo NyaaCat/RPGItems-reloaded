@@ -8,7 +8,7 @@ import org.ajoberstar.grgit.Grgit
 import org.apache.tools.ant.filters.ReplaceTokens
 
 String majorVersion = 3
-String minorVersion = 6
+String minorVersion = 7
 String minecraftVersion = "1.13.2"
 Grgit repo = Grgit.open()
 
@@ -25,7 +25,7 @@ sourceCompatibility = 1.8
 targetCompatibility = 1.8
 
 configurations.all {
-    resolutionStrategy.cacheChangingModulesFor 0, 'seconds'
+    // resolutionStrategy.cacheChangingModulesFor 0, 'seconds'
 }
 
 repositories {
@@ -59,7 +59,7 @@ repositories {
 }
 
 dependencies {
-    // compileOnly files('lib/spigot-1.13.2.jar')
+    compileOnly files('lib/spigot-1.13.2.jar')
     // compileOnly files('lib/patched_1.13.2.jar')
     api "org.spigotmc:spigot-api:$minecraftVersion-R0.1-SNAPSHOT"
     api 'cat.nyaa:nyaacore:6.3-SNAPSHOT'

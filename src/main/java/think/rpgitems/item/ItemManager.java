@@ -12,9 +12,13 @@ import org.bukkit.configuration.InvalidConfigurationException;
 import org.bukkit.configuration.MemoryConfiguration;
 import org.bukkit.configuration.file.YamlConfiguration;
 import org.bukkit.entity.Player;
+import org.bukkit.event.Event;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.ItemMeta;
+import org.bukkit.inventory.meta.tags.CustomItemTagContainer;
+import org.bukkit.inventory.meta.tags.ItemTagType;
 import org.bukkit.util.FileUtil;
+import think.rpgitems.Handler;
 import think.rpgitems.I18n;
 import think.rpgitems.RPGItems;
 import think.rpgitems.power.UnknownExtensionException;
@@ -29,13 +33,13 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.StandardCopyOption;
 import java.nio.file.StandardOpenOption;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.Objects;
+import java.util.*;
 import java.util.concurrent.ThreadLocalRandom;
 import java.util.logging.Level;
 
-import static think.rpgitems.item.RPGItem.updateItem;
+import static think.rpgitems.item.RPGItem.*;
+import static think.rpgitems.power.Utils.rethrow;
+import static think.rpgitems.utils.ItemTagUtils.*;
 
 public class ItemManager {
     public static HashMap<Integer, RPGItem> itemById = new HashMap<>();
@@ -80,13 +84,13 @@ public class ItemManager {
             for (ItemStack item : player.getInventory()) {
                 RPGItem rpgItem = ItemManager.toRPGItem(item);
                 if (rpgItem != null) {
-                    updateItem(rpgItem, item);
+                    rpgItem.updateItem(item);
                 }
             }
             for (ItemStack item : player.getInventory().getArmorContents()) {
                 RPGItem rpgItem = ItemManager.toRPGItem(item);
                 if (rpgItem != null) {
-                    updateItem(rpgItem, item);
+                    rpgItem.updateItem(item);
                 }
             }
         }
@@ -146,7 +150,7 @@ public class ItemManager {
                 throw new IllegalStateException("Trying to load " + file + " that does not exist.");
             }
             if (file.isDirectory()) {
-                File[] subFiles = file.listFiles((d, n) ->(d.isFile() && n.endsWith("yml")) || d.isDirectory());
+                File[] subFiles = file.listFiles((d, n) -> (d.isFile() && n.endsWith("yml")) || d.isDirectory());
                 if (Objects.requireNonNull(subFiles).length == 0) {
                     if (sender != null) {
                         new Message(I18n.format("message.item.empty_dir", file.getPath())).send(sender);
@@ -214,20 +218,20 @@ public class ItemManager {
     @SuppressWarnings("deprecation")
     public static void addItem(RPGItem item) {
         try {
-            if (item.getID() != 0) {
-                if (itemById.putIfAbsent(item.getID(), item) != null) {
-                    throw new IllegalArgumentException("Duplicated item id:" + item.getID());
+            if (item.getId() != 0) {
+                if (itemById.putIfAbsent(item.getId(), item) != null) {
+                    throw new IllegalArgumentException("Duplicated item id:" + item.getId());
                 }
             }
-            if (itemById.putIfAbsent(item.getUID(), item) != null) {
-                throw new IllegalArgumentException("Duplicated item uid:" + item.getUID());
+            if (itemById.putIfAbsent(item.getUid(), item) != null) {
+                throw new IllegalArgumentException("Duplicated item uid:" + item.getUid());
             }
             if (itemByName.putIfAbsent(item.getName(), item) != null) {
-                throw new IllegalArgumentException("Duplicated item name:" + item.getUID());
+                throw new IllegalArgumentException("Duplicated item name:" + item.getUid());
             }
         } catch (Exception e) {
-            itemById.remove(item.getID(), item);
-            itemById.remove(item.getUID(), item);
+            itemById.remove(item.getId(), item);
+            itemById.remove(item.getUid(), item);
             itemByName.remove(item.getName(), item);
             throw e;
         }
@@ -283,7 +287,7 @@ public class ItemManager {
             Bukkit.getOperators().forEach(message::send);
             plugin.getLogger().severe("Error loading items.yml. Creating backup");
             dump(e);
-            throw new RuntimeException(e);
+            rethrow(e);
         }
     }
 
@@ -356,10 +360,10 @@ public class ItemManager {
                 lock(itemFile);
             } catch (Exception e) {
                 plugin.getLogger().log(Level.SEVERE, "Error verifying integrity for " + itemName + ".", e);
-                throw new RuntimeException(e);
+                throw new Handler.CommandException("message.error.verifying", e, itemName, e.getLocalizedMessage());
             }
         } catch (Exception e) {
-            plugin.getLogger().log(Level.SEVERE, "Error saving" + itemName + ".", e);
+            plugin.getLogger().log(Level.SEVERE, "Error saving " + itemName + ".", e);
             plugin.getLogger().severe("Dumping current item");
             plugin.getLogger().severe("===============");
             plugin.getLogger().severe(cfgStr);
@@ -371,9 +375,10 @@ public class ItemManager {
                     lock(itemFile);
                 } catch (Exception exRec) {
                     plugin.getLogger().log(Level.SEVERE, "Error recovering backup: " + backup, exRec);
+                    throw new Handler.CommandException("message.error.recovering", exRec, itemName, backup.getPath(), exRec.getLocalizedMessage());
                 }
             }
-            throw new RuntimeException(e);
+            rethrow(e);
         }
     }
 
@@ -478,16 +483,34 @@ public class ItemManager {
         if (!item.hasItemMeta())
             return null;
         ItemMeta meta = item.getItemMeta();
-        return toRPGItem(meta);
-    }
-
-    public static RPGItem toRPGItem(ItemMeta meta) {
+        @SuppressWarnings("deprecation") CustomItemTagContainer tagContainer = meta.getCustomTagContainer();
+        if (tagContainer.hasCustomTag(TAG_META, ItemTagType.TAG_CONTAINER)) {
+            int uid = getInt(getTag(tagContainer, TAG_META), TAG_ITEM_UID);
+            return ItemManager.getItemById(uid);
+        }
+        // Old
         if (!meta.hasLore() || meta.getLore().size() <= 0)
             return null;
         try {
-            int id = RPGItem.decodeId(meta.getLore().get(0));
-            return ItemManager.getItemById(id);
+            if (!meta.hasLore() || meta.getLore().size() <= 0)
+                return null;
+            @SuppressWarnings("deprecation") Optional<Integer> id = decodeId(meta.getLore().get(0));
+            if (!id.isPresent()) return null;
+            RPGItem rpgItem = ItemManager.getItemById(id.get());
+            @SuppressWarnings("deprecation") think.rpgitems.data.RPGMetadata rpgMetadata = think.rpgitems.data.RPGMetadata.parseLoreline(item.getItemMeta().getLore().get(0));
+            @SuppressWarnings("deprecation") int durabilityKey = think.rpgitems.data.RPGMetadata.DURABILITY;
+            if (rpgMetadata.containsKey(durabilityKey)) {
+                int durability = ((Number) rpgMetadata.get(durabilityKey)).intValue();
+                SubItemTagContainer subItemTagContainer = makeTag(tagContainer, TAG_META);
+                set(subItemTagContainer, TAG_DURABILITY, durability);
+                set(subItemTagContainer, TAG_ITEM_UID, rpgItem.getUid());
+                subItemTagContainer.commit();
+            }
+            item.setItemMeta(meta);
+            rpgItem.updateItem(item);
+            return rpgItem;
         } catch (Exception e) {
+            RPGItems.logger.log(Level.WARNING, "Error migrating old item", e);
             return null;
         }
     }
@@ -497,8 +520,7 @@ public class ItemManager {
             return null;
         int free = nextUid();
         RPGItem item = new RPGItem(name, free, sender);
-        itemById.put(free, item);
-        itemByName.put(name, item);
+        addItem(item);
         return item;
     }
 
@@ -520,7 +542,7 @@ public class ItemManager {
         try {
             newItem = new RPGItem(section, name, free);
         } catch (UnknownPowerException | UnknownExtensionException e) {
-            throw new RuntimeException(e);
+            throw new IllegalStateException(e);
         }
         addItem(newItem);
         return newItem;
@@ -538,8 +560,8 @@ public class ItemManager {
     public static void remove(RPGItem item, boolean delete) {
         item.deinit();
         itemByName.remove(item.getName());
-        itemById.remove(item.getID());
-        itemById.remove(item.getUID());
+        itemById.remove(item.getId());
+        itemById.remove(item.getUid());
         if (delete) {
             try {
                 File backup = unlockAndBackup(item, true);
@@ -571,9 +593,13 @@ public class ItemManager {
                         + "-item";
     }
 
-    public static boolean canNotUse(Player p, RPGItem rItem) {
-        if (!WGSupport.canUse(p, rItem, null))
-            return true;
-        return rItem != null && !rItem.checkPermission(p, true);
+    public static Event.Result canUse(Player p, RPGItem rItem) {
+        return canUse(p, rItem, true);
+    }
+
+    public static Event.Result canUse(Player p, RPGItem rItem, boolean showWarn) {
+        if (WGSupport.canUse(p, rItem, null, showWarn) == Event.Result.DENY)
+            return Event.Result.DENY;
+        return (rItem == null || rItem.checkPermission(p, showWarn) == Event.Result.ALLOW) ? Event.Result.ALLOW : Event.Result.DENY;
     }
 }

@@ -2,6 +2,7 @@ package think.rpgitems.power;
 
 import cat.nyaa.nyaacore.Message;
 import cat.nyaa.nyaacore.Pair;
+import com.google.common.base.Strings;
 import com.google.common.cache.CacheBuilder;
 import com.google.common.cache.CacheLoader;
 import com.google.common.cache.LoadingCache;
@@ -27,6 +28,7 @@ import think.rpgitems.utils.MaterialUtils;
 
 import java.lang.reflect.Field;
 import java.lang.reflect.ParameterizedType;
+import java.nio.ByteBuffer;
 import java.util.*;
 import java.util.logging.Level;
 import java.util.stream.Collectors;
@@ -144,12 +146,12 @@ public class Utils {
      * @return the boolean
      */
     public static boolean checkCooldown(Power power, Player player, long cdTicks, boolean showWarn, boolean showPower) {
-        String key = player.getName() + "." + power.getItem().getUID() + "." + power.getNamespacedKey().toString() + ".cooldown";
+        String key = player.getName() + "." + power.getItem().getUid() + "." + power.getNamespacedKey().toString() + ".cooldown";
         return checkAndSetCooldown(power, player, cdTicks, showWarn, showPower, key);
     }
 
     public static boolean checkCooldownByString(Power power, Player player, String key, long cdTicks, boolean showWarn, boolean showPower) {
-        String cdKey = player.getName() + "." + power.getItem().getUID() + "." + "key." + key + ".cooldown";
+        String cdKey = player.getName() + "." + power.getItem().getUid() + "." + "key." + key + ".cooldown";
         return checkAndSetCooldown(power, player, cdTicks, showWarn, showPower, cdKey);
     }
 
@@ -168,8 +170,8 @@ public class Utils {
             return true;
         } else {
             if (showWarn) {
-                if (showPower || !power.displayName().equals(power.getLocalizedName(RPGItems.plugin.cfg.language))) {
-                    player.sendMessage(I18n.format("message.cooldown.power", ((double) (cooldown - nowTick)) / 20d, power.displayName()));
+                if (showPower || (!Strings.isNullOrEmpty(power.displayName()) && !power.displayName().equals(power.getLocalizedName(RPGItems.plugin.cfg.language)))) {
+                    player.sendMessage(I18n.format("message.cooldown.power", ((double) (cooldown - nowTick)) / 20d, power.getDisplayName()));
                 } else {
                     player.sendMessage(I18n.format("message.cooldown.general", ((double) (cooldown - nowTick)) / 20d));
                 }
@@ -574,5 +576,27 @@ public class Utils {
             }
         }
         setPowerPropertyUnchecked(sender, power, field, value);
+    }
+
+    public static byte[] decodeUUID(UUID complex) {
+        ByteBuffer bb = ByteBuffer.wrap(new byte[16]);
+        bb.putLong(complex.getMostSignificantBits());
+        bb.putLong(complex.getLeastSignificantBits());
+        return bb.array();
+    }
+
+    public static UUID encodeUUID(byte[] primitive) {
+        ByteBuffer bb = ByteBuffer.wrap(primitive);
+        long firstLong = bb.getLong();
+        long secondLong = bb.getLong();
+        return new UUID(firstLong, secondLong);
+    }
+
+    public static void rethrow(Exception e) {
+        if (e instanceof RuntimeException) {
+            throw (RuntimeException) e;
+        } else {
+            throw new RuntimeException(e);
+        }
     }
 }

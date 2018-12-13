@@ -58,7 +58,7 @@ public class PowerRepair extends BasePower implements PowerRightClick, PowerLeft
 
     @Property
     public String customMessage;
-    
+
     @Property
     public int amount = 1;
 
@@ -100,7 +100,7 @@ public class PowerRepair extends BasePower implements PowerRightClick, PowerLeft
     public PowerResult<Void> fire(Player player, ItemStack stack) {
         if (!checkCooldown(this, player, cooldown, true, true)) PowerResult.cd();
         int max = getItem().getMaxDurability();
-        int itemDurability = getItem().getDurability(stack);
+        int itemDurability = getItem().getItemStackDurability(stack);
         int delta = max - itemDurability;
         if (mode != RepairMode.ALWAYS) {
             if (max == -1 || delta == 0) {
@@ -111,7 +111,7 @@ public class PowerRepair extends BasePower implements PowerRightClick, PowerLeft
             }
         }
         if (removeItem(player.getInventory(), material, amount)) {
-            getItem().setDurability(stack, Math.min(itemDurability + this.durability, max));
+            getItem().setItemStackDurability(stack, Math.min(itemDurability + this.durability, max));
             return abortOnSuccess ? PowerResult.abort() : PowerResult.ok();
         } else {
             BaseComponent msg = Strings.isNullOrEmpty(customMessage) ?

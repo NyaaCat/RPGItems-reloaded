@@ -230,7 +230,7 @@ public class PowerProjectile extends BasePower implements PowerRightClick, Power
     @SuppressWarnings("deprecation")
     private void handleProjectile(Vector v, Projectile projectile) {
         projectile.setPersistent(false);
-        Events.registerProjectile(projectile.getEntityId(), getItem().getUID());
+        Events.registerProjectile(projectile.getEntityId(), getItem().getUid());
         projectile.setGravity(gravity);
         if (projectile instanceof Explosive) {
             if (yield != null) {
