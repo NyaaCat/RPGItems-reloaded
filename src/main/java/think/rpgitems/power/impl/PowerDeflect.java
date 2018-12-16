@@ -139,7 +139,7 @@ public class PowerDeflect extends BasePower implements PowerHitTaken, PowerRight
             if (p instanceof Fireball) {
                 ((Fireball) p).setDirection(target.getEyeLocation().getDirection());
             }
-        }, 1);
+        }, 0);
 
         target.getLocation().getWorld().playSound(target.getLocation(), Sound.ITEM_SHIELD_BLOCK, 1.0f, 3.0f);
         return PowerResult.ok(0.0);
