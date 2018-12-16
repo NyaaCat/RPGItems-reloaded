@@ -311,7 +311,10 @@ public class RPGItem {
         setBlockBreakingCost(s.getInt("blockBreakingCost", 1));
         setHitCostByDamage(s.getBoolean("hitCostByDamage", false));
         setMaxDurability(s.getInt("maxDurability", getItem().getMaxDurability()));
-        setDefaultDurability(s.getInt("defaultDurability", getMaxDurability() > 0 ? getMaxDurability() : -1));
+        setDefaultDurability(s.getInt("defaultDurability", getMaxDurability()));
+        if (getDefaultDurability() <= 0) {
+            setDefaultDurability(getMaxDurability());
+        }
         setDurabilityLowerBound(s.getInt("durabilityLowerBound", 0));
         setDurabilityUpperBound(s.getInt("durabilityUpperBound", getItem().getMaxDurability()));
         if (s.isBoolean("forceBar")) {
@@ -849,7 +852,6 @@ public class RPGItem {
         List<String> lines = getTooltipLines();
         lines.remove(0);
         setLore(lines);
-        resetRecipe(true);
     }
 
     @SuppressWarnings("deprecation")

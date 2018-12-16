@@ -33,7 +33,10 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.StandardCopyOption;
 import java.nio.file.StandardOpenOption;
-import java.util.*;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.Objects;
+import java.util.Optional;
 import java.util.concurrent.ThreadLocalRandom;
 import java.util.logging.Level;
 
@@ -229,6 +232,7 @@ public class ItemManager {
             if (itemByName.putIfAbsent(item.getName(), item) != null) {
                 throw new IllegalArgumentException("Duplicated item name:" + item.getUid());
             }
+            item.resetRecipe(true);
         } catch (Exception e) {
             itemById.remove(item.getId(), item);
             itemById.remove(item.getUid(), item);
