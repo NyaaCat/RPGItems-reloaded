@@ -64,7 +64,7 @@ message:
     set: 从 '%s' 掉落 '%s' 的几率设置为 %.2f%%
   command:
     usage: '指令用法: /%s (%s)'
-    info: 更详细帮助信息请查看 https://github.com/NyaaCat/RPGitems-reloaded/wiki，或输入 /rpgitem
+    info: 更详细帮助信息请查看 https://github.com/NyaaCat/RPGItems-reloaded/wiki，或输入 /rpgitem
       help [关键词]
   help:
     for: 显示 '%s' 的帮助信息
@@ -272,7 +272,7 @@ message:
 
     以 MIT 授权
 
-    Bug反馈: https://github.com/NyaaCat/RPGitems-reloaded/issues'
+    Bug反馈: https://github.com/NyaaCat/RPGItems-reloaded/issues'
   no_item: 暂无物品
   spu:
     no_endpoint: 未设置 SPU 服务器地址

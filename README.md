@@ -1,8 +1,8 @@
 # RPGItems [![Build Status](https://travis-ci.com/NyaaCat/RPGItems-reloaded.svg?branch=1.13.2)](https://travis-ci.com/NyaaCat/RPGItems-reloaded)
 
-The RPGitems2 plugin continued from [TheCreeperOfRedstone/RPG-Items-2](https://github.com/TheCreeperOfRedstone/RPG-Items-2)
+The RPGItems2 plugin continued from [TheCreeperOfRedstone/RPG-Items-2](https://github.com/TheCreeperOfRedstone/RPG-Items-2)
 
-**RPGitem 3.6 now depends on [NyaaCore](https://github.com/NyaaCat/NyaaCore) to work! See [Installation](https://github.com/NyaaCat/RPGitems-reloaded/wiki/Get-Started:-Installation) for detail.**
+**RPGitem 3.6 now depends on [NyaaCore](https://github.com/NyaaCat/NyaaCore) to work! See [Installation](https://github.com/NyaaCat/RPGItems-reloaded/wiki/Get-Started:-Installation) for detail.**
 
 ## Project Discussion
 
@@ -26,4 +26,4 @@ Some version of this plugin use code from [NBT API](https://www.spigotmc.org/res
 
 ## Resources
 
-[Wiki](https://github.com/NyaaCat/RPGitems-reloaded/wiki) | [Spigot page](https://www.spigotmc.org/resources/rpgitems.17549/) | [Javadoc](https://nyaacat.github.io/NyaaCentral/RPGitems-reloaded/3.6-mc1.13.2/javadoc/overview-summary.html)
+[Wiki](https://github.com/NyaaCat/RPGItems-reloaded/wiki) | [Spigot page](https://www.spigotmc.org/resources/rpgitems.17549/) | [Javadoc](https://nyaacat.github.io/NyaaCentral/RPGItems-reloaded/3.6-mc1.13.2/javadoc/overview-summary.html)

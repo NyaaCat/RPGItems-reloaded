@@ -135,7 +135,7 @@ public class Events implements Listener {
         if (!can) {
             e.setCancelled(true);
         }
-        if (rItem.getItemStackDurability(item) <= 0) {
+        if (rItem.getItemStackDurability(item).map(d -> d <= 0).orElse(false)) {
             player.getInventory().setItemInMainHand(null);
         } else {
             player.getInventory().setItemInMainHand(item);

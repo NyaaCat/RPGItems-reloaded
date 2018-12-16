@@ -137,7 +137,7 @@ message:
     Copyright © 2013 TheCreeperOfRedstone
     License MIT
 
-    Report Bugs At: https://github.com/NyaaCat/RPGitems-reloaded/issues
+    Report Bugs At: https://github.com/NyaaCat/RPGItems-reloaded/issues
   display:
     get: Item '%s' display name is '%s'
     set: Item '%s' display name set to '%s'

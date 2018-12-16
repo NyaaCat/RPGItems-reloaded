@@ -838,13 +838,13 @@ public class RPGItem {
         return ret;
     }
 
-    private <TEvent extends Event, TPower extends Power, TResult, TReturn> void triggerPostFire(Player player, ItemStack i, TEvent event, Trigger<TEvent, TPower, TResult, TReturn> trigger, Map<Power, PowerResult> resultMap, TReturn ret) {
-        RPGItemsPowersPostFireEvent<TEvent, TPower, TResult, TReturn> postFire = new RPGItemsPowersPostFireEvent<>(player, i, event, this, trigger, resultMap, ret);
+    private <TEvent extends Event, TPower extends Power, TResult, TReturn> void triggerPostFire(Player player, ItemStack itemStack, TEvent event, Trigger<TEvent, TPower, TResult, TReturn> trigger, Map<Power, PowerResult> resultMap, TReturn ret) {
+        RPGItemsPowersPostFireEvent<TEvent, TPower, TResult, TReturn> postFire = new RPGItemsPowersPostFireEvent<>(player, itemStack, event, this, trigger, resultMap, ret);
         Bukkit.getServer().getPluginManager().callEvent(postFire);
 
-        if (getItemStackDurability(i) <= 0) {
-            i.setAmount(0);
-            i.setType(Material.AIR);
+        if (getItemStackDurability(itemStack).map(d -> d <= 0).orElse(false)) {
+            itemStack.setAmount(0);
+            itemStack.setType(Material.AIR);
         }
     }
 
@@ -987,16 +987,16 @@ public class RPGItem {
         this.updateItem(item);
     }
 
-    public int getItemStackDurability(ItemStack item) {
+    public Optional<Integer> getItemStackDurability(ItemStack item) {
+        if (getMaxDurability() != -1) {
+            return Optional.empty();
+        }
         ItemMeta itemMeta = item.getItemMeta();
         SubItemTagContainer tagContainer = makeTag(itemMeta, TAG_META);
-        int durability = Integer.MAX_VALUE;
-        if (getMaxDurability() != -1) {
-            durability = computeIfAbsent(tagContainer, TAG_DURABILITY, ItemTagType.INTEGER, this::getDefaultDurability);
-        }
+        int durability = computeIfAbsent(tagContainer, TAG_DURABILITY, ItemTagType.INTEGER, this::getDefaultDurability);
         tagContainer.commit();
         item.setItemMeta(itemMeta);
-        return durability;
+        return Optional.of(durability);
     }
 
     public boolean consumeDurability(ItemStack item, int val) {

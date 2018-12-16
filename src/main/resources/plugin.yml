@@ -5,7 +5,7 @@ version: 3.7.686986-mc1.13.2
 depend: [NyaaCore,LangUtils]
 softdepend: [WorldGuard,NyaaUtils]
 authors: [Taiterio,cyilin,RecursiveG,Librazy]
-website: "https://github.com/NyaaCat/RPGitems-reloaded"
+website: "https://github.com/NyaaCat/RPGItems-reloaded"
 database: false
 api-version: 1.13
 
