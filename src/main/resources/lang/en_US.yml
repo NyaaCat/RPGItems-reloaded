@@ -101,9 +101,9 @@ message:
   num_out_of_range: '%d is out of range (%d, %d]'
   durability:
     info: 'Durability Max: %d, Default: %d, Lower %d, Upper %d'
-    max_and_default: Max and default durability set to %d
-    bound: Durability lower and upper bound set to %d and %d
-    default: Default durability set to %d
+    max_and_default: Max and default durability set to %s
+    bound: Durability lower and upper bound set to %s and %s
+    default: Default durability set to %s
     toggle: Durability bar toggled
   worldguard:
     disable: Worldguard support disabled

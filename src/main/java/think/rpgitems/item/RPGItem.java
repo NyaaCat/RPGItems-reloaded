@@ -153,7 +153,7 @@ public class RPGItem {
         RPGItem rItem = ItemManager.toRPGItem(item);
         if (rItem == null)
             return;
-        rItem.updateItem(item);
+        rItem.updateItem(item, false);
     }
 
     @Deprecated
@@ -471,6 +471,10 @@ public class RPGItem {
     }
 
     public void updateItem(ItemStack item) {
+        updateItem(item, false);
+    }
+
+    public void updateItem(ItemStack item, boolean loreOnly) {
         List<String> reservedLores = this.filterLores(item);
         item.setType(getItem());
         ItemMeta meta = item.getItemMeta();
@@ -479,11 +483,32 @@ public class RPGItem {
         CustomItemTagContainer itemTagContainer = item.getItemMeta().getCustomTagContainer();
         SubItemTagContainer rpgitemsTagContainer = makeTag(itemTagContainer, TAG_META);
         addDurabilityBar(rpgitemsTagContainer, lore);
+        Damageable damageable = (Damageable) meta;
+        if (getMaxDurability() > 0) {
+            int durability = computeIfAbsent(rpgitemsTagContainer, TAG_DURABILITY, ItemTagType.INTEGER, this::getDefaultDurability);
+            if (isCustomItemModel()) {
+                damageable.setDamage(getDataValue());
+            } else {
+                damageable.setDamage((getItem().getMaxDurability() - ((short) ((double) getItem().getMaxDurability() * ((double) durability / (double) getMaxDurability())))));
+            }
+        } else {
+            if (isCustomItemModel()) {
+                damageable.setDamage(getDataValue());
+            } else {
+                damageable.setDamage(getItem().getMaxDurability() != 0 ? 0 : getDataValue());
+            }
+        }
         // Patch for mcMMO buff. See SkillUtils.java#removeAbilityBuff in mcMMO
         if (item.hasItemMeta() && item.getItemMeta().hasLore() && item.getItemMeta().getLore().contains("mcMMO Ability Tool"))
             lore.add("mcMMO Ability Tool");
         lore.addAll(reservedLores);
         meta.setLore(lore);
+
+        if (loreOnly) {
+            rpgitemsTagContainer.commit();
+            item.setItemMeta(meta);
+        }
+
         if (isCustomItemModel() || hasPower(PowerUnbreakable.class)) {
             meta.setUnbreakable(true);
         } else {
@@ -505,21 +530,6 @@ public class RPGItem {
         if (enchantMap != null) {
             for (Enchantment e : enchantMap.keySet()) {
                 meta.addEnchant(e, enchantMap.get(e), true);
-            }
-        }
-        Damageable damageable = (Damageable) meta;
-        if (getMaxDurability() > 0) {
-            int durability = computeIfAbsent(rpgitemsTagContainer, TAG_DURABILITY, ItemTagType.INTEGER, this::getDefaultDurability);
-            if (isCustomItemModel()) {
-                damageable.setDamage(getDataValue());
-            } else {
-                damageable.setDamage((getItem().getMaxDurability() - ((short) ((double) getItem().getMaxDurability() * ((double) durability / (double) getMaxDurability())))));
-            }
-        } else {
-            if (isCustomItemModel()) {
-                damageable.setDamage(getDataValue());
-            } else {
-                damageable.setDamage(getItem().getMaxDurability() != 0 ? 0 : getDataValue());
             }
         }
         rpgitemsTagContainer.commit();
@@ -922,7 +932,7 @@ public class RPGItem {
         rpgitemsTagContainer.commit();
         meta.setDisplayName(getDisplayName());
         rStack.setItemMeta(meta);
-        updateItem(rStack);
+        updateItem(rStack, false);
         return rStack;
     }
 
@@ -984,7 +994,7 @@ public class RPGItem {
         }
         tagContainer.commit();
         item.setItemMeta(itemMeta);
-        this.updateItem(item);
+        this.updateItem(item, true);
     }
 
     public Optional<Integer> getItemStackDurability(ItemStack item) {
@@ -1033,7 +1043,7 @@ public class RPGItem {
             tagContainer.commit();
         }
         item.setItemMeta(itemMeta);
-        this.updateItem(item);
+        this.updateItem(item, true);
         return true;
     }
 

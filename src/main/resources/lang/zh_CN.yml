@@ -90,9 +90,9 @@ message:
   num_out_of_range: '%d 已超出范围 (%d, %d]'
   durability:
     info: '耐久 最大: %d, 默认: %d, 下限: %d, 上限: %d'
-    max_and_default: 最大及默认耐久已设置为 %d
-    bound: 耐久下界和上界已设置为 %d 与 %d
-    default: 默认耐久已设置为 %d
+    max_and_default: 最大及默认耐久已设置为 %s
+    bound: 耐久下界和上界已设置为 %s 与 %s
+    default: 默认耐久已设置为 %s
     toggle: 耐久条已切换
   worldguard:
     disable: Worldguard支持已禁用
