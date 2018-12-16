@@ -406,6 +406,9 @@ public class RPGItem {
         hitCostByDamage = s.getBoolean("hitCostByDamage", false);
         maxDurability = s.getInt("maxDurability", item.getType().getMaxDurability());
         defaultDurability = s.getInt("defaultDurability", maxDurability > 0 ? maxDurability : -1);
+        if (defaultDurability <= 0) {
+            defaultDurability = maxDurability;
+        }
         durabilityLowerBound = s.getInt("durabilityLowerBound", 0);
         durabilityUpperBound = s.getInt("durabilityUpperBound", item.getType().getMaxDurability());
         forceBar = s.getBoolean("forceBar", plugin.cfg.forceBar);
@@ -851,7 +854,6 @@ public class RPGItem {
             }
         }
         updateLocaleMeta(meta);
-        resetRecipe(true);
     }
 
     public ItemMeta getLocaleMeta() {
@@ -1152,9 +1154,7 @@ public class RPGItem {
     }
 
     public void setMaxDurability(int newVal) {
-        if (defaultDurability <= 0 && newVal > 0) {
-            setDefaultDurability(newVal);
-        }
+        setDefaultDurability(newVal);
         setMaxDurability(newVal, true);
     }
 

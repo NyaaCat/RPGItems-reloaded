@@ -146,7 +146,7 @@ public class ItemManager {
                 throw new IllegalStateException("Trying to load " + file + " that does not exist.");
             }
             if (file.isDirectory()) {
-                File[] subFiles = file.listFiles((d, n) ->(d.isFile() && n.endsWith("yml")) || d.isDirectory());
+                File[] subFiles = file.listFiles((d, n) -> (d.isFile() && n.endsWith("yml")) || d.isDirectory());
                 if (Objects.requireNonNull(subFiles).length == 0) {
                     if (sender != null) {
                         new Message(I18n.format("message.item.empty_dir", file.getPath())).send(sender);
@@ -225,6 +225,7 @@ public class ItemManager {
             if (itemByName.putIfAbsent(item.getName(), item) != null) {
                 throw new IllegalArgumentException("Duplicated item name:" + item.getUID());
             }
+            item.resetRecipe(true);
         } catch (Exception e) {
             itemById.remove(item.getID(), item);
             itemById.remove(item.getUID(), item);

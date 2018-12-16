@@ -68,6 +68,13 @@ public class Handler extends RPGCommandReceiver {
         return "";
     }
 
+    @SubCommand("save-all")
+    @Attribute("command")
+    public void save(CommandSender sender, Arguments args) {
+        ItemManager.save();
+        msg(sender, "message.item.saved");
+    }
+
     @SubCommand("reload")
     @Attribute("command")
     public void reload(CommandSender sender, Arguments args) {
@@ -911,7 +918,7 @@ public class Handler extends RPGCommandReceiver {
                     item.setMaxDurability(-1);
                     ItemManager.refreshItem();
                     ItemManager.save(item);
-                    msg(sender, "message.durability.change");
+                    msg(sender, "message.durability.max_and_default", "infinite");
                 }
                 break;
                 case "togglebar": {
@@ -923,10 +930,15 @@ public class Handler extends RPGCommandReceiver {
                 break;
                 case "default": {
                     int durability = args.nextInt();
+                    if (durability <= 0) {
+                        // Actually we don't check max here
+                        throw new CommandException("message.num_out_of_range", durability, 0, item.getMaxDurability());
+                    }
                     item.setDefaultDurability(durability);
                     ItemManager.refreshItem();
                     ItemManager.save(item);
                     msg(sender, "message.durability.change");
+                    msg(sender, "message.durability.default", String.valueOf(durability));
                 }
                 break;
                 case "bound": {
@@ -935,7 +947,7 @@ public class Handler extends RPGCommandReceiver {
                     item.setDurabilityBound(min, max);
                     ItemManager.refreshItem();
                     ItemManager.save(item);
-                    msg(sender, "message.durability.change");
+                    msg(sender, "message.durability.bound", String.valueOf(min), String.valueOf(max));
                 }
                 break;
                 default:

@@ -89,7 +89,9 @@ message:
   num_out_of_range: '%d 已超出范围 (%d, %d]'
   durability:
     info: '耐久 最大: %d, 默认: %d, 下限: %d, 上限: %d'
-    change: 耐久度已变更
+    max_and_default: 最大及默认耐久已设置为 %s
+    bound: 耐久下界和上界已设置为 %s 与 %s
+    default: 默认耐久已设置为 %s
     toggle: 耐久条已切换
   worldguard:
     disable: Worldguard支持已禁用
@@ -168,6 +170,7 @@ message:
     backedup: 物品 %s 已备份至 %s。
     cleanbackup: 已清理备份。
     no_backup: 未找到物品 %s 的备份。
+    saved: 物品已保存。
   damagemode:
     FIXED: 物品 '%s' 伤害模式设定为固定伤害（默认）
     MULTIPLY: 物品 '%s' 伤害模式设定为乘法伤害（原版伤害乘以RPG伤害）
