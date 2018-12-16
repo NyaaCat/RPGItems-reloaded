@@ -17,9 +17,11 @@ String branchArtifactId = "rpgitems"
 String branch = System.getenv("TRAVIS_BRANCH") == null ? repo.branch.current().name : System.getenv("TRAVIS_BRANCH")
 boolean mainBranch = System.getenv("MAIN_BRANCH") == null ? false : Boolean.parseBoolean(System.getenv("MAIN_BRANCH"))
 String commit = repo.head().abbreviatedId
-if (minecraftVersion != branch) {
+if (!mainBranch && minecraftVersion != branch) {
     branchArtifactId += branch.replace(minecraftVersion, "")
 }
+
+archivesBaseName = "RPGItems-reloaded"
 
 sourceCompatibility = 1.8
 targetCompatibility = 1.8

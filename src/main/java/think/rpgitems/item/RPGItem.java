@@ -812,7 +812,7 @@ public class RPGItem {
         RPGItemsPowersPostFireEvent<TEvent, TPower, TResult, TReturn> postFire = new RPGItemsPowersPostFireEvent<>(player, i, event, this, trigger, resultMap, ret);
         Bukkit.getServer().getPluginManager().callEvent(postFire);
 
-        if (getDurability(i) <= 0) {
+        if (getDurability(i).map(d -> d <= 0).orElse(false)) {
             i.setAmount(0);
             i.setType(Material.AIR);
         }
@@ -1166,13 +1166,14 @@ public class RPGItem {
         updateItem(this, item, meta);
     }
 
-    public int getDurability(ItemStack item) {
+    public Optional<Integer> getDurability(ItemStack item) {
+        if (getMaxDurability() == -1) return Optional.empty();
         RPGMetadata meta = getMetadata(item);
         int durability = getDefaultDurability();
-        if (getMaxDurability() != -1 && meta.containsKey(RPGMetadata.DURABILITY)) {
+        if (meta.containsKey(RPGMetadata.DURABILITY)) {
             durability = ((Number) meta.get(RPGMetadata.DURABILITY)).intValue();
         }
-        return durability;
+        return Optional.of(durability);
     }
 
     public boolean consumeDurability(ItemStack item, int val) {

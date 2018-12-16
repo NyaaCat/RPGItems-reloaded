@@ -911,7 +911,7 @@ public class Handler extends RPGCommandReceiver {
             item.setMaxDurability(durability);
             ItemManager.refreshItem();
             ItemManager.save(item);
-            msg(sender, "message.durability.change");
+            msg(sender, "message.durability.max_and_default", String.valueOf(durability));
         } catch (Exception e) {
             switch (arg) {
                 case "infinite": {
@@ -937,7 +937,6 @@ public class Handler extends RPGCommandReceiver {
                     item.setDefaultDurability(durability);
                     ItemManager.refreshItem();
                     ItemManager.save(item);
-                    msg(sender, "message.durability.change");
                     msg(sender, "message.durability.default", String.valueOf(durability));
                 }
                 break;

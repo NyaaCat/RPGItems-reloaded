@@ -100,7 +100,7 @@ public class PowerRepair extends BasePower implements PowerRightClick, PowerLeft
     public PowerResult<Void> fire(Player player, ItemStack stack) {
         if (!checkCooldown(this, player, cooldown, true, true)) PowerResult.cd();
         int max = getItem().getMaxDurability();
-        int itemDurability = getItem().getDurability(stack);
+        int itemDurability = getItem().getDurability(stack).orElseThrow(() -> new IllegalStateException("Repair is not allowed on item without durability"));
         int delta = max - itemDurability;
         if (mode != RepairMode.ALWAYS) {
             if (max == -1 || delta == 0) {
