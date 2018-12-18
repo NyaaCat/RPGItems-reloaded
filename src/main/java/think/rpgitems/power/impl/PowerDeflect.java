@@ -101,6 +101,14 @@ public class PowerDeflect extends BasePower implements PowerHitTaken, PowerRight
         if (!(target.getInventory().getItemInMainHand().equals(stack) || target.getInventory().getItemInOffHand().equals(stack))) {
             return PowerResult.noop();
         }
+        if (!(event instanceof EntityDamageByEntityEvent)) {
+            return PowerResult.noop();
+        }
+        EntityDamageByEntityEvent byEntityEvent = (EntityDamageByEntityEvent) event;
+        if (!(byEntityEvent.getDamager() instanceof Projectile)) {
+            return PowerResult.noop();
+        }
+
         boolean activated = System.currentTimeMillis() / 50 < time.getOrDefault(target.getUniqueId(), 0L);
 
         if (!activated) {
@@ -111,14 +119,6 @@ public class PowerDeflect extends BasePower implements PowerHitTaken, PowerRight
         }
 
         if (!getItem().consumeDurability(stack, cost)) return PowerResult.cost();
-
-        if (!(event instanceof EntityDamageByEntityEvent)) {
-            return PowerResult.noop();
-        }
-        EntityDamageByEntityEvent byEntityEvent = (EntityDamageByEntityEvent) event;
-        if (!(byEntityEvent.getDamager() instanceof Projectile)) {
-            return PowerResult.noop();
-        }
         Projectile p = (Projectile) byEntityEvent.getDamager();
         if (!(p.getShooter() instanceof LivingEntity)) return PowerResult.noop();
         LivingEntity source = (LivingEntity) p.getShooter();

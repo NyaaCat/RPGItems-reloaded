@@ -26,6 +26,15 @@ public class PowerHeadshot extends BasePower implements PowerHit {
     @Property
     public int cost = 0;
 
+    @Property
+    public boolean particleEnemy = true;
+
+    @Property
+    public boolean soundSelf = true;
+
+    @Property
+    public boolean soundEnemy = false;
+
     @Override
     public PowerResult<Double> hit(Player player, ItemStack stack, LivingEntity entity, double damage, EntityDamageByEntityEvent event) {
         if (!(event.getDamager() instanceof Projectile)) {
@@ -62,8 +71,15 @@ public class PowerHeadshot extends BasePower implements PowerHit {
         }
         if (hs) {
             if (!getItem().consumeDurability(stack, cost)) return PowerResult.cost();
-            damager.getWorld().playSound(damager.getLocation(), Sound.BLOCK_ANVIL_PLACE, 1, 3);
-            damager.getWorld().spawnParticle(Particle.REDSTONE, damager.getLocation(), 2, new Particle.DustOptions(Color.RED, 10));
+            if (soundSelf) {
+                damager.getWorld().playSound(damager.getLocation(), Sound.BLOCK_ANVIL_PLACE, 1, 3);
+            }
+            if (soundEnemy) {
+                damager.getWorld().playSound(entity.getLocation(), Sound.ENTITY_GHAST_HURT, 1, 3);
+            }
+            if (particleEnemy) {
+                damager.getWorld().spawnParticle(Particle.REDSTONE, entity.getLocation(), 2, new Particle.DustOptions(Color.RED, 10));
+            }
             return PowerResult.ok(damage * factor);
         }
         return PowerResult.fail();
