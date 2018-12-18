@@ -504,6 +504,18 @@ public class Events implements Listener {
         }
     }
 
+    @EventHandler(priority = EventPriority.HIGH, ignoreCancelled = true)
+    public void onDamage(EntityDamageByEntityEvent ev) {
+        if (ev.getDamager() instanceof Player) {
+            playerDamager(ev);
+        } else if (ev.getDamager() instanceof Projectile) {
+            projectileDamager(ev);
+        }
+        if (ev.getEntity() instanceof Player) {
+            playerHit(ev);
+        }
+    }
+
     private void playerDamager(EntityDamageByEntityEvent e) {
         Player player = (Player) e.getDamager();
         Entity entity = e.getEntity();
@@ -569,18 +581,6 @@ public class Events implements Listener {
         e.setDamage(damage);
     }
 
-    @EventHandler(priority = EventPriority.HIGH, ignoreCancelled = true)
-    public void onDamage(EntityDamageByEntityEvent ev) {
-        if (ev.getDamager() instanceof Player) {
-            playerDamager(ev);
-        } else if (ev.getDamager() instanceof Projectile) {
-            projectileDamager(ev);
-        }
-        if (ev.getEntity() instanceof Player) {
-            playerHit(ev);
-        }
-    }
-
     private void playerHit(EntityDamageByEntityEvent e) {
         Player player = (Player) e.getEntity();
         ItemStack[] armour = player.getInventory().getArmorContents();
@@ -630,6 +630,7 @@ public class Events implements Listener {
         }
     }
 
+    @Deprecated
     @EventHandler(ignoreCancelled = true, priority = EventPriority.HIGHEST)
     public void onItemCraft(PrepareItemCraftEvent e) {
         RPGItem rpg = ItemManager.toRPGItem(e.getInventory().getResult());
