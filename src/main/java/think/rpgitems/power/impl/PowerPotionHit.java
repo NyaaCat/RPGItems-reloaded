@@ -69,7 +69,7 @@ public class PowerPotionHit extends BasePower implements PowerHit, PowerLivingEn
     }
 
     @Override
-    public PowerResult<Void> fire(Player player, ItemStack stack, LivingEntity entity, double value) {
+    public PowerResult<Void> fire(Player player, ItemStack stack, LivingEntity entity, Double value) {
         if (rand.nextInt(chance) != 0) {
             return PowerResult.noop();
         }

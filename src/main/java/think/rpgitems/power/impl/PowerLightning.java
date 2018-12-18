@@ -8,6 +8,7 @@ import org.bukkit.event.entity.EntityDamageByEntityEvent;
 import org.bukkit.event.entity.ProjectileHitEvent;
 import org.bukkit.inventory.ItemStack;
 import think.rpgitems.I18n;
+import think.rpgitems.data.Context;
 import think.rpgitems.power.*;
 
 import java.util.Random;
@@ -44,6 +45,7 @@ public class PowerLightning extends BasePower implements PowerHit, PowerProjecti
         if (random.nextInt(chance) == 0) {
             if (!getItem().consumeDurability(stack, cost)) return PowerResult.cost();
             location.getWorld().strikeLightning(location);
+            Context.instance().putExpiringSeconds(player.getUniqueId(), "lightning.location", location, 3);
             return PowerResult.ok();
         }
         return PowerResult.noop();

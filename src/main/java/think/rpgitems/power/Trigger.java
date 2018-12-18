@@ -2,6 +2,7 @@ package think.rpgitems.power;
 
 import cat.nyaa.nyaacore.Pair;
 import com.google.common.base.Strings;
+import org.bukkit.Location;
 import org.bukkit.entity.LivingEntity;
 import org.bukkit.entity.Player;
 import org.bukkit.event.Event;
@@ -99,6 +100,11 @@ public abstract class Trigger<TEvent extends Event, TPower extends Power, TResul
         }
 
         @Override
+        public PowerResult<Double> warpResult(PowerResult<Void> overrideResult, PowerHit power, Player player, ItemStack i, EntityDamageByEntityEvent event) {
+            return overrideResult.with(event.getDamage());
+        }
+
+        @Override
         public PowerResult<Double> run(PowerHit power, Player player, ItemStack i, EntityDamageByEntityEvent event) {
             return power.hit(player, i, (LivingEntity) event.getEntity(), event.getDamage(), event);
         }
@@ -120,6 +126,11 @@ public abstract class Trigger<TEvent extends Event, TPower extends Power, TResul
         @Override
         public Double next(Double a, PowerResult<Double> b) {
             return b.isOK() ? Math.min(a, b.data()) : a;
+        }
+
+        @Override
+        public PowerResult<Double> warpResult(PowerResult<Void> overrideResult, PowerHitTaken power, Player player, ItemStack i, EntityDamageEvent event) {
+            return overrideResult.with(event.getDamage());
         }
 
         @Override
@@ -182,6 +193,11 @@ public abstract class Trigger<TEvent extends Event, TPower extends Power, TResul
         }
 
         @Override
+        public PowerResult<Boolean> warpResult(PowerResult<Void> overrideResult, PowerMainhandItem power, Player player, ItemStack i, PlayerSwapHandItemsEvent event) {
+            return overrideResult.with(true);
+        }
+
+        @Override
         public PowerResult<Boolean> run(PowerMainhandItem power, Player player, ItemStack i, PlayerSwapHandItemsEvent event) {
             return power.swapToOffhand(player, i, event);
         }
@@ -196,6 +212,11 @@ public abstract class Trigger<TEvent extends Event, TPower extends Power, TResul
         @Override
         public Boolean next(Boolean a, PowerResult<Boolean> b) {
             return b.isOK() ? b.data() && a : a;
+        }
+
+        @Override
+        public PowerResult<Boolean> warpResult(PowerResult<Void> overrideResult, PowerOffhandItem power, Player player, ItemStack i, PlayerSwapHandItemsEvent event) {
+            return overrideResult.with(true);
         }
 
         @Override
@@ -216,6 +237,11 @@ public abstract class Trigger<TEvent extends Event, TPower extends Power, TResul
         }
 
         @Override
+        public PowerResult<Boolean> warpResult(PowerResult<Void> overrideResult, PowerMainhandItem power, Player player, ItemStack i, InventoryClickEvent event) {
+            return overrideResult.with(true);
+        }
+
+        @Override
         public PowerResult<Boolean> run(PowerMainhandItem power, Player player, ItemStack i, InventoryClickEvent event) {
             return power.placeOffhand(player, i, event);
         }
@@ -233,15 +259,13 @@ public abstract class Trigger<TEvent extends Event, TPower extends Power, TResul
         }
 
         @Override
+        public PowerResult<Boolean> warpResult(PowerResult<Void> overrideResult, PowerOffhandItem power, Player player, ItemStack i, InventoryClickEvent event) {
+            return overrideResult.with(true);
+        }
+
+        @Override
         public PowerResult<Boolean> run(PowerOffhandItem power, Player player, ItemStack i, InventoryClickEvent event) {
             return power.pickupOffhand(player, i, event);
-        }
-    };
-
-    public static final Trigger<Event, PowerTick, Void, Void> TICK = new Trigger<Event, PowerTick, Void, Void>(Event.class, PowerTick.class, Void.class, Void.class, "TICK") {
-        @Override
-        public PowerResult<Void> run(PowerTick power, Player player, ItemStack i, Event event) {
-            return power.tick(player, i);
         }
     };
 
@@ -256,6 +280,39 @@ public abstract class Trigger<TEvent extends Event, TPower extends Power, TResul
         @Override
         public PowerResult<Void> run(PowerProjectileLaunch power, Player player, ItemStack i, ProjectileLaunchEvent event) {
             return power.projectileLaunch(player, i, event);
+        }
+    };
+
+
+
+    public static final Trigger<Event, PowerTick, Void, Void> TICK = new Trigger<Event, PowerTick, Void, Void>(Event.class, PowerTick.class, Void.class, Void.class, "TICK") {
+        @Override
+        public PowerResult<Void> run(PowerTick power, Player player, ItemStack i, Event event) {
+            return power.tick(player, i);
+        }
+    };
+
+    public static final Trigger<Event, PowerLocation, Void, Void> LOCATION = new Trigger<Event, PowerLocation, Void, Void>(Event.class, PowerLocation.class, Void.class, Void.class, "LOCATION") {
+        @Override
+        public PowerResult<Void> run(PowerLocation power, Player player, ItemStack i, Event event) {
+            throw new IllegalStateException();
+        }
+
+        @Override
+        public PowerResult<Void> run(PowerLocation power, Player player, ItemStack i, Event event, Object data) {
+            return power.fire(player, i, (Location) data);
+        }
+    };
+
+    public static final Trigger<Event, PowerLivingEntity, Void, Void> LIVINGENTITY = new Trigger<Event, PowerLivingEntity, Void, Void>(Event.class, PowerLivingEntity.class, Void.class, Void.class, "LIVINGENTITY") {
+        @Override
+        public PowerResult<Void> run(PowerLivingEntity power, Player player, ItemStack i, Event event) {
+            throw new IllegalStateException();
+        }
+
+        @Override
+        public PowerResult<Void> run(PowerLivingEntity power, Player player, ItemStack i, Event event, Object data) {
+            return power.fire(player, i, (LivingEntity) ((Pair) data).getKey(), (Double) ((Pair) data).getValue());
         }
     };
 
@@ -296,6 +353,14 @@ public abstract class Trigger<TEvent extends Event, TPower extends Power, TResul
     }
 
     public abstract PowerResult<TResult> run(TPower power, Player player, ItemStack i, TEvent event);
+
+    public PowerResult<TResult> run(TPower power, Player player, ItemStack i, TEvent event, Object data) {
+        return run(power, player, i, event);
+    }
+
+    public PowerResult<TResult> warpResult(PowerResult<Void> overrideResult, TPower power, Player player, ItemStack i, TEvent event) {
+        return overrideResult.with(null);
+    }
 
     public Class<TPower> getPowerClass() {
         return powerClass;

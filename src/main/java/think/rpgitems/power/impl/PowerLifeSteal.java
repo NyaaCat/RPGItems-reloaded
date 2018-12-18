@@ -60,8 +60,8 @@ public class PowerLifeSteal extends BasePower implements PowerHit, PowerLivingEn
     }
 
     @Override
-    public PowerResult<Void> fire(Player player, ItemStack stack, LivingEntity entity, double damage) {
-        if (random.nextInt(chance) == 0) {
+    public PowerResult<Void> fire(Player player, ItemStack stack, LivingEntity entity, Double damage) {
+        if (random.nextInt(chance) == 0 && damage != null) {
             if (!getItem().consumeDurability(stack, cost)) return PowerResult.cost();
             player.setHealth(Math.max(Math.min(player.getHealth() + damage * factor, player.getAttribute(Attribute.GENERIC_MAX_HEALTH).getValue()), 0.01));
             return PowerResult.ok();

@@ -91,6 +91,10 @@ public class PowerResult<T> {
         return of(TriggerResult.CONDITION, null);
     }
 
+    public static <T> PowerResult<T> context() {
+        return of(TriggerResult.CONTEXT, null);
+    }
+
     public boolean isOK() {
         return result == TriggerResult.OK;
     }
@@ -99,6 +103,7 @@ public class PowerResult<T> {
         return result == TriggerResult.CONDITION
                        || result == TriggerResult.FAIL
                        || result == TriggerResult.COST
+                       || result == TriggerResult.CONTEXT
                        || result == TriggerResult.ABORT;
     }
 

@@ -37,6 +37,8 @@ public interface Power {
      */
     void save(ConfigurationSection s);
 
+    String requiredContext();
+
     /**
      * NamespacedKey of this power
      *

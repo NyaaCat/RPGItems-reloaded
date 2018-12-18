@@ -5,6 +5,7 @@ import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
 
 import javax.annotation.CheckReturnValue;
+import javax.annotation.Nullable;
 
 public interface PowerLivingEntity extends Power {
 
@@ -18,5 +19,5 @@ public interface PowerLivingEntity extends Power {
      * @return PowerResult
      */
     @CheckReturnValue
-    PowerResult<Void> fire(Player player, ItemStack stack, LivingEntity entity, double value);
+    PowerResult<Void> fire(Player player, ItemStack stack, LivingEntity entity, @Nullable Double value);
 }

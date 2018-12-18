@@ -14,7 +14,7 @@ import org.librazy.nclangchecker.LangKey;
 import think.rpgitems.data.Font;
 import think.rpgitems.item.ItemManager;
 import think.rpgitems.power.PowerManager;
-import think.rpgitems.power.PowerTicker;
+import think.rpgitems.power.Ticker;
 import think.rpgitems.power.Trigger;
 import think.rpgitems.power.impl.BasePower;
 import think.rpgitems.support.WGSupport;
@@ -169,7 +169,7 @@ public class RPGItems extends JavaPlugin {
             logger.info("Loading RPGItems...");
             ItemManager.load(RPGItems.this);
             logger.info("Done");
-            new PowerTicker().runTaskTimer(RPGItems.this, 0, 1);
+            new Ticker().runTaskTimer(RPGItems.this, 0, 1);
         }
     }
 

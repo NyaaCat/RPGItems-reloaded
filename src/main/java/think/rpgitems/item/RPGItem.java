@@ -19,6 +19,7 @@ import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.configuration.MemoryConfiguration;
 import org.bukkit.enchantments.Enchantment;
 import org.bukkit.entity.Entity;
+import org.bukkit.entity.LivingEntity;
 import org.bukkit.entity.Player;
 import org.bukkit.event.Event;
 import org.bukkit.inventory.ItemFlag;
@@ -38,6 +39,7 @@ import think.rpgitems.Events;
 import think.rpgitems.Handler;
 import think.rpgitems.I18n;
 import think.rpgitems.RPGItems;
+import think.rpgitems.data.Context;
 import think.rpgitems.power.*;
 import think.rpgitems.power.impl.*;
 import think.rpgitems.support.WGSupport;
@@ -669,7 +671,7 @@ public class RPGItem {
      */
     public double meleeDamage(Player p, double originDamage, ItemStack stack, Entity entity) {
         double damage = originDamage;
-        if (ItemManager.canUse(p, this) == Event.Result.DENY|| hasPower(PowerRangedOnly.class)) {
+        if (ItemManager.canUse(p, this) == Event.Result.DENY || hasPower(PowerRangedOnly.class)) {
             return -1;
         }
         boolean can = consumeDurability(stack, getHittingCost());
@@ -838,7 +840,11 @@ public class RPGItem {
             if (result != null) {
                 resultMap.put(power, result);
             } else {
-                result = trigger.run(power, player, i, event);
+                if (power.requiredContext() != null) {
+                    result = handleContext(player, i, event, trigger, power);
+                } else {
+                    result = trigger.run(power, player, i, event);
+                }
                 resultMap.put(power, result);
             }
             ret = trigger.next(ret, result);
@@ -848,10 +854,39 @@ public class RPGItem {
         return ret;
     }
 
+    public <TEvent extends Event, TPower extends Power, TResult, TReturn> PowerResult<TResult> handleContext(Player player, ItemStack i, TEvent event, Trigger<TEvent, TPower, TResult, TReturn> trigger, TPower power) {
+        PowerResult<TResult> result;
+        String contextKey = power.requiredContext();
+        Object context = Context.instance().get(player.getUniqueId(), contextKey);
+        if (context == null) {
+            return PowerResult.context();
+        }
+        if (context instanceof Location) {
+            if (power instanceof PowerLocation) {
+                PowerResult<Void> overrideResult = Trigger.LOCATION.run((PowerLocation) power, player, i, event, context);
+                result = trigger.warpResult(overrideResult, power, player, i, event);
+            } else {
+                throw new IllegalStateException();
+            }
+        } else if (context instanceof Pair) {
+            Object key = ((Pair) context).getKey();
+            if (key instanceof LivingEntity) {
+                PowerResult<Void> overrideResult = Trigger.LIVINGENTITY.run((PowerLivingEntity) power, player, i, event, context);
+                result = trigger.warpResult(overrideResult, power, player, i, event);
+            } else {
+                throw new IllegalStateException();
+            }
+        } else {
+            throw new IllegalStateException();
+        }
+        return result;
+    }
+
     private <TEvent extends Event, TPower extends Power, TResult, TReturn> void triggerPostFire(Player player, ItemStack itemStack, TEvent event, Trigger<TEvent, TPower, TResult, TReturn> trigger, Map<Power, PowerResult> resultMap, TReturn ret) {
         RPGItemsPowersPostFireEvent<TEvent, TPower, TResult, TReturn> postFire = new RPGItemsPowersPostFireEvent<>(player, itemStack, event, this, trigger, resultMap, ret);
         Bukkit.getServer().getPluginManager().callEvent(postFire);
 
+        Context.instance().cleanTemp(player.getUniqueId());
         if (getItemStackDurability(itemStack).map(d -> d <= 0).orElse(false)) {
             itemStack.setAmount(0);
             itemStack.setType(Material.AIR);

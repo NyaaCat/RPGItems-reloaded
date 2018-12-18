@@ -8,4 +8,5 @@ public enum TriggerResult {
     NOOP,
     FAIL,
     ABORT,
+    CONTEXT,
 }

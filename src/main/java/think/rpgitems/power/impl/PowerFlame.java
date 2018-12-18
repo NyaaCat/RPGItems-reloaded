@@ -44,7 +44,7 @@ public class PowerFlame extends BasePower implements PowerHit, PowerLivingEntity
     }
 
     @Override
-    public PowerResult<Void> fire(Player player, ItemStack stack, LivingEntity entity, double value) {
+    public PowerResult<Void> fire(Player player, ItemStack stack, LivingEntity entity, Double value) {
         if (!getItem().consumeDurability(stack, cost)) return PowerResult.cost();
         entity.setFireTicks(burntime);
         return PowerResult.ok();

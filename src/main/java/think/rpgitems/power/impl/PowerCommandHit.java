@@ -78,8 +78,8 @@ public class PowerCommandHit extends PowerCommand implements PowerHit, PowerLivi
     }
 
     @Override
-    public PowerResult<Void> fire(Player player, ItemStack stack, LivingEntity entity, double damage) {
-        if (damage < minDamage) return PowerResult.noop();
+    public PowerResult<Void> fire(Player player, ItemStack stack, LivingEntity entity, Double damage) {
+        if (damage == null || damage < minDamage) return PowerResult.noop();
         if (!checkCooldownByString(this, player, command, cooldown, true, false)) return PowerResult.cd();
         if (!getItem().consumeDurability(stack, cost)) return PowerResult.cost();
 

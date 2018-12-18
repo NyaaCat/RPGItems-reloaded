@@ -8,6 +8,7 @@ import org.bukkit.inventory.ItemStack;
 import org.bukkit.potion.PotionEffect;
 import org.bukkit.potion.PotionEffectType;
 import think.rpgitems.I18n;
+import think.rpgitems.data.Context;
 import think.rpgitems.power.PowerHit;
 import think.rpgitems.power.PowerMeta;
 import think.rpgitems.power.PowerResult;
@@ -58,6 +59,8 @@ public class PowerRealDamage extends BasePower implements PowerHit {
             PotionEffect e = entity.getPotionEffect(PotionEffectType.DAMAGE_RESISTANCE);
             if (e.getAmplifier() >= 4) return PowerResult.noop();
         }
+        Context.instance().putExpiringSeconds(player.getUniqueId(), "realdamage.target", entity, 3);
+
         double health = entity.getHealth();
         double newHealth = health - realDamage;
         newHealth = max(newHealth, 0.1);//Bug workaround

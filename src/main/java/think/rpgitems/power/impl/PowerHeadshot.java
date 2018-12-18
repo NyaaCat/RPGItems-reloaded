@@ -12,6 +12,7 @@ import org.bukkit.inventory.ItemStack;
 import org.bukkit.util.BoundingBox;
 import org.bukkit.util.Vector;
 import think.rpgitems.I18n;
+import think.rpgitems.data.Context;
 import think.rpgitems.power.*;
 
 @PowerMeta(immutableTrigger = true)
@@ -25,6 +26,15 @@ public class PowerHeadshot extends BasePower implements PowerHit {
      */
     @Property
     public int cost = 0;
+
+    @Property
+    public boolean particleEnemy = true;
+
+    @Property
+    public boolean soundSelf = true;
+
+    @Property
+    public boolean soundEnemy = false;
 
     @Override
     public PowerResult<Double> hit(Player player, ItemStack stack, LivingEntity entity, double damage, EntityDamageByEntityEvent event) {
@@ -61,9 +71,17 @@ public class PowerHeadshot extends BasePower implements PowerHit {
             hs = squared <= maximum;
         }
         if (hs) {
+            Context.instance().putExpiringSeconds(player.getUniqueId(), "headshot.target", entity, 3);
             if (!getItem().consumeDurability(stack, cost)) return PowerResult.cost();
-            damager.getWorld().playSound(damager.getLocation(), Sound.BLOCK_ANVIL_PLACE, 1, 3);
-            damager.getWorld().spawnParticle(Particle.REDSTONE, damager.getLocation(), 2, new Particle.DustOptions(Color.RED, 10));
+            if (soundSelf) {
+                damager.getWorld().playSound(damager.getLocation(), Sound.BLOCK_ANVIL_PLACE, 1, 3);
+            }
+            if (soundEnemy) {
+                entity.getWorld().playSound(entity.getLocation(), Sound.ENTITY_GHAST_HURT, 1, 3);
+            }
+            if (particleEnemy) {
+                entity.getWorld().spawnParticle(Particle.REDSTONE, entity.getLocation(), 2, new Particle.DustOptions(Color.RED, 10));
+            }
             return PowerResult.ok(damage * factor);
         }
         return PowerResult.fail();

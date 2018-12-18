@@ -32,6 +32,9 @@ public abstract class BasePower implements Serializable, Power {
     @Property
     public Set<String> conditions = new HashSet<>();
 
+    @Property
+    public String requiredContext;
+
     @Override
     public RPGItem getItem() {
         return item;
@@ -126,5 +129,10 @@ public abstract class BasePower implements Serializable, Power {
     @Override
     public String getLocalizedName(String locale) {
         return I18n.format("power.properties." + getName() + ".main_name");
+    }
+
+    @Override
+    public String requiredContext() {
+        return requiredContext;
     }
 }
