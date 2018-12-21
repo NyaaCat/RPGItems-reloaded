@@ -101,7 +101,8 @@ boolean releasing = fullVersionString == null ? false : Boolean.parseBoolean(Sys
 
 tasks.withType(ProcessResources) {
     with copySpec {
-        from 'src/main/resources'
+        from 'src/main/resources/lang'
+        into 'lang'
         filter(ReplaceTokens, tokens: ['GIT_BRANCH': branch, 'GIT_HASH': commit], beginToken: '{', endToken: '}')
     }
 }

@@ -37,24 +37,22 @@ public interface Power {
      */
     void save(ConfigurationSection s);
 
-    String requiredContext();
-
     /**
-     * NamespacedKey of this power
+     * Static. NamespacedKey of this power
      *
      * @return NamespacedKey
      */
     NamespacedKey getNamespacedKey();
 
     /**
-     * Code name of this power
+     * Static. Code name of this power
      *
      * @return Code name
      */
     @LangKey(skipCheck = true) String getName();
 
     /**
-     * Localized name of this power
+     * Static. Localized name of this power
      *
      * @param locale Locale tag
      * @return Localized name
@@ -64,7 +62,7 @@ public interface Power {
     }
 
     /**
-     * Localized name of this power
+     * Static. Localized name of this power
      *
      * @param locale Locale
      * @return Localized name
@@ -129,6 +127,8 @@ public interface Power {
     Set<String> getSelectors();
 
     Set<String> getConditions();
+
+    String requiredContext();
 
     default void deinit() {
     }

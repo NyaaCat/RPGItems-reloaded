@@ -31,12 +31,12 @@ import think.rpgitems.support.WGSupport;
 import think.rpgitems.utils.MaterialUtils;
 import think.rpgitems.utils.NetworkUtils;
 
-import java.io.File;
-import java.io.FileOutputStream;
-import java.io.IOException;
+import java.io.*;
 import java.lang.reflect.Field;
+import java.lang.reflect.TypeVariable;
 import java.nio.channels.FileChannel;
 import java.nio.channels.FileLock;
+import java.nio.charset.StandardCharsets;
 import java.nio.file.FileVisitResult;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -65,7 +65,6 @@ public class Handler extends RPGCommandReceiver {
     public String getHelpPrefix() {
         return "";
     }
-
 
     @SubCommand("save-all")
     @Attribute("command")
@@ -1295,7 +1294,134 @@ public class Handler extends RPGCommandReceiver {
         msg(sender, "message.power.reorder", item.getName(), remove.getName());
     }
 
-    @SubCommand(value = "updatecmdandentity", permission = "rpgitem.updateitem")
+    @SuppressWarnings("ConstantConditions")
+    @SubCommand("gen-wiki")
+    @Attribute("command")
+    public void gen_wiki(CommandSender sender, Arguments args) throws IOException {
+        String lc = args.next();
+        Locale locale = Locale.forLanguageTag((lc == null ? RPGItems.plugin.cfg.language : lc).replace('_', '-'));
+        File wikiDir = new File(RPGItems.plugin.getDataFolder(), "wiki/" + locale.getLanguage());
+
+        int customHeaderLine = -1;
+        int customDescriptionLine = -1;
+        int customPropertiesLine = -1;
+        int customExampleLine = -1;
+        int customNoteLine = -1;
+
+        String propertyName = null;
+        String propertyType = null;
+        String propertyDefault = null;
+        String propertyRequired = null;
+        String propertyDescription = null;
+
+        InputStream inputStream = plugin.getResource("Template_" + locale.getLanguage() + ".md");
+        String newLine = System.getProperty("line.separator");
+        BufferedReader reader = new BufferedReader(new InputStreamReader(inputStream, StandardCharsets.UTF_8));
+        List<String> template = new ArrayList<>(100);
+        for (String line; (line = reader.readLine()) != null; ) {
+            template.add(line);
+            if (line.contains("<!-- begin")) {
+                int current = template.size() - 1;
+                if (line.contains("beginCustomHeader")) {
+                    customHeaderLine = current;
+                } else if (line.contains("beginCustomDescription")) {
+                    customDescriptionLine = current;
+                } else if (line.contains("beginCustomProperties")) {
+                    customPropertiesLine = current;
+                } else if (line.contains("beginCustomExample")) {
+                    customExampleLine = current;
+                } else if (line.contains("beginCustomNote")) {
+                    customNoteLine = current;
+                }
+            }
+            if (line.contains("<!-- property")) {
+                String pattern = line.substring(line.indexOf("[") + 1, line.indexOf("]")).replace("\\n", newLine);
+                if (line.contains("propertyName")) {
+                    propertyName = pattern;
+                } else if (line.contains("propertyType")) {
+                    propertyType = pattern;
+                } else if (line.contains("propertyDefault")) {
+                    propertyDefault = pattern;
+                } else if (line.contains("propertyRequired")) {
+                    propertyRequired = pattern;
+                } else if (line.contains("propertyDescription")) {
+                    propertyDescription = pattern;
+                }
+            }
+        }
+
+        if (Stream.of(customHeaderLine, customDescriptionLine, customPropertiesLine, customExampleLine, customNoteLine)
+                  .anyMatch(i -> i == -1)) {
+            throw new IllegalArgumentException();
+        }
+
+        if (Stream.of(propertyName, propertyType, propertyDefault, propertyRequired, propertyDescription)
+                  .anyMatch(Objects::isNull)) {
+            throw new IllegalArgumentException();
+        }
+
+        Map<Class<? extends Power>, Map<String, PowerProperty>> allProperties = PowerManager.getProperties();
+        for (Map.Entry<Class<? extends Power>, Map<String, PowerProperty>> entry : allProperties.entrySet()) {
+            Class<? extends Power> clazz = entry.getKey();
+            Map<String, PowerProperty> properties = entry.getValue();
+            Power instance = PowerManager.instantiate(clazz);
+            String localizedName = instance.getLocalizedName(locale);
+            NamespacedKey namespacedKey = instance.getNamespacedKey();
+            StringBuilder propertiesDesc = new StringBuilder();
+            PowerMeta powerMeta = PowerManager.getMeta(clazz);
+            for (Map.Entry<String, PowerProperty> propertyEntry : properties.entrySet()) {
+                String name = propertyEntry.getKey();
+                PowerProperty property = propertyEntry.getValue();
+
+                if (name.equals("triggers")
+                            || name.equals("conditions")
+                            || name.equals("selectors")
+                            || name.equals("displayName")
+                            || name.equals("requiredContext")
+                ) {
+                    continue;
+                }
+
+                propertiesDesc.append(propertyName.replace("${}", name));
+                propertiesDesc.append(propertyType.replace("${}", property.field().getGenericType().getTypeName().replaceAll("(java|think|org\\.bukkit)\\.([a-zA-Z0-9_$]+\\.)*", "")));
+                if (property.required()) {
+                    propertiesDesc.append(propertyRequired);
+                } else {
+                    String value = Utils.getProperty(instance, name, property.field());
+                    if (value != null) {
+                        propertiesDesc.append(propertyDefault.replace("${}", value));
+                    }
+                }
+                String description = PowerManager.getDescription(locale.toLanguageTag(), namespacedKey, name);
+                propertiesDesc.append(propertyDescription.replace("${}", description == null ? I18n.format("message.power.no_description") : description));
+            }
+            String toString = propertiesDesc.toString();
+            System.out.println();
+            System.out.println();
+            System.out.println(toString);
+            System.out.println();
+            System.out.println();
+        }
+    }
+
+    private String genericSimpleName(Field field) {
+        StringBuilder sb = new StringBuilder(field.getType().getSimpleName());
+        TypeVariable<?>[] typeparms = field.getType().getTypeParameters();
+        if (typeparms.length > 0) {
+            boolean first = true;
+            sb.append('<');
+            for (TypeVariable<?> typeparm : typeparms) {
+                if (!first)
+                    sb.append(',');
+                sb.append(typeparm.getName());
+                first = false;
+            }
+            sb.append('>');
+        }
+        return sb.toString();
+    }
+
+    @SubCommand(value = "updatecmdandentity")
     @Attribute("item")
     public void updateCommand(CommandSender sender, Arguments args) {
         String s = args.nextString();
