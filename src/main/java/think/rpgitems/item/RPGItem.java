@@ -505,6 +505,7 @@ public class RPGItem {
         if (loreOnly) {
             rpgitemsTagContainer.commit();
             item.setItemMeta(meta);
+            return;
         }
 
         if (isCustomItemModel() || hasPower(PowerUnbreakable.class)) {

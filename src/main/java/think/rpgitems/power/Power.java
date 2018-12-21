@@ -68,7 +68,7 @@ public interface Power {
      * @return Localized name
      */
     default String getLocalizedName(Locale locale) {
-        return getLocalizedName(locale.toLanguageTag());
+        return getLocalizedName(locale.toString());
     }
 
     /**

@@ -33,7 +33,6 @@ import think.rpgitems.utils.NetworkUtils;
 
 import java.io.*;
 import java.lang.reflect.Field;
-import java.lang.reflect.TypeVariable;
 import java.nio.channels.FileChannel;
 import java.nio.channels.FileLock;
 import java.nio.charset.StandardCharsets;
@@ -1300,7 +1299,12 @@ public class Handler extends RPGCommandReceiver {
     public void gen_wiki(CommandSender sender, Arguments args) throws IOException {
         String lc = args.next();
         Locale locale = Locale.forLanguageTag((lc == null ? RPGItems.plugin.cfg.language : lc).replace('_', '-'));
-        File wikiDir = new File(RPGItems.plugin.getDataFolder(), "wiki/" + locale.getLanguage());
+        File wikiDir = new File(RPGItems.plugin.getDataFolder(), "wiki/" + locale.toString());
+        if (!wikiDir.mkdirs()) {
+            if (!wikiDir.exists() || !wikiDir.isDirectory()) {
+                throw new IllegalStateException();
+            }
+        }
 
         int customHeaderLine = -1;
         int customDescriptionLine = -1;
@@ -1310,18 +1314,22 @@ public class Handler extends RPGCommandReceiver {
 
         String propertyName = null;
         String propertyType = null;
-        String propertyDefault = null;
+        String propertyDefaultValue = null;
         String propertyRequired = null;
         String propertyDescription = null;
 
-        InputStream inputStream = plugin.getResource("Template_" + locale.getLanguage() + ".md");
+        String propertyDefaultTrigger = null;
+        String propertyAvailableTrigger = null;
+        String propertyImmutableTrigger = null;
+        String propertyMarker = null;
+
+        InputStream inputStream = plugin.getResource("Template_" + locale.toString() + ".md");
         String newLine = System.getProperty("line.separator");
         BufferedReader reader = new BufferedReader(new InputStreamReader(inputStream, StandardCharsets.UTF_8));
         List<String> template = new ArrayList<>(100);
         for (String line; (line = reader.readLine()) != null; ) {
-            template.add(line);
             if (line.contains("<!-- begin")) {
-                int current = template.size() - 1;
+                int current = template.size();
                 if (line.contains("beginCustomHeader")) {
                     customHeaderLine = current;
                 } else if (line.contains("beginCustomDescription")) {
@@ -1335,19 +1343,29 @@ public class Handler extends RPGCommandReceiver {
                 }
             }
             if (line.contains("<!-- property")) {
-                String pattern = line.substring(line.indexOf("[") + 1, line.indexOf("]")).replace("\\n", newLine);
+                String pattern = line.substring(line.indexOf("[") + 1, line.lastIndexOf("]")).replace("\\n", newLine);
                 if (line.contains("propertyName")) {
                     propertyName = pattern;
                 } else if (line.contains("propertyType")) {
                     propertyType = pattern;
-                } else if (line.contains("propertyDefault")) {
-                    propertyDefault = pattern;
+                } else if (line.contains("propertyDefaultValue")) {
+                    propertyDefaultValue = pattern;
                 } else if (line.contains("propertyRequired")) {
                     propertyRequired = pattern;
                 } else if (line.contains("propertyDescription")) {
                     propertyDescription = pattern;
+                } else if (line.contains("propertyDefaultTrigger")) {
+                    propertyDefaultTrigger = pattern;
+                } else if (line.contains("propertyAvailableTrigger")) {
+                    propertyAvailableTrigger = pattern;
+                } else if (line.contains("propertyImmutableTrigger")) {
+                    propertyImmutableTrigger = pattern;
+                } else if (line.contains("propertyMarker")) {
+                    propertyMarker = pattern;
                 }
+                continue;
             }
+            template.add(line);
         }
 
         if (Stream.of(customHeaderLine, customDescriptionLine, customPropertiesLine, customExampleLine, customNoteLine)
@@ -1355,7 +1373,7 @@ public class Handler extends RPGCommandReceiver {
             throw new IllegalArgumentException();
         }
 
-        if (Stream.of(propertyName, propertyType, propertyDefault, propertyRequired, propertyDescription)
+        if (Stream.of(propertyName, propertyType, propertyDefaultValue, propertyRequired, propertyDescription, propertyDefaultTrigger, propertyAvailableTrigger, propertyImmutableTrigger, propertyMarker)
                   .anyMatch(Objects::isNull)) {
             throw new IllegalArgumentException();
         }
@@ -1369,13 +1387,73 @@ public class Handler extends RPGCommandReceiver {
             NamespacedKey namespacedKey = instance.getNamespacedKey();
             StringBuilder propertiesDesc = new StringBuilder();
             PowerMeta powerMeta = PowerManager.getMeta(clazz);
+
+            StringBuilder customHeader = new StringBuilder();
+            StringBuilder customDescription = new StringBuilder();
+            StringBuilder customProperties = new StringBuilder();
+            StringBuilder customExample = new StringBuilder();
+            StringBuilder customNote = new StringBuilder();
+            Path file = wikiDir.toPath().resolve(instance.getName() + " (" + locale.toString() + ").md");
+            if (file.toFile().exists()) {
+                List<String> old = Files.readAllLines(file, StandardCharsets.UTF_8);
+                Iterator<String> oldIterator = old.iterator();
+
+                while (oldIterator.hasNext()) {
+                    String current = oldIterator.next();
+                    if (current.contains("<!-- beginCustomHeader -->")) {
+                        while (oldIterator.hasNext()) {
+                            String chLine = oldIterator.next();
+                            if (chLine.contains("<!-- endCustomHeader -->")) {
+                                break;
+                            }
+                            customHeader.append(chLine);
+                        }
+                    }
+                    if (current.contains("<!-- beginCustomDescription -->")) {
+                        while (oldIterator.hasNext()) {
+                            String chLine = oldIterator.next();
+                            if (chLine.contains("<!-- endCustomDescription -->")) {
+                                break;
+                            }
+                            customDescription.append(chLine);
+                        }
+                    }
+                    if (current.contains("<!-- beginCustomProperties -->")) {
+                        while (oldIterator.hasNext()) {
+                            String chLine = oldIterator.next();
+                            if (chLine.contains("<!-- endCustomProperties -->")) {
+                                break;
+                            }
+                            customProperties.append(chLine);
+                        }
+                    }
+                    if (current.contains("<!-- beginCustomExample -->")) {
+                        while (oldIterator.hasNext()) {
+                            String chLine = oldIterator.next();
+                            if (chLine.contains("<!-- endCustomExample -->")) {
+                                break;
+                            }
+                            customExample.append(chLine);
+                        }
+                    }
+                    if (current.contains("<!-- beginCustomNote -->")) {
+                        while (oldIterator.hasNext()) {
+                            String chLine = oldIterator.next();
+                            if (chLine.contains("<!-- endCustomNote -->")) {
+                                break;
+                            }
+                            customNote.append(chLine);
+                        }
+                    }
+                }
+            }
             for (Map.Entry<String, PowerProperty> propertyEntry : properties.entrySet()) {
                 String name = propertyEntry.getKey();
                 PowerProperty property = propertyEntry.getValue();
 
                 if (name.equals("triggers")
-                            || name.equals("conditions")
-                            || name.equals("selectors")
+                            || (name.equals("conditions") && !powerMeta.withConditions())
+                            || (name.equals("selectors") && !powerMeta.withSelectors())
                             || name.equals("displayName")
                             || name.equals("requiredContext")
                 ) {
@@ -1388,37 +1466,54 @@ public class Handler extends RPGCommandReceiver {
                     propertiesDesc.append(propertyRequired);
                 } else {
                     String value = Utils.getProperty(instance, name, property.field());
-                    if (value != null) {
-                        propertiesDesc.append(propertyDefault.replace("${}", value));
+                    if (value != null && !value.trim().isEmpty()) {
+                        propertiesDesc.append(propertyDefaultValue.replace("${}", value));
                     }
                 }
-                String description = PowerManager.getDescription(locale.toLanguageTag(), namespacedKey, name);
+                String description = PowerManager.getDescription(locale.toString(), namespacedKey, name);
                 propertiesDesc.append(propertyDescription.replace("${}", description == null ? I18n.format("message.power.no_description") : description));
             }
-            String toString = propertiesDesc.toString();
-            System.out.println();
-            System.out.println();
-            System.out.println(toString);
-            System.out.println();
-            System.out.println();
-        }
-    }
-
-    private String genericSimpleName(Field field) {
-        StringBuilder sb = new StringBuilder(field.getType().getSimpleName());
-        TypeVariable<?>[] typeparms = field.getType().getTypeParameters();
-        if (typeparms.length > 0) {
-            boolean first = true;
-            sb.append('<');
-            for (TypeVariable<?> typeparm : typeparms) {
-                if (!first)
-                    sb.append(',');
-                sb.append(typeparm.getName());
-                first = false;
+            List<String> powerTemplate = new ArrayList<>(template);
+            if (customNote.length() > 0) {
+                powerTemplate.add(customNoteLine + 1, customNote.toString());
             }
-            sb.append('>');
+            if (customExample.length() > 0) {
+                powerTemplate.add(customExampleLine + 1, customExample.toString());
+            }
+            if (customProperties.length() > 0) {
+                powerTemplate.add(customPropertiesLine + 1, customProperties.toString());
+            }
+            if (customDescription.length() > 0) {
+                powerTemplate.add(customDescriptionLine + 1, customDescription.toString());
+            }
+            if (customHeader.length() > 0) {
+                powerTemplate.add(customHeaderLine + 1, customHeader.toString());
+            }
+            String fullTemplate = String.join(newLine, powerTemplate);
+            fullTemplate = fullTemplate.replace("${powerName}", localizedName);
+            fullTemplate = fullTemplate.replace("${namespacedKey}", namespacedKey.toString());
+            fullTemplate = fullTemplate.replace("${plugin}", PowerManager.getExtensions().get(namespacedKey.getNamespace()).getName());
+
+            if (powerMeta.marker()) {
+                fullTemplate = fullTemplate.replace("${trigger}", propertyMarker);
+            } else {
+                String defTriggers = instance.getTriggers().stream().map(Trigger::name).collect(Collectors.joining(", "));
+                if (powerMeta.immutableTrigger()) {
+                    String trigger = propertyImmutableTrigger.replace("${}", defTriggers);
+                    fullTemplate = fullTemplate.replace("${trigger}", trigger);
+                } else {
+                    String trigger = propertyDefaultTrigger.replace("${}", defTriggers);
+                    List<String> available = PowerManager.getAcceptedValue(clazz, properties.get("triggers").field().getAnnotation(AcceptedValue.class));
+                    trigger += propertyAvailableTrigger.replace("${}", String.join(", ", available));
+                    fullTemplate = fullTemplate.replace("${trigger}", trigger);
+                }
+            }
+
+            String description = PowerManager.getDescription(locale.toString(), namespacedKey, null);
+            fullTemplate = fullTemplate.replace("${description}", description == null ? I18n.format("message.power.no_description") : description);
+            fullTemplate = fullTemplate.replace("${properties}", propertiesDesc.toString());
+            java.nio.file.Files.write(file, fullTemplate.getBytes());
         }
-        return sb.toString();
     }
 
     @SubCommand(value = "updatecmdandentity")

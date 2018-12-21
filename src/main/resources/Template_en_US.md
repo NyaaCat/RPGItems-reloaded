@@ -4,6 +4,12 @@ Full Name: ${namespacedKey}
 
 Providing Plugin: ${plugin}
 
+${trigger}
+
+<!-- propertyDefaultTrigger:[Default Trigger: ${}. ] -->
+<!-- propertyAvailableTrigger:[All available Trigger: ${}] -->
+<!-- propertyImmutableTrigger:[Trigger: ${}] -->
+<!-- propertyMarker:[**Is a marker power**.] -->
 <!-- beginCustomHeader -->
 <!-- endCustomHeader -->
 
@@ -17,7 +23,7 @@ ${description}
 
 <!-- propertyName:[* ${}\n\n] -->
 <!-- propertyType:[  * Type: ${}\n] -->
-<!-- propertyDefault:[  * Default: ${}\n] -->
+<!-- propertyDefaultValue:[  * Default: ${}\n] -->
 <!-- propertyRequired:[  * **Required**\n] -->
 <!-- propertyDescription:[\n  ${}\n\n] -->
 ${properties}

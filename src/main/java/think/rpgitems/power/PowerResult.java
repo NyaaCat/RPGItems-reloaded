@@ -47,7 +47,9 @@ public class PowerResult<T> {
     }
 
     public PowerResult<T> sendMessage(CommandSender sender) {
-        sender.sendMessage(message);
+        if (message != null) {
+            sender.sendMessage(message);
+        }
         return this;
     }
 
