@@ -1,19 +1,24 @@
 package think.rpgitems.power;
 
+import java.lang.reflect.Field;
+
 public class PowerProperty {
-    private String name;
+    private final String name;
 
-    private boolean required;
+    private final boolean required;
 
-    private int order;
+    private final int order;
 
-    private String[] alias;
+    private final String[] alias;
 
-    public PowerProperty(String name, boolean required, int order, String[] alias) {
+    private final Field field;
+
+    private PowerProperty(String name, boolean required, int order, String[] alias, Field field) {
         this.name = name;
         this.required = required;
         this.order = order;
         this.alias = alias;
+        this.field = field;
     }
 
     public String name() {
@@ -30,5 +35,14 @@ public class PowerProperty {
 
     public String[] alias() {
         return alias;
+    }
+
+    public Field field() {
+        return field;
+    }
+
+    public static PowerProperty from(Field field, Property annotation, boolean required) {
+        if (annotation == null) return null;
+        return new PowerProperty(field.getName(), required, annotation.order(), annotation.alias(), field);
     }
 }

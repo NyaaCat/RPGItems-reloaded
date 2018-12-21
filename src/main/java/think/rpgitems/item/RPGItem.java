@@ -232,22 +232,18 @@ public class RPGItem {
             Map<Power, ConfigurationSection> conf = new HashMap<>();
             for (String sectionKey : powerList.getKeys(false)) {
                 ConfigurationSection section = powerList.getConfigurationSection(sectionKey);
-                try {
-                    String powerName = section.getString("powerName");
-                    NamespacedKey key = PowerManager.parseKey(powerName);
-                    Class<? extends Power> power = PowerManager.getPower(key);
-                    if (power == null) {
-                        plugin.getLogger().warning("Unknown power:" + key + " on item " + this.name);
-                        throw new UnknownPowerException(key);
-                    }
-                    Power pow = power.getConstructor().newInstance();
-                    pow.setItem(this);
-                    pow.init(section);
-                    addPower(key, pow, false);
-                    conf.put(pow, section);
-                } catch (InstantiationException | IllegalAccessException | NoSuchMethodException | InvocationTargetException e) {
-                    throw new RuntimeException(e);
+                String powerName = section.getString("powerName");
+                NamespacedKey key = PowerManager.parseKey(powerName);
+                Class<? extends Power> power = PowerManager.getPower(key);
+                if (power == null) {
+                    plugin.getLogger().warning("Unknown power:" + key + " on item " + this.name);
+                    throw new UnknownPowerException(key);
                 }
+                Power pow = PowerManager.instantiate(power);
+                pow.setItem(this);
+                pow.init(section);
+                addPower(key, pow, false);
+                conf.put(pow, section);
             }
             // 3.5 -> 3.6 conversion
             List<PowerSelector> selectors = getPower(PowerSelector.class);

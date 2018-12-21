@@ -11,7 +11,7 @@ import java.util.stream.Collectors;
 public class Context {
     private HashMap<UUID, ExpiringMap<String, Object>> storage = new HashMap<>();
 
-    private static Context instance;
+    private static Context instance = new Context();
 
     public static Context instance() {
         return instance;

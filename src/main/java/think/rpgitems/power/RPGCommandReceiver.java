@@ -141,13 +141,6 @@ public abstract class RPGCommandReceiver extends CommandReceiver {
         }
     }
 
-    protected Optional<PowerProperty> getLastRequired(SortedMap<PowerProperty, Field> argMap) {
-        return argMap.keySet()
-                     .stream()
-                     .filter(PowerProperty::required)
-                     .reduce((first, second) -> second);
-    }
-
     private List<String> resolvePowerProperties(CommandSender sender, RPGItem item, String last, Arguments cmd) {
         @LangKey(skipCheck = true) String powName = cmd.next();
         NamespacedKey powerKey;
@@ -158,20 +151,20 @@ public abstract class RPGCommandReceiver extends CommandReceiver {
         }
         Class<? extends Power> power = powers.get(powerKey);
         if (power == null) return Collections.emptyList();
-        SortedMap<PowerProperty, Field> argMap = PowerManager.getProperties(power);
+        Map<String, PowerProperty> argMap = PowerManager.getProperties(power);
         Set<Field> settled = new HashSet<>();
-        Optional<PowerProperty> req = getLastRequired(argMap);
 
-        List<Field> required = req.map(r -> argMap.entrySet()
-                                                  .stream()
-                                                  .filter(entry -> entry.getKey().order() <= r.order())
-                                                  .map(Map.Entry::getValue)
-                                                  .collect(Collectors.toList())).orElse(new ArrayList<>());
+        List<Field> required = argMap.values().stream()
+                                     .filter(PowerProperty::required)
+                                     .sorted(Comparator.comparing(PowerProperty::order))
+                                     .map(PowerProperty::field)
+                                     .collect(Collectors.toList());
 
         PowerMeta powerMeta = power.getAnnotation(PowerMeta.class);
 
-        for (Field field : argMap.values()) {
-            String name = field.getName();
+        for (Map.Entry<String, PowerProperty> prop : argMap.entrySet()) {
+            Field field = prop.getValue().field();
+            String name = prop.getKey();
             String value = cmd.argString(name, null);
             if (value != null
                         || isTrivialProperty(powerMeta, name)
@@ -193,8 +186,8 @@ public abstract class RPGCommandReceiver extends CommandReceiver {
                        || (!powerMeta.withSelectors() && name.equals("selectors"));
     }
 
-    private List<String> resolvePropertiesSuggestions(CommandSender sender, RPGItem item, String last, Class<? extends Power> power, SortedMap<PowerProperty, Field> argMap, Set<Field> settled, List<Field> required) {
-        if (argMap.values().stream().anyMatch(f -> last.startsWith(f.getName() + ":"))) {//we are suggesting a value as we have the complete property name
+    private List<String> resolvePropertiesSuggestions(CommandSender sender, RPGItem item, String last, Class<? extends Power> power, Map<String, PowerProperty> argMap, Set<Field> settled, List<Field> required) {
+        if (argMap.keySet().stream().anyMatch(f -> last.startsWith(f + ":"))) {//we are suggesting a value as we have the complete property name
             String currentPropertyName = last.split(":")[0];
             actionBarTip(sender, powers.inverse().get(power), currentPropertyName);
             return resolvePropertyValueSuggestion(item, power, currentPropertyName, last, true);
@@ -202,7 +195,7 @@ public abstract class RPGCommandReceiver extends CommandReceiver {
         List<String> suggestions;
         suggestions = required.stream().map(s -> s.getName() + ":").filter(s -> s.startsWith(last)).collect(Collectors.toList());
         if (!suggestions.isEmpty()) return suggestions; //required property
-        suggestions = argMap.values().stream().filter(s -> !settled.contains(s)).map(s -> s.getName() + ":").filter(s -> s.startsWith(last)).collect(Collectors.toList());
+        suggestions = argMap.values().stream().filter(s -> !settled.contains(s.field())).map(s -> s.field().getName() + ":").filter(s -> s.startsWith(last)).collect(Collectors.toList());
         return suggestions; //unsettled property
     }
 
@@ -239,7 +232,7 @@ public abstract class RPGCommandReceiver extends CommandReceiver {
         }
         if (cmd.top() == null) {
             // rpgitem item get/set power 1
-            return PowerManager.getProperties(powerClass).keySet().stream().map(PowerProperty::name).filter(s -> s.startsWith(last)).collect(Collectors.toList());
+            return PowerManager.getProperties(powerClass).keySet().stream().filter(s -> s.startsWith(last)).collect(Collectors.toList());
         }
         if (itemCommand.getValue().equals("get")) return Collections.emptyList();
         // rpgitem item set power 1 property

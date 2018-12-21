@@ -13,6 +13,7 @@ import think.rpgitems.RPGItems;
 
 import javax.annotation.CheckForNull;
 import java.lang.reflect.Field;
+import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Modifier;
 import java.util.*;
 import java.util.function.BiFunction;
@@ -26,7 +27,7 @@ import java.util.stream.Stream;
  */
 @SuppressWarnings("unchecked")
 public class PowerManager {
-    private static final Map<Class<? extends Power>, SortedMap<PowerProperty, Field>> properties = new HashMap<>();
+    private static final Map<Class<? extends Power>, Map<String, PowerProperty>> properties = new HashMap<>();
 
     private static final Map<Class<? extends Power>, PowerMeta> metas = new HashMap<>();
 
@@ -46,7 +47,7 @@ public class PowerManager {
     private static void registerPower(Class<? extends Power> clazz) {
         NamespacedKey key;
         try {
-            Power p = clazz.getConstructor().newInstance();
+            Power p = PowerManager.instantiate(clazz);
             key = p.getNamespacedKey();
             if (key != null) {
                 powers.put(key, clazz);
@@ -56,18 +57,32 @@ public class PowerManager {
             RPGItems.plugin.getLogger().log(Level.WARNING, "With {0}", clazz);
             return;
         }
-        SortedMap<PowerProperty, Field> argumentPriorityMap = getPowerProperties(clazz);
-        properties.put(clazz, argumentPriorityMap);
+        Map<String, PowerProperty> properties = getPowerProperties(clazz);
+        PowerManager.properties.put(clazz, properties);
         metas.put(clazz, clazz.getAnnotation(PowerMeta.class));
     }
 
-    private static SortedMap<PowerProperty, Field> getPowerProperties(Class<? extends Power> cls) {
-        SortedMap<PowerProperty, Field> argumentPriorityMap = new TreeMap<>(Comparator.comparing(PowerProperty::order).thenComparing(PowerProperty::hashCode));
-        Arrays.stream(cls.getFields())
-              .map(field -> Pair.of(field, field.getAnnotation(Property.class)))
-              .filter(pair -> pair.getValue() != null)
-              .forEach(pair -> argumentPriorityMap.put(new PowerProperty(pair.getKey().getName(), pair.getValue().required(), pair.getValue().order(), pair.getValue().alias()), pair.getKey()));
-        return argumentPriorityMap;
+    private static Map<String, PowerProperty> getPowerProperties(Class<? extends Power> cls) {
+        List<Pair<Field, Property>> collect = Arrays.stream(cls.getFields())
+                                                    .map(field -> Pair.of(field, field.getAnnotation(Property.class)))
+                                                    .filter(pair -> pair.getValue() != null)
+                                                    .sorted(Comparator.comparingInt(p -> p.getValue().order()))
+                                                    .collect(Collectors.toList());
+
+        int requiredOrder = collect.stream()
+                                   .map(Pair::getValue)
+                                   .filter(Property::required)
+                                   .reduce((first, second) -> second)
+                                   .map(Property::order)
+                                   .orElse(-1);
+
+        return collect.stream()
+                      .collect(
+                              Collectors.toMap(
+                                      p -> p.getKey().getName(),
+                                      p -> PowerProperty.from(p.getKey(), p.getValue(), p.getValue().order() < requiredOrder)
+                              )
+                      );
     }
 
     public static void registerPowers(Plugin plugin, String basePackage) {
@@ -143,7 +158,7 @@ public class PowerManager {
      * @return All registered powers' properties mapped by theirs class
      */
     @SuppressWarnings("unused")
-    public static Map<Class<? extends Power>, SortedMap<PowerProperty, Field>> getProperties() {
+    public static Map<Class<? extends Power>, Map<String, PowerProperty> > getProperties() {
         return Collections.unmodifiableMap(properties);
     }
 
@@ -155,17 +170,26 @@ public class PowerManager {
         return Collections.unmodifiableMap(powers);
     }
 
-    public static SortedMap<PowerProperty, Field> getProperties(Class<? extends Power> cls) {
-        return Collections.unmodifiableSortedMap(properties.get(cls));
+    public static Map<String, PowerProperty>  getProperties(Class<? extends Power> cls) {
+        return Collections.unmodifiableMap(properties.get(cls));
     }
 
-    public static SortedMap<PowerProperty, Field> getProperties(NamespacedKey key) {
+    public static Map<String, PowerProperty>  getProperties(NamespacedKey key) {
         return getProperties(powers.get(key));
     }
 
     @CheckForNull
     public static Class<? extends Power> getPower(NamespacedKey key) {
         return powers.get(overrides.computeIfAbsent(key, Function.identity()));
+    }
+
+    public static <T extends Power> T instantiate(Class<T> power) {
+        try {
+            return power.getConstructor().newInstance();
+        } catch (InstantiationException | IllegalAccessException | InvocationTargetException | NoSuchMethodException e) {
+            RPGItems.logger.severe("not instantiatable power: " + power);
+            throw new RuntimeException(e);
+        }
     }
 
     public static boolean hasPower(NamespacedKey key) {

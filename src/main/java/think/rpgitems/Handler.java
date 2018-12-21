@@ -35,7 +35,6 @@ import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.lang.reflect.Field;
-import java.lang.reflect.InvocationTargetException;
 import java.nio.channels.FileChannel;
 import java.nio.channels.FileLock;
 import java.nio.file.FileVisitResult;
@@ -273,7 +272,7 @@ public class Handler extends RPGCommandReceiver {
                     msg(sender, "message.power.key", power.toString());
                     msg(sender, "message.power.description", PowerManager.getDescription(power, null));
                     PowerManager.getProperties(power).forEach(
-                            (prop, f) -> showPowerProp(sender, power, prop, f, null)
+                            (name, prop) -> showPowerProp(sender, power, prop, null)
                     );
                     msg(sender, "message.line_separator");
                 });
@@ -776,12 +775,12 @@ public class Handler extends RPGCommandReceiver {
         Power pow = power.get();
         YamlConfiguration conf = new YamlConfiguration();
         if (property != null) {
-            Optional<Map.Entry<PowerProperty, Field>> prop = PowerManager.getProperties(item.getPowerKey(pow)).entrySet().stream().filter((pf) -> pf.getKey().name().equals(property)).findAny();
-            if (!prop.isPresent()) {
+            PowerProperty prop = PowerManager.getProperties(item.getPowerKey(pow)).get(property);
+            if (prop == null) {
                 msg(sender, "message.power_property.property_notfound", property);
                 return;
             }
-            Field field = prop.get().getValue();
+            Field field = prop.field();
             String value = Utils.getProperty(pow, property, field);
             msg(sender, "message.power_property.get", nth, pow.getName(), property, value);
         } else {
@@ -1052,7 +1051,7 @@ public class Handler extends RPGCommandReceiver {
 
     @SubCommand("power")
     @Attribute("power")
-    public void itemAddPower(CommandSender sender, Arguments args) throws IllegalAccessException {
+    public void itemAddPower(CommandSender sender, Arguments args) {
         String itemStr = args.next();
         String powerStr = args.next();
         if (itemStr == null || (itemStr.equals("help") && getItem(itemStr, sender) == null)) {
@@ -1066,7 +1065,7 @@ public class Handler extends RPGCommandReceiver {
                 msg(sender, "message.item.power", power.getLocalizedName(plugin.cfg.language), power.getNamespacedKey().toString(), power.displayText() == null ? I18n.format("message.power.no_display") : power.displayText(), power.getTriggers().stream().map(Trigger::name).collect(Collectors.joining(",")));
                 if ("list".equals(powerStr)) {
                     PowerManager.getProperties(power.getNamespacedKey()).forEach(
-                            (prop, f) -> showPowerProp(sender, power.getNamespacedKey(), prop, f, power)
+                            (name, prop) -> showPowerProp(sender, power.getNamespacedKey(), prop, power)
                     );
                 }
             }
@@ -1079,60 +1078,61 @@ public class Handler extends RPGCommandReceiver {
         Class<? extends Power> cls = keyClass.getValue();
         NamespacedKey key = keyClass.getKey();
         try {
-            power = cls.getConstructor().newInstance();
+            power = PowerManager.instantiate(cls);
             power.setItem(item);
             power.init(new YamlConfiguration());
-        } catch (InstantiationException | IllegalAccessException | NoSuchMethodException | InvocationTargetException e) {
-            plugin.getLogger().log(Level.WARNING, "Error adding power " + powerStr + " to item " + itemStr + " " + item, e);
-            msg(sender, "internal.error.command_exception");
-            return;
-        }
-        SortedMap<PowerProperty, Field> argMap = PowerManager.getProperties(cls);
-        Set<Field> settled = new HashSet<>();
-        Optional<PowerProperty> req = getLastRequired(argMap);
+            Map<String, PowerProperty> argMap = PowerManager.getProperties(cls);
+            Set<Field> settled = new HashSet<>();
 
-        Set<Field> required = req.map(r -> argMap.entrySet()
-                                                 .stream()
-                                                 .filter(entry -> entry.getKey().order() <= r.order())
-                                                 .map(Map.Entry::getValue)
-                                                 .collect(Collectors.toSet())).orElse(new HashSet<>());
+            List<Field> required = argMap.values().stream()
+                                         .filter(PowerProperty::required)
+                                         .sorted(Comparator.comparing(PowerProperty::order))
+                                         .map(PowerProperty::field)
+                                         .collect(Collectors.toList());
 
-        for (Field field : argMap.values()) {
-            String name = field.getName();
-            String value = args.argString(name, null);
-            if (value != null) {
+            for (Map.Entry<String, PowerProperty> prop : argMap.entrySet()) {
+                Field field = prop.getValue().field();
+                String name = prop.getKey();
+                String value = args.argString(name, null);
+                if (value != null) {
+                    Utils.setPowerProperty(sender, power, field, value);
+                    required.remove(field);
+                    settled.add(field);
+                }
+            }
+            for (Field field : argMap.entrySet()
+                                     .stream()
+                                     .filter(p -> p.getValue().required())
+                                     .map(Map.Entry::getValue)
+                                     .sorted(Comparator.comparing(PowerProperty::order))
+                                     .map(PowerProperty::field)
+                                     .collect(Collectors.toList())) {
+                if (settled.contains(field)) continue;
+                String value = args.next();
+                if (value == null) {
+                    if (!required.isEmpty()) {
+                        throw new BadCommandException("message.power.required",
+                                required.stream().map(Field::getName).collect(Collectors.joining(", "))
+                        );
+                    } else {
+                        break;
+                    }
+                }
                 Utils.setPowerProperty(sender, power, field, value);
                 required.remove(field);
                 settled.add(field);
             }
+            item.addPower(key, power);
+            ItemManager.refreshItem();
+            ItemManager.save(item);
+            msg(sender, "message.power.ok");
+        } catch (Exception e) {
+            plugin.getLogger().log(Level.WARNING, "Error adding power " + powerStr + " to item " + itemStr + " " + item, e);
+            msg(sender, "internal.error.command_exception");
         }
-        for (Field field : argMap.entrySet()
-                                 .stream()
-                                 .filter(p -> p.getKey().order() != Integer.MAX_VALUE)
-                                 .map(Map.Entry::getValue)
-                                 .collect(Collectors.toList())) {
-            if (settled.contains(field)) continue;
-            String value = args.next();
-            if (value == null) {
-                if (!required.isEmpty()) {
-                    throw new BadCommandException("message.power.required",
-                            required.stream().map(Field::getName).collect(Collectors.joining(", "))
-                    );
-                } else {
-                    break;
-                }
-            }
-            Utils.setPowerProperty(sender, power, field, value);
-            required.remove(field);
-            settled.add(field);
-        }
-        item.addPower(key, power);
-        ItemManager.refreshItem();
-        ItemManager.save(item);
-        msg(sender, "message.power.ok");
     }
 
-    private void showPowerProp(CommandSender sender, NamespacedKey powerKey, PowerProperty prop, Field f, Power powerObj) {
+    private void showPowerProp(CommandSender sender, NamespacedKey powerKey, PowerProperty prop, Power powerObj) {
         String name = prop.name();
         PowerMeta powerMeta = PowerManager.getMeta(powerKey);
         if (isTrivialProperty(powerMeta, name)) {
@@ -1141,7 +1141,7 @@ public class Handler extends RPGCommandReceiver {
         String desc = PowerManager.getDescription(powerKey, name);
         msg(sender, "message.power.property", name, Strings.isNullOrEmpty(desc) ? I18n.format("message.power.no_description") : desc);
         if (powerObj != null) {
-            msg(sender, "message.power.property_value", Utils.getProperty(powerObj, name, f));
+            msg(sender, "message.power.property_value", Utils.getProperty(powerObj, name, prop.field()));
         }
     }
 
