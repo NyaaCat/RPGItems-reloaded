@@ -59,8 +59,8 @@ public class PowerTippedArrow extends BasePower implements PowerRightClick {
         if (!checkCooldown(this, player, cooldown, true, true)) return PowerResult.cd();
         if (!getItem().consumeDurability(stack, cost)) return PowerResult.cost();
         player.playSound(player.getLocation(), Sound.ENTITY_ARROW_SHOOT, 1.0f, 1.0f);
+        Events.registerRPGProjectile(this.getItem(), stack, player);
         TippedArrow arrow = player.launchProjectile(TippedArrow.class);
-        Events.registerProjectile(arrow.getEntityId(), getItem().getUid());
         arrow.addCustomEffect(new PotionEffect(type, duration, amplifier), true);
         Events.autoRemoveProjectile(arrow.getEntityId());
         return PowerResult.ok();

@@ -52,6 +52,10 @@ public class Events implements Listener {
     private static HashMap<Integer, Integer> rpgProjectiles = new HashMap<>();
     private static Map<UUID, ItemStack> localItemStacks = new HashMap<>();
 
+    private static RPGItem projectileRpgItem;
+    private static ItemStack projectileItemStack;
+    private static Player projectilePlayer;
+
     static private boolean canStack(ItemStack a, ItemStack b) {
         if (a != null && a.getType() == Material.AIR) a = null;
         if (b != null && b.getType() == Material.AIR) b = null;
@@ -82,7 +86,16 @@ public class Events implements Listener {
         return localItemStacks.remove(entityId);
     }
 
-    public static void registerProjectile(int entityId, int uid) {
+    public static void registerRPGProjectile(RPGItem rpgItem, ItemStack itemStack, Player player) {
+        if (projectilePlayer != null) {
+            throw new IllegalStateException();
+        }
+        Events.projectileRpgItem = rpgItem;
+        Events.projectileItemStack = itemStack;
+        Events.projectilePlayer = player;
+    }
+
+    public static void registerRPGProjectile(int entityId, int uid) {
         rpgProjectiles.put(entityId, uid);
     }
 
@@ -227,6 +240,18 @@ public class Events implements Listener {
         ProjectileSource shooter = entity.getShooter();
         if (!(shooter instanceof Player)) return;
         Player player = (Player) shooter;
+        if (projectilePlayer != null) {
+            if (projectilePlayer != player) {
+                throw new IllegalStateException();
+            }
+            registerRPGProjectile(e.getEntity().getEntityId(), projectileRpgItem.getUid());
+            projectileRpgItem.power(player, projectileItemStack, e, Trigger.LAUNCH_PROJECTILE);
+            projectileRpgItem = null;
+            projectilePlayer = null;
+            projectileItemStack = null;
+            return;
+        }
+
         ItemStack item = player.getInventory().getItemInMainHand();
         RPGItem rItem = ItemManager.toRPGItem(item);
         if (entity instanceof Trident) {
@@ -257,7 +282,7 @@ public class Events implements Listener {
         if (ItemManager.canUse(player, rItem) == Event.Result.DENY) {
             return;
         }
-        registerProjectile(e.getEntity().getEntityId(), rItem.getUid());
+        registerRPGProjectile(e.getEntity().getEntityId(), rItem.getUid());
         rItem.power(player, item, e, Trigger.LAUNCH_PROJECTILE);
     }
 

@@ -66,9 +66,9 @@ public class PowerShulkerBullet extends BasePower implements PowerRightClick {
     public PowerResult<Void> rightClick(Player player, ItemStack stack, PlayerInteractEvent event) {
         if (!checkCooldown(this, player, cooldown, true, true)) return PowerResult.cd();
         if (!getItem().consumeDurability(stack, cost)) return PowerResult.cost();
+        Events.registerRPGProjectile(this.getItem(), stack, player);
         ShulkerBullet bullet = player.launchProjectile(ShulkerBullet.class, player.getEyeLocation().getDirection());
         bullet.setPersistent(false);
-        Events.registerProjectile(bullet.getEntityId(), getItem().getUid());
         List<LivingEntity> entities = getLivingEntitiesInCone(getNearestLivingEntities(this, player.getEyeLocation(), player, range, 0), player.getLocation().toVector(), 30, player.getLocation().getDirection());
         if (!entities.isEmpty()) {
             Context.instance().putExpiringSeconds(player.getUniqueId(), "shulkerbullet.target", entities.get(0), 3);

@@ -9,6 +9,7 @@ import org.bukkit.event.player.PlayerSwapHandItemsEvent;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.scheduler.BukkitRunnable;
 import org.bukkit.util.Vector;
+import think.rpgitems.Events;
 import think.rpgitems.I18n;
 import think.rpgitems.power.*;
 
@@ -119,7 +120,6 @@ public class PowerTranslocator extends BasePower implements PowerMainhandItem, P
     public PowerResult<Boolean> swapToOffhand(Player player, ItemStack stack, PlayerSwapHandItemsEvent event) {
         if (!checkCooldown(this, player, 0, true, true)) return PowerResult.ok(false);
         if (!getItem().consumeDurability(stack, setupCost)) return PowerResult.cost();
-
         SpectralArrow arrow = player.launchProjectile(SpectralArrow.class);
         arrow.setPickupStatus(Arrow.PickupStatus.DISALLOWED);
         arrow.setPersistent(false);

@@ -76,7 +76,7 @@ public class Handler extends RPGCommandReceiver {
     public void reload(CommandSender sender, Arguments args) {
         plugin.cfg = new Configuration(plugin);
         plugin.cfg.load();
-        plugin.i18n.load();
+        plugin.i18n = new I18n(plugin, plugin.cfg.language);
         WGSupport.reload();
         ItemManager.reload(plugin);
         plugin.managedPlugins.forEach(Bukkit.getPluginManager()::disablePlugin);
@@ -1393,7 +1393,7 @@ public class Handler extends RPGCommandReceiver {
             StringBuilder customProperties = new StringBuilder();
             StringBuilder customExample = new StringBuilder();
             StringBuilder customNote = new StringBuilder();
-            Path file = wikiDir.toPath().resolve(instance.getName() + " (" + locale.toString() + ").md");
+            Path file = wikiDir.toPath().resolve(instance.getName() + "-" + locale.toString() + ".md");
             if (file.toFile().exists()) {
                 List<String> old = Files.readAllLines(file, StandardCharsets.UTF_8);
                 Iterator<String> oldIterator = old.iterator();
@@ -1512,7 +1512,7 @@ public class Handler extends RPGCommandReceiver {
             String description = PowerManager.getDescription(locale.toString(), namespacedKey, null);
             fullTemplate = fullTemplate.replace("${description}", description == null ? I18n.format("message.power.no_description") : description);
             fullTemplate = fullTemplate.replace("${properties}", propertiesDesc.toString());
-            java.nio.file.Files.write(file, fullTemplate.getBytes());
+            java.nio.file.Files.write(file, fullTemplate.getBytes(StandardCharsets.UTF_8));
         }
     }
 

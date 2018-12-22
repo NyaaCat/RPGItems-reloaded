@@ -171,7 +171,7 @@ public class PowerProjectile extends BasePower implements PowerRightClick, Power
     public PowerResult<Void> fire(Player player, ItemStack stack) {
         if (!checkCooldown(this, player, cooldown, true, true)) return PowerResult.cd();
         if (!getItem().consumeDurability(stack, cost)) return PowerResult.cost();
-        fire(player, player.getEyeLocation().getDirection());
+        fire(player, stack, player.getEyeLocation().getDirection());
         UUID uuid = player.getUniqueId();
         if (burstCount > 1) {
             Integer prev = burstTask.getIfPresent(uuid);
@@ -186,7 +186,7 @@ public class PowerProjectile extends BasePower implements PowerRightClick, Power
                     if (player.getInventory().getItemInMainHand().equals(stack)) {
                         burstTask.put(uuid, this.getTaskId());
                         if (count-- > 0) {
-                            fire(player, player.getEyeLocation().getDirection());
+                            fire(player, stack, player.getEyeLocation().getDirection());
                             return;
                         }
                     }
@@ -199,9 +199,10 @@ public class PowerProjectile extends BasePower implements PowerRightClick, Power
         return PowerResult.ok();
     }
 
-    private void fire(Player player, Vector direction) {
+    private void fire(Player player, ItemStack stack, Vector direction) {
         if (!isCone) {
             Vector v = direction.multiply(speed);
+            Events.registerRPGProjectile(this.getItem(), stack, player);
             Projectile projectile = player.launchProjectile(projectileType, v);
             handleProjectile(v, projectile);
         } else {
@@ -221,6 +222,7 @@ public class PowerProjectile extends BasePower implements PowerRightClick, Power
                 double det = ThreadLocalRandom.current().nextDouble(0, 2 * Math.PI);
                 double theta = Math.acos(z);
                 Vector v = a.clone().multiply(Math.cos(det)).add(b.clone().multiply(Math.sin(det))).multiply(Math.sin(theta)).add(direction.clone().multiply(Math.cos(theta)));
+                Events.registerRPGProjectile(this.getItem(), stack, player);
                 Projectile projectile = player.launchProjectile(projectileType, v.normalize().multiply(speed));
                 handleProjectile(v, projectile);
             }
@@ -230,7 +232,6 @@ public class PowerProjectile extends BasePower implements PowerRightClick, Power
     @SuppressWarnings("deprecation")
     private void handleProjectile(Vector v, Projectile projectile) {
         projectile.setPersistent(false);
-        Events.registerProjectile(projectile.getEntityId(), getItem().getUid());
         projectile.setGravity(gravity);
         if (projectile instanceof Explosive) {
             if (yield != null) {
@@ -262,7 +263,7 @@ public class PowerProjectile extends BasePower implements PowerRightClick, Power
         if (!checkCooldown(this, player, cooldown, true, true)) return PowerResult.cd();
         if (!getItem().consumeDurability(stack, cost)) return PowerResult.cost();
         Vector direction = player.getEyeLocation().toVector().subtract(entity.getLocation().toVector()).normalize();
-        fire(player, direction);
+        fire(player, stack, direction);
         UUID uuid = player.getUniqueId();
         if (burstCount > 1) {
             Integer prev = burstTask.getIfPresent(uuid);
@@ -277,7 +278,7 @@ public class PowerProjectile extends BasePower implements PowerRightClick, Power
                     if (player.getInventory().getItemInMainHand().equals(stack)) {
                         burstTask.put(uuid, this.getTaskId());
                         if (count-- > 0) {
-                            fire(player, direction);
+                            fire(player, stack, direction);
                             return;
                         }
                     }

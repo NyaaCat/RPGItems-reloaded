@@ -365,6 +365,7 @@ power:
     both: 百分之 %.1f 的几率暴击 %.1f 倍，百分之 %.1f 的几率背刺 %.1f 倍
     critical: 百分之 %.1f 的几率暴击 %.1f 倍
     backstab: 百分之 %.1f 的几率背刺 %.1f 倍
+  gunfu: 子弹会自动追踪敌人 (%.1fs cooldown)
   properties:
     base:
       id: 此条件/选择器的ID
@@ -538,6 +539,14 @@ power:
       maxDistance: 最大距离
       maxTicks: 捕获的最长时间
       throwSpeed: 捕获结束后实体投掷速度
+    gunfu:
+      main_name: 枪斗术
+      main_description: 使弹射物自动追踪敌人
+      distance: 最大索敌距离
+      viewAngle: 最大索敌视角，度
+      maxTicks: 最大追踪时间，游戏刻
+      initVelFactor: 初速度倍率
+      velFactor: 每刻速度改变倍率
     headshot:
       main_name: 爆头
       main_description: 弹射物爆头时增加伤害

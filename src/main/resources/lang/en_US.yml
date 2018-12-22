@@ -360,6 +360,7 @@ power:
     withdraw: "Withdraw %s (%.1fs cooldown)"
   explosion: '%.1f%% chance to create a explosion of power %.1f'
   headshot: 'Deal %.1f damage when headshot'
+  gunfu: "Projectiles will track a enemy (%.1fs cooldown)"
   properties:
     base:
       id: ID of this condition/selector.
@@ -544,6 +545,14 @@ power:
       maxDistance: Maximum distance to catch
       maxTicks: Maximum ticks catching
       throwSpeed: Speed throwing entity
+    gunfu:
+      main_name: Gun Fu
+      main_description: Make projectiles track enemies
+      distance: Maximum distance to lock enemy
+      viewAngle: Maximum view angle to lock enemy
+      maxTicks: Maximum ticks tracking
+      initVelFactor: Factor of init velocity
+      velFactor: Factor of velocity change per tick
     headshot:
       main_name: Headshot
       main_description: Increase damage when headshot

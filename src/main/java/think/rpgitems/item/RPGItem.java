@@ -1030,7 +1030,7 @@ public class RPGItem {
     }
 
     public Optional<Integer> getItemStackDurability(ItemStack item) {
-        if (getMaxDurability() != -1) {
+        if (getMaxDurability() == -1) {
             return Optional.empty();
         }
         ItemMeta itemMeta = item.getItemMeta();
