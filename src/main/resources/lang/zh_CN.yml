@@ -37,7 +37,7 @@ message:
     need_material: 你需要 %s 以修复此物品
     economy: 未找到经济支持插件
     file_not_exists: 文件不存在：%s
-    reloading_locked: 无法重载一个尚未解锁的物品
+    reloading_locked: 无法重载被锁定的物品！使用 `/rpgitem backupitem` 以备份并解锁该物品。
     recovering: 恢复 %s 自 %s 失败：%s。建议停止服务器并手动检查物品配置及其备份。
     item_unlocked: 无法编辑已解锁的物品%s。请重载它再编辑。
     loading: 从%s加载物品时出错。%s
@@ -165,8 +165,8 @@ message:
       na: 物品 %s 无说明
     load: 已载入物品 %s {item}
     empty_dir: 跳过空目录 %s
-    file_deleted: 物品配置已删除。
-    recovering: 重载物品失败，恢复中。您的修改已保存至 %s。
+    file_deleted: 物品配置已删除
+    recovering: 重载物品失败，恢复中。您的修改已保存至 %s
     unlocked: 物品 %s 已解锁，备份至 %s。
     backedup: 物品 %s 已备份至 %s。
     cleanbackup: 已清理备份。
@@ -271,7 +271,7 @@ message:
     以 MIT 授权
 
     Bug反馈: https://github.com/NyaaCat/RPGItems-reloaded/issues'
-  no_item: 暂无物品
+  no_item: 暂无物品。
   spu:
     no_endpoint: 未设置 SPU 服务器地址
     finish: 数据升级完成
@@ -364,49 +364,49 @@ power:
   gunfu: 子弹会自动追踪敌人 (%.1fs cooldown)
   properties:
     base:
-      id: 此条件/选择器的ID
-      cooldown: 技能的冷却时间，以游戏刻为单位
+      id: 此条件/选择器的ID。
+      cooldown: 技能的冷却时间，以游戏刻为单位。
       display: 技能的提示文字。
-      cost: 技能的耐久消耗量
-      isStatic: 是否仅在触发开始时测试条件
-      isCritical: 条件失败时是否中止当前触发
-      triggers: 技能的触发
-      conditions: 技能的条件
-      selectors: 应用到本技能的选择器
+      cost: 技能的耐久消耗量。
+      isStatic: 是否仅在触发开始时测试条件。
+      isCritical: 条件失败时是否中止当前触发。
+      triggers: 技能的触发。
+      conditions: 技能的条件。
+      selectors: 应用到本技能的选择器。
     aoe:
       main_name: 范围效果
       main_description: 对周围实体施放状态效果。可使用选择器。
-      range: 有效范围，方块
-      type: 状态效果
-      duration: 持续时间，游戏刻
-      amplifier: 效果倍率
-      selfapplication: 是否对自身使用
-      name: 技能的提示文字
+      range: 有效范围，方块。
+      type: 状态效果。
+      duration: 持续时间，游戏刻。
+      amplifier: 效果倍率。
+      selfapplication: 是否对自身使用。
+      name: 技能的提示文字。
     aoecommand:
       main_name: 范围命令
       main_description: 对周围实体执行命令。可使用选择器。
       command: 要执行的命令
-      rm: 最小距离，方块
-      r: 最大距离，方块
-      facing: 有效视角，度
+      rm: 最小距离，方块。
+      r: 最大距离，方块。
+      facing: 有效视角，度。
       permission: 执行指令所需的临时权限
-      c: 实体的最大数量
+      c: 实体的最大数量。
       type: 实体的类型
       mustsee: 是否必须要看见实体
       range: 有效方块范围。
       selfapplication: 是否应用于触发的玩家。
     arrow:
       main_name: 射出一矢
-      main_description: 发射一支箭
+      main_description: 发射一支箭。
     attract:
       main_name: 吸引
       main_description: 吸引附近的怪物到玩家
-      radius: 有效半径
-      maxSpeed: 最大速度
-      duration: 主动触发的持续时间
-      attractingTickCost: 吸引时每刻的耐久消耗
-      attractingEntityTickCost: 吸引时每个实体每刻的耐久消耗
-      attractPlayer: 是否允许吸引玩家
+      radius: 有效半径。
+      maxSpeed: 最大速度。
+      duration: 主动触发的持续时间。
+      attractingTickCost: 吸引时每刻的耐久消耗。
+      attractingEntityTickCost: 吸引时每个实体每刻的耐久消耗。
+      attractPlayer: 是否允许吸引玩家。
     attributemodifier:
       main_name: 属性修改
       main_description: 修改玩家/物品属性
@@ -435,25 +435,25 @@ power:
       glass: 暂时不可用
     command:
       main_name: 命令
-      main_description: 执行一条命令
+      main_description: 执行一条命令。
       command: 执行的命令
       permission: 执行指令所需的临时权限
     commandhit:
       main_name: 击中命令
-      main_description: 击中目标时执行一条命令
+      main_description: 击中目标时执行一条命令。
       command: 执行的命令
       permission: 执行指令所需的临时权限
       minDamage: 触发最小的伤害
     consume:
       main_name: 消耗
-      main_description: 移除一份当前物品
+      main_description: 移除一份当前物品。
       isRight: 用于触发技能的鼠标键
     consumehit:
       main_name: 击中消耗
-      main_description: 击中目标时移除一份当前物品
+      main_description: 击中目标时移除一份当前物品。
     criticalhit:
       main_name: 背刺暴击
-      main_description: 暴击几率%%让攻击乘以暴击倍率。在背刺情况下，额外背刺几率%%让攻击乘以背刺倍率
+      main_description: 暴击几率%%让攻击乘以暴击倍率。在背刺情况下，额外背刺几率%%让攻击乘以背刺倍率。
       backstabChance: 背刺几率
       backstabFactor: 背刺倍率
       chance: 暴击几率
@@ -507,7 +507,7 @@ power:
       main_name: 爆炸
       main_description: 制造一个玩家产生的爆炸
       chance: 触发几率，百分比
-      power: 爆炸威力。 4 为 TNT 的爆炸威力。
+      power: 爆炸威力。 4 为 TNT 的爆炸威力
       distance: 最远距离
     fire:
       main_name: 喷火
@@ -577,7 +577,7 @@ power:
       main_description: 保留指定的 Lore
       regex: 正则表达式
       desc: 技能的提示文字
-      find: 是否只需要在lore中找到该正则表达式
+      find: 是否只需要在lore中找到该正则表达式。
     noimmutabletick:
       main_name: 取消无敌时间
       main_description: 取消被攻击怪物的无敌时间
