@@ -8,7 +8,7 @@ message:
     '2': 如果想自定义合成表
     '5': 进行放置
   error:
-    legacy_name: '%s 在 Minecraft 1.13 有一个新名字：%s'
+    legacy_name: '%s 在 Spigot 1.13 有一个新名字：%s'
     invalid_option: '输入 %s 对于 %s 无效. 可选项: %s'
     effect: '%s 不是一个有效的效果'
     permission: 你没有权限： '%s'
@@ -34,14 +34,14 @@ message:
       extension: 未知扩展： %s
     option: 无效项 '%s'
     iteminhand: 手中没有物品
-    need_material: '你需要 %s 以修复此物品'
+    need_material: 你需要 %s 以修复此物品
     economy: 未找到经济支持插件
     file_not_exists: 文件不存在：%s
     reloading_locked: 无法重载一个尚未解锁的物品
     recovering: 恢复 %s 自 %s 失败：%s。建议停止服务器并手动检查物品配置及其备份。
     item_unlocked: 无法编辑已解锁的物品%s。请重载它再编辑。
     loading: 从%s加载物品时出错。%s
-    verifying: '验证%s完整性出错。%s'
+    verifying: 验证%s完整性出错。%s
   wgcustomflag:
     disable: Worldguard 自定义标志已禁用
     enable: Worldguard 自定义标志已启用
@@ -56,9 +56,9 @@ message:
     not_vaild_int: '''%s'' 不是一个有效的整数'
     get: 第 %d 个技能 '%s' 的技能属性 %s 为 %s
     change: 技能属性已设置
-    all: |-
-      第 %d 个技能 '%s'：
-      %s
+    all: '第 %d 个技能 ''%s''：
+
+      %s'
   drop:
     get: 从 '%s' 掉落 '%s' 的几率为 %.2f%%
     set: 从 '%s' 掉落 '%s' 的几率设置为 %.2f%%
@@ -139,29 +139,29 @@ message:
     get: '物品 ''%s'' 材质为 {itemName} (%s): %d '
     list: '%s - {item}'
     print: '{itemName}'
-    power: '技能 %s (%s)：%s &r[%s]'
-    dump: |-
-      物品 %s:
-      %s
+    power: 技能 %s (%s)：%s &r[%s]
+    dump: '物品 %s:
+
+      %s'
     author:
       set: 物品 %s 的作者已设置为 {author}
       get: 物品 %s 的作者为 {author}
       na: 物品 %s 的作者不详
     license:
-      set: |-
-        物品 %s 的协议已设置为：
-        %s
-      get: |-
-        物品 %s 的协议为：
-        %s
+      set: '物品 %s 的协议已设置为：
+
+        %s'
+      get: '物品 %s 的协议为：
+
+        %s'
       na: 物品 %s 的协议不详
     note:
-      set: |-
-        物品 %s 的说明已设置为：
-        %s
-      get: |-
-        物品 %s 的说明为：
-        %s
+      set: '物品 %s 的说明已设置为：
+
+        %s'
+      get: '物品 %s 的说明为：
+
+        %s'
       na: 物品 %s 无说明
     load: 已载入物品 %s {item}
     empty_dir: 跳过空目录 %s
@@ -196,7 +196,7 @@ message:
     unknown: 未知技能 %s
     removed: 技能 %s 已移除
     required: '缺少必选参数: %s'
-    key: "&3&l技能 &r%s"
+    key: '&3&l技能 &r%s'
     description: '&3&l-| &r%s'
     property: '&b-| %s： &r%s'
     property_value: '&b-| &r%s'
@@ -210,14 +210,14 @@ message:
   skyhook:
     fail: 你没有钩到任何东西
   color:
-    next: '%s颜色已改变！'
+    next: '%s 颜色已改变！'
   print:
     itemflags: 'ItemFlags: '
     durability: '最大耐久度: %d'
     customitemmodel: '自定义模型: %s'
-    author: '作者：{author}'
-    note: '说明：%s'
-    license: '授权：%s'
+    author: 作者：{author}
+    note: 说明：%s
+    license: 授权：%s
   itemflag:
     add: 成功添加ItemFlag %s
     remove: 已将ItemFlag %s从物品上移除
@@ -253,16 +253,14 @@ message:
     conflict_name: 待导入物品与现有物品有相同名称： %s ，请在命令中使用 <原名称>:<新名称> 指定新名称
     invalid_conf: 物品配置无效： %s
     not_supported: 不支持从 %s 导入
-
   export:
     gist:
       token: 未指定 Gist Token，请在命令中指定 token:<token> 或者配置中配置 githubToken
-      ed: '导出成功 https://gist.github.com/%s'
+      ed: 导出成功 https://gist.github.com/%s
       timeout: Gist 上传超时
       failed: Gist 上传失败
       code: Gist API 调用错误： %d
     not_supported: 不支持从 %s 导出
-
   version: 'RPGItem v%s （{GIT_BRANCH} 分支，{GIT_HASH}）
 
 
@@ -280,8 +278,7 @@ message:
     command:
       code: '%s &r命令升级失败：%d, %s
 
-        %s
-        '
+        %s '
       updated: '%s &r命令已升级:
 
         %s ->
@@ -290,8 +287,7 @@ message:
       warn: '警告: %s'
       failed: '%s &r命令升级失败：%s
 
-       %s
-       '
+        %s '
       timeout: '%s &r命令升级超时'
     entity:
       code: '%s &r实体升级失败：%d, %s %s'
@@ -354,11 +350,11 @@ power:
   stuck: 攻击后 %d 几率敌人无法移动 %d tick (%.1f 秒冷却时间)
   shulkerbullet: 发射潜影贝子弹 (%.1f 秒冷却时间)
   translocator: 切副手发射传送信标，切主手传送至信标，从副手拿出拆除信标 (%.1f 秒冷却时间)
-  glove: "捕获一个实体 (%.1fs 冷却)"
-  mount: "骑乘一个实体 (%.1fs 冷却)"
+  glove: 捕获一个实体 (%.1fs 冷却)
+  mount: 骑乘一个实体 (%.1fs 冷却)
   economy:
-    deposit: "获得 %s (%.1fs cooldown)"
-    withdraw: "支付 %s (%.1fs cooldown)"
+    deposit: 获得 %s (%.1fs cooldown)
+    withdraw: 支付 %s (%.1fs cooldown)
   explosion: 百分之 %.1f 的概率制造一个强度为 %.1f 的爆炸
   headshot: 爆头时造成 %.1f 倍伤害
   criticalhit:
@@ -370,7 +366,7 @@ power:
     base:
       id: 此条件/选择器的ID
       cooldown: 技能的冷却时间，以游戏刻为单位
-      display: 技能的提示文字
+      display: 技能的提示文字。
       cost: 技能的耐久消耗量
       isStatic: 是否仅在触发开始时测试条件
       isCritical: 条件失败时是否中止当前触发
@@ -397,6 +393,8 @@ power:
       c: 实体的最大数量
       type: 实体的类型
       mustsee: 是否必须要看见实体
+      range: 有效方块范围。
+      selfapplication: 是否应用于触发的玩家。
     arrow:
       main_name: 射出一矢
       main_description: 发射一支箭
@@ -449,6 +447,7 @@ power:
     consume:
       main_name: 消耗
       main_description: 移除一份当前物品
+      isRight: 用于触发技能的鼠标键
     consumehit:
       main_name: 击中消耗
       main_description: 击中目标时移除一份当前物品
@@ -735,6 +734,7 @@ power:
       main_description: 发射钩爪钩住指定方块
       railMaterial: 可以钩的材质
       hookDistance: 可以钩的距离
+      hookingTickCost: 钩子每 tick 的消耗
     stuck:
       main_name: 定身
       main_description: 定身目标
@@ -777,10 +777,31 @@ power:
     unbreakable:
       main_name: 无法破坏
       main_description: 标记该物品为不可破坏
+    airborne:
+      main_name: 空中处决技
+      main_description: 空中或飞行时造成更多伤害
+      percentage: 空中或飞行时造成伤害增加的百分比
+      cap: 该技能所能造成的最高伤害值
+    andcondition:
+      main_name: And 条件
+      main_description: 要求所有条件满足
+    orcondition:
+      main_name: Or 条件
+      main_description: 要求有至少一项满足
+    sound:
+      main_name: 声音
+      main_description: 播放声音
+      pitch: 音高
+      volume: 音量
+      sound: 播放的声音
+    xorcondition:
+      main_name: XOR 条件
+      main_description: 要求所有条件结果的异或值为真
+      init: 初始值
 manual:
   give:
     description: 将物品给与施令者或特定玩家
-    usage: /rpgitem give item [player]
+    usage: /rpgitem give {item} [player]
   worldguard:
     description: 切换 WorldGuard 支持。
     usage: /rpgitem worldguard
@@ -792,12 +813,130 @@ manual:
     usage: /rpgitem giveperms
   power:
     description: 给物品添加技能
-    usage: "/rpgitem power {item} <power> <properties> [optionalProperties]"
+    usage: /rpgitem power {item} <power> <properties> [optionalProperties]
+  list:
+    description: 列出 RPGItems
+    usage: /rpgitem list [页数]
+  wgcustomflag:
+    description: 切换 WorldGuard custom flag 支持。
+    usage: /rpgitem wgcustomflag
+  wgforcerefresh:
+    description: 切换 WorldGuard 强制刷新。
+    usage: /rpgitem wgforcerefresh
+  wgignore:
+    description: 该物品是否忽略 WorldGuard PvP 保护。
+    usage: /rpgitem wgignore {item}
+  create:
+    description: 创建特定名称的物品
+    usage: /rpgitem create <名称>
+  remove:
+    description: 移除此物品
+    usage: /rpgitem remove {item}
+  display:
+    description: 设置物品名称
+    usage: /rpgitem display {item} <value>
+  quality:
+    description: 展示/设置物品的质量。当前没有实际作用。
+    usage: /rpgitem quality {item} [value]
+  damage:
+    description: '展示/设置物品的伤害值。可用的参数：
 
+      [value] - 设置物品伤害值为定值。/rpgitem test_item damage 15
+
+      [min] [max] - 设置物品伤害值为一个范围随机值。/rpgitem test_item damage 10 20'
+    usage: /rpgitem damage {item} [option]
+  armour:
+    description: 展示/设置物品护甲值
+    usage: /rpgitem armour {item} [value]
+  type:
+    description: 展示/设置物品的类型。类型在物品名称右下方展示。
+    usage: /rpgitem type {item} [value]
+  hand:
+    description: 展示/设置物品的手持状态。手持状态在物品名称的左下方展示。
+    usage: /rpgitem hand {item} [value]
+  item:
+    description: "设置物品的材质和其他参数。\n可选参数\n  [item id] - 设置物品为特定材质\n  [item id] hex [string]\
+      \ - 设置物品的材质并设置颜色。\n  [item id] [damage value] - 设置物品的材质和伤害值/损耗值。"
+    usage: /rpgitem item {item} [options|value]
+  print:
+    description: 打印物品状态
+    usage: /rpgitem print {item}
+  enchantment:
+    description: 以手中物品的附魔数据为模板，展示/复制或清除物品的附魔。
+    usage: /rpgitem enchantment {item} [clone|clear]
+  removepower:
+    description: 从物品中移除技能。如果该物品有多个此技能，按瀑布流顺序匹配的第一个将被移除。
+    usage: /rpgitem removepower {item} <power>
+  description:
+    description: 添加/移除或替换物品描述的文本。支持使用 & 符号作为样式代码。行号从 0 开始。
+    usage: /rpgitem description {item} <add <value>|set <line> <value>| remove <line>>
+  removerecipe:
+    description: 移除物品配方
+    usage: /rpgitem removerecipe {item}
+  recipe:
+    description: 添加物品配方
+    usage: /rpgitem recipe {item}
+  drop:
+    description: 展示/设置物品从特定实体掉落的几率
+    usage: /rpgitem drop {item} <entity> [chance]
+  get:
+    description: '获取物品的技能属性。
+
+      例如，获取 test_item 的第 1 个 potionhit 技能时长属性：
+
+      /rpgitem test_item get potionhit 1 duration'
+    usage: /rpgitem get {item} <power> <index> <property>
+  set:
+    description: '设置物品技能的属性。
+
+      例如，设置第 2 个 aoecommand 的 command 属性，为在每个目标实体位置生成一只高压爬行者：
+
+      /rpgitem test_item set aoecommand 2 command summon creeper {entity.x} {entity.y}
+      {entity.y} {ignited:1,Fuse:5}'
+    usage: /rpgitem set {item} <power> <index> <property> <value>
+  cost:
+    description: "展示/设置耐久消耗。\n可用参数：\n  breaking | breaking [value|integer] - 展示/设置物品破坏方块时的耐久消耗。\n\
+      \  hit | hit [value|integer] - 展示/设置手持或穿着此物品被伤害时的耐久消耗。\n  toggle - 切换物品是否基于伤害值消耗耐久。\n\
+      \  hitting | hitting [value|integer] - 展示/设置使用此物品攻击其他实体时的耐久消耗。\n注意，该值可以为负。负值将在相应消耗耐久事件时为物品增加耐久。"
+    usage: /rpgitem cost {item} <option>
+  durability:
+    description: "展示/设置物品耐久的最大值/默认值和其他参数。\n可选参数：\n  [value] - 设置最大耐久值 - /rpgitem test_item\
+      \ durability 100\n  infinite - 设置为无限耐久 - /rpgitem test_item durability infinite\n\
+      \  default - 设置默认耐久值 - /rpgitem test_item durability default 100\n  togglebar\
+      \ - 切换展示耐久条 - /rpgitem test_item durability togglebar\n  bound - 设置物品耐久边界值 -\
+      \ /rpgitem test_item durability bound 10 100"
+    usage: /rpgitem durability {item} <option>
+  permission:
+    description: 设置物品权限
+    usage: /rpgitem permission {item} <permission> <true|false>
+  togglepowerlore:
+    description: 切换展示技能说明文字。
+    usage: /rpgitem togglepowerlore {item}
+  togglearmorlore:
+    description: 切换展示护甲值说明文字。
+    usage: /rpgitem togglearmorlore {item}
+  additemflag:
+    description: 添加物品 flag。
+    usage: /rpgitem additemflag {item} <itemflag>
+  removeitemflag:
+    description: 移除物品 flag
+    usage: /rpgitem removeitemflag {item} <itemflag>
+  customitemmodel:
+    description: 切换物品自定义模型支持。
+    usage: /rpgitem customitemmodel {item}
+  version:
+    description: 展示 RPGItem 的版本信息。
+    usage: /rpgitem version
+  damagemode:
+    description: 展示/设置物品的伤害模型
+    usage: /rpgitem damagemode {item} [damagemode]
+  clone:
+    description: 克隆为新物品
+    usage: /rpgitem clone {item} <newItem>
 item:
   hand: 单手
   type: 剑
   armour: 护甲
-  additionaldamage: "附加 %s 伤害"
-  multiplydamage: "%s 倍伤害"
-  damage: "%s 伤害"
+  additionaldamage: 附加 %s 伤害
+  multiplydamage: '%s 倍伤害'
+  damage: '%s 伤害'
