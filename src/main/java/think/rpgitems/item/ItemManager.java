@@ -42,7 +42,8 @@ import java.util.logging.Level;
 
 import static think.rpgitems.item.RPGItem.*;
 import static think.rpgitems.power.Utils.rethrow;
-import static think.rpgitems.utils.ItemTagUtils.*;
+import static think.rpgitems.utils.ItemTagUtils.getInt;
+import static think.rpgitems.utils.ItemTagUtils.getTag;
 
 public class ItemManager {
     public static HashMap<Integer, RPGItem> itemById = new HashMap<>();
@@ -496,23 +497,8 @@ public class ItemManager {
         if (!meta.hasLore() || meta.getLore().size() <= 0)
             return null;
         try {
-            if (!meta.hasLore() || meta.getLore().size() <= 0)
-                return null;
             @SuppressWarnings("deprecation") Optional<Integer> id = decodeId(meta.getLore().get(0));
-            if (!id.isPresent()) return null;
-            RPGItem rpgItem = ItemManager.getItemById(id.get());
-            @SuppressWarnings("deprecation") think.rpgitems.data.RPGMetadata rpgMetadata = think.rpgitems.data.RPGMetadata.parseLoreline(item.getItemMeta().getLore().get(0));
-            @SuppressWarnings("deprecation") int durabilityKey = think.rpgitems.data.RPGMetadata.DURABILITY;
-            if (rpgMetadata.containsKey(durabilityKey)) {
-                int durability = ((Number) rpgMetadata.get(durabilityKey)).intValue();
-                SubItemTagContainer subItemTagContainer = makeTag(tagContainer, TAG_META);
-                set(subItemTagContainer, TAG_DURABILITY, durability);
-                set(subItemTagContainer, TAG_ITEM_UID, rpgItem.getUid());
-                subItemTagContainer.commit();
-            }
-            item.setItemMeta(meta);
-            rpgItem.updateItem(item);
-            return rpgItem;
+            return id.map(ItemManager::getItemById).orElse(null);
         } catch (Exception e) {
             RPGItems.logger.log(Level.WARNING, "Error migrating old item", e);
             return null;

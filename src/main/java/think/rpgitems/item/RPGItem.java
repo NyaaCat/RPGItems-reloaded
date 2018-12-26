@@ -46,7 +46,6 @@ import think.rpgitems.support.WGSupport;
 import think.rpgitems.utils.MaterialUtils;
 
 import java.io.File;
-import java.lang.reflect.InvocationTargetException;
 import java.util.*;
 import java.util.Map.Entry;
 import java.util.concurrent.ThreadLocalRandom;
@@ -159,20 +158,6 @@ public class RPGItem {
     }
 
     @Deprecated
-    private static String getMCEncodedUID(int id) {
-        String hex = String.format("%08x", id);
-        StringBuilder out = new StringBuilder();
-        for (char h : hex.toCharArray()) {
-            out.append(COLOR_CHAR);
-            out.append(h);
-        }
-        String str = out.toString();
-        if (str.length() != MC_ENCODED_ID_LENGTH)
-            throw new RuntimeException("Bad RPGItem ID: " + str + " (" + id + ")");
-        return out.toString();
-    }
-
-    @Deprecated
     public static Optional<Integer> decodeId(String str) throws NumberFormatException {
         if (str.length() < 16) {
             return Optional.empty();
@@ -185,7 +170,11 @@ public class RPGItem {
             i++;
             out.append(str.charAt(i));
         }
-        return Optional.of(Integer.parseUnsignedInt(out.toString(), 16));
+        try {
+            return Optional.of(Integer.parseUnsignedInt(out.toString(), 16));
+        } catch (NumberFormatException e) {
+            throw new IllegalArgumentException(str, e);
+        }
     }
 
     public static RPGItems getPlugin() {
@@ -478,8 +467,9 @@ public class RPGItem {
         ItemMeta meta = item.getItemMeta();
         List<String> lore = getLore();
         @SuppressWarnings("deprecation")
-        CustomItemTagContainer itemTagContainer = item.getItemMeta().getCustomTagContainer();
+        CustomItemTagContainer itemTagContainer = meta.getCustomTagContainer();
         SubItemTagContainer rpgitemsTagContainer = makeTag(itemTagContainer, TAG_META);
+        set(rpgitemsTagContainer, TAG_ITEM_UID, getUid());
         addDurabilityBar(rpgitemsTagContainer, lore);
         Damageable damageable = (Damageable) meta;
         if (getMaxDurability() > 0) {
@@ -533,6 +523,7 @@ public class RPGItem {
         }
         rpgitemsTagContainer.commit();
         item.setItemMeta(refreshAttributeModifiers(meta));
+        return;
     }
 
     private void addDurabilityBar(CustomItemTagContainer meta, List<String> lore) {

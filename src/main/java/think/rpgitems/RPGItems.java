@@ -169,7 +169,7 @@ public class RPGItems extends JavaPlugin {
             logger.info("Loading RPGItems...");
             ItemManager.load(RPGItems.this);
             logger.info("Done");
-            new Ticker().runTaskTimer(RPGItems.this, 0, 1);
+            // new Ticker().runTaskTimer(RPGItems.this, 0, 0);
         }
     }
 

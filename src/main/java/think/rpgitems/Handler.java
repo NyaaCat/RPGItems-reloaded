@@ -3,6 +3,7 @@ package think.rpgitems;
 import cat.nyaa.nyaacore.LanguageRepository;
 import cat.nyaa.nyaacore.Message;
 import cat.nyaa.nyaacore.Pair;
+import cat.nyaa.nyaacore.utils.ItemStackUtils;
 import com.google.common.base.Strings;
 import net.md_5.bungee.api.chat.BaseComponent;
 import net.md_5.bungee.api.chat.ComponentBuilder;
@@ -21,6 +22,8 @@ import org.bukkit.inventory.ItemFlag;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.EnchantmentStorageMeta;
 import org.bukkit.inventory.meta.ItemMeta;
+import org.bukkit.inventory.meta.tags.CustomItemTagContainer;
+import org.bukkit.inventory.meta.tags.ItemTagType;
 import org.librazy.nclangchecker.LangKey;
 import think.rpgitems.item.ItemManager;
 import think.rpgitems.item.RPGItem;
@@ -28,6 +31,7 @@ import think.rpgitems.power.*;
 import think.rpgitems.power.impl.PowerCommand;
 import think.rpgitems.power.impl.PowerThrow;
 import think.rpgitems.support.WGSupport;
+import think.rpgitems.utils.ItemTagUtils;
 import think.rpgitems.utils.MaterialUtils;
 import think.rpgitems.utils.NetworkUtils;
 
@@ -49,7 +53,11 @@ import java.util.logging.Level;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
+import static think.rpgitems.item.RPGItem.*;
+import static think.rpgitems.item.RPGItem.TAG_ITEM_UID;
 import static think.rpgitems.power.Utils.rethrow;
+import static think.rpgitems.utils.ItemTagUtils.*;
+import static think.rpgitems.utils.ItemTagUtils.set;
 import static think.rpgitems.utils.NetworkUtils.Location.GIST;
 
 public class Handler extends RPGCommandReceiver {
@@ -63,6 +71,63 @@ public class Handler extends RPGCommandReceiver {
     @Override
     public String getHelpPrefix() {
         return "";
+    }
+
+    @SubCommand("debug")
+    @Attribute("command")
+    public void debug(CommandSender sender, Arguments args) {
+        Player player = asPlayer(sender);
+        ItemStack item = player.getInventory().getItemInMainHand();
+        player.sendMessage(ItemStackUtils.itemToJson(item).replace(ChatColor.COLOR_CHAR, '&'));
+        if (item == null || item.getType() == Material.AIR) {
+            player.sendMessage("empty");
+            return;
+        }
+        if (!item.hasItemMeta()) {
+            player.sendMessage("empty meta");
+            return;
+        }
+        ItemMeta meta = item.getItemMeta();
+        @SuppressWarnings("deprecation") CustomItemTagContainer tagContainer = meta.getCustomTagContainer();
+        if (tagContainer.hasCustomTag(TAG_META, ItemTagType.TAG_CONTAINER)) {
+            int uid = getInt(getTag(tagContainer, TAG_META), TAG_ITEM_UID);
+            player.sendMessage("new item: " + uid);
+            RPGItem rpgItem = ItemManager.getItemById(uid);
+            player.sendMessage("rpgItem: " + (rpgItem == null ? null : rpgItem.getName()));
+            return;
+        }
+        // Old
+        if (!meta.hasLore() || meta.getLore().size() <= 0) {
+            player.sendMessage("empty lore");
+            return;
+        }
+        try {
+            player.sendMessage(meta.getLore().get(0).replace(ChatColor.COLOR_CHAR, '&'));
+            @SuppressWarnings("deprecation") Optional<Integer> id = decodeId(meta.getLore().get(0));
+            if (!id.isPresent()) {
+                player.sendMessage("decodeId failed");
+                return;
+            }
+            player.sendMessage("old item: " + id.get());
+            RPGItem rpgItem = ItemManager.getItemById(id.get());
+            if (rpgItem == null){
+                player.sendMessage("old item not found");
+                return;
+            }
+            @SuppressWarnings("deprecation") think.rpgitems.data.RPGMetadata rpgMetadata = think.rpgitems.data.RPGMetadata.parseLoreline(meta.getLore().get(0));
+            @SuppressWarnings("deprecation") int durabilityKey = think.rpgitems.data.RPGMetadata.DURABILITY;
+            if (rpgMetadata.containsKey(durabilityKey)) {
+                int durability = ((Number) rpgMetadata.get(durabilityKey)).intValue();
+                player.sendMessage("durability: " + durability);
+            } else {
+                player.sendMessage("no durability");
+            }
+            player.sendMessage(ItemStackUtils.itemToJson(item).replace(ChatColor.COLOR_CHAR, '&'));
+            rpgItem.updateItem(item);
+            player.sendMessage(ItemStackUtils.itemToJson(item).replace(ChatColor.COLOR_CHAR, '&'));
+        } catch (Exception e) {
+            RPGItems.logger.log(Level.WARNING, "Error migrating old item", e);
+        }
     }
 
     @SubCommand("save-all")
