@@ -5,6 +5,7 @@ import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
 import org.bukkit.Material;
 import org.bukkit.block.Block;
+import org.bukkit.craftbukkit.v1_13_R2.entity.CraftPlayer;
 import org.bukkit.entity.*;
 import org.bukkit.event.Event;
 import org.bukkit.event.EventHandler;
@@ -46,7 +47,6 @@ public class Events implements Listener {
     public static HashMap<String, Set<Integer>> drops = new HashMap<>();
 
     static HashMap<String, Integer> recipeWindows = new HashMap<>();
-    static final boolean useLocaleInv = false;
 
     private static HashSet<Integer> removeProjectiles = new HashSet<>();
     private static HashMap<Integer, Integer> rpgProjectiles = new HashMap<>();

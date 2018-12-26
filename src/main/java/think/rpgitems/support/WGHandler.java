@@ -1,5 +1,6 @@
 package think.rpgitems.support;
 
+import com.sk89q.worldedit.bukkit.BukkitAdapter;
 import com.sk89q.worldedit.util.Location;
 import com.sk89q.worldedit.world.World;
 import com.sk89q.worldguard.LocalPlayer;
@@ -74,8 +75,9 @@ public class WGHandler extends Handler {
                     String worldName = split[0];
                     String regionName = split[1];
                     boolean flag = Boolean.valueOf(v.toString());
-                    if (Bukkit.getServer().getWorld(worldName) == null) return;
-                    World world = worldGuardInstance.getPlatform().getWorldByName(worldName);
+                    org.bukkit.World bukkitWorld = Bukkit.getServer().getWorld(worldName);
+                    if (bukkitWorld == null) return;
+                    World world = BukkitAdapter.adapt(bukkitWorld);
                     RegionManager regionManager = worldGuardInstance.getPlatform().getRegionContainer().get(world);
                     if (regionManager == null) return;
                     ProtectedRegion region = regionManager.getRegion(regionName);

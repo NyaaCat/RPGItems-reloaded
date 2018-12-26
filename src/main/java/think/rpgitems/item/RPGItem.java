@@ -42,7 +42,6 @@ import think.rpgitems.RPGItems;
 import think.rpgitems.data.Context;
 import think.rpgitems.power.*;
 import think.rpgitems.power.impl.*;
-import think.rpgitems.support.WGSupport;
 import think.rpgitems.utils.MaterialUtils;
 
 import java.io.File;
@@ -71,7 +70,6 @@ public class RPGItem {
     private Map<Enchantment, Integer> enchantMap = null;
     private List<ItemFlag> itemFlags = new ArrayList<>();
     private boolean customItemModel = false;
-    private boolean numericBar = plugin.cfg.numericBar;
     // Powers
     private List<Power> powers = new ArrayList<>();
     private HashMap<Power, NamespacedKey> powerKeys = new HashMap<>();
@@ -110,6 +108,7 @@ public class RPGItem {
     private int defaultDurability;
     private int durabilityLowerBound;
     private int durabilityUpperBound;
+    private BarFormat barFormat;
 
     private int blockBreakingCost = 0;
     private int hittingCost = 0;
@@ -171,7 +170,11 @@ public class RPGItem {
             out.append(str.charAt(i));
         }
         try {
-            return Optional.of(Integer.parseUnsignedInt(out.toString(), 16));
+            String id = out.toString();
+            if (id.equals("r9ea1402")) { // NU Fuel
+                return Optional.empty();
+            }
+            return Optional.of(Integer.parseUnsignedInt(id, 16));
         } catch (NumberFormatException e) {
             throw new IllegalArgumentException(str, e);
         }
@@ -343,7 +346,12 @@ public class RPGItem {
                 }
             }
         }
-        setNumericBar(s.getBoolean("numericBar", plugin.cfg.numericBar));
+        if (s.isBoolean("numericBar")) {
+            setBarFormat(s.getBoolean("numericBar") ? BarFormat.NUMERIC : BarFormat.DEFAULT);
+        }
+        if (s.isString("barFormat")) {
+            setBarFormat(BarFormat.valueOf(s.getString("barFormat")));
+        }
         String damageModeStr = s.getString("damageMode", "FIXED");
         try {
             setDamageMode(DamageMode.valueOf(damageModeStr));
@@ -454,7 +462,7 @@ public class RPGItem {
             s.set("itemFlags", null);
         }
         s.set("customItemModel", isCustomItemModel());
-        s.set("numericBar", isNumericBar());
+        s.set("barFormat", getBarFormat().name());
     }
 
     public void updateItem(ItemStack item) {
@@ -523,29 +531,40 @@ public class RPGItem {
         }
         rpgitemsTagContainer.commit();
         item.setItemMeta(refreshAttributeModifiers(meta));
-        return;
     }
 
     private void addDurabilityBar(CustomItemTagContainer meta, List<String> lore) {
-        if (getMaxDurability() > 0) {
+        int maxDurability = getMaxDurability();
+        if (maxDurability > 0) {
             int durability = computeIfAbsent(meta, TAG_DURABILITY, ItemTagType.INTEGER, this::getDefaultDurability);
             if (isHasDurabilityBar()) {
                 StringBuilder out = new StringBuilder();
                 char boxChar = '\u25A0';
-                double ratio = (double) durability / (double) getMaxDurability();
-                if (isNumericBar()) {
-                    out.append(ChatColor.GREEN.toString()).append(boxChar).append(" ");
-                    out.append(ratio < 0.1 ? ChatColor.RED : ratio < 0.3 ? ChatColor.YELLOW : ChatColor.GREEN);
-                    out.append(durability);
-                    out.append(ChatColor.RESET).append(" / ").append(ChatColor.AQUA);
-                    out.append(getMaxDurability());
-                    out.append(ChatColor.GREEN).append(boxChar);
-                } else {
-                    int boxCount = tooltipWidth / 6;
-                    int mid = (int) ((double) boxCount * (ratio));
-                    for (int i = 0; i < boxCount; i++) {
-                        out.append(i < mid ? ChatColor.GREEN : i == mid ? ChatColor.YELLOW : ChatColor.RED);
-                        out.append(boxChar);
+                double ratio = (double) durability / (double) maxDurability;
+                BarFormat barFormat = getBarFormat();
+                switch (barFormat) {
+                    case NUMERIC_BIN:
+                    case NUMERIC_BIN_MINUS_ONE:
+                    case NUMERIC_HEX:
+                    case NUMERIC_HEX_MINUS_ONE:
+                    case NUMERIC:
+                    case NUMERIC_MINUS_ONE: {
+                        out.append(ChatColor.GREEN.toString()).append(boxChar).append(" ");
+                        out.append(ratio < 0.1 ? ChatColor.RED : ratio < 0.3 ? ChatColor.YELLOW : ChatColor.GREEN);
+                        out.append(formatBar(durability, maxDurability, barFormat));
+                        out.append(ChatColor.RESET).append(" / ").append(ChatColor.AQUA);
+                        out.append(formatBar(maxDurability, maxDurability, barFormat));
+                        out.append(ChatColor.GREEN).append(boxChar);
+                        break;
+                    }
+                    case DEFAULT: {
+                        int boxCount = tooltipWidth / 7;
+                        int mid = (int) ((double) boxCount * (ratio));
+                        for (int i = 0; i < boxCount; i++) {
+                            out.append(i < mid ? ChatColor.GREEN : i == mid ? ChatColor.YELLOW : ChatColor.RED);
+                            out.append(boxChar);
+                        }
+                        break;
                     }
                 }
                 if (!lore.get(lore.size() - 1).contains(boxChar + ""))
@@ -554,6 +573,29 @@ public class RPGItem {
                     lore.set(lore.size() - 1, out.toString());
             }
         }
+    }
+
+    private String formatBar(int durability, int maxDurability, BarFormat barFormat) {
+        switch (barFormat) {
+            case NUMERIC:
+                return String.valueOf(durability);
+            case NUMERIC_MINUS_ONE:
+                return String.valueOf(durability - 1);
+            case NUMERIC_HEX:
+                int hexLen = String.format("%X", maxDurability).length();
+                return String.format(String.format("0x%%0%dX", hexLen), durability);
+            case NUMERIC_HEX_MINUS_ONE:
+                int hexLenM1 = String.format("%X", maxDurability - 1).length();
+                return String.format(String.format("0x%%0%dX", hexLenM1), durability - 1);
+            case NUMERIC_BIN:
+                int binLen = Integer.toBinaryString(maxDurability).length();
+                return String.format(String.format("0b%%%ds", binLen), Integer.toBinaryString(durability)).replace(' ', '0');
+            case NUMERIC_BIN_MINUS_ONE:
+                int binLenM1 = Integer.toBinaryString(maxDurability - 1).length();
+                return String.format(String.format("0b%%%ds", binLenM1), Integer.toBinaryString(durability - 1)).replace(' ', '0');
+
+        }
+        throw new UnsupportedOperationException();
     }
 
     private List<String> filterLores(ItemStack i) {
@@ -789,7 +831,6 @@ public class RPGItem {
         if (i.getType().equals(Material.AIR)) return false;
         if (powers.isEmpty()) return false;
         if (checkPermission(player, true) == Event.Result.DENY) return false;
-        if (WGSupport.canUse(player, this, powers, plugin.cfg.wgShowWarning) == Event.Result.DENY) return false;
 
         RPGItemsPowersPreFireEvent<TEvent, TPower, TResult, TReturn> preFire = new RPGItemsPowersPreFireEvent<>(player, i, event, this, trigger, powers);
         Bukkit.getServer().getPluginManager().callEvent(preFire);
@@ -1489,12 +1530,12 @@ public class RPGItem {
         this.ignoreWorldGuard = ignoreWorldGuard;
     }
 
-    public boolean isNumericBar() {
-        return numericBar;
+    public BarFormat getBarFormat() {
+        return barFormat;
     }
 
-    public void setNumericBar(boolean numericBar) {
-        this.numericBar = numericBar;
+    public void setBarFormat(BarFormat barFormat) {
+        this.barFormat = barFormat;
     }
 
     public boolean isShowArmourLore() {
@@ -1532,5 +1573,16 @@ public class RPGItem {
             this.colour = colour;
             this.cCode = code;
         }
+    }
+
+    @LangKey(type = LangKeyType.SUFFIX)
+    public enum BarFormat {
+        DEFAULT,
+        NUMERIC,
+        NUMERIC_MINUS_ONE,
+        NUMERIC_HEX,
+        NUMERIC_HEX_MINUS_ONE,
+        NUMERIC_BIN,
+        NUMERIC_BIN_MINUS_ONE,
     }
 }

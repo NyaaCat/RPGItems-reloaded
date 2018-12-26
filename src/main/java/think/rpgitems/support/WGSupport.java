@@ -5,13 +5,17 @@ import com.sk89q.worldguard.WorldGuard;
 import com.sk89q.worldguard.bukkit.WorldGuardPlugin;
 import com.sk89q.worldguard.protection.flags.Flags;
 import com.sk89q.worldguard.protection.flags.StateFlag.State;
+import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
 import org.bukkit.entity.Player;
 import org.bukkit.event.Event;
+import org.bukkit.event.EventHandler;
+import org.bukkit.event.Listener;
 import org.bukkit.plugin.Plugin;
 import think.rpgitems.RPGItems;
 import think.rpgitems.item.RPGItem;
 import think.rpgitems.power.Power;
+import think.rpgitems.power.RPGItemsPowersPreFireEvent;
 
 import java.io.File;
 import java.util.Collection;
@@ -71,6 +75,7 @@ public class WGSupport {
             disabledItemByPlayer = new HashMap<>();
             enabledItemByPlayer = new HashMap<>();
             disabledByPlayer = new HashMap<>();
+            Bukkit.getPluginManager().registerEvents(new EventListener(), plugin);
             for (Player p : plugin.getServer().getOnlinePlayers()) {
                 WGHandler.refreshPlayerWG(p);
             }
@@ -161,5 +166,14 @@ public class WGSupport {
             return;
         }
         WGHandler.unregisterHandler();
+    }
+
+    public static class EventListener implements Listener {
+        @EventHandler
+        public <TEvent extends Event, TPower extends Power, TResult, TReturn> void onPreTrigger(RPGItemsPowersPreFireEvent<TEvent, TPower, TResult, TReturn> event) {
+            if (canUse(event.getPlayer(), event.getItem(), event.getPowers(), plugin.cfg.wgShowWarning) == Event.Result.DENY) {
+                event.setCancelled(true);
+            }
+        }
     }
 }

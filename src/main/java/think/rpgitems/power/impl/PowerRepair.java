@@ -51,6 +51,9 @@ public class PowerRepair extends BasePower implements PowerRightClick, PowerLeft
     public RepairMode mode = RepairMode.DEFAULT;
 
     @Property
+    public boolean allowBreak = true;
+
+    @Property
     public boolean abortOnSuccess = false;
 
     @Property
@@ -106,9 +109,12 @@ public class PowerRepair extends BasePower implements PowerRightClick, PowerLeft
             if (max == -1 || delta == 0) {
                 return PowerResult.noop();
             }
-            if (delta < this.durability && mode != RepairMode.ALLOW_OVER) {
+            if (this.durability > delta && mode != RepairMode.ALLOW_OVER) {
                 return PowerResult.noop();
             }
+        }
+        if (!allowBreak && this.durability + itemDurability < 0) {
+            return PowerResult.noop();
         }
         if (removeItem(player.getInventory(), material, amount)) {
             getItem().setItemStackDurability(stack, Math.min(itemDurability + this.durability, max));

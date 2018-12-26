@@ -31,7 +31,6 @@ import think.rpgitems.power.*;
 import think.rpgitems.power.impl.PowerCommand;
 import think.rpgitems.power.impl.PowerThrow;
 import think.rpgitems.support.WGSupport;
-import think.rpgitems.utils.ItemTagUtils;
 import think.rpgitems.utils.MaterialUtils;
 import think.rpgitems.utils.NetworkUtils;
 
@@ -54,10 +53,9 @@ import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 import static think.rpgitems.item.RPGItem.*;
-import static think.rpgitems.item.RPGItem.TAG_ITEM_UID;
 import static think.rpgitems.power.Utils.rethrow;
-import static think.rpgitems.utils.ItemTagUtils.*;
-import static think.rpgitems.utils.ItemTagUtils.set;
+import static think.rpgitems.utils.ItemTagUtils.getInt;
+import static think.rpgitems.utils.ItemTagUtils.getTag;
 import static think.rpgitems.utils.NetworkUtils.Location.GIST;
 
 public class Handler extends RPGCommandReceiver {
@@ -110,7 +108,7 @@ public class Handler extends RPGCommandReceiver {
             }
             player.sendMessage("old item: " + id.get());
             RPGItem rpgItem = ItemManager.getItemById(id.get());
-            if (rpgItem == null){
+            if (rpgItem == null) {
                 player.sendMessage("old item not found");
                 return;
             }
@@ -951,7 +949,7 @@ public class Handler extends RPGCommandReceiver {
     }
 
     @SubCommand("durability")
-    @Attribute("item:infinite,togglebar,default,bound")
+    @Attribute("item:infinite,default,bound")
     public void itemDurability(CommandSender sender, Arguments args) {
         RPGItem item = getItem(args.nextString(), sender);
         if (args.length() == 2) {
@@ -972,13 +970,6 @@ public class Handler extends RPGCommandReceiver {
                     ItemManager.refreshItem();
                     ItemManager.save(item);
                     msg(sender, "message.durability.max_and_default", "infinite");
-                }
-                break;
-                case "togglebar": {
-                    item.toggleBar();
-                    ItemManager.refreshItem();
-                    ItemManager.save(item);
-                    msg(sender, "message.durability.toggle");
                 }
                 break;
                 case "default": {
@@ -1082,15 +1073,25 @@ public class Handler extends RPGCommandReceiver {
         msg(sender, "message.customitemmodel." + (item.isCustomItemModel() ? "enable" : "disable"));
     }
 
-    @SubCommand("numericBar")
+    @SubCommand("togglebar")
     @Attribute("item")
-    public void toggleNumericBar(CommandSender sender, Arguments args) {
+    public void toggleBar(CommandSender sender, Arguments args) {
         RPGItem item = getItem(args.nextString(), sender);
-        item.setNumericBar(!item.isNumericBar());
+        item.toggleBar();
+        ItemManager.refreshItem();
+        ItemManager.save(item);
+        msg(sender, "message.durability.toggle");
+    }
+
+    @SubCommand("barformat")
+    @Attribute("item:DEFAULT,NUMERIC,NUMERIC_MINUS_ONE,NUMERIC_HEX,NUMERIC_HEX_MINUS_ONE,DEFAULT8")
+    public void toggleBarFormat(CommandSender sender, Arguments args) {
+        RPGItem item = getItem(args.nextString(), sender);
+        item.setBarFormat(args.nextEnum(BarFormat.class));
         item.rebuild();
         ItemManager.refreshItem();
         ItemManager.save(item);
-        msg(sender, "message.numericbar." + (item.isNumericBar() ? "enable" : "disable"));
+        msg(sender, "message.barformat." + item.getBarFormat().name());
     }
 
     @SubCommand("version")

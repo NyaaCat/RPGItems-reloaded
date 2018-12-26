@@ -35,7 +35,6 @@ public class RPGItems extends JavaPlugin {
 
     public static Logger logger;
     public static RPGItems plugin;
-    private static Events listener;
     List<Plugin> managedPlugins = new ArrayList<>();
     public I18n i18n;
     public Configuration cfg;
@@ -164,19 +163,19 @@ public class RPGItems extends JavaPlugin {
         @EventHandler
         public void onServerLoad(ServerLoadEvent event) {
             HandlerList.unregisterAll(this);
-            getServer().getPluginManager().registerEvents(listener = new Events(), RPGItems.this);
+            getServer().getPluginManager().registerEvents(new Events(), RPGItems.this);
             WGSupport.init(RPGItems.this);
             logger.info("Loading RPGItems...");
             ItemManager.load(RPGItems.this);
             logger.info("Done");
-            // new Ticker().runTaskTimer(RPGItems.this, 0, 0);
+            new Ticker().runTaskTimer(RPGItems.this, 0, 0);
         }
     }
 
     @Override
     public void onDisable() {
         WGSupport.unload();
-        HandlerList.unregisterAll(listener);
+        HandlerList.unregisterAll(plugin);
         getCommand("rpgitem").setExecutor(null);
         getCommand("rpgitem").setTabCompleter(null);
         this.getServer().getScheduler().cancelTasks(plugin);
