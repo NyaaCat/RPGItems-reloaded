@@ -108,7 +108,7 @@ public class RPGItem {
     private int defaultDurability;
     private int durabilityLowerBound;
     private int durabilityUpperBound;
-    private BarFormat barFormat;
+    private BarFormat barFormat = BarFormat.DEFAULT;
 
     private int blockBreakingCost = 0;
     private int hittingCost = 0;
@@ -473,8 +473,7 @@ public class RPGItem {
         List<String> reservedLores = this.filterLores(item);
         item.setType(getItem());
         ItemMeta meta = item.getItemMeta();
-        List<String> lore = getLore();
-        @SuppressWarnings("deprecation")
+        List<String> lore = new ArrayList<>(getLore());
         CustomItemTagContainer itemTagContainer = meta.getCustomTagContainer();
         SubItemTagContainer rpgitemsTagContainer = makeTag(itemTagContainer, TAG_META);
         set(rpgitemsTagContainer, TAG_ITEM_UID, getUid());
@@ -990,7 +989,7 @@ public class RPGItem {
     public ItemStack toItemStack() {
         ItemStack rStack = new ItemStack(getItem());
         ItemMeta meta = rStack.getItemMeta();
-        @SuppressWarnings("deprecation") CustomItemTagContainer itemTagContainer = meta.getCustomTagContainer();
+        CustomItemTagContainer itemTagContainer = meta.getCustomTagContainer();
         SubItemTagContainer rpgitemsTagContainer = makeTag(itemTagContainer, TAG_META);
         set(rpgitemsTagContainer, TAG_ITEM_UID, getUid());
         rpgitemsTagContainer.commit();
@@ -1015,7 +1014,7 @@ public class RPGItem {
             UUID uuid = UUID.fromString(this.getAuthor());
             OfflinePlayer authorPlayer = Bukkit.getOfflinePlayer(uuid);
             author = authorPlayer.getName();
-            authorComponent = Handler.getAuthorComponent(uuid, authorPlayer, author);
+            authorComponent = Handler.getAuthorComponent(authorPlayer, author);
         } catch (IllegalArgumentException ignored) {
         }
 
@@ -1376,7 +1375,7 @@ public class RPGItem {
     }
 
     public List<String> getLore() {
-        return lore;
+        return Collections.unmodifiableList(lore);
     }
 
     private void setLore(List<String> lore) {

@@ -488,7 +488,7 @@ public class ItemManager {
         if (!item.hasItemMeta())
             return null;
         ItemMeta meta = item.getItemMeta();
-        @SuppressWarnings("deprecation") CustomItemTagContainer tagContainer = meta.getCustomTagContainer();
+        CustomItemTagContainer tagContainer = meta.getCustomTagContainer();
         if (tagContainer.hasCustomTag(TAG_META, ItemTagType.TAG_CONTAINER)) {
             int uid = getInt(getTag(tagContainer, TAG_META), TAG_ITEM_UID);
             return ItemManager.getItemById(uid);

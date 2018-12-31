@@ -1,11 +1,16 @@
 package think.rpgitems.power.impl;
 
+import org.bukkit.Bukkit;
 import org.bukkit.Sound;
 import org.bukkit.entity.Entity;
 import org.bukkit.entity.EntityType;
 import org.bukkit.entity.LivingEntity;
 import org.bukkit.entity.Player;
+import org.bukkit.event.EventHandler;
+import org.bukkit.event.HandlerList;
+import org.bukkit.event.Listener;
 import org.bukkit.event.player.PlayerInteractEvent;
+import org.bukkit.event.player.PlayerQuitEvent;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.scheduler.BukkitRunnable;
 import think.rpgitems.I18n;
@@ -48,6 +53,20 @@ public class PowerGlove extends BasePower implements PowerRightClick {
             if (entity.isValid() && entity.getType() != EntityType.ARMOR_STAND && !entity.isInsideVehicle() &&
                     entity.getPassengers().isEmpty() && player.hasLineOfSight(entity) && player.addPassenger(entity)) {
                 player.getWorld().playSound(player.getLocation(), Sound.BLOCK_DISPENSER_DISPENSE, 1.0F, 1.0F);
+                Listener listener = null;
+                if (entity instanceof Player) {
+                    listener = new Listener() {
+                        @EventHandler
+                        public void onPlayerQuit(PlayerQuitEvent e) {
+                            if (e.getPlayer().getUniqueId().equals(entity.getUniqueId())) {
+                                player.removePassenger(entity);
+                                entity.leaveVehicle();
+                            }
+                        }
+                    };
+                    Bukkit.getPluginManager().registerEvents(listener, RPGItems.plugin);
+                }
+                Listener finalListener = listener;
                 new BukkitRunnable() {
                     private long ticks = 0L;
 
@@ -55,6 +74,9 @@ public class PowerGlove extends BasePower implements PowerRightClick {
                     public void run() {
                         if (ticks >= maxTicks || player.getPassengers().isEmpty() || entity.isDead()) {
                             cancel();
+                            if (finalListener != null) {
+                                HandlerList.unregisterAll(finalListener);
+                            }
                             if (!player.getPassengers().isEmpty() && player.getPassengers().get(0).getUniqueId().equals(entity.getUniqueId())) {
                                 player.getPassengers().get(0).leaveVehicle();
                             }

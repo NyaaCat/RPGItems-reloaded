@@ -4,11 +4,14 @@ import cat.nyaa.nyaacore.LanguageRepository;
 import cat.nyaa.nyaacore.Message;
 import cat.nyaa.nyaacore.Pair;
 import cat.nyaa.nyaacore.utils.ItemStackUtils;
+import cat.nyaa.nyaacore.utils.OfflinePlayerUtils;
 import com.google.common.base.Strings;
 import net.md_5.bungee.api.chat.BaseComponent;
 import net.md_5.bungee.api.chat.ComponentBuilder;
 import net.md_5.bungee.api.chat.HoverEvent;
 import net.md_5.bungee.api.chat.TextComponent;
+import net.md_5.bungee.chat.ComponentSerializer;
+import net.md_5.bungee.chat.TextComponentSerializer;
 import org.apache.commons.lang.NotImplementedException;
 import org.bukkit.*;
 import org.bukkit.command.CommandSender;
@@ -86,7 +89,7 @@ public class Handler extends RPGCommandReceiver {
             return;
         }
         ItemMeta meta = item.getItemMeta();
-        @SuppressWarnings("deprecation") CustomItemTagContainer tagContainer = meta.getCustomTagContainer();
+        CustomItemTagContainer tagContainer = meta.getCustomTagContainer();
         if (tagContainer.hasCustomTag(TAG_META, ItemTagType.TAG_CONTAINER)) {
             int uid = getInt(getTag(tagContainer, TAG_META), TAG_ITEM_UID);
             player.sendMessage("new item: " + uid);
@@ -1265,17 +1268,12 @@ public class Handler extends RPGCommandReceiver {
         String author = args.next();
         if (author != null) {
             BaseComponent authorComponent = new TextComponent(author);
-            if (author.startsWith("@")) {
-                String authorName = author.substring(1);
-                Optional<OfflinePlayer> maybeAuthor = Arrays.stream(Bukkit.getOfflinePlayers()).filter(p -> p.getName().startsWith(authorName)).max(Comparator.comparing(OfflinePlayer::getLastPlayed));
-                if (maybeAuthor.isPresent()) {
-                    OfflinePlayer authorPlayer = maybeAuthor.get();
-                    author = authorPlayer.getUniqueId().toString();
-                    authorComponent = new TextComponent(authorPlayer.getName());
-                    authorComponent.setHoverEvent(new HoverEvent(HoverEvent.Action.SHOW_ENTITY,
-                            new ComponentBuilder(Message.getPlayerJson(authorPlayer)).create()
-                    ));
-                }
+            String authorName = author.startsWith("@") ? author.substring(1) : author;
+            Optional<OfflinePlayer> maybeAuthor = Optional.ofNullable(OfflinePlayerUtils.lookupPlayer(authorName));
+            if (maybeAuthor.isPresent()) {
+                OfflinePlayer authorPlayer = maybeAuthor.get();
+                author = authorPlayer.getUniqueId().toString();
+                authorComponent = getAuthorComponent(authorPlayer, authorName);
             }
             item.setAuthor(author);
             msg(sender, "message.item.author.set", Collections.singletonMap("{author}", authorComponent), item.getName());
@@ -1284,22 +1282,23 @@ public class Handler extends RPGCommandReceiver {
             String authorText = item.getAuthor();
             if (Strings.isNullOrEmpty(authorText)) {
                 msg(sender, "message.item.author.na", item.getName());
+                return;
             }
             BaseComponent authorComponent = new TextComponent(authorText);
             try {
                 UUID uuid = UUID.fromString(authorText);
                 OfflinePlayer authorPlayer = Bukkit.getOfflinePlayer(uuid);
                 String authorName = authorPlayer.getName();
-                authorComponent = getAuthorComponent(uuid, authorPlayer, authorName);
+                authorComponent = getAuthorComponent(authorPlayer, authorName);
             } catch (IllegalArgumentException ignored) {
             }
             msg(sender, "message.item.author.get", Collections.singletonMap("{author}", authorComponent), item.getName());
         }
     }
 
-    public static BaseComponent getAuthorComponent(UUID uuid, OfflinePlayer authorPlayer, String authorName) {
+    public static BaseComponent getAuthorComponent(OfflinePlayer authorPlayer, String authorName) {
         if (authorName == null) {
-            authorName = uuid.toString();
+            authorName = authorPlayer.getUniqueId().toString();
         }
         BaseComponent authorComponent = new TextComponent(authorName);
         authorComponent.setHoverEvent(new HoverEvent(HoverEvent.Action.SHOW_ENTITY,
