@@ -6,7 +6,7 @@ The RPGItems2 plugin continued from [TheCreeperOfRedstone/RPG-Items-2](https://g
 
 ## Project Discussion
 
-Discord Server: [![Discord](https://img.shields.io/discord/486394125206421524.svg?logo=discord&link=https%3A%2F%2Fdiscord.gg%2FKPAmKQa)](https://discord.gg/KPAmKQa)
+Discord Server: [![Discord](https://img.shields.io/discord/486394125206421524.svg?logo=discord&link=https%3A%2F%2Fdiscord.gg%QeVy8Yd)](https://discord.gg/QeVy8Yd)
 
 ## Status
 
