@@ -10,8 +10,6 @@ import net.md_5.bungee.api.chat.BaseComponent;
 import net.md_5.bungee.api.chat.ComponentBuilder;
 import net.md_5.bungee.api.chat.HoverEvent;
 import net.md_5.bungee.api.chat.TextComponent;
-import net.md_5.bungee.chat.ComponentSerializer;
-import net.md_5.bungee.chat.TextComponentSerializer;
 import org.apache.commons.lang.NotImplementedException;
 import org.bukkit.*;
 import org.bukkit.command.CommandSender;
@@ -50,6 +48,7 @@ import java.nio.file.attribute.BasicFileAttributes;
 import java.util.*;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutionException;
+import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
 import java.util.logging.Level;
 import java.util.stream.Collectors;
@@ -1274,6 +1273,9 @@ public class Handler extends RPGCommandReceiver {
                 OfflinePlayer authorPlayer = maybeAuthor.get();
                 author = authorPlayer.getUniqueId().toString();
                 authorComponent = getAuthorComponent(authorPlayer, authorName);
+            } else if (author.startsWith("@")) {
+                msg(sender, "message.item.author.player_not_found", author);
+                return;
             }
             item.setAuthor(author);
             msg(sender, "message.item.author.set", Collections.singletonMap("{author}", authorComponent), item.getName());
@@ -1284,15 +1286,17 @@ public class Handler extends RPGCommandReceiver {
                 msg(sender, "message.item.author.na", item.getName());
                 return;
             }
-            BaseComponent authorComponent = new TextComponent(authorText);
-            try {
-                UUID uuid = UUID.fromString(authorText);
-                OfflinePlayer authorPlayer = Bukkit.getOfflinePlayer(uuid);
-                String authorName = authorPlayer.getName();
-                authorComponent = getAuthorComponent(authorPlayer, authorName);
-            } catch (IllegalArgumentException ignored) {
-            }
-            msg(sender, "message.item.author.get", Collections.singletonMap("{author}", authorComponent), item.getName());
+            Bukkit.getScheduler().runTaskAsynchronously(plugin, () -> {
+                BaseComponent authorComponent = new TextComponent(authorText);
+                try {
+                    UUID uuid = UUID.fromString(authorText);
+                    OfflinePlayer authorPlayer = Bukkit.getOfflinePlayer(uuid);
+                    String authorName = authorPlayer.getName() == null ? OfflinePlayerUtils.lookupPlayerNameByUuidOnline(uuid).get(2, TimeUnit.SECONDS) : authorPlayer.getName();
+                    authorComponent = getAuthorComponent(authorPlayer, authorName);
+                } catch (IllegalArgumentException | InterruptedException | ExecutionException | TimeoutException ignored) {
+                }
+                msg(sender, "message.item.author.get", Collections.singletonMap("{author}", authorComponent), item.getName());
+            });
         }
     }
 
