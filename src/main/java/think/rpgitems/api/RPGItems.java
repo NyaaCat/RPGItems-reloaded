@@ -13,6 +13,6 @@ public class RPGItems {
      * @return The RPGItem or null
      */
     public RPGItem toRPGItem(ItemStack itemstack) {
-        return ItemManager.toRPGItem(itemstack);
+        return ItemManager.toRPGItem(itemstack).orElse(null);
     }
 }

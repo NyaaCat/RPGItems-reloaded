@@ -29,6 +29,7 @@ import java.util.regex.Pattern;
 
 public class RPGItems extends JavaPlugin {
 
+    private static int version;
     private static int serial;
     private static String pluginMCVersion;
     private static String serverMCVersion;
@@ -44,13 +45,14 @@ public class RPGItems extends JavaPlugin {
         plugin = this;
         logger = this.getLogger();
 
-        String version = getDescription().getVersion();
-        Pattern serialPattern = Pattern.compile("\\d+\\.\\d+\\.(\\d+)-mc([\\d.]+)");
-        Matcher serialMatcher = serialPattern.matcher(version);
+        String versionDesc = getDescription().getVersion();
+        Pattern serialPattern = Pattern.compile("(\\d+)\\.(\\d+)\\.(\\d+)-mc([\\d.]+)");
+        Matcher serialMatcher = serialPattern.matcher(versionDesc);
 
         if (serialMatcher.matches()) {
-            serial = Integer.parseInt(serialMatcher.group(1));
-            pluginMCVersion = serialMatcher.group(2);
+            version = Integer.parseInt(serialMatcher.group(1)) * 100 + Integer.parseInt(serialMatcher.group(2));
+            serial = Integer.parseInt(serialMatcher.group(3));
+            pluginMCVersion = serialMatcher.group(4);
         }
 
         String serverVersion = Bukkit.getVersion();
@@ -145,6 +147,10 @@ public class RPGItems extends JavaPlugin {
         getCommand("rpgitem").setTabCompleter(commandHandler);
         getServer().getPluginManager().registerEvents(new ServerLoadListener(), this);
         managedPlugins.forEach(Bukkit.getPluginManager()::enablePlugin);
+    }
+
+    public static int getVersion() {
+        return version;
     }
 
     public static int getSerial() {

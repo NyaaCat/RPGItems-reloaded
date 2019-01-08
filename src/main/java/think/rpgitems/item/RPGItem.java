@@ -61,6 +61,8 @@ public class RPGItem {
     public static final NamespacedKey TAG_ITEM_UID = new NamespacedKey(RPGItems.plugin, "item_uid");
     public static final NamespacedKey TAG_META = new NamespacedKey(RPGItems.plugin, "meta");
     public static final NamespacedKey TAG_DURABILITY = new NamespacedKey(RPGItems.plugin, "durability");
+    public static final NamespacedKey TAG_OWNER = new NamespacedKey(RPGItems.plugin, "owner");
+    public static final NamespacedKey TAG_STACK_ID = new NamespacedKey(RPGItems.plugin, "stack_id");
 
     static RPGItems plugin;
     private boolean ignoreWorldGuard = false;
@@ -115,6 +117,7 @@ public class RPGItem {
     private int hitCost = 0;
     private boolean hitCostByDamage = false;
     private String mcVersion;
+    private int pluginVersion;
     private int pluginSerial;
     private List<String> lore;
 
@@ -127,6 +130,7 @@ public class RPGItem {
         getItemFlags().add(ItemFlag.HIDE_ATTRIBUTES);
         setMcVersion(RPGItems.getServerMCVersion());
         setPluginSerial(RPGItems.getSerial());
+        setPluginVersion(RPGItems.getVersion());
         rebuild();
     }
 
@@ -150,10 +154,8 @@ public class RPGItem {
     }
 
     public static void updateItemStack(ItemStack item) {
-        RPGItem rItem = ItemManager.toRPGItem(item);
-        if (rItem == null)
-            return;
-        rItem.updateItem(item, false);
+        Optional<RPGItem> rItem = ItemManager.toRPGItem(item);
+        rItem.ifPresent(r -> r.updateItem(item, false));
     }
 
     @Deprecated
@@ -188,6 +190,7 @@ public class RPGItem {
         setAuthor(s.getString("author", ""));
         setNote(s.getString("note", ""));
         setLicense(s.getString("license", ""));
+        setPluginVersion(s.getInt("pluginVersion", 0));
         setPluginSerial(s.getInt("pluginSerial", 0));
         setMcVersion(s.getString("mcVersion", ""));
 
@@ -513,9 +516,6 @@ public class RPGItem {
         meta.removeItemFlags(meta.getItemFlags().toArray(new ItemFlag[0]));
 
         for (ItemFlag flag : getItemFlags()) {
-            if (flag == ItemFlag.HIDE_ATTRIBUTES && hasPower(PowerAttributeModifier.class)) {
-                continue;
-            }
             meta.addItemFlags(flag);
         }
         Set<Enchantment> enchs = meta.getEnchants().keySet();
@@ -648,7 +648,7 @@ public class RPGItem {
             Iterator<Recipe> it = Bukkit.recipeIterator();
             while (it.hasNext()) {
                 Recipe recipe = it.next();
-                RPGItem rpgitem = ItemManager.toRPGItem(recipe.getResult());
+                RPGItem rpgitem = ItemManager.toRPGItem(recipe.getResult()).orElse(null);
                 if (rpgitem == null)
                     continue;
                 if (rpgitem.getUid() == getUid()) {
@@ -1425,6 +1425,14 @@ public class RPGItem {
 
     public void setPermission(String p) {
         permission = p;
+    }
+
+    public int getPluginVersion() {
+        return pluginVersion;
+    }
+
+    public void setPluginVersion(int pluginVersion) {
+        this.pluginVersion = pluginVersion;
     }
 
     public int getPluginSerial() {

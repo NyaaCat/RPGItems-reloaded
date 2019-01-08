@@ -26,6 +26,7 @@ import org.bukkit.inventory.meta.ItemMeta;
 import org.bukkit.inventory.meta.tags.CustomItemTagContainer;
 import org.bukkit.inventory.meta.tags.ItemTagType;
 import org.librazy.nclangchecker.LangKey;
+import think.rpgitems.item.ItemGroup;
 import think.rpgitems.item.ItemManager;
 import think.rpgitems.item.RPGItem;
 import think.rpgitems.power.*;
@@ -92,8 +93,8 @@ public class Handler extends RPGCommandReceiver {
         if (tagContainer.hasCustomTag(TAG_META, ItemTagType.TAG_CONTAINER)) {
             int uid = getInt(getTag(tagContainer, TAG_META), TAG_ITEM_UID);
             player.sendMessage("new item: " + uid);
-            RPGItem rpgItem = ItemManager.getItemById(uid);
-            player.sendMessage("rpgItem: " + (rpgItem == null ? null : rpgItem.getName()));
+            Optional<RPGItem> rpgItem = ItemManager.getItem(uid);
+            player.sendMessage("rpgItem: " + rpgItem.map(RPGItem::getName).orElse(null));
             return;
         }
         // Old
@@ -109,8 +110,8 @@ public class Handler extends RPGCommandReceiver {
                 return;
             }
             player.sendMessage("old item: " + id.get());
-            RPGItem rpgItem = ItemManager.getItemById(id.get());
-            if (rpgItem == null) {
+            Optional<RPGItem> rpgItem = ItemManager.getItem(id.get());
+            if (!rpgItem.isPresent()) {
                 player.sendMessage("old item not found");
                 return;
             }
@@ -123,7 +124,7 @@ public class Handler extends RPGCommandReceiver {
                 player.sendMessage("no durability");
             }
             player.sendMessage(ItemStackUtils.itemToJson(item).replace(ChatColor.COLOR_CHAR, '&'));
-            rpgItem.updateItem(item);
+            rpgItem.get().updateItem(item);
             player.sendMessage(ItemStackUtils.itemToJson(item).replace(ChatColor.COLOR_CHAR, '&'));
         } catch (Exception e) {
             RPGItems.logger.log(Level.WARNING, "Error migrating old item", e);
@@ -172,7 +173,7 @@ public class Handler extends RPGCommandReceiver {
         File file = item.getFile();
 
         if (plugin.cfg.itemFsLock) {
-            Pair<File, FileLock> backup = ItemManager.unlockedItem.get(item);
+            Pair<File, FileLock> backup = ItemManager.getBackup(item);
             if (backup == null) {
                 msg(sender, "message.error.reloading_locked");
                 return;
@@ -180,8 +181,7 @@ public class Handler extends RPGCommandReceiver {
             FileLock fileLock = backup.getValue();
             ItemManager.remove(item, false);
             if (!file.exists() || file.isDirectory()) {
-                ItemManager.itemFileLocks.remove(item.getFile().getCanonicalPath());
-                ItemManager.unlockedItem.remove(item);
+                ItemManager.removeLock(item);
                 msg(sender, "message.item.file_deleted");
                 return;
             }
@@ -190,14 +190,14 @@ public class Handler extends RPGCommandReceiver {
                 recoverBackup(sender, item, file, fileLock);
             } else {
                 backup.getKey().deleteOnExit();
-                ItemManager.unlockedItem.remove(item);
+                ItemManager.removeBackup(item);
                 fileLock.release();
                 fileLock.channel().close();
             }
         } else {
             ItemManager.remove(item, false);
             boolean load = ItemManager.load(file, sender);
-            Pair<File, FileLock> backup = ItemManager.unlockedItem.remove(item);
+            Pair<File, FileLock> backup = ItemManager.removeBackup(item);
             if (!load) {
                 if (backup != null) {
                     recoverBackup(sender, item, file, backup.getValue());
@@ -242,7 +242,7 @@ public class Handler extends RPGCommandReceiver {
             ItemManager.lock(item.getFile());
             throw new IllegalStateException();
         }
-        ItemManager.unlockedItem.put(item, Pair.of(backup, lock));
+        ItemManager.addBackup(item, Pair.of(backup, lock));
         if (itemFsLock) {
             msg(sender, "message.item.unlocked", item.getFile().getPath(), backup.getPath());
         } else {
@@ -252,8 +252,8 @@ public class Handler extends RPGCommandReceiver {
 
     @SubCommand("cleanbackup")
     public void cleanBackup(CommandSender sender, Arguments args) throws IOException {
-        if (!ItemManager.unlockedItem.isEmpty()) {
-            throw new BadCommandException("message.error.item_unlocked", ItemManager.unlockedItem.keySet().stream().findFirst().orElseThrow(IllegalStateException::new).getName());
+        if (!ItemManager.hasBackup()) {
+            throw new BadCommandException("message.error.item_unlocked", ItemManager.getUnlockedItem().stream().findFirst().orElseThrow(IllegalStateException::new).getName());
         }
         Files.walkFileTree(ItemManager.getBackupsDir().toPath(), new SimpleFileVisitor<Path>() {
             @Override
@@ -283,13 +283,13 @@ public class Handler extends RPGCommandReceiver {
         String nameSearch = args.argString("n", args.argString("name", ""));
         String displaySearch = args.argString("d", args.argString("display", ""));
         String typeSearch = args.argString("t", args.argString("type", ""));
-        List<RPGItem> items = ItemManager.itemByName.values()
-                                                    .stream()
-                                                    .filter(i -> i.getName().contains(nameSearch))
-                                                    .filter(i -> i.getDisplayName().contains(displaySearch))
-                                                    .filter(i -> i.getType().contains(typeSearch))
-                                                    .sorted(Comparator.comparing(RPGItem::getName))
-                                                    .collect(Collectors.toList());
+        List<RPGItem> items = ItemManager.items()
+                                         .stream()
+                                         .filter(i -> i.getName().contains(nameSearch))
+                                         .filter(i -> i.getDisplayName().contains(displaySearch))
+                                         .filter(i -> i.getType().contains(typeSearch))
+                                         .sorted(Comparator.comparing(RPGItem::getName))
+                                         .collect(Collectors.toList());
         if (items.size() == 0) {
             msg(sender, "message.no_item");
             return;
@@ -1591,7 +1591,7 @@ public class Handler extends RPGCommandReceiver {
         String s = args.nextString();
         if (s.equalsIgnoreCase("all")) {
             List<CompletableFuture<Void>> futures = new LinkedList<>();
-            for (RPGItem item : ItemManager.itemByName.values()) {
+            for (RPGItem item : ItemManager.items()) {
                 if (!item.getMcVersion().startsWith("1.13")) {
                     CompletableFuture<Void> cmdFuture = new CompletableFuture<>();
                     updateItemCommand(sender, item, cmdFuture);
@@ -1752,22 +1752,22 @@ public class Handler extends RPGCommandReceiver {
     }
 
     private RPGItem getItem(String str, CommandSender sender, boolean readOnly) {
-        RPGItem item = ItemManager.getItemByName(str);
-        if (item == null) {
+        Optional<RPGItem> item = ItemManager.getItem(str);
+        if (!item.isPresent()) {
             try {
-                item = ItemManager.getItemById(Integer.parseInt(str));
+                item = ItemManager.getItem(Integer.parseInt(str));
             } catch (NumberFormatException ignored) {
             }
         }
-        if (item == null && sender instanceof Player && str.equalsIgnoreCase("hand")) {
+        if (!item.isPresent() && sender instanceof Player && str.equalsIgnoreCase("hand")) {
             Player p = (Player) sender;
             item = ItemManager.toRPGItem(p.getInventory().getItemInMainHand());
         }
-        if (item != null) {
-            if (ItemManager.unlockedItem.containsKey(item) && !readOnly) {
-                throw new BadCommandException("message.error.item_unlocked", item.getName());
+        if (item.isPresent()) {
+            if (ItemManager.isUnlocked(item.get()) && !readOnly) {
+                throw new BadCommandException("message.error.item_unlocked", item.get().getName());
             }
-            return item;
+            return item.get();
         } else {
             throw new BadCommandException("message.error.item", str);
         }
@@ -1875,12 +1875,17 @@ public class Handler extends RPGCommandReceiver {
 
                 String name = args.argString(origin, origin);
 
-                if (ItemManager.itemById.containsKey(uid)) {
-                    RPGItem current = ItemManager.getItemById(uid);
-                    msg(sender, "message.import.conflict_uid", origin, current.getName(), uid);
+                if (ItemManager.hasId(uid)) {
+                    Optional<RPGItem> currentItem = ItemManager.getItem(uid);
+                    if (currentItem.isPresent()) {
+                        msg(sender, "message.import.conflict_uid", origin, currentItem.get().getName(), uid);
+                    } else {
+                        Optional<ItemGroup> currentGroup = ItemManager.getGroup(uid);
+                        msg(sender, "message.import.conflict_uid", origin, currentGroup.get().getName(), uid);
+                    }
                     return;
                 }
-                if (ItemManager.itemByName.containsKey(name)) {
+                if (ItemManager.hasName(name)) {
                     msg(sender, "message.import.conflict_name", name);
                     return;
                 }

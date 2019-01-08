@@ -33,10 +33,7 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.StandardCopyOption;
 import java.nio.file.StandardOpenOption;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.Objects;
-import java.util.Optional;
+import java.util.*;
 import java.util.concurrent.ThreadLocalRandom;
 import java.util.logging.Level;
 
@@ -46,14 +43,51 @@ import static think.rpgitems.utils.ItemTagUtils.getInt;
 import static think.rpgitems.utils.ItemTagUtils.getTag;
 
 public class ItemManager {
-    public static HashMap<Integer, RPGItem> itemById = new HashMap<>();
-    public static HashMap<String, RPGItem> itemByName = new HashMap<>();
-    public static HashMap<String, FileLock> itemFileLocks = new HashMap<>();
-    public static HashMap<RPGItem, Pair<File, FileLock>> unlockedItem = new HashMap<>();
+    private static HashMap<Integer, RPGItem> itemById = new HashMap<>();
+    private static HashMap<String, RPGItem> itemByName = new HashMap<>();
+    private static HashMap<Integer, ItemGroup> groupById = new HashMap<>();
+    private static HashMap<String, ItemGroup> groupByName = new HashMap<>();
+    private static HashMap<String, FileLock> itemFileLocks = new HashMap<>();
+    private static HashMap<RPGItem, Pair<File, FileLock>> unlockedItem = new HashMap<>();
     private static RPGItems plugin;
     private static File itemsDir;
     private static File backupsDir;
     private static boolean extendedLock = true;
+
+    public static boolean hasName(String name) {
+        return itemByName.containsKey(name) || groupByName.containsKey(name);
+    }
+
+    public static boolean hasId(Integer id) {
+        return itemById.containsKey(id) || groupById.containsKey(id);
+    }
+
+    public static boolean isUnlocked(RPGItem item) {
+        return unlockedItem.containsKey(item);
+    }
+
+    public static Collection<RPGItem> items() {
+        return itemByName.values();
+    }
+
+    public static Pair<File, FileLock> getBackup(RPGItem item) {
+        return unlockedItem.get(item);
+    }
+
+    public static void addBackup(RPGItem item, Pair<File, FileLock> of) {
+        unlockedItem.put(item, of);
+    }
+
+    public static boolean hasBackup() {
+        return unlockedItem.isEmpty();
+    }
+
+    public static Set<String> itemNames() {
+        return itemByName.keySet();
+    }
+    public static Set<RPGItem> getUnlockedItem() {
+        return unlockedItem.keySet();
+    }
 
     public static File getItemsDir() {
         return itemsDir;
@@ -86,16 +120,12 @@ public class ItemManager {
     public static void refreshItem() {
         for (Player player : Bukkit.getOnlinePlayers()) {
             for (ItemStack item : player.getInventory()) {
-                RPGItem rpgItem = ItemManager.toRPGItem(item);
-                if (rpgItem != null) {
-                    rpgItem.updateItem(item);
-                }
+                Optional<RPGItem> rpgItem = ItemManager.toRPGItem(item);
+                rpgItem.ifPresent(r -> r.updateItem(item));
             }
             for (ItemStack item : player.getInventory().getArmorContents()) {
-                RPGItem rpgItem = ItemManager.toRPGItem(item);
-                if (rpgItem != null) {
-                    rpgItem.updateItem(item);
-                }
+                Optional<RPGItem> rpgItem = ItemManager.toRPGItem(item);
+                rpgItem.ifPresent(r -> r.updateItem(item));
             }
         }
     }
@@ -342,6 +372,7 @@ public class ItemManager {
         boolean exist = itemFile.exists();
         String cfgStr = "";
         File backup = null;
+        item.setPluginVersion(RPGItems.getVersion());
         item.setPluginSerial(RPGItems.getSerial());
         try {
             YamlConfiguration configuration = new YamlConfiguration();
@@ -428,6 +459,15 @@ public class ItemManager {
         }
     }
 
+    public static void removeLock(RPGItem item) throws IOException {
+        ItemManager.itemFileLocks.remove(item.getFile().getCanonicalPath());
+        ItemManager.unlockedItem.remove(item);
+    }
+
+    public static Pair<File, FileLock> removeBackup(RPGItem item) {
+        return ItemManager.unlockedItem.remove(item);
+    }
+
     private static File createFile(File items, String itemName, boolean tran) {
         String filename = tran ? getItemFilename(itemName) + ".yml" : itemName;
         File file = new File(items, filename);
@@ -482,26 +522,26 @@ public class ItemManager {
         return backup;
     }
 
-    public static RPGItem toRPGItem(ItemStack item) {
+    public static Optional<RPGItem> toRPGItem(ItemStack item) {
         if (item == null || item.getType() == Material.AIR)
-            return null;
+            return Optional.empty();
         if (!item.hasItemMeta())
-            return null;
+            return Optional.empty();
         ItemMeta meta = item.getItemMeta();
         CustomItemTagContainer tagContainer = meta.getCustomTagContainer();
         if (tagContainer.hasCustomTag(TAG_META, ItemTagType.TAG_CONTAINER)) {
             int uid = getInt(getTag(tagContainer, TAG_META), TAG_ITEM_UID);
-            return ItemManager.getItemById(uid);
+            return ItemManager.getItem(uid);
         }
         // Old
         if (!meta.hasLore() || meta.getLore().size() <= 0)
-            return null;
+            return Optional.empty();
         try {
             @SuppressWarnings("deprecation") Optional<Integer> id = decodeId(meta.getLore().get(0));
-            return id.map(ItemManager::getItemById).orElse(null);
+            return id.map(ItemManager::getItemById);
         } catch (Exception e) {
             RPGItems.logger.log(Level.WARNING, "Error migrating old item", e);
-            return null;
+            return Optional.empty();
         }
     }
 
@@ -538,12 +578,45 @@ public class ItemManager {
         return newItem;
     }
 
-    public static RPGItem getItemById(int id) {
+    public static Optional<RPGItem> getItem(int id) {
+        return Optional.ofNullable(itemById.get(id));
+    }
+
+    public static Optional<RPGItem> getItem(String name) {
+        return Optional.ofNullable(itemByName.get(name));
+    }
+
+    static RPGItem getItemById(int id) {
         return itemById.get(id);
     }
 
-    public static RPGItem getItemByName(String name) {
+    static RPGItem getItemByName(String name) {
         return itemByName.get(name);
+    }
+
+    public static Optional<ItemGroup> getGroup(int uid) {
+        return Optional.ofNullable(groupById.get(uid));
+    }
+
+    public static Set<RPGItem> getItems(int id) {
+        RPGItem item = itemById.get(id);
+        if (item != null) return Collections.singleton(item);
+        ItemGroup itemGroup = groupById.get(id);
+        if (itemGroup != null) {
+            return Collections.unmodifiableSet(itemGroup.getItems());
+        }
+        return Collections.emptySet();
+    }
+
+    public static Set<RPGItem> getItems(String name) {
+        RPGItem item = itemByName.get(name);
+        if (item != null) return Collections.singleton(item);
+        ItemGroup itemGroup = groupByName.get(name);
+        if (itemGroup != null) {
+            return Collections.unmodifiableSet(itemGroup.getItems());
+        }
+        return Collections.emptySet();
+
     }
 
     @SuppressWarnings("deprecation")

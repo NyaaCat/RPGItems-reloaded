@@ -240,15 +240,12 @@ public abstract class RPGCommandReceiver extends CommandReceiver {
     }
 
     private static Pair<RPGItem, String> resolveItemCommand(String f, String s) {
-        RPGItem rpgItem = ItemManager.getItemByName(f);
-        if (rpgItem != null) {
-            return new Pair<>(rpgItem, s);
+        Optional<RPGItem> rpgItem = ItemManager.getItem(f);
+        if (rpgItem.isPresent()) {
+            return new Pair<>(rpgItem.get(), s);
         }
-        rpgItem = ItemManager.getItemByName(s);
-        if (rpgItem != null) {
-            return new Pair<>(rpgItem, f);
-        }
-        return null;
+        rpgItem = ItemManager.getItem(s);
+        return rpgItem.map(r -> new Pair<>(r, f)).orElse(null);
     }
 
     private static List<String> resolveSet(Set<String> values, String last) {
@@ -269,9 +266,9 @@ public abstract class RPGCommandReceiver extends CommandReceiver {
     @Override
     public boolean onCommand(CommandSender sender, Command command, String label, String[] args) {
         if (
-                (args.length > 0 && ItemManager.getItemByName(args[0]) != null)
+                (args.length > 0 && ItemManager.getItem(args[0]).isPresent())
                         ||
-                        (args.length > 1 && args[1].equals("create") && ItemManager.getItemByName(args[0]) == null)
+                        (args.length > 1 && args[1].equals("create") && !ItemManager.getItem(args[0]).isPresent())
         ) {
             if (args.length > 1) {
                 String cmd = args[1];
@@ -301,7 +298,7 @@ public abstract class RPGCommandReceiver extends CommandReceiver {
             case 1: {
                 String str = cmd.next();
                 if (suggestion) {
-                    if (ItemManager.getItemByName(str) != null) {
+                    if (ItemManager.getItem(str).isPresent()) {
                         // we have a `/rpgitem item` and waiting a proper command
                         return subCommandAttribute.entrySet().stream().filter(entry -> Stream.of("item", "power", "property").anyMatch(entry.getValue()::startsWith)).map(Map.Entry::getKey).collect(Collectors.toList());
                     } else {
@@ -317,14 +314,14 @@ public abstract class RPGCommandReceiver extends CommandReceiver {
                             return Collections.emptyList();
                         } else {
                             // it's a item command, just items
-                            return new ArrayList<>(ItemManager.itemByName.keySet());
+                            return new ArrayList<>(ItemManager.itemNames());
                         }
                     }
                 } else {
                     // trying to complete a `/rpgitem com` or `/rpgitem ite`
                     List<String> list = subCommands.keySet().stream().filter(s -> s.startsWith(str)).collect(Collectors.toList());
                     if (!list.isEmpty()) return list;
-                    return ItemManager.itemByName.keySet().stream().filter(s -> s.startsWith(str)).collect(Collectors.toList());
+                    return ItemManager.itemNames().stream().filter(s -> s.startsWith(str)).collect(Collectors.toList());
                 }
             }
             case 2: {
@@ -359,7 +356,7 @@ public abstract class RPGCommandReceiver extends CommandReceiver {
                             return null;
                     }
                 } else {
-                    if (ItemManager.getItemByName(first) != null) {
+                    if (ItemManager.getItem(first).isPresent()) {
                         // trying to complete `/rpgitem item com`
                         return subCommandAttribute.entrySet().stream()
                                                   .filter(entry -> Stream.of("item", "power", "property").anyMatch(entry.getValue()::startsWith))
@@ -375,10 +372,10 @@ public abstract class RPGCommandReceiver extends CommandReceiver {
                             case "property":
                             case "power":
                             case "item": {
-                                return ItemManager.itemByName.keySet().stream().filter(s -> s.startsWith(second)).collect(Collectors.toList()); // items
+                                return ItemManager.itemNames().stream().filter(s -> s.startsWith(second)).collect(Collectors.toList()); // items
                             }
                             case "items": {
-                                return resolveSet(ItemManager.itemByName.keySet(), second); // items
+                                return resolveSet(ItemManager.itemNames(), second); // items
                             }
                             case "command": {
                                 return att.length > 1 ? Arrays.stream(att[1].split(",")).filter(s -> s.startsWith(second)).collect(Collectors.toList()) : null; // bundled in attr

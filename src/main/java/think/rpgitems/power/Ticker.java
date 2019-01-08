@@ -9,6 +9,8 @@ import think.rpgitems.data.Context;
 import think.rpgitems.item.ItemManager;
 import think.rpgitems.item.RPGItem;
 
+import java.util.Optional;
+
 /**
  * BukkitRunnable that runs {@link PowerTick#tick(Player, ItemStack)}
  */
@@ -21,19 +23,19 @@ public class Ticker extends BukkitRunnable {
             if (ItemManager.canUse(player, null, false) == Event.Result.DENY) continue;
             ItemStack[] armour = player.getInventory().getArmorContents();
             for (ItemStack part : armour) {
-                RPGItem item = ItemManager.toRPGItem(part);
-                if (item == null)
+                Optional<RPGItem> item = ItemManager.toRPGItem(part);
+                if (!item.isPresent())
                     continue;
-                item.power(player, part, null, Trigger.TICK);
+                item.get().power(player, part, null, Trigger.TICK);
             }
             ItemStack mainHand = player.getInventory().getItemInMainHand();
-            RPGItem item = ItemManager.toRPGItem(mainHand);
-            if (item == null)
+            Optional<RPGItem> item = ItemManager.toRPGItem(mainHand);
+            if (!item.isPresent())
                 continue;
-            item.power(player, mainHand, null, Trigger.TICK);
+            item.get().power(player, mainHand, null, Trigger.TICK);
 
             if (player.isSneaking()) {
-                item.power(player, mainHand, null, Trigger.SNEAKING);
+                item.get().power(player, mainHand, null, Trigger.SNEAKING);
             }
         }
     }
