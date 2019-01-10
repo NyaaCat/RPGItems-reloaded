@@ -616,7 +616,6 @@ public class ItemManager {
             return Collections.unmodifiableSet(itemGroup.getItems());
         }
         return Collections.emptySet();
-
     }
 
     @SuppressWarnings("deprecation")
@@ -637,6 +636,10 @@ public class ItemManager {
     }
 
     public static String getItemFilename(String itemName) {
+        return getItemFilename(itemName, "-item");
+    }
+
+    public static String getItemFilename(String itemName, String postfix) {
         // ensure Windows servers won't be blown up by CONs or NULs
         // and escape some character that don't fit into a file name
         return
@@ -653,7 +656,7 @@ public class ItemManager {
                         .replace("|", "_p")
                         .replace(":", "_c")
                         .replace(".", "_d")
-                        + "-item";
+                        + postfix;
     }
 
     public static Event.Result canUse(Player p, RPGItem rItem) {

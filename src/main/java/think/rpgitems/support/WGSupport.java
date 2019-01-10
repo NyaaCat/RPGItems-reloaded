@@ -13,16 +13,15 @@ import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
 import org.bukkit.plugin.Plugin;
 import think.rpgitems.RPGItems;
+import think.rpgitems.item.ItemManager;
 import think.rpgitems.item.RPGItem;
 import think.rpgitems.power.Power;
 import think.rpgitems.power.RPGItemsPowersPreFireEvent;
 
 import java.io.File;
-import java.util.Collection;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.UUID;
+import java.util.*;
 import java.util.logging.Level;
+import java.util.stream.Collectors;
 
 public class WGSupport {
 
@@ -121,17 +120,19 @@ public class WGSupport {
         if (disabled != null && disabled) {
             return Event.Result.DENY;
         }
-        Collection<String> disabledItem = disabledItemByPlayer.get(player.getUniqueId());
-        Collection<String> enabledItem = enabledItemByPlayer.get(player.getUniqueId());
+        Collection<String> disableds = disabledItemByPlayer.get(player.getUniqueId());
+        Collection<String> enableds = enabledItemByPlayer.get(player.getUniqueId());
 
-        if (disabledItem != null && disabledItem.contains("*")) {
+        if (disableds != null && disableds.contains("*")) {
             return Event.Result.DENY;
         }
         if (item == null || item.isIgnoreWorldGuard()) {
             return Event.Result.ALLOW;
         }
+        List<String> disabledItems = disableds == null ? null : disableds.stream().map(ItemManager::getItems).flatMap(Set::stream).map(RPGItem::getName).collect(Collectors.toList());
+        List<String> enabledItems = enableds == null ? null : enableds.stream().map(ItemManager::getItems).flatMap(Set::stream).map(RPGItem::getName).collect(Collectors.toList());
         String itemName = item.getName();
-        if (notEnabled(disabledItem, enabledItem, itemName)) return Event.Result.DENY;
+        if (notEnabled(disabledItems, enabledItems, itemName)) return Event.Result.DENY;
 
         Collection<String> disabledPower = disabledPowerByPlayer.get(player.getUniqueId());
         Collection<String> enabledPower = enabledPowerByPlayer.get(player.getUniqueId());
