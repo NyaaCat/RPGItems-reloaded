@@ -36,6 +36,9 @@ public class ItemGroup {
             Pattern p = Pattern.compile(regex);
             setItems(ItemManager.itemNames().stream().filter(p.asPredicate()).map(ItemManager::getItemByName).collect(Collectors.toSet()));
             setItemUids(items.stream().map(RPGItem::getUid).collect(Collectors.toSet()));
+        } else {
+            setItems(new HashSet<>());
+            setItemUids(new HashSet<>());
         }
     }
 
@@ -63,6 +66,35 @@ public class ItemGroup {
 
         setItemUids(new HashSet<>(s.getIntegerList("item_uids")));
         setItems(getItemUids().stream().map(ItemManager::getItemById).filter(Objects::nonNull).collect(Collectors.toSet()));
+    }
+
+    public void addItem(RPGItem item) {
+        int uid = item.getUid();
+        try {
+            itemUids.add(uid);
+            items.add(item);
+        } catch (Throwable e) {
+            items.remove(item);
+            itemUids.remove(uid);
+            throw e;
+        }
+    }
+
+    public void removeItem(RPGItem item) {
+        itemUids.remove(item.getUid());
+        items.remove(item);
+    }
+
+    public void save(ConfigurationSection s) {
+        s.set("author", getAuthor());
+        s.set("note", getNote());
+        s.set("license", getLicense());
+
+        s.set("name", getName());
+        s.set("name", getUid());
+        s.set("regex", getRegex());
+
+        s.set("item_uids", getItemUids());
     }
 
     public String getAuthor() {
@@ -111,9 +143,10 @@ public class ItemGroup {
 
     public void setItemUids(Set<Integer> itemUids) {
         this.itemUids = itemUids;
+        setItems(getItemUids().stream().map(ItemManager::getItemById).filter(Objects::nonNull).collect(Collectors.toSet()));
     }
 
-    public void setItems(Set<RPGItem> items) {
+    private void setItems(Set<RPGItem> items) {
         this.items = items;
     }
 

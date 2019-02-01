@@ -1362,10 +1362,41 @@ public class Handler extends RPGCommandReceiver {
         msg(sender, "message.power.reorder", item.getName(), remove.getName());
     }
 
+    @SubCommand("creategroup")
+    public void createGroup(CommandSender sender, Arguments args) {
+        String groupName = args.next();
+        if (args.top() == null || !args.top().contains("/")) {
+            ItemGroup itemGroup = ItemManager.newGroup(groupName, sender);
+            if (itemGroup == null) {
+                msg(sender, "message.create.fail");
+                return;
+            }
+            while (args.top() != null) {
+                RPGItem item = getItem(args.nextString(), sender, true);
+                itemGroup.addItem(item);
+            }
+            ItemManager.save(itemGroup);
+        } else {
+            String regex = args.next();
+            if (!regex.startsWith("/") || !regex.endsWith("/")) {
+                msg(sender, "message.create.invalid_regex");
+                return;
+            } else {
+                regex = regex.substring(1, regex.length() - 1);
+            }
+            ItemGroup itemGroup = ItemManager.newGroup(groupName, regex, sender);
+            if (itemGroup == null) {
+                msg(sender, "message.create.fail");
+                return;
+            }
+            ItemManager.save(itemGroup);
+        }
+    }
+
     @SuppressWarnings("ConstantConditions")
     @SubCommand("gen-wiki")
     @Attribute("command")
-    public void gen_wiki(CommandSender sender, Arguments args) throws IOException {
+    public void genWiki(CommandSender sender, Arguments args) throws IOException {
         String lc = args.next();
         Locale locale = Locale.forLanguageTag((lc == null ? RPGItems.plugin.cfg.language : lc).replace('_', '-'));
         File wikiDir = new File(RPGItems.plugin.getDataFolder(), "wiki/" + locale.toString());
@@ -1796,7 +1827,7 @@ public class Handler extends RPGCommandReceiver {
                     item.save(conf);
                     conf.set("id", null);
                     String itemConf = conf.saveToString();
-                    String filename = ItemManager.getItemFilename(name) + ".yml";
+                    String filename = ItemManager.getItemFilename(name, "-item") + ".yml";
                     Map<String, String> content = new HashMap<>();
                     content.put("content", itemConf);
                     result.put(filename, content);

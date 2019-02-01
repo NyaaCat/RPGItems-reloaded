@@ -85,6 +85,7 @@ public class ItemManager {
     public static Set<String> itemNames() {
         return itemByName.keySet();
     }
+
     public static Set<RPGItem> getUnlockedItem() {
         return unlockedItem.keySet();
     }
@@ -236,7 +237,7 @@ public class ItemManager {
         Path base = getItemsDir().toPath().toRealPath();
         if (!path.startsWith(base)) {
             plugin.getLogger().info("Copying " + file + " to " + getItemsDir() + ".");
-            File newFile = createFile(getItemsDir(), file.getName(), false);
+            File newFile = createFile(getItemsDir(), file.getName(), "", false);
             plugin.getLogger().info("As " + newFile + ".");
             Files.copy(file.toPath(), newFile.toPath(), StandardCopyOption.REPLACE_EXISTING);
             file = newFile;
@@ -257,17 +258,32 @@ public class ItemManager {
                     throw new IllegalArgumentException("Duplicated item id:" + item.getId());
                 }
             }
-            if (itemById.putIfAbsent(item.getUid(), item) != null) {
+            if (groupById.containsKey(item.getUid()) || itemById.putIfAbsent(item.getUid(), item) != null) {
                 throw new IllegalArgumentException("Duplicated item uid:" + item.getUid());
             }
-            if (itemByName.putIfAbsent(item.getName(), item) != null) {
-                throw new IllegalArgumentException("Duplicated item name:" + item.getUid());
+            if (groupByName.containsKey(item.getName()) || itemByName.putIfAbsent(item.getName(), item) != null) {
+                throw new IllegalArgumentException("Duplicated item name:" + item.getName());
             }
             item.resetRecipe(true);
         } catch (Exception e) {
             itemById.remove(item.getId(), item);
             itemById.remove(item.getUid(), item);
             itemByName.remove(item.getName(), item);
+            throw e;
+        }
+    }
+
+    public static void addGroup(ItemGroup group) {
+        try {
+            if (itemById.containsKey(group.getUid()) || groupById.putIfAbsent(group.getUid(), group) != null) {
+                throw new IllegalArgumentException("Duplicated group uid:" + group.getUid());
+            }
+            if (itemByName.containsKey(group.getName()) || groupByName.putIfAbsent(group.getName(), group) != null) {
+                throw new IllegalArgumentException("Duplicated group name:" + group.getName());
+            }
+        } catch (Exception e) {
+            groupById.remove(group.getUid(), group);
+            groupByName.remove(group.getName(), group);
             throw e;
         }
     }
@@ -368,7 +384,7 @@ public class ItemManager {
 
     public static void save(RPGItem item) {
         String itemName = item.getName();
-        File itemFile = item.getFile() == null ? createFile(getItemsDir(), item.getName(), true) : item.getFile();
+        File itemFile = item.getFile() == null ? createFile(getItemsDir(), item.getName(), "-item", true) : item.getFile();
         boolean exist = itemFile.exists();
         String cfgStr = "";
         File backup = null;
@@ -414,6 +430,36 @@ public class ItemManager {
                     throw new Handler.CommandException("message.error.recovering", exRec, itemName, backup.getPath(), exRec.getLocalizedMessage());
                 }
             }
+            rethrow(e);
+        }
+    }
+    public static void save(ItemGroup itemGroup) {
+        String itemName = itemGroup.getName();
+        File itemFile = itemGroup.getFile() == null ? createFile(getItemsDir(), itemGroup.getName(), "-group", true) : itemGroup.getFile();
+        String cfgStr = "";
+        try {
+            YamlConfiguration configuration = new YamlConfiguration();
+            itemGroup.save(configuration);
+            cfgStr = configuration.saveToString();
+            configuration.save(itemFile);
+
+            try {
+                String canonicalPath = itemFile.getCanonicalPath();
+                YamlConfiguration test = new YamlConfiguration();
+                test.load(canonicalPath);
+                ItemGroup testGroup = new ItemGroup(test, null);
+                itemGroup.setFile(itemFile);
+                lock(itemFile);
+            } catch (Exception e) {
+                plugin.getLogger().log(Level.SEVERE, "Error verifying integrity for " + itemName + ".", e);
+                throw new Handler.CommandException("message.error.verifying", e, itemName, e.getLocalizedMessage());
+            }
+        } catch (Exception e) {
+            plugin.getLogger().log(Level.SEVERE, "Error saving " + itemName + ".", e);
+            plugin.getLogger().severe("Dumping current itemGroup");
+            plugin.getLogger().severe("===============");
+            plugin.getLogger().severe(cfgStr);
+            plugin.getLogger().severe("===============");
             rethrow(e);
         }
     }
@@ -468,8 +514,8 @@ public class ItemManager {
         return ItemManager.unlockedItem.remove(item);
     }
 
-    private static File createFile(File items, String itemName, boolean tran) {
-        String filename = tran ? getItemFilename(itemName) + ".yml" : itemName;
+    private static File createFile(File items, String itemName, String postfix, boolean tran) {
+        String filename = tran ? getItemFilename(itemName, postfix) + ".yml" : itemName;
         File file = new File(items, filename);
         while (file.exists()) {
             file = new File(items, ThreadLocalRandom.current().nextInt() + "." + filename);
@@ -546,7 +592,7 @@ public class ItemManager {
     }
 
     public static RPGItem newItem(String name, CommandSender sender) {
-        if (itemByName.containsKey(name))
+        if (itemByName.containsKey(name) || groupByName.containsKey(name))
             return null;
         int free = nextUid();
         RPGItem item = new RPGItem(name, free, sender);
@@ -554,11 +600,24 @@ public class ItemManager {
         return item;
     }
 
+    public static ItemGroup newGroup(String name, CommandSender sender) {
+        return newGroup(name, null, sender);
+    }
+
+    public static ItemGroup newGroup(String name, String regex, CommandSender sender) {
+        if (itemByName.containsKey(name) || groupByName.containsKey(name))
+            return null;
+        int free = nextUid();
+        ItemGroup group = new ItemGroup(name, free, regex, sender);
+        addGroup(group);
+        return group;
+    }
+
     static int nextUid() {
         int free;
         do {
             free = ThreadLocalRandom.current().nextInt(Integer.MIN_VALUE, 0);
-        } while (itemById.containsKey(free));
+        } while (itemById.containsKey(free) || groupById.containsKey(free));
         return free;
     }
 
@@ -598,22 +657,22 @@ public class ItemManager {
         return Optional.ofNullable(groupById.get(uid));
     }
 
+    public static Optional<ItemGroup> getGroup(String name) {
+        return Optional.ofNullable(groupByName.get(name));
+    }
+
     public static Set<RPGItem> getItems(int id) {
-        RPGItem item = itemById.get(id);
-        if (item != null) return Collections.singleton(item);
-        ItemGroup itemGroup = groupById.get(id);
-        if (itemGroup != null) {
-            return Collections.unmodifiableSet(itemGroup.getItems());
-        }
-        return Collections.emptySet();
+        return itemOrGroup(itemById.get(id), groupById.get(id));
     }
 
     public static Set<RPGItem> getItems(String name) {
-        RPGItem item = itemByName.get(name);
-        if (item != null) return Collections.singleton(item);
-        ItemGroup itemGroup = groupByName.get(name);
-        if (itemGroup != null) {
-            return Collections.unmodifiableSet(itemGroup.getItems());
+        return itemOrGroup(itemByName.get(name), groupByName.get(name));
+    }
+
+    private static Set<RPGItem> itemOrGroup(RPGItem rpgItem, ItemGroup group) {
+        if (rpgItem != null) return Collections.singleton(rpgItem);
+        if (group != null) {
+            return Collections.unmodifiableSet(group.getItems());
         }
         return Collections.emptySet();
     }
@@ -633,10 +692,6 @@ public class ItemManager {
                 plugin.getLogger().log(Level.WARNING, "Error deleting file " + item.getFile() + ".", e);
             }
         }
-    }
-
-    public static String getItemFilename(String itemName) {
-        return getItemFilename(itemName, "-item");
     }
 
     public static String getItemFilename(String itemName, String postfix) {
