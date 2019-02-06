@@ -16,6 +16,8 @@ import think.rpgitems.power.Utils;
 import java.lang.ref.PhantomReference;
 import java.lang.ref.Reference;
 import java.lang.ref.WeakReference;
+import java.util.Optional;
+import java.util.OptionalInt;
 import java.util.Set;
 import java.util.UUID;
 import java.util.function.Function;
@@ -25,6 +27,7 @@ import java.util.logging.Level;
 public final class ItemTagUtils {
 
     public static final ItemTagType<byte[], UUID> BA_UUID = new UUIDItemTagType();
+    public static final ItemTagType<Byte, Boolean> BYTE_BOOLEAN = new BooleanItemTagType();
     public static final ItemTagType<byte[], OfflinePlayer> BA_OFFLINE_PLAYER = new OfflinePlayerItemTagType();
 
     private ItemTagUtils() {
@@ -61,6 +64,15 @@ public final class ItemTagUtils {
         return putIfAbsent(container, key, type, (ignored) -> value);
     }
 
+    public static Boolean getBoolean(CustomItemTagContainer container, NamespacedKey key) {
+        return container.getCustomTag(key, BYTE_BOOLEAN);
+    }
+
+    public static Optional<Boolean> optBoolean(CustomItemTagContainer container, NamespacedKey key) {
+        if (!container.hasCustomTag(key, BYTE_BOOLEAN)) return Optional.empty();
+        return Optional.ofNullable(container.getCustomTag(key, BYTE_BOOLEAN));
+    }
+
     public static Byte getByte(CustomItemTagContainer container, NamespacedKey key) {
         return container.getCustomTag(key, ItemTagType.BYTE);
     }
@@ -71,6 +83,11 @@ public final class ItemTagUtils {
 
     public static Integer getInt(CustomItemTagContainer container, NamespacedKey key) {
         return container.getCustomTag(key, ItemTagType.INTEGER);
+    }
+
+    public static OptionalInt optInt(CustomItemTagContainer container, NamespacedKey key) {
+        if (!container.hasCustomTag(key, ItemTagType.INTEGER)) return OptionalInt.empty();
+        return OptionalInt.of(container.getCustomTag(key, ItemTagType.INTEGER));
     }
 
     public static Long getLong(CustomItemTagContainer container, NamespacedKey key) {
@@ -105,12 +122,21 @@ public final class ItemTagUtils {
         return container.getCustomTag(key, BA_UUID);
     }
 
+    public static Optional<UUID> optUUID(CustomItemTagContainer container, NamespacedKey key) {
+        if (!container.hasCustomTag(key, BA_UUID)) return Optional.empty();
+        return Optional.of(container.getCustomTag(key, BA_UUID));
+    }
+
     public static CustomItemTagContainer getTag(CustomItemTagContainer container, NamespacedKey key) {
         return container.getCustomTag(key, ItemTagType.TAG_CONTAINER);
     }
 
     public static OfflinePlayer getPlayer(CustomItemTagContainer container, NamespacedKey key) {
         return container.getCustomTag(key, BA_OFFLINE_PLAYER);
+    }
+
+    public static void set(CustomItemTagContainer container, NamespacedKey key, boolean value) {
+        container.setCustomTag(key, BYTE_BOOLEAN, value);
     }
 
     public static void set(CustomItemTagContainer container, NamespacedKey key, byte value) {
@@ -204,6 +230,37 @@ public final class ItemTagUtils {
         @Override
         public UUID fromPrimitive(byte[] primitive, ItemTagAdapterContext context) {
             return Utils.encodeUUID(primitive);
+        }
+    }
+
+    public static class BooleanItemTagType implements ItemTagType<Byte, Boolean> {
+        @Override
+        public Class<Byte> getPrimitiveType() {
+            return Byte.class;
+        }
+
+        @Override
+        public Class<Boolean> getComplexType() {
+            return Boolean.class;
+        }
+
+        @Override
+        public Byte toPrimitive(Boolean complex, ItemTagAdapterContext context) {
+            return (byte) (complex == null ? 0b10101010 : complex ? 0b11100000 : 0b00000111);
+        }
+
+        @Override
+        public Boolean fromPrimitive(Byte primitive, ItemTagAdapterContext context) {
+            switch (primitive) {
+                case (byte) 0b10101010:
+                    return null;
+                case (byte) 0b00000001:
+                    return true;
+                case (byte) 0b00000000:
+                    return false;
+                default:
+                    throw new IllegalArgumentException();
+            }
         }
     }
 

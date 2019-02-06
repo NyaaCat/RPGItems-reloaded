@@ -42,6 +42,7 @@ message:
     item_unlocked: 无法编辑已解锁的物品%s。请重载它再编辑。
     loading: 从%s加载物品时出错。%s
     verifying: 验证%s完整性出错。%s
+    invalid_regex: 无效的正则表达式
   wgcustomflag:
     disable: Worldguard 自定义标志已禁用
     enable: Worldguard 自定义标志已启用
@@ -225,9 +226,14 @@ message:
   customitemmodel:
     disable: 自定义物品模型关闭
     enable: 自定义物品模型开启
-  numericbar:
-    disable: 数值耐久条关闭
-    enable: 数值耐久条开启
+  barformat:
+    DEFAULT: 耐久条设置为默认（方块）
+    NUMERIC: 耐久条设置为数值显示
+    NUMERIC_MINUS_ONE: 耐久条设置为数值减一
+    NUMERIC_HEX: 耐久条设置为十六进制数值
+    NUMERIC_HEX_MINUS_ONE: 耐久条设置为十六进制数值减一
+    NUMERIC_BIN: 耐久条设置为二进制数值
+    NUMERIC_BIN_MINUS_ONE: 耐久条设置为二进制数值减一
   stuck: 你已经被定身，无法传送！
   cloneitem:
     success: 物品 %s 成功克隆为 %s

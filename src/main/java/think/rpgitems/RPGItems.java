@@ -142,9 +142,12 @@ public class RPGItems extends JavaPlugin {
                 return true;
             });
         }
-        Handler commandHandler = new Handler(this, i18n);
-        getCommand("rpgitem").setExecutor(commandHandler);
-        getCommand("rpgitem").setTabCompleter(commandHandler);
+        AdminHandler adminCommandHandler = new AdminHandler(this, i18n);
+        UserHandler userCommandHandler = new UserHandler(this, i18n);
+        getCommand("rpgitem").setExecutor(adminCommandHandler);
+        getCommand("rpgitem").setTabCompleter(adminCommandHandler);
+        getCommand("rpgitems").setExecutor(userCommandHandler);
+        getCommand("rpgitems").setTabCompleter(userCommandHandler);
         getServer().getPluginManager().registerEvents(new ServerLoadListener(), this);
         managedPlugins.forEach(Bukkit.getPluginManager()::enablePlugin);
     }

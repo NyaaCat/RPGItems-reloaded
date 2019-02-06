@@ -16,9 +16,14 @@ message:
   customitemmodel:
     disable: Custom item model disabled
     enable: Custom item model enabled
-  numericbar:
-    disable: Numeric durability bar disabled
-    enable: Numeric durability bar enabled
+  barformat:
+    DEFAULT: Durability bar set to default (box char)
+    NUMERIC: Durability bar set to numeric
+    NUMERIC_MINUS_ONE: Durability bar set to numeric minus one
+    NUMERIC_HEX: Durability bar set to hex numeric
+    NUMERIC_HEX_MINUS_ONE: Durability bar set to hex numeric minus one
+    NUMERIC_BIN: Durability bar set to binary numeric
+    NUMERIC_BIN_MINUS_ONE: Durability bar set to binary numeric minus one
   enchantment:
     removed: Attached enchantments removed
     success: Success
@@ -62,6 +67,7 @@ message:
     item_unlocked: You cannot edit unlocked %s. Reload it before editing.
     loading: 'Error loading item from %s. %s'
     verifying: 'Error verifying integrity for %s. %s'
+    invalid_regex: Invalid regex
   wgcustomflag:
     disable: Worldguard custom flag disabled
     enable: Worldguard custom flag enabled

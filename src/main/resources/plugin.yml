@@ -11,8 +11,13 @@ api-version: 1.13
 
 commands:
   rpgitem:
-    description: RPG Items
+    description: RPGItems‘ Admin Command Handler
     permission: rpgitem
+    permission-message: "You do not have the required permission: <permission>"
+    usage: "/<command> [SubCommand...] [Arguments...] or /<command> help"
+  rpgitems:
+    description: RPGItems‘ User Command Handler
+    permission: rpgitems
     permission-message: "You do not have the required permission: <permission>"
     usage: "/<command> [SubCommand...] [Arguments...] or /<command> help"
 
@@ -23,3 +28,6 @@ permissions:
     default: op
   rpgitem.updateitem:
     default: op
+
+  rpgitems.tomodel:
+    default: true

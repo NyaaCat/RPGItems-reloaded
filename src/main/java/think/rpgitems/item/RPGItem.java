@@ -35,8 +35,8 @@ import org.bukkit.potion.PotionEffect;
 import org.bukkit.potion.PotionEffectType;
 import org.librazy.nclangchecker.LangKey;
 import org.librazy.nclangchecker.LangKeyType;
+import think.rpgitems.AdminHandler;
 import think.rpgitems.Events;
-import think.rpgitems.Handler;
 import think.rpgitems.I18n;
 import think.rpgitems.RPGItems;
 import think.rpgitems.data.Context;
@@ -58,8 +58,9 @@ import static think.rpgitems.utils.ItemTagUtils.*;
 public class RPGItem {
     @Deprecated
     public static final int MC_ENCODED_ID_LENGTH = 16;
-    public static final NamespacedKey TAG_ITEM_UID = new NamespacedKey(RPGItems.plugin, "item_uid");
     public static final NamespacedKey TAG_META = new NamespacedKey(RPGItems.plugin, "meta");
+    public static final NamespacedKey TAG_ITEM_UID = new NamespacedKey(RPGItems.plugin, "item_uid");
+    public static final NamespacedKey TAG_IS_MODEL = new NamespacedKey(RPGItems.plugin, "is_model");
     public static final NamespacedKey TAG_DURABILITY = new NamespacedKey(RPGItems.plugin, "durability");
     public static final NamespacedKey TAG_OWNER = new NamespacedKey(RPGItems.plugin, "owner");
     public static final NamespacedKey TAG_STACK_ID = new NamespacedKey(RPGItems.plugin, "stack_id");
@@ -98,6 +99,8 @@ public class RPGItem {
     private int armour = 0;
     private String type = I18n.format("item.type");
     private String hand = I18n.format("item.hand");
+    private boolean canBeOwned = false;
+    private boolean hasStackId = false;
 
     private String author = plugin.cfg.defaultAuthor;
     private String note = plugin.cfg.defaultNote;
@@ -220,7 +223,8 @@ public class RPGItem {
             setDataValue(s.getInt("item_data"));
         }
         setIgnoreWorldGuard(s.getBoolean("ignoreWorldGuard", false));
-
+        setCanBeOwned(s.getBoolean("canBeOwned", false));
+        setHasStackId(s.getBoolean("hasStackId", false));
         // Powers
         ConfigurationSection powerList = s.getConfigurationSection("powers");
         if (powerList != null) {
@@ -401,6 +405,8 @@ public class RPGItem {
         s.set("description", descriptionConv);
         s.set("item", getItem().toString());
         s.set("ignoreWorldGuard", isIgnoreWorldGuard());
+        s.set("canBeOwned", isCanBeOwned());
+        s.set("hasStackId", isHasStackId());
 
         ItemMeta itemMeta = Bukkit.getItemFactory().getItemMeta(getItem());
 
@@ -992,9 +998,13 @@ public class RPGItem {
         CustomItemTagContainer itemTagContainer = meta.getCustomTagContainer();
         SubItemTagContainer rpgitemsTagContainer = makeTag(itemTagContainer, TAG_META);
         set(rpgitemsTagContainer, TAG_ITEM_UID, getUid());
+        if (isHasStackId()) {
+            set(rpgitemsTagContainer, TAG_STACK_ID, UUID.randomUUID());
+        }
         rpgitemsTagContainer.commit();
         meta.setDisplayName(getDisplayName());
         rStack.setItemMeta(meta);
+
         updateItem(rStack, false);
         return rStack;
     }
@@ -1014,7 +1024,7 @@ public class RPGItem {
             UUID uuid = UUID.fromString(this.getAuthor());
             OfflinePlayer authorPlayer = Bukkit.getOfflinePlayer(uuid);
             author = authorPlayer.getName();
-            authorComponent = Handler.getAuthorComponent(authorPlayer, author);
+            authorComponent = AdminHandler.getAuthorComponent(authorPlayer, author);
         } catch (IllegalArgumentException ignored) {
         }
 
@@ -1180,6 +1190,14 @@ public class RPGItem {
         return armour;
     }
 
+    public boolean isCanBeOwned() {
+        return canBeOwned;
+    }
+
+    public boolean isHasStackId() {
+        return hasStackId;
+    }
+
     public void setArmour(int a) {
         setArmour(a, true);
     }
@@ -1209,6 +1227,10 @@ public class RPGItem {
 
     public int getDamageMax() {
         return damageMax;
+    }
+
+    public void setCanBeOwned(boolean canBeOwned) {
+        this.canBeOwned = canBeOwned;
     }
 
     private void setDamageMax(int damageMax) {
@@ -1331,6 +1353,10 @@ public class RPGItem {
 
     public int getHitCost() {
         return hitCost;
+    }
+
+    public void setHasStackId(boolean hasStackId) {
+        this.hasStackId = hasStackId;
     }
 
     public void setHitCost(int hitCost) {

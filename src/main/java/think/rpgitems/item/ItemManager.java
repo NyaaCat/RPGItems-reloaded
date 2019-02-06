@@ -18,7 +18,7 @@ import org.bukkit.inventory.meta.ItemMeta;
 import org.bukkit.inventory.meta.tags.CustomItemTagContainer;
 import org.bukkit.inventory.meta.tags.ItemTagType;
 import org.bukkit.util.FileUtil;
-import think.rpgitems.Handler;
+import think.rpgitems.AdminHandler;
 import think.rpgitems.I18n;
 import think.rpgitems.RPGItems;
 import think.rpgitems.power.UnknownExtensionException;
@@ -39,8 +39,7 @@ import java.util.logging.Level;
 
 import static think.rpgitems.item.RPGItem.*;
 import static think.rpgitems.power.Utils.rethrow;
-import static think.rpgitems.utils.ItemTagUtils.getInt;
-import static think.rpgitems.utils.ItemTagUtils.getTag;
+import static think.rpgitems.utils.ItemTagUtils.*;
 
 public class ItemManager {
     private static HashMap<Integer, RPGItem> itemById = new HashMap<>();
@@ -412,7 +411,7 @@ public class ItemManager {
                 lock(itemFile);
             } catch (Exception e) {
                 plugin.getLogger().log(Level.SEVERE, "Error verifying integrity for " + itemName + ".", e);
-                throw new Handler.CommandException("message.error.verifying", e, itemName, e.getLocalizedMessage());
+                throw new AdminHandler.CommandException("message.error.verifying", e, itemName, e.getLocalizedMessage());
             }
         } catch (Exception e) {
             plugin.getLogger().log(Level.SEVERE, "Error saving " + itemName + ".", e);
@@ -427,7 +426,7 @@ public class ItemManager {
                     lock(itemFile);
                 } catch (Exception exRec) {
                     plugin.getLogger().log(Level.SEVERE, "Error recovering backup: " + backup, exRec);
-                    throw new Handler.CommandException("message.error.recovering", exRec, itemName, backup.getPath(), exRec.getLocalizedMessage());
+                    throw new AdminHandler.CommandException("message.error.recovering", exRec, itemName, backup.getPath(), exRec.getLocalizedMessage());
                 }
             }
             rethrow(e);
@@ -452,7 +451,7 @@ public class ItemManager {
                 lock(itemFile);
             } catch (Exception e) {
                 plugin.getLogger().log(Level.SEVERE, "Error verifying integrity for " + itemName + ".", e);
-                throw new Handler.CommandException("message.error.verifying", e, itemName, e.getLocalizedMessage());
+                throw new AdminHandler.CommandException("message.error.verifying", e, itemName, e.getLocalizedMessage());
             }
         } catch (Exception e) {
             plugin.getLogger().log(Level.SEVERE, "Error saving " + itemName + ".", e);
@@ -569,6 +568,10 @@ public class ItemManager {
     }
 
     public static Optional<RPGItem> toRPGItem(ItemStack item) {
+        return toRPGItem(item, true);
+    }
+
+    public static Optional<RPGItem> toRPGItem(ItemStack item, boolean ignoreModel) {
         if (item == null || item.getType() == Material.AIR)
             return Optional.empty();
         if (!item.hasItemMeta())
@@ -577,6 +580,10 @@ public class ItemManager {
         CustomItemTagContainer tagContainer = meta.getCustomTagContainer();
         if (tagContainer.hasCustomTag(TAG_META, ItemTagType.TAG_CONTAINER)) {
             int uid = getInt(getTag(tagContainer, TAG_META), TAG_ITEM_UID);
+            Optional<Boolean> optIsModel = optBoolean(tagContainer, TAG_IS_MODEL);
+            if (ignoreModel && optIsModel.orElse(false)) {
+                return Optional.empty();
+            }
             return ItemManager.getItem(uid);
         }
         // Old
@@ -588,6 +595,60 @@ public class ItemManager {
         } catch (Exception e) {
             RPGItems.logger.log(Level.WARNING, "Error migrating old item", e);
             return Optional.empty();
+        }
+    }
+
+    public static ItemInfo parseItemInfo(ItemStack item) {
+        if (item == null || item.getType() == Material.AIR) {
+            return null;
+        }
+        if (!item.hasItemMeta()) {
+            return null;
+        }
+        ItemMeta meta = item.getItemMeta();
+        CustomItemTagContainer tagContainer = meta.getCustomTagContainer();
+        if (tagContainer.hasCustomTag(TAG_META, ItemTagType.TAG_CONTAINER)) {
+            CustomItemTagContainer itemMeta = getTag(tagContainer, TAG_META);
+            int uid = getInt(itemMeta, TAG_ITEM_UID);
+            Optional<RPGItem> opt = ItemManager.getItem(uid);
+            if (!opt.isPresent()) return null;
+            RPGItem rpgItem = opt.get();
+            ItemInfo itemInfo = new ItemInfo(rpgItem);
+            if (rpgItem.getMaxDurability() > 0) {
+                OptionalInt optDur = optInt(itemMeta, TAG_DURABILITY);
+                itemInfo.durability = optDur.orElseGet(rpgItem::getDefaultDurability);
+            }
+
+            itemInfo.stackOwner = optUUID(itemMeta, TAG_OWNER).orElse(null);
+            itemInfo.stackId = optUUID(itemMeta, TAG_STACK_ID).orElse(null);
+            return itemInfo;
+        }
+        // Old
+        if (!meta.hasLore() || meta.getLore().size() <= 0) {
+            return null;
+        }
+        try {
+            @SuppressWarnings("deprecation") Optional<Integer> id = decodeId(meta.getLore().get(0));
+            if (!id.isPresent()) {
+                return null;
+            }
+            Optional<RPGItem> opt = ItemManager.getItem(id.get());
+            if (!opt.isPresent()) {
+                return null;
+            }
+            RPGItem rpgItem = opt.get();
+            ItemInfo itemInfo = new ItemInfo(rpgItem);
+
+            @SuppressWarnings("deprecation") think.rpgitems.data.RPGMetadata rpgMetadata = think.rpgitems.data.RPGMetadata.parseLoreline(meta.getLore().get(0));
+            if (rpgMetadata.containsKey(0)) {
+                itemInfo.durability = ((Number) rpgMetadata.get(0)).intValue();
+            } else if (rpgItem.getMaxDurability() > 0) {
+                itemInfo.durability = rpgItem.getDefaultDurability();
+            }
+            return itemInfo;
+        } catch (Exception e) {
+            RPGItems.logger.log(Level.WARNING, "Error migrating old item", e);
+            return null;
         }
     }
 

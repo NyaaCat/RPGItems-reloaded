@@ -19,7 +19,7 @@ import org.bukkit.inventory.ItemStack;
 import org.bukkit.permissions.PermissionAttachment;
 import org.bukkit.util.BoundingBox;
 import org.bukkit.util.Vector;
-import think.rpgitems.Handler;
+import think.rpgitems.AdminHandler;
 import think.rpgitems.I18n;
 import think.rpgitems.RPGItems;
 import think.rpgitems.data.Font;
@@ -451,25 +451,25 @@ public class Utils {
                     try {
                         field.set(power, Integer.parseInt(value));
                     } catch (NumberFormatException e) {
-                        throw new Handler.CommandException("internal.error.bad_int", value);
+                        throw new AdminHandler.CommandException("internal.error.bad_int", value);
                     }
                 } else if (field.getType().equals(long.class) || field.getType().equals(Long.class)) {
                     try {
                         field.set(power, Long.parseLong(value));
                     } catch (NumberFormatException e) {
-                        throw new Handler.CommandException("internal.error.bad_int", value);
+                        throw new AdminHandler.CommandException("internal.error.bad_int", value);
                     }
                 } else if (field.getType().equals(float.class) || field.getType().equals(Float.class)) {
                     try {
                         field.set(power, Float.parseFloat(value));
                     } catch (NumberFormatException e) {
-                        throw new Handler.CommandException("internal.error.bad_double", value);
+                        throw new AdminHandler.CommandException("internal.error.bad_double", value);
                     }
                 } else if (field.getType().equals(double.class) || field.getType().equals(Double.class)) {
                     try {
                         field.set(power, Double.parseDouble(value));
                     } catch (NumberFormatException e) {
-                        throw new Handler.CommandException("internal.error.bad_double", value);
+                        throw new AdminHandler.CommandException("internal.error.bad_double", value);
                     }
                 } else if (field.getType().equals(String.class)) {
                     field.set(power, value);
@@ -477,13 +477,13 @@ public class Utils {
                     if (value.equalsIgnoreCase("true") || value.equalsIgnoreCase("false")) {
                         field.set(power, Boolean.valueOf(value));
                     } else {
-                        throw new Handler.CommandException("message.error.invalid_option", value, field.getName(), "true, false");
+                        throw new AdminHandler.CommandException("message.error.invalid_option", value, field.getName(), "true, false");
                     }
                 } else if (field.getType().isEnum()) {
                     try {
                         field.set(power, Enum.valueOf((Class<Enum>) field.getType(), value));
                     } catch (IllegalArgumentException e) {
-                        throw new Handler.CommandException("internal.error.bad_enum", field.getName(), Stream.of(field.getType().getEnumConstants()).map(Object::toString).collect(Collectors.joining(", ")));
+                        throw new AdminHandler.CommandException("internal.error.bad_enum", field.getName(), Stream.of(field.getType().getEnumConstants()).map(Object::toString).collect(Collectors.joining(", ")));
                     }
                 } else if (Collection.class.isAssignableFrom(field.getType())) {
                     ParameterizedType listType = (ParameterizedType) field.getGenericType();
@@ -500,7 +500,7 @@ public class Utils {
                             List<String> list = values.collect(Collectors.toList());
                             field.set(power, list);
                         } else {
-                            throw new Handler.CommandException("internal.error.command_exception");
+                            throw new AdminHandler.CommandException("internal.error.command_exception");
                         }
                     } else {
                         if (listArg.isEnum()) {
@@ -519,7 +519,7 @@ public class Utils {
                             }
                             field.set(power, set);
                         } else {
-                            throw new Handler.CommandException("internal.error.command_exception");
+                            throw new AdminHandler.CommandException("internal.error.command_exception");
                         }
                     }
                 } else if (field.getType() == ItemStack.class) {
@@ -528,22 +528,22 @@ public class Utils {
                     if (sender instanceof Player && value.equalsIgnoreCase("HAND")) {
                         ItemStack hand = ((Player) sender).getInventory().getItemInMainHand();
                         if (hand == null || hand.getType() == Material.AIR) {
-                            throw new Handler.CommandException("message.error.iteminhand");
+                            throw new AdminHandler.CommandException("message.error.iteminhand");
                         }
                         item = hand.clone();
                         item.setAmount(1);
                     } else if (m == null || m == Material.AIR || !m.isItem()) {
-                        throw new Handler.CommandException("message.error.material", value);
+                        throw new AdminHandler.CommandException("message.error.material", value);
                     } else {
                         item = new ItemStack(m);
                     }
                     field.set(power, item.clone());
                 } else {
-                    throw new Handler.CommandException("internal.error.invalid_command_arg", power.getName(), field.getName());
+                    throw new AdminHandler.CommandException("internal.error.invalid_command_arg", power.getName(), field.getName());
                 }
             }
         } catch (IllegalAccessException e) {
-            throw new Handler.CommandException("internal.error.command_exception", e);
+            throw new AdminHandler.CommandException("internal.error.command_exception", e);
         }
     }
 
@@ -557,7 +557,7 @@ public class Utils {
             if (value.equalsIgnoreCase(trueChoice) || value.equalsIgnoreCase(falseChoice)) {
                 field.set(power, value.equalsIgnoreCase(trueChoice));
             } else {
-                throw new Handler.CommandException("message.error.invalid_option", value, field.getName(), falseChoice + ", " + trueChoice);//TODO
+                throw new AdminHandler.CommandException("message.error.invalid_option", value, field.getName(), falseChoice + ", " + trueChoice);//TODO
             }
             return;
         }
@@ -566,12 +566,12 @@ public class Utils {
             List<String> acc = PowerManager.getAcceptedValue(cls, as);
             if (!Collection.class.isAssignableFrom(field.getType())) {
                 if (!acc.contains(value))
-                    throw new Handler.CommandException("message.error.invalid_option", value, field.getName(), String.join(", ", acc));
+                    throw new AdminHandler.CommandException("message.error.invalid_option", value, field.getName(), String.join(", ", acc));
             } else {
                 String[] valueStrs = value.split(",");
                 List<String> values = Arrays.stream(valueStrs).filter(s -> !s.isEmpty()).map(String::trim).collect(Collectors.toList());
                 if (values.stream().filter(s -> !s.isEmpty()).anyMatch(v -> !acc.contains(v))) {
-                    throw new Handler.CommandException("message.error.invalid_option", value, field.getName(), String.join(", ", acc));
+                    throw new AdminHandler.CommandException("message.error.invalid_option", value, field.getName(), String.join(", ", acc));
                 }
             }
         }

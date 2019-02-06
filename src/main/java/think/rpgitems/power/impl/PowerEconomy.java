@@ -11,7 +11,7 @@ import org.bukkit.event.entity.EntityDamageByEntityEvent;
 import org.bukkit.event.player.PlayerInteractEvent;
 import org.bukkit.inventory.ItemStack;
 import org.librazy.nclangchecker.LangKey;
-import think.rpgitems.Handler;
+import think.rpgitems.AdminHandler;
 import think.rpgitems.I18n;
 import think.rpgitems.RPGItems;
 import think.rpgitems.power.*;
@@ -92,7 +92,7 @@ public class PowerEconomy extends BasePower implements PowerRightClick, PowerLef
                 eco = VaultUtils.getVaultEconomy();
             } catch (RuntimeException e) {
                 RPGItems.plugin.getLogger().log(Level.SEVERE, "Vault Economy not found", e);
-                throw new Handler.CommandException("message.error.economy");
+                throw new AdminHandler.CommandException("message.error.economy");
             }
         }
     }

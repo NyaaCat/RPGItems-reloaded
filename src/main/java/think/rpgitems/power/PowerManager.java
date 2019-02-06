@@ -8,7 +8,7 @@ import com.google.common.collect.HashBiMap;
 import org.bukkit.NamespacedKey;
 import org.bukkit.command.CommandSender;
 import org.bukkit.plugin.Plugin;
-import think.rpgitems.Handler;
+import think.rpgitems.AdminHandler;
 import think.rpgitems.RPGItems;
 
 import javax.annotation.CheckForNull;
@@ -132,7 +132,7 @@ public class PowerManager {
         try {
             f = cls.getField(field);
         } catch (NoSuchFieldException e) {
-            throw new Handler.CommandException("internal.error.invalid_command_arg", e);//TODO
+            throw new AdminHandler.CommandException("internal.error.invalid_command_arg", e);//TODO
         }
         Utils.setPowerProperty(sender, power, f, value);
     }

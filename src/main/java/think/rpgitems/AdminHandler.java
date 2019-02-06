@@ -61,10 +61,10 @@ import static think.rpgitems.utils.ItemTagUtils.getInt;
 import static think.rpgitems.utils.ItemTagUtils.getTag;
 import static think.rpgitems.utils.NetworkUtils.Location.GIST;
 
-public class Handler extends RPGCommandReceiver {
+public class AdminHandler extends RPGCommandReceiver {
     private final RPGItems plugin;
 
-    Handler(RPGItems plugin, LanguageRepository i18n) {
+    AdminHandler(RPGItems plugin, LanguageRepository i18n) {
         super(plugin, i18n);
         this.plugin = plugin;
     }
@@ -1274,7 +1274,7 @@ public class Handler extends RPGCommandReceiver {
                 author = authorPlayer.getUniqueId().toString();
                 authorComponent = getAuthorComponent(authorPlayer, authorName);
             } else if (author.startsWith("@")) {
-                msg(sender, "message.item.author.player_not_found", author);
+                msg(sender, "message.error.player", author);
                 return;
             }
             item.setAuthor(author);
@@ -1379,7 +1379,7 @@ public class Handler extends RPGCommandReceiver {
         } else {
             String regex = args.next();
             if (!regex.startsWith("/") || !regex.endsWith("/")) {
-                msg(sender, "message.create.invalid_regex");
+                msg(sender, "message.error.invalid_regex");
                 return;
             } else {
                 regex = regex.substring(1, regex.length() - 1);
@@ -1792,7 +1792,7 @@ public class Handler extends RPGCommandReceiver {
         }
         if (!item.isPresent() && sender instanceof Player && str.equalsIgnoreCase("hand")) {
             Player p = (Player) sender;
-            item = ItemManager.toRPGItem(p.getInventory().getItemInMainHand());
+            item = ItemManager.toRPGItem(p.getInventory().getItemInMainHand(), false);
         }
         if (item.isPresent()) {
             if (ItemManager.isUnlocked(item.get()) && !readOnly) {

@@ -10,7 +10,7 @@ import io.netty.handler.codec.http.FullHttpResponse;
 import io.netty.handler.codec.http.HttpHeaderValues;
 import io.netty.handler.codec.http.HttpMethod;
 import io.netty.util.ReferenceCountUtil;
-import think.rpgitems.Handler;
+import think.rpgitems.AdminHandler;
 import think.rpgitems.RPGItems;
 
 import java.util.Collections;
@@ -40,9 +40,9 @@ public class NetworkUtils {
         FullHttpResponse httpResponse = response.get(10, TimeUnit.SECONDS);
         try {
             if (httpResponse.status().code() == 404) {
-                throw new Handler.CommandException("message.import.gist.notfound", id);
+                throw new AdminHandler.CommandException("message.import.gist.notfound", id);
             } else if (httpResponse.status().code() != 200) {
-                throw new Handler.CommandException("message.import.gist.code", httpResponse.status().code());
+                throw new AdminHandler.CommandException("message.import.gist.code", httpResponse.status().code());
             }
 
             String json = httpResponse.content().toString(UTF_8);
@@ -67,9 +67,9 @@ public class NetworkUtils {
         FullHttpResponse httpResponse = response.get(10, TimeUnit.SECONDS);
         try {
             if (httpResponse.status().code() == 404) {
-                throw new Handler.CommandException("message.import.url.notfound", url);
+                throw new AdminHandler.CommandException("message.import.url.notfound", url);
             } else if (httpResponse.status().code() != 200) {
-                throw new Handler.CommandException("message.import.url.code", httpResponse.status().code());
+                throw new AdminHandler.CommandException("message.import.url.code", httpResponse.status().code());
             }
 
             String yamlStr = httpResponse.content().toString(UTF_8);
@@ -94,7 +94,7 @@ public class NetworkUtils {
             if (httpResponse.status().code() != 201) {
                 RPGItems.plugin.getLogger().warning("Code " + httpResponse.status().code() + " publishing gist");
                 RPGItems.plugin.getLogger().warning(httpResponse.content().toString(UTF_8));
-                throw new Handler.CommandException("message.export.gist.code", httpResponse.status().code());
+                throw new AdminHandler.CommandException("message.export.gist.code", httpResponse.status().code());
             }
             String location = httpResponse.headers().get("Location");
             String[] split = location.split("/");
@@ -108,7 +108,7 @@ public class NetworkUtils {
     public static Pair<String, List<String>> updateCommand(String item, String command) throws InterruptedException, ExecutionException, TimeoutException {
         String endPoint = RPGItems.plugin.cfg.spuEndpoint;
         if (Strings.isNullOrEmpty(endPoint)) {
-            throw new Handler.CommandException("message.spu.no_endpoint");
+            throw new AdminHandler.CommandException("message.spu.no_endpoint");
         }
         CompletableFuture<FullHttpResponse> response = HttpClient.request(endPoint + "/command/112/113", HttpMethod.POST, null, Unpooled.wrappedBuffer(command.getBytes(UTF_8)), HttpHeaderValues.TEXT_PLAIN);
         FullHttpResponse httpResponse = response.get(10, TimeUnit.SECONDS);
@@ -117,7 +117,7 @@ public class NetworkUtils {
             if (httpResponse.status().code() != 200) {
                 RPGItems.plugin.getLogger().warning("Code " + httpResponse.status().code() + " updating command " + item + ": " + command);
                 RPGItems.plugin.getLogger().warning(body);
-                throw new Handler.CommandException("message.spu.command.code", item, httpResponse.status().code(), body, command);
+                throw new AdminHandler.CommandException("message.spu.command.code", item, httpResponse.status().code(), body, command);
             }
             Map result = new Gson().fromJson(body, LinkedTreeMap.class);
             String updated = (String) result.get("command");
@@ -131,7 +131,7 @@ public class NetworkUtils {
     public static String updateEntity(String item, String entity, boolean name) throws InterruptedException, ExecutionException, TimeoutException {
         String endPoint = RPGItems.plugin.cfg.spuEndpoint;
         if (Strings.isNullOrEmpty(endPoint)) {
-            throw new Handler.CommandException("message.spu.no_endpoint");
+            throw new AdminHandler.CommandException("message.spu.no_endpoint");
         }
         CompletableFuture<FullHttpResponse> response = HttpClient.request(endPoint + (name ? "/entityname/112/113" : "/entitynbt/112/113"), HttpMethod.POST, null, Unpooled.wrappedBuffer(entity.getBytes(UTF_8)), HttpHeaderValues.TEXT_PLAIN);
         FullHttpResponse httpResponse = response.get(10, TimeUnit.SECONDS);
@@ -140,7 +140,7 @@ public class NetworkUtils {
             if (httpResponse.status().code() != 200) {
                 RPGItems.plugin.getLogger().warning("Code " + httpResponse.status().code() + " updating entity in " + item + ": " + entity);
                 RPGItems.plugin.getLogger().warning(result);
-                throw new Handler.CommandException("message.spu.entity.code", item, httpResponse.status().code(), result, entity);
+                throw new AdminHandler.CommandException("message.spu.entity.code", item, httpResponse.status().code(), result, entity);
             }
             return new Gson().fromJson(result, String.class);
         } finally {

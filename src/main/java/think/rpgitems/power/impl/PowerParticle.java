@@ -8,7 +8,7 @@ import org.bukkit.block.data.BlockData;
 import org.bukkit.entity.Player;
 import org.bukkit.event.player.PlayerInteractEvent;
 import org.bukkit.inventory.ItemStack;
-import think.rpgitems.Handler;
+import think.rpgitems.AdminHandler;
 import think.rpgitems.I18n;
 import think.rpgitems.power.*;
 
@@ -190,7 +190,7 @@ public class PowerParticle extends BasePower implements PowerRightClick, PowerLe
                     PowerParticle.this.particle = null;
                     return Optional.empty();
                 }
-                throw new Handler.CommandException("message.error.visualeffect", value);
+                throw new AdminHandler.CommandException("message.error.visualeffect", value);
             } catch (IllegalArgumentException e) {
                 DeprecatedEffect particleEffect = DeprecatedEffect.valueOf(value);
                 PowerParticle.this.effect = null;

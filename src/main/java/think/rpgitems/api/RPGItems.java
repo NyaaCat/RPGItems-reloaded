@@ -4,6 +4,10 @@ import org.bukkit.inventory.ItemStack;
 import think.rpgitems.item.ItemManager;
 import think.rpgitems.item.RPGItem;
 
+import java.util.Objects;
+
+import static think.rpgitems.item.ItemManager.parseItemInfo;
+
 public class RPGItems {
 
     /**
@@ -14,5 +18,9 @@ public class RPGItems {
      */
     public RPGItem toRPGItem(ItemStack itemstack) {
         return ItemManager.toRPGItem(itemstack).orElse(null);
+    }
+
+    public boolean isEqual(ItemStack a, ItemStack b) {
+        return Objects.equals(parseItemInfo(a), parseItemInfo(b));
     }
 }
