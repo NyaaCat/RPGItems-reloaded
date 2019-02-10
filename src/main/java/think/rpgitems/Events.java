@@ -413,7 +413,7 @@ public class Events implements Listener {
         }
         ItemStack tridentItem = e.getItem().getItemStack();
         ItemMeta itemMeta = tridentItem.getItemMeta();
-        if (!itemMeta.hasLore() || itemMeta.getLore().isEmpty()) {
+        if (!rpgProjectiles.containsKey(e.getArrow().getEntityId()) || !itemMeta.hasLore() || itemMeta.getLore().isEmpty()) {
             return;
         }
         try {

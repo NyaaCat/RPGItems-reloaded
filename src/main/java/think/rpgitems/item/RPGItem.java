@@ -1009,6 +1009,34 @@ public class RPGItem {
         return rStack;
     }
 
+    public void toModel(ItemStack itemStack) {
+        updateItem(itemStack);
+        ItemMeta itemMeta = itemStack.getItemMeta();
+        SubItemTagContainer meta = makeTag(itemMeta.getCustomTagContainer(), TAG_META);
+        meta.removeCustomTag(TAG_OWNER);
+        meta.removeCustomTag(TAG_STACK_ID);
+        set(meta, TAG_IS_MODEL, true);
+        meta.commit();
+        itemMeta.setDisplayName(getDisplayName());
+        itemStack.setItemMeta(itemMeta);
+    }
+
+    public void unModel(ItemStack itemStack, Player owner) {
+        updateItem(itemStack);
+        ItemMeta itemMeta = itemStack.getItemMeta();
+        SubItemTagContainer meta = makeTag(itemMeta.getCustomTagContainer(), TAG_META);
+        if (isCanBeOwned() && owner != null) {
+            set(meta, TAG_OWNER, owner);
+        }
+        if (isHasStackId()) {
+            set(meta, TAG_STACK_ID, UUID.randomUUID());
+        }
+        meta.removeCustomTag(TAG_IS_MODEL);
+        meta.commit();
+        itemMeta.setDisplayName(getDisplayName());
+        itemStack.setItemMeta(itemMeta);
+    }
+
     public Event.Result checkPermission(Player p, boolean showWarn) {
         if (isHasPermission() && !p.hasPermission(getPermission())) {
             if (showWarn) p.sendMessage(I18n.format("message.error.permission", getDisplayName()));
@@ -1018,6 +1046,9 @@ public class RPGItem {
     }
 
     public void print(CommandSender sender) {
+        print(sender, true);
+    }
+    public void print(CommandSender sender, boolean advance) {
         String author = this.getAuthor();
         BaseComponent authorComponent = new TextComponent(author);
         try {
@@ -1040,6 +1071,10 @@ public class RPGItem {
         }
 
         new Message("").append(I18n.format("message.print.author"), Collections.singletonMap("{author}", authorComponent)).send(sender);
+        if (!advance) {
+            return;
+        }
+
         new Message(I18n.format("message.print.license", getLicense())).send(sender);
         new Message(I18n.format("message.print.note", getNote())).send(sender);
 
@@ -1120,8 +1155,61 @@ public class RPGItem {
         return true;
     }
 
-    public void give(Player player) {
-        player.getInventory().addItem(toItemStack());
+    public void give(Player player, int count, boolean wear) {
+        ItemStack itemStack = toItemStack();
+        itemStack.setAmount(count);
+        if (wear) {
+            if (
+                    item.equals(Material.CHAINMAIL_HELMET) ||
+                            item.equals(Material.DIAMOND_HELMET) ||
+                            item.equals(Material.GOLDEN_HELMET) ||
+                            item.equals(Material.IRON_HELMET) ||
+                            item.equals(Material.LEATHER_HELMET) ||
+                            item.equals(Material.TURTLE_HELMET)
+            ) {
+                if (player.getInventory().getHelmet() == null) {
+                    player.getInventory().setHelmet(itemStack);
+                    return;
+                }
+            } else if (
+                           item.equals(Material.CHAINMAIL_CHESTPLATE) ||
+                                   item.equals(Material.DIAMOND_CHESTPLATE) ||
+                                   item.equals(Material.GOLDEN_CHESTPLATE) ||
+                                   item.equals(Material.IRON_CHESTPLATE) ||
+                                   item.equals(Material.LEATHER_CHESTPLATE)
+            ) {
+                if (player.getInventory().getChestplate() == null) {
+                    player.getInventory().setChestplate(itemStack);
+                    return;
+                }
+            } else if (
+                           item.equals(Material.CHAINMAIL_LEGGINGS) ||
+                                   item.equals(Material.DIAMOND_LEGGINGS) ||
+                                   item.equals(Material.GOLDEN_LEGGINGS) ||
+                                   item.equals(Material.IRON_LEGGINGS) ||
+                                   item.equals(Material.LEATHER_LEGGINGS)
+            ) {
+                if (player.getInventory().getLeggings() == null) {
+                    player.getInventory().setLeggings(itemStack);
+                    return;
+                }
+            } else if (
+                           item.equals(Material.CHAINMAIL_BOOTS) ||
+                                   item.equals(Material.DIAMOND_BOOTS) ||
+                                   item.equals(Material.GOLDEN_BOOTS) ||
+                                   item.equals(Material.IRON_BOOTS) ||
+                                   item.equals(Material.LEATHER_BOOTS)
+            ) {
+                if (player.getInventory().getBoots() == null) {
+                    player.getInventory().setBoots(itemStack);
+                    return;
+                }
+            }
+        }
+        HashMap<Integer, ItemStack> overflow = player.getInventory().addItem(itemStack);
+        for (ItemStack o : overflow.values()) {
+            player.getWorld().dropItemNaturally(player.getLocation(), o);
+        }
     }
 
     public boolean hasPower(Class<? extends Power> power) {

@@ -421,33 +421,51 @@ public class AdminHandler extends RPGCommandReceiver {
     @SubCommand("give")
     @Attribute("item")
     public void giveItem(CommandSender sender, Arguments args) {
-        RPGItem item = getItem(args.nextString(), sender);
-        if (args.length() == 2) {
-            if (sender instanceof Player) {
-                if ((!plugin.cfg.givePerms && sender.hasPermission("rpgitem")) || (plugin.cfg.givePerms && sender.hasPermission("rpgitem.give." + item.getName()))) {
-                    item.give((Player) sender);
+        String str = args.nextString();
+        Optional<RPGItem> optItem = ItemManager.getItem(str);
+        if (optItem.isPresent()) {
+            RPGItem item = optItem.get();
+            if ((plugin.cfg.givePerms || !sender.hasPermission("rpgitem")) && (!plugin.cfg.givePerms || !sender.hasPermission("rpgitem.give." + item.getName()))) {
+                msg(sender, "message.error.permission", str);
+                return;
+            }
+            if (args.length() == 2) {
+                if (sender instanceof Player) {
+                    item.give((Player) sender, 1, false);
                     msg(sender, "message.give.ok", item.getDisplayName());
                 } else {
-                    msg(sender, "message.error.permission", item.getDisplayName());
+                    msg(sender, "message.give.console");
                 }
+            } else {
+                Player player = args.nextPlayer();
+                int count;
+                try {
+                    count = args.nextInt();
+                } catch (BadCommandException e) {
+                    count = 1;
+                }
+                item.give(player, count, false);
+                msg(sender, "message.give.to", item.getDisplayName() + ChatColor.AQUA, player.getName());
+                msg(player, "message.give.ok", item.getDisplayName());
+            }
+        } else {
+            Optional<ItemGroup> optGroup = ItemManager.getGroup(str);
+            if (!optGroup.isPresent()) {
+                throw new BadCommandException("message.error.item", str);
+            }
+            ItemGroup group = optGroup.get();
+            if ((plugin.cfg.givePerms || !sender.hasPermission("rpgitem")) && (!plugin.cfg.givePerms || !sender.hasPermission("rpgitem.give.group." + group.getName()))) {
+                msg(sender, "message.error.permission", str);
+                return;
+            }
+            if (sender instanceof Player) {
+                group.give(args.nextPlayerOrSender(), 1, true);
+                msg(sender, "message.give.ok", group.getName());
             } else {
                 msg(sender, "message.give.console");
             }
-        } else {
-            Player player = args.nextPlayer();
-            int count;
-            try {
-                count = args.nextInt();
-            } catch (BadCommandException e) {
-                count = 1;
-            }
-            for (int i = 0; i < count; i++) {
-                item.give(player);
-            }
-
-            msg(sender, "message.give.to", item.getDisplayName() + ChatColor.AQUA, player.getName());
-            msg(player, "message.give.ok", item.getDisplayName());
         }
+
     }
 
     @SubCommand("remove")
@@ -1166,10 +1184,9 @@ public class AdminHandler extends RPGCommandReceiver {
                     settled.add(field);
                 }
             }
-            for (Field field : argMap.entrySet()
+            for (Field field : argMap.values()
                                      .stream()
-                                     .filter(p -> p.getValue().required())
-                                     .map(Map.Entry::getValue)
+                                     .filter(PowerProperty::required)
                                      .sorted(Comparator.comparing(PowerProperty::order))
                                      .map(PowerProperty::field)
                                      .collect(Collectors.toList())) {
@@ -1364,7 +1381,7 @@ public class AdminHandler extends RPGCommandReceiver {
 
     @SubCommand("creategroup")
     public void createGroup(CommandSender sender, Arguments args) {
-        String groupName = args.next();
+        String groupName = args.nextString();
         if (args.top() == null || !args.top().contains("/")) {
             ItemGroup itemGroup = ItemManager.newGroup(groupName, sender);
             if (itemGroup == null) {
@@ -1384,20 +1401,64 @@ public class AdminHandler extends RPGCommandReceiver {
             } else {
                 regex = regex.substring(1, regex.length() - 1);
             }
-            ItemGroup itemGroup = ItemManager.newGroup(groupName, regex, sender);
-            if (itemGroup == null) {
+            ItemGroup group = ItemManager.newGroup(groupName, regex, sender);
+            if (group == null) {
                 msg(sender, "message.create.fail");
                 return;
             }
-            ItemManager.save(itemGroup);
+            ItemManager.save(group);
+            Set<RPGItem> items = group.getItems();
+            msg(sender, "message.group.header", group.getName(), items.size());
+            if (!Strings.isNullOrEmpty(group.getNote())) {
+                msg(sender, "message.group.note", group.getNote());
+            }
+            for (RPGItem item : items) {
+                new Message("")
+                        .append(I18n.format("message.item.list", item.getName()), Collections.singletonMap("{item}", item.getComponent()))
+                        .send(sender);
+            }
         }
+    }
+
+    @SubCommand("listgroup")
+    public void listGroup(CommandSender sender, Arguments args) {
+        String groupName = args.nextString();
+        Optional<ItemGroup> optGroup = ItemManager.getGroup(groupName);
+        if (!optGroup.isPresent()) {
+            msg(sender, "message.error.item", groupName);
+            return;
+        }
+        ItemGroup group = optGroup.get();
+        Set<RPGItem> items = group.getItems();
+        msg(sender, "message.group.header", group.getName(), items.size());
+        if (!Strings.isNullOrEmpty(group.getNote())) {
+            msg(sender, "message.group.note", group.getNote());
+        }
+        for (RPGItem item : items) {
+            new Message("")
+                    .append(I18n.format("message.item.list", item.getName()), Collections.singletonMap("{item}", item.getComponent()))
+                    .send(sender);
+        }
+    }
+
+    @SubCommand("removegroup")
+    public void removeGroup(CommandSender sender, Arguments args) {
+        String groupName = args.nextString();
+        Optional<ItemGroup> optGroup = ItemManager.getGroup(groupName);
+        if (!optGroup.isPresent()) {
+            msg(sender, "message.error.item", groupName);
+            return;
+        }
+        ItemGroup group = optGroup.get();
+        ItemManager.remove(group, true);
+        msg(sender, "message.group.removed", group.getName());
     }
 
     @SuppressWarnings("ConstantConditions")
     @SubCommand("gen-wiki")
     @Attribute("command")
     public void genWiki(CommandSender sender, Arguments args) throws IOException {
-        String lc = args.next();
+        String lc = args.nextString();
         Locale locale = Locale.forLanguageTag((lc == null ? RPGItems.plugin.cfg.language : lc).replace('_', '-'));
         File wikiDir = new File(RPGItems.plugin.getDataFolder(), "wiki/" + locale.toString());
         if (!wikiDir.mkdirs()) {

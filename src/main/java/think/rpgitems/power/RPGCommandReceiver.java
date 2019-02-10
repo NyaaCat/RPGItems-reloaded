@@ -124,7 +124,7 @@ public abstract class RPGCommandReceiver extends CommandReceiver {
         if (args.length < 4) return Collections.emptyList();
         String last = args[args.length - 1];
         String[] arg = Arrays.copyOf(args, args.length - 1);
-        Arguments cmd = Arguments.parse(arg);
+        Arguments cmd = Arguments.parse(arg, sender);
         if (cmd == null) return Collections.emptyList();
         Pair<RPGItem, String> itemCommand = resolveItemCommand(cmd.next(), cmd.next());
         if (itemCommand == null) return Collections.emptyList();
@@ -281,7 +281,7 @@ public abstract class RPGCommandReceiver extends CommandReceiver {
                 args[0] = "print";
             }
         }
-        Arguments cmd = Arguments.parse(args);
+        Arguments cmd = Arguments.parse(args, sender);
         if (cmd == null) return false;
         acceptCommand(sender, cmd);
         return true;
@@ -290,7 +290,7 @@ public abstract class RPGCommandReceiver extends CommandReceiver {
     @Override
     public List<String> onTabComplete(CommandSender sender, Command command, String alias, String[] args) {
         boolean suggestion = args[args.length - 1].isEmpty();
-        CommandReceiver.Arguments cmd = CommandReceiver.Arguments.parse(args);
+        CommandReceiver.Arguments cmd = CommandReceiver.Arguments.parse(args, sender);
         if (cmd == null) return Collections.emptyList();
         switch (cmd.length()) {
             case 0:

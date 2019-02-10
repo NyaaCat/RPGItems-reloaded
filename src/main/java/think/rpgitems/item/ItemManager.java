@@ -133,6 +133,7 @@ public class ItemManager {
     public static void load(RPGItems pl) {
         plugin = pl;
         RPGItem.plugin = pl;
+        ItemGroup.plugin = pl;
 
         try {
             File testFile = new File(plugin.getDataFolder(), "lock_test" + System.currentTimeMillis() + ".tmp");
@@ -175,6 +176,7 @@ public class ItemManager {
         setItemsDir(mkdir());
         setBackupsDir(mkbkdir());
         load(getItemsDir(), plugin.cfg.itemShowLoaded ? Bukkit.getConsoleSender() : null);
+        groupById.values().forEach(ItemGroup::refresh);
     }
 
     public static boolean load(File file, CommandSender sender) {
@@ -243,6 +245,11 @@ public class ItemManager {
         }
         YamlConfiguration itemStorage = new YamlConfiguration();
         itemStorage.load(file);
+        if (file.getName().endsWith("-group.yml")) {
+            ItemGroup group = new ItemGroup(itemStorage, file);
+            addGroup(group);
+            return null;
+        }
         RPGItem item = new RPGItem(itemStorage, file);
         addItem(item);
         lock(file);
@@ -579,8 +586,9 @@ public class ItemManager {
         ItemMeta meta = item.getItemMeta();
         CustomItemTagContainer tagContainer = meta.getCustomTagContainer();
         if (tagContainer.hasCustomTag(TAG_META, ItemTagType.TAG_CONTAINER)) {
-            int uid = getInt(getTag(tagContainer, TAG_META), TAG_ITEM_UID);
-            Optional<Boolean> optIsModel = optBoolean(tagContainer, TAG_IS_MODEL);
+            CustomItemTagContainer metaTag = getTag(tagContainer, TAG_META);
+            int uid = getInt(metaTag, TAG_ITEM_UID);
+            Optional<Boolean> optIsModel = optBoolean(metaTag, TAG_IS_MODEL);
             if (ignoreModel && optIsModel.orElse(false)) {
                 return Optional.empty();
             }
@@ -751,6 +759,27 @@ public class ItemManager {
                 backup.deleteOnExit();
             } catch (IOException e) {
                 plugin.getLogger().log(Level.WARNING, "Error deleting file " + item.getFile() + ".", e);
+            }
+        }
+    }
+
+    public static void remove(ItemGroup group, boolean delete) {
+        groupByName.remove(group.getName());
+        groupById.remove(group.getUid());
+        if (delete) {
+            try {
+                File itemFile = group.getFile();
+                File backup = new File(getBackupsDir(), itemFile.getName().replaceAll("\\.yml$", "") + "." + System.currentTimeMillis() + ".bak");
+                try {
+                    if (!backup.createNewFile()) throw new IllegalStateException();
+                    Files.copy(itemFile.toPath(), backup.toPath(), StandardCopyOption.REPLACE_EXISTING);
+                } catch (Exception e) {
+                    plugin.getLogger().log(Level.SEVERE, "Cannot create backup for" + group.getName() + ".", e);
+                }
+                Files.delete(group.getFile().toPath());
+                backup.deleteOnExit();
+            } catch (IOException e) {
+                plugin.getLogger().log(Level.WARNING, "Error deleting file " + group.getFile() + ".", e);
             }
         }
     }

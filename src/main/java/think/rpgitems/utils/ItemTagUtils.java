@@ -246,7 +246,7 @@ public final class ItemTagUtils {
 
         @Override
         public Byte toPrimitive(Boolean complex, ItemTagAdapterContext context) {
-            return (byte) (complex == null ? 0b10101010 : complex ? 0b11100000 : 0b00000111);
+            return (byte) (complex == null ? 0b10101010 : complex ? 0b00000001 : 0b00000000);
         }
 
         @Override

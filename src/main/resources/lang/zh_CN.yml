@@ -300,6 +300,13 @@ message:
       updated: '%s &r实体已升级：%s -> %s'
       failed: '%s &r命令升级失败：%s %s'
       timeout: '%s &r命令升级超时'
+  group:
+    header: 物品组 %s （共 %d 个物品）
+    note: 备注：%s
+    removed: 物品组 %s 已移除
+  model:
+    to: 物品已转换为模型
+    is: 这是一个物品模型
 power:
   airborne: 攻击在滑翔时增加 %d%%
   charge: 攻击随速度增加，并在疾跑时增加 %d%%

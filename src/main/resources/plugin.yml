@@ -30,4 +30,6 @@ permissions:
     default: op
 
   rpgitems.tomodel:
-    default: true
+    default: false
+  rpgitems.info:
+    default: false

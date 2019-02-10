@@ -7,6 +7,7 @@ import org.bukkit.entity.Player;
 import think.rpgitems.RPGItems;
 
 import java.io.File;
+import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.Objects;
 import java.util.Set;
@@ -14,7 +15,7 @@ import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
 public class ItemGroup {
-    private static RPGItems plugin;
+    static RPGItems plugin;
 
     private String name;
     private int uid;
@@ -59,6 +60,10 @@ public class ItemGroup {
         restore(s);
     }
 
+    public void refresh() {
+        setItems(getItemUids().stream().map(ItemManager::getItemById).filter(Objects::nonNull).collect(Collectors.toSet()));
+    }
+
     private void restore(ConfigurationSection s) {
         setAuthor(s.getString("author", ""));
         setNote(s.getString("note", ""));
@@ -91,10 +96,17 @@ public class ItemGroup {
         s.set("license", getLicense());
 
         s.set("name", getName());
-        s.set("name", getUid());
+        s.set("uid", getUid());
         s.set("regex", getRegex());
 
-        s.set("item_uids", getItemUids());
+        s.set("item_uids", new ArrayList<>(getItemUids()));
+    }
+
+    public void give(Player sender, int count, boolean wear) {
+        refresh();
+        for (RPGItem item : items) {
+            item.give(sender, count, wear);
+        }
     }
 
     public String getAuthor() {

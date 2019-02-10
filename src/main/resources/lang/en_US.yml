@@ -299,6 +299,13 @@ message:
       updated: '%s &rEntity updated: %s -> %s'
       failed: '%s &rEntity update failed: %s %s'
       timeout: '%s &rEntity update timeout'
+  group:
+    header: Item group %s (%d items)
+    note: 'Note: %s'
+    removed: Item group %s removed
+  model:
+    to: Modelled item
+    is: This is a model item
 power:
   airborne: 'Damage increase by %d%% when gliding'
   charge: 'Damage increase with speed, by %d%% when sprinting'
