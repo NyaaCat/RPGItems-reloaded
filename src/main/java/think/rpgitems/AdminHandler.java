@@ -1210,6 +1210,9 @@ public class AdminHandler extends RPGCommandReceiver {
             ItemManager.save(item);
             msg(sender, "message.power.ok");
         } catch (Exception e) {
+            if (e instanceof CommandException) {
+                throw (CommandException) e;
+            }
             plugin.getLogger().log(Level.WARNING, "Error adding power " + powerStr + " to item " + itemStr + " " + item, e);
             msg(sender, "internal.error.command_exception");
         }

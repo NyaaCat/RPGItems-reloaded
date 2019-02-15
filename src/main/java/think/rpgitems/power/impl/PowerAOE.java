@@ -27,7 +27,7 @@ import static think.rpgitems.power.Utils.getNearbyEntities;
  * </p>
  */
 @PowerMeta(defaultTrigger = "RIGHT_CLICK", withSelectors = true, generalInterface = PowerPlain.class)
-public class PowerAOE extends BasePower implements PowerRightClick, PowerLeftClick, PowerPlain, PowerHit {
+public class PowerAOE extends BasePower implements PowerRightClick, PowerLeftClick, PowerOffhandClick, PowerPlain, PowerHit {
 
     /**
      * Cooldown time of this power
@@ -80,6 +80,11 @@ public class PowerAOE extends BasePower implements PowerRightClick, PowerLeftCli
 
     @Override
     public PowerResult<Void> leftClick(final Player player, ItemStack stack, PlayerInteractEvent event) {
+        return fire(player, stack);
+    }
+
+    @Override
+    public PowerResult<Void> offhandClick(final Player player, ItemStack stack, PlayerInteractEvent event) {
         return fire(player, stack);
     }
 
