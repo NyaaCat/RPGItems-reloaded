@@ -14,6 +14,7 @@ import org.bukkit.entity.Entity;
 import org.bukkit.entity.LivingEntity;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
+import org.bukkit.event.EventPriority;
 import org.bukkit.event.HandlerList;
 import org.bukkit.event.Listener;
 import org.bukkit.event.entity.EntityDamageEvent;
@@ -26,16 +27,16 @@ import org.bukkit.util.EulerAngle;
 import org.bukkit.util.Vector;
 import think.rpgitems.RPGItems;
 import think.rpgitems.power.*;
+import think.rpgitems.utils.PotionEffectUtils;
 
-import java.util.Comparator;
-import java.util.List;
-import java.util.Optional;
-import java.util.UUID;
+import java.util.*;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
 
+import static think.rpgitems.power.Utils.checkCooldown;
+
 @PowerMeta(defaultTrigger = {"RIGHT_CLICK", "TICK"})
-public class PowerParticleBarrier extends BasePower implements PowerRightClick, PowerLeftClick, PowerTick {
+public class PowerParticleBarrier extends BasePower implements PowerPlain, PowerRightClick, PowerLeftClick, PowerTick {
 
     @Property
     public double energyPerBarrier = 40;
@@ -51,6 +52,24 @@ public class PowerParticleBarrier extends BasePower implements PowerRightClick, 
 
     @Property
     public boolean projected = false;
+
+    @Property
+    public int cooldown = 20;
+
+    /**
+     * Cost of this power
+     */
+    @Property
+    public int cost = 0;
+
+    /**
+     * Type of potion effect
+     */
+    @Deserializer(PotionEffectUtils.class)
+    @Serializer(PotionEffectUtils.class)
+    @Property(order = 1, required = true)
+    @AcceptedValue(preset = Preset.POTION_EFFECT_TYPE)
+    public PotionEffectType effect = PotionEffectType.INCREASE_DAMAGE;
 
     private static AtomicInteger rc = new AtomicInteger(0);
 
@@ -74,7 +93,7 @@ public class PowerParticleBarrier extends BasePower implements PowerRightClick, 
         super.init(s);
         if (orc == 0) {
             event = new Listener() {
-                @EventHandler
+                @EventHandler(priority = EventPriority.LOW, ignoreCancelled = true)
                 public void onEntityDamage(EntityDamageEvent entityDamageEvent) {
                     Entity entity = entityDamageEvent.getEntity();
                     UUID uuid = entity.getUniqueId();
@@ -95,7 +114,7 @@ public class PowerParticleBarrier extends BasePower implements PowerRightClick, 
                     long lastTime = last ? pair.getKey() : currentTime;
                     double currentEnergy = last && pair.getValue() > 0 ? pair.getValue() : 0;
                     double energy = currentEnergy - (currentTime - lastTime) * energyDecay / 1000 + energyGain;
-                    energys.put(source, new Pair<>(currentTime, Math.max(energy, 100.0d)));
+                    energys.put(source, new Pair<>(currentTime, Math.min(energy, 100.0d)));
                 }
             };
             Bukkit.getPluginManager().registerEvents(event, RPGItems.plugin);
@@ -114,16 +133,19 @@ public class PowerParticleBarrier extends BasePower implements PowerRightClick, 
 
     @Override
     public PowerResult<Void> leftClick(Player player, ItemStack stack, PlayerInteractEvent event) {
-        return fire(player);
+        return fire(player, stack);
     }
 
     @Override
     public PowerResult<Void> rightClick(Player player, ItemStack stack, PlayerInteractEvent event) {
-        return fire(player);
+        return fire(player, stack);
     }
 
     @SuppressWarnings("unchecked")
-    public PowerResult<Void> fire(Player player) {
+    @Override
+    public PowerResult<Void> fire(Player player, ItemStack stack) {
+        if (!checkCooldown(this, player, cooldown, true, true)) return PowerResult.cd();
+        if (!getItem().consumeDurability(stack, cost)) return PowerResult.cost();
         if (!projected) {
             barrier(player, player);
             return PowerResult.ok();
@@ -151,38 +173,13 @@ public class PowerParticleBarrier extends BasePower implements PowerRightClick, 
         base.setYaw(base.getYaw() - 90);
         Vector l = base.getDirection().setY(0).normalize();
 
-        ArmorStand asL = eyeLocation.getWorld().spawn(eyeLocation.clone().add(l.multiply(2)), ArmorStand.class);
-        asL.setCanPickupItems(false);
-        asL.setMarker(true);
-        asL.setPersistent(false);
-        asL.setSmall(true);
-        asL.setCustomNameVisible(false);
-        asL.setGravity(false);
-        asL.setVisible(false);
+        ArmorStand asL = makeAs(eyeLocation.clone().add(l.multiply(2)));
         asL.setLeftArmPose(new EulerAngle(90 * Math.PI / 180, 60 * Math.PI / 180, 0));
-        asL.getEquipment().setItemInOffHand(new ItemStack(Material.SHIELD));
 
-        ArmorStand asR = eyeLocation.getWorld().spawn(eyeLocation.clone().add(r.multiply(2)), ArmorStand.class);
-        asR.setCanPickupItems(false);
-        asR.setMarker(true);
-        asR.setPersistent(false);
-        asR.setSmall(true);
-        asR.setCustomNameVisible(false);
-        asR.setGravity(false);
-        asR.setVisible(false);
+        ArmorStand asR = makeAs(eyeLocation.clone().add(r.multiply(2)));
         asR.setRightArmPose(new EulerAngle(90 * Math.PI / 180, 300 * Math.PI / 180, 0));
-        asR.getEquipment().setItemInMainHand(new ItemStack(Material.SHIELD));
 
-        ArmorStand asB = eyeLocation.getWorld().spawn(eyeLocation.clone().subtract(f.multiply(2)), ArmorStand.class);
-        asB.setCanPickupItems(false);
-        asB.setMarker(true);
-        asB.setPersistent(false);
-        asB.setSmall(true);
-        asB.setCustomNameVisible(false);
-        asB.setGravity(false);
-        asB.setVisible(false);
-        asB.setLeftArmPose(new EulerAngle(90 * Math.PI / 180, 270 * Math.PI / 180, 0));
-        asB.getEquipment().setItemInOffHand(new ItemStack(Material.SHIELD));
+        ArmorStand asB = makeAs(eyeLocation.clone().subtract(f.multiply(2)));
 
         new BukkitRunnable() {
             private int dur = 100;
@@ -217,6 +214,19 @@ public class PowerParticleBarrier extends BasePower implements PowerRightClick, 
         }.runTaskTimer(RPGItems.plugin, 0, 1L);
     }
 
+    private ArmorStand makeAs(Location loc) {
+        return loc.getWorld().spawn(loc, ArmorStand.class, as -> {
+            as.setCanPickupItems(false);
+            as.setMarker(true);
+            as.setPersistent(false);
+            as.setSmall(true);
+            as.setCustomNameVisible(false);
+            as.setGravity(false);
+            as.setVisible(false);
+            as.getEquipment().setItemInOffHand(new ItemStack(Material.SHIELD));
+        });
+    }
+
     @Override
     public void deinit() {
         int nrc = rc.decrementAndGet();
@@ -233,7 +243,7 @@ public class PowerParticleBarrier extends BasePower implements PowerRightClick, 
         double energy = pair.getValue() - (currentTimeMillis - pair.getKey()) * energyDecay / 1000;
         if (energy <= 0) return PowerResult.noop();
         int level = (int) (energy / energyPerLevel);
-        player.addPotionEffect(new PotionEffect(PotionEffectType.INCREASE_DAMAGE, 5, level));
+        player.addPotionEffect(new PotionEffect(effect, 5, level));
         return PowerResult.ok();
     }
 }
