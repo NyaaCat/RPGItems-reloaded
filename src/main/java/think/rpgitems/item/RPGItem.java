@@ -839,9 +839,6 @@ public class RPGItem {
             meta.removeItemFlags(flag);
         }
         for (ItemFlag flag : itemFlags) {
-            if (flag == ItemFlag.HIDE_ATTRIBUTES && hasPower(PowerAttributeModifier.class)) {
-                continue;
-            }
             meta.addItemFlags(flag);
         }
         Set<Enchantment> enchs = meta.getEnchants().keySet();
