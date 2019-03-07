@@ -56,10 +56,13 @@ public class PowerDummy extends BasePower implements PowerHit, PowerHitTaken, Po
 
     @Property
     public TriggerResult cooldownResult = TriggerResult.COOLDOWN;
+    
+    @Property
+    public boolean showCDWarning = true;
 
     @Override
     public PowerResult<Void> fire(Player player, ItemStack stack) {
-        if (!checkCooldownByString(this, player, cooldownKey, cooldown, true, false)) return PowerResult.of(cooldownResult);
+        if (!checkCooldownByString(this, player, cooldownKey, cooldown, showCDWarning, false)) return PowerResult.of(cooldownResult);
         if (!getItem().consumeDurability(stack, cost, checkDurabilityBound)) PowerResult.of(costResult);
         return PowerResult.of(successResult);
     }
