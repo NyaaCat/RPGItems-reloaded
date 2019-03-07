@@ -64,6 +64,9 @@ public class PowerRepair extends BasePower implements PowerRightClick, PowerLeft
 
     @Property
     public int amount = 1;
+    
+    @Property
+    public boolean showFailMsg = true;
 
     @Override
     public void init(ConfigurationSection section) {
@@ -120,12 +123,14 @@ public class PowerRepair extends BasePower implements PowerRightClick, PowerLeft
             getItem().setItemStackDurability(stack, Math.min(itemDurability + this.durability, max));
             return abortOnSuccess ? PowerResult.abort() : PowerResult.ok();
         } else {
-            BaseComponent msg = Strings.isNullOrEmpty(customMessage) ?
+            if (showFailMsg) {
+                BaseComponent msg = Strings.isNullOrEmpty(customMessage) ?
                                         new TextComponent(I18n.format("message.error.need_material", material.getType().name())) :
                                         new TextComponent(customMessage);
-            HoverEvent hover = new HoverEvent(HoverEvent.Action.SHOW_ITEM, new BaseComponent[]{new TextComponent(ItemStackUtils.itemToJson(material))});
-            msg.setHoverEvent(hover);
-            new Message("").append(msg).send(player);
+                HoverEvent hover = new HoverEvent(HoverEvent.Action.SHOW_ITEM, new BaseComponent[]{new TextComponent(ItemStackUtils.itemToJson(material))});
+                msg.setHoverEvent(hover);
+                new Message("").append(msg).send(player);
+            }
             return abortOnFailure ? PowerResult.abort() : PowerResult.fail();
         }
     }
