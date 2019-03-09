@@ -10,7 +10,7 @@ Discord Server: [![Discord](https://img.shields.io/discord/486394125206421524.sv
 
 ## Status
 
-The develop branch is `1.13.2` version 3.7 and is *in beta*. **Ensure you have latest Spigot/Paper and WorldEdit & WorldGuard**. Note upgrading from 3.6 to 3.7 may cause item instances broken. You need to manually give your player new items.
+The develop branch is `1.13.2` version 3.7 and is *in beta*. **Ensure you have latest Spigot/Paper and WorldEdit & WorldGuard**. Note upgrading from 3.6 to 3.7 changes item NBT so it may not behavior correctly with other plugins like shops that compares nbt or plugins relying on old item lore format.
 
 The stable/main branch is `1.13.2` version 3.6. It *should* be fully compatible with **Spigot/Paper 1.13.2**.
 

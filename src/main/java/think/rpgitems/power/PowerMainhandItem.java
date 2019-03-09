@@ -8,7 +8,7 @@ import org.bukkit.inventory.ItemStack;
 import javax.annotation.CheckReturnValue;
 
 /**
- * Triggers when player swap offhand item to main hand
+ * Triggers when player swap mainhand item to offhand
  */
 public interface PowerMainhandItem extends Power {
 

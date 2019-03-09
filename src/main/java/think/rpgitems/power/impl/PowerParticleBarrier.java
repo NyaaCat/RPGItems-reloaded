@@ -214,6 +214,7 @@ public class PowerParticleBarrier extends BasePower implements PowerPlain, Power
         }.runTaskTimer(RPGItems.plugin, 0, 1L);
     }
 
+    @SuppressWarnings("deprecation")
     private ArmorStand makeAs(Location loc) {
         return loc.getWorld().spawn(loc, ArmorStand.class, as -> {
             as.setCanPickupItems(false);

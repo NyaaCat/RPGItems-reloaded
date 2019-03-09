@@ -2,10 +2,12 @@ package think.rpgitems;
 
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
+import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.HandlerList;
 import org.bukkit.event.Listener;
 import org.bukkit.event.server.ServerLoadEvent;
+import org.bukkit.inventory.ItemStack;
 import org.bukkit.plugin.InvalidDescriptionException;
 import org.bukkit.plugin.InvalidPluginException;
 import org.bukkit.plugin.Plugin;
@@ -13,13 +15,13 @@ import org.bukkit.plugin.java.JavaPlugin;
 import org.librazy.nclangchecker.LangKey;
 import think.rpgitems.data.Font;
 import think.rpgitems.item.ItemManager;
-import think.rpgitems.power.PowerManager;
-import think.rpgitems.power.Ticker;
-import think.rpgitems.power.Trigger;
+import think.rpgitems.power.*;
 import think.rpgitems.power.impl.BasePower;
 import think.rpgitems.support.WGSupport;
 
 import java.io.File;
+import java.lang.reflect.InvocationHandler;
+import java.lang.reflect.Proxy;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.logging.Level;
@@ -68,6 +70,10 @@ public class RPGItems extends JavaPlugin {
         cfg = new Configuration(this);
         cfg.load();
         i18n = new I18n(this, cfg.language);
+
+        PowerManager.registerAdapter(PowerPlain.class, PowerOffhandClick.class, p -> getWrapper(p, PowerOffhandClick.class, "offhandClick"));
+        PowerManager.registerAdapter(PowerPlain.class, PowerSprint.class, p -> getWrapper(p, PowerSprint.class, "sprint"));
+        PowerManager.registerAdapter(PowerPlain.class, PowerSneak.class, p -> getWrapper(p, PowerSneak.class, "sneak"));
 
         PowerManager.addDescriptionResolver(RPGItems.plugin, (power, property) -> {
             if (property == null) {
@@ -190,5 +196,17 @@ public class RPGItems extends JavaPlugin {
         this.getServer().getScheduler().cancelTasks(plugin);
         ItemManager.unload();
         managedPlugins.forEach(Bukkit.getPluginManager()::disablePlugin);
+    }
+
+    @SuppressWarnings({"unchecked", "JavaReflectionInvocation"})
+    private static <T> T getWrapper(final PowerPlain obj, final Class<T> implInterface, final String delegateMethod) {
+        InvocationHandler invocationHandler = (proxy, method, args) -> {
+            if (!method.getName().equals(delegateMethod)) {
+                return obj.getClass().getMethod(method.getName(), method.getParameterTypes()).invoke(obj, args);
+            } else {
+                return obj.getClass().getDeclaredMethod("fire", Player.class, ItemStack.class).invoke(obj, args[0], args[1]);
+            }
+        };
+        return (T) Proxy.newProxyInstance(obj.getClass().getClassLoader(), new Class[]{implInterface}, invocationHandler);
     }
 }

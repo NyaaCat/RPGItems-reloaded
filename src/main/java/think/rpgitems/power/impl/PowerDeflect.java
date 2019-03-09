@@ -1,7 +1,6 @@
 package think.rpgitems.power.impl;
 
 import cat.nyaa.nyaacore.utils.TridentUtils;
-import org.bukkit.Bukkit;
 import org.bukkit.Sound;
 import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.entity.*;
@@ -12,7 +11,6 @@ import org.bukkit.inventory.ItemStack;
 import org.bukkit.util.Vector;
 import think.rpgitems.Events;
 import think.rpgitems.I18n;
-import think.rpgitems.RPGItems;
 import think.rpgitems.power.*;
 
 import java.util.*;
@@ -124,25 +122,40 @@ public class PowerDeflect extends BasePower implements PowerHitTaken, PowerRight
         LivingEntity source = (LivingEntity) p.getShooter();
         Vector relativePosition = target.getEyeLocation().toVector();
         relativePosition.subtract(source.getEyeLocation().toVector());
-        if (getAngleBetweenVectors(target.getEyeLocation().getDirection(), relativePosition.multiply(-1)) >= facing) {
-            return PowerResult.noop();
-        }
-        event.setCancelled(true);
-        p.setShooter(target);
-        Events.registerRPGProjectile(p.getEntityId(), getItem().getUid());
-        Vector velocity = p.getVelocity();
-        Bukkit.getScheduler().runTaskLater(RPGItems.plugin, () -> {
+        if (getAngleBetweenVectors(target.getEyeLocation().getDirection(), relativePosition.multiply(-1)) < facing
+                    && (p instanceof SmallFireball || p instanceof LargeFireball || p instanceof Arrow)) {
+            event.setCancelled(true);
+            target.getLocation().getWorld().playSound(target.getLocation(), Sound.ITEM_SHIELD_BLOCK, 1.0f, 3.0f);
+            Projectile t = target.launchProjectile(p.getClass());
+            Events.registerRPGProjectile(t.getEntityId(), getItem().getUid());
+            if (p instanceof TippedArrow) {
+                TippedArrow tippedArrowP = (TippedArrow) p;
+                TippedArrow tippedArrowT = (TippedArrow) t;
+                tippedArrowT.setBasePotionData(tippedArrowP.getBasePotionData());
+                tippedArrowP.getCustomEffects().forEach(potionEffect -> tippedArrowT.addCustomEffect(potionEffect, true));
+            }
+            if (p instanceof Arrow) {
+                Arrow arrowP = (Arrow) p;
+                Arrow arrowT = (Arrow) t;
+                arrowT.setDamage(arrowP.getDamage());
+                arrowT.setCritical(arrowP.isCritical());
+                arrowT.setKnockbackStrength(arrowP.getKnockbackStrength());
+                arrowT.setPickupStatus(arrowP.getPickupStatus());
+            }
             if (p instanceof Trident) {
-                TridentUtils.setTridentDealtDamage((Trident) p, false);
+                Trident tridentP = (Trident) p;
+                Trident tridentT = (Trident) t;
+                TridentUtils.setTridentItemStack(tridentP, TridentUtils.getTridentItemStack(tridentT));
             }
-            p.setVelocity(target.getEyeLocation().getDirection().multiply(velocity.length()));
-            if (p instanceof Fireball) {
-                ((Fireball) p).setDirection(target.getEyeLocation().getDirection());
-            }
-        }, 1);
-
-        target.getLocation().getWorld().playSound(target.getLocation(), Sound.ITEM_SHIELD_BLOCK, 1.0f, 3.0f);
-        return PowerResult.ok(0.0);
+            t.setGravity(p.hasGravity());
+            t.setBounce(p.doesBounce());
+            t.setShooter(target);
+            Events.autoRemoveProjectile(t.getEntityId());
+            p.eject();
+            p.remove();
+            return PowerResult.ok(0.0);
+        }
+        return PowerResult.noop();
     }
 
     @Override
