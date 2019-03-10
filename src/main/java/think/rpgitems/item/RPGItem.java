@@ -572,7 +572,7 @@ public class RPGItem {
                         break;
                     }
                 }
-                if (!lore.get(lore.size() - 1).contains(boxChar + ""))
+                if (lore.isEmpty() || !lore.get(lore.size() - 1).contains(boxChar + ""))
                     lore.add(out.toString());
                 else
                     lore.set(lore.size() - 1, out.toString());
