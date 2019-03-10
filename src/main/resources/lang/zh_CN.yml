@@ -411,6 +411,13 @@ power:
     arrow:
       main_name: 射出一矢
       main_description: 发射一支箭。
+    attachments:
+      main_name: 配件
+      main_description: 可以使用其他 RPGItem 作为配件。将会触发配件上的 ATTACHMENT 触发
+      allowedSlots: 可以使用的装备栏
+      allowedInvSlots: 可以使用的背包格，-1为禁用背包
+      limit: 配件数量
+      allowedItems: 可以使用的 RPGItem
     attract:
       main_name: 吸引
       main_description: 吸引附近的怪物到玩家

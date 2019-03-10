@@ -418,6 +418,13 @@ power:
     arrow:
       main_name: Arrow
       main_description: Fire an arrow.
+    attachments:
+      main_name: Attachments
+      main_description: Can use other RPGItems as attachments. Firing this power will trigger ATTACHMENT trigger of attachments.
+      allowedSlots: allowed equipment slot
+      allowedInvSlots: allowed inventory slot number. -1 to disable inventory
+      limit: maximum number of attachments
+      allowedItems: RPGItems/Groups' id or name that are leagal attachment for this item
     attract:
       main_name: Attract
       main_description: Pull around mobs in to player
