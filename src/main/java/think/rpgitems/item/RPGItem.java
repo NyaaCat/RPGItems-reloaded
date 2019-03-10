@@ -862,7 +862,7 @@ public class RPGItem {
         return result;
     }
 
-    public <TEvent extends Event, TPower extends Power, TResult, TReturn> TReturn power(Player player, ItemStack i, TEvent event, Trigger<TEvent, TPower, TResult, TReturn> trigger) {
+    public <TEvent extends Event, TPower extends Power, TResult, TReturn> TReturn power(Player player, ItemStack i, TEvent event, Trigger<TEvent, TPower, TResult, TReturn> trigger, Object context) {
         List<TPower> powers = this.getPower(trigger);
         TReturn ret = trigger.def(player, i, event);
         if (!triggerPreCheck(player, i, event, trigger, powers)) return ret;
@@ -877,7 +877,7 @@ public class RPGItem {
                 if (power.requiredContext() != null) {
                     result = handleContext(player, i, event, trigger, power);
                 } else {
-                    result = trigger.run(power, player, i, event);
+                    result = trigger.run(power, player, i, event, context);
                 }
                 resultMap.put(power, result);
             }
@@ -886,6 +886,10 @@ public class RPGItem {
         }
         triggerPostFire(player, i, event, trigger, resultMap, ret);
         return ret;
+    }
+
+    public <TEvent extends Event, TPower extends Power, TResult, TReturn> TReturn power(Player player, ItemStack i, TEvent event, Trigger<TEvent, TPower, TResult, TReturn> trigger) {
+        return power(player, i, event, trigger, null);
     }
 
     public <TEvent extends Event, TPower extends Power, TResult, TReturn> PowerResult<TResult> handleContext(Player player, ItemStack i, TEvent event, Trigger<TEvent, TPower, TResult, TReturn> trigger, TPower power) {

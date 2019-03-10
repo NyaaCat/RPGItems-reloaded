@@ -499,6 +499,12 @@ public class Utils {
                         } else if (listArg.equals(String.class)) {
                             List<String> list = values.collect(Collectors.toList());
                             field.set(power, list);
+                        } else if (listArg.equals(Integer.class)) {
+                            List<Integer> list = values.map(Integer::parseInt).collect(Collectors.toList());
+                            field.set(power, list);
+                        } else if (listArg.equals(Double.class)) {
+                            List<Double> list = values.map(Double::parseDouble).collect(Collectors.toList());
+                            field.set(power, list);
                         } else {
                             throw new AdminHandler.CommandException("internal.error.command_exception");
                         }
@@ -518,6 +524,12 @@ public class Utils {
                                 new Message(I18n.format("message.power.ignored_trigger", String.join(", ", ignored), power.getName(), power.getItem().getName())).send(sender);
                             }
                             field.set(power, set);
+                        } else if (listArg.equals(Integer.class)) {
+                            Set<Integer> list = values.map(Integer::parseInt).collect(Collectors.toSet());
+                            field.set(power, list);
+                        } else if (listArg.equals(Double.class)) {
+                            Set<Double> list = values.map(Double::parseDouble).collect(Collectors.toSet());
+                            field.set(power, list);
                         } else {
                             throw new AdminHandler.CommandException("internal.error.command_exception");
                         }

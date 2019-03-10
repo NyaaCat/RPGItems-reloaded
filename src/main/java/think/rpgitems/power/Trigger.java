@@ -16,6 +16,7 @@ import org.bukkit.event.player.PlayerSwapHandItemsEvent;
 import org.bukkit.event.player.PlayerToggleSneakEvent;
 import org.bukkit.event.player.PlayerToggleSprintEvent;
 import org.bukkit.inventory.ItemStack;
+import think.rpgitems.item.ItemManager;
 
 import javax.annotation.Nullable;
 import java.util.*;
@@ -283,12 +284,24 @@ public abstract class Trigger<TEvent extends Event, TPower extends Power, TResul
         }
     };
 
-
-
     public static final Trigger<Event, PowerTick, Void, Void> TICK = new Trigger<Event, PowerTick, Void, Void>(Event.class, PowerTick.class, Void.class, Void.class, "TICK") {
         @Override
         public PowerResult<Void> run(PowerTick power, Player player, ItemStack i, Event event) {
             return power.tick(player, i);
+        }
+    };
+
+    public static final Trigger<Event, PowerAttachment, Void, Void> ATTACHMENT = new Trigger<Event, PowerAttachment, Void, Void>(Event.class, PowerAttachment.class, Void.class, Void.class, "ATTACHMENT") {
+        @Override
+        public PowerResult<Void> run(PowerAttachment power, Player player, ItemStack i, Event event) {
+            throw new IllegalStateException();
+        }
+
+        @Override
+        public PowerResult<Void> run(PowerAttachment power, Player player, ItemStack i, Event event, Object data) {
+            ItemStack originalItemstack = (ItemStack) ((Pair) data).getKey();
+            Event originalEvent = (Event) ((Pair) data).getValue();
+            return power.attachment(player, i, ItemManager.toRPGItem(originalItemstack).orElseThrow(IllegalArgumentException::new), originalEvent, originalItemstack);
         }
     };
 
