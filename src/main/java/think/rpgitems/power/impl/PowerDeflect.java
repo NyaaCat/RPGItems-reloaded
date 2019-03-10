@@ -48,6 +48,13 @@ public class PowerDeflect extends BasePower implements PowerHitTaken, PowerRight
     @Property
     public int cost = 0;
 
+
+    /**
+     * Cost of each deflecting
+     */
+    @Property
+    public int deflectCost = 0;
+
     /**
      * Chance in percentage of triggering this power in passive mode
      */
@@ -115,7 +122,7 @@ public class PowerDeflect extends BasePower implements PowerHitTaken, PowerRight
             if (!checkCooldown(this, target, cooldownpassive, false, true)) return PowerResult.cd();
         }
 
-        if (!getItem().consumeDurability(stack, cost)) return PowerResult.cost();
+        if (!getItem().consumeDurability(stack, deflectCost)) return PowerResult.cost();
 
         Projectile p = (Projectile) byEntityEvent.getDamager();
         if (!(p.getShooter() instanceof LivingEntity)) return PowerResult.noop();
