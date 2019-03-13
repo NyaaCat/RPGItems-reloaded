@@ -22,7 +22,7 @@ import static think.rpgitems.power.Utils.checkCooldownByString;
  * </p>
  */
 @PowerMeta(defaultTrigger = "RIGHT_CLICK", generalInterface = PowerPlain.class)
-public class PowerDummy extends BasePower implements PowerHit, PowerHitTaken, PowerLeftClick, PowerRightClick, PowerOffhandClick, PowerProjectileHit, PowerSneak, PowerSprint, PowerOffhandItem, PowerMainhandItem, PowerTick, PowerPlain {
+public class PowerDummy extends BasePower implements PowerHit, PowerHitTaken, PowerLeftClick, PowerRightClick, PowerOffhandClick, PowerProjectileHit, PowerSneak, PowerSprint, PowerOffhandItem, PowerMainhandItem, PowerTick, PowerPlain, PowerHurt {
 
     /**
      * Cooldown time of this power
@@ -96,7 +96,12 @@ public class PowerDummy extends BasePower implements PowerHit, PowerHitTaken, Po
     public PowerResult<Double> takeHit(Player target, ItemStack stack, double damage, EntityDamageEvent event) {
         return fire(target, stack).with(damage);
     }
-
+    
+    @Override
+    public PowerResult<Void> hurt(Player target, ItemStack stack, EntityDamageEvent event) {
+        return fire(target, stack);
+    }
+    
     @Override
     public PowerResult<Void> offhandClick(Player player, ItemStack stack, PlayerInteractEvent event) {
         return fire(player, stack);
