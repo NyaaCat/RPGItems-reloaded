@@ -1385,17 +1385,18 @@ public class AdminHandler extends RPGCommandReceiver {
     @SubCommand("creategroup")
     public void createGroup(CommandSender sender, Arguments args) {
         String groupName = args.nextString();
+        ItemGroup group = null;
         if (args.top() == null || !args.top().contains("/")) {
-            ItemGroup itemGroup = ItemManager.newGroup(groupName, sender);
-            if (itemGroup == null) {
+            group = ItemManager.newGroup(groupName, sender);
+            if (group == null) {
                 msg(sender, "message.create.fail");
                 return;
             }
             while (args.top() != null) {
                 RPGItem item = getItem(args.nextString(), sender, true);
-                itemGroup.addItem(item);
+                group.addItem(item);
             }
-            ItemManager.save(itemGroup);
+            ItemManager.save(group);
         } else {
             String regex = args.next();
             if (!regex.startsWith("/") || !regex.endsWith("/")) {
@@ -1404,22 +1405,19 @@ public class AdminHandler extends RPGCommandReceiver {
             } else {
                 regex = regex.substring(1, regex.length() - 1);
             }
-            ItemGroup group = ItemManager.newGroup(groupName, regex, sender);
+            group = ItemManager.newGroup(groupName, regex, sender);
             if (group == null) {
                 msg(sender, "message.create.fail");
                 return;
             }
             ItemManager.save(group);
-            Set<RPGItem> items = group.getItems();
-            msg(sender, "message.group.header", group.getName(), items.size());
-            if (!Strings.isNullOrEmpty(group.getNote())) {
-                msg(sender, "message.group.note", group.getNote());
-            }
-            for (RPGItem item : items) {
-                new Message("")
-                        .append(I18n.format("message.item.list", item.getName()), Collections.singletonMap("{item}", item.getComponent()))
-                        .send(sender);
-            }
+        }
+        Set<RPGItem> items = group.getItems();
+        msg(sender, "message.group.header", group.getName(), items.size());
+        for (RPGItem item : items) {
+            new Message("")
+                    .append(I18n.format("message.item.list", item.getName()), Collections.singletonMap("{item}", item.getComponent()))
+                    .send(sender);
         }
     }
 
