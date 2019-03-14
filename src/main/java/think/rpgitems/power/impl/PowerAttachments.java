@@ -123,6 +123,7 @@ public class PowerAttachments extends BasePower implements PowerRightClick, Powe
     }
 
     public boolean attach(Player player, ItemStack stack, Event event, ItemStack itemStack, Set<RPGItem> allow) {
+        if (itemStack == null) return false;
         if (itemStack.equals(stack)) return false;
         Optional<RPGItem> optItem = ItemManager.toRPGItem(itemStack);
         if (!optItem.isPresent()) return false;
