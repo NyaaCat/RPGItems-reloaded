@@ -1421,6 +1421,38 @@ public class AdminHandler extends RPGCommandReceiver {
         }
     }
 
+    @SubCommand("addtogroup")
+    @Attribute("item")
+    public void addToGroup(CommandSender sender, Arguments args) {
+        RPGItem item = getItem(args.nextString(), sender, true);
+        String groupName = args.nextString();
+        Optional<ItemGroup> optGroup = ItemManager.getGroup(groupName);
+        if (!optGroup.isPresent()) {
+            msg(sender, "message.error.item", groupName);
+            return;
+        }
+        ItemGroup group = optGroup.get();
+        group.addItem(item);
+        msg(sender, "message.group.header", group.getName(), group.getItemUids().size());
+        ItemManager.save(group);
+    }
+
+    @SubCommand("removefromgroup")
+    @Attribute("item")
+    public void removeFromGroup(CommandSender sender, Arguments args) {
+        RPGItem item = getItem(args.nextString(), sender, true);
+        String groupName = args.nextString();
+        Optional<ItemGroup> optGroup = ItemManager.getGroup(groupName);
+        if (!optGroup.isPresent()) {
+            msg(sender, "message.error.item", groupName);
+            return;
+        }
+        ItemGroup group = optGroup.get();
+        group.removeItem(item);
+        msg(sender, "message.group.header", group.getName(), group.getItemUids().size());
+        ItemManager.save(group);
+    }
+
     @SubCommand("listgroup")
     public void listGroup(CommandSender sender, Arguments args) {
         String groupName = args.nextString();
