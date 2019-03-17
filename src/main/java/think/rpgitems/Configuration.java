@@ -2,6 +2,7 @@ package think.rpgitems;
 
 import cat.nyaa.nyaacore.configuration.PluginConfigure;
 import org.bukkit.plugin.java.JavaPlugin;
+import think.rpgitems.item.RPGItem;
 
 public class Configuration extends PluginConfigure {
     private final RPGItems plugin;
@@ -62,6 +63,9 @@ public class Configuration extends PluginConfigure {
 
     @Serializable(name = "item.defaults.license")
     public String defaultLicense = "All Right Reserved";
+
+    @Serializable(name = "item.defaults.enchant_mode")
+    public RPGItem.EnchantMode defaultEnchantMode = RPGItem.EnchantMode.DISALLOW;
 
     @Serializable(name = "item.defaults.note")
     public String defaultNote;

@@ -344,7 +344,7 @@ public class RPGItem {
                 }
             }
         }
-        String enchantModeStr = s.getString("enchantMode", "DISALLOW");
+        String enchantModeStr = s.getString("enchantMode", plugin.cfg.defaultEnchantMode.name());
         try {
             setEnchantMode(EnchantMode.valueOf(enchantModeStr));
         } catch (IllegalArgumentException e) {
@@ -1709,6 +1709,7 @@ public class RPGItem {
         MULTIPLY,
     }
 
+    @LangKey(type = LangKeyType.SUFFIX)
     public enum EnchantMode {
         DISALLOW,
         PERMISSION,

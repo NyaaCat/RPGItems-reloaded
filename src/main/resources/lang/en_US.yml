@@ -196,6 +196,10 @@ message:
     backedup: Item %s backed up to %s.
     cleanbackup: Cleaned up backup dictory.
     no_backup: Backup for %s not found.
+  enchantmode:
+    DISALLOW: Item '%s' enchant mode set to disallowing custom enchant (default)
+    PERMISSION: Item '%s' enchant mode set to requiring permission (rpgitem.enchant.[item name])
+    ADDITIONAL: Item '%s' enchant mode set to allow all enchant
   damagemode:
     FIXED: Item '%s' damage mode set to fixed damage (default)
     ADDITIONAL: Item '%s' damage mode set to additional damage (vanilla minecraft damage plus RPGItem damage)
