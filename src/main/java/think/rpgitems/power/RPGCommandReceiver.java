@@ -181,9 +181,11 @@ public abstract class RPGCommandReceiver extends CommandReceiver {
 
     protected boolean isTrivialProperty(PowerMeta powerMeta, String name) {
         return (powerMeta.immutableTrigger() && name.equals("triggers"))
-                       || (powerMeta.marker() && name.equals("triggers"))
-                       || (powerMeta.marker() && name.equals("conditions") && !powerMeta.withConditions())
-                       || (!powerMeta.withSelectors() && name.equals("selectors"));
+                        || (powerMeta.marker() && name.equals("triggers"))
+                        || (powerMeta.marker() && name.equals("conditions") && !powerMeta.withConditions())
+                        || (!powerMeta.withSelectors() && name.equals("selectors"))
+                        || (!powerMeta.withContext() && name.equals("requiredContext"))
+                        || name.equals("displayName");
     }
 
     private List<String> resolvePropertiesSuggestions(CommandSender sender, RPGItem item, String last, Class<? extends Power> power, Map<String, PowerProperty> argMap, Set<Field> settled, List<Field> required) {

@@ -15,5 +15,7 @@ public @interface PowerMeta {
 
     boolean withConditions() default false;
 
+    boolean withContext() default false;
+
     Class<? extends Power>[] generalInterface() default {};
 }

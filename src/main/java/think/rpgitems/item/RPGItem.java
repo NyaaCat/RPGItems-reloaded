@@ -73,6 +73,8 @@ public class RPGItem {
     private Map<Enchantment, Integer> enchantMap = null;
     private List<ItemFlag> itemFlags = new ArrayList<>();
     private boolean customItemModel = false;
+    private EnchantMode enchantMode = EnchantMode.DISALLOW;
+
     // Powers
     private List<Power> powers = new ArrayList<>();
     private HashMap<Power, NamespacedKey> powerKeys = new HashMap<>();
@@ -342,6 +344,12 @@ public class RPGItem {
                 }
             }
         }
+        String enchantModeStr = s.getString("enchantMode", "DISALLOW");
+        try {
+            setEnchantMode(EnchantMode.valueOf(enchantModeStr));
+        } catch (IllegalArgumentException e) {
+            setEnchantMode(EnchantMode.DISALLOW);
+        }
         setItemFlags(new ArrayList<>());
         if (s.isList("itemFlags")) {
             List<String> flags = s.getStringList("itemFlags");
@@ -460,6 +468,7 @@ public class RPGItem {
         } else {
             s.set("enchantments", null);
         }
+        s.set("enchantMode", enchantMode);
         List<ItemFlag> itemFlags = getItemFlags();
         if (!itemFlags.isEmpty()) {
             List<String> tmp = new ArrayList<>();
@@ -487,6 +496,9 @@ public class RPGItem {
         SubItemTagContainer rpgitemsTagContainer = makeTag(itemTagContainer, TAG_META);
         set(rpgitemsTagContainer, TAG_ITEM_UID, getUid());
         addDurabilityBar(rpgitemsTagContainer, lore);
+        if (meta instanceof LeatherArmorMeta) {
+            ((LeatherArmorMeta) meta).setColor(Color.fromRGB(getDataValue()));
+        }
         Damageable damageable = (Damageable) meta;
         if (getMaxDurability() > 0) {
             int durability = computeIfAbsent(rpgitemsTagContainer, TAG_DURABILITY, ItemTagType.INTEGER, this::getDefaultDurability);
@@ -524,14 +536,16 @@ public class RPGItem {
         for (ItemFlag flag : getItemFlags()) {
             meta.addItemFlags(flag);
         }
-        Set<Enchantment> enchs = meta.getEnchants().keySet();
-        for (Enchantment e : enchs) {
-            meta.removeEnchant(e);
+        if (getEnchantMode() == EnchantMode.DISALLOW) {
+            Set<Enchantment> enchs = meta.getEnchants().keySet();
+            for (Enchantment e : enchs) {
+                meta.removeEnchant(e);
+            }
         }
         Map<Enchantment, Integer> enchantMap = getEnchantMap();
         if (enchantMap != null) {
-            for (Enchantment e : enchantMap.keySet()) {
-                meta.addEnchant(e, enchantMap.get(e), true);
+            for (Entry<Enchantment, Integer> e : enchantMap.entrySet()) {
+                meta.addEnchant(e.getKey(), e.getValue(), true);
             }
         }
         rpgitemsTagContainer.commit();
@@ -1424,6 +1438,14 @@ public class RPGItem {
         return file;
     }
 
+    public EnchantMode getEnchantMode() {
+        return enchantMode;
+    }
+
+    public void setEnchantMode(EnchantMode enchantMode) {
+        this.enchantMode = enchantMode;
+    }
+
     void setFile(File itemFile) {
         file = itemFile;
     }
@@ -1685,6 +1707,12 @@ public class RPGItem {
         VANILLA,
         ADDITIONAL,
         MULTIPLY,
+    }
+
+    public enum EnchantMode {
+        DISALLOW,
+        PERMISSION,
+        ALLOW
     }
 
     @Deprecated

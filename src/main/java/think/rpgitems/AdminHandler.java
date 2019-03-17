@@ -321,6 +321,10 @@ public class AdminHandler extends RPGCommandReceiver {
                                                  .filter(i -> i.getKey().contains(nameSearch))
                                                  .sorted(Comparator.comparing(NamespacedKey::getKey))
                                                  .collect(Collectors.toList());
+        if (powers.size() == 0) {
+            msg(sender, "message.power.not_found", nameSearch);
+            return;
+        }
         Stream<NamespacedKey> stream = powers.stream();
         Pair<Integer, Integer> maxPage = getPaging(powers.size(), perPage, args);
         int page = maxPage.getValue();
@@ -1120,8 +1124,21 @@ public class AdminHandler extends RPGCommandReceiver {
         msg(sender, "message.version", RPGItems.plugin.getDescription().getVersion());
     }
 
+    @SubCommand("enchantmode")
+    @Attribute("item:DISALLOW,PERMISSION,ALLOW")
+    public void toggleItemEnchantMode(CommandSender sender, Arguments args) {
+        RPGItem item = getItem(args.nextString(), sender);
+        if (args.top() != null) {
+            item.setEnchantMode(args.nextEnum(RPGItem.EnchantMode.class));
+            item.rebuild();
+            ItemManager.refreshItem();
+            ItemManager.save(item);
+        }
+        msg(sender, "message.enchantmode." + item.getEnchantMode().name(), item.getName());
+    }
+
     @SubCommand("damagemode")
-    @Attribute("item")
+    @Attribute("item:FIXED,VANILLA,ADDITIONAL,MULTIPLY")
     public void toggleItemDamageMode(CommandSender sender, Arguments args) {
         RPGItem item = getItem(args.nextString(), sender);
         if (args.top() != null) {

@@ -104,9 +104,16 @@ public class Events implements Listener {
 
     @EventHandler
     public void onItemEnchant(EnchantItemEvent e) {
-        if (ItemManager.toRPGItem(e.getItem()) != null) {
-            if (!e.getEnchanter().hasPermission("rpgitem.allowenchant.new"))
+        Optional<RPGItem> opt = ItemManager.toRPGItem(e.getItem());
+        Player p = e.getEnchanter();
+        if (opt.isPresent()) {
+            RPGItem item = opt.get();
+            RPGItem.EnchantMode enchantMode = item.getEnchantMode();
+            if (enchantMode == RPGItem.EnchantMode.DISALLOW) {
                 e.setCancelled(true);
+            } else if (enchantMode == RPGItem.EnchantMode.PERMISSION && !(p.hasPermission("rpgitem.enchant." + item.getName()) || p.hasPermission("rpgitem.enchant." + item.getUid()))) {
+                e.setCancelled(true);
+            }
         }
     }
 
@@ -488,11 +495,20 @@ public class Events implements Listener {
                 HumanEntity p = e.getWhoClicked();
                 ItemStack ind1 = e.getView().getItem(0);
                 ItemStack ind2 = e.getView().getItem(1);
-                if (ItemManager.toRPGItem(ind1).isPresent() || ItemManager.toRPGItem(ind2).isPresent()) {
-                    if (!p.hasPermission("rpgitem.allowenchant.new"))
-                        e.setCancelled(true);
-                }
+                Optional<RPGItem> opt1 = ItemManager.toRPGItem(ind1);
+                Optional<RPGItem> opt2 = ItemManager.toRPGItem(ind2);
+                opt1.ifPresent(item -> checkEnchantPerm(e, p, item));
+                opt2.ifPresent(item -> checkEnchantPerm(e, p, item));
             }
+        }
+    }
+
+    public void checkEnchantPerm(InventoryClickEvent e, HumanEntity p, RPGItem item) {
+        RPGItem.EnchantMode enchantMode = item.getEnchantMode();
+        if (enchantMode == RPGItem.EnchantMode.DISALLOW) {
+            e.setCancelled(true);
+        } else if (enchantMode == RPGItem.EnchantMode.PERMISSION && !(p.hasPermission("rpgitem.enchant." + item.getName()) || p.hasPermission("rpgitem.enchant." + item.getUid()))) {
+            e.setCancelled(true);
         }
     }
 

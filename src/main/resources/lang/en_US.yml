@@ -233,7 +233,8 @@ message:
     property: '&b-| %s: &r%s'
     property_value: '&b-| &r%s'
     no_display: No display text
-    no_description: No description yet
+    no_description: '&7 No description yet'
+    not_found: No power found for %s
     reorder: Reordered item %s's power %s
     ignored_trigger: Ignoring unknown trigger %s on power %s for item %s
   toggleLore:

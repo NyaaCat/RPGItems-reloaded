@@ -172,6 +172,10 @@ message:
     backedup: 物品 %s 已备份至 %s。
     cleanbackup: 已清理备份。
     no_backup: 未找到物品 %s 的备份。
+  enchantmode:
+    DISALLOW: 物品 '%s' 附魔模式设定为禁止附魔（默认）
+    PERMISSION: 物品 '%s' 附魔模式设定为需要权限（rpgitem.enchant.[item name]）
+    ADDITIONAL: 物品 '%s' 附魔模式设定为允许附魔
   damagemode:
     FIXED: 物品 '%s' 伤害模式设定为固定伤害（默认）
     MULTIPLY: 物品 '%s' 伤害模式设定为乘法伤害（原版伤害乘以RPG伤害）
@@ -194,6 +198,7 @@ message:
     disable: Worldguard 自定义标志强制刷新已禁用
   power:
     ok: 技能已添加
+    not_found: 未找到满足 %s 的技能
     unknown: 未知技能 %s
     removed: 技能 %s 已移除
     required: '缺少必选参数: %s'
@@ -202,7 +207,7 @@ message:
     property: '&b-| %s： &r%s'
     property_value: '&b-| &r%s'
     no_display: 无说明
-    no_description: 暂无说明
+    no_description: '&7 暂无说明'
     reorder: 物品 %s 的技能 %s 已调整顺序
     ignored_trigger: 忽略物品%3$s技能%2$s的未知触发%1$s
   toggleLore:
