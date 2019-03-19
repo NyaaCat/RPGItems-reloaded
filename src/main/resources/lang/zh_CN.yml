@@ -38,10 +38,13 @@ message:
     economy: 未找到经济支持插件
     file_not_exists: 文件不存在：%s
     reloading_locked: 无法重载被锁定的物品！使用 `/rpgitem backupitem` 以备份并解锁该物品。
-    recovering: 恢复 %s 自 %s 失败：%s。建议停止服务器并手动检查物品配置及其备份。
+    recovering: '&c&l恢复 %s 自 %s 失败：%s。建议停止服务器并手动检查物品配置及其备份。'
     item_unlocked: 无法编辑已解锁的物品%s。请重载它再编辑。
     loading: 从%s加载物品时出错。%s
-    verifying: 验证%s完整性出错。%s
+    verifying: |-
+      &c&l验证%s完整性出错，物品可能没有正确保存。
+      &c&l建议停止服务器并手动检查物品配置及其备份，并向我们提交BUG并附带上后台日志，谢谢。
+      &e%s
     invalid_regex: 无效的正则表达式
   wgcustomflag:
     disable: Worldguard 自定义标志已禁用
@@ -497,6 +500,7 @@ power:
       cooldownpassive: 被动弹反的冷却时间
       duration: 持续时间
       chance: 被动弹反的百分比几率
+      deflectCost: 每次弹反的耐久消耗量。
     delayedcommand:
       main_name: 延迟命令
       main_description: 在一段时间后执行命令
@@ -509,7 +513,9 @@ power:
       successResult: 成功时的结果
       costResult: 无法消耗耐久时的结果
       cooldownResult: 冷却时的结果
-      ignoreDurabilityBound: 忽略物品的耐久边界
+      checkDurabilityBound: 是否检查物品的耐久边界
+      showCDWarning: 是否显示冷却消息
+      cooldownKey: 冷却时间的标识
     durabilitycondition:
       main_name: 耐久条件
       main_description: 要求耐久在一定范围内
@@ -524,10 +530,11 @@ power:
     equipmentcondition:
       main_name: 装备条件
       main_description: 要求玩家穿特定装备
-      slot: 装备栏
+      slots: 装备栏
       material: 玩家需要装备的材质
       itemStack: 玩家需要装备的物品
       rpgitem: 玩家需要装备的 RPGItem
+      matchAllSlot: 是否要求所有装备栏匹配
     explosion:
       main_name: 爆炸
       main_description: 制造一个玩家产生的爆炸
@@ -575,6 +582,9 @@ power:
       main_name: 爆头
       main_description: 弹射物爆头时增加伤害
       factor: 伤害倍率。造成 factor * damage 伤害
+      particleEnemy: 是否显示被爆头粒子效果
+      soundEnemy: 是否显示被爆头粒子音效
+      soundSelf: 是否显示爆头粒子音效
     ice:
       main_name: 冰冻
       main_description: 发射一个冰方块，在击中处生成一个大冰块
@@ -620,14 +630,20 @@ power:
       material: 粒子效果的材质
       dustColor: 尘埃粒子效果的颜色
       dustSize: 尘埃粒子效果的大小
+      offsetX: X 偏移
+      offsetY: Y 偏移
+      offsetZ: Z 偏移
+      extra: 附加数据
+      force: 强制显示粒子
     particlebarrier:
       main_name: 粒子屏障
-      main_description: 将受到的攻击转化为力量效果
+      main_description: 将受到的攻击转化为效果
       projected: 是否为投射屏障
       energyDecay: 能量每秒的衰减
       energyPerBarrier: 满盾能提供的能量
       barrierHealth: 满盾的生命值
       energyPerLevel: 每级力量效果所需要的能量
+      effect: 屏障的效果
     particletick:
       main_name: 佩戴粒子效果
       main_description: 佩戴后按照一定间隔生成粒子效果
@@ -638,6 +654,11 @@ power:
       material: 粒子效果的材质
       dustColor: 尘埃粒子效果的颜色
       dustSize: 尘埃粒子效果的大小
+      offsetX: X 偏移
+      offsetY: Y 偏移
+      offsetZ: Z 偏移
+      extra: 附加数据
+      force: 强制显示粒子
     potionhit:
       main_name: 击中效果
       main_description: 击中后对目标施放状态效果
@@ -709,6 +730,8 @@ power:
       amount: 所需材料数量
       mode: 是否允许耐久溢出
       customMessage: 材料不足时的自定义提示
+      showFailMsg: 是否显示提示
+      allowBreak: 是否允许以负耐久修爆物品
     rescue:
       main_name: 拯救
       main_description: 受到过量伤害或者血量即将低于指定值时拯救玩家

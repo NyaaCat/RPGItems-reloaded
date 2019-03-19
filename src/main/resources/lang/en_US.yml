@@ -66,7 +66,10 @@ message:
     recovering: Error recovering %s from %s, %s. We suggest you stop the server and check item files and backups manually.
     item_unlocked: You cannot edit unlocked %s. Reload it before editing.
     loading: 'Error loading item from %s. %s'
-    verifying: 'Error verifying integrity for %s. %s'
+    verifying: |-
+      &c&lError verifying integrity for %s.
+      &c&lWe suggest you stop the server and check item files and backups manually and file a issue with you console log to us, thanks.
+      &e%s
     invalid_regex: Invalid regex
   wgcustomflag:
     disable: Worldguard custom flag disabled
@@ -237,7 +240,7 @@ message:
     property: '&b-| %s: &r%s'
     property_value: '&b-| &r%s'
     no_display: No display text
-    no_description: '&7 No description yet'
+    no_description: '&7No description yet'
     not_found: No power found for %s
     reorder: Reordered item %s's power %s
     ignored_trigger: Ignoring unknown trigger %s on power %s for item %s
@@ -504,6 +507,7 @@ power:
       cooldownpassive: Cooldown time of this power in passive mode
       duration: Duration of this power, in ticks
       chance: Chance in percentage of triggering this power in passive mode
+      deflectCost: Cost for each deflect
     delayedcommand:
       main_name: Delayed Command
       main_description: Run command on click with a delay
@@ -516,7 +520,9 @@ power:
       successResult: Result returned when success
       costResult: Result returned when failed to comsume durability
       cooldownResult: Result returned when in cooldown
-      ignoreDurabilityBound: Ignore durability bound of this item
+      checkDurabilityBound: If to check durability bound of this item
+      showCDWarning: Show cooldown warning
+      cooldownKey: Key for cooldowning
     durabilitycondition:
       main_name: Durability Condition
       main_description: Condition that requires item's durability in a range
@@ -531,10 +537,11 @@ power:
     equipmentcondition:
       main_name: Equipment Condition
       main_description: Condition that requires player wear some item
-      slot: Equipment slot
+      slots: Equipment slots
       material: Material that player should wears
       itemStack: Item that player should wears
       rpgitem: RPGItem that player should wears
+      matchAllSlot: Whether to require all slot to match
     explosion:
       main_name: Explosion
       main_description: Make a explosion that caused by the player
@@ -582,6 +589,9 @@ power:
       main_name: Headshot
       main_description: Increase damage when headshot
       factor: Factor of headshot damage. E.g. deals (damage * factor) damage
+      particleEnemy: Whether to show particle at enemy location
+      soundEnemy: Whether to play sound at enemy location
+      soundSelf: Whether to play sound at player location
     ice:
       main_name: Ice
       main_description: Fire an ice block, then create a box of ice on impact
@@ -630,6 +640,11 @@ power:
       material: Material of dust particle
       dustColor: Color of dust particle
       dustSize: Size of dust particle
+      offsetX: Offset X
+      offsetY: Offset Y
+      offsetZ: Offset Z
+      extra: Extra data
+      force: Force show particle
     particlebarrier:
       main_name: Particle Barrier
       main_description: Spawn a barrier that redirecting energy of incoming attacks to strength
@@ -638,6 +653,7 @@ power:
       energyPerBarrier: Total energy gained when a barrier was broken
       barrierHealth: Health of a new barrier
       energyPerLevel: Energy required per level of strength effect
+      effect: Effect of particle barrier
     particletick:
       main_name: Particle Tick
       main_description: Spawn some particles around the user when equipped
@@ -648,6 +664,11 @@ power:
       material: Material of dust particle
       dustColor: Color of dust particle
       dustSize: Size of dust particle
+      offsetX: Offset X
+      offsetY: Offset Y
+      offsetZ: Offset Z
+      extra: Extra data
+      force: Force show particle
     potionhit:
       main_name: Potion Hit
       main_description: Apply effect to enemy when hit
@@ -719,6 +740,8 @@ power:
       amount: Amount of material required
       mode: Whether allow repairing when durability would overflow
       customMessage: Custom message when not enought material
+      showFailMsg: Whether to show message when not enought material
+      allowBreak: Allow repairing with negative durability to breaking the item
     rescue:
       main_name: Rescue
       main_description: Rescue player on low health or receiving high damage

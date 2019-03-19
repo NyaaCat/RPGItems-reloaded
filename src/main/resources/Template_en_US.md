@@ -5,13 +5,13 @@
 <!-- If you want to edit description of this power or property, -->
 <!-- please edit corresponding section in "resources/lang/en_US.yml" -->
 
-Full Name: ${namespacedKey}
+Full Name: `${namespacedKey}`
 
-Providing Plugin: ${plugin}
+Providing Plugin: `${plugin}`
 
 ${trigger}
 
-<!-- propertyDefaultTrigger:[Default Trigger: ${}. ] -->
+<!-- propertyDefaultTrigger:[Default Trigger: ${}.  \n] -->
 <!-- propertyAvailableTrigger:[All available Trigger: ${}.] -->
 <!-- propertyImmutableTrigger:[Trigger: ${}.] -->
 <!-- propertyMarker:[**Is a marker power**.] -->
@@ -25,12 +25,11 @@ ${description}
 <!-- endCustomDescription -->
 
 ## Properties
-
-<!-- propertyName:[* ${}\n\n] -->
+<!-- propertyName:[\n* ${}\n\n] -->
 <!-- propertyType:[  * Type: ${}\n] -->
 <!-- propertyDefaultValue:[  * Default: ${}\n] -->
 <!-- propertyRequired:[  * **Required**\n] -->
-<!-- propertyDescription:[\n  ${}\n\n] -->
+<!-- propertyDescription:[\n  ${}\n] -->
 ${properties}
 <!-- beginCustomProperties -->
 <!-- endCustomProperties -->

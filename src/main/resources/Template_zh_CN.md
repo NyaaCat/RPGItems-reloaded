@@ -5,13 +5,13 @@
 <!-- 如果您想修改技能或其属性的描述， -->
 <!-- 请修改 "resources/lang/zh_CN.yml" 中对应的项。 -->
 
-全名：${namespacedKey}
+全名：`${namespacedKey}`
 
-来源插件：${plugin}
+来源插件：`${plugin}`
 
 ${trigger}
 
-<!-- propertyDefaultTrigger:[默认触发：${}。 ] -->
+<!-- propertyDefaultTrigger:[默认触发：${}。  \n] -->
 <!-- propertyAvailableTrigger:[可用触发：${}。] -->
 <!-- propertyImmutableTrigger:[触发：${}。] -->
 <!-- propertyMarker:[**标识技能**。] -->
@@ -25,12 +25,11 @@ ${description}
 <!-- endCustomDescription -->
 
 ## 属性
-
-<!-- propertyName:[* ${}\n\n] -->
+<!-- propertyName:[\n* ${}\n\n] -->
 <!-- propertyType:[  * 类型：${}\n] -->
 <!-- propertyDefaultValue:[  * 默认：${}\n] -->
 <!-- propertyRequired:[  * **必填**\n] -->
-<!-- propertyDescription:[\n  ${}\n\n] -->
+<!-- propertyDescription:[\n  ${}\n] -->
 ${properties}
 <!-- beginCustomProperties -->
 <!-- endCustomProperties -->

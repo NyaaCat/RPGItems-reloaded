@@ -210,7 +210,11 @@ public class Utils {
             if (Collection.class.isAssignableFrom(field.getType())) {
                 Collection c = (Collection) val;
                 if (c.isEmpty()) return;
-                section.set(property, c.stream().map(Object::toString).collect(Collectors.joining(",")));
+                if (Set.class.isAssignableFrom(field.getType())) {
+                    section.set(property, c.stream().map(Object::toString).sorted().collect(Collectors.joining(",")));
+                } else {
+                    section.set(property, c.stream().map(Object::toString).collect(Collectors.joining(",")));
+                }
             } else {
                 val = field.getType().isEnum() ? ((Enum<?>) val).name() : val;
                 section.set(property, val);

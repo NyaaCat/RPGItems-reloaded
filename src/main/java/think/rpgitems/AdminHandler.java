@@ -1510,7 +1510,7 @@ public class AdminHandler extends RPGCommandReceiver {
     public void genWiki(CommandSender sender, Arguments args) throws IOException {
         String lc = args.nextString();
         Locale locale = Locale.forLanguageTag((lc == null ? RPGItems.plugin.cfg.language : lc).replace('_', '-'));
-        File wikiDir = new File(RPGItems.plugin.getDataFolder(), "wiki/" + locale.toString());
+        File wikiDir = new File(RPGItems.plugin.getDataFolder(), "wiki/");
         if (!wikiDir.mkdirs()) {
             if (!wikiDir.exists() || !wikiDir.isDirectory()) {
                 throw new IllegalStateException();
@@ -1590,7 +1590,10 @@ public class AdminHandler extends RPGCommandReceiver {
         }
 
         Map<Class<? extends Power>, Map<String, PowerProperty>> allProperties = PowerManager.getProperties();
-        for (Map.Entry<Class<? extends Power>, Map<String, PowerProperty>> entry : allProperties.entrySet()) {
+
+        StringBuilder catalog = new StringBuilder("# Powers\n\n");
+
+        for (Map.Entry<Class<? extends Power>, Map<String, PowerProperty>> entry : allProperties.entrySet().stream().sorted(Comparator.comparing(e -> e.getKey().getCanonicalName(), String::compareToIgnoreCase)).collect(Collectors.toList())) {
             Class<? extends Power> clazz = entry.getKey();
             Map<String, PowerProperty> properties = entry.getValue();
             Power instance = PowerManager.instantiate(clazz);
@@ -1598,13 +1601,18 @@ public class AdminHandler extends RPGCommandReceiver {
             NamespacedKey namespacedKey = instance.getNamespacedKey();
             StringBuilder propertiesDesc = new StringBuilder();
             PowerMeta powerMeta = PowerManager.getMeta(clazz);
+            String powerDesc = PowerManager.getDescription(locale.toString(), namespacedKey, null);
+            Path file = wikiDir.toPath().resolve(instance.getName() + "-" + locale.toString() + ".md");
 
+            String catalogEntry = "* [" + localizedName + " " + "(" + namespacedKey.toString() + ")](./" + file.getFileName().toString().replace(".md", "") + ")\n";
+            catalogEntry += "  " + powerDesc + "\n";
+            catalog.append(catalogEntry);
             StringBuilder customHeader = new StringBuilder();
             StringBuilder customDescription = new StringBuilder();
             StringBuilder customProperties = new StringBuilder();
             StringBuilder customExample = new StringBuilder();
             StringBuilder customNote = new StringBuilder();
-            Path file = wikiDir.toPath().resolve(instance.getName() + "-" + locale.toString() + ".md");
+
             if (file.toFile().exists()) {
                 List<String> old = Files.readAllLines(file, StandardCharsets.UTF_8);
                 Iterator<String> oldIterator = old.iterator();
@@ -1617,8 +1625,9 @@ public class AdminHandler extends RPGCommandReceiver {
                             if (chLine.contains("<!-- endCustomHeader -->")) {
                                 break;
                             }
-                            customHeader.append(chLine);
+                            customHeader.append(chLine).append("\n");
                         }
+                        customHeader.delete(Math.max(customHeader.length() - 1, 0), customHeader.length());
                     }
                     if (current.contains("<!-- beginCustomDescription -->")) {
                         while (oldIterator.hasNext()) {
@@ -1626,8 +1635,9 @@ public class AdminHandler extends RPGCommandReceiver {
                             if (chLine.contains("<!-- endCustomDescription -->")) {
                                 break;
                             }
-                            customDescription.append(chLine);
+                            customDescription.append(chLine).append("\n");
                         }
+                        customDescription.delete(Math.max(customDescription.length() - 1, 0), customDescription.length());
                     }
                     if (current.contains("<!-- beginCustomProperties -->")) {
                         while (oldIterator.hasNext()) {
@@ -1635,8 +1645,9 @@ public class AdminHandler extends RPGCommandReceiver {
                             if (chLine.contains("<!-- endCustomProperties -->")) {
                                 break;
                             }
-                            customProperties.append(chLine);
+                            customProperties.append(chLine).append("\n");
                         }
+                        customProperties.delete(Math.max(customProperties.length() - 1, 0), customProperties.length());
                     }
                     if (current.contains("<!-- beginCustomExample -->")) {
                         while (oldIterator.hasNext()) {
@@ -1644,8 +1655,9 @@ public class AdminHandler extends RPGCommandReceiver {
                             if (chLine.contains("<!-- endCustomExample -->")) {
                                 break;
                             }
-                            customExample.append(chLine);
+                            customExample.append(chLine).append("\n");
                         }
+                        customExample.delete(Math.max(customExample.length() - 1, 0), customExample.length());
                     }
                     if (current.contains("<!-- beginCustomNote -->")) {
                         while (oldIterator.hasNext()) {
@@ -1653,8 +1665,9 @@ public class AdminHandler extends RPGCommandReceiver {
                             if (chLine.contains("<!-- endCustomNote -->")) {
                                 break;
                             }
-                            customNote.append(chLine);
+                            customNote.append(chLine).append("\n");
                         }
+                        customNote.delete(Math.max(customNote.length() - 1, 0), customNote.length());
                     }
                 }
             }
@@ -1662,17 +1675,12 @@ public class AdminHandler extends RPGCommandReceiver {
                 String name = propertyEntry.getKey();
                 PowerProperty property = propertyEntry.getValue();
 
-                if (name.equals("triggers")
-                            || (name.equals("conditions") && !powerMeta.withConditions())
-                            || (name.equals("selectors") && !powerMeta.withSelectors())
-                            || name.equals("displayName")
-                            || name.equals("requiredContext")
-                ) {
+                if (isTrivialProperty(powerMeta, name)) {
                     continue;
                 }
 
                 propertiesDesc.append(propertyName.replace("${}", name));
-                propertiesDesc.append(propertyType.replace("${}", property.field().getGenericType().getTypeName().replaceAll("(java|think|org\\.bukkit)\\.([a-zA-Z0-9_$]+\\.)*", "")));
+                propertiesDesc.append(propertyType.replace("${}", property.field().getGenericType().getTypeName().replaceAll("(java|think|org\\.bukkit)\\.([a-zA-Z0-9_$]+\\.)*", "").replace("<", "&lt;").replace(">", "&gt;")));
                 if (property.required()) {
                     propertiesDesc.append(propertyRequired);
                 } else {
@@ -1708,23 +1716,24 @@ public class AdminHandler extends RPGCommandReceiver {
             if (powerMeta.marker()) {
                 fullTemplate = fullTemplate.replace("${trigger}", propertyMarker);
             } else {
-                String defTriggers = instance.getTriggers().stream().map(Trigger::name).collect(Collectors.joining(", "));
+                String defTriggers = instance.getTriggers().stream().map(Trigger::name).map(s -> "`" + s + "`").sorted().collect(Collectors.joining(", "));
                 if (powerMeta.immutableTrigger()) {
                     String trigger = propertyImmutableTrigger.replace("${}", defTriggers);
                     fullTemplate = fullTemplate.replace("${trigger}", trigger);
                 } else {
                     String trigger = propertyDefaultTrigger.replace("${}", defTriggers);
-                    List<String> available = PowerManager.getAcceptedValue(clazz, properties.get("triggers").field().getAnnotation(AcceptedValue.class));
-                    trigger += propertyAvailableTrigger.replace("${}", String.join(", ", available));
+                    String available = PowerManager.getAcceptedValue(clazz, properties.get("triggers").field().getAnnotation(AcceptedValue.class)).stream().map(s -> "`" + s + "`").collect(Collectors.joining(", "));
+                    trigger += propertyAvailableTrigger.replace("${}", available);
                     fullTemplate = fullTemplate.replace("${trigger}", trigger);
                 }
             }
 
-            String description = PowerManager.getDescription(locale.toString(), namespacedKey, null);
-            fullTemplate = fullTemplate.replace("${description}", description == null ? I18n.format("message.power.no_description") : description);
+            fullTemplate = fullTemplate.replace("${description}", powerDesc == null ? I18n.format("message.power.no_description") : powerDesc);
             fullTemplate = fullTemplate.replace("${properties}", propertiesDesc.toString());
             java.nio.file.Files.write(file, fullTemplate.getBytes(StandardCharsets.UTF_8));
         }
+        Path catalogFile = wikiDir.toPath().resolve("powers-" + locale.toString() + ".md");
+        java.nio.file.Files.write(catalogFile, catalog.toString().getBytes(StandardCharsets.UTF_8));
     }
 
     @SubCommand(value = "updatecmdandentity")

@@ -140,6 +140,7 @@ public class PowerManager {
     public static List<String> getAcceptedValue(Class<? extends Power> cls, AcceptedValue anno) {
         if (anno.preset() != Preset.NONE) {
             return Stream.concat(Arrays.stream(anno.value()), anno.preset().get(cls).stream())
+                         .sorted()
                          .collect(Collectors.toList());
         } else {
             return Arrays.asList(anno.value());
