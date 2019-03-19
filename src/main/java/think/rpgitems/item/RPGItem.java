@@ -545,7 +545,7 @@ public class RPGItem {
         Map<Enchantment, Integer> enchantMap = getEnchantMap();
         if (enchantMap != null) {
             for (Entry<Enchantment, Integer> e : enchantMap.entrySet()) {
-                meta.addEnchant(e.getKey(), e.getValue(), true);
+                meta.addEnchant(e.getKey(), Math.max(meta.getEnchantLevel(e.getKey()), e.getValue()), true);
             }
         }
         rpgitemsTagContainer.commit();

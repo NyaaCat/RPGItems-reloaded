@@ -524,12 +524,11 @@ public class ItemManager {
         String filename = tran ? getItemFilename(itemName, postfix) + ".yml" : itemName;
         File file = new File(items, filename);
         while (file.exists()) {
-            file = new File(items, ThreadLocalRandom.current().nextInt() + "." + filename);
+            file = new File(items, tran ? getItemFilename(itemName + ThreadLocalRandom.current().nextInt(), postfix) + ".yml" : itemName + ThreadLocalRandom.current().nextInt());
         }
         return file;
     }
-
-
+    
     private static void resetLock() {
         for (FileLock fileLock : itemFileLocks.values()) {
             try {
