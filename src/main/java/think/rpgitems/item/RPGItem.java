@@ -468,7 +468,7 @@ public class RPGItem {
         } else {
             s.set("enchantments", null);
         }
-        s.set("enchantMode", enchantMode);
+        s.set("enchantMode", enchantMode.name());
         List<ItemFlag> itemFlags = getItemFlags();
         if (!itemFlags.isEmpty()) {
             List<String> tmp = new ArrayList<>();
