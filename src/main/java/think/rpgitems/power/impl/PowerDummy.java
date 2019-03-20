@@ -12,6 +12,7 @@ import org.bukkit.event.player.PlayerToggleSneakEvent;
 import org.bukkit.event.player.PlayerToggleSprintEvent;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.enchantments.Enchantment;
+import org.bukkit.NamespacedKey;
 import think.rpgitems.power.*;
 
 import static think.rpgitems.power.Utils.checkCooldownByString;
@@ -62,7 +63,7 @@ public class PowerDummy extends BasePower implements PowerHit, PowerHitTaken, Po
      * Type of enchantment that reduces cost
      */
     @Property
-    public Enchantment enchantmentType = Enchantment.DURABILITY;
+    public String enchantmentType = "unbreaking";
 
     @Property
     public String cooldownKey = "dummy";
@@ -84,8 +85,10 @@ public class PowerDummy extends BasePower implements PowerHit, PowerHitTaken, Po
         if (!checkCooldownByString(this, player, cooldownKey, cooldown, showCDWarning, false)) return PowerResult.of(cooldownResult);
         int finalcost = cost;
         if (costReduceByEnchantment) {
-            double costpercentage = 1 - (stack.getEnchantmentLevel(enchantmentType) * costReducePercentage / 100d);
-            finalcost = (int)(Math.random() <= costpercentage ? Math.floor(cost * costpercentage) : Math.ceil(cost * costpercentage));
+            Enchantment ench = Enchantment.getByKey(NamespacedKey.minecraft(enchantmentType));
+            if (ench == null) return PowerResult.fail();
+            double costpercentage = 1 - (stack.getEnchantmentLevel(ench) * costReducePercentage / 100d);
+            finalcost = (int) Math.round(Math.random() <= costpercentage ? Math.floor(cost * costpercentage) : Math.ceil(cost * costpercentage));
         }
         if (!getItem().consumeDurability(stack, finalcost, checkDurabilityBound)) PowerResult.of(costResult);
         return PowerResult.of(successResult);
