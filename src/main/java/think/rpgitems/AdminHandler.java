@@ -699,7 +699,7 @@ public class AdminHandler extends RPGCommandReceiver {
     }
 
     @SubCommand("description")
-    @Attribute("item:add,set,remove")
+    @Attribute("item:add,insert,set,remove")
     public void itemAddDescription(CommandSender sender, Arguments args) {
         RPGItem item = getItem(args.nextString(), sender);
         String command = args.nextString();
@@ -709,6 +709,25 @@ public class AdminHandler extends RPGCommandReceiver {
                 item.addDescription(ChatColor.WHITE + line);
                 msg(sender, "message.description.ok");
                 ItemManager.refreshItem();
+                ItemManager.save(item);
+            }
+            break;
+            case "insert": {
+                int lineNo = args.nextInt();
+                String line = args.nextString();
+                int Length = item.getDescription().size();
+                if (lineNo < 0 || lineNo >= Length) {
+                    msg(sender, "message.num_out_of_range", lineNo, 0, item.getDescription().size());
+                    return;
+                }
+                item.addDescription(item.getDescription().get(Length - 1));
+                for (int i = Length - 1; i > lineNo;){
+                    item.getDescription().set(i, item.getDescription().get(--i));
+                }
+                item.getDescription().set(lineNo, ChatColor.translateAlternateColorCodes('&', ChatColor.WHITE + line));
+                item.rebuild();
+                ItemManager.refreshItem();
+                msg(sender, "message.description.ok");
                 ItemManager.save(item);
             }
             break;

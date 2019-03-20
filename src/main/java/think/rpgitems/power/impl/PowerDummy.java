@@ -94,10 +94,9 @@ public class PowerDummy extends BasePower implements PowerHit, PowerHitTaken, Po
         if (costByEnchantment) {
             Enchantment ench = Enchantment.getByKey(NamespacedKey.minecraft(enchantmentType));
             if (ench == null) return PowerResult.fail();
-            double costpercentage = doEnchReduceCost ?
-                    (1 - (stack.getEnchantmentLevel(ench) * enchCostPercentage / 100d)) :
-                    (stack.getEnchantmentLevel(ench) * enchCostPercentage / 100d);
-            finalcost = (int) Math.round(Math.random() <= costpercentage ? Math.floor(cost * costpercentage) : Math.ceil(cost * costpercentage));
+            double costpercentage = (stack.getEnchantmentLevel(ench) * enchCostPercentage / 100d);
+            finalcost = (int) Math.round(Math.random() <= costpercentage ? Math.ceil(cost * costpercentage) : Math.floor(cost * costpercentage));
+            if (doEnchReduceCost) finalcost = cost - finalcost;
         }
         if (!getItem().consumeDurability(stack, finalcost, checkDurabilityBound)) PowerResult.of(costResult);
         return PowerResult.of(successResult);
