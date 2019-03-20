@@ -48,16 +48,23 @@ public class PowerDummy extends BasePower implements PowerHit, PowerHitTaken, Po
     public String display;
     
     /**
-     * Whether enchantments can reduce cost
+     * Whether enchantments can determine cost
      */
     @Property
-    public boolean costReduceByEnchantment = false;
-    
+    public boolean costByEnchantment = false;
+
     /**
-     * Percentage of cost reduced per level of enchantment
+     * If reversed, enchantment reduces the cost instead of increasing
      */
     @Property
-    public double costReducePercentage = 6;
+    public boolean doEnchReduceCost = false;
+
+
+    /**
+     * Percentage of cost per level of enchantment
+     */
+    @Property
+    public double enchCostPercentage = 6;
     
     /**
      * Type of enchantment that reduces cost
@@ -84,10 +91,12 @@ public class PowerDummy extends BasePower implements PowerHit, PowerHitTaken, Po
     public PowerResult<Void> fire(Player player, ItemStack stack) {
         if (!checkCooldownByString(this, player, cooldownKey, cooldown, showCDWarning, false)) return PowerResult.of(cooldownResult);
         int finalcost = cost;
-        if (costReduceByEnchantment) {
+        if (costByEnchantment) {
             Enchantment ench = Enchantment.getByKey(NamespacedKey.minecraft(enchantmentType));
             if (ench == null) return PowerResult.fail();
-            double costpercentage = 1 - (stack.getEnchantmentLevel(ench) * costReducePercentage / 100d);
+            double costpercentage = doEnchReduceCost ?
+                    (1 - (stack.getEnchantmentLevel(ench) * enchCostPercentage / 100d)) :
+                    (stack.getEnchantmentLevel(ench) * enchCostPercentage / 100d);
             finalcost = (int) Math.round(Math.random() <= costpercentage ? Math.floor(cost * costpercentage) : Math.ceil(cost * costpercentage));
         }
         if (!getItem().consumeDurability(stack, finalcost, checkDurabilityBound)) PowerResult.of(costResult);
