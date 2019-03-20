@@ -11,6 +11,7 @@ import org.bukkit.event.player.PlayerSwapHandItemsEvent;
 import org.bukkit.event.player.PlayerToggleSneakEvent;
 import org.bukkit.event.player.PlayerToggleSprintEvent;
 import org.bukkit.inventory.ItemStack;
+import org.bukkit.enchantments.Enchantment;
 import think.rpgitems.power.*;
 
 import static think.rpgitems.power.Utils.checkCooldownByString;
@@ -44,6 +45,24 @@ public class PowerDummy extends BasePower implements PowerHit, PowerHitTaken, Po
      */
     @Property
     public String display;
+    
+    /**
+     * Whether enchantments can reduce cost
+     */
+    @Property
+    public boolean costReduceByEnchantment = false;
+    
+    /**
+     * Percentage of cost reduced per level of enchantment
+     */
+    @Property
+    public double costReducePercentage = 6;
+    
+    /**
+     * Type of enchantment that reduces cost
+     */
+    @Property
+    public Enchantment enchantmentType = Enchantment.DURABILITY;
 
     @Property
     public String cooldownKey = "dummy";
@@ -63,7 +82,12 @@ public class PowerDummy extends BasePower implements PowerHit, PowerHitTaken, Po
     @Override
     public PowerResult<Void> fire(Player player, ItemStack stack) {
         if (!checkCooldownByString(this, player, cooldownKey, cooldown, showCDWarning, false)) return PowerResult.of(cooldownResult);
-        if (!getItem().consumeDurability(stack, cost, checkDurabilityBound)) PowerResult.of(costResult);
+        int finalcost = cost;
+        if (costReduceByEnchantment) {
+            double costpercentage = 1 - (stack.getEnchantmentLevel(enchantmentType) * costReducePercentage / 100d);
+            finalcost = (int)(Math.random() <= costpercentage ? Math.floor(cost * costpercentage) : Math.ceil(cost * costpercentage));
+        }
+        if (!getItem().consumeDurability(stack, finalcost, checkDurabilityBound)) PowerResult.of(costResult);
         return PowerResult.of(successResult);
     }
 
