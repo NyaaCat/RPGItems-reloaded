@@ -85,7 +85,7 @@ public class PowerDummy extends BasePower implements PowerHit, PowerHitTaken, Po
         int finalcost = cost;
         if (costReduceByEnchantment) {
             double costpercentage = 1 - (stack.getEnchantmentLevel(enchantmentType) * costReducePercentage / 100d);
-            finalcost = (int)((Math.random() <= costpercentage ? 1 : 0) + Math.ceil(cost * costpercentage)));
+            finalcost = (int)(Math.random() <= costpercentage ? Math.floor(cost * costpercentage) : Math.ceil(cost * costpercentage));
         }
         if (!getItem().consumeDurability(stack, finalcost, checkDurabilityBound)) PowerResult.of(costResult);
         return PowerResult.of(successResult);
