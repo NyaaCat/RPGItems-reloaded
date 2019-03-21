@@ -720,11 +720,7 @@ public class AdminHandler extends RPGCommandReceiver {
                     msg(sender, "message.num_out_of_range", lineNo, 0, item.getDescription().size());
                     return;
                 }
-                item.addDescription(item.getDescription().get(Length - 1));
-                for (int i = Length - 1; i > lineNo;){
-                    item.getDescription().set(i, item.getDescription().get(--i));
-                }
-                item.getDescription().set(lineNo, ChatColor.translateAlternateColorCodes('&', ChatColor.WHITE + line));
+                item.getDescription().add(lineNo, ChatColor.translateAlternateColorCodes('&', ChatColor.WHITE + line));
                 item.rebuild();
                 ItemManager.refreshItem();
                 msg(sender, "message.description.ok");
@@ -1409,8 +1405,17 @@ public class AdminHandler extends RPGCommandReceiver {
     @Attribute("item")
     public void reorder(CommandSender sender, Arguments args) {
         RPGItem item = getItem(args.nextString(), sender);
-        int origin = args.nextInt() - 1;
-        int next = args.nextInt() - 1;
+        int origin = args.nextInt();
+        int next = args.nextInt();
+        int size = item.getPowers().size();
+        if (next < 0 || next >= size) {
+            msg(sender, "message.num_out_of_range", next, 0, size);
+            return;
+        }
+        if (origin < 0 || origin >= size) {
+            msg(sender, "message.num_out_of_range", origin, 0, size);
+            return;
+        }
         Power remove = item.getPowers().remove(origin);
         item.getPowers().add(next, remove);
         ItemManager.refreshItem();
