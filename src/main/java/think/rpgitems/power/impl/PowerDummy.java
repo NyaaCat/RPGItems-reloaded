@@ -15,6 +15,8 @@ import org.bukkit.enchantments.Enchantment;
 import org.bukkit.NamespacedKey;
 import think.rpgitems.power.*;
 
+import javax.annotation.Nullable;
+
 import static think.rpgitems.power.Utils.checkCooldownByString;
 
 /**
@@ -23,8 +25,8 @@ import static think.rpgitems.power.Utils.checkCooldownByString;
  * Won't do anything but give you fine control.
  * </p>
  */
-@PowerMeta(defaultTrigger = "RIGHT_CLICK", generalInterface = PowerPlain.class)
-public class PowerDummy extends BasePower implements PowerHit, PowerHitTaken, PowerLeftClick, PowerRightClick, PowerOffhandClick, PowerProjectileHit, PowerSneak, PowerSprint, PowerOffhandItem, PowerMainhandItem, PowerTick, PowerPlain, PowerHurt {
+@PowerMeta(defaultTrigger = "RIGHT_CLICK", generalInterface = PowerLivingEntity.class)
+public class PowerDummy extends BasePower implements PowerHit, PowerHitTaken, PowerLeftClick, PowerRightClick, PowerOffhandClick, PowerProjectileHit, PowerSneak, PowerSprint, PowerOffhandItem, PowerMainhandItem, PowerTick, PowerLivingEntity, PowerHurt {
 
     /**
      * Cooldown time of this power
@@ -72,6 +74,12 @@ public class PowerDummy extends BasePower implements PowerHit, PowerHitTaken, Po
     @Property
     public String enchantmentType = "unbreaking";
 
+    /**
+     * Whether cost by damage
+     */
+    @Property
+    public boolean costByDamage = false;
+
     @Property
     public String cooldownKey = "dummy";
 
@@ -88,15 +96,23 @@ public class PowerDummy extends BasePower implements PowerHit, PowerHitTaken, Po
     public boolean showCDWarning = true;
 
     @Override
-    public PowerResult<Void> fire(Player player, ItemStack stack) {
+    public PowerResult<Void> fire(Player player, ItemStack stack, @Nullable LivingEntity entity, @Nullable Double damage) {
         if (!checkCooldownByString(this, player, cooldownKey, cooldown, showCDWarning, false)) return PowerResult.of(cooldownResult);
-        int finalcost = cost;
+        int damagecost = cost;
+        if (damage != null && costByDamage) {
+            damagecost = (int) Math.round(damage * cost / 100d);
+        }
+        int finalcost = damagecost;
         if (costByEnchantment) {
             Enchantment ench = Enchantment.getByKey(NamespacedKey.minecraft(enchantmentType));
             if (ench == null) return PowerResult.fail();
             double costpercentage = (stack.getEnchantmentLevel(ench) * enchCostPercentage / 100d);
-            finalcost = (int) Math.round(Math.random() <= costpercentage ? Math.ceil(cost * costpercentage) : Math.floor(cost * costpercentage));
-            if (doEnchReduceCost) finalcost = cost - finalcost;
+            if (finalcost < 0){
+                finalcost = (int) Math.round(Math.random() <= costpercentage ? Math.floor(damagecost * costpercentage) : Math.ceil(finalcost * costpercentage));
+            } else {
+                finalcost = (int) Math.round(Math.random() <= costpercentage ? Math.ceil(damagecost * costpercentage) : Math.floor(finalcost * costpercentage));
+            }
+            if (doEnchReduceCost) finalcost = damagecost - finalcost;
         }
         if (!getItem().consumeDurability(stack, finalcost, checkDurabilityBound)) PowerResult.of(costResult);
         return PowerResult.of(successResult);
@@ -104,12 +120,12 @@ public class PowerDummy extends BasePower implements PowerHit, PowerHitTaken, Po
 
     @Override
     public PowerResult<Void> leftClick(Player player, ItemStack stack, PlayerInteractEvent event) {
-        return fire(player, stack);
+        return fire(player, stack, null, null);
     }
 
     @Override
     public PowerResult<Void> rightClick(Player player, ItemStack stack, PlayerInteractEvent event) {
-        return fire(player, stack);
+        return fire(player, stack, null,null);
     }
 
     @Override
@@ -124,52 +140,52 @@ public class PowerDummy extends BasePower implements PowerHit, PowerHitTaken, Po
 
     @Override
     public PowerResult<Double> hit(Player player, ItemStack stack, LivingEntity entity, double damage, EntityDamageByEntityEvent event) {
-        return fire(player, stack).with(damage);
+        return fire(player, stack, entity, damage).with(damage);
     }
 
     @Override
     public PowerResult<Double> takeHit(Player target, ItemStack stack, double damage, EntityDamageEvent event) {
-        return fire(target, stack).with(damage);
+        return fire(target, stack, null, damage).with(damage);
     }
     
     @Override
-    public PowerResult<Void> hurt(Player target, ItemStack stack, EntityDamageEvent event) {
-        return fire(target, stack);
+    public PowerResult<Double> hurt(Player target, ItemStack stack, double damage,EntityDamageEvent event) {
+        return fire(target, stack, null, damage).with(damage);
     }
     
     @Override
     public PowerResult<Void> offhandClick(Player player, ItemStack stack, PlayerInteractEvent event) {
-        return fire(player, stack);
+        return fire(player, stack, null,null);
     }
 
     @Override
     public PowerResult<Void> projectileHit(Player player, ItemStack stack, ProjectileHitEvent event) {
-        return fire(player, stack);
+        return fire(player, stack, null, null);
     }
 
     @Override
     public PowerResult<Void> sneak(Player player, ItemStack stack, PlayerToggleSneakEvent event) {
-        return fire(player, stack);
+        return fire(player, stack, null, null);
     }
 
     @Override
     public PowerResult<Void> sprint(Player player, ItemStack stack, PlayerToggleSprintEvent event) {
-        return fire(player, stack);
+        return fire(player, stack, null, null);
     }
 
     @Override
     public PowerResult<Boolean> swapToMainhand(Player player, ItemStack stack, PlayerSwapHandItemsEvent event) {
-        return fire(player, stack).with(true);
+        return fire(player, stack, null, null).with(true);
     }
 
     @Override
     public PowerResult<Boolean> swapToOffhand(Player player, ItemStack stack, PlayerSwapHandItemsEvent event) {
-        return fire(player, stack).with(true);
+        return fire(player, stack, null, null).with(true);
     }
 
     @Override
     public PowerResult<Void> tick(Player player, ItemStack stack) {
-        return fire(player, stack);
+        return fire(player, stack, null, null);
     }
 
     @Override
