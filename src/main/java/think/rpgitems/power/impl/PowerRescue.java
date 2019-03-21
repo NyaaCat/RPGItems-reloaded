@@ -73,11 +73,11 @@ public class PowerRescue extends BasePower implements PowerHurt, PowerHitTaken {
 
     // shouldn't be called if takeHit works. leave it as-is now
     @Override
-    public PowerResult<Void> hurt(Player target, ItemStack stack, EntityDamageEvent event) {
+    public PowerResult<Double> hurt(Player target, ItemStack stack, double damage, EntityDamageEvent event) {
         double health = target.getHealth() - event.getFinalDamage();
         if (health > healthTrigger) return PowerResult.noop();
         rescue(target, stack, event, false);
-        return PowerResult.ok();
+        return PowerResult.ok(0.0);
     }
 
     @Override

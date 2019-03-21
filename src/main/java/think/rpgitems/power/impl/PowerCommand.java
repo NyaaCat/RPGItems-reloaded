@@ -125,9 +125,10 @@ public class PowerCommand extends BasePower implements PowerRightClick, PowerLef
     }
 
     @Override
-    public PowerResult<Void> hurt(Player target, ItemStack stack, EntityDamageEvent event) {
-        return fire(target, stack);
+    public PowerResult<Double> hurt(Player target, ItemStack stack, double damage, EntityDamageEvent event) {
+        return fire(target, stack).with(damage);
     }
+
 
     @Override
     public PowerResult<Void> fire(Player target, ItemStack stack) {

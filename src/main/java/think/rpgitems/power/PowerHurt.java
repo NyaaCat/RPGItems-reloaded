@@ -20,5 +20,5 @@ public interface PowerHurt extends Power {
      * @return PowerResult
      */
     @CheckReturnValue
-    PowerResult<Void> hurt(Player target, ItemStack stack, EntityDamageEvent event);
+    PowerResult<Double> hurt(Player target, ItemStack stack, double damage, EntityDamageEvent event);
 }
