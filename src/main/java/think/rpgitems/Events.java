@@ -646,7 +646,7 @@ public class Events implements Listener {
     }
 
     @EventHandler(priority = EventPriority.MONITOR, ignoreCancelled = true)
-    private void onPlayerHurt(EntityDamageEvent ev) {
+    private void onPlayerHurt(EntityDamageByEntityEvent ev) {
         if (ev.getEntity() instanceof Player) {
             Player e = (Player) ev.getEntity();
             for (ItemStack item : e.getInventory().getContents()) {
