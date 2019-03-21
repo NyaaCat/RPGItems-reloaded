@@ -1407,7 +1407,7 @@ public class AdminHandler extends RPGCommandReceiver {
         RPGItem item = getItem(args.nextString(), sender);
         int origin = args.nextInt();
         int next = args.nextInt();
-        int size = item.getPower().size();
+        int size = item.getPowers().size();
         if (next < 0 || next >= size) {
             msg(sender, "message.num_out_of_range", next, 0, size);
             return;
