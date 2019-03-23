@@ -753,6 +753,7 @@ public class RPGItem {
                 if (getDamageMode() == DamageMode.ADDITIONAL) {
                     damage += originDamage;
                 }
+                if (damage < 0) damage = 0;
                 break;
             case VANILLA:
                 //no-op
