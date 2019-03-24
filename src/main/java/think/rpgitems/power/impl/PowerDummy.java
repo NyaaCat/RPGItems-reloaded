@@ -100,6 +100,7 @@ public class PowerDummy extends BasePower implements PowerHit, PowerHitTaken, Po
         if (!checkCooldownByString(this, player, cooldownKey, cooldown, showCDWarning, false)) return PowerResult.of(cooldownResult);
         int damagecost = cost;
         if (damage != null && costByDamage) {
+            if (damage < 0) damage = 0d;
             damagecost = (int) Math.round(damage * cost / 100d);
         }
         int finalcost = damagecost;
