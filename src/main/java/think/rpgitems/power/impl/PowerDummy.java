@@ -114,7 +114,7 @@ public class PowerDummy extends BasePower implements PowerHit, PowerHitTaken, Po
             }
             if (doEnchReduceCost) finalcost = damagecost - finalcost;
         }
-        if (!getItem().consumeDurability(stack, finalcost, checkDurabilityBound)) PowerResult.of(costResult);
+        if (!getItem().consumeDurability(stack, finalcost, checkDurabilityBound)) return PowerResult.of(costResult);
         return PowerResult.of(successResult);
     }
 
