@@ -115,11 +115,19 @@ public class Utils {
      */
     public static List<LivingEntity> getLivingEntitiesInCone(List<LivingEntity> entities, org.bukkit.util.Vector startPos, double degrees, org.bukkit.util.Vector direction) {
         List<LivingEntity> newEntities = new ArrayList<>();
+        float relativeAngle = 0;
+        float minAngle = 180;
         for (LivingEntity e : entities) {
             org.bukkit.util.Vector relativePosition = e.getEyeLocation().toVector();
             relativePosition.subtract(startPos);
-            if (getAngleBetweenVectors(direction, relativePosition) > degrees) continue;
-            newEntities.add(e);
+            relativeAngle = getAngleBetweenVectors(direction, relativePosition);
+            if (relativeAngle > degrees) continue;
+            if (relativeAngle < minAngle) {
+                minAngle = relativeAngle;
+                newEntities.add(0,e);
+            } else {
+                newEntities.add(e);
+            }
         }
         return newEntities;
     }
