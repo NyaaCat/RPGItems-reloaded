@@ -114,7 +114,7 @@ public class Utils {
      * @return All entities inside the cone
      */
     public static List<LivingEntity> getLivingEntitiesInCone(List<LivingEntity> entities, org.bukkit.util.Vector startPos, double degrees, org.bukkit.util.Vector direction) {
-        List<LivingEntity> newEntities = new ArrayList<>();
+        List<LivingEntity> newEntities = new LinkedList<>();
         float relativeAngle = 0;
         float minAngle = 180;
         for (LivingEntity e : entities) {

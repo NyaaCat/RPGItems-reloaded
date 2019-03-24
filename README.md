@@ -2,7 +2,7 @@
 
 The RPGItems2 plugin continued from [TheCreeperOfRedstone/RPG-Items-2](https://github.com/TheCreeperOfRedstone/RPG-Items-2)
 
-**RPGitem 3.6 now depends on [NyaaCore](https://github.com/NyaaCat/NyaaCore) to work! See [Installation](https://github.com/NyaaCat/RPGItems-reloaded/wiki/Get-Started:-Installation) for detail.**
+**RPGitem starting from 3.6 depends on [NyaaCore](https://github.com/NyaaCat/NyaaCore) to work! See [Installation](https://github.com/NyaaCat/RPGItems-reloaded/wiki/Get-Started:-Installation) for detail.**
 
 ## Project Discussion
 
