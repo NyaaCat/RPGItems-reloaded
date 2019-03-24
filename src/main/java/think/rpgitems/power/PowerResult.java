@@ -2,19 +2,24 @@ package think.rpgitems.power;
 
 import org.bukkit.command.CommandSender;
 
+import javax.annotation.CheckReturnValue;
+
 public class PowerResult<T> {
     private TriggerResult result;
     private T data;
     private String message;
 
+    @CheckReturnValue
     public static PowerResult<Void> of(TriggerResult result) {
         return new PowerResult<Void>().result(result);
     }
 
+    @CheckReturnValue
     public static <T> PowerResult<T> of(TriggerResult result, T data) {
         return new PowerResult<T>().result(result).data(data);
     }
 
+    @CheckReturnValue
     public static <T> PowerResult<T> of(TriggerResult result, T data, String message) {
         return new PowerResult<T>().result(result).data(data).message(message);
     }
