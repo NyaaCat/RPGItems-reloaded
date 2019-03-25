@@ -244,7 +244,7 @@ public class PowerProjectile extends BasePower implements PowerRightClick, Power
         if (projectile instanceof Fireball && setFireballDirection) {
             ((Fireball) projectile).setDirection(v.clone().normalize().multiply(speed));
         }
-        if (projectileType == Arrow.class) {
+        if (Arrow.class.isAssignableFrom(projectileType)) {
             Events.autoRemoveProjectile(projectile.getEntityId());
             ((Arrow) projectile).setPickupStatus(Arrow.PickupStatus.DISALLOWED);
         }
