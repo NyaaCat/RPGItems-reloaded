@@ -3,12 +3,10 @@ package think.rpgitems.power.impl;
 import org.bukkit.Bukkit;
 import org.bukkit.entity.LivingEntity;
 import org.bukkit.entity.Player;
+import org.bukkit.event.entity.EntityDamageByEntityEvent;
 import org.bukkit.event.player.PlayerInteractEvent;
 import org.bukkit.inventory.ItemStack;
-import think.rpgitems.power.AcceptedValue;
-import think.rpgitems.power.PowerMeta;
-import think.rpgitems.power.PowerResult;
-import think.rpgitems.power.Property;
+import think.rpgitems.power.*;
 
 import java.util.List;
 
@@ -25,7 +23,7 @@ import static think.rpgitems.power.Utils.*;
  */
 @SuppressWarnings("WeakerAccess")
 @PowerMeta(defaultTrigger = "RIGHT_CLICK", withSelectors = true)
-public class PowerAOECommand extends PowerCommand {
+public class PowerAOECommand extends PowerCommand implements PowerHit {
     /**
      * Whether the command will be apply to the user
      */
@@ -129,5 +127,10 @@ public class PowerAOECommand extends PowerCommand {
     @Override
     public PowerResult<Void> leftClick(Player player, ItemStack stack, PlayerInteractEvent event) {
         return fire(player, stack);
+    }
+
+    @Override
+    public PowerResult<Double> hit(Player player, ItemStack stack, LivingEntity entity, double damage, EntityDamageByEntityEvent event) {
+        return fire(player, stack).with(damage);
     }
 }
