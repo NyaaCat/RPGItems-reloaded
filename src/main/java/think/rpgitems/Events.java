@@ -551,6 +551,9 @@ public class Events implements Listener {
         if (item.getType() == Material.BOW || item.getType() == Material.SNOWBALL || item.getType() == Material.EGG || item.getType() == Material.POTION)
             return;
 
+        if (e.getCause() == EntityDamageEvent.DamageCause.THORNS)
+            return;
+
         RPGItem rItem = ItemManager.toRPGItem(item).orElse(null);
         if (rItem == null)
             return;
