@@ -20,10 +20,12 @@ import think.rpgitems.item.RPGItem;
 import think.rpgitems.power.*;
 import think.rpgitems.utils.PotionEffectUtils;
 
+import java.util.List;
+
 import static java.lang.Double.max;
 import static java.lang.Double.min;
-import static think.rpgitems.power.Utils.checkCooldown;
-import static think.rpgitems.power.Utils.getNearbyEntities;
+import static think.rpgitems.power.Utils.*;
+import static think.rpgitems.power.Utils.getLivingEntitiesInCone;
 
 /**
  * Power AOEDamage.
@@ -41,17 +43,42 @@ public class PowerAOEDamage extends BasePower implements PowerOffhandClick, Powe
      * Cooldown time of this power
      */
     @Property
-    public long cooldown = 20;
+    public long cooldown = 0;
     /**
      * Range of the power
      */
     @Property
-    public int range = 5;
+    public int range = 10;
+    /**
+     * Minimum radius
+     */
+    @Property
+    public int minrange = 0;
+    /**
+     * Maximum view angle
+     */
+    @Property
+    public double angle = 180;
+    /**
+     * Maximum count, excluding the user
+     */
+    @Property
+    public int count = 100;
+    /**
+     * Whether include players
+     */
+    @Property
+    public boolean incluePlayers = false;
     /**
      * Whether damage will be apply to the user
      */
     @Property
     public boolean selfapplication = false;
+    /**
+     * Whether only apply to the entities that player have line of sight
+     */
+    @Property
+    public boolean mustsee = false;
     /**
      * Display text of this power. Will use default text in case of null
      */
@@ -119,9 +146,21 @@ public class PowerAOEDamage extends BasePower implements PowerOffhandClick, Powe
         if (!checkCooldown(this, player, cooldown, true, true)) return PowerResult.cd();
         if (!getItem().consumeDurability(stack, cost)) return PowerResult.cost();
         if (selfapplication) dealDamage(player, damage);
-        for (Entity ent : getNearbyEntities(this, player.getLocation(), player, range))
-            if (ent instanceof LivingEntity && !player.equals(ent))
-                dealDamage((LivingEntity) ent, damage);
+        List<LivingEntity> nearbyEntities = getNearestLivingEntities(this, player.getLocation(), player, range, minrange);
+        List<LivingEntity> ent = getLivingEntitiesInCone(nearbyEntities, player.getEyeLocation().toVector(), angle, player.getEyeLocation().getDirection());
+        LivingEntity[] entities = ent.toArray(new LivingEntity[0]);
+        int c = count;
+        for (int i = 0; i < c && i < entities.length; ++i) {
+            LivingEntity e = entities[i];
+            if ((mustsee && !player.hasLineOfSight(e))
+                    || (e == player)
+                    || (!incluePlayers && e instanceof Player)
+            ) {
+                ++count;
+                continue;
+            }
+            e.damage(damage, player);
+        }
         return PowerResult.ok();
     }
 
