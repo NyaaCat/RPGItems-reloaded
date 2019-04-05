@@ -1,6 +1,8 @@
 package think.rpgitems.power.impl;
 
+import org.bukkit.NamespacedKey;
 import org.bukkit.configuration.ConfigurationSection;
+import org.bukkit.enchantments.Enchantment;
 import org.bukkit.entity.LivingEntity;
 import org.bukkit.entity.Player;
 import org.bukkit.event.entity.EntityDamageByEntityEvent;
@@ -11,8 +13,6 @@ import org.bukkit.event.player.PlayerSwapHandItemsEvent;
 import org.bukkit.event.player.PlayerToggleSneakEvent;
 import org.bukkit.event.player.PlayerToggleSprintEvent;
 import org.bukkit.inventory.ItemStack;
-import org.bukkit.enchantments.Enchantment;
-import org.bukkit.NamespacedKey;
 import think.rpgitems.power.*;
 
 import static think.rpgitems.power.Utils.checkCooldownByString;
@@ -46,7 +46,7 @@ public class PowerDummy extends BasePower implements PowerHit, PowerHitTaken, Po
      */
     @Property
     public String display;
-    
+
     /**
      * Whether enchantments can determine cost
      */
@@ -65,7 +65,7 @@ public class PowerDummy extends BasePower implements PowerHit, PowerHitTaken, Po
      */
     @Property
     public double enchCostPercentage = 6;
-    
+
     /**
      * Type of enchantment that reduces cost
      */
@@ -78,6 +78,12 @@ public class PowerDummy extends BasePower implements PowerHit, PowerHitTaken, Po
     @Property
     public boolean costByDamage = false;
 
+    /**
+     * Whether to require hurt by entity for HURT trigger
+     */
+    @Property
+    public boolean requireHurtByEntity = true;
+
     @Property
     public String cooldownKey = "dummy";
 
@@ -89,18 +95,19 @@ public class PowerDummy extends BasePower implements PowerHit, PowerHitTaken, Po
 
     @Property
     public TriggerResult cooldownResult = TriggerResult.COOLDOWN;
-    
+
     @Property
     public boolean showCDWarning = true;
 
     @Override
-    public PowerResult<Void> fire(Player player, ItemStack stack){
-        return fire(player, stack);
+    public PowerResult<Void> fire(Player player, ItemStack stack) {
+        return fire(player, stack, null, null);
     }
 
     @Override
     public PowerResult<Void> fire(Player player, ItemStack stack, LivingEntity entity, Double damage) {
-        if (!checkCooldownByString(this, player, cooldownKey, cooldown, showCDWarning, false)) return PowerResult.of(cooldownResult);
+        if (!checkCooldownByString(this, player, cooldownKey, cooldown, showCDWarning, false))
+            return PowerResult.of(cooldownResult);
         int damageCost = cost;
         if (damage != null && costByDamage) {
             if (damage < 0) damage = 0d;
@@ -140,19 +147,22 @@ public class PowerDummy extends BasePower implements PowerHit, PowerHitTaken, Po
 
     @Override
     public PowerResult<Double> hit(Player player, ItemStack stack, LivingEntity entity, double damage, EntityDamageByEntityEvent event) {
-        return fire(player, stack).with(damage);
+        return fire(player, stack, entity, damage).with(damage);
     }
 
     @Override
     public PowerResult<Double> takeHit(Player target, ItemStack stack, double damage, EntityDamageEvent event) {
-        return fire(target, stack).with(damage);
+        return fire(target, stack, null, damage).with(damage);
     }
-    
+
     @Override
     public PowerResult<Void> hurt(Player target, ItemStack stack, EntityDamageEvent event) {
-        return fire(target, stack);
+        if (!requireHurtByEntity || event instanceof EntityDamageByEntityEvent) {
+            return fire(target, stack, null, event.getDamage());
+        }
+        return PowerResult.noop();
     }
-    
+
     @Override
     public PowerResult<Void> offhandClick(Player player, ItemStack stack, PlayerInteractEvent event) {
         return fire(player, stack);

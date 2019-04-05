@@ -4,6 +4,7 @@ import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
 import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.entity.Player;
+import org.bukkit.event.entity.EntityDamageByEntityEvent;
 import org.bukkit.event.entity.EntityDamageEvent;
 import org.bukkit.event.player.PlayerInteractEvent;
 import org.bukkit.event.player.PlayerToggleSneakEvent;
@@ -52,6 +53,12 @@ public class PowerCommand extends BasePower implements PowerRightClick, PowerLef
     @Property
     public int cost = 0;
 
+    /**
+     * Whether to require hurt by entity for HURT trigger
+     */
+    @Property
+    public boolean requireHurtByEntity = true;
+
     @Override
     public void init(ConfigurationSection section) {
         if (section.isBoolean("isRight")) {
@@ -59,6 +66,19 @@ public class PowerCommand extends BasePower implements PowerRightClick, PowerLef
             triggers = Collections.singleton(isRight ? Trigger.RIGHT_CLICK : Trigger.LEFT_CLICK);
         }
         super.init(section);
+    }
+
+    @Override
+    public PowerResult<Void> rightClick(Player player, ItemStack stack, PlayerInteractEvent event) {
+        return fire(player, stack);
+    }
+
+    @Override
+    public PowerResult<Void> fire(Player target, ItemStack stack) {
+        if (!checkCooldownByString(this, target, command, cooldown, true, false))
+            return PowerResult.cd();
+        if (!getItem().consumeDurability(stack, cost)) return PowerResult.cost();
+        return executeCommand(target);
     }
 
     /**
@@ -71,7 +91,7 @@ public class PowerCommand extends BasePower implements PowerRightClick, PowerLef
         if (!player.isOnline()) return PowerResult.noop();
 
         String cmd = handlePlayerPlaceHolder(player, command);
-        if (permission.equals("console")){
+        if (permission.equals("console")) {
             Bukkit.dispatchCommand(Bukkit.getConsoleSender(), cmd);
         } else {
             boolean wasOp = player.isOp();
@@ -105,11 +125,6 @@ public class PowerCommand extends BasePower implements PowerRightClick, PowerLef
     }
 
     @Override
-    public PowerResult<Void> rightClick(Player player, ItemStack stack, PlayerInteractEvent event) {
-        return fire(player, stack);
-    }
-
-    @Override
     public PowerResult<Void> leftClick(Player player, ItemStack stack, PlayerInteractEvent event) {
         return fire(player, stack);
     }
@@ -126,24 +141,19 @@ public class PowerCommand extends BasePower implements PowerRightClick, PowerLef
 
     @Override
     public PowerResult<Void> hurt(Player target, ItemStack stack, EntityDamageEvent event) {
-        return fire(target, stack);
-    }
-
-    @Override
-    public PowerResult<Void> fire(Player target, ItemStack stack) {
-        if (!checkCooldownByString(this, target, command, cooldown, true, false))
-            return PowerResult.cd();
-        if (!getItem().consumeDurability(stack, cost)) return PowerResult.cost();
-        return executeCommand(target);
-    }
-
-    @Override
-    public String displayText() {
-        return ChatColor.GREEN + display;
+        if (!requireHurtByEntity || event instanceof EntityDamageByEntityEvent) {
+            return fire(target, stack);
+        }
+        return PowerResult.noop();
     }
 
     @Override
     public String getName() {
         return "command";
+    }
+
+    @Override
+    public String displayText() {
+        return ChatColor.GREEN + display;
     }
 }
