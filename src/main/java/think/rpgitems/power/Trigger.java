@@ -140,25 +140,10 @@ public abstract class Trigger<TEvent extends Event, TPower extends Power, TResul
         }
     };
 
-    public static final Trigger<EntityDamageEvent, PowerHurt, Double, Double> HURT = new Trigger<EntityDamageEvent, PowerHurt, Double, Double>(EntityDamageEvent.class, PowerHurt.class, Double.class, Double.class, "HURT") {
+    public static final Trigger<EntityDamageEvent, PowerHurt, Void, Void> HURT = new Trigger<EntityDamageEvent, PowerHurt, Void, Void>(EntityDamageEvent.class, PowerHurt.class, Void.class, Void.class, "HURT") {
         @Override
-        public Double def(Player player, ItemStack i, EntityDamageEvent event) {
-            return event.getDamage();
-        }
-
-        @Override
-        public Double next(Double a, PowerResult<Double> b) {
-            return b.isOK() ? Math.min(a, b.data()) : a;
-        }
-
-        @Override
-        public PowerResult<Double> warpResult(PowerResult<Void> overrideResult, PowerHurt power, Player player, ItemStack i, EntityDamageEvent event) {
-            return overrideResult.with(event.getDamage());
-        }
-
-        @Override
-        public PowerResult<Double> run(PowerHurt power, Player player, ItemStack i, EntityDamageEvent event) {
-            return power.hurt(player, i, event.getDamage(), event);
+        public PowerResult<Void> run(PowerHurt power, Player player, ItemStack i, EntityDamageEvent event) {
+            return power.hurt(player, i, event);
         }
     };
 
