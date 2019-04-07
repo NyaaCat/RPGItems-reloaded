@@ -651,19 +651,13 @@ public class Events implements Listener {
     @EventHandler(priority = EventPriority.MONITOR, ignoreCancelled = true)
     private void onPlayerHurt(EntityDamageByEntityEvent ev) {
         if (ev.getEntity() instanceof Player) {
-            ev.setDamage(playerHurt((Player) ev.getEntity(),ev));
+            Player e = (Player) ev.getEntity();
+            for (ItemStack item : e.getInventory().getContents()) {
+                RPGItem ri = ItemManager.toRPGItem(item).orElse(null);
+                if (ri == null) continue;
+                ri.power(e, item, ev, Trigger.HURT);
+            }
         }
-    }
-
-    private double playerHurt(Player e, EntityDamageByEntityEvent ev){
-        double ret = ev.getDamage();
-        for (ItemStack item : e.getInventory().getContents()) {
-            RPGItem ri = ItemManager.toRPGItem(item).orElse(null);
-            if (ri == null) continue;
-            double d = ri.power(e, item, ev, Trigger.HURT);
-            ret = d < ret ? d : ret;
-        }
-        return ret;
     }
 
     @Deprecated

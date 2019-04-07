@@ -19,5 +19,5 @@ public interface PowerLivingEntity extends Power {
      * @return PowerResult
      */
     @CheckReturnValue
-    PowerResult<Void> fire(Player player, ItemStack stack, @Nullable LivingEntity entity, @Nullable Double value);
+    PowerResult<Void> fire(Player player, ItemStack stack, LivingEntity entity, @Nullable Double value);
 }

@@ -1,12 +1,8 @@
 package think.rpgitems.power.impl;
 
-import org.bukkit.Effect;
 import org.bukkit.attribute.Attribute;
-import org.bukkit.entity.Entity;
-import org.bukkit.entity.LightningStrike;
 import org.bukkit.entity.LivingEntity;
 import org.bukkit.entity.Player;
-import org.bukkit.event.Event;
 import org.bukkit.event.entity.EntityDamageByEntityEvent;
 import org.bukkit.event.entity.EntityDamageEvent;
 import org.bukkit.event.player.PlayerInteractEvent;
@@ -15,17 +11,13 @@ import org.bukkit.event.player.PlayerToggleSprintEvent;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.potion.PotionEffect;
 import org.bukkit.potion.PotionEffectType;
-import think.rpgitems.I18n;
-import think.rpgitems.item.RPGItem;
 import think.rpgitems.power.*;
-import think.rpgitems.utils.PotionEffectUtils;
 
 import java.util.List;
 
 import static java.lang.Double.max;
 import static java.lang.Double.min;
 import static think.rpgitems.power.Utils.*;
-import static think.rpgitems.power.Utils.getLivingEntitiesInCone;
 
 /**
  * Power AOEDamage.
@@ -126,8 +118,8 @@ public class PowerAOEDamage extends BasePower implements PowerOffhandClick, Powe
     }
 
     @Override
-    public PowerResult<Double> hurt(Player target, ItemStack stack, double damage, EntityDamageEvent event) {
-        return fire(target, stack).with(damage);
+    public PowerResult<Void> hurt(Player target, ItemStack stack, EntityDamageEvent event) {
+        return fire(target, stack);
     }
 
     @Override
@@ -153,8 +145,8 @@ public class PowerAOEDamage extends BasePower implements PowerOffhandClick, Powe
         for (int i = 0; i < c && i < entities.length; ++i) {
             LivingEntity e = entities[i];
             if ((mustsee && !player.hasLineOfSight(e))
-                    || (e == player)
-                    || (!incluePlayers && e instanceof Player)
+                        || (e == player)
+                        || (!incluePlayers && e instanceof Player)
             ) {
                 ++count;
                 continue;

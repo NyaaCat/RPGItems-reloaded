@@ -16,9 +16,8 @@ public interface PowerHurt extends Power {
      * @param target Player being hurt
      * @param stack  Item that triggered this power
      * @param event  Event that triggered this power
-     *
      * @return PowerResult
      */
     @CheckReturnValue
-    PowerResult<Double> hurt(Player target, ItemStack stack, double damage, EntityDamageEvent event);
+    PowerResult<Void> hurt(Player target, ItemStack stack, EntityDamageEvent event);
 }
