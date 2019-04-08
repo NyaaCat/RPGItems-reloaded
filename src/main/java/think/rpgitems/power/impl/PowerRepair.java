@@ -106,33 +106,40 @@ public class PowerRepair extends BasePower implements PowerRightClick, PowerLeft
     public PowerResult<Void> fire(Player player, ItemStack stack) {
         if (!checkCooldown(this, player, cooldown, true, true)) PowerResult.cd();
         int max = getItem().getMaxDurability();
-        int itemDurability = getItem().getItemStackDurability(stack).orElseThrow(() -> new IllegalStateException("Repair is not allowed on item without durability"));
-        int delta = max - itemDurability;
-        if (mode != RepairMode.ALWAYS) {
-            if (max == -1 || delta == 0) {
-                return PowerResult.noop();
+        int repairCount = 0;
+        for (int i = 0; i < amount; i++) {
+            int itemDurability = getItem().getItemStackDurability(stack).orElseThrow(() -> new IllegalStateException("Repair is not allowed on item without durability"));
+            int delta = max - itemDurability;
+            if (mode != RepairMode.ALWAYS) {
+                if (max == -1 || delta == 0) {
+                    break;
+                }
+                if (this.durability > delta && mode != RepairMode.ALLOW_OVER) {
+                    break;
+                }
             }
-            if (this.durability > delta && mode != RepairMode.ALLOW_OVER) {
-                return PowerResult.noop();
+            if (!allowBreak && this.durability + itemDurability < 0) {
+                break;
+            }
+            if (removeItem(player.getInventory(), material, 1)) {
+                getItem().setItemStackDurability(stack, Math.min(itemDurability + this.durability, max));
+                repairCount++;
+            } else {
+                if (showFailMsg) {
+                    BaseComponent msg = Strings.isNullOrEmpty(customMessage) ?
+                            new TextComponent(I18n.format("message.error.need_material", material.getType().name())) :
+                            new TextComponent(customMessage);
+                    HoverEvent hover = new HoverEvent(HoverEvent.Action.SHOW_ITEM, new BaseComponent[]{new TextComponent(ItemStackUtils.itemToJson(material))});
+                    msg.setHoverEvent(hover);
+                    new Message("").append(msg).send(player);
+                }
+                return abortOnFailure ? PowerResult.abort() : PowerResult.fail();
             }
         }
-        if (!allowBreak && this.durability + itemDurability < 0) {
+        if (repairCount == 0) {
             return PowerResult.noop();
         }
-        if (removeItem(player.getInventory(), material, amount)) {
-            getItem().setItemStackDurability(stack, Math.min(itemDurability + this.durability, max));
-            return abortOnSuccess ? PowerResult.abort() : PowerResult.ok();
-        } else {
-            if (showFailMsg) {
-                BaseComponent msg = Strings.isNullOrEmpty(customMessage) ?
-                                        new TextComponent(I18n.format("message.error.need_material", material.getType().name())) :
-                                        new TextComponent(customMessage);
-                HoverEvent hover = new HoverEvent(HoverEvent.Action.SHOW_ITEM, new BaseComponent[]{new TextComponent(ItemStackUtils.itemToJson(material))});
-                msg.setHoverEvent(hover);
-                new Message("").append(msg).send(player);
-            }
-            return abortOnFailure ? PowerResult.abort() : PowerResult.fail();
-        }
+        return abortOnSuccess ? PowerResult.abort() : PowerResult.ok();
     }
 
     private boolean removeItem(Inventory inventory, ItemStack item, int amount) {
