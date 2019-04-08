@@ -148,7 +148,7 @@ public class PowerAOEDamage extends BasePower implements PowerOffhandClick, Powe
                         || (e == player)
                         || (!incluePlayers && e instanceof Player)
             ) {
-                ++count;
+                c++;
                 continue;
             }
             e.damage(damage, player);
