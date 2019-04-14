@@ -10,6 +10,7 @@ import think.rpgitems.RPGItems;
 import think.rpgitems.power.PowerHit;
 import think.rpgitems.power.PowerMeta;
 import think.rpgitems.power.PowerResult;
+import think.rpgitems.power.Property;
 
 /**
  * Power noimmutabletick.
@@ -19,6 +20,9 @@ import think.rpgitems.power.PowerResult;
  */
 @PowerMeta(immutableTrigger = true)
 public class PowerNoImmutableTick extends BasePower implements PowerHit {
+
+    @Property
+    public int immuneTime = 1;
 
     @Override
     public String getName() {
@@ -32,8 +36,8 @@ public class PowerNoImmutableTick extends BasePower implements PowerHit {
 
     @Override
     public PowerResult<Double> hit(Player player, ItemStack stack, LivingEntity entity, double damage, EntityDamageByEntityEvent event) {
-        Bukkit.getScheduler().runTaskLater(RPGItems.plugin, ()-> entity.setNoDamageTicks(0), 0);
-        Bukkit.getScheduler().runTaskLater(RPGItems.plugin, ()-> entity.setNoDamageTicks(0), 1);
+        Bukkit.getScheduler().runTaskLater(RPGItems.plugin, ()-> entity.setNoDamageTicks(immuneTime + 10), 0);
+        Bukkit.getScheduler().runTaskLater(RPGItems.plugin, ()-> entity.setNoDamageTicks(immuneTime + 10), 1);
         return PowerResult.ok(damage);
     }
 }
