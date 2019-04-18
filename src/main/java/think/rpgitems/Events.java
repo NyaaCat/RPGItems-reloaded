@@ -28,6 +28,9 @@ import org.bukkit.projectiles.ProjectileSource;
 import org.bukkit.scheduler.BukkitRunnable;
 import think.rpgitems.item.ItemManager;
 import think.rpgitems.item.RPGItem;
+import think.rpgitems.power.Power;
+import think.rpgitems.power.PowerSneak;
+import think.rpgitems.power.PowerSprint;
 import think.rpgitems.power.Trigger;
 import think.rpgitems.power.impl.PowerRanged;
 import think.rpgitems.power.impl.PowerRangedOnly;
@@ -37,6 +40,7 @@ import think.rpgitems.support.WGSupport;
 
 import java.util.*;
 import java.util.logging.Level;
+import java.util.stream.Stream;
 
 import static think.rpgitems.RPGItems.logger;
 import static think.rpgitems.RPGItems.plugin;
@@ -307,7 +311,7 @@ public class Events implements Listener {
         } else if (action == Action.RIGHT_CLICK_AIR) {
             rItem.power(player, e.getItem(), e, Trigger.RIGHT_CLICK);
         } else if (action == Action.RIGHT_CLICK_BLOCK &&
-                           !(e.getClickedBlock().getType().isInteractable() && !player.isSneaking())) {
+                !(e.getClickedBlock().getType().isInteractable() && !player.isSneaking())) {
             rItem.power(player, e.getItem(), e, Trigger.RIGHT_CLICK);
         } else if (action == Action.LEFT_CLICK_AIR || action == Action.LEFT_CLICK_BLOCK) {
             rItem.power(player, e.getItem(), e, Trigger.LEFT_CLICK);
@@ -320,10 +324,21 @@ public class Events implements Listener {
             return;
         }
         Player p = e.getPlayer();
-        ItemStack item = p.getInventory().getItemInMainHand();
-        RPGItem rItem = ItemManager.toRPGItem(item).orElse(null);
-        if (rItem == null) return;
-        rItem.power(p, item, e, Trigger.SNEAK);
+        Trigger<PlayerToggleSneakEvent, PowerSneak, Void, Void> trigger = Trigger.SNEAK;
+
+        trigger(p, e, p.getInventory().getItemInMainHand(), trigger);
+        trigger(p, e, p.getInventory().getItemInOffHand(), trigger);
+
+        ItemStack[] armorContents = p.getInventory().getArmorContents();
+        Stream.of(armorContents)
+                .map(ItemManager::toRPGItem)
+                .filter(Optional::isPresent)
+                .forEach(rpgItem -> trigger(p, e, rpgItem.get().toItemStack(), trigger));
+    }
+
+    <TEvent extends Event, TPower extends Power, TResult, TReturn> TReturn trigger(Player player, TEvent event, ItemStack itemStack, Trigger<TEvent, TPower, TResult, TReturn> trigger) {
+        Optional<RPGItem> rpgItem = ItemManager.toRPGItem(itemStack);
+        return rpgItem.map(rpgItem1 -> rpgItem1.power(player, itemStack, event, trigger)).orElse(null);
     }
 
     @EventHandler
@@ -332,10 +347,16 @@ public class Events implements Listener {
             return;
         }
         Player p = e.getPlayer();
-        ItemStack item = p.getInventory().getItemInMainHand();
-        RPGItem rItem = ItemManager.toRPGItem(item).orElse(null);
-        if (rItem == null) return;
-        rItem.power(p, item, e, Trigger.SPRINT);
+        Trigger<PlayerToggleSprintEvent, PowerSprint, Void, Void> sprint = Trigger.SPRINT;
+
+        trigger(p, e, p.getInventory().getItemInMainHand(), sprint);
+        trigger(p, e, p.getInventory().getItemInOffHand(), sprint);
+        ItemStack[] armorContents = p.getInventory().getArmorContents();
+        Stream.of(armorContents)
+                .map(ItemManager::toRPGItem)
+                .filter(Optional::isPresent)
+                .forEach(rpgItem -> trigger(p, e, rpgItem.get().toItemStack(), sprint));
+
     }
 
     @EventHandler

@@ -329,6 +329,14 @@ public abstract class Trigger<TEvent extends Event, TPower extends Power, TResul
         }
     };
 
+    public static final Trigger<Event, PowerTick, Void, Void> TICK_OFFHAND = new Trigger<Event, PowerTick, Void, Void>(Event.class, PowerTick.class, Void.class, Void.class, "TICK_OFFHAND") {
+        @Override
+        public PowerResult<Void> run(PowerTick power, Player player, ItemStack i, Event event) {
+            return power.tick(player, i);
+        }
+
+    };
+
     private final Class<TEvent> eventClass;
     private final Class<TResult> resultClass;
     private final Class<TPower> powerClass;
