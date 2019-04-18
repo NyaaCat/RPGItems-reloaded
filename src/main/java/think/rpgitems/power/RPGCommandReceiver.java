@@ -27,6 +27,7 @@ import static think.rpgitems.power.PowerManager.powers;
 
 public abstract class RPGCommandReceiver extends CommandReceiver {
     private final Map<String, String> subCommandAttribute = new HashMap<>();
+    private static final Map<String, String> commandAttributes = new HashMap<>();
     private final LanguageRepository i18n;
 
     public RPGCommandReceiver(RPGItems plugin, LanguageRepository i18n) {
@@ -78,6 +79,7 @@ public abstract class RPGCommandReceiver extends CommandReceiver {
             return resolveEnumListValue(power, propertyField, enumValues, last, hasNamePrefix);
         }
         AcceptedValue as = propertyField.getAnnotation(AcceptedValue.class);
+
         if (as != null) {
             return PowerManager.getAcceptedValue(power, as).stream().map(s -> (hasNamePrefix ? propertyField.getName() + ":" : "") + s).filter(s -> s.startsWith(last)).collect(Collectors.toList());
         }
@@ -87,6 +89,7 @@ public abstract class RPGCommandReceiver extends CommandReceiver {
         if (propertyField.getType().isEnum()) {
             return Stream.of(propertyField.getType().getEnumConstants()).map(s -> (hasNamePrefix ? propertyField.getName() + ":" : "") + s.toString()).filter(s -> s.startsWith(last)).collect(Collectors.toList());
         }
+
         return Collections.emptyList();
     }
 
@@ -290,7 +293,7 @@ public abstract class RPGCommandReceiver extends CommandReceiver {
     }
 
     @Override
-    public List<String> onTabComplete(CommandSender sender, Command command, String alias, String[] args) {
+    public List<String> onTabComplete(CommandSender sender, Command command, String alias, String[] args)   {
         boolean suggestion = args[args.length - 1].isEmpty();
         CommandReceiver.Arguments cmd = CommandReceiver.Arguments.parse(args, sender);
         if (cmd == null) return Collections.emptyList();

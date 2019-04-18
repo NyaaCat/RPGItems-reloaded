@@ -56,6 +56,11 @@ repositories {
         name 'vault-repo'
         url 'http://nexus.hc.to/content/repositories/pub_releases'
     }
+
+    maven{
+        name 'ReinWD'
+        url 'https://raw.githubusercontent.com/ReinWD/EffectLib/master/'
+    }
 }
 
 dependencies {
@@ -69,6 +74,8 @@ dependencies {
 
     // implementation files('lib/worldedit-bukkit-7.0.0-SNAPSHOT-dist.jar')
     // implementation files('lib/worldguard-legacy-7.0.0-SNAPSHOT-dist.jar')
+
+    implementation('cat.nyaa:EffectLib:nyaa-v1.0')
 
     implementation('com.sk89q.worldguard:worldguard-core:7.0.0-SNAPSHOT')
     implementation('com.sk89q.worldguard:worldguard-legacy:7.0.0-SNAPSHOT') {
