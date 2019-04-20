@@ -5,6 +5,8 @@ import org.bukkit.block.Block;
 import org.bukkit.entity.Entity;
 import org.bukkit.entity.LivingEntity;
 import org.bukkit.entity.Player;
+import org.bukkit.entity.Snowball;
+import org.bukkit.event.entity.ProjectileHitEvent;
 import org.bukkit.event.player.PlayerInteractEvent;
 import org.bukkit.event.player.PlayerToggleSneakEvent;
 import org.bukkit.event.player.PlayerToggleSprintEvent;
@@ -15,10 +17,7 @@ import org.librazy.nclangchecker.LangKey;
 import think.rpgitems.RPGItems;
 import think.rpgitems.power.*;
 
-import java.util.Arrays;
-import java.util.Iterator;
-import java.util.LinkedList;
-import java.util.List;
+import java.util.*;
 import java.util.stream.Collectors;
 
 @PowerMeta(defaultTrigger = "RIGHT_CLICK")
@@ -36,7 +35,6 @@ public class PowerBeam extends BasePower implements PowerRightClick, PowerLeftCl
     public Mode mode = Mode.PLAIN;
 
     @Property
-    //todo support not pierce
     public boolean pierce = true;
 
     @Property
@@ -48,6 +46,22 @@ public class PowerBeam extends BasePower implements PowerRightClick, PowerLeftCl
     @Property
     public int movementTicks = 40;
 
+    @Property
+    public double offsetX = 0;
+
+    @Property
+    public double offsetY = 0;
+
+    @Property
+    public double offsetZ = 0;
+
+    @Property
+    @Serializer(ExtraDataSerializer.class)
+    @Deserializer(ExtraDataSerializer.class)
+    public Object extraData;
+
+    @Property
+    public double speed = 0;
 
     @Override
     public @LangKey(skipCheck = true) String getName() {
@@ -61,30 +75,30 @@ public class PowerBeam extends BasePower implements PowerRightClick, PowerLeftCl
 
     @Override
     public PowerResult<Void> leftClick(Player player, ItemStack stack, PlayerInteractEvent event) {
-        return beam(player, player.getEyeLocation().getDirection(), length, amount, ignoreWall, pierce, mode, movementTicks);
+        return beam(player);
     }
 
     @Override
     public PowerResult<Void> rightClick(Player player, ItemStack stack, PlayerInteractEvent event) {
-        return beam(player, player.getEyeLocation().getDirection(), length, amount, ignoreWall, pierce, mode, movementTicks);
+        return beam(player);
     }
 
     @Override
     public PowerResult<Void> sneak(Player player, ItemStack stack, PlayerToggleSneakEvent event) {
-        return beam(player, player.getEyeLocation().getDirection(), length, amount, ignoreWall, pierce, mode, movementTicks);
+        return beam(player);
     }
 
     @Override
     public PowerResult<Void> sneaking(Player player, ItemStack stack) {
-        return beam(player, player.getEyeLocation().getDirection(), length, amount, ignoreWall, pierce, mode, movementTicks);
+        return beam(player);
     }
 
     @Override
     public PowerResult<Void> sprint(Player player, ItemStack stack, PlayerToggleSprintEvent event) {
-        return beam(player, player.getEyeLocation().getDirection(), length, amount, ignoreWall, pierce, mode, movementTicks);
+        return beam(player);
     }
 
-    private PowerResult<Void> beam(LivingEntity from, Vector towards, double length, int amount, boolean ignoreWall, boolean pierce, Mode mode, int movingTicks) {
+    private PowerResult<Void> beam(LivingEntity from) {
         new BukkitRunnable() {
             @Override
             public void run() {
@@ -98,13 +112,18 @@ public class PowerBeam extends BasePower implements PowerRightClick, PowerLeftCl
                     targetBlock = from.getTargetBlockExact(((int) Math.ceil(length)), FluidCollisionMode.NEVER);
                 }
                 Location toLocation;
+                Vector towards = from.getEyeLocation().getDirection();
                 if (targetBlock == null) {
-                    toLocation = fromLocation.add(towards.multiply(length));
+                    toLocation = fromLocation.clone();
+                    toLocation.add(towards.multiply(length));
                 } else {
-                    toLocation = targetBlock.getLocation();
+                    toLocation = fromLocation.clone();
+                    int lth = (int) Math.ceil(targetBlock.getLocation().distance(fromLocation));
+                    toLocation.add(towards.multiply(lth));
                 }
                 double actualLength = toLocation.distance(fromLocation);
-                Location step = toLocation.subtract(fromLocation).multiply(1 / actualLength);
+                Location step = toLocation.clone();
+                step.subtract(fromLocation).multiply(1 / actualLength);
 
                 List<Location> particleSpawnLocation = new LinkedList<>();
                 Location temp = fromLocation.clone();
@@ -114,6 +133,7 @@ public class PowerBeam extends BasePower implements PowerRightClick, PowerLeftCl
                 }
 
                 List<Entity> nearbyEntities = from.getNearbyEntities(length, length, length).stream()
+                        .filter(entity -> entity instanceof LivingEntity)
                         //mobs in front of player
                         .filter(entity -> entity.getLocation().subtract(fromLocation).toVector().angle(towards) < (Math.PI / 4))
                         .sorted((o1, o2) -> {
@@ -124,10 +144,10 @@ public class PowerBeam extends BasePower implements PowerRightClick, PowerLeftCl
 
                 switch (mode) {
                     case PLAIN:
-                        new PlainTask(particle, particleSpawnLocation, apS, nearbyEntities).runTask(RPGItems.plugin);
+                        new PlainTask(from, particle, particleSpawnLocation, apS, nearbyEntities).runTask(RPGItems.plugin);
                         break;
                     case MOVING:
-                        new MovingTask(particle, particleSpawnLocation, apS, movingTicks, nearbyEntities).runTask(RPGItems.plugin);
+                        new MovingTask(from, particle, particleSpawnLocation, apS, movementTicks, nearbyEntities).runTask(RPGItems.plugin);
                         break;
                 }
             }
@@ -136,14 +156,18 @@ public class PowerBeam extends BasePower implements PowerRightClick, PowerLeftCl
     }
 
     class PlainTask extends BukkitRunnable {
+        private LivingEntity from;
         private final Particle particle;
         private List<Location> particleSpawnLocation;
         private final int apS;
+        private List<Entity> nearbyEntities;
 
-        PlainTask(Particle particle, List<Location> particleSpawnLocation, int apS, List<Entity> nearbyEntities) {
+        PlainTask(LivingEntity from, Particle particle, List<Location> particleSpawnLocation, int apS, List<Entity> nearbyEntities) {
+            this.from = from;
             this.particle = particle;
             this.particleSpawnLocation = particleSpawnLocation;
             this.apS = apS;
+            this.nearbyEntities = nearbyEntities;
         }
 
         @Override
@@ -154,9 +178,58 @@ public class PowerBeam extends BasePower implements PowerRightClick, PowerLeftCl
             if (world == null) return;
             while (iterator.hasNext()) {
                 Location loc = iterator.next();
-                world.spawnParticle(this.particle, loc, apS);
+//                world.spawnParticle(this.particle, loc, apS);
+                world.spawnParticle(this.particle, loc, apS, offsetX, offsetY, offsetZ, speed, extraData);
+                Class<?> dataType = this.particle.getDataType();
+                if (tryHit(from, loc, nearbyEntities)) return;
             }
         }
+    }
+
+    private boolean tryHit(LivingEntity from, Location loc, List<Entity> nearbyEntities) {
+        if (!pierce) {
+            List<Entity> collect = nearbyEntities.stream()
+                    .filter(entity -> canHit(loc, entity))
+                    .limit(1)
+                    .collect(Collectors.toList());
+            if (!collect.isEmpty()) {
+                Entity entity = collect.get(0);
+                if (entity instanceof LivingEntity) {
+                    Snowball snowball = ((LivingEntity) entity).launchProjectile(Snowball.class);
+                    snowball.setShooter(from);
+                    ((LivingEntity) entity).damage(damage, snowball);
+                    Bukkit.getServer().getPluginManager().callEvent(new ProjectileHitEvent(snowball, entity));
+                    snowball.remove();
+                }
+                return true;
+            }
+        } else {
+            List<Entity> collect = nearbyEntities.stream()
+                    .filter(entity -> entity instanceof LivingEntity)
+                    .filter(entity -> canHit(loc, entity))
+                    .collect(Collectors.toList());
+            if (!collect.isEmpty()) {
+                collect.stream()
+                        .map(entity -> ((LivingEntity) entity))
+                        .forEach(livingEntity -> {
+                            Snowball snowball = livingEntity.launchProjectile(Snowball.class, new Vector(0, 0, 0));
+                            snowball.setShooter(from);
+                            livingEntity.damage(damage, snowball);
+                            Bukkit.getServer().getPluginManager().callEvent(new ProjectileHitEvent(snowball, livingEntity));
+                            snowball.remove();
+                        });
+                nearbyEntities.removeAll(collect);
+            }
+        }
+        return false;
+    }
+
+    private boolean canHit(Location loc, Entity entity) {
+        Location eyeLocation = ((LivingEntity) entity).getEyeLocation();
+        Location location = entity.getLocation();
+        return loc.getY() > Math.min(location.getY(), eyeLocation.getY()) &&
+                loc.getY() < Math.max(location.getY(), eyeLocation.getY()) &&
+                Math.pow((loc.getX() - location.getX()), 2) + Math.pow((loc.getZ() - location.getZ()), 2) < 0.5 * 0.5;
     }
 
     private enum Mode {
@@ -166,16 +239,21 @@ public class PowerBeam extends BasePower implements PowerRightClick, PowerLeftCl
     }
 
     private class MovingTask extends BukkitRunnable {
+        private final LivingEntity from;
         private final Particle particle;
         private final List<Location> particleSpawnLocation;
         private final int amountPerSec;
         private final int ticks;
+        private final List<Entity> nearbyEntities;
+        private final List<BukkitRunnable> runnables = new LinkedList<>();
 
-        public MovingTask(Particle particle, List<Location> particleSpawnLocation, int amountPerSec, int ticks, List<Entity> nearbyEntities) {
+        public MovingTask(LivingEntity from, Particle particle, List<Location> particleSpawnLocation, int amountPerSec, int ticks, List<Entity> nearbyEntities) {
+            this.from = from;
             this.particle = particle;
             this.particleSpawnLocation = particleSpawnLocation;
             this.amountPerSec = amountPerSec;
             this.ticks = ticks;
+            this.nearbyEntities = nearbyEntities;
         }
 
         @Override
@@ -188,16 +266,46 @@ public class PowerBeam extends BasePower implements PowerRightClick, PowerLeftCl
             int spS = (int) Math.ceil(((double) size) / ((double) ticks));
             Iterator<Location> iterator = particleSpawnLocation.iterator();
             for (int i = 0; i < ticks; i++) {
-                new BukkitRunnable() {
+                BukkitRunnable bukkitRunnable = new BukkitRunnable() {
                     @Override
                     public void run() {
                         for (int j = 0; j < spS; j++) {
                             if (!iterator.hasNext()) return;
-                            world.spawnParticle(particle, iterator.next(), amountPerSec);
+                            Location loc = iterator.next();
+                            world.spawnParticle(particle, loc, amountPerSec, offsetX, offsetY, offsetZ, speed, extraData);
+                            if (tryHit(from, loc, nearbyEntities)) {
+                                if (!runnables.isEmpty()) {
+                                    runnables.forEach(BukkitRunnable::cancel);
+                                }
+                                return;
+                            }
                         }
                     }
-                }.runTaskLater(RPGItems.plugin, i);
+                };
+                runnables.add(bukkitRunnable);
+                bukkitRunnable.runTaskLater(RPGItems.plugin, i);
             }
+        }
+    }
+
+    private class ExtraDataSerializer implements Getter, Setter {
+        @Override
+        public String get(Object object) {
+            if (object instanceof Particle.DustOptions) {
+                Color color = ((Particle.DustOptions) object).getColor();
+                return color.getRed() + "," + color.getGreen() + "," + color.getBlue() + "," + ((Particle.DustOptions) object).getSize();
+            }
+            return "";
+        }
+
+        @Override
+        public Optional set(String value) throws IllegalArgumentException {
+            String[] split = value.split(",", 4);
+            int r = Integer.parseInt(split[0]);
+            int g = Integer.parseInt(split[1]);
+            int b = Integer.parseInt(split[2]);
+            float size = Float.parseFloat(split[3]);
+            return Optional.of(new Particle.DustOptions(Color.fromRGB(r, g, b), size));
         }
     }
 }
