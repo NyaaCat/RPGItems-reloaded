@@ -111,6 +111,28 @@ public abstract class Trigger<TEvent extends Event, TPower extends Power, TResul
         }
     };
 
+    public static final Trigger<EntityDamageByEntityEvent, PowerHit, Double, Double> OFFHAND_HIT = new Trigger<EntityDamageByEntityEvent, PowerHit, Double, Double>(EntityDamageByEntityEvent.class, PowerHit.class, Double.class, Double.class, "OFFHAND_HIT") {
+        @Override
+        public Double def(Player player, ItemStack i, EntityDamageByEntityEvent event) {
+            return event.getDamage();
+        }
+
+        @Override
+        public Double next(Double a, PowerResult<Double> b) {
+            return b.isOK() ? Math.max(a, b.data()) : a;
+        }
+
+        @Override
+        public PowerResult<Double> warpResult(PowerResult<Void> overrideResult, PowerHit power, Player player, ItemStack i, EntityDamageByEntityEvent event) {
+            return overrideResult.with(event.getDamage());
+        }
+
+        @Override
+        public PowerResult<Double> run(PowerHit power, Player player, ItemStack i, EntityDamageByEntityEvent event) {
+            return power.hit(player, i, (LivingEntity) event.getEntity(), event.getDamage(), event);
+        }
+    };
+
     public static final Trigger<ProjectileHitEvent, PowerProjectileHit, Void, Void> PROJECTILE_HIT = new Trigger<ProjectileHitEvent, PowerProjectileHit, Void, Void>(ProjectileHitEvent.class, PowerProjectileHit.class, Void.class, Void.class, "PROJECTILE_HIT") {
         @Override
         public PowerResult<Void> run(PowerProjectileHit power, Player player, ItemStack i, ProjectileHitEvent event) {
