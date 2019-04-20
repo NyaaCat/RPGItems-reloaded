@@ -11,6 +11,8 @@ import org.bukkit.event.player.PlayerToggleSprintEvent;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.potion.PotionEffect;
 import org.bukkit.potion.PotionEffectType;
+import org.bukkit.scheduler.BukkitRunnable;
+import think.rpgitems.RPGItems;
 import think.rpgitems.power.*;
 
 import java.util.List;
@@ -87,6 +89,12 @@ public class PowerAOEDamage extends BasePower implements PowerOffhandClick, Powe
     @Property
     public double damage = 0;
 
+    /**
+     * Delay of the damage
+     */
+    @Property
+    public long delay = 0;
+
     @Override
     public PowerResult<Void> rightClick(final Player player, ItemStack stack, PlayerInteractEvent event) {
         return fire(player, stack);
@@ -151,7 +159,17 @@ public class PowerAOEDamage extends BasePower implements PowerOffhandClick, Powe
                 c++;
                 continue;
             }
-            e.damage(damage, player);
+            if (delay <= 0) {
+                e.damage(damage, player);
+            } else {
+                (new BukkitRunnable() {
+                    @Override
+                    public void run() {
+                        e.damage(damage, player);
+                    }
+                }).runTaskLater(RPGItems.plugin, delay);
+            }
+
         }
         return PowerResult.ok();
     }
