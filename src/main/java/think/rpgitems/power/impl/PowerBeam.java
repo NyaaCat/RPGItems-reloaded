@@ -32,7 +32,7 @@ public class PowerBeam extends BasePower implements PowerRightClick, PowerLeftCl
     public int amount = 200;
 
     @Property
-    public Mode mode = Mode.PLAIN;
+    public Mode mode = Mode.BEAM;
 
     @Property
     public boolean pierce = true;
@@ -143,10 +143,10 @@ public class PowerBeam extends BasePower implements PowerRightClick, PowerLeftCl
                         .collect(Collectors.toList());
 
                 switch (mode) {
-                    case PLAIN:
+                    case BEAM:
                         new PlainTask(from, particle, particleSpawnLocation, apS, nearbyEntities).runTask(RPGItems.plugin);
                         break;
-                    case MOVING:
+                    case PROJECTILE:
                         new MovingTask(from, particle, particleSpawnLocation, apS, movementTicks, nearbyEntities).runTask(RPGItems.plugin);
                         break;
                 }
@@ -195,11 +195,12 @@ public class PowerBeam extends BasePower implements PowerRightClick, PowerLeftCl
             if (!collect.isEmpty()) {
                 Entity entity = collect.get(0);
                 if (entity instanceof LivingEntity) {
-                    Snowball snowball = ((LivingEntity) entity).launchProjectile(Snowball.class);
-                    snowball.setShooter(from);
-                    ((LivingEntity) entity).damage(damage, snowball);
-                    Bukkit.getServer().getPluginManager().callEvent(new ProjectileHitEvent(snowball, entity));
-                    snowball.remove();
+//                    Snowball snowball = ((LivingEntity) entity).launchProjectile(Snowball.class);
+//                    snowball.setShooter(from);
+//                    ((LivingEntity) entity).damage(damage, snowball);
+//                    Bukkit.getServer().getPluginManager().callEvent(new ProjectileHitEvent(snowball, entity));
+//                    snowball.remove();
+                    ((LivingEntity) entity).damage(damage, from);
                 }
                 return true;
             }
@@ -212,11 +213,12 @@ public class PowerBeam extends BasePower implements PowerRightClick, PowerLeftCl
                 collect.stream()
                         .map(entity -> ((LivingEntity) entity))
                         .forEach(livingEntity -> {
-                            Snowball snowball = livingEntity.launchProjectile(Snowball.class, new Vector(0, 0, 0));
-                            snowball.setShooter(from);
-                            livingEntity.damage(damage, snowball);
-                            Bukkit.getServer().getPluginManager().callEvent(new ProjectileHitEvent(snowball, livingEntity));
-                            snowball.remove();
+//                            Snowball snowball = livingEntity.launchProjectile(Snowball.class, new Vector(0, 0, 0));
+//                            snowball.setShooter(from);
+//                            livingEntity.damage(damage, snowball);
+//                            Bukkit.getServer().getPluginManager().callEvent(new ProjectileHitEvent(snowball, livingEntity));
+//                            snowball.remove();
+                            livingEntity.damage(damage, from);
                         });
                 nearbyEntities.removeAll(collect);
             }
@@ -227,14 +229,15 @@ public class PowerBeam extends BasePower implements PowerRightClick, PowerLeftCl
     private boolean canHit(Location loc, Entity entity) {
         Location eyeLocation = ((LivingEntity) entity).getEyeLocation();
         Location location = entity.getLocation();
+
         return loc.getY() > Math.min(location.getY(), eyeLocation.getY()) &&
                 loc.getY() < Math.max(location.getY(), eyeLocation.getY()) &&
                 Math.pow((loc.getX() - location.getX()), 2) + Math.pow((loc.getZ() - location.getZ()), 2) < 0.5 * 0.5;
     }
 
     private enum Mode {
-        PLAIN,
-        MOVING,
+        BEAM,
+        PROJECTILE,
         ;
     }
 
@@ -288,7 +291,7 @@ public class PowerBeam extends BasePower implements PowerRightClick, PowerLeftCl
         }
     }
 
-    private class ExtraDataSerializer implements Getter, Setter {
+    public class ExtraDataSerializer implements Getter, Setter {
         @Override
         public String get(Object object) {
             if (object instanceof Particle.DustOptions) {
