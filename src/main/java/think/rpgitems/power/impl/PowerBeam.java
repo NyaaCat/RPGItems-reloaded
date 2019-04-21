@@ -132,11 +132,11 @@ public class PowerBeam extends BasePower implements PowerRightClick, PowerLeftCl
                 List<Location> particleSpawnLocation = new LinkedList<>();
                 Location temp = fromLocation.clone();
                 int apS = amount / ((int) Math.floor(actualLength));
-                for (int i = 0; i < length; i++, temp.add(step)) {
+                for (int i = 0; i < actualLength; i++, temp.add(step)) {
                     particleSpawnLocation.add(temp.clone());
                 }
 
-                List<Entity> nearbyEntities = from.getNearbyEntities(length, length, length).stream()
+                List<Entity> nearbyEntities = from.getNearbyEntities(actualLength, actualLength, actualLength).stream()
                         .filter(entity -> entity instanceof LivingEntity)
                         //mobs in front of player
                         .filter(entity -> entity.getLocation().subtract(fromLocation).toVector().angle(towards) < (Math.PI / 4))
