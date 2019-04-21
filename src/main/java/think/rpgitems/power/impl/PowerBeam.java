@@ -132,6 +132,7 @@ public class PowerBeam extends BasePower implements PowerRightClick, PowerLeftCl
                     toLocation.add(towards.multiply(lth));
                 }
                 double actualLength = toLocation.distance(fromLocation);
+                if (actualLength < 0.05) return;
                 Location step = toLocation.clone();
                 step.subtract(fromLocation).multiply(1 / actualLength);
 
