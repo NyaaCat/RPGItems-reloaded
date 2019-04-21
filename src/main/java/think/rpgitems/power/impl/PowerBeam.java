@@ -14,6 +14,7 @@ import org.bukkit.event.player.PlayerToggleSneakEvent;
 import org.bukkit.event.player.PlayerToggleSprintEvent;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.scheduler.BukkitRunnable;
+import org.bukkit.util.BoundingBox;
 import org.bukkit.util.Vector;
 import org.librazy.nclangchecker.LangKey;
 import think.rpgitems.Events;
@@ -135,6 +136,7 @@ public class PowerBeam extends BasePower implements PowerRightClick, PowerLeftCl
                 if (actualLength < 0.05) return;
                 Location step = toLocation.clone();
                 step.subtract(fromLocation).multiply(1 / actualLength);
+                int actualMovementTicks = (int) Math.round((actualLength/length) * movementTicks);
 
                 List<Location> particleSpawnLocation = new LinkedList<>();
                 Location temp = fromLocation.clone();
@@ -158,7 +160,7 @@ public class PowerBeam extends BasePower implements PowerRightClick, PowerLeftCl
                         new PlainTask(from, particle, particleSpawnLocation, apS, nearbyEntities).runTask(RPGItems.plugin);
                         break;
                     case PROJECTILE:
-                        new MovingTask(from, particle, particleSpawnLocation, apS, movementTicks, nearbyEntities).runTask(RPGItems.plugin);
+                        new MovingTask(from, particle, particleSpawnLocation, apS, actualMovementTicks, nearbyEntities).runTask(RPGItems.plugin);
                         break;
                 }
             }
@@ -272,10 +274,11 @@ public class PowerBeam extends BasePower implements PowerRightClick, PowerLeftCl
     private boolean canHit(Location loc, Entity entity) {
         Location eyeLocation = ((LivingEntity) entity).getEyeLocation();
         Location location = entity.getLocation();
-
-        return loc.getY() > Math.min(location.getY(), eyeLocation.getY()) &&
-                loc.getY() < Math.max(location.getY(), eyeLocation.getY()) &&
-                Math.pow((loc.getX() - location.getX()), 2) + Math.pow((loc.getZ() - location.getZ()), 2) < 1; // TODO use actual paticle radius and entity hitbox as result
+        BoundingBox boundingBox = entity.getBoundingBox();
+        return boundingBox.contains(loc.toVector());
+//        return loc.getY() > Math.min(location.getY(), eyeLocation.getY()) &&
+//                loc.getY() < Math.max(location.getY(), eyeLocation.getY()) &&
+//                Math.pow((loc.getX() - location.getX()), 2) + Math.pow((loc.getZ() - location.getZ()), 2) < 1; // TODO use actual paticle radius and entity hitbox as result
     }
 
     private enum Mode {
