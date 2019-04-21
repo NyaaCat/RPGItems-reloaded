@@ -26,16 +26,22 @@ public class Ticker extends BukkitRunnable {
                 Optional<RPGItem> item = ItemManager.toRPGItem(part);
                 if (!item.isPresent())
                     continue;
-                item.get().power(player, part, null, Trigger.TICK);
+                RPGItem rgi = item.get();
+                rgi.power(player, part, null, Trigger.TICK);
             }
-            ItemStack mainHand = player.getInventory().getItemInMainHand();
-            Optional<RPGItem> item = ItemManager.toRPGItem(mainHand);
-            if (!item.isPresent())
-                continue;
-            item.get().power(player, mainHand, null, Trigger.TICK);
+            ItemStack itemInMainHand = player.getInventory().getItemInMainHand();
+            ItemStack itemInOffHand = player.getInventory().getItemInOffHand();
+            Optional<RPGItem> offhand = ItemManager.toRPGItem(itemInOffHand);
+            Optional<RPGItem> mainhand = ItemManager.toRPGItem(itemInMainHand);
+            if (mainhand.isPresent()) {
+                mainhand.get().power(player, itemInMainHand, null, Trigger.TICK);
 
-            if (player.isSneaking()) {
-                item.get().power(player, mainHand, null, Trigger.SNEAKING);
+                if (player.isSneaking()) {
+                    mainhand.get().power(player, itemInMainHand, null, Trigger.SNEAKING);
+                }
+            }
+            if (offhand.isPresent()){
+                offhand.get().power(player, itemInOffHand, null, Trigger.TICK_OFFHAND);
             }
         }
     }

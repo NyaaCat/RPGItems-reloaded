@@ -8,6 +8,7 @@ import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.entity.Entity;
 import org.bukkit.entity.Player;
 import org.bukkit.entity.Projectile;
+import org.bukkit.event.entity.EntityShootBowEvent;
 import org.bukkit.event.player.PlayerInteractEvent;
 import org.bukkit.inventory.ItemStack;
 import think.rpgitems.RPGItems;
@@ -28,7 +29,7 @@ import static think.rpgitems.power.Utils.checkCooldownByString;
  * </p>
  */
 @PowerMeta(defaultTrigger = "RIGHT_CLICK", generalInterface = PowerPlain.class)
-public class PowerThrow extends BasePower implements PowerRightClick, PowerLeftClick, PowerPlain {
+public class PowerThrow extends BasePower implements PowerRightClick, PowerLeftClick, PowerPlain, PowerBowShoot {
     @Property(order = 5, required = true)
     public String entityData = "";
     @Property(order = 4)
@@ -120,5 +121,10 @@ public class PowerThrow extends BasePower implements PowerRightClick, PowerLeftC
         } catch (IllegalAccessException | InvocationTargetException | NoSuchMethodException e) {
             RPGItems.plugin.getLogger().log(Level.WARNING, "Execption spawning entity in " + getItem().getName(), e);
         }
+    }
+
+    @Override
+    public PowerResult<Void> bowShoot(Player player, ItemStack itemStack, EntityShootBowEvent e) {
+        return fire(player, itemStack);
     }
 }
