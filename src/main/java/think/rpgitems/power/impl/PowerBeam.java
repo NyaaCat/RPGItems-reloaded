@@ -23,6 +23,7 @@ import think.rpgitems.utils.ArmorStandUtil;
 
 import java.util.*;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 @PowerMeta(defaultTrigger = "RIGHT_CLICK")
 public class PowerBeam extends BasePower implements PowerRightClick, PowerLeftClick, PowerSneak, PowerSneaking, PowerSprint, PowerBowShoot {
@@ -117,7 +118,8 @@ public class PowerBeam extends BasePower implements PowerRightClick, PowerLeftCl
                             Arrays.stream(Material.values()).collect(Collectors.toSet())
                             , ((int) Math.ceil(length)));
                 } else {
-                    targetBlock = from.getTargetBlockExact(((int) Math.ceil(length)), FluidCollisionMode.NEVER);
+
+                    targetBlock = from.getTargetBlock(transp,((int) Math.ceil(length)));
                 }
                 Location toLocation;
                 Vector towards = from.getEyeLocation().getDirection();
