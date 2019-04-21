@@ -247,8 +247,10 @@ public class PowerBeam extends BasePower implements PowerRightClick, PowerLeftCl
                             Snowball snowball = ArmorStandUtil.asProjectileSource(from).launchProjectile(Snowball.class, new Vector(0, 0, 0));
                             Events.registerRPGProjectile(snowball.getEntityId(), getItem().getUid());
                             snowball.setShooter(from);
-                            livingEntity.damage(damage, snowball);
-                            Bukkit.getServer().getPluginManager().callEvent(new EntityDamageByEntityEvent(snowball, livingEntity, EntityDamageEvent.DamageCause.PROJECTILE, damage));
+                            EntityDamageByEntityEvent event = new EntityDamageByEntityEvent(snowball, livingEntity, EntityDamageEvent.DamageCause.PROJECTILE, damage);
+                            Bukkit.getServer().getPluginManager().callEvent(event);
+                            double actualDamage = event.getDamage();
+                            livingEntity.damage(actualDamage, snowball);
                             snowball.remove();
                         });
                 nearbyEntities.removeAll(collect);
