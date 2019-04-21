@@ -9,7 +9,6 @@ import org.bukkit.entity.Snowball;
 import org.bukkit.event.entity.EntityDamageByEntityEvent;
 import org.bukkit.event.entity.EntityDamageEvent;
 import org.bukkit.event.entity.EntityShootBowEvent;
-import org.bukkit.event.entity.ProjectileHitEvent;
 import org.bukkit.event.player.PlayerInteractEvent;
 import org.bukkit.event.player.PlayerToggleSneakEvent;
 import org.bukkit.event.player.PlayerToggleSprintEvent;
@@ -193,17 +192,30 @@ public class PowerBeam extends BasePower implements PowerRightClick, PowerLeftCl
                 if (!loc.equals(lastLocation)) {
                     Vector step = loc.toVector().subtract(lastLocation.toVector()).multiply(0.25);
                     for (int i = 0; i < 4; i++) {
-                        world.spawnParticle(this.particle, lastLocation, apS/4, offsetX, offsetY, offsetZ, speed, extraData);
+                        spawnParticle(from, world, lastLocation, apS / 4);
                         lastLocation.add(step);
                     }
-                } else {
-                    world.spawnParticle(this.particle, loc, apS, offsetX, offsetY, offsetZ, speed, extraData);
                 }
+//                else {
+//                    spawnParticle(from, world, loc, apS);
+//                }
                 Class<?> dataType = this.particle.getDataType();
                 lastLocation = loc;
                 if (tryHit(from, loc, nearbyEntities)) return;
             }
         }
+
+
+    }
+
+    private void spawnParticle(LivingEntity from, World world, Location lastLocation, int i) {
+        if ((lastLocation.distance(from.getEyeLocation()) < 1)) {
+            return;
+        }
+        if (from instanceof Player) {
+            ((Player) from).spawnParticle(this.particle, lastLocation, i / 2, offsetX, offsetY, offsetZ, speed, extraData);
+        }
+        world.spawnParticle(this.particle, lastLocation, i, offsetX, offsetY, offsetZ, speed, extraData);
     }
 
     private boolean tryHit(LivingEntity from, Location loc, List<Entity> nearbyEntities) {
@@ -233,7 +245,7 @@ public class PowerBeam extends BasePower implements PowerRightClick, PowerLeftCl
                         .map(entity -> ((LivingEntity) entity))
                         .forEach(livingEntity -> {
                             Snowball snowball = ArmorStandUtil.asProjectileSource(from).launchProjectile(Snowball.class, new Vector(0, 0, 0));
-                            Events.registerRPGProjectile(snowball.getEntityId(),getItem().getUid());
+                            Events.registerRPGProjectile(snowball.getEntityId(), getItem().getUid());
                             snowball.setShooter(from);
                             livingEntity.damage(damage, snowball);
                             Bukkit.getServer().getPluginManager().callEvent(new EntityDamageByEntityEvent(snowball, livingEntity, EntityDamageEvent.DamageCause.PROJECTILE, damage));
@@ -298,13 +310,14 @@ public class PowerBeam extends BasePower implements PowerRightClick, PowerLeftCl
                             if (!loc.equals(lastLocation)) {
                                 Vector step = loc.toVector().subtract(lastLocation.toVector()).multiply(0.25);
                                 for (int i = 0; i < 4; i++) {
-                                    world.spawnParticle(particle, lastLocation, amountPerSec/4, offsetX, offsetY, offsetZ, speed, extraData);
+                                    spawnParticle(from, world, lastLocation, amountPerSec / 4);
                                     lastLocation.add(step);
                                 }
-                            } else {
-                                world.spawnParticle(particle, loc, amountPerSec, offsetX, offsetY, offsetZ, speed, extraData);
                             }
-                            world.spawnParticle(particle, loc, amountPerSec, offsetX, offsetY, offsetZ, speed, extraData);
+//                            else {
+//                                spawnParticle(from, world, loc, amountPerSec);
+//                            }
+//                            spawnParticle(from, world, loc, amountPerSec);
                             if (tryHit(from, loc, nearbyEntities)) {
                                 if (!runnables.isEmpty()) {
                                     runnables.forEach(BukkitRunnable::cancel);
