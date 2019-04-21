@@ -67,6 +67,10 @@ public class PowerBeam extends BasePower implements PowerRightClick, PowerLeftCl
     @Property
     public double speed = 0;
 
+    private Set<Material> transp = Stream.of(Material.values())
+            .filter(material -> !material.isSolid())
+            .collect(Collectors.toSet());
+
     @Override
     public @LangKey(skipCheck = true) String getName() {
         return "beam";
@@ -228,9 +232,12 @@ public class PowerBeam extends BasePower implements PowerRightClick, PowerLeftCl
                 Entity entity = collect.get(0);
                 if (entity instanceof LivingEntity) {
                     Snowball snowball = ArmorStandUtil.asProjectileSource(from).launchProjectile(Snowball.class);
+                    Events.registerRPGProjectile(snowball.getEntityId(), getItem().getUid());
                     snowball.setShooter(from);
-                    ((LivingEntity) entity).damage(damage, snowball);
-                    Bukkit.getServer().getPluginManager().callEvent(new EntityDamageByEntityEvent(snowball, entity, EntityDamageEvent.DamageCause.PROJECTILE, damage));
+                    EntityDamageByEntityEvent event = new EntityDamageByEntityEvent(snowball, entity, EntityDamageEvent.DamageCause.PROJECTILE, damage);
+                    Bukkit.getServer().getPluginManager().callEvent(event);
+                    double actualDamage = event.getDamage();
+                    ((LivingEntity) entity).damage(actualDamage, snowball);
                     snowball.remove();
                 }
                 return true;
