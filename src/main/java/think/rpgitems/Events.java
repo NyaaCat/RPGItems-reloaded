@@ -618,6 +618,7 @@ public class Events implements Listener {
 //                e.setDamage(damage.get());
 //            });
 //        }
+        if (!(entity instanceof LivingEntity))return;
         if (rItem!=null){
             damage.set(rItem.power(player, item, e, Trigger.HIT));
         }
@@ -686,6 +687,7 @@ public class Events implements Listener {
 //                e.setDamage(damage.get());
 //            });
 //        }
+        if (!(e.getEntity() instanceof LivingEntity))return;
         if (rItem!=null){
             damage.set(rItem.power(player, item, e, Trigger.HIT));
         }
