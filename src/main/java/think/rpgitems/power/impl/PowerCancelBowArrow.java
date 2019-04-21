@@ -51,6 +51,6 @@ public class PowerCancelBowArrow extends BasePower implements PowerBowShoot {
 //                new Message("item " + rpgItem.getDisplayName() +" don't have "+nextPowerName+" "+nextPowerIndex+" that can be triggered.");
 //            }
 //        });
-        return null;
+        return PowerResult.ok();
     }
 }
