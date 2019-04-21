@@ -6,10 +6,7 @@ import org.bukkit.Location;
 import org.bukkit.entity.LivingEntity;
 import org.bukkit.entity.Player;
 import org.bukkit.event.Event;
-import org.bukkit.event.entity.EntityDamageByEntityEvent;
-import org.bukkit.event.entity.EntityDamageEvent;
-import org.bukkit.event.entity.ProjectileHitEvent;
-import org.bukkit.event.entity.ProjectileLaunchEvent;
+import org.bukkit.event.entity.*;
 import org.bukkit.event.inventory.InventoryClickEvent;
 import org.bukkit.event.player.PlayerInteractEvent;
 import org.bukkit.event.player.PlayerSwapHandItemsEvent;
@@ -89,6 +86,13 @@ public abstract class Trigger<TEvent extends Event, TPower extends Power, TResul
         acceptingNew = false;
     }
 
+    public static final Trigger<EntityShootBowEvent, PowerBowShoot, Void, Void> BOW_SHOOT = new Trigger<EntityShootBowEvent, PowerBowShoot, Void, Void>(EntityShootBowEvent.class, PowerBowShoot.class, Void.class, Void.class, "BOW_SHOOT") {
+        @Override
+        public PowerResult<Void> run(PowerBowShoot power, Player player, ItemStack i, EntityShootBowEvent event) {
+            return power.bowShoot(player, i, event);
+        }
+    };
+
     public static final Trigger<EntityDamageByEntityEvent, PowerHit, Double, Double> HIT = new Trigger<EntityDamageByEntityEvent, PowerHit, Double, Double>(EntityDamageByEntityEvent.class, PowerHit.class, Double.class, Double.class, "HIT") {
         @Override
         public Double def(Player player, ItemStack i, EntityDamageByEntityEvent event) {
@@ -132,6 +136,8 @@ public abstract class Trigger<TEvent extends Event, TPower extends Power, TResul
             return power.hit(player, i, (LivingEntity) event.getEntity(), event.getDamage(), event);
         }
     };
+
+//    public static final Trigger<EntityShootBowEvent>
 
     public static final Trigger<ProjectileHitEvent, PowerProjectileHit, Void, Void> PROJECTILE_HIT = new Trigger<ProjectileHitEvent, PowerProjectileHit, Void, Void>(ProjectileHitEvent.class, PowerProjectileHit.class, Void.class, Void.class, "PROJECTILE_HIT") {
         @Override

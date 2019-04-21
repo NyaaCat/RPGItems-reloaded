@@ -5,8 +5,7 @@ import org.bukkit.block.Block;
 import org.bukkit.entity.Entity;
 import org.bukkit.entity.LivingEntity;
 import org.bukkit.entity.Player;
-import org.bukkit.entity.Snowball;
-import org.bukkit.event.entity.ProjectileHitEvent;
+import org.bukkit.event.entity.EntityShootBowEvent;
 import org.bukkit.event.player.PlayerInteractEvent;
 import org.bukkit.event.player.PlayerToggleSneakEvent;
 import org.bukkit.event.player.PlayerToggleSprintEvent;
@@ -21,7 +20,7 @@ import java.util.*;
 import java.util.stream.Collectors;
 
 @PowerMeta(defaultTrigger = "RIGHT_CLICK")
-public class PowerBeam extends BasePower implements PowerRightClick, PowerLeftClick, PowerSneak, PowerSneaking, PowerSprint {
+public class PowerBeam extends BasePower implements PowerRightClick, PowerLeftClick, PowerSneak, PowerSneaking, PowerSprint, PowerBowShoot {
     @Property
     public int length = 10;
 
@@ -153,6 +152,11 @@ public class PowerBeam extends BasePower implements PowerRightClick, PowerLeftCl
             }
         }.runTaskAsynchronously(RPGItems.plugin);
         return new PowerResult<>();
+    }
+
+    @Override
+    public PowerResult<Void> bowShoot(Player player, ItemStack itemStack, EntityShootBowEvent e) {
+        return beam(player);
     }
 
     class PlainTask extends BukkitRunnable {

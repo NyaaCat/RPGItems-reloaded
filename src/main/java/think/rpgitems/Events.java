@@ -247,6 +247,16 @@ public class Events implements Listener {
         e.getProjectile().setMetadata("rpgitems.force", new FixedMetadataValue(plugin, e.getForce()));
     }
 
+    @EventHandler(priority = EventPriority.HIGH)
+    public void onPlayerShootBow(EntityShootBowEvent e){
+        LivingEntity entity = e.getEntity();
+        Vector velocity = e.getProjectile().getVelocity();
+        if (entity instanceof Player){
+            ItemStack bow = e.getBow();
+            ItemManager.toRPGItem(bow).ifPresent(rpgItem -> rpgItem.power(((Player) entity), bow, e, Trigger.BOW_SHOOT));
+        }
+    }
+
     @EventHandler
     public void onProjectileFire(ProjectileLaunchEvent e) {
         Projectile entity = e.getEntity();
