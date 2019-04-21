@@ -5,7 +5,9 @@ import org.bukkit.block.Block;
 import org.bukkit.entity.Entity;
 import org.bukkit.entity.LivingEntity;
 import org.bukkit.entity.Player;
+import org.bukkit.entity.Snowball;
 import org.bukkit.event.entity.EntityShootBowEvent;
+import org.bukkit.event.entity.ProjectileHitEvent;
 import org.bukkit.event.player.PlayerInteractEvent;
 import org.bukkit.event.player.PlayerToggleSneakEvent;
 import org.bukkit.event.player.PlayerToggleSprintEvent;
@@ -15,6 +17,7 @@ import org.bukkit.util.Vector;
 import org.librazy.nclangchecker.LangKey;
 import think.rpgitems.RPGItems;
 import think.rpgitems.power.*;
+import think.rpgitems.utils.ArmorStandUtil;
 
 import java.util.*;
 import java.util.stream.Collectors;
@@ -209,12 +212,11 @@ public class PowerBeam extends BasePower implements PowerRightClick, PowerLeftCl
             if (!collect.isEmpty()) {
                 Entity entity = collect.get(0);
                 if (entity instanceof LivingEntity) {
-//                    Snowball snowball = ((LivingEntity) entity).launchProjectile(Snowball.class);
-//                    snowball.setShooter(from);
-//                    ((LivingEntity) entity).damage(damage, snowball);
-//                    Bukkit.getServer().getPluginManager().callEvent(new ProjectileHitEvent(snowball, entity));
-//                    snowball.remove();
-                    ((LivingEntity) entity).damage(damage, from);
+                    Snowball snowball = ArmorStandUtil.asProjectileSource(from).launchProjectile(Snowball.class);
+                    snowball.setShooter(from);
+                    ((LivingEntity) entity).damage(damage, snowball);
+                    Bukkit.getServer().getPluginManager().callEvent(new ProjectileHitEvent(snowball, entity));
+                    snowball.remove();
                 }
                 return true;
             }
@@ -227,12 +229,11 @@ public class PowerBeam extends BasePower implements PowerRightClick, PowerLeftCl
                 collect.stream()
                         .map(entity -> ((LivingEntity) entity))
                         .forEach(livingEntity -> {
-//                            Snowball snowball = livingEntity.launchProjectile(Snowball.class, new Vector(0, 0, 0));
-//                            snowball.setShooter(from);
-//                            livingEntity.damage(damage, snowball);
-//                            Bukkit.getServer().getPluginManager().callEvent(new ProjectileHitEvent(snowball, livingEntity));
-//                            snowball.remove();
-                            livingEntity.damage(damage, from);
+                            Snowball snowball = ArmorStandUtil.asProjectileSource(from).launchProjectile(Snowball.class, new Vector(0, 0, 0));
+                            snowball.setShooter(from);
+                            livingEntity.damage(damage, snowball);
+                            Bukkit.getServer().getPluginManager().callEvent(new ProjectileHitEvent(snowball, livingEntity));
+                            snowball.remove();
                         });
                 nearbyEntities.removeAll(collect);
             }
