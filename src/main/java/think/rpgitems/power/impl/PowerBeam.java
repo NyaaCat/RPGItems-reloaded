@@ -196,11 +196,13 @@ public class PowerBeam extends BasePower implements PowerRightClick, PowerLeftCl
             if (world == null) return;
             Location lastLocation = particleSpawnLocation.get(0);
             while (iterator.hasNext()) {
+                boolean isHit = false;
                 Location loc = iterator.next();
 //                world.spawnParticle(this.particle, loc, apS);
                 if (!loc.equals(lastLocation)) {
                     Vector step = loc.toVector().subtract(lastLocation.toVector()).multiply(0.25);
                     for (int i = 0; i < 4; i++) {
+                        isHit = tryHit(from, lastLocation, nearbyEntities) || isHit;
                         spawnParticle(from, world, lastLocation, apS / 4);
                         lastLocation.add(step);
                     }
@@ -210,7 +212,7 @@ public class PowerBeam extends BasePower implements PowerRightClick, PowerLeftCl
 //                }
                 Class<?> dataType = this.particle.getDataType();
                 lastLocation = loc;
-                if (tryHit(from, loc, nearbyEntities)) return;
+                if (isHit) return;
             }
         }
 
@@ -242,7 +244,9 @@ public class PowerBeam extends BasePower implements PowerRightClick, PowerLeftCl
                     EntityDamageByEntityEvent event = new EntityDamageByEntityEvent(snowball, entity, EntityDamageEvent.DamageCause.PROJECTILE, damage);
                     Bukkit.getServer().getPluginManager().callEvent(event);
                     double actualDamage = event.getDamage();
+                    entity.setLastDamageCause(event);
                     ((LivingEntity) entity).damage(actualDamage, snowball);
+                    entity.setLastDamageCause(event);
                     snowball.remove();
                 }
                 return true;
@@ -262,7 +266,9 @@ public class PowerBeam extends BasePower implements PowerRightClick, PowerLeftCl
                             EntityDamageByEntityEvent event = new EntityDamageByEntityEvent(snowball, livingEntity, EntityDamageEvent.DamageCause.PROJECTILE, damage);
                             Bukkit.getServer().getPluginManager().callEvent(event);
                             double actualDamage = event.getDamage();
+                            livingEntity.setLastDamageCause(event);
                             livingEntity.damage(actualDamage, snowball);
+                            livingEntity.setLastDamageCause(event);
                             snowball.remove();
                         });
                 nearbyEntities.removeAll(collect);
@@ -320,11 +326,13 @@ public class PowerBeam extends BasePower implements PowerRightClick, PowerLeftCl
                     public void run() {
                         Location lastLocation = particleSpawnLocation.get(0);
                         for (int j = 0; j < spS; j++) {
+                            boolean isHit = false;
                             if (!iterator.hasNext()) return;
                             Location loc = iterator.next();
                             if (!loc.equals(lastLocation)) {
                                 Vector step = loc.toVector().subtract(lastLocation.toVector()).multiply(0.25);
                                 for (int i = 0; i < 4; i++) {
+                                    isHit = tryHit(from, lastLocation, nearbyEntities) || isHit;
                                     spawnParticle(from, world, lastLocation, amountPerSec / 4);
                                     lastLocation.add(step);
                                 }
@@ -333,7 +341,7 @@ public class PowerBeam extends BasePower implements PowerRightClick, PowerLeftCl
 //                                spawnParticle(from, world, loc, amountPerSec);
 //                            }
 //                            spawnParticle(from, world, loc, amountPerSec);
-                            if (tryHit(from, loc, nearbyEntities)) {
+                            if (isHit) {
                                 if (!runnables.isEmpty()) {
                                     runnables.forEach(BukkitRunnable::cancel);
                                 }
