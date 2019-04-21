@@ -621,14 +621,15 @@ public class Events implements Listener {
         if (!(entity instanceof LivingEntity))return;
         if (rItem!=null){
             damage.set(rItem.power(player, item, e, Trigger.HIT));
+            e.setDamage(damage.get());
         }
         for (ItemStack armorContent : armorContents) {
             if (armorContent == null) continue;
             RPGItem rpgItem = ItemManager.toRPGItem(armorContent).orElse(null);
             if (rpgItem == null)continue;
             damage.set(rpgItem.power(player, armorContent, e, Trigger.HIT));
+            e.setDamage(damage.get());
         }
-        e.setDamage(damage.get());
         ItemStack itemInOffHand = player.getInventory().getItemInOffHand();
         Optional<RPGItem> offhand = ItemManager.toRPGItem(itemInOffHand);
         //todo
@@ -690,14 +691,15 @@ public class Events implements Listener {
         if (!(e.getEntity() instanceof LivingEntity))return;
         if (rItem!=null){
             damage.set(rItem.power(player, item, e, Trigger.HIT));
+            e.setDamage(damage.get());
         }
         for (ItemStack armorContent : armorContents) {
             if (armorContent == null) continue;
             RPGItem rpgItem = ItemManager.toRPGItem(armorContent).orElse(null);
             if (rpgItem == null)continue;
             damage.set(rpgItem.power(player, armorContent, e, Trigger.HIT));
+            e.setDamage(damage.get());
         }
-        e.setDamage(damage.get());
         ItemStack itemInOffHand = player.getInventory().getItemInOffHand();
         Optional<RPGItem> offhand = ItemManager.toRPGItem(itemInOffHand);
         //todo
