@@ -232,7 +232,7 @@ public class PowerBeam extends BasePower implements PowerRightClick, PowerLeftCl
 
         return loc.getY() > Math.min(location.getY(), eyeLocation.getY()) &&
                 loc.getY() < Math.max(location.getY(), eyeLocation.getY()) &&
-                Math.pow((loc.getX() - location.getX()), 2) + Math.pow((loc.getZ() - location.getZ()), 2) < 0.5 * 0.5;
+                Math.pow((loc.getX() - location.getX()), 2) + Math.pow((loc.getZ() - location.getZ()), 2) < 1; // TODO use actual paticle radius and entity hitbox as result
     }
 
     private enum Mode {
