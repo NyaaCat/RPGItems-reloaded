@@ -26,6 +26,7 @@ import org.bukkit.inventory.meta.ItemMeta;
 import org.bukkit.metadata.FixedMetadataValue;
 import org.bukkit.projectiles.ProjectileSource;
 import org.bukkit.scheduler.BukkitRunnable;
+import org.bukkit.util.Vector;
 import think.rpgitems.item.ItemManager;
 import think.rpgitems.item.RPGItem;
 import think.rpgitems.power.Power;
@@ -329,7 +330,8 @@ public class Events implements Listener {
         Trigger<PlayerToggleSneakEvent, PowerSneak, Void, Void> trigger = Trigger.SNEAK;
 
         trigger(p, e, p.getInventory().getItemInMainHand(), trigger);
-        trigger(p, e, p.getInventory().getItemInOffHand(), trigger);
+        //todo
+//        trigger(p, e, p.getInventory().getItemInOffHand(), trigger);
 
         ItemStack[] armorContents = p.getInventory().getArmorContents();
         Stream.of(armorContents)
@@ -352,7 +354,8 @@ public class Events implements Listener {
         Trigger<PlayerToggleSprintEvent, PowerSprint, Void, Void> sprint = Trigger.SPRINT;
 
         trigger(p, e, p.getInventory().getItemInMainHand(), sprint);
-        trigger(p, e, p.getInventory().getItemInOffHand(), sprint);
+        //todo
+//        trigger(p, e, p.getInventory().getItemInOffHand(), sprint);
         ItemStack[] armorContents = p.getInventory().getArmorContents();
         Stream.of(armorContents)
                 .map(ItemManager::toRPGItem)
@@ -578,6 +581,7 @@ public class Events implements Listener {
             return;
 
         RPGItem rItem = ItemManager.toRPGItem(item).orElse(null);
+        ItemStack[] armorContents = player.getInventory().getArmorContents();
         double originDamage = e.getDamage();
         AtomicReference<Double> damage = new AtomicReference<>(originDamage);
         if (rItem != null) {
@@ -587,26 +591,37 @@ public class Events implements Listener {
             e.setCancelled(true);
             return;
         }
-        List<RPGItem> collect = Stream.concat(
-                Stream.of(rItem),
-                Stream.of(player.getInventory().getArmorContents())
-                        .map(ItemManager::toRPGItem)
-                        .filter(Optional::isPresent)
-                        .map(Optional::get)
-        ).filter(Objects::nonNull).collect(Collectors.toList());
+//        List<RPGItem> collect = Stream.concat(
+//                Stream.of(rItem),
+//                Stream.of(player.getInventory().getArmorContents())
+//                        .map(ItemManager::toRPGItem)
+//                        .filter(Optional::isPresent)
+//                        .map(Optional::get)
+//        ).filter(Objects::nonNull).collect(Collectors.toList());
 
         e.setDamage(damage.get());
-        if (!collect.isEmpty()) {
-            collect.forEach(rpgItem -> {
-                if (entity instanceof LivingEntity) {
-                    damage.set(rpgItem.power(player, rpgItem.toItemStack(), e, Trigger.HIT));
-                }
-                e.setDamage(damage.get());
-            });
+//        if (!collect.isEmpty()) {
+//            collect.forEach(rpgItem -> {
+//                if (entity instanceof LivingEntity) {
+//                    damage.set(rpgItem.power(player, rpgItem.toItemStack(), e, Trigger.HIT));
+//                }
+//                e.setDamage(damage.get());
+//            });
+//        }
+        if (rItem!=null){
+            damage.set(rItem.power(player, item, e, Trigger.HIT));
         }
+        for (ItemStack armorContent : armorContents) {
+            if (armorContent == null) continue;
+            RPGItem rpgItem = ItemManager.toRPGItem(armorContent).orElse(null);
+            if (rpgItem == null)continue;
+            damage.set(rpgItem.power(player, armorContent, e, Trigger.HIT));
+        }
+        e.setDamage(damage.get());
         ItemStack itemInOffHand = player.getInventory().getItemInOffHand();
         Optional<RPGItem> offhand = ItemManager.toRPGItem(itemInOffHand);
-        offhand.ifPresent(rpgItem -> damage.set(rpgItem.power(player, itemInOffHand, e, Trigger.OFFHAND_HIT)));
+        //todo
+//        offhand.ifPresent(rpgItem -> damage.set(rpgItem.power(player, itemInOffHand, e, Trigger.OFFHAND_HIT)));
         e.setDamage(damage.get());
     }
 
@@ -644,25 +659,37 @@ public class Events implements Listener {
 
         double originDamage = e.getDamage();
         AtomicReference<Double> damage = new AtomicReference<>(rItem.projectileDamage(player, originDamage, item, projectile, e.getEntity()));
+        ItemStack[] armorContents = player.getInventory().getArmorContents();
         e.setDamage(damage.get());
-        List<RPGItem> collect = Stream.concat(
-                Stream.of(rItem),
-                Stream.of(player.getInventory().getArmorContents())
-                        .map(ItemManager::toRPGItem)
-                        .filter(Optional::isPresent)
-                        .map(Optional::get)
-        ).filter(Objects::nonNull).collect(Collectors.toList());
-        if (!collect.isEmpty()) {
-            collect.forEach(rpgItem -> {
-                if (e.getEntity() instanceof LivingEntity) {
-                    damage.set(rpgItem.power((Player) projectile.getShooter(), rpgItem.toItemStack(), e, Trigger.HIT));
-                }
-                e.setDamage(damage.get());
-            });
+//        List<RPGItem> collect = Stream.concat(
+//                Stream.of(rItem),
+//                Stream.of(player.getInventory().getArmorContents())
+//                        .map(ItemManager::toRPGItem)
+//                        .filter(Optional::isPresent)
+//                        .map(Optional::get)
+//        ).filter(Objects::nonNull).collect(Collectors.toList());
+//        if (!collect.isEmpty()) {
+//            collect.forEach(rpgItem -> {
+//                if (e.getEntity() instanceof LivingEntity) {
+//                    damage.set(rpgItem.power((Player) projectile.getShooter(), rpgItem.toItemStack(), e, Trigger.HIT));
+//                }
+//                e.setDamage(damage.get());
+//            });
+//        }
+        if (rItem!=null){
+            damage.set(rItem.power(player, item, e, Trigger.HIT));
         }
+        for (ItemStack armorContent : armorContents) {
+            if (armorContent == null) continue;
+            RPGItem rpgItem = ItemManager.toRPGItem(armorContent).orElse(null);
+            if (rpgItem == null)continue;
+            damage.set(rpgItem.power(player, armorContent, e, Trigger.HIT));
+        }
+        e.setDamage(damage.get());
         ItemStack itemInOffHand = player.getInventory().getItemInOffHand();
         Optional<RPGItem> offhand = ItemManager.toRPGItem(itemInOffHand);
-        offhand.ifPresent(rpgItem -> rpgItem.power(player, itemInOffHand, e, Trigger.OFFHAND_HIT));
+        //todo
+//        offhand.ifPresent(rpgItem -> rpgItem.power(player, itemInOffHand, e, Trigger.OFFHAND_HIT));
     }
 
     private void playerHit(EntityDamageByEntityEvent e) {

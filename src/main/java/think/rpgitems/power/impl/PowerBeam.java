@@ -176,11 +176,21 @@ public class PowerBeam extends BasePower implements PowerRightClick, PowerLeftCl
             Iterator<Location> iterator = particleSpawnLocation.iterator();
             World world = particleSpawnLocation.get(0).getWorld();
             if (world == null) return;
+            Location lastLocation = particleSpawnLocation.get(0);
             while (iterator.hasNext()) {
                 Location loc = iterator.next();
 //                world.spawnParticle(this.particle, loc, apS);
-                world.spawnParticle(this.particle, loc, apS, offsetX, offsetY, offsetZ, speed, extraData);
+                if (!loc.equals(lastLocation)) {
+                    Vector step = loc.toVector().subtract(lastLocation.toVector()).multiply(0.25);
+                    for (int i = 0; i < 4; i++) {
+                        world.spawnParticle(this.particle, lastLocation, apS/4, offsetX, offsetY, offsetZ, speed, extraData);
+                        lastLocation.add(step);
+                    }
+                } else {
+                    world.spawnParticle(this.particle, loc, apS, offsetX, offsetY, offsetZ, speed, extraData);
+                }
                 Class<?> dataType = this.particle.getDataType();
+                lastLocation = loc;
                 if (tryHit(from, loc, nearbyEntities)) return;
             }
         }
@@ -272,9 +282,19 @@ public class PowerBeam extends BasePower implements PowerRightClick, PowerLeftCl
                 BukkitRunnable bukkitRunnable = new BukkitRunnable() {
                     @Override
                     public void run() {
+                        Location lastLocation = particleSpawnLocation.get(0);
                         for (int j = 0; j < spS; j++) {
                             if (!iterator.hasNext()) return;
                             Location loc = iterator.next();
+                            if (!loc.equals(lastLocation)) {
+                                Vector step = loc.toVector().subtract(lastLocation.toVector()).multiply(0.25);
+                                for (int i = 0; i < 4; i++) {
+                                    world.spawnParticle(particle, lastLocation, amountPerSec/4, offsetX, offsetY, offsetZ, speed, extraData);
+                                    lastLocation.add(step);
+                                }
+                            } else {
+                                world.spawnParticle(particle, loc, amountPerSec, offsetX, offsetY, offsetZ, speed, extraData);
+                            }
                             world.spawnParticle(particle, loc, amountPerSec, offsetX, offsetY, offsetZ, speed, extraData);
                             if (tryHit(from, loc, nearbyEntities)) {
                                 if (!runnables.isEmpty()) {
