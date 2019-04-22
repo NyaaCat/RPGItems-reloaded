@@ -37,13 +37,13 @@ import think.rpgitems.support.WGHandler;
 import think.rpgitems.support.WGSupport;
 
 import java.util.*;
-import java.util.concurrent.atomic.AtomicReference;
 import java.util.logging.Level;
 import java.util.stream.Stream;
 
 import static think.rpgitems.RPGItems.logger;
 import static think.rpgitems.RPGItems.plugin;
 import static think.rpgitems.power.Utils.maxWithCancel;
+import static think.rpgitems.power.Utils.minWithCancel;
 
 public class Events implements Listener {
 
@@ -240,7 +240,7 @@ public class Events implements Listener {
         float force = e.getForce();
         if (entity instanceof Player) {
             ItemStack bow = e.getBow();
-            force = ItemManager.toRPGItem(bow).map(rpgItem -> rpgItem.power(((Player) entity), bow, e, Trigger.BOW_SHOOT)).orElse(force);
+            force = ItemManager.toRPGItem(bow).flatMap(rpgItem -> rpgItem.power(((Player) entity), bow, e, Trigger.BOW_SHOOT)).orElse(force);
         }
         if (force == -1) {
             e.setCancelled(true);
@@ -599,7 +599,7 @@ public class Events implements Listener {
         e.setDamage(damage);
         if (!(entity instanceof LivingEntity)) return;
         if (rItem != null) {
-            damage = rItem.power(player, item, e, Trigger.HIT);
+            damage = maxWithCancel(rItem.power(player, item, e, Trigger.HIT).orElse(null), damage);
         }
         runHitTrigger(e, player, damage, armorContents);
     }
@@ -650,7 +650,7 @@ public class Events implements Listener {
         e.setDamage(damage);
         ItemStack[] armorContents = player.getInventory().getArmorContents();
         if (!(e.getEntity() instanceof LivingEntity)) return;
-        damage = rItem.power(player, item, e, Trigger.HIT);
+        damage = maxWithCancel(rItem.power(player, item, e, Trigger.HIT).orElse(null), damage);
         runHitTrigger(e, player, damage, armorContents);
     }
 
@@ -659,9 +659,13 @@ public class Events implements Listener {
             if (armorContent == null) continue;
             RPGItem rpgItem = ItemManager.toRPGItem(armorContent).orElse(null);
             if (rpgItem == null) continue;
-            damage = maxWithCancel(damage, rpgItem.power(player, armorContent, e, Trigger.HIT));
+            damage = maxWithCancel(rpgItem.power(player, armorContent, e, Trigger.HIT).orElse(null), damage);
         }
-        e.setDamage(damage == -1 ? 0 : damage);
+        if (damage == -1) {
+            e.setCancelled(true);
+            e.setDamage(0);
+        }
+        e.setDamage(damage);
     }
 
     private void playerHit(EntityDamageByEntityEvent e) {
@@ -695,8 +699,7 @@ public class Events implements Listener {
         for (ItemStack item : e.getInventory().getContents()) {
             RPGItem ri = ItemManager.toRPGItem(item).orElse(null);
             if (ri == null) continue;
-            double d = ri.power(e, item, ev, Trigger.HIT_TAKEN);
-            ret = d < ret ? d : ret;
+            ret = minWithCancel(ri.power(e, item, ev, Trigger.HIT_TAKEN).orElse(null), ret);
         }
         return ret;
     }

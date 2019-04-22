@@ -624,18 +624,27 @@ public class Utils {
         }
     }
 
-    public static float maxWithCancel(float a, float b) {
-        if (a == -1 || b == -1) return -1;
+    public static Float maxWithCancel(Float a, Float b) {
+        if (a == null) {
+            return b;
+        }
+        if (a == -1 || b == -1) return -1.0f;
         return Math.max(a, b);
     }
 
-    public static double maxWithCancel(double a, double b) {
-        if (a == -1 || b == -1) return -1;
+    public static Double maxWithCancel(Double a, Double b) {
+        if (a == null) {
+            return b;
+        }
+        if (a == -1 || b == -1) return -1.0;
         return Math.max(a, b);
     }
 
-    public static double minWithCancel(double a, double b) {
-        if (a == -1 || b == -1) return -1;
+    public static Double minWithCancel(Double a, Double b) {
+        if (a == null) {
+            return b;
+        }
+        if (a == -1 || b == -1) return -1.0;
         return Math.min(a, b);
     }
 }

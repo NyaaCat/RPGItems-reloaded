@@ -89,15 +89,15 @@ public abstract class Trigger<TEvent extends Event, TPower extends Power, TResul
         acceptingNew = false;
     }
 
-    public static final Trigger<EntityShootBowEvent, PowerBowShoot, Float, Float> BOW_SHOOT = new Trigger<EntityShootBowEvent, PowerBowShoot, Float, Float>(EntityShootBowEvent.class, PowerBowShoot.class, Float.class, Float.class, "BOW_SHOOT") {
+    public static final Trigger<EntityShootBowEvent, PowerBowShoot, Float, Optional<Float>> BOW_SHOOT = new Trigger<EntityShootBowEvent, PowerBowShoot, Float, Optional<Float>>(EntityShootBowEvent.class, PowerBowShoot.class, Float.class, Optional.class, "BOW_SHOOT") {
         @Override
-        public Float def(Player player, ItemStack i, EntityShootBowEvent event) {
-            return event.getForce();
+        public Optional<Float> def(Player player, ItemStack i, EntityShootBowEvent event) {
+            return Optional.empty();
         }
 
         @Override
-        public Float next(Float a, PowerResult<Float> b) {
-            return b.isOK() ? maxWithCancel(a, b.data()) : a;
+        public Optional<Float> next(Optional<Float> a, PowerResult<Float> b) {
+            return b.isOK() ? Optional.ofNullable(maxWithCancel(a.orElse(null), b.data())) : a;
         }
 
         @Override
@@ -111,37 +111,15 @@ public abstract class Trigger<TEvent extends Event, TPower extends Power, TResul
         }
     };
 
-    public static final Trigger<EntityDamageByEntityEvent, PowerHit, Double, Double> HIT = new Trigger<EntityDamageByEntityEvent, PowerHit, Double, Double>(EntityDamageByEntityEvent.class, PowerHit.class, Double.class, Double.class, "HIT") {
+    public static final Trigger<EntityDamageByEntityEvent, PowerHit, Double, Optional<Double>> HIT = new Trigger<EntityDamageByEntityEvent, PowerHit, Double, Optional<Double>>(EntityDamageByEntityEvent.class, PowerHit.class, Double.class, Optional.class, "HIT") {
         @Override
-        public Double def(Player player, ItemStack i, EntityDamageByEntityEvent event) {
-            return event.getDamage();
+        public Optional<Double> def(Player player, ItemStack i, EntityDamageByEntityEvent event) {
+            return Optional.empty();
         }
 
         @Override
-        public Double next(Double a, PowerResult<Double> b) {
-            return b.isOK() ? maxWithCancel(a, b.data()) : a;
-        }
-
-        @Override
-        public PowerResult<Double> warpResult(PowerResult<Void> overrideResult, PowerHit power, Player player, ItemStack i, EntityDamageByEntityEvent event) {
-            return overrideResult.with(event.getDamage());
-        }
-
-        @Override
-        public PowerResult<Double> run(PowerHit power, Player player, ItemStack i, EntityDamageByEntityEvent event) {
-            return power.hit(player, i, (LivingEntity) event.getEntity(), event.getDamage(), event);
-        }
-    };
-
-    public static final Trigger<EntityDamageByEntityEvent, PowerHit, Double, Double> OFFHAND_HIT = new Trigger<EntityDamageByEntityEvent, PowerHit, Double, Double>(EntityDamageByEntityEvent.class, PowerHit.class, Double.class, Double.class, "OFFHAND_HIT") {
-        @Override
-        public Double def(Player player, ItemStack i, EntityDamageByEntityEvent event) {
-            return event.getDamage();
-        }
-
-        @Override
-        public Double next(Double a, PowerResult<Double> b) {
-            return b.isOK() ? maxWithCancel(a, b.data()) : a;
+        public Optional<Double> next(Optional<Double> a, PowerResult<Double> b) {
+            return b.isOK() ? Optional.ofNullable(maxWithCancel(a.orElse(null), b.data())) : a;
         }
 
         @Override
@@ -162,15 +140,15 @@ public abstract class Trigger<TEvent extends Event, TPower extends Power, TResul
         }
     };
 
-    public static final Trigger<EntityDamageEvent, PowerHitTaken, Double, Double> HIT_TAKEN = new Trigger<EntityDamageEvent, PowerHitTaken, Double, Double>(EntityDamageEvent.class, PowerHitTaken.class, Double.class, Double.class, "HIT_TAKEN") {
+    public static final Trigger<EntityDamageEvent, PowerHitTaken, Double, Optional<Double>> HIT_TAKEN = new Trigger<EntityDamageEvent, PowerHitTaken, Double, Optional<Double>>(EntityDamageEvent.class, PowerHitTaken.class, Double.class, Optional.class, "HIT_TAKEN") {
         @Override
-        public Double def(Player player, ItemStack i, EntityDamageEvent event) {
-            return event.getDamage();
+        public Optional<Double> def(Player player, ItemStack i, EntityDamageEvent event) {
+            return Optional.empty();
         }
 
         @Override
-        public Double next(Double a, PowerResult<Double> b) {
-            return b.isOK() ? minWithCancel(a, b.data()) : a;
+        public Optional<Double> next(Optional<Double> a, PowerResult<Double> b) {
+            return b.isOK() ? Optional.ofNullable(minWithCancel(a.orElse(null), b.data())) : a;
         }
 
         @Override
@@ -387,7 +365,8 @@ public abstract class Trigger<TEvent extends Event, TPower extends Power, TResul
     private final Class<TReturn> returnClass;
     private final String name;
 
-    private Trigger(Class<TEvent> eventClass, Class<TPower> powerClass, Class<TResult> resultClass, Class<TReturn> returnClass, String name) {
+    @SuppressWarnings("unchecked")
+    private Trigger(Class<TEvent> eventClass, Class<TPower> powerClass, Class<TResult> resultClass, Class returnClass, String name) {
         this(name, eventClass, powerClass, resultClass, returnClass);
         register(this);
     }
