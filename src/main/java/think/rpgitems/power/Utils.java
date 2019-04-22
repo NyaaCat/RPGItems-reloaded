@@ -623,4 +623,19 @@ public class Utils {
             throw new RuntimeException(e);
         }
     }
+
+    public static float maxWithCancel(float a, float b) {
+        if (a == -1 || b == -1) return -1;
+        return Math.max(a, b);
+    }
+
+    public static double maxWithCancel(double a, double b) {
+        if (a == -1 || b == -1) return -1;
+        return Math.max(a, b);
+    }
+
+    public static double minWithCancel(double a, double b) {
+        if (a == -1 || b == -1) return -1;
+        return Math.min(a, b);
+    }
 }

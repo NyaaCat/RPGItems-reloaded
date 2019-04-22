@@ -12,7 +12,7 @@ import java.util.Map;
 
 public class ArmorStandUtil {
     private static Map<Entity, ArmorStand> projectileSources = new LinkedHashMap<>();
-    private static final String META_KEY = "rpgitem-armor-stand";
+    private static final String META_KEY = "RPGItems.ArmorStand";
 
     public static ArmorStand asProjectileSource(Entity player) {
         return projectileSources.computeIfAbsent(player, player1 -> {
@@ -28,6 +28,7 @@ public class ArmorStandUtil {
         return summon;
     }
 
+    @SuppressWarnings("deprecation")
     private static ArmorStand summon(Location location) {
         ArmorStand armorStand;
         armorStand = location.getWorld().spawn(location, ArmorStand.class, (e) -> {

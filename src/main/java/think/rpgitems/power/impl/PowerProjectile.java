@@ -128,6 +128,12 @@ public class PowerProjectile extends BasePower implements PowerRightClick, Power
     @Property(order = 2, required = true)
     public Class<? extends Projectile> projectileType = Snowball.class;
 
+    @Property
+    public boolean suppressArrow = false;
+
+    @Property
+    public boolean applyForce = false;
+
     @Override
     public String getName() {
         return "projectile";
@@ -170,9 +176,13 @@ public class PowerProjectile extends BasePower implements PowerRightClick, Power
 
     @Override
     public PowerResult<Void> fire(Player player, ItemStack stack) {
+        return fire(player, stack, 1);
+    }
+
+    public PowerResult<Void> fire(Player player, ItemStack stack, float speedFactor) {
         if (!checkCooldown(this, player, cooldown, true, true)) return PowerResult.cd();
         if (!getItem().consumeDurability(stack, cost)) return PowerResult.cost();
-        fire(player, stack, player.getEyeLocation().getDirection());
+        fire(player, stack, player.getEyeLocation().getDirection(), speedFactor);
         UUID uuid = player.getUniqueId();
         if (burstCount > 1) {
             Integer prev = burstTask.getIfPresent(uuid);
@@ -187,7 +197,7 @@ public class PowerProjectile extends BasePower implements PowerRightClick, Power
                     if (player.getInventory().getItemInMainHand().equals(stack)) {
                         burstTask.put(uuid, this.getTaskId());
                         if (count-- > 0) {
-                            fire(player, stack, player.getEyeLocation().getDirection());
+                            fire(player, stack, player.getEyeLocation().getDirection(), speedFactor);
                             return;
                         }
                     }
@@ -200,9 +210,9 @@ public class PowerProjectile extends BasePower implements PowerRightClick, Power
         return PowerResult.ok();
     }
 
-    private void fire(Player player, ItemStack stack, Vector direction) {
+    private void fire(Player player, ItemStack stack, Vector direction, float speedFactor) {
         if (!isCone) {
-            Vector v = direction.multiply(speed);
+            Vector v = direction.multiply(speed * speedFactor);
             Events.registerRPGProjectile(this.getItem(), stack, player);
             Projectile projectile = player.launchProjectile(projectileType, v);
             handleProjectile(v, projectile);
@@ -224,7 +234,7 @@ public class PowerProjectile extends BasePower implements PowerRightClick, Power
                 double theta = Math.acos(z);
                 Vector v = a.clone().multiply(Math.cos(det)).add(b.clone().multiply(Math.sin(det))).multiply(Math.sin(theta)).add(direction.clone().multiply(Math.cos(theta)));
                 Events.registerRPGProjectile(this.getItem(), stack, player);
-                Projectile projectile = player.launchProjectile(projectileType, v.normalize().multiply(speed));
+                Projectile projectile = player.launchProjectile(projectileType, v.normalize().multiply(speed * speedFactor));
                 handleProjectile(v, projectile);
             }
         }
@@ -264,7 +274,7 @@ public class PowerProjectile extends BasePower implements PowerRightClick, Power
         if (!checkCooldown(this, player, cooldown, true, true)) return PowerResult.cd();
         if (!getItem().consumeDurability(stack, cost)) return PowerResult.cost();
         Vector direction = player.getEyeLocation().toVector().subtract(entity.getLocation().toVector()).normalize();
-        fire(player, stack, direction);
+        fire(player, stack, direction, 1);
         UUID uuid = player.getUniqueId();
         if (burstCount > 1) {
             Integer prev = burstTask.getIfPresent(uuid);
@@ -279,7 +289,7 @@ public class PowerProjectile extends BasePower implements PowerRightClick, Power
                     if (player.getInventory().getItemInMainHand().equals(stack)) {
                         burstTask.put(uuid, this.getTaskId());
                         if (count-- > 0) {
-                            fire(player, stack, direction);
+                            fire(player, stack, direction, 1);
                             return;
                         }
                     }
@@ -293,8 +303,11 @@ public class PowerProjectile extends BasePower implements PowerRightClick, Power
     }
 
     @Override
-    public PowerResult<Void> bowShoot(Player player, ItemStack itemStack, EntityShootBowEvent e) {
-        return fire(player, itemStack);
+    public PowerResult<Float> bowShoot(Player player, ItemStack itemStack, EntityShootBowEvent e) {
+        if (suppressArrow) {
+            e.setCancelled(true);
+        }
+        return fire(player, itemStack, applyForce ? e.getForce() : 1).with(suppressArrow ? -1 : e.getForce());
     }
 
     public static class ProjectileType implements Getter, Setter {

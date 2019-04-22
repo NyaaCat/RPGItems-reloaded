@@ -796,8 +796,8 @@ public class RPGItem {
                 }
 
                 //Apply force adjustments
-                if (damager.hasMetadata("rpgitems.force")) {
-                    damage *= damager.getMetadata("rpgitems.force").get(0).asFloat();
+                if (damager.hasMetadata("RPGItems.Force")) {
+                    damage *= damager.getMetadata("RPGItems.Force").get(0).asFloat();
                 }
                 if (getDamageMode() == DamageMode.ADDITIONAL) {
                     damage += originDamage;

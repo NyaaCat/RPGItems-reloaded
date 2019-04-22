@@ -212,7 +212,7 @@ public class PowerDummy extends BasePower implements PowerHit, PowerHitTaken, Po
     }
 
     @Override
-    public PowerResult<Void> bowShoot(Player player, ItemStack itemStack, EntityShootBowEvent e) {
-        return fire(player, itemStack);
+    public PowerResult<Float> bowShoot(Player player, ItemStack itemStack, EntityShootBowEvent e) {
+        return fire(player, itemStack).with(e.getForce());
     }
 }

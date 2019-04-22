@@ -9,5 +9,5 @@ import javax.annotation.CheckReturnValue;
 public interface PowerBowShoot extends Power {
 
     @CheckReturnValue
-    PowerResult<Void> bowShoot(Player player, ItemStack itemStack, EntityShootBowEvent e);
+    PowerResult<Float> bowShoot(Player player, ItemStack stack, EntityShootBowEvent event);
 }

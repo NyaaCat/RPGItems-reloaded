@@ -16,12 +16,6 @@ public class PowerCancelBowArrow extends BasePower implements PowerBowShoot {
     @Property
     public boolean cancelArrow = true;
 
-//    @Property
-//    public String nextPowerName;
-//
-//    @Property
-//    public int nextPowerIndex;
-
     @Override
     public @LangKey(skipCheck = true) String getName() {
         return "cancelbowarrow";
@@ -33,24 +27,13 @@ public class PowerCancelBowArrow extends BasePower implements PowerBowShoot {
     }
 
     @Override
-    public PowerResult<Void> bowShoot(Player player, ItemStack itemStack, EntityShootBowEvent e) {
+    public PowerResult<Float> bowShoot(Player player, ItemStack itemStack, EntityShootBowEvent e) {
         if (cancelArrow) {
             Entity projectile = e.getProjectile();
             projectile.remove();
+        } else {
+            e.setCancelled(true);
         }
-//        ItemManager.toRPGItem(itemStack).ifPresent(rpgItem -> {
-//            try {
-//                List<PowerBowShoot> collect = rpgItem.getPowers().stream()
-//                        .filter(power -> power instanceof PowerBowShoot)
-//                        .filter(power -> power.getName().equals(nextPowerName))
-//                        .map(power -> ((PowerBowShoot) power))
-//                        .collect(Collectors.toList());
-//                PowerBowShoot power = collect.get(nextPowerIndex);
-//                power.bowShoot(player, itemStack, e);
-//            } catch (IndexOutOfBoundsException ex){
-//                new Message("item " + rpgItem.getDisplayName() +" don't have "+nextPowerName+" "+nextPowerIndex+" that can be triggered.");
-//            }
-//        });
-        return PowerResult.ok();
+        return PowerResult.ok(e.getForce());
     }
 }

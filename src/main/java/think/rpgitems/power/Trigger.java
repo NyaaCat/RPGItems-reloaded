@@ -21,6 +21,9 @@ import java.util.function.Predicate;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
+import static think.rpgitems.power.Utils.maxWithCancel;
+import static think.rpgitems.power.Utils.minWithCancel;
+
 public abstract class Trigger<TEvent extends Event, TPower extends Power, TResult, TReturn> {
 
     private static boolean acceptingNew = true;
@@ -86,9 +89,24 @@ public abstract class Trigger<TEvent extends Event, TPower extends Power, TResul
         acceptingNew = false;
     }
 
-    public static final Trigger<EntityShootBowEvent, PowerBowShoot, Void, Void> BOW_SHOOT = new Trigger<EntityShootBowEvent, PowerBowShoot, Void, Void>(EntityShootBowEvent.class, PowerBowShoot.class, Void.class, Void.class, "BOW_SHOOT") {
+    public static final Trigger<EntityShootBowEvent, PowerBowShoot, Float, Float> BOW_SHOOT = new Trigger<EntityShootBowEvent, PowerBowShoot, Float, Float>(EntityShootBowEvent.class, PowerBowShoot.class, Float.class, Float.class, "BOW_SHOOT") {
         @Override
-        public PowerResult<Void> run(PowerBowShoot power, Player player, ItemStack i, EntityShootBowEvent event) {
+        public Float def(Player player, ItemStack i, EntityShootBowEvent event) {
+            return event.getForce();
+        }
+
+        @Override
+        public Float next(Float a, PowerResult<Float> b) {
+            return b.isOK() ? maxWithCancel(a, b.data()) : a;
+        }
+
+        @Override
+        public PowerResult<Float> warpResult(PowerResult<Void> overrideResult, PowerBowShoot power, Player player, ItemStack i, EntityShootBowEvent event) {
+            return overrideResult.with(event.getForce());
+        }
+
+        @Override
+        public PowerResult<Float> run(PowerBowShoot power, Player player, ItemStack i, EntityShootBowEvent event) {
             return power.bowShoot(player, i, event);
         }
     };
@@ -101,7 +119,7 @@ public abstract class Trigger<TEvent extends Event, TPower extends Power, TResul
 
         @Override
         public Double next(Double a, PowerResult<Double> b) {
-            return b.isOK() ? Math.max(a, b.data()) : a;
+            return b.isOK() ? maxWithCancel(a, b.data()) : a;
         }
 
         @Override
@@ -123,7 +141,7 @@ public abstract class Trigger<TEvent extends Event, TPower extends Power, TResul
 
         @Override
         public Double next(Double a, PowerResult<Double> b) {
-            return b.isOK() ? Math.max(a, b.data()) : a;
+            return b.isOK() ? maxWithCancel(a, b.data()) : a;
         }
 
         @Override
@@ -136,8 +154,6 @@ public abstract class Trigger<TEvent extends Event, TPower extends Power, TResul
             return power.hit(player, i, (LivingEntity) event.getEntity(), event.getDamage(), event);
         }
     };
-
-//    public static final Trigger<EntityShootBowEvent>
 
     public static final Trigger<ProjectileHitEvent, PowerProjectileHit, Void, Void> PROJECTILE_HIT = new Trigger<ProjectileHitEvent, PowerProjectileHit, Void, Void>(ProjectileHitEvent.class, PowerProjectileHit.class, Void.class, Void.class, "PROJECTILE_HIT") {
         @Override
@@ -154,7 +170,7 @@ public abstract class Trigger<TEvent extends Event, TPower extends Power, TResul
 
         @Override
         public Double next(Double a, PowerResult<Double> b) {
-            return b.isOK() ? Math.min(a, b.data()) : a;
+            return b.isOK() ? minWithCancel(a, b.data()) : a;
         }
 
         @Override

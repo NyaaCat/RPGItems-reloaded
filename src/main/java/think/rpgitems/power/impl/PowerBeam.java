@@ -70,8 +70,8 @@ public class PowerBeam extends BasePower implements PowerRightClick, PowerLeftCl
     public double speed = 0;
 
     private Set<Material> transp = Stream.of(Material.values())
-            .filter(material -> !material.isSolid())
-            .collect(Collectors.toSet());
+                                         .filter(material -> !material.isSolid())
+                                         .collect(Collectors.toSet());
 
     @Override
     public @LangKey(skipCheck = true) String getName() {
@@ -120,7 +120,7 @@ public class PowerBeam extends BasePower implements PowerRightClick, PowerLeftCl
                             , ((int) Math.ceil(length)));
                 } else {
 
-                    targetBlock = from.getTargetBlock(transp,((int) Math.ceil(length)));
+                    targetBlock = from.getTargetBlock(transp, ((int) Math.ceil(length)));
                 }
                 Location toLocation;
                 Vector towards = from.getEyeLocation().getDirection();
@@ -136,7 +136,7 @@ public class PowerBeam extends BasePower implements PowerRightClick, PowerLeftCl
                 if (actualLength < 0.05) return;
                 Location step = toLocation.clone();
                 step.subtract(fromLocation).multiply(1 / actualLength);
-                int actualMovementTicks = (int) Math.round((actualLength/length) * movementTicks);
+                int actualMovementTicks = (int) Math.round((actualLength / length) * movementTicks);
 
                 List<Location> particleSpawnLocation = new LinkedList<>();
                 Location temp = fromLocation.clone();
@@ -146,14 +146,14 @@ public class PowerBeam extends BasePower implements PowerRightClick, PowerLeftCl
                 }
 
                 List<Entity> nearbyEntities = from.getNearbyEntities(actualLength, actualLength, actualLength).stream()
-                        .filter(entity -> entity instanceof LivingEntity)
-                        //mobs in front of player
-                        .filter(entity -> entity.getLocation().subtract(fromLocation).toVector().angle(towards) < (Math.PI / 4))
-                        .sorted((o1, o2) -> {
-                            Vector o = from.getLocation().toVector();
-                            return (int) (o1.getLocation().toVector().distanceSquared(o) - o2.getLocation().toVector().distanceSquared(o));
-                        })
-                        .collect(Collectors.toList());
+                                                  .filter(entity -> entity instanceof LivingEntity)
+                                                  //mobs in front of player
+                                                  .filter(entity -> entity.getLocation().subtract(fromLocation).toVector().angle(towards) < (Math.PI / 4))
+                                                  .sorted((o1, o2) -> {
+                                                      Vector o = from.getLocation().toVector();
+                                                      return (int) (o1.getLocation().toVector().distanceSquared(o) - o2.getLocation().toVector().distanceSquared(o));
+                                                  })
+                                                  .collect(Collectors.toList());
 
                 switch (mode) {
                     case BEAM:
@@ -169,8 +169,8 @@ public class PowerBeam extends BasePower implements PowerRightClick, PowerLeftCl
     }
 
     @Override
-    public PowerResult<Void> bowShoot(Player player, ItemStack itemStack, EntityShootBowEvent e) {
-        return beam(player);
+    public PowerResult<Float> bowShoot(Player player, ItemStack itemStack, EntityShootBowEvent e) {
+        return beam(player).with(e.getForce());
     }
 
     class PlainTask extends BukkitRunnable {
@@ -232,9 +232,9 @@ public class PowerBeam extends BasePower implements PowerRightClick, PowerLeftCl
     private boolean tryHit(LivingEntity from, Location loc, List<Entity> nearbyEntities) {
         if (!pierce) {
             List<Entity> collect = nearbyEntities.stream()
-                    .filter(entity -> canHit(loc, entity))
-                    .limit(1)
-                    .collect(Collectors.toList());
+                                                 .filter(entity -> canHit(loc, entity))
+                                                 .limit(1)
+                                                 .collect(Collectors.toList());
             if (!collect.isEmpty()) {
                 Entity entity = collect.get(0);
                 if (entity instanceof LivingEntity) {
@@ -253,24 +253,24 @@ public class PowerBeam extends BasePower implements PowerRightClick, PowerLeftCl
             }
         } else {
             List<Entity> collect = nearbyEntities.stream()
-                    .filter(entity -> entity instanceof LivingEntity)
-                    .filter(entity -> canHit(loc, entity))
-                    .collect(Collectors.toList());
+                                                 .filter(entity -> entity instanceof LivingEntity)
+                                                 .filter(entity -> canHit(loc, entity))
+                                                 .collect(Collectors.toList());
             if (!collect.isEmpty()) {
                 collect.stream()
-                        .map(entity -> ((LivingEntity) entity))
-                        .forEach(livingEntity -> {
-                            Snowball snowball = ArmorStandUtil.asProjectileSource(from).launchProjectile(Snowball.class, new Vector(0, 0, 0));
-                            Events.registerRPGProjectile(snowball.getEntityId(), getItem().getUid());
-                            snowball.setShooter(from);
-                            EntityDamageByEntityEvent event = new EntityDamageByEntityEvent(snowball, livingEntity, EntityDamageEvent.DamageCause.PROJECTILE, damage);
-                            Bukkit.getServer().getPluginManager().callEvent(event);
-                            double actualDamage = event.getDamage();
-                            livingEntity.setLastDamageCause(event);
-                            livingEntity.damage(actualDamage, snowball);
-                            livingEntity.setLastDamageCause(event);
-                            snowball.remove();
-                        });
+                       .map(entity -> ((LivingEntity) entity))
+                       .forEach(livingEntity -> {
+                           Snowball snowball = ArmorStandUtil.asProjectileSource(from).launchProjectile(Snowball.class, new Vector(0, 0, 0));
+                           Events.registerRPGProjectile(snowball.getEntityId(), getItem().getUid());
+                           snowball.setShooter(from);
+                           EntityDamageByEntityEvent event = new EntityDamageByEntityEvent(snowball, livingEntity, EntityDamageEvent.DamageCause.PROJECTILE, damage);
+                           Bukkit.getServer().getPluginManager().callEvent(event);
+                           double actualDamage = event.getDamage();
+                           livingEntity.setLastDamageCause(event);
+                           livingEntity.damage(actualDamage, snowball);
+                           livingEntity.setLastDamageCause(event);
+                           snowball.remove();
+                       });
                 nearbyEntities.removeAll(collect);
             }
         }
