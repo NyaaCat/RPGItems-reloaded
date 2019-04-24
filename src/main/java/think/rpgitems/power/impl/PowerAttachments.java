@@ -18,7 +18,7 @@ import java.util.*;
 import java.util.stream.Collectors;
 
 @PowerMeta(defaultTrigger = "RIGHT_CLICK", withSelectors = true, generalInterface = PowerPlain.class)
-public class PowerAttachments extends BasePower implements PowerRightClick, PowerLeftClick, PowerOffhandClick, PowerPlain, PowerHit {
+public class PowerAttachments extends BasePower implements PowerTick, PowerRightClick, PowerLeftClick, PowerOffhandClick, PowerPlain, PowerHit {
 
     @Property
     public List<EquipmentSlot> allowedSlots;
@@ -31,6 +31,11 @@ public class PowerAttachments extends BasePower implements PowerRightClick, Powe
 
     @Property
     public Set<String> allowedItems;
+
+    @Override
+    public PowerResult<Void> tick(Player player, ItemStack stack) {
+        return fire(player, stack);
+    }
 
     @Override
     public PowerResult<Double> hit(Player player, ItemStack stack, LivingEntity entity, double damage, EntityDamageByEntityEvent event) {
@@ -71,31 +76,33 @@ public class PowerAttachments extends BasePower implements PowerRightClick, Powe
         int num = 0;
         ItemStack itemStack = null;
         PlayerInventory inventory = player.getInventory();
-        for (EquipmentSlot allowedSlot : allowedSlots) {
-            switch (allowedSlot) {
-                case HAND:
-                    itemStack = inventory.getItemInMainHand();
-                    break;
-                case OFF_HAND:
-                    itemStack = inventory.getItemInOffHand();
-                    break;
-                case FEET:
-                    itemStack = inventory.getBoots();
-                    break;
-                case LEGS:
-                    itemStack = inventory.getLeggings();
-                    break;
-                case CHEST:
-                    itemStack = inventory.getChestplate();
-                    break;
-                case HEAD:
-                    itemStack = inventory.getHelmet();
-                    break;
+        if (allowedSlots != null) {
+            for (EquipmentSlot allowedSlot : allowedSlots) {
+                switch (allowedSlot) {
+                    case HAND:
+                        itemStack = inventory.getItemInMainHand();
+                        break;
+                    case OFF_HAND:
+                        itemStack = inventory.getItemInOffHand();
+                        break;
+                    case FEET:
+                        itemStack = inventory.getBoots();
+                        break;
+                    case LEGS:
+                        itemStack = inventory.getLeggings();
+                        break;
+                    case CHEST:
+                        itemStack = inventory.getChestplate();
+                        break;
+                    case HEAD:
+                        itemStack = inventory.getHelmet();
+                        break;
+                }
+                if (attach(player, stack, event, itemStack, allow)) {
+                    num += 1;
+                }
+                if (num >= limit) return PowerResult.ok();
             }
-            if (attach(player, stack, event, itemStack, allow)) {
-                num += 1;
-            }
-            if (num >= limit) return PowerResult.ok();
         }
         if (allowedInvSlots == null || allowedInvSlots.isEmpty()) {
             for (ItemStack envSlot: inventory.getContents()) {
