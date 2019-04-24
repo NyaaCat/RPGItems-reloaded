@@ -18,7 +18,7 @@ import java.util.*;
 import java.util.stream.Collectors;
 
 @PowerMeta(defaultTrigger = "RIGHT_CLICK", withSelectors = true, generalInterface = PowerPlain.class)
-public class PowerAttachments extends BasePower implements PowerRightClick, PowerLeftClick, PowerOffhandClick, PowerPlain, PowerHit {
+public class PowerAttachments extends BasePower implements PowerTick, PowerRightClick, PowerLeftClick, PowerOffhandClick, PowerPlain, PowerHit {
 
     @Property
     public List<EquipmentSlot> allowedSlots;
@@ -31,6 +31,11 @@ public class PowerAttachments extends BasePower implements PowerRightClick, Powe
 
     @Property
     public Set<String> allowedItems;
+
+    @Override
+    public PowerResult<Void> tick(Player player, ItemStack stack) {
+        return fire(player, stack);
+    }
 
     @Override
     public PowerResult<Double> hit(Player player, ItemStack stack, LivingEntity entity, double damage, EntityDamageByEntityEvent event) {
