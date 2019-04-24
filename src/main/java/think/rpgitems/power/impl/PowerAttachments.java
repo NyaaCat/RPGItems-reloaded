@@ -76,31 +76,33 @@ public class PowerAttachments extends BasePower implements PowerTick, PowerRight
         int num = 0;
         ItemStack itemStack = null;
         PlayerInventory inventory = player.getInventory();
-        for (EquipmentSlot allowedSlot : allowedSlots) {
-            switch (allowedSlot) {
-                case HAND:
-                    itemStack = inventory.getItemInMainHand();
-                    break;
-                case OFF_HAND:
-                    itemStack = inventory.getItemInOffHand();
-                    break;
-                case FEET:
-                    itemStack = inventory.getBoots();
-                    break;
-                case LEGS:
-                    itemStack = inventory.getLeggings();
-                    break;
-                case CHEST:
-                    itemStack = inventory.getChestplate();
-                    break;
-                case HEAD:
-                    itemStack = inventory.getHelmet();
-                    break;
+        if (allowedSlots != null) {
+            for (EquipmentSlot allowedSlot : allowedSlots) {
+                switch (allowedSlot) {
+                    case HAND:
+                        itemStack = inventory.getItemInMainHand();
+                        break;
+                    case OFF_HAND:
+                        itemStack = inventory.getItemInOffHand();
+                        break;
+                    case FEET:
+                        itemStack = inventory.getBoots();
+                        break;
+                    case LEGS:
+                        itemStack = inventory.getLeggings();
+                        break;
+                    case CHEST:
+                        itemStack = inventory.getChestplate();
+                        break;
+                    case HEAD:
+                        itemStack = inventory.getHelmet();
+                        break;
+                }
+                if (attach(player, stack, event, itemStack, allow)) {
+                    num += 1;
+                }
+                if (num >= limit) return PowerResult.ok();
             }
-            if (attach(player, stack, event, itemStack, allow)) {
-                num += 1;
-            }
-            if (num >= limit) return PowerResult.ok();
         }
         if (allowedInvSlots == null || allowedInvSlots.isEmpty()) {
             for (ItemStack envSlot: inventory.getContents()) {
