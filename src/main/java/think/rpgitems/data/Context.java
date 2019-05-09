@@ -2,6 +2,7 @@ package think.rpgitems.data;
 
 import org.bukkit.Location;
 import org.bukkit.entity.LivingEntity;
+import org.bukkit.entity.Player;
 
 import javax.annotation.Nonnull;
 import java.util.*;
@@ -23,6 +24,26 @@ public class Context {
         Object obj = local.get(key);
         if (obj instanceof LivingEntity) {
             return (LivingEntity) obj;
+        }
+        return null;
+    }
+
+    public Boolean getBoolean(UUID context, String key) {
+        ExpiringMap<String, Object> local = storage.get(context);
+        if (local == null) return null;
+        Object obj = local.get(key);
+        if (obj instanceof Boolean) {
+            return (Boolean) obj;
+        }
+        return null;
+    }
+
+    public Double getDouble(UUID context, String key) {
+        ExpiringMap<String, Object> local = storage.get(context);
+        if (local == null) return null;
+        Object obj = local.get(key);
+        if (obj instanceof Double) {
+            return (Double) obj;
         }
         return null;
     }

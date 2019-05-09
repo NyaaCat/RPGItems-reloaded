@@ -439,6 +439,7 @@ public class ItemManager {
             rethrow(e);
         }
     }
+
     public static void save(ItemGroup itemGroup) {
         String itemName = itemGroup.getName();
         File itemFile = itemGroup.getFile() == null ? createFile(getItemsDir(), itemGroup.getName(), "-group", true) : itemGroup.getFile();
@@ -528,7 +529,7 @@ public class ItemManager {
         }
         return file;
     }
-    
+
     private static void resetLock() {
         for (FileLock fileLock : itemFileLocks.values()) {
             try {
@@ -593,6 +594,10 @@ public class ItemManager {
             }
             return ItemManager.getItem(uid);
         }
+        if (!plugin.cfg.itemCompat) {
+            return Optional.empty();
+        }
+
         // Old
         if (!meta.hasLore() || meta.getLore().size() <= 0)
             return Optional.empty();

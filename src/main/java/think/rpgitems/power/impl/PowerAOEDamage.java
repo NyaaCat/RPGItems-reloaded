@@ -13,12 +13,15 @@ import org.bukkit.potion.PotionEffect;
 import org.bukkit.potion.PotionEffectType;
 import org.bukkit.scheduler.BukkitRunnable;
 import think.rpgitems.RPGItems;
+import think.rpgitems.data.Context;
 import think.rpgitems.power.*;
 
 import java.util.List;
 
 import static java.lang.Double.max;
 import static java.lang.Double.min;
+import static think.rpgitems.Events.OVERRIDING_DAMAGE;
+import static think.rpgitems.Events.SUPPRESS_MELEE;
 import static think.rpgitems.power.Utils.*;
 
 /**
@@ -95,6 +98,12 @@ public class PowerAOEDamage extends BasePower implements PowerOffhandClick, Powe
     @Property
     public long delay = 0;
 
+    /**
+     * Whether to suppress the hit trigger
+     */
+    @Property
+    public boolean suppressMelee = false;
+
     @Override
     public PowerResult<Void> rightClick(final Player player, ItemStack stack, PlayerInteractEvent event) {
         return fire(player, stack);
@@ -145,6 +154,8 @@ public class PowerAOEDamage extends BasePower implements PowerOffhandClick, Powe
     public PowerResult<Void> fire(Player player, ItemStack stack) {
         if (!checkCooldown(this, player, cooldown, true, true)) return PowerResult.cd();
         if (!getItem().consumeDurability(stack, cost)) return PowerResult.cost();
+        Context.instance().putTemp(player.getUniqueId(), OVERRIDING_DAMAGE, damage);
+        Context.instance().putTemp(player.getUniqueId(), SUPPRESS_MELEE, suppressMelee);
         if (selfapplication) dealDamage(player, damage);
         List<LivingEntity> nearbyEntities = getNearestLivingEntities(this, player.getLocation(), player, range, minrange);
         List<LivingEntity> ent = getLivingEntitiesInCone(nearbyEntities, player.getEyeLocation().toVector(), angle, player.getEyeLocation().getDirection());
@@ -165,7 +176,11 @@ public class PowerAOEDamage extends BasePower implements PowerOffhandClick, Powe
                 (new BukkitRunnable() {
                     @Override
                     public void run() {
+                        Context.instance().putTemp(player.getUniqueId(), OVERRIDING_DAMAGE, damage);
+                        Context.instance().putTemp(player.getUniqueId(), SUPPRESS_MELEE, suppressMelee);
                         e.damage(damage, player);
+                        Context.instance().putTemp(player.getUniqueId(), SUPPRESS_MELEE, suppressMelee);
+                        Context.instance().putTemp(player.getUniqueId(), OVERRIDING_DAMAGE, null);
                     }
                 }).runTaskLater(RPGItems.plugin, delay);
             }

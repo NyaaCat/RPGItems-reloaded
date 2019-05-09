@@ -44,7 +44,6 @@ import think.rpgitems.power.*;
 import think.rpgitems.power.impl.*;
 import think.rpgitems.utils.MaterialUtils;
 
-import javax.annotation.Nullable;
 import java.io.File;
 import java.util.*;
 import java.util.Map.Entry;
@@ -104,6 +103,7 @@ public class RPGItem {
     private String hand = I18n.format("item.hand");
     private boolean canBeOwned = false;
     private boolean hasStackId = false;
+    private boolean alwaysAllowMelee = false;
 
     private String author = plugin.cfg.defaultAuthor;
     private String note = plugin.cfg.defaultNote;
@@ -374,6 +374,7 @@ public class RPGItem {
         } catch (IllegalArgumentException e) {
             setDamageMode(DamageMode.FIXED);
         }
+        setAlwaysAllowMelee(s.getBoolean("alwaysAllowMelee", false));
         rebuild();
         String lore = s.getString("lore");
         if (!Strings.isNullOrEmpty(lore)) {
@@ -482,6 +483,7 @@ public class RPGItem {
         }
         s.set("customItemModel", isCustomItemModel());
         s.set("barFormat", getBarFormat().name());
+        s.set("alwaysAllowMelee", isAlwaysAllowMelee());
     }
 
     public void updateItem(ItemStack item) {
@@ -710,6 +712,24 @@ public class RPGItem {
         }
     }
 
+    public boolean canDoMeleeTo(ItemStack item, Entity entity) {
+        if (hasPower(PowerRangedOnly.class)) {
+            return false;
+        }
+        if (item.getType() == Material.BOW || item.getType() == Material.SNOWBALL || item.getType() == Material.EGG || item.getType() == Material.POTION) {
+            return isAlwaysAllowMelee();
+        }
+        return true;
+    }
+
+    public boolean canDoProjectileTo(ItemStack item, double distance, Entity entity) {
+        List<PowerRanged> ranged = getPower(PowerRanged.class, true);
+        if (!ranged.isEmpty()) {
+            return !(ranged.get(0).rm > distance) && !(distance > ranged.get(0).r);
+        }
+        return true;
+    }
+
     /**
      * Event-type independent melee damage event
      *
@@ -721,7 +741,7 @@ public class RPGItem {
      */
     public double meleeDamage(Player p, double originDamage, ItemStack stack, Entity entity) {
         double damage = originDamage;
-        if (ItemManager.canUse(p, this) == Event.Result.DENY || hasPower(PowerRangedOnly.class)) {
+        if (!canDoMeleeTo(stack, entity) || ItemManager.canUse(p, this) == Event.Result.DENY) {
             return -1;
         }
         boolean can = consumeDurability(stack, getHittingCost());
@@ -776,15 +796,14 @@ public class RPGItem {
     public double projectileDamage(Player p, double originDamage, ItemStack stack, Entity damager, Entity entity) {
         double damage = originDamage;
         if (ItemManager.canUse(p, this) == Event.Result.DENY) {
-            return originDamage;
+            return -1;
         }
-        List<PowerRanged> ranged = getPower(PowerRanged.class, true);
-        if (!ranged.isEmpty()) {
-            double distance = p.getLocation().distance(entity.getLocation());
-            if (ranged.get(0).rm > distance || distance > ranged.get(0).r) {
-                return -1;
-            }
+
+        double distance = p.getLocation().distance(entity.getLocation());
+        if (!canDoProjectileTo(stack, distance, entity)) {
+            return -1;
         }
+
         switch (getDamageMode()) {
             case FIXED:
             case ADDITIONAL:
@@ -882,26 +901,30 @@ public class RPGItem {
         List<TPower> powers = this.getPower(trigger);
         TReturn ret = trigger.def(player, i, event);
         if (!triggerPreCheck(player, i, event, trigger, powers)) return ret;
-        List<PowerCondition> conds = getPower(PowerCondition.class, true);
-        Map<PowerCondition, PowerResult> staticCond = checkStaticCondition(player, i, conds);
-        Map<Power, PowerResult> resultMap = new LinkedHashMap<>(staticCond);
-        for (TPower power : powers) {
-            PowerResult<TResult> result = checkConditions(player, i, power, conds, resultMap);
-            if (result != null) {
-                resultMap.put(power, result);
-            } else {
-                if (power.requiredContext() != null) {
-                    result = handleContext(player, i, event, trigger, power);
+        try {
+            List<PowerCondition> conds = getPower(PowerCondition.class, true);
+            Map<PowerCondition, PowerResult> staticCond = checkStaticCondition(player, i, conds);
+            Map<Power, PowerResult> resultMap = new LinkedHashMap<>(staticCond);
+            for (TPower power : powers) {
+                PowerResult<TResult> result = checkConditions(player, i, power, conds, resultMap);
+                if (result != null) {
+                    resultMap.put(power, result);
                 } else {
-                    result = trigger.run(power, player, i, event, context);
+                    if (power.requiredContext() != null) {
+                        result = handleContext(player, i, event, trigger, power);
+                    } else {
+                        result = trigger.run(power, player, i, event, context);
+                    }
+                    resultMap.put(power, result);
                 }
-                resultMap.put(power, result);
+                ret = trigger.next(ret, result);
+                if (result.isAbort()) break;
             }
-            ret = trigger.next(ret, result);
-            if (result.isAbort()) break;
+            triggerPostFire(player, i, event, trigger, resultMap, ret);
+            return ret;
+        } finally {
+            Context.instance().cleanTemp(player.getUniqueId());
         }
-        triggerPostFire(player, i, event, trigger, resultMap, ret);
-        return ret;
     }
 
     public <TEvent extends Event, TPower extends Power, TResult, TReturn> TReturn power(Player player, ItemStack i, TEvent event, Trigger<TEvent, TPower, TResult, TReturn> trigger) {
@@ -940,7 +963,6 @@ public class RPGItem {
         RPGItemsPowersPostFireEvent<TEvent, TPower, TResult, TReturn> postFire = new RPGItemsPowersPostFireEvent<>(player, itemStack, event, this, trigger, resultMap, ret);
         Bukkit.getServer().getPluginManager().callEvent(postFire);
 
-        Context.instance().cleanTemp(player.getUniqueId());
         if (getItemStackDurability(itemStack).map(d -> d <= 0).orElse(false)) {
             itemStack.setAmount(0);
             itemStack.setType(Material.AIR);
@@ -1068,6 +1090,7 @@ public class RPGItem {
     public void print(CommandSender sender) {
         print(sender, true);
     }
+
     public void print(CommandSender sender, boolean advance) {
         String author = this.getAuthor();
         BaseComponent authorComponent = new TextComponent(author);
@@ -1298,12 +1321,20 @@ public class RPGItem {
         return armour;
     }
 
+    public boolean isAlwaysAllowMelee() {
+        return alwaysAllowMelee;
+    }
+
     public boolean isCanBeOwned() {
         return canBeOwned;
     }
 
     public boolean isHasStackId() {
         return hasStackId;
+    }
+
+    public void setAlwaysAllowMelee(boolean alwaysAllowMelee) {
+        this.alwaysAllowMelee = alwaysAllowMelee;
     }
 
     public void setArmour(int a) {

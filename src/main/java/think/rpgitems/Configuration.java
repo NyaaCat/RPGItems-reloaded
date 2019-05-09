@@ -28,6 +28,9 @@ public class Configuration extends PluginConfigure {
     @Serializable(name = "general.pid_compat", alias = "pidCompat")
     public boolean pidCompat = false;
 
+    @Serializable(name = "general.item_compat")
+    public boolean itemCompat = true;
+
     @Serializable(name = "command.list.item_per_page", alias = "itemperpage")
     public int itemPerPage = 9;
 

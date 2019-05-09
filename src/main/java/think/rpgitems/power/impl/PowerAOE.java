@@ -54,6 +54,7 @@ public class PowerAOE extends BasePower implements PowerRightClick, PowerLeftCli
      */
     @Property(order = 5)
     public boolean selfapplication = true;
+
     /**
      * Type of the potion
      */

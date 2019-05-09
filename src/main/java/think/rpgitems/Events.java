@@ -18,12 +18,11 @@ import org.bukkit.event.hanging.HangingBreakEvent.RemoveCause;
 import org.bukkit.event.inventory.*;
 import org.bukkit.event.player.*;
 import org.bukkit.inventory.*;
-import org.bukkit.inventory.meta.Damageable;
 import org.bukkit.inventory.meta.ItemMeta;
 import org.bukkit.metadata.FixedMetadataValue;
 import org.bukkit.projectiles.ProjectileSource;
 import org.bukkit.scheduler.BukkitRunnable;
-import org.bukkit.util.Vector;
+import think.rpgitems.data.Context;
 import think.rpgitems.item.ItemManager;
 import think.rpgitems.item.RPGItem;
 import think.rpgitems.power.Power;
@@ -47,6 +46,9 @@ import static think.rpgitems.power.Utils.minWithCancel;
 
 public class Events implements Listener {
 
+    public static final String OVERRIDING_DAMAGE = "OverridingDamage";
+    public static final String SUPPRESS_MELEE = "SuppressMelee";
+    public static final String SUPPRESS_PROJECTILE = "SuppressProjectile";
     public static HashMap<String, Set<Integer>> drops = new HashMap<>();
 
     static HashMap<String, Integer> recipeWindows = new HashMap<>();
@@ -335,19 +337,15 @@ public class Events implements Listener {
         Trigger<PlayerToggleSneakEvent, PowerSneak, Void, Void> trigger = Trigger.SNEAK;
 
         trigger(p, e, p.getInventory().getItemInMainHand(), trigger);
-        //todo
-//        trigger(p, e, p.getInventory().getItemInOffHand(), trigger);
 
         ItemStack[] armorContents = p.getInventory().getArmorContents();
         Stream.of(armorContents)
-              .map(ItemManager::toRPGItem)
-              .filter(Optional::isPresent)
-              .forEach(rpgItem -> trigger(p, e, rpgItem.get().toItemStack(), trigger));
+              .forEach(i -> trigger(p, e, i, trigger));
     }
 
     <TEvent extends Event, TPower extends Power, TResult, TReturn> TReturn trigger(Player player, TEvent event, ItemStack itemStack, Trigger<TEvent, TPower, TResult, TReturn> trigger) {
         Optional<RPGItem> rpgItem = ItemManager.toRPGItem(itemStack);
-        return rpgItem.map(rpgItem1 -> rpgItem1.power(player, itemStack, event, trigger)).orElse(null);
+        return rpgItem.map(r -> r.power(player, itemStack, event, trigger)).orElse(null);
     }
 
     @EventHandler
@@ -359,13 +357,9 @@ public class Events implements Listener {
         Trigger<PlayerToggleSprintEvent, PowerSprint, Void, Void> sprint = Trigger.SPRINT;
 
         trigger(p, e, p.getInventory().getItemInMainHand(), sprint);
-        //todo
-//        trigger(p, e, p.getInventory().getItemInOffHand(), sprint);
         ItemStack[] armorContents = p.getInventory().getArmorContents();
         Stream.of(armorContents)
-              .map(ItemManager::toRPGItem)
-              .filter(Optional::isPresent)
-              .forEach(rpgItem -> trigger(p, e, rpgItem.get().toItemStack(), sprint));
+              .forEach(i -> trigger(p, e, i, sprint));
 
     }
 
@@ -418,7 +412,7 @@ public class Events implements Listener {
         } else {
             item = e.getItemInHand();
         }
-        if (item == null)
+        if (item.getType() == Material.AIR)
             return;
 
         RPGItem rItem = ItemManager.toRPGItem(item).orElse(null);
@@ -579,18 +573,28 @@ public class Events implements Listener {
         Entity entity = e.getEntity();
         ItemStack item = player.getInventory().getItemInMainHand();
 
-        if (item.getType() == Material.BOW || item.getType() == Material.SNOWBALL || item.getType() == Material.EGG || item.getType() == Material.POTION)
-            return;
-
         if (e.getCause() == EntityDamageEvent.DamageCause.THORNS)
             return;
+
+        Boolean suppressMelee = Context.instance().getBoolean(player.getUniqueId(), SUPPRESS_MELEE);
+        Double overridingDamage = Context.instance().getDouble(player.getUniqueId(), OVERRIDING_DAMAGE);
+
+        if (suppressMelee != null && suppressMelee) {
+            if (overridingDamage != null) {
+                e.setDamage(overridingDamage);
+            }
+            return;
+        }
+
 
         RPGItem rItem = ItemManager.toRPGItem(item).orElse(null);
         ItemStack[] armorContents = player.getInventory().getArmorContents();
         double originDamage = e.getDamage();
         double damage = originDamage;
-        if (rItem != null) {
+        if (rItem != null && overridingDamage == null) {
             damage = rItem.meleeDamage(player, originDamage, item, entity);
+        } else if (overridingDamage != null) {
+            damage = overridingDamage;
         }
         if (damage == -1) {
             e.setCancelled(true);
@@ -641,8 +645,23 @@ public class Events implements Listener {
             }
         }
 
+        Boolean suppressProjectile = Context.instance().getBoolean(player.getUniqueId(), SUPPRESS_PROJECTILE);
+        Double overridingDamage = Context.instance().getDouble(player.getUniqueId(), OVERRIDING_DAMAGE);
+
+        if (suppressProjectile != null && suppressProjectile) {
+            if (overridingDamage != null) {
+                e.setDamage(overridingDamage);
+            }
+            return;
+        }
+
         double originDamage = e.getDamage();
-        double damage = rItem.projectileDamage(player, originDamage, item, projectile, e.getEntity());
+        double damage;
+        if (overridingDamage == null) {
+            damage = rItem.projectileDamage(player, originDamage, item, projectile, e.getEntity());
+        } else {
+            damage = overridingDamage;
+        }
         if (damage == -1) {
             e.setCancelled(true);
             return;
@@ -752,11 +771,9 @@ public class Events implements Listener {
 
     @EventHandler(ignoreCancelled = true, priority = EventPriority.NORMAL)
     public void onItemDamage(PlayerItemDamageEvent e) {
-        ItemMeta itemMeta = e.getItem().getItemMeta();
-        if (e.getItem().getType().getMaxDurability() - (((Damageable) itemMeta).getDamage() + e.getDamage()) <= 0) {
-            if (ItemManager.toRPGItem(e.getItem()).isPresent()) {
-                e.setCancelled(true);
-            }
+        if (ItemManager.toRPGItem(e.getItem()).isPresent()) {
+            e.setCancelled(true);
         }
+
     }
 }
