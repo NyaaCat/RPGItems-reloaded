@@ -535,6 +535,11 @@ power:
       itemStack: 玩家需要装备的物品
       rpgitem: 玩家需要装备的 RPGItem
       matchAllSlot: 是否要求所有装备栏匹配
+    evaldamage:
+      main_name: 动态伤害
+      main_description: 根据变量动态计算伤害
+      display: 显示名称
+      expression: 计算伤害的表达式
     explosion:
       main_name: 爆炸
       main_description: 制造一个玩家产生的爆炸

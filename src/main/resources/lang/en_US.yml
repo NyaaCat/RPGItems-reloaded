@@ -542,6 +542,11 @@ power:
       itemStack: Item that player should wears
       rpgitem: RPGItem that player should wears
       matchAllSlot: Whether to require all slot to match
+    evaldamage:
+      main_name: Eval Damage
+      main_description: Calculate damage dynamicly
+      display: Display name
+      expression: Expression to compute damage
     explosion:
       main_name: Explosion
       main_description: Make a explosion that caused by the player

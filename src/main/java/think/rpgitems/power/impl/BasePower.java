@@ -33,9 +33,6 @@ public abstract class BasePower implements Serializable, Power {
     public Set<String> conditions = new HashSet<>();
 
     @Property
-    public OffhandMode handMode = OffhandMode.MAINHAND;
-
-    @Property
     public String requiredContext;
 
     @Override

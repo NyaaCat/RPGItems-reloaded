@@ -20,8 +20,8 @@ import static think.rpgitems.power.Utils.checkCooldownByString;
  * </p>
  */
 @SuppressWarnings("WeakerAccess")
-@PowerMeta(immutableTrigger = true)
-public class PowerPotionTick extends BasePower implements PowerTick {
+@PowerMeta(defaultTrigger = "TICK")
+public class PowerPotionTick extends BasePower implements PowerTick, PowerSneaking {
 
     /**
      * Type of potion effect
@@ -59,6 +59,15 @@ public class PowerPotionTick extends BasePower implements PowerTick {
 
     @Override
     public PowerResult<Void> tick(Player player, ItemStack stack) {
+        return fire(player, stack);
+    }
+
+    @Override
+    public PowerResult<Void> sneaking(Player player, ItemStack stack) {
+        return fire(player, stack);
+    }
+
+    private PowerResult<Void> fire(Player player, ItemStack stack) {
         if (!checkCooldownByString(this, player, "potiontick." + effect.getName(), interval, false, true)) return PowerResult.cd();
         if (!getItem().consumeDurability(stack, cost)) return PowerResult.cost();
         double health = player.getHealth();

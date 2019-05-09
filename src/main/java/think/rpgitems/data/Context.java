@@ -1,10 +1,11 @@
 package think.rpgitems.data;
 
+import cat.nyaa.nyaacore.Pair;
 import org.bukkit.Location;
 import org.bukkit.entity.LivingEntity;
-import org.bukkit.entity.Player;
 
 import javax.annotation.Nonnull;
+import javax.annotation.Nullable;
 import java.util.*;
 import java.util.function.Function;
 import java.util.stream.Collectors;
@@ -132,7 +133,8 @@ public class Context {
             cleanup(null, null, TEMP);
         }
 
-        public Object cleanup(Object findKey, Object findValue, Long removing) {
+        @Nullable
+        public Pair<K, V> cleanup(Object findKey, Object findValue, Long removing) {
             long currentMillis = getCurrentMillis();
             Iterator<Map.Entry<K, Long>> expireIter = this.birth.entrySet().iterator();
 
@@ -143,14 +145,14 @@ public class Context {
                 Long birth = entry.getValue();
 
                 if ((currentMillis - birth <= (long) this.aliveAge)
-                            || (Objects.equals(birth, removing))) {
+                            && !Objects.equals(birth, removing)) {
                     if (Objects.equals(findKey, key)) {
-                        return key;
+                        return Pair.of(key, value);
                     }
                     if (value != null && Objects.equals(findValue, value)) {
-                        return value;
+                        return Pair.of(key, value);
                     }
-                    break;
+                    continue;
                 }
 
                 inner.remove(key);
@@ -184,7 +186,11 @@ public class Context {
         @SuppressWarnings("unchecked")
         @Override
         public V get(Object key) {
-            return (V) this.cleanup(key, null, null);
+            Pair<K, V> cleanup = this.cleanup(key, null, null);
+            if (cleanup == null) {
+                return null;
+            }
+            return cleanup.getValue();
         }
 
         @Override

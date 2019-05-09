@@ -56,6 +56,11 @@ public class PowerPotionSelf extends BasePower implements PowerRightClick, Power
     @Property(order = 3, required = true)
     @AcceptedValue(preset = Preset.POTION_EFFECT_TYPE)
     public PotionEffectType type = PotionEffectType.HEAL;
+    /**
+     * Whether to remove the effect instead of adding it.
+     */
+    @Property
+    public boolean clear = false;
 
     @Override
     public PowerResult<Void> rightClick(Player player, ItemStack stack, PlayerInteractEvent event) {
@@ -71,7 +76,11 @@ public class PowerPotionSelf extends BasePower implements PowerRightClick, Power
     public PowerResult<Void> fire(Player player, ItemStack stack) {
         if (!checkCooldown(this, player, cooldown, true, true)) return PowerResult.cd();
         if (!getItem().consumeDurability(stack, cost)) return PowerResult.cost();
-        player.addPotionEffect(new PotionEffect(type, duration, amplifier), true);
+        if (clear) {
+            player.removePotionEffect(type);
+        } else {
+            player.addPotionEffect(new PotionEffect(type, duration, amplifier), true);
+        }
         return PowerResult.ok();
     }
 
