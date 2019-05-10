@@ -1,6 +1,7 @@
 package think.rpgitems.power.impl;
 
 import com.udojava.evalex.Expression;
+import com.udojava.evalex.LazyFunction;
 import org.bukkit.entity.Entity;
 import org.bukkit.entity.LivingEntity;
 import org.bukkit.entity.Player;
@@ -9,10 +10,12 @@ import org.bukkit.event.entity.EntityDamageByEntityEvent;
 import org.bukkit.event.entity.EntityDamageEvent;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.projectiles.ProjectileSource;
+import org.bukkit.scoreboard.Objective;
 import think.rpgitems.item.RPGItem;
 import think.rpgitems.power.*;
 
 import java.math.BigDecimal;
+import java.util.List;
 import java.util.function.Supplier;
 import java.util.logging.Level;
 
@@ -58,7 +61,9 @@ public class PowerEvalDamage extends BasePower implements PowerHit, PowerHitTake
                     .and("entityY", lazyNumber(() -> entity.getLocation().getY()))
                     .and("entityZ", lazyNumber(() -> entity.getLocation().getZ()))
                     .and("entityLastDamage", lazyNumber(entity::getLastDamage))
-                    .and("cause", event.getCause().name());
+                    .and("cause", event.getCause().name())
+                    .addLazyFunction(scoreBoard(player))
+            ;
 
             BigDecimal result = ex.eval();
             return PowerResult.ok(result.doubleValue());
@@ -102,7 +107,8 @@ public class PowerEvalDamage extends BasePower implements PowerHit, PowerHitTake
                     .and("playerY", lazyNumber(() -> player.getLocation().getY()))
                     .and("playerZ", lazyNumber(() -> player.getLocation().getZ()))
                     .and("playerLastDamage", lazyNumber(player::getLastDamage))
-                    .and("cause", event.getCause().name());
+                    .and("cause", event.getCause().name())
+                    .addLazyFunction(scoreBoard(player));
 
             if (byEntity) {
                 boolean byProjectile = false;
@@ -149,5 +155,38 @@ public class PowerEvalDamage extends BasePower implements PowerHit, PowerHitTake
     @Override
     public String displayText() {
         return display != null ? display : "Damage may vary based on environment";
+    }
+
+    private LazyFunction scoreBoard(Player player) {
+        return new LazyFunction() {
+            @Override
+            public String getName() {
+                return "playerScoreBoard";
+            }
+
+            @Override
+            public int getNumParams() {
+                return 2;
+            }
+
+            @Override
+            public boolean numParamsVaries() {
+                return false;
+            }
+
+            @Override
+            public boolean isBooleanFunction() {
+                return false;
+            }
+
+            @Override
+            public Expression.LazyNumber lazyEval(List<Expression.LazyNumber> lazyParams) {
+                Objective objective = player.getScoreboard().getObjective(lazyParams.get(0).getString());
+                if (objective == null) {
+                    return lazyParams.get(1);
+                }
+                return lazyNumber(() -> (double) objective.getScore(player.getName()).getScore());
+            }
+        };
     }
 }
