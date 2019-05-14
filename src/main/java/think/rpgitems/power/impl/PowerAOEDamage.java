@@ -20,8 +20,7 @@ import java.util.List;
 
 import static java.lang.Double.max;
 import static java.lang.Double.min;
-import static think.rpgitems.Events.OVERRIDING_DAMAGE;
-import static think.rpgitems.Events.SUPPRESS_MELEE;
+import static think.rpgitems.Events.*;
 import static think.rpgitems.power.Utils.*;
 
 /**
@@ -154,6 +153,7 @@ public class PowerAOEDamage extends BasePower implements PowerOffhandClick, Powe
     public PowerResult<Void> fire(Player player, ItemStack stack) {
         if (!checkCooldown(this, player, cooldown, true, true)) return PowerResult.cd();
         if (!getItem().consumeDurability(stack, cost)) return PowerResult.cost();
+        Context.instance().putTemp(player.getUniqueId(), DAMAGE_SOURCE, getNamespacedKey().toString());
         Context.instance().putTemp(player.getUniqueId(), OVERRIDING_DAMAGE, damage);
         Context.instance().putTemp(player.getUniqueId(), SUPPRESS_MELEE, suppressMelee);
         if (selfapplication) dealDamage(player, damage);

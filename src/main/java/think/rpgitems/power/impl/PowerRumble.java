@@ -3,10 +3,7 @@ package think.rpgitems.power.impl;
 import org.bukkit.Effect;
 import org.bukkit.Location;
 import org.bukkit.block.Block;
-import org.bukkit.entity.Entity;
-import org.bukkit.entity.ItemFrame;
-import org.bukkit.entity.Painting;
-import org.bukkit.entity.Player;
+import org.bukkit.entity.*;
 import org.bukkit.event.player.PlayerInteractEvent;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.metadata.FixedMetadataValue;
@@ -14,6 +11,7 @@ import org.bukkit.scheduler.BukkitRunnable;
 import org.bukkit.util.Vector;
 import think.rpgitems.I18n;
 import think.rpgitems.RPGItems;
+import think.rpgitems.data.Context;
 import think.rpgitems.power.PowerMeta;
 import think.rpgitems.power.PowerResult;
 import think.rpgitems.power.PowerRightClick;
@@ -22,6 +20,8 @@ import think.rpgitems.power.Property;
 import java.util.List;
 import java.util.Random;
 
+import static think.rpgitems.Events.DAMAGE_SOURCE;
+import static think.rpgitems.Events.OVERRIDING_DAMAGE;
 import static think.rpgitems.power.Utils.checkCooldown;
 import static think.rpgitems.power.Utils.getNearbyEntities;
 
@@ -57,6 +57,9 @@ public class PowerRumble extends BasePower implements PowerRightClick {
      */
     @Property
     public int cost = 0;
+
+    @Property
+    public double damage = 0;
 
     @Override
     public PowerResult<Void> rightClick(final Player player, ItemStack stack, PlayerInteractEvent event) {
@@ -104,6 +107,18 @@ public class PowerRumble extends BasePower implements PowerRightClick {
                             }
                             if (e.getLocation().distance(location) <= 2.5)
                                 e.setVelocity(new Vector(random.nextGaussian() / 4d, 1d + random.nextDouble() * (double) power, random.nextGaussian() / 4d));
+
+                            if (!(e instanceof LivingEntity)){
+                                continue;
+                            }
+                            if (damage > 0) {
+                                Context.instance().putTemp(player.getUniqueId(), DAMAGE_SOURCE, getNamespacedKey().toString());
+                                Context.instance().putTemp(player.getUniqueId(), OVERRIDING_DAMAGE, damage);
+                                ((LivingEntity) e).damage(damage, player);
+                                Context.instance().putTemp(player.getUniqueId(), OVERRIDING_DAMAGE, null);
+                                Context.instance().putTemp(player.getUniqueId(), DAMAGE_SOURCE, null);
+
+                            }
                         }
                     }
                     location.getWorld().createExplosion(location.getX(), location.getY(), location.getZ(), power, false, false); // Trigger the explosion after all hanging entities have been protected

@@ -6,6 +6,8 @@ import com.google.common.base.Strings;
 import com.google.common.cache.CacheBuilder;
 import com.google.common.cache.CacheLoader;
 import com.google.common.cache.LoadingCache;
+import com.udojava.evalex.Expression;
+import com.udojava.evalex.LazyFunction;
 import org.bukkit.ChatColor;
 import org.bukkit.Location;
 import org.bukkit.Material;
@@ -17,26 +19,28 @@ import org.bukkit.entity.LivingEntity;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.permissions.PermissionAttachment;
+import org.bukkit.scoreboard.Objective;
 import org.bukkit.util.BoundingBox;
 import org.bukkit.util.Vector;
 import think.rpgitems.AdminHandler;
 import think.rpgitems.I18n;
 import think.rpgitems.RPGItems;
+import think.rpgitems.data.Context;
 import think.rpgitems.data.Font;
 import think.rpgitems.power.impl.PowerSelector;
 import think.rpgitems.utils.MaterialUtils;
 
 import java.lang.reflect.Field;
 import java.lang.reflect.ParameterizedType;
+import java.math.BigDecimal;
 import java.nio.ByteBuffer;
 import java.util.*;
+import java.util.function.Supplier;
 import java.util.logging.Level;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 public class Utils {
-
-    private static Map<String, Long> cooldowns = new HashMap<>();
 
     private static LoadingCache<String, List<String>> permissionCache = CacheBuilder
                                                                                 .newBuilder()
@@ -154,27 +158,25 @@ public class Utils {
      * @return the boolean
      */
     public static boolean checkCooldown(Power power, Player player, long cdTicks, boolean showWarn, boolean showPower) {
-        String key = player.getName() + "." + power.getItem().getUid() + "." + power.getNamespacedKey().toString() + ".cooldown";
-        return checkAndSetCooldown(power, player, cdTicks, showWarn, showPower, key);
+        return checkAndSetCooldown(power, player, cdTicks, showWarn, showPower, "cooldown." + power.getItem().getUid()  + "." + power.getNamespacedKey().toString());
     }
 
     public static boolean checkCooldownByString(Power power, Player player, String key, long cdTicks, boolean showWarn, boolean showPower) {
-        String cdKey = player.getName() + "." + power.getItem().getUid() + "." + "key." + key + ".cooldown";
-        return checkAndSetCooldown(power, player, cdTicks, showWarn, showPower, cdKey);
+        return checkAndSetCooldown(power, player, cdTicks, showWarn, showPower, "cooldown." + power.getItem().getUid()  + "." + key);
     }
 
     private static boolean checkAndSetCooldown(Power power, Player player, long cooldownTime, boolean showWarn, boolean showPower, String key) {
         long cooldown;
-        Long value = cooldowns.get(key);
+        Long value = (Long) Context.instance().get(player.getUniqueId(), key);
         long nowTick = System.currentTimeMillis() / 50;
         if (value == null) {
             cooldown = nowTick;
-            cooldowns.put(key, cooldown);
         } else {
             cooldown = value;
         }
         if (cooldown <= nowTick) {
-            cooldowns.put(key, nowTick + cooldownTime);
+            long cd = nowTick + cooldownTime;
+            Context.instance().put(player.getUniqueId(), key, cd, cd);
             return true;
         } else {
             if (showWarn) {
@@ -646,5 +648,137 @@ public class Utils {
         }
         if (a == -1 || b == -1) return -1.0;
         return Math.min(a, b);
+    }
+
+    public static Expression.LazyNumber lazyNumber(Supplier<Double> f) {
+        return new Expression.LazyNumber() {
+            @Override
+            public BigDecimal eval() {
+                return BigDecimal.valueOf(f.get());
+            }
+
+            @Override
+            public String getString() {
+                return null;
+            }
+        };
+    }
+
+    public static LazyFunction scoreBoard(Player player) {
+        return new LazyFunction() {
+            @Override
+            public String getName() {
+                return "playerScoreBoard";
+            }
+
+            @Override
+            public int getNumParams() {
+                return 2;
+            }
+
+            @Override
+            public boolean numParamsVaries() {
+                return false;
+            }
+
+            @Override
+            public boolean isBooleanFunction() {
+                return false;
+            }
+
+            @Override
+            public Expression.LazyNumber lazyEval(List<Expression.LazyNumber> lazyParams) {
+                Objective objective = player.getScoreboard().getObjective(lazyParams.get(0).getString());
+                if (objective == null) {
+                    return lazyParams.get(1);
+                }
+                return lazyNumber(() -> (double) objective.getScore(player.getName()).getScore());
+            }
+        };
+    }
+
+    public static LazyFunction context(Player player) {
+        return new LazyFunction() {
+            @Override
+            public String getName() {
+                return "playerContext";
+            }
+
+            @Override
+            public int getNumParams() {
+                return 2;
+            }
+
+            @Override
+            public boolean numParamsVaries() {
+                return false;
+            }
+
+            @Override
+            public boolean isBooleanFunction() {
+                return false;
+            }
+
+            @Override
+            public Expression.LazyNumber lazyEval(List<Expression.LazyNumber> lazyParams) {
+                Object obj = Context.instance().get(player.getUniqueId(), lazyParams.get(0).getString());
+                if (obj == null) {
+                    return lazyParams.get(1);
+                }
+                return new Expression.LazyNumber() {
+                    @Override
+                    public BigDecimal eval() {
+                        if (obj instanceof Number) {
+                            return BigDecimal.valueOf(((Number) obj).doubleValue());
+                        }
+                        return null;
+                    }
+
+                    @Override
+                    public String getString() {
+                        return obj.toString();
+                    }
+                };
+            }
+        };
+    }
+
+    public static LazyFunction now() {
+        return new LazyFunction() {
+            @Override
+            public String getName() {
+                return "now";
+            }
+
+            @Override
+            public int getNumParams() {
+                return 0;
+            }
+
+            @Override
+            public boolean numParamsVaries() {
+                return false;
+            }
+
+            @Override
+            public boolean isBooleanFunction() {
+                return false;
+            }
+
+            @Override
+            public Expression.LazyNumber lazyEval(List<Expression.LazyNumber> lazyParams) {
+                return new Expression.LazyNumber() {
+                    @Override
+                    public BigDecimal eval() {
+                        return BigDecimal.valueOf(System.currentTimeMillis());
+                    }
+
+                    @Override
+                    public String getString() {
+                        return null;
+                    }
+                };
+            }
+        };
     }
 }

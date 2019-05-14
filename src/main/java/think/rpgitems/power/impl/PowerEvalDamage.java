@@ -1,7 +1,6 @@
 package think.rpgitems.power.impl;
 
 import com.udojava.evalex.Expression;
-import com.udojava.evalex.LazyFunction;
 import org.bukkit.entity.Entity;
 import org.bukkit.entity.LivingEntity;
 import org.bukkit.entity.Player;
@@ -10,13 +9,10 @@ import org.bukkit.event.entity.EntityDamageByEntityEvent;
 import org.bukkit.event.entity.EntityDamageEvent;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.projectiles.ProjectileSource;
-import org.bukkit.scoreboard.Objective;
 import think.rpgitems.item.RPGItem;
 import think.rpgitems.power.*;
 
 import java.math.BigDecimal;
-import java.util.List;
-import java.util.function.Supplier;
 import java.util.logging.Level;
 
 /**
@@ -46,23 +42,23 @@ public class PowerEvalDamage extends BasePower implements PowerHit, PowerHitTake
                     .and("damage", BigDecimal.valueOf(damage))
                     .and("damagerType", damager.getType().name())
                     .and("isDamageByProjectile", byProjectile ? BigDecimal.ONE : BigDecimal.ZERO)
-                    .and("damagerTicksLived", lazyNumber(() -> (double) damager.getTicksLived()))
-                    .and("finalDamage", lazyNumber(event::getFinalDamage))
-                    .and("distance", lazyNumber(() -> player.getLocation().distance(entity.getLocation())))
-                    .and("playerYaw", lazyNumber(() -> (double) player.getLocation().getYaw()))
-                    .and("playerPitch", lazyNumber(() -> (double) player.getLocation().getPitch()))
-                    .and("playerX", lazyNumber(() -> player.getLocation().getX()))
-                    .and("playerY", lazyNumber(() -> player.getLocation().getY()))
-                    .and("playerZ", lazyNumber(() -> player.getLocation().getZ()))
+                    .and("damagerTicksLived", Utils.lazyNumber(() -> (double) damager.getTicksLived()))
+                    .and("finalDamage", Utils.lazyNumber(event::getFinalDamage))
+                    .and("distance", Utils.lazyNumber(() -> player.getLocation().distance(entity.getLocation())))
+                    .and("playerYaw", Utils.lazyNumber(() -> (double) player.getLocation().getYaw()))
+                    .and("playerPitch", Utils.lazyNumber(() -> (double) player.getLocation().getPitch()))
+                    .and("playerX", Utils.lazyNumber(() -> player.getLocation().getX()))
+                    .and("playerY", Utils.lazyNumber(() -> player.getLocation().getY()))
+                    .and("playerZ", Utils.lazyNumber(() -> player.getLocation().getZ()))
                     .and("entityType", entity.getType().name())
-                    .and("entityYaw", lazyNumber(() -> (double) entity.getLocation().getYaw()))
-                    .and("entityPitch", lazyNumber(() -> (double) entity.getLocation().getPitch()))
-                    .and("entityX", lazyNumber(() -> entity.getLocation().getX()))
-                    .and("entityY", lazyNumber(() -> entity.getLocation().getY()))
-                    .and("entityZ", lazyNumber(() -> entity.getLocation().getZ()))
-                    .and("entityLastDamage", lazyNumber(entity::getLastDamage))
+                    .and("entityYaw", Utils.lazyNumber(() -> (double) entity.getLocation().getYaw()))
+                    .and("entityPitch", Utils.lazyNumber(() -> (double) entity.getLocation().getPitch()))
+                    .and("entityX", Utils.lazyNumber(() -> entity.getLocation().getX()))
+                    .and("entityY", Utils.lazyNumber(() -> entity.getLocation().getY()))
+                    .and("entityZ", Utils.lazyNumber(() -> entity.getLocation().getZ()))
+                    .and("entityLastDamage", Utils.lazyNumber(entity::getLastDamage))
                     .and("cause", event.getCause().name())
-                    .addLazyFunction(scoreBoard(player))
+                    .addLazyFunction(Utils.scoreBoard(player))
             ;
 
             BigDecimal result = ex.eval();
@@ -77,20 +73,6 @@ public class PowerEvalDamage extends BasePower implements PowerHit, PowerHitTake
         }
     }
 
-    private static Expression.LazyNumber lazyNumber(Supplier<Double> f) {
-        return new Expression.LazyNumber() {
-            @Override
-            public BigDecimal eval() {
-                return BigDecimal.valueOf(f.get());
-            }
-
-            @Override
-            public String getString() {
-                return null;
-            }
-        };
-    }
-
     @Override
     public PowerResult<Double> takeHit(Player player, ItemStack stack, double damage, EntityDamageEvent event) {
         boolean byEntity = event instanceof EntityDamageByEntityEvent;
@@ -99,16 +81,18 @@ public class PowerEvalDamage extends BasePower implements PowerHit, PowerHitTake
             Expression ex = new Expression(expression);
             ex
                     .and("damage", BigDecimal.valueOf(damage))
-                    .and("finalDamage", lazyNumber(event::getFinalDamage))
+                    .and("finalDamage", Utils.lazyNumber(event::getFinalDamage))
                     .and("isDamageByEntity", byEntity ? BigDecimal.ONE : BigDecimal.ZERO)
-                    .and("playerYaw", lazyNumber(() -> (double) player.getLocation().getYaw()))
-                    .and("playerPitch", lazyNumber(() -> (double) player.getLocation().getPitch()))
-                    .and("playerX", lazyNumber(() -> player.getLocation().getX()))
-                    .and("playerY", lazyNumber(() -> player.getLocation().getY()))
-                    .and("playerZ", lazyNumber(() -> player.getLocation().getZ()))
-                    .and("playerLastDamage", lazyNumber(player::getLastDamage))
-                    .and("cause", event.getCause().name())
-                    .addLazyFunction(scoreBoard(player));
+                    .and("playerYaw", Utils.lazyNumber(() -> (double) player.getLocation().getYaw()))
+                    .and("playerPitch", Utils.lazyNumber(() -> (double) player.getLocation().getPitch()))
+                    .and("playerX", Utils.lazyNumber(() -> player.getLocation().getX()))
+                    .and("playerY", Utils.lazyNumber(() -> player.getLocation().getY()))
+                    .and("playerZ", Utils.lazyNumber(() -> player.getLocation().getZ()))
+                    .and("playerLastDamage", Utils.lazyNumber(player::getLastDamage))
+                    .and("cause", event.getCause().name());
+            ex.addLazyFunction(Utils.scoreBoard(player));
+            ex.addLazyFunction(Utils.context(player));
+            ex.addLazyFunction(Utils.now());
 
             if (byEntity) {
                 boolean byProjectile = false;
@@ -125,14 +109,14 @@ public class PowerEvalDamage extends BasePower implements PowerHit, PowerHitTake
                 ex
                         .and("damagerType", damager.getType().name())
                         .and("isDamageByProjectile", byProjectile ? BigDecimal.ONE : BigDecimal.ZERO)
-                        .and("damagerTicksLived", lazyNumber(() -> (double) damager.getTicksLived()))
-                        .and("distance", lazyNumber(() -> player.getLocation().distance(entity.getLocation())))
+                        .and("damagerTicksLived", Utils.lazyNumber(() -> (double) damager.getTicksLived()))
+                        .and("distance", Utils.lazyNumber(() -> player.getLocation().distance(entity.getLocation())))
                         .and("entityType", entity.getType().name())
-                        .and("entityYaw", lazyNumber(() -> (double) entity.getLocation().getYaw()))
-                        .and("entityPitch", lazyNumber(() -> (double) entity.getLocation().getPitch()))
-                        .and("entityX", lazyNumber(() -> entity.getLocation().getX()))
-                        .and("entityY", lazyNumber(() -> entity.getLocation().getY()))
-                        .and("entityZ", lazyNumber(() -> entity.getLocation().getZ()));
+                        .and("entityYaw", Utils.lazyNumber(() -> (double) entity.getLocation().getYaw()))
+                        .and("entityPitch", Utils.lazyNumber(() -> (double) entity.getLocation().getPitch()))
+                        .and("entityX", Utils.lazyNumber(() -> entity.getLocation().getX()))
+                        .and("entityY", Utils.lazyNumber(() -> entity.getLocation().getY()))
+                        .and("entityZ", Utils.lazyNumber(() -> entity.getLocation().getZ()));
             }
 
             BigDecimal result = ex.eval();
@@ -157,36 +141,4 @@ public class PowerEvalDamage extends BasePower implements PowerHit, PowerHitTake
         return display != null ? display : "Damage may vary based on environment";
     }
 
-    private LazyFunction scoreBoard(Player player) {
-        return new LazyFunction() {
-            @Override
-            public String getName() {
-                return "playerScoreBoard";
-            }
-
-            @Override
-            public int getNumParams() {
-                return 2;
-            }
-
-            @Override
-            public boolean numParamsVaries() {
-                return false;
-            }
-
-            @Override
-            public boolean isBooleanFunction() {
-                return false;
-            }
-
-            @Override
-            public Expression.LazyNumber lazyEval(List<Expression.LazyNumber> lazyParams) {
-                Objective objective = player.getScoreboard().getObjective(lazyParams.get(0).getString());
-                if (objective == null) {
-                    return lazyParams.get(1);
-                }
-                return lazyNumber(() -> (double) objective.getScore(player.getName()).getScore());
-            }
-        };
-    }
 }

@@ -22,11 +22,11 @@ import java.util.*;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
-import static think.rpgitems.Events.OVERRIDING_DAMAGE;
-import static think.rpgitems.Events.SUPPRESS_MELEE;
+import static think.rpgitems.Events.*;
+import static think.rpgitems.power.Utils.checkCooldown;
 
 @PowerMeta(defaultTrigger = "RIGHT_CLICK")
-public class PowerBeam extends BasePower implements PowerRightClick, PowerLeftClick, PowerSneak, PowerSneaking, PowerSprint, PowerBowShoot {
+public class PowerBeam extends BasePower implements PowerPlain, PowerRightClick, PowerLeftClick, PowerSneak, PowerSneaking, PowerSprint, PowerBowShoot {
     @Property
     public int length = 10;
 
@@ -60,6 +60,17 @@ public class PowerBeam extends BasePower implements PowerRightClick, PowerLeftCl
     @Property
     public double offsetZ = 0;
 
+    /**
+     * Cost of this power
+     */
+    @Property
+    public int cost = 0;
+    /**
+     * Cooldown time of this power
+     */
+    @Property
+    public long cooldown = 0;
+
     @Property
     @Serializer(ExtraDataSerializer.class)
     @Deserializer(ExtraDataSerializer.class)
@@ -80,6 +91,13 @@ public class PowerBeam extends BasePower implements PowerRightClick, PowerLeftCl
                                          .collect(Collectors.toSet());
 
     @Override
+    public PowerResult<Void> fire(Player player, ItemStack stack) {
+        if (!checkCooldown(this, player, cooldown, true, true)) return PowerResult.cd();
+        if (!getItem().consumeDurability(stack, cost)) return PowerResult.cost();
+        return beam(player);
+    }
+
+    @Override
     public @LangKey(skipCheck = true) String getName() {
         return "beam";
     }
@@ -91,27 +109,27 @@ public class PowerBeam extends BasePower implements PowerRightClick, PowerLeftCl
 
     @Override
     public PowerResult<Void> leftClick(Player player, ItemStack stack, PlayerInteractEvent event) {
-        return beam(player);
+        return fire(player, stack);
     }
 
     @Override
     public PowerResult<Void> rightClick(Player player, ItemStack stack, PlayerInteractEvent event) {
-        return beam(player);
+        return fire(player, stack);
     }
 
     @Override
     public PowerResult<Void> sneak(Player player, ItemStack stack, PlayerToggleSneakEvent event) {
-        return beam(player);
+        return fire(player, stack);
     }
 
     @Override
     public PowerResult<Void> sneaking(Player player, ItemStack stack) {
-        return beam(player);
+        return fire(player, stack);
     }
 
     @Override
     public PowerResult<Void> sprint(Player player, ItemStack stack, PlayerToggleSprintEvent event) {
-        return beam(player);
+        return fire(player, stack);
     }
 
     private PowerResult<Void> beam(LivingEntity from) {
@@ -234,11 +252,13 @@ public class PowerBeam extends BasePower implements PowerRightClick, PowerLeftCl
             if (!collect.isEmpty()) {
                 Entity entity = collect.get(0);
                 if (entity instanceof LivingEntity) {
+                    Context.instance().putTemp(from.getUniqueId(), DAMAGE_SOURCE, getNamespacedKey().toString());
                     Context.instance().putTemp(from.getUniqueId(), OVERRIDING_DAMAGE, damage);
                     Context.instance().putTemp(from.getUniqueId(), SUPPRESS_MELEE, suppressMelee);
                     ((LivingEntity) entity).damage(damage, from);
                     Context.instance().putTemp(from.getUniqueId(), SUPPRESS_MELEE, null);
                     Context.instance().putTemp(from.getUniqueId(), OVERRIDING_DAMAGE, null);
+                    Context.instance().putTemp(from.getUniqueId(), DAMAGE_SOURCE, null);
                 }
                 return true;
             }
@@ -247,6 +267,7 @@ public class PowerBeam extends BasePower implements PowerRightClick, PowerLeftCl
                                                  .filter(entity -> entity instanceof LivingEntity)
                                                  .filter(entity -> canHit(loc, entity))
                                                  .collect(Collectors.toList());
+            Context.instance().putTemp(from.getUniqueId(), DAMAGE_SOURCE, getNamespacedKey().toString());
             Context.instance().putTemp(from.getUniqueId(), OVERRIDING_DAMAGE, damage);
             Context.instance().putTemp(from.getUniqueId(), SUPPRESS_MELEE, suppressMelee);
 
@@ -260,6 +281,7 @@ public class PowerBeam extends BasePower implements PowerRightClick, PowerLeftCl
             }
             Context.instance().putTemp(from.getUniqueId(), SUPPRESS_MELEE, null);
             Context.instance().putTemp(from.getUniqueId(), OVERRIDING_DAMAGE, null);
+            Context.instance().putTemp(from.getUniqueId(), DAMAGE_SOURCE, null);
         }
         return false;
     }

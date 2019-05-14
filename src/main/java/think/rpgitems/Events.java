@@ -46,6 +46,7 @@ import static think.rpgitems.power.Utils.minWithCancel;
 
 public class Events implements Listener {
 
+    public static final String DAMAGE_SOURCE = "DamageSource";
     public static final String OVERRIDING_DAMAGE = "OverridingDamage";
     public static final String SUPPRESS_MELEE = "SuppressMelee";
     public static final String SUPPRESS_PROJECTILE = "SuppressProjectile";

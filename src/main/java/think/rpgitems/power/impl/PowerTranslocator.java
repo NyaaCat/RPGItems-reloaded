@@ -69,6 +69,9 @@ public class PowerTranslocator extends BasePower implements PowerMainhandItem, P
     @Property
     public int tpCost = 0;
 
+    @Property
+    public double speed = 1;
+
     @Override
     public PowerResult<Boolean> swapToMainhand(Player player, ItemStack stack, PlayerSwapHandItemsEvent event) {
         checkCooldown(this, player, cooldown, false, true);
@@ -120,7 +123,7 @@ public class PowerTranslocator extends BasePower implements PowerMainhandItem, P
     public PowerResult<Boolean> swapToOffhand(Player player, ItemStack stack, PlayerSwapHandItemsEvent event) {
         if (!checkCooldown(this, player, 0, true, true)) return PowerResult.ok(false);
         if (!getItem().consumeDurability(stack, setupCost)) return PowerResult.cost();
-        SpectralArrow arrow = player.launchProjectile(SpectralArrow.class);
+        SpectralArrow arrow = player.launchProjectile(SpectralArrow.class, player.getLocation().getDirection().multiply(speed));
         arrow.setPickupStatus(Arrow.PickupStatus.DISALLOWED);
         arrow.setPersistent(false);
         arrow.setBounce(true);
