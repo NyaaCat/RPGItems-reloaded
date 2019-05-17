@@ -542,6 +542,10 @@ power:
       itemStack: Item that player should wears
       rpgitem: RPGItem that player should wears
       matchAllSlot: Whether to require all slot to match
+    evalcondition:
+      main_name: Eval Condition
+      main_description: Calculate condition dynamicly
+      expression: Expression to compute condition
     evaldamage:
       main_name: Eval Damage
       main_description: Calculate damage dynamicly

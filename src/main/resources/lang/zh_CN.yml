@@ -535,6 +535,10 @@ power:
       itemStack: 玩家需要装备的物品
       rpgitem: 玩家需要装备的 RPGItem
       matchAllSlot: 是否要求所有装备栏匹配
+    evalcondition:
+      main_name: 动态条件
+      main_description: 根据变量动态计算结果
+      expression: 计算条件结果的表达式
     evaldamage:
       main_name: 动态伤害
       main_description: 根据变量动态计算伤害
