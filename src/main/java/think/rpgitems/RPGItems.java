@@ -1,5 +1,6 @@
 package think.rpgitems;
 
+import cat.nyaa.nyaacore.utils.ClassPathUtils;
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
 import org.bukkit.entity.Player;
@@ -16,11 +17,13 @@ import org.librazy.nclangchecker.LangKey;
 import think.rpgitems.data.Font;
 import think.rpgitems.item.ItemManager;
 import think.rpgitems.power.*;
-import think.rpgitems.power.impl.BasePower;
+import think.rpgitems.power.BasePower;
 import think.rpgitems.support.WGSupport;
+import think.rpgitems.trigger.TriggerListener;
 
 import java.io.File;
 import java.lang.reflect.InvocationHandler;
+import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Proxy;
 import java.util.ArrayList;
 import java.util.List;
@@ -91,7 +94,24 @@ public class RPGItems extends JavaPlugin {
             }
             return null;
         });
-        PowerManager.registerPowers(RPGItems.plugin, BasePower.class.getPackage().getName());
+
+        Class<? extends Trigger>[] mainTriggers = ClassPathUtils.scanSubclasses(RPGItems.plugin, "think.rpgitems.trigger", Trigger.class);
+        Class<? extends Trigger>[] triggers = ClassPathUtils.scanSubclasses(RPGItems.plugin, "cat.nyaa.rpgitems.trigger", Trigger.class);
+        for(Class<? extends Trigger> t: mainTriggers) {
+            try {
+                Class.forName(t.getName(), true, t.getClassLoader());
+            } catch (ClassNotFoundException e) {
+                throw new AssertionError(e);
+            }
+        }
+        for(Class<? extends Trigger> t: triggers) {
+            try {
+                Class.forName(t.getName(), true, t.getClassLoader());
+            } catch (ClassNotFoundException e) {
+                throw new AssertionError(e);
+            }
+        }
+        PowerManager.registerPowers(RPGItems.plugin, "cat.nyaa.rpgitems.power.impl");
         saveDefaultConfig();
         Font.load();
         WGSupport.load();
@@ -122,7 +142,6 @@ public class RPGItems extends JavaPlugin {
 
     @Override
     public void onEnable() {
-        Trigger.stopAcceptingRegistrations();
         plugin = this;
         if (plugin.cfg.version.startsWith("0.") && Double.parseDouble(plugin.cfg.version) < 0.5) {
             Bukkit.getConsoleSender().sendMessage(ChatColor.RED + "======================================");
@@ -176,10 +195,20 @@ public class RPGItems extends JavaPlugin {
     }
 
     private class ServerLoadListener implements Listener {
+        @SuppressWarnings("unchecked")
         @EventHandler
         public void onServerLoad(ServerLoadEvent event) {
             HandlerList.unregisterAll(this);
             getServer().getPluginManager().registerEvents(new Events(), RPGItems.this);
+            Class<? extends Listener>[] classes = (Class<Listener>[]) ClassPathUtils.scanClassesWithAnnotations(RPGItems.plugin, "cat.nyaa.rpgitems.trigger", TriggerListener.class);
+            for (Class<? extends Listener> cls: classes) {
+                try {
+                    Listener l = cls.getConstructor().newInstance();
+                    getServer().getPluginManager().registerEvents(l, RPGItems.this);
+                } catch (InstantiationException | IllegalAccessException | InvocationTargetException | NoSuchMethodException e) {
+                    plugin.getLogger().log(Level.WARNING, "Bad listener", e);
+                }
+            }
             WGSupport.init(RPGItems.this);
             logger.info("Loading RPGItems...");
             ItemManager.load(RPGItems.this);

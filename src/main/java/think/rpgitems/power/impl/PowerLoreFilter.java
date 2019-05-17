@@ -1,5 +1,6 @@
 package think.rpgitems.power.impl;
 
+import think.rpgitems.power.BasePower;
 import think.rpgitems.power.PowerMeta;
 import think.rpgitems.power.Property;
 

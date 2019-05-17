@@ -1,0 +1,5 @@
+include ':powers:1.13.2'
+findProject(':powers:1.13.2')?.name = 'RPGItems-Power-1.13.2'
+include 'powers:1.14'
+findProject(':powers:1.14')?.name = 'RPGItems-Power-1.14'
+

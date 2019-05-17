@@ -53,6 +53,8 @@ import java.util.regex.Matcher;
 import java.util.stream.Collectors;
 
 import static org.bukkit.ChatColor.COLOR_CHAR;
+import static think.rpgitems.trigger.LivingEntity.LIVINGENTITY;
+import static think.rpgitems.trigger.Location.LOCATION;
 import static think.rpgitems.utils.ItemTagUtils.*;
 
 public class RPGItem {
@@ -940,7 +942,7 @@ public class RPGItem {
         }
         if (context instanceof Location) {
             if (power instanceof PowerLocation) {
-                PowerResult<Void> overrideResult = Trigger.LOCATION.run((PowerLocation) power, player, i, event, context);
+                PowerResult<Void> overrideResult = LOCATION.run((PowerLocation) power, player, i, event, context);
                 result = trigger.warpResult(overrideResult, power, player, i, event);
             } else {
                 throw new IllegalStateException();
@@ -948,7 +950,7 @@ public class RPGItem {
         } else if (context instanceof Pair) {
             Object key = ((Pair) context).getKey();
             if (key instanceof LivingEntity) {
-                PowerResult<Void> overrideResult = Trigger.LIVINGENTITY.run((PowerLivingEntity) power, player, i, event, context);
+                PowerResult<Void> overrideResult = LIVINGENTITY.run((PowerLivingEntity) power, player, i, event, context);
                 result = trigger.warpResult(overrideResult, power, player, i, event);
             } else {
                 throw new IllegalStateException();

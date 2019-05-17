@@ -1,7 +1,6 @@
 package think.rpgitems.power;
 
 import org.bukkit.Effect;
-import think.rpgitems.power.impl.PowerParticle;
 
 import java.util.Arrays;
 import java.util.List;
@@ -55,7 +54,7 @@ public enum Preset {
                 return
                         Stream.concat(
                                 Arrays.stream(Effect.values()).filter(effect -> effect.getType() == Effect.Type.VISUAL),
-                                Arrays.stream(PowerParticle.DeprecatedEffect.values())
+                                Arrays.stream(DeprecatedEffect.values())
                         )
                               .map(Enum::name).collect(Collectors.toList());
             case NONE:

@@ -14,6 +14,7 @@ import org.bukkit.scoreboard.Score;
 import org.bukkit.scoreboard.Scoreboard;
 import org.bukkit.scoreboard.Team;
 import think.rpgitems.I18n;
+import think.rpgitems.power.BasePower;
 import think.rpgitems.power.PowerMeta;
 import think.rpgitems.power.Property;
 

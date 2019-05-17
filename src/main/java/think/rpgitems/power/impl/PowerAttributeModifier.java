@@ -3,6 +3,7 @@ package think.rpgitems.power.impl;
 import org.bukkit.attribute.Attribute;
 import org.bukkit.attribute.AttributeModifier;
 import org.bukkit.inventory.EquipmentSlot;
+import think.rpgitems.power.BasePower;
 import think.rpgitems.power.PowerMeta;
 import think.rpgitems.power.Property;
 

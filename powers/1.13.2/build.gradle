@@ -1,0 +1,54 @@
+plugins {
+    id 'java-library'
+    id 'com.github.johnrengelman.shadow' version '5.0.0'
+}
+
+sourceCompatibility = 1.8
+targetCompatibility = 1.8
+
+configurations.all {
+    resolutionStrategy.cacheChangingModulesFor 0, 'seconds'
+}
+
+shadowJar {
+    configurations = [project.configurations.shadow]
+    archiveClassifier.set('release')
+}
+
+repositories {
+    mavenCentral()
+
+    maven {
+        name 'Spigot'
+        url 'https://hub.spigotmc.org/nexus/content/groups/public/'
+    }
+
+    maven {
+        name 'NyaaCentral'
+        url 'https://raw.githubusercontent.com/NyaaCat/NyaaCentral/maven-repo'
+    }
+
+    maven {
+        name 'vault-repo'
+        url 'http://nexus.hc.to/content/repositories/pub_releases'
+    }
+
+    maven {
+        name 'sk89q'
+        url "http://maven.sk89q.com/repo/"
+    }
+}
+
+dependencies {
+    shadow project(':')
+    compileOnly "org.spigotmc:spigot-api:1.13.2-R0.1-SNAPSHOT"
+    compileOnly 'cat.nyaa:nyaacore:6.3-SNAPSHOT'
+
+    compileOnly 'org.librazy:NyaaUtilsLangChecker:2.0-SNAPSHOT'
+
+    compileOnly('net.milkbowl.vault:VaultAPI:1.7') {
+        transitive = false
+    }
+
+    testCompile group: 'junit', name: 'junit', version: '4.12'
+}

@@ -9,7 +9,6 @@ import org.bukkit.event.player.PlayerSwapHandItemsEvent;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.scheduler.BukkitRunnable;
 import org.bukkit.util.Vector;
-import think.rpgitems.Events;
 import think.rpgitems.I18n;
 import think.rpgitems.power.*;
 
