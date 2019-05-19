@@ -3,7 +3,7 @@ package cat.nyaa.rpgitems.trigger;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
-import org.bukkit.event.entity.EntityLoadCrossbowEvent;
+import org.bukkit.event.entity.EntityShootCrossbowEvent;
 import think.rpgitems.RPGItems;
 import think.rpgitems.trigger.TriggerListener;
 
@@ -14,7 +14,7 @@ public class Events implements Listener {
     }
 
     @EventHandler
-    public void onPlayerLoadCrossbow(EntityLoadCrossbowEvent event) {
+    public void onPlayerLoadCrossbow(EntityShootCrossbowEvent event) {
         if (event.getEntity() instanceof Player) {
             Player player = (Player) event.getEntity();
             RPGItems.logger.warning(player.getDisplayName());

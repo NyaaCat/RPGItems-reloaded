@@ -40,9 +40,14 @@ repositories {
 }
 
 dependencies {
-    shadow project(':')
-    shadow project(':powers:RPGItems-Power-1.13.2')
-    // api "org.spigotmc:spigot-api:1.14.1-R0.1-SNAPSHOT"
+    shadow project(':common')
+    shadow project(':powers:1.13.2')
+    String minecraftVersion = "1.14.1"
+    if (project.properties.minecraftVersion != null) {
+        minecraftVersion = project.properties.minecraftVersion
+    }
+    println(minecraftVersion)
+    compileOnly "org.spigotmc:spigot-api:$minecraftVersion-R0.1-SNAPSHOT"
     compileOnly files("lib/spigot-1.14.1.jar")
     compileOnly 'cat.nyaa:nyaacore:6.3-SNAPSHOT'
 

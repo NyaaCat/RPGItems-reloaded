@@ -40,8 +40,13 @@ repositories {
 }
 
 dependencies {
-    shadow project(':')
-    compileOnly "org.spigotmc:spigot-api:1.13.2-R0.1-SNAPSHOT"
+    shadow project(':common')
+    String minecraftVersion = "1.13.2"
+    if (project.properties.minecraftVersion != null) {
+        minecraftVersion = project.properties.minecraftVersion
+    }
+    println(minecraftVersion)
+    compileOnly "org.spigotmc:spigot-api:$minecraftVersion-R0.1-SNAPSHOT"
     compileOnly 'cat.nyaa:nyaacore:6.3-SNAPSHOT'
 
     compileOnly 'org.librazy:NyaaUtilsLangChecker:2.0-SNAPSHOT'
