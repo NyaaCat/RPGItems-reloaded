@@ -5,6 +5,8 @@ import org.bukkit.block.Block;
 import org.bukkit.entity.Entity;
 import org.bukkit.entity.LivingEntity;
 import org.bukkit.entity.Player;
+import org.bukkit.event.entity.EntityDamageByEntityEvent;
+import org.bukkit.event.entity.EntityDamageEvent;
 import org.bukkit.event.entity.EntityShootBowEvent;
 import org.bukkit.event.player.PlayerInteractEvent;
 import org.bukkit.event.player.PlayerToggleSneakEvent;
@@ -26,7 +28,7 @@ import static think.rpgitems.Events.*;
 import static think.rpgitems.power.Utils.checkCooldown;
 
 @PowerMeta(defaultTrigger = "RIGHT_CLICK")
-public class PowerBeam extends BasePower implements PowerPlain, PowerRightClick, PowerLeftClick, PowerSneak, PowerSneaking, PowerSprint, PowerBowShoot {
+public class PowerBeam extends BasePower implements PowerPlain, PowerRightClick, PowerLeftClick, PowerSneak, PowerSneaking, PowerSprint, PowerBowShoot, PowerHitTaken, PowerHit {
     @Property
     public int length = 10;
 
@@ -253,6 +255,16 @@ public class PowerBeam extends BasePower implements PowerPlain, PowerRightClick,
     @Override
     public PowerResult<Float> bowShoot(Player player, ItemStack itemStack, EntityShootBowEvent e) {
         return beam(player).with(e.getForce());
+    }
+
+    @Override
+    public PowerResult<Double> hit(Player player, ItemStack stack, LivingEntity entity, double damage, EntityDamageByEntityEvent event) {
+        return beam(player).with(event.getDamage());
+    }
+
+    @Override
+    public PowerResult<Double> takeHit(Player target, ItemStack stack, double damage, EntityDamageEvent event) {
+        return beam(target).with(event.getDamage());
     }
 
     class PlainTask extends BukkitRunnable {
