@@ -89,6 +89,9 @@ public class PowerBeam extends BasePower implements PowerPlain, PowerRightClick,
     public double homingRange = 30;
 
     @Property
+    public int stepsBeforeHoming = 5;
+
+    @Property
     public int burstCount = 1;
 
     @Property
@@ -198,7 +201,7 @@ public class PowerBeam extends BasePower implements PowerPlain, PowerRightClick,
                             fire(from, fromLocation, toLocation, towards, actualLength);
                         }
                     }
-                }.runTaskLater(RPGItems.plugin, i * burstInterval);
+                }.runTaskLaterAsynchronously(RPGItems.plugin, i * burstInterval);
             }
             return PowerResult.ok();
         } else {
@@ -321,7 +324,7 @@ public class PowerBeam extends BasePower implements PowerPlain, PowerRightClick,
         public MovingTask(LivingEntity from, Vector towards, int apS, double actualLength, List<Entity> entities, Entity target) {
             this.from = from;
             this.towards = towards;
-            this.amountPerSec = apS;
+            this.amountPerSec = apS / ((int) Math.floor(actualLength));
             this.nearbyEntities = entities;
             this.target = target;
         }
@@ -332,12 +335,12 @@ public class PowerBeam extends BasePower implements PowerPlain, PowerRightClick,
             int spS = (int) Math.ceil(((double) length) / ((double) movementTicks));
             Location lastLocation = from.getEyeLocation();
             towards.normalize();
-            for (int i = 0; i < movementTicks; i++) {
-                int finalI = i;
+            for (int i = 0; i < length; i++) {
                 BukkitRunnable bukkitRunnable = new BukkitRunnable() {
                     @Override
                     public void run() {
                         for (int j = 0; j < spS; j++) {
+                            int finalI = j;
                             boolean isHit = false;
                             for (int k = 0; k < 4; k++) {
                                 Vector step = towards.clone().normalize().multiply(0.25);
@@ -367,7 +370,7 @@ public class PowerBeam extends BasePower implements PowerPlain, PowerRightClick,
     }
 
     private Vector homingCorrect(Vector towards, Location lastLocation, Entity target, int i) {
-        if (target == null || i < 5) {
+        if (target == null || i < stepsBeforeHoming) {
             return towards;
         }
         Location targetLocation;
