@@ -165,7 +165,35 @@ public class PowerBeam extends BasePower implements PowerPlain, PowerRightClick,
     private Random random = new Random();
     private Vector yUnit = new Vector(0, 1, 0);
 
+    @Property
+    public double spawnsPerBlock = 2;
+
+    double lengthPerSpawn = 1 / spawnsPerBlock;
+
     private PowerResult<Void> beam(LivingEntity from) {
+        if (burstCount > 0) {
+            for (int i = 0; i < burstCount; i++) {
+                new BukkitRunnable(){
+                    @Override
+                    public void run() {
+                        if (cone){
+                            for (int j = 0; j < beamAmount; j++) {
+                                fire(from);
+                            }
+                        }else {
+                            fire(from);
+                        }
+                    }
+                }.runTaskLaterAsynchronously(RPGItems.plugin, i * burstInterval);
+            }
+            return PowerResult.ok();
+        } else {
+            return fire(from);
+        }
+    }
+
+    private PowerResult<Void> fire(LivingEntity from) {
+        lengthPerSpawn = 1 / spawnsPerBlock;
         Location fromLocation = from.getEyeLocation();
         Block targetBlock;
         if (ignoreWall) {
@@ -176,6 +204,7 @@ public class PowerBeam extends BasePower implements PowerPlain, PowerRightClick,
         } else {
             targetBlock = from.getTargetBlock(transp, ((int) Math.ceil(length)));
         }
+
         Vector towards = from.getEyeLocation().getDirection();
         Location toLocation;
         if (targetBlock.getType() == Material.AIR) {
@@ -186,31 +215,9 @@ public class PowerBeam extends BasePower implements PowerPlain, PowerRightClick,
             int lth = (int) Math.ceil(targetBlock.getLocation().distance(fromLocation));
             toLocation.add(towards.clone().multiply(lth));
         }
+
         double actualLength = toLocation.distance(fromLocation);
         if (actualLength < 0.05) return PowerResult.noop();
-        if (burstCount > 0) {
-            for (int i = 0; i < burstCount; i++) {
-                new BukkitRunnable(){
-                    @Override
-                    public void run() {
-                        if (cone){
-                            for (int j = 0; j < beamAmount; j++) {
-                                fire(from, fromLocation, toLocation, towards, actualLength);
-                            }
-                        }else {
-                            fire(from, fromLocation, toLocation, towards, actualLength);
-                        }
-                    }
-                }.runTaskLaterAsynchronously(RPGItems.plugin, i * burstInterval);
-            }
-            return PowerResult.ok();
-        } else {
-            return fire(from, fromLocation, toLocation, towards, actualLength);
-        }
-    }
-
-    private PowerResult<Void> fire(LivingEntity from, Location fromLocation, Location toLocation, Vector toward, double actualLength) {
-        Vector towards = toward.clone();
         if (cone) {
             double phi = random.nextInt(360);
             double theta;
@@ -294,8 +301,8 @@ public class PowerBeam extends BasePower implements PowerPlain, PowerRightClick,
             Location lastLocation = from.getEyeLocation();
             for (int i = 0; i < length; i++) {
                 boolean isHit = false;
-                for (int j = 0; j < 4; j++) {
-                    Vector step = towards.clone().normalize().multiply(0.25);
+                for (int j = 0; j < spawnsPerBlock; j++) {
+                    Vector step = towards.clone().normalize().multiply(lengthPerSpawn);
                     isHit = tryHit(from, lastLocation, nearbyEntities) || isHit;
                     Block block = world.getBlockAt(lastLocation);
                     if (transp.contains(block.getType())) {
@@ -332,21 +339,21 @@ public class PowerBeam extends BasePower implements PowerPlain, PowerRightClick,
         @Override
         public void run() {
             World world = from.getWorld();
-            int spS = (int) Math.ceil(((double) length) / ((double) movementTicks));
+            double lpT = ((double) length) / ((double) movementTicks);
+            double partsPerTick = lpT / lengthPerSpawn;
             Location lastLocation = from.getEyeLocation();
             towards.normalize();
-            for (int i = 0; i < length; i++) {
+            for (int i = 0; i < movementTicks; i++) {
+                int finalI = i;
                 BukkitRunnable bukkitRunnable = new BukkitRunnable() {
                     @Override
                     public void run() {
-                        for (int j = 0; j < spS; j++) {
-                            int finalI = j;
-                            boolean isHit = false;
-                            for (int k = 0; k < 4; k++) {
-                                Vector step = towards.clone().normalize().multiply(0.25);
+                        boolean isHit = false;
+                        for (int k = 0; k < partsPerTick; k++) {
+                            Vector step = towards.clone().normalize().multiply(lengthPerSpawn);
                                 isHit = tryHit(from, lastLocation, nearbyEntities) || isHit;
                                 if (transp.contains(world.getBlockAt(lastLocation).getType())) {
-                                    spawnParticle(from, world, lastLocation, amountPerSec / 4);
+                                    spawnParticle(from, world, lastLocation, (int) (amountPerSec / spawnsPerBlock));
                                 } else if (!ignoreWall) {
                                     runnables.forEach(BukkitRunnable::cancel);
                                     return;
@@ -360,8 +367,8 @@ public class PowerBeam extends BasePower implements PowerPlain, PowerRightClick,
                                 }
                                 return;
                             }
-                        }
-                    }
+                            runnables.remove(this);
+                     }
                 };
                 runnables.add(bukkitRunnable);
                 bukkitRunnable.runTaskLater(RPGItems.plugin, i);
@@ -370,7 +377,7 @@ public class PowerBeam extends BasePower implements PowerPlain, PowerRightClick,
     }
 
     private Vector homingCorrect(Vector towards, Location lastLocation, Entity target, int i) {
-        if (target == null || i < stepsBeforeHoming) {
+        if (target == null || i < stepsBeforeHoming || target.isDead()) {
             return towards;
         }
         Location targetLocation;
@@ -384,7 +391,7 @@ public class PowerBeam extends BasePower implements PowerPlain, PowerRightClick,
         Vector targetDirection = targetLocation.toVector().subtract(lastLocation.toVector());
         float angle = clone.angle(targetDirection);
         Vector crossProduct = clone.clone().getCrossProduct(targetDirection);
-        double actualAng = homingAngle / 4;
+        double actualAng = homingAngle / spawnsPerBlock;
         if (angle > Math.toRadians(actualAng)) {
             clone.add(clone.clone().getCrossProduct(crossProduct).normalize().multiply(-1 * Math.tan(actualAng)));
         } else {
@@ -453,12 +460,13 @@ public class PowerBeam extends BasePower implements PowerPlain, PowerRightClick,
         BoundingBox boundingBox = entity.getBoundingBox();
         BoundingBox particleBox = boxCache.get(loc);
         if (particleBox == null) {
-            double x = Math.min(offsetX, 0.1);
-            double y = Math.min(offsetY, 0.1);
-            double z = Math.min(offsetZ, 0.1);
-            particleBox = BoundingBox.of(loc, x, y, z);
+            double x = Math.max(offsetX, 0.1);
+            double y = Math.max(offsetY, 0.1);
+            double z = Math.max(offsetZ, 0.1);
+            particleBox = BoundingBox.of(loc, x+0.1, y+0.1, z+0.1);
         }
-        return boundingBox.overlaps(particleBox);
+        boxCache.put(loc, particleBox);
+        return boundingBox.overlaps(particleBox) || particleBox.overlaps(boundingBox);
     }
 
     private enum Mode {
