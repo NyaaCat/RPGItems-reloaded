@@ -112,6 +112,9 @@ public class PowerBeam extends BasePower implements PowerPlain, PowerRightClick,
     public boolean hitSelfWhenBounced = false;
 
     @Property
+    public double gravity = 0;
+
+    @Property
     @Serializer(ExtraDataSerializer.class)
     @Deserializer(ExtraDataSerializer.class)
     public Object extraData;
@@ -214,32 +217,8 @@ public class PowerBeam extends BasePower implements PowerPlain, PowerRightClick,
     private PowerResult<Void> fire(LivingEntity from) {
         lengthPerSpawn = 1 / spawnsPerBlock;
         Location fromLocation = from.getEyeLocation();
-        Block targetBlock;
-//        if (ignoreWall) {
-//            targetBlock = from.getTargetBlock(
-//                    Arrays.stream(Material.values())
-//                            .collect(Collectors.toSet())
-//                    , ((int) Math.ceil(length)));
-//        } else {
-//            targetBlock = from.getTargetBlock(transp, ((int) Math.ceil(length)));
-//        }
-        targetBlock = from.getTargetBlock(
-                Arrays.stream(Material.values())
-                        .collect(Collectors.toSet())
-                , ((int) Math.ceil(length)));
         Vector towards = from.getEyeLocation().getDirection();
-        Location toLocation;
-        if (targetBlock.getType() == Material.AIR) {
-            toLocation = fromLocation.clone();
-            toLocation.add(towards.clone().multiply(length));
-        } else {
-            toLocation = fromLocation.clone();
-            int lth = (int) Math.ceil(targetBlock.getLocation().distance(fromLocation));
-            toLocation.add(towards.clone().multiply(lth));
-        }
 
-        double actualLength = toLocation.distance(fromLocation);
-        if (actualLength < 0.05) return PowerResult.noop();
         if (cone) {
             double phi = random.nextInt(360);
             double theta;
@@ -253,12 +232,10 @@ public class PowerBeam extends BasePower implements PowerPlain, PowerRightClick,
             }
         }
 
-        Location step = toLocation.clone();
-        step.subtract(fromLocation).multiply(1 / actualLength);
 
         Entity target = null;
         if (from instanceof Player && homing) {
-            target = Utils.getLivingEntitiesInCone(Utils.getNearestLivingEntities(this, fromLocation, ((Player) from), actualLength, 0), fromLocation.toVector(), homingRange, from.getEyeLocation().getDirection()).stream()
+            target = Utils.getLivingEntitiesInCone(Utils.getNearestLivingEntities(this, fromLocation, ((Player) from), Math.min(1000, length), 0), fromLocation.toVector(), homingRange, from.getEyeLocation().getDirection()).stream()
                     .findFirst().orElse(null);
         }
 
@@ -299,14 +276,16 @@ public class PowerBeam extends BasePower implements PowerPlain, PowerRightClick,
             World world = from.getWorld();
             towards.normalize();
             Location lastLocation = from.getEyeLocation();
-            for (int i = 0; i < length; i++) {
+            double lpT = length / ((double) movementTicks);
+            double partsPerTick = lpT / lengthPerSpawn;
+            for (int i = 0; i < movementTicks; i++) {
                 boolean isHit = false;
                 Vector step = new Vector(0, 0, 0);
-                for (int j = 0; j < spawnsPerBlock; j++) {
+                for (int j = 0; j < partsPerTick; j++) {
                     isHit = tryHit(from, lastLocation, bounced && hitSelfWhenBounced) || isHit;
                     Block block = lastLocation.getBlock();
                     if (transp.contains(block.getType())) {
-                        spawnParticle(from, world, lastLocation, apS / 4);
+                        spawnParticle(from, world, lastLocation, (int) Math.ceil(apS / partsPerTick));
                     } else if (!ignoreWall) {
                         if (bounces > 0) {
                             bounces--;
@@ -318,6 +297,7 @@ public class PowerBeam extends BasePower implements PowerPlain, PowerRightClick,
                     }
                     step = towards.clone().normalize().multiply(lengthPerSpawn);
                     lastLocation.add(step);
+                    towards = addGravity(towards, partsPerTick);
                     towards = homingCorrect(towards, lastLocation, target, i);
                 }
                 if (isHit) return;
@@ -325,6 +305,14 @@ public class PowerBeam extends BasePower implements PowerPlain, PowerRightClick,
         }
 
 
+    }
+
+    Vector gravityVector = new Vector(0, -gravity / 20, 0);
+
+    private Vector addGravity(Vector towards, double partsPerTick) {
+        double gravityPerTick = (-gravity / 20d) / partsPerTick;
+        gravityVector.setY(gravityPerTick);
+        return towards.add(gravityVector);
     }
 
     private class MovingTask extends BukkitRunnable {
@@ -351,44 +339,43 @@ public class PowerBeam extends BasePower implements PowerPlain, PowerRightClick,
             double partsPerTick = lpT / lengthPerSpawn;
             Location lastLocation = from.getEyeLocation();
             towards.normalize();
-            for (int i = 0; i < movementTicks; i++) {
-                int finalI = i;
-                BukkitRunnable bukkitRunnable = new BukkitRunnable() {
-                    @Override
-                    public void run() {
-                        boolean isHit = false;
-                        Vector step = new Vector(0, 0, 0);
-                        for (int k = 0; k < partsPerTick; k++) {
-                            isHit = tryHit(from, lastLocation, bounced && hitSelfWhenBounced) || isHit;
-                            Block block = lastLocation.getBlock();
-                            if (transp.contains(block.getType())) {
-                                spawnParticle(from, world, lastLocation, (int) (amountPerSec / spawnsPerBlock));
-                            } else if (!ignoreWall) {
-                                if (bounces > 0) {
-                                    bounces--;
-                                    bounced = true;
-                                    makeBounce(block, towards, lastLocation.clone().subtract(step));
-                                } else {
-                                    runnables.forEach(BukkitRunnable::cancel);
-                                    return;
-                                }
-                            }
-                            step = towards.clone().normalize().multiply(lengthPerSpawn);
-                            lastLocation.add(step);
-                            towards = homingCorrect(towards, lastLocation, target, finalI);
-                        }
-                        if (isHit) {
-                            if (!runnables.isEmpty()) {
+            final int[] finalI = {0};
+            BukkitRunnable bukkitRunnable = new BukkitRunnable() {
+                @Override
+                public void run() {
+                    boolean isHit = false;
+                    Vector step = new Vector(0, 0, 0);
+                    for (int k = 0; k < partsPerTick; k++) {
+                        isHit = tryHit(from, lastLocation, bounced && hitSelfWhenBounced) || isHit;
+                        Block block = lastLocation.getBlock();
+                        if (transp.contains(block.getType())) {
+                            spawnParticle(from, world, lastLocation, (int) (amountPerSec / spawnsPerBlock));
+                        } else if (!ignoreWall) {
+                            if (bounces > 0) {
+                                bounces--;
+                                bounced = true;
+                                makeBounce(block, towards, lastLocation.clone().subtract(step));
+                            } else {
                                 runnables.forEach(BukkitRunnable::cancel);
+                                return;
                             }
-                            return;
                         }
-                        runnables.remove(this);
+                        step = towards.clone().normalize().multiply(lengthPerSpawn);
+                        lastLocation.add(step);
+                        towards = addGravity(towards, partsPerTick);
+                        towards = homingCorrect(towards, lastLocation, target, finalI[0]);
                     }
-                };
-                runnables.add(bukkitRunnable);
-                bukkitRunnable.runTaskLater(RPGItems.plugin, i);
-            }
+                    if (isHit) {
+                        this.cancel();
+                        return;
+                    }
+                    if (finalI[0] >= movementTicks){
+                        this.cancel();
+                    }
+                    finalI[0]++;
+                }
+            };
+            bukkitRunnable.runTaskTimer(RPGItems.plugin, 0, 1);
         }
     }
 
