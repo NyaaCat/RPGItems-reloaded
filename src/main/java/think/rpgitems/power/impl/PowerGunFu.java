@@ -65,6 +65,9 @@ public class PowerGunFu extends BasePower implements PowerProjectileLaunch, Powe
     @Property
     public int maxTicks = 200;
 
+    @Property
+    public int delay = 0;
+
     @Override
     public void init(ConfigurationSection s) {
         cooldown = s.getLong("cooldownTime");
@@ -126,7 +129,7 @@ public class PowerGunFu extends BasePower implements PowerProjectileLaunch, Powe
                         ((Fireball) projectile).setDirection(rel.normalize());
                     }
                 }
-            }.runTaskTimer(RPGItems.plugin, 1, 0);
+            }.runTaskTimer(RPGItems.plugin, delay, 0);
         }
         return ok(force * (float) initVelFactor);
     }
