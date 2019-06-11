@@ -361,7 +361,7 @@ public class PowerBeam extends BasePower implements PowerPlain, PowerRightClick,
                                 bounced = true;
                                 makeBounce(block, towards, lastLocation.clone().subtract(step));
                             } else {
-                                runnables.forEach(BukkitRunnable::cancel);
+                                this.cancel();
                                 return;
                             }
                         }

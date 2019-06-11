@@ -6,6 +6,7 @@ import org.bukkit.entity.Entity;
 import org.bukkit.entity.LivingEntity;
 import org.bukkit.entity.Player;
 import org.bukkit.event.entity.EntityDamageByEntityEvent;
+import org.bukkit.event.entity.EntityShootBowEvent;
 import org.bukkit.event.player.PlayerInteractEvent;
 import org.bukkit.inventory.ItemStack;
 import think.rpgitems.power.*;
@@ -19,7 +20,7 @@ import static think.rpgitems.power.Utils.checkCooldown;
  * </p>
  */
 @PowerMeta(defaultTrigger = "RIGHT_CLICK", generalInterface = PowerPlain.class)
-public class PowerSound extends BasePower implements PowerLeftClick, PowerRightClick, PowerPlain, PowerHit {
+public class PowerSound extends BasePower implements PowerLeftClick, PowerRightClick, PowerPlain, PowerHit, PowerBowShoot {
     /**
      * Pitch of sound
      */
@@ -89,5 +90,11 @@ public class PowerSound extends BasePower implements PowerLeftClick, PowerRightC
     public PowerResult<Double> hit(Player player, ItemStack stack, LivingEntity entity, double damage, EntityDamageByEntityEvent event) {
         if (!checkCooldown(this, player, cooldown, true, true)) return PowerResult.cd();
         return sound(entity, stack).with(damage);
+    }
+
+    @Override
+    public PowerResult<Float> bowShoot(Player player, ItemStack stack, EntityShootBowEvent event) {
+        if (!checkCooldown(this, player, cooldown, true, true)) return PowerResult.cd();
+        return sound(player, stack).with(event.getForce());
     }
 }
