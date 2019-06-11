@@ -62,6 +62,10 @@ public class PowerBeam extends BasePower implements PowerPlain, PowerRightClick,
     @Property
     public double offsetZ = 0;
 
+    @Property
+    public double spawnsPerBlock = 2;
+    double lengthPerSpawn = 1 / spawnsPerBlock;
+
     /**
      * Cost of this power
      */
@@ -120,6 +124,7 @@ public class PowerBeam extends BasePower implements PowerPlain, PowerRightClick,
             .filter(material -> !material.isSolid() || !material.isOccluding())
             .collect(Collectors.toSet());
 
+
     @Override
     public PowerResult<Void> fire(Player player, ItemStack stack) {
         if (!checkCooldown(this, player, cooldown, true, true)) return PowerResult.cd();
@@ -162,13 +167,20 @@ public class PowerBeam extends BasePower implements PowerPlain, PowerRightClick,
         return fire(player, stack);
     }
 
-    private Random random = new Random();
-    private Vector yUnit = new Vector(0, 1, 0);
+    @Override
+    public PowerResult<Float> bowShoot(Player player, ItemStack itemStack, EntityShootBowEvent e) {
+        return beam(player).with(e.getForce());
+    }
 
-    @Property
-    public double spawnsPerBlock = 2;
+    @Override
+    public PowerResult<Double> hit(Player player, ItemStack stack, LivingEntity entity, double damage, EntityDamageByEntityEvent event) {
+        return beam(player).with(event.getDamage());
+    }
 
-    double lengthPerSpawn = 1 / spawnsPerBlock;
+    @Override
+    public PowerResult<Double> takeHit(Player target, ItemStack stack, double damage, EntityDamageEvent event) {
+        return beam(target).with(event.getDamage());
+    }
 
     private PowerResult<Void> beam(LivingEntity from) {
         if (burstCount > 0) {
@@ -262,20 +274,8 @@ public class PowerBeam extends BasePower implements PowerPlain, PowerRightClick,
         return PowerResult.ok();
     }
 
-    @Override
-    public PowerResult<Float> bowShoot(Player player, ItemStack itemStack, EntityShootBowEvent e) {
-        return beam(player).with(e.getForce());
-    }
-
-    @Override
-    public PowerResult<Double> hit(Player player, ItemStack stack, LivingEntity entity, double damage, EntityDamageByEntityEvent event) {
-        return beam(player).with(event.getDamage());
-    }
-
-    @Override
-    public PowerResult<Double> takeHit(Player target, ItemStack stack, double damage, EntityDamageEvent event) {
-        return beam(target).with(event.getDamage());
-    }
+    private Random random = new Random();
+    private Vector yUnit = new Vector(0, 1, 0);
 
     class PlainTask extends BukkitRunnable {
         private double length;
