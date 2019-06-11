@@ -5,7 +5,10 @@ import org.bukkit.Effect;
 import org.bukkit.Material;
 import org.bukkit.Particle;
 import org.bukkit.block.data.BlockData;
+import org.bukkit.entity.Entity;
+import org.bukkit.entity.LivingEntity;
 import org.bukkit.entity.Player;
+import org.bukkit.event.entity.EntityDamageByEntityEvent;
 import org.bukkit.event.player.PlayerInteractEvent;
 import org.bukkit.inventory.ItemStack;
 import think.rpgitems.AdminHandler;
@@ -20,8 +23,8 @@ import java.util.Optional;
  * When right clicked, spawn some particles around the user.
  * </p>
  */
-@PowerMeta(immutableTrigger = true, generalInterface = PowerPlain.class)
-public class PowerParticle extends BasePower implements PowerRightClick, PowerLeftClick, PowerPlain {
+@PowerMeta(generalInterface = PowerPlain.class)
+public class PowerParticle extends BasePower implements PowerRightClick, PowerLeftClick, PowerPlain, PowerHit {
     /**
      * Name of particle effect
      */
@@ -86,7 +89,7 @@ public class PowerParticle extends BasePower implements PowerRightClick, PowerLe
         return fire(player, stack);
     }
 
-    void spawnParticle(Player player) {
+    void spawnParticle(Entity player) {
         if (particle == null) {
             if (effect == Effect.SMOKE) {
                 player.getWorld().playEffect(player.getLocation().add(0, 2, 0), effect, 4);
@@ -121,6 +124,13 @@ public class PowerParticle extends BasePower implements PowerRightClick, PowerLe
         if (!getItem().consumeDurability(stack, cost)) return PowerResult.cost();
         spawnParticle(player);
         return PowerResult.ok();
+    }
+
+    @Override
+    public PowerResult<Double> hit(Player player, ItemStack stack, LivingEntity entity, double damage, EntityDamageByEntityEvent event) {
+        if (!getItem().consumeDurability(stack, cost)) return PowerResult.cost();
+        spawnParticle(entity);
+        return PowerResult.ok().with(damage);
     }
 
     @SuppressWarnings("unused")

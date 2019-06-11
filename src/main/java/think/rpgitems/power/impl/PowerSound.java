@@ -2,7 +2,10 @@ package think.rpgitems.power.impl;
 
 import org.bukkit.ChatColor;
 import org.bukkit.Location;
+import org.bukkit.entity.Entity;
+import org.bukkit.entity.LivingEntity;
 import org.bukkit.entity.Player;
+import org.bukkit.event.entity.EntityDamageByEntityEvent;
 import org.bukkit.event.player.PlayerInteractEvent;
 import org.bukkit.inventory.ItemStack;
 import think.rpgitems.power.*;
@@ -16,7 +19,7 @@ import static think.rpgitems.power.Utils.checkCooldown;
  * </p>
  */
 @PowerMeta(defaultTrigger = "RIGHT_CLICK", generalInterface = PowerPlain.class)
-public class PowerSound extends BasePower implements PowerLeftClick, PowerRightClick, PowerPlain {
+public class PowerSound extends BasePower implements PowerLeftClick, PowerRightClick, PowerPlain, PowerHit {
     /**
      * Pitch of sound
      */
@@ -71,9 +74,20 @@ public class PowerSound extends BasePower implements PowerLeftClick, PowerRightC
     @Override
     public PowerResult<Void> fire(Player player, ItemStack stack) {
         if (!checkCooldown(this, player, cooldown, true, true)) return PowerResult.cd();
+        return this.sound(player, stack);
+    }
+
+    private PowerResult<Void> sound(Entity player, ItemStack stack) {
         if (!getItem().consumeDurability(stack, cost)) return PowerResult.cost();
         Location location = player.getLocation();
         location.getWorld().playSound(location, sound, volume, pitch);
         return PowerResult.ok();
+    }
+
+
+    @Override
+    public PowerResult<Double> hit(Player player, ItemStack stack, LivingEntity entity, double damage, EntityDamageByEntityEvent event) {
+        if (!checkCooldown(this, player, cooldown, true, true)) return PowerResult.cd();
+        return sound(entity, stack).with(damage);
     }
 }

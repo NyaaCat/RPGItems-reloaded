@@ -29,7 +29,7 @@ import static think.rpgitems.Events.*;
 import static think.rpgitems.power.Utils.checkCooldown;
 
 @PowerMeta(defaultTrigger = "RIGHT_CLICK")
-public class PowerBeam extends BasePower implements PowerPlain, PowerRightClick, PowerLeftClick, PowerSneak, PowerSneaking, PowerSprint, PowerBowShoot, PowerHitTaken, PowerHit {
+public class PowerBeam extends BasePower implements PowerPlain, PowerRightClick, PowerLeftClick, PowerSneak, PowerSneaking, PowerSprint, PowerBowShoot, PowerHitTaken, PowerHit, PowerHurt {
     @Property
     public int length = 10;
 
@@ -252,6 +252,11 @@ public class PowerBeam extends BasePower implements PowerPlain, PowerRightClick,
 
     private Random random = new Random();
     private Vector yUnit = new Vector(0, 1, 0);
+
+    @Override
+    public PowerResult<Void> hurt(Player target, ItemStack stack, EntityDamageEvent event) {
+        return fire(target, stack);
+    }
 
     class PlainTask extends BukkitRunnable {
         private int bounces;
