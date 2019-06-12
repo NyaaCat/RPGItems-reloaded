@@ -180,8 +180,8 @@ public class Utils {
             return true;
         } else {
             if (showWarn) {
-                if (showPower || (!Strings.isNullOrEmpty(power.displayName()) && !power.displayName().equals(power.getLocalizedName(RPGItems.plugin.cfg.language)))) {
-                    player.sendMessage(I18n.format("message.cooldown.power", ((double) (cooldown - nowTick)) / 20d, power.displayName()));
+                if (showPower || (!Strings.isNullOrEmpty(power.getDisplayName()) && !power.getDisplayName().equals(power.getLocalizedName(RPGItems.plugin.cfg.language)))) {
+                    player.sendMessage(I18n.format("message.cooldown.power", ((double) (cooldown - nowTick)) / 20d, power.getDisplayName()));
                 } else {
                     player.sendMessage(I18n.format("message.cooldown.general", ((double) (cooldown - nowTick)) / 20d));
                 }

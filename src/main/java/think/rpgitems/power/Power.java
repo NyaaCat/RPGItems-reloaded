@@ -72,11 +72,21 @@ public interface Power {
     }
 
     /**
+     * Display name of this power
+     *
+     * @return Display name
+     */
+    @Nullable
+    String displayName();
+
+    /**
      * Display name or default name of this power
      *
      * @return Display name or default name
      */
-    String displayName();
+    default String getDisplayName() {
+        return Strings.isNullOrEmpty(displayName()) ? getLocalizedName(RPGItems.plugin.cfg.language) : displayName();
+    }
 
     /**
      * Display text of this power
