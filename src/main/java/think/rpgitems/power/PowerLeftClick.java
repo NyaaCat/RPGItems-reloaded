@@ -9,7 +9,7 @@ import javax.annotation.CheckReturnValue;
 /**
  * Triggers when left click
  */
-public interface PowerLeftClick extends Power {
+public interface PowerLeftClick extends Pimpl {
     /**
      * Calls when {@code player} using {@code stack} left clicks {@code clicked}
      *

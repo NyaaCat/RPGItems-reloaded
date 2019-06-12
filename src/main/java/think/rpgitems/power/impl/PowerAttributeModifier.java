@@ -3,6 +3,7 @@ package think.rpgitems.power.impl;
 import org.bukkit.attribute.Attribute;
 import org.bukkit.attribute.AttributeModifier;
 import org.bukkit.inventory.EquipmentSlot;
+import think.rpgitems.power.Pimpl;
 import think.rpgitems.power.PowerMeta;
 import think.rpgitems.power.Property;
 
@@ -14,7 +15,7 @@ import java.util.UUID;
  *  Add attribute modifier to item
  * </p>
  */
-@PowerMeta(marker = true)
+@PowerMeta(implClass = Pimpl.class, marker = true)
 public class PowerAttributeModifier extends BasePower {
 
     @Property(order = 0)

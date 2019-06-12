@@ -9,6 +9,9 @@ import net.md_5.bungee.api.chat.BaseComponent;
 import net.md_5.bungee.api.chat.ClickEvent;
 import net.md_5.bungee.api.chat.HoverEvent;
 import net.md_5.bungee.api.chat.TextComponent;
+import net.sf.cglib.proxy.Enhancer;
+import net.sf.cglib.proxy.MethodInterceptor;
+import net.sf.cglib.proxy.MethodProxy;
 import org.apache.commons.lang.StringUtils;
 import org.bukkit.*;
 import org.bukkit.attribute.Attribute;
@@ -45,6 +48,7 @@ import think.rpgitems.power.impl.*;
 import think.rpgitems.utils.MaterialUtils;
 
 import java.io.File;
+import java.lang.reflect.Method;
 import java.util.*;
 import java.util.Map.Entry;
 import java.util.concurrent.ThreadLocalRandom;
@@ -877,7 +881,7 @@ public class RPGItem {
         return consumeDurability(stack, getBlockBreakingCost());
     }
 
-    private <TEvent extends Event, TPower extends Power, TResult, TReturn> boolean triggerPreCheck(Player player, ItemStack i, TEvent event, Trigger<TEvent, TPower, TResult, TReturn> trigger, List<TPower> powers) {
+    private <TEvent extends Event, TPower extends Pimpl, TResult, TReturn> boolean triggerPreCheck(Player player, ItemStack i, TEvent event, Trigger<TEvent, TPower, TResult, TReturn> trigger, List<TPower> powers) {
         if (i.getType().equals(Material.AIR)) return false;
         if (powers.isEmpty()) return false;
         if (checkPermission(player, true) == Event.Result.DENY) return false;
@@ -888,8 +892,8 @@ public class RPGItem {
     }
 
     @SuppressWarnings("unchecked")
-    private <T> PowerResult<T> checkConditions(Player player, ItemStack i, Power power, List<PowerCondition> conds, Map<Power, PowerResult> context) {
-        Set<String> ids = power.getConditions();
+    private <T> PowerResult<T> checkConditions(Player player, ItemStack i, Pimpl pimpl, List<PowerCondition> conds, Map<Pimpl, PowerResult> context) {
+        Set<String> ids = pimpl.getPower().getConditions();
         List<PowerCondition> conditions = conds.stream().filter(p -> ids.contains(p.id())).collect(Collectors.toList());
         List<PowerCondition> failed = conditions.stream().filter(p -> p.isStatic() ? !context.get(p).isOK() : !p.check(player, i, context).isOK()).collect(Collectors.toList());
         if (failed.isEmpty()) return null;
@@ -907,20 +911,20 @@ public class RPGItem {
         return result;
     }
 
-    public <TEvent extends Event, TPower extends Power, TResult, TReturn> TReturn power(Player player, ItemStack i, TEvent event, Trigger<TEvent, TPower, TResult, TReturn> trigger, Object context) {
-        List<TPower> powers = this.getPower(trigger);
+    public <TEvent extends Event, TPower extends Pimpl, TResult, TReturn> TReturn power(Player player, ItemStack i, TEvent event, Trigger<TEvent, TPower, TResult, TReturn> trigger, Object context) {
+        List<TPower> powers = this.getPower(trigger, player);
         TReturn ret = trigger.def(player, i, event);
         if (!triggerPreCheck(player, i, event, trigger, powers)) return ret;
         try {
             List<PowerCondition> conds = getPower(PowerCondition.class, true);
             Map<PowerCondition, PowerResult> staticCond = checkStaticCondition(player, i, conds);
-            Map<Power, PowerResult> resultMap = new LinkedHashMap<>(staticCond);
+            Map<Pimpl, PowerResult> resultMap = new LinkedHashMap<>(staticCond);
             for (TPower power : powers) {
                 PowerResult<TResult> result = checkConditions(player, i, power, conds, resultMap);
                 if (result != null) {
                     resultMap.put(power, result);
                 } else {
-                    if (power.requiredContext() != null) {
+                    if (power.getPower().requiredContext() != null) {
                         result = handleContext(player, i, event, trigger, power);
                     } else {
                         result = trigger.run(power, player, i, event, context);
@@ -937,13 +941,13 @@ public class RPGItem {
         }
     }
 
-    public <TEvent extends Event, TPower extends Power, TResult, TReturn> TReturn power(Player player, ItemStack i, TEvent event, Trigger<TEvent, TPower, TResult, TReturn> trigger) {
+    public <TEvent extends Event, TPower extends Pimpl, TResult, TReturn> TReturn power(Player player, ItemStack i, TEvent event, Trigger<TEvent, TPower, TResult, TReturn> trigger) {
         return power(player, i, event, trigger, null);
     }
 
-    public <TEvent extends Event, TPower extends Power, TResult, TReturn> PowerResult<TResult> handleContext(Player player, ItemStack i, TEvent event, Trigger<TEvent, TPower, TResult, TReturn> trigger, TPower power) {
+    public <TEvent extends Event, TPower extends Pimpl, TResult, TReturn> PowerResult<TResult> handleContext(Player player, ItemStack i, TEvent event, Trigger<TEvent, TPower, TResult, TReturn> trigger, TPower power) {
         PowerResult<TResult> result;
-        String contextKey = power.requiredContext();
+        String contextKey = power.getPower().requiredContext();
         Object context = Context.instance().get(player.getUniqueId(), contextKey);
         if (context == null) {
             return PowerResult.context();
@@ -969,7 +973,7 @@ public class RPGItem {
         return result;
     }
 
-    private <TEvent extends Event, TPower extends Power, TResult, TReturn> void triggerPostFire(Player player, ItemStack itemStack, TEvent event, Trigger<TEvent, TPower, TResult, TReturn> trigger, Map<Power, PowerResult> resultMap, TReturn ret) {
+    private <TEvent extends Event, TPower extends Pimpl, TResult, TReturn> void triggerPostFire(Player player, ItemStack itemStack, TEvent event, Trigger<TEvent, TPower, TResult, TReturn> trigger, Map<Pimpl, PowerResult> resultMap, TReturn ret) {
         RPGItemsPowersPostFireEvent<TEvent, TPower, TResult, TReturn> postFire = new RPGItemsPowersPostFireEvent<>(player, itemStack, event, this, trigger, resultMap, ret);
         Bukkit.getServer().getPluginManager().callEvent(postFire);
 
@@ -1319,8 +1323,65 @@ public class RPGItem {
         return msg;
     }
 
-    private <TEvent extends Event, T extends Power, TResult, TReturn> List<T> getPower(Trigger<TEvent, T, TResult, TReturn> trigger) {
-        return powers.stream().filter(p -> p.getTriggers().contains(trigger)).map(p -> p.cast(trigger.getPowerClass())).collect(Collectors.toList());
+    @SuppressWarnings("unchecked")
+    private <TEvent extends Event, T extends Pimpl, TResult, TReturn> List<T> getPower(Trigger<TEvent, T, TResult, TReturn> trigger, Player player) {
+        return powers.stream()
+                     .filter(p -> p.getTriggers().contains(trigger))
+                     .map(p -> {
+                         Class<? extends Power> cls = p.getClass();
+                         Power proxy = DynamicMethodInterceptor.create(p, player, cls, trigger);
+                         return PowerManager.createImpl(cls, proxy);
+                     })
+                     .map(p -> p.cast(trigger.getPowerClass()))
+                     .collect(Collectors.toList());
+    }
+
+    public static class DynamicMethodInterceptor implements MethodInterceptor {
+        private static WeakHashMap<Power, WeakHashMap<Player, Power>> cache = new WeakHashMap<>();
+
+        private static Power makeProxy(Power orig, Player player, Class<? extends Power> cls, Trigger trigger) {
+            Enhancer enhancer = new Enhancer();
+            enhancer.setSuperclass(cls);
+            enhancer.setInterfaces(new Class[]{trigger.getPowerClass()});
+            enhancer.setCallback(new DynamicMethodInterceptor(orig, player));
+            return (Power) enhancer.create();
+        }
+
+        protected static Power create(Power orig, Player player, Class<? extends Power> cls, Trigger trigger) {
+            return cache.computeIfAbsent(orig, (k) -> new WeakHashMap<>())
+                        .computeIfAbsent(player, (p) -> makeProxy(orig, player, cls, trigger));
+        }
+
+        private final Power orig;
+        private final Player player;
+        private final Map<Method, PowerProperty> getters;
+
+        protected DynamicMethodInterceptor(Power orig, Player player) {
+            RPGItems.logger.info("new DynamicMethodInterceptor with " + orig + "@" + orig.hashCode() + " " + player.getName());
+
+            this.orig = orig;
+            this.player = player;
+            this.getters = PowerManager.getProperties(orig.getClass())
+                                       .entrySet()
+                                       .stream()
+                                       .collect(Collectors.toMap(e -> e.getValue().getKey(), e -> e.getValue().getValue()));
+        }
+
+        @Override
+        public Object intercept(Object proxy, Method method, Object[] args, MethodProxy methodProxy)
+                throws Throwable {
+            if (getters.containsKey(method)) {
+                RPGItems.logger.info("Proxying " + method.getDeclaringClass() + "@" + method.getName() + ". " + method.toGenericString());
+                RPGItems.logger.info("To " + orig + ". " + orig.getClass().toGenericString());
+                RPGItems.logger.info("With player " + player.getName());
+                PowerProperty powerProperty = getters.get(method);
+                if (powerProperty.name().equals("cooldown")) {
+                    return 0;
+                }
+
+            }
+            return methodProxy.invoke(orig, args);
+        }
     }
 
     public void deinit() {

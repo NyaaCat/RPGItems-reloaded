@@ -8,7 +8,7 @@ import javax.annotation.CheckReturnValue;
 /**
  * Triggers per tick
  */
-public interface PowerTick extends Power {
+public interface PowerTick extends Pimpl {
     /**
      * Calls per tick with {@code player} using {@code stack}
      *

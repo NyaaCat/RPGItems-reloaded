@@ -9,7 +9,7 @@ import javax.annotation.CheckReturnValue;
 /**
  * Triggers when player clicks an item in offhand
  */
-public interface PowerOffhandClick extends Power {
+public interface PowerOffhandClick extends Pimpl {
     /**
      * Calls when {@code player} using {@code stack} in offhand clicks
      *

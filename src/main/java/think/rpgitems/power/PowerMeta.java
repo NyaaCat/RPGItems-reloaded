@@ -5,6 +5,8 @@ import java.lang.annotation.RetentionPolicy;
 
 @Retention(RetentionPolicy.RUNTIME)
 public @interface PowerMeta {
+    Class<? extends Pimpl> implClass();
+
     boolean immutableTrigger() default false;
 
     String[] defaultTrigger() default {};
@@ -17,5 +19,5 @@ public @interface PowerMeta {
 
     boolean withContext() default false;
 
-    Class<? extends Power>[] generalInterface() default {};
+    Class<? extends Pimpl>[] generalInterface() default {};
 }

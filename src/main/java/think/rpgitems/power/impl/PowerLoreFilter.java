@@ -1,5 +1,6 @@
 package think.rpgitems.power.impl;
 
+import think.rpgitems.power.Pimpl;
 import think.rpgitems.power.PowerMeta;
 import think.rpgitems.power.Property;
 
@@ -13,7 +14,7 @@ import java.util.regex.Pattern;
  * </p>
  */
 @SuppressWarnings("WeakerAccess")
-@PowerMeta(marker = true)
+@PowerMeta(implClass = Pimpl.class, marker = true)
 public class PowerLoreFilter extends BasePower {
     /**
      * Regex to filter the lore

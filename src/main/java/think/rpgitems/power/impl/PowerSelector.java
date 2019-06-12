@@ -15,6 +15,7 @@ import org.bukkit.scoreboard.Score;
 import org.bukkit.scoreboard.Scoreboard;
 import org.bukkit.scoreboard.Team;
 import think.rpgitems.I18n;
+import think.rpgitems.power.Pimpl;
 import think.rpgitems.power.PowerMeta;
 import think.rpgitems.power.Property;
 
@@ -30,7 +31,7 @@ import java.util.stream.Stream;
  * Provide a selector for some AOE power.
  * </p>
  */
-@PowerMeta(marker = true)
+@PowerMeta(implClass = Pimpl.class, marker = true)
 public class PowerSelector extends BasePower {
 
     @Property(order = 0, required = true)

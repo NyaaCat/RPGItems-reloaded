@@ -9,7 +9,7 @@ import think.rpgitems.item.RPGItem;
 
 import java.util.List;
 
-public class RPGItemsPowersPreFireEvent<TEvent extends Event, TPower extends Power, TResult, TReturn> extends Event implements Cancellable {
+public class RPGItemsPowersPreFireEvent<TEvent extends Event, TPower extends Pimpl, TResult, TReturn> extends Event implements Cancellable {
 
     private static final HandlerList handlers = new HandlerList();
     private boolean cancel;
@@ -46,7 +46,7 @@ public class RPGItemsPowersPreFireEvent<TEvent extends Event, TPower extends Pow
         return trigger;
     }
 
-    public List<? extends Power> getPowers() {
+    public List<? extends Pimpl> getPowers() {
         return powers;
     }
 

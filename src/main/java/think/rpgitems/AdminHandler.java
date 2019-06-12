@@ -30,14 +30,13 @@ import think.rpgitems.item.ItemGroup;
 import think.rpgitems.item.ItemManager;
 import think.rpgitems.item.RPGItem;
 import think.rpgitems.power.*;
-import think.rpgitems.power.impl.PowerCommand;
-import think.rpgitems.power.impl.PowerThrow;
 import think.rpgitems.support.WGSupport;
 import think.rpgitems.utils.MaterialUtils;
 import think.rpgitems.utils.NetworkUtils;
 
 import java.io.*;
 import java.lang.reflect.Field;
+import java.lang.reflect.Method;
 import java.nio.channels.FileChannel;
 import java.nio.channels.FileLock;
 import java.nio.charset.StandardCharsets;
@@ -341,7 +340,7 @@ public class AdminHandler extends RPGCommandReceiver {
                     msg(sender, "message.power.key", power.toString());
                     msg(sender, "message.power.description", PowerManager.getDescription(power, null));
                     PowerManager.getProperties(power).forEach(
-                            (name, prop) -> showPowerProp(sender, power, prop, null)
+                            (name, mp) -> showPowerProp(sender, power, mp.getValue(), null)
                     );
                     msg(sender, "message.line_separator");
                 });
@@ -898,12 +897,12 @@ public class AdminHandler extends RPGCommandReceiver {
         Power pow = power.get();
         YamlConfiguration conf = new YamlConfiguration();
         if (property != null) {
-            PowerProperty prop = PowerManager.getProperties(item.getPowerKey(pow)).get(property);
-            if (prop == null) {
+            Optional<Map.Entry<String, Pair<Method, PowerProperty>>> prop = PowerManager.getProperties(item.getPowerKey(pow)).entrySet().stream().filter((pf) -> pf.getValue().getValue().name().equals(property)).findAny();
+            if (!prop.isPresent()) {
                 msg(sender, "message.power_property.property_notfound", property);
                 return;
             }
-            Field field = prop.field();
+            Field field = prop.get().getValue().getValue().field();
             String value = Utils.getProperty(pow, property, field);
             msg(sender, "message.power_property.get", nth, pow.getName(), property, value);
         } else {
@@ -1204,7 +1203,7 @@ public class AdminHandler extends RPGCommandReceiver {
                 msg(sender, "message.item.power", power.getLocalizedName(plugin.cfg.language), power.getNamespacedKey().toString(), power.displayText() == null ? I18n.format("message.power.no_display") : power.displayText(), power.getTriggers().stream().map(Trigger::name).collect(Collectors.joining(",")));
                 if ("list".equals(powerStr)) {
                     PowerManager.getProperties(power.getNamespacedKey()).forEach(
-                            (name, prop) -> showPowerProp(sender, power.getNamespacedKey(), prop, power)
+                            (name, prop) -> showPowerProp(sender, power.getNamespacedKey(), prop.getValue(), power)
                     );
                 }
             }
@@ -1220,17 +1219,18 @@ public class AdminHandler extends RPGCommandReceiver {
             power = PowerManager.instantiate(cls);
             power.setItem(item);
             power.init(new YamlConfiguration());
-            Map<String, PowerProperty> argMap = PowerManager.getProperties(cls);
+            Map<String, Pair<Method, PowerProperty>> argMap = PowerManager.getProperties(cls);
             Set<Field> settled = new HashSet<>();
 
             List<Field> required = argMap.values().stream()
+                                         .map(Pair::getValue)
                                          .filter(PowerProperty::required)
                                          .sorted(Comparator.comparing(PowerProperty::order))
                                          .map(PowerProperty::field)
                                          .collect(Collectors.toList());
 
-            for (Map.Entry<String, PowerProperty> prop : argMap.entrySet()) {
-                Field field = prop.getValue().field();
+            for (Map.Entry<String, Pair<Method, PowerProperty>> prop : argMap.entrySet()) {
+                Field field = prop.getValue().getValue().field();
                 String name = prop.getKey();
                 String value = args.argString(name, null);
                 if (value != null) {
@@ -1241,6 +1241,7 @@ public class AdminHandler extends RPGCommandReceiver {
             }
             for (Field field : argMap.values()
                                      .stream()
+                                     .map(Pair::getValue)
                                      .filter(PowerProperty::required)
                                      .sorted(Comparator.comparing(PowerProperty::order))
                                      .map(PowerProperty::field)
@@ -1636,13 +1637,13 @@ public class AdminHandler extends RPGCommandReceiver {
             throw new IllegalArgumentException();
         }
 
-        Map<Class<? extends Power>, Map<String, PowerProperty>> allProperties = PowerManager.getProperties();
+        Map<Class<? extends Power>, Map<String, Pair<Method, PowerProperty>>> allProperties = PowerManager.getProperties();
 
         StringBuilder catalog = new StringBuilder("# Powers\n\n");
 
-        for (Map.Entry<Class<? extends Power>, Map<String, PowerProperty>> entry : allProperties.entrySet().stream().sorted(Comparator.comparing(e -> e.getKey().getCanonicalName(), String::compareToIgnoreCase)).collect(Collectors.toList())) {
+        for (Map.Entry<Class<? extends Power>, Map<String, Pair<Method, PowerProperty>>> entry : allProperties.entrySet().stream().sorted(Comparator.comparing(e -> e.getKey().getCanonicalName(), String::compareToIgnoreCase)).collect(Collectors.toList())) {
             Class<? extends Power> clazz = entry.getKey();
-            Map<String, PowerProperty> properties = entry.getValue();
+            Map<String, Pair<Method, PowerProperty>> properties = entry.getValue();
             Power instance = PowerManager.instantiate(clazz);
             String localizedName = instance.getLocalizedName(locale);
             NamespacedKey namespacedKey = instance.getNamespacedKey();
@@ -1718,9 +1719,9 @@ public class AdminHandler extends RPGCommandReceiver {
                     }
                 }
             }
-            for (Map.Entry<String, PowerProperty> propertyEntry : properties.entrySet()) {
+            for (Map.Entry<String, Pair<Method, PowerProperty>> propertyEntry : properties.entrySet()) {
                 String name = propertyEntry.getKey();
-                PowerProperty property = propertyEntry.getValue();
+                PowerProperty property = propertyEntry.getValue().getValue();
 
                 if (isTrivialProperty(powerMeta, name)) {
                     continue;
@@ -1769,7 +1770,7 @@ public class AdminHandler extends RPGCommandReceiver {
                     fullTemplate = fullTemplate.replace("${trigger}", trigger);
                 } else {
                     String trigger = propertyDefaultTrigger.replace("${}", defTriggers);
-                    String available = PowerManager.getAcceptedValue(clazz, properties.get("triggers").field().getAnnotation(AcceptedValue.class)).stream().map(s -> "`" + s + "`").collect(Collectors.joining(", "));
+                    String available = PowerManager.getAcceptedValue(clazz, properties.get("triggers").getValue().field().getAnnotation(AcceptedValue.class)).stream().map(s -> "`" + s + "`").collect(Collectors.joining(", "));
                     trigger += propertyAvailableTrigger.replace("${}", available);
                     fullTemplate = fullTemplate.replace("${trigger}", trigger);
                 }
@@ -1781,168 +1782,6 @@ public class AdminHandler extends RPGCommandReceiver {
         }
         Path catalogFile = wikiDir.toPath().resolve("powers-" + locale.toString() + ".md");
         java.nio.file.Files.write(catalogFile, catalog.toString().getBytes(StandardCharsets.UTF_8));
-    }
-
-    @SubCommand(value = "updatecmdandentity")
-    @Attribute("item")
-    public void updateCommand(CommandSender sender, Arguments args) {
-        String s = args.nextString();
-        if (s.equalsIgnoreCase("all")) {
-            List<CompletableFuture<Void>> futures = new LinkedList<>();
-            for (RPGItem item : ItemManager.items()) {
-                if (!item.getMcVersion().startsWith("1.13")) {
-                    CompletableFuture<Void> cmdFuture = new CompletableFuture<>();
-                    updateItemCommand(sender, item, cmdFuture);
-                    CompletableFuture<Void> entFuture = new CompletableFuture<>();
-                    updateItemEntityData(sender, item, entFuture);
-                    futures.add(cmdFuture);
-                    futures.add(entFuture);
-                }
-            }
-            CompletableFuture<Void> all = CompletableFuture.allOf(futures.toArray(new CompletableFuture[0]));
-            all.whenComplete((v, e) -> {
-                if (e != null) {
-                    plugin.getLogger().log(Level.WARNING, "Update command and entity failed:", e);
-                }
-                msg(sender, "message.spu.finish");
-            });
-        } else {
-            RPGItem item = getItem(s, sender);
-            CompletableFuture<Void> cmdFuture = new CompletableFuture<>();
-            updateItemCommand(sender, item, cmdFuture);
-            CompletableFuture<Void> entFuture = new CompletableFuture<>();
-            updateItemEntityData(sender, item, entFuture);
-            CompletableFuture<Void> all = CompletableFuture.allOf(cmdFuture, entFuture);
-            all.whenComplete((v, e) -> {
-                if (e != null) {
-                    plugin.getLogger().log(Level.WARNING, "Update command and entity for " + item + " failed:", e);
-                }
-                msg(sender, "message.spu.finish");
-            });
-        }
-    }
-
-    private void updateItemCommand(CommandSender sender, RPGItem item, CompletableFuture<Void> cmdFuture) {
-        Bukkit.getScheduler().runTaskAsynchronously(plugin, () -> {
-            List<PowerCommand> powers = item.getPower(PowerCommand.class, true);
-            for (PowerCommand p : powers) {
-                String origin = p.command;
-                try {
-                    String escaped = escapePlaceholders(origin);
-                    Pair<String, List<String>> resultAndWarn = NetworkUtils.updateCommand(item.getName(), escaped);
-                    String updated = resultAndWarn.getKey();
-                    String result = unescapePlaceholders(updated);
-                    p.command = result;
-                    Bukkit.getScheduler().runTask(plugin, () -> {
-                        msg(sender, "message.spu.command.updated", item.getDisplayName(), origin, result);
-                        for (String warn : resultAndWarn.getValue()) {
-                            if (!Strings.isNullOrEmpty(warn)) {
-                                msg(sender, "message.spu.command.warn", warn);
-                            }
-                        }
-                    });
-                } catch (InterruptedException | ExecutionException e) {
-                    plugin.getLogger().log(Level.WARNING, "Error updating command for " + item.getName(), e);
-                    Bukkit.getScheduler().runTask(plugin, () -> msg(sender, "message.spu.command.failed", item.getName(), e.getLocalizedMessage(), origin));
-                } catch (TimeoutException e) {
-                    plugin.getLogger().log(Level.WARNING, "Timeout updating command" + item.getName(), e);
-                    Bukkit.getScheduler().runTask(plugin, () -> msg(sender, "message.spu.command.timeout", item.getName()));
-                } catch (BadCommandException e) {
-                    sender.sendMessage(e.getLocalizedMessage());
-                }
-            }
-            Bukkit.getScheduler().runTask(plugin, () -> {
-                ItemManager.save(item);
-                cmdFuture.complete(null);
-            });
-        });
-    }
-
-    private void updateItemEntityData(CommandSender sender, RPGItem item, CompletableFuture<Void> entFuture) {
-        Bukkit.getScheduler().runTaskAsynchronously(plugin, () -> {
-            List<PowerThrow> powers = item.getPower(PowerThrow.class, true);
-            try {
-                for (PowerThrow p : powers) {
-                    String entityData = p.entityData;
-                    String entityName = p.entityName;
-                    try {
-                        String escapedData = escapePlaceholders(entityData);
-                        String rawupdtData = NetworkUtils.updateEntity(item.getName(), escapedData, false);
-                        String updatedData = unescapePlaceholders(rawupdtData);
-                        String updatedName = NetworkUtils.updateEntity(item.getName(), entityName, true);
-                        p.entityData = updatedData;
-                        p.entityName = updatedName;
-                        Bukkit.getScheduler().runTask(plugin, () -> {
-                            msg(sender, "message.spu.entity.updated", item.getDisplayName(), entityName, updatedName);
-                            msg(sender, "message.spu.entity.updated", item.getDisplayName(), entityData, updatedData);
-                        });
-                    } catch (InterruptedException | ExecutionException e) {
-                        plugin.getLogger().log(Level.WARNING, "Error updating command", e);
-                        Bukkit.getScheduler().runTask(plugin, () -> msg(sender, "message.spu.entity.failed", item.getName(), e.getLocalizedMessage(), entityName + " " + entityData));
-                    } catch (TimeoutException e) {
-                        plugin.getLogger().log(Level.WARNING, "Timeout updating command", e);
-                        Bukkit.getScheduler().runTask(plugin, () -> msg(sender, "message.spu.entity.timeout", item.getName()));
-                    }
-                }
-                item.setMcVersion(RPGItems.getServerMCVersion());
-            } catch (BadCommandException e) {
-                sender.sendMessage(e.getLocalizedMessage());
-            }
-            Bukkit.getScheduler().runTask(plugin, () -> {
-                ItemManager.save(item);
-                entFuture.complete(null);
-            });
-        });
-    }
-
-    private String unescapePlaceholders(String updated) {
-        String cmd = updated;
-        cmd = cmd.replaceAll("FakeRGIPlayer", "{player}");
-        cmd = cmd.replaceAll("3ac39513-f55c-4147-93f9-efab77fa8c25", "{playerUUID}");
-        cmd = cmd.replaceAll("725709", "{player.x}");
-        cmd = cmd.replaceAll("985982", "{player.y}");
-        cmd = cmd.replaceAll("608151", "{player.z}");
-        cmd = cmd.replaceAll("248\\.271", "{yaw}");
-        cmd = cmd.replaceAll("335\\.815", "{pitch}");
-
-        cmd = cmd.replaceAll("FakeRGIEntity", "{entity}");
-        cmd = cmd.replaceAll("3ac39513-f55c-4147-93f9-efab05fa8c95", "{entity.uuid}");
-        cmd = cmd.replaceAll("979663", "{entity.x}");
-        cmd = cmd.replaceAll("611131", "{entity.y}");
-        cmd = cmd.replaceAll("454436", "{entity.z}");
-        cmd = cmd.replaceAll("56\\.151", "{entity.yaw}");
-        cmd = cmd.replaceAll("295\\.229", "{entity.pitch}");
-
-        cmd = cmd.replaceAll("276\\.61", "{player.yaw}");
-        cmd = cmd.replaceAll("179\\.119", "{player.pitch}");
-
-        cmd = cmd.replaceAll("6424030", "{damage}");
-        return cmd;
-    }
-
-    private String escapePlaceholders(String origin) {
-        String cmd = origin;
-        cmd = cmd.replaceAll("\\{player}", "FakeRGIPlayer");
-        cmd = cmd.replaceAll("\\{playerUUID}", "4ec39513-a43c-7433-93f9-efab77fa8c25");
-        cmd = cmd.replaceAll("\\{player\\.x}", "725709");
-        cmd = cmd.replaceAll("\\{player\\.y}", "985982");
-        cmd = cmd.replaceAll("\\{player\\.z}", "608151");
-        cmd = cmd.replaceAll("\\{yaw}", "248.271");
-        cmd = cmd.replaceAll("\\{pitch}", "335.815");
-
-        cmd = cmd.replaceAll("\\{entity}", "FakeRGIEntity");
-        cmd = cmd.replaceAll("\\{entity\\.uuid}", "3ac39513-f55c-4147-93f9-efab05fa8c95");
-        cmd = cmd.replaceAll("\\{entity\\.x}", "979663");
-        cmd = cmd.replaceAll("\\{entity\\.y}", "611131");
-        cmd = cmd.replaceAll("\\{entity\\.z}", "454436");
-        cmd = cmd.replaceAll("\\{entity\\.yaw}", "56.151");
-        cmd = cmd.replaceAll("\\{entity\\.pitch}", "295.229");
-
-        cmd = cmd.replaceAll("\\{player\\.yaw}", "276.61");
-        cmd = cmd.replaceAll("\\{player\\.pitch}", "179.119");
-
-        cmd = cmd.replaceAll("\\{damage}", "6424030");
-        return cmd;
     }
 
     private RPGItem getItem(String str, CommandSender sender) {

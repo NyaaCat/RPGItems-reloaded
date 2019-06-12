@@ -10,7 +10,7 @@ import javax.annotation.CheckReturnValue;
 /**
  * Triggers when RPG Projectile launches
  */
-public interface PowerProjectileLaunch extends Power {
+public interface PowerProjectileLaunch extends Pimpl {
     /**
      * Calls when {@code player} using {@code stack} launching a projectile {@code arrow}
      *

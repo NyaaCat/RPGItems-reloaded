@@ -52,7 +52,8 @@ public class Utils {
         return Arrays.asList(str.split(";"));
     }
 
-    public static List<Entity> getNearbyEntities(Power power, Location l, Player player, double radius, double dx, double dy, double dz) {
+    public static List<Entity> getNearbyEntities(Pimpl pimpl, Location l, Player player, double radius, double dx, double dy, double dz) {
+        Power power = pimpl.getPower();
         List<Entity> entities = new ArrayList<>();
         Collection<Entity> nearbyEntities = l.getWorld().getNearbyEntities(l, dx, dy, dz);
         if (!nearbyEntities.isEmpty()){
@@ -81,7 +82,7 @@ public class Utils {
      * @param radius radius
      * @return nearby entities
      */
-    public static List<Entity> getNearbyEntities(Power power, Location l, Player player, double radius) {
+    public static List<Entity> getNearbyEntities(Pimpl power, Location l, Player player, double radius) {
         return getNearbyEntities(power, l, player, radius, radius, radius, radius);
     }
 
@@ -95,7 +96,7 @@ public class Utils {
      * @param min    min radius
      * @return nearby living entities ordered by distance
      */
-    public static List<LivingEntity> getNearestLivingEntities(Power power, Location l, Player player, double radius, double min) {
+    public static List<LivingEntity> getNearestLivingEntities(Pimpl power, Location l, Player player, double radius, double min) {
         final List<Map.Entry<LivingEntity, Double>> entities = new ArrayList<>();
         for (Entity e : getNearbyEntities(power, l, player, radius)) {
             if (e instanceof LivingEntity && !player.equals(e)) {
@@ -164,10 +165,6 @@ public class Utils {
         return checkAndSetCooldown(power, player, cdTicks, showWarn, showPower, "cooldown." + power.getItem().getUid()  + "." + power.getNamespacedKey().toString());
     }
 
-    public static boolean checkCooldownByString(Power power, Player player, String key, long cdTicks, boolean showWarn, boolean showPower) {
-        return checkAndSetCooldown(power, player, cdTicks, showWarn, showPower, "cooldown." + power.getItem().getUid()  + "." + key);
-    }
-
     private static boolean checkAndSetCooldown(Power power, Player player, long cooldownTime, boolean showWarn, boolean showPower, String key) {
         long cooldown;
         Long value = (Long) Context.instance().get(player.getUniqueId(), key);
@@ -184,7 +181,7 @@ public class Utils {
         } else {
             if (showWarn) {
                 if (showPower || (!Strings.isNullOrEmpty(power.displayName()) && !power.displayName().equals(power.getLocalizedName(RPGItems.plugin.cfg.language)))) {
-                    player.sendMessage(I18n.format("message.cooldown.power", ((double) (cooldown - nowTick)) / 20d, power.getDisplayName()));
+                    player.sendMessage(I18n.format("message.cooldown.power", ((double) (cooldown - nowTick)) / 20d, power.displayName()));
                 } else {
                     player.sendMessage(I18n.format("message.cooldown.general", ((double) (cooldown - nowTick)) / 20d));
                 }

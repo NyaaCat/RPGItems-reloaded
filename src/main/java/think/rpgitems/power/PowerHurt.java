@@ -9,7 +9,7 @@ import javax.annotation.CheckReturnValue;
 /**
  * Triggers when being hurt
  */
-public interface PowerHurt extends Power {
+public interface PowerHurt extends Pimpl {
     /**
      * Calls when {@code target} using {@code stack} being hurt in {@code event}
      *

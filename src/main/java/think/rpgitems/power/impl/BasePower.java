@@ -1,5 +1,6 @@
 package think.rpgitems.power.impl;
 
+import cat.nyaa.nyaacore.Pair;
 import org.bukkit.Bukkit;
 import org.bukkit.NamespacedKey;
 import org.bukkit.configuration.ConfigurationSection;
@@ -11,6 +12,7 @@ import think.rpgitems.power.*;
 
 import java.io.Serializable;
 import java.lang.reflect.Field;
+import java.lang.reflect.Method;
 import java.util.*;
 
 /**
@@ -47,12 +49,12 @@ public abstract class BasePower implements Serializable, Power {
 
     @Override
     public void save(ConfigurationSection section) {
-        Map<String, PowerProperty> properties = PowerManager.getProperties(this.getClass());
+        Map<String, Pair<Method, PowerProperty>> properties = PowerManager.getProperties(this.getClass());
         PowerMeta powerMeta = this.getClass().getAnnotation(PowerMeta.class);
 
-        for (Map.Entry<String, PowerProperty> entry : properties.entrySet()) {
+        for (Map.Entry<String, Pair<Method, PowerProperty>> entry : properties.entrySet()) {
             String name = entry.getKey();
-            PowerProperty property = entry.getValue();
+            PowerProperty property = entry.getValue().getValue();
             Field field = property.field();
             if (name.equals("triggers") && powerMeta.immutableTrigger()) {
                 continue;
@@ -68,10 +70,10 @@ public abstract class BasePower implements Serializable, Power {
     @Override
     public void init(ConfigurationSection section) {
         PowerMeta powerMeta = this.getClass().getAnnotation(PowerMeta.class);
-        Map<String, PowerProperty> properties = PowerManager.getProperties(this.getClass());
-        for (Map.Entry<String, PowerProperty> entry : properties.entrySet()) {
+        Map<String, Pair<Method, PowerProperty>> properties = PowerManager.getProperties(this.getClass());
+        for (Map.Entry<String, Pair<Method, PowerProperty>> entry : properties.entrySet()) {
             String name = entry.getKey();
-            PowerProperty property = entry.getValue();
+            PowerProperty property = entry.getValue().getValue();
             Field field = property.field();
             if (name.equals("triggers") && powerMeta.immutableTrigger()) {
                 continue;

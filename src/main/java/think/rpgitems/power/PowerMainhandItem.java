@@ -10,7 +10,7 @@ import javax.annotation.CheckReturnValue;
 /**
  * Triggers when player swap mainhand item to offhand
  */
-public interface PowerMainhandItem extends Power {
+public interface PowerMainhandItem extends Pimpl {
 
     /**
      * Calls when {@code player} swap mainhand item to offhand

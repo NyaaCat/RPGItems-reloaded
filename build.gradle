@@ -1,6 +1,7 @@
 plugins {
     id 'java-library'
     id 'maven-publish'
+    id 'com.github.johnrengelman.shadow' version '4.0.3'
     id 'org.ajoberstar.grgit' version '3.0.0'
 }
 
@@ -56,11 +57,10 @@ repositories {
         name 'vault-repo'
         url 'http://nexus.hc.to/content/repositories/pub_releases'
     }
+}
 
-    maven{
-        name 'ReinWD'
-        url 'https://raw.githubusercontent.com/ReinWD/EffectLib/master/'
-    }
+shadowJar {
+    configurations = [project.configurations.shadow]
 }
 
 dependencies {
@@ -71,6 +71,8 @@ dependencies {
 
     compileOnly 'io.netty:netty-all:4.1.25.Final' // netty is shadowed inside spigot jar
     compileOnly 'org.ow2.asm:asm:7.0' // netty is shadowed inside spigot jar
+    compileOnly 'cglib:cglib-nodep:3.2.9'
+    shadow 'cglib:cglib-nodep:3.2.9'
 
     // implementation files('lib/worldedit-bukkit-7.0.0-SNAPSHOT-dist.jar')
     // implementation files('lib/worldguard-legacy-7.0.0-SNAPSHOT-dist.jar')
@@ -153,7 +155,14 @@ tasks.withType(PublishToMavenRepository) {
 }
 
 jar {
+    classifier = 'core'
+    dependsOn shadowJar
+}
+
+shadowJar {
     classifier = 'release'
+    // relocate 'net.sf.cglib', 'cat.nyaa.cglib'
+    configurations = [project.configurations.shadow]
 }
 
 task apiJar(type: Jar) {

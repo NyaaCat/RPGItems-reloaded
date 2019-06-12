@@ -14,6 +14,7 @@ import think.rpgitems.RPGItems;
 import javax.annotation.CheckForNull;
 import java.lang.reflect.Field;
 import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
 import java.util.*;
 import java.util.function.BiFunction;
@@ -27,7 +28,7 @@ import java.util.stream.Stream;
  */
 @SuppressWarnings("unchecked")
 public class PowerManager {
-    private static final Map<Class<? extends Power>, Map<String, PowerProperty>> properties = new HashMap<>();
+    private static final Map<Class<? extends Power>, Map<String, Pair<Method, PowerProperty>>> properties = new HashMap<>();
 
     private static final Map<Class<? extends Power>, PowerMeta> metas = new HashMap<>();
 
@@ -40,7 +41,7 @@ public class PowerManager {
 
     private static final HashBasedTable<Plugin, String, BiFunction<NamespacedKey, String, String>> descriptionResolvers = HashBasedTable.create();
 
-    static final HashBasedTable<Class<? extends Power>, Class<? extends Power>, Function> adapters = HashBasedTable.create();
+    static final HashBasedTable<Class<? extends Pimpl>, Class<? extends Pimpl>, Function> adapters = HashBasedTable.create();
 
     private static final HashMap<NamespacedKey, NamespacedKey> overrides = new HashMap<>();
 
@@ -57,17 +58,19 @@ public class PowerManager {
             RPGItems.plugin.getLogger().log(Level.WARNING, "With {0}", clazz);
             return;
         }
-        Map<String, PowerProperty> properties = getPowerProperties(clazz);
-        PowerManager.properties.put(clazz, properties);
         metas.put(clazz, clazz.getAnnotation(PowerMeta.class));
+        Map<String, Pair<Method, PowerProperty>> argumentPriorityMap = getPowerProperties(clazz);
+        properties.put(clazz, argumentPriorityMap);
     }
 
-    private static Map<String, PowerProperty> getPowerProperties(Class<? extends Power> cls) {
-        List<Pair<Field, Property>> collect = Arrays.stream(cls.getFields())
-                                                    .map(field -> Pair.of(field, field.getAnnotation(Property.class)))
-                                                    .filter(pair -> pair.getValue() != null)
-                                                    .sorted(Comparator.comparingInt(p -> p.getValue().order()))
-                                                    .collect(Collectors.toList());
+    private static Map<String, Pair<Method, PowerProperty>> getPowerProperties(Class<? extends Power> cls) {
+        RPGItems.logger.severe("Scanning class " + cls.toGenericString());
+        List<Method> methods = Arrays.stream(cls.getMethods()).collect(Collectors.toList());
+        List<Pair<Field, Property>> collect =  Arrays.stream(cls.getFields())
+              .map(field -> Pair.of(field, field.getAnnotation(Property.class)))
+              .filter(pair -> pair.getValue() != null)
+              .sorted(Comparator.comparingInt(p -> p.getValue().order()))
+              .collect(Collectors.toList());
 
         int requiredOrder = collect.stream()
                                    .map(Pair::getValue)
@@ -80,20 +83,37 @@ public class PowerManager {
                       .collect(
                               Collectors.toMap(
                                       p -> p.getKey().getName(),
-                                      p -> PowerProperty.from(p.getKey(), p.getValue(), p.getValue().order() < requiredOrder)
+                                      p -> {
+                                          String name = p.getKey().getName();
+                                          return Pair.of(metas.get(cls).marker() ? null :
+                                                           methods.stream()
+                                                                  .filter(
+                                                                          m -> m.getParameterCount() == 0 &&
+                                                                                       (m.getName().toLowerCase(Locale.ROOT).equals("get" + name.toLowerCase(Locale.ROOT))
+                                                                                                || m.getName().toLowerCase(Locale.ROOT).equals("is" + name.toLowerCase(Locale.ROOT))
+                                                                                                || m.getName().toLowerCase(Locale.ROOT).equals(name.toLowerCase(Locale.ROOT))
+                                                                                       )
+                                                                  )
+                                                                  .reduce((a, b) -> {
+                                                                      throw new IllegalArgumentException(name + " " + a.toString() + " " + b.toString());
+                                                                  })
+                                                                  .orElseThrow(() -> new IllegalArgumentException(name)),
+                                              PowerProperty.from(p.getKey(), p.getValue(), p.getValue().order() < requiredOrder));
+                                      }
                               )
                       );
-    }
+        }
 
     public static void registerPowers(Plugin plugin, String basePackage) {
         Class<? extends Power>[] classes = ClassPathUtils.scanSubclasses(plugin, basePackage, Power.class);
-        registerPowers(plugin, classes);
+        List<Class<? extends Power>> classList = Arrays.stream(classes).filter(c -> c.getAnnotation(PowerMeta.class) != null).collect(Collectors.toList());
+        registerPowers(plugin, classList);
     }
 
     @SuppressWarnings({"WeakerAccess"})
-    public static void registerPowers(Plugin plugin, Class<? extends Power>... powers) {
+    public static void registerPowers(Plugin plugin, List<Class<? extends Power>> powers) {
         extensions.put(plugin.getName().toLowerCase(Locale.ROOT), plugin);
-        Stream.of(powers).filter(c -> !Modifier.isAbstract(c.getModifiers()) && !c.isInterface()).sorted(Comparator.comparing(Class::getCanonicalName)).forEach(PowerManager::registerPower);
+        powers.stream().filter(c -> !Modifier.isAbstract(c.getModifiers()) && !c.isInterface()).sorted(Comparator.comparing(Class::getCanonicalName)).forEach(PowerManager::registerPower);
     }
 
     public static void addDescriptionResolver(Plugin plugin, BiFunction<NamespacedKey, String, String> descriptionResolver) {
@@ -159,7 +179,7 @@ public class PowerManager {
      * @return All registered powers' properties mapped by theirs class
      */
     @SuppressWarnings("unused")
-    public static Map<Class<? extends Power>, Map<String, PowerProperty> > getProperties() {
+    public static Map<Class<? extends Power>, Map<String, Pair<Method, PowerProperty>>> getProperties() {
         return Collections.unmodifiableMap(properties);
     }
 
@@ -171,11 +191,11 @@ public class PowerManager {
         return Collections.unmodifiableMap(powers);
     }
 
-    public static Map<String, PowerProperty>  getProperties(Class<? extends Power> cls) {
+    public static Map<String, Pair<Method, PowerProperty>> getProperties(Class<? extends Power> cls) {
         return Collections.unmodifiableMap(properties.get(cls));
     }
 
-    public static Map<String, PowerProperty>  getProperties(NamespacedKey key) {
+    public static Map<String, Pair<Method, PowerProperty>> getProperties(NamespacedKey key) {
         return getProperties(powers.get(key));
     }
 
@@ -221,18 +241,18 @@ public class PowerManager {
         return metas.get(cls);
     }
 
-    public static <G extends Power, S extends Power> void registerAdapter(Class<G> general, Class<S> specified, Function<G, S> adapter) {
+    public static <G extends Pimpl, S extends Pimpl> void registerAdapter(Class<G> general, Class<S> specified, Function<G, S> adapter) {
         adapters.put(general, specified, adapter);
     }
 
-    public static <T extends Power> T adaptPower(Power power, Class<T> specified) {
-        List<Class<? extends Power>> generals = Arrays.asList(getMeta(power.getNamespacedKey()).generalInterface());
-        Set<Class<? extends Power>> statics = Power.getStaticInterfaces(power.getClass());
-        List<Class<? extends Power>> preferences = generals.stream().filter(statics::contains).collect(Collectors.toList());
+    public static <T extends Pimpl> T adaptPower(Pimpl pimpl, Class<T> specified) {
+        List<Class<? extends Pimpl>> generals = Arrays.asList(getMeta(pimpl.getPower().getNamespacedKey()).generalInterface());
+        Set<Class<? extends Pimpl>> statics = Power.getStaticInterfaces(pimpl.getClass());
+        List<Class<? extends Pimpl>> preferences = generals.stream().filter(statics::contains).collect(Collectors.toList());
 
-        for (Class<? extends Power> general : preferences) {
+        for (Class<? extends Pimpl> general : preferences) {
             if (adapters.contains(general, specified)) {
-                return (T) adapters.get(general, specified).apply(power);
+                return (T) adapters.get(general, specified).apply(pimpl);
             }
         }
         throw new ClassCastException();
@@ -254,5 +274,17 @@ public class PowerManager {
             throw new IllegalArgumentException("Not overrideable: " + origin + "@" + originPower.toGenericString() + " " + override + "@" + overridePower.toGenericString());
         }
         overrides.put(origin, override);
+    }
+
+    public static Pimpl createImpl(Class<? extends Power> cls, Power p) {
+        if (!cls.isInstance(p)) throw new IllegalArgumentException();
+        Class<? extends Pimpl> pimpl = getMeta(cls).implClass();
+        if (pimpl.equals(Pimpl.class)) throw new IllegalStateException();
+        try {
+            return pimpl.getConstructor(cls).newInstance(p);
+        } catch (InstantiationException | IllegalAccessException | InvocationTargetException | NoSuchMethodException e) {
+            RPGItems.logger.log(Level.SEVERE, "Invalid impl: " + pimpl + " for " + cls, e);
+            throw new RuntimeException(e);
+        }
     }
 }

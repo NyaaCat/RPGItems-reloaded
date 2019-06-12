@@ -5,7 +5,7 @@ import org.bukkit.inventory.ItemStack;
 
 import java.util.Map;
 
-public interface PowerCondition<T> extends Power {
+public interface PowerCondition<T> extends Power,Pimpl {
 
     String id();
 

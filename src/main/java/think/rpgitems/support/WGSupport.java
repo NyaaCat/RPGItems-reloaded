@@ -15,7 +15,7 @@ import org.bukkit.plugin.Plugin;
 import think.rpgitems.RPGItems;
 import think.rpgitems.item.ItemManager;
 import think.rpgitems.item.RPGItem;
-import think.rpgitems.power.Power;
+import think.rpgitems.power.Pimpl;
 import think.rpgitems.power.RPGItemsPowersPreFireEvent;
 
 import java.io.File;
@@ -110,7 +110,7 @@ public class WGSupport {
         return (stat == null || stat.equals(State.ALLOW)) ? Event.Result.ALLOW : Event.Result.DENY;
     }
 
-    private static Event.Result canUse(Player player, RPGItem item, Collection<? extends Power> powers) {
+    private static Event.Result canUse(Player player, RPGItem item, Collection<? extends Pimpl> powers) {
         if (!hasSupport || !useWorldGuard) {
             return Event.Result.DEFAULT;
         }
@@ -138,14 +138,14 @@ public class WGSupport {
         Collection<String> enabledPower = enabledPowerByPlayer.get(player.getUniqueId());
 
         if (powers == null) return Event.Result.ALLOW;
-        for (Power power : powers) {
-            String powerName = item.getPowerKey(power).toString();
+        for (Pimpl power : powers) {
+            String powerName = item.getPowerKey(power.getPower()).toString();
             if (notEnabled(disabledPower, enabledPower, powerName)) return Event.Result.DENY;
         }
         return Event.Result.ALLOW;
     }
 
-    public static Event.Result canUse(Player player, RPGItem item, Collection<? extends Power> powers, boolean showWarn) {
+    public static Event.Result canUse(Player player, RPGItem item, Collection<? extends Pimpl> powers, boolean showWarn) {
         Event.Result result = canUse(player, item, powers);
         if (result == Event.Result.DENY && showWarn) {
             String message = warningMessageByPlayer.get(player.getUniqueId());
@@ -171,7 +171,7 @@ public class WGSupport {
 
     public static class EventListener implements Listener {
         @EventHandler
-        public <TEvent extends Event, TPower extends Power, TResult, TReturn> void onPreTrigger(RPGItemsPowersPreFireEvent<TEvent, TPower, TResult, TReturn> event) {
+        public <TEvent extends Event, TPower extends Pimpl, TResult, TReturn> void onPreTrigger(RPGItemsPowersPreFireEvent<TEvent, TPower, TResult, TReturn> event) {
             if (canUse(event.getPlayer(), event.getItem(), event.getPowers(), plugin.cfg.wgShowWarning) == Event.Result.DENY) {
                 event.setCancelled(true);
             }

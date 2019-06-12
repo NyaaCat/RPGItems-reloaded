@@ -24,13 +24,13 @@ import java.util.stream.Stream;
 import static think.rpgitems.power.Utils.maxWithCancel;
 import static think.rpgitems.power.Utils.minWithCancel;
 
-public abstract class Trigger<TEvent extends Event, TPower extends Power, TResult, TReturn> {
+public abstract class Trigger<TEvent extends Event, TPower extends Pimpl, TResult, TReturn> {
 
     private static boolean acceptingNew = true;
 
     private static final Map<String, Trigger> registry = new HashMap<>();
 
-    public static Stream<Trigger> fromInterface(Class<? extends Power> power) {
+    public static Stream<Trigger> fromInterface(Class<? extends Pimpl> power) {
         return registry.values().stream().filter(t -> t.powerClass.equals(power));
     }
 

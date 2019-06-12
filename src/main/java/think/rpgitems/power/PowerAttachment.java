@@ -7,7 +7,7 @@ import think.rpgitems.item.RPGItem;
 
 import javax.annotation.CheckReturnValue;
 
-public interface PowerAttachment extends Power {
+public interface PowerAttachment extends Pimpl {
     @CheckReturnValue
     PowerResult<Void> attachment(Player player, ItemStack stack, RPGItem originItem, Event originEvent, ItemStack originStack);
 }
