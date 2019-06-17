@@ -472,19 +472,13 @@ public class PowerBeam extends BasePower implements PowerPlain, PowerRightClick,
         return false;
     }
 
-    private WeakHashMap<Location, BoundingBox> boxCache = new WeakHashMap<>();
-
     private boolean canHit(Location loc, Entity entity) {
         BoundingBox boundingBox = entity.getBoundingBox();
-        Location location = loc.getBlock().getLocation();
-        BoundingBox particleBox = boxCache.get(location);
-        if (particleBox == null) {
-            double x = Math.max(offsetX, 0.1);
-            double y = Math.max(offsetY, 0.1);
-            double z = Math.max(offsetZ, 0.1);
-            particleBox = BoundingBox.of(loc, x + 0.1, y + 0.1, z + 0.1);
-        }
-        boxCache.put(location, particleBox);
+        BoundingBox particleBox;
+        double x = Math.max(offsetX, 0.1);
+        double y = Math.max(offsetY, 0.1);
+        double z = Math.max(offsetZ, 0.1);
+        particleBox = BoundingBox.of(loc, x + 0.1, y + 0.1, z + 0.1);
         return boundingBox.overlaps(particleBox) || particleBox.overlaps(boundingBox);
     }
 
