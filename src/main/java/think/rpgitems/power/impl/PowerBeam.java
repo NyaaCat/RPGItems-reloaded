@@ -374,7 +374,7 @@ public class PowerBeam extends BasePower implements PowerPlain, PowerRightClick,
                         this.cancel();
                         return;
                     }
-                    if (finalI[0] >= movementTicks){
+                    if (finalI[0] >= movementTicks) {
                         this.cancel();
                     }
                     finalI[0]++;
