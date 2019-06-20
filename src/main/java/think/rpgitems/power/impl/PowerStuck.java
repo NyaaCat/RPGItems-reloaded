@@ -99,6 +99,7 @@ public class PowerStuck extends BasePower implements PowerHit, PowerRightClick {
             stucked.put(entity.getUniqueId(), System.currentTimeMillis());
             entity.addPotionEffect(new PotionEffect(PotionEffectType.SLOW, duration, 10), true);
 //            entity.addPotionEffect(new PotionEffect(PotionEffectType.JUMP, duration, 128), true);
+            //todo change implementation to lock entity mobilability
             return PowerResult.ok(damage);
         }
         return PowerResult.noop();
