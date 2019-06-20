@@ -94,6 +94,9 @@ public class PowerBeam extends BasePower implements PowerPlain, PowerRightClick,
     public double homingRange = 30;
 
     @Property
+    public Target homingTarget = Target.MOBS;
+
+    @Property
     public int stepsBeforeHoming = 5;
 
     @Property
@@ -235,7 +238,19 @@ public class PowerBeam extends BasePower implements PowerPlain, PowerRightClick,
 
         Entity target = null;
         if (from instanceof Player && homing) {
+            final Target homingTarget = this.homingTarget;
             target = Utils.getLivingEntitiesInCone(Utils.getNearestLivingEntities(this, fromLocation, ((Player) from), Math.min(1000, length), 0), fromLocation.toVector(), homingRange, from.getEyeLocation().getDirection()).stream()
+                    .filter(livingEntity -> {
+                        switch(homingTarget){
+                            case MOBS:
+                                return !(livingEntity instanceof Player);
+                            case PLAYERS:
+                                return livingEntity instanceof Player;
+                            case ALL:
+                                break;
+                        }
+                        return true;
+                    })
                     .findFirst().orElse(null);
         }
 
@@ -508,5 +523,9 @@ public class PowerBeam extends BasePower implements PowerPlain, PowerRightClick,
             float size = Float.parseFloat(split[3]);
             return Optional.of(new Particle.DustOptions(Color.fromRGB(r, g, b), size));
         }
+    }
+
+    enum Target{
+        MOBS, PLAYERS, ALL
     }
 }
