@@ -28,6 +28,13 @@ import java.util.stream.Stream;
 import static think.rpgitems.Events.*;
 import static think.rpgitems.power.Utils.checkCooldown;
 
+/**
+ * @Author ReinWD
+ * @email ReinWDD@gmail.com
+ * Wrote & Maintained by ReinWD
+ * if you have any issue, please send me email or @ReinWD in issues.
+ * Accepted language: 中文, English.
+ */
 @PowerMeta(defaultTrigger = "RIGHT_CLICK")
 public class PowerBeam extends BasePower implements PowerPlain, PowerRightClick, PowerLeftClick, PowerSneak, PowerSneaking, PowerSprint, PowerBowShoot, PowerHitTaken, PowerHit, PowerHurt {
     @Property
