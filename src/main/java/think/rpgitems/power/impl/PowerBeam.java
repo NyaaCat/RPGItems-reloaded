@@ -450,7 +450,9 @@ public class PowerBeam extends BasePower implements PowerPlain, PowerRightClick,
     }
 
     private boolean tryHit(LivingEntity from, Location loc, boolean canHitSelf) {
-        double length = Math.max(new Vector(offsetX, offsetY, offsetZ).length(), 10);
+
+        double offsetLength = new Vector(offsetX, offsetY, offsetZ).length();
+        double length =Double.isNaN(offsetLength)?0: Math.max(offsetLength, 10);
         Collection<Entity> candidates = from.getWorld().getNearbyEntities(loc, length, length, length);
         if (!pierce) {
             List<Entity> collect = candidates.stream()
