@@ -98,7 +98,7 @@ public class PowerStuck extends BasePower implements PowerHit, PowerRightClick {
             if (!getItem().consumeDurability(stack, cost)) return PowerResult.cost();
             stucked.put(entity.getUniqueId(), System.currentTimeMillis());
             entity.addPotionEffect(new PotionEffect(PotionEffectType.SLOW, duration, 10), true);
-            entity.addPotionEffect(new PotionEffect(PotionEffectType.JUMP, duration, 128), true);
+//            entity.addPotionEffect(new PotionEffect(PotionEffectType.JUMP, duration, 128), true);
             return PowerResult.ok(damage);
         }
         return PowerResult.noop();
@@ -113,7 +113,7 @@ public class PowerStuck extends BasePower implements PowerHit, PowerRightClick {
                     if (!getItem().consumeDurability(stack, costPerEntity)) return;
                     stucked.put(entity.getUniqueId(), System.currentTimeMillis());
                     entity.addPotionEffect(new PotionEffect(PotionEffectType.SLOW, duration, 10), true);
-                    entity.addPotionEffect(new PotionEffect(PotionEffectType.JUMP, duration, 128), true);
+//                    entity.addPotionEffect(new PotionEffect(PotionEffectType.JUMP, duration, 128), true);
                 }
         );
         return PowerResult.ok();
