@@ -33,6 +33,9 @@ public class PowerEnchantedHit extends BasePower implements PowerHit {
     @Property
     public EnumEnchantment enchantmentType = EnumEnchantment.ARROW_DAMAGE;
 
+    @Property
+    public boolean setBaseDamage = false;
+
     @Override
     public PowerResult<Double> hit(Player player, ItemStack stack, LivingEntity entity, double damage, EntityDamageByEntityEvent event) {
         int enchLevel = stack.getEnchantmentLevel(enchantmentType.getEnchantment());
@@ -43,6 +46,9 @@ public class PowerEnchantedHit extends BasePower implements PowerHit {
             damage *= Math.pow(amountPerLevel, enchLevel);
         }
         if (damage < 0 ) damage = 0;
+        if (setBaseDamage) {
+            event.setDamage(damage);
+        }
         return PowerResult.ok(damage);
     }
 

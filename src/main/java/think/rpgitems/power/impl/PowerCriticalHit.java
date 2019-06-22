@@ -29,6 +29,9 @@ public class PowerCriticalHit extends BasePower implements PowerHit {
     @Property
     public double backstabFactor = 1.5;
 
+    @Property
+    public boolean setBaseDamage = false;
+
     @Override
     public PowerResult<Double> hit(Player player, ItemStack stack, LivingEntity entity, double damage, EntityDamageByEntityEvent event) {
         if (ThreadLocalRandom.current().nextDouble(100) < chance) {
@@ -36,6 +39,9 @@ public class PowerCriticalHit extends BasePower implements PowerHit {
         }
         if (getAngleBetweenVectors(((LivingEntity) event.getEntity()).getEyeLocation().getDirection(), player.getEyeLocation().getDirection()) < 90 && ThreadLocalRandom.current().nextDouble(100) < backstabChance) {
             damage *= backstabFactor;
+        }
+        if (setBaseDamage) {
+            event.setDamage(damage);
         }
         return PowerResult.ok(damage);
     }

@@ -36,6 +36,9 @@ public class PowerHeadshot extends BasePower implements PowerHit {
     @Property
     public boolean soundEnemy = false;
 
+    @Property
+    public boolean setBaseDamage = false;
+
     @Override
     public PowerResult<Double> hit(Player player, ItemStack stack, LivingEntity entity, double damage, EntityDamageByEntityEvent event) {
         if (!(event.getDamager() instanceof Projectile)) {
@@ -81,6 +84,9 @@ public class PowerHeadshot extends BasePower implements PowerHit {
             }
             if (particleEnemy) {
                 entity.getWorld().spawnParticle(Particle.REDSTONE, entity.getLocation(), 2, new Particle.DustOptions(Color.RED, 10));
+            }
+            if (setBaseDamage) {
+                event.setDamage(damage * factor);
             }
             return PowerResult.ok(damage * factor);
         }

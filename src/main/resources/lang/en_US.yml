@@ -493,6 +493,7 @@ power:
       backstabFactor: Factor of backstab damage. E.g. deals (damage * backstabFactor) damage
       chance: Chance of triggering critical hit, in percentage
       factor: Factor of critical hit damage. E.g. deals (damage * factor) damage
+      setBaseDamage: Whether to set event base damage to final damage to allow stacking of damage power.
     deathcommand:
       main_name: Death Command
       main_description: With a 1/chance to kill the target then execute the command for count times
@@ -551,6 +552,7 @@ power:
       main_description: Calculate damage dynamicly
       display: Display name
       expression: Expression to compute damage
+      setBaseDamage: Whether to set event base damage to final damage to allow stacking of damage power.
     explosion:
       main_name: Explosion
       main_description: Make a explosion that caused by the player
@@ -601,6 +603,7 @@ power:
       particleEnemy: Whether to show particle at enemy location
       soundEnemy: Whether to play sound at enemy location
       soundSelf: Whether to play sound at player location
+      setBaseDamage: Whether to set event base damage to final damage to allow stacking of damage power.
     ice:
       main_name: Ice
       main_description: Fire an ice block, then create a box of ice on impact

@@ -486,6 +486,7 @@ power:
       backstabFactor: 背刺倍率
       chance: 暴击几率
       factor: 暴击倍率
+      setBaseDamage: 是否设为基础伤害（伤害增益可叠加）
     deathcommand:
       main_name: 即死命令
       main_description: 以 1/chance 的几率杀死目标并执行命令
@@ -544,6 +545,7 @@ power:
       main_description: 根据变量动态计算伤害
       display: 显示名称
       expression: 计算伤害的表达式
+      setBaseDamage: 是否设为基础伤害（伤害增益可叠加）
     explosion:
       main_name: 爆炸
       main_description: 制造一个玩家产生的爆炸
@@ -594,6 +596,7 @@ power:
       particleEnemy: 是否显示被爆头粒子效果
       soundEnemy: 是否显示被爆头粒子音效
       soundSelf: 是否显示爆头粒子音效
+      setBaseDamage: 是否设为基础伤害（伤害增益可叠加）
     ice:
       main_name: 冰冻
       main_description: 发射一个冰方块，在击中处生成一个大冰块

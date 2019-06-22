@@ -27,6 +27,9 @@ public class PowerEvalDamage extends BasePower implements PowerHit, PowerHitTake
     @Property(required = true)
     public String expression = "";
 
+    @Property
+    public boolean setBaseDamage = false;
+
     // Feel free to add variable below
 
     @Override
@@ -62,7 +65,11 @@ public class PowerEvalDamage extends BasePower implements PowerHit, PowerHitTake
             ;
 
             BigDecimal result = ex.eval();
-            return PowerResult.ok(result.doubleValue());
+            double ret = result.doubleValue();
+            if (setBaseDamage) {
+                event.setDamage(ret);
+            }
+            return PowerResult.ok(ret);
         } catch (Expression.ExpressionException ex) {
             RPGItem.getPlugin().getLogger().log(Level.WARNING, "bad expression: " + expression, ex);
             if (player.isOp() || player.hasPermission("rpgitem")) {
