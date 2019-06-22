@@ -71,8 +71,8 @@ dependencies {
 
     compileOnly 'io.netty:netty-all:4.1.25.Final' // netty is shadowed inside spigot jar
     compileOnly 'org.ow2.asm:asm:7.0' // netty is shadowed inside spigot jar
-    compileOnly 'cglib:cglib-nodep:3.2.9'
-    shadow 'cglib:cglib-nodep:3.2.9'
+    compileOnly 'cglib:cglib-nodep:3.2.12'
+    shadow 'cglib:cglib-nodep:3.2.12'
 
     // implementation files('lib/worldedit-bukkit-7.0.0-SNAPSHOT-dist.jar')
     // implementation files('lib/worldguard-legacy-7.0.0-SNAPSHOT-dist.jar')
