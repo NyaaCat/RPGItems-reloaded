@@ -224,21 +224,23 @@ public class PowerBeam extends BasePower implements PowerPlain, PowerRightClick,
         }
     }
 
+    final Vector crosser = new Vector(1,1,1);
+
     private PowerResult<Void> fire(LivingEntity from) {
         lengthPerSpawn = 1 / spawnsPerBlock;
         Location fromLocation = from.getEyeLocation();
         Vector towards = from.getEyeLocation().getDirection();
 
         if (cone) {
-            double phi = random.nextInt(360);
+            double phi = random.nextDouble()*360;
             double theta;
             if (coneRange > 0) {
-                theta = random.nextInt(((int) Math.round(coneRange)));
-                double shiftLen = towards.length() * Math.tan(Math.toRadians(theta));
+                theta = random.nextDouble()*coneRange;
                 Vector clone = towards.clone();
-                Vector shift = clone.crossProduct(yUnit).normalize().multiply(shiftLen);
-                shift.rotateAroundNonUnitAxis(towards, Math.toRadians(phi));
-                towards = towards.add(shift);
+                Vector cross = clone.clone().add(crosser);
+                Vector vertical = clone.getCrossProduct(cross).getCrossProduct(towards);
+                towards.rotateAroundAxis(vertical, Math.toRadians(theta));
+                towards.rotateAroundAxis(clone, Math.toRadians(phi));
             }
         }
 
