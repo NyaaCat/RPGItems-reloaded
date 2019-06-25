@@ -19,9 +19,14 @@ package think.rpgitems.power.impl;
 import org.bukkit.Material;
 import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.entity.Player;
+import org.bukkit.event.Event;
+import org.bukkit.event.entity.EntityDamageEvent;
 import org.bukkit.event.player.PlayerInteractEvent;
+import org.bukkit.event.player.PlayerToggleSneakEvent;
+import org.bukkit.event.player.PlayerToggleSprintEvent;
 import org.bukkit.inventory.ItemStack;
 import think.rpgitems.I18n;
+import think.rpgitems.item.RPGItem;
 import think.rpgitems.power.*;
 
 import java.util.Collections;
@@ -36,7 +41,7 @@ import static think.rpgitems.power.Utils.checkCooldown;
  * </p>
  */
 @PowerMeta(defaultTrigger = "RIGHT_CLICK")
-public class PowerConsume extends BasePower implements PowerRightClick, PowerLeftClick {
+public class PowerConsume extends BasePower implements PowerRightClick, PowerLeftClick, PowerSneak, PowerHitTaken, PowerHurt, PowerSprint, PowerAttachment {
     /**
      * Cooldown time of this power
      */
@@ -63,6 +68,31 @@ public class PowerConsume extends BasePower implements PowerRightClick, PowerLef
 
     @Override
     public PowerResult<Void> leftClick(final Player player, ItemStack stack, PlayerInteractEvent event) {
+        return fire(player, stack);
+    }
+
+    @Override
+    public PowerResult<Void> sneak(Player player, ItemStack stack, PlayerToggleSneakEvent event) {
+        return fire(player, stack);
+    }
+
+    @Override
+    public PowerResult<Void> sprint(Player player, ItemStack stack, PlayerToggleSprintEvent event) {
+        return fire(player, stack);
+    }
+
+    @Override
+    public PowerResult<Double> takeHit(Player target, ItemStack stack, double damage, EntityDamageEvent event) {
+        return fire(target, stack).with(damage);
+    }
+
+    @Override
+    public PowerResult<Void> hurt(Player target, ItemStack stack, EntityDamageEvent event) {
+        return fire(target, stack);
+    }
+
+    @Override
+    public PowerResult<Void> attachment(Player player, ItemStack stack, RPGItem originItem, Event originEvent, ItemStack originStack) {
         return fire(player, stack);
     }
 
