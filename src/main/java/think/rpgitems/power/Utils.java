@@ -54,9 +54,12 @@ public class Utils {
 
     public static List<Entity> getNearbyEntities(Power power, Location l, Player player, double radius, double dx, double dy, double dz) {
         List<Entity> entities = new ArrayList<>();
-        for (Entity e : l.getWorld().getNearbyEntities(l, dx, dy, dz)) {
-            if (l.distance(e.getLocation()) <= radius) {
-                entities.add(e);
+        Collection<Entity> nearbyEntities = l.getWorld().getNearbyEntities(l, dx, dy, dz);
+        if (!nearbyEntities.isEmpty()){
+            for (Entity e : nearbyEntities) {
+                if (l.distance(e.getLocation()) <= radius) {
+                    entities.add(e);
+                }
             }
         }
         power.getItem().getPowers().stream().filter(pow -> pow instanceof PowerSelector).forEach(

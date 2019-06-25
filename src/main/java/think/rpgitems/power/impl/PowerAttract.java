@@ -13,6 +13,7 @@ import think.rpgitems.item.RPGItem;
 import think.rpgitems.power.*;
 
 import java.util.List;
+import java.util.logging.Level;
 
 import static think.rpgitems.power.Utils.checkCooldown;
 import static think.rpgitems.power.Utils.getNearbyEntities;
@@ -105,6 +106,9 @@ public class PowerAttract extends BasePower implements PowerTick, PowerLeftClick
                 double d = locTarget.distance(locPlayer);
                 if (d < 1 || d > radius) continue;
                 double newVelocity = Math.sqrt(d - 1) / factor;
+                if (Double.isInfinite(newVelocity)){
+                    newVelocity = 0;
+                }
                 Vector direction = locPlayer.subtract(locTarget).toVector().normalize();
                 e.setVelocity(direction.multiply(newVelocity));
             }
