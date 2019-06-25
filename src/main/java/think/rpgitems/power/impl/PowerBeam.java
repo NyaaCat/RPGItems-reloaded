@@ -22,6 +22,7 @@ import think.rpgitems.data.Context;
 import think.rpgitems.power.*;
 
 import java.util.*;
+import java.util.logging.Level;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -224,7 +225,7 @@ public class PowerBeam extends BasePower implements PowerPlain, PowerRightClick,
         }
     }
 
-    final Vector crosser = new Vector(1,1,1);
+    final Vector crosser = new Vector(1, 1, 1);
 
     private PowerResult<Void> fire(LivingEntity from) {
         lengthPerSpawn = 1 / spawnsPerBlock;
@@ -232,10 +233,10 @@ public class PowerBeam extends BasePower implements PowerPlain, PowerRightClick,
         Vector towards = from.getEyeLocation().getDirection();
 
         if (cone) {
-            double phi = random.nextDouble()*360;
+            double phi = random.nextDouble() * 360;
             double theta;
             if (coneRange > 0) {
-                theta = random.nextDouble()*coneRange;
+                theta = random.nextDouble() * coneRange;
                 Vector clone = towards.clone();
                 Vector cross = clone.clone().add(crosser);
                 Vector vertical = clone.getCrossProduct(cross).getCrossProduct(towards);
@@ -250,7 +251,7 @@ public class PowerBeam extends BasePower implements PowerPlain, PowerRightClick,
             final Target homingTarget = this.homingTarget;
             target = Utils.getLivingEntitiesInCone(Utils.getNearestLivingEntities(this, fromLocation, ((Player) from), Math.min(1000, length), 0), fromLocation.toVector(), homingRange, from.getEyeLocation().getDirection()).stream()
                     .filter(livingEntity -> {
-                        switch(homingTarget){
+                        switch (homingTarget) {
                             case MOBS:
                                 return !(livingEntity instanceof Player);
                             case PLAYERS:
@@ -372,36 +373,41 @@ public class PowerBeam extends BasePower implements PowerPlain, PowerRightClick,
             BukkitRunnable bukkitRunnable = new BukkitRunnable() {
                 @Override
                 public void run() {
-                    boolean isHit = false;
-                    Vector step = new Vector(0, 0, 0);
-                    for (int k = 0; k < partsPerTick; k++) {
-                        isHit = tryHit(from, lastLocation, bounced && hitSelfWhenBounced) || isHit;
-                        Block block = lastLocation.getBlock();
-                        if (transp.contains(block.getType())) {
-                            spawnParticle(from, world, lastLocation, (int) (amountPerSec / spawnsPerBlock));
-                        } else if (!ignoreWall) {
-                            if (bounces > 0) {
-                                bounces--;
-                                bounced = true;
-                                makeBounce(block, towards, lastLocation.clone().subtract(step));
-                            } else {
-                                this.cancel();
-                                return;
+                    try {
+                        boolean isHit = false;
+                        Vector step = new Vector(0, 0, 0);
+                        for (int k = 0; k < partsPerTick; k++) {
+                            isHit = tryHit(from, lastLocation, bounced && hitSelfWhenBounced) || isHit;
+                            Block block = lastLocation.getBlock();
+                            if (transp.contains(block.getType())) {
+                                spawnParticle(from, world, lastLocation, (int) (amountPerSec / spawnsPerBlock));
+                            } else if (!ignoreWall) {
+                                if (bounces > 0) {
+                                    bounces--;
+                                    bounced = true;
+                                    makeBounce(block, towards, lastLocation.clone().subtract(step));
+                                } else {
+                                    this.cancel();
+                                    return;
+                                }
                             }
+                            step = towards.clone().normalize().multiply(lengthPerSpawn);
+                            lastLocation.add(step);
+                            towards = addGravity(towards, partsPerTick);
+                            towards = homingCorrect(towards, lastLocation, target, finalI[0]);
                         }
-                        step = towards.clone().normalize().multiply(lengthPerSpawn);
-                        lastLocation.add(step);
-                        towards = addGravity(towards, partsPerTick);
-                        towards = homingCorrect(towards, lastLocation, target, finalI[0]);
-                    }
-                    if (isHit) {
+                        if (isHit) {
+                            this.cancel();
+                            return;
+                        }
+                        if (finalI[0] >= movementTicks) {
+                            this.cancel();
+                        }
+                        finalI[0]++;
+                    } catch (Exception ex) {
+                        from.getServer().getLogger().log(Level.WARNING, "", ex);
                         this.cancel();
-                        return;
                     }
-                    if (finalI[0] >= movementTicks) {
-                        this.cancel();
-                    }
-                    finalI[0]++;
                 }
             };
             bukkitRunnable.runTaskTimer(RPGItems.plugin, 0, 1);
@@ -454,7 +460,7 @@ public class PowerBeam extends BasePower implements PowerPlain, PowerRightClick,
     private boolean tryHit(LivingEntity from, Location loc, boolean canHitSelf) {
 
         double offsetLength = new Vector(offsetX, offsetY, offsetZ).length();
-        double length =Double.isNaN(offsetLength)?0: Math.max(offsetLength, 10);
+        double length = Double.isNaN(offsetLength) ? 0 : Math.max(offsetLength, 10);
         Collection<Entity> candidates = from.getWorld().getNearbyEntities(loc, length, length, length);
         if (!pierce) {
             List<Entity> collect = candidates.stream()
@@ -536,7 +542,7 @@ public class PowerBeam extends BasePower implements PowerPlain, PowerRightClick,
         }
     }
 
-    enum Target{
+    enum Target {
         MOBS, PLAYERS, ALL
     }
 }
