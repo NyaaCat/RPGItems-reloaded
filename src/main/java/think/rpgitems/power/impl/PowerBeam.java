@@ -150,7 +150,7 @@ public class PowerBeam extends BasePower implements PowerPlain, PowerRightClick,
     public PowerResult<Void> fire(Player player, ItemStack stack) {
         if (!checkCooldown(this, player, cooldown, true, true)) return PowerResult.cd();
         if (!getItem().consumeDurability(stack, cost)) return PowerResult.cost();
-        return beam(player);
+        return beam(player, stack);
     }
 
     @Override
@@ -165,17 +165,17 @@ public class PowerBeam extends BasePower implements PowerPlain, PowerRightClick,
 
     @Override
     public PowerResult<Void> leftClick(Player player, ItemStack stack, PlayerInteractEvent event) {
-        return fire(player, stack);
+        return beam(player, stack);
     }
 
     @Override
     public PowerResult<Void> rightClick(Player player, ItemStack stack, PlayerInteractEvent event) {
-        return fire(player, stack);
+        return beam(player, stack);
     }
 
     @Override
     public PowerResult<Void> sneak(Player player, ItemStack stack, PlayerToggleSneakEvent event) {
-        return fire(player, stack);
+        return beam(player, stack);
     }
 
     @Override
@@ -185,25 +185,25 @@ public class PowerBeam extends BasePower implements PowerPlain, PowerRightClick,
 
     @Override
     public PowerResult<Void> sprint(Player player, ItemStack stack, PlayerToggleSprintEvent event) {
-        return fire(player, stack);
+        return beam(player, stack);
     }
 
     @Override
     public PowerResult<Float> bowShoot(Player player, ItemStack itemStack, EntityShootBowEvent e) {
-        return beam(player).with(e.getForce());
+        return beam(player, itemStack).with(e.getForce());
     }
 
     @Override
     public PowerResult<Double> hit(Player player, ItemStack stack, LivingEntity entity, double damage, EntityDamageByEntityEvent event) {
-        return beam(player).with(event.getDamage());
+        return beam(player, stack).with(event.getDamage());
     }
 
     @Override
     public PowerResult<Double> takeHit(Player target, ItemStack stack, double damage, EntityDamageEvent event) {
-        return beam(target).with(event.getDamage());
+        return beam(target, stack).with(event.getDamage());
     }
 
-    private PowerResult<Void> beam(LivingEntity from) {
+    private PowerResult<Void> beam(LivingEntity from, ItemStack stack) {
         if (burstCount > 0) {
             for (int i = 0; i < burstCount; i++) {
                 new BukkitRunnable() {
@@ -211,23 +211,23 @@ public class PowerBeam extends BasePower implements PowerPlain, PowerRightClick,
                     public void run() {
                         if (cone) {
                             for (int j = 0; j < beamAmount; j++) {
-                                fire(from);
+                                internalFireBeam(from, stack);
                             }
                         } else {
-                            fire(from);
+                            internalFireBeam(from, stack);
                         }
                     }
                 }.runTaskLaterAsynchronously(RPGItems.plugin, i * burstInterval);
             }
             return PowerResult.ok();
         } else {
-            return fire(from);
+            return internalFireBeam(from, stack);
         }
     }
 
     final Vector crosser = new Vector(1, 1, 1);
 
-    private PowerResult<Void> fire(LivingEntity from) {
+    private PowerResult<Void> internalFireBeam(LivingEntity from, ItemStack stack) {
         lengthPerSpawn = 1 / spawnsPerBlock;
         Location fromLocation = from.getEyeLocation();
         Vector towards = from.getEyeLocation().getDirection();
@@ -266,10 +266,10 @@ public class PowerBeam extends BasePower implements PowerPlain, PowerRightClick,
 
         switch (mode) {
             case BEAM:
-                new PlainTask(from, towards, amount, length, target, bounce).runTask(RPGItems.plugin);
+                new PlainTask(from, towards, amount, length, target, bounce, stack).runTask(RPGItems.plugin);
                 break;
             case PROJECTILE:
-                new MovingTask(from, towards, amount, length, target, bounce).runTask(RPGItems.plugin);
+                new MovingTask(from, towards, amount, length, target, bounce, stack).runTask(RPGItems.plugin);
                 break;
         }
         return PowerResult.ok();
@@ -280,22 +280,24 @@ public class PowerBeam extends BasePower implements PowerPlain, PowerRightClick,
 
     @Override
     public PowerResult<Void> hurt(Player target, ItemStack stack, EntityDamageEvent event) {
-        return fire(target, stack);
+        return beam(target, stack);
     }
 
     class PlainTask extends BukkitRunnable {
         private int bounces;
         private double length;
+        private final ItemStack stack;
         private LivingEntity from;
         private Vector towards;
         private final int apS;
         private Entity target;
         boolean bounced = false;
 
-        public PlainTask(LivingEntity from, Vector towards, int amount, double actualLength, Entity target, int bounces) {
+        public PlainTask(LivingEntity from, Vector towards, int amount, double actualLength, Entity target, int bounces, ItemStack stack) {
             this.from = from;
             this.towards = towards;
             this.length = actualLength;
+            this.stack = stack;
             this.apS = amount / ((int) Math.floor(actualLength));
             this.target = target;
             this.bounces = bounces;
@@ -312,7 +314,7 @@ public class PowerBeam extends BasePower implements PowerPlain, PowerRightClick,
                 boolean isHit = false;
                 Vector step = new Vector(0, 0, 0);
                 for (int j = 0; j < partsPerTick; j++) {
-                    isHit = tryHit(from, lastLocation, bounced && hitSelfWhenBounced) || isHit;
+                    isHit = tryHit(from, lastLocation, stack, bounced && hitSelfWhenBounced) || isHit;
                     Block block = lastLocation.getBlock();
                     if (transp.contains(block.getType())) {
                         spawnParticle(from, world, lastLocation, (int) Math.ceil(apS / partsPerTick));
@@ -322,6 +324,7 @@ public class PowerBeam extends BasePower implements PowerPlain, PowerRightClick,
                             bounced = true;
                             makeBounce(block, towards, lastLocation.clone().subtract(step));
                         } else {
+                            Context.instance().putTemp(from.getUniqueId(), DAMAGE_SOURCE_ITEM, null);
                             return;
                         }
                     }
@@ -330,8 +333,12 @@ public class PowerBeam extends BasePower implements PowerPlain, PowerRightClick,
                     towards = addGravity(towards, partsPerTick);
                     towards = homingCorrect(towards, lastLocation, target, i);
                 }
-                if (isHit) return;
+                if (isHit) {
+                    Context.instance().putTemp(from.getUniqueId(), DAMAGE_SOURCE_ITEM, null);
+                    return;
+                }
             }
+            Context.instance().putTemp(from.getUniqueId(), DAMAGE_SOURCE_ITEM, null);
         }
 
 
@@ -349,14 +356,16 @@ public class PowerBeam extends BasePower implements PowerPlain, PowerRightClick,
         private final LivingEntity from;
         private int bounces;
         private Vector towards;
+        private final ItemStack stack;
         private final int amountPerSec;
         private final List<BukkitRunnable> runnables = new LinkedList<>();
         private Entity target;
         boolean bounced = false;
 
-        public MovingTask(LivingEntity from, Vector towards, int apS, double actualLength, Entity target, int bounces) {
+        public MovingTask(LivingEntity from, Vector towards, int apS, double actualLength, Entity target, int bounces, ItemStack stack) {
             this.from = from;
             this.towards = towards;
+            this.stack = stack;
             this.amountPerSec = apS / ((int) Math.floor(actualLength));
             this.target = target;
             this.bounces = bounces;
@@ -377,7 +386,7 @@ public class PowerBeam extends BasePower implements PowerPlain, PowerRightClick,
                         boolean isHit = false;
                         Vector step = new Vector(0, 0, 0);
                         for (int k = 0; k < partsPerTick; k++) {
-                            isHit = tryHit(from, lastLocation, bounced && hitSelfWhenBounced) || isHit;
+                            isHit = tryHit(from, lastLocation, stack, bounced && hitSelfWhenBounced) || isHit;
                             Block block = lastLocation.getBlock();
                             if (transp.contains(block.getType())) {
                                 spawnParticle(from, world, lastLocation, (int) (amountPerSec / spawnsPerBlock));
@@ -398,15 +407,18 @@ public class PowerBeam extends BasePower implements PowerPlain, PowerRightClick,
                         }
                         if (isHit) {
                             this.cancel();
+                            Context.instance().putTemp(from.getUniqueId(), DAMAGE_SOURCE_ITEM, null);
                             return;
                         }
                         if (finalI[0] >= movementTicks) {
                             this.cancel();
+                            Context.instance().putTemp(from.getUniqueId(), DAMAGE_SOURCE_ITEM, null);
                         }
                         finalI[0]++;
                     } catch (Exception ex) {
                         from.getServer().getLogger().log(Level.WARNING, "", ex);
                         this.cancel();
+                        Context.instance().putTemp(from.getUniqueId(), DAMAGE_SOURCE_ITEM, null);
                     }
                 }
             };
@@ -457,7 +469,7 @@ public class PowerBeam extends BasePower implements PowerPlain, PowerRightClick,
         world.spawnParticle(this.particle, lastLocation, i, offsetX, offsetY, offsetZ, speed, extraData);
     }
 
-    private boolean tryHit(LivingEntity from, Location loc, boolean canHitSelf) {
+    private boolean tryHit(LivingEntity from, Location loc, ItemStack stack, boolean canHitSelf) {
 
         double offsetLength = new Vector(offsetX, offsetY, offsetZ).length();
         double length = Double.isNaN(offsetLength) ? 0 : Math.max(offsetLength, 10);
@@ -474,10 +486,12 @@ public class PowerBeam extends BasePower implements PowerPlain, PowerRightClick,
                     Context.instance().putTemp(from.getUniqueId(), DAMAGE_SOURCE, getNamespacedKey().toString());
                     Context.instance().putTemp(from.getUniqueId(), OVERRIDING_DAMAGE, damage);
                     Context.instance().putTemp(from.getUniqueId(), SUPPRESS_MELEE, suppressMelee);
+                    Context.instance().putTemp(from.getUniqueId(), DAMAGE_SOURCE_ITEM, stack);
                     ((LivingEntity) entity).damage(damage, from);
                     Context.instance().putTemp(from.getUniqueId(), SUPPRESS_MELEE, null);
                     Context.instance().putTemp(from.getUniqueId(), OVERRIDING_DAMAGE, null);
                     Context.instance().putTemp(from.getUniqueId(), DAMAGE_SOURCE, null);
+                    Context.instance().putTemp(from.getUniqueId(), DAMAGE_SOURCE_ITEM, null);
                 }
                 return true;
             }
@@ -489,6 +503,7 @@ public class PowerBeam extends BasePower implements PowerPlain, PowerRightClick,
             Context.instance().putTemp(from.getUniqueId(), DAMAGE_SOURCE, getNamespacedKey().toString());
             Context.instance().putTemp(from.getUniqueId(), OVERRIDING_DAMAGE, damage);
             Context.instance().putTemp(from.getUniqueId(), SUPPRESS_MELEE, suppressMelee);
+            Context.instance().putTemp(from.getUniqueId(), DAMAGE_SOURCE_ITEM, stack);
 
             if (!collect.isEmpty()) {
                 collect.stream()
@@ -500,6 +515,7 @@ public class PowerBeam extends BasePower implements PowerPlain, PowerRightClick,
             Context.instance().putTemp(from.getUniqueId(), SUPPRESS_MELEE, null);
             Context.instance().putTemp(from.getUniqueId(), OVERRIDING_DAMAGE, null);
             Context.instance().putTemp(from.getUniqueId(), DAMAGE_SOURCE, null);
+            Context.instance().putTemp(from.getUniqueId(), DAMAGE_SOURCE_ITEM, null);
         }
         return false;
     }

@@ -178,9 +178,11 @@ public class PowerAOEDamage extends BasePower implements PowerOffhandClick, Powe
                     public void run() {
                         Context.instance().putTemp(player.getUniqueId(), OVERRIDING_DAMAGE, damage);
                         Context.instance().putTemp(player.getUniqueId(), SUPPRESS_MELEE, suppressMelee);
+                        Context.instance().putTemp(player.getUniqueId(), DAMAGE_SOURCE_ITEM, stack);
                         e.damage(damage, player);
                         Context.instance().putTemp(player.getUniqueId(), SUPPRESS_MELEE, suppressMelee);
                         Context.instance().putTemp(player.getUniqueId(), OVERRIDING_DAMAGE, null);
+                        Context.instance().putTemp(player.getUniqueId(), DAMAGE_SOURCE_ITEM, null);
                     }
                 }).runTaskLater(RPGItems.plugin, delay);
             }

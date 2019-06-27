@@ -50,6 +50,7 @@ public class Events implements Listener {
     public static final String OVERRIDING_DAMAGE = "OverridingDamage";
     public static final String SUPPRESS_MELEE = "SuppressMelee";
     public static final String SUPPRESS_PROJECTILE = "SuppressProjectile";
+    public static final String DAMAGE_SOURCE_ITEM = "DamageSourceItem";
     public static HashMap<String, Set<Integer>> drops = new HashMap<>();
 
     static HashMap<String, Integer> recipeWindows = new HashMap<>();
@@ -538,6 +539,8 @@ public class Events implements Listener {
         }
     }
 
+    //this function cann't catch event when player open their backpack.
+    //fuck there's no event when player open their backpack.
     @EventHandler(ignoreCancelled = true, priority = EventPriority.HIGHEST)
     public void onInventoryOpen(final InventoryOpenEvent e) {
         if (e.getInventory().getHolder() == null || e.getInventory().getLocation() == null)
@@ -579,6 +582,11 @@ public class Events implements Listener {
 
         Boolean suppressMelee = Context.instance().getBoolean(player.getUniqueId(), SUPPRESS_MELEE);
         Double overridingDamage = Context.instance().getDouble(player.getUniqueId(), OVERRIDING_DAMAGE);
+        Object sourceItem = Context.instance().get(player.getUniqueId(), DAMAGE_SOURCE_ITEM);
+
+        if (sourceItem!=null){
+            item = ((ItemStack) sourceItem);
+        }
 
         if (suppressMelee != null && suppressMelee) {
             if (overridingDamage != null) {
