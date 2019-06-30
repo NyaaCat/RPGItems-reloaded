@@ -335,10 +335,10 @@ public class PowerBeam extends BasePower implements PowerPlain, PowerRightClick,
                     step = towards.clone().normalize().multiply(lengthPerSpawn);
                     lastLocation.add(step);
                     towards = addGravity(towards, partsPerTick);
-                    if (isHit && homingTargetMode.equals(HomingTargetMode.MULTI_TARGET)){
-                        target = getNextTarget(from.getEyeLocation().getDirection(), from.getEyeLocation(), from);
-                    }
                     towards = homingCorrect(towards, lastLocation, target, i, () -> target = getNextTarget(from.getEyeLocation().getDirection(), from.getEyeLocation(), from));
+                }
+                if (isStepHit && homingTargetMode.equals(HomingTargetMode.MULTI_TARGET)){
+                    target = getNextTarget(from.getEyeLocation().getDirection(), from.getEyeLocation(), from);
                 }
                 if (isStepHit && !pierce) {
                     Context.instance().putTemp(from.getUniqueId(), DAMAGE_SOURCE_ITEM, null);
@@ -411,10 +411,11 @@ public class PowerBeam extends BasePower implements PowerPlain, PowerRightClick,
                             step = towards.clone().normalize().multiply(lengthPerSpawn);
                             lastLocation.add(step);
                             towards = addGravity(towards, partsPerTick);
-                            if (isHit && homingTargetMode.equals(HomingTargetMode.MULTI_TARGET)){
-                                target = getNextTarget(from.getEyeLocation().getDirection(), from.getEyeLocation(), from);
-                            }
+
                             towards = homingCorrect(towards, lastLocation, target, finalI[0], () -> target = getNextTarget(from.getEyeLocation().getDirection(), from.getEyeLocation(), from));
+                        }
+                        if (isStepHit && homingTargetMode.equals(HomingTargetMode.MULTI_TARGET)){
+                            target = getNextTarget(from.getEyeLocation().getDirection(), from.getEyeLocation(), from);
                         }
                         if (isStepHit && !pierce) {
                             this.cancel();
@@ -479,8 +480,9 @@ public class PowerBeam extends BasePower implements PowerPlain, PowerRightClick,
     }
 
     private LivingEntity getNextTarget(Vector towards, Location lastLocation, Entity from) {
-        return Utils.getLivingEntitiesInCone(from.getNearbyEntities(length, length, length).stream()
-                .filter(entity -> entity instanceof LivingEntity && !entity.equals(from))
+        int radius = Math.min(this.length, 300);
+        return Utils.getLivingEntitiesInCone(from.getNearbyEntities(radius, this.length, this.length).stream()
+                .filter(entity -> entity instanceof LivingEntity && !entity.equals(from) && !entity.isDead())
                 .map(entity -> ((LivingEntity) entity))
                         .collect(Collectors.toList())
                 , lastLocation.toVector(), homingRange, towards).stream()
