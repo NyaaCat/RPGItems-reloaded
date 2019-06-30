@@ -255,9 +255,9 @@ public class PowerBeam extends BasePower implements PowerPlain, PowerRightClick,
                             case MOBS:
                                 return !(livingEntity instanceof Player);
                             case PLAYERS:
-                                return livingEntity instanceof Player;
+                                return livingEntity instanceof Player && !((Player) livingEntity).getGameMode().equals(GameMode.SPECTATOR);
                             case ALL:
-                                break;
+                                return !(livingEntity instanceof Player) || !((Player) livingEntity).getGameMode().equals(GameMode.SPECTATOR);
                         }
                         return true;
                     })
@@ -463,10 +463,10 @@ public class PowerBeam extends BasePower implements PowerPlain, PowerRightClick,
         if ((lastLocation.distance(from.getEyeLocation()) < 1)) {
             return;
         }
-        if (from instanceof Player) {
-            ((Player) from).spawnParticle(this.particle, lastLocation, i / 2, offsetX, offsetY, offsetZ, speed, extraData);
-        }
-        world.spawnParticle(this.particle, lastLocation, i, offsetX, offsetY, offsetZ, speed, extraData);
+//        if (from instanceof Player) {
+//            ((Player) from).spawnParticle(this.particle, lastLocation, i / 2, offsetX, offsetY, offsetZ, speed, extraData);
+//        }
+        world.spawnParticle(this.particle, lastLocation, i, offsetX, offsetY, offsetZ, speed, extraData, true);
     }
 
     private boolean tryHit(LivingEntity from, Location loc, ItemStack stack, boolean canHitSelf) {
