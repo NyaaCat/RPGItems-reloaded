@@ -102,6 +102,9 @@ public class PowerBeam extends BasePower implements PowerPlain, PowerRightClick,
     public double homingRange = 30;
 
     @Property
+    public HomingTargetMode homingTargetMode = HomingTargetMode.ONE_TARGET;
+
+    @Property
     public Target homingTarget = Target.MOBS;
 
     @Property
@@ -248,20 +251,20 @@ public class PowerBeam extends BasePower implements PowerPlain, PowerRightClick,
 
         Entity target = null;
         if (from instanceof Player && homing) {
-            final Target homingTarget = this.homingTarget;
-            target = Utils.getLivingEntitiesInCone(Utils.getNearestLivingEntities(this, fromLocation, ((Player) from), Math.min(1000, length), 0), fromLocation.toVector(), homingRange, from.getEyeLocation().getDirection()).stream()
-                    .filter(livingEntity -> {
-                        switch (homingTarget) {
-                            case MOBS:
-                                return !(livingEntity instanceof Player);
-                            case PLAYERS:
-                                return livingEntity instanceof Player && !((Player) livingEntity).getGameMode().equals(GameMode.SPECTATOR);
-                            case ALL:
-                                return !(livingEntity instanceof Player) || !((Player) livingEntity).getGameMode().equals(GameMode.SPECTATOR);
-                        }
-                        return true;
-                    })
-                    .findFirst().orElse(null);
+            target = getNextTarget(from.getEyeLocation().getDirection(), fromLocation, from);
+//                    Utils.getLivingEntitiesInCone(Utils.getNearestLivingEntities(this, fromLocation, ((Player) from), Math.min(1000, length), 0), fromLocation.toVector(), homingRange, from.getEyeLocation().getDirection()).stream()
+//                    .filter(livingEntity -> {
+//                        switch (homingTarget) {
+//                            case MOBS:
+//                                return !(livingEntity instanceof Player);
+//                            case PLAYERS:
+//                                return livingEntity instanceof Player && !((Player) livingEntity).getGameMode().equals(GameMode.SPECTATOR);
+//                            case ALL:
+//                                return !(livingEntity instanceof Player) || !((Player) livingEntity).getGameMode().equals(GameMode.SPECTATOR);
+//                        }
+//                        return true;
+//                    })
+//                    .findFirst().orElse(null);
         }
 
         switch (mode) {
@@ -311,10 +314,11 @@ public class PowerBeam extends BasePower implements PowerPlain, PowerRightClick,
             double lpT = length / ((double) movementTicks);
             double partsPerTick = lpT / lengthPerSpawn;
             for (int i = 0; i < movementTicks; i++) {
-                boolean isHit = false;
+                boolean isStepHit = false;
                 Vector step = new Vector(0, 0, 0);
                 for (int j = 0; j < partsPerTick; j++) {
-                    isHit = tryHit(from, lastLocation, stack, bounced && hitSelfWhenBounced) || isHit;
+                    boolean isHit = tryHit(from, lastLocation, stack, bounced && hitSelfWhenBounced);
+                    isStepHit = isHit || isStepHit;
                     Block block = lastLocation.getBlock();
                     if (transp.contains(block.getType())) {
                         spawnParticle(from, world, lastLocation, (int) Math.ceil(apS / partsPerTick));
@@ -331,9 +335,12 @@ public class PowerBeam extends BasePower implements PowerPlain, PowerRightClick,
                     step = towards.clone().normalize().multiply(lengthPerSpawn);
                     lastLocation.add(step);
                     towards = addGravity(towards, partsPerTick);
-                    towards = homingCorrect(towards, lastLocation, target, i);
+                    if (isHit && homingTargetMode.equals(HomingTargetMode.MULTI_TARGET)){
+                        target = getNextTarget(from.getEyeLocation().getDirection(), from.getEyeLocation(), from);
+                    }
+                    towards = homingCorrect(towards, lastLocation, target, i, () -> target = getNextTarget(from.getEyeLocation().getDirection(), from.getEyeLocation(), from));
                 }
-                if (isHit) {
+                if (isStepHit && !pierce) {
                     Context.instance().putTemp(from.getUniqueId(), DAMAGE_SOURCE_ITEM, null);
                     return;
                 }
@@ -383,10 +390,11 @@ public class PowerBeam extends BasePower implements PowerPlain, PowerRightClick,
                 @Override
                 public void run() {
                     try {
-                        boolean isHit = false;
+                        boolean isStepHit = false;
                         Vector step = new Vector(0, 0, 0);
                         for (int k = 0; k < partsPerTick; k++) {
-                            isHit = tryHit(from, lastLocation, stack, bounced && hitSelfWhenBounced) || isHit;
+                            boolean isHit = tryHit(from, lastLocation, stack, bounced && hitSelfWhenBounced);
+                            isStepHit = isHit || isStepHit;
                             Block block = lastLocation.getBlock();
                             if (transp.contains(block.getType())) {
                                 spawnParticle(from, world, lastLocation, (int) (amountPerSec / spawnsPerBlock));
@@ -403,9 +411,12 @@ public class PowerBeam extends BasePower implements PowerPlain, PowerRightClick,
                             step = towards.clone().normalize().multiply(lengthPerSpawn);
                             lastLocation.add(step);
                             towards = addGravity(towards, partsPerTick);
-                            towards = homingCorrect(towards, lastLocation, target, finalI[0]);
+                            if (isHit && homingTargetMode.equals(HomingTargetMode.MULTI_TARGET)){
+                                target = getNextTarget(from.getEyeLocation().getDirection(), from.getEyeLocation(), from);
+                            }
+                            towards = homingCorrect(towards, lastLocation, target, finalI[0], () -> target = getNextTarget(from.getEyeLocation().getDirection(), from.getEyeLocation(), from));
                         }
-                        if (isHit) {
+                        if (isStepHit && !pierce) {
                             this.cancel();
                             Context.instance().putTemp(from.getUniqueId(), DAMAGE_SOURCE_ITEM, null);
                             return;
@@ -435,9 +446,12 @@ public class PowerBeam extends BasePower implements PowerPlain, PowerRightClick,
         }
     }
 
-    private Vector homingCorrect(Vector towards, Location lastLocation, Entity target, int i) {
-        if (target == null || i < stepsBeforeHoming || target.isDead()) {
+    private Vector homingCorrect(Vector towards, Location lastLocation, Entity target, int i, Runnable runnable) {
+        if (target == null || i < stepsBeforeHoming) {
             return towards;
+        }
+        if (target.isDead()){
+            runnable.run();
         }
         Location targetLocation;
         if (target instanceof LivingEntity) {
@@ -452,11 +466,36 @@ public class PowerBeam extends BasePower implements PowerPlain, PowerRightClick,
         Vector crossProduct = clone.clone().getCrossProduct(targetDirection);
         double actualAng = homingAngle / spawnsPerBlock;
         if (angle > Math.toRadians(actualAng)) {
+            //↓a legacy but functionable way to rotate.
+            //will create a enlarging circle
             clone.add(clone.clone().getCrossProduct(crossProduct).normalize().multiply(-1 * Math.tan(actualAng)));
+            // ↓a better way to rotate.
+            // will create a exact circle.
+//            clone.rotateAroundAxis(crossProduct, actualAng);
         } else {
             clone = targetDirection.normalize();
         }
         return clone;
+    }
+
+    private LivingEntity getNextTarget(Vector towards, Location lastLocation, Entity from) {
+        return Utils.getLivingEntitiesInCone(from.getNearbyEntities(length, length, length).stream()
+                .filter(entity -> entity instanceof LivingEntity && !entity.equals(from))
+                .map(entity -> ((LivingEntity) entity))
+                        .collect(Collectors.toList())
+                , lastLocation.toVector(), homingRange, towards).stream()
+                .filter(livingEntity -> {
+                    switch (homingTarget) {
+                        case MOBS:
+                            return !(livingEntity instanceof Player);
+                        case PLAYERS:
+                            return livingEntity instanceof Player && !((Player) livingEntity).getGameMode().equals(GameMode.SPECTATOR);
+                        case ALL:
+                            return !(livingEntity instanceof Player) || !((Player) livingEntity).getGameMode().equals(GameMode.SPECTATOR);
+                    }
+                    return true;
+                })
+                .findFirst().orElse(null);
     }
 
     private void spawnParticle(LivingEntity from, World world, Location lastLocation, int i) {
@@ -474,9 +513,10 @@ public class PowerBeam extends BasePower implements PowerPlain, PowerRightClick,
         double offsetLength = new Vector(offsetX, offsetY, offsetZ).length();
         double length = Double.isNaN(offsetLength) ? 0 : Math.max(offsetLength, 10);
         Collection<Entity> candidates = from.getWorld().getNearbyEntities(loc, length, length, length);
+        boolean result = false;
         if (!pierce) {
             List<Entity> collect = candidates.stream()
-                    .filter(entity -> (entity instanceof LivingEntity) && (canHitSelf || !entity.equals(from)))
+                    .filter(entity -> (entity instanceof LivingEntity) && (canHitSelf || !entity.equals(from)) && entity.isDead())
                     .filter(entity -> canHit(loc, entity))
                     .limit(1)
                     .collect(Collectors.toList());
@@ -511,13 +551,14 @@ public class PowerBeam extends BasePower implements PowerPlain, PowerRightClick,
                         .forEach(livingEntity -> {
                             livingEntity.damage(damage, from);
                         });
+                result = true;
             }
             Context.instance().putTemp(from.getUniqueId(), SUPPRESS_MELEE, null);
             Context.instance().putTemp(from.getUniqueId(), OVERRIDING_DAMAGE, null);
             Context.instance().putTemp(from.getUniqueId(), DAMAGE_SOURCE, null);
             Context.instance().putTemp(from.getUniqueId(), DAMAGE_SOURCE_ITEM, null);
         }
-        return false;
+        return result;
     }
 
     private boolean canHit(Location loc, Entity entity) {
@@ -560,5 +601,9 @@ public class PowerBeam extends BasePower implements PowerPlain, PowerRightClick,
 
     enum Target {
         MOBS, PLAYERS, ALL
+    }
+
+    private enum HomingTargetMode {
+        ONE_TARGET, MULTI_TARGET;
     }
 }
