@@ -165,17 +165,17 @@ public class PowerBeam extends BasePower implements PowerPlain, PowerRightClick,
 
     @Override
     public PowerResult<Void> leftClick(Player player, ItemStack stack, PlayerInteractEvent event) {
-        return beam(player, stack);
+        return fire(player, stack);
     }
 
     @Override
     public PowerResult<Void> rightClick(Player player, ItemStack stack, PlayerInteractEvent event) {
-        return beam(player, stack);
+        return fire(player, stack);
     }
 
     @Override
     public PowerResult<Void> sneak(Player player, ItemStack stack, PlayerToggleSneakEvent event) {
-        return beam(player, stack);
+        return fire(player, stack);
     }
 
     @Override
@@ -185,22 +185,22 @@ public class PowerBeam extends BasePower implements PowerPlain, PowerRightClick,
 
     @Override
     public PowerResult<Void> sprint(Player player, ItemStack stack, PlayerToggleSprintEvent event) {
-        return beam(player, stack);
+        return fire(player, stack);
     }
 
     @Override
     public PowerResult<Float> bowShoot(Player player, ItemStack itemStack, EntityShootBowEvent e) {
-        return beam(player, itemStack).with(e.getForce());
+        return fire(player, itemStack).with(e.getForce());
     }
 
     @Override
     public PowerResult<Double> hit(Player player, ItemStack stack, LivingEntity entity, double damage, EntityDamageByEntityEvent event) {
-        return beam(player, stack).with(event.getDamage());
+        return fire(player, stack).with(event.getDamage());
     }
 
     @Override
     public PowerResult<Double> takeHit(Player target, ItemStack stack, double damage, EntityDamageEvent event) {
-        return beam(target, stack).with(event.getDamage());
+        return fire(target, stack).with(event.getDamage());
     }
 
     private PowerResult<Void> beam(LivingEntity from, ItemStack stack) {
