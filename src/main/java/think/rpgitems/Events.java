@@ -513,6 +513,21 @@ public class Events implements Listener {
             ItemManager.save();
             e.getPlayer().sendMessage(ChatColor.AQUA + "Recipe set for " + item.getName());
         }
+        updatePlayerInventory(e.getInventory(), e);
+    }
+
+    private void updatePlayerInventory(Inventory inventory, InventoryEvent e) {
+        Inventory in = inventory;
+        Iterator<ItemStack> it = in.iterator();
+        try {
+            while (it.hasNext()) {
+                ItemStack item = it.next();
+                ItemManager.toRPGItem(item).ifPresent(rpgItem -> rpgItem.updateItem(item));
+            }
+        } catch (ArrayIndexOutOfBoundsException ex) {
+            logger.log(Level.WARNING, "Exception when InventoryOpenEvent. May be harmless.", ex);
+            // Fix for the bug with anvils in craftbukkit
+        }
     }
 
     @EventHandler(ignoreCancelled = true, priority = EventPriority.HIGHEST)
@@ -546,17 +561,7 @@ public class Events implements Listener {
         if (e.getInventory().getHolder() == null || e.getInventory().getLocation() == null)
             return;
         if (e.getInventory().getType() != InventoryType.CHEST) {
-            Inventory in = e.getInventory();
-            Iterator<ItemStack> it = in.iterator();
-            try {
-                while (it.hasNext()) {
-                    ItemStack item = it.next();
-                    ItemManager.toRPGItem(item).ifPresent(rpgItem -> rpgItem.updateItem(item));
-                }
-            } catch (ArrayIndexOutOfBoundsException ex) {
-                logger.log(Level.WARNING, "Exception when InventoryOpenEvent. May be harmless.", ex);
-                // Fix for the bug with anvils in craftbukkit
-            }
+            updatePlayerInventory(e.getInventory(), e);
         }
     }
 
