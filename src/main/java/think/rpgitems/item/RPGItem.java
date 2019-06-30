@@ -98,6 +98,7 @@ public class RPGItem {
     private int damageMin = 0;
     private int damageMax = 3;
     private DamageMode damageMode = DamageMode.FIXED;
+    private AttributeMode attributeMode = AttributeMode.PARTIAL_UPDATE;
     private int armour = 0;
     private String type = I18n.format("item.type");
     private String hand = I18n.format("item.hand");
@@ -217,6 +218,7 @@ public class RPGItem {
         setDamageMin(s.getInt("damageMin"));
         setDamageMax(s.getInt("damageMax"));
         setArmour(s.getInt("armour", 0), false);
+        setAttributeMode(AttributeMode.valueOf(s.getString("attributemode", "PARTIAL_UPDATE")));
         String materialName = s.getString("item");
         setItem(MaterialUtils.getMaterial(materialName, Bukkit.getConsoleSender()));
         ItemMeta itemMeta = Bukkit.getItemFactory().getItemMeta(getItem());
@@ -408,6 +410,7 @@ public class RPGItem {
         s.set("armour", getArmour());
         s.set("type", getType().replaceAll("" + COLOR_CHAR, "&"));
         s.set("hand", getHand().replaceAll("" + COLOR_CHAR, "&"));
+        s.set("attributemode", attributeMode.name());
         ArrayList<String> descriptionConv = new ArrayList<>(getDescription());
         for (int i = 0; i < descriptionConv.size(); i++) {
             descriptionConv.set(i, descriptionConv.get(i).replaceAll("" + COLOR_CHAR, "&"));
@@ -642,8 +645,15 @@ public class RPGItem {
 
     private ItemMeta refreshAttributeModifiers(ItemMeta itemMeta) {
         List<PowerAttributeModifier> attributeModifiers = getPower(PowerAttributeModifier.class);
+        Multimap<Attribute, AttributeModifier> old = itemMeta.getAttributeModifiers();
+        if (attributeMode.equals(AttributeMode.FULL_UPDATE)){
+            if (old!= null && !old.isEmpty()){
+                old.forEach((attribute, attributeModifier) -> {
+                    itemMeta.removeAttributeModifier(attribute, attributeModifier);
+                });
+            }
+        }
         if (!attributeModifiers.isEmpty()) {
-            Multimap<Attribute, AttributeModifier> old = itemMeta.getAttributeModifiers();
             for (PowerAttributeModifier attributeModifier : attributeModifiers) {
                 Attribute attribute = attributeModifier.attribute;
                 UUID uuid = new UUID(attributeModifier.uuidMost, attributeModifier.uuidLeast);
@@ -1734,6 +1744,14 @@ public class RPGItem {
         this.showPowerText = showPowerText;
     }
 
+    public void setAttributeMode(AttributeMode attributeMode) {
+        this.attributeMode = attributeMode;
+    }
+
+    public AttributeMode getAttributeMode() {
+        return attributeMode;
+    }
+
     @LangKey(type = LangKeyType.SUFFIX)
     public enum DamageMode {
         FIXED,
@@ -1760,6 +1778,10 @@ public class RPGItem {
             this.colour = colour;
             this.cCode = code;
         }
+    }
+
+    public enum AttributeMode {
+        FULL_UPDATE, PARTIAL_UPDATE;
     }
 
     @LangKey(type = LangKeyType.SUFFIX)

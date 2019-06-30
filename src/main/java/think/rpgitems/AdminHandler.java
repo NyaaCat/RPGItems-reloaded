@@ -56,6 +56,8 @@ import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 import static think.rpgitems.item.RPGItem.*;
+import static think.rpgitems.item.RPGItem.AttributeMode.FULL_UPDATE;
+import static think.rpgitems.item.RPGItem.AttributeMode.PARTIAL_UPDATE;
 import static think.rpgitems.power.Utils.rethrow;
 import static think.rpgitems.utils.ItemTagUtils.getInt;
 import static think.rpgitems.utils.ItemTagUtils.getTag;
@@ -696,6 +698,27 @@ public class AdminHandler extends RPGCommandReceiver {
         } catch (UnknownExtensionException e) {
             msg(sender, "message.error.unknown.extension", e.getName());
         }
+    }
+
+    @SubCommand("attributemode")
+    @Attribute("item:FULL_UPDATE,PARTIAL_UPDATE")
+    public void setAttributeMode(CommandSender sender, Arguments arguments){
+        RPGItem item = getItem(arguments.nextString(), sender);
+        switch (arguments.top()){
+            case "FULL_UPDATE":
+                item.setAttributeMode(FULL_UPDATE);
+                new Message("").append(I18n.format("message.attributemode.set", "FULL_UPDATE"), item.toItemStack())
+                        .send(sender);
+                break;
+            case "PARTIAL_UPDATE":
+                item.setAttributeMode(PARTIAL_UPDATE);
+                new Message("").append(I18n.format("message.attributemode.set", "PARTIAL_UPDATE"), item.toItemStack())
+                        .send(sender);
+                break;
+            default:
+                throw new BadCommandException("accepted value: FULL_UPDATE,PARTIAL_UPDATE");
+        }
+        ItemManager.save(item);
     }
 
     @SubCommand("description")

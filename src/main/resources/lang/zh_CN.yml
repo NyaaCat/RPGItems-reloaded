@@ -315,6 +315,8 @@ message:
   model:
     to: 物品已转换为模型
     is: 这是一个物品模型
+  attributemode:
+    set: 物品 {itemName} 的 attribute mode 设置为 %s
 power:
   airborne: 攻击在滑翔时增加 %d%%
   charge: 攻击随速度增加，并在疾跑时增加 %d%%

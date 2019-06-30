@@ -314,6 +314,8 @@ message:
   model:
     to: Modelled item
     is: This is a model item
+  attributemode:
+    set: item {itemName} 's attribute mode set to %s
 power:
   airborne: 'Damage increase by %d%% when gliding'
   charge: 'Damage increase with speed, by %d%% when sprinting'
