@@ -518,7 +518,7 @@ public class PowerBeam extends BasePower implements PowerPlain, PowerRightClick,
         boolean result = false;
         if (!pierce) {
             List<Entity> collect = candidates.stream()
-                    .filter(entity -> (entity instanceof LivingEntity) && (canHitSelf || !entity.equals(from)) && entity.isDead())
+                    .filter(entity -> (entity instanceof LivingEntity) && (canHitSelf || !entity.equals(from)) && !entity.isDead())
                     .filter(entity -> canHit(loc, entity))
                     .limit(1)
                     .collect(Collectors.toList());
