@@ -74,7 +74,7 @@ public class PowerPotionHit extends BasePower implements PowerHit, PowerLivingEn
             return PowerResult.noop();
         }
         if (!getItem().consumeDurability(stack, cost)) return PowerResult.cost();
-        entity.addPotionEffect(new PotionEffect(type, duration, amplifier));
+        entity.addPotionEffect(new PotionEffect(type, duration, amplifier), true);
         return PowerResult.ok();
     }
 }
