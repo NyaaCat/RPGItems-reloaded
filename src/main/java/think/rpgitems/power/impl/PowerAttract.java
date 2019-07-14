@@ -4,6 +4,8 @@ import org.bukkit.Location;
 import org.bukkit.entity.Entity;
 import org.bukkit.entity.LivingEntity;
 import org.bukkit.entity.Player;
+import org.bukkit.event.entity.EntityDamageByEntityEvent;
+import org.bukkit.event.entity.EntityDamageEvent;
 import org.bukkit.event.player.PlayerInteractEvent;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.scheduler.BukkitRunnable;
@@ -27,7 +29,7 @@ import static think.rpgitems.power.Utils.getNearbyEntities;
  */
 @SuppressWarnings("WeakerAccess")
 @PowerMeta(defaultTrigger = "RIGHT_CLICK", withSelectors = true, generalInterface = PowerPlain.class)
-public class PowerAttract extends BasePower implements PowerTick, PowerLeftClick, PowerRightClick, PowerPlain {
+public class PowerAttract extends BasePower implements PowerTick, PowerLeftClick, PowerRightClick, PowerPlain, PowerSneaking, PowerHurt, PowerHitTaken {
     /**
      * Maximum radius
      */
@@ -71,6 +73,25 @@ public class PowerAttract extends BasePower implements PowerTick, PowerLeftClick
     @Property
     public boolean attractPlayer;
 
+    @Property
+    public boolean requireHurtByEntity = true;
+
+    @Override
+    public PowerResult<Double> takeHit(Player target, ItemStack stack, double damage, EntityDamageEvent event) {
+        if (!requireHurtByEntity || event instanceof EntityDamageByEntityEvent) {
+            return fire(target, stack).with(damage);
+        }
+        return PowerResult.noop();
+    }
+
+    @Override
+    public PowerResult<Void> hurt(Player target, ItemStack stack, EntityDamageEvent event) {
+        if (!requireHurtByEntity || event instanceof EntityDamageByEntityEvent) {
+            return fire(target, stack);
+        }
+        return PowerResult.noop();
+    }
+
     @Override
     public String getName() {
         return "attract";
@@ -83,6 +104,11 @@ public class PowerAttract extends BasePower implements PowerTick, PowerLeftClick
 
     @Override
     public PowerResult<Void> tick(Player player, ItemStack stack) {
+        return attract(player, stack);
+    }
+
+    @Override
+    public PowerResult<Void> sneaking(Player player, ItemStack stack) {
         return attract(player, stack);
     }
 
