@@ -24,7 +24,7 @@ import java.util.Optional;
  * When right clicked, spawn some particles around the user.
  * </p>
  */
-@PowerMeta(generalInterface = PowerPlain.class)
+@PowerMeta(defaultTrigger = "RIGHT_CLICK", generalInterface = PowerPlain.class)
 public class PowerParticle extends BasePower implements PowerRightClick, PowerLeftClick, PowerPlain, PowerHit, PowerHitTaken, PowerHurt {
     /**
      * Name of particle effect
