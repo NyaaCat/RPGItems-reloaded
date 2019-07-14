@@ -73,6 +73,10 @@ public class Context {
         storage.computeIfAbsent(context, (ignored) -> new ExpiringMap<>()).putTemp(key, obj);
     }
 
+    public void removeTemp(UUID context, String key){
+        storage.computeIfAbsent(context, uuid -> new ExpiringMap<>()).remove(key);
+    }
+
     public void put(UUID context, String key, Object obj, long expire) {
         storage.computeIfAbsent(context, (ignored) -> new ExpiringMap<>()).put(key, obj, expire);
     }
