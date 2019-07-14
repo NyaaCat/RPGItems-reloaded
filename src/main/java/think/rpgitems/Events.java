@@ -516,12 +516,43 @@ public class Events implements Listener {
         updatePlayerInventory(e.getInventory(), e);
     }
 
+    List<UUID> switchCooldown = new ArrayList<>();
+    @EventHandler
+    public void onPlayerChangeItem(PlayerItemHeldEvent ev){
+        ItemStack item = ev.getPlayer().getInventory().getItem(ev.getNewSlot());
+//        ItemStack mainhandItem = ev.getPlayer().getInventory().getItemInMainHand();
+        updteItem(item);
+        if (switchCooldown.contains(ev.getPlayer().getUniqueId()))return;
+        ItemStack[] armorContents = ev.getPlayer().getInventory().getArmorContents();
+        for (int i = 0; i < armorContents.length; i++) {
+            ItemStack stack = armorContents[i];
+            updteItem(stack);
+        }
+        ItemStack offhandItem = ev.getPlayer().getInventory().getItemInOffHand();
+        updteItem(offhandItem);
+        switchCooldown.add(ev.getPlayer().getUniqueId());
+        new BukkitRunnable(){
+            @Override
+            public void run() {
+                switchCooldown.remove(ev.getPlayer().getUniqueId());
+            }
+        }.runTaskLater(plugin, 20);
+    }
+
+    private void updteItem(ItemStack itemStack){
+        RPGItem rpgItem = ItemManager.toRPGItem(itemStack).orElse(null);
+        if (rpgItem!=null){
+            rpgItem.updateItem(itemStack);
+        }
+    }
+
     private void updatePlayerInventory(Inventory inventory, InventoryEvent e) {
         Inventory in = inventory;
         Iterator<ItemStack> it = in.iterator();
         try {
             while (it.hasNext()) {
                 ItemStack item = it.next();
+                ItemManager.toRPGItem(item).ifPresent(rpgItem -> rpgItem.updateItem(item));
                 ItemManager.toRPGItem(item).ifPresent(rpgItem -> rpgItem.updateItem(item));
             }
         } catch (ArrayIndexOutOfBoundsException ex) {

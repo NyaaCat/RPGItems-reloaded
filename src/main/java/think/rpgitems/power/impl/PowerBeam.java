@@ -206,6 +206,11 @@ public class PowerBeam extends BasePower implements PowerPlain, PowerRightClick,
         return fire(target, stack).with(event.getDamage());
     }
 
+    @Override
+    public PowerResult<Void> hurt(Player target, ItemStack stack, EntityDamageEvent event) {
+        return fire(target, stack);
+    }
+
     private PowerResult<Void> beam(LivingEntity from, ItemStack stack) {
         if (burstCount > 0) {
             for (int i = 0; i < burstCount; i++) {
@@ -277,14 +282,9 @@ public class PowerBeam extends BasePower implements PowerPlain, PowerRightClick,
         }
         return PowerResult.ok();
     }
-
     private Random random = new Random();
-    private Vector yUnit = new Vector(0, 1, 0);
 
-    @Override
-    public PowerResult<Void> hurt(Player target, ItemStack stack, EntityDamageEvent event) {
-        return beam(target, stack);
-    }
+    private Vector yUnit = new Vector(0, 1, 0);
 
     class PlainTask extends BukkitRunnable {
         private int bounces;
@@ -328,7 +328,7 @@ public class PowerBeam extends BasePower implements PowerPlain, PowerRightClick,
                             bounced = true;
                             makeBounce(block, towards, lastLocation.clone().subtract(step));
                         } else {
-                            Context.instance().putTemp(from.getUniqueId(), DAMAGE_SOURCE_ITEM, null);
+                            Context.instance().removeTemp(from.getUniqueId(), DAMAGE_SOURCE_ITEM);
                             return;
                         }
                     }
@@ -341,11 +341,11 @@ public class PowerBeam extends BasePower implements PowerPlain, PowerRightClick,
                     target = getNextTarget(from.getEyeLocation().getDirection(), from.getEyeLocation(), from);
                 }
                 if (isStepHit && !pierce) {
-                    Context.instance().putTemp(from.getUniqueId(), DAMAGE_SOURCE_ITEM, null);
+                    Context.instance().removeTemp(from.getUniqueId(), DAMAGE_SOURCE_ITEM);
                     return;
                 }
             }
-            Context.instance().putTemp(from.getUniqueId(), DAMAGE_SOURCE_ITEM, null);
+            Context.instance().removeTemp(from.getUniqueId(), DAMAGE_SOURCE_ITEM);
         }
 
 
@@ -419,18 +419,18 @@ public class PowerBeam extends BasePower implements PowerPlain, PowerRightClick,
                         }
                         if (isStepHit && !pierce) {
                             this.cancel();
-                            Context.instance().putTemp(from.getUniqueId(), DAMAGE_SOURCE_ITEM, null);
+                            Context.instance().removeTemp(from.getUniqueId(), DAMAGE_SOURCE_ITEM);
                             return;
                         }
                         if (finalI[0] >= movementTicks) {
                             this.cancel();
-                            Context.instance().putTemp(from.getUniqueId(), DAMAGE_SOURCE_ITEM, null);
+                            Context.instance().removeTemp(from.getUniqueId(), DAMAGE_SOURCE_ITEM);
                         }
                         finalI[0]++;
                     } catch (Exception ex) {
                         from.getServer().getLogger().log(Level.WARNING, "", ex);
                         this.cancel();
-                        Context.instance().putTemp(from.getUniqueId(), DAMAGE_SOURCE_ITEM, null);
+                        Context.instance().removeTemp(from.getUniqueId(), DAMAGE_SOURCE_ITEM);
                     }
                 }
             };
@@ -533,7 +533,7 @@ public class PowerBeam extends BasePower implements PowerPlain, PowerRightClick,
                     Context.instance().putTemp(from.getUniqueId(), SUPPRESS_MELEE, null);
                     Context.instance().putTemp(from.getUniqueId(), OVERRIDING_DAMAGE, null);
                     Context.instance().putTemp(from.getUniqueId(), DAMAGE_SOURCE, null);
-                    Context.instance().putTemp(from.getUniqueId(), DAMAGE_SOURCE_ITEM, null);
+                    Context.instance().removeTemp(from.getUniqueId(), DAMAGE_SOURCE_ITEM);
                 }
                 return true;
             }
@@ -558,7 +558,8 @@ public class PowerBeam extends BasePower implements PowerPlain, PowerRightClick,
             Context.instance().putTemp(from.getUniqueId(), SUPPRESS_MELEE, null);
             Context.instance().putTemp(from.getUniqueId(), OVERRIDING_DAMAGE, null);
             Context.instance().putTemp(from.getUniqueId(), DAMAGE_SOURCE, null);
-            Context.instance().putTemp(from.getUniqueId(), DAMAGE_SOURCE_ITEM, null);
+            Context.instance().removeTemp(from.getUniqueId(), DAMAGE_SOURCE_ITEM);
+
         }
         return result;
     }
