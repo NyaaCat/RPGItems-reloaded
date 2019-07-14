@@ -6,6 +6,7 @@ import org.bukkit.entity.Entity;
 import org.bukkit.entity.LivingEntity;
 import org.bukkit.entity.Player;
 import org.bukkit.event.entity.EntityDamageByEntityEvent;
+import org.bukkit.event.entity.EntityDamageEvent;
 import org.bukkit.event.entity.EntityShootBowEvent;
 import org.bukkit.event.player.PlayerInteractEvent;
 import org.bukkit.inventory.ItemStack;
@@ -20,7 +21,7 @@ import static think.rpgitems.power.Utils.checkCooldown;
  * </p>
  */
 @PowerMeta(defaultTrigger = "RIGHT_CLICK", generalInterface = PowerPlain.class)
-public class PowerSound extends BasePower implements PowerLeftClick, PowerRightClick, PowerPlain, PowerHit, PowerBowShoot {
+public class PowerSound extends BasePower implements PowerLeftClick, PowerRightClick, PowerPlain, PowerHit, PowerBowShoot, PowerHitTaken, PowerHurt {
     /**
      * Pitch of sound
      */
@@ -51,6 +52,25 @@ public class PowerSound extends BasePower implements PowerLeftClick, PowerRightC
      */
     @Property
     public long cooldown = 20;
+
+    @Property
+    public boolean requireHurtByEntity = true;
+
+    @Override
+    public PowerResult<Double> takeHit(Player target, ItemStack stack, double damage, EntityDamageEvent event) {
+        if (!requireHurtByEntity || event instanceof EntityDamageByEntityEvent) {
+            return fire(target, stack).with(damage);
+        }
+        return PowerResult.noop();
+    }
+
+    @Override
+    public PowerResult<Void> hurt(Player target, ItemStack stack, EntityDamageEvent event) {
+        if (!requireHurtByEntity || event instanceof EntityDamageByEntityEvent) {
+            return fire(target, stack);
+        }
+        return PowerResult.noop();
+    }
 
     @Override
     public String getName() {
@@ -85,7 +105,6 @@ public class PowerSound extends BasePower implements PowerLeftClick, PowerRightC
         return PowerResult.ok();
     }
 
-
     @Override
     public PowerResult<Double> hit(Player player, ItemStack stack, LivingEntity entity, double damage, EntityDamageByEntityEvent event) {
         if (!checkCooldown(this, player, cooldown, true, true)) return PowerResult.cd();
@@ -94,7 +113,6 @@ public class PowerSound extends BasePower implements PowerLeftClick, PowerRightC
 
     @Override
     public PowerResult<Float> bowShoot(Player player, ItemStack stack, EntityShootBowEvent event) {
-        if (!checkCooldown(this, player, cooldown, true, true)) return PowerResult.cd();
-        return sound(player, stack).with(event.getForce());
+        return fire(player, stack).with(event.getForce());
     }
 }
