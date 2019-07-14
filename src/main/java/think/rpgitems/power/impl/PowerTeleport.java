@@ -31,7 +31,7 @@ import static think.rpgitems.power.Utils.checkCooldown;
  */
 @SuppressWarnings("WeakerAccess")
 @PowerMeta(defaultTrigger = {"RIGHT_CLICK", "PROJECTILE_HIT"})
-public class PowerTeleport extends BasePower implements PowerSneak, PowerLeftClick, PowerSprint, PowerRightClick, PowerProjectileHit {
+public class PowerTeleport extends BasePower implements PowerSneak, PowerLeftClick, PowerSprint, PowerRightClick, PowerProjectileHit, PowerPlain {
 
     /**
      * Maximum distance.

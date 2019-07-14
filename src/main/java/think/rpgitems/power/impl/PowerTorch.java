@@ -13,10 +13,7 @@ import org.bukkit.metadata.FixedMetadataValue;
 import org.bukkit.scheduler.BukkitRunnable;
 import think.rpgitems.I18n;
 import think.rpgitems.RPGItems;
-import think.rpgitems.power.PowerMeta;
-import think.rpgitems.power.PowerResult;
-import think.rpgitems.power.PowerRightClick;
-import think.rpgitems.power.Property;
+import think.rpgitems.power.*;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -31,8 +28,8 @@ import static think.rpgitems.power.Utils.checkCooldown;
  * The torch power will shoots torches to light up an area.
  * </p>
  */
-@PowerMeta(immutableTrigger = true)
-public class PowerTorch extends BasePower implements PowerRightClick {
+@PowerMeta
+public class PowerTorch extends BasePower implements PowerPlain {
     /**
      * Cooldown time of this power
      */
@@ -45,7 +42,7 @@ public class PowerTorch extends BasePower implements PowerRightClick {
     public int cost = 0;
 
     @Override
-    public PowerResult<Void> rightClick(final Player player, ItemStack stack, PlayerInteractEvent event) {
+    public PowerResult<Void> fire(final Player player, ItemStack stack) {
         if (!checkCooldown(this, player, cooldown, true, true)) return PowerResult.cd();
         if (!getItem().consumeDurability(stack, cost)) return PowerResult.cost();
         player.playSound(player.getLocation(), Sound.ITEM_FLINTANDSTEEL_USE, 1.0f, 0.8f);
