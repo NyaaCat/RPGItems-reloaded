@@ -10,6 +10,9 @@ import org.bukkit.ChatColor;
 import org.bukkit.Material;
 import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.entity.Player;
+import org.bukkit.event.entity.EntityDamageByEntityEvent;
+import org.bukkit.event.entity.EntityDamageEvent;
+import org.bukkit.event.entity.EntityShootBowEvent;
 import org.bukkit.event.player.PlayerInteractEvent;
 import org.bukkit.inventory.Inventory;
 import org.bukkit.inventory.ItemStack;
@@ -27,7 +30,7 @@ import static think.rpgitems.power.Utils.checkCooldown;
  * </p>
  */
 @PowerMeta(defaultTrigger = "RIGHT_CLICK", generalInterface = PowerPlain.class)
-public class PowerRepair extends BasePower implements PowerRightClick, PowerLeftClick, PowerPlain {
+public class PowerRepair extends BasePower implements PowerRightClick, PowerLeftClick, PowerPlain, PowerHitTaken, PowerHurt, PowerBowShoot {
 
     /**
      * Cooldown time of this power
@@ -68,6 +71,25 @@ public class PowerRepair extends BasePower implements PowerRightClick, PowerLeft
     @Property
     public boolean showFailMsg = true;
 
+    @Property
+    public boolean requireHurtByEntity = true;
+
+    @Override
+    public PowerResult<Double> takeHit(Player target, ItemStack stack, double damage, EntityDamageEvent event) {
+        if (!requireHurtByEntity || event instanceof EntityDamageByEntityEvent) {
+            return fire(target, stack).with(damage);
+        }
+        return PowerResult.noop();
+    }
+
+    @Override
+    public PowerResult<Void> hurt(Player target, ItemStack stack, EntityDamageEvent event) {
+        if (!requireHurtByEntity || event instanceof EntityDamageByEntityEvent) {
+            return fire(target, stack);
+        }
+        return PowerResult.noop();
+    }
+
     @Override
     public void init(ConfigurationSection section) {
         if (section.isBoolean("isRight")) {
@@ -100,6 +122,11 @@ public class PowerRepair extends BasePower implements PowerRightClick, PowerLeft
             return fire(player, stack);
         }
         return PowerResult.noop();
+    }
+
+    @Override
+    public PowerResult<Float> bowShoot(Player player, ItemStack itemStack, EntityShootBowEvent e) {
+        return fire(player, itemStack).with(e.getForce());
     }
 
     @Override
