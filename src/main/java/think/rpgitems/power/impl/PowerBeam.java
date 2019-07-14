@@ -136,6 +136,9 @@ public class PowerBeam extends BasePower implements PowerPlain, PowerRightClick,
     @Property
     public double speed = 0;
 
+    @Property
+    public boolean requireHurtByEntity = true;
+
 
     /**
      * Whether to suppress the hit trigger
@@ -203,7 +206,10 @@ public class PowerBeam extends BasePower implements PowerPlain, PowerRightClick,
 
     @Override
     public PowerResult<Double> takeHit(Player target, ItemStack stack, double damage, EntityDamageEvent event) {
-        return fire(target, stack).with(event.getDamage());
+        if (!requireHurtByEntity || event instanceof EntityDamageByEntityEvent) {
+            return fire(target, stack).with(event.getDamage());
+        }
+        return PowerResult.noop();
     }
 
     private PowerResult<Void> beam(LivingEntity from, ItemStack stack) {
@@ -283,7 +289,10 @@ public class PowerBeam extends BasePower implements PowerPlain, PowerRightClick,
 
     @Override
     public PowerResult<Void> hurt(Player target, ItemStack stack, EntityDamageEvent event) {
-        return beam(target, stack);
+        if (!requireHurtByEntity || event instanceof EntityDamageByEntityEvent) {
+            return fire(target, stack);
+        }
+        return PowerResult.noop();
     }
 
     class PlainTask extends BukkitRunnable {
