@@ -9,6 +9,7 @@ import org.bukkit.entity.Entity;
 import org.bukkit.entity.LivingEntity;
 import org.bukkit.entity.Player;
 import org.bukkit.event.entity.EntityDamageByEntityEvent;
+import org.bukkit.event.entity.EntityDamageEvent;
 import org.bukkit.event.player.PlayerInteractEvent;
 import org.bukkit.inventory.ItemStack;
 import think.rpgitems.AdminHandler;
@@ -24,7 +25,7 @@ import java.util.Optional;
  * </p>
  */
 @PowerMeta(generalInterface = PowerPlain.class)
-public class PowerParticle extends BasePower implements PowerRightClick, PowerLeftClick, PowerPlain, PowerHit {
+public class PowerParticle extends BasePower implements PowerRightClick, PowerLeftClick, PowerPlain, PowerHit, PowerHitTaken, PowerHurt {
     /**
      * Name of particle effect
      */
@@ -71,6 +72,25 @@ public class PowerParticle extends BasePower implements PowerRightClick, PowerLe
 
     @Property
     public boolean force = false;
+
+    @Property
+    public boolean requireHurtByEntity = true;
+
+    @Override
+    public PowerResult<Double> takeHit(Player target, ItemStack stack, double damage, EntityDamageEvent event) {
+        if (!requireHurtByEntity || event instanceof EntityDamageByEntityEvent) {
+            return fire(target, stack).with(damage);
+        }
+        return PowerResult.noop();
+    }
+
+    @Override
+    public PowerResult<Void> hurt(Player target, ItemStack stack, EntityDamageEvent event) {
+        if (!requireHurtByEntity || event instanceof EntityDamageByEntityEvent) {
+            return fire(target, stack);
+        }
+        return PowerResult.noop();
+    }
 
     private Object data = null;
 

@@ -19,7 +19,7 @@ import static think.rpgitems.power.Utils.checkCooldown;
  */
 @SuppressWarnings("WeakerAccess")
 @PowerMeta(immutableTrigger = true)
-public class PowerParticleTick extends PowerParticle implements PowerTick {
+public class PowerParticleTick extends PowerParticle implements PowerTick, PowerSneaking {
     /**
      * Interval of particle effect
      */
@@ -38,6 +38,16 @@ public class PowerParticleTick extends PowerParticle implements PowerTick {
 
     @Override
     public PowerResult<Void> tick(Player player, ItemStack stack) {
+        return fire(player, stack);
+    }
+
+    @Override
+    public PowerResult<Void> sneaking(Player player, ItemStack stack) {
+        return fire(player, stack);
+    }
+
+    @Override
+    public PowerResult<Void> fire(Player player, ItemStack stack) {
         if (!checkCooldown(this, player, interval, false, true)) return PowerResult.cd();
         if (!getItem().consumeDurability(stack, cost)) return PowerResult.cost();
         spawnParticle(player);

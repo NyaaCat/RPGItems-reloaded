@@ -8,14 +8,15 @@ import org.bukkit.entity.Entity;
 import org.bukkit.entity.ItemFrame;
 import org.bukkit.entity.Painting;
 import org.bukkit.entity.Player;
+import org.bukkit.event.entity.EntityDamageByEntityEvent;
+import org.bukkit.event.entity.EntityDamageEvent;
 import org.bukkit.event.player.PlayerInteractEvent;
+import org.bukkit.event.player.PlayerToggleSneakEvent;
+import org.bukkit.event.player.PlayerToggleSprintEvent;
 import org.bukkit.inventory.ItemStack;
 import think.rpgitems.I18n;
 import think.rpgitems.RPGItems;
-import think.rpgitems.power.PowerMeta;
-import think.rpgitems.power.PowerResult;
-import think.rpgitems.power.PowerRightClick;
-import think.rpgitems.power.Property;
+import think.rpgitems.power.*;
 
 import java.util.HashSet;
 import java.util.Set;
@@ -32,7 +33,7 @@ import static think.rpgitems.power.Utils.checkCooldown;
  */
 @SuppressWarnings("WeakerAccess")
 @PowerMeta(immutableTrigger = true)
-public class PowerForceField extends BasePower implements PowerRightClick {
+public class PowerForceField extends BasePower implements PowerHitTaken, PowerLeftClick, PowerRightClick, PowerSneak, PowerSprint, PowerPlain, PowerHurt {
     /**
      * Cooldown time of this power
      */
@@ -64,6 +65,9 @@ public class PowerForceField extends BasePower implements PowerRightClick {
     @Property
     public int cost = 0;
 
+    @Property
+    public boolean requireHurtByEntity = true;
+
     @Override
     public String getName() {
         return "forcefield";
@@ -75,7 +79,43 @@ public class PowerForceField extends BasePower implements PowerRightClick {
     }
 
     @Override
+    public PowerResult<Void> leftClick(Player player, ItemStack stack, PlayerInteractEvent event) {
+        return fire(player, stack);
+    }
+
+    @Override
     public PowerResult<Void> rightClick(Player player, ItemStack stack, PlayerInteractEvent event) {
+        return fire(player, stack);
+    }
+
+    @Override
+    public PowerResult<Double> takeHit(Player target, ItemStack stack, double damage, EntityDamageEvent event) {
+        if (!requireHurtByEntity || event instanceof EntityDamageByEntityEvent) {
+            return fire(target, stack).with(damage);
+        }
+        return PowerResult.noop();
+    }
+
+    @Override
+    public PowerResult<Void> hurt(Player target, ItemStack stack, EntityDamageEvent event) {
+        if (!requireHurtByEntity || event instanceof EntityDamageByEntityEvent) {
+            return fire(target, stack);
+        }
+        return PowerResult.noop();
+    }
+
+    @Override
+    public PowerResult<Void> sneak(Player player, ItemStack stack, PlayerToggleSneakEvent event) {
+        return fire(player, stack);
+    }
+
+    @Override
+    public PowerResult<Void> sprint(Player player, ItemStack stack, PlayerToggleSprintEvent event) {
+        return fire(player, stack);
+    }
+
+    @Override
+    public PowerResult<Void> fire(Player player, ItemStack stack) {
         if (!checkCooldown(this, player, cooldown, true, true)) return PowerResult.cd();
         if (!getItem().consumeDurability(stack, cost)) return PowerResult.cost();
         World w = player.getWorld();
