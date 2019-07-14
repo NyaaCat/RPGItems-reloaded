@@ -26,7 +26,7 @@ import static think.rpgitems.power.Utils.checkCooldown;
  */
 @SuppressWarnings("WeakerAccess")
 @PowerMeta(defaultTrigger = "RIGHT_CLICK", generalInterface = PowerPlain.class)
-public class PowerPotionSelf extends BasePower implements PowerRightClick, PowerLeftClick, PowerSneak, PowerSprint, PowerHit, PowerHitTaken, PowerPlain {
+public class PowerPotionSelf extends BasePower implements PowerRightClick, PowerLeftClick, PowerSneak, PowerSprint, PowerHit, PowerHitTaken, PowerPlain, PowerHurt {
 
     /**
      * Cooldown time of this power
@@ -61,6 +61,25 @@ public class PowerPotionSelf extends BasePower implements PowerRightClick, Power
      */
     @Property
     public boolean clear = false;
+
+    @Property
+    public boolean requireHurtByEntity = true;
+
+    @Override
+    public PowerResult<Double> takeHit(Player target, ItemStack stack, double damage, EntityDamageEvent event) {
+        if (!requireHurtByEntity || event instanceof EntityDamageByEntityEvent) {
+            return fire(target, stack).with(damage);
+        }
+        return PowerResult.noop();
+    }
+
+    @Override
+    public PowerResult<Void> hurt(Player target, ItemStack stack, EntityDamageEvent event) {
+        if (!requireHurtByEntity || event instanceof EntityDamageByEntityEvent) {
+            return fire(target, stack);
+        }
+        return PowerResult.noop();
+    }
 
     @Override
     public PowerResult<Void> rightClick(Player player, ItemStack stack, PlayerInteractEvent event) {
@@ -99,10 +118,6 @@ public class PowerPotionSelf extends BasePower implements PowerRightClick, Power
         return fire(player, stack).with(damage);
     }
 
-    @Override
-    public PowerResult<Double> takeHit(Player target, ItemStack stack, double damage, EntityDamageEvent event) {
-        return fire(target, stack).with(damage);
-    }
 
     @Override
     public void init(ConfigurationSection section) {
