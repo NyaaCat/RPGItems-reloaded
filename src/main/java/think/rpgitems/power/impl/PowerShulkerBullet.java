@@ -4,6 +4,7 @@ import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.entity.LivingEntity;
 import org.bukkit.entity.Player;
 import org.bukkit.entity.ShulkerBullet;
+import org.bukkit.event.entity.EntityShootBowEvent;
 import org.bukkit.event.player.PlayerInteractEvent;
 import org.bukkit.event.player.PlayerToggleSneakEvent;
 import org.bukkit.event.player.PlayerToggleSprintEvent;
@@ -26,7 +27,7 @@ import static think.rpgitems.power.Utils.*;
  * </p>
  */
 @PowerMeta(defaultTrigger = "RIGHT_CLICK", withSelectors = true)
-public class PowerShulkerBullet extends BasePower implements PowerRightClick, PowerLeftClick, PowerSneak, PowerSprint, PowerPlain {
+public class PowerShulkerBullet extends BasePower implements PowerRightClick, PowerLeftClick, PowerSneak, PowerSprint, PowerPlain, PowerBowShoot {
 
     /**
      * Cooldown time of this power
@@ -68,6 +69,11 @@ public class PowerShulkerBullet extends BasePower implements PowerRightClick, Po
     @Override
     public PowerResult<Void> sprint(Player player, ItemStack stack, PlayerToggleSprintEvent event) {
         return fire(player, stack);
+    }
+
+    @Override
+    public PowerResult<Float> bowShoot(Player player, ItemStack itemStack, EntityShootBowEvent e) {
+        return fire(player, itemStack).with(e.getForce());
     }
 
     @Override

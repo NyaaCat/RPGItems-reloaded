@@ -7,6 +7,7 @@ import org.bukkit.block.data.BlockData;
 import org.bukkit.block.data.Directional;
 import org.bukkit.entity.FallingBlock;
 import org.bukkit.entity.Player;
+import org.bukkit.event.entity.EntityShootBowEvent;
 import org.bukkit.event.player.PlayerInteractEvent;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.metadata.FixedMetadataValue;
@@ -29,7 +30,7 @@ import static think.rpgitems.power.Utils.checkCooldown;
  * </p>
  */
 @PowerMeta(defaultTrigger = "RIGHT_CLICK")
-public class PowerTorch extends BasePower implements PowerPlain {
+public class PowerTorch extends BasePower implements PowerPlain, PowerLeftClick, PowerRightClick, PowerBowShoot {
     /**
      * Cooldown time of this power
      */
@@ -40,6 +41,21 @@ public class PowerTorch extends BasePower implements PowerPlain {
      */
     @Property
     public int cost = 0;
+
+    @Override
+    public PowerResult<Void> leftClick(Player player, ItemStack stack, PlayerInteractEvent event) {
+        return fire(player, stack);
+    }
+
+    @Override
+    public PowerResult<Void> rightClick(Player player, ItemStack stack, PlayerInteractEvent event) {
+        return fire(player, stack);
+    }
+
+    @Override
+    public PowerResult<Float> bowShoot(Player player, ItemStack stack, EntityShootBowEvent event) {
+        return fire(player, stack).with(event.getForce());
+    }
 
     @Override
     public PowerResult<Void> fire(final Player player, ItemStack stack) {

@@ -9,6 +9,7 @@ import org.bukkit.entity.LivingEntity;
 import org.bukkit.entity.Player;
 import org.bukkit.event.entity.EntityDamageByEntityEvent;
 import org.bukkit.event.entity.EntityDamageEvent;
+import org.bukkit.event.entity.EntityShootBowEvent;
 import org.bukkit.event.player.PlayerInteractEvent;
 import org.bukkit.inventory.ItemStack;
 import org.librazy.nclangchecker.LangKey;
@@ -22,7 +23,7 @@ import java.util.logging.Level;
 import static think.rpgitems.power.Utils.checkCooldown;
 
 @PowerMeta(defaultTrigger = "RIGHT_CLICK", generalInterface = PowerPlain.class)
-public class PowerEconomy extends BasePower implements PowerRightClick, PowerLeftClick, PowerPlain, PowerHit, PowerHurt, PowerHitTaken {
+public class PowerEconomy extends BasePower implements PowerRightClick, PowerLeftClick, PowerPlain, PowerHit, PowerHurt, PowerHitTaken, PowerBowShoot {
 
     private static Economy eco;
 
@@ -70,6 +71,10 @@ public class PowerEconomy extends BasePower implements PowerRightClick, PowerLef
         return fire(player, stack);
     }
 
+    @Override
+    public PowerResult<Float> bowShoot(Player player, ItemStack stack, EntityShootBowEvent event) {
+        return fire(player, stack).with(event.getForce());
+    }
 
     @Override
     public PowerResult<Double> hit(Player player, ItemStack stack, LivingEntity entity, double damage, EntityDamageByEntityEvent event) {

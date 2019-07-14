@@ -7,6 +7,7 @@ import org.bukkit.Material;
 import org.bukkit.block.Block;
 import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.entity.Player;
+import org.bukkit.event.entity.EntityShootBowEvent;
 import org.bukkit.event.player.PlayerInteractEvent;
 import org.bukkit.event.player.PlayerToggleSneakEvent;
 import org.bukkit.event.player.PlayerToggleSprintEvent;
@@ -33,7 +34,7 @@ import static think.rpgitems.power.Utils.checkCooldown;
  */
 @SuppressWarnings("WeakerAccess")
 @PowerMeta(defaultTrigger = "RIGHT_CLICK")
-public class PowerSkyHook extends BasePower implements PowerRightClick, PowerLeftClick, PowerSneak, PowerSprint, PowerPlain {
+public class PowerSkyHook extends BasePower implements PowerRightClick, PowerLeftClick, PowerSneak, PowerSprint, PowerPlain, PowerBowShoot {
 
     /**
      * Material that can hooks on
@@ -82,6 +83,11 @@ public class PowerSkyHook extends BasePower implements PowerRightClick, PowerLef
     @Override
     public PowerResult<Void> sprint(Player player, ItemStack stack, PlayerToggleSprintEvent event) {
         return fire(player, stack);
+    }
+
+    @Override
+    public PowerResult<Float> bowShoot(Player player, ItemStack itemStack, EntityShootBowEvent e) {
+        return fire(player, itemStack).with(e.getForce());
     }
 
     @Override

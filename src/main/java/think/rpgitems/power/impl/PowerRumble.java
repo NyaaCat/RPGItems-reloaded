@@ -6,6 +6,7 @@ import org.bukkit.block.Block;
 import org.bukkit.entity.*;
 import org.bukkit.event.entity.EntityDamageByEntityEvent;
 import org.bukkit.event.entity.EntityDamageEvent;
+import org.bukkit.event.entity.EntityShootBowEvent;
 import org.bukkit.event.player.PlayerInteractEvent;
 import org.bukkit.event.player.PlayerToggleSneakEvent;
 import org.bukkit.event.player.PlayerToggleSprintEvent;
@@ -36,7 +37,7 @@ import static think.rpgitems.power.Utils.getNearbyEntities;
  */
 @SuppressWarnings("WeakerAccess")
 @PowerMeta(defaultTrigger = "RIGHT_CLICK", withSelectors = true)
-public class PowerRumble extends BasePower implements PowerRightClick, PowerLeftClick, PowerSneak, PowerSprint, PowerPlain {
+public class PowerRumble extends BasePower implements PowerRightClick, PowerLeftClick, PowerSneak, PowerSprint, PowerPlain, PowerBowShoot {
 
     /**
      * Cooldown time of this power
@@ -70,6 +71,11 @@ public class PowerRumble extends BasePower implements PowerRightClick, PowerLeft
     @Override
     public PowerResult<Void> rightClick(Player player, ItemStack stack, PlayerInteractEvent event) {
         return fire(player, stack);
+    }
+
+    @Override
+    public PowerResult<Float> bowShoot(Player player, ItemStack stack, EntityShootBowEvent event) {
+        return fire(player, stack).with(event.getForce());
     }
 
     @Override

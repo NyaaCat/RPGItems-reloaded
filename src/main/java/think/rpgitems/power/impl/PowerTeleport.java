@@ -5,6 +5,7 @@ import org.bukkit.*;
 import org.bukkit.block.Block;
 import org.bukkit.entity.Player;
 import org.bukkit.event.Event;
+import org.bukkit.event.entity.EntityShootBowEvent;
 import org.bukkit.event.entity.ProjectileHitEvent;
 import org.bukkit.event.player.PlayerInteractEvent;
 import org.bukkit.event.player.PlayerToggleSneakEvent;
@@ -31,7 +32,7 @@ import static think.rpgitems.power.Utils.checkCooldown;
  */
 @SuppressWarnings("WeakerAccess")
 @PowerMeta(defaultTrigger = {"RIGHT_CLICK", "PROJECTILE_HIT"})
-public class PowerTeleport extends BasePower implements PowerSneak, PowerLeftClick, PowerSprint, PowerRightClick, PowerProjectileHit, PowerPlain {
+public class PowerTeleport extends BasePower implements PowerSneak, PowerLeftClick, PowerSprint, PowerRightClick, PowerProjectileHit, PowerPlain, PowerBowShoot {
 
     /**
      * Maximum distance.
@@ -73,6 +74,10 @@ public class PowerTeleport extends BasePower implements PowerSneak, PowerLeftCli
         return fire(player, stack);
     }
 
+    @Override
+    public PowerResult<Float> bowShoot(Player player, ItemStack itemStack, EntityShootBowEvent e) {
+        return fire(player, itemStack).with(e.getForce());
+    }
 
     public PowerResult<Void> fire(Player player, ItemStack stack) {
         if (!checkCooldown(this, player, cooldown, true, true)) return PowerResult.cd();

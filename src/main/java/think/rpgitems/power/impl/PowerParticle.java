@@ -10,6 +10,7 @@ import org.bukkit.entity.LivingEntity;
 import org.bukkit.entity.Player;
 import org.bukkit.event.entity.EntityDamageByEntityEvent;
 import org.bukkit.event.entity.EntityDamageEvent;
+import org.bukkit.event.entity.EntityShootBowEvent;
 import org.bukkit.event.player.PlayerInteractEvent;
 import org.bukkit.inventory.ItemStack;
 import think.rpgitems.AdminHandler;
@@ -25,7 +26,7 @@ import java.util.Optional;
  * </p>
  */
 @PowerMeta(defaultTrigger = "RIGHT_CLICK", generalInterface = PowerPlain.class)
-public class PowerParticle extends BasePower implements PowerRightClick, PowerLeftClick, PowerPlain, PowerHit, PowerHitTaken, PowerHurt {
+public class PowerParticle extends BasePower implements PowerRightClick, PowerLeftClick, PowerPlain, PowerHit, PowerHitTaken, PowerHurt, PowerBowShoot {
     /**
      * Name of particle effect
      */
@@ -107,6 +108,11 @@ public class PowerParticle extends BasePower implements PowerRightClick, PowerLe
     @Override
     public PowerResult<Void> rightClick(Player player, ItemStack stack, PlayerInteractEvent event) {
         return fire(player, stack);
+    }
+
+    @Override
+    public PowerResult<Float> bowShoot(Player player, ItemStack stack, EntityShootBowEvent event) {
+        return fire(player, stack).with(event.getForce());
     }
 
     void spawnParticle(Entity player) {

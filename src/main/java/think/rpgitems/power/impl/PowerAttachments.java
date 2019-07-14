@@ -6,6 +6,7 @@ import org.bukkit.entity.Player;
 import org.bukkit.event.Event;
 import org.bukkit.event.entity.EntityDamageByEntityEvent;
 import org.bukkit.event.entity.EntityDamageEvent;
+import org.bukkit.event.entity.EntityShootBowEvent;
 import org.bukkit.event.player.PlayerInteractEvent;
 import org.bukkit.inventory.EquipmentSlot;
 import org.bukkit.inventory.ItemStack;
@@ -19,7 +20,7 @@ import java.util.*;
 import java.util.stream.Collectors;
 
 @PowerMeta(defaultTrigger = "RIGHT_CLICK", withSelectors = true, generalInterface = PowerPlain.class)
-public class PowerAttachments extends BasePower implements PowerTick, PowerRightClick, PowerLeftClick, PowerOffhandClick, PowerPlain, PowerHit, PowerSneaking, PowerHurt, PowerHitTaken  {
+public class PowerAttachments extends BasePower implements PowerTick, PowerRightClick, PowerLeftClick, PowerOffhandClick, PowerPlain, PowerHit, PowerSneaking, PowerHurt, PowerHitTaken, PowerBowShoot  {
 
     @Property
     public List<EquipmentSlot> allowedSlots;
@@ -83,6 +84,11 @@ public class PowerAttachments extends BasePower implements PowerTick, PowerRight
     @Override
     public PowerResult<Void> rightClick(Player player, ItemStack stack, PlayerInteractEvent event) {
         return fire(player, stack, event);
+    }
+
+    @Override
+    public PowerResult<Float> bowShoot(Player player, ItemStack stack, EntityShootBowEvent event) {
+        return fire(player, stack).with(event.getForce());
     }
 
     @Override

@@ -18,6 +18,7 @@ import org.bukkit.event.EventPriority;
 import org.bukkit.event.HandlerList;
 import org.bukkit.event.Listener;
 import org.bukkit.event.entity.EntityDamageEvent;
+import org.bukkit.event.entity.EntityShootBowEvent;
 import org.bukkit.event.player.PlayerInteractEvent;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.potion.PotionEffect;
@@ -36,7 +37,7 @@ import java.util.concurrent.atomic.AtomicInteger;
 import static think.rpgitems.power.Utils.checkCooldown;
 
 @PowerMeta(defaultTrigger = {"RIGHT_CLICK", "TICK"})
-public class PowerParticleBarrier extends BasePower implements PowerPlain, PowerRightClick, PowerLeftClick, PowerTick {
+public class PowerParticleBarrier extends BasePower implements PowerPlain, PowerRightClick, PowerLeftClick, PowerTick, PowerBowShoot {
 
     @Property
     public double energyPerBarrier = 40;
@@ -139,6 +140,11 @@ public class PowerParticleBarrier extends BasePower implements PowerPlain, Power
     @Override
     public PowerResult<Void> rightClick(Player player, ItemStack stack, PlayerInteractEvent event) {
         return fire(player, stack);
+    }
+
+    @Override
+    public PowerResult<Float> bowShoot(Player player, ItemStack stack, EntityShootBowEvent event) {
+        return fire(player, stack).with(event.getForce());
     }
 
     @SuppressWarnings("unchecked")
