@@ -25,7 +25,7 @@ import static think.rpgitems.power.Utils.checkCooldownByString;
  * </p>
  */
 @PowerMeta(defaultTrigger = "RIGHT_CLICK", generalInterface = PowerPlain.class)
-public class PowerCommand extends BasePower implements PowerRightClick, PowerLeftClick, PowerSprint, PowerSneak, PowerHurt, PowerPlain {
+public class PowerCommand extends BasePower implements PowerRightClick, PowerLeftClick, PowerSprint, PowerSneak, PowerHurt, PowerHitTaken, PowerPlain {
 
     /**
      * Command to be executed
@@ -143,6 +143,14 @@ public class PowerCommand extends BasePower implements PowerRightClick, PowerLef
     public PowerResult<Void> hurt(Player target, ItemStack stack, EntityDamageEvent event) {
         if (!requireHurtByEntity || event instanceof EntityDamageByEntityEvent) {
             return fire(target, stack);
+        }
+        return PowerResult.noop();
+    }
+
+    @Override
+    public PowerResult<Double> takeHit(Player target, ItemStack stack, double damage, EntityDamageEvent event) {
+        if (!requireHurtByEntity || event instanceof EntityDamageByEntityEvent) {
+            return fire(target, stack).with(damage);
         }
         return PowerResult.noop();
     }
