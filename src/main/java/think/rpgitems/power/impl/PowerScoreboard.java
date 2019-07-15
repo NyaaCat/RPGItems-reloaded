@@ -15,7 +15,9 @@ import org.bukkit.event.player.PlayerSwapHandItemsEvent;
 import org.bukkit.event.player.PlayerToggleSneakEvent;
 import org.bukkit.event.player.PlayerToggleSprintEvent;
 import org.bukkit.inventory.ItemStack;
+import org.bukkit.scheduler.BukkitRunnable;
 import org.bukkit.scoreboard.Scoreboard;
+import think.rpgitems.RPGItems;
 import think.rpgitems.power.*;
 
 import java.util.Set;
@@ -53,6 +55,12 @@ public class PowerScoreboard extends BasePower implements PowerHit, PowerHitTake
     public int cost = 0;
 
     @Property
+    public boolean reverseTagAfterDelay = false;
+
+    @Property
+    public long delay = 20;
+
+    @Property
     public boolean abortOnSuccess = false;
 
     private static LoadingCache<String, Pair<Set<String>, Set<String>>> teamCache = CacheBuilder
@@ -84,6 +92,15 @@ public class PowerScoreboard extends BasePower implements PowerHit, PowerHitTake
             Pair<Set<String>, Set<String>> tag = tagCache.getUnchecked(this.tag);
             tag.getKey().forEach(player::addScoreboardTag);
             tag.getValue().forEach(player::removeScoreboardTag);
+            if (reverseTagAfterDelay) {
+                (new BukkitRunnable() {
+                    @Override
+                    public void run() {
+                        tag.getKey().forEach(player::removeScoreboardTag);
+                        tag.getValue().forEach(player::addScoreboardTag);
+                    }
+                }).runTaskLater(RPGItems.plugin, delay);
+            }
         }
         return abortOnSuccess? PowerResult.abort() : PowerResult.ok();
     }
