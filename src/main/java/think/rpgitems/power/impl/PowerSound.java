@@ -51,7 +51,7 @@ public class PowerSound extends BasePower implements PowerLeftClick, PowerRightC
      * Cooldown time of this power
      */
     @Property
-    public long cooldown = 20;
+    public long cooldown = 0;
 
     @Property
     public boolean requireHurtByEntity = true;

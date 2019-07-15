@@ -57,7 +57,7 @@ public class PowerProjectile extends BasePower implements PowerRightClick, Power
      * Cooldown time of this power
      */
     @Property(order = 0)
-    public long cooldown = 20;
+    public long cooldown = 0;
     /**
      * Whether launch projectiles in cone
      */
@@ -87,7 +87,7 @@ public class PowerProjectile extends BasePower implements PowerRightClick, Power
      * Cost of this power
      */
     @Property
-    public int cost = 1;
+    public int cost = 0;
     /**
      * Burst count of one shoot
      */

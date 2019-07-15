@@ -35,13 +35,13 @@ public class PowerDeflect extends BasePower implements PowerHitTaken, PowerRight
      * Cooldown time of this power
      */
     @Property(order = 2)
-    public int cooldown = 20;
+    public int cooldown = 0;
 
     /**
      * Cooldown time of this power in passive mode
      */
     @Property(order = 4)
-    public int cooldownpassive = 20;
+    public int cooldownpassive = 0;
 
     /**
      * Cost of this power

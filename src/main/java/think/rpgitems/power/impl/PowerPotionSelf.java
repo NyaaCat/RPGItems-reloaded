@@ -33,7 +33,7 @@ public class PowerPotionSelf extends BasePower implements PowerRightClick, Power
      * Cooldown time of this power
      */
     @Property(order = 0)
-    public long cooldown = 20;
+    public long cooldown = 0;
     /**
      * Amplifier of potion effect
      */

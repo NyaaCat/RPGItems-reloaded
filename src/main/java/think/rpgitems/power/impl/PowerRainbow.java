@@ -34,7 +34,7 @@ public class PowerRainbow extends BasePower implements PowerRightClick, PowerPla
      * Cooldown time of this power
      */
     @Property(order = 0)
-    public long cooldown = 20;
+    public long cooldown = 0;
     /**
      * Count of blocks
      */

@@ -83,7 +83,7 @@ public class PowerStuck extends BasePower implements PowerLeftClick, PowerRightC
      * Cooldown time of this power
      */
     @Property(order = 0)
-    public long cooldown = 200;
+    public long cooldown = 0;
 
     @Property
     public boolean requireHurtByEntity = true;

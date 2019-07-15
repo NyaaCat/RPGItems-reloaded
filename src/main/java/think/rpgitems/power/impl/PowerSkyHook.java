@@ -45,7 +45,7 @@ public class PowerSkyHook extends BasePower implements PowerRightClick, PowerLef
      * Cooldown time of this power
      */
     @Property
-    public long cooldown = 20;
+    public long cooldown = 0;
     /**
      * Cost of this power
      */

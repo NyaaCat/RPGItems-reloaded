@@ -31,7 +31,7 @@ public class PowerEconomy extends BasePower implements PowerRightClick, PowerLef
      * Cooldown time of this power
      */
     @Property
-    public int cooldown = 20;
+    public int cooldown = 0;
 
     @Property
     public double amountToPlayer;

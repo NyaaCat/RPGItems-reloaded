@@ -37,7 +37,7 @@ public class PowerThrow extends BasePower implements PowerRightClick, PowerLeftC
     @Property(order = 4)
     public String entityName = "";
     @Property(order = 1)
-    public long cooldown = 20;
+    public long cooldown = 0;
     @Property(order = 3)
     public double speed = 3;
     @Property(order = 0)

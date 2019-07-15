@@ -19,6 +19,8 @@ import think.rpgitems.power.*;
 
 import java.util.Optional;
 
+import static think.rpgitems.power.Utils.checkCooldown;
+
 /**
  * Power particle.
  * <p>
@@ -46,6 +48,12 @@ public class PowerParticle extends BasePower implements PowerRightClick, PowerLe
      */
     @Property
     public int cost = 0;
+
+    /**
+     * Cooldown time of this power
+     */
+    @Property
+    public long cooldown = 0;
 
     @Property
     public Material material;
@@ -147,6 +155,7 @@ public class PowerParticle extends BasePower implements PowerRightClick, PowerLe
 
     @Override
     public PowerResult<Void> fire(Player player, ItemStack stack) {
+        if (!checkCooldown(this, player, cooldown, true, true)) return PowerResult.cd();
         if (!getItem().consumeDurability(stack, cost)) return PowerResult.cost();
         spawnParticle(player);
         return PowerResult.ok();

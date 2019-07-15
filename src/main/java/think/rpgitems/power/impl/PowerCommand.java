@@ -47,7 +47,7 @@ public class PowerCommand extends BasePower implements PowerRightClick, PowerLef
      * Cooldown time of this power
      */
     @Property(order = 1)
-    public long cooldown = 20;
+    public long cooldown = 0;
     /**
      * Cost of this power
      */

@@ -34,7 +34,7 @@ public class PowerAOE extends BasePower implements PowerRightClick, PowerLeftCli
      * Cooldown time of this power
      */
     @Property(order = 0)
-    public long cooldown = 20;
+    public long cooldown = 0;
     /**
      * Amplifier of the potion
      */

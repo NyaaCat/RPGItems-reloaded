@@ -66,7 +66,7 @@ public class PowerAttract extends BasePower implements PowerTick, PowerLeftClick
      * Cooldown time of this power
      */
     @Property
-    public long cooldown = 20;
+    public long cooldown = 0;
 
     /**
      * Whether allow attracting player

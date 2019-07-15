@@ -55,7 +55,7 @@ public class PowerParticleBarrier extends BasePower implements PowerPlain, Power
     public boolean projected = false;
 
     @Property
-    public int cooldown = 20;
+    public int cooldown = 0;
 
     /**
      * Cost of this power
