@@ -220,7 +220,7 @@ public class PowerScoreboard extends BasePower implements PowerHit, PowerHitTake
     @Override
     public PowerResult<Void> sneaking(Player player, ItemStack stack) {
         return fire(player, stack);
-
+    }
     public enum ScoreboardOperation {
         NO_OP, ADD_SCORE, SET_SCORE, RESET_SCORE;
     }
