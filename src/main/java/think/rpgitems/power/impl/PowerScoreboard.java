@@ -22,6 +22,8 @@ import org.bukkit.scoreboard.Scoreboard;
 import think.rpgitems.RPGItems;
 import think.rpgitems.power.*;
 
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Set;
 import java.util.concurrent.TimeUnit;
 
@@ -99,7 +101,7 @@ public class PowerScoreboard extends BasePower implements PowerHit, PowerHitTake
             int ori = sc.getScore();
             switch (scoreOperation) {
                 case ADD_SCORE:
-                    sc.setScore(ori+value);
+                    sc.setScore(ori + value);
                     break;
                 case SET_SCORE:
                     sc.setScore(value);
@@ -118,14 +120,24 @@ public class PowerScoreboard extends BasePower implements PowerHit, PowerHitTake
 
         if (this.tag != null) {
             Pair<Set<String>, Set<String>> tag = tagCache.getUnchecked(this.tag);
-            tag.getKey().forEach(player::addScoreboardTag);
-            tag.getValue().forEach(player::removeScoreboardTag);
+            List<String> addedTags = new ArrayList<>();
+            List<String> removedTags = new ArrayList<>();
+            tag.getKey().forEach(tag1 -> {
+                if (player.addScoreboardTag(tag1)) {
+                    addedTags.add(tag1);
+                }
+            });
+            tag.getValue().forEach(tag1 -> {
+                if (player.removeScoreboardTag(tag1)) {
+                    removedTags.add(tag1);
+                }
+            });
             if (reverseTagAfterDelay) {
                 (new BukkitRunnable() {
                     @Override
                     public void run() {
-                        tag.getKey().forEach(player::removeScoreboardTag);
-                        tag.getValue().forEach(player::addScoreboardTag);
+                        addedTags.forEach(player::removeScoreboardTag);
+                        removedTags.forEach(player::addScoreboardTag);
                     }
                 }).runTaskLater(RPGItems.plugin, delay);
             }
