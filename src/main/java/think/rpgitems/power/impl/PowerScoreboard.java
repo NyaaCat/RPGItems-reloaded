@@ -56,9 +56,6 @@ public class PowerScoreboard extends BasePower implements PowerHit, PowerHitTake
     @Property
     public String objective = "";
 
-    @Property
-    public String score = "";
-
     /**
      * Cost of this power
      */
@@ -89,7 +86,7 @@ public class PowerScoreboard extends BasePower implements PowerHit, PowerHitTake
 
         Objective objective = scoreboard.getObjective(this.objective);
         if (objective != null) {
-            Score sc = objective.getScore(this.score);
+            Score sc = objective.getScore(player.getName());
             int ori = sc.getScore();
             switch (scoreOperation) {
                 case ADD_SCORE:
