@@ -14,6 +14,8 @@ import org.bukkit.event.player.PlayerSwapHandItemsEvent;
 import org.bukkit.event.player.PlayerToggleSneakEvent;
 import org.bukkit.event.player.PlayerToggleSprintEvent;
 import org.bukkit.inventory.ItemStack;
+import org.bukkit.scoreboard.Objective;
+import org.bukkit.scoreboard.Score;
 import org.bukkit.scoreboard.Scoreboard;
 import think.rpgitems.power.*;
 
@@ -45,6 +47,18 @@ public class PowerScoreboard extends BasePower implements PowerHit, PowerHitTake
     @Property
     public long cooldown = 20;
 
+    @Property
+    public ScoreboardOperation scoreOperation = ScoreboardOperation.NO_OP;
+
+    @Property
+    public int value = 0;
+
+    @Property
+    public String objective = "";
+
+    @Property
+    public String score = "";
+
     /**
      * Cost of this power
      */
@@ -55,16 +69,16 @@ public class PowerScoreboard extends BasePower implements PowerHit, PowerHitTake
     public boolean abortOnSuccess = false;
 
     private static LoadingCache<String, Pair<Set<String>, Set<String>>> teamCache = CacheBuilder
-                                                                                            .newBuilder()
-                                                                                            .concurrencyLevel(1)
-                                                                                            .expireAfterAccess(1, TimeUnit.DAYS)
-                                                                                            .build(CacheLoader.from(PowerSelector::parse));
+            .newBuilder()
+            .concurrencyLevel(1)
+            .expireAfterAccess(1, TimeUnit.DAYS)
+            .build(CacheLoader.from(PowerSelector::parse));
 
     private static LoadingCache<String, Pair<Set<String>, Set<String>>> tagCache = CacheBuilder
-                                                                                           .newBuilder()
-                                                                                           .concurrencyLevel(1)
-                                                                                           .expireAfterAccess(1, TimeUnit.DAYS)
-                                                                                           .build(CacheLoader.from(PowerSelector::parse));
+            .newBuilder()
+            .concurrencyLevel(1)
+            .expireAfterAccess(1, TimeUnit.DAYS)
+            .build(CacheLoader.from(PowerSelector::parse));
 
     @Override
     public PowerResult<Void> fire(Player player, ItemStack stack) {
@@ -73,6 +87,23 @@ public class PowerScoreboard extends BasePower implements PowerHit, PowerHitTake
 
         Scoreboard scoreboard = player.getScoreboard();
 
+        Objective objective = scoreboard.getObjective(this.objective);
+        if (objective != null) {
+            Score sc = objective.getScore(this.score);
+            int ori = sc.getScore();
+            switch (scoreOperation) {
+                case ADD_SCORE:
+                    sc.setScore(ori+value);
+                    break;
+                case SET_SCORE:
+                    sc.setScore(value);
+                    break;
+                case RESET_SCORE:
+                    sc.setScore(0);
+                    break;
+                default:
+            }
+        }
         if (this.team != null) {
             Pair<Set<String>, Set<String>> team = teamCache.getUnchecked(this.team);
             team.getKey().stream().map(scoreboard::getTeam).forEach(t -> t.addEntry(player.getName()));
@@ -84,7 +115,7 @@ public class PowerScoreboard extends BasePower implements PowerHit, PowerHitTake
             tag.getKey().forEach(player::addScoreboardTag);
             tag.getValue().forEach(player::removeScoreboardTag);
         }
-        return abortOnSuccess? PowerResult.abort() : PowerResult.ok();
+        return abortOnSuccess ? PowerResult.abort() : PowerResult.ok();
     }
 
     @Override
@@ -150,5 +181,9 @@ public class PowerScoreboard extends BasePower implements PowerHit, PowerHitTake
     @Override
     public PowerResult<Void> tick(Player player, ItemStack stack) {
         return fire(player, stack);
+    }
+
+    public enum ScoreboardOperation {
+        NO_OP, ADD_SCORE, SET_SCORE, RESET_SCORE;
     }
 }
