@@ -539,9 +539,9 @@ public class PowerBeam extends BasePower implements PowerPlain, PowerRightClick,
                     Context.instance().putTemp(from.getUniqueId(), SUPPRESS_MELEE, suppressMelee);
                     Context.instance().putTemp(from.getUniqueId(), DAMAGE_SOURCE_ITEM, stack);
                     ((LivingEntity) entity).damage(damage, from);
-                    Context.instance().putTemp(from.getUniqueId(), SUPPRESS_MELEE, null);
-                    Context.instance().putTemp(from.getUniqueId(), OVERRIDING_DAMAGE, null);
-                    Context.instance().putTemp(from.getUniqueId(), DAMAGE_SOURCE, null);
+                    Context.instance().removeTemp(from.getUniqueId(), SUPPRESS_MELEE);
+                    Context.instance().removeTemp(from.getUniqueId(), OVERRIDING_DAMAGE);
+                    Context.instance().removeTemp(from.getUniqueId(), DAMAGE_SOURCE);
                     Context.instance().removeTemp(from.getUniqueId(), DAMAGE_SOURCE_ITEM);
                 }
                 return true;
@@ -564,9 +564,9 @@ public class PowerBeam extends BasePower implements PowerPlain, PowerRightClick,
                         });
                 result = true;
             }
-            Context.instance().putTemp(from.getUniqueId(), SUPPRESS_MELEE, null);
-            Context.instance().putTemp(from.getUniqueId(), OVERRIDING_DAMAGE, null);
-            Context.instance().putTemp(from.getUniqueId(), DAMAGE_SOURCE, null);
+            Context.instance().removeTemp(from.getUniqueId(), SUPPRESS_MELEE);
+            Context.instance().removeTemp(from.getUniqueId(), OVERRIDING_DAMAGE);
+            Context.instance().removeTemp(from.getUniqueId(), DAMAGE_SOURCE);
             Context.instance().removeTemp(from.getUniqueId(), DAMAGE_SOURCE_ITEM);
 
         }
