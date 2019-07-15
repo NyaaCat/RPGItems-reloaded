@@ -28,7 +28,7 @@ import static think.rpgitems.power.Utils.*;
  * </p>
  */
 @SuppressWarnings("WeakerAccess")
-@PowerMeta(defaultTrigger = "RIGHT_CLICK")
+@PowerMeta(defaultTrigger = "RIGHT_CLICK", generalInterface = PowerPlain.class)
 public class PowerDeflect extends BasePower implements PowerHitTaken, PowerRightClick, PowerLeftClick, PowerPlain, PowerBowShoot {
 
     /**

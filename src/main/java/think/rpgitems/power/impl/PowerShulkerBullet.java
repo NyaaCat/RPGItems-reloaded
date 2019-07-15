@@ -26,7 +26,7 @@ import static think.rpgitems.power.Utils.*;
  * Target nearest entity
  * </p>
  */
-@PowerMeta(defaultTrigger = "RIGHT_CLICK", withSelectors = true)
+@PowerMeta(defaultTrigger = "RIGHT_CLICK", withSelectors = true, generalInterface = PowerPlain.class)
 public class PowerShulkerBullet extends BasePower implements PowerRightClick, PowerLeftClick, PowerSneak, PowerSprint, PowerPlain, PowerBowShoot {
 
     /**

@@ -36,7 +36,7 @@ import java.util.concurrent.atomic.AtomicInteger;
 
 import static think.rpgitems.power.Utils.checkCooldown;
 
-@PowerMeta(defaultTrigger = {"RIGHT_CLICK", "TICK"})
+@PowerMeta(defaultTrigger = {"RIGHT_CLICK", "TICK"}, generalInterface = PowerPlain.class)
 public class PowerParticleBarrier extends BasePower implements PowerPlain, PowerRightClick, PowerLeftClick, PowerTick, PowerBowShoot {
 
     @Property

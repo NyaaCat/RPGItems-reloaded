@@ -41,8 +41,8 @@ import static think.rpgitems.power.Utils.checkCooldown;
  * With {@link #cooldown cooldown} time (ticks).
  * </p>
  */
-@PowerMeta(defaultTrigger = "RIGHT_CLICK")
-public class PowerConsume extends BasePower implements PowerRightClick, PowerLeftClick, PowerSneak, PowerHitTaken, PowerHurt, PowerSprint, PowerAttachment {
+@PowerMeta(defaultTrigger = "RIGHT_CLICK", generalInterface = PowerPlain.class)
+public class PowerConsume extends BasePower implements PowerPlain, PowerRightClick, PowerLeftClick, PowerSneak, PowerHitTaken, PowerHurt, PowerSprint, PowerAttachment {
     /**
      * Cooldown time of this power
      */

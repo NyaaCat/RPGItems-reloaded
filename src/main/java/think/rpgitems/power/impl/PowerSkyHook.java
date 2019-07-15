@@ -33,7 +33,7 @@ import static think.rpgitems.power.Utils.checkCooldown;
  * </p>
  */
 @SuppressWarnings("WeakerAccess")
-@PowerMeta(defaultTrigger = "RIGHT_CLICK")
+@PowerMeta(defaultTrigger = "RIGHT_CLICK", generalInterface = PowerPlain.class)
 public class PowerSkyHook extends BasePower implements PowerRightClick, PowerLeftClick, PowerSneak, PowerSprint, PowerPlain, PowerBowShoot {
 
     /**

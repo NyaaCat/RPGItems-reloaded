@@ -32,7 +32,7 @@ import static think.rpgitems.power.Utils.checkCooldown;
  * </p>
  */
 @SuppressWarnings("WeakerAccess")
-@PowerMeta(defaultTrigger = "RIGHT_CLICK")
+@PowerMeta(defaultTrigger = "RIGHT_CLICK", generalInterface = PowerPlain.class)
 public class PowerForceField extends BasePower implements PowerHitTaken, PowerLeftClick, PowerRightClick, PowerSneak, PowerSprint, PowerPlain, PowerHurt {
     /**
      * Cooldown time of this power

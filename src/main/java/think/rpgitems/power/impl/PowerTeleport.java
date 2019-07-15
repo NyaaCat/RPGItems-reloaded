@@ -31,7 +31,7 @@ import static think.rpgitems.power.Utils.checkCooldown;
  * </p>
  */
 @SuppressWarnings("WeakerAccess")
-@PowerMeta(defaultTrigger = {"RIGHT_CLICK", "PROJECTILE_HIT"})
+@PowerMeta(defaultTrigger = {"RIGHT_CLICK", "PROJECTILE_HIT"}, generalInterface = PowerPlain.class)
 public class PowerTeleport extends BasePower implements PowerSneak, PowerLeftClick, PowerSprint, PowerRightClick, PowerProjectileHit, PowerPlain, PowerBowShoot {
 
     /**

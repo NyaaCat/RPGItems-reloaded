@@ -18,7 +18,7 @@ import static think.rpgitems.power.Utils.checkCooldown;
  * </p>
  */
 @SuppressWarnings("WeakerAccess")
-@PowerMeta(immutableTrigger = true)
+@PowerMeta(defaultTrigger = "TICK")
 public class PowerParticleTick extends PowerParticle implements PowerTick, PowerSneaking {
     /**
      * Interval of particle effect

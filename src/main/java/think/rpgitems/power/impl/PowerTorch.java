@@ -29,7 +29,7 @@ import static think.rpgitems.power.Utils.checkCooldown;
  * The torch power will shoots torches to light up an area.
  * </p>
  */
-@PowerMeta(defaultTrigger = "RIGHT_CLICK")
+@PowerMeta(defaultTrigger = "RIGHT_CLICK", generalInterface = PowerPlain.class)
 public class PowerTorch extends BasePower implements PowerPlain, PowerLeftClick, PowerRightClick, PowerBowShoot {
     /**
      * Cooldown time of this power
