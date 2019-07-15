@@ -26,7 +26,7 @@ import static think.rpgitems.power.Utils.*;
 @PowerMeta(immutableTrigger = true, withSelectors = true)
 public class PowerMount extends BasePower implements PowerRightClick {
     @Property(order = 0)
-    public long cooldown = 20L;
+    public long cooldown = 0L;
     @Property(order = 1)
     public int maxDistance = 5;
     @Property(order = 2)

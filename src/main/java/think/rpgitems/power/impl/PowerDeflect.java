@@ -6,6 +6,7 @@ import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.entity.*;
 import org.bukkit.event.entity.EntityDamageByEntityEvent;
 import org.bukkit.event.entity.EntityDamageEvent;
+import org.bukkit.event.entity.EntityShootBowEvent;
 import org.bukkit.event.player.PlayerInteractEvent;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.util.Vector;
@@ -27,20 +28,20 @@ import static think.rpgitems.power.Utils.*;
  * </p>
  */
 @SuppressWarnings("WeakerAccess")
-@PowerMeta(defaultTrigger = "RIGHT_CLICK")
-public class PowerDeflect extends BasePower implements PowerHitTaken, PowerRightClick, PowerLeftClick, PowerPlain {
+@PowerMeta(defaultTrigger = "RIGHT_CLICK", generalInterface = PowerPlain.class)
+public class PowerDeflect extends BasePower implements PowerHitTaken, PowerRightClick, PowerLeftClick, PowerPlain, PowerBowShoot {
 
     /**
      * Cooldown time of this power
      */
     @Property(order = 2)
-    public int cooldown = 20;
+    public int cooldown = 0;
 
     /**
      * Cooldown time of this power in passive mode
      */
     @Property(order = 4)
-    public int cooldownpassive = 20;
+    public int cooldownpassive = 0;
 
     /**
      * Cost of this power
@@ -183,6 +184,11 @@ public class PowerDeflect extends BasePower implements PowerHitTaken, PowerRight
     @Override
     public PowerResult<Void> leftClick(Player player, ItemStack stack, PlayerInteractEvent event) {
         return fire(player, stack);
+    }
+
+    @Override
+    public PowerResult<Float> bowShoot(Player player, ItemStack stack, EntityShootBowEvent event) {
+        return fire(player, stack).with(event.getForce());
     }
 
     @Override

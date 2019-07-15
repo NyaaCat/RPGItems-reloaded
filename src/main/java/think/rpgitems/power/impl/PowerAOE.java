@@ -5,6 +5,7 @@ import org.bukkit.entity.Entity;
 import org.bukkit.entity.LivingEntity;
 import org.bukkit.entity.Player;
 import org.bukkit.event.entity.EntityDamageByEntityEvent;
+import org.bukkit.event.entity.EntityShootBowEvent;
 import org.bukkit.event.player.PlayerInteractEvent;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.potion.PotionEffect;
@@ -27,13 +28,13 @@ import static think.rpgitems.power.Utils.getNearbyEntities;
  * </p>
  */
 @PowerMeta(defaultTrigger = "RIGHT_CLICK", withSelectors = true, generalInterface = PowerPlain.class)
-public class PowerAOE extends BasePower implements PowerRightClick, PowerLeftClick, PowerOffhandClick, PowerPlain, PowerHit {
+public class PowerAOE extends BasePower implements PowerRightClick, PowerLeftClick, PowerOffhandClick, PowerPlain, PowerHit, PowerBowShoot {
 
     /**
      * Cooldown time of this power
      */
     @Property(order = 0)
-    public long cooldown = 20;
+    public long cooldown = 0;
     /**
      * Amplifier of the potion
      */
@@ -92,6 +93,11 @@ public class PowerAOE extends BasePower implements PowerRightClick, PowerLeftCli
     @Override
     public PowerResult<Double> hit(Player player, ItemStack stack, LivingEntity entity, double damage, EntityDamageByEntityEvent event) {
         return fire(player, stack).with(damage);
+    }
+
+    @Override
+    public PowerResult<Float> bowShoot(Player player, ItemStack stack, EntityShootBowEvent event) {
+        return fire(player, stack).with(event.getForce());
     }
 
     @Override

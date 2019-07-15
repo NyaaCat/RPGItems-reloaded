@@ -7,16 +7,14 @@ import org.bukkit.block.data.BlockData;
 import org.bukkit.block.data.Directional;
 import org.bukkit.entity.FallingBlock;
 import org.bukkit.entity.Player;
+import org.bukkit.event.entity.EntityShootBowEvent;
 import org.bukkit.event.player.PlayerInteractEvent;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.metadata.FixedMetadataValue;
 import org.bukkit.scheduler.BukkitRunnable;
 import think.rpgitems.I18n;
 import think.rpgitems.RPGItems;
-import think.rpgitems.power.PowerMeta;
-import think.rpgitems.power.PowerResult;
-import think.rpgitems.power.PowerRightClick;
-import think.rpgitems.power.Property;
+import think.rpgitems.power.*;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -31,13 +29,13 @@ import static think.rpgitems.power.Utils.checkCooldown;
  * The torch power will shoots torches to light up an area.
  * </p>
  */
-@PowerMeta(immutableTrigger = true)
-public class PowerTorch extends BasePower implements PowerRightClick {
+@PowerMeta(defaultTrigger = "RIGHT_CLICK", generalInterface = PowerPlain.class)
+public class PowerTorch extends BasePower implements PowerPlain, PowerLeftClick, PowerRightClick, PowerBowShoot {
     /**
      * Cooldown time of this power
      */
     @Property(order = 0)
-    public long cooldown = 20;
+    public long cooldown = 0;
     /**
      * Cost of this power
      */
@@ -45,7 +43,22 @@ public class PowerTorch extends BasePower implements PowerRightClick {
     public int cost = 0;
 
     @Override
-    public PowerResult<Void> rightClick(final Player player, ItemStack stack, PlayerInteractEvent event) {
+    public PowerResult<Void> leftClick(Player player, ItemStack stack, PlayerInteractEvent event) {
+        return fire(player, stack);
+    }
+
+    @Override
+    public PowerResult<Void> rightClick(Player player, ItemStack stack, PlayerInteractEvent event) {
+        return fire(player, stack);
+    }
+
+    @Override
+    public PowerResult<Float> bowShoot(Player player, ItemStack stack, EntityShootBowEvent event) {
+        return fire(player, stack).with(event.getForce());
+    }
+
+    @Override
+    public PowerResult<Void> fire(final Player player, ItemStack stack) {
         if (!checkCooldown(this, player, cooldown, true, true)) return PowerResult.cd();
         if (!getItem().consumeDurability(stack, cost)) return PowerResult.cost();
         player.playSound(player.getLocation(), Sound.ITEM_FLINTANDSTEEL_USE, 1.0f, 0.8f);

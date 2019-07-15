@@ -6,6 +6,7 @@ import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.entity.Player;
 import org.bukkit.event.entity.EntityDamageByEntityEvent;
 import org.bukkit.event.entity.EntityDamageEvent;
+import org.bukkit.event.entity.EntityShootBowEvent;
 import org.bukkit.event.player.PlayerInteractEvent;
 import org.bukkit.event.player.PlayerToggleSneakEvent;
 import org.bukkit.event.player.PlayerToggleSprintEvent;
@@ -25,7 +26,7 @@ import static think.rpgitems.power.Utils.checkCooldownByString;
  * </p>
  */
 @PowerMeta(defaultTrigger = "RIGHT_CLICK", generalInterface = PowerPlain.class)
-public class PowerCommand extends BasePower implements PowerRightClick, PowerLeftClick, PowerSprint, PowerSneak, PowerHurt, PowerPlain {
+public class PowerCommand extends BasePower implements PowerRightClick, PowerLeftClick, PowerSprint, PowerSneak, PowerHurt, PowerHitTaken, PowerPlain, PowerBowShoot {
 
     /**
      * Command to be executed
@@ -46,7 +47,7 @@ public class PowerCommand extends BasePower implements PowerRightClick, PowerLef
      * Cooldown time of this power
      */
     @Property(order = 1)
-    public long cooldown = 20;
+    public long cooldown = 0;
     /**
      * Cost of this power
      */
@@ -145,6 +146,19 @@ public class PowerCommand extends BasePower implements PowerRightClick, PowerLef
             return fire(target, stack);
         }
         return PowerResult.noop();
+    }
+
+    @Override
+    public PowerResult<Double> takeHit(Player target, ItemStack stack, double damage, EntityDamageEvent event) {
+        if (!requireHurtByEntity || event instanceof EntityDamageByEntityEvent) {
+            return fire(target, stack).with(damage);
+        }
+        return PowerResult.noop();
+    }
+
+    @Override
+    public PowerResult<Float> bowShoot(Player player, ItemStack stack, EntityShootBowEvent event) {
+        return fire(player, stack).with(event.getForce());
     }
 
     @Override

@@ -9,6 +9,8 @@ import org.bukkit.entity.Entity;
 import org.bukkit.entity.LivingEntity;
 import org.bukkit.entity.Player;
 import org.bukkit.event.entity.EntityDamageByEntityEvent;
+import org.bukkit.event.entity.EntityDamageEvent;
+import org.bukkit.event.entity.EntityShootBowEvent;
 import org.bukkit.event.player.PlayerInteractEvent;
 import org.bukkit.inventory.ItemStack;
 import think.rpgitems.AdminHandler;
@@ -17,14 +19,16 @@ import think.rpgitems.power.*;
 
 import java.util.Optional;
 
+import static think.rpgitems.power.Utils.checkCooldown;
+
 /**
  * Power particle.
  * <p>
  * When right clicked, spawn some particles around the user.
  * </p>
  */
-@PowerMeta(generalInterface = PowerPlain.class)
-public class PowerParticle extends BasePower implements PowerRightClick, PowerLeftClick, PowerPlain, PowerHit {
+@PowerMeta(defaultTrigger = "RIGHT_CLICK", generalInterface = PowerPlain.class)
+public class PowerParticle extends BasePower implements PowerRightClick, PowerLeftClick, PowerPlain, PowerHit, PowerHitTaken, PowerHurt, PowerBowShoot {
     /**
      * Name of particle effect
      */
@@ -44,6 +48,12 @@ public class PowerParticle extends BasePower implements PowerRightClick, PowerLe
      */
     @Property
     public int cost = 0;
+
+    /**
+     * Cooldown time of this power
+     */
+    @Property
+    public long cooldown = 0;
 
     @Property
     public Material material;
@@ -72,6 +82,25 @@ public class PowerParticle extends BasePower implements PowerRightClick, PowerLe
     @Property
     public boolean force = false;
 
+    @Property
+    public boolean requireHurtByEntity = true;
+
+    @Override
+    public PowerResult<Double> takeHit(Player target, ItemStack stack, double damage, EntityDamageEvent event) {
+        if (!requireHurtByEntity || event instanceof EntityDamageByEntityEvent) {
+            return fire(target, stack).with(damage);
+        }
+        return PowerResult.noop();
+    }
+
+    @Override
+    public PowerResult<Void> hurt(Player target, ItemStack stack, EntityDamageEvent event) {
+        if (!requireHurtByEntity || event instanceof EntityDamageByEntityEvent) {
+            return fire(target, stack);
+        }
+        return PowerResult.noop();
+    }
+
     private Object data = null;
 
     @Override
@@ -87,6 +116,11 @@ public class PowerParticle extends BasePower implements PowerRightClick, PowerLe
     @Override
     public PowerResult<Void> rightClick(Player player, ItemStack stack, PlayerInteractEvent event) {
         return fire(player, stack);
+    }
+
+    @Override
+    public PowerResult<Float> bowShoot(Player player, ItemStack stack, EntityShootBowEvent event) {
+        return fire(player, stack).with(event.getForce());
     }
 
     void spawnParticle(Entity player) {
@@ -121,6 +155,7 @@ public class PowerParticle extends BasePower implements PowerRightClick, PowerLe
 
     @Override
     public PowerResult<Void> fire(Player player, ItemStack stack) {
+        if (!checkCooldown(this, player, cooldown, true, true)) return PowerResult.cd();
         if (!getItem().consumeDurability(stack, cost)) return PowerResult.cost();
         spawnParticle(player);
         return PowerResult.ok();

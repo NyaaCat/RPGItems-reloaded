@@ -8,6 +8,8 @@ import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.entity.LivingEntity;
 import org.bukkit.entity.Player;
 import org.bukkit.event.entity.EntityDamageByEntityEvent;
+import org.bukkit.event.entity.EntityDamageEvent;
+import org.bukkit.event.entity.EntityShootBowEvent;
 import org.bukkit.event.player.PlayerInteractEvent;
 import org.bukkit.inventory.ItemStack;
 import org.librazy.nclangchecker.LangKey;
@@ -20,8 +22,8 @@ import java.util.logging.Level;
 
 import static think.rpgitems.power.Utils.checkCooldown;
 
-@PowerMeta(generalInterface = PowerPlain.class)
-public class PowerEconomy extends BasePower implements PowerRightClick, PowerLeftClick, PowerPlain, PowerHit {
+@PowerMeta(defaultTrigger = "RIGHT_CLICK", generalInterface = PowerPlain.class)
+public class PowerEconomy extends BasePower implements PowerRightClick, PowerLeftClick, PowerPlain, PowerHit, PowerHurt, PowerHitTaken, PowerBowShoot {
 
     private static Economy eco;
 
@@ -29,7 +31,7 @@ public class PowerEconomy extends BasePower implements PowerRightClick, PowerLef
      * Cooldown time of this power
      */
     @Property
-    public int cooldown = 20;
+    public int cooldown = 0;
 
     @Property
     public double amountToPlayer;
@@ -39,6 +41,25 @@ public class PowerEconomy extends BasePower implements PowerRightClick, PowerLef
 
     @Property
     public boolean abortOnFailure = true;
+
+    @Property
+    public boolean requireHurtByEntity = true;
+
+    @Override
+    public PowerResult<Double> takeHit(Player target, ItemStack stack, double damage, EntityDamageEvent event) {
+        if (!requireHurtByEntity || event instanceof EntityDamageByEntityEvent) {
+            return fire(target, stack).with(damage);
+        }
+        return PowerResult.noop();
+    }
+
+    @Override
+    public PowerResult<Void> hurt(Player target, ItemStack stack, EntityDamageEvent event) {
+        if (!requireHurtByEntity || event instanceof EntityDamageByEntityEvent) {
+            return fire(target, stack);
+        }
+        return PowerResult.noop();
+    }
 
     @Override
     public PowerResult<Void> leftClick(Player player, ItemStack stack, PlayerInteractEvent event) {
@@ -50,6 +71,10 @@ public class PowerEconomy extends BasePower implements PowerRightClick, PowerLef
         return fire(player, stack);
     }
 
+    @Override
+    public PowerResult<Float> bowShoot(Player player, ItemStack stack, EntityShootBowEvent event) {
+        return fire(player, stack).with(event.getForce());
+    }
 
     @Override
     public PowerResult<Double> hit(Player player, ItemStack stack, LivingEntity entity, double damage, EntityDamageByEntityEvent event) {

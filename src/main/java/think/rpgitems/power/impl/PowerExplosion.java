@@ -15,7 +15,7 @@ import think.rpgitems.power.*;
 
 import java.util.concurrent.ThreadLocalRandom;
 
-@PowerMeta(defaultTrigger = {"PROJECTILE_HIT"})
+@PowerMeta(defaultTrigger = {"PROJECTILE_HIT"}, generalInterface = PowerPlain.class)
 public class PowerExplosion extends BasePower implements PowerLeftClick, PowerRightClick, PowerPlain, PowerHit, PowerProjectileHit, PowerLocation {
 
     @Property

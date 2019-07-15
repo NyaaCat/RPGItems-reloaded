@@ -37,7 +37,7 @@ import static think.rpgitems.power.Utils.checkCooldown;
  */
 @SuppressWarnings("WeakerAccess")
 @PowerMeta(defaultTrigger = "RIGHT_CLICK", generalInterface = PowerPlain.class)
-public class PowerProjectile extends BasePower implements PowerRightClick, PowerLeftClick, PowerSneak, PowerSprint, PowerHitTaken, PowerHit, PowerLivingEntity, PowerPlain, PowerBowShoot{
+public class PowerProjectile extends BasePower implements PowerRightClick, PowerLeftClick, PowerSneak, PowerSprint, PowerHitTaken, PowerHit, PowerLivingEntity, PowerPlain, PowerBowShoot, PowerHurt {
     /**
      * Z_axis.
      */
@@ -57,7 +57,7 @@ public class PowerProjectile extends BasePower implements PowerRightClick, Power
      * Cooldown time of this power
      */
     @Property(order = 0)
-    public long cooldown = 20;
+    public long cooldown = 0;
     /**
      * Whether launch projectiles in cone
      */
@@ -87,7 +87,7 @@ public class PowerProjectile extends BasePower implements PowerRightClick, Power
      * Cost of this power
      */
     @Property
-    public int cost = 1;
+    public int cost = 0;
     /**
      * Burst count of one shoot
      */
@@ -144,6 +144,25 @@ public class PowerProjectile extends BasePower implements PowerRightClick, Power
         return I18n.format(isCone ? "power.projectile.cone" : "power.projectile.display", getProjectileType(projectileType), (double) cooldown / 20d);
     }
 
+    @Property
+    public boolean requireHurtByEntity = true;
+
+    @Override
+    public PowerResult<Double> takeHit(Player target, ItemStack stack, double damage, EntityDamageEvent event) {
+        if (!requireHurtByEntity || event instanceof EntityDamageByEntityEvent) {
+            return fire(target, stack).with(damage);
+        }
+        return PowerResult.noop();
+    }
+
+    @Override
+    public PowerResult<Void> hurt(Player target, ItemStack stack, EntityDamageEvent event) {
+        if (!requireHurtByEntity || event instanceof EntityDamageByEntityEvent) {
+            return fire(target, stack);
+        }
+        return PowerResult.noop();
+    }
+
     @Override
     public PowerResult<Void> rightClick(Player player, ItemStack stack, PlayerInteractEvent event) {
         return fire(player, stack);
@@ -157,11 +176,6 @@ public class PowerProjectile extends BasePower implements PowerRightClick, Power
     @Override
     public PowerResult<Double> hit(Player player, ItemStack stack, LivingEntity entity, double damage, EntityDamageByEntityEvent event) {
         return fire(player, stack).with(damage);
-    }
-
-    @Override
-    public PowerResult<Double> takeHit(Player target, ItemStack stack, double damage, EntityDamageEvent event) {
-        return fire(target, stack).with(damage);
     }
 
     @Override

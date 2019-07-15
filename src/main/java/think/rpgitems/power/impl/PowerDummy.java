@@ -25,7 +25,7 @@ import static think.rpgitems.power.Utils.checkCooldownByString;
  * </p>
  */
 @PowerMeta(defaultTrigger = "RIGHT_CLICK", generalInterface = {PowerLivingEntity.class, PowerPlain.class})
-public class PowerDummy extends BasePower implements PowerHit, PowerHitTaken, PowerLeftClick, PowerRightClick, PowerOffhandClick, PowerProjectileHit, PowerSneak, PowerSprint, PowerOffhandItem, PowerMainhandItem, PowerTick, PowerPlain, PowerLivingEntity, PowerHurt, PowerBowShoot {
+public class PowerDummy extends BasePower implements PowerHit, PowerHitTaken, PowerLeftClick, PowerRightClick, PowerOffhandClick, PowerProjectileHit, PowerSneak, PowerSneaking, PowerSprint, PowerOffhandItem, PowerMainhandItem, PowerTick, PowerPlain, PowerLivingEntity, PowerHurt, PowerBowShoot {
 
     /**
      * Cooldown time of this power
@@ -157,7 +157,10 @@ public class PowerDummy extends BasePower implements PowerHit, PowerHitTaken, Po
 
     @Override
     public PowerResult<Double> takeHit(Player target, ItemStack stack, double damage, EntityDamageEvent event) {
-        return fire(target, stack, null, damage).with(damage);
+        if (!requireHurtByEntity || event instanceof EntityDamageByEntityEvent) {
+            return fire(target, stack, null, damage).with(damage);
+        }
+        return PowerResult.noop();
     }
 
     @Override
@@ -200,6 +203,11 @@ public class PowerDummy extends BasePower implements PowerHit, PowerHitTaken, Po
 
     @Override
     public PowerResult<Void> tick(Player player, ItemStack stack) {
+        return fire(player, stack);
+    }
+
+    @Override
+    public PowerResult<Void> sneaking(Player player, ItemStack stack) {
         return fire(player, stack);
     }
 

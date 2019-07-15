@@ -36,7 +36,7 @@ import static think.rpgitems.power.Utils.checkCooldown;
  * if you have any issue, please send me email or @ReinWD in issues.
  * Accepted language: 中文, English.
  */
-@PowerMeta(defaultTrigger = "RIGHT_CLICK")
+@PowerMeta(defaultTrigger = "RIGHT_CLICK", generalInterface = PowerPlain.class)
 public class PowerBeam extends BasePower implements PowerPlain, PowerRightClick, PowerLeftClick, PowerSneak, PowerSneaking, PowerSprint, PowerBowShoot, PowerHitTaken, PowerHit, PowerHurt {
     @Property
     public int length = 10;
@@ -136,6 +136,9 @@ public class PowerBeam extends BasePower implements PowerPlain, PowerRightClick,
     @Property
     public double speed = 0;
 
+    @Property
+    public boolean requireHurtByEntity = true;
+
 
     /**
      * Whether to suppress the hit trigger
@@ -203,12 +206,10 @@ public class PowerBeam extends BasePower implements PowerPlain, PowerRightClick,
 
     @Override
     public PowerResult<Double> takeHit(Player target, ItemStack stack, double damage, EntityDamageEvent event) {
-        return fire(target, stack).with(event.getDamage());
-    }
-
-    @Override
-    public PowerResult<Void> hurt(Player target, ItemStack stack, EntityDamageEvent event) {
-        return fire(target, stack);
+        if (!requireHurtByEntity || event instanceof EntityDamageByEntityEvent) {
+            return fire(target, stack).with(event.getDamage());
+        }
+        return PowerResult.noop();
     }
 
     private PowerResult<Void> beam(LivingEntity from, ItemStack stack) {
@@ -285,6 +286,14 @@ public class PowerBeam extends BasePower implements PowerPlain, PowerRightClick,
     private Random random = new Random();
 
     private Vector yUnit = new Vector(0, 1, 0);
+
+    @Override
+    public PowerResult<Void> hurt(Player target, ItemStack stack, EntityDamageEvent event) {
+        if (!requireHurtByEntity || event instanceof EntityDamageByEntityEvent) {
+            return fire(target, stack);
+        }
+        return PowerResult.noop();
+    }
 
     class PlainTask extends BukkitRunnable {
         private int bounces;

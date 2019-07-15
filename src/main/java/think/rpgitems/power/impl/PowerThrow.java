@@ -8,6 +8,8 @@ import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.entity.Entity;
 import org.bukkit.entity.Player;
 import org.bukkit.entity.Projectile;
+import org.bukkit.event.entity.EntityDamageByEntityEvent;
+import org.bukkit.event.entity.EntityDamageEvent;
 import org.bukkit.event.entity.EntityShootBowEvent;
 import org.bukkit.event.player.PlayerInteractEvent;
 import org.bukkit.inventory.ItemStack;
@@ -29,13 +31,13 @@ import static think.rpgitems.power.Utils.checkCooldownByString;
  * </p>
  */
 @PowerMeta(defaultTrigger = "RIGHT_CLICK", generalInterface = PowerPlain.class)
-public class PowerThrow extends BasePower implements PowerRightClick, PowerLeftClick, PowerPlain, PowerBowShoot {
+public class PowerThrow extends BasePower implements PowerRightClick, PowerLeftClick, PowerPlain, PowerBowShoot, PowerHurt, PowerHitTaken {
     @Property(order = 5, required = true)
     public String entityData = "";
     @Property(order = 4)
     public String entityName = "";
     @Property(order = 1)
-    public long cooldown = 20;
+    public long cooldown = 0;
     @Property(order = 3)
     public double speed = 3;
     @Property(order = 0)
@@ -44,6 +46,25 @@ public class PowerThrow extends BasePower implements PowerRightClick, PowerLeftC
     public boolean isPersistent;
     @Property
     public int cost = 0;
+
+    @Property
+    public boolean requireHurtByEntity = true;
+
+    @Override
+    public PowerResult<Double> takeHit(Player target, ItemStack stack, double damage, EntityDamageEvent event) {
+        if (!requireHurtByEntity || event instanceof EntityDamageByEntityEvent) {
+            return fire(target, stack).with(damage);
+        }
+        return PowerResult.noop();
+    }
+
+    @Override
+    public PowerResult<Void> hurt(Player target, ItemStack stack, EntityDamageEvent event) {
+        if (!requireHurtByEntity || event instanceof EntityDamageByEntityEvent) {
+            return fire(target, stack);
+        }
+        return PowerResult.noop();
+    }
 
     @Override
     public void init(ConfigurationSection section) {

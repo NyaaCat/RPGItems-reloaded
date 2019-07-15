@@ -6,6 +6,7 @@ import org.bukkit.block.data.BlockData;
 import org.bukkit.entity.Entity;
 import org.bukkit.entity.FallingBlock;
 import org.bukkit.entity.Player;
+import org.bukkit.event.entity.EntityShootBowEvent;
 import org.bukkit.event.player.PlayerInteractEvent;
 import org.bukkit.event.player.PlayerToggleSneakEvent;
 import org.bukkit.event.player.PlayerToggleSprintEvent;
@@ -30,14 +31,14 @@ import static think.rpgitems.power.Utils.getNearbyEntities;
  * the ice will slowly remove itself.
  * </p>
  */
-@PowerMeta(immutableTrigger = true, withSelectors = true)
-public class PowerIce extends BasePower implements PowerRightClick, PowerLeftClick, PowerSprint, PowerSneak, PowerPlain {
+@PowerMeta(defaultTrigger = "RIGHT_CLICK", withSelectors = true, generalInterface = PowerPlain.class)
+public class PowerIce extends BasePower implements PowerRightClick, PowerLeftClick, PowerSprint, PowerSneak, PowerPlain, PowerBowShoot {
 
     /**
      * Cooldown time of this power
      */
     @Property(order = 0)
-    public long cooldown = 20;
+    public long cooldown = 0;
     /**
      * Cost of this power
      */
@@ -52,6 +53,11 @@ public class PowerIce extends BasePower implements PowerRightClick, PowerLeftCli
     @Override
     public PowerResult<Void> leftClick(Player player, ItemStack stack, PlayerInteractEvent event) {
         return fire(player, stack);
+    }
+
+    @Override
+    public PowerResult<Float> bowShoot(Player player, ItemStack stack, EntityShootBowEvent event) {
+        return fire(player, stack).with(event.getForce());
     }
 
     @Override

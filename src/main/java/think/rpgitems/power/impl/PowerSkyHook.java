@@ -7,7 +7,10 @@ import org.bukkit.Material;
 import org.bukkit.block.Block;
 import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.entity.Player;
+import org.bukkit.event.entity.EntityShootBowEvent;
 import org.bukkit.event.player.PlayerInteractEvent;
+import org.bukkit.event.player.PlayerToggleSneakEvent;
+import org.bukkit.event.player.PlayerToggleSprintEvent;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.scheduler.BukkitRunnable;
 import org.bukkit.util.Vector;
@@ -30,8 +33,8 @@ import static think.rpgitems.power.Utils.checkCooldown;
  * </p>
  */
 @SuppressWarnings("WeakerAccess")
-@PowerMeta(immutableTrigger = true)
-public class PowerSkyHook extends BasePower implements PowerRightClick {
+@PowerMeta(defaultTrigger = "RIGHT_CLICK", generalInterface = PowerPlain.class)
+public class PowerSkyHook extends BasePower implements PowerRightClick, PowerLeftClick, PowerSneak, PowerSprint, PowerPlain, PowerBowShoot {
 
     /**
      * Material that can hooks on
@@ -42,7 +45,7 @@ public class PowerSkyHook extends BasePower implements PowerRightClick {
      * Cooldown time of this power
      */
     @Property
-    public long cooldown = 20;
+    public long cooldown = 0;
     /**
      * Cost of this power
      */
@@ -63,7 +66,32 @@ public class PowerSkyHook extends BasePower implements PowerRightClick {
     private static Map<UUID, Boolean> hooking = new HashMap<>();
 
     @Override
-    public PowerResult<Void> rightClick(final Player player, ItemStack stack, PlayerInteractEvent event) {
+    public PowerResult<Void> leftClick(Player player, ItemStack stack, PlayerInteractEvent event) {
+        return fire(player, stack);
+    }
+
+    @Override
+    public PowerResult<Void> rightClick(Player player, ItemStack stack, PlayerInteractEvent event) {
+        return fire(player, stack);
+    }
+
+    @Override
+    public PowerResult<Void> sneak(Player player, ItemStack stack, PlayerToggleSneakEvent event) {
+        return fire(player, stack);
+    }
+
+    @Override
+    public PowerResult<Void> sprint(Player player, ItemStack stack, PlayerToggleSprintEvent event) {
+        return fire(player, stack);
+    }
+
+    @Override
+    public PowerResult<Float> bowShoot(Player player, ItemStack itemStack, EntityShootBowEvent e) {
+        return fire(player, itemStack).with(e.getForce());
+    }
+
+    @Override
+    public PowerResult<Void> fire(final Player player, ItemStack stack) {
         if (!checkCooldown(this, player, cooldown, true, true)) return PowerResult.cd();
         if (!getItem().consumeDurability(stack, cost)) return PowerResult.cost();
         Boolean isHooking = hooking.get(player.getUniqueId());

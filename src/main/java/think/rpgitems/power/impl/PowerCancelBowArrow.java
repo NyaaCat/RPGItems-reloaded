@@ -10,7 +10,7 @@ import think.rpgitems.power.PowerMeta;
 import think.rpgitems.power.PowerResult;
 import think.rpgitems.power.Property;
 
-@PowerMeta(defaultTrigger = "BOW_SHOOT")
+@PowerMeta(immutableTrigger = true, defaultTrigger = "BOW_SHOOT")
 public class PowerCancelBowArrow extends BasePower implements PowerBowShoot {
 
     @Property

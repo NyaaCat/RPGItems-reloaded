@@ -4,6 +4,9 @@ import org.bukkit.Location;
 import org.bukkit.entity.Entity;
 import org.bukkit.entity.LivingEntity;
 import org.bukkit.entity.Player;
+import org.bukkit.event.entity.EntityDamageByEntityEvent;
+import org.bukkit.event.entity.EntityDamageEvent;
+import org.bukkit.event.entity.EntityShootBowEvent;
 import org.bukkit.event.player.PlayerInteractEvent;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.scheduler.BukkitRunnable;
@@ -27,7 +30,7 @@ import static think.rpgitems.power.Utils.getNearbyEntities;
  */
 @SuppressWarnings("WeakerAccess")
 @PowerMeta(defaultTrigger = "RIGHT_CLICK", withSelectors = true, generalInterface = PowerPlain.class)
-public class PowerAttract extends BasePower implements PowerTick, PowerLeftClick, PowerRightClick, PowerPlain {
+public class PowerAttract extends BasePower implements PowerTick, PowerLeftClick, PowerRightClick, PowerPlain, PowerSneaking, PowerHurt, PowerHitTaken, PowerBowShoot {
     /**
      * Maximum radius
      */
@@ -63,13 +66,32 @@ public class PowerAttract extends BasePower implements PowerTick, PowerLeftClick
      * Cooldown time of this power
      */
     @Property
-    public long cooldown = 20;
+    public long cooldown = 0;
 
     /**
      * Whether allow attracting player
      */
     @Property
     public boolean attractPlayer;
+
+    @Property
+    public boolean requireHurtByEntity = true;
+
+    @Override
+    public PowerResult<Double> takeHit(Player target, ItemStack stack, double damage, EntityDamageEvent event) {
+        if (!requireHurtByEntity || event instanceof EntityDamageByEntityEvent) {
+            return fire(target, stack).with(damage);
+        }
+        return PowerResult.noop();
+    }
+
+    @Override
+    public PowerResult<Void> hurt(Player target, ItemStack stack, EntityDamageEvent event) {
+        if (!requireHurtByEntity || event instanceof EntityDamageByEntityEvent) {
+            return fire(target, stack);
+        }
+        return PowerResult.noop();
+    }
 
     @Override
     public String getName() {
@@ -83,6 +105,11 @@ public class PowerAttract extends BasePower implements PowerTick, PowerLeftClick
 
     @Override
     public PowerResult<Void> tick(Player player, ItemStack stack) {
+        return attract(player, stack);
+    }
+
+    @Override
+    public PowerResult<Void> sneaking(Player player, ItemStack stack) {
         return attract(player, stack);
     }
 
@@ -124,6 +151,11 @@ public class PowerAttract extends BasePower implements PowerTick, PowerLeftClick
     @Override
     public PowerResult<Void> rightClick(Player player, ItemStack stack, PlayerInteractEvent event) {
         return fire(player, stack);
+    }
+
+    @Override
+    public PowerResult<Float> bowShoot(Player player, ItemStack stack, EntityShootBowEvent event) {
+        return fire(player, stack).with(event.getForce());
     }
 
     @Override

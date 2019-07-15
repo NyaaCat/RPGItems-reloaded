@@ -30,6 +30,9 @@ public class PowerCharge extends BasePower implements PowerHit {
     @Property
     public double cap = 300;
 
+    @Property
+    public boolean setBaseDamage = false;
+
     @Override
     public String getName() {
         return "charge";
@@ -51,6 +54,9 @@ public class PowerCharge extends BasePower implements PowerHit {
         event.setDamage(damage);
         if (damage > originDamage) {
             player.playSound(player.getLocation(), Sound.BLOCK_ANVIL_LAND, 0.1f, 0.1f);
+        }
+        if (setBaseDamage) {
+            event.setDamage(damage);
         }
         return PowerResult.ok(damage);
     }

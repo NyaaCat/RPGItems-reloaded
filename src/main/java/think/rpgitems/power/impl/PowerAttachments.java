@@ -5,6 +5,8 @@ import org.bukkit.entity.LivingEntity;
 import org.bukkit.entity.Player;
 import org.bukkit.event.Event;
 import org.bukkit.event.entity.EntityDamageByEntityEvent;
+import org.bukkit.event.entity.EntityDamageEvent;
+import org.bukkit.event.entity.EntityShootBowEvent;
 import org.bukkit.event.player.PlayerInteractEvent;
 import org.bukkit.inventory.EquipmentSlot;
 import org.bukkit.inventory.ItemStack;
@@ -18,7 +20,7 @@ import java.util.*;
 import java.util.stream.Collectors;
 
 @PowerMeta(defaultTrigger = "RIGHT_CLICK", withSelectors = true, generalInterface = PowerPlain.class)
-public class PowerAttachments extends BasePower implements PowerTick, PowerRightClick, PowerLeftClick, PowerOffhandClick, PowerPlain, PowerHit {
+public class PowerAttachments extends BasePower implements PowerTick, PowerRightClick, PowerLeftClick, PowerOffhandClick, PowerPlain, PowerHit, PowerSneaking, PowerHurt, PowerHitTaken, PowerBowShoot  {
 
     @Property
     public List<EquipmentSlot> allowedSlots;
@@ -32,9 +34,36 @@ public class PowerAttachments extends BasePower implements PowerTick, PowerRight
     @Property
     public Set<String> allowedItems;
 
+    /**
+     * Whether to require hurt by entity for HURT trigger
+     */
+    @Property
+    public boolean requireHurtByEntity = true;
+
     @Override
     public PowerResult<Void> tick(Player player, ItemStack stack) {
         return fire(player, stack);
+    }
+
+    @Override
+    public PowerResult<Void> sneaking(Player player, ItemStack stack) {
+        return fire(player, stack);
+    }
+
+    @Override
+    public PowerResult<Double> takeHit(Player target, ItemStack stack, double damage, EntityDamageEvent event) {
+        if (!requireHurtByEntity || event instanceof EntityDamageByEntityEvent) {
+            return fire(target, stack, event).with(damage);
+        }
+        return PowerResult.noop();
+    }
+
+    @Override
+    public PowerResult<Void> hurt(Player target, ItemStack stack, EntityDamageEvent event) {
+        if (!requireHurtByEntity || event instanceof EntityDamageByEntityEvent) {
+            return fire(target, stack, event);
+        }
+        return PowerResult.noop();
     }
 
     @Override
@@ -55,6 +84,11 @@ public class PowerAttachments extends BasePower implements PowerTick, PowerRight
     @Override
     public PowerResult<Void> rightClick(Player player, ItemStack stack, PlayerInteractEvent event) {
         return fire(player, stack, event);
+    }
+
+    @Override
+    public PowerResult<Float> bowShoot(Player player, ItemStack stack, EntityShootBowEvent event) {
+        return fire(player, stack).with(event.getForce());
     }
 
     @Override

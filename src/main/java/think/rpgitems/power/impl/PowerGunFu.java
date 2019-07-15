@@ -36,7 +36,7 @@ public class PowerGunFu extends BasePower implements PowerProjectileLaunch, Powe
      * Cooldown time of this power
      */
     @Property(order = 0)
-    public long cooldown = 20;
+    public long cooldown = 0;
     /**
      * Cost of this power
      */

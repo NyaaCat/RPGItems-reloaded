@@ -26,6 +26,9 @@ public class PowerAirborne extends BasePower implements PowerHit {
     @Property
     public double cap = 300.0;
 
+    @Property
+    public boolean setBaseDamage = false;
+
     @Override
     public String getName() {
         return "airborne";
@@ -45,6 +48,9 @@ public class PowerAirborne extends BasePower implements PowerHit {
         damage = Math.max(Math.min(damage, cap), originDamage);
         if (damage > originDamage) {
             player.playSound(player.getLocation(), Sound.ENTITY_BAT_TAKEOFF, 0.1f, 0.1f);
+        }
+        if (setBaseDamage) {
+            event.setDamage(damage);
         }
         return PowerResult.ok(damage);
     }
