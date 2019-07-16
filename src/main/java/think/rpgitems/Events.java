@@ -23,6 +23,7 @@ import org.bukkit.metadata.FixedMetadataValue;
 import org.bukkit.projectiles.ProjectileSource;
 import org.bukkit.scheduler.BukkitRunnable;
 import think.rpgitems.data.Context;
+import think.rpgitems.data.LightContext;
 import think.rpgitems.item.ItemManager;
 import think.rpgitems.item.RPGItem;
 import think.rpgitems.power.Power;
@@ -616,12 +617,24 @@ public class Events implements Listener {
         if (e.getCause() == EntityDamageEvent.DamageCause.THORNS)
             return;
 
-        Boolean suppressMelee = Context.instance().getBoolean(player.getUniqueId(), SUPPRESS_MELEE);
-        Double overridingDamage = Context.instance().getDouble(player.getUniqueId(), OVERRIDING_DAMAGE);
-        Object sourceItem = Context.instance().get(player.getUniqueId(), DAMAGE_SOURCE_ITEM);
+        Boolean suppressMelee;
+        Double overridingDamage;
+        Object sourceItem;
+        overridingDamage = LightContext.getTemp(player.getUniqueId(), OVERRIDING_DAMAGE, (double) 0).orElse(null);
+        suppressMelee = LightContext.getTemp(player.getUniqueId(), SUPPRESS_MELEE, Boolean.FALSE).orElse(null);
+        sourceItem = LightContext.getTemp(player.getUniqueId(), DAMAGE_SOURCE_ITEM, item).orElse(null);
+
+        if (overridingDamage == null) {
+            overridingDamage = Context.instance().getDouble(player.getUniqueId(), OVERRIDING_DAMAGE);
+        }
 
         if (sourceItem!=null){
             item = ((ItemStack) sourceItem);
+        }else{
+            sourceItem = Context.instance().get(player.getUniqueId(), DAMAGE_SOURCE_ITEM);
+            if (sourceItem!=null){
+                item = ((ItemStack) sourceItem);
+            }
         }
 
         if (suppressMelee != null && suppressMelee) {
@@ -629,6 +642,14 @@ public class Events implements Listener {
                 e.setDamage(overridingDamage);
             }
             return;
+        }else {
+            suppressMelee =Context.instance().getBoolean(player.getUniqueId(), SUPPRESS_MELEE);
+            if (suppressMelee != null && suppressMelee) {
+                if (overridingDamage != null) {
+                    e.setDamage(overridingDamage);
+                }
+                return;
+            }
         }
 
 

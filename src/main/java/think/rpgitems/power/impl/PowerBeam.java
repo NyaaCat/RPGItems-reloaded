@@ -18,7 +18,7 @@ import org.bukkit.util.RayTraceResult;
 import org.bukkit.util.Vector;
 import org.librazy.nclangchecker.LangKey;
 import think.rpgitems.RPGItems;
-import think.rpgitems.data.Context;
+import think.rpgitems.data.LightContext;
 import think.rpgitems.power.*;
 
 import java.util.*;
@@ -283,6 +283,7 @@ public class PowerBeam extends BasePower implements PowerPlain, PowerRightClick,
         }
         return PowerResult.ok();
     }
+
     private Random random = new Random();
 
     private Vector yUnit = new Vector(0, 1, 0);
@@ -337,7 +338,7 @@ public class PowerBeam extends BasePower implements PowerPlain, PowerRightClick,
                             bounced = true;
                             makeBounce(block, towards, lastLocation.clone().subtract(step));
                         } else {
-                            Context.instance().removeTemp(from.getUniqueId(), DAMAGE_SOURCE_ITEM);
+                            LightContext.removeTemp(from.getUniqueId(), DAMAGE_SOURCE_ITEM);
                             return;
                         }
                     }
@@ -346,15 +347,15 @@ public class PowerBeam extends BasePower implements PowerPlain, PowerRightClick,
                     towards = addGravity(towards, partsPerTick);
                     towards = homingCorrect(towards, lastLocation, target, i, () -> target = getNextTarget(from.getEyeLocation().getDirection(), from.getEyeLocation(), from));
                 }
-                if (isStepHit && homingTargetMode.equals(HomingTargetMode.MULTI_TARGET)){
+                if (isStepHit && homingTargetMode.equals(HomingTargetMode.MULTI_TARGET)) {
                     target = getNextTarget(from.getEyeLocation().getDirection(), from.getEyeLocation(), from);
                 }
                 if (isStepHit && !pierce) {
-                    Context.instance().removeTemp(from.getUniqueId(), DAMAGE_SOURCE_ITEM);
+                    LightContext.clear();
                     return;
                 }
             }
-            Context.instance().removeTemp(from.getUniqueId(), DAMAGE_SOURCE_ITEM);
+            LightContext.clear();
         }
 
 
@@ -423,23 +424,23 @@ public class PowerBeam extends BasePower implements PowerPlain, PowerRightClick,
 
                             towards = homingCorrect(towards, lastLocation, target, finalI[0], () -> target = getNextTarget(from.getEyeLocation().getDirection(), from.getEyeLocation(), from));
                         }
-                        if (isStepHit && homingTargetMode.equals(HomingTargetMode.MULTI_TARGET)){
+                        if (isStepHit && homingTargetMode.equals(HomingTargetMode.MULTI_TARGET)) {
                             target = getNextTarget(from.getEyeLocation().getDirection(), from.getEyeLocation(), from);
                         }
                         if (isStepHit && !pierce) {
                             this.cancel();
-                            Context.instance().removeTemp(from.getUniqueId(), DAMAGE_SOURCE_ITEM);
+                            LightContext.clear();
                             return;
                         }
                         if (finalI[0] >= movementTicks) {
                             this.cancel();
-                            Context.instance().removeTemp(from.getUniqueId(), DAMAGE_SOURCE_ITEM);
+                            LightContext.clear();
                         }
                         finalI[0]++;
                     } catch (Exception ex) {
                         from.getServer().getLogger().log(Level.WARNING, "", ex);
                         this.cancel();
-                        Context.instance().removeTemp(from.getUniqueId(), DAMAGE_SOURCE_ITEM);
+                        LightContext.clear();
                     }
                 }
             };
@@ -460,7 +461,7 @@ public class PowerBeam extends BasePower implements PowerPlain, PowerRightClick,
         if (target == null || i < stepsBeforeHoming) {
             return towards;
         }
-        if (target.isDead()){
+        if (target.isDead()) {
             runnable.run();
         }
         Location targetLocation;
@@ -491,8 +492,8 @@ public class PowerBeam extends BasePower implements PowerPlain, PowerRightClick,
     private LivingEntity getNextTarget(Vector towards, Location lastLocation, Entity from) {
         int radius = Math.min(this.length, 300);
         return Utils.getLivingEntitiesInCone(from.getNearbyEntities(radius, this.length, this.length).stream()
-                .filter(entity -> entity instanceof LivingEntity && !entity.equals(from) && !entity.isDead())
-                .map(entity -> ((LivingEntity) entity))
+                        .filter(entity -> entity instanceof LivingEntity && !entity.equals(from) && !entity.isDead())
+                        .map(entity -> ((LivingEntity) entity))
                         .collect(Collectors.toList())
                 , lastLocation.toVector(), homingRange, towards).stream()
                 .filter(livingEntity -> {
@@ -509,14 +510,20 @@ public class PowerBeam extends BasePower implements PowerPlain, PowerRightClick,
                 .findFirst().orElse(null);
     }
 
+    private boolean spawnInWorld = false;
+
     private void spawnParticle(LivingEntity from, World world, Location lastLocation, int i) {
         if ((lastLocation.distance(from.getEyeLocation()) < 1)) {
             return;
         }
-//        if (from instanceof Player) {
-//            ((Player) from).spawnParticle(this.particle, lastLocation, i / 2, offsetX, offsetY, offsetZ, speed, extraData);
-//        }
-        world.spawnParticle(this.particle, lastLocation, i, offsetX, offsetY, offsetZ, speed, extraData, true);
+        if (spawnInWorld) {
+            if (from instanceof Player) {
+                ((Player) from).spawnParticle(this.particle, lastLocation, i / 2, offsetX, offsetY, offsetZ, speed, extraData);
+            }
+        }else {
+            world.spawnParticle(this.particle, lastLocation, i, offsetX, offsetY, offsetZ, speed, extraData, false);
+        }
+        spawnInWorld = !spawnInWorld;
     }
 
     private boolean tryHit(LivingEntity from, Location loc, ItemStack stack, boolean canHitSelf) {
@@ -534,15 +541,12 @@ public class PowerBeam extends BasePower implements PowerPlain, PowerRightClick,
             if (!collect.isEmpty()) {
                 Entity entity = collect.get(0);
                 if (entity instanceof LivingEntity) {
-                    Context.instance().putTemp(from.getUniqueId(), DAMAGE_SOURCE, getNamespacedKey().toString());
-                    Context.instance().putTemp(from.getUniqueId(), OVERRIDING_DAMAGE, damage);
-                    Context.instance().putTemp(from.getUniqueId(), SUPPRESS_MELEE, suppressMelee);
-                    Context.instance().putTemp(from.getUniqueId(), DAMAGE_SOURCE_ITEM, stack);
+                    LightContext.putTemp(from.getUniqueId(), DAMAGE_SOURCE, getNamespacedKey().toString());
+                    LightContext.putTemp(from.getUniqueId(), OVERRIDING_DAMAGE, damage);
+                    LightContext.putTemp(from.getUniqueId(), SUPPRESS_MELEE, suppressMelee);
+                    LightContext.putTemp(from.getUniqueId(), DAMAGE_SOURCE_ITEM, stack);
                     ((LivingEntity) entity).damage(damage, from);
-                    Context.instance().removeTemp(from.getUniqueId(), SUPPRESS_MELEE);
-                    Context.instance().removeTemp(from.getUniqueId(), OVERRIDING_DAMAGE);
-                    Context.instance().removeTemp(from.getUniqueId(), DAMAGE_SOURCE);
-                    Context.instance().removeTemp(from.getUniqueId(), DAMAGE_SOURCE_ITEM);
+                    LightContext.clear();
                 }
                 return true;
             }
@@ -551,10 +555,10 @@ public class PowerBeam extends BasePower implements PowerPlain, PowerRightClick,
                     .filter(entity -> (entity instanceof LivingEntity) && (canHitSelf || !entity.equals(from)))
                     .filter(entity -> canHit(loc, entity))
                     .collect(Collectors.toList());
-            Context.instance().putTemp(from.getUniqueId(), DAMAGE_SOURCE, getNamespacedKey().toString());
-            Context.instance().putTemp(from.getUniqueId(), OVERRIDING_DAMAGE, damage);
-            Context.instance().putTemp(from.getUniqueId(), SUPPRESS_MELEE, suppressMelee);
-            Context.instance().putTemp(from.getUniqueId(), DAMAGE_SOURCE_ITEM, stack);
+            LightContext.putTemp(from.getUniqueId(), DAMAGE_SOURCE, getNamespacedKey().toString());
+            LightContext.putTemp(from.getUniqueId(), OVERRIDING_DAMAGE, damage);
+            LightContext.putTemp(from.getUniqueId(), SUPPRESS_MELEE, suppressMelee);
+            LightContext.putTemp(from.getUniqueId(), DAMAGE_SOURCE_ITEM, stack);
 
             if (!collect.isEmpty()) {
                 collect.stream()
@@ -564,10 +568,7 @@ public class PowerBeam extends BasePower implements PowerPlain, PowerRightClick,
                         });
                 result = true;
             }
-            Context.instance().removeTemp(from.getUniqueId(), SUPPRESS_MELEE);
-            Context.instance().removeTemp(from.getUniqueId(), OVERRIDING_DAMAGE);
-            Context.instance().removeTemp(from.getUniqueId(), DAMAGE_SOURCE);
-            Context.instance().removeTemp(from.getUniqueId(), DAMAGE_SOURCE_ITEM);
+            LightContext.clear();
 
         }
         return result;
