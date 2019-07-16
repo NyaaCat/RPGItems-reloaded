@@ -10,6 +10,7 @@ import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.entity.Entity;
 import org.bukkit.entity.EntityType;
 import org.bukkit.entity.Player;
+import org.bukkit.scoreboard.Objective;
 import org.bukkit.scoreboard.Score;
 import org.bukkit.scoreboard.Scoreboard;
 import org.bukkit.scoreboard.Team;
@@ -138,28 +139,28 @@ public class PowerSelector extends BasePower {
     }
 
     private static LoadingCache<String, Map<String, Pair<Integer, Integer>>> scoreCache = CacheBuilder
-                                                                                                 .newBuilder()
-                                                                                                 .concurrencyLevel(1)
-                                                                                                 .expireAfterAccess(1, TimeUnit.DAYS)
-                                                                                                 .build(CacheLoader.from(PowerSelector::parseScore));
+            .newBuilder()
+            .concurrencyLevel(1)
+            .expireAfterAccess(1, TimeUnit.DAYS)
+            .build(CacheLoader.from(PowerSelector::parseScore));
 
     private static LoadingCache<String, Pair<Set<String>, Set<String>>> teamCache = CacheBuilder
-                                                                                           .newBuilder()
-                                                                                           .concurrencyLevel(1)
-                                                                                           .expireAfterAccess(1, TimeUnit.DAYS)
-                                                                                           .build(CacheLoader.from(PowerSelector::parse));
+            .newBuilder()
+            .concurrencyLevel(1)
+            .expireAfterAccess(1, TimeUnit.DAYS)
+            .build(CacheLoader.from(PowerSelector::parse));
 
     private static LoadingCache<String, Pair<Set<String>, Set<String>>> tagCache = CacheBuilder
-                                                                                          .newBuilder()
-                                                                                          .concurrencyLevel(1)
-                                                                                          .expireAfterAccess(1, TimeUnit.DAYS)
-                                                                                          .build(CacheLoader.from(PowerSelector::parse));
+            .newBuilder()
+            .concurrencyLevel(1)
+            .expireAfterAccess(1, TimeUnit.DAYS)
+            .build(CacheLoader.from(PowerSelector::parse));
 
     private static LoadingCache<String, Set<EntityType>> typeCache = CacheBuilder
-                                                                            .newBuilder()
-                                                                            .concurrencyLevel(1)
-                                                                            .expireAfterAccess(1, TimeUnit.DAYS)
-                                                                            .build(CacheLoader.from(PowerSelector::parseType));
+            .newBuilder()
+            .concurrencyLevel(1)
+            .expireAfterAccess(1, TimeUnit.DAYS)
+            .build(CacheLoader.from(PowerSelector::parseType));
 
     private double getCoordinate(String s, double base) {
         if (s == null) return base;
@@ -217,32 +218,36 @@ public class PowerSelector extends BasePower {
 
     static boolean matchTeam(Entity e, Scoreboard s, Pair<Set<String>, Set<String>> teamLimit) {
         String name = e.getUniqueId().toString();
-        if (e instanceof OfflinePlayer){
-            name = ((OfflinePlayer)e).getName();
+        if (e instanceof OfflinePlayer) {
+            name = ((OfflinePlayer) e).getName();
         }
         Team t = s.getEntryTeam(name);
         if (teamLimit.getValue() == null) return t == null;
         if (teamLimit.getKey() == null) return t != null;
         return teamLimit.getKey().stream().findFirst().map(l -> t != null && l.equals(t.getName())).orElse(true)
-                       && (t == null || !teamLimit.getValue().contains(t.getName()));
+                && (t == null || !teamLimit.getValue().contains(t.getName()));
     }
 
     static boolean matchScore(Entity e, Scoreboard s, Map<String, Pair<Integer, Integer>> scoreLimit) {
         String name = e.getUniqueId().toString();
-        if (e instanceof OfflinePlayer){
-            name = ((OfflinePlayer)e).getName();
+        if (e instanceof OfflinePlayer) {
+            name = ((OfflinePlayer) e).getName();
         }
-        Set<Score> scores = s.getScores(name);
-        Map<String, Integer> smap = new HashMap<>();
-        scores.forEach(sc -> smap.put(sc.getObjective().getName(), sc.getScore()));
-        return scoreLimit.entrySet().stream().allMatch(sl -> Optional.ofNullable(smap.get(sl.getKey())).map(
-                sco -> {
-                    boolean result = true;
-                    Pair<Integer, Integer> limit = sl.getValue();
-                    if (limit.getValue() != null) result = sco < limit.getValue();
-                    if (limit.getKey() != null) result &= sco >= limit.getKey();
-                    return result;
-                }).orElse(false));
+        String finalName = name;
+        return scoreLimit.entrySet().stream().allMatch(sl ->
+        {
+            Objective objective = s.getObjective(sl.getKey());
+            if (objective == null) return false;
+            Score score = objective.getScore(finalName);
+            return Optional.of(score.getScore())
+                    .map(sco -> {
+                        boolean result = true;
+                        Pair<Integer, Integer> limit = sl.getValue();
+                        if (limit.getValue() != null) result = sco < limit.getValue();
+                        if (limit.getKey() != null) result &= sco >= limit.getKey();
+                        return result;
+                    }).orElse(false);
+        });
     }
 
     static boolean matchTag(Entity e, Pair<Set<String>, Set<String>> tagLimit) {
@@ -250,7 +255,7 @@ public class PowerSelector extends BasePower {
         if (tagLimit.getValue() == null) return tags.isEmpty();
         if (tagLimit.getKey() == null) return !tags.isEmpty();
         return tags.containsAll(tagLimit.getKey())
-                       && tags.stream().noneMatch(t -> tagLimit.getValue().contains(t));
+                && tags.stream().noneMatch(t -> tagLimit.getValue().contains(t));
     }
 
     private boolean inRadius(Entity e, Location l, Integer r, Integer rm) {
