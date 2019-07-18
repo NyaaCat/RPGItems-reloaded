@@ -76,6 +76,8 @@ public class PowerScoreboard extends BasePower implements PowerHit, PowerHitTake
     @Property
     public boolean abortOnSuccess = false;
 
+    private BukkitRunnable removeTask;
+
     private static LoadingCache<String, Pair<Set<String>, Set<String>>> teamCache = CacheBuilder
             .newBuilder()
             .concurrencyLevel(1)
@@ -122,6 +124,12 @@ public class PowerScoreboard extends BasePower implements PowerHit, PowerHitTake
             Pair<Set<String>, Set<String>> tag = tagCache.getUnchecked(this.tag);
             List<String> addedTags = new ArrayList<>();
             List<String> removedTags = new ArrayList<>();
+            if (removeTask != null) {
+                if (!removeTask.isCancelled()) {
+                    removeTask.cancel();
+                    removeTask.run();
+                }
+            }
             tag.getKey().forEach(tag1 -> {
                 if (player.addScoreboardTag(tag1)) {
                     addedTags.add(tag1);
@@ -133,13 +141,14 @@ public class PowerScoreboard extends BasePower implements PowerHit, PowerHitTake
                 }
             });
             if (reverseTagAfterDelay) {
-                (new BukkitRunnable() {
+                removeTask = new BukkitRunnable() {
                     @Override
                     public void run() {
                         addedTags.forEach(player::removeScoreboardTag);
                         removedTags.forEach(player::addScoreboardTag);
                     }
-                }).runTaskLater(RPGItems.plugin, delay);
+                };
+                removeTask.runTaskLater(RPGItems.plugin, delay);
             }
         }
         return abortOnSuccess ? PowerResult.abort() : PowerResult.ok();
