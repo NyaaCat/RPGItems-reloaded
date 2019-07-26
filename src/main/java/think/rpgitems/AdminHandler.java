@@ -563,11 +563,11 @@ public class AdminHandler extends RPGCommandReceiver {
         String type = args.next();
         if (type != null) {
             item.setHand(type);
-            msg(sender, "message.hand.set", item.getName(), item.getType());
+            msg(sender, "message.hand.set", item.getName(), item.getHand());
             ItemManager.refreshItem();
             ItemManager.save(item);
         } else {
-            msg(sender, "message.hand.get", item.getName(), item.getType());
+            msg(sender, "message.hand.get", item.getName(), item.getHand());
         }
     }
 
