@@ -1,55 +1,91 @@
 package think.rpgitems.power.impl;
 
 import com.meowj.langutils.lang.convert.EnumEnchantment;
-import com.meowj.langutils.lang.convert.EnumEnchantmentLevel;
-import org.bukkit.NamespacedKey;
-import org.bukkit.enchantments.Enchantment;
 import org.bukkit.entity.LivingEntity;
 import org.bukkit.entity.Player;
 import org.bukkit.event.entity.EntityDamageByEntityEvent;
 import org.bukkit.inventory.ItemStack;
-import think.rpgitems.I18n;
-import think.rpgitems.power.PowerHit;
-import think.rpgitems.power.PowerMeta;
-import think.rpgitems.power.PowerResult;
-import think.rpgitems.power.Property;
+import think.rpgitems.power.*;
 
-import java.util.concurrent.ThreadLocalRandom;
-
-import static think.rpgitems.power.Utils.getAngleBetweenVectors;
-
-@PowerMeta(immutableTrigger = true)
-public class PowerEnchantedHit extends BasePower implements PowerHit {
+@PowerMeta(immutableTrigger = true, implClass = PowerEnchantedHit.Impl.class)
+public class PowerEnchantedHit extends BasePower {
 
     @Property
-    public Mode mode = Mode.ADDITION;
+    private Mode mode = Mode.ADDITION;
 
     @Property
-    public double amountPerLevel = 1;
+    private double amountPerLevel = 1;
 
     @Property
-    public String display;
+    private String display;
 
     @Property
-    public EnumEnchantment enchantmentType = EnumEnchantment.ARROW_DAMAGE;
+    private EnumEnchantment enchantmentType = EnumEnchantment.ARROW_DAMAGE;
 
     @Property
-    public boolean setBaseDamage = false;
+    private boolean setBaseDamage = false;
 
-    @Override
-    public PowerResult<Double> hit(Player player, ItemStack stack, LivingEntity entity, double damage, EntityDamageByEntityEvent event) {
-        int enchLevel = stack.getEnchantmentLevel(enchantmentType.getEnchantment());
-        if (mode == Mode.ADDITION) {
-            damage += (enchLevel * amountPerLevel);
+    public class Impl implements PowerHit {
+        @Override
+        public PowerResult<Double> hit(Player player, ItemStack stack, LivingEntity entity, double damage, EntityDamageByEntityEvent event) {
+            int enchLevel = stack.getEnchantmentLevel(getEnchantmentType().getEnchantment());
+            if (getMode() == Mode.ADDITION) {
+                damage += (enchLevel * getAmountPerLevel());
+            }
+            if (getMode() == Mode.MULTIPLICATION) {
+                damage *= Math.pow(getAmountPerLevel(), enchLevel);
+            }
+            if (damage < 0) damage = 0;
+            if (isSetBaseDamage()) {
+                event.setDamage(damage);
+            }
+            return PowerResult.ok(damage);
         }
-        if (mode == Mode.MULTIPLICATION) {
-            damage *= Math.pow(amountPerLevel, enchLevel);
+
+        @Override
+        public Power getPower() {
+            return PowerEnchantedHit.this;
         }
-        if (damage < 0 ) damage = 0;
-        if (setBaseDamage) {
-            event.setDamage(damage);
-        }
-        return PowerResult.ok(damage);
+    }
+
+    public double getAmountPerLevel() {
+        return amountPerLevel;
+    }
+
+    public String getDisplay() {
+        return display;
+    }
+
+    public EnumEnchantment getEnchantmentType() {
+        return enchantmentType;
+    }
+
+    public Mode getMode() {
+        return mode;
+    }
+
+    public boolean isSetBaseDamage() {
+        return setBaseDamage;
+    }
+
+    public void setAmountPerLevel(double amountPerLevel) {
+        this.amountPerLevel = amountPerLevel;
+    }
+
+    public void setDisplay(String display) {
+        this.display = display;
+    }
+
+    public void setEnchantmentType(EnumEnchantment enchantmentType) {
+        this.enchantmentType = enchantmentType;
+    }
+
+    public void setMode(Mode mode) {
+        this.mode = mode;
+    }
+
+    public void setSetBaseDamage(boolean setBaseDamage) {
+        this.setBaseDamage = setBaseDamage;
     }
 
     private enum Mode {
@@ -65,7 +101,7 @@ public class PowerEnchantedHit extends BasePower implements PowerHit {
 
     @Override
     public String displayText() {
-        return display;
+        return getDisplay();
     }
 
 }

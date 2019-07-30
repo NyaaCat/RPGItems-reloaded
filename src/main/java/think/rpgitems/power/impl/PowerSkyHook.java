@@ -1,0 +1,232 @@
+package think.rpgitems.power.impl;
+
+import org.bukkit.Bukkit;
+import org.bukkit.GameMode;
+import org.bukkit.Location;
+import org.bukkit.Material;
+import org.bukkit.block.Block;
+import org.bukkit.configuration.ConfigurationSection;
+import org.bukkit.entity.Player;
+import org.bukkit.event.entity.EntityShootBowEvent;
+import org.bukkit.event.player.PlayerInteractEvent;
+import org.bukkit.event.player.PlayerToggleSneakEvent;
+import org.bukkit.event.player.PlayerToggleSprintEvent;
+import org.bukkit.inventory.ItemStack;
+import org.bukkit.scheduler.BukkitRunnable;
+import org.bukkit.util.Vector;
+import think.rpgitems.I18n;
+import think.rpgitems.RPGItems;
+import think.rpgitems.power.*;
+import think.rpgitems.utils.MaterialUtils;
+
+import java.util.HashMap;
+import java.util.Map;
+import java.util.UUID;
+
+import static think.rpgitems.power.Utils.checkCooldown;
+
+/**
+ * Power skyhook.
+ * <p>
+ * The skyhook power will allow the user to hook on to {@link #railMaterial material}
+ * up to {@link #hookDistance distance} blocks away
+ * </p>
+ */
+@SuppressWarnings("WeakerAccess")
+@PowerMeta(defaultTrigger = "RIGHT_CLICK", generalInterface = PowerPlain.class, implClass = PowerSkyHook.Impl.class)
+public class PowerSkyHook extends BasePower {
+
+    @Property(order = 0)
+    private Material railMaterial = Material.GLASS;
+    @Property
+    private long cooldown = 0;
+    @Property
+    private int cost = 0;
+    @Property
+    private int hookingTickCost = 0;
+    @Deserializer(MaterialUtils.class)
+    @Property(order = 1, required = true)
+    private int hookDistance = 10;
+
+    private static Map<UUID, Boolean> hooking = new HashMap<>();
+
+    public class Impl  implements PowerRightClick, PowerLeftClick, PowerSneak, PowerSprint, PowerPlain, PowerBowShoot {
+
+        @Override
+        public PowerResult<Void> leftClick(Player player, ItemStack stack, PlayerInteractEvent event) {
+            return fire(player, stack);
+        }
+
+        @Override
+        public PowerResult<Void> rightClick(Player player, ItemStack stack, PlayerInteractEvent event) {
+            return fire(player, stack);
+        }
+
+        @Override
+        public PowerResult<Void> sneak(Player player, ItemStack stack, PlayerToggleSneakEvent event) {
+            return fire(player, stack);
+        }
+
+        @Override
+        public PowerResult<Void> sprint(Player player, ItemStack stack, PlayerToggleSprintEvent event) {
+            return fire(player, stack);
+        }
+
+        @Override
+        public PowerResult<Float> bowShoot(Player player, ItemStack itemStack, EntityShootBowEvent e) {
+            return fire(player, itemStack).with(e.getForce());
+        }
+
+        @Override
+        public PowerResult<Void> fire(final Player player, ItemStack stack) {
+            if (!checkCooldown(getPower(), player, getCooldown(), true, true)) return PowerResult.cd();
+            if (!getItem().consumeDurability(stack, getCost())) return PowerResult.cost();
+            Boolean isHooking = hooking.get(player.getUniqueId());
+            if (isHooking == null) {
+                isHooking = false;
+            }
+            if (isHooking) {
+                player.setVelocity(player.getLocation().getDirection());
+                hooking.put(player.getUniqueId(), false);
+                return PowerResult.noop();
+            }
+            Block block = player.getTargetBlock(null, getHookDistance());
+            if (block.getType() != getRailMaterial()) {
+                player.sendMessage(I18n.format("message.skyhook.fail"));
+                return PowerResult.fail();
+            }
+            hooking.put(player.getUniqueId(), true);
+            final Location location = player.getLocation();
+            player.setAllowFlight(true);
+            player.setVelocity(location.getDirection().multiply(block.getLocation().distance(location) / 2d));
+            player.setFlying(true);
+            (new BukkitRunnable() {
+
+                private int delay = 0;
+
+                @Override
+                public void run() {
+                    if (!(player.getAllowFlight() && getItem().consumeDurability(stack, getHookingTickCost()))) {
+                        cancel();
+                        hooking.put(player.getUniqueId(), false);
+                        return;
+                    }
+                    boolean isHooking = hooking.getOrDefault(player.getUniqueId(), false);
+                    if (!isHooking) {
+                        player.setFlying(false);
+                        if (player.getGameMode() != GameMode.CREATIVE)
+                            player.setAllowFlight(false);
+                        cancel();
+                        return;
+                    }
+                    player.setFlying(true);
+                    player.getLocation(location);
+                    location.add(0, 2.4, 0);
+                    if (delay < 20) {
+                        delay++;
+                        if (location.getBlock().getType() == getRailMaterial()) {
+                            delay = 20;
+                        }
+                        return;
+                    }
+                    Vector dir = location.getDirection().setY(0).normalize();
+                    location.add(dir);
+                    if (location.getBlock().getType() != getRailMaterial()) {
+                        player.setFlying(false);
+                        if (player.getGameMode() != GameMode.CREATIVE)
+                            player.setAllowFlight(false);
+                        cancel();
+                        hooking.put(player.getUniqueId(), false);
+                        return;
+                    }
+                    player.setVelocity(dir.multiply(0.5));
+
+                }
+            }).runTaskTimer(RPGItems.plugin, 0, 0);
+            return PowerResult.ok();
+        }
+
+        @Override
+        public Power getPower() {
+            return PowerSkyHook.this;
+        }
+    }
+    @Override
+    public void init(ConfigurationSection s) {
+        setRailMaterial(MaterialUtils.getMaterial(s.getString("railMaterial", "GLASS"), Bukkit.getConsoleSender()));
+    }
+
+    @Override
+    public void save(ConfigurationSection s) {
+        s.set("cost", getCost());
+        s.set("hookingTickCost", getHookingTickCost());
+        s.set("cooldown", getCooldown());
+        s.set("railMaterial", getRailMaterial().toString());
+        s.set("hookDistance", getHookDistance());
+    }
+
+    /**
+     * Cooldown time of this power
+     */
+    public long getCooldown() {
+        return cooldown;
+    }
+
+    /**
+     * Cost of this power
+     */
+    public int getCost() {
+        return cost;
+    }
+
+    /**
+     * Maximum distance.
+     */
+    public int getHookDistance() {
+        return hookDistance;
+    }
+
+    /**
+     * Hooking Cost Per-Tick
+     */
+    public int getHookingTickCost() {
+        return hookingTickCost;
+    }
+
+    @Override
+    public String getName() {
+        return "skyhook";
+    }
+
+    @Override
+    public String displayText() {
+        return I18n.format("power.skyhook");
+    }
+
+    /**
+     * Material that can hooks on
+     */
+    public Material getRailMaterial() {
+        return railMaterial;
+    }
+
+    public void setCooldown(long cooldown) {
+        this.cooldown = cooldown;
+    }
+
+    public void setCost(int cost) {
+        this.cost = cost;
+    }
+
+    public void setHookDistance(int hookDistance) {
+        this.hookDistance = hookDistance;
+    }
+
+    public void setHookingTickCost(int hookingTickCost) {
+        this.hookingTickCost = hookingTickCost;
+    }
+
+    public void setRailMaterial(Material railMaterial) {
+        this.railMaterial = railMaterial;
+    }
+}

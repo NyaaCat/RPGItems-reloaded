@@ -52,8 +52,7 @@ public class Utils {
         return Arrays.asList(str.split(";"));
     }
 
-    public static List<Entity> getNearbyEntities(Pimpl pimpl, Location l, Player player, double radius, double dx, double dy, double dz) {
-        Power power = pimpl.getPower();
+    public static List<Entity> getNearbyEntities(Power power, Location l, Player player, double radius, double dx, double dy, double dz) {
         List<Entity> entities = new ArrayList<>();
         Collection<Entity> nearbyEntities = l.getWorld().getNearbyEntities(l, dx, dy, dz);
         if (!nearbyEntities.isEmpty()){
@@ -82,7 +81,7 @@ public class Utils {
      * @param radius radius
      * @return nearby entities
      */
-    public static List<Entity> getNearbyEntities(Pimpl power, Location l, Player player, double radius) {
+    public static List<Entity> getNearbyEntities(Power power, Location l, Player player, double radius) {
         return getNearbyEntities(power, l, player, radius, radius, radius, radius);
     }
 
@@ -96,7 +95,7 @@ public class Utils {
      * @param min    min radius
      * @return nearby living entities ordered by distance
      */
-    public static List<LivingEntity> getNearestLivingEntities(Pimpl power, Location l, Player player, double radius, double min) {
+    public static List<LivingEntity> getNearestLivingEntities(Power power, Location l, Player player, double radius, double min) {
         final List<Map.Entry<LivingEntity, Double>> entities = new ArrayList<>();
         for (Entity e : getNearbyEntities(power, l, player, radius)) {
             if (e instanceof LivingEntity && !player.equals(e)) {
@@ -165,7 +164,7 @@ public class Utils {
         return checkAndSetCooldown(power, player, cdTicks, showWarn, showPower, "cooldown." + power.getItem().getUid()  + "." + power.getNamespacedKey().toString());
     }
 
-    private static boolean checkAndSetCooldown(Power power, Player player, long cooldownTime, boolean showWarn, boolean showPower, String key) {
+    public static boolean checkAndSetCooldown(Power power, Player player, long cooldownTime, boolean showWarn, boolean showPower, String key) {
         long cooldown;
         Long value = (Long) Context.instance().get(player.getUniqueId(), key);
         long nowTick = System.currentTimeMillis() / 50;
