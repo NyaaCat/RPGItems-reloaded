@@ -179,8 +179,8 @@ public class Utils {
             return true;
         } else {
             if (showWarn) {
-                if (showPower || (!Strings.isNullOrEmpty(power.getDisplayName()) && !power.getDisplayName().equals(power.getLocalizedName(RPGItems.plugin.cfg.language)))) {
-                    player.sendMessage(I18n.format("message.cooldown.power", ((double) (cooldown - nowTick)) / 20d, power.getDisplayName()));
+                if (showPower || (!Strings.isNullOrEmpty(power.getLocalizedDisplayName()) && !power.getLocalizedDisplayName().equals(power.getLocalizedName(RPGItems.plugin.cfg.language)))) {
+                    player.sendMessage(I18n.format("message.cooldown.power", ((double) (cooldown - nowTick)) / 20d, power.getLocalizedDisplayName()));
                 } else {
                     player.sendMessage(I18n.format("message.cooldown.general", ((double) (cooldown - nowTick)) / 20d));
                 }

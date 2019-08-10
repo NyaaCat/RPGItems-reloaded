@@ -84,7 +84,7 @@ public interface Power {
      *
      * @return Display name or default name
      */
-    default String getDisplayName() {
+    default String getLocalizedDisplayName() {
         return Strings.isNullOrEmpty(displayName()) ? getLocalizedName(RPGItems.plugin.cfg.language) : displayName();
     }
 

@@ -95,9 +95,9 @@ public class PowerManager {
                                                                                        )
                                                                   )
                                                                   .reduce((a, b) -> {
-                                                                      throw new IllegalArgumentException(name + " " + a.toString() + " " + b.toString());
+                                                                      throw new IllegalArgumentException(p.getKey() + " " + name + " " + a.toString() + " " + b.toString());
                                                                   })
-                                                                  .orElseThrow(() -> new IllegalArgumentException(name)),
+                                                                  .orElseThrow(() -> new IllegalArgumentException(p.getKey() + " " + name)),
                                               PowerProperty.from(p.getKey(), p.getValue(), p.getValue().order() < requiredOrder));
                                       }
                               )

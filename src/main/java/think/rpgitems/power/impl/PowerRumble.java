@@ -37,29 +37,35 @@ import static think.rpgitems.power.Utils.getNearbyEntities;
 @PowerMeta(defaultTrigger = "RIGHT_CLICK", withSelectors = true, generalInterface = PowerPlain.class, implClass = PowerRumble.Impl.class)
 public class PowerRumble extends BasePower {
 
-    /**
-     * Cooldown time of this power
-     */
     @Property(order = 0)
-    public long cooldown = 0;
-    /**
-     * Power of rumble
-     */
+    private long cooldown = 0;
     @Property(order = 1)
-    public int power = 2;
-    /**
-     * Maximum distance of rumble
-     */
+    private int power = 2;
     @Property(order = 2, required = true)
-    public int distance = 15;
+    private int distance = 15;
+    @Property
+    private int cost = 0;
+
+    @Property
+    private double damage = 0;
+
     /**
      * Cost of this power
      */
-    @Property
-    public int cost = 0;
+    public int getCost() {
+        return cost;
+    }
 
-    @Property
-    public double damage = 0;
+    public double getDamage() {
+        return damage;
+    }
+
+    /**
+     * Maximum distance of rumble
+     */
+    public int getDistance() {
+        return distance;
+    }
 
     @Override
     public String getName() {
@@ -68,7 +74,21 @@ public class PowerRumble extends BasePower {
 
     @Override
     public String displayText() {
-        return I18n.format("power.rumble", (double) cooldown / 20d);
+        return I18n.format("power.rumble", (double) getCooldown() / 20d);
+    }
+
+    /**
+     * Cooldown time of this power
+     */
+    public long getCooldown() {
+        return cooldown;
+    }
+
+    /**
+     * Power of rumble
+     */
+    public int getPower() {
+        return power;
     }
 
     public class Impl implements PowerRightClick, PowerLeftClick, PowerSneak, PowerSprint, PowerPlain, PowerBowShoot {
@@ -79,8 +99,8 @@ public class PowerRumble extends BasePower {
 
         @Override
         public PowerResult<Void> fire(final Player player, ItemStack stack) {
-            if (!checkCooldown(getPower(), player, cooldown, true, true)) return PowerResult.cd();
-            if (!getItem().consumeDurability(stack, cost)) return PowerResult.cost();
+            if (!checkCooldown(getPower(), player, getCooldown(), true, true)) return PowerResult.cd();
+            if (!getItem().consumeDurability(stack, getCost())) return PowerResult.cost();
             final Location location = player.getLocation().add(0, -0.2, 0);
             final Vector direction = player.getLocation().getDirection();
             direction.setY(0);
@@ -127,10 +147,10 @@ public class PowerRumble extends BasePower {
                                 if (!(e instanceof LivingEntity)) {
                                     continue;
                                 }
-                                if (damage > 0) {
+                                if (getDamage() > 0) {
                                     Context.instance().putTemp(player.getUniqueId(), DAMAGE_SOURCE, getNamespacedKey().toString());
-                                    Context.instance().putTemp(player.getUniqueId(), OVERRIDING_DAMAGE, damage);
-                                    ((LivingEntity) e).damage(damage, player);
+                                    Context.instance().putTemp(player.getUniqueId(), OVERRIDING_DAMAGE, getDamage());
+                                    ((LivingEntity) e).damage(getDamage(), player);
                                     Context.instance().putTemp(player.getUniqueId(), OVERRIDING_DAMAGE, null);
                                     Context.instance().putTemp(player.getUniqueId(), DAMAGE_SOURCE, null);
 
@@ -142,7 +162,7 @@ public class PowerRumble extends BasePower {
                         return;
                     }
                     location.add(direction);
-                    if (getCount() >= distance) {
+                    if (getCount() >= getDistance()) {
                         cancel();
                     }
                     count = getCount() + 1;
