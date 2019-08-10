@@ -35,12 +35,12 @@ public class PowerLoreFilter extends BasePower {
 
     private Pattern pattern;
 
-    public PowerLoreFilter compile(){
+    public PowerLoreFilter compile() {
         pattern = Pattern.compile(regex);
         return this;
     }
 
-    public Pattern pattern(){
+    public Pattern pattern() {
         return pattern;
     }
 

@@ -50,6 +50,55 @@ public class PowerThrow extends BasePower {
     @Property
     private boolean requireHurtByEntity = true;
 
+    @Override
+    public void init(ConfigurationSection section) {
+        boolean isRight = section.getBoolean("isRight", true);
+        triggers = Collections.singleton(isRight ? Trigger.RIGHT_CLICK : Trigger.LEFT_CLICK);
+        super.init(section);
+    }
+
+    public long getCooldown() {
+        return cooldown;
+    }
+
+    public int getCost() {
+        return cost;
+    }
+
+    public String getEntityData() {
+        return entityData;
+    }
+
+    public String getEntityName() {
+        return entityName;
+    }
+
+    @Override
+    public String getName() {
+        return "throw";
+    }
+
+    @Override
+    public String displayText() {
+        return ChatColor.GREEN + getDisplay();
+    }
+
+    public String getDisplay() {
+        return display;
+    }
+
+    public double getSpeed() {
+        return speed;
+    }
+
+    public boolean isPersistent() {
+        return isPersistent;
+    }
+
+    public boolean isRequireHurtByEntity() {
+        return requireHurtByEntity;
+    }
+
     public class Impl implements PowerRightClick, PowerLeftClick, PowerPlain, PowerBowShoot, PowerHurt, PowerHitTaken {
 
         @Override
@@ -58,20 +107,6 @@ public class PowerThrow extends BasePower {
                 return fire(target, stack).with(damage);
             }
             return PowerResult.noop();
-        }
-
-        @Override
-        public PowerResult<Void> hurt(Player target, ItemStack stack, EntityDamageEvent event) {
-            if (!isRequireHurtByEntity() || event instanceof EntityDamageByEntityEvent) {
-                return fire(target, stack);
-            }
-            return PowerResult.noop();
-        }
-
-
-        @Override
-        public PowerResult<Void> rightClick(Player player, ItemStack stack, PlayerInteractEvent event) {
-            return fire(player, stack);
         }
 
         @Override
@@ -84,8 +119,8 @@ public class PowerThrow extends BasePower {
         }
 
         @Override
-        public PowerResult<Void> leftClick(Player player, ItemStack stack, PlayerInteractEvent event) {
-            return fire(player, stack);
+        public Power getPower() {
+            return PowerThrow.this;
         }
 
         @SuppressWarnings("deprecation")
@@ -131,62 +166,26 @@ public class PowerThrow extends BasePower {
         }
 
         @Override
-        public PowerResult<Float> bowShoot(Player player, ItemStack itemStack, EntityShootBowEvent e) {
-            return fire(player, itemStack).with(e.getForce());
+        public PowerResult<Void> hurt(Player target, ItemStack stack, EntityDamageEvent event) {
+            if (!isRequireHurtByEntity() || event instanceof EntityDamageByEntityEvent) {
+                return fire(target, stack);
+            }
+            return PowerResult.noop();
         }
 
         @Override
-        public Power getPower() {
-            return PowerThrow.this;
+        public PowerResult<Void> rightClick(Player player, ItemStack stack, PlayerInteractEvent event) {
+            return fire(player, stack);
         }
-    }
 
-    @Override
-    public void init(ConfigurationSection section) {
-        boolean isRight = section.getBoolean("isRight", true);
-        triggers = Collections.singleton(isRight ? Trigger.RIGHT_CLICK : Trigger.LEFT_CLICK);
-        super.init(section);
-    }
+        @Override
+        public PowerResult<Void> leftClick(Player player, ItemStack stack, PlayerInteractEvent event) {
+            return fire(player, stack);
+        }
 
-    public long getCooldown() {
-        return cooldown;
-    }
-
-    public int getCost() {
-        return cost;
-    }
-
-    public String getDisplay() {
-        return display;
-    }
-
-    public String getEntityData() {
-        return entityData;
-    }
-
-    public String getEntityName() {
-        return entityName;
-    }
-
-    @Override
-    public String getName() {
-        return "throw";
-    }
-
-    @Override
-    public String displayText() {
-        return ChatColor.GREEN + getDisplay();
-    }
-
-    public double getSpeed() {
-        return speed;
-    }
-
-    public boolean isPersistent() {
-        return isPersistent;
-    }
-
-    public boolean isRequireHurtByEntity() {
-        return requireHurtByEntity;
+        @Override
+        public PowerResult<Float> bowShoot(Player player, ItemStack itemStack, EntityShootBowEvent e) {
+            return fire(player, itemStack).with(e.getForce());
+        }
     }
 }

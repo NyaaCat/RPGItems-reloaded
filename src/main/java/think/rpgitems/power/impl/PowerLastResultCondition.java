@@ -30,11 +30,6 @@ public class PowerLastResultCondition extends BasePower implements PowerConditio
     }
 
     @Override
-    public Power getPower() {
-        return this;
-    }
-
-    @Override
     public boolean isStatic() {
         return false;
     }
@@ -54,6 +49,11 @@ public class PowerLastResultCondition extends BasePower implements PowerConditio
     }
 
     @Override
+    public Set<String> getConditions() {
+        return Collections.emptySet();
+    }
+
+    @Override
     public String getName() {
         return "lastresultcondition";
     }
@@ -64,7 +64,7 @@ public class PowerLastResultCondition extends BasePower implements PowerConditio
     }
 
     @Override
-    public Set<String> getConditions() {
-        return Collections.emptySet();
+    public Power getPower() {
+        return this;
     }
 }

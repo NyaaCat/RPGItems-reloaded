@@ -42,48 +42,36 @@ import static think.rpgitems.power.Utils.checkCooldown;
 @PowerMeta(defaultTrigger = {"RIGHT_CLICK", "TICK"}, generalInterface = PowerPlain.class, implClass = PowerParticleBarrier.Impl.class)
 public class PowerParticleBarrier extends BasePower {
 
+    private static final Cache<UUID, Double> barriers = CacheBuilder.newBuilder()
+                                                                    .expireAfterAccess(1, TimeUnit.MINUTES)
+                                                                    .build();
+    private static final Cache<UUID, UUID> barrierSources = CacheBuilder.newBuilder()
+                                                                        .expireAfterAccess(1, TimeUnit.MINUTES)
+                                                                        .build();
+    private static final Cache<UUID, Pair<Long, Double>> energys = CacheBuilder.newBuilder()
+                                                                               .expireAfterAccess(10, TimeUnit.MINUTES)
+                                                                               .build();
+    private static AtomicInteger rc = new AtomicInteger(0);
+    private static Listener event;
     @Property
     private double energyPerBarrier = 40;
-
     @Property
     private double barrierHealth = 40;
-
     @Property
     private double energyDecay = 1.5;
-
     @Property
     private double energyPerLevel = 10;
-
     @Property
     private boolean projected = false;
-
     @Property
     private int cooldown = 0;
-
     @Property
     private int cost = 0;
-
     @Deserializer(PotionEffectUtils.class)
     @Serializer(PotionEffectUtils.class)
     @Property(order = 1, required = true)
     @AcceptedValue(preset = Preset.POTION_EFFECT_TYPE)
     private PotionEffectType effect = PotionEffectType.INCREASE_DAMAGE;
-
-    private static AtomicInteger rc = new AtomicInteger(0);
-
-    private static Listener event;
-
-    private static final Cache<UUID, Double> barriers = CacheBuilder.newBuilder()
-                                                                    .expireAfterAccess(1, TimeUnit.MINUTES)
-                                                                    .build();
-
-    private static final Cache<UUID, UUID> barrierSources = CacheBuilder.newBuilder()
-                                                                        .expireAfterAccess(1, TimeUnit.MINUTES)
-                                                                        .build();
-
-    private static final Cache<UUID, Pair<Long, Double>> energys = CacheBuilder.newBuilder()
-                                                                               .expireAfterAccess(10, TimeUnit.MINUTES)
-                                                                               .build();
 
     @Override
     public void init(ConfigurationSection s) {
@@ -119,6 +107,18 @@ public class PowerParticleBarrier extends BasePower {
         }
     }
 
+    public static AtomicInteger getRc() {
+        return rc;
+    }
+
+    public static Cache<UUID, Double> getBarriers() {
+        return barriers;
+    }
+
+    public double getEnergyPerBarrier() {
+        return energyPerBarrier;
+    }
+
     public double getBarrierHealth() {
         return barrierHealth;
     }
@@ -127,8 +127,16 @@ public class PowerParticleBarrier extends BasePower {
         return barrierSources;
     }
 
-    public static Cache<UUID, Double> getBarriers() {
-        return barriers;
+    public static Cache<UUID, Pair<Long, Double>> getEnergys() {
+        return energys;
+    }
+
+    public double getEnergyDecay() {
+        return energyDecay;
+    }
+
+    public static Listener getEvent() {
+        return event;
     }
 
     public int getCooldown() {
@@ -149,24 +157,8 @@ public class PowerParticleBarrier extends BasePower {
         return effect;
     }
 
-    public double getEnergyDecay() {
-        return energyDecay;
-    }
-
-    public double getEnergyPerBarrier() {
-        return energyPerBarrier;
-    }
-
     public double getEnergyPerLevel() {
         return energyPerLevel;
-    }
-
-    public static Cache<UUID, Pair<Long, Double>> getEnergys() {
-        return energys;
-    }
-
-    public static Listener getEvent() {
-        return event;
     }
 
     @Override
@@ -179,21 +171,23 @@ public class PowerParticleBarrier extends BasePower {
         return null;
     }
 
+    @Override
+    public void deinit() {
+        int nrc = getRc().decrementAndGet();
+        if (nrc == 0) {
+            HandlerList.unregisterAll(getEvent());
+        }
+    }
+
+    public boolean isProjected() {
+        return projected;
+    }
+
     public class Impl implements PowerPlain, PowerRightClick, PowerLeftClick, PowerTick, PowerBowShoot {
 
         @Override
         public PowerResult<Void> leftClick(Player player, ItemStack stack, PlayerInteractEvent event) {
             return fire(player, stack);
-        }
-
-        @Override
-        public PowerResult<Void> rightClick(Player player, ItemStack stack, PlayerInteractEvent event) {
-            return fire(player, stack);
-        }
-
-        @Override
-        public PowerResult<Float> bowShoot(Player player, ItemStack stack, EntityShootBowEvent event) {
-            return fire(player, stack).with(event.getForce());
         }
 
         @SuppressWarnings("unchecked")
@@ -214,6 +208,11 @@ public class PowerParticleBarrier extends BasePower {
                     return PowerResult.fail();
                 }
             }
+        }
+
+        @Override
+        public Power getPower() {
+            return PowerParticleBarrier.this;
         }
 
         @SuppressWarnings("deprecation")
@@ -284,6 +283,16 @@ public class PowerParticleBarrier extends BasePower {
         }
 
         @Override
+        public PowerResult<Void> rightClick(Player player, ItemStack stack, PlayerInteractEvent event) {
+            return fire(player, stack);
+        }
+
+        @Override
+        public PowerResult<Float> bowShoot(Player player, ItemStack stack, EntityShootBowEvent event) {
+            return fire(player, stack).with(event.getForce());
+        }
+
+        @Override
         public PowerResult<Void> tick(Player player, ItemStack stack) {
             Pair<Long, Double> pair = getEnergys().getIfPresent(player.getUniqueId());
             if (pair == null) return PowerResult.noop();
@@ -294,27 +303,5 @@ public class PowerParticleBarrier extends BasePower {
             player.addPotionEffect(new PotionEffect(getEffect(), 5, level));
             return PowerResult.ok();
         }
-
-        @Override
-        public Power getPower() {
-            return PowerParticleBarrier.this;
-        }
-    }
-
-
-    @Override
-    public void deinit() {
-        int nrc = getRc().decrementAndGet();
-        if (nrc == 0) {
-            HandlerList.unregisterAll(getEvent());
-        }
-    }
-
-    public static AtomicInteger getRc() {
-        return rc;
-    }
-
-    public boolean isProjected() {
-        return projected;
     }
 }

@@ -12,7 +12,7 @@ import java.util.UUID;
 /**
  * Power attributemodifier.
  * <p>
- *  Add attribute modifier to item
+ * Add attribute modifier to item
  * </p>
  */
 @PowerMeta(implClass = Pimpl.class, marker = true)

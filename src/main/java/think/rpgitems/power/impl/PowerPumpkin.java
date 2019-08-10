@@ -32,13 +32,6 @@ public class PowerPumpkin extends BasePower {
     private int cost = 0;
 
     /**
-     * Chance of triggering this power
-     */
-    public int getChance() {
-        return chance;
-    }
-
-    /**
      * Cost of this power
      */
     public int getCost() {
@@ -62,7 +55,14 @@ public class PowerPumpkin extends BasePower {
         return I18n.format("power.pumpkin", getChance());
     }
 
-    public class Impl  implements PowerHit {
+    /**
+     * Chance of triggering this power
+     */
+    public int getChance() {
+        return chance;
+    }
+
+    public class Impl implements PowerHit {
 
         @Override
         public PowerResult<Double> hit(Player player, ItemStack stack, LivingEntity entity, double damage, EntityDamageByEntityEvent event) {

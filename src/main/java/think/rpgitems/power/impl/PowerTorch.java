@@ -36,22 +36,51 @@ public class PowerTorch extends BasePower {
     @Property
     private int cost = 0;
 
-    public class Impl  implements PowerPlain, PowerLeftClick, PowerRightClick, PowerBowShoot {
+    private List<BlockFace> getPossibleFaces(Location loc) {
+        List<BlockFace> faces = new ArrayList<>();
+        Block relative = loc.getBlock().getRelative(BlockFace.DOWN);
+        if (relative.getType().isSolid() && relative.getType().isOccluding()) {
+            faces.add(BlockFace.DOWN);
+        }
+        for (BlockFace f : ((Directional) Material.WALL_TORCH.createBlockData()).getFaces()) {
+            Block block = loc.getBlock().getRelative(f);
+            if (block.getType().isSolid() && block.getType().isOccluding()) {
+                faces.add(f.getOppositeFace());
+            }
+        }
+        return faces;
+    }
+
+    /**
+     * Cost of this power
+     */
+    public int getCost() {
+        return cost;
+    }
+
+    @Override
+    public String getName() {
+        return "torch";
+    }
+
+    @Override
+    public String displayText() {
+        return I18n.format("power.torch", (double) getCooldown() / 20d);
+    }
+
+    /**
+     * Cooldown time of this power
+     */
+    public long getCooldown() {
+        return cooldown;
+    }
+
+    public class Impl implements PowerPlain, PowerLeftClick, PowerRightClick, PowerBowShoot {
 
 
         @Override
         public PowerResult<Void> leftClick(Player player, ItemStack stack, PlayerInteractEvent event) {
             return fire(player, stack);
-        }
-
-        @Override
-        public PowerResult<Void> rightClick(Player player, ItemStack stack, PlayerInteractEvent event) {
-            return fire(player, stack);
-        }
-
-        @Override
-        public PowerResult<Float> bowShoot(Player player, ItemStack stack, EntityShootBowEvent event) {
-            return fire(player, stack).with(event.getForce());
         }
 
         @Override
@@ -135,44 +164,15 @@ public class PowerTorch extends BasePower {
         public Power getPower() {
             return PowerTorch.this;
         }
-    }
 
-    @Override
-    public String displayText() {
-        return I18n.format("power.torch", (double) getCooldown() / 20d);
-    }
-
-    /**
-     * Cooldown time of this power
-     */
-    public long getCooldown() {
-        return cooldown;
-    }
-
-    /**
-     * Cost of this power
-     */
-    public int getCost() {
-        return cost;
-    }
-
-    @Override
-    public String getName() {
-        return "torch";
-    }
-
-    private List<BlockFace> getPossibleFaces(Location loc) {
-        List<BlockFace> faces = new ArrayList<>();
-        Block relative = loc.getBlock().getRelative(BlockFace.DOWN);
-        if (relative.getType().isSolid() && relative.getType().isOccluding()) {
-            faces.add(BlockFace.DOWN);
+        @Override
+        public PowerResult<Void> rightClick(Player player, ItemStack stack, PlayerInteractEvent event) {
+            return fire(player, stack);
         }
-        for (BlockFace f : ((Directional) Material.WALL_TORCH.createBlockData()).getFaces()) {
-            Block block = loc.getBlock().getRelative(f);
-            if (block.getType().isSolid() && block.getType().isOccluding()) {
-                faces.add(f.getOppositeFace());
-            }
+
+        @Override
+        public PowerResult<Float> bowShoot(Player player, ItemStack stack, EntityShootBowEvent event) {
+            return fire(player, stack).with(event.getForce());
         }
-        return faces;
     }
 }

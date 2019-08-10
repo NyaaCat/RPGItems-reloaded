@@ -1,7 +1,6 @@
 package think.rpgitems.power.impl;
 
 import org.bukkit.Material;
-import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.EquipmentSlot;
 import org.bukkit.inventory.ItemStack;
@@ -40,11 +39,6 @@ public class PowerEquipmentCondition extends BasePower implements PowerCondition
     @Override
     public String id() {
         return id;
-    }
-
-    @Override
-    public Power getPower() {
-        return PowerEquipmentCondition.this;
     }
 
     @Override
@@ -132,6 +126,11 @@ public class PowerEquipmentCondition extends BasePower implements PowerCondition
     }
 
     @Override
+    public Set<String> getConditions() {
+        return Collections.emptySet();
+    }
+
+    @Override
     public String getName() {
         return "equipmentcondition";
     }
@@ -142,7 +141,7 @@ public class PowerEquipmentCondition extends BasePower implements PowerCondition
     }
 
     @Override
-    public Set<String> getConditions() {
-        return Collections.emptySet();
+    public Power getPower() {
+        return PowerEquipmentCondition.this;
     }
 }

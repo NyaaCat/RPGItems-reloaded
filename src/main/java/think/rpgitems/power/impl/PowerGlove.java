@@ -32,10 +32,6 @@ public class PowerGlove extends BasePower {
     @Property(order = 3)
     private double throwSpeed = 0.0D;
 
-    public long getCooldown() {
-        return cooldown;
-    }
-
     public int getMaxDistance() {
         return maxDistance;
     }
@@ -44,24 +40,22 @@ public class PowerGlove extends BasePower {
         return maxTicks;
     }
 
+    @Override
+    public String getName() {
+        return "glove";
+    }
+
+    @Override
+    public String displayText() {
+        return I18n.format("power.glove", (double) getCooldown() / 20D);
+    }
+
+    public long getCooldown() {
+        return cooldown;
+    }
+
     public double getThrowSpeed() {
         return throwSpeed;
-    }
-
-    public void setCooldown(long cooldown) {
-        this.cooldown = cooldown;
-    }
-
-    public void setMaxDistance(int maxDistance) {
-        this.maxDistance = maxDistance;
-    }
-
-    public void setMaxTicks(int maxTicks) {
-        this.maxTicks = maxTicks;
-    }
-
-    public void setThrowSpeed(double throwSpeed) {
-        this.throwSpeed = throwSpeed;
     }
 
     public class Impl implements PowerRightClick {
@@ -98,14 +92,6 @@ public class PowerGlove extends BasePower {
                     }
                     Listener finalListener = listener;
                     new BukkitRunnable() {
-                        public void setTicks(long ticks) {
-                            this.ticks = ticks;
-                        }
-
-                        public long getTicks() {
-                            return ticks;
-                        }
-
                         private long ticks = 0L;
 
                         @Override
@@ -121,6 +107,14 @@ public class PowerGlove extends BasePower {
                             }
                             setTicks(getTicks() + 1);
                         }
+
+                        public long getTicks() {
+                            return ticks;
+                        }
+
+                        public void setTicks(long ticks) {
+                            this.ticks = ticks;
+                        }
                     }.runTaskTimer(RPGItems.plugin, 1, 1);
                     return PowerResult.ok();
                 }
@@ -133,15 +127,5 @@ public class PowerGlove extends BasePower {
         public Power getPower() {
             return PowerGlove.this;
         }
-    }
-
-    @Override
-    public String getName() {
-        return "glove";
-    }
-
-    @Override
-    public String displayText() {
-        return I18n.format("power.glove", (double) getCooldown() / 20D);
     }
 }

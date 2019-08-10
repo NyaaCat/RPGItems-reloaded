@@ -36,6 +36,43 @@ public class PowerHeadshot extends BasePower {
     @Property
     private boolean setBaseDamage = false;
 
+    /**
+     * Cost of this power
+     */
+    public int getCost() {
+        return cost;
+    }
+
+    @Override
+    public String getName() {
+        return "headshot";
+    }
+
+    @Override
+    public String displayText() {
+        return I18n.format("power.headshot", getFactor());
+    }
+
+    public double getFactor() {
+        return factor;
+    }
+
+    public boolean isParticleEnemy() {
+        return particleEnemy;
+    }
+
+    public boolean isSetBaseDamage() {
+        return setBaseDamage;
+    }
+
+    public boolean isSoundEnemy() {
+        return soundEnemy;
+    }
+
+    public boolean isSoundSelf() {
+        return soundSelf;
+    }
+
     public class Impl implements PowerHit {
 
         @Override
@@ -96,42 +133,5 @@ public class PowerHeadshot extends BasePower {
         public Power getPower() {
             return PowerHeadshot.this;
         }
-    }
-
-    @Override
-    public String displayText() {
-        return I18n.format("power.headshot", getFactor());
-    }
-
-    /**
-     * Cost of this power
-     */
-    public int getCost() {
-        return cost;
-    }
-
-    public double getFactor() {
-        return factor;
-    }
-
-    @Override
-    public String getName() {
-        return "headshot";
-    }
-
-    public boolean isParticleEnemy() {
-        return particleEnemy;
-    }
-
-    public boolean isSetBaseDamage() {
-        return setBaseDamage;
-    }
-
-    public boolean isSoundEnemy() {
-        return soundEnemy;
-    }
-
-    public boolean isSoundSelf() {
-        return soundSelf;
     }
 }

@@ -44,6 +44,18 @@ public class PowerCharge extends BasePower {
         return I18n.format("power.charge", getPercentage());
     }
 
+    public int getPercentage() {
+        return percentage;
+    }
+
+    public int getSpeedPercentage() {
+        return speedPercentage;
+    }
+
+    public boolean isSetBaseDamage() {
+        return setBaseDamage;
+    }
+
     public class Impl implements PowerHit {
         @Override
         public PowerResult<Double> hit(Player player, ItemStack stack, LivingEntity entity, double damage, EntityDamageByEntityEvent event) {
@@ -67,33 +79,5 @@ public class PowerCharge extends BasePower {
         public Power getPower() {
             return PowerCharge.this;
         }
-    }
-
-    public int getPercentage() {
-        return percentage;
-    }
-
-    public int getSpeedPercentage() {
-        return speedPercentage;
-    }
-
-    public boolean isSetBaseDamage() {
-        return setBaseDamage;
-    }
-
-    public void setCap(double cap) {
-        this.cap = cap;
-    }
-
-    public void setPercentage(int percentage) {
-        this.percentage = percentage;
-    }
-
-    public void setSetBaseDamage(boolean setBaseDamage) {
-        this.setBaseDamage = setBaseDamage;
-    }
-
-    public void setSpeedPercentage(int speedPercentage) {
-        this.speedPercentage = speedPercentage;
     }
 }

@@ -32,11 +32,6 @@ public class PowerDurabilityCondition extends BasePower implements PowerConditio
     }
 
     @Override
-    public Power getPower() {
-        return this;
-    }
-
-    @Override
     public boolean isStatic() {
         return isStatic;
     }
@@ -54,6 +49,11 @@ public class PowerDurabilityCondition extends BasePower implements PowerConditio
     }
 
     @Override
+    public Set<String> getConditions() {
+        return Collections.emptySet();
+    }
+
+    @Override
     public String getName() {
         return "durabilitycondition";
     }
@@ -64,7 +64,7 @@ public class PowerDurabilityCondition extends BasePower implements PowerConditio
     }
 
     @Override
-    public Set<String> getConditions() {
-        return Collections.emptySet();
+    public Power getPower() {
+        return this;
     }
 }

@@ -11,7 +11,7 @@ import think.rpgitems.power.*;
 /**
  * Power airborne.
  * <p>
- *  Do more damage when gliding
+ * Do more damage when gliding
  * </p>
  */
 @PowerMeta(immutableTrigger = true, implClass = PowerAirborne.Impl.class)
@@ -29,26 +29,6 @@ public class PowerAirborne extends BasePower {
         return cap;
     }
 
-    public int getPercentage() {
-        return percentage;
-    }
-
-    public boolean isSetBaseDamage() {
-        return setBaseDamage;
-    }
-
-    public void setCap(double cap) {
-        this.cap = cap;
-    }
-
-    public void setPercentage(int percentage) {
-        this.percentage = percentage;
-    }
-
-    public void setSetBaseDamage(boolean setBaseDamage) {
-        this.setBaseDamage = setBaseDamage;
-    }
-
     @Override
     public String getName() {
         return "airborne";
@@ -57,6 +37,14 @@ public class PowerAirborne extends BasePower {
     @Override
     public String displayText() {
         return I18n.format("power.airborne", getPercentage());
+    }
+
+    public int getPercentage() {
+        return percentage;
+    }
+
+    public boolean isSetBaseDamage() {
+        return setBaseDamage;
     }
 
     class Impl implements PowerHit {

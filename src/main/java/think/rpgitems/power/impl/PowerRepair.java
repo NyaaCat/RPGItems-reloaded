@@ -94,10 +94,6 @@ public class PowerRepair extends BasePower {
         return customMessage;
     }
 
-    public String getDisplay() {
-        return display;
-    }
-
     public int getDurability() {
         return durability;
     }
@@ -120,6 +116,40 @@ public class PowerRepair extends BasePower {
         return ChatColor.GREEN + getDisplay();
     }
 
+    public String getDisplay() {
+        return display;
+    }
+
+    public boolean isAbortOnFailure() {
+        return abortOnFailure;
+    }
+
+    public boolean isAbortOnSuccess() {
+        return abortOnSuccess;
+    }
+
+    public boolean isAllowBreak() {
+        return allowBreak;
+    }
+
+    public boolean isRequireHurtByEntity() {
+        return requireHurtByEntity;
+    }
+
+    public boolean isShowFailMsg() {
+        return showFailMsg;
+    }
+
+    public boolean isSneak() {
+        return isSneak;
+    }
+
+    public enum RepairMode {
+        DEFAULT,
+        ALLOW_OVER,
+        ALWAYS,
+    }
+
     public class Impl implements PowerRightClick, PowerLeftClick, PowerPlain, PowerHitTaken, PowerHurt, PowerBowShoot {
 
         @Override
@@ -128,35 +158,6 @@ public class PowerRepair extends BasePower {
                 return fire(target, stack).with(damage);
             }
             return PowerResult.noop();
-        }
-
-        @Override
-        public PowerResult<Void> hurt(Player target, ItemStack stack, EntityDamageEvent event) {
-            if (!isRequireHurtByEntity() || event instanceof EntityDamageByEntityEvent) {
-                return fire(target, stack);
-            }
-            return PowerResult.noop();
-        }
-
-        @Override
-        public PowerResult<Void> rightClick(Player player, ItemStack stack, PlayerInteractEvent event) {
-            if (player.isSneaking() == isSneak()) {
-                return fire(player, stack);
-            }
-            return PowerResult.noop();
-        }
-
-        @Override
-        public PowerResult<Void> leftClick(Player player, ItemStack stack, PlayerInteractEvent event) {
-            if (player.isSneaking() == isSneak()) {
-                return fire(player, stack);
-            }
-            return PowerResult.noop();
-        }
-
-        @Override
-        public PowerResult<Float> bowShoot(Player player, ItemStack itemStack, EntityShootBowEvent e) {
-            return fire(player, itemStack).with(e.getForce());
         }
 
         @Override
@@ -199,6 +200,11 @@ public class PowerRepair extends BasePower {
             return isAbortOnSuccess() ? PowerResult.abort() : PowerResult.ok();
         }
 
+        @Override
+        public Power getPower() {
+            return PowerRepair.this;
+        }
+
         private boolean removeItem(Inventory inventory, ItemStack item, int amount) {
             for (int slot = 0; slot < inventory.getSize(); slot++) {
                 ItemStack tmp = inventory.getItem(slot);
@@ -217,90 +223,32 @@ public class PowerRepair extends BasePower {
         }
 
         @Override
-        public Power getPower() {
-            return PowerRepair.this;
+        public PowerResult<Void> hurt(Player target, ItemStack stack, EntityDamageEvent event) {
+            if (!isRequireHurtByEntity() || event instanceof EntityDamageByEntityEvent) {
+                return fire(target, stack);
+            }
+            return PowerResult.noop();
         }
-    }
 
-    public boolean isAbortOnFailure() {
-        return abortOnFailure;
-    }
+        @Override
+        public PowerResult<Void> rightClick(Player player, ItemStack stack, PlayerInteractEvent event) {
+            if (player.isSneaking() == isSneak()) {
+                return fire(player, stack);
+            }
+            return PowerResult.noop();
+        }
 
-    public boolean isAbortOnSuccess() {
-        return abortOnSuccess;
-    }
+        @Override
+        public PowerResult<Void> leftClick(Player player, ItemStack stack, PlayerInteractEvent event) {
+            if (player.isSneaking() == isSneak()) {
+                return fire(player, stack);
+            }
+            return PowerResult.noop();
+        }
 
-    public boolean isAllowBreak() {
-        return allowBreak;
-    }
-
-    public boolean isRequireHurtByEntity() {
-        return requireHurtByEntity;
-    }
-
-    public boolean isShowFailMsg() {
-        return showFailMsg;
-    }
-
-    public boolean isSneak() {
-        return isSneak;
-    }
-
-    public void setAbortOnFailure(boolean abortOnFailure) {
-        this.abortOnFailure = abortOnFailure;
-    }
-
-    public void setAbortOnSuccess(boolean abortOnSuccess) {
-        this.abortOnSuccess = abortOnSuccess;
-    }
-
-    public void setAllowBreak(boolean allowBreak) {
-        this.allowBreak = allowBreak;
-    }
-
-    public void setAmount(int amount) {
-        this.amount = amount;
-    }
-
-    public void setCooldown(int cooldown) {
-        this.cooldown = cooldown;
-    }
-
-    public void setCustomMessage(String customMessage) {
-        this.customMessage = customMessage;
-    }
-
-    public void setDisplay(String display) {
-        this.display = display;
-    }
-
-    public void setDurability(int durability) {
-        this.durability = durability;
-    }
-
-    public void setMaterial(ItemStack material) {
-        this.material = material;
-    }
-
-    public void setMode(RepairMode mode) {
-        this.mode = mode;
-    }
-
-    public void setRequireHurtByEntity(boolean requireHurtByEntity) {
-        this.requireHurtByEntity = requireHurtByEntity;
-    }
-
-    public void setShowFailMsg(boolean showFailMsg) {
-        this.showFailMsg = showFailMsg;
-    }
-
-    public void setSneak(boolean sneak) {
-        isSneak = sneak;
-    }
-
-    public enum RepairMode {
-        DEFAULT,
-        ALLOW_OVER,
-        ALWAYS,
+        @Override
+        public PowerResult<Float> bowShoot(Player player, ItemStack itemStack, EntityShootBowEvent e) {
+            return fire(player, itemStack).with(e.getForce());
+        }
     }
 }

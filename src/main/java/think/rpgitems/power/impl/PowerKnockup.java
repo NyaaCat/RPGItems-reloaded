@@ -30,35 +30,6 @@ public class PowerKnockup extends BasePower {
 
     private Random rand = new Random();
 
-    public class Impl implements PowerHit {
-
-        @Override
-        public PowerResult<Double> hit(Player player, ItemStack stack, LivingEntity entity, double damage, EntityDamageByEntityEvent event) {
-            if (!getItem().consumeDurability(stack, getCost())) return PowerResult.cost();
-            if (getRand().nextInt(getChance()) == 0) {
-                Bukkit.getScheduler().runTask(RPGItems.plugin, () -> entity.setVelocity(player.getLocation().getDirection().setY(getKnockUpPower())));
-            }
-            return PowerResult.ok(damage);
-        }
-
-        @Override
-        public Power getPower() {
-            return PowerKnockup.this;
-        }
-    }
-
-    @Override
-    public String displayText() {
-        return I18n.format("power.knockup", (int) ((1d / (double) getChance()) * 100d));
-    }
-
-    /**
-     * Chance of triggering this power
-     */
-    public int getChance() {
-        return chance;
-    }
-
     /**
      * Cost of this power
      */
@@ -78,7 +49,32 @@ public class PowerKnockup extends BasePower {
         return "knockup";
     }
 
-    public Random getRand() {
-        return rand;
+    @Override
+    public String displayText() {
+        return I18n.format("power.knockup", (int) ((1d / (double) getChance()) * 100d));
+    }
+
+    /**
+     * Chance of triggering this power
+     */
+    public int getChance() {
+        return chance;
+    }
+
+    public class Impl implements PowerHit {
+
+        @Override
+        public PowerResult<Double> hit(Player player, ItemStack stack, LivingEntity entity, double damage, EntityDamageByEntityEvent event) {
+            if (!getItem().consumeDurability(stack, getCost())) return PowerResult.cost();
+            if (rand.nextInt(getChance()) == 0) {
+                Bukkit.getScheduler().runTask(RPGItems.plugin, () -> entity.setVelocity(player.getLocation().getDirection().setY(getKnockUpPower())));
+            }
+            return PowerResult.ok(damage);
+        }
+
+        @Override
+        public Power getPower() {
+            return PowerKnockup.this;
+        }
     }
 }

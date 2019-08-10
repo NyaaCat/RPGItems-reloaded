@@ -38,46 +38,11 @@ public class PowerPotionHit extends BasePower {
 
     private Random rand = new Random();
 
-    public class Impl implements PowerHit, PowerLivingEntity {
-        @Override
-        public PowerResult<Double> hit(Player player, ItemStack stack, LivingEntity entity, double damage, EntityDamageByEntityEvent event) {
-            return fire(player, stack, entity, damage).with(damage);
-        }
-
-
-        @Override
-        public PowerResult<Void> fire(Player player, ItemStack stack, LivingEntity entity, Double value) {
-            if (getRand().nextInt(getChance()) != 0) {
-                return PowerResult.noop();
-            }
-            if (!getItem().consumeDurability(stack, getCost())) return PowerResult.cost();
-            entity.addPotionEffect(new PotionEffect(getType(), getDuration(), getAmplifier()), true);
-            return PowerResult.ok();
-        }
-
-        @Override
-        public Power getPower() {
-            return PowerPotionHit.this;
-        }
-    }
-
-    @Override
-    public String displayText() {
-        return I18n.format("power.potionhit", (int) ((1d / (double) getChance()) * 100d), getType().getName().toLowerCase().replace('_', ' '));
-    }
-
     /**
      * Amplifier of potion effect
      */
     public int getAmplifier() {
         return amplifier;
-    }
-
-    /**
-     * Chance of triggering this power
-     */
-    public int getChance() {
-        return chance;
     }
 
     /**
@@ -99,8 +64,16 @@ public class PowerPotionHit extends BasePower {
         return "potionhit";
     }
 
-    public Random getRand() {
-        return rand;
+    @Override
+    public String displayText() {
+        return I18n.format("power.potionhit", (int) ((1d / (double) getChance()) * 100d), getType().getName().toLowerCase().replace('_', ' '));
+    }
+
+    /**
+     * Chance of triggering this power
+     */
+    public int getChance() {
+        return chance;
     }
 
     /**
@@ -108,5 +81,32 @@ public class PowerPotionHit extends BasePower {
      */
     public PotionEffectType getType() {
         return type;
+    }
+
+    public Random getRand() {
+        return rand;
+    }
+
+    public class Impl implements PowerHit, PowerLivingEntity {
+        @Override
+        public PowerResult<Double> hit(Player player, ItemStack stack, LivingEntity entity, double damage, EntityDamageByEntityEvent event) {
+            return fire(player, stack, entity, damage).with(damage);
+        }
+
+
+        @Override
+        public PowerResult<Void> fire(Player player, ItemStack stack, LivingEntity entity, Double value) {
+            if (getRand().nextInt(getChance()) != 0) {
+                return PowerResult.noop();
+            }
+            if (!getItem().consumeDurability(stack, getCost())) return PowerResult.cost();
+            entity.addPotionEffect(new PotionEffect(getType(), getDuration(), getAmplifier()), true);
+            return PowerResult.ok();
+        }
+
+        @Override
+        public Power getPower() {
+            return PowerPotionHit.this;
+        }
     }
 }

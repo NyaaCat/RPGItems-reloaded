@@ -22,27 +22,17 @@ public class PowerFlame extends BasePower {
     @Property
     private int cost = 0;
 
-    public class Impl implements PowerHit, PowerLivingEntity {
-
-        @Override
-        public PowerResult<Void> fire(Player player, ItemStack stack, LivingEntity entity, Double value) {
-            if (!getItem().consumeDurability(stack, getCost())) return PowerResult.cost();
-            entity.setFireTicks(getBurntime());
-            return PowerResult.ok();
-        }
-
-        @Override
-        public PowerResult<Double> hit(Player player, ItemStack stack, LivingEntity entity, double damage, EntityDamageByEntityEvent event) {
-            return fire(player, stack, entity, damage).with(damage);
-        }
-
-
-        @Override
-        public Power getPower() {
-            return PowerFlame.this;
-        }
+    /**
+     * Cost of this power
+     */
+    public int getCost() {
+        return cost;
     }
 
+    @Override
+    public String getName() {
+        return "flame";
+    }
 
     @Override
     public String displayText() {
@@ -56,15 +46,23 @@ public class PowerFlame extends BasePower {
         return burntime;
     }
 
-    /**
-     * Cost of this power
-     */
-    public int getCost() {
-        return cost;
-    }
+    public class Impl implements PowerHit, PowerLivingEntity {
 
-    @Override
-    public String getName() {
-        return "flame";
+        @Override
+        public PowerResult<Double> hit(Player player, ItemStack stack, LivingEntity entity, double damage, EntityDamageByEntityEvent event) {
+            return fire(player, stack, entity, damage).with(damage);
+        }
+
+        @Override
+        public PowerResult<Void> fire(Player player, ItemStack stack, LivingEntity entity, Double value) {
+            if (!getItem().consumeDurability(stack, getCost())) return PowerResult.cost();
+            entity.setFireTicks(getBurntime());
+            return PowerResult.ok();
+        }
+
+        @Override
+        public Power getPower() {
+            return PowerFlame.this;
+        }
     }
 }

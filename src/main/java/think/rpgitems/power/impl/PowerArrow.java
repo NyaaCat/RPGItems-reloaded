@@ -25,15 +25,34 @@ public class PowerArrow extends BasePower {
     @Property
     private int cost = 0;
 
+    /**
+     * Cost of this power
+     */
+    public int getCost() {
+        return cost;
+    }
+
+    @Override
+    public String getName() {
+        return "arrow";
+    }
+
+    @Override
+    public String displayText() {
+        return I18n.format("power.arrow", (double) getCooldown() / 20d);
+    }
+
+    /**
+     * Cooldown time of this power
+     */
+    public long getCooldown() {
+        return cooldown;
+    }
+
     public class Impl implements PowerRightClick, PowerLeftClick, PowerPlain {
 
         @Override
         public PowerResult<Void> rightClick(Player player, ItemStack stack, PlayerInteractEvent event) {
-            return fire(player, stack);
-        }
-
-        @Override
-        public PowerResult<Void> leftClick(Player player, ItemStack stack, PlayerInteractEvent event) {
             return fire(player, stack);
         }
 
@@ -55,37 +74,10 @@ public class PowerArrow extends BasePower {
         public Power getPower() {
             return PowerArrow.this;
         }
-    }
 
-    @Override
-    public String displayText() {
-        return I18n.format("power.arrow", (double) getCooldown() / 20d);
-    }
-
-    /**
-     * Cooldown time of this power
-     */
-    public long getCooldown() {
-        return cooldown;
-    }
-
-    /**
-     * Cost of this power
-     */
-    public int getCost() {
-        return cost;
-    }
-
-    @Override
-    public String getName() {
-        return "arrow";
-    }
-
-    public void setCooldown(long cooldown) {
-        this.cooldown = cooldown;
-    }
-
-    public void setCost(int cost) {
-        this.cost = cost;
+        @Override
+        public PowerResult<Void> leftClick(Player player, ItemStack stack, PlayerInteractEvent event) {
+            return fire(player, stack);
+        }
     }
 }

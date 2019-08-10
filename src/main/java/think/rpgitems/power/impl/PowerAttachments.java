@@ -16,7 +16,9 @@ import think.rpgitems.item.ItemManager;
 import think.rpgitems.item.RPGItem;
 import think.rpgitems.power.*;
 
-import java.util.*;
+import java.util.List;
+import java.util.Optional;
+import java.util.Set;
 import java.util.stream.Collectors;
 
 @PowerMeta(defaultTrigger = "RIGHT_CLICK", withSelectors = true, generalInterface = PowerPlain.class, implClass = PowerAttachments.Impl.class)
@@ -37,57 +39,44 @@ public class PowerAttachments extends BasePower {
     @Property
     private boolean requireHurtByEntity = true;
 
+    public List<Integer> getAllowedInvSlots() {
+        return allowedInvSlots;
+    }
+
+    public Set<String> getAllowedItems() {
+        return allowedItems;
+    }
+
+    public List<EquipmentSlot> getAllowedSlots() {
+        return allowedSlots;
+    }
+
+    public int getLimit() {
+        return limit;
+    }
+
+    @Override
+    public @LangKey(skipCheck = true) String getName() {
+        return "attachments";
+    }
+
+    @Override
+    public String displayText() {
+        return null;
+    }
+
+    /**
+     * Whether to require hurt by entity for HURT trigger
+     */
+    public boolean isRequireHurtByEntity() {
+        return requireHurtByEntity;
+    }
+
     public class Impl implements PowerTick, PowerRightClick, PowerLeftClick, PowerOffhandClick, PowerPlain, PowerHit, PowerSneaking, PowerHurt, PowerHitTaken, PowerBowShoot {
 
         @Override
         public PowerResult<Void> tick(Player player, ItemStack stack) {
             return fire(player, stack);
-        }
-
-        @Override
-        public PowerResult<Void> sneaking(Player player, ItemStack stack) {
-            return fire(player, stack);
-        }
-
-        @Override
-        public PowerResult<Double> takeHit(Player target, ItemStack stack, double damage, EntityDamageEvent event) {
-            if (!isRequireHurtByEntity() || event instanceof EntityDamageByEntityEvent) {
-                return fire(target, stack, event).with(damage);
-            }
-            return PowerResult.noop();
-        }
-
-        @Override
-        public PowerResult<Void> hurt(Player target, ItemStack stack, EntityDamageEvent event) {
-            if (!isRequireHurtByEntity() || event instanceof EntityDamageByEntityEvent) {
-                return fire(target, stack, event);
-            }
-            return PowerResult.noop();
-        }
-
-        @Override
-        public PowerResult<Double> hit(Player player, ItemStack stack, LivingEntity entity, double damage, EntityDamageByEntityEvent event) {
-            return fire(player, stack, event).with(damage);
-        }
-
-        @Override
-        public PowerResult<Void> leftClick(Player player, ItemStack stack, PlayerInteractEvent event) {
-            return fire(player, stack, event);
-        }
-
-        @Override
-        public PowerResult<Void> offhandClick(Player player, ItemStack stack, PlayerInteractEvent event) {
-            return fire(player, stack, event);
-        }
-
-        @Override
-        public PowerResult<Void> rightClick(Player player, ItemStack stack, PlayerInteractEvent event) {
-            return fire(player, stack, event);
-        }
-
-        @Override
-        public PowerResult<Float> bowShoot(Player player, ItemStack stack, EntityShootBowEvent event) {
-            return fire(player, stack).with(event.getForce());
         }
 
         @Override
@@ -174,61 +163,54 @@ public class PowerAttachments extends BasePower {
         }
 
         @Override
+        public PowerResult<Void> sneaking(Player player, ItemStack stack) {
+            return fire(player, stack);
+        }
+
+        @Override
+        public PowerResult<Double> takeHit(Player target, ItemStack stack, double damage, EntityDamageEvent event) {
+            if (!isRequireHurtByEntity() || event instanceof EntityDamageByEntityEvent) {
+                return fire(target, stack, event).with(damage);
+            }
+            return PowerResult.noop();
+        }
+
+        @Override
+        public PowerResult<Void> hurt(Player target, ItemStack stack, EntityDamageEvent event) {
+            if (!isRequireHurtByEntity() || event instanceof EntityDamageByEntityEvent) {
+                return fire(target, stack, event);
+            }
+            return PowerResult.noop();
+        }
+
+        @Override
+        public PowerResult<Double> hit(Player player, ItemStack stack, LivingEntity entity, double damage, EntityDamageByEntityEvent event) {
+            return fire(player, stack, event).with(damage);
+        }
+
+        @Override
+        public PowerResult<Void> leftClick(Player player, ItemStack stack, PlayerInteractEvent event) {
+            return fire(player, stack, event);
+        }
+
+        @Override
+        public PowerResult<Void> offhandClick(Player player, ItemStack stack, PlayerInteractEvent event) {
+            return fire(player, stack, event);
+        }
+
+        @Override
+        public PowerResult<Void> rightClick(Player player, ItemStack stack, PlayerInteractEvent event) {
+            return fire(player, stack, event);
+        }
+
+        @Override
+        public PowerResult<Float> bowShoot(Player player, ItemStack stack, EntityShootBowEvent event) {
+            return fire(player, stack).with(event.getForce());
+        }
+
+        @Override
         public Power getPower() {
             return PowerAttachments.this;
         }
-    }
-
-    public List<Integer> getAllowedInvSlots() {
-        return allowedInvSlots;
-    }
-
-    public Set<String> getAllowedItems() {
-        return allowedItems;
-    }
-
-    public List<EquipmentSlot> getAllowedSlots() {
-        return allowedSlots;
-    }
-
-    public int getLimit() {
-        return limit;
-    }
-
-    @Override
-    public @LangKey(skipCheck = true) String getName() {
-        return "attachments";
-    }
-
-    @Override
-    public String displayText() {
-        return null;
-    }
-
-    /**
-     * Whether to require hurt by entity for HURT trigger
-     */
-    public boolean isRequireHurtByEntity() {
-        return requireHurtByEntity;
-    }
-
-    public void setAllowedInvSlots(List<Integer> allowedInvSlots) {
-        this.allowedInvSlots = allowedInvSlots;
-    }
-
-    public void setAllowedItems(Set<String> allowedItems) {
-        this.allowedItems = allowedItems;
-    }
-
-    public void setAllowedSlots(List<EquipmentSlot> allowedSlots) {
-        this.allowedSlots = allowedSlots;
-    }
-
-    public void setLimit(int limit) {
-        this.limit = limit;
-    }
-
-    public void setRequireHurtByEntity(boolean requireHurtByEntity) {
-        this.requireHurtByEntity = requireHurtByEntity;
     }
 }

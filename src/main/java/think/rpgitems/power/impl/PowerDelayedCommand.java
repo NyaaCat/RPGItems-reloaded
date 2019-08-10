@@ -42,18 +42,27 @@ public class PowerDelayedCommand extends PowerCommand {
 
     public class Impl extends PowerCommand.Impl {
         @Override
-        public Power getPower() {
-            return PowerDelayedCommand.this;
-        }
-
-        @Override
-        public PowerResult<Void> rightClick(final Player player, ItemStack stack, PlayerInteractEvent event) {
-            return fire(player, stack);
-        }
-
-        @Override
         public PowerResult<Void> leftClick(final Player player, ItemStack stack, PlayerInteractEvent event) {
             return fire(player, stack);
+        }
+
+        @Override
+        public PowerResult<Void> fire(Player target, ItemStack stack) {
+            if (!checkAndSetCooldown(getPower(), target, getCooldown(), true, false, getCommand()))
+                return PowerResult.cd();
+            if (!getItem().consumeDurability(stack, getCost())) return PowerResult.cost();
+            (new BukkitRunnable() {
+                @Override
+                public void run() {
+                    executeCommand(target);
+                }
+            }).runTaskLater(RPGItems.plugin, getDelay());
+            return PowerResult.ok();
+        }
+
+        @Override
+        public Power getPower() {
+            return PowerDelayedCommand.this;
         }
 
         @Override
@@ -72,20 +81,8 @@ public class PowerDelayedCommand extends PowerCommand {
         }
 
         @Override
-        public PowerResult<Void> fire(Player target, ItemStack stack) {
-            if (!checkAndSetCooldown(getPower(), target, getCooldown(), true, false, getCommand())) return PowerResult.cd();
-            if (!getItem().consumeDurability(stack, getCost())) return PowerResult.cost();
-            (new BukkitRunnable() {
-                @Override
-                public void run() {
-                    executeCommand(target);
-                }
-            }).runTaskLater(RPGItems.plugin, getDelay());
-            return PowerResult.ok();
+        public PowerResult<Void> rightClick(final Player player, ItemStack stack, PlayerInteractEvent event) {
+            return fire(player, stack);
         }
-    }
-
-    public void setDelay(int delay) {
-        this.delay = delay;
     }
 }

@@ -36,13 +36,6 @@ public class PowerDeathCommand extends BasePower {
     private int cost = 0;
 
     /**
-     * Chance of triggering this power
-     */
-    public int getChance() {
-        return chance;
-    }
-
-    /**
      * Command to be executed
      */
     public String getCommand() {
@@ -63,13 +56,6 @@ public class PowerDeathCommand extends BasePower {
         return count;
     }
 
-    /**
-     * Description in display text
-     */
-    public String getDesc() {
-        return desc;
-    }
-
     @Override
     public String getName() {
         return "deathcommand";
@@ -78,6 +64,24 @@ public class PowerDeathCommand extends BasePower {
     @Override
     public String displayText() {
         return I18n.format("power.deathcommand", getChance(), getDesc().equals("") ? "execute some command" : getDesc());
+    }
+
+    /**
+     * Chance of triggering this power
+     */
+    public int getChance() {
+        return chance;
+    }
+
+    /**
+     * Description in display text
+     */
+    public String getDesc() {
+        return desc;
+    }
+
+    public static Random getRand() {
+        return rand;
     }
 
     public class Impl implements PowerHit {
@@ -101,30 +105,5 @@ public class PowerDeathCommand extends BasePower {
         public Power getPower() {
             return PowerDeathCommand.this;
         }
-    }
-
-
-    public static Random getRand() {
-        return rand;
-    }
-
-    public void setChance(int chance) {
-        this.chance = chance;
-    }
-
-    public void setCommand(String command) {
-        this.command = command;
-    }
-
-    public void setCost(int cost) {
-        this.cost = cost;
-    }
-
-    public void setCount(int count) {
-        this.count = count;
-    }
-
-    public void setDesc(String desc) {
-        this.desc = desc;
     }
 }

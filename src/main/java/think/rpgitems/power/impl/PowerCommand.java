@@ -42,6 +42,18 @@ public class PowerCommand extends BasePower {
     @Property
     private boolean requireHurtByEntity = true;
 
+    public static String handlePlayerPlaceHolder(Player player, String cmd) {
+        cmd = cmd.replaceAll("\\{player}", player.getName());
+        cmd = cmd.replaceAll("\\{player\\.x}", Float.toString(-player.getLocation().getBlockX()));
+        cmd = cmd.replaceAll("\\{player\\.y}", Float.toString(-player.getLocation().getBlockY()));
+        cmd = cmd.replaceAll("\\{player\\.z}", Float.toString(-player.getLocation().getBlockZ()));
+        cmd = cmd.replaceAll("\\{player\\.yaw}", Float.toString(90 + player.getEyeLocation().getYaw()));
+        cmd = cmd.replaceAll("\\{player\\.pitch}", Float.toString(-player.getEyeLocation().getPitch()));
+        cmd = cmd.replaceAll("\\{yaw}", Float.toString(player.getLocation().getYaw() + 90));
+        cmd = cmd.replaceAll("\\{pitch}", Float.toString(-player.getLocation().getPitch()));
+        return cmd;
+    }
+
     @Override
     public void init(ConfigurationSection section) {
         if (section.isBoolean("isRight")) {
@@ -51,10 +63,106 @@ public class PowerCommand extends BasePower {
         super.init(section);
     }
 
+    /**
+     * Command to be executed
+     */
+    public String getCommand() {
+        return command;
+    }
+
+    /**
+     * Cooldown time of this power
+     */
+    public long getCooldown() {
+        return cooldown;
+    }
+
+    /**
+     * Cost of this power
+     */
+    public int getCost() {
+        return cost;
+    }
+
+    @Override
+    public String getName() {
+        return "command";
+    }
+
+    @Override
+    public String displayText() {
+        return ChatColor.GREEN + getDisplay();
+    }
+
+    /**
+     * Display text of this power
+     */
+    public String getDisplay() {
+        return display;
+    }
+
+    /**
+     * Permission will be given to user executing the {@code command}
+     */
+    public String getPermission() {
+        return permission;
+    }
+
+    /**
+     * Whether to require hurt by entity for HURT trigger
+     */
+    public boolean isRequireHurtByEntity() {
+        return requireHurtByEntity;
+    }
+
     public class Impl implements PowerRightClick, PowerLeftClick, PowerSprint, PowerSneak, PowerHurt, PowerHitTaken, PowerPlain, PowerBowShoot {
         @Override
         public PowerResult<Void> leftClick(Player player, ItemStack stack, PlayerInteractEvent event) {
             return fire(player, stack);
+        }
+
+        @Override
+        public PowerResult<Void> fire(Player target, ItemStack stack) {
+            if (!checkAndSetCooldown(getPower(), target, getCooldown(), true, false, getCommand()))
+                return PowerResult.cd();
+            if (!getItem().consumeDurability(stack, getCost())) return PowerResult.cost();
+            return executeCommand(target);
+        }
+
+        @Override
+        public Power getPower() {
+            return PowerCommand.this;
+        }
+
+        /**
+         * Execute command
+         *
+         * @param player player
+         * @return PowerResult
+         */
+        protected PowerResult<Void> executeCommand(Player player) {
+            if (!player.isOnline()) return PowerResult.noop();
+
+            String cmd = handlePlayerPlaceHolder(player, getCommand());
+            if (getPermission().equals("console")) {
+                Bukkit.dispatchCommand(Bukkit.getConsoleSender(), cmd);
+            } else {
+                boolean wasOp = player.isOp();
+                attachPermission(player, getPermission());
+                if (getPermission().equals("*")) {
+                    try {
+                        player.setOp(true);
+                        player.performCommand(cmd);
+                    } finally {
+                        if (!wasOp) {
+                            player.setOp(false);
+                        }
+                    }
+                } else {
+                    player.performCommand(cmd);
+                }
+            }
+            return PowerResult.ok();
         }
 
         @Override
@@ -92,136 +200,5 @@ public class PowerCommand extends BasePower {
         public PowerResult<Void> rightClick(Player player, ItemStack stack, PlayerInteractEvent event) {
             return fire(player, stack);
         }
-
-        @Override
-        public PowerResult<Void> fire(Player target, ItemStack stack) {
-            if (!checkAndSetCooldown(getPower(), target, getCooldown(), true, false, getCommand()))
-                return PowerResult.cd();
-            if (!getItem().consumeDurability(stack, getCost())) return PowerResult.cost();
-            return executeCommand(target);
-        }
-
-        /**
-         * Execute command
-         *
-         * @param player player
-         * @return PowerResult
-         */
-        protected PowerResult<Void> executeCommand(Player player) {
-            if (!player.isOnline()) return PowerResult.noop();
-
-            String cmd = handlePlayerPlaceHolder(player, getCommand());
-            if (getPermission().equals("console")) {
-                Bukkit.dispatchCommand(Bukkit.getConsoleSender(), cmd);
-            } else {
-                boolean wasOp = player.isOp();
-                attachPermission(player, getPermission());
-                if (getPermission().equals("*")) {
-                    try {
-                        player.setOp(true);
-                        player.performCommand(cmd);
-                    } finally {
-                        if (!wasOp) {
-                            player.setOp(false);
-                        }
-                    }
-                } else {
-                    player.performCommand(cmd);
-                }
-            }
-            return PowerResult.ok();
-        }
-
-        @Override
-        public Power getPower() {
-            return PowerCommand.this;
-        }
-    }
-    public static String handlePlayerPlaceHolder(Player player, String cmd) {
-        cmd = cmd.replaceAll("\\{player}", player.getName());
-        cmd = cmd.replaceAll("\\{player\\.x}", Float.toString(-player.getLocation().getBlockX()));
-        cmd = cmd.replaceAll("\\{player\\.y}", Float.toString(-player.getLocation().getBlockY()));
-        cmd = cmd.replaceAll("\\{player\\.z}", Float.toString(-player.getLocation().getBlockZ()));
-        cmd = cmd.replaceAll("\\{player\\.yaw}", Float.toString(90 + player.getEyeLocation().getYaw()));
-        cmd = cmd.replaceAll("\\{player\\.pitch}", Float.toString(-player.getEyeLocation().getPitch()));
-        cmd = cmd.replaceAll("\\{yaw}", Float.toString(player.getLocation().getYaw() + 90));
-        cmd = cmd.replaceAll("\\{pitch}", Float.toString(-player.getLocation().getPitch()));
-        return cmd;
-    }
-
-    /**
-     * Command to be executed
-     */
-    public String getCommand() {
-        return command;
-    }
-
-    /**
-     * Cooldown time of this power
-     */
-    public long getCooldown() {
-        return cooldown;
-    }
-
-    /**
-     * Cost of this power
-     */
-    public int getCost() {
-        return cost;
-    }
-
-    /**
-     * Display text of this power
-     */
-    public String getDisplay() {
-        return display;
-    }
-
-    @Override
-    public String getName() {
-        return "command";
-    }
-
-    @Override
-    public String displayText() {
-        return ChatColor.GREEN + getDisplay();
-    }
-
-    /**
-     * Permission will be given to user executing the {@code command}
-     */
-    public String getPermission() {
-        return permission;
-    }
-
-    /**
-     * Whether to require hurt by entity for HURT trigger
-     */
-    public boolean isRequireHurtByEntity() {
-        return requireHurtByEntity;
-    }
-
-    public void setCommand(String command) {
-        this.command = command;
-    }
-
-    public void setCooldown(long cooldown) {
-        this.cooldown = cooldown;
-    }
-
-    public void setCost(int cost) {
-        this.cost = cost;
-    }
-
-    public void setDisplay(String display) {
-        this.display = display;
-    }
-
-    public void setPermission(String permission) {
-        this.permission = permission;
-    }
-
-    public void setRequireHurtByEntity(boolean requireHurtByEntity) {
-        this.requireHurtByEntity = requireHurtByEntity;
     }
 }

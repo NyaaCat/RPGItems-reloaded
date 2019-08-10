@@ -40,15 +40,15 @@ public class PowerParticleTick extends PowerParticle {
         return I18n.format("power.particletick");
     }
 
+    @Override
+    public Set<Trigger> getTriggers() {
+        return Collections.singleton(Trigger.TICK);
+    }
+
     public class Impl implements PowerTick, PowerSneaking, PowerPlain {
 
         @Override
         public PowerResult<Void> tick(Player player, ItemStack stack) {
-            return fire(player, stack);
-        }
-
-        @Override
-        public PowerResult<Void> sneaking(Player player, ItemStack stack) {
             return fire(player, stack);
         }
 
@@ -64,10 +64,10 @@ public class PowerParticleTick extends PowerParticle {
         public Power getPower() {
             return PowerParticleTick.this;
         }
-    }
 
-    @Override
-    public Set<Trigger> getTriggers() {
-        return Collections.singleton(Trigger.TICK);
+        @Override
+        public PowerResult<Void> sneaking(Player player, ItemStack stack) {
+            return fire(player, stack);
+        }
     }
 }

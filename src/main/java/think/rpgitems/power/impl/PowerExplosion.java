@@ -31,6 +31,38 @@ public class PowerExplosion extends BasePower {
     @Property
     private int cost = 0;
 
+    /**
+     * Cost of this power
+     */
+    public int getCost() {
+        return cost;
+    }
+
+    public int getDistance() {
+        return distance;
+    }
+
+    @Override
+    public String getName() {
+        return "explosion";
+    }
+
+    @Override
+    public String displayText() {
+        return I18n.format("power.explosion", getChance(), getExplosionPower());
+    }
+
+    /**
+     * Chance of triggering this power
+     */
+    public double getChance() {
+        return chance;
+    }
+
+    public float getExplosionPower() {
+        return explosionPower;
+    }
+
     public class Impl implements PowerLeftClick, PowerRightClick, PowerPlain, PowerHit, PowerProjectileHit, PowerLocation {
 
         @Override
@@ -43,6 +75,16 @@ public class PowerExplosion extends BasePower {
             Block targetBlock = player.getTargetBlock(null, getDistance());
             if (targetBlock == null) return PowerResult.noop();
             return fire(player, stack, targetBlock.getLocation());
+        }
+
+        @Override
+        public PowerResult<Void> fire(Player player, ItemStack stack, Location location) {
+            if (ThreadLocalRandom.current().nextDouble(100) < getChance()) {
+                if (!getItem().consumeDurability(stack, getCost())) return PowerResult.cost();
+                boolean explosion = NmsUtils.createExplosion(location.getWorld(), player, location.getX(), location.getY(), location.getZ(), getExplosionPower(), false, false);
+                return explosion ? PowerResult.ok() : PowerResult.fail();
+            }
+            return PowerResult.noop();
         }
 
         @Override
@@ -62,16 +104,6 @@ public class PowerExplosion extends BasePower {
         }
 
         @Override
-        public PowerResult<Void> fire(Player player, ItemStack stack, Location location) {
-            if (ThreadLocalRandom.current().nextDouble(100) < getChance()) {
-                if (!getItem().consumeDurability(stack, getCost())) return PowerResult.cost();
-                boolean explosion = NmsUtils.createExplosion(location.getWorld(), player, location.getX(), location.getY(), location.getZ(), getExplosionPower(), false, false);
-                return explosion ? PowerResult.ok() : PowerResult.fail();
-            }
-            return PowerResult.noop();
-        }
-
-        @Override
         public PowerResult<Void> projectileHit(Player player, ItemStack stack, ProjectileHitEvent event) {
             Projectile hit = event.getEntity();
             Location location = hit.getLocation();
@@ -87,37 +119,5 @@ public class PowerExplosion extends BasePower {
         public Power getPower() {
             return PowerExplosion.this;
         }
-    }
-
-    @Override
-    public String displayText() {
-        return I18n.format("power.explosion", getChance(), getExplosionPower());
-    }
-
-    /**
-     * Chance of triggering this power
-     */
-    public double getChance() {
-        return chance;
-    }
-
-    /**
-     * Cost of this power
-     */
-    public int getCost() {
-        return cost;
-    }
-
-    public int getDistance() {
-        return distance;
-    }
-
-    public float getExplosionPower() {
-        return explosionPower;
-    }
-
-    @Override
-    public String getName() {
-        return "explosion";
     }
 }

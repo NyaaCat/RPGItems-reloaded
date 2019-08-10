@@ -29,17 +29,27 @@ public class PowerLightning extends BasePower {
     private Random random = new Random();
 
     /**
-     * Chance of triggering this power
-     */
-    public int getChance() {
-        return chance;
-    }
-
-    /**
      * Cost of this power
      */
     public int getCost() {
         return cost;
+    }
+
+    @Override
+    public String getName() {
+        return "lightning";
+    }
+
+    @Override
+    public String displayText() {
+        return I18n.format("power.lightning", (int) ((1d / (double) getChance()) * 100d));
+    }
+
+    /**
+     * Chance of triggering this power
+     */
+    public int getChance() {
+        return chance;
     }
 
     public Random getRandom() {
@@ -76,15 +86,5 @@ public class PowerLightning extends BasePower {
         public Power getPower() {
             return PowerLightning.this;
         }
-    }
-
-    @Override
-    public String displayText() {
-        return I18n.format("power.lightning", (int) ((1d / (double) getChance()) * 100d));
-    }
-
-    @Override
-    public String getName() {
-        return "lightning";
     }
 }

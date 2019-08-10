@@ -25,7 +25,55 @@ public class PowerCommandHit extends PowerCommand {
     @Property
     private double minDamage = 0;
 
+    public static String handleEntityPlaceHolder(LivingEntity e, String cmd) {
+        cmd = cmd.replaceAll("\\{entity}", e.getName());
+        cmd = cmd.replaceAll("\\{entity\\.uuid}", e.getUniqueId().toString());
+        cmd = cmd.replaceAll("\\{entity\\.x}", Float.toString(e.getLocation().getBlockX()));
+        cmd = cmd.replaceAll("\\{entity\\.y}", Float.toString(e.getLocation().getBlockY()));
+        cmd = cmd.replaceAll("\\{entity\\.z}", Float.toString(e.getLocation().getBlockZ()));
+        cmd = cmd.replaceAll("\\{entity\\.yaw}", Float.toString(90 + e.getEyeLocation().getYaw()));
+        cmd = cmd.replaceAll("\\{entity\\.pitch}", Float.toString(-e.getEyeLocation().getPitch()));
+        return cmd;
+    }
+
+    /**
+     * Minimum damage to trigger
+     */
+    public double getMinDamage() {
+        return minDamage;
+    }
+
+    @Override
+    public String getName() {
+        return "commandhit";
+    }
+
+    @Override
+    public String displayText() {
+        return ChatColor.GREEN + getDisplay();
+    }
+
     public class Impl implements PowerHit, PowerLivingEntity {
+        @Override
+        public PowerResult<Double> hit(Player player, ItemStack stack, LivingEntity entity, double damage, EntityDamageByEntityEvent event) {
+            return fire(player, stack, entity, damage).with(damage);
+        }
+
+        @Override
+        public PowerResult<Void> fire(Player player, ItemStack stack, LivingEntity entity, Double damage) {
+            if (damage == null || damage < getMinDamage()) return PowerResult.noop();
+            if (!checkAndSetCooldown(getPower(), player, getCooldown(), true, false, getCommand()))
+                return PowerResult.cd();
+            if (!getItem().consumeDurability(stack, getCost())) return PowerResult.cost();
+
+            return executeCommand(player, entity, damage);
+        }
+
+        @Override
+        public Power getPower() {
+            return PowerCommandHit.this;
+        }
+
         /**
          * Execute command
          *
@@ -58,57 +106,5 @@ public class PowerCommandHit extends PowerCommand {
                     player.setOp(wasOp);
             }
         }
-
-
-        @Override
-        public PowerResult<Double> hit(Player player, ItemStack stack, LivingEntity entity, double damage, EntityDamageByEntityEvent event) {
-            return fire(player, stack, entity, damage).with(damage);
-        }
-
-        @Override
-        public PowerResult<Void> fire(Player player, ItemStack stack, LivingEntity entity, Double damage) {
-            if (damage == null || damage < getMinDamage()) return PowerResult.noop();
-            if (!checkAndSetCooldown(getPower(), player, getCooldown(), true, false, getCommand())) return PowerResult.cd();
-            if (!getItem().consumeDurability(stack, getCost())) return PowerResult.cost();
-
-            return executeCommand(player, entity, damage);
-        }
-
-        @Override
-        public Power getPower() {
-            return PowerCommandHit.this;
-        }
-    }
-
-    public static String handleEntityPlaceHolder(LivingEntity e, String cmd) {
-        cmd = cmd.replaceAll("\\{entity}", e.getName());
-        cmd = cmd.replaceAll("\\{entity\\.uuid}", e.getUniqueId().toString());
-        cmd = cmd.replaceAll("\\{entity\\.x}", Float.toString(e.getLocation().getBlockX()));
-        cmd = cmd.replaceAll("\\{entity\\.y}", Float.toString(e.getLocation().getBlockY()));
-        cmd = cmd.replaceAll("\\{entity\\.z}", Float.toString(e.getLocation().getBlockZ()));
-        cmd = cmd.replaceAll("\\{entity\\.yaw}", Float.toString(90 + e.getEyeLocation().getYaw()));
-        cmd = cmd.replaceAll("\\{entity\\.pitch}", Float.toString(-e.getEyeLocation().getPitch()));
-        return cmd;
-    }
-
-    @Override
-    public String displayText() {
-        return ChatColor.GREEN + getDisplay();
-    }
-
-    /**
-     * Minimum damage to trigger
-     */
-    public double getMinDamage() {
-        return minDamage;
-    }
-
-    @Override
-    public String getName() {
-        return "commandhit";
-    }
-
-    public void setMinDamage(double minDamage) {
-        this.minDamage = minDamage;
     }
 }

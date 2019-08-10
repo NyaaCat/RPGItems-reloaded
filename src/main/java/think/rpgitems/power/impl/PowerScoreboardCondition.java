@@ -18,22 +18,33 @@ import static think.rpgitems.power.impl.PowerSelector.*;
 @PowerMeta(marker = true, implClass = PowerScoreboardCondition.class)
 public class PowerScoreboardCondition extends BasePower implements PowerCondition<Void> {
 
+    private static LoadingCache<String, Map<String, Pair<Integer, Integer>>> scoreCache = CacheBuilder
+                                                                                                  .newBuilder()
+                                                                                                  .concurrencyLevel(1)
+                                                                                                  .expireAfterAccess(1, TimeUnit.DAYS)
+                                                                                                  .build(CacheLoader.from(PowerSelector::parseScore));
+    private static LoadingCache<String, Pair<Set<String>, Set<String>>> teamCache = CacheBuilder
+                                                                                            .newBuilder()
+                                                                                            .concurrencyLevel(1)
+                                                                                            .expireAfterAccess(1, TimeUnit.DAYS)
+                                                                                            .build(CacheLoader.from(PowerSelector::parse));
+    private static LoadingCache<String, Pair<Set<String>, Set<String>>> tagCache = CacheBuilder
+                                                                                           .newBuilder()
+                                                                                           .concurrencyLevel(1)
+                                                                                           .expireAfterAccess(1, TimeUnit.DAYS)
+                                                                                           .build(CacheLoader.from(PowerSelector::parse));
     @Property(order = 0, required = true)
     public String id;
-
     @Property
     public boolean isStatic = false;
-
     @Property
     public boolean isCritical = false;
-
     /**
      * Selecting targets by score(s), According to the following format
      * `score_name:min,max another_score_name:min,max`
      */
     @Property
     public String score;
-
     /**
      * Selecting targets by tag(s), According to the following format
      * `MUST_HAVE,!MUST_NOT_HAVE`
@@ -42,7 +53,6 @@ public class PowerScoreboardCondition extends BasePower implements PowerConditio
      */
     @Property
     public String tag;
-
     /**
      * Selecting targets by team(s), According to the following format
      * `MUST_ON,!MUST_NOT_ON`
@@ -53,32 +63,9 @@ public class PowerScoreboardCondition extends BasePower implements PowerConditio
     @Property
     public String team;
 
-    private static LoadingCache<String, Map<String, Pair<Integer, Integer>>> scoreCache = CacheBuilder
-                                                                                                 .newBuilder()
-                                                                                                 .concurrencyLevel(1)
-                                                                                                 .expireAfterAccess(1, TimeUnit.DAYS)
-                                                                                                 .build(CacheLoader.from(PowerSelector::parseScore));
-
-    private static LoadingCache<String, Pair<Set<String>, Set<String>>> teamCache = CacheBuilder
-                                                                                           .newBuilder()
-                                                                                           .concurrencyLevel(1)
-                                                                                           .expireAfterAccess(1, TimeUnit.DAYS)
-                                                                                           .build(CacheLoader.from(PowerSelector::parse));
-
-    private static LoadingCache<String, Pair<Set<String>, Set<String>>> tagCache = CacheBuilder
-                                                                                          .newBuilder()
-                                                                                          .concurrencyLevel(1)
-                                                                                          .expireAfterAccess(1, TimeUnit.DAYS)
-                                                                                          .build(CacheLoader.from(PowerSelector::parse));
-
     @Override
     public String id() {
         return id;
-    }
-
-    @Override
-    public Power getPower() {
-        return PowerScoreboardCondition.this;
     }
 
     @Override
@@ -115,6 +102,11 @@ public class PowerScoreboardCondition extends BasePower implements PowerConditio
     }
 
     @Override
+    public Set<String> getConditions() {
+        return Collections.emptySet();
+    }
+
+    @Override
     public String getName() {
         return "scoreboardcondition";
     }
@@ -125,7 +117,7 @@ public class PowerScoreboardCondition extends BasePower implements PowerConditio
     }
 
     @Override
-    public Set<String> getConditions() {
-        return Collections.emptySet();
+    public Power getPower() {
+        return PowerScoreboardCondition.this;
     }
 }

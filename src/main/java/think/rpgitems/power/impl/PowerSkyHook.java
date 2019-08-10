@@ -36,6 +36,7 @@ import static think.rpgitems.power.Utils.checkCooldown;
 @PowerMeta(defaultTrigger = "RIGHT_CLICK", generalInterface = PowerPlain.class, implClass = PowerSkyHook.Impl.class)
 public class PowerSkyHook extends BasePower {
 
+    private static Map<UUID, Boolean> hooking = new HashMap<>();
     @Property(order = 0)
     private Material railMaterial = Material.GLASS;
     @Property
@@ -48,33 +49,70 @@ public class PowerSkyHook extends BasePower {
     @Property(order = 1, required = true)
     private int hookDistance = 10;
 
-    private static Map<UUID, Boolean> hooking = new HashMap<>();
+    @Override
+    public void init(ConfigurationSection s) {
+        railMaterial = MaterialUtils.getMaterial(s.getString("railMaterial", "GLASS"), Bukkit.getConsoleSender());
+    }
 
-    public class Impl  implements PowerRightClick, PowerLeftClick, PowerSneak, PowerSprint, PowerPlain, PowerBowShoot {
+    @Override
+    public void save(ConfigurationSection s) {
+        s.set("cost", getCost());
+        s.set("hookingTickCost", getHookingTickCost());
+        s.set("cooldown", getCooldown());
+        s.set("railMaterial", getRailMaterial().toString());
+        s.set("hookDistance", getHookDistance());
+    }
+
+    /**
+     * Cost of this power
+     */
+    public int getCost() {
+        return cost;
+    }
+
+    /**
+     * Hooking Cost Per-Tick
+     */
+    public int getHookingTickCost() {
+        return hookingTickCost;
+    }
+
+    /**
+     * Cooldown time of this power
+     */
+    public long getCooldown() {
+        return cooldown;
+    }
+
+    /**
+     * Material that can hooks on
+     */
+    public Material getRailMaterial() {
+        return railMaterial;
+    }
+
+    /**
+     * Maximum distance.
+     */
+    public int getHookDistance() {
+        return hookDistance;
+    }
+
+    @Override
+    public String getName() {
+        return "skyhook";
+    }
+
+    @Override
+    public String displayText() {
+        return I18n.format("power.skyhook");
+    }
+
+    public class Impl implements PowerRightClick, PowerLeftClick, PowerSneak, PowerSprint, PowerPlain, PowerBowShoot {
 
         @Override
         public PowerResult<Void> leftClick(Player player, ItemStack stack, PlayerInteractEvent event) {
             return fire(player, stack);
-        }
-
-        @Override
-        public PowerResult<Void> rightClick(Player player, ItemStack stack, PlayerInteractEvent event) {
-            return fire(player, stack);
-        }
-
-        @Override
-        public PowerResult<Void> sneak(Player player, ItemStack stack, PlayerToggleSneakEvent event) {
-            return fire(player, stack);
-        }
-
-        @Override
-        public PowerResult<Void> sprint(Player player, ItemStack stack, PlayerToggleSprintEvent event) {
-            return fire(player, stack);
-        }
-
-        @Override
-        public PowerResult<Float> bowShoot(Player player, ItemStack itemStack, EntityShootBowEvent e) {
-            return fire(player, itemStack).with(e.getForce());
         }
 
         @Override
@@ -150,83 +188,25 @@ public class PowerSkyHook extends BasePower {
         public Power getPower() {
             return PowerSkyHook.this;
         }
-    }
-    @Override
-    public void init(ConfigurationSection s) {
-        setRailMaterial(MaterialUtils.getMaterial(s.getString("railMaterial", "GLASS"), Bukkit.getConsoleSender()));
-    }
 
-    @Override
-    public void save(ConfigurationSection s) {
-        s.set("cost", getCost());
-        s.set("hookingTickCost", getHookingTickCost());
-        s.set("cooldown", getCooldown());
-        s.set("railMaterial", getRailMaterial().toString());
-        s.set("hookDistance", getHookDistance());
-    }
+        @Override
+        public PowerResult<Void> rightClick(Player player, ItemStack stack, PlayerInteractEvent event) {
+            return fire(player, stack);
+        }
 
-    /**
-     * Cooldown time of this power
-     */
-    public long getCooldown() {
-        return cooldown;
-    }
+        @Override
+        public PowerResult<Void> sneak(Player player, ItemStack stack, PlayerToggleSneakEvent event) {
+            return fire(player, stack);
+        }
 
-    /**
-     * Cost of this power
-     */
-    public int getCost() {
-        return cost;
-    }
+        @Override
+        public PowerResult<Void> sprint(Player player, ItemStack stack, PlayerToggleSprintEvent event) {
+            return fire(player, stack);
+        }
 
-    /**
-     * Maximum distance.
-     */
-    public int getHookDistance() {
-        return hookDistance;
-    }
-
-    /**
-     * Hooking Cost Per-Tick
-     */
-    public int getHookingTickCost() {
-        return hookingTickCost;
-    }
-
-    @Override
-    public String getName() {
-        return "skyhook";
-    }
-
-    @Override
-    public String displayText() {
-        return I18n.format("power.skyhook");
-    }
-
-    /**
-     * Material that can hooks on
-     */
-    public Material getRailMaterial() {
-        return railMaterial;
-    }
-
-    public void setCooldown(long cooldown) {
-        this.cooldown = cooldown;
-    }
-
-    public void setCost(int cost) {
-        this.cost = cost;
-    }
-
-    public void setHookDistance(int hookDistance) {
-        this.hookDistance = hookDistance;
-    }
-
-    public void setHookingTickCost(int hookingTickCost) {
-        this.hookingTickCost = hookingTickCost;
-    }
-
-    public void setRailMaterial(Material railMaterial) {
-        this.railMaterial = railMaterial;
+        @Override
+        public PowerResult<Float> bowShoot(Player player, ItemStack itemStack, EntityShootBowEvent e) {
+            return fire(player, itemStack).with(e.getForce());
+        }
     }
 }

@@ -61,29 +61,19 @@ public class PowerRumble extends BasePower {
     @Property
     public double damage = 0;
 
+    @Override
+    public String getName() {
+        return "rumble";
+    }
+
+    @Override
+    public String displayText() {
+        return I18n.format("power.rumble", (double) cooldown / 20d);
+    }
+
     public class Impl implements PowerRightClick, PowerLeftClick, PowerSneak, PowerSprint, PowerPlain, PowerBowShoot {
         @Override
         public PowerResult<Void> leftClick(Player player, ItemStack stack, PlayerInteractEvent event) {
-            return fire(player, stack);
-        }
-
-        @Override
-        public PowerResult<Void> rightClick(Player player, ItemStack stack, PlayerInteractEvent event) {
-            return fire(player, stack);
-        }
-
-        @Override
-        public PowerResult<Float> bowShoot(Player player, ItemStack stack, EntityShootBowEvent event) {
-            return fire(player, stack).with(event.getForce());
-        }
-
-        @Override
-        public PowerResult<Void> sneak(Player player, ItemStack stack, PlayerToggleSneakEvent event) {
-            return fire(player, stack);
-        }
-
-        @Override
-        public PowerResult<Void> sprint(Player player, ItemStack stack, PlayerToggleSprintEvent event) {
             return fire(player, stack);
         }
 
@@ -96,10 +86,6 @@ public class PowerRumble extends BasePower {
             direction.setY(0);
             direction.normalize();
             BukkitRunnable task = new BukkitRunnable() {
-                public int getCount() {
-                    return count;
-                }
-
                 private int count = 0;
 
                 public void run() {
@@ -161,6 +147,10 @@ public class PowerRumble extends BasePower {
                     }
                     count = getCount() + 1;
                 }
+
+                public int getCount() {
+                    return count;
+                }
             };
             task.runTaskTimer(RPGItems.plugin, 0, 3);
             return PowerResult.ok();
@@ -170,16 +160,26 @@ public class PowerRumble extends BasePower {
         public Power getPower() {
             return PowerRumble.this;
         }
-    }
 
-    @Override
-    public String getName() {
-        return "rumble";
-    }
+        @Override
+        public PowerResult<Void> rightClick(Player player, ItemStack stack, PlayerInteractEvent event) {
+            return fire(player, stack);
+        }
 
-    @Override
-    public String displayText() {
-        return I18n.format("power.rumble", (double) cooldown / 20d);
+        @Override
+        public PowerResult<Float> bowShoot(Player player, ItemStack stack, EntityShootBowEvent event) {
+            return fire(player, stack).with(event.getForce());
+        }
+
+        @Override
+        public PowerResult<Void> sneak(Player player, ItemStack stack, PlayerToggleSneakEvent event) {
+            return fire(player, stack);
+        }
+
+        @Override
+        public PowerResult<Void> sprint(Player player, ItemStack stack, PlayerToggleSprintEvent event) {
+            return fire(player, stack);
+        }
     }
 
 }

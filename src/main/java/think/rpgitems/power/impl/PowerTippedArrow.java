@@ -39,6 +39,51 @@ public class PowerTippedArrow extends BasePower {
     @Property
     private int cost = 0;
 
+    /**
+     * Cost of this power
+     */
+    public int getCost() {
+        return cost;
+    }
+
+    @Override
+    public String getName() {
+        return "tippedarrow";
+    }
+
+    @Override
+    public String displayText() {
+        return I18n.format("power.tippedarrow", getType().getName().toLowerCase().replaceAll("_", " "), getAmplifier() + 1, ((double) getDuration()) / 20d, (double) getCooldown() / 20d);
+    }
+
+    /**
+     * Type of potion effect
+     */
+    public PotionEffectType getType() {
+        return type;
+    }
+
+    /**
+     * Amplifier of potion effect
+     */
+    public int getAmplifier() {
+        return amplifier;
+    }
+
+    /**
+     * Duration of potion effect, in ticks
+     */
+    public int getDuration() {
+        return duration;
+    }
+
+    /**
+     * Cooldown time of this power
+     */
+    public long getCooldown() {
+        return cooldown;
+    }
+
     public class Impl implements PowerRightClick {
         @Override
         public PowerResult<Void> rightClick(Player player, ItemStack stack, PlayerInteractEvent event) {
@@ -56,50 +101,5 @@ public class PowerTippedArrow extends BasePower {
         public Power getPower() {
             return PowerTippedArrow.this;
         }
-    }
-
-    @Override
-    public String displayText() {
-        return I18n.format("power.tippedarrow", getType().getName().toLowerCase().replaceAll("_", " "), getAmplifier() + 1, ((double) getDuration()) / 20d, (double) getCooldown() / 20d);
-    }
-
-    /**
-     * Amplifier of potion effect
-     */
-    public int getAmplifier() {
-        return amplifier;
-    }
-
-    /**
-     * Cooldown time of this power
-     */
-    public long getCooldown() {
-        return cooldown;
-    }
-
-    /**
-     * Cost of this power
-     */
-    public int getCost() {
-        return cost;
-    }
-
-    /**
-     * Duration of potion effect, in ticks
-     */
-    public int getDuration() {
-        return duration;
-    }
-
-    @Override
-    public String getName() {
-        return "tippedarrow";
-    }
-
-    /**
-     * Type of potion effect
-     */
-    public PotionEffectType getType() {
-        return type;
     }
 }

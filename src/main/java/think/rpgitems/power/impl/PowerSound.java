@@ -52,6 +52,16 @@ public class PowerSound extends BasePower {
         return cost;
     }
 
+    @Override
+    public String getName() {
+        return "sound";
+    }
+
+    @Override
+    public String displayText() {
+        return ChatColor.GREEN + getDisplay();
+    }
+
     /**
      * Display text of this power
      */
@@ -84,43 +94,10 @@ public class PowerSound extends BasePower {
         return requireHurtByEntity;
     }
 
-    public void setCooldown(long cooldown) {
-        this.cooldown = cooldown;
-    }
-
-    public void setCost(int cost) {
-        this.cost = cost;
-    }
-
-    public void setDisplay(String display) {
-        this.display = display;
-    }
-
-    public void setPitch(float pitch) {
-        this.pitch = pitch;
-    }
-
-    public void setRequireHurtByEntity(boolean requireHurtByEntity) {
-        this.requireHurtByEntity = requireHurtByEntity;
-    }
-
-    public void setSound(String sound) {
-        this.sound = sound;
-    }
-
-    public void setVolume(float volume) {
-        this.volume = volume;
-    }
-
     public class Impl implements PowerLeftClick, PowerRightClick, PowerPlain, PowerHit, PowerBowShoot, PowerHitTaken, PowerHurt {
 
         @Override
         public PowerResult<Void> leftClick(Player player, ItemStack stack, PlayerInteractEvent event) {
-            return fire(player, stack);
-        }
-
-        @Override
-        public PowerResult<Void> rightClick(Player player, ItemStack stack, PlayerInteractEvent event) {
             return fire(player, stack);
         }
 
@@ -130,11 +107,21 @@ public class PowerSound extends BasePower {
             return this.sound(player, stack);
         }
 
+        @Override
+        public Power getPower() {
+            return PowerSound.this;
+        }
+
         private PowerResult<Void> sound(Entity player, ItemStack stack) {
             if (!getItem().consumeDurability(stack, getCost())) return PowerResult.cost();
             Location location = player.getLocation();
             location.getWorld().playSound(location, getSound(), getVolume(), getPitch());
             return PowerResult.ok();
+        }
+
+        @Override
+        public PowerResult<Void> rightClick(Player player, ItemStack stack, PlayerInteractEvent event) {
+            return fire(player, stack);
         }
 
         @Override
@@ -148,35 +135,20 @@ public class PowerSound extends BasePower {
             return fire(player, stack).with(event.getForce());
         }
 
-    @Override
-    public PowerResult<Double> takeHit(Player target, ItemStack stack, double damage, EntityDamageEvent event) {
-        if (!isRequireHurtByEntity() || event instanceof EntityDamageByEntityEvent) {
-            return fire(target, stack).with(damage);
+        @Override
+        public PowerResult<Double> takeHit(Player target, ItemStack stack, double damage, EntityDamageEvent event) {
+            if (!isRequireHurtByEntity() || event instanceof EntityDamageByEntityEvent) {
+                return fire(target, stack).with(damage);
+            }
+            return PowerResult.noop();
         }
-        return PowerResult.noop();
-    }
-
-    @Override
-    public PowerResult<Void> hurt(Player target, ItemStack stack, EntityDamageEvent event) {
-        if (!isRequireHurtByEntity() || event instanceof EntityDamageByEntityEvent) {
-            return fire(target, stack);
-        }
-        return PowerResult.noop();
-    }
 
         @Override
-        public Power getPower() {
-            return PowerSound.this;
+        public PowerResult<Void> hurt(Player target, ItemStack stack, EntityDamageEvent event) {
+            if (!isRequireHurtByEntity() || event instanceof EntityDamageByEntityEvent) {
+                return fire(target, stack);
+            }
+            return PowerResult.noop();
         }
-    }
-
-    @Override
-    public String getName() {
-        return "sound";
-    }
-
-    @Override
-    public String displayText() {
-        return ChatColor.GREEN + getDisplay();
     }
 }

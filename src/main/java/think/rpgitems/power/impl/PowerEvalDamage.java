@@ -30,6 +30,27 @@ public class PowerEvalDamage extends BasePower {
     @Property
     private boolean setBaseDamage = false;
 
+    public String getExpression() {
+        return expression;
+    }
+
+    @Override
+    public String getName() {
+        return "evaldamage";
+    }
+
+    @Override
+    public String displayText() {
+        return getDisplay() != null ? getDisplay() : "Damage may vary based on environment";
+    }
+
+    public String getDisplay() {
+        return display;
+    }
+
+    public boolean isSetBaseDamage() {
+        return setBaseDamage;
+    }
 
     public class Impl implements PowerHit, PowerHitTaken {
         // Feel free to add variable below
@@ -143,27 +164,5 @@ public class PowerEvalDamage extends BasePower {
         public Power getPower() {
             return PowerEvalDamage.this;
         }
-    }
-
-    public String getDisplay() {
-        return display;
-    }
-
-    public String getExpression() {
-        return expression;
-    }
-
-    @Override
-    public String getName() {
-        return "evaldamage";
-    }
-
-    @Override
-    public String displayText() {
-        return getDisplay() != null ? getDisplay() : "Damage may vary based on environment";
-    }
-
-    public boolean isSetBaseDamage() {
-        return setBaseDamage;
     }
 }

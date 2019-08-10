@@ -66,6 +66,10 @@ public class PowerConsume extends BasePower {
         return cooldown;
     }
 
+    public void setCooldown(int cooldown) {
+        this.cooldown = cooldown;
+    }
+
     /**
      * Cost of this power
      */
@@ -73,26 +77,51 @@ public class PowerConsume extends BasePower {
         return cost;
     }
 
-    public boolean isRequireHurtByEntity() {
-        return requireHurtByEntity;
-    }
-
-    public void setCooldown(int cooldown) {
-        this.cooldown = cooldown;
-    }
-
     public void setCost(int cost) {
         this.cost = cost;
+    }
+
+    @Override
+    public String getName() {
+        return "consume";
+    }
+
+    @Override
+    public String displayText() {
+        return I18n.format("power.consume");
+    }
+
+    public boolean isRequireHurtByEntity() {
+        return requireHurtByEntity;
     }
 
     public void setRequireHurtByEntity(boolean requireHurtByEntity) {
         this.requireHurtByEntity = requireHurtByEntity;
     }
 
-    public class Impl  implements PowerPlain, PowerRightClick, PowerLeftClick, PowerSneak, PowerHitTaken, PowerHurt, PowerSprint, PowerAttachment {
+    public class Impl implements PowerPlain, PowerRightClick, PowerLeftClick, PowerSneak, PowerHitTaken, PowerHurt, PowerSprint, PowerAttachment {
         @Override
         public PowerResult<Void> rightClick(final Player player, ItemStack stack, PlayerInteractEvent event) {
             return fire(player, stack);
+        }
+
+        public PowerResult<Void> fire(final Player player, ItemStack s) {
+            if (!checkCooldown(getPower(), player, getCooldown(), false, true)) return PowerResult.cd();
+            if (!getItem().consumeDurability(s, getCost())) return PowerResult.cost();
+            int count = s.getAmount() - 1;
+            if (count == 0) {
+                s.setAmount(0);
+                s.setType(Material.AIR);
+            } else {
+                s.setAmount(count);
+            }
+
+            return PowerResult.ok();
+        }
+
+        @Override
+        public Power getPower() {
+            return PowerConsume.this;
         }
 
         @Override
@@ -130,34 +159,5 @@ public class PowerConsume extends BasePower {
         public PowerResult<Void> attachment(Player player, ItemStack stack, RPGItem originItem, Event originEvent, ItemStack originStack) {
             return fire(player, stack);
         }
-
-        public PowerResult<Void> fire(final Player player, ItemStack s) {
-            if (!checkCooldown(getPower(), player, getCooldown(), false, true)) return PowerResult.cd();
-            if (!getItem().consumeDurability(s, getCost())) return PowerResult.cost();
-            int count = s.getAmount() - 1;
-            if (count == 0) {
-                s.setAmount(0);
-                s.setType(Material.AIR);
-            } else {
-                s.setAmount(count);
-            }
-
-            return PowerResult.ok();
-        }
-
-        @Override
-        public Power getPower() {
-            return PowerConsume.this;
-        }
-    }
-
-    @Override
-    public String getName() {
-        return "consume";
-    }
-
-    @Override
-    public String displayText() {
-        return I18n.format("power.consume");
     }
 }

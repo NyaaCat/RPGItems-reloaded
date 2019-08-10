@@ -13,59 +13,27 @@ import think.rpgitems.power.*;
 import java.io.Serializable;
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
-import java.util.*;
+import java.util.Collections;
+import java.util.HashSet;
+import java.util.Map;
+import java.util.Set;
 
 /**
  * Base class containing common methods and fields.
  */
 public abstract class BasePower implements Serializable, Power {
-    RPGItem item;
-
     @Property
     public String displayName;
-
     @Property
     @AcceptedValue(preset = Preset.TRIGGERS)
     public Set<Trigger> triggers = Power.getDefaultTriggers(this.getClass());
-
     @Property
     public Set<String> selectors = new HashSet<>();
-
     @Property
     public Set<String> conditions = new HashSet<>();
-
     @Property
     public String requiredContext;
-
-    @Override
-    public RPGItem getItem() {
-        return item;
-    }
-
-    @Override
-    public void setItem(RPGItem item) {
-        this.item = item;
-    }
-
-    @Override
-    public void save(ConfigurationSection section) {
-        Map<String, Pair<Method, PowerProperty>> properties = PowerManager.getProperties(this.getClass());
-        PowerMeta powerMeta = this.getClass().getAnnotation(PowerMeta.class);
-
-        for (Map.Entry<String, Pair<Method, PowerProperty>> entry : properties.entrySet()) {
-            String name = entry.getKey();
-            PowerProperty property = entry.getValue().getValue();
-            Field field = property.field();
-            if (name.equals("triggers") && powerMeta.immutableTrigger()) {
-                continue;
-            }
-            try {
-                Utils.saveProperty(this, section, name, field);
-            } catch (IllegalAccessException e) {
-                throw new RuntimeException(e);
-            }
-        }
-    }
+    RPGItem item;
 
     @Override
     public void init(ConfigurationSection section) {
@@ -106,23 +74,23 @@ public abstract class BasePower implements Serializable, Power {
     }
 
     @Override
-    public String displayName() {
-        return displayName;
-    }
+    public void save(ConfigurationSection section) {
+        Map<String, Pair<Method, PowerProperty>> properties = PowerManager.getProperties(this.getClass());
+        PowerMeta powerMeta = this.getClass().getAnnotation(PowerMeta.class);
 
-    @Override
-    public Set<Trigger> getTriggers() {
-        return Collections.unmodifiableSet(triggers);
-    }
-
-    @Override
-    public Set<String> getConditions() {
-        return Collections.unmodifiableSet(conditions);
-    }
-
-    @Override
-    public Set<String> getSelectors() {
-        return Collections.unmodifiableSet(selectors);
+        for (Map.Entry<String, Pair<Method, PowerProperty>> entry : properties.entrySet()) {
+            String name = entry.getKey();
+            PowerProperty property = entry.getValue().getValue();
+            Field field = property.field();
+            if (name.equals("triggers") && powerMeta.immutableTrigger()) {
+                continue;
+            }
+            try {
+                Utils.saveProperty(this, section, name, field);
+            } catch (IllegalAccessException e) {
+                throw new RuntimeException(e);
+            }
+        }
     }
 
     @Override
@@ -133,6 +101,36 @@ public abstract class BasePower implements Serializable, Power {
     @Override
     public String getLocalizedName(String locale) {
         return I18n.format("power.properties." + getName() + ".main_name");
+    }
+
+    @Override
+    public String displayName() {
+        return displayName;
+    }
+
+    @Override
+    public RPGItem getItem() {
+        return item;
+    }
+
+    @Override
+    public void setItem(RPGItem item) {
+        this.item = item;
+    }
+
+    @Override
+    public Set<Trigger> getTriggers() {
+        return Collections.unmodifiableSet(triggers);
+    }
+
+    @Override
+    public Set<String> getSelectors() {
+        return Collections.unmodifiableSet(selectors);
+    }
+
+    @Override
+    public Set<String> getConditions() {
+        return Collections.unmodifiableSet(conditions);
     }
 
     @Override

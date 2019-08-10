@@ -23,6 +23,10 @@ public class PowerCancelBowArrow extends BasePower {
         return null;
     }
 
+    public boolean isCancelArrow() {
+        return cancelArrow;
+    }
+
     public class Impl implements PowerBowShoot {
         @Override
         public PowerResult<Float> bowShoot(Player player, ItemStack itemStack, EntityShootBowEvent e) {
@@ -39,13 +43,5 @@ public class PowerCancelBowArrow extends BasePower {
         public Power getPower() {
             return PowerCancelBowArrow.this;
         }
-    }
-
-    public boolean isCancelArrow() {
-        return cancelArrow;
-    }
-
-    public void setCancelArrow(boolean cancelArrow) {
-        this.cancelArrow = cancelArrow;
     }
 }

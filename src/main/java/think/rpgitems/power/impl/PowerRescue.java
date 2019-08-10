@@ -43,18 +43,6 @@ public class PowerRescue extends BasePower {
     @Property
     private double damageTrigger = 1024;
 
-    @Override
-    public String displayText() {
-        return I18n.format("power.rescue.display", ((double) getHealthTrigger()) / 2, (double) getCooldown() / 20d);
-    }
-
-    /**
-     * Cooldown time of this power
-     */
-    public long getCooldown() {
-        return cooldown;
-    }
-
     /**
      * Cost of this power
      */
@@ -69,6 +57,16 @@ public class PowerRescue extends BasePower {
         return damageTrigger;
     }
 
+    @Override
+    public String getName() {
+        return "rescue";
+    }
+
+    @Override
+    public String displayText() {
+        return I18n.format("power.rescue.display", ((double) getHealthTrigger()) / 2, (double) getCooldown() / 20d);
+    }
+
     /**
      * Health trigger of rescue
      */
@@ -76,9 +74,25 @@ public class PowerRescue extends BasePower {
         return healthTrigger;
     }
 
-    @Override
-    public String getName() {
-        return "rescue";
+    /**
+     * Cooldown time of this power
+     */
+    public long getCooldown() {
+        return cooldown;
+    }
+
+    /**
+     * Whether rescue in place instead of teleport
+     */
+    public boolean isInPlace() {
+        return inPlace;
+    }
+
+    /**
+     * Whether use bed instead of home
+     */
+    public boolean isUseBed() {
+        return useBed;
     }
 
     public class Impl implements PowerHurt, PowerHitTaken {
@@ -90,18 +104,6 @@ public class PowerRescue extends BasePower {
             if (health > getHealthTrigger()) return PowerResult.noop();
             rescue(target, stack, event, false);
             return PowerResult.ok();
-        }
-
-        @Override
-        public PowerResult<Double> takeHit(Player target, ItemStack stack, double damage, EntityDamageEvent event) {
-            double health = target.getHealth() - event.getFinalDamage();
-            if (health > getHealthTrigger() && event.getFinalDamage() < getDamageTrigger()) return PowerResult.noop();
-            Long last = rescueTime.getIfPresent(target.getUniqueId());
-            if (last != null && System.currentTimeMillis() - last < 3000) {
-                event.setCancelled(true);
-                return PowerResult.ok(0.0);
-            }
-            return rescue(target, stack, event, true);
         }
 
         private PowerResult<Double> rescue(Player target, ItemStack stack, EntityDamageEvent event, boolean canceled) {
@@ -138,19 +140,17 @@ public class PowerRescue extends BasePower {
         public Power getPower() {
             return PowerRescue.this;
         }
-    }
 
-    /**
-     * Whether rescue in place instead of teleport
-     */
-    public boolean isInPlace() {
-        return inPlace;
-    }
-
-    /**
-     * Whether use bed instead of home
-     */
-    public boolean isUseBed() {
-        return useBed;
+        @Override
+        public PowerResult<Double> takeHit(Player target, ItemStack stack, double damage, EntityDamageEvent event) {
+            double health = target.getHealth() - event.getFinalDamage();
+            if (health > getHealthTrigger() && event.getFinalDamage() < getDamageTrigger()) return PowerResult.noop();
+            Long last = rescueTime.getIfPresent(target.getUniqueId());
+            if (last != null && System.currentTimeMillis() - last < 3000) {
+                event.setCancelled(true);
+                return PowerResult.ok(0.0);
+            }
+            return rescue(target, stack, event, true);
+        }
     }
 }

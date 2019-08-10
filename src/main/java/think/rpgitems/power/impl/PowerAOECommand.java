@@ -65,10 +65,54 @@ public class PowerAOECommand extends PowerCommand {
         return "aoecommand";
     }
 
+    /**
+     * Maximum radius
+     */
+    public int getR() {
+        return r;
+    }
+
+    /**
+     * Minimum radius
+     */
+    public int getRm() {
+        return rm;
+    }
+
+    /**
+     * Type of targets. Can be `entity` `player` `mobs` now
+     * entity: apply the command to every {@link LivingEntity} in range
+     * player: apply the command to every {@link Player} in range
+     * mobs: apply the command to every {@link LivingEntity}  except {@link Player}in range
+     */
+    public String getType() {
+        return type;
+    }
+
+    /**
+     * Whether only apply to the entities that player have line of sight
+     */
+    public boolean isMustsee() {
+        return mustsee;
+    }
+
+    /**
+     * Whether the command will be apply to the user
+     */
+    public boolean isSelfapplication() {
+        return selfapplication;
+    }
+
     public class Impl implements PowerPlain, PowerRightClick, PowerLeftClick, PowerHit {
         @Override
+        public PowerResult<Void> rightClick(Player player, ItemStack stack, PlayerInteractEvent event) {
+            return fire(player, stack);
+        }
+
+        @Override
         public PowerResult<Void> fire(Player player, ItemStack stack) {
-            if (!checkAndSetCooldown(getPower(), player, getCooldown(), true, false, getCommand())) return PowerResult.cd();
+            if (!checkAndSetCooldown(getPower(), player, getCooldown(), true, false, getCommand()))
+                return PowerResult.cd();
             if (!getItem().consumeDurability(stack, getCost())) return PowerResult.cost();
             if (!player.isOnline()) return PowerResult.noop();
 
@@ -111,8 +155,8 @@ public class PowerAOECommand extends PowerCommand {
         }
 
         @Override
-        public PowerResult<Void> rightClick(Player player, ItemStack stack, PlayerInteractEvent event) {
-            return fire(player, stack);
+        public Power getPower() {
+            return PowerAOECommand.this;
         }
 
         @Override
@@ -124,76 +168,5 @@ public class PowerAOECommand extends PowerCommand {
         public PowerResult<Double> hit(Player player, ItemStack stack, LivingEntity entity, double damage, EntityDamageByEntityEvent event) {
             return fire(player, stack).with(damage);
         }
-
-        @Override
-        public Power getPower() {
-            return PowerAOECommand.this;
-        }
-    }
-
-    /**
-     * Maximum radius
-     */
-    public int getR() {
-        return r;
-    }
-
-    /**
-     * Minimum radius
-     */
-    public int getRm() {
-        return rm;
-    }
-
-    /**
-     * Type of targets. Can be `entity` `player` `mobs` now
-     * entity: apply the command to every {@link LivingEntity} in range
-     * player: apply the command to every {@link Player} in range
-     * mobs: apply the command to every {@link LivingEntity}  except {@link Player}in range
-     */
-    public String getType() {
-        return type;
-    }
-
-    /**
-     * Whether only apply to the entities that player have line of sight
-     */
-    public boolean isMustsee() {
-        return mustsee;
-    }
-
-    /**
-     * Whether the command will be apply to the user
-     */
-    public boolean isSelfapplication() {
-        return selfapplication;
-    }
-
-    public void setC(int c) {
-        this.c = c;
-    }
-
-    public void setFacing(double facing) {
-        this.facing = facing;
-    }
-
-    public void setMustsee(boolean mustsee) {
-        this.mustsee = mustsee;
-    }
-
-    public void setR(int r) {
-        this.r = r;
-    }
-
-    public void setRm(int rm) {
-        this.rm = rm;
-    }
-
-    public void setSelfapplication(boolean selfapplication) {
-        this.selfapplication = selfapplication;
-    }
-
-    public void setType(String type) {
-        this.type = type;
     }
 }

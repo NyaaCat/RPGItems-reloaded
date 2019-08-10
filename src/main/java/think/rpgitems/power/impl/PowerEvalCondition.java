@@ -33,11 +33,6 @@ public class PowerEvalCondition extends BasePower implements PowerCondition<BigD
     }
 
     @Override
-    public Power getPower() {
-        return PowerEvalCondition.this;
-    }
-
-    @Override
     public boolean isStatic() {
         return isStatic;
     }
@@ -65,6 +60,11 @@ public class PowerEvalCondition extends BasePower implements PowerCondition<BigD
     }
 
     @Override
+    public Set<String> getConditions() {
+        return Collections.emptySet();
+    }
+
+    @Override
     public String getName() {
         return "evalcondition";
     }
@@ -75,7 +75,7 @@ public class PowerEvalCondition extends BasePower implements PowerCondition<BigD
     }
 
     @Override
-    public Set<String> getConditions() {
-        return Collections.emptySet();
+    public Power getPower() {
+        return PowerEvalCondition.this;
     }
 }

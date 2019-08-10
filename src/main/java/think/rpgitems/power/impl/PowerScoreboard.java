@@ -32,51 +32,118 @@ import static think.rpgitems.power.Utils.checkCooldown;
 @PowerMeta(defaultTrigger = "RIGHT_CLICK", generalInterface = PowerPlain.class, implClass = PowerScoreboard.Impl.class)
 public class PowerScoreboard extends BasePower {
 
-    @Property
-    private String tag;
-
-    @Property
-    private String team;
-
-    @Property
-    private long cooldown = 0;
-
-    @Property
-    private ScoreboardOperation scoreOperation = ScoreboardOperation.NO_OP;
-
-    @Property
-    private int value = 0;
-
-    @Property
-    private String objective = "";
-
-    @Property
-    private int cost = 0;
-
-    @Property
-    private boolean reverseTagAfterDelay = false;
-
-    @Property
-    private long delay = 20;
-
-    @Property
-    private boolean abortOnSuccess = false;
-
-    private BukkitRunnable removeTask;
-
     private static LoadingCache<String, Pair<Set<String>, Set<String>>> teamCache = CacheBuilder
                                                                                             .newBuilder()
                                                                                             .concurrencyLevel(1)
                                                                                             .expireAfterAccess(1, TimeUnit.DAYS)
                                                                                             .build(CacheLoader.from(PowerSelector::parse));
-
     private static LoadingCache<String, Pair<Set<String>, Set<String>>> tagCache = CacheBuilder
                                                                                            .newBuilder()
                                                                                            .concurrencyLevel(1)
                                                                                            .expireAfterAccess(1, TimeUnit.DAYS)
                                                                                            .build(CacheLoader.from(PowerSelector::parse));
+    @Property
+    private String tag;
+    @Property
+    private String team;
+    @Property
+    private long cooldown = 0;
+    @Property
+    private ScoreboardOperation scoreOperation = ScoreboardOperation.NO_OP;
+    @Property
+    private int value = 0;
+    @Property
+    private String objective = "";
+    @Property
+    private int cost = 0;
+    @Property
+    private boolean reverseTagAfterDelay = false;
+    @Property
+    private long delay = 20;
+    @Property
+    private boolean abortOnSuccess = false;
+    private BukkitRunnable removeTask;
+    @Property
+    private boolean requireHurtByEntity = true;
+
+    /**
+     * Cooldown time of this power
+     */
+    public long getCooldown() {
+        return cooldown;
+    }
+
+    /**
+     * Cost of this power
+     */
+    public int getCost() {
+        return cost;
+    }
+
+    public long getDelay() {
+        return delay;
+    }
+
+    @Override
+    public String getName() {
+        return "scoreboard";
+    }
+
+    @Override
+    public String displayText() {
+        return null;
+    }
+
+    public String getObjective() {
+        return objective;
+    }
+
+    public ScoreboardOperation getScoreOperation() {
+        return scoreOperation;
+    }
+
+    /**
+     * Tag(s) to add and remove, according to the following format
+     * `TO_ADD,!TO_REMOVE`
+     */
+    public String getTag() {
+        return tag;
+    }
+
+    /**
+     * Team(s) to join and leave, according to the following format
+     * `JOIN,!LEAVE`
+     */
+    public String getTeam() {
+        return team;
+    }
+
+    public int getValue() {
+        return value;
+    }
+
+    public boolean isAbortOnSuccess() {
+        return abortOnSuccess;
+    }
+
+    public boolean isRequireHurtByEntity() {
+        return requireHurtByEntity;
+    }
+
+    public boolean isReverseTagAfterDelay() {
+        return reverseTagAfterDelay;
+    }
+
+    public enum ScoreboardOperation {
+        NO_OP, ADD_SCORE, SET_SCORE, RESET_SCORE
+    }
 
     public class Impl implements PowerHit, PowerHitTaken, PowerHurt, PowerLeftClick, PowerRightClick, PowerOffhandClick, PowerProjectileHit, PowerSneak, PowerSprint, PowerOffhandItem, PowerMainhandItem, PowerTick, PowerSneaking, PowerPlain, PowerBowShoot {
+
+        @Override
+        public PowerResult<Void> leftClick(Player player, ItemStack stack, PlayerInteractEvent event) {
+            return fire(player, stack);
+        }
 
         @Override
         public PowerResult<Void> fire(Player player, ItemStack stack) {
@@ -143,8 +210,8 @@ public class PowerScoreboard extends BasePower {
         }
 
         @Override
-        public PowerResult<Void> leftClick(Player player, ItemStack stack, PlayerInteractEvent event) {
-            return fire(player, stack);
+        public Power getPower() {
+            return PowerScoreboard.this;
         }
 
         @Override
@@ -217,130 +284,5 @@ public class PowerScoreboard extends BasePower {
         public PowerResult<Void> sneaking(Player player, ItemStack stack) {
             return fire(player, stack);
         }
-
-        @Override
-        public Power getPower() {
-            return PowerScoreboard.this;
-        }
-    }
-
-    /**
-     * Cooldown time of this power
-     */
-    public long getCooldown() {
-        return cooldown;
-    }
-
-    /**
-     * Cost of this power
-     */
-    public int getCost() {
-        return cost;
-    }
-
-    public long getDelay() {
-        return delay;
-    }
-
-    @Override
-    public String getName() {
-        return "scoreboard";
-    }
-
-    @Override
-    public String displayText() {
-        return null;
-    }
-
-
-    @Property
-    private boolean requireHurtByEntity = true;
-
-    public String getObjective() {
-        return objective;
-    }
-
-    public ScoreboardOperation getScoreOperation() {
-        return scoreOperation;
-    }
-
-    /**
-     * Tag(s) to add and remove, according to the following format
-     * `TO_ADD,!TO_REMOVE`
-     */
-    public String getTag() {
-        return tag;
-    }
-
-    /**
-     * Team(s) to join and leave, according to the following format
-     * `JOIN,!LEAVE`
-     */
-    public String getTeam() {
-        return team;
-    }
-
-    public int getValue() {
-        return value;
-    }
-
-    public boolean isAbortOnSuccess() {
-        return abortOnSuccess;
-    }
-
-    public boolean isRequireHurtByEntity() {
-        return requireHurtByEntity;
-    }
-
-    public boolean isReverseTagAfterDelay() {
-        return reverseTagAfterDelay;
-    }
-
-    public void setAbortOnSuccess(boolean abortOnSuccess) {
-        this.abortOnSuccess = abortOnSuccess;
-    }
-
-    public void setCooldown(long cooldown) {
-        this.cooldown = cooldown;
-    }
-
-    public void setCost(int cost) {
-        this.cost = cost;
-    }
-
-    public void setDelay(long delay) {
-        this.delay = delay;
-    }
-
-    public void setObjective(String objective) {
-        this.objective = objective;
-    }
-
-    public void setRequireHurtByEntity(boolean requireHurtByEntity) {
-        this.requireHurtByEntity = requireHurtByEntity;
-    }
-
-    public void setReverseTagAfterDelay(boolean reverseTagAfterDelay) {
-        this.reverseTagAfterDelay = reverseTagAfterDelay;
-    }
-
-    public void setScoreOperation(ScoreboardOperation scoreOperation) {
-        this.scoreOperation = scoreOperation;
-    }
-
-    public void setTag(String tag) {
-        this.tag = tag;
-    }
-
-    public void setTeam(String team) {
-        this.team = team;
-    }
-
-    public void setValue(int value) {
-        this.value = value;
-    }
-
-    public enum ScoreboardOperation {
-        NO_OP, ADD_SCORE, SET_SCORE, RESET_SCORE;
     }
 }

@@ -37,6 +37,23 @@ public class PowerFood extends BasePower {
     @Property(order = 0, required = true)
     private int foodpoints;
 
+    @Override
+    public String getName() {
+        return "food";
+    }
+
+    @Override
+    public String displayText() {
+        return I18n.format("power.food", getFoodpoints());
+    }
+
+    /**
+     * Food Points
+     */
+    public int getFoodpoints() {
+        return foodpoints;
+    }
+
     public class Impl implements PowerRightClick {
         @Override
         public PowerResult<Void> rightClick(final Player player, ItemStack stack, PlayerInteractEvent event) {
@@ -58,22 +75,5 @@ public class PowerFood extends BasePower {
         public Power getPower() {
             return PowerFood.this;
         }
-    }
-
-    /**
-     * Food Points
-     */
-    public int getFoodpoints() {
-        return foodpoints;
-    }
-
-    @Override
-    public String getName() {
-        return "food";
-    }
-
-    @Override
-    public String displayText() {
-        return I18n.format("power.food", getFoodpoints());
     }
 }

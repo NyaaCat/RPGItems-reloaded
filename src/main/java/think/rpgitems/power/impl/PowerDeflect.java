@@ -31,33 +31,43 @@ import static think.rpgitems.power.Utils.*;
 @PowerMeta(defaultTrigger = "RIGHT_CLICK", generalInterface = PowerPlain.class, implClass = PowerDeflect.Impl.class)
 public class PowerDeflect extends BasePower {
 
+    private static Map<UUID, Long> time = new HashMap<>();
     @Property(order = 2)
     private int cooldown = 0;
-
     @Property(order = 4)
     private int cooldownpassive = 0;
-
     @Property
     private int cost = 0;
-
-
     @Property
     private int deflectCost = 0;
-
     @Property
     private int chance = 50;
-
     @Property
     private int duration = 50;
-
     @Property(order = 0, required = true)
     private double facing = 30;
 
-    private static Map<UUID, Long> time = new HashMap<>();
+    @Override
+    public void init(ConfigurationSection section) {
+        cooldownpassive = section.getInt("cooldownpassive", 20);
+        boolean passive = section.getBoolean("passive", false);
+        boolean initiative = section.getBoolean("initiative", true);
+        boolean isRight = section.getBoolean("isRight", true);
+        triggers = new HashSet<>();
+        if (passive) {
+            triggers.add(Trigger.HIT_TAKEN);
+        }
+        if (initiative) {
+            triggers.add(isRight ? Trigger.RIGHT_CLICK : Trigger.LEFT_CLICK);
+        }
+        super.init(section);
+    }
 
     @Override
-    public String displayText() {
-        return I18n.format("power.deflect", (double) getCooldown() / 20d);
+    public Set<Trigger> getTriggers() {
+        HashSet<Trigger> triggers = new HashSet<>(super.getTriggers());
+        triggers.add(Trigger.HIT_TAKEN);
+        return triggers;
     }
 
     /**
@@ -65,13 +75,6 @@ public class PowerDeflect extends BasePower {
      */
     public int getChance() {
         return chance;
-    }
-
-    /**
-     * Cooldown time of this power
-     */
-    public int getCooldown() {
-        return cooldown;
     }
 
     /**
@@ -115,19 +118,19 @@ public class PowerDeflect extends BasePower {
     }
 
     @Override
-    public void init(ConfigurationSection section) {
-        setCooldownpassive(section.getInt("cooldownpassive", 20));
-        boolean passive = section.getBoolean("passive", false);
-        boolean initiative = section.getBoolean("initiative", true);
-        boolean isRight = section.getBoolean("isRight", true);
-        triggers = new HashSet<>();
-        if (passive) {
-            triggers.add(Trigger.HIT_TAKEN);
-        }
-        if (initiative) {
-            triggers.add(isRight ? Trigger.RIGHT_CLICK : Trigger.LEFT_CLICK);
-        }
-        super.init(section);
+    public String displayText() {
+        return I18n.format("power.deflect", (double) getCooldown() / 20d);
+    }
+
+    /**
+     * Cooldown time of this power
+     */
+    public int getCooldown() {
+        return cooldown;
+    }
+
+    public static Map<UUID, Long> getTime() {
+        return time;
     }
 
     public class Impl implements PowerHitTaken, PowerRightClick, PowerLeftClick, PowerPlain, PowerBowShoot {
@@ -197,6 +200,11 @@ public class PowerDeflect extends BasePower {
         }
 
         @Override
+        public Power getPower() {
+            return PowerDeflect.this;
+        }
+
+        @Override
         public PowerResult<Void> rightClick(Player player, ItemStack stack, PlayerInteractEvent event) {
             return fire(player, stack);
         }
@@ -220,53 +228,5 @@ public class PowerDeflect extends BasePower {
         public PowerResult<Float> bowShoot(Player player, ItemStack stack, EntityShootBowEvent event) {
             return fire(player, stack).with(event.getForce());
         }
-
-        @Override
-        public Power getPower() {
-            return PowerDeflect.this;
-        }
-    }
-
-    public static Map<UUID, Long> getTime() {
-        return time;
-    }
-
-    @Override
-    public Set<Trigger> getTriggers() {
-        HashSet<Trigger> triggers = new HashSet<>(super.getTriggers());
-        triggers.add(Trigger.HIT_TAKEN);
-        return triggers;
-    }
-
-    public void setChance(int chance) {
-        this.chance = chance;
-    }
-
-    public void setCooldown(int cooldown) {
-        this.cooldown = cooldown;
-    }
-
-    public void setCooldownpassive(int cooldownpassive) {
-        this.cooldownpassive = cooldownpassive;
-    }
-
-    public void setCost(int cost) {
-        this.cost = cost;
-    }
-
-    public void setDeflectCost(int deflectCost) {
-        this.deflectCost = deflectCost;
-    }
-
-    public void setDuration(int duration) {
-        this.duration = duration;
-    }
-
-    public void setFacing(double facing) {
-        this.facing = facing;
-    }
-
-    public static void setTime(Map<UUID, Long> time) {
-        PowerDeflect.time = time;
     }
 }

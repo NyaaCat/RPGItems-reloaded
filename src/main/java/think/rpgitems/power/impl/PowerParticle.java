@@ -75,60 +75,49 @@ public class PowerParticle extends BasePower {
 
     @Property
     private boolean requireHurtByEntity = true;
+    private Object data = null;
 
-    public class Impl implements PowerRightClick, PowerLeftClick, PowerPlain, PowerHit, PowerHitTaken, PowerHurt, PowerBowShoot {
-
-        @Override
-        public PowerResult<Double> takeHit(Player target, ItemStack stack, double damage, EntityDamageEvent event) {
-            if (!isRequireHurtByEntity() || event instanceof EntityDamageByEntityEvent) {
-                return fire(target, stack).with(damage);
+    void spawnParticle(Entity player) {
+        if (getParticle() == null) {
+            if (getEffect() == Effect.SMOKE) {
+                player.getWorld().playEffect(player.getLocation().add(0, 2, 0), getEffect(), 4);
+            } else {
+                player.getWorld().playEffect(player.getLocation(), getEffect(), 0);
             }
-            return PowerResult.noop();
+        } else {
+            player.getWorld().spawnParticle(getParticle(), player.getLocation(), getParticleCount(), getOffsetX(), getOffsetY(), getOffsetZ(), getExtra(), getData(), isForce());
         }
+    }
 
-        @Override
-        public PowerResult<Void> hurt(Player target, ItemStack stack, EntityDamageEvent event) {
-            if (!isRequireHurtByEntity() || event instanceof EntityDamageByEntityEvent) {
-                return fire(target, stack);
-            }
-            return PowerResult.noop();
-        }
+    public Particle getParticle() {
+        return particle;
+    }
 
+    /**
+     * Name of particle effect
+     */
+    public Effect getEffect() {
+        return effect;
+    }
 
-        @Override
-        public PowerResult<Void> rightClick(Player player, ItemStack stack, PlayerInteractEvent event) {
-            return fire(player, stack);
-        }
+    public int getParticleCount() {
+        return particleCount;
+    }
 
-        @Override
-        public PowerResult<Float> bowShoot(Player player, ItemStack stack, EntityShootBowEvent event) {
-            return fire(player, stack).with(event.getForce());
-        }
+    public double getOffsetX() {
+        return offsetX;
+    }
 
-        @Override
-        public PowerResult<Void> leftClick(Player player, ItemStack stack, PlayerInteractEvent event) {
-            return fire(player, stack);
-        }
+    public double getOffsetY() {
+        return offsetY;
+    }
 
-        @Override
-        public PowerResult<Void> fire(Player player, ItemStack stack) {
-            if (!checkCooldown(getPower(), player, getCooldown(), true, true)) return PowerResult.cd();
-            if (!getItem().consumeDurability(stack, getCost())) return PowerResult.cost();
-            spawnParticle(player);
-            return PowerResult.ok();
-        }
+    public double getOffsetZ() {
+        return offsetZ;
+    }
 
-        @Override
-        public PowerResult<Double> hit(Player player, ItemStack stack, LivingEntity entity, double damage, EntityDamageByEntityEvent event) {
-            if (!getItem().consumeDurability(stack, getCost())) return PowerResult.cost();
-            spawnParticle(entity);
-            return PowerResult.ok().with(damage);
-        }
-
-        @Override
-        public Power getPower() {
-            return PowerParticle.this;
-        }
+    public double getExtra() {
+        return extra;
     }
 
     private Object getData() {
@@ -144,19 +133,21 @@ public class PowerParticle extends BasePower {
         return data;
     }
 
-    void spawnParticle(Entity player) {
-        if (getParticle() == null) {
-            if (getEffect() == Effect.SMOKE) {
-                player.getWorld().playEffect(player.getLocation().add(0, 2, 0), getEffect(), 4);
-            } else {
-                player.getWorld().playEffect(player.getLocation(), getEffect(), 0);
-            }
-        } else {
-            player.getWorld().spawnParticle(getParticle(), player.getLocation(), getParticleCount(), getOffsetX(), getOffsetY(), getOffsetZ(), getExtra(), getData(), isForce());
-        }
+    public boolean isForce() {
+        return force;
     }
 
-    private Object data = null;
+    public Material getMaterial() {
+        return material;
+    }
+
+    public int getDustColor() {
+        return dustColor;
+    }
+
+    public double getDustSize() {
+        return dustSize;
+    }
 
     /**
      * Cooldown time of this power
@@ -172,29 +163,6 @@ public class PowerParticle extends BasePower {
         return cost;
     }
 
-    public int getDustColor() {
-        return dustColor;
-    }
-
-    public double getDustSize() {
-        return dustSize;
-    }
-
-    /**
-     * Name of particle effect
-     */
-    public Effect getEffect() {
-        return effect;
-    }
-
-    public double getExtra() {
-        return extra;
-    }
-
-    public Material getMaterial() {
-        return material;
-    }
-
     @Override
     public String getName() {
         return "particle";
@@ -203,30 +171,6 @@ public class PowerParticle extends BasePower {
     @Override
     public String displayText() {
         return I18n.format("power.particle");
-    }
-
-    public double getOffsetX() {
-        return offsetX;
-    }
-
-    public double getOffsetY() {
-        return offsetY;
-    }
-
-    public double getOffsetZ() {
-        return offsetZ;
-    }
-
-    public Particle getParticle() {
-        return particle;
-    }
-
-    public int getParticleCount() {
-        return particleCount;
-    }
-
-    public boolean isForce() {
-        return force;
     }
 
     public boolean isRequireHurtByEntity() {
@@ -280,6 +224,60 @@ public class PowerParticle extends BasePower {
 
         public Particle getParticle() {
             return particle;
+        }
+    }
+
+    public class Impl implements PowerRightClick, PowerLeftClick, PowerPlain, PowerHit, PowerHitTaken, PowerHurt, PowerBowShoot {
+
+        @Override
+        public PowerResult<Double> takeHit(Player target, ItemStack stack, double damage, EntityDamageEvent event) {
+            if (!isRequireHurtByEntity() || event instanceof EntityDamageByEntityEvent) {
+                return fire(target, stack).with(damage);
+            }
+            return PowerResult.noop();
+        }
+
+        @Override
+        public PowerResult<Void> fire(Player player, ItemStack stack) {
+            if (!checkCooldown(getPower(), player, getCooldown(), true, true)) return PowerResult.cd();
+            if (!getItem().consumeDurability(stack, getCost())) return PowerResult.cost();
+            spawnParticle(player);
+            return PowerResult.ok();
+        }
+
+        @Override
+        public Power getPower() {
+            return PowerParticle.this;
+        }
+
+        @Override
+        public PowerResult<Void> hurt(Player target, ItemStack stack, EntityDamageEvent event) {
+            if (!isRequireHurtByEntity() || event instanceof EntityDamageByEntityEvent) {
+                return fire(target, stack);
+            }
+            return PowerResult.noop();
+        }
+
+        @Override
+        public PowerResult<Void> rightClick(Player player, ItemStack stack, PlayerInteractEvent event) {
+            return fire(player, stack);
+        }
+
+        @Override
+        public PowerResult<Float> bowShoot(Player player, ItemStack stack, EntityShootBowEvent event) {
+            return fire(player, stack).with(event.getForce());
+        }
+
+        @Override
+        public PowerResult<Void> leftClick(Player player, ItemStack stack, PlayerInteractEvent event) {
+            return fire(player, stack);
+        }
+
+        @Override
+        public PowerResult<Double> hit(Player player, ItemStack stack, LivingEntity entity, double damage, EntityDamageByEntityEvent event) {
+            if (!getItem().consumeDurability(stack, getCost())) return PowerResult.cost();
+            spawnParticle(entity);
+            return PowerResult.ok().with(damage);
         }
     }
 

@@ -51,6 +51,23 @@ public class PowerAOE extends BasePower {
     @Property
     private int cost = 0;
 
+    /**
+     * Cost of this power
+     */
+    public int getCost() {
+        return cost;
+    }
+
+    @Override
+    public String getName() {
+        return "aoe";
+    }
+
+    @Override
+    public String displayText() {
+        return getDisplay() != null ? getDisplay() : I18n.format("power.aoe.display", getType().getName(), getAmplifier(), getDuration(), isSelfapplication() ? I18n.format("power.aoe.selfapplication.including") : I18n.format("power.aoe.selfapplication.excluding"), getRange(), (double) getCooldown() / 20d);
+    }
+
     public String getDisplay() {
         return display;
     }
@@ -59,30 +76,52 @@ public class PowerAOE extends BasePower {
         this.display = display;
     }
 
+    /**
+     * Type of the potion
+     */
+    public PotionEffectType getType() {
+        return type;
+    }
+
+    /**
+     * Amplifier of the potion
+     */
+    public int getAmplifier() {
+        return amplifier;
+    }
+
+    /**
+     * Duration of the potion
+     */
+    public int getDuration() {
+        return duration;
+    }
+
+    /**
+     * Whether the potion will be apply to the user
+     */
+    public boolean isSelfapplication() {
+        return selfapplication;
+    }
+
+    /**
+     * Range of the potion
+     */
+    public int getRange() {
+        return range;
+    }
+
+    /**
+     * Cooldown time of this power
+     */
+    public long getCooldown() {
+        return cooldown;
+    }
+
     public class Impl implements PowerRightClick, PowerLeftClick, PowerOffhandClick, PowerPlain, PowerHit, PowerBowShoot {
         @Override
         public PowerResult<Void> rightClick(final Player player, ItemStack stack, PlayerInteractEvent event) {
             return fire(player, stack);
-        }
-
-        @Override
-        public PowerResult<Void> leftClick(final Player player, ItemStack stack, PlayerInteractEvent event) {
-            return fire(player, stack);
-        }
-
-        @Override
-        public PowerResult<Void> offhandClick(final Player player, ItemStack stack, PlayerInteractEvent event) {
-            return fire(player, stack);
-        }
-
-        @Override
-        public PowerResult<Double> hit(Player player, ItemStack stack, LivingEntity entity, double damage, EntityDamageByEntityEvent event) {
-            return fire(player, stack).with(damage);
-        }
-
-        @Override
-        public PowerResult<Float> bowShoot(Player player, ItemStack stack, EntityShootBowEvent event) {
-            return fire(player, stack).with(event.getForce());
         }
 
         @Override
@@ -106,93 +145,25 @@ public class PowerAOE extends BasePower {
         public Power getPower() {
             return PowerAOE.this;
         }
-    }
 
-    /**
-     * Amplifier of the potion
-     */
-    public int getAmplifier() {
-        return amplifier;
-    }
+        @Override
+        public PowerResult<Void> leftClick(final Player player, ItemStack stack, PlayerInteractEvent event) {
+            return fire(player, stack);
+        }
 
-    /**
-     * Cooldown time of this power
-     */
-    public long getCooldown() {
-        return cooldown;
-    }
+        @Override
+        public PowerResult<Void> offhandClick(final Player player, ItemStack stack, PlayerInteractEvent event) {
+            return fire(player, stack);
+        }
 
-    /**
-     * Cost of this power
-     */
-    public int getCost() {
-        return cost;
-    }
+        @Override
+        public PowerResult<Double> hit(Player player, ItemStack stack, LivingEntity entity, double damage, EntityDamageByEntityEvent event) {
+            return fire(player, stack).with(damage);
+        }
 
-    /**
-     * Duration of the potion
-     */
-    public int getDuration() {
-        return duration;
-    }
-
-
-    @Override
-    public String getName() {
-        return "aoe";
-    }
-
-    @Override
-    public String displayText() {
-        return getDisplay() != null ? getDisplay() : I18n.format("power.aoe.display", getType().getName(), getAmplifier(), getDuration(), isSelfapplication() ? I18n.format("power.aoe.selfapplication.including") : I18n.format("power.aoe.selfapplication.excluding"), getRange(), (double) getCooldown() / 20d);
-    }
-
-    /**
-     * Range of the potion
-     */
-    public int getRange() {
-        return range;
-    }
-
-    /**
-     * Type of the potion
-     */
-    public PotionEffectType getType() {
-        return type;
-    }
-
-    /**
-     * Whether the potion will be apply to the user
-     */
-    public boolean isSelfapplication() {
-        return selfapplication;
-    }
-
-    public void setAmplifier(int amplifier) {
-        this.amplifier = amplifier;
-    }
-
-    public void setCooldown(long cooldown) {
-        this.cooldown = cooldown;
-    }
-
-    public void setCost(int cost) {
-        this.cost = cost;
-    }
-
-    public void setDuration(int duration) {
-        this.duration = duration;
-    }
-
-    public void setRange(int range) {
-        this.range = range;
-    }
-
-    public void setSelfapplication(boolean selfapplication) {
-        this.selfapplication = selfapplication;
-    }
-
-    public void setType(PotionEffectType type) {
-        this.type = type;
+        @Override
+        public PowerResult<Float> bowShoot(Player player, ItemStack stack, EntityShootBowEvent event) {
+            return fire(player, stack).with(event.getForce());
+        }
     }
 }

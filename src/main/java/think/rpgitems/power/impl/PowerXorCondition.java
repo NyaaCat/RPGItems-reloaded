@@ -30,11 +30,6 @@ public class PowerXorCondition extends BasePower implements PowerCondition<Void>
     }
 
     @Override
-    public Power getPower() {
-        return this;
-    }
-
-    @Override
     public boolean isStatic() {
         return isStatic;
     }
@@ -76,5 +71,10 @@ public class PowerXorCondition extends BasePower implements PowerCondition<Void>
     @Override
     public String displayText() {
         return null;
+    }
+
+    @Override
+    public Power getPower() {
+        return this;
     }
 }

@@ -27,7 +27,7 @@ import static think.rpgitems.power.Utils.*;
  * </p>
  */
 @PowerMeta(defaultTrigger = "RIGHT_CLICK", withSelectors = true, generalInterface = PowerPlain.class, implClass = PowerShulkerBullet.Impl.class)
-public class PowerShulkerBullet extends BasePower{
+public class PowerShulkerBullet extends BasePower {
 
     @Property(order = 0)
     private long cooldown = 0;
@@ -38,34 +38,45 @@ public class PowerShulkerBullet extends BasePower{
 
     @Override
     public void init(ConfigurationSection s) {
-        setCooldown(s.getLong("cooldownTime"));
+        cooldown = s.getLong("cooldownTime");
         super.init(s);
     }
 
-    public class Impl  implements PowerRightClick, PowerLeftClick, PowerSneak, PowerSprint, PowerPlain, PowerBowShoot {
+    /**
+     * Cost of this power
+     */
+    public int getCost() {
+        return cost;
+    }
+
+    @Override
+    public String getName() {
+        return "shulkerbullet";
+    }
+
+    @Override
+    public String displayText() {
+        return I18n.format("power.shulkerbullet", (double) getCooldown() / 20d);
+    }
+
+    /**
+     * Cooldown time of this power
+     */
+    public long getCooldown() {
+        return cooldown;
+    }
+
+    /**
+     * Range of target finding
+     */
+    public double getRange() {
+        return range;
+    }
+
+    public class Impl implements PowerRightClick, PowerLeftClick, PowerSneak, PowerSprint, PowerPlain, PowerBowShoot {
         @Override
         public PowerResult<Void> leftClick(Player player, ItemStack stack, PlayerInteractEvent event) {
             return fire(player, stack);
-        }
-
-        @Override
-        public PowerResult<Void> rightClick(Player player, ItemStack stack, PlayerInteractEvent event) {
-            return fire(player, stack);
-        }
-
-        @Override
-        public PowerResult<Void> sneak(Player player, ItemStack stack, PlayerToggleSneakEvent event) {
-            return fire(player, stack);
-        }
-
-        @Override
-        public PowerResult<Void> sprint(Player player, ItemStack stack, PlayerToggleSprintEvent event) {
-            return fire(player, stack);
-        }
-
-        @Override
-        public PowerResult<Float> bowShoot(Player player, ItemStack itemStack, EntityShootBowEvent e) {
-            return fire(player, itemStack).with(e.getForce());
         }
 
         @Override
@@ -88,50 +99,25 @@ public class PowerShulkerBullet extends BasePower{
         public Power getPower() {
             return PowerShulkerBullet.this;
         }
-    }
 
+        @Override
+        public PowerResult<Void> rightClick(Player player, ItemStack stack, PlayerInteractEvent event) {
+            return fire(player, stack);
+        }
 
+        @Override
+        public PowerResult<Void> sneak(Player player, ItemStack stack, PlayerToggleSneakEvent event) {
+            return fire(player, stack);
+        }
 
-    /**
-     * Cooldown time of this power
-     */
-    public long getCooldown() {
-        return cooldown;
-    }
+        @Override
+        public PowerResult<Void> sprint(Player player, ItemStack stack, PlayerToggleSprintEvent event) {
+            return fire(player, stack);
+        }
 
-    /**
-     * Cost of this power
-     */
-    public int getCost() {
-        return cost;
-    }
-
-    @Override
-    public String getName() {
-        return "shulkerbullet";
-    }
-
-    @Override
-    public String displayText() {
-        return I18n.format("power.shulkerbullet", (double) getCooldown() / 20d);
-    }
-
-    /**
-     * Range of target finding
-     */
-    public double getRange() {
-        return range;
-    }
-
-    public void setCooldown(long cooldown) {
-        this.cooldown = cooldown;
-    }
-
-    public void setCost(int cost) {
-        this.cost = cost;
-    }
-
-    public void setRange(double range) {
-        this.range = range;
+        @Override
+        public PowerResult<Float> bowShoot(Player player, ItemStack itemStack, EntityShootBowEvent e) {
+            return fire(player, itemStack).with(e.getForce());
+        }
     }
 }

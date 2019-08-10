@@ -42,79 +42,17 @@ public class PowerEconomy extends BasePower {
     @Property
     private boolean requireHurtByEntity = true;
 
-    public class Impl implements PowerRightClick, PowerLeftClick, PowerPlain, PowerHit, PowerHurt, PowerHitTaken, PowerBowShoot {
-
-
-
     @Override
-    public PowerResult<Double> takeHit(Player target, ItemStack stack, double damage, EntityDamageEvent event) {
-        if (!isRequireHurtByEntity() || event instanceof EntityDamageByEntityEvent) {
-            return fire(target, stack).with(damage);
+    public void init(ConfigurationSection section) {
+        super.init(section);
+        if (eco == null) {
+            try {
+                eco = VaultUtils.getVaultEconomy();
+            } catch (RuntimeException e) {
+                RPGItems.plugin.getLogger().log(Level.SEVERE, "Vault Economy not found", e);
+                throw new AdminHandler.CommandException("message.error.economy");
+            }
         }
-        return PowerResult.noop();
-    }
-
-    @Override
-    public PowerResult<Void> hurt(Player target, ItemStack stack, EntityDamageEvent event) {
-        if (!isRequireHurtByEntity() || event instanceof EntityDamageByEntityEvent) {
-            return fire(target, stack);
-        }
-        return PowerResult.noop();
-    }
-
-    @Override
-    public PowerResult<Void> leftClick(Player player, ItemStack stack, PlayerInteractEvent event) {
-        return fire(player, stack);
-    }
-
-    @Override
-    public PowerResult<Void> rightClick(Player player, ItemStack stack, PlayerInteractEvent event) {
-        return fire(player, stack);
-    }
-
-    @Override
-    public PowerResult<Float> bowShoot(Player player, ItemStack stack, EntityShootBowEvent event) {
-        return fire(player, stack).with(event.getForce());
-    }
-
-    @Override
-    public PowerResult<Double> hit(Player player, ItemStack stack, LivingEntity entity, double damage, EntityDamageByEntityEvent event) {
-        return fire(player, stack).with(damage);
-    }
-
-    @Override
-    public PowerResult<Void> fire(Player player, ItemStack stack) {
-        if (!checkCooldown(getPower(), player, getCooldown(), true, true)) return isAbortOnFailure() ? PowerResult.abort() : PowerResult.cd();
-        EconomyResponse economyResponse;
-        if (getAmountToPlayer() > 0) {
-            economyResponse = eco.depositPlayer(player, getAmountToPlayer());
-        } else {
-            economyResponse = eco.withdrawPlayer(player, -getAmountToPlayer());
-        }
-        if (economyResponse.transactionSuccess()) {
-            return PowerResult.ok();
-        }
-        if (isShowFailMessage()) {
-            new Message(economyResponse.errorMessage).send(player);
-        }
-        return isAbortOnFailure() ? PowerResult.abort() : PowerResult.fail();
-    }
-
-        @Override
-        public Power getPower() {
-            return PowerEconomy.this;
-        }
-    }
-
-    public double getAmountToPlayer() {
-        return amountToPlayer;
-    }
-
-    /**
-     * Cooldown time of this power
-     */
-    public int getCooldown() {
-        return cooldown;
     }
 
     @Override
@@ -127,17 +65,15 @@ public class PowerEconomy extends BasePower {
         return I18n.format(getAmountToPlayer() > 0 ? "power.economy.deposit" : "power.economy.withdraw", eco.format(Math.abs(getAmountToPlayer())), (double) getCooldown() / 20d);
     }
 
-    @Override
-    public void init(ConfigurationSection section) {
-        super.init(section);
-        if (eco == null) {
-            try {
-                eco = VaultUtils.getVaultEconomy();
-            } catch (RuntimeException e) {
-                RPGItems.plugin.getLogger().log(Level.SEVERE, "Vault Economy not found", e);
-                throw new AdminHandler.CommandException("message.error.economy");
-            }
-        }
+    public double getAmountToPlayer() {
+        return amountToPlayer;
+    }
+
+    /**
+     * Cooldown time of this power
+     */
+    public int getCooldown() {
+        return cooldown;
     }
 
     public boolean isAbortOnFailure() {
@@ -152,23 +88,67 @@ public class PowerEconomy extends BasePower {
         return showFailMessage;
     }
 
-    public void setAbortOnFailure(boolean abortOnFailure) {
-        this.abortOnFailure = abortOnFailure;
-    }
+    public class Impl implements PowerRightClick, PowerLeftClick, PowerPlain, PowerHit, PowerHurt, PowerHitTaken, PowerBowShoot {
 
-    public void setAmountToPlayer(double amountToPlayer) {
-        this.amountToPlayer = amountToPlayer;
-    }
 
-    public void setCooldown(int cooldown) {
-        this.cooldown = cooldown;
-    }
+        @Override
+        public PowerResult<Double> takeHit(Player target, ItemStack stack, double damage, EntityDamageEvent event) {
+            if (!isRequireHurtByEntity() || event instanceof EntityDamageByEntityEvent) {
+                return fire(target, stack).with(damage);
+            }
+            return PowerResult.noop();
+        }
 
-    public void setRequireHurtByEntity(boolean requireHurtByEntity) {
-        this.requireHurtByEntity = requireHurtByEntity;
-    }
+        @Override
+        public PowerResult<Void> fire(Player player, ItemStack stack) {
+            if (!checkCooldown(getPower(), player, getCooldown(), true, true))
+                return isAbortOnFailure() ? PowerResult.abort() : PowerResult.cd();
+            EconomyResponse economyResponse;
+            if (getAmountToPlayer() > 0) {
+                economyResponse = eco.depositPlayer(player, getAmountToPlayer());
+            } else {
+                economyResponse = eco.withdrawPlayer(player, -getAmountToPlayer());
+            }
+            if (economyResponse.transactionSuccess()) {
+                return PowerResult.ok();
+            }
+            if (isShowFailMessage()) {
+                new Message(economyResponse.errorMessage).send(player);
+            }
+            return isAbortOnFailure() ? PowerResult.abort() : PowerResult.fail();
+        }
 
-    public void setShowFailMessage(boolean showFailMessage) {
-        this.showFailMessage = showFailMessage;
+        @Override
+        public Power getPower() {
+            return PowerEconomy.this;
+        }
+
+        @Override
+        public PowerResult<Void> hurt(Player target, ItemStack stack, EntityDamageEvent event) {
+            if (!isRequireHurtByEntity() || event instanceof EntityDamageByEntityEvent) {
+                return fire(target, stack);
+            }
+            return PowerResult.noop();
+        }
+
+        @Override
+        public PowerResult<Void> leftClick(Player player, ItemStack stack, PlayerInteractEvent event) {
+            return fire(player, stack);
+        }
+
+        @Override
+        public PowerResult<Void> rightClick(Player player, ItemStack stack, PlayerInteractEvent event) {
+            return fire(player, stack);
+        }
+
+        @Override
+        public PowerResult<Float> bowShoot(Player player, ItemStack stack, EntityShootBowEvent event) {
+            return fire(player, stack).with(event.getForce());
+        }
+
+        @Override
+        public PowerResult<Double> hit(Player player, ItemStack stack, LivingEntity entity, double damage, EntityDamageByEntityEvent event) {
+            return fire(player, stack).with(damage);
+        }
     }
 }

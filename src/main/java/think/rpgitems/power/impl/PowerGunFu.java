@@ -32,7 +32,7 @@ import static think.rpgitems.power.Utils.*;
 @PowerMeta(immutableTrigger = true, withSelectors = true, implClass = PowerGunFu.Impl.class)
 public class PowerGunFu extends BasePower {
 
-    @Property(order = 0)
+    @Property(order = 0, alias = "cooldownTime")
     private long cooldown = 0;
     @Property
     private int cost = 0;
@@ -58,72 +58,7 @@ public class PowerGunFu extends BasePower {
 
     @Override
     public void init(ConfigurationSection s) {
-        setCooldown(s.getLong("cooldownTime"));
         super.init(s);
-    }
-
-    public class Impl  implements PowerProjectileLaunch, PowerBowShoot {
-
-        @Override
-        public PowerResult<Float> bowShoot(Player player, ItemStack stack, EntityShootBowEvent event) {
-            if (!checkCooldown(getPower(), player, getCooldown(), true, true)) return PowerResult.cd();
-            if (!getItem().consumeDurability(stack, getCost())) return PowerResult.cost();
-            if (event.getProjectile() instanceof Projectile) {
-                return run(player, (Projectile) event.getProjectile(), event.getForce());
-            }
-            return noop();
-        }
-
-        @Override
-        @SuppressWarnings("deprecation")
-        public PowerResult<Void> projectileLaunch(Player player, ItemStack stack, ProjectileLaunchEvent event) {
-            if (!checkCooldown(getPower(), player, getCooldown(), true, true)) return PowerResult.cd();
-            if (!getItem().consumeDurability(stack, getCost())) return PowerResult.cost();
-            Projectile projectile = event.getEntity();
-            return run(player, projectile, 1).with(null);
-        }
-
-        public PowerResult<Float> run(Player player, Projectile projectile, float force) {
-            List<LivingEntity> entities = getLivingEntitiesInCone(getNearestLivingEntities(getPower(), player.getEyeLocation(), player, getDistance(), 0), player.getLocation().toVector(), getViewAngle(), player.getLocation().getDirection()).stream().filter(player::hasLineOfSight).collect(Collectors.toList());
-            projectile.setVelocity(projectile.getVelocity().multiply(getInitVelFactor()));
-            if (!entities.isEmpty()) {
-                LivingEntity target = entities.get(0);
-                Context.instance().putExpiringSeconds(player.getUniqueId(), "gunfu.target", target, 3);
-                new BukkitRunnable() {
-
-                    private int ticks = getMaxTicks();
-
-                    @Override
-                    public void run() {
-                        if (!target.isValid() || projectile.isDead() || !projectile.isValid() || ticks-- <= 0) {
-                            cancel();
-                            return;
-                        }
-                        Vector origVel = projectile.getVelocity();
-                        double v = origVel.length();
-                        Vector rel = target.getEyeLocation().toVector().subtract(projectile.getLocation().toVector()).normalize().multiply(v);
-                        double velFac = getVelFactor() * (getForceFactor() - force);
-                        rel.multiply(velFac).add(origVel.multiply(1 - velFac));
-                        projectile.setVelocity(rel);
-                        if (projectile instanceof Fireball) {
-                            ((Fireball) projectile).setDirection(rel.normalize());
-                        }
-                    }
-                }.runTaskTimer(RPGItems.plugin, getDelay(), 0);
-            }
-            return ok(force * (float) getInitVelFactor());
-        }
-
-        @Override
-        public Power getPower() {
-            return PowerGunFu.this;
-        }
-    }
-    /**
-     * Cooldown time of this power
-     */
-    public long getCooldown() {
-        return cooldown;
     }
 
     /**
@@ -166,6 +101,13 @@ public class PowerGunFu extends BasePower {
         return I18n.format("power.gunfu", (double) getCooldown() / 20d);
     }
 
+    /**
+     * Cooldown time of this power
+     */
+    public long getCooldown() {
+        return cooldown;
+    }
+
     public double getVelFactor() {
         return velFactor;
     }
@@ -177,39 +119,61 @@ public class PowerGunFu extends BasePower {
         return viewAngle;
     }
 
-    public void setCooldown(long cooldown) {
-        this.cooldown = cooldown;
-    }
+    public class Impl implements PowerProjectileLaunch, PowerBowShoot {
 
-    public void setCost(int cost) {
-        this.cost = cost;
-    }
+        @Override
+        public PowerResult<Float> bowShoot(Player player, ItemStack stack, EntityShootBowEvent event) {
+            if (!checkCooldown(getPower(), player, getCooldown(), true, true)) return PowerResult.cd();
+            if (!getItem().consumeDurability(stack, getCost())) return PowerResult.cost();
+            if (event.getProjectile() instanceof Projectile) {
+                return run(player, (Projectile) event.getProjectile(), event.getForce());
+            }
+            return noop();
+        }
 
-    public void setDelay(int delay) {
-        this.delay = delay;
-    }
+        @Override
+        public Power getPower() {
+            return PowerGunFu.this;
+        }
 
-    public void setDistance(double distance) {
-        this.distance = distance;
-    }
+        public PowerResult<Float> run(Player player, Projectile projectile, float force) {
+            List<LivingEntity> entities = getLivingEntitiesInCone(getNearestLivingEntities(getPower(), player.getEyeLocation(), player, getDistance(), 0), player.getLocation().toVector(), getViewAngle(), player.getLocation().getDirection()).stream().filter(player::hasLineOfSight).collect(Collectors.toList());
+            projectile.setVelocity(projectile.getVelocity().multiply(getInitVelFactor()));
+            if (!entities.isEmpty()) {
+                LivingEntity target = entities.get(0);
+                Context.instance().putExpiringSeconds(player.getUniqueId(), "gunfu.target", target, 3);
+                new BukkitRunnable() {
 
-    public void setForceFactor(double forceFactor) {
-        this.forceFactor = forceFactor;
-    }
+                    private int ticks = getMaxTicks();
 
-    public void setInitVelFactor(double initVelFactor) {
-        this.initVelFactor = initVelFactor;
-    }
+                    @Override
+                    public void run() {
+                        if (!target.isValid() || projectile.isDead() || !projectile.isValid() || ticks-- <= 0) {
+                            cancel();
+                            return;
+                        }
+                        Vector origVel = projectile.getVelocity();
+                        double v = origVel.length();
+                        Vector rel = target.getEyeLocation().toVector().subtract(projectile.getLocation().toVector()).normalize().multiply(v);
+                        double velFac = getVelFactor() * (getForceFactor() - force);
+                        rel.multiply(velFac).add(origVel.multiply(1 - velFac));
+                        projectile.setVelocity(rel);
+                        if (projectile instanceof Fireball) {
+                            ((Fireball) projectile).setDirection(rel.normalize());
+                        }
+                    }
+                }.runTaskTimer(RPGItems.plugin, getDelay(), 0);
+            }
+            return ok(force * (float) getInitVelFactor());
+        }
 
-    public void setMaxTicks(int maxTicks) {
-        this.maxTicks = maxTicks;
-    }
-
-    public void setVelFactor(double velFactor) {
-        this.velFactor = velFactor;
-    }
-
-    public void setViewAngle(double viewAngle) {
-        this.viewAngle = viewAngle;
+        @Override
+        @SuppressWarnings("deprecation")
+        public PowerResult<Void> projectileLaunch(Player player, ItemStack stack, ProjectileLaunchEvent event) {
+            if (!checkCooldown(getPower(), player, getCooldown(), true, true)) return PowerResult.cd();
+            if (!getItem().consumeDurability(stack, getCost())) return PowerResult.cost();
+            Projectile projectile = event.getEntity();
+            return run(player, projectile, 1).with(null);
+        }
     }
 }

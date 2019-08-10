@@ -43,31 +43,54 @@ public class PowerTeleport extends BasePower {
     @Property
     private TargetMode targetMode = TargetMode.DEFAULT;
 
+    /**
+     * Cost of this power
+     */
+    public int getCost() {
+        return cost;
+    }
+
+    @Override
+    public String getName() {
+        return "teleport";
+    }
+
+    @Override
+    public String displayText() {
+        return I18n.format("power.teleport", getDistance(), (double) getCooldown() / 20d);
+    }
+
+    /**
+     * Maximum distance.
+     */
+    public int getDistance() {
+        return distance;
+    }
+
+    /**
+     * Cooldown time of this power
+     */
+    public long getCooldown() {
+        return cooldown;
+    }
+
+    public TargetMode getTargetMode() {
+        return targetMode;
+    }
+
+    public enum TargetMode {
+        DEFAULT,
+        RAY_TRACING_SWEEP,
+        RAY_TRACING_EXACT,
+        RAY_TRACING_EXACT_SWEEP,
+        RAY_TRACING
+    }
+
     public class Impl implements PowerSneak, PowerLeftClick, PowerSprint, PowerRightClick, PowerProjectileHit, PowerPlain, PowerBowShoot {
 
         @Override
         public PowerResult<Void> rightClick(Player player, ItemStack stack, PlayerInteractEvent event) {
             return fire(player, stack);
-        }
-
-        @Override
-        public PowerResult<Void> leftClick(Player player, ItemStack stack, PlayerInteractEvent event) {
-            return fire(player, stack);
-        }
-
-        @Override
-        public PowerResult<Void> sneak(Player player, ItemStack stack, PlayerToggleSneakEvent event) {
-            return fire(player, stack);
-        }
-
-        @Override
-        public PowerResult<Void> sprint(Player player, ItemStack stack, PlayerToggleSprintEvent event) {
-            return fire(player, stack);
-        }
-
-        @Override
-        public PowerResult<Float> bowShoot(Player player, ItemStack itemStack, EntityShootBowEvent e) {
-            return fire(player, itemStack).with(e.getForce());
         }
 
         public PowerResult<Void> fire(Player player, ItemStack stack) {
@@ -141,6 +164,31 @@ public class PowerTeleport extends BasePower {
         }
 
         @Override
+        public Power getPower() {
+            return PowerTeleport.this;
+        }
+
+        @Override
+        public PowerResult<Void> leftClick(Player player, ItemStack stack, PlayerInteractEvent event) {
+            return fire(player, stack);
+        }
+
+        @Override
+        public PowerResult<Void> sneak(Player player, ItemStack stack, PlayerToggleSneakEvent event) {
+            return fire(player, stack);
+        }
+
+        @Override
+        public PowerResult<Void> sprint(Player player, ItemStack stack, PlayerToggleSprintEvent event) {
+            return fire(player, stack);
+        }
+
+        @Override
+        public PowerResult<Float> bowShoot(Player player, ItemStack itemStack, EntityShootBowEvent e) {
+            return fire(player, itemStack).with(e.getForce());
+        }
+
+        @Override
         public PowerResult<Void> projectileHit(Player player, ItemStack stack, ProjectileHitEvent event) {
             if (!checkCooldown(getPower(), player, getCooldown(), true, true)) return PowerResult.cd();
             if (!getItem().consumeDurability(stack, getCost())) return PowerResult.cost();
@@ -158,69 +206,5 @@ public class PowerTeleport extends BasePower {
             world.playSound(newLoc, Sound.ENTITY_ENDERMAN_TELEPORT, 1.0f, 0.3f);
             return PowerResult.ok();
         }
-
-        @Override
-        public Power getPower() {
-            return PowerTeleport.this;
-        }
-    }
-
-    /**
-     * Cooldown time of this power
-     */
-    public long getCooldown() {
-        return cooldown;
-    }
-
-    /**
-     * Cost of this power
-     */
-    public int getCost() {
-        return cost;
-    }
-
-    /**
-     * Maximum distance.
-     */
-    public int getDistance() {
-        return distance;
-    }
-
-    @Override
-    public String getName() {
-        return "teleport";
-    }
-
-    @Override
-    public String displayText() {
-        return I18n.format("power.teleport", getDistance(), (double) getCooldown() / 20d);
-    }
-
-    public TargetMode getTargetMode() {
-        return targetMode;
-    }
-
-    public void setCooldown(long cooldown) {
-        this.cooldown = cooldown;
-    }
-
-    public void setCost(int cost) {
-        this.cost = cost;
-    }
-
-    public void setDistance(int distance) {
-        this.distance = distance;
-    }
-
-    public void setTargetMode(TargetMode targetMode) {
-        this.targetMode = targetMode;
-    }
-
-    public enum TargetMode {
-        DEFAULT,
-        RAY_TRACING_SWEEP,
-        RAY_TRACING_EXACT,
-        RAY_TRACING_EXACT_SWEEP,
-        RAY_TRACING
     }
 }

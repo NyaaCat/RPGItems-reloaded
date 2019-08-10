@@ -43,15 +43,34 @@ public class PowerFireball extends BasePower {
     @Property
     private int cost = 0;
 
+    /**
+     * Cost of this power
+     */
+    public int getCost() {
+        return cost;
+    }
+
+    @Override
+    public String getName() {
+        return "fireball";
+    }
+
+    @Override
+    public String displayText() {
+        return I18n.format("power.fireball", (double) getCooldown() / 20d);
+    }
+
+    /**
+     * Cooldown time of this power
+     */
+    public long getCooldown() {
+        return cooldown;
+    }
+
     public class Impl implements PowerRightClick, PowerLeftClick, PowerSprint, PowerSneak, PowerPlain {
 
         @Override
         public PowerResult<Void> rightClick(Player player, ItemStack stack, PlayerInteractEvent event) {
-            return fire(player, stack);
-        }
-
-        @Override
-        public PowerResult<Void> leftClick(Player player, ItemStack stack, PlayerInteractEvent event) {
             return fire(player, stack);
         }
 
@@ -68,6 +87,16 @@ public class PowerFireball extends BasePower {
         }
 
         @Override
+        public Power getPower() {
+            return PowerFireball.this;
+        }
+
+        @Override
+        public PowerResult<Void> leftClick(Player player, ItemStack stack, PlayerInteractEvent event) {
+            return fire(player, stack);
+        }
+
+        @Override
         public PowerResult<Void> sneak(Player player, ItemStack stack, PlayerToggleSneakEvent event) {
             return fire(player, stack);
         }
@@ -76,34 +105,5 @@ public class PowerFireball extends BasePower {
         public PowerResult<Void> sprint(Player player, ItemStack stack, PlayerToggleSprintEvent event) {
             return fire(player, stack);
         }
-
-        @Override
-        public Power getPower() {
-            return PowerFireball.this;
-        }
-    }
-
-    @Override
-    public String displayText() {
-        return I18n.format("power.fireball", (double) getCooldown() / 20d);
-    }
-
-    /**
-     * Cooldown time of this power
-     */
-    public long getCooldown() {
-        return cooldown;
-    }
-
-    /**
-     * Cost of this power
-     */
-    public int getCost() {
-        return cost;
-    }
-
-    @Override
-    public String getName() {
-        return "fireball";
     }
 }

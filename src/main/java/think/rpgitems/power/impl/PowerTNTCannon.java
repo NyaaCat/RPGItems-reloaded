@@ -24,6 +24,30 @@ public class PowerTNTCannon extends BasePower {
     @Property
     private int cost = 0;
 
+    /**
+     * Cost of this power
+     */
+    public int getCost() {
+        return cost;
+    }
+
+    @Override
+    public String getName() {
+        return "tntcannon";
+    }
+
+    @Override
+    public String displayText() {
+        return I18n.format("power.tntcannon", (double) getCooldown() / 20d);
+    }
+
+    /**
+     * Cooldown time of this power
+     */
+    public long getCooldown() {
+        return cooldown;
+    }
+
     public class Impl implements PowerRightClick {
         @Override
         public PowerResult<Void> rightClick(Player player, ItemStack stack, PlayerInteractEvent event) {
@@ -39,31 +63,5 @@ public class PowerTNTCannon extends BasePower {
         public Power getPower() {
             return PowerTNTCannon.this;
         }
-    }
-
-
-
-    @Override
-    public String displayText() {
-        return I18n.format("power.tntcannon", (double) getCooldown() / 20d);
-    }
-
-    /**
-     * Cooldown time of this power
-     */
-    public long getCooldown() {
-        return cooldown;
-    }
-
-    /**
-     * Cost of this power
-     */
-    public int getCost() {
-        return cost;
-    }
-
-    @Override
-    public String getName() {
-        return "tntcannon";
     }
 }

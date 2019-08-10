@@ -27,18 +27,6 @@ import static think.rpgitems.power.Utils.checkCooldown;
 @PowerMeta(immutableTrigger = true, implClass = PowerTranslocator.Impl.class)
 public class PowerTranslocator extends BasePower {
 
-    private static Cache<UUID, UUID> playerTranslocatorMap = CacheBuilder.newBuilder()
-                                                                         .expireAfterAccess(10, TimeUnit.MINUTES)
-                                                                         .removalListener(n -> {
-                                                                             UUID armorStandUUID = (UUID) n.getValue();
-                                                                             Bukkit.getScheduler().runTask(plugin, () -> {
-                                                                                 Entity translocator = Bukkit.getServer().getEntity(armorStandUUID);
-                                                                                 if (translocator != null) {
-                                                                                     translocator.remove();
-                                                                                 }
-                                                                             });
-                                                                         }).build();
-
     public static Cache<UUID, UUID> translocatorPlayerMap = CacheBuilder.newBuilder()
                                                                         .expireAfterAccess(10, TimeUnit.MINUTES)
                                                                         .removalListener(n -> {
@@ -50,7 +38,17 @@ public class PowerTranslocator extends BasePower {
                                                                                 }
                                                                             });
                                                                         }).build();
-
+    private static Cache<UUID, UUID> playerTranslocatorMap = CacheBuilder.newBuilder()
+                                                                         .expireAfterAccess(10, TimeUnit.MINUTES)
+                                                                         .removalListener(n -> {
+                                                                             UUID armorStandUUID = (UUID) n.getValue();
+                                                                             Bukkit.getScheduler().runTask(plugin, () -> {
+                                                                                 Entity translocator = Bukkit.getServer().getEntity(armorStandUUID);
+                                                                                 if (translocator != null) {
+                                                                                     translocator.remove();
+                                                                                 }
+                                                                             });
+                                                                         }).build();
     @Property
     private long cooldown = 80;
     @Property
@@ -61,6 +59,41 @@ public class PowerTranslocator extends BasePower {
 
     @Property
     private double speed = 1;
+
+    @Override
+    public String getName() {
+        return "translocator";
+    }
+
+    @Override
+    public String displayText() {
+        return I18n.format("power.translocator", (double) getCooldown() / 20d);
+    }
+
+    /**
+     * Cooldown time of this power
+     */
+    public long getCooldown() {
+        return cooldown;
+    }
+
+    /**
+     * Cost to setup an translocator
+     */
+    public int getSetupCost() {
+        return setupCost;
+    }
+
+    public double getSpeed() {
+        return speed;
+    }
+
+    /**
+     * Cost to teleport to the translocator
+     */
+    public int getTpCost() {
+        return tpCost;
+    }
 
     public class Impl implements PowerMainhandItem, PowerOffhandItem {
         @Override
@@ -109,6 +142,11 @@ public class PowerTranslocator extends BasePower {
             return PowerResult.fail();
         }
 
+        @Override
+        public Power getPower() {
+            return PowerTranslocator.this;
+        }
+
         @SuppressWarnings("deprecation")
         @Override
         public PowerResult<Boolean> swapToOffhand(Player player, ItemStack stack, PlayerSwapHandItemsEvent event) {
@@ -155,45 +193,5 @@ public class PowerTranslocator extends BasePower {
         public PowerResult<Boolean> placeOffhand(Player player, ItemStack stack, InventoryClickEvent event) {
             return PowerResult.ok(false);
         }
-
-        @Override
-        public Power getPower() {
-            return PowerTranslocator.this;
-        }
-    }
-
-    /**
-     * Cooldown time of this power
-     */
-    public long getCooldown() {
-        return cooldown;
-    }
-
-    @Override
-    public String getName() {
-        return "translocator";
-    }
-
-    @Override
-    public String displayText() {
-        return I18n.format("power.translocator", (double) getCooldown() / 20d);
-    }
-
-    /**
-     * Cost to setup an translocator
-     */
-    public int getSetupCost() {
-        return setupCost;
-    }
-
-    public double getSpeed() {
-        return speed;
-    }
-
-    /**
-     * Cost to teleport to the translocator
-     */
-    public int getTpCost() {
-        return tpCost;
     }
 }

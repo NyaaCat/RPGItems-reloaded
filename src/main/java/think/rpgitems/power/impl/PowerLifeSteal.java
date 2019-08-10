@@ -45,6 +45,41 @@ public class PowerLifeSteal extends BasePower {
 
     private Random random = new Random();
 
+    /**
+     * Cost of this power
+     */
+    public int getCost() {
+        return cost;
+    }
+
+    /**
+     * Factor of life steal
+     */
+    public double getFactor() {
+        return factor;
+    }
+
+    @Override
+    public String getName() {
+        return "lifesteal";
+    }
+
+    @Override
+    public String displayText() {
+        return I18n.format("power.lifesteal", getChance());
+    }
+
+    /**
+     * Chance of triggering this power
+     */
+    public int getChance() {
+        return chance;
+    }
+
+    public Random getRandom() {
+        return random;
+    }
+
     public class Impl implements PowerHit, PowerLivingEntity {
 
         @Override
@@ -66,40 +101,5 @@ public class PowerLifeSteal extends BasePower {
         public Power getPower() {
             return PowerLifeSteal.this;
         }
-    }
-
-    @Override
-    public String displayText() {
-        return I18n.format("power.lifesteal", getChance());
-    }
-
-    /**
-     * Chance of triggering this power
-     */
-    public int getChance() {
-        return chance;
-    }
-
-    /**
-     * Cost of this power
-     */
-    public int getCost() {
-        return cost;
-    }
-
-    /**
-     * Factor of life steal
-     */
-    public double getFactor() {
-        return factor;
-    }
-
-    @Override
-    public String getName() {
-        return "lifesteal";
-    }
-
-    public Random getRandom() {
-        return random;
     }
 }

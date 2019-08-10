@@ -28,11 +28,6 @@ public class PowerAndCondition extends BasePower implements PowerCondition<Map.E
     }
 
     @Override
-    public Power getPower() {
-        return this;
-    }
-
-    @Override
     public boolean isStatic() {
         return isStatic;
     }
@@ -73,5 +68,10 @@ public class PowerAndCondition extends BasePower implements PowerCondition<Map.E
     @Override
     public String displayText() {
         return null;
+    }
+
+    @Override
+    public Power getPower() {
+        return this;
     }
 }

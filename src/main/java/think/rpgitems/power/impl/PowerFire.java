@@ -63,15 +63,48 @@ public class PowerFire extends BasePower {
     @Property
     private int cost = 0;
 
+    /**
+     * Duration of the fire, in ticks
+     */
+    public int getBurnduration() {
+        return burnduration;
+    }
+
+    /**
+     * Cost of this power
+     */
+    public int getCost() {
+        return cost;
+    }
+
+    /**
+     * Maximum distance
+     */
+    public int getDistance() {
+        return distance;
+    }
+
+    @Override
+    public String getName() {
+        return "fire";
+    }
+
+    @Override
+    public String displayText() {
+        return I18n.format("power.fire", (double) getCooldown() / 20d);
+    }
+
+    /**
+     * Cooldown time of this power
+     */
+    public long getCooldown() {
+        return cooldown;
+    }
+
     public class Impl implements PowerRightClick, PowerLeftClick, PowerSneak, PowerSprint, PowerPlain {
 
         @Override
         public PowerResult<Void> rightClick(final Player player, ItemStack stack, PlayerInteractEvent event) {
-            return fire(player, stack);
-        }
-
-        @Override
-        public PowerResult<Void> leftClick(final Player player, ItemStack stack, PlayerInteractEvent event) {
             return fire(player, stack);
         }
 
@@ -159,6 +192,16 @@ public class PowerFire extends BasePower {
         }
 
         @Override
+        public Power getPower() {
+            return PowerFire.this;
+        }
+
+        @Override
+        public PowerResult<Void> leftClick(final Player player, ItemStack stack, PlayerInteractEvent event) {
+            return fire(player, stack);
+        }
+
+        @Override
         public PowerResult<Void> sneak(Player player, ItemStack stack, PlayerToggleSneakEvent event) {
             return fire(player, stack);
         }
@@ -167,48 +210,5 @@ public class PowerFire extends BasePower {
         public PowerResult<Void> sprint(Player player, ItemStack stack, PlayerToggleSprintEvent event) {
             return fire(player, stack);
         }
-
-        @Override
-        public Power getPower() {
-            return PowerFire.this;
-        }
-    }
-
-    @Override
-    public String displayText() {
-        return I18n.format("power.fire", (double) getCooldown() / 20d);
-    }
-
-    /**
-     * Duration of the fire, in ticks
-     */
-    public int getBurnduration() {
-        return burnduration;
-    }
-
-    /**
-     * Cooldown time of this power
-     */
-    public long getCooldown() {
-        return cooldown;
-    }
-
-    /**
-     * Cost of this power
-     */
-    public int getCost() {
-        return cost;
-    }
-
-    /**
-     * Maximum distance
-     */
-    public int getDistance() {
-        return distance;
-    }
-
-    @Override
-    public String getName() {
-        return "fire";
     }
 }

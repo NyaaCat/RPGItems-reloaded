@@ -29,6 +29,28 @@ public class PowerMount extends BasePower {
     @Property(order = 2)
     private int maxTicks = 200;
 
+    public int getMaxDistance() {
+        return maxDistance;
+    }
+
+    public int getMaxTicks() {
+        return maxTicks;
+    }
+
+    @Override
+    public String getName() {
+        return "mount";
+    }
+
+    @Override
+    public String displayText() {
+        return I18n.format("power.mount", (double) getCooldown() / 20D);
+    }
+
+    public long getCooldown() {
+        return cooldown;
+    }
+
     public class Impl implements PowerRightClick {
 
         @Override
@@ -79,39 +101,5 @@ public class PowerMount extends BasePower {
         public Power getPower() {
             return PowerMount.this;
         }
-    }
-
-    public long getCooldown() {
-        return cooldown;
-    }
-
-    public int getMaxDistance() {
-        return maxDistance;
-    }
-
-    public int getMaxTicks() {
-        return maxTicks;
-    }
-
-    @Override
-    public String getName() {
-        return "mount";
-    }
-
-    @Override
-    public String displayText() {
-        return I18n.format("power.mount", (double) getCooldown() / 20D);
-    }
-
-    public void setCooldown(long cooldown) {
-        this.cooldown = cooldown;
-    }
-
-    public void setMaxDistance(int maxDistance) {
-        this.maxDistance = maxDistance;
-    }
-
-    public void setMaxTicks(int maxTicks) {
-        this.maxTicks = maxTicks;
     }
 }

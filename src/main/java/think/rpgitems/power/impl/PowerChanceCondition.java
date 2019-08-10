@@ -20,18 +20,13 @@ public class PowerChanceCondition extends BasePower implements PowerCondition<Vo
 
     @Property
     public boolean isCritical = false;
-    
+
     @Property
     public double chancePercentage;
 
     @Override
     public String id() {
         return id;
-    }
-
-    @Override
-    public Power getPower() {
-        return this;
     }
 
     @Override
@@ -51,6 +46,11 @@ public class PowerChanceCondition extends BasePower implements PowerCondition<Vo
     }
 
     @Override
+    public Set<String> getConditions() {
+        return Collections.emptySet();
+    }
+
+    @Override
     public String getName() {
         return "chancecondition";
     }
@@ -61,7 +61,7 @@ public class PowerChanceCondition extends BasePower implements PowerCondition<Vo
     }
 
     @Override
-    public Set<String> getConditions() {
-        return Collections.emptySet();
+    public Power getPower() {
+        return this;
     }
 }

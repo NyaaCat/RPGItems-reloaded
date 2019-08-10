@@ -21,6 +21,23 @@ public class PowerConsumeHit extends BasePower {
     @Property(order = 0)
     private int cooldown = 0;
 
+    /**
+     * Cooldown time of this power
+     */
+    public int getCooldown() {
+        return cooldown;
+    }
+
+    @Override
+    public String getName() {
+        return "consumehit";
+    }
+
+    @Override
+    public String displayText() {
+        return I18n.format("power.consumehit");
+    }
+
     public class Impl implements PowerHit {
         @Override
         public PowerResult<Double> hit(final Player player, ItemStack stack, LivingEntity entity, double damage, EntityDamageByEntityEvent event) {
@@ -39,26 +56,5 @@ public class PowerConsumeHit extends BasePower {
         public Power getPower() {
             return PowerConsumeHit.this;
         }
-    }
-
-    /**
-     * Cooldown time of this power
-     */
-    public int getCooldown() {
-        return cooldown;
-    }
-
-    @Override
-    public String getName() {
-        return "consumehit";
-    }
-
-    @Override
-    public String displayText() {
-        return I18n.format("power.consumehit");
-    }
-
-    public void setCooldown(int cooldown) {
-        this.cooldown = cooldown;
     }
 }

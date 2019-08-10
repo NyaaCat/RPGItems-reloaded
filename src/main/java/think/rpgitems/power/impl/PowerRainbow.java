@@ -41,16 +41,49 @@ public class PowerRainbow extends BasePower {
 
     private Random random = new Random();
 
+    /**
+     * Cost of this power
+     */
+    public int getCost() {
+        return cost;
+    }
+
+    @Override
+    public String getName() {
+        return "rainbow";
+    }
+
+    @Override
+    public String displayText() {
+        return I18n.format("power.rainbow", getCount(), (double) getCooldown() / 20d);
+    }
+
+    /**
+     * Count of blocks
+     */
+    public int getCount() {
+        return count;
+    }
+
+    /**
+     * Cooldown time of this power
+     */
+    public long getCooldown() {
+        return cooldown;
+    }
+
+    /**
+     * Whether launch fire instead of wool
+     */
+    public boolean isFire() {
+        return isFire;
+    }
+
     public class Impl implements PowerRightClick, PowerPlain, PowerBowShoot {
 
         @Override
         public PowerResult<Void> rightClick(Player player, ItemStack stack, PlayerInteractEvent event) {
             return fire(player, stack);
-        }
-
-        @Override
-        public PowerResult<Float> bowShoot(Player player, ItemStack stack, EntityShootBowEvent event) {
-            return fire(player, stack).with(event.getForce());
         }
 
         @Override
@@ -115,43 +148,10 @@ public class PowerRainbow extends BasePower {
         public Power getPower() {
             return PowerRainbow.this;
         }
-    }
 
-    @Override
-    public String displayText() {
-        return I18n.format("power.rainbow", getCount(), (double) getCooldown() / 20d);
-    }
-
-    /**
-     * Cooldown time of this power
-     */
-    public long getCooldown() {
-        return cooldown;
-    }
-
-    /**
-     * Cost of this power
-     */
-    public int getCost() {
-        return cost;
-    }
-
-    /**
-     * Count of blocks
-     */
-    public int getCount() {
-        return count;
-    }
-
-    @Override
-    public String getName() {
-        return "rainbow";
-    }
-
-    /**
-     * Whether launch fire instead of wool
-     */
-    public boolean isFire() {
-        return isFire;
+        @Override
+        public PowerResult<Float> bowShoot(Player player, ItemStack stack, EntityShootBowEvent event) {
+            return fire(player, stack).with(event.getForce());
+        }
     }
 }

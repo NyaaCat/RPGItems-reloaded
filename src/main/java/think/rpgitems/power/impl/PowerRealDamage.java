@@ -35,38 +35,6 @@ public class PowerRealDamage extends BasePower {
     @Property
     private double minDamage = 0;
 
-    public class Impl implements PowerHit {
-
-        @Override
-        public PowerResult<Double> hit(Player player, ItemStack stack, LivingEntity entity, double damage, EntityDamageByEntityEvent event) {
-            if (damage < getMinDamage()) return PowerResult.noop();
-            if (!checkCooldown(getPower(), player, getCooldown(), true, true)) return PowerResult.cd();
-            if (!getItem().consumeDurability(stack, getCost())) return PowerResult.cost();
-            if (entity.hasPotionEffect(PotionEffectType.DAMAGE_RESISTANCE)) {
-                PotionEffect e = entity.getPotionEffect(PotionEffectType.DAMAGE_RESISTANCE);
-                if (e.getAmplifier() >= 4) return PowerResult.noop();
-            }
-            Context.instance().putExpiringSeconds(player.getUniqueId(), "realdamage.target", entity, 3);
-
-            double health = entity.getHealth();
-            double newHealth = health - getRealDamage();
-            newHealth = max(newHealth, 0.1);//Bug workaround
-            newHealth = min(newHealth, entity.getAttribute(Attribute.GENERIC_MAX_HEALTH).getValue());
-            entity.setHealth(newHealth);
-            return PowerResult.ok(damage);
-        }
-
-        @Override
-        public Power getPower() {
-            return PowerRealDamage.this;
-        }
-    }
-
-    @Override
-    public String displayText() {
-        return I18n.format("power.realdamage", getRealDamage());
-    }
-
     /**
      * Cooldown time of this power
      */
@@ -93,10 +61,42 @@ public class PowerRealDamage extends BasePower {
         return "realdamage";
     }
 
+    @Override
+    public String displayText() {
+        return I18n.format("power.realdamage", getRealDamage());
+    }
+
     /**
      * Damage of this power
      */
     public double getRealDamage() {
         return realDamage;
+    }
+
+    public class Impl implements PowerHit {
+
+        @Override
+        public PowerResult<Double> hit(Player player, ItemStack stack, LivingEntity entity, double damage, EntityDamageByEntityEvent event) {
+            if (damage < getMinDamage()) return PowerResult.noop();
+            if (!checkCooldown(getPower(), player, getCooldown(), true, true)) return PowerResult.cd();
+            if (!getItem().consumeDurability(stack, getCost())) return PowerResult.cost();
+            if (entity.hasPotionEffect(PotionEffectType.DAMAGE_RESISTANCE)) {
+                PotionEffect e = entity.getPotionEffect(PotionEffectType.DAMAGE_RESISTANCE);
+                if (e.getAmplifier() >= 4) return PowerResult.noop();
+            }
+            Context.instance().putExpiringSeconds(player.getUniqueId(), "realdamage.target", entity, 3);
+
+            double health = entity.getHealth();
+            double newHealth = health - getRealDamage();
+            newHealth = max(newHealth, 0.1);//Bug workaround
+            newHealth = min(newHealth, entity.getAttribute(Attribute.GENERIC_MAX_HEALTH).getValue());
+            entity.setHealth(newHealth);
+            return PowerResult.ok(damage);
+        }
+
+        @Override
+        public Power getPower() {
+            return PowerRealDamage.this;
+        }
     }
 }

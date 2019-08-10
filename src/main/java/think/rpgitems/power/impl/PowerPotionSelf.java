@@ -48,6 +48,74 @@ public class PowerPotionSelf extends BasePower {
     @Property
     private boolean requireHurtByEntity = true;
 
+    @Override
+    public void init(ConfigurationSection section) {
+        if (section.isInt("amp")) {
+            amplifier = section.getInt("amp");
+        }
+        if (section.isInt("time")) {
+            duration = section.getInt("time");
+        }
+
+        super.init(section);
+    }
+
+    /**
+     * Cooldown time of this power
+     */
+    public long getCooldown() {
+        return cooldown;
+    }
+
+    /**
+     * Cost of this power
+     */
+    public int getCost() {
+        return cost;
+    }
+
+    @Override
+    public String getName() {
+        return "potionself";
+    }
+
+    @Override
+    public String displayText() {
+        return I18n.format("power.potionself", getType().getName().toLowerCase().replaceAll("_", " "), getAmplifier() + 1, ((double) getDuration()) / 20d);
+    }
+
+    /**
+     * Type of potion effect
+     */
+    public PotionEffectType getType() {
+        return type;
+    }
+
+    /**
+     * Amplifier of potion effect
+     */
+    public int getAmplifier() {
+        return amplifier;
+    }
+
+    /**
+     * Time of potion effect, in ticks
+     */
+    public int getDuration() {
+        return duration;
+    }
+
+    /**
+     * Whether to remove the effect instead of adding it.
+     */
+    public boolean isClear() {
+        return clear;
+    }
+
+    public boolean isRequireHurtByEntity() {
+        return requireHurtByEntity;
+    }
+
     public class Impl implements PowerRightClick, PowerLeftClick, PowerSneak, PowerSprint, PowerHit, PowerHitTaken, PowerPlain, PowerHurt, PowerBowShoot {
         @Override
         public PowerResult<Double> takeHit(Player target, ItemStack stack, double damage, EntityDamageEvent event) {
@@ -55,6 +123,23 @@ public class PowerPotionSelf extends BasePower {
                 return fire(target, stack).with(damage);
             }
             return PowerResult.noop();
+        }
+
+        @Override
+        public PowerResult<Void> fire(Player player, ItemStack stack) {
+            if (!checkCooldown(getPower(), player, getCooldown(), true, true)) return PowerResult.cd();
+            if (!getItem().consumeDurability(stack, getCost())) return PowerResult.cost();
+            if (isClear()) {
+                player.removePotionEffect(getType());
+            } else {
+                player.addPotionEffect(new PotionEffect(getType(), getDuration(), getAmplifier()), true);
+            }
+            return PowerResult.ok();
+        }
+
+        @Override
+        public Power getPower() {
+            return PowerPotionSelf.this;
         }
 
         @Override
@@ -81,18 +166,6 @@ public class PowerPotionSelf extends BasePower {
         }
 
         @Override
-        public PowerResult<Void> fire(Player player, ItemStack stack) {
-            if (!checkCooldown(getPower(), player, getCooldown(), true, true)) return PowerResult.cd();
-            if (!getItem().consumeDurability(stack, getCost())) return PowerResult.cost();
-            if (isClear()) {
-                player.removePotionEffect(getType());
-            } else {
-                player.addPotionEffect(new PotionEffect(getType(), getDuration(), getAmplifier()), true);
-            }
-            return PowerResult.ok();
-        }
-
-        @Override
         public PowerResult<Void> sneak(Player player, ItemStack stack, PlayerToggleSneakEvent event) {
             return fire(player, stack);
         }
@@ -106,79 +179,5 @@ public class PowerPotionSelf extends BasePower {
         public PowerResult<Double> hit(Player player, ItemStack stack, LivingEntity entity, double damage, EntityDamageByEntityEvent event) {
             return fire(player, stack).with(damage);
         }
-
-        @Override
-        public Power getPower() {
-            return PowerPotionSelf.this;
-        }
-    }
-
-
-    @Override
-    public void init(ConfigurationSection section) {
-        if (section.isInt("amp")) {
-            amplifier = section.getInt("amp");
-        }
-        if (section.isInt("time")) {
-            duration = section.getInt("time");
-        }
-
-        super.init(section);
-    }
-
-    /**
-     * Amplifier of potion effect
-     */
-    public int getAmplifier() {
-        return amplifier;
-    }
-
-    /**
-     * Cooldown time of this power
-     */
-    public long getCooldown() {
-        return cooldown;
-    }
-
-    /**
-     * Cost of this power
-     */
-    public int getCost() {
-        return cost;
-    }
-
-    /**
-     * Time of potion effect, in ticks
-     */
-    public int getDuration() {
-        return duration;
-    }
-
-    @Override
-    public String getName() {
-        return "potionself";
-    }
-
-    @Override
-    public String displayText() {
-        return I18n.format("power.potionself", getType().getName().toLowerCase().replaceAll("_", " "), getAmplifier() + 1, ((double) getDuration()) / 20d);
-    }
-
-    /**
-     * Type of potion effect
-     */
-    public PotionEffectType getType() {
-        return type;
-    }
-
-    /**
-     * Whether to remove the effect instead of adding it.
-     */
-    public boolean isClear() {
-        return clear;
-    }
-
-    public boolean isRequireHurtByEntity() {
-        return requireHurtByEntity;
     }
 }

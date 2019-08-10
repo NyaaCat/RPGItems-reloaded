@@ -28,11 +28,6 @@ public class PowerOrCondition extends BasePower implements PowerCondition<Map.En
     }
 
     @Override
-    public Power getPower() {
-        return PowerOrCondition.this;
-    }
-
-    @Override
     public boolean isStatic() {
         return isStatic;
     }
@@ -73,5 +68,10 @@ public class PowerOrCondition extends BasePower implements PowerCondition<Map.En
     @Override
     public String displayText() {
         return null;
+    }
+
+    @Override
+    public Power getPower() {
+        return PowerOrCondition.this;
     }
 }

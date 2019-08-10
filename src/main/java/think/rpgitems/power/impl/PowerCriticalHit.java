@@ -29,6 +29,60 @@ public class PowerCriticalHit extends BasePower {
     @Property
     private boolean setBaseDamage = false;
 
+    @Override
+    public String getName() {
+        return "criticalhit";
+    }
+
+    @Override
+    public String displayText() {
+        return (getBackstabChance() != 0 && getChance() != 0) ?
+                       I18n.format("power.criticalhit.both", getChance(), getFactor(), getBackstabChance(), getBackstabFactor())
+                       : (getChance() != 0) ?
+                                 I18n.format("power.criticalhit.critical", getChance(), getFactor()) :
+                                 I18n.format("power.criticalhit.backstab", getBackstabChance(), getBackstabFactor());
+    }
+
+    public double getBackstabChance() {
+        return backstabChance;
+    }
+
+    public double getChance() {
+        return chance;
+    }
+
+    public double getFactor() {
+        return factor;
+    }
+
+    public double getBackstabFactor() {
+        return backstabFactor;
+    }
+
+    public void setBackstabFactor(double backstabFactor) {
+        this.backstabFactor = backstabFactor;
+    }
+
+    public void setFactor(double factor) {
+        this.factor = factor;
+    }
+
+    public void setChance(double chance) {
+        this.chance = chance;
+    }
+
+    public void setBackstabChance(double backstabChance) {
+        this.backstabChance = backstabChance;
+    }
+
+    public boolean isSetBaseDamage() {
+        return setBaseDamage;
+    }
+
+    public void setSetBaseDamage(boolean setBaseDamage) {
+        this.setBaseDamage = setBaseDamage;
+    }
+
     public class Impl implements PowerHit {
         @Override
         public PowerResult<Double> hit(Player player, ItemStack stack, LivingEntity entity, double damage, EntityDamageByEntityEvent event) {
@@ -48,61 +102,5 @@ public class PowerCriticalHit extends BasePower {
         public Power getPower() {
             return PowerCriticalHit.this;
         }
-    }
-
-
-
-    public double getBackstabChance() {
-        return backstabChance;
-    }
-
-    public double getBackstabFactor() {
-        return backstabFactor;
-    }
-
-    public double getChance() {
-        return chance;
-    }
-
-    public double getFactor() {
-        return factor;
-    }
-
-    @Override
-    public String getName() {
-        return "criticalhit";
-    }
-
-    @Override
-    public String displayText() {
-        return (getBackstabChance() != 0 && getChance() != 0) ?
-                       I18n.format("power.criticalhit.both", getChance(), getFactor(), getBackstabChance(), getBackstabFactor())
-                       : (getChance() != 0) ?
-                                 I18n.format("power.criticalhit.critical", getChance(), getFactor()) :
-                                 I18n.format("power.criticalhit.backstab", getBackstabChance(), getBackstabFactor());
-    }
-
-    public boolean isSetBaseDamage() {
-        return setBaseDamage;
-    }
-
-    public void setBackstabChance(double backstabChance) {
-        this.backstabChance = backstabChance;
-    }
-
-    public void setBackstabFactor(double backstabFactor) {
-        this.backstabFactor = backstabFactor;
-    }
-
-    public void setChance(double chance) {
-        this.chance = chance;
-    }
-
-    public void setFactor(double factor) {
-        this.factor = factor;
-    }
-
-    public void setSetBaseDamage(boolean setBaseDamage) {
-        this.setBaseDamage = setBaseDamage;
     }
 }

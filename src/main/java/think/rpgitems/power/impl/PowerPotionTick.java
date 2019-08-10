@@ -39,14 +39,63 @@ public class PowerPotionTick extends BasePower {
     @Property
     private boolean clear = false;
 
+    /**
+     * Cost of this power
+     */
+    public int getCost() {
+        return cost;
+    }
+
+    /**
+     * Duration of this power
+     */
+    public int getDuration() {
+        return duration;
+    }
+
+    /**
+     * Interval of this power
+     */
+    public int getInterval() {
+        return interval;
+    }
+
+    @Override
+    public String getName() {
+        return "potiontick";
+    }
+
+    @Override
+    public String displayText() {
+        return isClear() ?
+                       I18n.format("power.potiontick.clear", getEffect().getName().toLowerCase().replaceAll("_", " "))
+                       : I18n.format("power.potiontick.display", getEffect().getName().toLowerCase().replaceAll("_", " "), getAmplifier() + 1);
+    }
+
+    /**
+     * Whether to remove the effect instead of adding it.
+     */
+    public boolean isClear() {
+        return clear;
+    }
+
+    /**
+     * Type of potion effect
+     */
+    public PotionEffectType getEffect() {
+        return effect;
+    }
+
+    /**
+     * Amplifier of potion effect
+     */
+    public int getAmplifier() {
+        return amplifier;
+    }
+
     public class Impl implements PowerTick, PowerSneaking {
         @Override
         public PowerResult<Void> tick(Player player, ItemStack stack) {
-            return fire(player, stack);
-        }
-
-        @Override
-        public PowerResult<Void> sneaking(Player player, ItemStack stack) {
             return fire(player, stack);
         }
 
@@ -80,59 +129,10 @@ public class PowerPotionTick extends BasePower {
         public Power getPower() {
             return PowerPotionTick.this;
         }
-    }
 
-    /**
-     * Amplifier of potion effect
-     */
-    public int getAmplifier() {
-        return amplifier;
-    }
-
-    /**
-     * Cost of this power
-     */
-    public int getCost() {
-        return cost;
-    }
-
-    /**
-     * Duration of this power
-     */
-    public int getDuration() {
-        return duration;
-    }
-
-    /**
-     * Type of potion effect
-     */
-    public PotionEffectType getEffect() {
-        return effect;
-    }
-
-    /**
-     * Interval of this power
-     */
-    public int getInterval() {
-        return interval;
-    }
-
-    @Override
-    public String getName() {
-        return "potiontick";
-    }
-
-    @Override
-    public String displayText() {
-        return isClear() ?
-                       I18n.format("power.potiontick.clear", getEffect().getName().toLowerCase().replaceAll("_", " "))
-                       : I18n.format("power.potiontick.display", getEffect().getName().toLowerCase().replaceAll("_", " "), getAmplifier() + 1);
-    }
-
-    /**
-     * Whether to remove the effect instead of adding it.
-     */
-    public boolean isClear() {
-        return clear;
+        @Override
+        public PowerResult<Void> sneaking(Player player, ItemStack stack) {
+            return fire(player, stack);
+        }
     }
 }
