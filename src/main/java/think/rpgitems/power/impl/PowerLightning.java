@@ -22,9 +22,9 @@ import java.util.Random;
 @PowerMeta(defaultTrigger = {"HIT", "PROJECTILE_HIT"}, generalInterface = PowerLocation.class, implClass = PowerLightning.Impl.class)
 public class PowerLightning extends BasePower {
     @Property(order = 0)
-    private int chance = 20;
+    public int chance = 20;
     @Property
-    private int cost = 0;
+    public int cost = 0;
 
     private Random random = new Random();
 

@@ -40,71 +40,71 @@ import static think.rpgitems.power.Utils.checkCooldown;
 public class PowerBeam extends BasePower {
     private final Vector crosser = new Vector(1, 1, 1);
     @Property
-    private int length = 10;
+    public int length = 10;
     @Property
-    private Particle particle = Particle.LAVA;
+    public Particle particle = Particle.LAVA;
     @Property
-    private int amount = 200;
+    public int amount = 200;
     @Property
-    private Mode mode = Mode.BEAM;
+    public Mode mode = Mode.BEAM;
     @Property
-    private boolean pierce = true;
+    public boolean pierce = true;
     @Property
-    private boolean ignoreWall = true;
+    public boolean ignoreWall = true;
     @Property
-    private double damage = 20;
+    public double damage = 20;
     @Property
-    private int movementTicks = 40;
+    public int movementTicks = 40;
     @Property
-    private double offsetX = 0;
+    public double offsetX = 0;
     @Property
-    private double offsetY = 0;
+    public double offsetY = 0;
     @Property
-    private double offsetZ = 0;
+    public double offsetZ = 0;
     @Property
-    private double spawnsPerBlock = 2;
+    public double spawnsPerBlock = 2;
     @Property
-    private int cost = 0;
+    public int cost = 0;
     @Property
-    private long cooldown = 0;
+    public int cooldown = 0;
     @Property
-    private boolean cone = false;
+    public boolean cone = false;
     @Property
-    private double coneRange = 30;
+    public double coneRange = 30;
     @Property
-    private boolean homing = false;
+    public boolean homing = false;
     @Property
-    private double homingAngle = 1;
+    public double homingAngle = 1;
     @Property
-    private double homingRange = 30;
+    public double homingRange = 30;
     @Property
-    private HomingTargetMode homingTargetMode = HomingTargetMode.ONE_TARGET;
+    public HomingTargetMode homingTargetMode = HomingTargetMode.ONE_TARGET;
     @Property
-    private Target homingTarget = Target.MOBS;
+    public Target homingTarget = Target.MOBS;
     @Property
-    private int stepsBeforeHoming = 5;
+    public int stepsBeforeHoming = 5;
     @Property
-    private int burstCount = 1;
+    public int burstCount = 1;
     @Property
-    private int beamAmount = 1;
+    public int beamAmount = 1;
     @Property
-    private int burstInterval = 1;
+    public int burstInterval = 1;
     @Property
-    private int bounce = 0;
+    public int bounce = 0;
     @Property
-    private boolean hitSelfWhenBounced = false;
+    public boolean hitSelfWhenBounced = false;
     @Property
-    private double gravity = 0;
+    public double gravity = 0;
     @Property
     @Serializer(ExtraDataSerializer.class)
     @Deserializer(ExtraDataSerializer.class)
-    private Object extraData;
+    public Object extraData;
     @Property
-    private double speed = 0;
+    public double speed = 0;
     @Property
-    private boolean requireHurtByEntity = true;
+    public boolean requireHurtByEntity = true;
     @Property
-    private boolean suppressMelee = false;
+    public boolean suppressMelee = false;
     private Set<Material> transp = Stream.of(Material.values())
                                          .filter(Material::isBlock)
                                          .filter(material -> !material.isSolid() || !material.isOccluding())
@@ -177,6 +177,10 @@ public class PowerBeam extends BasePower {
         return homingAngle;
     }
 
+    public double getSpawnsPerBlock() {
+        return spawnsPerBlock;
+    }
+
     private LivingEntity getNextTarget(Vector towards, Location lastLocation, Entity from) {
         int radius = Math.min(this.getLength(), 300);
         return Utils.getLivingEntitiesInCone(from.getNearbyEntities(radius, this.getLength(), this.getLength()).stream()
@@ -221,7 +225,7 @@ public class PowerBeam extends BasePower {
         } else {
             world.spawnParticle(this.getParticle(), lastLocation, i, getOffsetX(), getOffsetY(), getOffsetZ(), getSpeed(), getExtraData(), false);
         }
-        setSpawnInWorld(!isSpawnInWorld());
+        spawnInWorld = !isSpawnInWorld();
     }
 
     public boolean isSpawnInWorld() {
@@ -250,10 +254,6 @@ public class PowerBeam extends BasePower {
 
     public Object getExtraData() {
         return extraData;
-    }
-
-    private void setSpawnInWorld(boolean value) {
-        spawnInWorld = value;
     }
 
     private boolean tryHit(LivingEntity from, Location loc, ItemStack stack, boolean canHitSelf) {
@@ -356,7 +356,7 @@ public class PowerBeam extends BasePower {
     /**
      * Cooldown time of this power
      */
-    public long getCooldown() {
+    public int getCooldown() {
         return cooldown;
     }
 
@@ -377,10 +377,6 @@ public class PowerBeam extends BasePower {
 
     public double getLengthPerSpawn() {
         return 1 / getSpawnsPerBlock();
-    }
-
-    public double getSpawnsPerBlock() {
-        return spawnsPerBlock;
     }
 
     public Mode getMode() {

@@ -28,50 +28,50 @@ import static think.rpgitems.power.Utils.checkAndSetCooldown;
 public class PowerDummy extends BasePower {
 
     @Property
-    private long cooldown = 0;
+    public int cooldown = 0;
 
     @Property
-    private int cost = 0;
+    public int cost = 0;
 
     @Property
-    private boolean checkDurabilityBound = true;
+    public boolean checkDurabilityBound = true;
 
     @Property
-    private String display;
+    public String display;
 
     @Property
-    private boolean costByEnchantment = false;
+    public boolean costByEnchantment = false;
 
     @Property
-    private boolean doEnchReduceCost = false;
+    public boolean doEnchReduceCost = false;
 
 
     @Property
-    private double enchCostPercentage = 6;
+    public double enchCostPercentage = 6;
 
     @Property
-    private String enchantmentType = "unbreaking";
+    public String enchantmentType = "unbreaking";
 
     @Property
-    private boolean costByDamage = false;
+    public boolean costByDamage = false;
 
     @Property
-    private boolean requireHurtByEntity = true;
+    public boolean requireHurtByEntity = true;
 
     @Property
-    private String cooldownKey = "dummy";
+    public String cooldownKey = "dummy";
 
     @Property
-    private TriggerResult successResult = TriggerResult.OK;
+    public TriggerResult successResult = TriggerResult.OK;
 
     @Property
-    private TriggerResult costResult = TriggerResult.COST;
+    public TriggerResult costResult = TriggerResult.COST;
 
     @Property
-    private TriggerResult cooldownResult = TriggerResult.COOLDOWN;
+    public TriggerResult cooldownResult = TriggerResult.COOLDOWN;
 
     @Property
-    private boolean showCDWarning = true;
+    public boolean showCDWarning = true;
 
     @Override
     public void init(ConfigurationSection section) {
@@ -84,7 +84,7 @@ public class PowerDummy extends BasePower {
     /**
      * Cooldown time of this power
      */
-    public long getCooldown() {
+    public int getCooldown() {
         return cooldown;
     }
 

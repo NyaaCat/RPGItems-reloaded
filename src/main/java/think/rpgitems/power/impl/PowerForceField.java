@@ -35,20 +35,20 @@ import static think.rpgitems.power.Utils.checkCooldown;
 @PowerMeta(defaultTrigger = "RIGHT_CLICK", generalInterface = PowerPlain.class, implClass = PowerForceField.Impl.class)
 public class PowerForceField extends BasePower {
     @Property(order = 0)
-    private int cooldown = 200;
+    public int cooldown = 200;
     @Property(order = 1)
-    private int radius = 5;
+    public int radius = 5;
     @Property(order = 2)
-    private int height = 30;
+    public int height = 30;
     @Property(order = 3)
-    private int base = -15;
+    public int base = -15;
     @Property(order = 4, required = true)
-    private int ttl = 100;
+    public int ttl = 100;
     @Property
-    private int cost = 0;
+    public int cost = 0;
 
     @Property
-    private boolean requireHurtByEntity = true;
+    public boolean requireHurtByEntity = true;
 
     /* copied from wikipedia */
     private Set<Location> circlePoints(World w, int x0, int y0, int radius, int l) {

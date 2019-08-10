@@ -22,11 +22,11 @@ import java.util.Random;
 public class PowerKnockup extends BasePower {
 
     @Property(order = 0)
-    private int chance = 20;
+    public int chance = 20;
     @Property(order = 1, alias = "power")
-    private double knockUpPower = 2;
+    public double knockUpPower = 2;
     @Property
-    private int cost = 0;
+    public int cost = 0;
 
     private Random rand = new Random();
 

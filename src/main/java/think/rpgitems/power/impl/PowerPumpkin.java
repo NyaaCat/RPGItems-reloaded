@@ -25,11 +25,11 @@ import java.util.Random;
 public class PowerPumpkin extends BasePower {
     private static final Random rand = new Random();
     @Property(order = 0)
-    private int chance = 20;
+    public int chance = 20;
     @Property(order = 1, required = true)
-    private double drop = 0;
+    public double drop = 0;
     @Property
-    private int cost = 0;
+    public int cost = 0;
 
     /**
      * Cost of this power

@@ -30,23 +30,23 @@ import static think.rpgitems.power.Utils.checkCooldown;
 public class PowerPotionSelf extends BasePower {
 
     @Property(order = 0)
-    private long cooldown = 0;
+    public int cooldown = 0;
     @Property(order = 2)
-    private int amplifier = 1;
+    public int amplifier = 1;
     @Property(order = 1)
-    private int duration = 20;
+    public int duration = 20;
     @Property
-    private int cost = 0;
+    public int cost = 0;
     @Deserializer(PotionEffectUtils.class)
     @Serializer(PotionEffectUtils.class)
     @Property(order = 3, required = true)
     @AcceptedValue(preset = Preset.POTION_EFFECT_TYPE)
-    private PotionEffectType type = PotionEffectType.HEAL;
+    public PotionEffectType type = PotionEffectType.HEAL;
     @Property
-    private boolean clear = false;
+    public boolean clear = false;
 
     @Property
-    private boolean requireHurtByEntity = true;
+    public boolean requireHurtByEntity = true;
 
     @Override
     public void init(ConfigurationSection section) {
@@ -63,7 +63,7 @@ public class PowerPotionSelf extends BasePower {
     /**
      * Cooldown time of this power
      */
-    public long getCooldown() {
+    public int getCooldown() {
         return cooldown;
     }
 

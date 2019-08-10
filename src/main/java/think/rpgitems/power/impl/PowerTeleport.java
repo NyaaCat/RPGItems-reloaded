@@ -34,14 +34,14 @@ import static think.rpgitems.power.Utils.checkCooldown;
 public class PowerTeleport extends BasePower {
 
     @Property(order = 1)
-    private int distance = 5;
+    public int distance = 5;
     @Property(order = 0)
-    private long cooldown = 0;
+    public int cooldown = 0;
     @Property
-    private int cost = 0;
+    public int cost = 0;
 
     @Property
-    private TargetMode targetMode = TargetMode.DEFAULT;
+    public TargetMode targetMode = TargetMode.DEFAULT;
 
     /**
      * Cost of this power
@@ -70,7 +70,7 @@ public class PowerTeleport extends BasePower {
     /**
      * Cooldown time of this power
      */
-    public long getCooldown() {
+    public int getCooldown() {
         return cooldown;
     }
 

@@ -35,7 +35,7 @@ import think.rpgitems.power.*;
 @PowerMeta(immutableTrigger = true, implClass = PowerFood.Impl.class)
 public class PowerFood extends BasePower {
     @Property(order = 0, required = true)
-    private int foodpoints;
+    public int foodpoints;
 
     @Override
     public String getName() {

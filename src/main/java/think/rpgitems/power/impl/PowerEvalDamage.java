@@ -22,13 +22,13 @@ import java.util.logging.Level;
 public class PowerEvalDamage extends BasePower {
 
     @Property
-    private String display;
+    public String display;
 
     @Property(required = true)
-    private String expression = "";
+    public String expression = "";
 
     @Property
-    private boolean setBaseDamage = false;
+    public boolean setBaseDamage = false;
 
     public String getExpression() {
         return expression;

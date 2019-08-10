@@ -33,28 +33,28 @@ import static think.rpgitems.power.Utils.*;
 public class PowerGunFu extends BasePower {
 
     @Property(order = 0, alias = "cooldownTime")
-    private long cooldown = 0;
+    public int cooldown = 0;
     @Property
-    private int cost = 0;
+    public int cost = 0;
     @Property(order = 1)
-    private double distance = 20;
+    public double distance = 20;
     @Property
-    private double viewAngle = 30;
+    public double viewAngle = 30;
 
     @Property
-    private double initVelFactor = 0.5;
+    public double initVelFactor = 0.5;
 
     @Property
-    private double velFactor = 0.05;
+    public double velFactor = 0.05;
 
     @Property
-    private double forceFactor = 1.5;
+    public double forceFactor = 1.5;
 
     @Property
-    private int maxTicks = 200;
+    public int maxTicks = 200;
 
     @Property
-    private int delay = 0;
+    public int delay = 0;
 
     @Override
     public void init(ConfigurationSection s) {
@@ -104,7 +104,7 @@ public class PowerGunFu extends BasePower {
     /**
      * Cooldown time of this power
      */
-    public long getCooldown() {
+    public int getCooldown() {
         return cooldown;
     }
 

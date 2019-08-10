@@ -19,7 +19,7 @@ import static think.rpgitems.power.Utils.checkCooldown;
 @PowerMeta(immutableTrigger = true, implClass = PowerConsumeHit.Impl.class)
 public class PowerConsumeHit extends BasePower {
     @Property(order = 0)
-    private int cooldown = 0;
+    public int cooldown = 0;
 
     /**
      * Cooldown time of this power

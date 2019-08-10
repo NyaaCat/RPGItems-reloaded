@@ -23,7 +23,7 @@ import static think.rpgitems.power.Utils.checkAndSetCooldown;
 public class PowerCommandHit extends PowerCommand {
 
     @Property
-    private double minDamage = 0;
+    public double minDamage = 0;
 
     public static String handleEntityPlaceHolder(LivingEntity e, String cmd) {
         cmd = cmd.replaceAll("\\{entity}", e.getName());

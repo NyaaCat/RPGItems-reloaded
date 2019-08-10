@@ -33,43 +33,43 @@ import static think.rpgitems.power.Utils.checkCooldown;
 public class PowerRepair extends BasePower {
 
     @Property
-    private int cooldown = 0;
+    public int cooldown = 0;
 
     @Property(order = 2, required = true)
-    private int durability = 20;
+    public int durability = 20;
 
     @Property(order = 0)
-    private String display = "";
+    public String display = "";
 
     @Property(order = 4)
-    private boolean isSneak;
+    public boolean isSneak;
 
     @Property(order = 1)
-    private ItemStack material;
+    public ItemStack material;
 
     @Property
-    private RepairMode mode = RepairMode.DEFAULT;
+    public RepairMode mode = RepairMode.DEFAULT;
 
     @Property
-    private boolean allowBreak = true;
+    public boolean allowBreak = true;
 
     @Property
-    private boolean abortOnSuccess = false;
+    public boolean abortOnSuccess = false;
 
     @Property
-    private boolean abortOnFailure = false;
+    public boolean abortOnFailure = false;
 
     @Property
-    private String customMessage;
+    public String customMessage;
 
     @Property
-    private int amount = 1;
+    public int amount = 1;
 
     @Property
-    private boolean showFailMsg = true;
+    public boolean showFailMsg = true;
 
     @Property
-    private boolean requireHurtByEntity = true;
+    public boolean requireHurtByEntity = true;
 
     @Override
     public void init(ConfigurationSection section) {

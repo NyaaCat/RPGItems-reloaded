@@ -23,11 +23,11 @@ import static think.rpgitems.power.Utils.*;
 @PowerMeta(immutableTrigger = true, withSelectors = true, implClass = PowerMount.Impl.class)
 public class PowerMount extends BasePower {
     @Property(order = 0)
-    private long cooldown = 0L;
+    public int cooldown = 0;
     @Property(order = 1)
-    private int maxDistance = 5;
+    public int maxDistance = 5;
     @Property(order = 2)
-    private int maxTicks = 200;
+    public int maxTicks = 200;
 
     public int getMaxDistance() {
         return maxDistance;
@@ -47,7 +47,7 @@ public class PowerMount extends BasePower {
         return I18n.format("power.mount", (double) getCooldown() / 20D);
     }
 
-    public long getCooldown() {
+    public int getCooldown() {
         return cooldown;
     }
 

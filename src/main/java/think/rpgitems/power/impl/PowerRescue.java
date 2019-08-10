@@ -31,17 +31,17 @@ import static think.rpgitems.power.Utils.checkCooldown;
 public class PowerRescue extends BasePower {
     private static Cache<UUID, Long> rescueTime = CacheBuilder.newBuilder().expireAfterWrite(5, TimeUnit.SECONDS).build();
     @Property(order = 1)
-    private int healthTrigger = 4;
+    public int healthTrigger = 4;
     @Property(order = 2)
-    private boolean useBed = true;
+    public boolean useBed = true;
     @Property(order = 3)
-    private boolean inPlace = false;
+    public boolean inPlace = false;
     @Property(order = 0)
-    private long cooldown = 0;
+    public int cooldown = 0;
     @Property
-    private int cost = 0;
+    public int cost = 0;
     @Property
-    private double damageTrigger = 1024;
+    public double damageTrigger = 1024;
 
     /**
      * Cost of this power
@@ -77,7 +77,7 @@ public class PowerRescue extends BasePower {
     /**
      * Cooldown time of this power
      */
-    public long getCooldown() {
+    public int getCooldown() {
         return cooldown;
     }
 

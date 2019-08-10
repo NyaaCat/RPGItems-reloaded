@@ -44,13 +44,13 @@ import static think.rpgitems.power.Utils.checkCooldown;
 @PowerMeta(defaultTrigger = "RIGHT_CLICK", generalInterface = PowerPlain.class, implClass = PowerConsume.Impl.class)
 public class PowerConsume extends BasePower {
     @Property(order = 1)
-    private int cooldown = 0;
+    public int cooldown = 0;
 
     @Property
-    private int cost = 0;
+    public int cost = 0;
 
     @Property
-    private boolean requireHurtByEntity = true;
+    public boolean requireHurtByEntity = true;
 
     @Override
     public void init(ConfigurationSection section) {
@@ -66,19 +66,11 @@ public class PowerConsume extends BasePower {
         return cooldown;
     }
 
-    public void setCooldown(int cooldown) {
-        this.cooldown = cooldown;
-    }
-
     /**
      * Cost of this power
      */
     public int getCost() {
         return cost;
-    }
-
-    public void setCost(int cost) {
-        this.cost = cost;
     }
 
     @Override
@@ -93,10 +85,6 @@ public class PowerConsume extends BasePower {
 
     public boolean isRequireHurtByEntity() {
         return requireHurtByEntity;
-    }
-
-    public void setRequireHurtByEntity(boolean requireHurtByEntity) {
-        this.requireHurtByEntity = requireHurtByEntity;
     }
 
     public class Impl implements PowerPlain, PowerRightClick, PowerLeftClick, PowerSneak, PowerHitTaken, PowerHurt, PowerSprint, PowerAttachment {

@@ -27,18 +27,18 @@ import static think.rpgitems.power.Utils.checkCooldown;
 public class PowerRealDamage extends BasePower {
 
     @Property(order = 0)
-    private long cooldown = 0;
+    public int cooldown = 0;
     @Property
-    private int cost = 0;
+    public int cost = 0;
     @Property(order = 1, required = true)
-    private double realDamage = 0;
+    public double realDamage = 0;
     @Property
-    private double minDamage = 0;
+    public double minDamage = 0;
 
     /**
      * Cooldown time of this power
      */
-    public long getCooldown() {
+    public int getCooldown() {
         return cooldown;
     }
 

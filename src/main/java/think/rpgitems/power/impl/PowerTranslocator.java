@@ -50,15 +50,15 @@ public class PowerTranslocator extends BasePower {
                                                                              });
                                                                          }).build();
     @Property
-    private long cooldown = 80;
+    public int cooldown = 80;
     @Property
-    private int setupCost = 0;
+    public int setupCost = 0;
 
     @Property
-    private int tpCost = 0;
+    public int tpCost = 0;
 
     @Property
-    private double speed = 1;
+    public double speed = 1;
 
     @Override
     public String getName() {
@@ -73,7 +73,7 @@ public class PowerTranslocator extends BasePower {
     /**
      * Cooldown time of this power
      */
-    public long getCooldown() {
+    public int getCooldown() {
         return cooldown;
     }
 

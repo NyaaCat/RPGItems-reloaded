@@ -63,14 +63,25 @@ public class PowerManager {
         properties.put(clazz, argumentPriorityMap);
     }
 
+
+    public static List<Field> getAllFields(Class<?> type) {
+        List<Field> fields = new ArrayList<>();
+        for (Class<?> c = type; c != null; c = c.getSuperclass()) {
+            fields.addAll(Arrays.asList(c.getDeclaredFields()));
+        }
+        return fields;
+    }
+
+
     private static Map<String, Pair<Method, PowerProperty>> getPowerProperties(Class<? extends Power> cls) {
         RPGItems.logger.severe("Scanning class " + cls.toGenericString());
         List<Method> methods = Arrays.stream(cls.getMethods()).collect(Collectors.toList());
-        List<Pair<Field, Property>> collect =  Arrays.stream(cls.getFields())
-              .map(field -> Pair.of(field, field.getAnnotation(Property.class)))
-              .filter(pair -> pair.getValue() != null)
-              .sorted(Comparator.comparingInt(p -> p.getValue().order()))
-              .collect(Collectors.toList());
+        List<Pair<Field, Property>> collect = getAllFields(cls)
+                                                      .stream()
+                                                      .map(field -> Pair.of(field, field.getAnnotation(Property.class)))
+                                                      .filter(pair -> pair.getValue() != null)
+                                                      .sorted(Comparator.comparingInt(p -> p.getValue().order()))
+                                                      .collect(Collectors.toList());
 
         int requiredOrder = collect.stream()
                                    .map(Pair::getValue)
@@ -86,23 +97,24 @@ public class PowerManager {
                                       p -> {
                                           String name = p.getKey().getName();
                                           return Pair.of(metas.get(cls).marker() ? null :
-                                                           methods.stream()
-                                                                  .filter(
-                                                                          m -> m.getParameterCount() == 0 &&
-                                                                                       (m.getName().toLowerCase(Locale.ROOT).equals("get" + name.toLowerCase(Locale.ROOT))
-                                                                                                || m.getName().toLowerCase(Locale.ROOT).equals("is" + name.toLowerCase(Locale.ROOT))
-                                                                                                || m.getName().toLowerCase(Locale.ROOT).equals(name.toLowerCase(Locale.ROOT))
-                                                                                       )
-                                                                  )
-                                                                  .reduce((a, b) -> {
-                                                                      throw new IllegalArgumentException(p.getKey() + " " + name + " " + a.toString() + " " + b.toString());
-                                                                  })
-                                                                  .orElseThrow(() -> new IllegalArgumentException(p.getKey() + " " + name)),
-                                              PowerProperty.from(p.getKey(), p.getValue(), p.getValue().order() < requiredOrder));
+                                                                 methods.stream()
+                                                                        .filter(
+                                                                                m -> m.getParameterCount() == 0 &&
+                                                                                             (m.getName().toLowerCase(Locale.ROOT).equals("get" + name.toLowerCase(Locale.ROOT))
+                                                                                                      || m.getName().toLowerCase(Locale.ROOT).equals("is" + name.toLowerCase(Locale.ROOT))
+                                                                                                      || m.getName().toLowerCase(Locale.ROOT).equals(name.toLowerCase(Locale.ROOT))
+                                                                                                      || m.getName().toLowerCase(Locale.ROOT).replaceAll("(is)|(get)", "").equals(name.toLowerCase(Locale.ROOT).replaceAll("(is)|(get)", ""))
+                                                                                             )
+                                                                        )
+                                                                        .reduce((a, b) -> {
+                                                                            throw new IllegalArgumentException(p.getKey() + " " + name + " " + a.toString() + " " + b.toString());
+                                                                        })
+                                                                        .orElseThrow(() -> new IllegalArgumentException(p.getKey() + " " + name)),
+                                                  PowerProperty.from(p.getKey(), p.getValue(), p.getValue().order() < requiredOrder));
                                       }
                               )
                       );
-        }
+    }
 
     public static void registerPowers(Plugin plugin, String basePackage) {
         Class<? extends Power>[] classes = ClassPathUtils.scanSubclasses(plugin, basePackage, Power.class);

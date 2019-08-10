@@ -21,7 +21,7 @@ import static think.rpgitems.power.Utils.checkCooldown;
 @PowerMeta(defaultTrigger = "TICK", implClass = PowerParticleTick.Impl.class)
 public class PowerParticleTick extends PowerParticle {
     @Property(order = 1)
-    private int interval = 15;
+    public int interval = 15;
 
     /**
      * Interval of particle effect

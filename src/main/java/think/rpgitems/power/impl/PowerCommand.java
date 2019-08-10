@@ -29,18 +29,18 @@ import static think.rpgitems.power.Utils.checkAndSetCooldown;
 public class PowerCommand extends BasePower {
 
     @Property(order = 4, required = true)
-    private String command = "";
+    public String command = "";
     @Property(order = 3)
-    private String display = "Runs command";
+    public String display = "Runs command";
     @Property(order = 8)
-    private String permission = "";
+    public String permission = "";
     @Property(order = 1)
-    private long cooldown = 0;
+    public int cooldown = 0;
     @Property
-    private int cost = 0;
+    public int cost = 0;
 
     @Property
-    private boolean requireHurtByEntity = true;
+    public boolean requireHurtByEntity = true;
 
     public static String handlePlayerPlaceHolder(Player player, String cmd) {
         cmd = cmd.replaceAll("\\{player}", player.getName());
@@ -73,7 +73,7 @@ public class PowerCommand extends BasePower {
     /**
      * Cooldown time of this power
      */
-    public long getCooldown() {
+    public int getCooldown() {
         return cooldown;
     }
 

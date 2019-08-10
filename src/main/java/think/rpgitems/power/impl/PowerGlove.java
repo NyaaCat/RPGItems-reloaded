@@ -24,13 +24,13 @@ import static think.rpgitems.power.Utils.*;
 @PowerMeta(immutableTrigger = true, withSelectors = true, implClass = PowerGlove.Impl.class)
 public class PowerGlove extends BasePower {
     @Property(order = 0)
-    private long cooldown = 20L;
+    public int cooldown = 20;
     @Property(order = 1)
-    private int maxDistance = 5;
+    public int maxDistance = 5;
     @Property(order = 2)
-    private int maxTicks = 200;
+    public int maxTicks = 200;
     @Property(order = 3)
-    private double throwSpeed = 0.0D;
+    public double throwSpeed = 0.0D;
 
     public int getMaxDistance() {
         return maxDistance;
@@ -50,7 +50,7 @@ public class PowerGlove extends BasePower {
         return I18n.format("power.glove", (double) getCooldown() / 20D);
     }
 
-    public long getCooldown() {
+    public int getCooldown() {
         return cooldown;
     }
 

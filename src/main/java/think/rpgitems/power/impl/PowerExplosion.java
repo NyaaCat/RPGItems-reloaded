@@ -19,17 +19,17 @@ import java.util.concurrent.ThreadLocalRandom;
 public class PowerExplosion extends BasePower {
 
     @Property
-    private int distance = 20;
+    public int distance = 20;
 
     @Property
-    private double chance = 20;
+    public double chance = 20;
 
 
     @Property(alias = "power")
-    private float explosionPower = 4.0f;
+    public float explosionPower = 4.0f;
 
     @Property
-    private int cost = 0;
+    public int cost = 0;
 
     /**
      * Cost of this power

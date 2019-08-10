@@ -32,9 +32,9 @@ import static think.rpgitems.power.Utils.checkCooldown;
 @PowerMeta(defaultTrigger = "RIGHT_CLICK", generalInterface = PowerPlain.class, implClass = PowerTorch.Impl.class)
 public class PowerTorch extends BasePower {
     @Property(order = 0)
-    private long cooldown = 0;
+    public int cooldown = 0;
     @Property
-    private int cost = 0;
+    public int cost = 0;
 
     private List<BlockFace> getPossibleFaces(Location loc) {
         List<BlockFace> faces = new ArrayList<>();
@@ -71,7 +71,7 @@ public class PowerTorch extends BasePower {
     /**
      * Cooldown time of this power
      */
-    public long getCooldown() {
+    public int getCooldown() {
         return cooldown;
     }
 

@@ -18,9 +18,9 @@ import think.rpgitems.power.*;
 public class PowerFlame extends BasePower {
 
     @Property(order = 0)
-    private int burntime = 20;
+    public int burntime = 20;
     @Property
-    private int cost = 0;
+    public int cost = 0;
 
     /**
      * Cost of this power

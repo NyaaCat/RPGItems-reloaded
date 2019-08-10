@@ -43,33 +43,33 @@ public class PowerScoreboard extends BasePower {
                                                                                            .expireAfterAccess(1, TimeUnit.DAYS)
                                                                                            .build(CacheLoader.from(PowerSelector::parse));
     @Property
-    private String tag;
+    public String tag;
     @Property
-    private String team;
+    public String team;
     @Property
-    private long cooldown = 0;
+    public int cooldown = 0;
     @Property
-    private ScoreboardOperation scoreOperation = ScoreboardOperation.NO_OP;
+    public ScoreboardOperation scoreOperation = ScoreboardOperation.NO_OP;
     @Property
-    private int value = 0;
+    public int value = 0;
     @Property
-    private String objective = "";
+    public String objective = "";
     @Property
-    private int cost = 0;
+    public int cost = 0;
     @Property
-    private boolean reverseTagAfterDelay = false;
+    public boolean reverseTagAfterDelay = false;
     @Property
-    private long delay = 20;
+    public long delay = 20;
     @Property
-    private boolean abortOnSuccess = false;
+    public boolean abortOnSuccess = false;
+    @Property
+    public boolean requireHurtByEntity = true;
     private BukkitRunnable removeTask;
-    @Property
-    private boolean requireHurtByEntity = true;
 
     /**
      * Cooldown time of this power
      */
-    public long getCooldown() {
+    public int getCooldown() {
         return cooldown;
     }
 

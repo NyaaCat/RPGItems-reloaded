@@ -33,48 +33,48 @@ public class PowerParticle extends BasePower {
     @Serializer(EffectSetter.class)
     @Deserializer(value = EffectSetter.class, message = "message.error.visualeffect")
     @AcceptedValue(preset = Preset.VISUAL_EFFECT)
-    private Effect effect = Effect.MOBSPAWNER_FLAMES;
+    public Effect effect = Effect.MOBSPAWNER_FLAMES;
 
     @Property
     @Serializer(ParticleSetter.class)
     @Deserializer(value = ParticleSetter.class)
-    private Particle particle = null;
+    public Particle particle = null;
 
     @Property
-    private int cost = 0;
+    public int cost = 0;
 
     @Property
-    private long cooldown = 0;
+    public int cooldown = 0;
 
     @Property
-    private Material material;
+    public Material material;
 
     @Property
-    private int dustColor = 0;
+    public int dustColor = 0;
 
     @Property
-    private double dustSize = 0;
+    public double dustSize = 0;
 
     @Property
-    private int particleCount = 1;
+    public int particleCount = 1;
 
     @Property
-    private double offsetX = 0;
+    public double offsetX = 0;
 
     @Property
-    private double offsetY = 0;
+    public double offsetY = 0;
 
     @Property
-    private double offsetZ = 0;
+    public double offsetZ = 0;
 
     @Property
-    private double extra = 1;
+    public double extra = 1;
 
     @Property
-    private boolean force = false;
+    public boolean force = false;
 
     @Property
-    private boolean requireHurtByEntity = true;
+    public boolean requireHurtByEntity = true;
     private Object data = null;
 
     void spawnParticle(Entity player) {
@@ -152,7 +152,7 @@ public class PowerParticle extends BasePower {
     /**
      * Cooldown time of this power
      */
-    public long getCooldown() {
+    public int getCooldown() {
         return cooldown;
     }
 

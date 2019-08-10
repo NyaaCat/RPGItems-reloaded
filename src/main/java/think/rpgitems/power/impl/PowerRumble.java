@@ -38,16 +38,16 @@ import static think.rpgitems.power.Utils.getNearbyEntities;
 public class PowerRumble extends BasePower {
 
     @Property(order = 0)
-    private long cooldown = 0;
+    public int cooldown = 0;
     @Property(order = 1)
-    private int power = 2;
+    public int power = 2;
     @Property(order = 2, required = true)
-    private int distance = 15;
+    public int distance = 15;
     @Property
-    private int cost = 0;
+    public int cost = 0;
 
     @Property
-    private double damage = 0;
+    public double damage = 0;
 
     /**
      * Cost of this power
@@ -80,7 +80,7 @@ public class PowerRumble extends BasePower {
     /**
      * Cooldown time of this power
      */
-    public long getCooldown() {
+    public int getCooldown() {
         return cooldown;
     }
 

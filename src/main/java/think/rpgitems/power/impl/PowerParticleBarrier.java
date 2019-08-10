@@ -54,24 +54,24 @@ public class PowerParticleBarrier extends BasePower {
     private static AtomicInteger rc = new AtomicInteger(0);
     private static Listener event;
     @Property
-    private double energyPerBarrier = 40;
+    public double energyPerBarrier = 40;
     @Property
-    private double barrierHealth = 40;
+    public double barrierHealth = 40;
     @Property
-    private double energyDecay = 1.5;
+    public double energyDecay = 1.5;
     @Property
-    private double energyPerLevel = 10;
+    public double energyPerLevel = 10;
     @Property
-    private boolean projected = false;
+    public boolean projected = false;
     @Property
-    private int cooldown = 0;
+    public int cooldown = 0;
     @Property
-    private int cost = 0;
+    public int cost = 0;
     @Deserializer(PotionEffectUtils.class)
     @Serializer(PotionEffectUtils.class)
     @Property(order = 1, required = true)
     @AcceptedValue(preset = Preset.POTION_EFFECT_TYPE)
-    private PotionEffectType effect = PotionEffectType.INCREASE_DAMAGE;
+    public PotionEffectType effect = PotionEffectType.INCREASE_DAMAGE;
 
     @Override
     public void init(ConfigurationSection s) {

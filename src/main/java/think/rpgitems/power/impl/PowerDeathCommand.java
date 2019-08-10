@@ -25,15 +25,15 @@ public class PowerDeathCommand extends BasePower {
 
     private static final Random rand = new Random();
     @Property(order = 1, required = true)
-    private String command = "";
+    public String command = "";
     @Property(order = 0)
-    private int chance = 20;
+    public int chance = 20;
     @Property(order = 3)
-    private String desc = "";
+    public String desc = "";
     @Property(order = 2)
-    private int count = 1;
+    public int count = 1;
     @Property
-    private int cost = 0;
+    public int cost = 0;
 
     /**
      * Command to be executed

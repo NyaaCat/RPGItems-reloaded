@@ -23,18 +23,18 @@ import java.util.Random;
 public class PowerPotionHit extends BasePower {
 
     @Property
-    private int chance = 20;
+    public int chance = 20;
     @Deserializer(PotionEffectUtils.class)
     @Serializer(PotionEffectUtils.class)
     @Property(order = 3, required = true)
     @AcceptedValue(preset = Preset.POTION_EFFECT_TYPE)
-    private PotionEffectType type = PotionEffectType.HARM;
+    public PotionEffectType type = PotionEffectType.HARM;
     @Property(order = 1)
-    private int duration = 20;
+    public int duration = 20;
     @Property(order = 2)
-    private int amplifier = 1;
+    public int amplifier = 1;
     @Property
-    private int cost = 0;
+    public int cost = 0;
 
     private Random rand = new Random();
 

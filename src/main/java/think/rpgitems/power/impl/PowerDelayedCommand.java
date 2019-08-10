@@ -26,7 +26,7 @@ import static think.rpgitems.power.Utils.checkAndSetCooldown;
 @PowerMeta(defaultTrigger = "RIGHT_CLICK", implClass = PowerDelayedCommand.Impl.class)
 public class PowerDelayedCommand extends PowerCommand {
     @Property(order = 0)
-    private int delay = 20;
+    public int delay = 20;
 
     /**
      * Delay before executing command

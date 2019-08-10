@@ -28,19 +28,19 @@ public class PowerEconomy extends BasePower {
     private static Economy eco;
 
     @Property
-    private int cooldown = 0;
+    public int cooldown = 0;
 
     @Property
-    private double amountToPlayer;
+    public double amountToPlayer;
 
     @Property
-    private boolean showFailMessage;
+    public boolean showFailMessage;
 
     @Property
-    private boolean abortOnFailure = true;
+    public boolean abortOnFailure = true;
 
     @Property
-    private boolean requireHurtByEntity = true;
+    public boolean requireHurtByEntity = true;
 
     @Override
     public void init(ConfigurationSection section) {

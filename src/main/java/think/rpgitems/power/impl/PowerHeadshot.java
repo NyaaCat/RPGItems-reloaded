@@ -19,22 +19,22 @@ import think.rpgitems.power.*;
 public class PowerHeadshot extends BasePower {
 
     @Property
-    private double factor = 1.5;
+    public double factor = 1.5;
 
     @Property
-    private int cost = 0;
+    public int cost = 0;
 
     @Property
-    private boolean particleEnemy = true;
+    public boolean particleEnemy = true;
 
     @Property
-    private boolean soundSelf = true;
+    public boolean soundSelf = true;
 
     @Property
-    private boolean soundEnemy = false;
+    public boolean soundEnemy = false;
 
     @Property
-    private boolean setBaseDamage = false;
+    public boolean setBaseDamage = false;
 
     /**
      * Cost of this power

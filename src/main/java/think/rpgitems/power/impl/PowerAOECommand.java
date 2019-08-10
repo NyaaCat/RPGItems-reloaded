@@ -25,26 +25,26 @@ import static think.rpgitems.power.Utils.*;
 @PowerMeta(defaultTrigger = "RIGHT_CLICK", withSelectors = true, implClass = PowerAOECommand.Impl.class)
 public class PowerAOECommand extends PowerCommand {
     @Property
-    private boolean selfapplication = false;
+    public boolean selfapplication = false;
 
     @Property
     @AcceptedValue({"entity", "player", "mobs"})
-    private String type = "entity";
+    public String type = "entity";
 
     @Property(order = 6)
-    private int r = 10;
+    public int r = 10;
 
     @Property(order = 5)
-    private int rm = 0;
+    public int rm = 0;
 
     @Property(order = 7, required = true)
-    private double facing = 30;
+    public double facing = 30;
 
     @Property
-    private int c = 100;
+    public int c = 100;
 
     @Property
-    private boolean mustsee = false;
+    public boolean mustsee = false;
 
     /**
      * Maximum count

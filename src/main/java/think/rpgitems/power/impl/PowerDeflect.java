@@ -33,19 +33,19 @@ public class PowerDeflect extends BasePower {
 
     private static Map<UUID, Long> time = new HashMap<>();
     @Property(order = 2)
-    private int cooldown = 0;
+    public int cooldown = 0;
     @Property(order = 4)
-    private int cooldownpassive = 0;
+    public int cooldownpassive = 0;
     @Property
-    private int cost = 0;
+    public int cost = 0;
     @Property
-    private int deflectCost = 0;
+    public int deflectCost = 0;
     @Property
-    private int chance = 50;
+    public int chance = 50;
     @Property
-    private int duration = 50;
+    public int duration = 50;
     @Property(order = 0, required = true)
-    private double facing = 30;
+    public double facing = 30;
 
     @Override
     public void init(ConfigurationSection section) {

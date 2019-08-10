@@ -26,18 +26,18 @@ import static think.rpgitems.power.Utils.checkCooldown;
 public class PowerTippedArrow extends BasePower {
 
     @Property(order = 0)
-    private long cooldown = 0;
+    public int cooldown = 0;
     @Property(order = 3, required = true)
-    private int amplifier = 1;
+    public int amplifier = 1;
     @Property(order = 2)
-    private int duration = 15;
+    public int duration = 15;
     @Deserializer(PotionEffectUtils.class)
     @Serializer(PotionEffectUtils.class)
     @AcceptedValue(preset = Preset.POTION_EFFECT_TYPE)
     @Property(order = 1)
-    private PotionEffectType type = PotionEffectType.POISON;
+    public PotionEffectType type = PotionEffectType.POISON;
     @Property
-    private int cost = 0;
+    public int cost = 0;
 
     /**
      * Cost of this power
@@ -80,7 +80,7 @@ public class PowerTippedArrow extends BasePower {
     /**
      * Cooldown time of this power
      */
-    public long getCooldown() {
+    public int getCooldown() {
         return cooldown;
     }
 

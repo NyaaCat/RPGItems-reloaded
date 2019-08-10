@@ -19,16 +19,16 @@ import think.rpgitems.power.*;
 public class PowerCharge extends BasePower {
 
     @Property
-    private int percentage = 30;
+    public int percentage = 30;
 
     @Property
-    private int speedPercentage = 20;
+    public int speedPercentage = 20;
 
     @Property
-    private double cap = 300;
+    public double cap = 300;
 
     @Property
-    private boolean setBaseDamage = false;
+    public boolean setBaseDamage = false;
 
     public double getCap() {
         return cap;

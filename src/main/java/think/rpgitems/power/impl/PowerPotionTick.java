@@ -27,17 +27,17 @@ public class PowerPotionTick extends BasePower {
     @Serializer(PotionEffectUtils.class)
     @Property(order = 1, required = true)
     @AcceptedValue(preset = Preset.POTION_EFFECT_TYPE)
-    private PotionEffectType effect = PotionEffectType.SPEED;
+    public PotionEffectType effect = PotionEffectType.SPEED;
     @Property(order = 0)
-    private int amplifier = 1;
+    public int amplifier = 1;
     @Property
-    private int cost = 0;
+    public int cost = 0;
     @Property(order = 2)
-    private int interval = 0;
+    public int interval = 0;
     @Property(order = 3)
-    private int duration = 60;
+    public int duration = 60;
     @Property
-    private boolean clear = false;
+    public boolean clear = false;
 
     /**
      * Cost of this power

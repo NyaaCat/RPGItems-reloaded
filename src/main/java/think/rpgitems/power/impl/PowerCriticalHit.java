@@ -15,19 +15,19 @@ import static think.rpgitems.power.Utils.getAngleBetweenVectors;
 public class PowerCriticalHit extends BasePower {
 
     @Property
-    private double chance = 20;
+    public double chance = 20;
 
     @Property
-    private double backstabChance = 20;
+    public double backstabChance = 20;
 
     @Property
-    private double factor = 1.5;
+    public double factor = 1.5;
 
     @Property
-    private double backstabFactor = 1.5;
+    public double backstabFactor = 1.5;
 
     @Property
-    private boolean setBaseDamage = false;
+    public boolean setBaseDamage = false;
 
     @Override
     public String getName() {
@@ -57,22 +57,6 @@ public class PowerCriticalHit extends BasePower {
 
     public double getBackstabFactor() {
         return backstabFactor;
-    }
-
-    public void setBackstabFactor(double backstabFactor) {
-        this.backstabFactor = backstabFactor;
-    }
-
-    public void setFactor(double factor) {
-        this.factor = factor;
-    }
-
-    public void setChance(double chance) {
-        this.chance = chance;
-    }
-
-    public void setBackstabChance(double backstabChance) {
-        this.backstabChance = backstabChance;
     }
 
     public boolean isSetBaseDamage() {

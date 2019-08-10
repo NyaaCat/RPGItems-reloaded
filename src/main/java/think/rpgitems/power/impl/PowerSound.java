@@ -23,25 +23,25 @@ import static think.rpgitems.power.Utils.checkCooldown;
 @PowerMeta(defaultTrigger = "RIGHT_CLICK", generalInterface = PowerPlain.class, implClass = PowerSound.Impl.class)
 public class PowerSound extends BasePower {
     @Property
-    private float pitch = 1.0f;
+    public float pitch = 1.0f;
     @Property
-    private float volume = 1.0f;
+    public float volume = 1.0f;
     @Property
-    private String sound = "";
+    public String sound = "";
     @Property
-    private int cost = 0;
+    public int cost = 0;
     @Property
-    private String display = "Plays sound";
+    public String display = "Plays sound";
     @Property
-    private long cooldown = 0;
+    public int cooldown = 0;
 
     @Property
-    private boolean requireHurtByEntity = true;
+    public boolean requireHurtByEntity = true;
 
     /**
      * Cooldown time of this power
      */
-    public long getCooldown() {
+    public int getCooldown() {
         return cooldown;
     }
 

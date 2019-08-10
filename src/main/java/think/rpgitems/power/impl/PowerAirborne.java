@@ -17,13 +17,13 @@ import think.rpgitems.power.*;
 @PowerMeta(immutableTrigger = true, implClass = PowerAirborne.Impl.class)
 public class PowerAirborne extends BasePower {
     @Property
-    private int percentage = 50;
+    public int percentage = 50;
 
     @Property
-    private double cap = 300.0;
+    public double cap = 300.0;
 
     @Property
-    private boolean setBaseDamage = false;
+    public boolean setBaseDamage = false;
 
     public double getCap() {
         return cap;

@@ -11,7 +11,7 @@ import think.rpgitems.power.*;
 public class PowerCancelBowArrow extends BasePower {
 
     @Property
-    private boolean cancelArrow = true;
+    public boolean cancelArrow = true;
 
     @Override
     public @LangKey(skipCheck = true) String getName() {

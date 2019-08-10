@@ -38,16 +38,16 @@ public class PowerSkyHook extends BasePower {
 
     private static Map<UUID, Boolean> hooking = new HashMap<>();
     @Property(order = 0)
-    private Material railMaterial = Material.GLASS;
+    public Material railMaterial = Material.GLASS;
     @Property
-    private long cooldown = 0;
+    public int cooldown = 0;
     @Property
-    private int cost = 0;
+    public int cost = 0;
     @Property
-    private int hookingTickCost = 0;
+    public int hookingTickCost = 0;
     @Deserializer(MaterialUtils.class)
     @Property(order = 1, required = true)
-    private int hookDistance = 10;
+    public int hookDistance = 10;
 
     @Override
     public void init(ConfigurationSection s) {
@@ -80,7 +80,7 @@ public class PowerSkyHook extends BasePower {
     /**
      * Cooldown time of this power
      */
-    public long getCooldown() {
+    public int getCooldown() {
         return cooldown;
     }
 

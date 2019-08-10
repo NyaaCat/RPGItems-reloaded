@@ -11,19 +11,19 @@ import think.rpgitems.power.*;
 public class PowerEnchantedHit extends BasePower {
 
     @Property
-    private Mode mode = Mode.ADDITION;
+    public Mode mode = Mode.ADDITION;
 
     @Property
-    private double amountPerLevel = 1;
+    public double amountPerLevel = 1;
 
     @Property
-    private String display;
+    public String display;
 
     @Property
-    private EnumEnchantment enchantmentType = EnumEnchantment.ARROW_DAMAGE;
+    public EnumEnchantment enchantmentType = EnumEnchantment.ARROW_DAMAGE;
 
     @Property
-    private boolean setBaseDamage = false;
+    public boolean setBaseDamage = false;
 
     public double getAmountPerLevel() {
         return amountPerLevel;

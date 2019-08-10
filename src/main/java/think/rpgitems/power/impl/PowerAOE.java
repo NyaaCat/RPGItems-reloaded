@@ -31,25 +31,25 @@ import static think.rpgitems.power.Utils.getNearbyEntities;
 public class PowerAOE extends BasePower {
 
     @Property(order = 0)
-    private long cooldown = 0;
+    public int cooldown = 0;
     @Property(order = 4, required = true)
-    private int amplifier = 1;
+    public int amplifier = 1;
     @Property(order = 3)
-    private int duration = 15;
+    public int duration = 15;
     @Property(order = 1)
-    private int range = 5;
+    public int range = 5;
     @Property(order = 5)
-    private boolean selfapplication = true;
+    public boolean selfapplication = true;
 
     @Property(order = 2)
     @Deserializer(PotionEffectUtils.class)
     @Serializer(PotionEffectUtils.class)
     @AcceptedValue(preset = Preset.POTION_EFFECT_TYPE)
-    private PotionEffectType type;
+    public PotionEffectType type;
     @Property(alias = "name")
-    private String display = null;
+    public String display = null;
     @Property
-    private int cost = 0;
+    public int cost = 0;
 
     /**
      * Cost of this power
@@ -70,10 +70,6 @@ public class PowerAOE extends BasePower {
 
     public String getDisplay() {
         return display;
-    }
-
-    public void setDisplay(String display) {
-        this.display = display;
     }
 
     /**
@@ -114,7 +110,7 @@ public class PowerAOE extends BasePower {
     /**
      * Cooldown time of this power
      */
-    public long getCooldown() {
+    public int getCooldown() {
         return cooldown;
     }
 

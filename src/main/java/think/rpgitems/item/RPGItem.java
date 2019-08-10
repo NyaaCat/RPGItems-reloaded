@@ -1357,8 +1357,6 @@ public class RPGItem {
         private final Map<Method, PowerProperty> getters;
 
         protected DynamicMethodInterceptor(Power orig, Player player) {
-            RPGItems.logger.info("new DynamicMethodInterceptor with " + orig + "@" + orig.hashCode() + " " + player.getName());
-
             this.orig = orig;
             this.player = player;
             this.getters = PowerManager.getProperties(orig.getClass())
@@ -1371,14 +1369,10 @@ public class RPGItem {
         public Object intercept(Object proxy, Method method, Object[] args, MethodProxy methodProxy)
                 throws Throwable {
             if (getters.containsKey(method)) {
-                RPGItems.logger.info("Proxying " + method.getDeclaringClass() + "@" + method.getName() + ". " + method.toGenericString());
-                RPGItems.logger.info("To " + orig + ". " + orig.getClass().toGenericString());
-                RPGItems.logger.info("With player " + player.getName());
                 PowerProperty powerProperty = getters.get(method);
                 if (powerProperty.name().equals("cooldown")) {
-                    return 0;
+                    return ((int)methodProxy.invoke(orig, args) / 2);
                 }
-
             }
             return methodProxy.invoke(orig, args);
         }

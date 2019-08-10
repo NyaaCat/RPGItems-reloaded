@@ -33,22 +33,22 @@ import static think.rpgitems.power.Utils.checkAndSetCooldown;
 @PowerMeta(defaultTrigger = "RIGHT_CLICK", generalInterface = PowerPlain.class, implClass = PowerThrow.Impl.class)
 public class PowerThrow extends BasePower {
     @Property(order = 5, required = true)
-    private String entityData = "";
+    public String entityData = "";
     @Property(order = 4)
-    private String entityName = "";
+    public String entityName = "";
     @Property(order = 1)
-    private long cooldown = 0;
+    public int cooldown = 0;
     @Property(order = 3)
-    private double speed = 3;
+    public double speed = 3;
     @Property(order = 0)
-    private String display = "throw entity";
+    public String display = "throw entity";
     @Property(order = 6)
-    private boolean isPersistent;
+    public boolean isPersistent;
     @Property
-    private int cost = 0;
+    public int cost = 0;
 
     @Property
-    private boolean requireHurtByEntity = true;
+    public boolean requireHurtByEntity = true;
 
     @Override
     public void init(ConfigurationSection section) {
@@ -57,7 +57,7 @@ public class PowerThrow extends BasePower {
         super.init(section);
     }
 
-    public long getCooldown() {
+    public int getCooldown() {
         return cooldown;
     }
 

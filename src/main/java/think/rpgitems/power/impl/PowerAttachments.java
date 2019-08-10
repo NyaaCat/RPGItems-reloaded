@@ -25,19 +25,19 @@ import java.util.stream.Collectors;
 public class PowerAttachments extends BasePower {
 
     @Property
-    private List<EquipmentSlot> allowedSlots;
+    public List<EquipmentSlot> allowedSlots;
 
     @Property
-    private List<Integer> allowedInvSlots;
+    public List<Integer> allowedInvSlots;
 
     @Property
-    private int limit;
+    public int limit;
 
     @Property
-    private Set<String> allowedItems;
+    public Set<String> allowedItems;
 
     @Property
-    private boolean requireHurtByEntity = true;
+    public boolean requireHurtByEntity = true;
 
     public List<Integer> getAllowedInvSlots() {
         return allowedInvSlots;

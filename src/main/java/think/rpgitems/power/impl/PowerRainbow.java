@@ -31,13 +31,13 @@ import static think.rpgitems.power.Utils.checkCooldown;
 public class PowerRainbow extends BasePower {
 
     @Property(order = 0)
-    private long cooldown = 0;
+    public int cooldown = 0;
     @Property(order = 1)
-    private int count = 5;
+    public int count = 5;
     @Property(order = 2)
-    private boolean isFire = false;
+    public boolean isFire = false;
     @Property
-    private int cost = 0;
+    public int cost = 0;
 
     private Random random = new Random();
 
@@ -68,7 +68,7 @@ public class PowerRainbow extends BasePower {
     /**
      * Cooldown time of this power
      */
-    public long getCooldown() {
+    public int getCooldown() {
         return cooldown;
     }
 

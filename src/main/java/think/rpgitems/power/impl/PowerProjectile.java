@@ -50,35 +50,30 @@ public class PowerProjectile extends BasePower {
      * Y_axis.
      */
     private static final Vector y_axis = new Vector(0, 1, 0);
-
-    private Cache<UUID, Integer> burstTask = CacheBuilder.newBuilder().expireAfterAccess(1, TimeUnit.MINUTES).concurrencyLevel(2).build();
-
     @Property(order = 0)
-    private long cooldown = 0;
+    public int cooldown = 0;
     @Property(order = 1)
-    private boolean isCone = false;
+    public boolean isCone = false;
     @Property
-    private boolean gravity = true;
+    public boolean gravity = true;
     @Property(order = 3)
-    private int range = 15;
+    public int range = 15;
     @Property(order = 4)
-    private int amount = 5;
+    public int amount = 5;
     @Property(order = 5)
-    private double speed = 1;
+    public double speed = 1;
     @Property
-    private int cost = 0;
+    public int cost = 0;
     @Property
-    private int burstCount = 1;
+    public int burstCount = 1;
     @Property
-    private int burstInterval = 1;
+    public int burstInterval = 1;
     @Property
-    private boolean setFireballDirection = false;
-
+    public boolean setFireballDirection = false;
     @Property
-    private Double yield = null;
-
+    public Double yield = null;
     @Property
-    private Boolean isIncendiary = null;
+    public Boolean isIncendiary = null;
     @AcceptedValue({
             "skull",
             "fireball",
@@ -93,15 +88,14 @@ public class PowerProjectile extends BasePower {
     @Deserializer(ProjectileType.class)
     @Serializer(ProjectileType.class)
     @Property(order = 2, required = true)
-    private Class<? extends Projectile> projectileType = Snowball.class;
-
+    public Class<? extends Projectile> projectileType = Snowball.class;
     @Property
-    private boolean suppressArrow = false;
-
+    public boolean suppressArrow = false;
     @Property
-    private boolean applyForce = false;
+    public boolean applyForce = false;
     @Property
-    private boolean requireHurtByEntity = true;
+    public boolean requireHurtByEntity = true;
+    private Cache<UUID, Integer> burstTask = CacheBuilder.newBuilder().expireAfterAccess(1, TimeUnit.MINUTES).concurrencyLevel(2).build();
 
     @Override
     public void init(ConfigurationSection section) {
@@ -196,7 +190,7 @@ public class PowerProjectile extends BasePower {
     /**
      * Cooldown time of this power
      */
-    public long getCooldown() {
+    public int getCooldown() {
         return cooldown;
     }
 

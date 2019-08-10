@@ -31,26 +31,26 @@ import static think.rpgitems.power.Utils.getNearbyEntities;
 @PowerMeta(defaultTrigger = "RIGHT_CLICK", withSelectors = true, generalInterface = PowerPlain.class, implClass = PowerAttract.Impl.class)
 public class PowerAttract extends BasePower {
     @Property(order = 0)
-    private int radius = 5;
+    public int radius = 5;
     @Property(order = 1, required = true)
-    private double maxSpeed = 0.4D;
+    public double maxSpeed = 0.4D;
     @Property
-    private int duration = 5;
+    public int duration = 5;
     @Property
-    private int cost = 0;
+    public int cost = 0;
     @Property
-    private int attractingTickCost = 0;
+    public int attractingTickCost = 0;
     @Property
-    private int attractingEntityTickCost = 0;
+    public int attractingEntityTickCost = 0;
 
     @Property
-    private long cooldown = 0;
+    public int cooldown = 0;
 
     @Property
-    private boolean attractPlayer;
+    public boolean attractPlayer;
 
     @Property
-    private boolean requireHurtByEntity = true;
+    public boolean requireHurtByEntity = true;
 
     /**
      * Hooking Cost Pre-Entity-Tick
@@ -69,7 +69,7 @@ public class PowerAttract extends BasePower {
     /**
      * Cooldown time of this power
      */
-    public long getCooldown() {
+    public int getCooldown() {
         return cooldown;
     }
 

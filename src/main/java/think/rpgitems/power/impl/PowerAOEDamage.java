@@ -37,33 +37,33 @@ import static think.rpgitems.power.Utils.*;
 public class PowerAOEDamage extends BasePower {
 
     @Property
-    private long cooldown = 0;
+    public int cooldown = 0;
     @Property
-    private int range = 10;
+    public int range = 10;
     @Property
-    private int minrange = 0;
+    public int minrange = 0;
     @Property
-    private double angle = 180;
+    public double angle = 180;
     @Property
-    private int count = 100;
+    public int count = 100;
     @Property
-    private boolean incluePlayers = false;
+    public boolean incluePlayers = false;
     @Property
-    private boolean selfapplication = false;
+    public boolean selfapplication = false;
     @Property
-    private boolean mustsee = false;
+    public boolean mustsee = false;
     @Property
-    private String name = null;
+    public String name = null;
     @Property
-    private int cost = 0;
+    public int cost = 0;
     @Property
-    private double damage = 0;
+    public double damage = 0;
 
     @Property
-    private long delay = 0;
+    public long delay = 0;
 
     @Property
-    private boolean suppressMelee = false;
+    public boolean suppressMelee = false;
 
     /**
      * Maximum view angle
@@ -75,7 +75,7 @@ public class PowerAOEDamage extends BasePower {
     /**
      * Cooldown time of this power
      */
-    public long getCooldown() {
+    public int getCooldown() {
         return cooldown;
     }
 
@@ -126,12 +126,6 @@ public class PowerAOEDamage extends BasePower {
      */
     public boolean isIncluePlayers() {
         return incluePlayers;
-    }    /**
-     * Display text of this power. Will use default text in case of null
-     */
-    @Override
-    public String getName() {
-        return "AOEDamage";
     }
 
     /**
@@ -139,9 +133,6 @@ public class PowerAOEDamage extends BasePower {
      */
     public boolean isMustsee() {
         return mustsee;
-    }    @Override
-    public String displayText() {
-        return getName() != null ? getName() : "Deal damage to nearby mobs";
     }
 
     /**
@@ -276,7 +267,18 @@ public class PowerAOEDamage extends BasePower {
         }
     }
 
+    /**
+     * Display text of this power. Will use default text in case of null
+     */
+    @Override
+    public String getName() {
+        return "AOEDamage";
+    }
 
+    @Override
+    public String displayText() {
+        return getName() != null ? getName() : "Deal damage to nearby mobs";
+    }
 
 
 }

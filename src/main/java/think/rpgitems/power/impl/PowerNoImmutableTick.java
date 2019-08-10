@@ -19,7 +19,7 @@ import think.rpgitems.power.*;
 public class PowerNoImmutableTick extends BasePower {
 
     @Property
-    private int immuneTime = 1;
+    public int immuneTime = 1;
 
     public int getImmuneTime() {
         return immuneTime;

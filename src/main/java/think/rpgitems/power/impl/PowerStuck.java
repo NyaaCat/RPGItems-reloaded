@@ -41,23 +41,23 @@ public class PowerStuck extends BasePower {
     private static Listener listener;
     private static Cache<UUID, Long> stucked = CacheBuilder.newBuilder().expireAfterAccess(10, TimeUnit.MINUTES).concurrencyLevel(2).build();
     @Property
-    private int chance = 3;
+    public int chance = 3;
     @Property
-    private int cost = 0;
+    public int cost = 0;
     @Property
-    private int costAoe = 0;
+    public int costAoe = 0;
     @Property
-    private int costPerEntity = 0;
+    public int costPerEntity = 0;
     @Property
-    private int range = 10;
+    public int range = 10;
     @Property
-    private double facing = 30;
+    public double facing = 30;
     @Property(order = 1)
-    private int duration = 100;
+    public int duration = 100;
     @Property(order = 0)
-    private long cooldown = 0;
+    public int cooldown = 0;
     @Property
-    private boolean requireHurtByEntity = true;
+    public boolean requireHurtByEntity = true;
     private Random random = new Random();
 
     @Override
@@ -106,6 +106,13 @@ public class PowerStuck extends BasePower {
     }
 
     /**
+     * Duration of this power in tick
+     */
+    public int getDuration() {
+        return duration;
+    }
+
+    /**
      * Cost of this power (hit)
      */
     public int getCost() {
@@ -151,16 +158,9 @@ public class PowerStuck extends BasePower {
     }
 
     /**
-     * Duration of this power in tick
-     */
-    public int getDuration() {
-        return duration;
-    }
-
-    /**
      * Cooldown time of this power
      */
-    public long getCooldown() {
+    public int getCooldown() {
         return cooldown;
     }
 
