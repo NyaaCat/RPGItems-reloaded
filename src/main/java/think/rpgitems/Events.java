@@ -26,7 +26,6 @@ import think.rpgitems.data.Context;
 import think.rpgitems.data.LightContext;
 import think.rpgitems.item.ItemManager;
 import think.rpgitems.item.RPGItem;
-import think.rpgitems.power.Power;
 import think.rpgitems.power.PowerSneak;
 import think.rpgitems.power.PowerSprint;
 import think.rpgitems.power.Trigger;
@@ -42,6 +41,7 @@ import java.util.stream.Stream;
 
 import static think.rpgitems.RPGItems.logger;
 import static think.rpgitems.RPGItems.plugin;
+import static think.rpgitems.power.Trigger.trigger;
 import static think.rpgitems.power.Utils.maxWithCancel;
 import static think.rpgitems.power.Utils.minWithCancel;
 
@@ -344,11 +344,6 @@ public class Events implements Listener {
         ItemStack[] armorContents = p.getInventory().getArmorContents();
         Stream.of(armorContents)
               .forEach(i -> trigger(p, e, i, trigger));
-    }
-
-    <TEvent extends Event, TPower extends Power, TResult, TReturn> TReturn trigger(Player player, TEvent event, ItemStack itemStack, Trigger<TEvent, TPower, TResult, TReturn> trigger) {
-        Optional<RPGItem> rpgItem = ItemManager.toRPGItem(itemStack);
-        return rpgItem.map(r -> r.power(player, itemStack, event, trigger)).orElse(null);
     }
 
     @EventHandler

@@ -14,6 +14,7 @@ import org.bukkit.event.player.PlayerToggleSneakEvent;
 import org.bukkit.event.player.PlayerToggleSprintEvent;
 import org.bukkit.inventory.ItemStack;
 import think.rpgitems.item.ItemManager;
+import think.rpgitems.item.RPGItem;
 
 import javax.annotation.Nullable;
 import java.util.*;
@@ -79,6 +80,11 @@ public abstract class Trigger<TEvent extends Event, TPower extends Power, TResul
             throw new IllegalStateException("No longer accepting new triggers (can only be done when loading): " + trigger.name);
         }
         registry.put(name, trigger);
+    }
+
+    public static <TEvent extends Event, TPower extends Power, TResult, TReturn> TReturn trigger(Player player, TEvent event, ItemStack itemStack, Trigger<TEvent, TPower, TResult, TReturn> trigger) {
+        Optional<RPGItem> rpgItem = ItemManager.toRPGItem(itemStack);
+        return rpgItem.map(r -> r.power(player, itemStack, event, trigger)).orElse(null);
     }
 
     public static boolean isAcceptingRegistrations() {

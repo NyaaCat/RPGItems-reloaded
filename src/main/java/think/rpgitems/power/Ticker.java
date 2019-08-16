@@ -10,6 +10,7 @@ import think.rpgitems.item.ItemManager;
 import think.rpgitems.item.RPGItem;
 
 import java.util.Optional;
+import java.util.stream.Stream;
 
 /**
  * BukkitRunnable that runs {@link PowerTick#tick(Player, ItemStack)}
@@ -33,16 +34,13 @@ public class Ticker extends BukkitRunnable {
             ItemStack itemInOffHand = player.getInventory().getItemInOffHand();
             Optional<RPGItem> offhand = ItemManager.toRPGItem(itemInOffHand);
             Optional<RPGItem> mainhand = ItemManager.toRPGItem(itemInMainHand);
-            if (mainhand.isPresent()) {
-                mainhand.get().power(player, itemInMainHand, null, Trigger.TICK);
-
-                if (player.isSneaking()) {
-                    mainhand.get().power(player, itemInMainHand, null, Trigger.SNEAKING);
-                }
+            mainhand.ifPresent(rpgItem -> rpgItem.power(player, itemInMainHand, null, Trigger.TICK));
+            if (player.isSneaking()) {
+                mainhand.ifPresent(i -> i.power(player, itemInMainHand, null, Trigger.SNEAKING));
+                Stream.of(player.getInventory().getArmorContents())
+                      .forEach(i -> Trigger.trigger(player, null, i, Trigger.SNEAKING));
             }
-            if (offhand.isPresent()){
-                offhand.get().power(player, itemInOffHand, null, Trigger.TICK_OFFHAND);
-            }
+            offhand.ifPresent(i -> i.power(player, itemInOffHand, null, Trigger.TICK_OFFHAND));
         }
     }
 
