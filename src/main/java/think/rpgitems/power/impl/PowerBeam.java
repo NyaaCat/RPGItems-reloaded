@@ -2,6 +2,7 @@ package think.rpgitems.power.impl;
 
 import org.bukkit.*;
 import org.bukkit.block.Block;
+import org.bukkit.entity.ArmorStand;
 import org.bukkit.entity.Entity;
 import org.bukkit.entity.LivingEntity;
 import org.bukkit.entity.Player;
@@ -497,6 +498,9 @@ public class PowerBeam extends BasePower implements PowerPlain, PowerRightClick,
                         .collect(Collectors.toList())
                 , lastLocation.toVector(), homingRange, towards).stream()
                 .filter(livingEntity -> {
+                    if (isUtilArmorStand(livingEntity)){
+                        return false;
+                    }
                     switch (homingTarget) {
                         case MOBS:
                             return !(livingEntity instanceof Player);
@@ -508,6 +512,14 @@ public class PowerBeam extends BasePower implements PowerPlain, PowerRightClick,
                     return true;
                 })
                 .findFirst().orElse(null);
+    }
+
+    private boolean isUtilArmorStand(LivingEntity livingEntity) {
+        if(livingEntity instanceof ArmorStand){
+            ArmorStand arm = (ArmorStand) livingEntity;
+            return arm.isMarker() && !arm.isVisible();
+        }
+        return false;
     }
 
     private boolean spawnInWorld = false;
@@ -527,14 +539,13 @@ public class PowerBeam extends BasePower implements PowerPlain, PowerRightClick,
     }
 
     private boolean tryHit(LivingEntity from, Location loc, ItemStack stack, boolean canHitSelf) {
-
         double offsetLength = new Vector(offsetX, offsetY, offsetZ).length();
         double length = Double.isNaN(offsetLength) ? 0 : Math.max(offsetLength, 10);
         Collection<Entity> candidates = from.getWorld().getNearbyEntities(loc, length, length, length);
         boolean result = false;
         if (!pierce) {
             List<Entity> collect = candidates.stream()
-                    .filter(entity -> (entity instanceof LivingEntity) && (canHitSelf || !entity.equals(from)) && !entity.isDead())
+                    .filter(entity -> (entity instanceof LivingEntity) && (!isUtilArmorStand((LivingEntity) entity)) && (canHitSelf || !entity.equals(from)) && !entity.isDead())
                     .filter(entity -> canHit(loc, entity))
                     .limit(1)
                     .collect(Collectors.toList());
@@ -552,7 +563,7 @@ public class PowerBeam extends BasePower implements PowerPlain, PowerRightClick,
             }
         } else {
             List<Entity> collect = candidates.stream()
-                    .filter(entity -> (entity instanceof LivingEntity) && (canHitSelf || !entity.equals(from)))
+                    .filter(entity -> (entity instanceof LivingEntity) && (!isUtilArmorStand((LivingEntity) entity)) && (canHitSelf || !entity.equals(from)))
                     .filter(entity -> canHit(loc, entity))
                     .collect(Collectors.toList());
             LightContext.putTemp(from.getUniqueId(), DAMAGE_SOURCE, getNamespacedKey().toString());
