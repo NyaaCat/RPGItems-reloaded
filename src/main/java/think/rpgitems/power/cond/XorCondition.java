@@ -1,16 +1,17 @@
-package think.rpgitems.power.impl;
+package think.rpgitems.power.cond;
 
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
 import think.rpgitems.power.*;
+import think.rpgitems.power.impl.BasePower;
 
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
-@PowerMeta(marker = true, withConditions = true, implClass = PowerXorCondition.class)
-public class PowerXorCondition extends BasePower implements PowerCondition<Void> {
+@PowerMeta(marker = true, withConditions = true)
+public class XorCondition extends BasePower implements Condition<Void> {
 
     @Property(order = 0, required = true)
     public String id;
@@ -41,22 +42,22 @@ public class PowerXorCondition extends BasePower implements PowerCondition<Void>
 
     @SuppressWarnings("unchecked")
     @Override
-    public PowerResult<Void> check(Player player, ItemStack stack, Map<Power, PowerResult> context) {
+    public PowerResult<Void> check(Player player, ItemStack stack, Map<PropertyHolder, PowerResult> context) {
         Set<String> conditions = new HashSet<>(getConditions());
         boolean ans = init;
-        for (Map.Entry<Power, PowerResult> entry : context.entrySet()) {
-            Power power = entry.getKey();
-            if (power instanceof PowerCondition && conditions.contains(((PowerCondition) power).id())) {
-                conditions.remove(((PowerCondition) power).id());
+        for (Map.Entry<PropertyHolder, PowerResult> entry : context.entrySet()) {
+            PropertyHolder power = entry.getKey();
+            if (power instanceof Condition && conditions.contains(((Condition) power).id())) {
+                conditions.remove(((Condition) power).id());
                 ans = ans ^ entry.getValue().isOK();
             }
         }
         if (!isStatic) {
-            List<PowerCondition> powerConditions = getItem().getPower(PowerCondition.class, true);
-            for (PowerCondition powerCondition : powerConditions) {
-                if (!conditions.contains(powerCondition.id())) continue;
-                assert !powerCondition.isStatic();
-                PowerResult result = powerCondition.check(player, stack, context);
+            List<Condition> powerConditions = getItem().getConditions();
+            for (Condition condition : powerConditions) {
+                if (!conditions.contains(condition.id())) continue;
+                assert !condition.isStatic();
+                PowerResult result = condition.check(player, stack, context);
                 ans = ans ^ result.isOK();
             }
         }
@@ -71,10 +72,5 @@ public class PowerXorCondition extends BasePower implements PowerCondition<Void>
     @Override
     public String displayText() {
         return null;
-    }
-
-    @Override
-    public Power getPower() {
-        return this;
     }
 }

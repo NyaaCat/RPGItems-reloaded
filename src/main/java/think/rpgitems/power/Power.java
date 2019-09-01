@@ -22,54 +22,7 @@ import java.util.stream.Stream;
 /**
  * Base interface for all powers
  */
-public interface Power {
-    /**
-     * Loads configuration for this power
-     *
-     * @param s Configuration
-     */
-    void init(ConfigurationSection s);
-
-    /**
-     * Saves configuration for this power
-     *
-     * @param s Configuration
-     */
-    void save(ConfigurationSection s);
-
-    /**
-     * Static. NamespacedKey of this power
-     *
-     * @return NamespacedKey
-     */
-    NamespacedKey getNamespacedKey();
-
-    /**
-     * Static. Code name of this power
-     *
-     * @return Code name
-     */
-    @LangKey(skipCheck = true) String getName();
-
-    /**
-     * Static. Localized name of this power
-     *
-     * @param locale Locale tag
-     * @return Localized name
-     */
-    default String getLocalizedName(String locale) {
-        return getName();
-    }
-
-    /**
-     * Static. Localized name of this power
-     *
-     * @param locale Locale
-     * @return Localized name
-     */
-    default String getLocalizedName(Locale locale) {
-        return getLocalizedName(locale.toString());
-    }
+public interface Power extends PropertyHolder {
 
     /**
      * Display name of this power
@@ -114,13 +67,6 @@ public interface Power {
     default String localizedDisplayText(Locale locale) {
         return localizedDisplayText(locale.toLanguageTag());
     }
-
-    /**
-     * @return Item it belongs to
-     */
-    RPGItem getItem();
-
-    void setItem(RPGItem item);
 
     Set<Trigger> getTriggers();
 

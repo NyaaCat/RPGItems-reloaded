@@ -209,7 +209,7 @@ public class Utils {
     }
 
     @SuppressWarnings("unchecked")
-    public static void saveProperty(Power p, ConfigurationSection section, String property, Field field) throws IllegalAccessException {
+    public static void saveProperty(PropertyHolder p, ConfigurationSection section, String property, Field field) throws IllegalAccessException {
         Serializer getter = field.getAnnotation(Serializer.class);
         Object val = field.get(p);
         if (val == null) return;
@@ -231,7 +231,7 @@ public class Utils {
         }
     }
 
-    public static String getProperty(Power p, String property, Field field) {
+    public static String getProperty(PropertyHolder p, String property, Field field) {
         YamlConfiguration configuration = new YamlConfiguration();
         try {
             saveProperty(p, configuration, property, field);
@@ -443,7 +443,7 @@ public class Utils {
     }
 
     @SuppressWarnings("unchecked")
-    public static void setPowerPropertyUnchecked(CommandSender sender, Power power, Field field, String value) {
+    public static void setPowerPropertyUnchecked(CommandSender sender, PropertyHolder power, Field field, String value) {
         try {
             if (value.equals("null")) {
                 field.set(power, null);

@@ -203,7 +203,7 @@ public class PowerManager {
         return Collections.unmodifiableMap(powers);
     }
 
-    public static Map<String, Pair<Method, PowerProperty>> getProperties(Class<? extends Power> cls) {
+    public static Map<String, Pair<Method, PowerProperty>> getProperties(Class<? extends PropertyHolder> cls) {
         return Collections.unmodifiableMap(properties.get(cls));
     }
 

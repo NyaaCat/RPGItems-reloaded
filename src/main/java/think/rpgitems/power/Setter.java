@@ -13,7 +13,7 @@ public interface Setter<T> {
      */
     Optional<T> set(String value) throws IllegalArgumentException;
 
-    static Setter from(Power p, Class<? extends Setter> cls) {
+    static Setter from(PropertyHolder p, Class<? extends Setter> cls) {
         return getAccessor(p, cls);
     }
 }

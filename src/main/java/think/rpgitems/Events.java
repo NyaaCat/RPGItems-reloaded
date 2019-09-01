@@ -162,28 +162,6 @@ public class Events implements Listener {
     }
 
     @EventHandler
-    public void onEntityDeath(EntityDeathEvent e) {
-        String type = e.getEntity().getType().toString();
-        Random random = new Random();
-        if (drops.containsKey(type)) {
-            Set<Integer> items = drops.get(type);
-            Iterator<Integer> it = items.iterator();
-            while (it.hasNext()) {
-                int id = it.next();
-                RPGItem item = ItemManager.getItem(id).orElse(null);
-                if (item == null) {
-                    it.remove();
-                    continue;
-                }
-                double chance = item.getDropChances().get(type);
-                if (random.nextDouble() < chance / 100d) {
-                    e.getDrops().add(item.toItemStack());
-                }
-            }
-        }
-    }
-
-    @EventHandler
     public void onProjectileHit(ProjectileHitEvent e) {
         final Projectile entity = e.getEntity();
         if (removeProjectiles.contains(entity.getEntityId())) {
@@ -487,26 +465,6 @@ public class Events implements Listener {
 
     @EventHandler
     public void onInventoryClose(InventoryCloseEvent e) {
-        if (recipeWindows.containsKey(e.getPlayer().getName())) {
-            int id = recipeWindows.remove(e.getPlayer().getName());
-            RPGItem item = ItemManager.getItem(id).orElse(null);
-            if (item == null) return;
-            if (item.getRecipe() == null) {
-                item.setRecipe(new ArrayList<>());
-            }
-            item.getRecipe().clear();
-            for (int y = 0; y < 3; y++) {
-                for (int x = 0; x < 3; x++) {
-                    int i = x + y * 9;
-                    ItemStack it = e.getInventory().getItem(i);
-                    item.getRecipe().add(it);
-                }
-            }
-            item.setHasRecipe(true);
-            item.resetRecipe(true);
-            ItemManager.save();
-            e.getPlayer().sendMessage(ChatColor.AQUA + "Recipe set for " + item.getName());
-        }
         updatePlayerInventory(e.getInventory(), e);
     }
 
@@ -787,40 +745,6 @@ public class Events implements Listener {
                 RPGItem ri = ItemManager.toRPGItem(item).orElse(null);
                 if (ri == null) continue;
                 ri.power(e, item, ev, Trigger.HURT);
-            }
-        }
-    }
-
-    @Deprecated
-    @EventHandler(ignoreCancelled = true, priority = EventPriority.HIGHEST)
-    public void onItemCraft(PrepareItemCraftEvent e) {
-        RPGItem rpg = ItemManager.toRPGItem(e.getInventory().getResult()).orElse(null);
-        if (rpg != null) {
-            if (!rpg.isHasRecipe()) {
-                e.getInventory().setResult(new ItemStack(Material.AIR));
-                return;
-            }
-            List<ItemStack> temp = rpg.getRecipe();
-            if (temp != null && temp.size() == 9) {
-                int idx = 0;
-                for (ItemStack s : temp) {
-                    if (!canStack(s, e.getInventory().getMatrix()[idx])) {
-                        idx = -1;
-                        break;
-                    }
-                    idx++;
-                }
-                if (idx < 0) {
-                    e.getInventory().setResult(new ItemStack(Material.AIR));
-                } else {
-                    Random random = new Random();
-                    if (random.nextInt(rpg.getRecipeChance()) != 0) {
-                        ItemStack baseitem = new ItemStack(e.getInventory().getResult().getType());
-                        e.getInventory().setResult(baseitem);
-                    }
-                }
-            } else {
-                e.getInventory().setResult(new ItemStack(Material.AIR));
             }
         }
     }

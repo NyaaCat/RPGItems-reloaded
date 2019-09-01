@@ -1,15 +1,16 @@
-package think.rpgitems.power.impl;
+package think.rpgitems.power.cond;
 
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
 import think.rpgitems.power.*;
+import think.rpgitems.power.impl.BasePower;
 
 import java.util.Collections;
 import java.util.Map;
 import java.util.Set;
 
-@PowerMeta(marker = true, implClass = PowerDurabilityCondition.class)
-public class PowerDurabilityCondition extends BasePower implements PowerCondition<Void> {
+@PowerMeta(marker = true)
+public class DurabilityCondition extends BasePower implements Condition<Void> {
 
     @Property(order = 0, required = true)
     public String id;
@@ -42,7 +43,7 @@ public class PowerDurabilityCondition extends BasePower implements PowerConditio
     }
 
     @Override
-    public PowerResult<Void> check(Player player, ItemStack stack, Map<Power, PowerResult> context) {
+    public PowerResult<Void> check(Player player, ItemStack stack, Map<PropertyHolder, PowerResult> context) {
         int durability = getItem().getItemStackDurability(stack).orElseThrow(() -> new IllegalStateException("Durability condition is not allowed on item without durability"));
         if ((durabilityMax > 0 && durability > durabilityMax) || durability < durabilityMin) return PowerResult.fail();
         return PowerResult.ok();
@@ -61,10 +62,5 @@ public class PowerDurabilityCondition extends BasePower implements PowerConditio
     @Override
     public String displayText() {
         return null;
-    }
-
-    @Override
-    public Power getPower() {
-        return this;
     }
 }

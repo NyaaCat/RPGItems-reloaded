@@ -5,7 +5,7 @@ import java.lang.annotation.RetentionPolicy;
 
 @Retention(RetentionPolicy.RUNTIME)
 public @interface PowerMeta {
-    Class<? extends Pimpl> implClass();
+    Class<? extends Pimpl> implClass() default Pimpl.class;
 
     boolean immutableTrigger() default false;
 

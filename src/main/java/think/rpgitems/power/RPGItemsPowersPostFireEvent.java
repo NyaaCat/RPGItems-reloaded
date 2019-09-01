@@ -26,10 +26,10 @@ public class RPGItemsPowersPostFireEvent<TEvent extends Event, TPower extends Pi
     private final RPGItem rpgItem;
     private final Player player;
     private final Trigger<TEvent, TPower, TResult, TReturn> trigger;
-    private final Map<Pimpl, PowerResult> results;
+    private final Map<PropertyHolder, PowerResult> results;
     private final TReturn ret;
 
-    public RPGItemsPowersPostFireEvent(Player player, ItemStack itemStack, TEvent event, RPGItem rpgItem, Trigger<TEvent, TPower, TResult, TReturn> trigger, Map<Pimpl, PowerResult> powerResults, TReturn ret) {
+    public RPGItemsPowersPostFireEvent(Player player, ItemStack itemStack, TEvent event, RPGItem rpgItem, Trigger<TEvent, TPower, TResult, TReturn> trigger, Map<PropertyHolder, PowerResult> powerResults, TReturn ret) {
         this.event = event;
         this.itemStack = itemStack;
         this.rpgItem = rpgItem;
@@ -55,7 +55,7 @@ public class RPGItemsPowersPostFireEvent<TEvent extends Event, TPower extends Pi
         return trigger;
     }
 
-    public Map<Pimpl, PowerResult> getResults() {
+    public Map<PropertyHolder, PowerResult> getResults() {
         return results;
     }
 

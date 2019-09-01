@@ -135,7 +135,7 @@ public class PowerSelector extends BasePower {
     @Property
     public String team;
 
-    static Map<String, Pair<Integer, Integer>> parseScore(String limit) {
+    public static Map<String, Pair<Integer, Integer>> parseScore(String limit) {
         Map<String, Pair<Integer, Integer>> result = new HashMap<>();
         Arrays.stream(limit.split("\\s")).forEach(s -> {
             String name = s.split(":")[0];
@@ -153,7 +153,7 @@ public class PowerSelector extends BasePower {
         return Arrays.stream(type.split(",")).map(String::toUpperCase).map(EntityType::valueOf).collect(Collectors.toSet());
     }
 
-    static Pair<Set<String>, Set<String>> parse(String limit) {
+    public static Pair<Set<String>, Set<String>> parse(String limit) {
         if (limit.isEmpty()) {
             return new Pair<>(Collections.emptySet(), null);
         }
@@ -234,7 +234,7 @@ public class PowerSelector extends BasePower {
         return result;
     }
 
-    static boolean matchTag(Entity e, Pair<Set<String>, Set<String>> tagLimit) {
+    public static boolean matchTag(Entity e, Pair<Set<String>, Set<String>> tagLimit) {
         Set<String> tags = e.getScoreboardTags();
         if (tagLimit.getValue() == null) return tags.isEmpty();
         if (tagLimit.getKey() == null) return !tags.isEmpty();
@@ -242,7 +242,7 @@ public class PowerSelector extends BasePower {
                        && tags.stream().noneMatch(t -> tagLimit.getValue().contains(t));
     }
 
-    static boolean matchTeam(Entity e, Scoreboard s, Pair<Set<String>, Set<String>> teamLimit) {
+    public static boolean matchTeam(Entity e, Scoreboard s, Pair<Set<String>, Set<String>> teamLimit) {
         String name = e.getUniqueId().toString();
         if (e instanceof OfflinePlayer) {
             name = ((OfflinePlayer) e).getName();
@@ -254,7 +254,7 @@ public class PowerSelector extends BasePower {
                        && (t == null || !teamLimit.getValue().contains(t.getName()));
     }
 
-    static boolean matchScore(Entity e, Scoreboard s, Map<String, Pair<Integer, Integer>> scoreLimit) {
+    public static boolean matchScore(Entity e, Scoreboard s, Map<String, Pair<Integer, Integer>> scoreLimit) {
         String name = e.getUniqueId().toString();
         if (e instanceof OfflinePlayer) {
             name = ((OfflinePlayer) e).getName();

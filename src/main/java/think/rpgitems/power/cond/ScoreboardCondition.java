@@ -1,4 +1,4 @@
-package think.rpgitems.power.impl;
+package think.rpgitems.power.cond;
 
 import cat.nyaa.nyaacore.Pair;
 import com.google.common.cache.CacheBuilder;
@@ -7,6 +7,8 @@ import com.google.common.cache.LoadingCache;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
 import think.rpgitems.power.*;
+import think.rpgitems.power.impl.BasePower;
+import think.rpgitems.power.impl.PowerSelector;
 
 import java.util.Collections;
 import java.util.Map;
@@ -15,8 +17,8 @@ import java.util.concurrent.TimeUnit;
 
 import static think.rpgitems.power.impl.PowerSelector.*;
 
-@PowerMeta(marker = true, implClass = PowerScoreboardCondition.class)
-public class PowerScoreboardCondition extends BasePower implements PowerCondition<Void> {
+@PowerMeta(marker = true)
+public class ScoreboardCondition extends BasePower implements Condition<Void> {
 
     private static LoadingCache<String, Map<String, Pair<Integer, Integer>>> scoreCache = CacheBuilder
                                                                                                   .newBuilder()
@@ -79,7 +81,7 @@ public class PowerScoreboardCondition extends BasePower implements PowerConditio
     }
 
     @Override
-    public PowerResult<Void> check(Player player, ItemStack stack, Map<Power, PowerResult> context) {
+    public PowerResult<Void> check(Player player, ItemStack stack, Map<PropertyHolder, PowerResult> context) {
         if (tag != null) {
             Pair<Set<String>, Set<String>> t = tagCache.getUnchecked(tag);
             if (!matchTag(player, t)) {
@@ -114,10 +116,5 @@ public class PowerScoreboardCondition extends BasePower implements PowerConditio
     @Override
     public String displayText() {
         return null;
-    }
-
-    @Override
-    public Power getPower() {
-        return PowerScoreboardCondition.this;
     }
 }

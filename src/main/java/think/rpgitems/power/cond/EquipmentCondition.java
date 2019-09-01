@@ -1,4 +1,4 @@
-package think.rpgitems.power.impl;
+package think.rpgitems.power.cond;
 
 import org.bukkit.Material;
 import org.bukkit.entity.Player;
@@ -7,13 +7,14 @@ import org.bukkit.inventory.ItemStack;
 import think.rpgitems.item.ItemManager;
 import think.rpgitems.item.RPGItem;
 import think.rpgitems.power.*;
+import think.rpgitems.power.impl.BasePower;
 
 import java.util.*;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
-@PowerMeta(marker = true, implClass = PowerEquipmentCondition.class)
-public class PowerEquipmentCondition extends BasePower implements PowerCondition<Void> {
+@PowerMeta(marker = true)
+public class EquipmentCondition extends BasePower implements Condition<Void> {
 
     @Property(order = 0, required = true)
     public String id;
@@ -52,7 +53,7 @@ public class PowerEquipmentCondition extends BasePower implements PowerCondition
     }
 
     @Override
-    public PowerResult<Void> check(Player player, ItemStack stack, Map<Power, PowerResult> context) {
+    public PowerResult<Void> check(Player player, ItemStack stack, Map<PropertyHolder, PowerResult> context) {
         if (slots.isEmpty()) {
             List<ItemStack> itemStacks = Stream.concat(
                     Arrays.stream(player.getInventory().getArmorContents()),
@@ -138,10 +139,5 @@ public class PowerEquipmentCondition extends BasePower implements PowerCondition
     @Override
     public String displayText() {
         return null;
-    }
-
-    @Override
-    public Power getPower() {
-        return PowerEquipmentCondition.this;
     }
 }

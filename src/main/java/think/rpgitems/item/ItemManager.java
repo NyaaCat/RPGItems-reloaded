@@ -270,7 +270,6 @@ public class ItemManager {
             if (groupByName.containsKey(item.getName()) || itemByName.putIfAbsent(item.getName(), item) != null) {
                 throw new IllegalArgumentException("Duplicated item name:" + item.getName());
             }
-            item.resetRecipe(true);
         } catch (Exception e) {
             itemById.remove(item.getId(), item);
             itemById.remove(item.getUid(), item);

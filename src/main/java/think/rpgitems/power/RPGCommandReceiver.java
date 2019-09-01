@@ -65,8 +65,8 @@ public abstract class RPGCommandReceiver extends CommandReceiver {
             }
             if (!listArg.isEnum()) {
                 if (propertyField.getName().equalsIgnoreCase("conditions")) {
-                    List<PowerCondition> conditions = item.getPower(PowerCondition.class, true);
-                    List<String> conditionIds = conditions.stream().map(PowerCondition::id).collect(Collectors.toList());
+                    List<Condition> conditions = item.getConditions();
+                    List<String> conditionIds = conditions.stream().map(Condition::id).collect(Collectors.toList());
                     return resolveEnumListValue(power, propertyField, conditionIds, last, hasNamePrefix);
                 }
                 if (propertyField.getName().equalsIgnoreCase("selectors")) {

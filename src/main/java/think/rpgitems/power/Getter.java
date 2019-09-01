@@ -10,11 +10,11 @@ public interface Getter<T> {
      */
     String get(T object);
 
-    static Getter from(Power p, Class<? extends Getter> cls) {
+    static Getter from(PropertyHolder p, Class<? extends Getter> cls) {
         return getAccessor(p, cls);
     }
 
-    static <T> T getAccessor(Power p, Class<? extends T> cls) {
+    static <T> T getAccessor(PropertyHolder p, Class<? extends T> cls) {
         try {
             return cls.getDeclaredConstructor().newInstance();
         } catch (InstantiationException | IllegalAccessException | InvocationTargetException e) {

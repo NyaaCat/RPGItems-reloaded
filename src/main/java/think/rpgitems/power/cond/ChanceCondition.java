@@ -1,16 +1,17 @@
-package think.rpgitems.power.impl;
+package think.rpgitems.power.cond;
 
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
 import think.rpgitems.power.*;
+import think.rpgitems.power.impl.BasePower;
 
 import java.util.Collections;
 import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.ThreadLocalRandom;
 
-@PowerMeta(marker = true, implClass = PowerChanceCondition.class)
-public class PowerChanceCondition extends BasePower implements PowerCondition<Void> {
+@PowerMeta(marker = true)
+public class ChanceCondition extends BasePower implements Condition<Void> {
 
     @Property(order = 0, required = true)
     public String id;
@@ -40,7 +41,7 @@ public class PowerChanceCondition extends BasePower implements PowerCondition<Vo
     }
 
     @Override
-    public PowerResult<Void> check(Player player, ItemStack stack, Map<Power, PowerResult> context) {
+    public PowerResult<Void> check(Player player, ItemStack stack, Map<PropertyHolder, PowerResult> context) {
         if (ThreadLocalRandom.current().nextDouble(0, 100) > chancePercentage) return PowerResult.fail();
         return PowerResult.ok();
     }
@@ -58,10 +59,5 @@ public class PowerChanceCondition extends BasePower implements PowerCondition<Vo
     @Override
     public String displayText() {
         return null;
-    }
-
-    @Override
-    public Power getPower() {
-        return this;
     }
 }

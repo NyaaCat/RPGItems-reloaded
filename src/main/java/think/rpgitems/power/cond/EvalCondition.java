@@ -1,9 +1,10 @@
-package think.rpgitems.power.impl;
+package think.rpgitems.power.cond;
 
 import com.udojava.evalex.Expression;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
 import think.rpgitems.power.*;
+import think.rpgitems.power.impl.BasePower;
 
 import java.math.BigDecimal;
 import java.util.Collections;
@@ -12,8 +13,8 @@ import java.util.Set;
 
 import static think.rpgitems.power.Utils.*;
 
-@PowerMeta(marker = true, implClass = PowerEvalCondition.class)
-public class PowerEvalCondition extends BasePower implements PowerCondition<BigDecimal> {
+@PowerMeta(marker = true)
+public class EvalCondition extends BasePower implements Condition<BigDecimal> {
 
     @Property(order = 0, required = true)
     public String id;
@@ -43,7 +44,7 @@ public class PowerEvalCondition extends BasePower implements PowerCondition<BigD
     }
 
     @Override
-    public PowerResult<BigDecimal> check(Player player, ItemStack stack, Map<Power, PowerResult> c) {
+    public PowerResult<BigDecimal> check(Player player, ItemStack stack, Map<PropertyHolder, PowerResult> context) {
         Expression e = new Expression(expression);
         e.and("playerYaw", lazyNumber(() -> (double) player.getLocation().getYaw()))
          .and("playerPitch", lazyNumber(() -> (double) player.getLocation().getPitch()))
@@ -72,10 +73,5 @@ public class PowerEvalCondition extends BasePower implements PowerCondition<BigD
     @Override
     public String displayText() {
         return null;
-    }
-
-    @Override
-    public Power getPower() {
-        return PowerEvalCondition.this;
     }
 }

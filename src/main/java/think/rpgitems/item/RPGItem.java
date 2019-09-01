@@ -27,8 +27,6 @@ import org.bukkit.entity.Player;
 import org.bukkit.event.Event;
 import org.bukkit.inventory.ItemFlag;
 import org.bukkit.inventory.ItemStack;
-import org.bukkit.inventory.Recipe;
-import org.bukkit.inventory.ShapedRecipe;
 import org.bukkit.inventory.meta.Damageable;
 import org.bukkit.inventory.meta.ItemMeta;
 import org.bukkit.inventory.meta.LeatherArmorMeta;
@@ -81,13 +79,8 @@ public class RPGItem {
 
     // Powers
     private List<Power> powers = new ArrayList<>();
+    private List<Condition> conditions = new ArrayList<>();
     private HashMap<Power, NamespacedKey> powerKeys = new HashMap<>();
-    // Recipes
-    private int recipeChance = 6;
-    private boolean hasRecipe = false;
-    private List<ItemStack> recipe = null;
-    // Drops
-    private Map<String, Double> dropChances = new HashMap<>();
     private File file;
 
     private NamespacedKey namespacedKey;
@@ -276,40 +269,6 @@ public class RPGItem {
 
         setHasPermission(s.getBoolean("haspermission", false));
         setPermission(s.getString("permission", "rpgitem.item." + name));
-        // Recipes
-        setRecipeChance(s.getInt("recipechance", 6));
-        setHasRecipe(s.getBoolean("hasRecipe", false));
-        if (isHasRecipe()) {
-            setRecipe(s.getList("recipe").stream()
-                       .map(i -> i instanceof ItemStack ? Pair.of(null, (ItemStack) i) : Pair.of(i, (ItemStack) null))
-                       .map(p -> Optional.ofNullable(p.getValue())
-                                         .orElseThrow(() -> new IllegalArgumentException("Bad itemstack " + p.getKey())))
-                       .collect(Collectors.toList()));
-        }
-
-        ConfigurationSection drops = s.getConfigurationSection("dropChances");
-        if (drops != null) {
-            Map<String, Double> dropChances = getDropChances();
-            for (String key : drops.getKeys(false)) {
-                double chance = drops.getDouble(key, 0.0);
-                chance = Math.min(chance, 100.0);
-                if (chance > 0) {
-                    dropChances.put(key, chance);
-                    if (!Events.drops.containsKey(key)) {
-                        Events.drops.put(key, new HashSet<>());
-                    }
-                    Set<Integer> set = Events.drops.get(key);
-                    set.add(getUid());
-                } else {
-                    dropChances.remove(key);
-                    if (Events.drops.containsKey(key)) {
-                        Set<Integer> set = Events.drops.get(key);
-                        set.remove(getUid());
-                    }
-                }
-                dropChances.put(key, chance);
-            }
-        }
         setCustomItemModel(s.getBoolean("customItemModel", false));
 
         setHitCost(s.getInt("hitCost", 1));
@@ -440,19 +399,6 @@ public class RPGItem {
             p.save(pConfig);
             powerConfigs.set(Integer.toString(i), pConfig);
             i++;
-        }
-
-        // Recipes
-        s.set("recipechance", getRecipeChance());
-        s.set("hasRecipe", isHasRecipe());
-        if (isHasRecipe()) {
-            s.set("recipe", getRecipe());
-            s.set("namespacedKey", getNamespacedKey().getKey());
-        }
-
-        ConfigurationSection drops = s.createSection("dropChances");
-        for (String key : getDropChances().keySet()) {
-            drops.set(key, getDropChances().get(key));
         }
 
         s.set("hitCost", getHitCost());
@@ -679,53 +625,6 @@ public class RPGItem {
         return itemMeta;
     }
 
-    public void resetRecipe(boolean removeOld) {
-        boolean hasOldRecipe = false;
-        if (removeOld) {
-            Iterator<Recipe> it = Bukkit.recipeIterator();
-            while (it.hasNext()) {
-                Recipe recipe = it.next();
-                RPGItem rpgitem = ItemManager.toRPGItem(recipe.getResult()).orElse(null);
-                if (rpgitem == null)
-                    continue;
-                if (rpgitem.getUid() == getUid()) {
-                    hasOldRecipe = true;
-                }
-            }
-        }
-        if (isHasRecipe()) {
-            if (getNamespacedKey() == null || hasOldRecipe) {
-                setNamespacedKey(new NamespacedKey(RPGItems.plugin, "item_" + getUid()));
-            }
-            ShapedRecipe shapedRecipe = new ShapedRecipe(getNamespacedKey(), toItemStack());
-
-            Map<ItemStack, Character> charMap = new HashMap<>();
-            int i = 0;
-            for (ItemStack s : getRecipe()) {
-                if (!charMap.containsKey(s)) {
-                    charMap.put(s, (char) (65 + (i++)));
-                }
-            }
-
-            StringBuilder shape = new StringBuilder();
-            for (ItemStack m : getRecipe()) {
-                shape.append(charMap.get(m));
-            }
-            shapedRecipe.shape(shape.substring(0, 3), shape.substring(3, 6), shape.substring(6, 9));
-
-            for (Entry<ItemStack, Character> e : charMap.entrySet()) {
-                if (e.getKey() != null) {
-                    shapedRecipe.setIngredient(e.getValue(), e.getKey().getData());
-                }
-            }
-            try {
-                Bukkit.addRecipe(shapedRecipe);
-            } catch (IllegalStateException exception) {
-                plugin.getLogger().log(Level.INFO, "Error adding recipe. It's ok when reloading plugin", exception);
-            }
-        }
-    }
-
     public boolean canDoMeleeTo(ItemStack item, Entity entity) {
         if (hasPower(PowerRangedOnly.class)) {
             return false;
@@ -892,20 +791,20 @@ public class RPGItem {
     }
 
     @SuppressWarnings("unchecked")
-    private <T> PowerResult<T> checkConditions(Player player, ItemStack i, Pimpl pimpl, List<PowerCondition> conds, Map<Pimpl, PowerResult> context) {
+    private <T> PowerResult<T> checkConditions(Player player, ItemStack i, Pimpl pimpl, List<Condition> conds, Map<PropertyHolder, PowerResult> context) {
         Set<String> ids = pimpl.getPower().getConditions();
-        List<PowerCondition> conditions = conds.stream().filter(p -> ids.contains(p.id())).collect(Collectors.toList());
-        List<PowerCondition> failed = conditions.stream().filter(p -> p.isStatic() ? !context.get(p).isOK() : !p.check(player, i, context).isOK()).collect(Collectors.toList());
+        List<Condition> conditions = conds.stream().filter(p -> ids.contains(p.id())).collect(Collectors.toList());
+        List<Condition> failed = conditions.stream().filter(p -> p.isStatic() ? !context.get(p).isOK() : !p.check(player, i, context).isOK()).collect(Collectors.toList());
         if (failed.isEmpty()) return null;
-        return failed.stream().anyMatch(PowerCondition::isCritical) ? PowerResult.abort() : PowerResult.condition();
+        return failed.stream().anyMatch(Condition::isCritical) ? PowerResult.abort() : PowerResult.condition();
     }
 
     @SuppressWarnings("unchecked")
-    private Map<PowerCondition, PowerResult> checkStaticCondition(Player player, ItemStack i, List<PowerCondition> conds) {
+    private Map<Condition, PowerResult> checkStaticCondition(Player player, ItemStack i, List<Condition> conds) {
         Set<String> ids = powers.stream().flatMap(p -> p.getConditions().stream()).collect(Collectors.toSet());
-        List<PowerCondition> statics = conds.stream().filter(PowerCondition::isStatic).filter(p -> ids.contains(p.id())).collect(Collectors.toList());
-        Map<PowerCondition, PowerResult> result = new LinkedHashMap<>();
-        for (PowerCondition c : statics) {
+        List<Condition> statics = conds.stream().filter(Condition::isStatic).filter(p -> ids.contains(p.id())).collect(Collectors.toList());
+        Map<Condition, PowerResult> result = new LinkedHashMap<>();
+        for (Condition c : statics) {
             result.put(c, c.check(player, i, result));
         }
         return result;
@@ -916,20 +815,20 @@ public class RPGItem {
         TReturn ret = trigger.def(player, i, event);
         if (!triggerPreCheck(player, i, event, trigger, powers)) return ret;
         try {
-            List<PowerCondition> conds = getPower(PowerCondition.class, true);
-            Map<PowerCondition, PowerResult> staticCond = checkStaticCondition(player, i, conds);
-            Map<Pimpl, PowerResult> resultMap = new LinkedHashMap<>(staticCond);
+            List<Condition> conds = getConditions();
+            Map<Condition, PowerResult> staticCond = checkStaticCondition(player, i, conds);
+            Map<PropertyHolder, PowerResult> resultMap = new LinkedHashMap<>(staticCond);
             for (TPower power : powers) {
                 PowerResult<TResult> result = checkConditions(player, i, power, conds, resultMap);
                 if (result != null) {
-                    resultMap.put(power, result);
+                    resultMap.put(power.getPower(), result);
                 } else {
                     if (power.getPower().requiredContext() != null) {
                         result = handleContext(player, i, event, trigger, power);
                     } else {
                         result = trigger.run(power, player, i, event, context);
                     }
-                    resultMap.put(power, result);
+                    resultMap.put(power.getPower(), result);
                 }
                 ret = trigger.next(ret, result);
                 if (result.isAbort()) break;
@@ -939,6 +838,10 @@ public class RPGItem {
         } finally {
             Context.instance().cleanTemp(player.getUniqueId());
         }
+    }
+
+    public List<Condition> getConditions() {
+        return conditions;
     }
 
     public <TEvent extends Event, TPower extends Pimpl, TResult, TReturn> TReturn power(Player player, ItemStack i, TEvent event, Trigger<TEvent, TPower, TResult, TReturn> trigger) {
@@ -973,7 +876,7 @@ public class RPGItem {
         return result;
     }
 
-    private <TEvent extends Event, TPower extends Pimpl, TResult, TReturn> void triggerPostFire(Player player, ItemStack itemStack, TEvent event, Trigger<TEvent, TPower, TResult, TReturn> trigger, Map<Pimpl, PowerResult> resultMap, TReturn ret) {
+    private <TEvent extends Event, TPower extends Pimpl, TResult, TReturn> void triggerPostFire(Player player, ItemStack itemStack, TEvent event, Trigger<TEvent, TPower, TResult, TReturn> trigger, Map<PropertyHolder, PowerResult> resultMap, TReturn ret) {
         RPGItemsPowersPostFireEvent<TEvent, TPower, TResult, TReturn> postFire = new RPGItemsPowersPostFireEvent<>(player, itemStack, event, this, trigger, resultMap, ret);
         Bukkit.getServer().getPluginManager().callEvent(postFire);
 
@@ -1495,14 +1398,6 @@ public class RPGItem {
         this.displayName = ChatColor.translateAlternateColorCodes('&', displayName);
     }
 
-    public Map<String, Double> getDropChances() {
-        return dropChances;
-    }
-
-    public void setDropChances(Map<String, Double> dropChances) {
-        this.dropChances = dropChances;
-    }
-
     public int getDurabilityLowerBound() {
         return durabilityLowerBound;
     }
@@ -1689,22 +1584,6 @@ public class RPGItem {
         return Objects.requireNonNull(powerKeys.get(power));
     }
 
-    public List<ItemStack> getRecipe() {
-        return recipe;
-    }
-
-    public void setRecipe(List<ItemStack> recipe) {
-        this.recipe = recipe;
-    }
-
-    public int getRecipeChance() {
-        return recipeChance;
-    }
-
-    public void setRecipeChance(int p) {
-        recipeChance = p;
-    }
-
     public int getTooltipWidth() {
         return tooltipWidth;
     }
@@ -1749,14 +1628,6 @@ public class RPGItem {
 
     public void setHasPermission(boolean b) {
         hasPermission = b;
-    }
-
-    public boolean isHasRecipe() {
-        return hasRecipe;
-    }
-
-    public void setHasRecipe(boolean hasRecipe) {
-        this.hasRecipe = hasRecipe;
     }
 
     public boolean isHitCostByDamage() {
