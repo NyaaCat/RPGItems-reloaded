@@ -3,6 +3,9 @@ package think.rpgitems;
 import cat.nyaa.nyaacore.LanguageRepository;
 import cat.nyaa.nyaacore.Message;
 import cat.nyaa.nyaacore.Pair;
+import cat.nyaa.nyaacore.cmdreceiver.Arguments;
+import cat.nyaa.nyaacore.cmdreceiver.BadCommandException;
+import cat.nyaa.nyaacore.cmdreceiver.SubCommand;
 import cat.nyaa.nyaacore.utils.ItemStackUtils;
 import cat.nyaa.nyaacore.utils.OfflinePlayerUtils;
 import com.google.common.base.Strings;
@@ -16,16 +19,13 @@ import org.bukkit.command.CommandSender;
 import org.bukkit.configuration.InvalidConfigurationException;
 import org.bukkit.configuration.file.YamlConfiguration;
 import org.bukkit.enchantments.Enchantment;
-import org.bukkit.entity.EntityType;
 import org.bukkit.entity.Player;
-import org.bukkit.inventory.Inventory;
 import org.bukkit.inventory.ItemFlag;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.EnchantmentStorageMeta;
 import org.bukkit.inventory.meta.ItemMeta;
 import org.bukkit.inventory.meta.tags.CustomItemTagContainer;
 import org.bukkit.inventory.meta.tags.ItemTagType;
-import org.librazy.nclangchecker.LangKey;
 import think.rpgitems.item.ItemGroup;
 import think.rpgitems.item.ItemManager;
 import think.rpgitems.item.RPGItem;
@@ -46,7 +46,6 @@ import java.nio.file.Path;
 import java.nio.file.SimpleFileVisitor;
 import java.nio.file.attribute.BasicFileAttributes;
 import java.util.*;
-import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
@@ -54,9 +53,9 @@ import java.util.logging.Level;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
-import static think.rpgitems.item.RPGItem.*;
 import static think.rpgitems.item.RPGItem.AttributeMode.FULL_UPDATE;
 import static think.rpgitems.item.RPGItem.AttributeMode.PARTIAL_UPDATE;
+import static think.rpgitems.item.RPGItem.*;
 import static think.rpgitems.power.Utils.rethrow;
 import static think.rpgitems.utils.ItemTagUtils.getInt;
 import static think.rpgitems.utils.ItemTagUtils.getTag;
@@ -701,18 +700,18 @@ public class AdminHandler extends RPGCommandReceiver {
 
     @SubCommand("attributemode")
     @Attribute("item:FULL_UPDATE,PARTIAL_UPDATE")
-    public void setAttributeMode(CommandSender sender, Arguments arguments){
+    public void setAttributeMode(CommandSender sender, Arguments arguments) {
         RPGItem item = getItem(arguments.nextString(), sender);
-        switch (arguments.top()){
+        switch (arguments.top()) {
             case "FULL_UPDATE":
                 item.setAttributeMode(FULL_UPDATE);
                 new Message("").append(I18n.format("message.attributemode.set", "FULL_UPDATE"), item.toItemStack())
-                        .send(sender);
+                               .send(sender);
                 break;
             case "PARTIAL_UPDATE":
                 item.setAttributeMode(PARTIAL_UPDATE);
                 new Message("").append(I18n.format("message.attributemode.set", "PARTIAL_UPDATE"), item.toItemStack())
-                        .send(sender);
+                               .send(sender);
                 break;
             default:
                 throw new BadCommandException("accepted value: FULL_UPDATE,PARTIAL_UPDATE");
@@ -1865,15 +1864,14 @@ public class AdminHandler extends RPGCommandReceiver {
     }
 
     public static class CommandException extends BadCommandException {
-        @LangKey
         private final String msg_internal;
 
-        public CommandException(@LangKey String msg_internal, Object... args) {
+        public CommandException(String msg_internal, Object... args) {
             super(msg_internal, args);
             this.msg_internal = msg_internal;
         }
 
-        public CommandException(@LangKey(varArgsPosition = 1) String msg_internal, Throwable cause, Object... args) {
+        public CommandException(String msg_internal, Throwable cause, Object... args) {
             super(msg_internal, cause, args);
             this.msg_internal = msg_internal;
         }

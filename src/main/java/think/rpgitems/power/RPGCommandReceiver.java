@@ -1,16 +1,16 @@
 package think.rpgitems.power;
 
-import cat.nyaa.nyaacore.CommandReceiver;
 import cat.nyaa.nyaacore.LanguageRepository;
 import cat.nyaa.nyaacore.Message;
 import cat.nyaa.nyaacore.Pair;
+import cat.nyaa.nyaacore.cmdreceiver.Arguments;
+import cat.nyaa.nyaacore.cmdreceiver.CommandReceiver;
 import net.md_5.bungee.api.chat.BaseComponent;
 import org.bukkit.Bukkit;
 import org.bukkit.NamespacedKey;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
-import org.librazy.nclangchecker.LangKey;
 import think.rpgitems.RPGItems;
 import think.rpgitems.item.ItemManager;
 import think.rpgitems.item.RPGItem;
@@ -28,19 +28,11 @@ import static think.rpgitems.power.PowerManager.powers;
 
 public abstract class RPGCommandReceiver extends CommandReceiver {
     private final Map<String, String> subCommandAttribute = new HashMap<>();
-    private static final Map<String, String> commandAttributes = new HashMap<>();
     private final LanguageRepository i18n;
 
     public RPGCommandReceiver(RPGItems plugin, LanguageRepository i18n) {
         super(plugin, i18n);
         this.i18n = i18n;
-        subCommands.forEach(
-                (s, method) -> {
-                    Attribute attr = method.getAnnotation(Attribute.class);
-                    if (attr == null) return;
-                    subCommandAttribute.put(s, attr.value());
-                }
-        );
     }
 
     private static List<String> resolvePropertyValueSuggestion(RPGItem item, Class<? extends Power> power, String propertyName, String last, boolean hasNamePrefix) {
@@ -146,7 +138,7 @@ public abstract class RPGCommandReceiver extends CommandReceiver {
     }
 
     private List<String> resolvePowerProperties(CommandSender sender, RPGItem item, String last, Arguments cmd) {
-        @LangKey(skipCheck = true) String powName = cmd.next();
+        String powName = cmd.next();
         NamespacedKey powerKey;
         try {
             powerKey = PowerManager.parseKey(powName);
@@ -295,10 +287,8 @@ public abstract class RPGCommandReceiver extends CommandReceiver {
     }
 
     @Override
-    public List<String> onTabComplete(CommandSender sender, Command command, String alias, String[] args)   {
-        boolean suggestion = args[args.length - 1].isEmpty();
-        CommandReceiver.Arguments cmd = CommandReceiver.Arguments.parse(args, sender);
-        if (cmd == null) return Collections.emptyList();
+    public List<String> acceptTabComplete(CommandSender sender, Arguments cmd)   {
+        boolean suggestion = cmd.top().isEmpty();
         switch (cmd.length()) {
             case 0:
                 return subCommandAttribute.entrySet().stream().filter(entry -> entry.getValue().startsWith("command")).map(Map.Entry::getKey).collect(Collectors.toList());
@@ -442,7 +432,7 @@ public abstract class RPGCommandReceiver extends CommandReceiver {
         }
     }
 
-    protected void msg(CommandSender target, @LangKey(varArgsPosition = 1) String template, Map<String, BaseComponent> map, Object... args) {
+    protected void msg(CommandSender target, String template, Map<String, BaseComponent> map, Object... args) {
         new Message("").append(i18n.getFormatted(template, args), map).send(target);
     }
 

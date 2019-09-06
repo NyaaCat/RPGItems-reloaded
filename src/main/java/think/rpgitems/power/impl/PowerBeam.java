@@ -16,7 +16,6 @@ import org.bukkit.scheduler.BukkitRunnable;
 import org.bukkit.util.BoundingBox;
 import org.bukkit.util.RayTraceResult;
 import org.bukkit.util.Vector;
-import org.librazy.nclangchecker.LangKey;
 import think.rpgitems.RPGItems;
 import think.rpgitems.data.LightContext;
 import think.rpgitems.power.*;
@@ -388,7 +387,7 @@ public class PowerBeam extends BasePower {
     }
 
     @Override
-    public @LangKey(skipCheck = true) String getName() {
+    public String getName() {
         return "beam";
     }
 

@@ -7,7 +7,6 @@ import net.md_5.bungee.api.chat.TextComponent;
 import net.md_5.bungee.chat.BaseComponentSerializer;
 import org.bukkit.NamespacedKey;
 import org.bukkit.configuration.ConfigurationSection;
-import org.librazy.nclangchecker.LangKey;
 import think.rpgitems.RPGItems;
 import think.rpgitems.item.RPGItem;
 

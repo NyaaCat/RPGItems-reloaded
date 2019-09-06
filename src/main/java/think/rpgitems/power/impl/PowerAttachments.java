@@ -11,7 +11,6 @@ import org.bukkit.event.player.PlayerInteractEvent;
 import org.bukkit.inventory.EquipmentSlot;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.PlayerInventory;
-import org.librazy.nclangchecker.LangKey;
 import think.rpgitems.item.ItemManager;
 import think.rpgitems.item.RPGItem;
 import think.rpgitems.power.*;
@@ -56,7 +55,7 @@ public class PowerAttachments extends BasePower {
     }
 
     @Override
-    public @LangKey(skipCheck = true) String getName() {
+    public String getName() {
         return "attachments";
     }
 

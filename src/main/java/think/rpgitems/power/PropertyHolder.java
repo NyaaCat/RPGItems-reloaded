@@ -2,7 +2,6 @@ package think.rpgitems.power;
 
 import org.bukkit.NamespacedKey;
 import org.bukkit.configuration.ConfigurationSection;
-import org.librazy.nclangchecker.LangKey;
 import think.rpgitems.item.RPGItem;
 
 import java.util.Locale;
@@ -42,7 +41,7 @@ public interface PropertyHolder {
      *
      * @return Code name
      */
-    @LangKey(skipCheck = true) String getName();
+    String getName();
 
     /**
      * Static. Localized name of this power

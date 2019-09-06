@@ -13,13 +13,10 @@ public class LightContext {
         stringObjectMap.put(key, val);
     }
 
-    public static <T> Optional<T> getTemp(UUID uuid, String key, T returnType){
+    @SuppressWarnings("unchecked")
+    public static <T> Optional<T> getTemp(UUID uuid, String key){
         Map<String, Object> stringObjectMap = context.computeIfAbsent(uuid, uuid1 -> new HashMap<>());
-        try{
-            return Optional.of(((T) stringObjectMap.get(key)));
-        } catch (Exception ex){
-           return Optional.empty();
-        }
+        return Optional.ofNullable((T) stringObjectMap.get(key));
     }
 
     public static void removeTemp(UUID uuid, String key){

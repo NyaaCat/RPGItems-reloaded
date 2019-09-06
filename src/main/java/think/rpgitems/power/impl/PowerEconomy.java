@@ -12,7 +12,6 @@ import org.bukkit.event.entity.EntityDamageEvent;
 import org.bukkit.event.entity.EntityShootBowEvent;
 import org.bukkit.event.player.PlayerInteractEvent;
 import org.bukkit.inventory.ItemStack;
-import org.librazy.nclangchecker.LangKey;
 import think.rpgitems.AdminHandler;
 import think.rpgitems.I18n;
 import think.rpgitems.RPGItems;
@@ -56,7 +55,7 @@ public class PowerEconomy extends BasePower {
     }
 
     @Override
-    public @LangKey(skipCheck = true) String getName() {
+    public String getName() {
         return "economy";
     }
 

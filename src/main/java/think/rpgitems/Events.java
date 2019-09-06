@@ -2,7 +2,6 @@ package think.rpgitems;
 
 import cat.nyaa.nyaacore.utils.TridentUtils;
 import org.bukkit.Bukkit;
-import org.bukkit.ChatColor;
 import org.bukkit.Material;
 import org.bukkit.block.Block;
 import org.bukkit.entity.*;
@@ -26,7 +25,10 @@ import think.rpgitems.data.Context;
 import think.rpgitems.data.LightContext;
 import think.rpgitems.item.ItemManager;
 import think.rpgitems.item.RPGItem;
-import think.rpgitems.power.*;
+import think.rpgitems.power.Pimpl;
+import think.rpgitems.power.PowerSneak;
+import think.rpgitems.power.PowerSprint;
+import think.rpgitems.power.Trigger;
 import think.rpgitems.power.impl.PowerRanged;
 import think.rpgitems.power.impl.PowerRangedOnly;
 import think.rpgitems.support.WGHandler;
@@ -469,12 +471,13 @@ public class Events implements Listener {
     }
 
     List<UUID> switchCooldown = new ArrayList<>();
+
     @EventHandler
-    public void onPlayerChangeItem(PlayerItemHeldEvent ev){
+    public void onPlayerChangeItem(PlayerItemHeldEvent ev) {
         ItemStack item = ev.getPlayer().getInventory().getItem(ev.getNewSlot());
 //        ItemStack mainhandItem = ev.getPlayer().getInventory().getItemInMainHand();
         updteItem(item);
-        if (switchCooldown.contains(ev.getPlayer().getUniqueId()))return;
+        if (switchCooldown.contains(ev.getPlayer().getUniqueId())) return;
         ItemStack[] armorContents = ev.getPlayer().getInventory().getArmorContents();
         for (int i = 0; i < armorContents.length; i++) {
             ItemStack stack = armorContents[i];
@@ -483,7 +486,7 @@ public class Events implements Listener {
         ItemStack offhandItem = ev.getPlayer().getInventory().getItemInOffHand();
         updteItem(offhandItem);
         switchCooldown.add(ev.getPlayer().getUniqueId());
-        new BukkitRunnable(){
+        new BukkitRunnable() {
             @Override
             public void run() {
                 switchCooldown.remove(ev.getPlayer().getUniqueId());
@@ -491,9 +494,9 @@ public class Events implements Listener {
         }.runTaskLater(plugin, 20);
     }
 
-    private void updteItem(ItemStack itemStack){
+    private void updteItem(ItemStack itemStack) {
         RPGItem rpgItem = ItemManager.toRPGItem(itemStack).orElse(null);
-        if (rpgItem!=null){
+        if (rpgItem != null) {
             rpgItem.updateItem(itemStack);
         }
     }
@@ -568,50 +571,42 @@ public class Events implements Listener {
         if (e.getCause() == EntityDamageEvent.DamageCause.THORNS)
             return;
 
-        Boolean suppressMelee;
-        Double overridingDamage;
-        Object sourceItem;
-        overridingDamage = LightContext.getTemp(player.getUniqueId(), OVERRIDING_DAMAGE, (double) 0).orElse(null);
-        suppressMelee = LightContext.getTemp(player.getUniqueId(), SUPPRESS_MELEE, Boolean.FALSE).orElse(null);
-        sourceItem = LightContext.getTemp(player.getUniqueId(), DAMAGE_SOURCE_ITEM, item).orElse(null);
+        Optional<Boolean> suppressMelee = LightContext.getTemp(player.getUniqueId(), SUPPRESS_MELEE);
+        Optional<Double> overridingDamage = LightContext.getTemp(player.getUniqueId(), OVERRIDING_DAMAGE);
+        Optional<ItemStack> sourceItem = LightContext.getTemp(player.getUniqueId(), DAMAGE_SOURCE_ITEM);
 
-        if (overridingDamage == null) {
-            overridingDamage = Context.instance().getDouble(player.getUniqueId(), OVERRIDING_DAMAGE);
+        if (!overridingDamage.isPresent()) {
+            overridingDamage = Optional.ofNullable(Context.instance().getDouble(player.getUniqueId(), OVERRIDING_DAMAGE));
         }
 
-        if (sourceItem!=null){
-            item = ((ItemStack) sourceItem);
-        }else{
-            sourceItem = Context.instance().get(player.getUniqueId(), DAMAGE_SOURCE_ITEM);
-            if (sourceItem!=null){
-                item = ((ItemStack) sourceItem);
+        if (sourceItem.isPresent()) {
+            item = sourceItem.get();
+        } else {
+            sourceItem = Optional.ofNullable((ItemStack) Context.instance().get(player.getUniqueId(), DAMAGE_SOURCE_ITEM));
+            if (sourceItem.isPresent()) {
+                item = sourceItem.get();
             }
         }
 
-        if (suppressMelee != null && suppressMelee) {
-            if (overridingDamage != null) {
-                e.setDamage(overridingDamage);
-            }
+        if (suppressMelee.isPresent() && suppressMelee.get()) {
+            overridingDamage.ifPresent(e::setDamage);
             return;
-        }else {
-            suppressMelee =Context.instance().getBoolean(player.getUniqueId(), SUPPRESS_MELEE);
-            if (suppressMelee != null && suppressMelee) {
-                if (overridingDamage != null) {
-                    e.setDamage(overridingDamage);
-                }
+        } else {
+            suppressMelee = Optional.ofNullable(Context.instance().getBoolean(player.getUniqueId(), SUPPRESS_MELEE));
+            if (suppressMelee.isPresent() && suppressMelee.get()) {
+                overridingDamage.ifPresent(e::setDamage);
                 return;
             }
         }
-
 
         RPGItem rItem = ItemManager.toRPGItem(item).orElse(null);
         ItemStack[] armorContents = player.getInventory().getArmorContents();
         double originDamage = e.getDamage();
         double damage = originDamage;
-        if (rItem != null && overridingDamage == null) {
+        if (rItem != null && !overridingDamage.isPresent()) {
             damage = rItem.meleeDamage(player, originDamage, item, entity);
-        } else if (overridingDamage != null) {
-            damage = overridingDamage;
+        } else if (overridingDamage.isPresent()) {
+            damage = overridingDamage.get();
         }
         if (damage == -1) {
             e.setCancelled(true);

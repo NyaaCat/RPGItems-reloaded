@@ -2,8 +2,6 @@ package think.rpgitems;
 
 import cat.nyaa.nyaacore.LanguageRepository;
 import org.bukkit.plugin.java.JavaPlugin;
-import org.librazy.nclangchecker.LangKey;
-
 public class I18n extends LanguageRepository {
     private static I18n instance = null;
     private final RPGItems plugin;
@@ -16,7 +14,7 @@ public class I18n extends LanguageRepository {
         load();
     }
 
-    public static String format(@LangKey String key, Object... args) {
+    public static String format(String key, Object... args) {
         return instance.getFormatted(key, args);
     }
 

@@ -12,7 +12,6 @@ import org.bukkit.plugin.InvalidDescriptionException;
 import org.bukkit.plugin.InvalidPluginException;
 import org.bukkit.plugin.Plugin;
 import org.bukkit.plugin.java.JavaPlugin;
-import org.librazy.nclangchecker.LangKey;
 import think.rpgitems.data.Font;
 import think.rpgitems.item.ItemManager;
 import think.rpgitems.power.*;
@@ -78,14 +77,14 @@ public class RPGItems extends JavaPlugin {
 
         PowerManager.addDescriptionResolver(RPGItems.plugin, (power, property) -> {
             if (property == null) {
-                @LangKey(skipCheck = true) String powerKey = "power.properties." + power.getKey() + ".main_description";
+                String powerKey = "power.properties." + power.getKey() + ".main_description";
                 return I18n.format(powerKey);
             }
-            @LangKey(skipCheck = true) String key = "power.properties." + power.getKey() + "." + property;
+            String key = "power.properties." + power.getKey() + "." + property;
             if (I18n.getInstance().hasKey(key)) {
                 return I18n.format(key);
             }
-            @LangKey(skipCheck = true) String baseKey = "power.properties.base." + property;
+            String baseKey = "power.properties.base." + property;
             if (I18n.getInstance().hasKey(baseKey)) {
                 return I18n.format(baseKey);
             }

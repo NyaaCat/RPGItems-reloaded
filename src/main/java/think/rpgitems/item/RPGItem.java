@@ -34,8 +34,6 @@ import org.bukkit.inventory.meta.tags.CustomItemTagContainer;
 import org.bukkit.inventory.meta.tags.ItemTagType;
 import org.bukkit.potion.PotionEffect;
 import org.bukkit.potion.PotionEffectType;
-import org.librazy.nclangchecker.LangKey;
-import org.librazy.nclangchecker.LangKeyType;
 import think.rpgitems.AdminHandler;
 import think.rpgitems.Events;
 import think.rpgitems.I18n;
@@ -1678,7 +1676,6 @@ public class RPGItem {
         return attributeMode;
     }
 
-    @LangKey(type = LangKeyType.SUFFIX)
     public enum DamageMode {
         FIXED,
         VANILLA,
@@ -1686,7 +1683,6 @@ public class RPGItem {
         MULTIPLY,
     }
 
-    @LangKey(type = LangKeyType.SUFFIX)
     public enum EnchantMode {
         DISALLOW,
         PERMISSION,
@@ -1710,7 +1706,6 @@ public class RPGItem {
         FULL_UPDATE, PARTIAL_UPDATE;
     }
 
-    @LangKey(type = LangKeyType.SUFFIX)
     public enum BarFormat {
         DEFAULT,
         NUMERIC,

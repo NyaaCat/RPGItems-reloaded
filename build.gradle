@@ -10,7 +10,7 @@ import org.apache.tools.ant.filters.ReplaceTokens
 
 String majorVersion = 3
 String minorVersion = 7
-String minecraftVersion = "1.13.2"
+String minecraftVersion = "1.14.4"
 Grgit repo = Grgit.open(currentDir: project.rootDir)
 
 String branchArtifactId = "rpgitems"
@@ -33,30 +33,12 @@ repositories {
     // mavenLocal()
     jcenter()
     mavenCentral()
-    maven {
-        name 'Spigot'
-        url 'https://hub.spigotmc.org/nexus/content/groups/public/'
-    }
-
-    maven {
-        name 'Sonatype'
-        url 'https://oss.sonatype.org/content/groups/public'
-    }
-
-    maven {
-        name 'sk89q'
-        url "http://maven.sk89q.com/repo/"
-    }
-
-    maven {
-        name 'NyaaCentral'
-        url 'https://raw.githubusercontent.com/NyaaCat/NyaaCentral/maven-repo'
-    }
-
-    maven {
-        name 'vault-repo'
-        url 'http://nexus.hc.to/content/repositories/pub_releases'
-    }
+    maven { name 'Spigot';      url 'https://hub.spigotmc.org/nexus/content/repositories/snapshots/' }
+    maven { name 'Sonatype';    url 'https://oss.sonatype.org/content/groups/public' }
+    maven { name 'sk89q';       url 'http://maven.sk89q.com/artifactory/repo/' }
+    maven { name 'vault-repo';  url 'https://jitpack.io' }
+    maven { name 'NyaaCat';     url 'https://ci.nyaacat.com/maven/' }
+    maven { name 'EssentialsX'; url 'https://ci.ender.zone/plugin/repository/everything' }
 }
 
 shadowJar {
@@ -67,10 +49,10 @@ dependencies {
     // compileOnly files('lib/spigot-1.13.2.jar')
     // compileOnly files('lib/patched_1.13.2.jar')
     api "org.spigotmc:spigot-api:$minecraftVersion-R0.1-SNAPSHOT"
-    api 'cat.nyaa:nyaacore:6.3-SNAPSHOT'
+    api "cat.nyaa:nyaacore:7.0-SNAPSHOT"
 
     compileOnly 'io.netty:netty-all:4.1.25.Final' // netty is shadowed inside spigot jar
-    compileOnly 'org.ow2.asm:asm:7.0' // netty is shadowed inside spigot jar
+    compileOnly 'org.ow2.asm:asm:7.0'
     compileOnly 'cglib:cglib-nodep:3.2.12'
     shadow 'cglib:cglib-nodep:3.2.12'
 
@@ -79,8 +61,8 @@ dependencies {
 
 //    implementation('cat.nyaa:EffectLib:nyaa-v1.0')
 
-    implementation('com.sk89q.worldguard:worldguard-core:7.0.0-SNAPSHOT')
-    implementation('com.sk89q.worldguard:worldguard-legacy:7.0.0-SNAPSHOT') {
+    implementation('com.sk89q.worldguard:worldguard-core:7.0.1-SNAPSHOT')
+    implementation('com.sk89q.worldguard:worldguard-bukkit:7.0.1-SNAPSHOT') {
         exclude group: 'io.papermc', module: 'paperlib'
         exclude group: 'org.bstats', module: 'bstats-bukkit'
         exclude group: 'org.bukkit', module: 'bukkit'
@@ -90,10 +72,6 @@ dependencies {
     implementation('net.milkbowl.vault:VaultAPI:1.7') {
         transitive = false
     }
-    implementation 'cat.nyaa:LangUtils:2.1-SNAPSHOT'
-    implementation 'org.librazy:NyaaUtilsLangChecker:2.0-SNAPSHOT'
-    annotationProcessor 'org.librazy:NyaaUtilsLangChecker:2.0-SNAPSHOT'
-    annotationProcessor "org.spigotmc:spigot-api:$minecraftVersion-R0.1-SNAPSHOT"
 }
 
 String nyaaCoreLangDir = System.getenv("NYAACORE_LANG_DIR")

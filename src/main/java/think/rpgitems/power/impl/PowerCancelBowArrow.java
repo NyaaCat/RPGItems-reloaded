@@ -4,7 +4,6 @@ import org.bukkit.entity.Entity;
 import org.bukkit.entity.Player;
 import org.bukkit.event.entity.EntityShootBowEvent;
 import org.bukkit.inventory.ItemStack;
-import org.librazy.nclangchecker.LangKey;
 import think.rpgitems.power.*;
 
 @PowerMeta(immutableTrigger = true, defaultTrigger = "BOW_SHOOT", implClass = PowerCancelBowArrow.Impl.class)
@@ -14,7 +13,7 @@ public class PowerCancelBowArrow extends BasePower {
     public boolean cancelArrow = true;
 
     @Override
-    public @LangKey(skipCheck = true) String getName() {
+    public String getName() {
         return "cancelbowarrow";
     }
 
