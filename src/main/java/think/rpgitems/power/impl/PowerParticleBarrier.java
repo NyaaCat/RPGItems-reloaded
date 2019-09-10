@@ -199,7 +199,7 @@ public class PowerParticleBarrier extends BasePower {
                 barrier(player, player);
                 return PowerResult.ok();
             } else {
-                List<LivingEntity> livingEntities = RayTraceUtils.rayTraceEntites(player, 32);
+                List<LivingEntity> livingEntities = RayTraceUtils.rayTraceEntities(player, 32);
                 Optional<LivingEntity> optionalPlayer = livingEntities.stream().min(Comparator.comparing(p -> p.getLocation().distanceSquared(player.getLocation())));
                 if (optionalPlayer.isPresent()) {
                     barrier(player, optionalPlayer.get());

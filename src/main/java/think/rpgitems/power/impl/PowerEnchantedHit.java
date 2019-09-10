@@ -1,6 +1,6 @@
 package think.rpgitems.power.impl;
 
-import com.meowj.langutils.lang.convert.EnumEnchantment;
+import org.bukkit.enchantments.Enchantment;
 import org.bukkit.entity.LivingEntity;
 import org.bukkit.entity.Player;
 import org.bukkit.event.entity.EntityDamageByEntityEvent;
@@ -20,7 +20,7 @@ public class PowerEnchantedHit extends BasePower {
     public String display;
 
     @Property
-    public EnumEnchantment enchantmentType = EnumEnchantment.ARROW_DAMAGE;
+    public Enchantment enchantmentType = Enchantment.ARROW_DAMAGE;
 
     @Property
     public boolean setBaseDamage = false;
@@ -29,7 +29,7 @@ public class PowerEnchantedHit extends BasePower {
         return amountPerLevel;
     }
 
-    public EnumEnchantment getEnchantmentType() {
+    public Enchantment getEnchantmentType() {
         return enchantmentType;
     }
 
@@ -64,7 +64,7 @@ public class PowerEnchantedHit extends BasePower {
     public class Impl implements PowerHit {
         @Override
         public PowerResult<Double> hit(Player player, ItemStack stack, LivingEntity entity, double damage, EntityDamageByEntityEvent event) {
-            int enchLevel = stack.getEnchantmentLevel(getEnchantmentType().getEnchantment());
+            int enchLevel = stack.getEnchantmentLevel(getEnchantmentType());
             if (getMode() == Mode.ADDITION) {
                 damage += (enchLevel * getAmountPerLevel());
             }

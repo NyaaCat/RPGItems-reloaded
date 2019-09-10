@@ -1,6 +1,9 @@
 package think.rpgitems;
 
 import cat.nyaa.nyaacore.LanguageRepository;
+import cat.nyaa.nyaacore.cmdreceiver.Arguments;
+import cat.nyaa.nyaacore.cmdreceiver.BadCommandException;
+import cat.nyaa.nyaacore.cmdreceiver.SubCommand;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
@@ -12,8 +15,10 @@ import think.rpgitems.power.RPGCommandReceiver;
 
 import java.util.Optional;
 
-import static think.rpgitems.item.RPGItem.*;
-import static think.rpgitems.utils.ItemTagUtils.*;
+import static think.rpgitems.item.RPGItem.TAG_IS_MODEL;
+import static think.rpgitems.item.RPGItem.TAG_META;
+import static think.rpgitems.utils.ItemTagUtils.getTag;
+import static think.rpgitems.utils.ItemTagUtils.optBoolean;
 
 public class UserHandler extends RPGCommandReceiver {
     private final RPGItems plugin;
@@ -38,7 +43,7 @@ public class UserHandler extends RPGCommandReceiver {
         CustomItemTagContainer tagContainer = itemStack.getItemMeta().getCustomTagContainer();
         CustomItemTagContainer metaTag = getTag(tagContainer, TAG_META);
         Optional<Boolean> optIsModel = optBoolean(metaTag, TAG_IS_MODEL);
-        if (optIsModel.orElse(false)){
+        if (optIsModel.orElse(false)) {
             msg(p, "message.model.is");
         }
     }

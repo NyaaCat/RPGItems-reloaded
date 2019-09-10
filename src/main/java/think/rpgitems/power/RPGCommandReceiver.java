@@ -116,12 +116,12 @@ public abstract class RPGCommandReceiver extends CommandReceiver {
         return enumValues.stream().filter(n -> n.startsWith(incompleteValue)).map(n -> base + (next ? "" : ",") + n).collect(Collectors.toList());
     }
 
-    private List<String> resolvePowerOrPropertySuggestion(CommandSender sender, String[] args) {
+    private List<String> resolvePowerOrPropertySuggestion(CommandSender sender, Arguments cmd) {
+        if (cmd == null) return Collections.emptyList();
+        String[] args = cmd.getRawArgs();
         if (args.length < 4) return Collections.emptyList();
         String last = args[args.length - 1];
         String[] arg = Arrays.copyOf(args, args.length - 1);
-        Arguments cmd = Arguments.parse(arg, sender);
-        if (cmd == null) return Collections.emptyList();
         Pair<RPGItem, String> itemCommand = resolveItemCommand(cmd.next(), cmd.next());
         if (itemCommand == null) return Collections.emptyList();
         switch (itemCommand.getValue()) {
@@ -263,32 +263,9 @@ public abstract class RPGCommandReceiver extends CommandReceiver {
     }
 
     @Override
-    public boolean onCommand(CommandSender sender, Command command, String label, String[] args) {
-        if (
-                (args.length > 0 && ItemManager.getItem(args[0]).isPresent())
-                        ||
-                        (args.length > 1 && args[1].equals("create") && !ItemManager.getItem(args[0]).isPresent())
-        ) {
-            if (args.length > 1) {
-                String cmd = args[1];
-                args[1] = args[0];
-                args[0] = cmd;
-            } else {
-                String name = args[0];
-                args = new String[args.length + 1];
-                args[1] = name;
-                args[0] = "print";
-            }
-        }
-        Arguments cmd = Arguments.parse(args, sender);
-        if (cmd == null) return false;
-        acceptCommand(sender, cmd);
-        return true;
-    }
-
-    @Override
     public List<String> acceptTabComplete(CommandSender sender, Arguments cmd)   {
-        boolean suggestion = cmd.top().isEmpty();
+        boolean suggestion = cmd.isSuggestion();
+        Set<String> subCommands = getSubCommands();
         switch (cmd.length()) {
             case 0:
                 return subCommandAttribute.entrySet().stream().filter(entry -> entry.getValue().startsWith("command")).map(Map.Entry::getKey).collect(Collectors.toList());
@@ -316,7 +293,7 @@ public abstract class RPGCommandReceiver extends CommandReceiver {
                     }
                 } else {
                     // trying to complete a `/rpgitem com` or `/rpgitem ite`
-                    List<String> list = subCommands.keySet().stream().filter(s -> s.startsWith(str)).collect(Collectors.toList());
+                    List<String> list = subCommands.stream().filter(s -> s.startsWith(str)).collect(Collectors.toList());
                     if (!list.isEmpty()) return list;
                     return ItemManager.itemNames().stream().filter(s -> s.startsWith(str)).collect(Collectors.toList());
                 }
@@ -393,7 +370,7 @@ public abstract class RPGCommandReceiver extends CommandReceiver {
                 if (attr == null) return Collections.emptyList();
                 String[] att = attr.split(":", 2);
                 if (suggestion) {
-                    return resolvePowerOrPropertySuggestion(sender, args); // only case is `/rpgitem power item somepower`
+                    return resolvePowerOrPropertySuggestion(sender, cmd); // only case is `/rpgitem power item somepower`
                 } else {
                     switch (att[0]) {
                         case "property":
@@ -427,7 +404,7 @@ public abstract class RPGCommandReceiver extends CommandReceiver {
                 }
             }
             default: {
-                return resolvePowerOrPropertySuggestion(sender, args);
+                return resolvePowerOrPropertySuggestion(sender, cmd);
             }
         }
     }
