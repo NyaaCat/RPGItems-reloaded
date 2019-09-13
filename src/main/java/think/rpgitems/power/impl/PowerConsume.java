@@ -41,7 +41,7 @@ import static think.rpgitems.power.Utils.checkCooldown;
  * With {@link #cooldown cooldown} time (ticks).
  * </p>
  */
-@PowerMeta(defaultTrigger = "RIGHT_CLICK", generalInterface = PowerPlain.class, implClass = PowerConsume.Impl.class)
+@Meta(defaultTrigger = "RIGHT_CLICK", generalInterface = PowerPlain.class, implClass = PowerConsume.Impl.class)
 public class PowerConsume extends BasePower {
     @Property(order = 1)
     public int cooldown = 0;

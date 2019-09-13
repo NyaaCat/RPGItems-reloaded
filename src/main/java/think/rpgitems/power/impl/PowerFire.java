@@ -51,7 +51,7 @@ import static think.rpgitems.power.Utils.getNearbyEntities;
  * </p>
  */
 @SuppressWarnings("WeakerAccess")
-@PowerMeta(defaultTrigger = "RIGHT_CLICK", withSelectors = true, generalInterface = PowerPlain.class, implClass = PowerFire.Impl.class)
+@Meta(defaultTrigger = "RIGHT_CLICK", withSelectors = true, generalInterface = PowerPlain.class, implClass = PowerFire.Impl.class)
 public class PowerFire extends BasePower {
 
     @Property(order = 0)

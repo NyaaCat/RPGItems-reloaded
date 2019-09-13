@@ -11,7 +11,7 @@ import java.util.concurrent.ThreadLocalRandom;
 
 import static think.rpgitems.power.Utils.getAngleBetweenVectors;
 
-@PowerMeta(immutableTrigger = true, implClass = PowerCriticalHit.Impl.class)
+@Meta(immutableTrigger = true, implClass = PowerCriticalHit.Impl.class)
 public class PowerCriticalHit extends BasePower {
 
     @Property

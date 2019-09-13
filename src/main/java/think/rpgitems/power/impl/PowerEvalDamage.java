@@ -18,7 +18,7 @@ import java.util.logging.Level;
 /**
  * Power EvalDamage.
  */
-@PowerMeta(defaultTrigger = "HIT", implClass = PowerEvalDamage.Impl.class)
+@Meta(defaultTrigger = "HIT", implClass = PowerEvalDamage.Impl.class)
 public class PowerEvalDamage extends BasePower {
 
     @Property

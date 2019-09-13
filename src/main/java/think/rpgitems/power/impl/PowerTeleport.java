@@ -30,7 +30,7 @@ import static think.rpgitems.power.Utils.checkCooldown;
  * </p>
  */
 @SuppressWarnings("WeakerAccess")
-@PowerMeta(defaultTrigger = {"RIGHT_CLICK", "PROJECTILE_HIT"}, generalInterface = PowerPlain.class, implClass = PowerTeleport.Impl.class)
+@Meta(defaultTrigger = {"RIGHT_CLICK", "PROJECTILE_HIT"}, generalInterface = PowerPlain.class, implClass = PowerTeleport.Impl.class)
 public class PowerTeleport extends BasePower {
 
     @Property(order = 1)

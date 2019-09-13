@@ -10,7 +10,7 @@ import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.ThreadLocalRandom;
 
-@PowerMeta(marker = true)
+@Meta(marker = true)
 public class ChanceCondition extends BasePower implements Condition<Void> {
 
     @Property(order = 0, required = true)

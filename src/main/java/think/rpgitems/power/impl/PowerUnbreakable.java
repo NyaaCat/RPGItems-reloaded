@@ -2,7 +2,7 @@ package think.rpgitems.power.impl;
 
 import think.rpgitems.I18n;
 import think.rpgitems.power.Pimpl;
-import think.rpgitems.power.PowerMeta;
+import think.rpgitems.power.Meta;
 
 
 /**
@@ -12,7 +12,7 @@ import think.rpgitems.power.PowerMeta;
  * Mark this item as unbreakable.
  * </p>
  */
-@PowerMeta(implClass = Pimpl.class, marker = true)
+@Meta(implClass = Pimpl.class, marker = true)
 public class PowerUnbreakable extends BasePower {
 
     @Override

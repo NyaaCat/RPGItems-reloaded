@@ -36,7 +36,7 @@ import static think.rpgitems.power.Utils.checkCooldown;
  * </p>
  */
 @SuppressWarnings("WeakerAccess")
-@PowerMeta(defaultTrigger = "RIGHT_CLICK", generalInterface = PowerPlain.class, implClass = PowerProjectile.Impl.class)
+@Meta(defaultTrigger = "RIGHT_CLICK", generalInterface = PowerPlain.class, implClass = PowerProjectile.Impl.class)
 public class PowerProjectile extends BasePower {
     /**
      * Z_axis.

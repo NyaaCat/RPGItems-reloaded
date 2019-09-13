@@ -203,41 +203,14 @@ public class RPGItem {
         // Powers
         ConfigurationSection powerList = s.getConfigurationSection("powers");
         if (powerList != null) {
-            Map<Power, ConfigurationSection> conf = new HashMap<>();
             for (String sectionKey : powerList.getKeys(false)) {
                 ConfigurationSection section = powerList.getConfigurationSection(sectionKey);
                 String powerName = section.getString("powerName");
-                NamespacedKey key = PowerManager.parseKey(powerName);
-                Class<? extends Power> power = PowerManager.getPower(key);
-                if (power == null) {
-                    plugin.getLogger().warning("Unknown power:" + key + " on item " + this.name);
-                    throw new UnknownPowerException(key);
-                }
-                Power pow = PowerManager.instantiate(power);
-                pow.setItem(this);
-                pow.init(section);
-                addPower(key, pow, false);
-                conf.put(pow, section);
+
+                addPower(section, powerName);
             }
-            // 3.5 -> 3.6 conversion
-            List<PowerSelector> selectors = getPower(PowerSelector.class);
-            for (PowerSelector selector : selectors) {
-                ConfigurationSection section = conf.get(selector);
-                String applyTo = section.getString("applyTo");
-                if (Strings.isNullOrEmpty(applyTo)) {
-                    continue;
-                }
-                selector.id = UUID.randomUUID().toString();
-                Set<? extends Class<? extends Power>> applicable = Arrays.stream(applyTo.split(",")).map(p -> p.split(" ", 2)[0]).map(PowerManager::parseLegacyKey).map(PowerManager::getPower).collect(Collectors.toSet());
-                for (Class<? extends Power> pow : applicable) {
-                    List<? extends Power> app = getPower(pow);
-                    for (Power power : app) {
-                        if (power instanceof BasePower) {
-                            ((BasePower) power).selectors.add(selector.id());
-                        }
-                    }
-                }
-            }
+
+
         }
 
         setHasPermission(s.getBoolean("haspermission", false));
@@ -322,6 +295,32 @@ public class RPGItem {
             getDescription().addAll(0, lores);
             rebuild();
         }
+    }
+
+    private void addPower(ConfigurationSection section, String powerName) throws UnknownPowerException {
+        NamespacedKey key = PowerManager.parseKey(powerName);
+        Class<? extends Power> power = PowerManager.getPower(key);
+        if (power == null) {
+            plugin.getLogger().warning("Unknown power:" + key + " on item " + this.name);
+            throw new UnknownPowerException(key);
+        }
+        Power pow = PowerManager.instantiate(power);
+        pow.setItem(this);
+        pow.init(section);
+        addPower(key, pow, false);
+    }
+
+    private void addCondition(ConfigurationSection section, String powerName) throws UnknownPowerException {
+        NamespacedKey key = PowerManager.parseKey(powerName);
+        Class<? extends Power> power = PowerManager.getPower(key);
+        if (power == null) {
+            plugin.getLogger().warning("Unknown power:" + key + " on item " + this.name);
+            throw new UnknownPowerException(key);
+        }
+        Power pow = PowerManager.instantiate(power);
+        pow.setItem(this);
+        pow.init(section);
+        addPower(key, pow, false);
     }
 
     public void save(ConfigurationSection s) {
@@ -1230,7 +1229,7 @@ public class RPGItem {
 
         private final Power orig;
         private final Player player;
-        private final Map<Method, PowerProperty> getters;
+        private final Map<Method, PropertyInstance> getters;
 
         protected DynamicMethodInterceptor(Power orig, Player player) {
             this.orig = orig;
@@ -1245,8 +1244,8 @@ public class RPGItem {
         public Object intercept(Object proxy, Method method, Object[] args, MethodProxy methodProxy)
                 throws Throwable {
             if (getters.containsKey(method)) {
-                PowerProperty powerProperty = getters.get(method);
-                if (powerProperty.name().equals("cooldown")) {
+                PropertyInstance propertyInstance = getters.get(method);
+                if (propertyInstance.name().equals("cooldown")) {
                     return ((int) methodProxy.invoke(orig, args) / 2);
                 }
             }

@@ -26,7 +26,7 @@ import static think.rpgitems.power.Utils.checkCooldown;
  * </p>
  */
 @SuppressWarnings("WeakerAccess")
-@PowerMeta(defaultTrigger = "RIGHT_CLICK", generalInterface = PowerPlain.class, implClass = PowerPotionSelf.Impl.class)
+@Meta(defaultTrigger = "RIGHT_CLICK", generalInterface = PowerPlain.class, implClass = PowerPotionSelf.Impl.class)
 public class PowerPotionSelf extends BasePower {
 
     @Property(order = 0)

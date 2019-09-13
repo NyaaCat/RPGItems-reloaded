@@ -2,7 +2,7 @@ package think.rpgitems.power;
 
 import java.lang.reflect.Field;
 
-public class PowerProperty {
+public class PropertyInstance {
     private final String name;
 
     private final boolean required;
@@ -13,7 +13,7 @@ public class PowerProperty {
 
     private final Field field;
 
-    private PowerProperty(String name, boolean required, int order, String[] alias, Field field) {
+    private PropertyInstance(String name, boolean required, int order, String[] alias, Field field) {
         this.name = name;
         this.required = required;
         this.order = order;
@@ -41,8 +41,8 @@ public class PowerProperty {
         return field;
     }
 
-    public static PowerProperty from(Field field, Property annotation, boolean required) {
+    public static PropertyInstance from(Field field, Property annotation, boolean required) {
         if (annotation == null) return null;
-        return new PowerProperty(field.getName(), required, annotation.order(), annotation.alias(), field);
+        return new PropertyInstance(field.getName(), required, annotation.order(), annotation.alias(), field);
     }
 }

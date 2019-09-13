@@ -25,7 +25,7 @@ import static think.rpgitems.power.Utils.checkAndSetCooldown;
  * giving the permission {@link #permission} just for the use of the command.
  * </p>
  */
-@PowerMeta(defaultTrigger = "RIGHT_CLICK", generalInterface = PowerPlain.class, implClass = PowerCommand.Impl.class)
+@Meta(defaultTrigger = "RIGHT_CLICK", generalInterface = PowerPlain.class, implClass = PowerCommand.Impl.class)
 public class PowerCommand extends BasePower {
 
     @Property(order = 4, required = true)

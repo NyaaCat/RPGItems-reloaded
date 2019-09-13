@@ -35,7 +35,7 @@ import static think.rpgitems.power.Utils.checkCooldown;
  * if you have any issue, please send me email or @ReinWD in issues.
  * Accepted language: 中文, English.
  */
-@PowerMeta(defaultTrigger = "RIGHT_CLICK", generalInterface = PowerPlain.class, implClass = PowerBeam.Impl.class)
+@Meta(defaultTrigger = "RIGHT_CLICK", generalInterface = PowerPlain.class, implClass = PowerBeam.Impl.class)
 public class PowerBeam extends BasePower {
     private final Vector crosser = new Vector(1, 1, 1);
     @Property

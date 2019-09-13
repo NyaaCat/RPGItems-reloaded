@@ -19,7 +19,7 @@ import java.util.Random;
  * The lightning power will strike the hit target with lightning with a chance of 1/{@link #chance}.
  * </p>
  */
-@PowerMeta(defaultTrigger = {"HIT", "PROJECTILE_HIT"}, generalInterface = PowerLocation.class, implClass = PowerLightning.Impl.class)
+@Meta(defaultTrigger = {"HIT", "PROJECTILE_HIT"}, generalInterface = PowerLocation.class, implClass = PowerLightning.Impl.class)
 public class PowerLightning extends BasePower {
     @Property(order = 0)
     public int chance = 20;

@@ -20,13 +20,13 @@ public abstract class BasePropertyHolder implements PropertyHolder {
 
     @Override
     public void init(ConfigurationSection section) {
-        PowerMeta powerMeta = this.getClass().getAnnotation(PowerMeta.class);
-        Map<String, Pair<Method, PowerProperty>> properties = PowerManager.getProperties(this.getClass());
-        for (Map.Entry<String, Pair<Method, PowerProperty>> entry : properties.entrySet()) {
+        Meta meta = this.getClass().getAnnotation(Meta.class);
+        Map<String, Pair<Method, PropertyInstance>> properties = PowerManager.getProperties(this.getClass());
+        for (Map.Entry<String, Pair<Method, PropertyInstance>> entry : properties.entrySet()) {
             String name = entry.getKey();
-            PowerProperty property = entry.getValue().getValue();
+            PropertyInstance property = entry.getValue().getValue();
             Field field = property.field();
-            if (name.equals("triggers") && powerMeta.immutableTrigger()) {
+            if (name.equals("triggers") && meta.immutableTrigger()) {
                 continue;
             }
             if (field.getType().isAssignableFrom(ItemStack.class)) {
@@ -58,14 +58,14 @@ public abstract class BasePropertyHolder implements PropertyHolder {
 
     @Override
     public void save(ConfigurationSection section) {
-        Map<String, Pair<Method, PowerProperty>> properties = PowerManager.getProperties(this.getClass());
-        PowerMeta powerMeta = this.getClass().getAnnotation(PowerMeta.class);
+        Map<String, Pair<Method, PropertyInstance>> properties = PowerManager.getProperties(this.getClass());
+        Meta meta = this.getClass().getAnnotation(Meta.class);
 
-        for (Map.Entry<String, Pair<Method, PowerProperty>> entry : properties.entrySet()) {
+        for (Map.Entry<String, Pair<Method, PropertyInstance>> entry : properties.entrySet()) {
             String name = entry.getKey();
-            PowerProperty property = entry.getValue().getValue();
+            PropertyInstance property = entry.getValue().getValue();
             Field field = property.field();
-            if (name.equals("triggers") && powerMeta.immutableTrigger()) {
+            if (name.equals("triggers") && meta.immutableTrigger()) {
                 continue;
             }
             try {

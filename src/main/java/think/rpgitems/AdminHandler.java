@@ -780,7 +780,7 @@ public class AdminHandler extends RPGCommandReceiver {
         Power pow = power.get();
         YamlConfiguration conf = new YamlConfiguration();
         if (property != null) {
-            Optional<Map.Entry<String, Pair<Method, PowerProperty>>> prop = PowerManager.getProperties(item.getPowerKey(pow)).entrySet().stream().filter((pf) -> pf.getValue().getValue().name().equals(property)).findAny();
+            Optional<Map.Entry<String, Pair<Method, PropertyInstance>>> prop = PowerManager.getProperties(item.getPowerKey(pow)).entrySet().stream().filter((pf) -> pf.getValue().getValue().name().equals(property)).findAny();
             if (!prop.isPresent()) {
                 msg(sender, "message.power_property.property_notfound", property);
                 return;
@@ -1102,17 +1102,17 @@ public class AdminHandler extends RPGCommandReceiver {
             power = PowerManager.instantiate(cls);
             power.setItem(item);
             power.init(new YamlConfiguration());
-            Map<String, Pair<Method, PowerProperty>> argMap = PowerManager.getProperties(cls);
+            Map<String, Pair<Method, PropertyInstance>> argMap = PowerManager.getProperties(cls);
             Set<Field> settled = new HashSet<>();
 
             List<Field> required = argMap.values().stream()
                                          .map(Pair::getValue)
-                                         .filter(PowerProperty::required)
-                                         .sorted(Comparator.comparing(PowerProperty::order))
-                                         .map(PowerProperty::field)
+                                         .filter(PropertyInstance::required)
+                                         .sorted(Comparator.comparing(PropertyInstance::order))
+                                         .map(PropertyInstance::field)
                                          .collect(Collectors.toList());
 
-            for (Map.Entry<String, Pair<Method, PowerProperty>> prop : argMap.entrySet()) {
+            for (Map.Entry<String, Pair<Method, PropertyInstance>> prop : argMap.entrySet()) {
                 Field field = prop.getValue().getValue().field();
                 String name = prop.getKey();
                 String value = args.argString(name, null);
@@ -1125,9 +1125,9 @@ public class AdminHandler extends RPGCommandReceiver {
             for (Field field : argMap.values()
                                      .stream()
                                      .map(Pair::getValue)
-                                     .filter(PowerProperty::required)
-                                     .sorted(Comparator.comparing(PowerProperty::order))
-                                     .map(PowerProperty::field)
+                                     .filter(PropertyInstance::required)
+                                     .sorted(Comparator.comparing(PropertyInstance::order))
+                                     .map(PropertyInstance::field)
                                      .collect(Collectors.toList())) {
                 if (settled.contains(field)) continue;
                 String value = args.next();
@@ -1157,10 +1157,10 @@ public class AdminHandler extends RPGCommandReceiver {
         }
     }
 
-    private void showPowerProp(CommandSender sender, NamespacedKey powerKey, PowerProperty prop, Power powerObj) {
+    private void showPowerProp(CommandSender sender, NamespacedKey powerKey, PropertyInstance prop, Power powerObj) {
         String name = prop.name();
-        PowerMeta powerMeta = PowerManager.getMeta(powerKey);
-        if (isTrivialProperty(powerMeta, name)) {
+        Meta meta = PowerManager.getMeta(powerKey);
+        if (isTrivialProperty(meta, name)) {
             return;
         }
         String desc = PowerManager.getDescription(powerKey, name);
@@ -1520,18 +1520,18 @@ public class AdminHandler extends RPGCommandReceiver {
             throw new IllegalArgumentException();
         }
 
-        Map<Class<? extends Power>, Map<String, Pair<Method, PowerProperty>>> allProperties = PowerManager.getProperties();
+        Map<Class<? extends PropertyHolder>, Map<String, Pair<Method, PropertyInstance>>> allProperties = PowerManager.getProperties();
 
         StringBuilder catalog = new StringBuilder("# Powers\n\n");
 
-        for (Map.Entry<Class<? extends Power>, Map<String, Pair<Method, PowerProperty>>> entry : allProperties.entrySet().stream().sorted(Comparator.comparing(e -> e.getKey().getCanonicalName(), String::compareToIgnoreCase)).collect(Collectors.toList())) {
-            Class<? extends Power> clazz = entry.getKey();
-            Map<String, Pair<Method, PowerProperty>> properties = entry.getValue();
-            Power instance = PowerManager.instantiate(clazz);
+        for (Map.Entry<Class<? extends PropertyHolder>, Map<String, Pair<Method, PropertyInstance>>> entry : allProperties.entrySet().stream().sorted(Comparator.comparing(e -> e.getKey().getCanonicalName(), String::compareToIgnoreCase)).collect(Collectors.toList())) {
+            Class<? extends PropertyHolder> clazz = entry.getKey();
+            Map<String, Pair<Method, PropertyInstance>> properties = entry.getValue();
+            PropertyHolder instance = PowerManager.instantiate(clazz);
             String localizedName = instance.getLocalizedName(locale);
             NamespacedKey namespacedKey = instance.getNamespacedKey();
             StringBuilder propertiesDesc = new StringBuilder();
-            PowerMeta powerMeta = PowerManager.getMeta(clazz);
+            Meta meta = PowerManager.getMeta(clazz);
             String powerDesc = PowerManager.getDescription(locale.toString(), namespacedKey, null);
             Path file = wikiDir.toPath().resolve(instance.getName() + "-" + locale.toString() + ".md");
 
@@ -1602,11 +1602,11 @@ public class AdminHandler extends RPGCommandReceiver {
                     }
                 }
             }
-            for (Map.Entry<String, Pair<Method, PowerProperty>> propertyEntry : properties.entrySet()) {
+            for (Map.Entry<String, Pair<Method, PropertyInstance>> propertyEntry : properties.entrySet()) {
                 String name = propertyEntry.getKey();
-                PowerProperty property = propertyEntry.getValue().getValue();
+                PropertyInstance property = propertyEntry.getValue().getValue();
 
-                if (isTrivialProperty(powerMeta, name)) {
+                if (isTrivialProperty(meta, name)) {
                     continue;
                 }
 
@@ -1644,11 +1644,11 @@ public class AdminHandler extends RPGCommandReceiver {
             fullTemplate = fullTemplate.replace("${namespacedKey}", namespacedKey.toString());
             fullTemplate = fullTemplate.replace("${plugin}", PowerManager.getExtensions().get(namespacedKey.getNamespace()).getName());
 
-            if (powerMeta.marker()) {
+            if (meta.marker()) {
                 fullTemplate = fullTemplate.replace("${trigger}", propertyMarker);
-            } else {
-                String defTriggers = instance.getTriggers().stream().map(Trigger::name).map(s -> "`" + s + "`").sorted().collect(Collectors.joining(", "));
-                if (powerMeta.immutableTrigger()) {
+            } else if (instance instanceof Power) {
+                String defTriggers = ((Power) instance).getTriggers().stream().map(Trigger::name).map(s -> "`" + s + "`").sorted().collect(Collectors.joining(", "));
+                if (meta.immutableTrigger()) {
                     String trigger = propertyImmutableTrigger.replace("${}", defTriggers);
                     fullTemplate = fullTemplate.replace("${trigger}", trigger);
                 } else {

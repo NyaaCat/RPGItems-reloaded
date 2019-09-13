@@ -32,7 +32,7 @@ import think.rpgitems.power.*;
  * </p>
  */
 @SuppressWarnings("WeakerAccess")
-@PowerMeta(immutableTrigger = true, implClass = PowerFood.Impl.class)
+@Meta(immutableTrigger = true, implClass = PowerFood.Impl.class)
 public class PowerFood extends BasePower {
     @Property(order = 0, required = true)
     public int foodpoints;

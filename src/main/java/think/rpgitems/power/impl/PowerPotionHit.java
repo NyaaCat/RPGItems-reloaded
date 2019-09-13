@@ -19,7 +19,7 @@ import java.util.Random;
  * </p>
  */
 @SuppressWarnings("WeakerAccess")
-@PowerMeta(immutableTrigger = true, generalInterface = PowerLivingEntity.class, implClass = PowerPotionHit.Impl.class)
+@Meta(immutableTrigger = true, generalInterface = PowerLivingEntity.class, implClass = PowerPotionHit.Impl.class)
 public class PowerPotionHit extends BasePower {
 
     @Property

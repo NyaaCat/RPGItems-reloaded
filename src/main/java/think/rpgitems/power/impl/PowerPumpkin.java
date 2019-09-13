@@ -21,7 +21,7 @@ import java.util.Random;
  * </p>
  */
 @SuppressWarnings("WeakerAccess")
-@PowerMeta(immutableTrigger = true, implClass = PowerPumpkin.Impl.class)
+@Meta(immutableTrigger = true, implClass = PowerPumpkin.Impl.class)
 public class PowerPumpkin extends BasePower {
     private static final Random rand = new Random();
     @Property(order = 0)

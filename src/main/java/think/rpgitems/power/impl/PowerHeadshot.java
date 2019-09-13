@@ -15,7 +15,7 @@ import think.rpgitems.I18n;
 import think.rpgitems.data.Context;
 import think.rpgitems.power.*;
 
-@PowerMeta(immutableTrigger = true, implClass = PowerHeadshot.Impl.class)
+@Meta(immutableTrigger = true, implClass = PowerHeadshot.Impl.class)
 public class PowerHeadshot extends BasePower {
 
     @Property

@@ -27,7 +27,7 @@ import static think.rpgitems.power.Utils.getNearbyEntities;
  * as well if not set via {@link #selfapplication selfapplication}.
  * </p>
  */
-@PowerMeta(defaultTrigger = "RIGHT_CLICK", withSelectors = true, generalInterface = PowerPlain.class, implClass = PowerAOE.Impl.class)
+@Meta(defaultTrigger = "RIGHT_CLICK", withSelectors = true, generalInterface = PowerPlain.class, implClass = PowerAOE.Impl.class)
 public class PowerAOE extends BasePower {
 
     @Property(order = 0)

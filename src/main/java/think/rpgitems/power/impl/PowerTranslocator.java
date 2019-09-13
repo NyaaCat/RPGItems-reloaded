@@ -24,7 +24,7 @@ import static think.rpgitems.power.Utils.checkCooldown;
  * Throw an translocator and teleport to it later
  * </p>
  */
-@PowerMeta(immutableTrigger = true, implClass = PowerTranslocator.Impl.class)
+@Meta(immutableTrigger = true, implClass = PowerTranslocator.Impl.class)
 public class PowerTranslocator extends BasePower {
 
     public static Cache<UUID, UUID> translocatorPlayerMap = CacheBuilder.newBuilder()

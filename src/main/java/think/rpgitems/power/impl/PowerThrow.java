@@ -30,7 +30,7 @@ import static think.rpgitems.power.Utils.checkAndSetCooldown;
  * Spawn and throw an entity
  * </p>
  */
-@PowerMeta(defaultTrigger = "RIGHT_CLICK", generalInterface = PowerPlain.class, implClass = PowerThrow.Impl.class)
+@Meta(defaultTrigger = "RIGHT_CLICK", generalInterface = PowerPlain.class, implClass = PowerThrow.Impl.class)
 public class PowerThrow extends BasePower {
     @Property(order = 5, required = true)
     public String entityData = "";

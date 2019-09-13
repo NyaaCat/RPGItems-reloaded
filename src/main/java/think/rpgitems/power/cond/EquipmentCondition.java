@@ -13,7 +13,7 @@ import java.util.*;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
-@PowerMeta(marker = true)
+@Meta(marker = true)
 public class EquipmentCondition extends BasePower implements Condition<Void> {
 
     @Property(order = 0, required = true)

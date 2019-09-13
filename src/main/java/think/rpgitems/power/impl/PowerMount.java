@@ -20,7 +20,7 @@ import java.util.List;
 
 import static think.rpgitems.power.Utils.*;
 
-@PowerMeta(immutableTrigger = true, withSelectors = true, implClass = PowerMount.Impl.class)
+@Meta(immutableTrigger = true, withSelectors = true, implClass = PowerMount.Impl.class)
 public class PowerMount extends BasePower {
     @Property(order = 0)
     public int cooldown = 0;

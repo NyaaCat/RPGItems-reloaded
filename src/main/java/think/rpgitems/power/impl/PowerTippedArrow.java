@@ -22,7 +22,7 @@ import static think.rpgitems.power.Utils.checkCooldown;
  * </p>
  */
 @SuppressWarnings("WeakerAccess")
-@PowerMeta(immutableTrigger = true, implClass = PowerTippedArrow.Impl.class)
+@Meta(immutableTrigger = true, implClass = PowerTippedArrow.Impl.class)
 public class PowerTippedArrow extends BasePower {
 
     @Property(order = 0)

@@ -8,7 +8,6 @@ import cat.nyaa.nyaacore.cmdreceiver.CommandReceiver;
 import net.md_5.bungee.api.chat.BaseComponent;
 import org.bukkit.Bukkit;
 import org.bukkit.NamespacedKey;
-import org.bukkit.command.Command;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
 import think.rpgitems.RPGItems;
@@ -147,24 +146,24 @@ public abstract class RPGCommandReceiver extends CommandReceiver {
         }
         Class<? extends Power> power = powers.get(powerKey);
         if (power == null) return Collections.emptyList();
-        Map<String, Pair<Method, PowerProperty>> argMap = PowerManager.getProperties(power);
+        Map<String, Pair<Method, PropertyInstance>> argMap = PowerManager.getProperties(power);
         Set<Field> settled = new HashSet<>();
 
         List<Field> required = argMap.values().stream()
                                      .map(Pair::getValue)
-                                     .filter(PowerProperty::required)
-                                     .sorted(Comparator.comparing(PowerProperty::order))
-                                     .map(PowerProperty::field)
+                                     .filter(PropertyInstance::required)
+                                     .sorted(Comparator.comparing(PropertyInstance::order))
+                                     .map(PropertyInstance::field)
                                      .collect(Collectors.toList());
 
-        PowerMeta powerMeta = power.getAnnotation(PowerMeta.class);
+        Meta meta = power.getAnnotation(Meta.class);
 
-        for (Map.Entry<String, Pair<Method, PowerProperty>> prop : argMap.entrySet()) {
+        for (Map.Entry<String, Pair<Method, PropertyInstance>> prop : argMap.entrySet()) {
             Field field = prop.getValue().getValue().field();
             String name = prop.getKey();
             String value = cmd.argString(name, null);
             if (value != null
-                        || isTrivialProperty(powerMeta, name)
+                        || isTrivialProperty(meta, name)
             ) {
                 required.remove(field);
                 settled.add(field);
@@ -176,16 +175,16 @@ public abstract class RPGCommandReceiver extends CommandReceiver {
         return resolvePropertiesSuggestions(sender, item, last, power, argMap, settled, required);
     }
 
-    protected boolean isTrivialProperty(PowerMeta powerMeta, String name) {
-        return (powerMeta.immutableTrigger() && name.equals("triggers"))
-                        || (powerMeta.marker() && name.equals("triggers"))
-                        || (powerMeta.marker() && name.equals("conditions") && !powerMeta.withConditions())
-                        || (!powerMeta.withSelectors() && name.equals("selectors"))
-                        || (!powerMeta.withContext() && name.equals("requiredContext"))
+    protected boolean isTrivialProperty(Meta meta, String name) {
+        return (meta.immutableTrigger() && name.equals("triggers"))
+                        || (meta.marker() && name.equals("triggers"))
+                        || (meta.marker() && name.equals("conditions") && !meta.withConditions())
+                        || (!meta.withSelectors() && name.equals("selectors"))
+                        || (!meta.withContext() && name.equals("requiredContext"))
                         || name.equals("displayName");
     }
 
-    private List<String> resolvePropertiesSuggestions(CommandSender sender, RPGItem item, String last, Class<? extends Power> power, Map<String, Pair<Method, PowerProperty>> argMap, Set<Field> settled, List<Field> required) {
+    private List<String> resolvePropertiesSuggestions(CommandSender sender, RPGItem item, String last, Class<? extends Power> power, Map<String, Pair<Method, PropertyInstance>> argMap, Set<Field> settled, List<Field> required) {
         if (argMap.keySet().stream().anyMatch(f -> last.startsWith(f + ":"))) {//we are suggesting a value as we have the complete property name
             String currentPropertyName = last.split(":")[0];
             actionBarTip(sender, powers.inverse().get(power), currentPropertyName);

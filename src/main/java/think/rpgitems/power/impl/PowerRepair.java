@@ -29,7 +29,7 @@ import static think.rpgitems.power.Utils.checkCooldown;
  * Repair the item with some material
  * </p>
  */
-@PowerMeta(defaultTrigger = "RIGHT_CLICK", generalInterface = PowerPlain.class, implClass = PowerRepair.Impl.class)
+@Meta(defaultTrigger = "RIGHT_CLICK", generalInterface = PowerPlain.class, implClass = PowerRepair.Impl.class)
 public class PowerRepair extends BasePower {
 
     @Property

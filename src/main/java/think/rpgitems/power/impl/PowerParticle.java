@@ -27,7 +27,7 @@ import static think.rpgitems.power.Utils.checkCooldown;
  * When right clicked, spawn some particles around the user.
  * </p>
  */
-@PowerMeta(defaultTrigger = "RIGHT_CLICK", generalInterface = PowerPlain.class, implClass = PowerParticle.Impl.class)
+@Meta(defaultTrigger = "RIGHT_CLICK", generalInterface = PowerPlain.class, implClass = PowerParticle.Impl.class)
 public class PowerParticle extends BasePower {
     @Property(order = 0, required = true)
     @Serializer(EffectSetter.class)

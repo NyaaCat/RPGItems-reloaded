@@ -20,7 +20,7 @@ import static think.rpgitems.power.Utils.checkAndSetCooldown;
  * </p>
  */
 @SuppressWarnings("WeakerAccess")
-@PowerMeta(defaultTrigger = "TICK", implClass = PowerPotionTick.Impl.class)
+@Meta(defaultTrigger = "TICK", implClass = PowerPotionTick.Impl.class)
 public class PowerPotionTick extends BasePower {
 
     @Deserializer(PotionEffectUtils.class)

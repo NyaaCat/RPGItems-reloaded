@@ -28,7 +28,7 @@ import static think.rpgitems.power.Utils.getNearbyEntities;
  * </p>
  */
 @SuppressWarnings("WeakerAccess")
-@PowerMeta(defaultTrigger = "RIGHT_CLICK", withSelectors = true, generalInterface = PowerPlain.class, implClass = PowerAttract.Impl.class)
+@Meta(defaultTrigger = "RIGHT_CLICK", withSelectors = true, generalInterface = PowerPlain.class, implClass = PowerAttract.Impl.class)
 public class PowerAttract extends BasePower {
     @Property(order = 0)
     public int radius = 5;

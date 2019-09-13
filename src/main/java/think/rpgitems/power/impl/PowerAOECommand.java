@@ -22,7 +22,7 @@ import static think.rpgitems.power.Utils.*;
  * </p>
  */
 @SuppressWarnings("WeakerAccess")
-@PowerMeta(defaultTrigger = "RIGHT_CLICK", withSelectors = true, implClass = PowerAOECommand.Impl.class)
+@Meta(defaultTrigger = "RIGHT_CLICK", withSelectors = true, implClass = PowerAOECommand.Impl.class)
 public class PowerAOECommand extends PowerCommand {
     @Property
     public boolean selfapplication = false;

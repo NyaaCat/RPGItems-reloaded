@@ -33,7 +33,7 @@ import static think.rpgitems.power.Utils.*;
  * as well if not set via {@link #selfapplication selfapplication}.
  * </p>
  */
-@PowerMeta(defaultTrigger = "RIGHT_CLICK", withSelectors = true, generalInterface = PowerPlain.class, implClass = PowerAOEDamage.Impl.class)
+@Meta(defaultTrigger = "RIGHT_CLICK", withSelectors = true, generalInterface = PowerPlain.class, implClass = PowerAOEDamage.Impl.class)
 public class PowerAOEDamage extends BasePower {
 
     @Property

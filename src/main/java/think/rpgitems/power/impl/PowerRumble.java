@@ -34,7 +34,7 @@ import static think.rpgitems.power.Utils.getNearbyEntities;
  * </p>
  */
 @SuppressWarnings("WeakerAccess")
-@PowerMeta(defaultTrigger = "RIGHT_CLICK", withSelectors = true, generalInterface = PowerPlain.class, implClass = PowerRumble.Impl.class)
+@Meta(defaultTrigger = "RIGHT_CLICK", withSelectors = true, generalInterface = PowerPlain.class, implClass = PowerRumble.Impl.class)
 public class PowerRumble extends BasePower {
 
     @Property(order = 0)

@@ -28,9 +28,9 @@ import java.util.stream.Stream;
  */
 @SuppressWarnings("unchecked")
 public class PowerManager {
-    private static final Map<Class<? extends Power>, Map<String, Pair<Method, PowerProperty>>> properties = new HashMap<>();
+    private static final Map<Class<? extends PropertyHolder>, Map<String, Pair<Method, PropertyInstance>>> properties = new HashMap<>();
 
-    private static final Map<Class<? extends Power>, PowerMeta> metas = new HashMap<>();
+    private static final Map<Class<? extends PropertyHolder>, Meta> metas = new HashMap<>();
 
     private static final Map<String, Plugin> extensions = new HashMap<>();
 
@@ -38,6 +38,8 @@ public class PowerManager {
      * Power by name, and name by power
      */
     static BiMap<NamespacedKey, Class<? extends Power>> powers = HashBiMap.create();
+
+    private static BiMap<NamespacedKey, Class<? extends Condition>> conditions = HashBiMap.create();
 
     private static final HashBasedTable<Plugin, String, BiFunction<NamespacedKey, String, String>> descriptionResolvers = HashBasedTable.create();
 
@@ -58,9 +60,27 @@ public class PowerManager {
             RPGItems.plugin.getLogger().log(Level.WARNING, "With {0}", clazz);
             return;
         }
-        metas.put(clazz, clazz.getAnnotation(PowerMeta.class));
-        Map<String, Pair<Method, PowerProperty>> argumentPriorityMap = getPowerProperties(clazz);
-        properties.put(clazz, argumentPriorityMap);
+        metas.put(clazz, clazz.getAnnotation(Meta.class));
+        Map<String, Pair<Method, PropertyInstance>> propertyMap = scanProperties(clazz);
+        properties.put(clazz, propertyMap);
+    }
+
+    private static void registerCondition(Class<? extends Condition> clazz) {
+        NamespacedKey key;
+        try {
+            Condition p = PowerManager.instantiate(clazz);
+            key = p.getNamespacedKey();
+            if (key != null) {
+                conditions.put(key, clazz);
+            }
+        } catch (Exception e) {
+            RPGItems.plugin.getLogger().log(Level.WARNING, "Failed to add power", e);
+            RPGItems.plugin.getLogger().log(Level.WARNING, "With {0}", clazz);
+            return;
+        }
+        metas.put(clazz, clazz.getAnnotation(Meta.class));
+        Map<String, Pair<Method, PropertyInstance>> propertyMap = scanProperties(clazz);
+        properties.put(clazz, propertyMap);
     }
 
 
@@ -73,7 +93,7 @@ public class PowerManager {
     }
 
 
-    private static Map<String, Pair<Method, PowerProperty>> getPowerProperties(Class<? extends Power> cls) {
+    private static Map<String, Pair<Method, PropertyInstance>> scanProperties(Class<? extends PropertyHolder> cls) {
         RPGItems.logger.severe("Scanning class " + cls.toGenericString());
         List<Method> methods = Arrays.stream(cls.getMethods()).collect(Collectors.toList());
         List<Pair<Field, Property>> collect = getAllFields(cls)
@@ -110,7 +130,7 @@ public class PowerManager {
                                                                             throw new IllegalArgumentException(p.getKey() + " " + name + " " + a.toString() + " " + b.toString());
                                                                         })
                                                                         .orElseThrow(() -> new IllegalArgumentException(p.getKey() + " " + name)),
-                                                  PowerProperty.from(p.getKey(), p.getValue(), p.getValue().order() < requiredOrder));
+                                                  PropertyInstance.from(p.getKey(), p.getValue(), p.getValue().order() < requiredOrder));
                                       }
                               )
                       );
@@ -118,7 +138,7 @@ public class PowerManager {
 
     public static void registerPowers(Plugin plugin, String basePackage) {
         Class<? extends Power>[] classes = ClassPathUtils.scanSubclasses(plugin, basePackage, Power.class);
-        List<Class<? extends Power>> classList = Arrays.stream(classes).filter(c -> c.getAnnotation(PowerMeta.class) != null).collect(Collectors.toList());
+        List<Class<? extends Power>> classList = Arrays.stream(classes).filter(c -> c.getAnnotation(Meta.class) != null).collect(Collectors.toList());
         registerPowers(plugin, classList);
     }
 
@@ -126,6 +146,19 @@ public class PowerManager {
     public static void registerPowers(Plugin plugin, List<Class<? extends Power>> powers) {
         extensions.put(plugin.getName().toLowerCase(Locale.ROOT), plugin);
         powers.stream().filter(c -> !Modifier.isAbstract(c.getModifiers()) && !c.isInterface()).sorted(Comparator.comparing(Class::getCanonicalName)).forEach(PowerManager::registerPower);
+    }
+
+
+    public static void registerConditions(Plugin plugin, String basePackage) {
+        Class<? extends Condition>[] classes = ClassPathUtils.scanSubclasses(plugin, basePackage, Condition.class);
+        List<Class<? extends Condition>> classList = Arrays.stream(classes).filter(c -> c.getAnnotation(Meta.class) != null).collect(Collectors.toList());
+        registerConditions(plugin, classList);
+    }
+
+    @SuppressWarnings({"WeakerAccess"})
+    public static void registerConditions(Plugin plugin, List<Class<? extends Condition>> conditions) {
+        extensions.put(plugin.getName().toLowerCase(Locale.ROOT), plugin);
+        conditions.stream().filter(c -> !Modifier.isAbstract(c.getModifiers()) && !c.isInterface()).sorted(Comparator.comparing(Class::getCanonicalName)).forEach(PowerManager::registerCondition);
     }
 
     public static void addDescriptionResolver(Plugin plugin, BiFunction<NamespacedKey, String, String> descriptionResolver) {
@@ -150,14 +183,6 @@ public class PowerManager {
         return new NamespacedKey(namespace, split[1]);
     }
 
-    public static NamespacedKey parseLegacyKey(String powerStr) {
-        powerStr = powerStr.trim();
-        if (powerStr.contains(":")) {
-            throw new IllegalArgumentException();
-        }
-        return new NamespacedKey(RPGItems.plugin, powerStr);
-    }
-
     public static void setPowerProperty(CommandSender sender, Power power, String field, String value) throws IllegalAccessException {
         Field f;
         Class<? extends Power> cls = power.getClass();
@@ -169,7 +194,7 @@ public class PowerManager {
         Utils.setPowerProperty(sender, power, f, value);
     }
 
-    public static List<String> getAcceptedValue(Class<? extends Power> cls, AcceptedValue anno) {
+    public static List<String> getAcceptedValue(Class<? extends PropertyHolder> cls, AcceptedValue anno) {
         if (anno.preset() != Preset.NONE) {
             return Stream.concat(Arrays.stream(anno.value()), anno.preset().get(cls).stream())
                          .sorted()
@@ -191,7 +216,7 @@ public class PowerManager {
      * @return All registered powers' properties mapped by theirs class
      */
     @SuppressWarnings("unused")
-    public static Map<Class<? extends Power>, Map<String, Pair<Method, PowerProperty>>> getProperties() {
+    public static Map<Class<? extends PropertyHolder>, Map<String, Pair<Method, PropertyInstance>>> getProperties() {
         return Collections.unmodifiableMap(properties);
     }
 
@@ -203,11 +228,11 @@ public class PowerManager {
         return Collections.unmodifiableMap(powers);
     }
 
-    public static Map<String, Pair<Method, PowerProperty>> getProperties(Class<? extends PropertyHolder> cls) {
+    public static Map<String, Pair<Method, PropertyInstance>> getProperties(Class<? extends PropertyHolder> cls) {
         return Collections.unmodifiableMap(properties.get(cls));
     }
 
-    public static Map<String, Pair<Method, PowerProperty>> getProperties(NamespacedKey key) {
+    public static Map<String, Pair<Method, PropertyInstance>> getProperties(NamespacedKey key) {
         return getProperties(powers.get(key));
     }
 
@@ -216,11 +241,16 @@ public class PowerManager {
         return powers.get(overrides.computeIfAbsent(key, Function.identity()));
     }
 
-    public static <T extends Power> T instantiate(Class<T> power) {
+    @CheckForNull
+    public static Class<? extends Condition> getCondition(NamespacedKey key) {
+        return conditions.get(overrides.computeIfAbsent(key, Function.identity()));
+    }
+
+    public static <T extends PropertyHolder> T instantiate(Class<T> clz) {
         try {
-            return power.getConstructor().newInstance();
+            return clz.getConstructor().newInstance();
         } catch (InstantiationException | IllegalAccessException | InvocationTargetException | NoSuchMethodException e) {
-            RPGItems.logger.severe("not instantiatable power: " + power);
+            RPGItems.logger.severe("not instantiatable: " + clz);
             throw new RuntimeException(e);
         }
     }
@@ -245,11 +275,11 @@ public class PowerManager {
         return extensions.size() > 1;
     }
 
-    public static PowerMeta getMeta(NamespacedKey key) {
+    public static Meta getMeta(NamespacedKey key) {
         return getMeta(powers.get(key));
     }
 
-    public static PowerMeta getMeta(Class<? extends Power> cls) {
+    public static Meta getMeta(Class<? extends PropertyHolder> cls) {
         return metas.get(cls);
     }
 

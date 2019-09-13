@@ -6,7 +6,7 @@ import org.bukkit.event.entity.EntityShootBowEvent;
 import org.bukkit.inventory.ItemStack;
 import think.rpgitems.power.*;
 
-@PowerMeta(immutableTrigger = true, defaultTrigger = "BOW_SHOOT", implClass = PowerCancelBowArrow.Impl.class)
+@Meta(immutableTrigger = true, defaultTrigger = "BOW_SHOOT", implClass = PowerCancelBowArrow.Impl.class)
 public class PowerCancelBowArrow extends BasePower {
 
     @Property

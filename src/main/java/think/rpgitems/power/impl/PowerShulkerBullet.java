@@ -26,7 +26,7 @@ import static think.rpgitems.power.Utils.*;
  * Target nearest entity
  * </p>
  */
-@PowerMeta(defaultTrigger = "RIGHT_CLICK", withSelectors = true, generalInterface = PowerPlain.class, implClass = PowerShulkerBullet.Impl.class)
+@Meta(defaultTrigger = "RIGHT_CLICK", withSelectors = true, generalInterface = PowerPlain.class, implClass = PowerShulkerBullet.Impl.class)
 public class PowerShulkerBullet extends BasePower {
 
     @Property(order = 0)

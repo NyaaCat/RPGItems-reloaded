@@ -20,7 +20,7 @@ import static think.rpgitems.power.Utils.checkCooldown;
  * Play a sound
  * </p>
  */
-@PowerMeta(defaultTrigger = "RIGHT_CLICK", generalInterface = PowerPlain.class, implClass = PowerSound.Impl.class)
+@Meta(defaultTrigger = "RIGHT_CLICK", generalInterface = PowerPlain.class, implClass = PowerSound.Impl.class)
 public class PowerSound extends BasePower {
     @Property
     public float pitch = 1.0f;

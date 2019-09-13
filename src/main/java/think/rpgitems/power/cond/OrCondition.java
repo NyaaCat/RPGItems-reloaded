@@ -11,7 +11,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
-@PowerMeta(marker = true, withConditions = true)
+@Meta(marker = true, withConditions = true)
 public class OrCondition extends BasePower implements Condition<Map.Entry<PropertyHolder, PowerResult>> {
 
     @Property(order = 0, required = true)

@@ -31,7 +31,7 @@ import static think.rpgitems.power.Utils.getNearbyEntities;
  * the ice will slowly remove itself.
  * </p>
  */
-@PowerMeta(defaultTrigger = "RIGHT_CLICK", withSelectors = true, generalInterface = PowerPlain.class, implClass = PowerIce.Impl.class)
+@Meta(defaultTrigger = "RIGHT_CLICK", withSelectors = true, generalInterface = PowerPlain.class, implClass = PowerIce.Impl.class)
 public class PowerIce extends BasePower {
 
     @Property(order = 0)

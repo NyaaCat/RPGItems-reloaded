@@ -33,7 +33,7 @@ import static think.rpgitems.power.Utils.checkCooldown;
  * </p>
  */
 @SuppressWarnings("WeakerAccess")
-@PowerMeta(defaultTrigger = "RIGHT_CLICK", generalInterface = PowerPlain.class, implClass = PowerSkyHook.Impl.class)
+@Meta(defaultTrigger = "RIGHT_CLICK", generalInterface = PowerPlain.class, implClass = PowerSkyHook.Impl.class)
 public class PowerSkyHook extends BasePower {
 
     private static Map<UUID, Boolean> hooking = new HashMap<>();

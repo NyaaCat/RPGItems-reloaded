@@ -21,7 +21,7 @@ import java.util.logging.Level;
 
 import static think.rpgitems.power.Utils.checkCooldown;
 
-@PowerMeta(defaultTrigger = "RIGHT_CLICK", generalInterface = PowerPlain.class, implClass = PowerEconomy.Impl.class)
+@Meta(defaultTrigger = "RIGHT_CLICK", generalInterface = PowerPlain.class, implClass = PowerEconomy.Impl.class)
 public class PowerEconomy extends BasePower {
 
     private static Economy eco;

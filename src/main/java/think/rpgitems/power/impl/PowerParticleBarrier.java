@@ -39,7 +39,7 @@ import java.util.concurrent.atomic.AtomicInteger;
 
 import static think.rpgitems.power.Utils.checkCooldown;
 
-@PowerMeta(defaultTrigger = {"RIGHT_CLICK", "TICK"}, generalInterface = PowerPlain.class, implClass = PowerParticleBarrier.Impl.class)
+@Meta(defaultTrigger = {"RIGHT_CLICK", "TICK"}, generalInterface = PowerPlain.class, implClass = PowerParticleBarrier.Impl.class)
 public class PowerParticleBarrier extends BasePower {
 
     private static final Cache<UUID, Double> barriers = CacheBuilder.newBuilder()

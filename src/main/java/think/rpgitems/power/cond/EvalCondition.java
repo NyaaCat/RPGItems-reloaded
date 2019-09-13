@@ -13,7 +13,7 @@ import java.util.Set;
 
 import static think.rpgitems.power.Utils.*;
 
-@PowerMeta(marker = true)
+@Meta(marker = true)
 public class EvalCondition extends BasePower implements Condition<BigDecimal> {
 
     @Property(order = 0, required = true)

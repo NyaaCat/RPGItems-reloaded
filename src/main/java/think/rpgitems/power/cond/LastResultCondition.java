@@ -10,7 +10,7 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
 
-@PowerMeta(marker = true)
+@Meta(marker = true)
 public class LastResultCondition extends BasePower implements Condition<Map.Entry<PropertyHolder, PowerResult>> {
 
     @Property(order = 0, required = true)

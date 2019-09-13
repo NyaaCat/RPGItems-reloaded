@@ -16,7 +16,7 @@ import static think.rpgitems.power.Utils.checkCooldown;
  * The tntcannon power will fire active tnt on right click.
  * </p>
  */
-@PowerMeta(immutableTrigger = true, implClass = PowerTNTCannon.Impl.class)
+@Meta(immutableTrigger = true, implClass = PowerTNTCannon.Impl.class)
 public class PowerTNTCannon extends BasePower {
 
     @Property(order = 0)

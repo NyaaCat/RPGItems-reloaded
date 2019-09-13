@@ -21,7 +21,7 @@ import java.util.List;
 
 import static think.rpgitems.power.Utils.*;
 
-@PowerMeta(immutableTrigger = true, withSelectors = true, implClass = PowerGlove.Impl.class)
+@Meta(immutableTrigger = true, withSelectors = true, implClass = PowerGlove.Impl.class)
 public class PowerGlove extends BasePower {
     @Property(order = 0)
     public int cooldown = 20;

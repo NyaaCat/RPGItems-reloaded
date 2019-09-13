@@ -28,7 +28,7 @@ import static think.rpgitems.power.Utils.*;
  * </p>
  */
 @SuppressWarnings("WeakerAccess")
-@PowerMeta(defaultTrigger = "RIGHT_CLICK", generalInterface = PowerPlain.class, implClass = PowerDeflect.Impl.class)
+@Meta(defaultTrigger = "RIGHT_CLICK", generalInterface = PowerPlain.class, implClass = PowerDeflect.Impl.class)
 public class PowerDeflect extends BasePower {
 
     private static Map<UUID, Long> time = new HashMap<>();

@@ -17,7 +17,7 @@ import java.util.concurrent.TimeUnit;
 
 import static think.rpgitems.power.impl.PowerSelector.*;
 
-@PowerMeta(marker = true)
+@Meta(marker = true)
 public class ScoreboardCondition extends BasePower implements Condition<Void> {
 
     private static LoadingCache<String, Map<String, Pair<Integer, Integer>>> scoreCache = CacheBuilder

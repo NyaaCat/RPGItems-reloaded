@@ -14,7 +14,7 @@ import think.rpgitems.power.*;
  * </p>
  */
 @SuppressWarnings("WeakerAccess")
-@PowerMeta(immutableTrigger = true, generalInterface = PowerLivingEntity.class, implClass = PowerFlame.Impl.class)
+@Meta(immutableTrigger = true, generalInterface = PowerLivingEntity.class, implClass = PowerFlame.Impl.class)
 public class PowerFlame extends BasePower {
 
     @Property(order = 0)

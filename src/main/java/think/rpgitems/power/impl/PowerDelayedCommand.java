@@ -9,7 +9,7 @@ import org.bukkit.inventory.ItemStack;
 import org.bukkit.scheduler.BukkitRunnable;
 import think.rpgitems.RPGItems;
 import think.rpgitems.power.Power;
-import think.rpgitems.power.PowerMeta;
+import think.rpgitems.power.Meta;
 import think.rpgitems.power.PowerResult;
 import think.rpgitems.power.Property;
 
@@ -23,7 +23,7 @@ import static think.rpgitems.power.Utils.checkAndSetCooldown;
  * </p>
  */
 @SuppressWarnings("WeakerAccess")
-@PowerMeta(defaultTrigger = "RIGHT_CLICK", implClass = PowerDelayedCommand.Impl.class)
+@Meta(defaultTrigger = "RIGHT_CLICK", implClass = PowerDelayedCommand.Impl.class)
 public class PowerDelayedCommand extends PowerCommand {
     @Property(order = 0)
     public int delay = 20;

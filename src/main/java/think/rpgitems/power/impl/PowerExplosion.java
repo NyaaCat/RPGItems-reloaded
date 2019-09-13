@@ -15,7 +15,7 @@ import think.rpgitems.power.*;
 
 import java.util.concurrent.ThreadLocalRandom;
 
-@PowerMeta(defaultTrigger = {"PROJECTILE_HIT"}, generalInterface = PowerPlain.class, implClass = PowerExplosion.Impl.class)
+@Meta(defaultTrigger = {"PROJECTILE_HIT"}, generalInterface = PowerPlain.class, implClass = PowerExplosion.Impl.class)
 public class PowerExplosion extends BasePower {
 
     @Property

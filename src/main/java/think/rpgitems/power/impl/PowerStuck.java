@@ -35,7 +35,7 @@ import static think.rpgitems.power.Utils.*;
  * The stuck power will make the hit target stuck with a chance of 1/{@link #chance}.
  * </p>
  */
-@PowerMeta(defaultTrigger = "HIT", withSelectors = true, generalInterface = PowerPlain.class, implClass = PowerStuck.Impl.class)
+@Meta(defaultTrigger = "HIT", withSelectors = true, generalInterface = PowerPlain.class, implClass = PowerStuck.Impl.class)
 public class PowerStuck extends BasePower {
     private static AtomicInteger rc = new AtomicInteger(0);
     private static Listener listener;

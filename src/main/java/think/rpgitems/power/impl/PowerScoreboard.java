@@ -29,7 +29,7 @@ import java.util.concurrent.TimeUnit;
 
 import static think.rpgitems.power.Utils.checkCooldown;
 
-@PowerMeta(defaultTrigger = "RIGHT_CLICK", generalInterface = PowerPlain.class, implClass = PowerScoreboard.Impl.class)
+@Meta(defaultTrigger = "RIGHT_CLICK", generalInterface = PowerPlain.class, implClass = PowerScoreboard.Impl.class)
 public class PowerScoreboard extends BasePower {
 
     private static LoadingCache<String, Pair<Set<String>, Set<String>>> teamCache = CacheBuilder

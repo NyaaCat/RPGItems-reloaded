@@ -15,7 +15,7 @@ import think.rpgitems.power.*;
  * Cancel the damage delay (no-damage-tick)
  * </p>
  */
-@PowerMeta(immutableTrigger = true, implClass = PowerNoImmutableTick.Impl.class)
+@Meta(immutableTrigger = true, implClass = PowerNoImmutableTick.Impl.class)
 public class PowerNoImmutableTick extends BasePower {
 
     @Property

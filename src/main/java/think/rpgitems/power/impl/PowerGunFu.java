@@ -29,7 +29,7 @@ import static think.rpgitems.power.Utils.*;
  * Target nearest entity
  * </p>
  */
-@PowerMeta(immutableTrigger = true, withSelectors = true, implClass = PowerGunFu.Impl.class)
+@Meta(immutableTrigger = true, withSelectors = true, implClass = PowerGunFu.Impl.class)
 public class PowerGunFu extends BasePower {
 
     @Property(order = 0, alias = "cooldownTime")

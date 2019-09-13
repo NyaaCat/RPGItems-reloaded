@@ -16,7 +16,7 @@ import org.bukkit.scoreboard.Scoreboard;
 import org.bukkit.scoreboard.Team;
 import think.rpgitems.I18n;
 import think.rpgitems.power.Pimpl;
-import think.rpgitems.power.PowerMeta;
+import think.rpgitems.power.Meta;
 import think.rpgitems.power.Property;
 
 import java.util.*;
@@ -31,7 +31,7 @@ import java.util.stream.Stream;
  * Provide a selector for some AOE power.
  * </p>
  */
-@PowerMeta(implClass = Pimpl.class, marker = true)
+@Meta(implClass = Pimpl.class, marker = true)
 public class PowerSelector extends BasePower {
 
     private static LoadingCache<String, Map<String, Pair<Integer, Integer>>> scoreCache = CacheBuilder

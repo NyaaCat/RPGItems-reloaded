@@ -18,7 +18,7 @@ import java.util.Random;
  * with a chance of 1/{@link #getChance()} and a power of {@link #getKnockUpPower()}.
  * </p>
  */
-@PowerMeta(immutableTrigger = true, implClass = PowerKnockup.Impl.class)
+@Meta(immutableTrigger = true, implClass = PowerKnockup.Impl.class)
 public class PowerKnockup extends BasePower {
 
     @Property(order = 0)

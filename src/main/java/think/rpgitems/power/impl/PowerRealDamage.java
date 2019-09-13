@@ -23,7 +23,7 @@ import static think.rpgitems.power.Utils.checkCooldown;
  * </p>
  */
 @SuppressWarnings("WeakerAccess")
-@PowerMeta(immutableTrigger = true, implClass = PowerRealDamage.Impl.class)
+@Meta(immutableTrigger = true, implClass = PowerRealDamage.Impl.class)
 public class PowerRealDamage extends BasePower {
 
     @Property(order = 0)

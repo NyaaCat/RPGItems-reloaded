@@ -2,13 +2,7 @@ package think.rpgitems.power;
 
 import com.google.common.base.Strings;
 import com.google.common.reflect.TypeToken;
-import net.md_5.bungee.api.chat.BaseComponent;
-import net.md_5.bungee.api.chat.TextComponent;
-import net.md_5.bungee.chat.BaseComponentSerializer;
-import org.bukkit.NamespacedKey;
-import org.bukkit.configuration.ConfigurationSection;
 import think.rpgitems.RPGItems;
-import think.rpgitems.item.RPGItem;
 
 import javax.annotation.Nullable;
 import java.util.Collections;
@@ -115,7 +109,7 @@ public interface Power extends PropertyHolder {
 
     static Set<Trigger> getDefaultTriggers(Class<? extends Power> cls) {
         cls = getUserClass(cls);
-        PowerMeta annotation = Objects.requireNonNull(cls.getAnnotation(PowerMeta.class));
+        Meta annotation = Objects.requireNonNull(cls.getAnnotation(Meta.class));
         if (annotation.defaultTrigger().length > 0) {
             return Trigger.valueOf(annotation.defaultTrigger());
         }

@@ -16,7 +16,7 @@ public enum Preset {
     ;
 
     @SuppressWarnings("unchecked")
-    public List<String> get(Class<? extends Power> cls) {
+    public List<String> get(Class<? extends PropertyHolder> cls) {
         switch (this) {
             case POTION_EFFECT_TYPE:
                 return Arrays.asList("SPEED",

@@ -9,7 +9,7 @@ import java.util.Collections;
 import java.util.Map;
 import java.util.Set;
 
-@PowerMeta(marker = true)
+@Meta(marker = true)
 public class DurabilityCondition extends BasePower implements Condition<Void> {
 
     @Property(order = 0, required = true)

@@ -27,7 +27,7 @@ import static think.rpgitems.power.Utils.checkCooldown;
  * </p>
  */
 @SuppressWarnings("WeakerAccess")
-@PowerMeta(immutableTrigger = true, implClass = PowerRescue.Impl.class)
+@Meta(immutableTrigger = true, implClass = PowerRescue.Impl.class)
 public class PowerRescue extends BasePower {
     private static Cache<UUID, Long> rescueTime = CacheBuilder.newBuilder().expireAfterWrite(5, TimeUnit.SECONDS).build();
     @Property(order = 1)

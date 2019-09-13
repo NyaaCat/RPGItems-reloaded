@@ -20,7 +20,7 @@ import java.util.Random;
  * </p>
  */
 @SuppressWarnings("WeakerAccess")
-@PowerMeta(immutableTrigger = true, implClass = PowerDeathCommand.Impl.class)
+@Meta(immutableTrigger = true, implClass = PowerDeathCommand.Impl.class)
 public class PowerDeathCommand extends BasePower {
 
     private static final Random rand = new Random();
