@@ -20,4 +20,6 @@ public @interface Meta {
     boolean withContext() default false;
 
     Class<? extends Pimpl>[] generalInterface() default {};
+
+    String note() default "";
 }

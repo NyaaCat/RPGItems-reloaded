@@ -40,6 +40,7 @@ import java.nio.ByteBuffer;
 import java.util.*;
 import java.util.function.Supplier;
 import java.util.logging.Level;
+import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -445,6 +446,8 @@ public class Utils {
         return (format == null ? "" : format);
     }
 
+    private static final Pattern VALID_KEY = Pattern.compile("[a-z0-9/._-]+");
+
     @SuppressWarnings({"unchecked", "deprecation"})
     public static void setPowerPropertyUnchecked(CommandSender sender, PropertyHolder power, Field field, String value) {
         try {
@@ -567,8 +570,10 @@ public class Utils {
                     }
                     field.set(power, item.clone());
                 } else if (field.getType() == Enchantment.class) {
-                    Enchantment enchantment = Enchantment.getByKey(NamespacedKey.minecraft(value));
-                    if (enchantment == null) {
+                    Enchantment enchantment;
+                    if (VALID_KEY.matcher(value).matches()) {
+                        enchantment = Enchantment.getByKey(NamespacedKey.minecraft(value));
+                    } else  {
                         enchantment = Enchantment.getByName(value);
                     }
                     if (enchantment == null) {

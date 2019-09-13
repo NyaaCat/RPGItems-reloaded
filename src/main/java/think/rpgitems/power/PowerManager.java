@@ -50,6 +50,7 @@ public class PowerManager {
     private static void registerPower(Class<? extends Power> clazz) {
         NamespacedKey key = null;
         try {
+            metas.put(clazz, clazz.getAnnotation(Meta.class));
             Power p = PowerManager.instantiate(clazz);
             key = p.getNamespacedKey();
             if (key != null) {
@@ -57,12 +58,14 @@ public class PowerManager {
             } else {
                 return;
             }
-            metas.put(clazz, clazz.getAnnotation(Meta.class));
             Map<String, Pair<Method, PropertyInstance>> propertyMap = scanProperties(clazz);
             properties.put(clazz, propertyMap);
         } catch (Throwable e) {
-            RPGItems.plugin.getLogger().log(Level.WARNING, "Failed to add power", e);
-            RPGItems.plugin.getLogger().log(Level.WARNING, "With {0}", clazz);
+            RPGItems.plugin.getLogger().log(Level.WARNING, "Failed to add power {0}", clazz);
+            RPGItems.plugin.getLogger().log(Level.FINE, "Exception: {0}", e);
+            if (!Optional.ofNullable(metas.get(clazz)).map(c -> c.note().isEmpty()).orElse(false)) {
+                RPGItems.plugin.getLogger().log(Level.WARNING, "Note: {0}", metas.get(clazz).note());
+            }
             if (key != null) {
                 powers.remove(key);
                 metas.remove(clazz);
