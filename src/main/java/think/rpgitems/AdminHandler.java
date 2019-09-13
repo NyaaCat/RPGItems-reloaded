@@ -24,8 +24,8 @@ import org.bukkit.inventory.ItemFlag;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.EnchantmentStorageMeta;
 import org.bukkit.inventory.meta.ItemMeta;
-import org.bukkit.inventory.meta.tags.CustomItemTagContainer;
-import org.bukkit.inventory.meta.tags.ItemTagType;
+import org.bukkit.persistence.PersistentDataContainer;
+import org.bukkit.persistence.PersistentDataType;
 import think.rpgitems.item.ItemGroup;
 import think.rpgitems.item.ItemManager;
 import think.rpgitems.item.RPGItem;
@@ -89,45 +89,13 @@ public class AdminHandler extends RPGCommandReceiver {
             return;
         }
         ItemMeta meta = item.getItemMeta();
-        CustomItemTagContainer tagContainer = meta.getCustomTagContainer();
-        if (tagContainer.hasCustomTag(TAG_META, ItemTagType.TAG_CONTAINER)) {
+        PersistentDataContainer tagContainer = meta.getPersistentDataContainer();
+        if (tagContainer.has(TAG_META, PersistentDataType.TAG_CONTAINER)) {
             int uid = getInt(getTag(tagContainer, TAG_META), TAG_ITEM_UID);
             player.sendMessage("new item: " + uid);
             Optional<RPGItem> rpgItem = ItemManager.getItem(uid);
             player.sendMessage("rpgItem: " + rpgItem.map(RPGItem::getName).orElse(null));
             return;
-        }
-        // Old
-        if (!meta.hasLore() || meta.getLore().size() <= 0) {
-            player.sendMessage("empty lore");
-            return;
-        }
-        try {
-            player.sendMessage(meta.getLore().get(0).replace(ChatColor.COLOR_CHAR, '&'));
-            @SuppressWarnings("deprecation") Optional<Integer> id = decodeId(meta.getLore().get(0));
-            if (!id.isPresent()) {
-                player.sendMessage("decodeId failed");
-                return;
-            }
-            player.sendMessage("old item: " + id.get());
-            Optional<RPGItem> rpgItem = ItemManager.getItem(id.get());
-            if (!rpgItem.isPresent()) {
-                player.sendMessage("old item not found");
-                return;
-            }
-            @SuppressWarnings("deprecation") think.rpgitems.data.RPGMetadata rpgMetadata = think.rpgitems.data.RPGMetadata.parseLoreline(meta.getLore().get(0));
-            @SuppressWarnings("deprecation") int durabilityKey = think.rpgitems.data.RPGMetadata.DURABILITY;
-            if (rpgMetadata.containsKey(durabilityKey)) {
-                int durability = ((Number) rpgMetadata.get(durabilityKey)).intValue();
-                player.sendMessage("durability: " + durability);
-            } else {
-                player.sendMessage("no durability");
-            }
-            player.sendMessage(ItemStackUtils.itemToJson(item).replace(ChatColor.COLOR_CHAR, '&'));
-            rpgItem.get().updateItem(item);
-            player.sendMessage(ItemStackUtils.itemToJson(item).replace(ChatColor.COLOR_CHAR, '&'));
-        } catch (Exception e) {
-            RPGItems.logger.log(Level.WARNING, "Error migrating old item", e);
         }
     }
 

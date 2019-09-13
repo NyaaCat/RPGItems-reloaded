@@ -7,9 +7,9 @@ import org.bukkit.Bukkit;
 import org.bukkit.NamespacedKey;
 import org.bukkit.OfflinePlayer;
 import org.bukkit.inventory.meta.ItemMeta;
-import org.bukkit.inventory.meta.tags.CustomItemTagContainer;
-import org.bukkit.inventory.meta.tags.ItemTagAdapterContext;
-import org.bukkit.inventory.meta.tags.ItemTagType;
+import org.bukkit.persistence.PersistentDataAdapterContext;
+import org.bukkit.persistence.PersistentDataContainer;
+import org.bukkit.persistence.PersistentDataType;
 import think.rpgitems.RPGItems;
 import think.rpgitems.power.Utils;
 
@@ -26,174 +26,174 @@ import java.util.logging.Level;
 
 public final class ItemTagUtils {
 
-    public static final ItemTagType<byte[], UUID> BA_UUID = new UUIDItemTagType();
-    public static final ItemTagType<Byte, Boolean> BYTE_BOOLEAN = new BooleanItemTagType();
-    public static final ItemTagType<byte[], OfflinePlayer> BA_OFFLINE_PLAYER = new OfflinePlayerItemTagType();
+    public static final PersistentDataType<byte[], UUID> BA_UUID = new UUIDPersistentDataType();
+    public static final PersistentDataType<Byte, Boolean> BYTE_BOOLEAN = new BooleanPersistentDataType();
+    public static final PersistentDataType<byte[], OfflinePlayer> BA_OFFLINE_PLAYER = new OfflinePlayerPersistentDataType();
 
     private ItemTagUtils() {
         throw new IllegalStateException();
     }
 
-    public static <T, Z> Z computeIfAbsent(CustomItemTagContainer container, NamespacedKey key, ItemTagType<T, Z> type, Supplier<? extends Z> mappingFunction) {
+    public static <T, Z> Z computeIfAbsent(PersistentDataContainer container, NamespacedKey key, PersistentDataType<T, Z> type, Supplier<? extends Z> mappingFunction) {
         return computeIfAbsent(container, key, type, (ignored) -> mappingFunction.get());
     }
 
-    public static <T, Z> Z computeIfAbsent(CustomItemTagContainer container, NamespacedKey key, ItemTagType<T, Z> type, Function<NamespacedKey, ? extends Z> mappingFunction) {
-        Z value = container.getCustomTag(key, type);
+    public static <T, Z> Z computeIfAbsent(PersistentDataContainer container, NamespacedKey key, PersistentDataType<T, Z> type, Function<NamespacedKey, ? extends Z> mappingFunction) {
+        Z value = container.get(key, type);
         if (value == null) {
             value = mappingFunction.apply(key);
         }
-        container.setCustomTag(key, type, value);
+        container.set(key, type, value);
         return value;
     }
 
-    public static <T, Z> Z putIfAbsent(CustomItemTagContainer container, NamespacedKey key, ItemTagType<T, Z> type, Supplier<? extends Z> mappingFunction) {
+    public static <T, Z> Z putIfAbsent(PersistentDataContainer container, NamespacedKey key, PersistentDataType<T, Z> type, Supplier<? extends Z> mappingFunction) {
         return computeIfAbsent(container, key, type, (ignored) -> mappingFunction.get());
     }
 
-    public static <T, Z> Z putIfAbsent(CustomItemTagContainer container, NamespacedKey key, ItemTagType<T, Z> type, Function<NamespacedKey, ? extends Z> mappingFunction) {
-        Z old = container.getCustomTag(key, type);
+    public static <T, Z> Z putIfAbsent(PersistentDataContainer container, NamespacedKey key, PersistentDataType<T, Z> type, Function<NamespacedKey, ? extends Z> mappingFunction) {
+        Z old = container.get(key, type);
         if (old == null) {
-            container.setCustomTag(key, type, mappingFunction.apply(key));
+            container.set(key, type, mappingFunction.apply(key));
             return null;
         }
         return old;
     }
 
-    public static <T, Z> Z putValueIfAbsent(CustomItemTagContainer container, NamespacedKey key, ItemTagType<T, Z> type, Z value) {
+    public static <T, Z> Z putValueIfAbsent(PersistentDataContainer container, NamespacedKey key, PersistentDataType<T, Z> type, Z value) {
         return putIfAbsent(container, key, type, (ignored) -> value);
     }
 
-    public static Boolean getBoolean(CustomItemTagContainer container, NamespacedKey key) {
-        return container.getCustomTag(key, BYTE_BOOLEAN);
+    public static Boolean getBoolean(PersistentDataContainer container, NamespacedKey key) {
+        return container.get(key, BYTE_BOOLEAN);
     }
 
-    public static Optional<Boolean> optBoolean(CustomItemTagContainer container, NamespacedKey key) {
-        if (!container.hasCustomTag(key, BYTE_BOOLEAN)) return Optional.empty();
-        return Optional.ofNullable(container.getCustomTag(key, BYTE_BOOLEAN));
+    public static Optional<Boolean> optBoolean(PersistentDataContainer container, NamespacedKey key) {
+        if (!container.has(key, BYTE_BOOLEAN)) return Optional.empty();
+        return Optional.ofNullable(container.get(key, BYTE_BOOLEAN));
     }
 
-    public static Byte getByte(CustomItemTagContainer container, NamespacedKey key) {
-        return container.getCustomTag(key, ItemTagType.BYTE);
+    public static Byte getByte(PersistentDataContainer container, NamespacedKey key) {
+        return container.get(key, PersistentDataType.BYTE);
     }
 
-    public static Short getShort(CustomItemTagContainer container, NamespacedKey key) {
-        return container.getCustomTag(key, ItemTagType.SHORT);
+    public static Short getShort(PersistentDataContainer container, NamespacedKey key) {
+        return container.get(key, PersistentDataType.SHORT);
     }
 
-    public static Integer getInt(CustomItemTagContainer container, NamespacedKey key) {
-        return container.getCustomTag(key, ItemTagType.INTEGER);
+    public static Integer getInt(PersistentDataContainer container, NamespacedKey key) {
+        return container.get(key, PersistentDataType.INTEGER);
     }
 
-    public static OptionalInt optInt(CustomItemTagContainer container, NamespacedKey key) {
-        if (!container.hasCustomTag(key, ItemTagType.INTEGER)) return OptionalInt.empty();
-        return OptionalInt.of(container.getCustomTag(key, ItemTagType.INTEGER));
+    public static OptionalInt optInt(PersistentDataContainer container, NamespacedKey key) {
+        if (!container.has(key, PersistentDataType.INTEGER)) return OptionalInt.empty();
+        return OptionalInt.of(container.get(key, PersistentDataType.INTEGER));
     }
 
-    public static Long getLong(CustomItemTagContainer container, NamespacedKey key) {
-        return container.getCustomTag(key, ItemTagType.LONG);
+    public static Long getLong(PersistentDataContainer container, NamespacedKey key) {
+        return container.get(key, PersistentDataType.LONG);
     }
 
-    public static Float getFloat(CustomItemTagContainer container, NamespacedKey key) {
-        return container.getCustomTag(key, ItemTagType.FLOAT);
+    public static Float getFloat(PersistentDataContainer container, NamespacedKey key) {
+        return container.get(key, PersistentDataType.FLOAT);
     }
 
-    public static Double getDouble(CustomItemTagContainer container, NamespacedKey key) {
-        return container.getCustomTag(key, ItemTagType.DOUBLE);
+    public static Double getDouble(PersistentDataContainer container, NamespacedKey key) {
+        return container.get(key, PersistentDataType.DOUBLE);
     }
 
-    public static String getString(CustomItemTagContainer container, NamespacedKey key) {
-        return container.getCustomTag(key, ItemTagType.STRING);
+    public static String getString(PersistentDataContainer container, NamespacedKey key) {
+        return container.get(key, PersistentDataType.STRING);
     }
 
-    public static byte[] getByteArray(CustomItemTagContainer container, NamespacedKey key) {
-        return container.getCustomTag(key, ItemTagType.BYTE_ARRAY);
+    public static byte[] getByteArray(PersistentDataContainer container, NamespacedKey key) {
+        return container.get(key, PersistentDataType.BYTE_ARRAY);
     }
 
-    public static int[] getIntArray(CustomItemTagContainer container, NamespacedKey key) {
-        return container.getCustomTag(key, ItemTagType.INTEGER_ARRAY);
+    public static int[] getIntArray(PersistentDataContainer container, NamespacedKey key) {
+        return container.get(key, PersistentDataType.INTEGER_ARRAY);
     }
 
-    public static long[] getLongArray(CustomItemTagContainer container, NamespacedKey key) {
-        return container.getCustomTag(key, ItemTagType.LONG_ARRAY);
+    public static long[] getLongArray(PersistentDataContainer container, NamespacedKey key) {
+        return container.get(key, PersistentDataType.LONG_ARRAY);
     }
 
-    public static UUID getUUID(CustomItemTagContainer container, NamespacedKey key) {
-        return container.getCustomTag(key, BA_UUID);
+    public static UUID getUUID(PersistentDataContainer container, NamespacedKey key) {
+        return container.get(key, BA_UUID);
     }
 
-    public static Optional<UUID> optUUID(CustomItemTagContainer container, NamespacedKey key) {
-        if (!container.hasCustomTag(key, BA_UUID)) return Optional.empty();
-        return Optional.of(container.getCustomTag(key, BA_UUID));
+    public static Optional<UUID> optUUID(PersistentDataContainer container, NamespacedKey key) {
+        if (!container.has(key, BA_UUID)) return Optional.empty();
+        return Optional.of(container.get(key, BA_UUID));
     }
 
-    public static CustomItemTagContainer getTag(CustomItemTagContainer container, NamespacedKey key) {
-        return container.getCustomTag(key, ItemTagType.TAG_CONTAINER);
+    public static PersistentDataContainer getTag(PersistentDataContainer container, NamespacedKey key) {
+        return container.get(key, PersistentDataType.TAG_CONTAINER);
     }
 
-    public static OfflinePlayer getPlayer(CustomItemTagContainer container, NamespacedKey key) {
-        return container.getCustomTag(key, BA_OFFLINE_PLAYER);
+    public static OfflinePlayer getPlayer(PersistentDataContainer container, NamespacedKey key) {
+        return container.get(key, BA_OFFLINE_PLAYER);
     }
 
-    public static void set(CustomItemTagContainer container, NamespacedKey key, boolean value) {
-        container.setCustomTag(key, BYTE_BOOLEAN, value);
+    public static void set(PersistentDataContainer container, NamespacedKey key, boolean value) {
+        container.set(key, BYTE_BOOLEAN, value);
     }
 
-    public static void set(CustomItemTagContainer container, NamespacedKey key, byte value) {
-        container.setCustomTag(key, ItemTagType.BYTE, value);
+    public static void set(PersistentDataContainer container, NamespacedKey key, byte value) {
+        container.set(key, PersistentDataType.BYTE, value);
     }
 
-    public static void set(CustomItemTagContainer container, NamespacedKey key, short value) {
-        container.setCustomTag(key, ItemTagType.SHORT, value);
+    public static void set(PersistentDataContainer container, NamespacedKey key, short value) {
+        container.set(key, PersistentDataType.SHORT, value);
     }
 
-    public static void set(CustomItemTagContainer container, NamespacedKey key, int value) {
-        container.setCustomTag(key, ItemTagType.INTEGER, value);
+    public static void set(PersistentDataContainer container, NamespacedKey key, int value) {
+        container.set(key, PersistentDataType.INTEGER, value);
     }
 
-    public static void set(CustomItemTagContainer container, NamespacedKey key, long value) {
-        container.setCustomTag(key, ItemTagType.LONG, value);
+    public static void set(PersistentDataContainer container, NamespacedKey key, long value) {
+        container.set(key, PersistentDataType.LONG, value);
     }
 
-    public static void set(CustomItemTagContainer container, NamespacedKey key, float value) {
-        container.setCustomTag(key, ItemTagType.FLOAT, value);
+    public static void set(PersistentDataContainer container, NamespacedKey key, float value) {
+        container.set(key, PersistentDataType.FLOAT, value);
     }
 
-    public static void set(CustomItemTagContainer container, NamespacedKey key, double value) {
-        container.setCustomTag(key, ItemTagType.DOUBLE, value);
+    public static void set(PersistentDataContainer container, NamespacedKey key, double value) {
+        container.set(key, PersistentDataType.DOUBLE, value);
     }
 
-    public static void set(CustomItemTagContainer container, NamespacedKey key, String value) {
-        container.setCustomTag(key, ItemTagType.STRING, value);
+    public static void set(PersistentDataContainer container, NamespacedKey key, String value) {
+        container.set(key, PersistentDataType.STRING, value);
     }
 
-    public static void set(CustomItemTagContainer container, NamespacedKey key, byte[] value) {
-        container.setCustomTag(key, ItemTagType.BYTE_ARRAY, value);
+    public static void set(PersistentDataContainer container, NamespacedKey key, byte[] value) {
+        container.set(key, PersistentDataType.BYTE_ARRAY, value);
     }
 
-    public static void set(CustomItemTagContainer container, NamespacedKey key, int[] value) {
-        container.setCustomTag(key, ItemTagType.INTEGER_ARRAY, value);
+    public static void set(PersistentDataContainer container, NamespacedKey key, int[] value) {
+        container.set(key, PersistentDataType.INTEGER_ARRAY, value);
     }
 
-    public static void set(CustomItemTagContainer container, NamespacedKey key, long[] value) {
-        container.setCustomTag(key, ItemTagType.LONG_ARRAY, value);
+    public static void set(PersistentDataContainer container, NamespacedKey key, long[] value) {
+        container.set(key, PersistentDataType.LONG_ARRAY, value);
     }
 
-    public static void set(CustomItemTagContainer container, NamespacedKey key, CustomItemTagContainer value) {
-        container.setCustomTag(key, ItemTagType.TAG_CONTAINER, value);
+    public static void set(PersistentDataContainer container, NamespacedKey key, PersistentDataContainer value) {
+        container.set(key, PersistentDataType.TAG_CONTAINER, value);
     }
 
-    public static void set(CustomItemTagContainer container, NamespacedKey key, UUID value) {
-        container.setCustomTag(key, BA_UUID, value);
+    public static void set(PersistentDataContainer container, NamespacedKey key, UUID value) {
+        container.set(key, BA_UUID, value);
     }
 
-    public static void set(CustomItemTagContainer container, NamespacedKey key, OfflinePlayer value) {
-        container.setCustomTag(key, BA_OFFLINE_PLAYER, value);
+    public static void set(PersistentDataContainer container, NamespacedKey key, OfflinePlayer value) {
+        container.set(key, BA_OFFLINE_PLAYER, value);
     }
 
-    public static SubItemTagContainer makeTag(CustomItemTagContainer container, NamespacedKey key) {
-        SubItemTagContainer subItemTagContainer = new SubItemTagContainer(container, key, computeIfAbsent(container, key, ItemTagType.TAG_CONTAINER, (k) -> container.getAdapterContext().newTagContainer()));
-        WeakReference<CustomItemTagContainer> weakParent = new WeakReference<>(container);
+    public static SubItemTagContainer makeTag(PersistentDataContainer container, NamespacedKey key) {
+        SubItemTagContainer subItemTagContainer = new SubItemTagContainer(container, key, computeIfAbsent(container, key, PersistentDataType.TAG_CONTAINER, (k) -> container.getAdapterContext().newPersistentDataContainer()));
+        WeakReference<PersistentDataContainer> weakParent = new WeakReference<>(container);
         FinalizablePhantomReference<SubItemTagContainer> reference = new FinalizablePhantomReference<SubItemTagContainer>(subItemTagContainer, SubItemTagContainer.frq) {
             public void finalizeReferent() {
                 if (SubItemTagContainer.references.remove(this)) {
@@ -207,11 +207,11 @@ public final class ItemTagUtils {
     }
 
     public static SubItemTagContainer makeTag(ItemMeta itemMeta, NamespacedKey key) {
-        @SuppressWarnings("deprecation") CustomItemTagContainer container = itemMeta.getCustomTagContainer();
+        @SuppressWarnings("deprecation") PersistentDataContainer container = itemMeta.getPersistentDataContainer();
         return makeTag(container, key);
     }
 
-    public static class UUIDItemTagType implements ItemTagType<byte[], UUID> {
+    public static class UUIDPersistentDataType implements PersistentDataType<byte[], UUID> {
         @Override
         public Class<byte[]> getPrimitiveType() {
             return byte[].class;
@@ -223,17 +223,17 @@ public final class ItemTagUtils {
         }
 
         @Override
-        public byte[] toPrimitive(UUID complex, ItemTagAdapterContext context) {
+        public byte[] toPrimitive(UUID complex, PersistentDataAdapterContext context) {
             return Utils.decodeUUID(complex);
         }
 
         @Override
-        public UUID fromPrimitive(byte[] primitive, ItemTagAdapterContext context) {
+        public UUID fromPrimitive(byte[] primitive, PersistentDataAdapterContext context) {
             return Utils.encodeUUID(primitive);
         }
     }
 
-    public static class BooleanItemTagType implements ItemTagType<Byte, Boolean> {
+    public static class BooleanPersistentDataType implements PersistentDataType<Byte, Boolean> {
         @Override
         public Class<Byte> getPrimitiveType() {
             return Byte.class;
@@ -245,12 +245,12 @@ public final class ItemTagUtils {
         }
 
         @Override
-        public Byte toPrimitive(Boolean complex, ItemTagAdapterContext context) {
+        public Byte toPrimitive(Boolean complex, PersistentDataAdapterContext context) {
             return (byte) (complex == null ? 0b10101010 : complex ? 0b00000001 : 0b00000000);
         }
 
         @Override
-        public Boolean fromPrimitive(Byte primitive, ItemTagAdapterContext context) {
+        public Boolean fromPrimitive(Byte primitive, PersistentDataAdapterContext context) {
             switch (primitive) {
                 case (byte) 0b10101010:
                     return null;
@@ -264,7 +264,7 @@ public final class ItemTagUtils {
         }
     }
 
-    public static class OfflinePlayerItemTagType implements ItemTagType<byte[], OfflinePlayer> {
+    public static class OfflinePlayerPersistentDataType implements PersistentDataType<byte[], OfflinePlayer> {
         @Override
         public Class<byte[]> getPrimitiveType() {
             return byte[].class;
@@ -276,49 +276,54 @@ public final class ItemTagUtils {
         }
 
         @Override
-        public byte[] toPrimitive(OfflinePlayer complex, ItemTagAdapterContext context) {
+        public byte[] toPrimitive(OfflinePlayer complex, PersistentDataAdapterContext context) {
             return Utils.decodeUUID(complex.getUniqueId());
         }
 
         @Override
-        public OfflinePlayer fromPrimitive(byte[] primitive, ItemTagAdapterContext context) {
+        public OfflinePlayer fromPrimitive(byte[] primitive, PersistentDataAdapterContext context) {
             return Bukkit.getOfflinePlayer(Utils.encodeUUID(primitive));
         }
     }
 
-    public static class SubItemTagContainer implements CustomItemTagContainer {
-        private CustomItemTagContainer parent;
-        private CustomItemTagContainer self;
+    public static class SubItemTagContainer implements PersistentDataContainer {
+        private PersistentDataContainer parent;
+        private PersistentDataContainer self;
         private NamespacedKey key;
         private PhantomReference<SubItemTagContainer> reference;
 
         private static FinalizableReferenceQueue frq = new FinalizableReferenceQueue();
         private static final Set<Reference<?>> references = Sets.newConcurrentHashSet();
 
-        private SubItemTagContainer(CustomItemTagContainer parent, NamespacedKey key, CustomItemTagContainer self) {
+        private SubItemTagContainer(PersistentDataContainer parent, NamespacedKey key, PersistentDataContainer self) {
             this.parent = parent;
             this.self = self;
             this.key = key;
         }
 
         @Override
-        public <T, Z> void setCustomTag(NamespacedKey namespacedKey, ItemTagType<T, Z> itemTagType, Z z) {
-            self.setCustomTag(namespacedKey, itemTagType, z);
+        public <T, Z> void set(NamespacedKey namespacedKey, PersistentDataType<T, Z> persistentDataType, Z z) {
+            self.set(namespacedKey, persistentDataType, z);
         }
 
         @Override
-        public <T, Z> boolean hasCustomTag(NamespacedKey namespacedKey, ItemTagType<T, Z> itemTagType) {
-            return self.hasCustomTag(namespacedKey, itemTagType);
+        public <T, Z> boolean has(NamespacedKey namespacedKey, PersistentDataType<T, Z> persistentDataType) {
+            return self.has(namespacedKey, persistentDataType);
         }
 
         @Override
-        public <T, Z> Z getCustomTag(NamespacedKey namespacedKey, ItemTagType<T, Z> itemTagType) {
-            return self.getCustomTag(namespacedKey, itemTagType);
+        public <T, Z> Z get(NamespacedKey namespacedKey, PersistentDataType<T, Z> persistentDataType) {
+            return self.get(namespacedKey, persistentDataType);
         }
 
         @Override
-        public void removeCustomTag(NamespacedKey namespacedKey) {
-            self.removeCustomTag(namespacedKey);
+        public <T, Z> Z getOrDefault(NamespacedKey key, PersistentDataType<T, Z> type, Z defaultValue) {
+            return self.getOrDefault(key, type, defaultValue);
+        }
+
+        @Override
+        public void remove(NamespacedKey namespacedKey) {
+            self.remove(namespacedKey);
         }
 
         @Override
@@ -327,12 +332,12 @@ public final class ItemTagUtils {
         }
 
         @Override
-        public ItemTagAdapterContext getAdapterContext() {
+        public PersistentDataAdapterContext getAdapterContext() {
             return self.getAdapterContext();
         }
 
         public void commit() {
-            set(parent, key, self);
+            ItemTagUtils.set(parent, key, self);
             if (parent instanceof SubItemTagContainer) {
                 ((SubItemTagContainer) parent).commit();
             }

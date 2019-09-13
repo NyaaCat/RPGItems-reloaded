@@ -129,8 +129,6 @@ public class RPGItems extends JavaPlugin {
             Bukkit.getConsoleSender().sendMessage(ChatColor.RED + "Please run your server with latest version of RPGItems 3.5 before update.");
             Bukkit.getConsoleSender().sendMessage(ChatColor.RED + "======================================");
             throw new IllegalStateException();
-        } else if (plugin.cfg.version.equals("0.5")) {
-            cfg.pidCompat = true;
         }
 
         if (Bukkit.class.getPackage().getImplementationVersion().startsWith("git-Bukkit-")) {

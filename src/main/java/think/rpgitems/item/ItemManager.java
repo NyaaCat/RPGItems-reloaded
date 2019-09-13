@@ -8,15 +8,14 @@ import org.bukkit.Material;
 import org.bukkit.command.CommandSender;
 import org.bukkit.command.ConsoleCommandSender;
 import org.bukkit.configuration.ConfigurationSection;
-import org.bukkit.configuration.InvalidConfigurationException;
 import org.bukkit.configuration.MemoryConfiguration;
 import org.bukkit.configuration.file.YamlConfiguration;
 import org.bukkit.entity.Player;
 import org.bukkit.event.Event;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.ItemMeta;
-import org.bukkit.inventory.meta.tags.CustomItemTagContainer;
-import org.bukkit.inventory.meta.tags.ItemTagType;
+import org.bukkit.persistence.PersistentDataContainer;
+import org.bukkit.persistence.PersistentDataType;
 import org.bukkit.util.FileUtil;
 import think.rpgitems.AdminHandler;
 import think.rpgitems.I18n;
@@ -28,7 +27,6 @@ import think.rpgitems.support.WGSupport;
 import java.io.*;
 import java.nio.channels.FileChannel;
 import java.nio.channels.FileLock;
-import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.StandardCopyOption;
@@ -152,27 +150,6 @@ public class ItemManager {
             extendedLock = false;
             plugin.getLogger().log(Level.WARNING, "Not writable data folder!", e);
         }
-
-        File dirItems = new File(plugin.getDataFolder(), "items");
-        if (!dirItems.exists() || !dirItems.isDirectory()) {
-            setItemsDir(mkdir());
-            setBackupsDir(mkbkdir());
-            File f = new File(plugin.getDataFolder(), "items.yml");
-            if (!f.exists()) {
-                return;
-            }
-            plugin.getLogger().warning("loading items from legacy items.yml");
-            loadFromLegacyFile(f);
-            plugin.getLogger().warning("moving items to directory based storage");
-            save();
-            Path bak = f.toPath().resolveSibling("items.bak");
-            try {
-                Files.move(f.toPath(), bak);
-            } catch (IOException e) {
-                plugin.getLogger().log(Level.WARNING, "Error moving items.yml to items.bak", e);
-            }
-            return;
-        }
         setItemsDir(mkdir());
         setBackupsDir(mkbkdir());
         load(getItemsDir(), plugin.cfg.itemShowLoaded ? Bukkit.getConsoleSender() : null);
@@ -290,60 +267,6 @@ public class ItemManager {
             groupById.remove(group.getUid(), group);
             groupByName.remove(group.getName(), group);
             throw e;
-        }
-    }
-
-    private static void loadFromLegacyFile(File f) {
-        plugin.cfg.pidCompat = true;
-        plugin.cfg.save();
-        try {
-            YamlConfiguration itemStorage;
-            try (FileInputStream in = new FileInputStream(f)) {
-                byte[] data = new byte[(int) f.length()];
-                int read = in.read(data);
-                if (read < 0) throw new IllegalStateException();
-                itemStorage = new YamlConfiguration();
-                String str = new String(data, StandardCharsets.UTF_8);
-                itemStorage.loadFromString(str);
-            } catch (IOException | InvalidConfigurationException e) {
-                plugin.getLogger().log(Level.SEVERE, "Error opening " + f.getPath(), e);
-                return;
-            }
-            ConfigurationSection section;
-            try {
-                section = itemStorage.getConfigurationSection("items");
-            } catch (NullPointerException e) {
-                plugin.getLogger().severe("Error loading items.yml. Is this your first time to load RPGItems?");
-                dump(e);
-                return;
-            }
-            if (section == null)
-                return;
-            for (Object obj : section.getValues(false).values()) {
-                String current = null;
-                try {
-                    ConfigurationSection sec = (ConfigurationSection) obj;
-                    current = sec.getString("name");
-                    RPGItem item = new RPGItem(sec, null);
-                    addItem(item);
-                    Message message = new Message("").append(I18n.format("message.update.success"), Collections.singletonMap("{item}", item.getComponent()));
-                    // Bukkit.getOperators().forEach(message::send);
-                    message.send(Bukkit.getConsoleSender());
-                } catch (Exception e) {
-                    plugin.getLogger().log(Level.SEVERE, "Error updating " + current, e);
-                    Message message = new Message(I18n.format("message.update.fail", current, e.getLocalizedMessage()));
-                    Bukkit.getOperators().forEach(message::send);
-                    message.send(Bukkit.getConsoleSender());
-                }
-            }
-        } catch (Exception e) {
-            // Something went wrong
-            plugin.getLogger().log(Level.SEVERE, "Error handling " + f.getPath(), e);
-            Message message = new Message(I18n.format("message.update.fail", f.getPath(), e.getLocalizedMessage()));
-            Bukkit.getOperators().forEach(message::send);
-            plugin.getLogger().severe("Error loading items.yml. Creating backup");
-            dump(e);
-            rethrow(e);
         }
     }
 
@@ -583,9 +506,9 @@ public class ItemManager {
         if (!item.hasItemMeta())
             return Optional.empty();
         ItemMeta meta = item.getItemMeta();
-        CustomItemTagContainer tagContainer = meta.getCustomTagContainer();
-        if (tagContainer.hasCustomTag(TAG_META, ItemTagType.TAG_CONTAINER)) {
-            CustomItemTagContainer metaTag = getTag(tagContainer, TAG_META);
+        PersistentDataContainer tagContainer = meta.getPersistentDataContainer();
+        if (tagContainer.has(TAG_META, PersistentDataType.TAG_CONTAINER)) {
+            PersistentDataContainer metaTag = getTag(tagContainer, TAG_META);
             int uid = getInt(metaTag, TAG_ITEM_UID);
             Optional<Boolean> optIsModel = optBoolean(metaTag, TAG_IS_MODEL);
             if (ignoreModel && optIsModel.orElse(false)) {
@@ -593,20 +516,7 @@ public class ItemManager {
             }
             return ItemManager.getItem(uid);
         }
-        if (!plugin.cfg.itemCompat) {
-            return Optional.empty();
-        }
-
-        // Old
-        if (!meta.hasLore() || meta.getLore().size() <= 0)
-            return Optional.empty();
-        try {
-            @SuppressWarnings("deprecation") Optional<Integer> id = decodeId(meta.getLore().get(0));
-            return id.map(ItemManager::getItemById);
-        } catch (Exception e) {
-            RPGItems.logger.log(Level.WARNING, "Error migrating old item", e);
-            return Optional.empty();
-        }
+        return Optional.empty();
     }
 
     public static ItemInfo parseItemInfo(ItemStack item) {
@@ -617,9 +527,9 @@ public class ItemManager {
             return null;
         }
         ItemMeta meta = item.getItemMeta();
-        CustomItemTagContainer tagContainer = meta.getCustomTagContainer();
-        if (tagContainer.hasCustomTag(TAG_META, ItemTagType.TAG_CONTAINER)) {
-            CustomItemTagContainer itemMeta = getTag(tagContainer, TAG_META);
+        PersistentDataContainer tagContainer = meta.getPersistentDataContainer();
+        if (tagContainer.has(TAG_META, PersistentDataType.TAG_CONTAINER)) {
+            PersistentDataContainer itemMeta = getTag(tagContainer, TAG_META);
             int uid = getInt(itemMeta, TAG_ITEM_UID);
             Optional<RPGItem> opt = ItemManager.getItem(uid);
             if (!opt.isPresent()) return null;
@@ -634,33 +544,7 @@ public class ItemManager {
             itemInfo.stackId = optUUID(itemMeta, TAG_STACK_ID).orElse(null);
             return itemInfo;
         }
-        // Old
-        if (!meta.hasLore() || meta.getLore().size() <= 0) {
-            return null;
-        }
-        try {
-            @SuppressWarnings("deprecation") Optional<Integer> id = decodeId(meta.getLore().get(0));
-            if (!id.isPresent()) {
-                return null;
-            }
-            Optional<RPGItem> opt = ItemManager.getItem(id.get());
-            if (!opt.isPresent()) {
-                return null;
-            }
-            RPGItem rpgItem = opt.get();
-            ItemInfo itemInfo = new ItemInfo(rpgItem);
-
-            @SuppressWarnings("deprecation") think.rpgitems.data.RPGMetadata rpgMetadata = think.rpgitems.data.RPGMetadata.parseLoreline(meta.getLore().get(0));
-            if (rpgMetadata.containsKey(0)) {
-                itemInfo.durability = ((Number) rpgMetadata.get(0)).intValue();
-            } else if (rpgItem.getMaxDurability() > 0) {
-                itemInfo.durability = rpgItem.getDefaultDurability();
-            }
-            return itemInfo;
-        } catch (Exception e) {
-            RPGItems.logger.log(Level.WARNING, "Error migrating old item", e);
-            return null;
-        }
+        return null;
     }
 
     public static RPGItem newItem(String name, CommandSender sender) {
