@@ -1,4 +1,4 @@
-package think.rpgitems.power.impl;
+package think.rpgitems.power;
 
 import cat.nyaa.nyaacore.Pair;
 import org.bukkit.Bukkit;

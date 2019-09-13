@@ -1,21 +1,10 @@
 package think.rpgitems.power.impl;
 
-import cat.nyaa.nyaacore.Pair;
-import org.bukkit.Bukkit;
-import org.bukkit.NamespacedKey;
-import org.bukkit.configuration.ConfigurationSection;
-import org.bukkit.inventory.ItemStack;
-import think.rpgitems.I18n;
-import think.rpgitems.RPGItems;
-import think.rpgitems.item.RPGItem;
 import think.rpgitems.power.*;
 
 import java.io.Serializable;
-import java.lang.reflect.Field;
-import java.lang.reflect.Method;
 import java.util.Collections;
 import java.util.HashSet;
-import java.util.Map;
 import java.util.Set;
 
 /**

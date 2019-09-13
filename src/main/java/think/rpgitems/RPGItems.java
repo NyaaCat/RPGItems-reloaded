@@ -90,7 +90,8 @@ public class RPGItems extends JavaPlugin {
             }
             return null;
         });
-        PowerManager.registerPowers(RPGItems.plugin, BasePower.class.getPackage().getName());
+        PowerManager.registerConditions(RPGItems.plugin, Power.class.getPackage().getName() + ".cond");
+        PowerManager.registerPowers(RPGItems.plugin, Power.class.getPackage().getName() + ".impl");
         saveDefaultConfig();
         Font.load();
         WGSupport.load();

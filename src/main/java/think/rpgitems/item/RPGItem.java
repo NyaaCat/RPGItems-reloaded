@@ -78,6 +78,7 @@ public class RPGItem {
     private List<Power> powers = new ArrayList<>();
     private List<Condition> conditions = new ArrayList<>();
     private HashMap<Power, NamespacedKey> powerKeys = new HashMap<>();
+    private HashMap<Condition, NamespacedKey> conditionKeys = new HashMap<>();
     private File file;
 
     private NamespacedKey namespacedKey;
@@ -205,9 +206,12 @@ public class RPGItem {
         if (powerList != null) {
             for (String sectionKey : powerList.getKeys(false)) {
                 ConfigurationSection section = powerList.getConfigurationSection(sectionKey);
-                String powerName = section.getString("powerName");
-
-                addPower(section, powerName);
+                String powerName = Objects.requireNonNull(section).getString("powerName");
+                if (Objects.requireNonNull(powerName).endsWith("condition")) {
+                    addCondition(section, powerName);
+                } else {
+                    addPower(section, powerName);
+                }
             }
 
 
@@ -312,15 +316,15 @@ public class RPGItem {
 
     private void addCondition(ConfigurationSection section, String powerName) throws UnknownPowerException {
         NamespacedKey key = PowerManager.parseKey(powerName);
-        Class<? extends Power> power = PowerManager.getPower(key);
-        if (power == null) {
-            plugin.getLogger().warning("Unknown power:" + key + " on item " + this.name);
+        Class<? extends Condition> condition = PowerManager.getCondition(key);
+        if (condition == null) {
+            plugin.getLogger().warning("Unknown condition:" + key + " on item " + this.name);
             throw new UnknownPowerException(key);
         }
-        Power pow = PowerManager.instantiate(power);
+        Condition pow = PowerManager.instantiate(condition);
         pow.setItem(this);
         pow.init(section);
-        addPower(key, pow, false);
+        addCondition(key, pow, false);
     }
 
     public void save(ConfigurationSection s) {
@@ -1178,6 +1182,25 @@ public class RPGItem {
         power.deinit();
         rebuild();
     }
+
+    public void addCondition(NamespacedKey key, Condition condition) {
+        addCondition(key, condition, true);
+    }
+
+    private void addCondition(NamespacedKey key, Condition condition, boolean update) {
+        conditions.add(condition);
+        conditionKeys.put(condition, key);
+        if (update) {
+            rebuild();
+        }
+    }
+
+    public void removeCondition(Condition condition) {
+        conditions.remove(condition);
+        conditionKeys.remove(condition);
+        rebuild();
+    }
+
 
     public void addDescription(String str) {
         getDescription().add(ChatColor.translateAlternateColorCodes('&', str));

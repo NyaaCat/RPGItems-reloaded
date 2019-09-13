@@ -48,21 +48,27 @@ public class PowerManager {
     private static final HashMap<NamespacedKey, NamespacedKey> overrides = new HashMap<>();
 
     private static void registerPower(Class<? extends Power> clazz) {
-        NamespacedKey key;
+        NamespacedKey key = null;
         try {
             Power p = PowerManager.instantiate(clazz);
             key = p.getNamespacedKey();
             if (key != null) {
                 powers.put(key, clazz);
+            } else {
+                return;
             }
-        } catch (Exception e) {
+            metas.put(clazz, clazz.getAnnotation(Meta.class));
+            Map<String, Pair<Method, PropertyInstance>> propertyMap = scanProperties(clazz);
+            properties.put(clazz, propertyMap);
+        } catch (Throwable e) {
             RPGItems.plugin.getLogger().log(Level.WARNING, "Failed to add power", e);
             RPGItems.plugin.getLogger().log(Level.WARNING, "With {0}", clazz);
-            return;
+            if (key != null) {
+                powers.remove(key);
+                metas.remove(clazz);
+                properties.remove(clazz);
+            }
         }
-        metas.put(clazz, clazz.getAnnotation(Meta.class));
-        Map<String, Pair<Method, PropertyInstance>> propertyMap = scanProperties(clazz);
-        properties.put(clazz, propertyMap);
     }
 
     private static void registerCondition(Class<? extends Condition> clazz) {

@@ -11,9 +11,11 @@ import com.udojava.evalex.LazyFunction;
 import org.bukkit.ChatColor;
 import org.bukkit.Location;
 import org.bukkit.Material;
+import org.bukkit.NamespacedKey;
 import org.bukkit.command.CommandSender;
 import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.configuration.file.YamlConfiguration;
+import org.bukkit.enchantments.Enchantment;
 import org.bukkit.entity.Entity;
 import org.bukkit.entity.LivingEntity;
 import org.bukkit.entity.Player;
@@ -31,6 +33,7 @@ import think.rpgitems.power.impl.PowerSelector;
 import think.rpgitems.utils.MaterialUtils;
 
 import java.lang.reflect.Field;
+import java.lang.reflect.Modifier;
 import java.lang.reflect.ParameterizedType;
 import java.math.BigDecimal;
 import java.nio.ByteBuffer;
@@ -442,7 +445,7 @@ public class Utils {
         return (format == null ? "" : format);
     }
 
-    @SuppressWarnings("unchecked")
+    @SuppressWarnings({"unchecked", "deprecation"})
     public static void setPowerPropertyUnchecked(CommandSender sender, PropertyHolder power, Field field, String value) {
         try {
             if (value.equals("null")) {
@@ -563,8 +566,23 @@ public class Utils {
                         item = new ItemStack(m);
                     }
                     field.set(power, item.clone());
+                } else if (field.getType() == Enchantment.class) {
+                    Enchantment enchantment = Enchantment.getByKey(NamespacedKey.minecraft(value));
+                    if (enchantment == null) {
+                        enchantment = Enchantment.getByName(value);
+                    }
+                    if (enchantment == null) {
+                        enchantment = Arrays.stream(Enchantment.class.getDeclaredFields()).parallel().filter(f -> Modifier.isStatic(f.getModifiers())).filter(f -> f.getName().equals(value)).findAny().map(f -> {
+                            try {
+                                return (Enchantment) f.get(null);
+                            } catch (IllegalAccessException e) {
+                                throw new AdminHandler.CommandException("message.error.invalid_enchant", e);
+                            }
+                        }).orElse(null);
+                    }
+                    field.set(power, enchantment);
                 } else {
-                    throw new AdminHandler.CommandException("internal.error.invalid_command_arg", power.getName(), field.getName());
+                    throw new AdminHandler.CommandException("message.error.invalid_command_arg", power.getName(), field.getName());
                 }
             }
         } catch (IllegalAccessException e) {

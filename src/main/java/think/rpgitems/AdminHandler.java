@@ -1854,6 +1854,11 @@ public class AdminHandler extends RPGCommandReceiver {
         }
 
         @Override
+        public String getMessage() {
+            return toString();
+        }
+
+        @Override
         public String getLocalizedMessage() {
             return I18n.format(msg_internal, objs);
         }

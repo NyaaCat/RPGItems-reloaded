@@ -8,6 +8,7 @@ message:
     '2': 如果想自定义合成表
     '5': 进行放置
   error:
+    invalid_command_arg: '加载技能失败：%s，%s'
     legacy_name: '%s 在 Spigot 1.13 有一个新名字：%s'
     invalid_option: '输入 %s 对于 %s 无效. 可选项: %s'
     effect: '%s 不是一个有效的效果'
