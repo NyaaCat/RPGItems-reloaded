@@ -15,7 +15,6 @@ import net.sf.cglib.proxy.MethodProxy;
 import org.apache.commons.lang.StringUtils;
 import org.bukkit.*;
 import org.bukkit.attribute.Attribute;
-import org.bukkit.attribute.AttributeModifier;
 import org.bukkit.block.Block;
 import org.bukkit.command.CommandSender;
 import org.bukkit.configuration.ConfigurationSection;
@@ -39,7 +38,7 @@ import think.rpgitems.I18n;
 import think.rpgitems.RPGItems;
 import think.rpgitems.data.Context;
 import think.rpgitems.power.*;
-import think.rpgitems.power.impl.*;
+import think.rpgitems.power.marker.*;
 import think.rpgitems.utils.MaterialUtils;
 
 import java.io.File;
@@ -50,6 +49,7 @@ import java.util.concurrent.ThreadLocalRandom;
 import java.util.logging.Level;
 import java.util.regex.Matcher;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 import static org.bukkit.ChatColor.COLOR_CHAR;
 import static think.rpgitems.utils.ItemTagUtils.*;
@@ -76,9 +76,9 @@ public class RPGItem {
 
     // Powers
     private List<Power> powers = new ArrayList<>();
-    private List<Condition> conditions = new ArrayList<>();
-    private HashMap<Power, NamespacedKey> powerKeys = new HashMap<>();
-    private HashMap<Condition, NamespacedKey> conditionKeys = new HashMap<>();
+    private List<Condition<?>> conditions = new ArrayList<>();
+    private List<Marker> markers = new ArrayList<>();
+    private HashMap<PropertyHolder, NamespacedKey> keys = new HashMap<>();
     private File file;
 
     private NamespacedKey namespacedKey;
@@ -174,14 +174,9 @@ public class RPGItem {
 
         String display = s.getString("display");
 
-        @SuppressWarnings("deprecation") Quality quality = s.isString("quality") ? Quality.valueOf(s.getString("quality")) : null;
-        if (quality != null) {
-            display = quality.colour + ChatColor.BOLD + display;
-        }
-
         setDisplayName(display);
         setType(s.getString("type", I18n.format("item.type")), false);
-        setHand(ChatColor.translateAlternateColorCodes('&', s.getString("hand", I18n.format("item.hand"))), false);
+        setHand(ChatColor.translateAlternateColorCodes('&', Objects.requireNonNull(s.getString("hand", I18n.format("item.hand")))), false);
         setDescription(s.getStringList("description"));
         for (int i = 0; i < getDescription().size(); i++) {
             getDescription().set(i, ChatColor.translateAlternateColorCodes('&', getDescription().get(i)));
@@ -207,14 +202,33 @@ public class RPGItem {
             for (String sectionKey : powerList.getKeys(false)) {
                 ConfigurationSection section = powerList.getConfigurationSection(sectionKey);
                 String powerName = Objects.requireNonNull(section).getString("powerName");
+                // 3.7 -> 3.8 Migration
                 if (Objects.requireNonNull(powerName).endsWith("condition")) {
-                    addCondition(section, powerName);
+                    loadCondition(section, powerName);
+                } else if (Stream.of("attributemodifier", "lorefilter", "ranged", "rangedonly", "selector", "unbreakable").anyMatch(powerName::endsWith)) {
+                    loadMarker(section, powerName);
                 } else {
-                    addPower(section, powerName);
+                    loadPower(section, powerName);
                 }
             }
-
-
+        }
+        // Conditions
+        ConfigurationSection conditionList = s.getConfigurationSection("conditions");
+        if (conditionList != null) {
+            for (String sectionKey : conditionList.getKeys(false)) {
+                ConfigurationSection section = Objects.requireNonNull(powerList).getConfigurationSection(sectionKey);
+                String conditionName = Objects.requireNonNull(section).getString("conditionName");
+                loadCondition(section, conditionName);
+            }
+        }
+        // Markers
+        ConfigurationSection markerList = s.getConfigurationSection("marker");
+        if (markerList != null) {
+            for (String sectionKey : markerList.getKeys(false)) {
+                ConfigurationSection section = Objects.requireNonNull(powerList).getConfigurationSection(sectionKey);
+                String markerName = Objects.requireNonNull(section).getString("markerName");
+                loadMarker(section, markerName);
+            }
         }
 
         setHasPermission(s.getBoolean("haspermission", false));
@@ -243,7 +257,7 @@ public class RPGItem {
         if (s.isConfigurationSection("enchantments")) {
             ConfigurationSection enchConf = s.getConfigurationSection("enchantments");
             setEnchantMap(new HashMap<>());
-            for (String enchName : enchConf.getKeys(false)) {
+            for (String enchName : Objects.requireNonNull(enchConf).getKeys(false)) {
                 Enchantment ench;
                 try {
                     ench = Enchantment.getByKey(NamespacedKey.minecraft(enchName));
@@ -301,7 +315,7 @@ public class RPGItem {
         }
     }
 
-    private void addPower(ConfigurationSection section, String powerName) throws UnknownPowerException {
+    private void loadPower(ConfigurationSection section, String powerName) throws UnknownPowerException {
         NamespacedKey key = PowerManager.parseKey(powerName);
         Class<? extends Power> power = PowerManager.getPower(key);
         if (power == null) {
@@ -314,18 +328,32 @@ public class RPGItem {
         addPower(key, pow, false);
     }
 
-    private void addCondition(ConfigurationSection section, String powerName) throws UnknownPowerException {
+    private void loadCondition(ConfigurationSection section, String powerName) throws UnknownPowerException {
         NamespacedKey key = PowerManager.parseKey(powerName);
-        Class<? extends Condition> condition = PowerManager.getCondition(key);
+        Class<? extends Condition<?>> condition = PowerManager.getCondition(key);
         if (condition == null) {
             plugin.getLogger().warning("Unknown condition:" + key + " on item " + this.name);
             throw new UnknownPowerException(key);
         }
-        Condition pow = PowerManager.instantiate(condition);
+        Condition<?> pow = PowerManager.instantiate(condition);
         pow.setItem(this);
         pow.init(section);
         addCondition(key, pow, false);
     }
+
+    private void loadMarker(ConfigurationSection section, String powerName) throws UnknownPowerException {
+        NamespacedKey key = PowerManager.parseKey(powerName);
+        Class<? extends Marker> marker = PowerManager.getMarker(key);
+        if (marker == null) {
+            plugin.getLogger().warning("Unknown marker:" + key + " on item " + this.name);
+            throw new UnknownPowerException(key);
+        }
+        Marker pow = PowerManager.instantiate(marker);
+        pow.setItem(this);
+        pow.init(section);
+        addMarker(key, pow, false);
+    }
+
 
     public void save(ConfigurationSection s) {
         s.set("name", name);
@@ -376,6 +404,24 @@ public class RPGItem {
             powerConfigs.set(Integer.toString(i), pConfig);
             i++;
         }
+        ConfigurationSection conditionConfigs = s.createSection("conditions");
+        i = 0;
+        for (Condition<?> p : conditions) {
+            MemoryConfiguration pConfig = new MemoryConfiguration();
+            pConfig.set("conditionName", p.getNamespacedKey().toString());
+            p.save(pConfig);
+            conditionConfigs.set(Integer.toString(i), pConfig);
+            i++;
+        }
+        ConfigurationSection markerConfigs = s.createSection("markers");
+        i = 0;
+        for (Marker p : markers) {
+            MemoryConfiguration pConfig = new MemoryConfiguration();
+            pConfig.set("markerName", p.getNamespacedKey().toString());
+            p.save(pConfig);
+            markerConfigs.set(Integer.toString(i), pConfig);
+            i++;
+        }
 
         s.set("hitCost", getHitCost());
         s.set("hittingCost", getHittingCost());
@@ -424,7 +470,7 @@ public class RPGItem {
         item.setType(getItem());
         ItemMeta meta = item.getItemMeta();
         List<String> lore = new ArrayList<>(getLore());
-        PersistentDataContainer itemTagContainer = meta.getPersistentDataContainer();
+        PersistentDataContainer itemTagContainer = Objects.requireNonNull(meta).getPersistentDataContainer();
         SubItemTagContainer rpgitemsTagContainer = makeTag(itemTagContainer, TAG_META);
         set(rpgitemsTagContainer, TAG_ITEM_UID, getUid());
         addDurabilityBar(rpgitemsTagContainer, lore);
@@ -447,7 +493,7 @@ public class RPGItem {
             }
         }
         // Patch for mcMMO buff. See SkillUtils.java#removeAbilityBuff in mcMMO
-        if (item.hasItemMeta() && item.getItemMeta().hasLore() && item.getItemMeta().getLore().contains("mcMMO Ability Tool"))
+        if (item.hasItemMeta() && Objects.requireNonNull(item.getItemMeta()).hasLore() && Objects.requireNonNull(item.getItemMeta().getLore()).contains("mcMMO Ability Tool"))
             lore.add("mcMMO Ability Tool");
         lore.addAll(reservedLores);
         meta.setLore(lore);
@@ -458,7 +504,7 @@ public class RPGItem {
             return;
         }
 
-        if (isCustomItemModel() || hasPower(PowerUnbreakable.class)) {
+        if (isCustomItemModel() || hasMarker(Unbreakable.class)) {
             meta.setUnbreakable(true);
         } else {
             meta.setUnbreakable(false);
@@ -551,14 +597,14 @@ public class RPGItem {
 
     private List<String> filterLores(ItemStack i) {
         List<String> ret = new ArrayList<>();
-        List<PowerLoreFilter> patterns = getPower(PowerLoreFilter.class).stream()
-                                                                        .filter(p -> !Strings.isNullOrEmpty(p.regex))
-                                                                        .map(PowerLoreFilter::compile)
-                                                                        .collect(Collectors.toList());
+        List<LoreFilter> patterns = getMarker(LoreFilter.class).stream()
+                                                               .filter(p -> !Strings.isNullOrEmpty(p.regex))
+                                                               .map(LoreFilter::compile)
+                                                               .collect(Collectors.toList());
         if (patterns.isEmpty()) return Collections.emptyList();
-        if (!i.hasItemMeta() || !i.getItemMeta().hasLore()) return Collections.emptyList();
-        for (String str : i.getItemMeta().getLore()) {
-            for (PowerLoreFilter p : patterns) {
+        if (!i.hasItemMeta() || !Objects.requireNonNull(i.getItemMeta()).hasLore()) return Collections.emptyList();
+        for (String str : Objects.requireNonNull(i.getItemMeta().getLore())) {
+            for (LoreFilter p : patterns) {
                 Matcher matcher = p.pattern().matcher(ChatColor.stripColor(str));
                 if (p.find ? matcher.find() : matcher.matches()) {
                     ret.add(str);
@@ -570,20 +616,18 @@ public class RPGItem {
     }
 
     private ItemMeta refreshAttributeModifiers(ItemMeta itemMeta) {
-        List<PowerAttributeModifier> attributeModifiers = getPower(PowerAttributeModifier.class);
-        Multimap<Attribute, AttributeModifier> old = itemMeta.getAttributeModifiers();
+        List<AttributeModifier> attributeModifiers = getMarker(AttributeModifier.class);
+        Multimap<Attribute, org.bukkit.attribute.AttributeModifier> old = itemMeta.getAttributeModifiers();
         if (attributeMode.equals(AttributeMode.FULL_UPDATE)) {
             if (old != null && !old.isEmpty()) {
-                old.forEach((attribute, attributeModifier) -> {
-                    itemMeta.removeAttributeModifier(attribute, attributeModifier);
-                });
+                old.forEach(itemMeta::removeAttributeModifier);
             }
         }
         if (!attributeModifiers.isEmpty()) {
-            for (PowerAttributeModifier attributeModifier : attributeModifiers) {
+            for (AttributeModifier attributeModifier : attributeModifiers) {
                 Attribute attribute = attributeModifier.attribute;
                 UUID uuid = new UUID(attributeModifier.uuidMost, attributeModifier.uuidLeast);
-                AttributeModifier modifier = new AttributeModifier(
+                org.bukkit.attribute.AttributeModifier modifier = new org.bukkit.attribute.AttributeModifier(
                         uuid,
                         attributeModifier.name,
                         attributeModifier.amount,
@@ -602,7 +646,7 @@ public class RPGItem {
     }
 
     public boolean canDoMeleeTo(ItemStack item, Entity entity) {
-        if (hasPower(PowerRangedOnly.class)) {
+        if (hasMarker(RangedOnly.class)) {
             return false;
         }
         if (item.getType() == Material.BOW || item.getType() == Material.SNOWBALL || item.getType() == Material.EGG || item.getType() == Material.POTION) {
@@ -612,7 +656,7 @@ public class RPGItem {
     }
 
     public boolean canDoProjectileTo(ItemStack item, double distance, Entity entity) {
-        List<PowerRanged> ranged = getPower(PowerRanged.class, true);
+        List<Ranged> ranged = getMarker(Ranged.class, true);
         if (!ranged.isEmpty()) {
             return !(ranged.get(0).rm > distance) && !(distance > ranged.get(0).r);
         }
@@ -766,22 +810,20 @@ public class RPGItem {
         return !preFire.isCancelled();
     }
 
-    @SuppressWarnings("unchecked")
-    private <T> PowerResult<T> checkConditions(Player player, ItemStack i, Pimpl pimpl, List<Condition> conds, Map<PropertyHolder, PowerResult> context) {
+    private <T> PowerResult<T> checkConditions(Player player, ItemStack i, Pimpl pimpl, List<Condition<?>> conds, Map<PropertyHolder, PowerResult<?>> context) {
         Set<String> ids = pimpl.getPower().getConditions();
-        List<Condition> conditions = conds.stream().filter(p -> ids.contains(p.id())).collect(Collectors.toList());
-        List<Condition> failed = conditions.stream().filter(p -> p.isStatic() ? !context.get(p).isOK() : !p.check(player, i, context).isOK()).collect(Collectors.toList());
+        List<Condition<?>> conditions = conds.stream().filter(p -> ids.contains(p.id())).collect(Collectors.toList());
+        List<Condition<?>> failed = conditions.stream().filter(p -> p.isStatic() ? !context.get(p).isOK() : !p.check(player, i, context).isOK()).collect(Collectors.toList());
         if (failed.isEmpty()) return null;
         return failed.stream().anyMatch(Condition::isCritical) ? PowerResult.abort() : PowerResult.condition();
     }
 
-    @SuppressWarnings("unchecked")
-    private Map<Condition, PowerResult> checkStaticCondition(Player player, ItemStack i, List<Condition> conds) {
+    private Map<Condition<?>, PowerResult<?>> checkStaticCondition(Player player, ItemStack i, List<Condition<?>> conds) {
         Set<String> ids = powers.stream().flatMap(p -> p.getConditions().stream()).collect(Collectors.toSet());
-        List<Condition> statics = conds.stream().filter(Condition::isStatic).filter(p -> ids.contains(p.id())).collect(Collectors.toList());
-        Map<Condition, PowerResult> result = new LinkedHashMap<>();
-        for (Condition c : statics) {
-            result.put(c, c.check(player, i, result));
+        List<Condition<?>> statics = conds.stream().filter(Condition::isStatic).filter(p -> ids.contains(p.id())).collect(Collectors.toList());
+        Map<Condition<?>, PowerResult<?>> result = new LinkedHashMap<>();
+        for (Condition<?> c : statics) {
+            result.put(c, c.check(player, i, Collections.unmodifiableMap(result)));
         }
         return result;
     }
@@ -791,9 +833,9 @@ public class RPGItem {
         TReturn ret = trigger.def(player, i, event);
         if (!triggerPreCheck(player, i, event, trigger, powers)) return ret;
         try {
-            List<Condition> conds = getConditions();
-            Map<Condition, PowerResult> staticCond = checkStaticCondition(player, i, conds);
-            Map<PropertyHolder, PowerResult> resultMap = new LinkedHashMap<>(staticCond);
+            List<Condition<?>> conds = getConditions();
+            Map<Condition<?>, PowerResult<?>> staticCond = checkStaticCondition(player, i, conds);
+            Map<PropertyHolder, PowerResult<?>> resultMap = new LinkedHashMap<>(staticCond);
             for (TPower power : powers) {
                 PowerResult<TResult> result = checkConditions(player, i, power, conds, resultMap);
                 if (result != null) {
@@ -816,7 +858,7 @@ public class RPGItem {
         }
     }
 
-    public List<Condition> getConditions() {
+    public List<Condition<?>> getConditions() {
         return conditions;
     }
 
@@ -852,7 +894,7 @@ public class RPGItem {
         return result;
     }
 
-    private <TEvent extends Event, TPower extends Pimpl, TResult, TReturn> void triggerPostFire(Player player, ItemStack itemStack, TEvent event, Trigger<TEvent, TPower, TResult, TReturn> trigger, Map<PropertyHolder, PowerResult> resultMap, TReturn ret) {
+    private <TEvent extends Event, TPower extends Pimpl, TResult, TReturn> void triggerPostFire(Player player, ItemStack itemStack, TEvent event, Trigger<TEvent, TPower, TResult, TReturn> trigger, Map<PropertyHolder, PowerResult<?>> resultMap, TReturn ret) {
         RPGItemsPowersPostFireEvent<TEvent, TPower, TResult, TReturn> postFire = new RPGItemsPowersPostFireEvent<>(player, itemStack, event, this, trigger, resultMap, ret);
         Bukkit.getServer().getPluginManager().callEvent(postFire);
 
@@ -930,7 +972,7 @@ public class RPGItem {
     public ItemStack toItemStack() {
         ItemStack rStack = new ItemStack(getItem());
         ItemMeta meta = rStack.getItemMeta();
-        PersistentDataContainer itemTagContainer = meta.getPersistentDataContainer();
+        PersistentDataContainer itemTagContainer = Objects.requireNonNull(meta).getPersistentDataContainer();
         SubItemTagContainer rpgitemsTagContainer = makeTag(itemTagContainer, TAG_META);
         set(rpgitemsTagContainer, TAG_ITEM_UID, getUid());
         if (isHasStackId()) {
@@ -947,7 +989,7 @@ public class RPGItem {
     public void toModel(ItemStack itemStack) {
         updateItem(itemStack);
         ItemMeta itemMeta = itemStack.getItemMeta();
-        SubItemTagContainer meta = makeTag(itemMeta.getPersistentDataContainer(), TAG_META);
+        SubItemTagContainer meta = makeTag(Objects.requireNonNull(itemMeta).getPersistentDataContainer(), TAG_META);
         meta.remove(TAG_OWNER);
         meta.remove(TAG_STACK_ID);
         set(meta, TAG_IS_MODEL, true);
@@ -959,7 +1001,7 @@ public class RPGItem {
     public void unModel(ItemStack itemStack, Player owner) {
         updateItem(itemStack);
         ItemMeta itemMeta = itemStack.getItemMeta();
-        SubItemTagContainer meta = makeTag(itemMeta.getPersistentDataContainer(), TAG_META);
+        SubItemTagContainer meta = makeTag(Objects.requireNonNull(itemMeta).getPersistentDataContainer(), TAG_META);
         if (isCanBeOwned() && owner != null) {
             set(meta, TAG_OWNER, owner);
         }
@@ -1032,7 +1074,7 @@ public class RPGItem {
 
     public void setItemStackDurability(ItemStack item, int val) {
         ItemMeta itemMeta = item.getItemMeta();
-        SubItemTagContainer tagContainer = makeTag(itemMeta, TAG_META);
+        SubItemTagContainer tagContainer = makeTag(Objects.requireNonNull(itemMeta), TAG_META);
         if (getMaxDurability() != -1) {
             set(tagContainer, TAG_DURABILITY, val);
         }
@@ -1046,7 +1088,7 @@ public class RPGItem {
             return Optional.empty();
         }
         ItemMeta itemMeta = item.getItemMeta();
-        SubItemTagContainer tagContainer = makeTag(itemMeta, TAG_META);
+        SubItemTagContainer tagContainer = makeTag(Objects.requireNonNull(itemMeta), TAG_META);
         int durability = computeIfAbsent(tagContainer, TAG_DURABILITY, PersistentDataType.INTEGER, this::getDefaultDurability);
         tagContainer.commit();
         item.setItemMeta(itemMeta);
@@ -1062,7 +1104,7 @@ public class RPGItem {
         int durability;
         ItemMeta itemMeta = item.getItemMeta();
         if (getMaxDurability() != -1) {
-            SubItemTagContainer tagContainer = makeTag(itemMeta, TAG_META);
+            SubItemTagContainer tagContainer = makeTag(Objects.requireNonNull(itemMeta), TAG_META);
             durability = computeIfAbsent(tagContainer, TAG_DURABILITY, PersistentDataType.INTEGER, this::getDefaultDurability);
             if (checkbound && (
                     (val > 0 && durability < getDurabilityLowerBound()) ||
@@ -1073,7 +1115,7 @@ public class RPGItem {
                 return false;
             }
             if (durability <= val
-                        && hasPower(PowerUnbreakable.class)
+                        && hasMarker(Unbreakable.class)
                         && !isCustomItemModel()) {
                 tagContainer.commit();
                 item.setItemMeta(itemMeta);
@@ -1148,20 +1190,20 @@ public class RPGItem {
         }
     }
 
-    public boolean hasPower(Class<? extends Power> power) {
-        return powers.stream().anyMatch(p -> p.getClass().equals(power));
+    public boolean hasMarker(Class<? extends Marker> marker) {
+        return markers.stream().anyMatch(p -> p.getClass().equals(marker));
     }
 
-    public <T extends Power> List<T> getPower(Class<T> power) {
-        return powers.stream().filter(p -> p.getClass().equals(power)).map(power::cast).collect(Collectors.toList());
+    public <T extends Marker> List<T> getMarker(Class<T> marker) {
+        return markers.stream().filter(p -> p.getClass().equals(marker)).map(marker::cast).collect(Collectors.toList());
+    }
+
+    public <T extends Marker> List<T> getMarker(Class<T> marker, boolean subclass) {
+        return subclass ? markers.stream().filter(marker::isInstance).map(marker::cast).collect(Collectors.toList()) : getMarker(marker);
     }
 
     public <T extends Power> List<T> getPower(NamespacedKey key, Class<T> power) {
         return powers.stream().filter(p -> p.getClass().equals(power) && getPowerKey(p).equals(key)).map(power::cast).collect(Collectors.toList());
-    }
-
-    public <T extends Power> List<T> getPower(Class<T> power, boolean subclass) {
-        return subclass ? powers.stream().filter(power::isInstance).map(power::cast).collect(Collectors.toList()) : getPower(power);
     }
 
     public void addPower(NamespacedKey key, Power power) {
@@ -1170,7 +1212,7 @@ public class RPGItem {
 
     private void addPower(NamespacedKey key, Power power, boolean update) {
         powers.add(power);
-        powerKeys.put(power, key);
+        keys.put(power, key);
         if (update) {
             rebuild();
         }
@@ -1178,26 +1220,44 @@ public class RPGItem {
 
     public void removePower(Power power) {
         powers.remove(power);
-        powerKeys.remove(power);
+        keys.remove(power);
         power.deinit();
         rebuild();
     }
 
-    public void addCondition(NamespacedKey key, Condition condition) {
+    public void addCondition(NamespacedKey key, Condition<?> condition) {
         addCondition(key, condition, true);
     }
 
-    private void addCondition(NamespacedKey key, Condition condition, boolean update) {
+    private void addCondition(NamespacedKey key, Condition<?> condition, boolean update) {
         conditions.add(condition);
-        conditionKeys.put(condition, key);
+        keys.put(condition, key);
         if (update) {
             rebuild();
         }
     }
 
-    public void removeCondition(Condition condition) {
+    public void removeCondition(Condition<?> condition) {
         conditions.remove(condition);
-        conditionKeys.remove(condition);
+        keys.remove(condition);
+        rebuild();
+    }
+
+    public void addMarker(NamespacedKey key, Marker marker) {
+        addMarker(key, marker, true);
+    }
+
+    private void addMarker(NamespacedKey key, Marker marker, boolean update) {
+        markers.add(marker);
+        keys.put(marker, key);
+        if (update) {
+            rebuild();
+        }
+    }
+
+    public void removeMarker(Marker marker) {
+        markers.remove(marker);
+        keys.remove(marker);
         rebuild();
     }
 
@@ -1221,7 +1281,6 @@ public class RPGItem {
         return msg;
     }
 
-    @SuppressWarnings("unchecked")
     private <TEvent extends Event, T extends Pimpl, TResult, TReturn> List<T> getPower(Trigger<TEvent, T, TResult, TReturn> trigger, Player player) {
         return powers.stream()
                      .filter(p -> p.getTriggers().contains(trigger))
@@ -1234,6 +1293,7 @@ public class RPGItem {
                      .collect(Collectors.toList());
     }
 
+    @SuppressWarnings("rawtypes")
     public static class DynamicMethodInterceptor implements MethodInterceptor {
         private static WeakHashMap<Power, WeakHashMap<Player, Power>> cache = new WeakHashMap<>();
 
@@ -1473,11 +1533,6 @@ public class RPGItem {
         this.hittingCost = hittingCost;
     }
 
-    @Deprecated
-    public int getId() {
-        return id;
-    }
-
     public Material getItem() {
         return item;
     }
@@ -1576,7 +1631,7 @@ public class RPGItem {
     }
 
     public NamespacedKey getPowerKey(Power power) {
-        return Objects.requireNonNull(powerKeys.get(power));
+        return Objects.requireNonNull(keys.get(power));
     }
 
     public int getTooltipWidth() {
@@ -1684,19 +1739,6 @@ public class RPGItem {
         DISALLOW,
         PERMISSION,
         ALLOW
-    }
-
-    @Deprecated
-    private enum Quality {
-        TRASH(ChatColor.GRAY.toString(), "7"), COMMON(ChatColor.WHITE.toString(), "f"), UNCOMMON(ChatColor.GREEN.toString(), "a"), RARE(ChatColor.BLUE.toString(), "9"), EPIC(ChatColor.DARK_PURPLE.toString(), "5"), LEGENDARY(ChatColor.GOLD.toString(), "6");
-
-        public final String colour;
-        public final String cCode;
-
-        Quality(String colour, String code) {
-            this.colour = colour;
-            this.cCode = code;
-        }
     }
 
     public enum AttributeMode {

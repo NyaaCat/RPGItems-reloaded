@@ -1,9 +1,7 @@
-package think.rpgitems.power.impl;
+package think.rpgitems.power.marker;
 
 import org.bukkit.attribute.Attribute;
-import org.bukkit.attribute.AttributeModifier;
 import org.bukkit.inventory.EquipmentSlot;
-import think.rpgitems.power.Pimpl;
 import think.rpgitems.power.Meta;
 import think.rpgitems.power.Property;
 
@@ -15,8 +13,8 @@ import java.util.UUID;
  * Add attribute modifier to item
  * </p>
  */
-@Meta(implClass = Pimpl.class, marker = true)
-public class PowerAttributeModifier extends BasePower {
+@Meta(marker = true)
+public class AttributeModifier extends BaseMarker {
 
     @Property(order = 0)
     public double amount = 2;
@@ -28,7 +26,7 @@ public class PowerAttributeModifier extends BasePower {
     public String name = "generic.maxHealth";
 
     @Property(order = 3, required = true)
-    public AttributeModifier.Operation operation = AttributeModifier.Operation.ADD_NUMBER;
+    public org.bukkit.attribute.AttributeModifier.Operation operation = org.bukkit.attribute.AttributeModifier.Operation.ADD_NUMBER;
 
     @Property
     public EquipmentSlot slot = null;

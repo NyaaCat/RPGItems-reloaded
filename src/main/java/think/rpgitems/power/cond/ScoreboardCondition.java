@@ -6,35 +6,37 @@ import com.google.common.cache.CacheLoader;
 import com.google.common.cache.LoadingCache;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
-import think.rpgitems.power.*;
-import think.rpgitems.power.impl.BasePower;
-import think.rpgitems.power.impl.PowerSelector;
+import think.rpgitems.power.Meta;
+import think.rpgitems.power.PowerResult;
+import think.rpgitems.power.Property;
+import think.rpgitems.power.PropertyHolder;
+import think.rpgitems.power.marker.Selector;
 
 import java.util.Collections;
 import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.TimeUnit;
 
-import static think.rpgitems.power.impl.PowerSelector.*;
+import static think.rpgitems.power.marker.Selector.*;
 
 @Meta(marker = true)
-public class ScoreboardCondition extends BasePower implements Condition<Void> {
+public class ScoreboardCondition extends BaseCondition<Void> {
 
     private static LoadingCache<String, Map<String, Pair<Integer, Integer>>> scoreCache = CacheBuilder
                                                                                                   .newBuilder()
                                                                                                   .concurrencyLevel(1)
                                                                                                   .expireAfterAccess(1, TimeUnit.DAYS)
-                                                                                                  .build(CacheLoader.from(PowerSelector::parseScore));
+                                                                                                  .build(CacheLoader.from(Selector::parseScore));
     private static LoadingCache<String, Pair<Set<String>, Set<String>>> teamCache = CacheBuilder
                                                                                             .newBuilder()
                                                                                             .concurrencyLevel(1)
                                                                                             .expireAfterAccess(1, TimeUnit.DAYS)
-                                                                                            .build(CacheLoader.from(PowerSelector::parse));
+                                                                                            .build(CacheLoader.from(Selector::parse));
     private static LoadingCache<String, Pair<Set<String>, Set<String>>> tagCache = CacheBuilder
                                                                                            .newBuilder()
                                                                                            .concurrencyLevel(1)
                                                                                            .expireAfterAccess(1, TimeUnit.DAYS)
-                                                                                           .build(CacheLoader.from(PowerSelector::parse));
+                                                                                           .build(CacheLoader.from(Selector::parse));
     @Property(order = 0, required = true)
     public String id;
     @Property
@@ -81,7 +83,7 @@ public class ScoreboardCondition extends BasePower implements Condition<Void> {
     }
 
     @Override
-    public PowerResult<Void> check(Player player, ItemStack stack, Map<PropertyHolder, PowerResult> context) {
+    public PowerResult<Void> check(Player player, ItemStack stack, Map<PropertyHolder, PowerResult<?>> context) {
         if (tag != null) {
             Pair<Set<String>, Set<String>> t = tagCache.getUnchecked(tag);
             if (!matchTag(player, t)) {

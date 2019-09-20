@@ -10,7 +10,7 @@ import java.util.Map;
 import java.util.Set;
 
 @Meta(marker = true)
-public class DurabilityCondition extends BasePower implements Condition<Void> {
+public class DurabilityCondition extends BaseCondition<Void> {
 
     @Property(order = 0, required = true)
     public String id;
@@ -43,7 +43,7 @@ public class DurabilityCondition extends BasePower implements Condition<Void> {
     }
 
     @Override
-    public PowerResult<Void> check(Player player, ItemStack stack, Map<PropertyHolder, PowerResult> context) {
+    public PowerResult<Void> check(Player player, ItemStack stack, Map<PropertyHolder, PowerResult<?>> context) {
         int durability = getItem().getItemStackDurability(stack).orElseThrow(() -> new IllegalStateException("Durability condition is not allowed on item without durability"));
         if ((durabilityMax > 0 && durability > durabilityMax) || durability < durabilityMin) return PowerResult.fail();
         return PowerResult.ok();

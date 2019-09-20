@@ -15,7 +15,6 @@ import org.bukkit.plugin.java.JavaPlugin;
 import think.rpgitems.data.Font;
 import think.rpgitems.item.ItemManager;
 import think.rpgitems.power.*;
-import think.rpgitems.power.impl.BasePower;
 import think.rpgitems.support.WGSupport;
 
 import java.io.File;
@@ -92,6 +91,7 @@ public class RPGItems extends JavaPlugin {
         });
         PowerManager.registerConditions(RPGItems.plugin, Power.class.getPackage().getName() + ".cond");
         PowerManager.registerPowers(RPGItems.plugin, Power.class.getPackage().getName() + ".impl");
+        PowerManager.registerMarkers(RPGItems.plugin, Power.class.getPackage().getName() + ".marker");
         saveDefaultConfig();
         Font.load();
         WGSupport.load();

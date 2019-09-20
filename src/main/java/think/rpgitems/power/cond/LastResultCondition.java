@@ -3,7 +3,6 @@ package think.rpgitems.power.cond;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
 import think.rpgitems.power.*;
-import think.rpgitems.power.impl.BasePower;
 
 import java.util.Collections;
 import java.util.Map;
@@ -11,7 +10,7 @@ import java.util.Optional;
 import java.util.Set;
 
 @Meta(marker = true)
-public class LastResultCondition extends BasePower implements Condition<Map.Entry<PropertyHolder, PowerResult>> {
+public class LastResultCondition extends BaseCondition<Map.Entry<PropertyHolder, PowerResult<?>>> {
 
     @Property(order = 0, required = true)
     public String id;
@@ -41,8 +40,8 @@ public class LastResultCondition extends BasePower implements Condition<Map.Entr
     }
 
     @Override
-    public PowerResult<Map.Entry<PropertyHolder, PowerResult>> check(Player player, ItemStack stack, Map<PropertyHolder, PowerResult> context) {
-        Optional<Map.Entry<PropertyHolder, PowerResult>> last = context.entrySet().stream().skip(context.size() - 1).findFirst();
+    public PowerResult<Map.Entry<PropertyHolder, PowerResult<?>>> check(Player player, ItemStack stack, Map<PropertyHolder, PowerResult<?>> context) {
+        Optional<Map.Entry<PropertyHolder, PowerResult<?>>> last = context.entrySet().stream().skip(context.size() - 1).findFirst();
         return last
                        .map(r -> okResults.contains(r.getValue().result()) ? PowerResult.ok() : PowerResult.fail())
                        .orElse(failOnNoResult ? PowerResult.fail() : PowerResult.ok())

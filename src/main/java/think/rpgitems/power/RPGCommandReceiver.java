@@ -5,6 +5,7 @@ import cat.nyaa.nyaacore.Message;
 import cat.nyaa.nyaacore.Pair;
 import cat.nyaa.nyaacore.cmdreceiver.Arguments;
 import cat.nyaa.nyaacore.cmdreceiver.CommandReceiver;
+import cat.nyaa.nyaacore.cmdreceiver.SubCommand;
 import net.md_5.bungee.api.chat.BaseComponent;
 import org.bukkit.Bukkit;
 import org.bukkit.NamespacedKey;
@@ -13,7 +14,7 @@ import org.bukkit.entity.Player;
 import think.rpgitems.RPGItems;
 import think.rpgitems.item.ItemManager;
 import think.rpgitems.item.RPGItem;
-import think.rpgitems.power.impl.PowerSelector;
+import think.rpgitems.power.marker.Selector;
 
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
@@ -31,6 +32,11 @@ public abstract class RPGCommandReceiver extends CommandReceiver {
 
     public RPGCommandReceiver(RPGItems plugin, LanguageRepository i18n) {
         super(plugin, i18n);
+        Arrays.stream(getClass().getDeclaredMethods()).forEach(method -> {
+            if (method.getAnnotation(Attribute.class) != null) {
+                subCommandAttribute.put(method.getAnnotation(SubCommand.class).value(), method.getAnnotation(Attribute.class).value());
+            }
+        });
         this.i18n = i18n;
     }
 
@@ -56,13 +62,13 @@ public abstract class RPGCommandReceiver extends CommandReceiver {
             }
             if (!listArg.isEnum()) {
                 if (propertyField.getName().equalsIgnoreCase("conditions")) {
-                    List<Condition> conditions = item.getConditions();
+                    List<Condition<?>> conditions = item.getConditions();
                     List<String> conditionIds = conditions.stream().map(Condition::id).collect(Collectors.toList());
                     return resolveEnumListValue(power, propertyField, conditionIds, last, hasNamePrefix);
                 }
                 if (propertyField.getName().equalsIgnoreCase("selectors")) {
-                    List<PowerSelector> selectors = item.getPower(PowerSelector.class);
-                    List<String> selectorIds = selectors.stream().map(PowerSelector::id).collect(Collectors.toList());
+                    List<Selector> selectors = item.getMarker(Selector.class);
+                    List<String> selectorIds = selectors.stream().map(Selector::id).collect(Collectors.toList());
                     return resolveEnumListValue(power, propertyField, selectorIds, last, hasNamePrefix);
                 }
                 return Collections.emptyList();
@@ -110,6 +116,10 @@ public abstract class RPGCommandReceiver extends CommandReceiver {
         if (Set.class.isAssignableFrom(propertyField.getType()) || (as != null && as.preset() == Preset.TRIGGERS)) {
             enumValues.removeAll(currentVaules);
         }
+        return resolveEnumCompletion(enumValues, last, hasNamePrefix, currentVaules, incompleteValue);
+    }
+
+    private static List<String> resolveEnumCompletion(Collection<String> enumValues, String last, boolean hasNamePrefix, List<String> currentVaules, String incompleteValue) {
         String base = incompleteValue.isEmpty() ? last : last.replaceAll(incompleteValue + "$", "");
         boolean next = (currentVaules.isEmpty() && !hasNamePrefix) || base.endsWith(":") || base.endsWith(",");
         return enumValues.stream().filter(n -> n.startsWith(incompleteValue)).map(n -> base + (next ? "" : ",") + n).collect(Collectors.toList());
@@ -177,11 +187,11 @@ public abstract class RPGCommandReceiver extends CommandReceiver {
 
     protected boolean isTrivialProperty(Meta meta, String name) {
         return (meta.immutableTrigger() && name.equals("triggers"))
-                        || (meta.marker() && name.equals("triggers"))
-                        || (meta.marker() && name.equals("conditions") && !meta.withConditions())
-                        || (!meta.withSelectors() && name.equals("selectors"))
-                        || (!meta.withContext() && name.equals("requiredContext"))
-                        || name.equals("displayName");
+                       || (meta.marker() && name.equals("triggers"))
+                       || (meta.marker() && name.equals("conditions") && !meta.withConditions())
+                       || (!meta.withSelectors() && name.equals("selectors"))
+                       || (!meta.withContext() && name.equals("requiredContext"))
+                       || name.equals("displayName");
     }
 
     private List<String> resolvePropertiesSuggestions(CommandSender sender, RPGItem item, String last, Class<? extends Power> power, Map<String, Pair<Method, PropertyInstance>> argMap, Set<Field> settled, List<Field> required) {
@@ -221,14 +231,14 @@ public abstract class RPGCommandReceiver extends CommandReceiver {
         List<Power> powers = item.getPowers().stream().filter(p -> item.getPowerKey(p).equals(key)).collect(Collectors.toList());
         if (powers.isEmpty()) return Collections.emptyList();
         Class<? extends Power> powerClass = powers.get(0).getClass();
-        if (cmd.top() == null) {
+        if (cmd.top().equals("")) {
             // rpgitem item get/set power
             return IntStream.rangeClosed(1, powers.size()).mapToObj(Integer::toString).collect(Collectors.toList());
         } else {
             // rpgitem item get/set power 1 ...
             cmd.next();
         }
-        if (cmd.top() == null) {
+        if (cmd.top().equals("")) {
             // rpgitem item get/set power 1
             return PowerManager.getProperties(powerClass).keySet().stream().filter(s -> s.startsWith(last)).collect(Collectors.toList());
         }
@@ -256,21 +266,19 @@ public abstract class RPGCommandReceiver extends CommandReceiver {
         }
         values.removeAll(currentVaules);
         String incompleteValue = lastVaule;
-        String base = incompleteValue.isEmpty() ? last : last.replaceAll(incompleteValue + "$", "");
-        boolean next = currentVaules.isEmpty() || base.endsWith(",");
-        return values.stream().filter(n -> n.startsWith(incompleteValue)).map(n -> base + (next ? "" : ",") + n).collect(Collectors.toList());
+        return resolveEnumCompletion(values, last, false, currentVaules, incompleteValue);
     }
 
     @Override
-    public List<String> acceptTabComplete(CommandSender sender, Arguments cmd)   {
+    public List<String> acceptTabComplete(CommandSender sender, Arguments cmd) {
         boolean suggestion = cmd.isSuggestion();
         Set<String> subCommands = getSubCommands();
-        switch (cmd.length()) {
-            case 0:
-                return subCommandAttribute.entrySet().stream().filter(entry -> entry.getValue().startsWith("command")).map(Map.Entry::getKey).collect(Collectors.toList());
-            case 1: {
-                String str = cmd.next();
-                if (suggestion) {
+        if (suggestion) {
+            switch (cmd.length() - 1) {
+                case 0:
+                    return Collections.emptyList();
+                case 1: {
+                    String str = cmd.next();
                     if (ItemManager.getItem(str).isPresent()) {
                         // we have a `/rpgitem item` and waiting a proper command
                         return subCommandAttribute.entrySet().stream().filter(entry -> Stream.of("item", "power", "property").anyMatch(entry.getValue()::startsWith)).map(Map.Entry::getKey).collect(Collectors.toList());
@@ -290,17 +298,10 @@ public abstract class RPGCommandReceiver extends CommandReceiver {
                             return new ArrayList<>(ItemManager.itemNames());
                         }
                     }
-                } else {
-                    // trying to complete a `/rpgitem com` or `/rpgitem ite`
-                    List<String> list = subCommands.stream().filter(s -> s.startsWith(str)).collect(Collectors.toList());
-                    if (!list.isEmpty()) return list;
-                    return ItemManager.itemNames().stream().filter(s -> s.startsWith(str)).collect(Collectors.toList());
                 }
-            }
-            case 2: {
-                String first = cmd.next();
-                String second = cmd.next();
-                if (suggestion) {
+                case 2: {
+                    String first = cmd.next();
+                    String second = cmd.next();
                     // may be `/rpgitem item command` or `/rpgitem command item`
                     Pair<RPGItem, String> itemCommand = resolveItemCommand(first, second);
                     if (itemCommand == null) return Collections.emptyList(); // neither
@@ -328,7 +329,24 @@ public abstract class RPGCommandReceiver extends CommandReceiver {
                         default:
                             return null;
                     }
-                } else {
+                }
+                default:
+                    return resolvePowerOrPropertySuggestion(sender, cmd); // only case is `/rpgitem power item somepower`
+            }
+        } else {
+            switch (cmd.length()) {
+                case 0:
+                    return subCommandAttribute.entrySet().stream().filter(entry -> entry.getValue().startsWith("command")).map(Map.Entry::getKey).collect(Collectors.toList());
+                case 1: {
+                    String str = cmd.next();
+                    // trying to complete a `/rpgitem com` or `/rpgitem ite`
+                    List<String> list = subCommands.stream().filter(s -> s.startsWith(str)).collect(Collectors.toList());
+                    if (!list.isEmpty()) return list;
+                    return ItemManager.itemNames().stream().filter(s -> s.startsWith(str)).collect(Collectors.toList());
+                }
+                case 2: {
+                    String first = cmd.next();
+                    String second = cmd.next();
                     if (ItemManager.getItem(first).isPresent()) {
                         // trying to complete `/rpgitem item com`
                         return subCommandAttribute.entrySet().stream()
@@ -358,19 +376,15 @@ public abstract class RPGCommandReceiver extends CommandReceiver {
                         }
                     }
                 }
-            }
-            case 3: {
-                String first = cmd.next();
-                String second = cmd.next();
-                String third = cmd.next();
-                Pair<RPGItem, String> itemCommand = resolveItemCommand(first, second);
-                if (itemCommand == null) return Collections.emptyList();
-                String attr = subCommandAttribute.get(itemCommand.getValue());
-                if (attr == null) return Collections.emptyList();
-                String[] att = attr.split(":", 2);
-                if (suggestion) {
-                    return resolvePowerOrPropertySuggestion(sender, cmd); // only case is `/rpgitem power item somepower`
-                } else {
+                case 3: {
+                    String first = cmd.next();
+                    String second = cmd.next();
+                    String third = cmd.next();
+                    Pair<RPGItem, String> itemCommand = resolveItemCommand(first, second);
+                    if (itemCommand == null) return Collections.emptyList();
+                    String attr = subCommandAttribute.get(itemCommand.getValue());
+                    if (attr == null) return Collections.emptyList();
+                    String[] att = attr.split(":", 2);
                     switch (att[0]) {
                         case "property":
                         case "power":
@@ -400,10 +414,10 @@ public abstract class RPGCommandReceiver extends CommandReceiver {
                         default:
                             return Collections.emptyList();
                     }
+
                 }
-            }
-            default: {
-                return resolvePowerOrPropertySuggestion(sender, cmd);
+                default:
+                    return resolvePowerOrPropertySuggestion(sender, cmd);
             }
         }
     }

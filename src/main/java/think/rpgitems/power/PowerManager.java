@@ -18,6 +18,7 @@ import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
 import java.util.*;
 import java.util.function.BiFunction;
+import java.util.function.Consumer;
 import java.util.function.Function;
 import java.util.logging.Level;
 import java.util.stream.Collectors;
@@ -40,6 +41,8 @@ public class PowerManager {
     static BiMap<NamespacedKey, Class<? extends Power>> powers = HashBiMap.create();
 
     private static BiMap<NamespacedKey, Class<? extends Condition>> conditions = HashBiMap.create();
+
+    private static BiMap<NamespacedKey, Class<? extends Marker>> markers = HashBiMap.create();
 
     private static final HashBasedTable<Plugin, String, BiFunction<NamespacedKey, String, String>> descriptionResolvers = HashBasedTable.create();
 
@@ -74,22 +77,31 @@ public class PowerManager {
         }
     }
 
-    private static void registerCondition(Class<? extends Condition> clazz) {
+    private static <T extends PropertyHolder> void register(Class<? extends T> clazz, BiMap<NamespacedKey, Class<? extends T>> registry) {
         NamespacedKey key;
         try {
-            Condition p = PowerManager.instantiate(clazz);
+            T p = PowerManager.instantiate(clazz);
             key = p.getNamespacedKey();
             if (key != null) {
-                conditions.put(key, clazz);
+                registry.put(key, clazz);
             }
         } catch (Exception e) {
-            RPGItems.plugin.getLogger().log(Level.WARNING, "Failed to add power", e);
+            RPGItems.plugin.getLogger().log(Level.WARNING, "Failed to add", e);
             RPGItems.plugin.getLogger().log(Level.WARNING, "With {0}", clazz);
             return;
         }
         metas.put(clazz, clazz.getAnnotation(Meta.class));
         Map<String, Pair<Method, PropertyInstance>> propertyMap = scanProperties(clazz);
         properties.put(clazz, propertyMap);
+    }
+
+    @SuppressWarnings("rawtypes")
+    private static void registerCondition(Class<? extends Condition> clazz) {
+        register(clazz, conditions);
+    }
+
+    private static void registerMarker(Class<? extends Marker> clazz) {
+        register(clazz, markers);
     }
 
 
@@ -145,29 +157,28 @@ public class PowerManager {
                       );
     }
 
+    public static <T extends PropertyHolder> void registerPackage(Plugin plugin, String basePackage, Class<T> tClass, Consumer<Class<? extends T>> register) {
+        Class<? extends T>[] classes = ClassPathUtils.scanSubclasses(plugin, basePackage, tClass);
+        List<Class<? extends T>> classList = Arrays.stream(classes).filter(c -> c.getAnnotation(Meta.class) != null).collect(Collectors.toList());
+        registerList(plugin, classList, register);
+    }
+
+    public static <T extends PropertyHolder> void registerList(Plugin plugin, List<Class<? extends T>> list, Consumer<Class<? extends T>> register) {
+        extensions.put(plugin.getName().toLowerCase(Locale.ROOT), plugin);
+        list.stream().filter(c -> !Modifier.isAbstract(c.getModifiers()) && !c.isInterface()).sorted(Comparator.comparing(Class::getCanonicalName)).forEach(register);
+    }
+
     public static void registerPowers(Plugin plugin, String basePackage) {
-        Class<? extends Power>[] classes = ClassPathUtils.scanSubclasses(plugin, basePackage, Power.class);
-        List<Class<? extends Power>> classList = Arrays.stream(classes).filter(c -> c.getAnnotation(Meta.class) != null).collect(Collectors.toList());
-        registerPowers(plugin, classList);
+        registerPackage(plugin, basePackage, Power.class, (Consumer<Class<? extends Power>>) PowerManager::registerPower);
     }
 
-    @SuppressWarnings({"WeakerAccess"})
-    public static void registerPowers(Plugin plugin, List<Class<? extends Power>> powers) {
-        extensions.put(plugin.getName().toLowerCase(Locale.ROOT), plugin);
-        powers.stream().filter(c -> !Modifier.isAbstract(c.getModifiers()) && !c.isInterface()).sorted(Comparator.comparing(Class::getCanonicalName)).forEach(PowerManager::registerPower);
-    }
-
-
+    @SuppressWarnings("rawtypes")
     public static void registerConditions(Plugin plugin, String basePackage) {
-        Class<? extends Condition>[] classes = ClassPathUtils.scanSubclasses(plugin, basePackage, Condition.class);
-        List<Class<? extends Condition>> classList = Arrays.stream(classes).filter(c -> c.getAnnotation(Meta.class) != null).collect(Collectors.toList());
-        registerConditions(plugin, classList);
+        registerPackage(plugin, basePackage, Condition.class, (Consumer<Class<? extends Condition>>) PowerManager::registerCondition);
     }
 
-    @SuppressWarnings({"WeakerAccess"})
-    public static void registerConditions(Plugin plugin, List<Class<? extends Condition>> conditions) {
-        extensions.put(plugin.getName().toLowerCase(Locale.ROOT), plugin);
-        conditions.stream().filter(c -> !Modifier.isAbstract(c.getModifiers()) && !c.isInterface()).sorted(Comparator.comparing(Class::getCanonicalName)).forEach(PowerManager::registerCondition);
+    public static void registerMarkers(Plugin plugin, String basePackage) {
+        registerPackage(plugin, basePackage, Marker.class, (Consumer<Class<? extends Marker>>) PowerManager::registerMarker);
     }
 
     public static void addDescriptionResolver(Plugin plugin, BiFunction<NamespacedKey, String, String> descriptionResolver) {
@@ -251,8 +262,13 @@ public class PowerManager {
     }
 
     @CheckForNull
-    public static Class<? extends Condition> getCondition(NamespacedKey key) {
-        return conditions.get(overrides.computeIfAbsent(key, Function.identity()));
+    public static Class<? extends Condition<?>> getCondition(NamespacedKey key) {
+        return (Class<? extends Condition<?>>) conditions.get(overrides.computeIfAbsent(key, Function.identity()));
+    }
+
+    @CheckForNull
+    public static Class<? extends Marker> getMarker(NamespacedKey key) {
+        return markers.get(overrides.computeIfAbsent(key, Function.identity()));
     }
 
     public static <T extends PropertyHolder> T instantiate(Class<T> clz) {

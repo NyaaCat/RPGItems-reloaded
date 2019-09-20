@@ -1,7 +1,6 @@
-package think.rpgitems.power.impl;
+package think.rpgitems.power.marker;
 
 import think.rpgitems.I18n;
-import think.rpgitems.power.Pimpl;
 import think.rpgitems.power.Meta;
 import think.rpgitems.power.Property;
 
@@ -13,8 +12,8 @@ import think.rpgitems.power.Property;
  * Mark this item as ranged.
  * </p>
  */
-@Meta(implClass = Pimpl.class, marker = true)
-public class PowerRanged extends BasePower {
+@Meta(marker = true)
+public class Ranged extends BaseMarker {
     /**
      * Maximum radius
      */

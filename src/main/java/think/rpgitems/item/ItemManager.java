@@ -16,7 +16,6 @@ import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.ItemMeta;
 import org.bukkit.persistence.PersistentDataContainer;
 import org.bukkit.persistence.PersistentDataType;
-import org.bukkit.util.FileUtil;
 import think.rpgitems.AdminHandler;
 import think.rpgitems.I18n;
 import think.rpgitems.RPGItems;
@@ -24,7 +23,9 @@ import think.rpgitems.power.UnknownExtensionException;
 import think.rpgitems.power.UnknownPowerException;
 import think.rpgitems.support.WGSupport;
 
-import java.io.*;
+import java.io.File;
+import java.io.IOException;
+import java.io.RandomAccessFile;
 import java.nio.channels.FileChannel;
 import java.nio.channels.FileLock;
 import java.nio.file.Files;
@@ -180,7 +181,7 @@ public class ItemManager {
             RPGItem item = load(file);
             if (sender != null) {
                 new Message("")
-                        .append(I18n.format("message.item.load", item.getName()), Collections.singletonMap("{item}", item.getComponent()))
+                        .append(I18n.format("message.item.load", Objects.requireNonNull(item).getName()), Collections.singletonMap("{item}", item.getComponent()))
                         .send(sender);
             }
             return true;
@@ -233,14 +234,8 @@ public class ItemManager {
         return item;
     }
 
-    @SuppressWarnings("deprecation")
     public static void addItem(RPGItem item) {
         try {
-            if (item.getId() != 0) {
-                if (itemById.putIfAbsent(item.getId(), item) != null) {
-                    throw new IllegalArgumentException("Duplicated item id:" + item.getId());
-                }
-            }
             if (groupById.containsKey(item.getUid()) || itemById.putIfAbsent(item.getUid(), item) != null) {
                 throw new IllegalArgumentException("Duplicated item uid:" + item.getUid());
             }
@@ -248,7 +243,6 @@ public class ItemManager {
                 throw new IllegalArgumentException("Duplicated item name:" + item.getName());
             }
         } catch (Exception e) {
-            itemById.remove(item.getId(), item);
             itemById.remove(item.getUid(), item);
             itemByName.remove(item.getName(), item);
             throw e;
@@ -267,20 +261,6 @@ public class ItemManager {
             groupById.remove(group.getUid(), group);
             groupByName.remove(group.getName(), group);
             throw e;
-        }
-    }
-
-    private static void dump(Exception e) {
-        File file = new File(plugin.getDataFolder(), "items.yml");
-        long time = System.currentTimeMillis();
-        File backup = new File(plugin.getDataFolder(), time + "-items.yml");
-        FileUtil.copy(file, backup);
-        File log = new File(plugin.getDataFolder(), time + "-log.txt");
-        try (PrintStream ps = new PrintStream(log)) {
-            ps.printf("RPGItems (%s) ItemManager.loadFromLegacyFile\r\n", plugin.getDescription().getVersion());
-            e.printStackTrace(ps);
-        } catch (FileNotFoundException e1) {
-            plugin.getLogger().log(Level.SEVERE, "Error creating +" + log.getPath(), e1);
         }
     }
 
@@ -376,7 +356,7 @@ public class ItemManager {
                 String canonicalPath = itemFile.getCanonicalPath();
                 YamlConfiguration test = new YamlConfiguration();
                 test.load(canonicalPath);
-                ItemGroup testGroup = new ItemGroup(test, null);
+                new ItemGroup(test, null);
                 itemGroup.setFile(itemFile);
                 lock(itemFile);
             } catch (Exception e) {
@@ -506,7 +486,7 @@ public class ItemManager {
         if (!item.hasItemMeta())
             return Optional.empty();
         ItemMeta meta = item.getItemMeta();
-        PersistentDataContainer tagContainer = meta.getPersistentDataContainer();
+        PersistentDataContainer tagContainer = Objects.requireNonNull(meta).getPersistentDataContainer();
         if (tagContainer.has(TAG_META, PersistentDataType.TAG_CONTAINER)) {
             PersistentDataContainer metaTag = getTag(tagContainer, TAG_META);
             int uid = getInt(metaTag, TAG_ITEM_UID);
@@ -527,7 +507,7 @@ public class ItemManager {
             return null;
         }
         ItemMeta meta = item.getItemMeta();
-        PersistentDataContainer tagContainer = meta.getPersistentDataContainer();
+        PersistentDataContainer tagContainer = Objects.requireNonNull(meta).getPersistentDataContainer();
         if (tagContainer.has(TAG_META, PersistentDataType.TAG_CONTAINER)) {
             PersistentDataContainer itemMeta = getTag(tagContainer, TAG_META);
             int uid = getInt(itemMeta, TAG_ITEM_UID);
@@ -633,11 +613,9 @@ public class ItemManager {
         return Collections.emptySet();
     }
 
-    @SuppressWarnings("deprecation")
     public static void remove(RPGItem item, boolean delete) {
         item.deinit();
         itemByName.remove(item.getName());
-        itemById.remove(item.getId());
         itemById.remove(item.getUid());
         if (delete) {
             try {

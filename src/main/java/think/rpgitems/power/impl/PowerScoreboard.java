@@ -21,6 +21,7 @@ import org.bukkit.scoreboard.Score;
 import org.bukkit.scoreboard.Scoreboard;
 import think.rpgitems.RPGItems;
 import think.rpgitems.power.*;
+import think.rpgitems.power.marker.Selector;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -36,12 +37,12 @@ public class PowerScoreboard extends BasePower {
                                                                                             .newBuilder()
                                                                                             .concurrencyLevel(1)
                                                                                             .expireAfterAccess(1, TimeUnit.DAYS)
-                                                                                            .build(CacheLoader.from(PowerSelector::parse));
+                                                                                            .build(CacheLoader.from(Selector::parse));
     private static LoadingCache<String, Pair<Set<String>, Set<String>>> tagCache = CacheBuilder
                                                                                            .newBuilder()
                                                                                            .concurrencyLevel(1)
                                                                                            .expireAfterAccess(1, TimeUnit.DAYS)
-                                                                                           .build(CacheLoader.from(PowerSelector::parse));
+                                                                                           .build(CacheLoader.from(Selector::parse));
     @Property
     public String tag;
     @Property

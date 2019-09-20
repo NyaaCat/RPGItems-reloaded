@@ -1,4 +1,4 @@
-package think.rpgitems.power.impl;
+package think.rpgitems.power.marker;
 
 import cat.nyaa.nyaacore.Pair;
 import com.google.common.cache.CacheBuilder;
@@ -15,7 +15,6 @@ import org.bukkit.scoreboard.Score;
 import org.bukkit.scoreboard.Scoreboard;
 import org.bukkit.scoreboard.Team;
 import think.rpgitems.I18n;
-import think.rpgitems.power.Pimpl;
 import think.rpgitems.power.Meta;
 import think.rpgitems.power.Property;
 
@@ -31,29 +30,29 @@ import java.util.stream.Stream;
  * Provide a selector for some AOE power.
  * </p>
  */
-@Meta(implClass = Pimpl.class, marker = true)
-public class PowerSelector extends BasePower {
+@Meta(marker = true)
+public class Selector extends BaseMarker {
 
     private static LoadingCache<String, Map<String, Pair<Integer, Integer>>> scoreCache = CacheBuilder
                                                                                                   .newBuilder()
                                                                                                   .concurrencyLevel(1)
                                                                                                   .expireAfterAccess(1, TimeUnit.DAYS)
-                                                                                                  .build(CacheLoader.from(PowerSelector::parseScore));
+                                                                                                  .build(CacheLoader.from(Selector::parseScore));
     private static LoadingCache<String, Pair<Set<String>, Set<String>>> teamCache = CacheBuilder
                                                                                             .newBuilder()
                                                                                             .concurrencyLevel(1)
                                                                                             .expireAfterAccess(1, TimeUnit.DAYS)
-                                                                                            .build(CacheLoader.from(PowerSelector::parse));
+                                                                                            .build(CacheLoader.from(Selector::parse));
     private static LoadingCache<String, Pair<Set<String>, Set<String>>> tagCache = CacheBuilder
                                                                                            .newBuilder()
                                                                                            .concurrencyLevel(1)
                                                                                            .expireAfterAccess(1, TimeUnit.DAYS)
-                                                                                           .build(CacheLoader.from(PowerSelector::parse));
+                                                                                           .build(CacheLoader.from(Selector::parse));
     private static LoadingCache<String, Set<EntityType>> typeCache = CacheBuilder
                                                                              .newBuilder()
                                                                              .concurrencyLevel(1)
                                                                              .expireAfterAccess(1, TimeUnit.DAYS)
-                                                                             .build(CacheLoader.from(PowerSelector::parseType));
+                                                                             .build(CacheLoader.from(Selector::parseType));
     @Property(order = 0, required = true)
     public String id;
     /**

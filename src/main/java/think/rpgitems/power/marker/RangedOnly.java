@@ -1,7 +1,6 @@
-package think.rpgitems.power.impl;
+package think.rpgitems.power.marker;
 
 import think.rpgitems.I18n;
-import think.rpgitems.power.Pimpl;
 import think.rpgitems.power.Meta;
 
 
@@ -12,8 +11,8 @@ import think.rpgitems.power.Meta;
  * Mark this item as ranged only.
  * </p>
  */
-@Meta(implClass = Pimpl.class, marker = true)
-public class PowerRangedOnly extends PowerRanged {
+@Meta(marker = true)
+public class RangedOnly extends Ranged {
     @Override
     public String getName() {
         return "rangedonly";

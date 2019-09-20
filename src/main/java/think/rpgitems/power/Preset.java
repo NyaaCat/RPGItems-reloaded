@@ -2,6 +2,7 @@ package think.rpgitems.power;
 
 import org.bukkit.Effect;
 import org.bukkit.Particle;
+import org.bukkit.enchantments.Enchantment;
 
 import java.util.Arrays;
 import java.util.List;
@@ -13,6 +14,7 @@ public enum Preset {
     POTION_EFFECT_TYPE,
     TRIGGERS,
     VISUAL_EFFECT,
+    ENCHANTMENT,
     ;
 
     @SuppressWarnings("unchecked")
@@ -58,6 +60,8 @@ public enum Preset {
                                 Arrays.stream(DeprecatedEffect.values())
                         )
                               .map(Enum::name).collect(Collectors.toList());
+            case ENCHANTMENT:
+                return Arrays.stream(Enchantment.values()).map(e -> e.getKey().toString()).collect(Collectors.toList());
             case NONE:
             default:
                 throw new IllegalStateException();

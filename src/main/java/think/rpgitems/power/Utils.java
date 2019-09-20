@@ -29,7 +29,7 @@ import think.rpgitems.I18n;
 import think.rpgitems.RPGItems;
 import think.rpgitems.data.Context;
 import think.rpgitems.data.Font;
-import think.rpgitems.power.impl.PowerSelector;
+import think.rpgitems.power.marker.Selector;
 import think.rpgitems.utils.MaterialUtils;
 
 import java.lang.reflect.Field;
@@ -66,10 +66,10 @@ public class Utils {
                 }
             }
         }
-        power.getItem().getPowers().stream().filter(pow -> pow instanceof PowerSelector).forEach(
+        power.getItem().getPowers().stream().filter(pow -> pow instanceof Selector).forEach(
                 selector -> {
-                    if (power.getSelectors().contains(((PowerSelector) selector).id())) {
-                        ((PowerSelector) selector).inPlaceFilter(player, entities);
+                    if (power.getSelectors().contains(((Selector) selector).id())) {
+                        ((Selector) selector).inPlaceFilter(player, entities);
                     }
                 }
         );

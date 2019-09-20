@@ -15,5 +15,9 @@ public interface Condition<T> extends PropertyHolder {
 
     boolean isCritical();
 
-    PowerResult<T> check(Player player, ItemStack stack, Map<PropertyHolder, PowerResult> context);
+    PowerResult<T> check(Player player, ItemStack stack, Map<PropertyHolder, PowerResult<?>> context);
+
+    Set<String> getConditions();
+
+    String displayText();
 }

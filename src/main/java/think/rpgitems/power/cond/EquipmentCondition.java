@@ -6,15 +6,17 @@ import org.bukkit.inventory.EquipmentSlot;
 import org.bukkit.inventory.ItemStack;
 import think.rpgitems.item.ItemManager;
 import think.rpgitems.item.RPGItem;
-import think.rpgitems.power.*;
-import think.rpgitems.power.impl.BasePower;
+import think.rpgitems.power.Meta;
+import think.rpgitems.power.PowerResult;
+import think.rpgitems.power.Property;
+import think.rpgitems.power.PropertyHolder;
 
 import java.util.*;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 @Meta(marker = true)
-public class EquipmentCondition extends BasePower implements Condition<Void> {
+public class EquipmentCondition extends BaseCondition<Void> {
 
     @Property(order = 0, required = true)
     public String id;
@@ -53,7 +55,7 @@ public class EquipmentCondition extends BasePower implements Condition<Void> {
     }
 
     @Override
-    public PowerResult<Void> check(Player player, ItemStack stack, Map<PropertyHolder, PowerResult> context) {
+    public PowerResult<Void> check(Player player, ItemStack stack, Map<PropertyHolder, PowerResult<?>> context) {
         if (slots.isEmpty()) {
             List<ItemStack> itemStacks = Stream.concat(
                     Arrays.stream(player.getInventory().getArmorContents()),

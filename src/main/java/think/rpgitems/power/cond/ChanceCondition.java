@@ -11,7 +11,7 @@ import java.util.Set;
 import java.util.concurrent.ThreadLocalRandom;
 
 @Meta(marker = true)
-public class ChanceCondition extends BasePower implements Condition<Void> {
+public class ChanceCondition extends BaseCondition<Void> {
 
     @Property(order = 0, required = true)
     public String id;
@@ -41,7 +41,7 @@ public class ChanceCondition extends BasePower implements Condition<Void> {
     }
 
     @Override
-    public PowerResult<Void> check(Player player, ItemStack stack, Map<PropertyHolder, PowerResult> context) {
+    public PowerResult<Void> check(Player player, ItemStack stack, Map<PropertyHolder, PowerResult<?>> context) {
         if (ThreadLocalRandom.current().nextDouble(0, 100) > chancePercentage) return PowerResult.fail();
         return PowerResult.ok();
     }

@@ -29,8 +29,8 @@ import think.rpgitems.power.Pimpl;
 import think.rpgitems.power.PowerSneak;
 import think.rpgitems.power.PowerSprint;
 import think.rpgitems.power.Trigger;
-import think.rpgitems.power.impl.PowerRanged;
-import think.rpgitems.power.impl.PowerRangedOnly;
+import think.rpgitems.power.marker.Ranged;
+import think.rpgitems.power.marker.RangedOnly;
 import think.rpgitems.support.WGHandler;
 import think.rpgitems.support.WGSupport;
 
@@ -197,7 +197,7 @@ public class Events implements Listener {
                         }
                     }
 
-                    List<PowerRanged> ranged = rItem.getPower(PowerRanged.class, true);
+                    List<Ranged> ranged = rItem.getMarker(Ranged.class, true);
                     if (!ranged.isEmpty()) {
                         double distance = player.getLocation().distance(e.getEntity().getLocation());
                         if (ranged.get(0).rm > distance || distance > ranged.get(0).r) {
@@ -272,7 +272,7 @@ public class Events implements Listener {
                 }
             }
         }
-        if (!rItem.hasPower(PowerRanged.class) && !rItem.hasPower(PowerRangedOnly.class) && item.getType() != Material.BOW && item.getType() != Material.SNOWBALL && item.getType() != Material.EGG && item.getType() != Material.POTION && item.getType() != Material.TRIDENT) {
+        if (!rItem.hasMarker(Ranged.class) && !rItem.hasMarker(RangedOnly.class) && item.getType() != Material.BOW && item.getType() != Material.SNOWBALL && item.getType() != Material.EGG && item.getType() != Material.POTION && item.getType() != Material.TRIDENT) {
             return;
         }
         if (ItemManager.canUse(player, rItem) == Event.Result.DENY) {
