@@ -27,6 +27,7 @@ public abstract class BasePower extends BasePropertyHolder implements Serializab
     public String displayName() {
         return displayName;
     }
+
     @Override
     public Set<Trigger> getTriggers() {
         return Collections.unmodifiableSet(triggers);

@@ -8,8 +8,8 @@ import org.bukkit.event.player.PlayerToggleSprintEvent;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.scheduler.BukkitRunnable;
 import think.rpgitems.RPGItems;
-import think.rpgitems.power.Power;
 import think.rpgitems.power.Meta;
+import think.rpgitems.power.Power;
 import think.rpgitems.power.PowerResult;
 import think.rpgitems.power.Property;
 

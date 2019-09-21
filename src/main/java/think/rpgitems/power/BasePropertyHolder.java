@@ -8,7 +8,6 @@ import org.bukkit.inventory.ItemStack;
 import think.rpgitems.I18n;
 import think.rpgitems.RPGItems;
 import think.rpgitems.item.RPGItem;
-import think.rpgitems.power.*;
 
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;

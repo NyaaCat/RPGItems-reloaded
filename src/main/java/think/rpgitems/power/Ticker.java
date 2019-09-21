@@ -40,7 +40,7 @@ public class Ticker extends BukkitRunnable {
                     mainhand.get().power(player, itemInMainHand, null, Trigger.SNEAKING);
                 }
             }
-            if (offhand.isPresent()){
+            if (offhand.isPresent()) {
                 offhand.get().power(player, itemInOffHand, null, Trigger.TICK_OFFHAND);
             }
         }

@@ -59,7 +59,7 @@ public class Utils {
     public static List<Entity> getNearbyEntities(Power power, Location l, Player player, double radius, double dx, double dy, double dz) {
         List<Entity> entities = new ArrayList<>();
         Collection<Entity> nearbyEntities = l.getWorld().getNearbyEntities(l, dx, dy, dz);
-        if (!nearbyEntities.isEmpty()){
+        if (!nearbyEntities.isEmpty()) {
             for (Entity e : nearbyEntities) {
                 if (l.distance(e.getLocation()) <= radius) {
                     entities.add(e);
@@ -135,7 +135,7 @@ public class Utils {
             if (relativeAngle > degrees) continue;
             if (relativeAngle < minAngle) {
                 minAngle = relativeAngle;
-                newEntities.add(0,e);
+                newEntities.add(0, e);
             } else {
                 newEntities.add(e);
             }
@@ -165,7 +165,7 @@ public class Utils {
      * @return the boolean
      */
     public static boolean checkCooldown(Power power, Player player, long cdTicks, boolean showWarn, boolean showPower) {
-        return checkAndSetCooldown(power, player, cdTicks, showWarn, showPower, "cooldown." + power.getItem().getUid()  + "." + power.getNamespacedKey().toString());
+        return checkAndSetCooldown(power, player, cdTicks, showWarn, showPower, "cooldown." + power.getItem().getUid() + "." + power.getNamespacedKey().toString());
     }
 
     public static boolean checkAndSetCooldown(Power power, Player player, long cooldownTime, boolean showWarn, boolean showPower, String key) {
@@ -573,7 +573,7 @@ public class Utils {
                     Enchantment enchantment;
                     if (VALID_KEY.matcher(value).matches()) {
                         enchantment = Enchantment.getByKey(NamespacedKey.minecraft(value));
-                    } else  {
+                    } else {
                         enchantment = Enchantment.getByName(value);
                     }
                     if (enchantment == null) {

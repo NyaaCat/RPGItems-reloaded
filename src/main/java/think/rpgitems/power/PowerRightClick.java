@@ -13,10 +13,9 @@ public interface PowerRightClick extends Pimpl {
     /**
      * Calls when {@code player} using {@code stack} right clicks {@code clicked}
      *
-     * @param player  Player
-     * @param stack   Item that triggered this power
-     * @param event   Event that triggered this power
-     *
+     * @param player Player
+     * @param stack  Item that triggered this power
+     * @param event  Event that triggered this power
      * @return PowerResult
      */
     @CheckReturnValue

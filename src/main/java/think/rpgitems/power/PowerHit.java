@@ -19,7 +19,6 @@ public interface PowerHit extends Pimpl {
      * @param entity LivingEntity being hit
      * @param damage Damage of this event
      * @param event  Event that triggered this power
-     *
      * @return PowerResult with proposed damage
      */
     @CheckReturnValue

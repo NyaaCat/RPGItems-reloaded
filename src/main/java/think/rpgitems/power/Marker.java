@@ -1,16 +1,9 @@
 package think.rpgitems.power;
 
 import com.google.common.base.Strings;
-import com.google.common.reflect.TypeToken;
 import think.rpgitems.RPGItems;
 
 import javax.annotation.Nullable;
-import java.util.Collections;
-import java.util.Locale;
-import java.util.Objects;
-import java.util.Set;
-import java.util.stream.Collectors;
-import java.util.stream.Stream;
 
 /**
  * Base interface for all powers

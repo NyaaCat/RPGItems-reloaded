@@ -1,6 +1,8 @@
 package think.rpgitems.power.cond;
 
-import think.rpgitems.power.*;
+import think.rpgitems.power.BasePropertyHolder;
+import think.rpgitems.power.Condition;
+import think.rpgitems.power.Property;
 
 import java.io.Serializable;
 import java.util.Collections;

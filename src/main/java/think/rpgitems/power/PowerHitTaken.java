@@ -17,7 +17,6 @@ public interface PowerHitTaken extends Pimpl {
      * @param stack  Item that triggered this power
      * @param damage Damage of this event
      * @param event  Event that triggered this power
-     *
      * @return PowerResult with proposed damage
      */
     @CheckReturnValue

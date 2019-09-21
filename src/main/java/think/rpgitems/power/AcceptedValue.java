@@ -9,5 +9,6 @@ import java.lang.annotation.Target;
 @Target(ElementType.FIELD)
 public @interface AcceptedValue {
     String[] value() default {};
+
     Preset preset() default Preset.NONE;
 }

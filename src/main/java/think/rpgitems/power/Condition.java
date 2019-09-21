@@ -3,7 +3,6 @@ package think.rpgitems.power;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
 
-import java.util.Collections;
 import java.util.Map;
 import java.util.Set;
 

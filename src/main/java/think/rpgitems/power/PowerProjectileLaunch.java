@@ -1,7 +1,6 @@
 package think.rpgitems.power;
 
 import org.bukkit.entity.Player;
-import org.bukkit.event.entity.ProjectileHitEvent;
 import org.bukkit.event.entity.ProjectileLaunchEvent;
 import org.bukkit.inventory.ItemStack;
 
@@ -17,7 +16,6 @@ public interface PowerProjectileLaunch extends Pimpl {
      * @param player Player
      * @param stack  Item that triggered this power
      * @param event  Event that triggered this power
-     *
      * @return PowerResult
      */
     @CheckReturnValue

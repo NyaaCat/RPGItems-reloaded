@@ -2,7 +2,10 @@ package think.rpgitems.power.cond;
 
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
-import think.rpgitems.power.*;
+import think.rpgitems.power.Meta;
+import think.rpgitems.power.PowerResult;
+import think.rpgitems.power.Property;
+import think.rpgitems.power.PropertyHolder;
 
 import java.util.Collections;
 import java.util.Map;

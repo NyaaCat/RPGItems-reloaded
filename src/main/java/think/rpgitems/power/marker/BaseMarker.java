@@ -1,11 +1,10 @@
 package think.rpgitems.power.marker;
 
-import think.rpgitems.power.*;
+import think.rpgitems.power.BasePropertyHolder;
+import think.rpgitems.power.Marker;
+import think.rpgitems.power.Property;
 
 import java.io.Serializable;
-import java.util.Collections;
-import java.util.HashSet;
-import java.util.Set;
 
 /**
  * Base class containing common methods and fields.
