@@ -216,8 +216,8 @@ public class RPGItem {
         ConfigurationSection conditionList = s.getConfigurationSection("conditions");
         if (conditionList != null) {
             for (String sectionKey : conditionList.getKeys(false)) {
-                ConfigurationSection section = Objects.requireNonNull(powerList).getConfigurationSection(sectionKey);
-                String conditionName = Objects.requireNonNull(section).getString("conditionName");
+                ConfigurationSection section = Objects.requireNonNull(conditionList).getConfigurationSection(sectionKey);
+                String conditionName = Objects.requireNonNull(Objects.requireNonNull(section).getString("conditionName"));
                 loadCondition(section, conditionName);
             }
         }
@@ -225,8 +225,8 @@ public class RPGItem {
         ConfigurationSection markerList = s.getConfigurationSection("marker");
         if (markerList != null) {
             for (String sectionKey : markerList.getKeys(false)) {
-                ConfigurationSection section = Objects.requireNonNull(powerList).getConfigurationSection(sectionKey);
-                String markerName = Objects.requireNonNull(section).getString("markerName");
+                ConfigurationSection section = Objects.requireNonNull(markerList).getConfigurationSection(sectionKey);
+                String markerName = Objects.requireNonNull(Objects.requireNonNull(section).getString("markerName"));
                 loadMarker(section, markerName);
             }
         }

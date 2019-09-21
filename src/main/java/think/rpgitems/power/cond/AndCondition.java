@@ -4,7 +4,6 @@ import cat.nyaa.nyaacore.Pair;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
 import think.rpgitems.power.*;
-import think.rpgitems.power.impl.BasePower;
 
 import java.util.HashSet;
 import java.util.List;

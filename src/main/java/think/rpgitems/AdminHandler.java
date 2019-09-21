@@ -1847,8 +1847,10 @@ public class AdminHandler extends RPGCommandReceiver {
         @Override
         public String toString() {
             StringBuilder keyBuilder = new StringBuilder("CommandException<" + msg_internal + ">");
-            for (Object obj : objs) {
-                keyBuilder.append("#<").append(obj.toString()).append(">");
+            if (objs != null) {
+                for (Object obj : objs) {
+                    keyBuilder.append("#<").append(obj).append(">");
+                }
             }
             return keyBuilder.toString();
         }
