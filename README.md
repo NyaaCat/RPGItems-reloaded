@@ -10,12 +10,10 @@ Discord Server: [![Discord](https://img.shields.io/discord/486394125206421524.sv
 
 ## Status
 
-The develop branch is `1.13.2` version 3.7 and is *in beta*. **Ensure you have latest Spigot/Paper and WorldEdit & WorldGuard**. Note upgrading from 3.6 to 3.7 changes item NBT so it may not behavior correctly with other plugins like shops that compares nbt or plugins relying on old item lore format.
+The stable/main branch is `1.13.2` version 3.7 and. **Ensure you have latest Spigot/Paper and WorldEdit & WorldGuard**. Note upgrading from 3.6 to 3.7 changes item NBT so it may not behavior correctly with other plugins like shops that compares nbt or plugins relying on old item lore format.
 
-The stable/main branch is `1.13.2` version 3.6. It *should* be fully compatible with **Spigot/Paper 1.13.2**.
-
-The stable branch is `1.11` version 3.5 compatibles with **Spigot 1.11 ~ 1.12.x** and the work is focused on fixing bugs and compatibility issues resolving. It *will not* port to 1.13 but it should work (with some minor issue).  
-Old branches (1.7 ~ 1.10, 1.12, 1.13, 1.13.1) are no longer maintained.  
+The `1.13.2` version 3.6 *should* be fully compatible with **Spigot/Paper 1.13.2**. The `1.11` branch version 3.5 compatibles with **Spigot 1.11 ~ 1.12.x** and the work is focused on fixing bugs and compatibility issues resolving. It *will not* port to 1.13 but it should work (with some minor issue).  
+Old branches (1.7 ~ 1.12, 1.13, 1.13.1) are no longer maintained.  
 Critical bug fix (e.g. item duplication) may be backported upon request (by opening a issue).  
 Backport PR is welcomed.
 
