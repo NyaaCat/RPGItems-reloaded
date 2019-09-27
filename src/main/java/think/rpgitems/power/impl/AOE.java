@@ -65,7 +65,7 @@ public class AOE extends BasePower {
 
     @Override
     public String displayText() {
-        return getDisplay() != null ? getDisplay() : I18n.format("power.aoe.display", getType().getName(), getAmplifier(), getDuration(), isSelfapplication() ? I18n.format("power.aoe.selfapplication.including") : I18n.format("power.aoe.selfapplication.excluding"), getRange(), (double) getCooldown() / 20d);
+        return getDisplay() != null ? getDisplay() : I18n.formatDefault("power.aoe.display", getType().getName(), getAmplifier(), getDuration(), isSelfapplication() ? I18n.formatDefault("power.aoe.selfapplication.including") : I18n.formatDefault("power.aoe.selfapplication.excluding"), getRange(), (double) getCooldown() / 20d);
     }
 
     public String getDisplay() {

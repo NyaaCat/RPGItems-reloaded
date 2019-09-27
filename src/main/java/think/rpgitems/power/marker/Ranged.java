@@ -33,6 +33,6 @@ public class Ranged extends BaseMarker {
 
     @Override
     public String displayText() {
-        return I18n.format("power.ranged");
+        return I18n.formatDefault("power.ranged");
     }
 }

@@ -44,7 +44,7 @@ public class Food extends BasePower {
 
     @Override
     public String displayText() {
-        return I18n.format("power.food", getFoodpoints());
+        return I18n.formatDefault("power.food", getFoodpoints());
     }
 
     /**

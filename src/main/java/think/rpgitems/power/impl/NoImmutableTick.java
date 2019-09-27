@@ -32,7 +32,7 @@ public class NoImmutableTick extends BasePower {
 
     @Override
     public String displayText() {
-        return I18n.format("power.noimmutabletick");
+        return I18n.formatDefault("power.noimmutabletick");
     }
 
     public class Impl implements PowerHit {

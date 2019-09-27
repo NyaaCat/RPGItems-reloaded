@@ -49,7 +49,7 @@ public class Explosion extends BasePower {
 
     @Override
     public String displayText() {
-        return I18n.format("power.explosion", getChance(), getExplosionPower());
+        return I18n.formatDefault("power.explosion", getChance(), getExplosionPower());
     }
 
     /**
@@ -97,7 +97,7 @@ public class Explosion extends BasePower {
             Location location = entity.getLocation();
             Location start = player.getLocation();
             if (start.distanceSquared(location) >= getDistance() * getDistance()) {
-                player.sendMessage(I18n.format("message.too.far"));
+                player.sendMessage(I18n.formatDefault("message.too.far"));
                 return PowerResult.noop();
             }
             return fire(player, stack, location).with(damage);
@@ -109,7 +109,7 @@ public class Explosion extends BasePower {
             Location location = hit.getLocation();
             Location start = player.getLocation();
             if (start.distanceSquared(location) >= getDistance() * getDistance()) {
-                player.sendMessage(I18n.format("message.too.far"));
+                player.sendMessage(I18n.formatDefault("message.too.far"));
                 return PowerResult.noop();
             }
             return fire(player, stack, location);

@@ -63,7 +63,7 @@ public class DeathCommand extends BasePower {
 
     @Override
     public String displayText() {
-        return I18n.format("power.deathcommand", getChance(), getDesc().equals("") ? "execute some command" : getDesc());
+        return I18n.formatDefault("power.deathcommand", getChance(), getDesc().equals("") ? "execute some command" : getDesc());
     }
 
     /**

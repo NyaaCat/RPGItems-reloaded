@@ -66,7 +66,7 @@ public class LifeSteal extends BasePower {
 
     @Override
     public String displayText() {
-        return I18n.format("power.lifesteal", getChance());
+        return I18n.formatDefault("power.lifesteal", getChance());
     }
 
     /**

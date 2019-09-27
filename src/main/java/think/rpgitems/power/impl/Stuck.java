@@ -92,7 +92,7 @@ public class Stuck extends BasePower {
                     try {
                         if (stucked.get(e.getPlayer().getUniqueId(), () -> Long.MIN_VALUE) >= (System.currentTimeMillis() - getDuration() * 50)) {
                             if (e.getCause() != PlayerTeleportEvent.TeleportCause.COMMAND) {
-                                e.getPlayer().sendMessage(I18n.format("message.stuck"));
+                                e.getPlayer().sendMessage(I18n.formatDefault("message.stuck"));
                                 e.setCancelled(true);
                             }
                         }
@@ -147,7 +147,7 @@ public class Stuck extends BasePower {
 
     @Override
     public String displayText() {
-        return I18n.format("power.stuck", (int) ((1d / (double) getChance()) * 100d), getDuration(), (double) getCooldown() / 20d);
+        return I18n.formatDefault("power.stuck", (int) ((1d / (double) getChance()) * 100d), getDuration(), (double) getCooldown() / 20d);
     }
 
     /**

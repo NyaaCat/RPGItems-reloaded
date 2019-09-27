@@ -44,7 +44,7 @@ public class Mount extends BasePower {
 
     @Override
     public String displayText() {
-        return I18n.format("power.mount", (double) getCooldown() / 20D);
+        return I18n.formatDefault("power.mount", (double) getCooldown() / 20D);
     }
 
     public int getCooldown() {

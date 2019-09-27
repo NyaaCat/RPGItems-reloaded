@@ -67,7 +67,7 @@ public class Translocator extends BasePower {
 
     @Override
     public String displayText() {
-        return I18n.format("power.translocator", (double) getCooldown() / 20d);
+        return I18n.formatDefault("power.translocator", (double) getCooldown() / 20d);
     }
 
     /**
@@ -178,7 +178,7 @@ public class Translocator extends BasePower {
                         armorStand.setSmall(true);
                         armorStand.setMarker(false);
                         armorStand.setPersistent(false);
-                        armorStand.setCustomName(I18n.format("message.translocator", player.getName()));
+                        armorStand.setCustomName(I18n.formatDefault("message.translocator", player.getName()));
                         armorStand.setCustomNameVisible(true);
                         playerTranslocatorMap.put(player.getUniqueId(), armorStand.getUniqueId());
                         translocatorPlayerMap.put(armorStand.getUniqueId(), player.getUniqueId());

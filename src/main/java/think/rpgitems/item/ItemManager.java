@@ -158,6 +158,11 @@ public class ItemManager {
     }
 
     public static boolean load(File file, CommandSender sender) {
+        String locale = RPGItems.plugin.cfg.language;
+        if (sender instanceof Player) {
+            locale = ((Player) sender).getLocale();
+        }
+        I18n i18n = I18n.getInstance(locale);
         try {
             if (!file.exists()) {
                 plugin.getLogger().severe("Trying to load " + file + " that does not exist.");
@@ -167,9 +172,9 @@ public class ItemManager {
                 File[] subFiles = file.listFiles(f -> !f.getName().startsWith(".") && ((f.isFile() && f.getName().endsWith("yml")) || f.isDirectory()));
                 if (Objects.requireNonNull(subFiles).length == 0) {
                     if (sender != null) {
-                        new Message(I18n.format("message.item.empty_dir", file.getPath())).send(sender);
+                        new Message(I18n.formatDefault("message.item.empty_dir", file.getPath())).send(sender);
                     } else {
-                        new Message(I18n.format("message.item.empty_dir", file.getPath())).send(Bukkit.getConsoleSender());
+                        new Message(I18n.formatDefault("message.item.empty_dir", file.getPath())).send(Bukkit.getConsoleSender());
                     }
                     return false;
                 }
@@ -181,7 +186,7 @@ public class ItemManager {
             RPGItem item = load(file);
             if (sender != null) {
                 new Message("")
-                        .append(I18n.format("message.item.load", Objects.requireNonNull(item).getName()), Collections.singletonMap("{item}", item.getComponent()))
+                        .append(I18n.formatDefault("message.item.load", Objects.requireNonNull(item).getName()), Collections.singletonMap("{item}", item.getComponent(sender)))
                         .send(sender);
             }
             return true;
@@ -192,7 +197,7 @@ public class ItemManager {
                 plugin.getLogger().log(Level.SEVERE, "Error loading " + file + ".", e);
             }
 
-            Message message = new Message(I18n.format("message.error.loading", file.getPath(), e.getLocalizedMessage()));
+            Message message = new Message(I18n.formatDefault("message.error.loading", file.getPath(), e.getLocalizedMessage()));
             if (sender != null) {
                 message.send(sender);
             } else {

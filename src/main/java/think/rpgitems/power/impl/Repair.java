@@ -185,7 +185,7 @@ public class Repair extends BasePower {
                 } else {
                     if (isShowFailMsg()) {
                         BaseComponent msg = Strings.isNullOrEmpty(getCustomMessage()) ?
-                                                    new TextComponent(I18n.format("message.error.need_material", getMaterial().getType().name())) :
+                                                    new TextComponent(I18n.formatDefault("message.error.need_material", getMaterial().getType().name())) :
                                                     new TextComponent(getCustomMessage());
                         HoverEvent hover = new HoverEvent(HoverEvent.Action.SHOW_ITEM, new BaseComponent[]{new TextComponent(ItemStackUtils.itemToJson(getMaterial()))});
                         msg.setHoverEvent(hover);

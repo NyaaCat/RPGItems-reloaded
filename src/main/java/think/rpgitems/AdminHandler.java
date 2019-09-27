@@ -1,6 +1,5 @@
 package think.rpgitems;
 
-import cat.nyaa.nyaacore.LanguageRepository;
 import cat.nyaa.nyaacore.Message;
 import cat.nyaa.nyaacore.Pair;
 import cat.nyaa.nyaacore.cmdreceiver.Arguments;
@@ -64,7 +63,7 @@ import static think.rpgitems.utils.NetworkUtils.Location.GIST;
 public class AdminHandler extends RPGCommandReceiver {
     private final RPGItems plugin;
 
-    AdminHandler(RPGItems plugin, LanguageRepository i18n) {
+    AdminHandler(RPGItems plugin, I18n i18n) {
         super(plugin, i18n);
         this.plugin = plugin;
     }
@@ -110,7 +109,7 @@ public class AdminHandler extends RPGCommandReceiver {
     public void reload(CommandSender sender, Arguments args) {
         plugin.cfg = new Configuration(plugin);
         plugin.cfg.load();
-        plugin.i18n = new I18n(plugin, plugin.cfg.language);
+        plugin.cfg.enabledLanguages.forEach(lang -> new I18n(plugin, lang));
         WGSupport.reload();
         ItemManager.reload(plugin);
         plugin.managedPlugins.forEach(Bukkit.getPluginManager()::disablePlugin);
@@ -250,12 +249,10 @@ public class AdminHandler extends RPGCommandReceiver {
         int perPage = RPGItems.plugin.cfg.itemPerPage;
         String nameSearch = args.argString("n", args.argString("name", ""));
         String displaySearch = args.argString("d", args.argString("display", ""));
-        String typeSearch = args.argString("t", args.argString("type", ""));
         List<RPGItem> items = ItemManager.items()
                                          .stream()
                                          .filter(i -> i.getName().contains(nameSearch))
                                          .filter(i -> i.getDisplayName().contains(displaySearch))
-                                         .filter(i -> i.getType().contains(typeSearch))
                                          .sorted(Comparator.comparing(RPGItem::getName))
                                          .collect(Collectors.toList());
         if (items.size() == 0) {
@@ -273,7 +270,7 @@ public class AdminHandler extends RPGCommandReceiver {
 
         stream.forEach(
                 item -> new Message("")
-                                .append(I18n.format("message.item.list", item.getName()), Collections.singletonMap("{item}", item.getComponent()))
+                                .append(I18n.getInstance(sender).format("message.item.list", item.getName()), Collections.singletonMap("{item}", item.getComponent(sender)))
                                 .send(sender)
         );
     }
@@ -507,43 +504,13 @@ public class AdminHandler extends RPGCommandReceiver {
         }
     }
 
-    @SubCommand("type")
-    @Attribute("item")
-    public void itemType(CommandSender sender, Arguments args) {
-        RPGItem item = getItem(args.nextString(), sender);
-        String type = args.next();
-        if (type != null) {
-            item.setType(type);
-            msg(sender, "message.type.set", item.getName(), item.getType());
-            ItemManager.refreshItem();
-            ItemManager.save(item);
-        } else {
-            msg(sender, "message.type.get", item.getName(), item.getType());
-        }
-    }
-
-    @SubCommand("hand")
-    @Attribute("item")
-    public void itemHand(CommandSender sender, Arguments args) {
-        RPGItem item = getItem(args.nextString(), sender);
-        String type = args.next();
-        if (type != null) {
-            item.setHand(type);
-            msg(sender, "message.hand.set", item.getName(), item.getHand());
-            ItemManager.refreshItem();
-            ItemManager.save(item);
-        } else {
-            msg(sender, "message.hand.get", item.getName(), item.getHand());
-        }
-    }
-
     @SubCommand("item")
     @Attribute("item")
     public void itemItem(CommandSender sender, Arguments args) {
         RPGItem item = getItem(args.nextString(), sender);
         if (args.length() == 2) {
             new Message("")
-                    .append(I18n.format("message.item.get", item.getName(), item.getItem().name(), item.getDataValue()), new ItemStack(item.getItem()))
+                    .append(I18n.getInstance(sender).format("message.item.get", item.getName(), item.getItem().name(), item.getDataValue()), new ItemStack(item.getItem()))
                     .send(sender);
         } else if (args.length() >= 3) {
             String materialName = args.nextString();
@@ -573,7 +540,7 @@ public class AdminHandler extends RPGCommandReceiver {
             ItemManager.refreshItem();
 
             new Message("")
-                    .append(I18n.format("message.item.set", item.getName(), item.getItem().name(), item.getDataValue()), new ItemStack(item.getItem()))
+                    .append(I18n.getInstance(sender).format("message.item.set", item.getName(), item.getItem().name(), item.getDataValue()), new ItemStack(item.getItem()))
                     .send(sender);
             ItemManager.save(item);
         }
@@ -673,12 +640,12 @@ public class AdminHandler extends RPGCommandReceiver {
         switch (arguments.top()) {
             case "FULL_UPDATE":
                 item.setAttributeMode(FULL_UPDATE);
-                new Message("").append(I18n.format("message.attributemode.set", "FULL_UPDATE"), item.toItemStack())
+                new Message("").append(I18n.getInstance(sender).format("message.attributemode.set", "FULL_UPDATE"), item.toItemStack())
                                .send(sender);
                 break;
             case "PARTIAL_UPDATE":
                 item.setAttributeMode(PARTIAL_UPDATE);
-                new Message("").append(I18n.format("message.attributemode.set", "PARTIAL_UPDATE"), item.toItemStack())
+                new Message("").append(I18n.getInstance(sender).format("message.attributemode.set", "PARTIAL_UPDATE"), item.toItemStack())
                                .send(sender);
                 break;
             default:
@@ -740,22 +707,6 @@ public class AdminHandler extends RPGCommandReceiver {
                 item.rebuild();
                 ItemManager.refreshItem();
                 msg(sender, "message.description.remove");
-                ItemManager.save(item);
-            }
-            break;
-            case "wrap": {
-                int lineNo = args.nextInt();
-                if (lineNo < 0 || lineNo >= item.getDescription().size()) {
-                    msg(sender, "message.num_out_of_range", lineNo, 0, item.getDescription().size());
-                    return;
-                }
-                String line = item.getDescription().remove(lineNo);
-                item.getTooltipLines();
-                @SuppressWarnings("deprecation") List<String> wrapLines = Utils.wrapLines(line, item.getTooltipWidth());
-                item.getDescription().addAll(lineNo, wrapLines);
-                item.rebuild();
-                ItemManager.refreshItem();
-                msg(sender, "message.description.change");
                 ItemManager.save(item);
             }
             break;
@@ -1083,7 +1034,7 @@ public class AdminHandler extends RPGCommandReceiver {
         if (getItem(itemStr, sender) != null && (powerStr == null || powerStr.equals("list"))) {
             RPGItem item = getItem(itemStr, sender);
             for (Power power : item.getPowers()) {
-                msg(sender, "message.item.power", power.getLocalizedName(plugin.cfg.language), power.getNamespacedKey().toString(), power.displayText() == null ? I18n.format("message.power.no_display") : power.displayText(), power.getTriggers().stream().map(Trigger::name).collect(Collectors.joining(",")));
+                msg(sender, "message.item.power", power.getLocalizedName(plugin.cfg.language), power.getNamespacedKey().toString(), power.displayText() == null ? I18n.getInstance(sender).format("message.power.no_display") : power.displayText(), power.getTriggers().stream().map(Trigger::name).collect(Collectors.joining(",")));
                 if ("list".equals(powerStr)) {
                     PowerManager.getProperties(power.getNamespacedKey()).forEach(
                             (name, prop) -> showPowerProp(sender, power.getNamespacedKey(), prop.getValue(), power)
@@ -1164,7 +1115,7 @@ public class AdminHandler extends RPGCommandReceiver {
             return;
         }
         String desc = PowerManager.getDescription(powerKey, name);
-        msg(sender, "message.power.property", name, Strings.isNullOrEmpty(desc) ? I18n.format("message.power.no_description") : desc);
+        msg(sender, "message.power.property", name, Strings.isNullOrEmpty(desc) ? I18n.getInstance(sender).format("message.power.no_description") : desc);
         if (powerObj != null) {
             msg(sender, "message.power.property_value", Utils.getProperty(powerObj, name, prop.field()));
         }
@@ -1364,7 +1315,7 @@ public class AdminHandler extends RPGCommandReceiver {
         msg(sender, "message.group.header", group.getName(), items.size());
         for (RPGItem item : items) {
             new Message("")
-                    .append(I18n.format("message.item.list", item.getName()), Collections.singletonMap("{item}", item.getComponent()))
+                    .append(I18n.getInstance(sender).format("message.item.list", item.getName()), Collections.singletonMap("{item}", item.getComponent(sender)))
                     .send(sender);
         }
     }
@@ -1417,7 +1368,7 @@ public class AdminHandler extends RPGCommandReceiver {
         }
         for (RPGItem item : items) {
             new Message("")
-                    .append(I18n.format("message.item.list", item.getName()), Collections.singletonMap("{item}", item.getComponent()))
+                    .append(I18n.getInstance(sender).format("message.item.list", item.getName()), Collections.singletonMap("{item}", item.getComponent(sender)))
                     .send(sender);
         }
     }
@@ -1439,7 +1390,7 @@ public class AdminHandler extends RPGCommandReceiver {
     @SubCommand("gen-wiki")
     @Attribute("command")
     public void genWiki(CommandSender sender, Arguments args) throws IOException {
-        String lc = args.nextString();
+        String lc = args.next();
         Locale locale = Locale.forLanguageTag((lc == null ? RPGItems.plugin.cfg.language : lc).replace('_', '-'));
         File wikiDir = new File(RPGItems.plugin.getDataFolder(), "wiki/");
         if (!wikiDir.mkdirs()) {
@@ -1621,7 +1572,7 @@ public class AdminHandler extends RPGCommandReceiver {
                     }
                 }
                 String description = PowerManager.getDescription(locale.toString(), namespacedKey, name);
-                propertiesDesc.append(propertyDescription.replace("${}", description == null ? I18n.format("message.power.no_description") : description));
+                propertiesDesc.append(propertyDescription.replace("${}", description == null ? I18n.getInstance(sender).format("message.power.no_description") : description));
             }
             List<String> powerTemplate = new ArrayList<>(template);
             if (customNote.length() > 0) {
@@ -1659,7 +1610,7 @@ public class AdminHandler extends RPGCommandReceiver {
                 }
             }
 
-            fullTemplate = fullTemplate.replace("${description}", powerDesc == null ? I18n.format("message.power.no_description") : powerDesc);
+            fullTemplate = fullTemplate.replace("${description}", powerDesc == null ? I18n.getInstance(sender).format("message.power.no_description") : powerDesc);
             fullTemplate = fullTemplate.replace("${properties}", propertiesDesc.toString());
             java.nio.file.Files.write(file, fullTemplate.getBytes(StandardCharsets.UTF_8));
         }
@@ -1739,7 +1690,7 @@ public class AdminHandler extends RPGCommandReceiver {
     }
 
     private void downloadGist(CommandSender sender, Arguments args, String id) {
-        new Message(I18n.format("message.import.gist.ing")).send(sender);
+        new Message(I18n.getInstance(sender).format("message.import.gist.ing")).send(sender);
         String token = args.argString("token", plugin.cfg.githubToken);
         Bukkit.getScheduler().runTaskAsynchronously(plugin, () -> {
             Map<String, String> gist;
@@ -1748,10 +1699,10 @@ public class AdminHandler extends RPGCommandReceiver {
                 Bukkit.getScheduler().runTask(plugin, () -> loadItems(sender, gist, args));
             } catch (InterruptedException | ExecutionException e) {
                 plugin.getLogger().log(Level.WARNING, "Error importing gist", e);
-                Bukkit.getScheduler().runTask(plugin, () -> new Message(I18n.format("message.import.gist.failed")).send(sender));
+                Bukkit.getScheduler().runTask(plugin, () -> new Message(I18n.getInstance(sender).format("message.import.gist.failed")).send(sender));
             } catch (TimeoutException e) {
                 plugin.getLogger().log(Level.WARNING, "Timeout importing gist", e);
-                Bukkit.getScheduler().runTask(plugin, () -> new Message(I18n.format("message.import.gist.timeout")).send(sender));
+                Bukkit.getScheduler().runTask(plugin, () -> new Message(I18n.getInstance(sender).format("message.import.gist.timeout")).send(sender));
             } catch (BadCommandException e) {
                 sender.sendMessage(e.getLocalizedMessage());
             }
@@ -1759,17 +1710,17 @@ public class AdminHandler extends RPGCommandReceiver {
     }
 
     private void downloadUrl(CommandSender sender, Arguments args, String url) {
-        new Message(I18n.format("message.import.url.ing")).send(sender);
+        new Message(I18n.getInstance(sender).format("message.import.url.ing")).send(sender);
         Bukkit.getScheduler().runTaskAsynchronously(plugin, () -> {
             try {
                 Map<String, String> itemConf = NetworkUtils.downloadUrl(url);
                 Bukkit.getScheduler().runTask(plugin, () -> loadItems(sender, itemConf, args));
             } catch (InterruptedException | ExecutionException e) {
                 plugin.getLogger().log(Level.WARNING, "Error importing url", e);
-                Bukkit.getScheduler().runTask(plugin, () -> new Message(I18n.format("message.import.url.failed")).send(sender));
+                Bukkit.getScheduler().runTask(plugin, () -> new Message(I18n.getInstance(sender).format("message.import.url.failed")).send(sender));
             } catch (TimeoutException e) {
                 plugin.getLogger().log(Level.WARNING, "Timeout importing url", e);
-                Bukkit.getScheduler().runTask(plugin, () -> new Message(I18n.format("message.import.url.timeout")).send(sender));
+                Bukkit.getScheduler().runTask(plugin, () -> new Message(I18n.getInstance(sender).format("message.import.url.timeout")).send(sender));
             } catch (BadCommandException e) {
                 sender.sendMessage(e.getLocalizedMessage());
             }
@@ -1862,7 +1813,7 @@ public class AdminHandler extends RPGCommandReceiver {
 
         @Override
         public String getLocalizedMessage() {
-            return I18n.format(msg_internal, objs);
+            return I18n.getInstance(RPGItems.plugin.cfg.language).format(msg_internal, objs);
         }
     }
 }

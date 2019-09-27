@@ -37,7 +37,7 @@ public class ParticleTick extends ParticlePower {
 
     @Override
     public String displayText() {
-        return I18n.format("power.particletick");
+        return I18n.formatDefault("power.particletick");
     }
 
     @Override

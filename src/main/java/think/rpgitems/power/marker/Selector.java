@@ -294,6 +294,6 @@ public class Selector extends BaseMarker {
 
     @Override
     public String displayText() {
-        return display == null ? I18n.format("power.selector") : display;
+        return display == null ? I18n.formatDefault("power.selector") : display;
     }
 }

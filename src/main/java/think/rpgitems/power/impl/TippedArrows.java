@@ -52,7 +52,7 @@ public class TippedArrows extends BasePower {
 
     @Override
     public String displayText() {
-        return I18n.format("power.tippedarrow", getType().getName().toLowerCase().replaceAll("_", " "), getAmplifier() + 1, ((double) getDuration()) / 20d, (double) getCooldown() / 20d);
+        return I18n.formatDefault("power.tippedarrow", getType().getName().toLowerCase().replaceAll("_", " "), getAmplifier() + 1, ((double) getDuration()) / 20d, (double) getCooldown() / 20d);
     }
 
     /**

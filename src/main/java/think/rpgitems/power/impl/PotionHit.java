@@ -66,7 +66,7 @@ public class PotionHit extends BasePower {
 
     @Override
     public String displayText() {
-        return I18n.format("power.potionhit", (int) ((1d / (double) getChance()) * 100d), getType().getName().toLowerCase().replace('_', ' '));
+        return I18n.formatDefault("power.potionhit", (int) ((1d / (double) getChance()) * 100d), getType().getName().toLowerCase().replace('_', ' '));
     }
 
     /**

@@ -53,7 +53,7 @@ public class Ice extends BasePower {
 
     @Override
     public String displayText() {
-        return I18n.format("power.ice", (double) getCooldown() / 20d);
+        return I18n.formatDefault("power.ice", (double) getCooldown() / 20d);
     }
 
     /**

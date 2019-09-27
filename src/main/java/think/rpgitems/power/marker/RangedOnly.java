@@ -20,6 +20,6 @@ public class RangedOnly extends Ranged {
 
     @Override
     public String displayText() {
-        return I18n.format("power.rangedonly");
+        return I18n.formatDefault("power.rangedonly");
     }
 }

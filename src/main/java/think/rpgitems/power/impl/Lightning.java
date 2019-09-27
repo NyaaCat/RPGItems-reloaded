@@ -42,7 +42,7 @@ public class Lightning extends BasePower {
 
     @Override
     public String displayText() {
-        return I18n.format("power.lightning", (int) ((1d / (double) getChance()) * 100d));
+        return I18n.formatDefault("power.lightning", (int) ((1d / (double) getChance()) * 100d));
     }
 
     /**

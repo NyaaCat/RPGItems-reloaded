@@ -64,7 +64,7 @@ public class Rescue extends BasePower {
 
     @Override
     public String displayText() {
-        return I18n.format("power.rescue.display", ((double) getHealthTrigger()) / 2, (double) getCooldown() / 20d);
+        return I18n.formatDefault("power.rescue.display", ((double) getHealthTrigger()) / 2, (double) getCooldown() / 20d);
     }
 
     /**
@@ -110,7 +110,7 @@ public class Rescue extends BasePower {
             if (!checkCooldown(getPower(), target, getCooldown(), true, true)) return PowerResult.cd();
             if (!getItem().consumeDurability(stack, getCost())) return PowerResult.cost();
             rescueTime.put(target.getUniqueId(), System.currentTimeMillis());
-            target.sendMessage(I18n.format("power.rescue.info"));
+            target.sendMessage(I18n.formatDefault("power.rescue.info"));
             DamageCause cause = event.getCause();
             if (!canceled) {
                 target.addPotionEffect(new PotionEffect(PotionEffectType.HEALTH_BOOST, 2, 255));

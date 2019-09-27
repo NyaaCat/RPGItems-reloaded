@@ -55,7 +55,7 @@ public class ShulkerBulletPower extends BasePower {
 
     @Override
     public String displayText() {
-        return I18n.format("power.shulkerbullet", (double) getCooldown() / 20d);
+        return I18n.formatDefault("power.shulkerbullet", (double) getCooldown() / 20d);
     }
 
     /**

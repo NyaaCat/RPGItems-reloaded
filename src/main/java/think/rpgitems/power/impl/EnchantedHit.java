@@ -20,7 +20,6 @@ public class EnchantedHit extends BasePower {
     public String display;
 
     @Property
-    @Serializer(EnchantmentSerializer.class)
     @AcceptedValue(preset = Preset.ENCHANTMENT)
     public Enchantment enchantmentType = Enchantment.ARROW_DAMAGE;
 
@@ -83,13 +82,6 @@ public class EnchantedHit extends BasePower {
         @Override
         public Power getPower() {
             return EnchantedHit.this;
-        }
-    }
-
-    public static class EnchantmentSerializer implements Getter<Enchantment> {
-        @Override
-        public String get(Enchantment e) {
-            return e.getKey().toString();
         }
     }
 }

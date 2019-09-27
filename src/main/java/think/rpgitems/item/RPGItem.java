@@ -12,7 +12,6 @@ import net.md_5.bungee.api.chat.TextComponent;
 import net.sf.cglib.proxy.Enhancer;
 import net.sf.cglib.proxy.MethodInterceptor;
 import net.sf.cglib.proxy.MethodProxy;
-import org.apache.commons.lang.StringUtils;
 import org.bukkit.*;
 import org.bukkit.attribute.Attribute;
 import org.bukkit.block.Block;
@@ -95,8 +94,6 @@ public class RPGItem {
     private DamageMode damageMode = DamageMode.FIXED;
     private AttributeMode attributeMode = AttributeMode.PARTIAL_UPDATE;
     private int armour = 0;
-    private String type = I18n.format("item.type");
-    private String hand = I18n.format("item.hand");
     private boolean canBeOwned = false;
     private boolean hasStackId = false;
     private boolean alwaysAllowMelee = false;
@@ -157,11 +154,7 @@ public class RPGItem {
 
     public static void updateItemStack(ItemStack item) {
         Optional<RPGItem> rItem = ItemManager.toRPGItem(item);
-        rItem.ifPresent(r -> r.updateItem(item, false));
-    }
-
-    public static RPGItems getPlugin() {
-        return plugin;
+        rItem.ifPresent(r -> r.updateItem(item,  false));
     }
 
     private void restore(ConfigurationSection s) throws UnknownPowerException, UnknownExtensionException {
@@ -175,12 +168,11 @@ public class RPGItem {
         String display = s.getString("display");
 
         setDisplayName(display);
-        setType(s.getString("type", I18n.format("item.type")), false);
-        setHand(ChatColor.translateAlternateColorCodes('&', Objects.requireNonNull(s.getString("hand", I18n.format("item.hand")))), false);
-        setDescription(s.getStringList("description"));
-        for (int i = 0; i < getDescription().size(); i++) {
-            getDescription().set(i, ChatColor.translateAlternateColorCodes('&', getDescription().get(i)));
+        List<String> desc = s.getStringList("description");
+        for (int i = 0; i < desc.size(); i++) {
+            desc.set(i, ChatColor.translateAlternateColorCodes('&', desc.get(i)));
         }
+        setDescription(desc);
         setDamageMin(s.getInt("damageMin"));
         setDamageMax(s.getInt("damageMax"));
         setArmour(s.getInt("armour", 0), false);
@@ -305,14 +297,6 @@ public class RPGItem {
         }
         setAlwaysAllowMelee(s.getBoolean("alwaysAllowMelee", false));
         rebuild();
-        String lore = s.getString("lore");
-        if (!Strings.isNullOrEmpty(lore)) {
-            getTooltipLines();
-            @SuppressWarnings("deprecation") List<String> lores = Utils.wrapLines(String.format("%s%s\"%s\"", ChatColor.YELLOW, ChatColor.ITALIC,
-                    ChatColor.translateAlternateColorCodes('&', lore)), tooltipWidth);
-            getDescription().addAll(0, lores);
-            rebuild();
-        }
     }
 
     private void loadPower(ConfigurationSection section, String powerName) throws UnknownPowerException {
@@ -375,8 +359,6 @@ public class RPGItem {
         s.set("damageMin", getDamageMin());
         s.set("damageMax", getDamageMax());
         s.set("armour", getArmour());
-        s.set("type", getType().replaceAll("" + COLOR_CHAR, "&"));
-        s.set("hand", getHand().replaceAll("" + COLOR_CHAR, "&"));
         s.set("attributemode", attributeMode.name());
         ArrayList<String> descriptionConv = new ArrayList<>(getDescription());
         for (int i = 0; i < descriptionConv.size(); i++) {
@@ -465,7 +447,7 @@ public class RPGItem {
         updateItem(item, false);
     }
 
-    public void updateItem(ItemStack item, boolean loreOnly) {
+    public void updateItem(ItemStack item,boolean loreOnly) {
         List<String> reservedLores = this.filterLores(item);
         item.setType(getItem());
         ItemMeta meta = item.getItemMeta();
@@ -938,19 +920,17 @@ public class RPGItem {
         int armorMinLen = 0;
         String damageStr = null;
         if (isShowArmourLore()) {
-            armorMinLen = Utils.getStringWidth(ChatColor.stripColor(getHand() + "     " + getType()));
-
             if (getArmour() != 0) {
-                damageStr = getArmour() + "% " + I18n.format("item.armour");
+                damageStr = getArmour() + "% " + I18n.formatDefault("item.armour");
             }
             if ((getDamageMin() != 0 || getDamageMax() != 0) && getDamageMode() != DamageMode.VANILLA) {
                 damageStr = damageStr == null ? "" : damageStr + " & ";
                 if (getDamageMode() == DamageMode.ADDITIONAL) {
-                    damageStr += I18n.format("item.additionaldamage", getDamageMin() == getDamageMax() ? String.valueOf(getDamageMin()) : getDamageMin() + "-" + getDamageMax());
+                    damageStr += I18n.formatDefault("item.additionaldamage", getDamageMin() == getDamageMax() ? String.valueOf(getDamageMin()) : getDamageMin() + "-" + getDamageMax());
                 } else if (getDamageMode() == DamageMode.MULTIPLY) {
-                    damageStr += I18n.format("item.multiplydamage", getDamageMin() == getDamageMax() ? String.valueOf(getDamageMin()) : getDamageMin() + "-" + getDamageMax());
+                    damageStr += I18n.formatDefault("item.multiplydamage", getDamageMin() == getDamageMax() ? String.valueOf(getDamageMin()) : getDamageMin() + "-" + getDamageMax());
                 } else {
-                    damageStr += I18n.format("item.damage", getDamageMin() == getDamageMax() ? String.valueOf(getDamageMin()) : getDamageMin() + "-" + getDamageMax());
+                    damageStr += I18n.formatDefault("item.damage", getDamageMin() == getDamageMax() ? String.valueOf(getDamageMin()) : getDamageMin() + "-" + getDamageMax());
                 }
             }
             if (damageStr != null) {
@@ -963,7 +943,6 @@ public class RPGItem {
             if (damageStr != null) {
                 output.add(1, ChatColor.WHITE + damageStr);
             }
-            output.add(1, ChatColor.WHITE + getHand() + StringUtils.repeat(" ", (width - Utils.getStringWidth(ChatColor.stripColor(getHand() + getType()))) / 4) + getType());
         }
 
         return output;
@@ -1002,7 +981,7 @@ public class RPGItem {
         updateItem(itemStack);
         ItemMeta itemMeta = itemStack.getItemMeta();
         SubItemTagContainer meta = makeTag(Objects.requireNonNull(itemMeta).getPersistentDataContainer(), TAG_META);
-        if (isCanBeOwned() && owner != null) {
+        if (isCanBeOwned()) {
             set(meta, TAG_OWNER, owner);
         }
         if (isHasStackId()) {
@@ -1016,7 +995,8 @@ public class RPGItem {
 
     public Event.Result checkPermission(Player p, boolean showWarn) {
         if (isHasPermission() && !p.hasPermission(getPermission())) {
-            if (showWarn) p.sendMessage(I18n.format("message.error.permission", getDisplayName()));
+            if (showWarn)
+                p.sendMessage(I18n.getInstance(p.getLocale()).format("message.error.permission", getDisplayName()));
             return Event.Result.DENY;
         }
         return Event.Result.ALLOW;
@@ -1037,9 +1017,11 @@ public class RPGItem {
         } catch (IllegalArgumentException ignored) {
         }
 
+        String locale = RPGItems.plugin.cfg.language;
         if (sender instanceof Player) {
+            locale = ((Player) sender).getLocale();
             new Message("")
-                    .append(I18n.format("message.item.print"), toItemStack())
+                    .append(I18n.getInstance(((Player) sender).getLocale()).format("message.item.print"), toItemStack())
                     .send(sender);
         } else {
             List<String> lines = getTooltipLines();
@@ -1047,18 +1029,19 @@ public class RPGItem {
                 sender.sendMessage(line);
             }
         }
+        I18n i18n = I18n.getInstance(locale);
 
-        new Message("").append(I18n.format("message.print.author"), Collections.singletonMap("{author}", authorComponent)).send(sender);
+        new Message("").append(I18n.formatDefault("message.print.author"), Collections.singletonMap("{author}", authorComponent)).send(sender);
         if (!advance) {
             return;
         }
 
-        new Message(I18n.format("message.print.license", getLicense())).send(sender);
-        new Message(I18n.format("message.print.note", getNote())).send(sender);
+        new Message(I18n.formatDefault("message.print.license", getLicense())).send(sender);
+        new Message(I18n.formatDefault("message.print.note", getNote())).send(sender);
 
-        sender.sendMessage(I18n.format("message.durability.info", getMaxDurability(), getDefaultDurability(), getDurabilityLowerBound(), getDurabilityUpperBound()));
+        sender.sendMessage(I18n.formatDefault("message.durability.info", getMaxDurability(), getDefaultDurability(), getDurabilityLowerBound(), getDurabilityUpperBound()));
         if (isCustomItemModel()) {
-            sender.sendMessage(I18n.format("message.print.customitemmodel", getItem().name() + ":" + getDataValue()));
+            sender.sendMessage(I18n.formatDefault("message.print.customitemmodel", getItem().name() + ":" + getDataValue()));
         }
         if (!getItemFlags().isEmpty()) {
             StringBuilder str = new StringBuilder();
@@ -1068,7 +1051,7 @@ public class RPGItem {
                 }
                 str.append(flag.name());
             }
-            sender.sendMessage(I18n.format("message.print.itemflags") + str);
+            sender.sendMessage(I18n.formatDefault("message.print.itemflags") + str);
         }
     }
 
@@ -1127,9 +1110,9 @@ public class RPGItem {
             }
             set(tagContainer, TAG_DURABILITY, durability);
             tagContainer.commit();
+            item.setItemMeta(itemMeta);
+            this.updateItem(item, true);
         }
-        item.setItemMeta(itemMeta);
-        this.updateItem(item, true);
         return true;
     }
 
@@ -1272,7 +1255,15 @@ public class RPGItem {
         rebuild();
     }
 
-    public BaseComponent getComponent() {
+    public BaseComponent getComponent(CommandSender sender) {
+        String locale = RPGItems.plugin.cfg.language;
+        if (sender instanceof Player) {
+            locale = ((Player) sender).getLocale();
+        }
+        return getComponent(locale);
+    }
+
+    public BaseComponent getComponent(String locale) {
         BaseComponent msg = new TextComponent(getDisplayName());
         msg.setClickEvent(new ClickEvent(ClickEvent.Action.SUGGEST_COMMAND, "/rpgitem " + getName()));
         HoverEvent hover = new HoverEvent(HoverEvent.Action.SHOW_ITEM,
@@ -1498,21 +1489,6 @@ public class RPGItem {
         file = itemFile;
     }
 
-    public String getHand() {
-        return hand;
-    }
-
-    public void setHand(String h) {
-        setHand(h, true);
-    }
-
-    public void setHand(String h, boolean update) {
-        hand = ChatColor.translateAlternateColorCodes('&', h);
-        if (update) {
-            rebuild();
-        }
-    }
-
     public int getHitCost() {
         return hitCost;
     }
@@ -1636,20 +1612,6 @@ public class RPGItem {
 
     public int getTooltipWidth() {
         return tooltipWidth;
-    }
-
-    public String getType() {
-        return type;
-    }
-
-    public void setType(String str) {
-        setType(str, true);
-    }
-
-    public void setType(String str, boolean update) {
-        type = ChatColor.translateAlternateColorCodes('&', str);
-        if (update)
-            rebuild();
     }
 
     public int getUid() {

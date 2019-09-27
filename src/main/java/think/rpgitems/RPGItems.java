@@ -37,7 +37,6 @@ public class RPGItems extends JavaPlugin {
     public static Logger logger;
     public static RPGItems plugin;
     List<Plugin> managedPlugins = new ArrayList<>();
-    public I18n i18n;
     public Configuration cfg;
 
     @Override
@@ -67,28 +66,29 @@ public class RPGItems extends JavaPlugin {
 
         cfg = new Configuration(this);
         cfg.load();
-        i18n = new I18n(this, cfg.language);
+        cfg.enabledLanguages.forEach(lang -> new I18n(this, lang));
 
         PowerManager.registerAdapter(PowerPlain.class, PowerOffhandClick.class, p -> getWrapper(p, PowerOffhandClick.class, "offhandClick"));
         PowerManager.registerAdapter(PowerPlain.class, PowerSprint.class, p -> getWrapper(p, PowerSprint.class, "sprint"));
         PowerManager.registerAdapter(PowerPlain.class, PowerSneak.class, p -> getWrapper(p, PowerSneak.class, "sneak"));
         PowerManager.registerAdapter(PowerPlain.class, PowerAttachment.class, p -> getWrapper(p, PowerAttachment.class, "attachment"));
-
-        PowerManager.addDescriptionResolver(RPGItems.plugin, (power, property) -> {
-            if (property == null) {
-                String powerKey = "power.properties." + power.getKey() + ".main_description";
-                return I18n.format(powerKey);
-            }
-            String key = "power.properties." + power.getKey() + "." + property;
-            if (I18n.getInstance().hasKey(key)) {
-                return I18n.format(key);
-            }
-            String baseKey = "power.properties.base." + property;
-            if (I18n.getInstance().hasKey(baseKey)) {
-                return I18n.format(baseKey);
-            }
-            return null;
-        });
+        cfg.enabledLanguages.forEach(lang ->
+                                             PowerManager.addDescriptionResolver(RPGItems.plugin, lang, (power, property) -> {
+                                                 I18n i18n = I18n.getInstance(lang);
+                                                 if (property == null) {
+                                                     String powerKey = "power.properties." + power.getKey() + ".main_description";
+                                                     return I18n.formatDefault(powerKey);
+                                                 }
+                                                 String key = "power.properties." + power.getKey() + "." + property;
+                                                 if (i18n.hasKey(key)) {
+                                                     return I18n.formatDefault(key);
+                                                 }
+                                                 String baseKey = "power.properties.base." + property;
+                                                 if (i18n.hasKey(baseKey)) {
+                                                     return I18n.formatDefault(baseKey);
+                                                 }
+                                                 return null;
+                                             }));
         PowerManager.registerConditions(RPGItems.plugin, Power.class.getPackage().getName() + ".cond");
         PowerManager.registerPowers(RPGItems.plugin, Power.class.getPackage().getName() + ".impl");
         PowerManager.registerMarkers(RPGItems.plugin, Power.class.getPackage().getName() + ".marker");
@@ -147,8 +147,8 @@ public class RPGItems extends JavaPlugin {
                 return true;
             });
         }
-        AdminHandler adminCommandHandler = new AdminHandler(this, i18n);
-        UserHandler userCommandHandler = new UserHandler(this, i18n);
+        AdminHandler adminCommandHandler = new AdminHandler(this, I18n.getInstance(cfg.language));
+        UserHandler userCommandHandler = new UserHandler(this, I18n.getInstance(cfg.language));
         getCommand("rpgitem").setExecutor(adminCommandHandler);
         getCommand("rpgitem").setTabCompleter(adminCommandHandler);
         getCommand("rpgitems").setExecutor(userCommandHandler);

@@ -55,7 +55,7 @@ public class Rainbow extends BasePower {
 
     @Override
     public String displayText() {
-        return I18n.format("power.rainbow", getCount(), (double) getCooldown() / 20d);
+        return I18n.formatDefault("power.rainbow", getCount(), (double) getCooldown() / 20d);
     }
 
     /**

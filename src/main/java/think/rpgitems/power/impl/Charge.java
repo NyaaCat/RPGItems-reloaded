@@ -41,7 +41,7 @@ public class Charge extends BasePower {
 
     @Override
     public String displayText() {
-        return I18n.format("power.charge", getPercentage());
+        return I18n.formatDefault("power.charge", getPercentage());
     }
 
     public int getPercentage() {

@@ -57,7 +57,7 @@ public class Teleport extends BasePower {
 
     @Override
     public String displayText() {
-        return I18n.format("power.teleport", getDistance(), (double) getCooldown() / 20d);
+        return I18n.formatDefault("power.teleport", getDistance(), (double) getCooldown() / 20d);
     }
 
     /**
@@ -196,7 +196,7 @@ public class Teleport extends BasePower {
             Location start = player.getLocation();
             Location newLoc = event.getEntity().getLocation();
             if (start.distanceSquared(newLoc) >= getDistance() * getDistance()) {
-                player.sendMessage(I18n.format("message.too.far"));
+                player.sendMessage(I18n.formatDefault("message.too.far"));
                 return PowerResult.noop();
             }
             newLoc.setPitch(start.getPitch());

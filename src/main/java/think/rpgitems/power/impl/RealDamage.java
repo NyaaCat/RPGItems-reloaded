@@ -63,7 +63,7 @@ public class RealDamage extends BasePower {
 
     @Override
     public String displayText() {
-        return I18n.format("power.realdamage", getRealDamage());
+        return I18n.formatDefault("power.realdamage", getRealDamage());
     }
 
     /**

@@ -17,7 +17,7 @@ public class MaterialUtils implements Setter<Material> {
             m = Material.matchMaterial(name, true);
             if (m != null) {
                 m = Bukkit.getUnsafe().fromLegacy(m);
-                sender.sendMessage(I18n.format("message.error.legacy_name", name, m.toString()));
+                sender.sendMessage(I18n.formatDefault("message.error.legacy_name", name, m.toString()));
             }
         }
         return m;

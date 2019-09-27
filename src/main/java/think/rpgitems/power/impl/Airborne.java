@@ -36,7 +36,7 @@ public class Airborne extends BasePower {
 
     @Override
     public String displayText() {
-        return I18n.format("power.airborne", getPercentage());
+        return I18n.formatDefault("power.airborne", getPercentage());
     }
 
     public int getPercentage() {

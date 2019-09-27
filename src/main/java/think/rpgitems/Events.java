@@ -467,41 +467,35 @@ public class Events implements Listener {
 
     @EventHandler
     public void onInventoryClose(InventoryCloseEvent e) {
-        updatePlayerInventory(e.getInventory(), e);
+        updatePlayerInventory(e.getInventory(), (Player) e.getPlayer(), e);
     }
 
     List<UUID> switchCooldown = new ArrayList<>();
 
     @EventHandler
     public void onPlayerChangeItem(PlayerItemHeldEvent ev) {
-        ItemStack item = ev.getPlayer().getInventory().getItem(ev.getNewSlot());
-//        ItemStack mainhandItem = ev.getPlayer().getInventory().getItemInMainHand();
-        updteItem(item);
-        if (switchCooldown.contains(ev.getPlayer().getUniqueId())) return;
-        ItemStack[] armorContents = ev.getPlayer().getInventory().getArmorContents();
+        Player player = ev.getPlayer();
+        ItemStack item = player.getInventory().getItem(ev.getNewSlot());
+        ItemManager.toRPGItem(item).ifPresent(rpgItem -> rpgItem.updateItem(item));
+        if (switchCooldown.contains(player.getUniqueId())) return;
+        ItemStack[] armorContents = player.getInventory().getArmorContents();
         for (int i = 0; i < armorContents.length; i++) {
             ItemStack stack = armorContents[i];
-            updteItem(stack);
+            ItemManager.toRPGItem(stack).ifPresent(rpgItem -> rpgItem.updateItem(item));
         }
-        ItemStack offhandItem = ev.getPlayer().getInventory().getItemInOffHand();
-        updteItem(offhandItem);
-        switchCooldown.add(ev.getPlayer().getUniqueId());
+        ItemStack offhandItem = player.getInventory().getItemInOffHand();
+        ItemManager.toRPGItem(offhandItem).ifPresent(rpgItem -> rpgItem.updateItem(item));
+        switchCooldown.add(player.getUniqueId());
         new BukkitRunnable() {
             @Override
             public void run() {
-                switchCooldown.remove(ev.getPlayer().getUniqueId());
+                switchCooldown.remove(player.getUniqueId());
             }
         }.runTaskLater(plugin, 20);
     }
 
-    private void updteItem(ItemStack itemStack) {
-        RPGItem rpgItem = ItemManager.toRPGItem(itemStack).orElse(null);
-        if (rpgItem != null) {
-            rpgItem.updateItem(itemStack);
-        }
-    }
 
-    private void updatePlayerInventory(Inventory inventory, InventoryEvent e) {
+    private void updatePlayerInventory(Inventory inventory, Player p, InventoryEvent e) {
         Inventory in = inventory;
         Iterator<ItemStack> it = in.iterator();
         try {
@@ -547,7 +541,7 @@ public class Events implements Listener {
         if (e.getInventory().getHolder() == null || e.getInventory().getLocation() == null)
             return;
         if (e.getInventory().getType() != InventoryType.CHEST) {
-            updatePlayerInventory(e.getInventory(), e);
+            updatePlayerInventory(e.getInventory(), (Player) e.getPlayer(), e);
         }
     }
 

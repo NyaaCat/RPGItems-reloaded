@@ -35,7 +35,7 @@ public class ConsumeHit extends BasePower {
 
     @Override
     public String displayText() {
-        return I18n.format("power.consumehit");
+        return I18n.formatDefault("power.consumehit");
     }
 
     public class Impl implements PowerHit {

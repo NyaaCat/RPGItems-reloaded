@@ -149,7 +149,7 @@ public class ProjectilePower extends BasePower {
 
     @Override
     public String displayText() {
-        return I18n.format(isCone() ? "power.projectile.cone" : "power.projectile.display", getProjectileType(getProjectileType()), (double) getCooldown() / 20d);
+        return I18n.formatDefault(isCone() ? "power.projectile.cone" : "power.projectile.display", getProjectileType(getProjectileType()), (double) getCooldown() / 20d);
     }
 
     /**

@@ -21,6 +21,6 @@ public class Unbreakable extends BaseMarker {
 
     @Override
     public String displayText() {
-        return I18n.format("power.unbreakable");
+        return I18n.formatDefault("power.unbreakable");
     }
 }

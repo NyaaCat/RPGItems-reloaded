@@ -52,7 +52,7 @@ public class Pumpkin extends BasePower {
 
     @Override
     public String displayText() {
-        return I18n.format("power.pumpkin", getChance());
+        return I18n.formatDefault("power.pumpkin", getChance());
     }
 
     /**

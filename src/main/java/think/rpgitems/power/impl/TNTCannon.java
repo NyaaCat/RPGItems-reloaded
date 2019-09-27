@@ -38,7 +38,7 @@ public class TNTCannon extends BasePower {
 
     @Override
     public String displayText() {
-        return I18n.format("power.tntcannon", (double) getCooldown() / 20d);
+        return I18n.formatDefault("power.tntcannon", (double) getCooldown() / 20d);
     }
 
     /**

@@ -60,7 +60,7 @@ public class Economy extends BasePower {
 
     @Override
     public String displayText() {
-        return I18n.format(getAmountToPlayer() > 0 ? "power.economy.deposit" : "power.economy.withdraw", eco.format(Math.abs(getAmountToPlayer())), (double) getCooldown() / 20d);
+        return I18n.formatDefault(getAmountToPlayer() > 0 ? "power.economy.deposit" : "power.economy.withdraw", eco.format(Math.abs(getAmountToPlayer())), (double) getCooldown() / 20d);
     }
 
     public double getAmountToPlayer() {

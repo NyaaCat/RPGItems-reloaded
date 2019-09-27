@@ -4,6 +4,11 @@ import cat.nyaa.nyaacore.configuration.PluginConfigure;
 import org.bukkit.plugin.java.JavaPlugin;
 import think.rpgitems.item.RPGItem;
 
+import java.util.ArrayList;
+import java.util.List;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
+
 public class Configuration extends PluginConfigure {
     private final RPGItems plugin;
 
@@ -21,6 +26,9 @@ public class Configuration extends PluginConfigure {
 
     @Serializable
     public String version = "1.0";
+
+    @Serializable(name = "general.enabled_languages")
+    public List<String> enabledLanguages = Stream.of("en_US", "zh_CN").collect(Collectors.toList());
 
     @Serializable(name = "general.spu_endpoint")
     public String spuEndpoint = null;

@@ -36,7 +36,7 @@ public class Flame extends BasePower {
 
     @Override
     public String displayText() {
-        return I18n.format("power.flame", (double) getBurntime() / 20d);
+        return I18n.formatDefault("power.flame", (double) getBurntime() / 20d);
     }
 
     /**

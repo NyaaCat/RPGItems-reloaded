@@ -9,6 +9,7 @@ import org.bukkit.event.entity.EntityDamageByEntityEvent;
 import org.bukkit.event.entity.EntityDamageEvent;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.projectiles.ProjectileSource;
+import think.rpgitems.RPGItems;
 import think.rpgitems.item.RPGItem;
 import think.rpgitems.power.*;
 
@@ -93,7 +94,7 @@ public class EvalDamage extends BasePower {
                 }
                 return PowerResult.ok(ret);
             } catch (Expression.ExpressionException ex) {
-                RPGItem.getPlugin().getLogger().log(Level.WARNING, "bad expression: " + getExpression(), ex);
+                RPGItems.plugin.getLogger().log(Level.WARNING, "bad expression: " + getExpression(), ex);
                 if (player.isOp() || player.hasPermission("rpgitem")) {
                     player.sendMessage("bad expression: " + getExpression());
                     player.sendMessage(ex.getMessage());
@@ -151,7 +152,7 @@ public class EvalDamage extends BasePower {
                 BigDecimal result = ex.eval();
                 return PowerResult.ok(result.doubleValue());
             } catch (Expression.ExpressionException ex) {
-                RPGItem.getPlugin().getLogger().log(Level.WARNING, "bad expression: " + getExpression(), ex);
+                RPGItems.plugin.getLogger().log(Level.WARNING, "bad expression: " + getExpression(), ex);
                 if (player.isOp() || player.hasPermission("rpgitem")) {
                     player.sendMessage("bad expression: " + getExpression());
                     player.sendMessage(ex.getMessage());

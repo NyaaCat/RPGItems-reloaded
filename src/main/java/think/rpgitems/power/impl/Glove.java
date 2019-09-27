@@ -47,7 +47,7 @@ public class Glove extends BasePower {
 
     @Override
     public String displayText() {
-        return I18n.format("power.glove", (double) getCooldown() / 20D);
+        return I18n.formatDefault("power.glove", (double) getCooldown() / 20D);
     }
 
     public int getCooldown() {

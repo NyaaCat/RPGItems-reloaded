@@ -170,7 +170,7 @@ public class ParticlePower extends BasePower {
 
     @Override
     public String displayText() {
-        return I18n.format("power.particle");
+        return I18n.formatDefault("power.particle");
     }
 
     public boolean isRequireHurtByEntity() {

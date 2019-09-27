@@ -105,7 +105,7 @@ public class SkyHook extends BasePower {
 
     @Override
     public String displayText() {
-        return I18n.format("power.skyhook");
+        return I18n.formatDefault("power.skyhook");
     }
 
     public class Impl implements PowerRightClick, PowerLeftClick, PowerSneak, PowerSprint, PowerPlain, PowerBowShoot {
@@ -130,7 +130,7 @@ public class SkyHook extends BasePower {
             }
             Block block = player.getTargetBlock(null, getHookDistance());
             if (block.getType() != getRailMaterial()) {
-                player.sendMessage(I18n.format("message.skyhook.fail"));
+                player.sendMessage(I18n.formatDefault("message.skyhook.fail"));
                 return PowerResult.fail();
             }
             hooking.put(player.getUniqueId(), true);

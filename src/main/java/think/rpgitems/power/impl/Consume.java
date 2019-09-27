@@ -80,7 +80,7 @@ public class Consume extends BasePower {
 
     @Override
     public String displayText() {
-        return I18n.format("power.consume");
+        return I18n.formatDefault("power.consume");
     }
 
     public boolean isRequireHurtByEntity() {

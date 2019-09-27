@@ -8,10 +8,7 @@ import com.google.common.cache.CacheLoader;
 import com.google.common.cache.LoadingCache;
 import com.udojava.evalex.Expression;
 import com.udojava.evalex.LazyFunction;
-import org.bukkit.ChatColor;
-import org.bukkit.Location;
-import org.bukkit.Material;
-import org.bukkit.NamespacedKey;
+import org.bukkit.*;
 import org.bukkit.command.CommandSender;
 import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.configuration.file.YamlConfiguration;
@@ -29,6 +26,7 @@ import think.rpgitems.I18n;
 import think.rpgitems.RPGItems;
 import think.rpgitems.data.Context;
 import think.rpgitems.data.Font;
+import think.rpgitems.item.RPGItem;
 import think.rpgitems.power.marker.Selector;
 import think.rpgitems.utils.MaterialUtils;
 
@@ -183,10 +181,11 @@ public class Utils {
             return true;
         } else {
             if (showWarn) {
+                I18n i18n = I18n.getInstance(player.getLocale());
                 if (showPower || (!Strings.isNullOrEmpty(power.getLocalizedDisplayName()) && !power.getLocalizedDisplayName().equals(power.getLocalizedName(RPGItems.plugin.cfg.language)))) {
-                    player.sendMessage(I18n.format("message.cooldown.power", ((double) (cooldown - nowTick)) / 20d, power.getLocalizedDisplayName()));
+                    player.sendMessage(I18n.formatDefault("message.cooldown.power", ((double) (cooldown - nowTick)) / 20d, power.getLocalizedDisplayName()));
                 } else {
-                    player.sendMessage(I18n.format("message.cooldown.general", ((double) (cooldown - nowTick)) / 20d));
+                    player.sendMessage(I18n.formatDefault("message.cooldown.general", ((double) (cooldown - nowTick)) / 20d));
                 }
             }
             return false;
@@ -228,6 +227,8 @@ public class Utils {
                 } else {
                     section.set(property, c.stream().map(Object::toString).collect(Collectors.joining(",")));
                 }
+            } else if (field.getType() == Enchantment.class) {
+                section.set(property, ((Enchantment) val).getKey().toString());
             } else {
                 val = field.getType().isEnum() ? ((Enum<?>) val).name() : val;
                 section.set(property, val);
@@ -450,6 +451,11 @@ public class Utils {
 
     @SuppressWarnings({"unchecked", "deprecation"})
     public static void setPowerPropertyUnchecked(CommandSender sender, PropertyHolder power, Field field, String value) {
+        String locale = RPGItems.plugin.cfg.language;
+        if (sender instanceof Player) {
+            locale = ((Player) sender).getLocale();
+        }
+        I18n i18n = I18n.getInstance(locale);
         try {
             if (value.equals("null")) {
                 field.set(power, null);
@@ -463,7 +469,7 @@ public class Utils {
                     if (!v.isPresent()) return;
                     field.set(power, v.get());
                 } catch (IllegalArgumentException e) {
-                    new Message(I18n.format(st.message(), value)).send(sender);
+                    new Message(I18n.formatDefault(st.message(), value)).send(sender);
                 }
             } else {
                 if (field.getType().equals(int.class) || field.getType().equals(Integer.class)) {
@@ -540,7 +546,7 @@ public class Utils {
                             Set<String> ignored = new LinkedHashSet<>();
                             Set<Trigger> set = Trigger.getValid(values.collect(Collectors.toList()), ignored);
                             if (!ignored.isEmpty()) {
-                                new Message(I18n.format("message.power.ignored_trigger", String.join(", ", ignored), power.getName(), power.getItem().getName())).send(sender);
+                                new Message(I18n.formatDefault("message.power.ignored_trigger", String.join(", ", ignored), power.getName(), power.getItem().getName())).send(sender);
                             }
                             field.set(power, set);
                         } else if (listArg.equals(Integer.class)) {
@@ -573,6 +579,12 @@ public class Utils {
                     Enchantment enchantment;
                     if (VALID_KEY.matcher(value).matches()) {
                         enchantment = Enchantment.getByKey(NamespacedKey.minecraft(value));
+                    } else if (value.contains(":")) {
+                        if (value.startsWith("minecraft:")) {
+                            enchantment = Enchantment.getByKey(NamespacedKey.minecraft(value.split(":", 2)[1]));
+                        } else {
+                            enchantment = Enchantment.getByKey(new NamespacedKey(Objects.requireNonNull(Bukkit.getPluginManager().getPlugin(value.split(":", 2)[0])), value.split(":", 2)[1]));
+                        }
                     } else {
                         enchantment = Enchantment.getByName(value);
                     }

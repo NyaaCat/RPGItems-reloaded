@@ -12,6 +12,7 @@ import org.bukkit.inventory.ItemStack;
 import org.bukkit.scheduler.BukkitRunnable;
 import org.bukkit.util.Vector;
 import think.rpgitems.I18n;
+import think.rpgitems.RPGItems;
 import think.rpgitems.item.RPGItem;
 import think.rpgitems.power.*;
 
@@ -101,7 +102,7 @@ public class Attract extends BasePower {
 
     @Override
     public String displayText() {
-        return I18n.format("power.attract");
+        return I18n.formatDefault("power.attract");
     }
 
     /**
@@ -147,7 +148,7 @@ public class Attract extends BasePower {
                     }
                     attract(player, stack);
                 }
-            }.runTaskTimer(RPGItem.getPlugin(), 0, 1);
+            }.runTaskTimer(RPGItems.plugin, 0, 1);
             return PowerResult.ok();
         }
 

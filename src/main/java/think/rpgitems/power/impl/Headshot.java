@@ -50,7 +50,7 @@ public class Headshot extends BasePower {
 
     @Override
     public String displayText() {
-        return I18n.format("power.headshot", getFactor());
+        return I18n.formatDefault("power.headshot", getFactor());
     }
 
     public double getFactor() {
