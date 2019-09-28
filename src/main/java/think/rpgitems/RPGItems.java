@@ -15,6 +15,7 @@ import org.bukkit.plugin.java.JavaPlugin;
 import think.rpgitems.data.Font;
 import think.rpgitems.item.ItemManager;
 import think.rpgitems.power.*;
+import think.rpgitems.power.trigger.Trigger;
 import think.rpgitems.support.WGSupport;
 
 import java.io.File;

@@ -12,6 +12,7 @@ import org.bukkit.event.player.PlayerToggleSneakEvent;
 import org.bukkit.event.player.PlayerToggleSprintEvent;
 import org.bukkit.inventory.ItemStack;
 import think.rpgitems.power.*;
+import think.rpgitems.power.trigger.BaseTriggers;
 
 import java.util.Collections;
 
@@ -58,7 +59,7 @@ public class Command extends BasePower {
     public void init(ConfigurationSection section) {
         if (section.isBoolean("isRight")) {
             boolean isRight = section.getBoolean("isRight", true);
-            triggers = Collections.singleton(isRight ? Trigger.RIGHT_CLICK : Trigger.LEFT_CLICK);
+            triggers = Collections.singleton(isRight ? BaseTriggers.RIGHT_CLICK : BaseTriggers.LEFT_CLICK);
         }
         super.init(section);
     }

@@ -13,8 +13,8 @@ import org.bukkit.scheduler.BukkitRunnable;
 import org.bukkit.util.Vector;
 import think.rpgitems.I18n;
 import think.rpgitems.RPGItems;
-import think.rpgitems.item.RPGItem;
 import think.rpgitems.power.*;
+import think.rpgitems.power.trigger.BaseTriggers;
 
 import java.util.List;
 
@@ -161,7 +161,7 @@ public class Attract extends BasePower {
             if (!player.isOnline() || player.isDead()) {
                 return PowerResult.noop();
             }
-            if (!triggers.contains(Trigger.TICK) && !stack.equals(player.getInventory().getItemInMainHand())) {
+            if (!triggers.contains(BaseTriggers.TICK) && !stack.equals(player.getInventory().getItemInMainHand())) {
                 return PowerResult.noop();
             }
             double factor = Math.sqrt(getRadius() - 1.0) / getMaxSpeed();

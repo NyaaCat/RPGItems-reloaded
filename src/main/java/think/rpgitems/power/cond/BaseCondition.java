@@ -27,4 +27,9 @@ public abstract class BaseCondition<T> extends BasePropertyHolder implements Ser
     public String displayText() {
         return displayText;
     }
+
+    @Override
+    public final String getType() {
+        return "condition";
+    }
 }

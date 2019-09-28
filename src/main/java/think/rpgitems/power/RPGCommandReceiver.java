@@ -15,6 +15,7 @@ import think.rpgitems.RPGItems;
 import think.rpgitems.item.ItemManager;
 import think.rpgitems.item.RPGItem;
 import think.rpgitems.power.marker.Selector;
+import think.rpgitems.power.trigger.Trigger;
 
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;

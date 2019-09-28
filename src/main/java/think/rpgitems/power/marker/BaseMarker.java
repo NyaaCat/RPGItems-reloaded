@@ -17,4 +17,9 @@ public abstract class BaseMarker extends BasePropertyHolder implements Serializa
     public String displayName() {
         return displayName;
     }
+
+    @Override
+    public final String getType() {
+        return "marker";
+    }
 }

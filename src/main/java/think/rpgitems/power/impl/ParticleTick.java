@@ -4,6 +4,8 @@ import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
 import think.rpgitems.I18n;
 import think.rpgitems.power.*;
+import think.rpgitems.power.trigger.BaseTriggers;
+import think.rpgitems.power.trigger.Trigger;
 
 import java.util.Collections;
 import java.util.Set;
@@ -42,7 +44,7 @@ public class ParticleTick extends ParticlePower {
 
     @Override
     public Set<Trigger> getTriggers() {
-        return Collections.singleton(Trigger.TICK);
+        return Collections.singleton(BaseTriggers.TICK);
     }
 
     public class Impl implements PowerTick, PowerSneaking, PowerPlain {

@@ -26,8 +26,8 @@ import think.rpgitems.I18n;
 import think.rpgitems.RPGItems;
 import think.rpgitems.data.Context;
 import think.rpgitems.data.Font;
-import think.rpgitems.item.RPGItem;
 import think.rpgitems.power.marker.Selector;
+import think.rpgitems.power.trigger.Trigger;
 import think.rpgitems.utils.MaterialUtils;
 
 import java.lang.reflect.Field;

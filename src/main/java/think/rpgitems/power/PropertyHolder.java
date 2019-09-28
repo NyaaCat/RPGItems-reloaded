@@ -8,21 +8,21 @@ import java.util.Locale;
 
 public interface PropertyHolder {
     /**
-     * Loads configuration for this power
+     * Loads configuration for this object
      *
      * @param s Configuration
      */
     void init(ConfigurationSection s);
 
     /**
-     * Saves configuration for this power
+     * Saves configuration for this object
      *
      * @param s Configuration
      */
     void save(ConfigurationSection s);
 
     /**
-     * Static. NamespacedKey of this power
+     * Static. NamespacedKey of this object
      *
      * @return NamespacedKey
      */
@@ -37,14 +37,21 @@ public interface PropertyHolder {
 
 
     /**
-     * Static. Code name of this power
+     * Static. Code name of this object
      *
      * @return Code name
      */
     String getName();
 
     /**
-     * Static. Localized name of this power
+     * Static. Type of this object
+     *
+     * @return Type
+     */
+    String getType();
+
+    /**
+     * Static. Localized name of this object
      *
      * @param locale Locale tag
      * @return Localized name
@@ -54,7 +61,7 @@ public interface PropertyHolder {
     }
 
     /**
-     * Static. Localized name of this power
+     * Static. Localized name of this object
      *
      * @param locale Locale
      * @return Localized name

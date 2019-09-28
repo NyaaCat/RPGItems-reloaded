@@ -13,6 +13,8 @@ import org.bukkit.util.Vector;
 import think.rpgitems.Events;
 import think.rpgitems.I18n;
 import think.rpgitems.power.*;
+import think.rpgitems.power.trigger.BaseTriggers;
+import think.rpgitems.power.trigger.Trigger;
 
 import java.util.*;
 import java.util.concurrent.ThreadLocalRandom;
@@ -24,7 +26,7 @@ import static think.rpgitems.power.Utils.*;
  * <p>
  * Deflect arrows or fireballs towards player within {@link #facing} when
  * 1. manual triggered when some of initiative trigger are enabled with a cooldown of {@link #cooldown} and duration {@link #duration}
- * 2. auto triggered when {@link Trigger#HIT_TAKEN} is enabled with a chance of {@link #chance} and a cooldown of {@link #cooldownpassive}
+ * 2. auto triggered when {@link BaseTriggers#HIT_TAKEN} is enabled with a chance of {@link #chance} and a cooldown of {@link #cooldownpassive}
  * </p>
  */
 @SuppressWarnings("WeakerAccess")
@@ -55,10 +57,10 @@ public class Deflect extends BasePower {
         boolean isRight = section.getBoolean("isRight", true);
         triggers = new HashSet<>();
         if (passive) {
-            triggers.add(Trigger.HIT_TAKEN);
+            triggers.add(BaseTriggers.HIT_TAKEN);
         }
         if (initiative) {
-            triggers.add(isRight ? Trigger.RIGHT_CLICK : Trigger.LEFT_CLICK);
+            triggers.add(isRight ? BaseTriggers.RIGHT_CLICK : BaseTriggers.LEFT_CLICK);
         }
         super.init(section);
     }
@@ -66,7 +68,7 @@ public class Deflect extends BasePower {
     @Override
     public Set<Trigger> getTriggers() {
         HashSet<Trigger> triggers = new HashSet<>(super.getTriggers());
-        triggers.add(Trigger.HIT_TAKEN);
+        triggers.add(BaseTriggers.HIT_TAKEN);
         return triggers;
     }
 
@@ -150,7 +152,7 @@ public class Deflect extends BasePower {
             boolean activated = System.currentTimeMillis() / 50 < getTime().getOrDefault(target.getUniqueId(), 0L);
 
             if (!activated) {
-                if (!triggers.contains(Trigger.HIT_TAKEN)
+                if (!triggers.contains(BaseTriggers.HIT_TAKEN)
                             || ThreadLocalRandom.current().nextInt(0, 100) >= getChance())
                     return PowerResult.noop();
                 if (!checkCooldown(getPower(), target, getCooldownpassive(), false, true)) return PowerResult.cd();

@@ -21,6 +21,8 @@ import org.bukkit.potion.PotionEffectType;
 import think.rpgitems.I18n;
 import think.rpgitems.RPGItems;
 import think.rpgitems.power.*;
+import think.rpgitems.power.trigger.BaseTriggers;
+import think.rpgitems.power.trigger.Trigger;
 
 import java.util.*;
 import java.util.concurrent.ExecutionException;
@@ -67,10 +69,10 @@ public class Stuck extends BasePower {
         boolean allowAoe = s.getBoolean("allowAoe", false);
         Set<Trigger> triggerTypes = new HashSet<>();
         if (allowHit) {
-            triggerTypes.add(Trigger.HIT);
+            triggerTypes.add(BaseTriggers.HIT);
         }
         if (allowAoe) {
-            triggerTypes.add(Trigger.RIGHT_CLICK);
+            triggerTypes.add(BaseTriggers.RIGHT_CLICK);
         }
         triggers = triggerTypes;
         super.init(s);

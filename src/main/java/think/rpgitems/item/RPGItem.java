@@ -38,6 +38,8 @@ import think.rpgitems.RPGItems;
 import think.rpgitems.data.Context;
 import think.rpgitems.power.*;
 import think.rpgitems.power.marker.*;
+import think.rpgitems.power.trigger.BaseTriggers;
+import think.rpgitems.power.trigger.Trigger;
 import think.rpgitems.utils.MaterialUtils;
 
 import java.io.File;
@@ -77,6 +79,8 @@ public class RPGItem {
     private List<Power> powers = new ArrayList<>();
     private List<Condition<?>> conditions = new ArrayList<>();
     private List<Marker> markers = new ArrayList<>();
+    @SuppressWarnings("rawtypes")
+    private Map<String, Trigger> triggers = new HashMap<>();
     private HashMap<PropertyHolder, NamespacedKey> keys = new HashMap<>();
     private File file;
 
@@ -214,12 +218,20 @@ public class RPGItem {
             }
         }
         // Markers
-        ConfigurationSection markerList = s.getConfigurationSection("marker");
+        ConfigurationSection markerList = s.getConfigurationSection("markers");
         if (markerList != null) {
             for (String sectionKey : markerList.getKeys(false)) {
                 ConfigurationSection section = Objects.requireNonNull(markerList).getConfigurationSection(sectionKey);
                 String markerName = Objects.requireNonNull(Objects.requireNonNull(section).getString("markerName"));
                 loadMarker(section, markerName);
+            }
+        }
+        // Triggers
+        ConfigurationSection triggerList = s.getConfigurationSection("triggers");
+        if (triggerList != null) {
+            for (String sectionKey : triggerList.getKeys(false)) {
+                ConfigurationSection section = Objects.requireNonNull(markerList).getConfigurationSection(sectionKey);
+                loadTrigger(section, sectionKey);
             }
         }
 
@@ -338,7 +350,27 @@ public class RPGItem {
         addMarker(key, pow, false);
     }
 
+    @SuppressWarnings("rawtypes")
+    private void loadTrigger(ConfigurationSection section, String triggerName) throws UnknownPowerException {
+        String baseTrigger =  section.getString("base");
+        if (baseTrigger == null) {
+            throw new IllegalArgumentException();
+        }
+        Trigger base = Trigger.get(baseTrigger);
+        if(base == null) {
+            plugin.getLogger().warning("Unknown base trigger:" + baseTrigger + " on item " + this.name);
+            throw new UnknownPowerException(new NamespacedKey(RPGItems.plugin, baseTrigger));
+        }
 
+        Trigger newTrigger = base.copy(triggerName);
+
+        newTrigger.setItem(this);
+        newTrigger.init(section);
+        triggers.put(triggerName, newTrigger);
+    }
+
+
+    @SuppressWarnings("rawtypes")
     public void save(ConfigurationSection s) {
         s.set("name", name);
         if (id != 0) {
@@ -402,6 +434,14 @@ public class RPGItem {
             pConfig.set("markerName", p.getNamespacedKey().toString());
             p.save(pConfig);
             markerConfigs.set(Integer.toString(i), pConfig);
+            i++;
+        }
+        ConfigurationSection triggerConfigs = s.createSection("triggers");
+        for (Entry<String, Trigger> p : triggers.entrySet()) {
+            MemoryConfiguration pConfig = new MemoryConfiguration();
+            p.getValue().save(pConfig);
+            pConfig.set("base", p.getValue().getBase());
+            triggerConfigs.set(p.getKey(), pConfig);
             i++;
         }
 
@@ -857,7 +897,7 @@ public class RPGItem {
         }
         if (context instanceof Location) {
             if (power instanceof PowerLocation) {
-                PowerResult<Void> overrideResult = Trigger.LOCATION.run((PowerLocation) power, player, i, event, context);
+                PowerResult<Void> overrideResult = BaseTriggers.LOCATION.run((PowerLocation) power, player, i, event, context);
                 result = trigger.warpResult(overrideResult, power, player, i, event);
             } else {
                 throw new IllegalStateException();
@@ -865,7 +905,7 @@ public class RPGItem {
         } else if (context instanceof Pair) {
             Object key = ((Pair) context).getKey();
             if (key instanceof LivingEntity) {
-                PowerResult<Void> overrideResult = Trigger.LIVINGENTITY.run((PowerLivingEntity) power, player, i, event, context);
+                PowerResult<Void> overrideResult = BaseTriggers.LIVINGENTITY.run((PowerLivingEntity) power, player, i, event, context);
                 result = trigger.warpResult(overrideResult, power, player, i, event);
             } else {
                 throw new IllegalStateException();

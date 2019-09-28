@@ -18,6 +18,7 @@ import org.bukkit.inventory.Inventory;
 import org.bukkit.inventory.ItemStack;
 import think.rpgitems.I18n;
 import think.rpgitems.power.*;
+import think.rpgitems.power.trigger.BaseTriggers;
 
 import java.util.Collections;
 
@@ -74,7 +75,7 @@ public class Repair extends BasePower {
     @Override
     public void init(ConfigurationSection section) {
         if (section.isBoolean("isRight")) {
-            triggers = section.getBoolean("isRight", true) ? Collections.singleton(Trigger.RIGHT_CLICK) : Collections.singleton(Trigger.LEFT_CLICK);
+            triggers = section.getBoolean("isRight", true) ? Collections.singleton(BaseTriggers.RIGHT_CLICK) : Collections.singleton(BaseTriggers.LEFT_CLICK);
         }
         super.init(section);
     }

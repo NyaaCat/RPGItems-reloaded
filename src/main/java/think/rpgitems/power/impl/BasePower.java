@@ -1,6 +1,7 @@
 package think.rpgitems.power.impl;
 
 import think.rpgitems.power.*;
+import think.rpgitems.power.trigger.Trigger;
 
 import java.io.Serializable;
 import java.util.Collections;
@@ -46,5 +47,10 @@ public abstract class BasePower extends BasePropertyHolder implements Serializab
     @Override
     public String requiredContext() {
         return requiredContext;
+    }
+
+    @Override
+    public final String getType() {
+        return "power";
     }
 }

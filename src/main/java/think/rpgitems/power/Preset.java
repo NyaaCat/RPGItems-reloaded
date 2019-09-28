@@ -3,6 +3,7 @@ package think.rpgitems.power;
 import org.bukkit.Effect;
 import org.bukkit.Particle;
 import org.bukkit.enchantments.Enchantment;
+import think.rpgitems.power.trigger.Trigger;
 
 import java.util.Arrays;
 import java.util.List;

@@ -14,6 +14,7 @@ import org.bukkit.inventory.PlayerInventory;
 import think.rpgitems.item.ItemManager;
 import think.rpgitems.item.RPGItem;
 import think.rpgitems.power.*;
+import think.rpgitems.power.trigger.BaseTriggers;
 
 import java.util.List;
 import java.util.Optional;
@@ -157,7 +158,7 @@ public class Attachments extends BasePower {
             if (!optItem.isPresent()) return false;
             RPGItem item = optItem.get();
             if (allow != null && !allow.contains(item)) return false;
-            item.power(player, itemStack, event, Trigger.ATTACHMENT, Pair.of(stack, event));
+            item.power(player, itemStack, event, BaseTriggers.ATTACHMENT, Pair.of(stack, event));
             return true;
         }
 

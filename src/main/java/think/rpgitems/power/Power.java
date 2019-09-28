@@ -3,6 +3,7 @@ package think.rpgitems.power;
 import com.google.common.base.Strings;
 import com.google.common.reflect.TypeToken;
 import think.rpgitems.RPGItems;
+import think.rpgitems.power.trigger.Trigger;
 
 import javax.annotation.Nullable;
 import java.util.Collections;

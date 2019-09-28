@@ -6,6 +6,7 @@ import org.bukkit.event.Event;
 import org.bukkit.event.HandlerList;
 import org.bukkit.inventory.ItemStack;
 import think.rpgitems.item.RPGItem;
+import think.rpgitems.power.trigger.Trigger;
 
 import java.util.List;
 

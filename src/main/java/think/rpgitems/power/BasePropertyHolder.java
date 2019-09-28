@@ -82,7 +82,7 @@ public abstract class BasePropertyHolder implements PropertyHolder {
 
     @Override
     public String getLocalizedName(String locale) {
-        return I18n.getInstance(locale).format("power.properties." + getName() + ".main_name");
+        return I18n.getInstance(locale).format(getType() + ".properties." + getName() + ".main_name");
     }
 
     @Override

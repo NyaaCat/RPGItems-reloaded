@@ -1,6 +1,7 @@
 package think.rpgitems;
 
 import cat.nyaa.nyaacore.LanguageRepository;
+import cat.nyaa.nyaacore.NyaaCoreLoader;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
 import org.bukkit.plugin.java.JavaPlugin;
@@ -17,7 +18,9 @@ public class I18n extends LanguageRepository {
         instances.put(lang, this);
         this.plugin = plugin;
         this.lang = lang;
-        load(false);
+        loadResourceLanguage(lang);
+        save(lang + ".template");
+        loadLocalLanguage(lang + ".custom");
     }
 
     public static I18n getInstance(CommandSender sender) {

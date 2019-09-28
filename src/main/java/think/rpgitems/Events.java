@@ -28,7 +28,8 @@ import think.rpgitems.item.RPGItem;
 import think.rpgitems.power.Pimpl;
 import think.rpgitems.power.PowerSneak;
 import think.rpgitems.power.PowerSprint;
-import think.rpgitems.power.Trigger;
+import think.rpgitems.power.trigger.BaseTriggers;
+import think.rpgitems.power.trigger.Trigger;
 import think.rpgitems.power.marker.Ranged;
 import think.rpgitems.power.marker.RangedOnly;
 import think.rpgitems.support.WGHandler;
@@ -204,7 +205,7 @@ public class Events implements Listener {
                             return;
                         }
                     }
-                    rItem.power(player, item, e, Trigger.PROJECTILE_HIT);
+                    rItem.power(player, item, e, BaseTriggers.PROJECTILE_HIT);
                 }
             } finally {
                 Bukkit.getScheduler().runTask(plugin, () -> rpgProjectiles.remove(entity.getEntityId()));
@@ -218,7 +219,7 @@ public class Events implements Listener {
         float force = e.getForce();
         if (entity instanceof Player) {
             ItemStack bow = e.getBow();
-            force = ItemManager.toRPGItem(bow).flatMap(rpgItem -> rpgItem.power(((Player) entity), bow, e, Trigger.BOW_SHOOT)).orElse(force);
+            force = ItemManager.toRPGItem(bow).flatMap(rpgItem -> rpgItem.power(((Player) entity), bow, e, BaseTriggers.BOW_SHOOT)).orElse(force);
         }
         if (force == -1) {
             e.setCancelled(true);
@@ -241,7 +242,7 @@ public class Events implements Listener {
                 throw new IllegalStateException();
             }
             registerRPGProjectile(e.getEntity().getEntityId(), projectileRpgItem.getUid());
-            projectileRpgItem.power(player, projectileItemStack, e, Trigger.LAUNCH_PROJECTILE);
+            projectileRpgItem.power(player, projectileItemStack, e, BaseTriggers.LAUNCH_PROJECTILE);
             projectileRpgItem = null;
             projectilePlayer = null;
             projectileItemStack = null;
@@ -279,7 +280,7 @@ public class Events implements Listener {
             return;
         }
         registerRPGProjectile(e.getEntity().getEntityId(), rItem.getUid());
-        rItem.power(player, item, e, Trigger.LAUNCH_PROJECTILE);
+        rItem.power(player, item, e, BaseTriggers.LAUNCH_PROJECTILE);
     }
 
     @EventHandler
@@ -293,14 +294,14 @@ public class Events implements Listener {
         RPGItem rItem = ItemManager.toRPGItem(e.getItem()).orElse(null);
         if (rItem == null) return;
         if (e.getHand() == EquipmentSlot.OFF_HAND) {
-            rItem.power(player, e.getItem(), e, Trigger.OFFHAND_CLICK);
+            rItem.power(player, e.getItem(), e, BaseTriggers.OFFHAND_CLICK);
         } else if (action == Action.RIGHT_CLICK_AIR) {
-            rItem.power(player, e.getItem(), e, Trigger.RIGHT_CLICK);
+            rItem.power(player, e.getItem(), e, BaseTriggers.RIGHT_CLICK);
         } else if (action == Action.RIGHT_CLICK_BLOCK &&
                            !(e.getClickedBlock().getType().isInteractable() && !player.isSneaking())) {
-            rItem.power(player, e.getItem(), e, Trigger.RIGHT_CLICK);
+            rItem.power(player, e.getItem(), e, BaseTriggers.RIGHT_CLICK);
         } else if (action == Action.LEFT_CLICK_AIR || action == Action.LEFT_CLICK_BLOCK) {
-            rItem.power(player, e.getItem(), e, Trigger.LEFT_CLICK);
+            rItem.power(player, e.getItem(), e, BaseTriggers.LEFT_CLICK);
         }
     }
 
@@ -310,7 +311,7 @@ public class Events implements Listener {
             return;
         }
         Player p = e.getPlayer();
-        Trigger<PlayerToggleSneakEvent, PowerSneak, Void, Void> trigger = Trigger.SNEAK;
+        Trigger<PlayerToggleSneakEvent, PowerSneak, Void, Void> trigger = BaseTriggers.SNEAK;
 
         trigger(p, e, p.getInventory().getItemInMainHand(), trigger);
 
@@ -330,7 +331,7 @@ public class Events implements Listener {
             return;
         }
         Player p = e.getPlayer();
-        Trigger<PlayerToggleSprintEvent, PowerSprint, Void, Void> sprint = Trigger.SPRINT;
+        Trigger<PlayerToggleSprintEvent, PowerSprint, Void, Void> sprint = BaseTriggers.SPRINT;
 
         trigger(p, e, p.getInventory().getItemInMainHand(), sprint);
         ItemStack[] armorContents = p.getInventory().getArmorContents();
@@ -348,12 +349,12 @@ public class Events implements Listener {
         RPGItem oitem = ItemManager.toRPGItem(ois).orElse(null);
 
         if (mitem != null) {
-            Boolean cont = mitem.power(player, mis, e, Trigger.SWAP_TO_MAINHAND);
+            Boolean cont = mitem.power(player, mis, e, BaseTriggers.SWAP_TO_MAINHAND);
             if (!cont) e.setCancelled(true);
         }
 
         if (oitem != null) {
-            Boolean cont = oitem.power(player, ois, e, Trigger.SWAP_TO_OFFHAND);
+            Boolean cont = oitem.power(player, ois, e, BaseTriggers.SWAP_TO_OFFHAND);
             if (!cont) e.setCancelled(true);
         }
     }
@@ -370,12 +371,12 @@ public class Events implements Listener {
         RPGItem cursorItem = ItemManager.toRPGItem(cursorIs).orElse(null);
 
         if (currentItem != null && (e.getAction() == InventoryAction.PICKUP_SOME || e.getAction() == InventoryAction.PICKUP_ALL || e.getAction() == InventoryAction.PICKUP_ONE || e.getAction() == InventoryAction.PICKUP_HALF || e.getAction() == InventoryAction.DROP_ALL_SLOT || e.getAction() == InventoryAction.DROP_ONE_CURSOR)) {
-            Boolean cont = currentItem.power(player, currentIs, e, Trigger.PICKUP_OFF_HAND);
+            Boolean cont = currentItem.power(player, currentIs, e, BaseTriggers.PICKUP_OFF_HAND);
             if (!cont) e.setCancelled(true);
         }
 
         if (cursorItem != null && (e.getAction() == InventoryAction.PLACE_SOME || e.getAction() == InventoryAction.PLACE_ONE || e.getAction() == InventoryAction.PLACE_ALL)) {
-            Boolean cont = cursorItem.power(player, cursorIs, e, Trigger.PLACE_OFF_HAND);
+            Boolean cont = cursorItem.power(player, cursorIs, e, BaseTriggers.PLACE_OFF_HAND);
             if (!cont) e.setCancelled(true);
         }
     }
@@ -609,7 +610,7 @@ public class Events implements Listener {
         e.setDamage(damage);
         if (!(entity instanceof LivingEntity)) return;
         if (rItem != null) {
-            damage = maxWithCancel(rItem.power(player, item, e, Trigger.HIT).orElse(null), damage);
+            damage = maxWithCancel(rItem.power(player, item, e, BaseTriggers.HIT).orElse(null), damage);
         }
         runHitTrigger(e, player, damage, armorContents);
     }
@@ -672,7 +673,7 @@ public class Events implements Listener {
         e.setDamage(damage);
         ItemStack[] armorContents = player.getInventory().getArmorContents();
         if (!(e.getEntity() instanceof LivingEntity)) return;
-        damage = maxWithCancel(rItem.power(player, item, e, Trigger.HIT).orElse(null), damage);
+        damage = maxWithCancel(rItem.power(player, item, e, BaseTriggers.HIT).orElse(null), damage);
         runHitTrigger(e, player, damage, armorContents);
     }
 
@@ -681,7 +682,7 @@ public class Events implements Listener {
             if (armorContent == null) continue;
             RPGItem rpgItem = ItemManager.toRPGItem(armorContent).orElse(null);
             if (rpgItem == null) continue;
-            damage = maxWithCancel(rpgItem.power(player, armorContent, e, Trigger.HIT).orElse(null), damage);
+            damage = maxWithCancel(rpgItem.power(player, armorContent, e, BaseTriggers.HIT).orElse(null), damage);
         }
         if (damage == -1) {
             e.setCancelled(true);
@@ -721,7 +722,7 @@ public class Events implements Listener {
         for (ItemStack item : e.getInventory().getContents()) {
             RPGItem ri = ItemManager.toRPGItem(item).orElse(null);
             if (ri == null) continue;
-            ret = minWithCancel(ri.power(e, item, ev, Trigger.HIT_TAKEN).orElse(null), ret);
+            ret = minWithCancel(ri.power(e, item, ev, BaseTriggers.HIT_TAKEN).orElse(null), ret);
         }
         return ret;
     }
@@ -733,7 +734,7 @@ public class Events implements Listener {
             for (ItemStack item : e.getInventory().getContents()) {
                 RPGItem ri = ItemManager.toRPGItem(item).orElse(null);
                 if (ri == null) continue;
-                ri.power(e, item, ev, Trigger.HURT);
+                ri.power(e, item, ev, BaseTriggers.HURT);
             }
         }
     }
