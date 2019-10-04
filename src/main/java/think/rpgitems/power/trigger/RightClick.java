@@ -7,8 +7,12 @@ import think.rpgitems.power.PowerResult;
 import think.rpgitems.power.PowerRightClick;
 
 class RightClick extends Trigger<PlayerInteractEvent, PowerRightClick, Void, Void> {
-    public RightClick() {
+    RightClick() {
         super(PlayerInteractEvent.class, PowerRightClick.class, Void.class, Void.class, "RIGHT_CLICK");
+    }
+
+    public RightClick(String name) {
+        super(name, "RIGHT_CLICK", PlayerInteractEvent.class, PowerRightClick.class, Void.class, Void.class);
     }
 
     @Override

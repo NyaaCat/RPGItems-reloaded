@@ -20,8 +20,12 @@ class HitTaken extends Trigger<EntityDamageEvent, PowerHitTaken, Double, Optiona
     @Property
     public double maxDamage = Double.POSITIVE_INFINITY;
 
-    public HitTaken() {
+    HitTaken() {
         super(EntityDamageEvent.class, PowerHitTaken.class, Double.class, Optional.class, "HIT_TAKEN");
+    }
+
+    public HitTaken(String name) {
+        super(name, "HIT_TAKEN", EntityDamageEvent.class, PowerHitTaken.class, Double.class, Optional.class);
     }
 
     @Override

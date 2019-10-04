@@ -19,8 +19,12 @@ class BowShoot extends Trigger<EntityShootBowEvent, PowerBowShoot, Float, Option
     @Property
     public float maxForce = Float.POSITIVE_INFINITY;
 
-    public BowShoot() {
+    BowShoot() {
         super(EntityShootBowEvent.class, PowerBowShoot.class, Float.class, Optional.class, "BOW_SHOOT");
+    }
+
+    public BowShoot(String name) {
+        super(name, "BOW_SHOOT", EntityShootBowEvent.class, PowerBowShoot.class, Float.class, Optional.class);
     }
 
     @Override

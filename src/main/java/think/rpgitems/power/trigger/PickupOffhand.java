@@ -7,8 +7,11 @@ import think.rpgitems.power.PowerOffhandItem;
 import think.rpgitems.power.PowerResult;
 
 class PickupOffhand extends Trigger<InventoryClickEvent, PowerOffhandItem, Boolean, Boolean> {
-    public PickupOffhand() {
+    PickupOffhand() {
         super(InventoryClickEvent.class, PowerOffhandItem.class, Boolean.class, Boolean.class, "PICKUP_OFF_HAND");
+    }
+    public PickupOffhand(String name) {
+        super(name, "PICKUP_OFF_HAND", InventoryClickEvent.class, PowerOffhandItem.class, Boolean.class, Boolean.class);
     }
 
     @Override

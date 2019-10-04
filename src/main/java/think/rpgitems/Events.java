@@ -482,10 +482,10 @@ public class Events implements Listener {
         ItemStack[] armorContents = player.getInventory().getArmorContents();
         for (int i = 0; i < armorContents.length; i++) {
             ItemStack stack = armorContents[i];
-            ItemManager.toRPGItem(stack).ifPresent(rpgItem -> rpgItem.updateItem(item));
+            ItemManager.toRPGItem(stack).ifPresent(rpgItem -> rpgItem.updateItem(stack));
         }
         ItemStack offhandItem = player.getInventory().getItemInOffHand();
-        ItemManager.toRPGItem(offhandItem).ifPresent(rpgItem -> rpgItem.updateItem(item));
+        ItemManager.toRPGItem(offhandItem).ifPresent(rpgItem -> rpgItem.updateItem(offhandItem));
         switchCooldown.add(player.getUniqueId());
         new BukkitRunnable() {
             @Override

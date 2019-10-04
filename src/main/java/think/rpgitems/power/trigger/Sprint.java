@@ -7,8 +7,12 @@ import think.rpgitems.power.PowerResult;
 import think.rpgitems.power.PowerSprint;
 
 class Sprint extends Trigger<PlayerToggleSprintEvent, PowerSprint, Void, Void> {
-    public Sprint() {
+    Sprint() {
         super(PlayerToggleSprintEvent.class, PowerSprint.class, Void.class, Void.class, "SPRINT");
+    }
+
+    public Sprint(String name) {
+        super(name, "SPRINT", PlayerToggleSprintEvent.class, PowerSprint.class, Void.class, Void.class);
     }
 
     @Override

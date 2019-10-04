@@ -29,7 +29,7 @@ public abstract class BaseCondition<T> extends BasePropertyHolder implements Ser
     }
 
     @Override
-    public final String getType() {
+    public final String getPropertyHolderType() {
         return "condition";
     }
 }

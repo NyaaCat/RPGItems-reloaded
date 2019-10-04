@@ -5,12 +5,11 @@ import com.google.common.base.Strings;
 import org.bukkit.entity.Player;
 import org.bukkit.event.Event;
 import org.bukkit.inventory.ItemStack;
-import think.rpgitems.power.BasePropertyHolder;
-import think.rpgitems.power.Pimpl;
-import think.rpgitems.power.PowerResult;
+import think.rpgitems.power.*;
 
 import javax.annotation.Nullable;
 import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.Method;
 import java.util.*;
 import java.util.function.Predicate;
 import java.util.stream.Collectors;
@@ -71,6 +70,7 @@ public abstract class Trigger<TEvent extends Event, TPower extends Pimpl, TResul
             throw new IllegalStateException("No longer accepting new triggers (can only be done when loading): " + trigger.name);
         }
         registry.put(name, trigger);
+        PowerManager.registerMetas(trigger.getClass());
     }
 
     public static boolean isAcceptingRegistrations() {
@@ -82,7 +82,7 @@ public abstract class Trigger<TEvent extends Event, TPower extends Pimpl, TResul
     }
 
     @Override
-    public final String getType() {
+    public final String getPropertyHolderType() {
         return "trigger";
     }
 
@@ -97,6 +97,9 @@ public abstract class Trigger<TEvent extends Event, TPower extends Pimpl, TResul
     private final Class<TReturn> returnClass;
     private final String name;
     private final String base;
+
+    @Property
+    public int priority;
 
     @SuppressWarnings("unchecked")
     Trigger(Class<TEvent> eventClass, Class<TPower> powerClass, Class<TResult> resultClass, Class returnClass, String name) {
@@ -113,18 +116,22 @@ public abstract class Trigger<TEvent extends Event, TPower extends Pimpl, TResul
         this.base = null;
     }
 
-    public Trigger(String name, String base, Class<TEvent> eventClass, Class<TPower> powerClass, Class<TResult> resultClass, Class<TReturn> returnClass) {
+    @SuppressWarnings("unchecked")
+    Trigger(String name, String base, Class<TEvent> eventClass, Class<TPower> powerClass, Class<TResult> resultClass, Class returnClass) {
         this.eventClass = eventClass;
         this.powerClass = powerClass;
         this.resultClass = resultClass;
         this.returnClass = returnClass;
         this.name = name;
-        if(Trigger.get(base) == null) {
+        if (Trigger.get(base) == null) {
             throw new IllegalArgumentException();
         }
         this.base = base;
     }
 
+    public int getPriority() {
+        return priority;
+    }
 
     public static Set<String> keySet() {
         return registry.keySet();
@@ -190,8 +197,8 @@ public abstract class Trigger<TEvent extends Event, TPower extends Pimpl, TResul
         if (Trigger.get(name) != null) throw new IllegalArgumentException("name is used");
         try {
             return getClass()
-                           .getConstructor(String.class, String.class, Class.class, Class.class, Class.class, Class.class)
-                           .newInstance(name, this.name(), this.getEventClass(), this.getPowerClass(), this.getReturnClass(), this.getResultClass());
+                           .getConstructor(String.class)
+                           .newInstance(name);
         } catch (NoSuchMethodException | InstantiationException | IllegalAccessException | InvocationTargetException e) {
             throw new RuntimeException(e);
         }

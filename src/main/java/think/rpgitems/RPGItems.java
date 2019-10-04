@@ -15,6 +15,7 @@ import org.bukkit.plugin.java.JavaPlugin;
 import think.rpgitems.data.Font;
 import think.rpgitems.item.ItemManager;
 import think.rpgitems.power.*;
+import think.rpgitems.power.trigger.BaseTriggers;
 import think.rpgitems.power.trigger.Trigger;
 import think.rpgitems.support.WGSupport;
 
@@ -69,6 +70,7 @@ public class RPGItems extends JavaPlugin {
         cfg.load();
         cfg.enabledLanguages.forEach(lang -> new I18n(this, lang));
 
+        new BaseTriggers();
         PowerManager.registerAdapter(PowerPlain.class, PowerOffhandClick.class, p -> getWrapper(p, PowerOffhandClick.class, "offhandClick"));
         PowerManager.registerAdapter(PowerPlain.class, PowerSprint.class, p -> getWrapper(p, PowerSprint.class, "sprint"));
         PowerManager.registerAdapter(PowerPlain.class, PowerSneak.class, p -> getWrapper(p, PowerSneak.class, "sneak"));

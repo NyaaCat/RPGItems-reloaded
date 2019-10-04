@@ -50,7 +50,7 @@ public abstract class BasePower extends BasePropertyHolder implements Serializab
     }
 
     @Override
-    public final String getType() {
+    public final String getPropertyHolderType() {
         return "power";
     }
 }

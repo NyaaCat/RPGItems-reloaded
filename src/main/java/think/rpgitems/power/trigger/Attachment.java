@@ -9,8 +9,12 @@ import think.rpgitems.power.PowerAttachment;
 import think.rpgitems.power.PowerResult;
 
 class Attachment extends Trigger<Event, PowerAttachment, Void, Void> {
-    public Attachment() {
+    Attachment() {
         super(Event.class, PowerAttachment.class, Void.class, Void.class, "ATTACHMENT");
+    }
+
+    public Attachment(String name) {
+        super(name, "ATTACHMENT", Event.class, PowerAttachment.class, Void.class, Void.class);
     }
 
     @Override

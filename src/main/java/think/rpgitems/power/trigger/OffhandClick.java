@@ -7,8 +7,12 @@ import think.rpgitems.power.PowerOffhandClick;
 import think.rpgitems.power.PowerResult;
 
 class OffhandClick extends Trigger<PlayerInteractEvent, PowerOffhandClick, Void, Void> {
-    public OffhandClick() {
+    OffhandClick() {
         super(PlayerInteractEvent.class, PowerOffhandClick.class, Void.class, Void.class, "OFFHAND_CLICK");
+    }
+
+    public OffhandClick(String name) {
+        super(name, "OFFHAND_CLICK", PlayerInteractEvent.class, PowerOffhandClick.class, Void.class, Void.class);
     }
 
     @Override

@@ -15,8 +15,12 @@ class Hurt extends Trigger<EntityDamageEvent, PowerHurt, Void, Void> {
     @Property
     public double maxDamage = Double.POSITIVE_INFINITY;
 
-    public Hurt() {
+    Hurt() {
         super(EntityDamageEvent.class, PowerHurt.class, Void.class, Void.class, "HURT");
+    }
+
+    public Hurt(String name) {
+        super(name, "HURT", EntityDamageEvent.class, PowerHurt.class, Void.class, Void.class);
     }
 
     @Override

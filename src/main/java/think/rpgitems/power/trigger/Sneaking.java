@@ -7,8 +7,12 @@ import think.rpgitems.power.PowerResult;
 import think.rpgitems.power.PowerSneaking;
 
 class Sneaking extends Trigger<Event, PowerSneaking, Void, Void> {
-    public Sneaking() {
+    Sneaking() {
         super(Event.class, PowerSneaking.class, Void.class, Void.class, "SNEAKING");
+    }
+
+    public Sneaking(String name) {
+        super(name, "SNEAKING", Event.class, PowerSneaking.class, Void.class, Void.class);
     }
 
     @Override

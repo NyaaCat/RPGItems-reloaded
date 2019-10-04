@@ -20,8 +20,12 @@ public class Hit extends Trigger<EntityDamageByEntityEvent, PowerHit, Double, Op
     @Property
     public double maxDamage = Double.POSITIVE_INFINITY;
 
-    public Hit() {
+    Hit() {
         super(EntityDamageByEntityEvent.class, PowerHit.class, Double.class, Optional.class, "HIT");
+    }
+
+    public Hit(String name) {
+        super(name, "HIT", EntityDamageByEntityEvent.class, PowerHit.class, Double.class, Optional.class);
     }
 
     @Override

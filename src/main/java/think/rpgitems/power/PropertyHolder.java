@@ -48,7 +48,7 @@ public interface PropertyHolder {
      *
      * @return Type
      */
-    String getType();
+    String getPropertyHolderType();
 
     /**
      * Static. Localized name of this object

@@ -158,7 +158,7 @@ public class RPGItem {
 
     public static void updateItemStack(ItemStack item) {
         Optional<RPGItem> rItem = ItemManager.toRPGItem(item);
-        rItem.ifPresent(r -> r.updateItem(item,  false));
+        rItem.ifPresent(r -> r.updateItem(item, false));
     }
 
     private void restore(ConfigurationSection s) throws UnknownPowerException, UnknownExtensionException {
@@ -230,7 +230,7 @@ public class RPGItem {
         ConfigurationSection triggerList = s.getConfigurationSection("triggers");
         if (triggerList != null) {
             for (String sectionKey : triggerList.getKeys(false)) {
-                ConfigurationSection section = Objects.requireNonNull(markerList).getConfigurationSection(sectionKey);
+                ConfigurationSection section = Objects.requireNonNull(triggerList).getConfigurationSection(sectionKey);
                 loadTrigger(section, sectionKey);
             }
         }
@@ -352,12 +352,12 @@ public class RPGItem {
 
     @SuppressWarnings("rawtypes")
     private void loadTrigger(ConfigurationSection section, String triggerName) throws UnknownPowerException {
-        String baseTrigger =  section.getString("base");
+        String baseTrigger = section.getString("base");
         if (baseTrigger == null) {
             throw new IllegalArgumentException();
         }
         Trigger base = Trigger.get(baseTrigger);
-        if(base == null) {
+        if (base == null) {
             plugin.getLogger().warning("Unknown base trigger:" + baseTrigger + " on item " + this.name);
             throw new UnknownPowerException(new NamespacedKey(RPGItems.plugin, baseTrigger));
         }
@@ -487,7 +487,7 @@ public class RPGItem {
         updateItem(item, false);
     }
 
-    public void updateItem(ItemStack item,boolean loreOnly) {
+    public void updateItem(ItemStack item, boolean loreOnly) {
         List<String> reservedLores = this.filterLores(item);
         item.setType(getItem());
         ItemMeta meta = item.getItemMeta();
@@ -851,6 +851,8 @@ public class RPGItem {
     }
 
     public <TEvent extends Event, TPower extends Pimpl, TResult, TReturn> TReturn power(Player player, ItemStack i, TEvent event, Trigger<TEvent, TPower, TResult, TReturn> trigger, Object context) {
+        powerCustomTrigger(player, i, event, trigger, context);
+
         List<TPower> powers = this.getPower(trigger, player);
         TReturn ret = trigger.def(player, i, event);
         if (!triggerPreCheck(player, i, event, trigger, powers)) return ret;
@@ -878,6 +880,19 @@ public class RPGItem {
         } finally {
             Context.instance().cleanTemp(player.getUniqueId());
         }
+    }
+
+    @SuppressWarnings("unchecked")
+    public <TEvent extends Event, TPower extends Pimpl, TResult, TReturn> void powerCustomTrigger(Player player, ItemStack i, TEvent event, Trigger<TEvent, TPower, TResult, TReturn> trigger, Object context) {
+        this.triggers.entrySet()
+                     .parallelStream()
+                     .filter(e -> trigger.getClass().isInstance(e.getValue()))
+                     .sorted(Comparator.comparing(en -> en.getValue().getPriority()))
+                     .filter(e -> e.getValue().check(player, i, event)).forEach(e -> this.power(player, i, event, e.getValue(), context));
+    }
+
+    public void addTrigger(String name, Trigger trigger) {
+        triggers.put(name, trigger);
     }
 
     public List<Condition<?>> getConditions() {
@@ -1643,7 +1658,15 @@ public class RPGItem {
     }
 
     public List<Power> getPowers() {
-        return powers;
+        return Collections.unmodifiableList(powers);
+    }
+
+    public List<Marker> getMarkers() {
+        return Collections.unmodifiableList(markers);
+    }
+
+    public Map<String, Trigger> getTriggers() {
+        return Collections.unmodifiableMap(triggers);
     }
 
     public NamespacedKey getPowerKey(Power power) {

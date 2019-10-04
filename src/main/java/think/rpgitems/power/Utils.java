@@ -607,9 +607,9 @@ public class Utils {
         }
     }
 
-    public static void setPowerProperty(CommandSender sender, Power power, Field field, String value) throws
+    public static void setPowerProperty(CommandSender sender, PropertyHolder power, Field field, String value) throws
             IllegalAccessException {
-        Class<? extends Power> cls = power.getClass();
+        Class<? extends PropertyHolder> cls = power.getClass();
         BooleanChoice bc = field.getAnnotation(BooleanChoice.class);
         if (bc != null) {
             String trueChoice = bc.trueChoice();

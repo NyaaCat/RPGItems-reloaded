@@ -53,7 +53,7 @@ public class PowerManager {
     private static void registerPower(Class<? extends Power> clazz) {
         NamespacedKey key = null;
         try {
-            metas.put(clazz, clazz.getAnnotation(Meta.class));
+            registerMetas(clazz);
             Power p = PowerManager.instantiate(clazz);
             key = p.getNamespacedKey();
             if (key != null) {
@@ -61,13 +61,12 @@ public class PowerManager {
             } else {
                 return;
             }
-            Map<String, Pair<Method, PropertyInstance>> propertyMap = scanProperties(clazz);
-            properties.put(clazz, propertyMap);
         } catch (Throwable e) {
             RPGItems.plugin.getLogger().log(Level.WARNING, "Failed to add power {0}", clazz);
-            RPGItems.plugin.getLogger().log(Level.FINE, "Exception: {0}", e);
             if (!Optional.ofNullable(metas.get(clazz)).map(c -> c.note().isEmpty()).orElse(false)) {
                 RPGItems.plugin.getLogger().log(Level.WARNING, "Note: {0}", metas.get(clazz).note());
+            } else {
+                RPGItems.plugin.getLogger().log(Level.INFO, "Exception: {0}", e);
             }
             if (key != null) {
                 powers.remove(key);
@@ -80,6 +79,7 @@ public class PowerManager {
     private static <T extends PropertyHolder> void register(Class<? extends T> clazz, BiMap<NamespacedKey, Class<? extends T>> registry) {
         NamespacedKey key;
         try {
+            registerMetas(clazz);
             T p = PowerManager.instantiate(clazz);
             key = p.getNamespacedKey();
             if (key != null) {
@@ -88,8 +88,14 @@ public class PowerManager {
         } catch (Exception e) {
             RPGItems.plugin.getLogger().log(Level.WARNING, "Failed to add", e);
             RPGItems.plugin.getLogger().log(Level.WARNING, "With {0}", clazz);
+            metas.remove(clazz);
+            properties.remove(clazz);
+            registry.remove(clazz);
             return;
         }
+    }
+
+    public static <T extends PropertyHolder> void registerMetas(Class<? extends T> clazz) {
         metas.put(clazz, clazz.getAnnotation(Meta.class));
         Map<String, Pair<Method, PropertyInstance>> propertyMap = scanProperties(clazz);
         properties.put(clazz, propertyMap);
@@ -137,7 +143,7 @@ public class PowerManager {
                                       p -> p.getKey().getName(),
                                       p -> {
                                           String name = p.getKey().getName();
-                                          return Pair.of(metas.get(cls).marker() ? null :
+                                          return Pair.of(!Power.class.isAssignableFrom(cls) || metas.get(cls).marker() ? null :
                                                                  methods.stream()
                                                                         .filter(
                                                                                 m -> m.getParameterCount() == 0 &&
@@ -203,9 +209,9 @@ public class PowerManager {
         return new NamespacedKey(namespace, split[1]);
     }
 
-    public static void setPowerProperty(CommandSender sender, Power power, String field, String value) throws IllegalAccessException {
+    public static void setPowerProperty(CommandSender sender, PropertyHolder power, String field, String value) throws IllegalAccessException {
         Field f;
-        Class<? extends Power> cls = power.getClass();
+        Class<? extends PropertyHolder> cls = power.getClass();
         try {
             f = cls.getField(field);
         } catch (NoSuchFieldException e) {

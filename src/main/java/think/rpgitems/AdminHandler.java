@@ -305,7 +305,7 @@ public class AdminHandler extends RPGCommandReceiver {
                     msg(sender, "message.power.key", power.toString());
                     msg(sender, "message.power.description", PowerManager.getDescription(power, null));
                     PowerManager.getProperties(power).forEach(
-                            (name, mp) -> showPowerProp(sender, power, mp.getValue(), null)
+                            (name, mp) -> showProp(sender, power, mp.getValue(), null)
                     );
                     msg(sender, "message.line_separator");
                 });
@@ -450,7 +450,7 @@ public class AdminHandler extends RPGCommandReceiver {
     @Attribute("item")
     public void itemDisplay(CommandSender sender, Arguments args) {
         RPGItem item = getItem(args.nextString(), sender);
-        String value = args.next();
+        String value = args.consume();
         if (value != null) {
             item.setDisplayName(value);
             msg(sender, "message.display.set", item.getName(), item.getDisplayName());
@@ -578,7 +578,7 @@ public class AdminHandler extends RPGCommandReceiver {
             case "clone": {
                 if (sender instanceof Player) {
                     ItemStack hand = ((Player) sender).getInventory().getItemInMainHand();
-                    if (hand == null || hand.getType() == Material.AIR) {
+                    if (hand.getType() == Material.AIR) {
                         msg(sender, "message.enchantment.fail");
                     } else {
                         if (hand.getType() == Material.ENCHANTED_BOOK) {
@@ -662,7 +662,7 @@ public class AdminHandler extends RPGCommandReceiver {
         String command = args.nextString();
         switch (command) {
             case "add": {
-                String line = args.nextString();
+                String line = args.consumeString();
                 item.addDescription(ChatColor.WHITE + line);
                 msg(sender, "message.description.ok");
                 ItemManager.refreshItem();
@@ -671,7 +671,7 @@ public class AdminHandler extends RPGCommandReceiver {
             break;
             case "insert": {
                 int lineNo = args.nextInt();
-                String line = args.nextString();
+                String line = args.consumeString();
                 int Length = item.getDescription().size();
                 if (lineNo < 0 || lineNo >= Length) {
                     msg(sender, "message.num_out_of_range", lineNo, 0, item.getDescription().size());
@@ -686,7 +686,7 @@ public class AdminHandler extends RPGCommandReceiver {
             break;
             case "set": {
                 int lineNo = args.nextInt();
-                String line = args.nextString();
+                String line = args.consumeString();
                 if (lineNo < 0 || lineNo >= item.getDescription().size()) {
                     msg(sender, "message.num_out_of_range", lineNo, 0, item.getDescription().size());
                     return;
@@ -759,6 +759,35 @@ public class AdminHandler extends RPGCommandReceiver {
             return null;
         }
     }
+
+    private Pair<NamespacedKey, Class<? extends Marker>> getMarkerClass(CommandSender sender, String markerStr) {
+        try {
+            NamespacedKey key = PowerManager.parseKey(markerStr);
+            Class<? extends Marker> cls = PowerManager.getMarker(key);
+            if (cls == null) {
+                msg(sender, "message.power.unknown", markerStr);
+            }
+            return Pair.of(key, cls);
+        } catch (UnknownExtensionException e) {
+            msg(sender, "message.error.unknown.extension", e.getName());
+            return null;
+        }
+    }
+
+    private Pair<NamespacedKey, Class<? extends Condition>> getConditionClass(CommandSender sender, String conditionStr) {
+        try {
+            NamespacedKey key = PowerManager.parseKey(conditionStr);
+            Class<? extends Condition> cls = PowerManager.getCondition(key);
+            if (cls == null) {
+                msg(sender, "message.power.unknown", conditionStr);
+            }
+            return Pair.of(key, cls);
+        } catch (UnknownExtensionException e) {
+            msg(sender, "message.error.unknown.extension", e.getName());
+            return null;
+        }
+    }
+
 
     @SubCommand("set")
     @Attribute("property")
@@ -1038,7 +1067,7 @@ public class AdminHandler extends RPGCommandReceiver {
                 msg(sender, "message.item.power", power.getLocalizedName(plugin.cfg.language), power.getNamespacedKey().toString(), power.displayText() == null ? I18n.getInstance(sender).format("message.power.no_display") : power.displayText(), power.getTriggers().stream().map(Trigger::name).collect(Collectors.joining(",")));
                 if ("list".equals(powerStr)) {
                     PowerManager.getProperties(power.getNamespacedKey()).forEach(
-                            (name, prop) -> showPowerProp(sender, power.getNamespacedKey(), prop.getValue(), power)
+                            (name, prop) -> showProp(sender, power.getNamespacedKey(), prop.getValue(), power)
                     );
                 }
             }
@@ -1051,51 +1080,7 @@ public class AdminHandler extends RPGCommandReceiver {
         Class<? extends Power> cls = keyClass.getValue();
         NamespacedKey key = keyClass.getKey();
         try {
-            power = PowerManager.instantiate(cls);
-            power.setItem(item);
-            power.init(new YamlConfiguration());
-            Map<String, Pair<Method, PropertyInstance>> argMap = PowerManager.getProperties(cls);
-            Set<Field> settled = new HashSet<>();
-
-            List<Field> required = argMap.values().stream()
-                                         .map(Pair::getValue)
-                                         .filter(PropertyInstance::required)
-                                         .sorted(Comparator.comparing(PropertyInstance::order))
-                                         .map(PropertyInstance::field)
-                                         .collect(Collectors.toList());
-
-            for (Map.Entry<String, Pair<Method, PropertyInstance>> prop : argMap.entrySet()) {
-                Field field = prop.getValue().getValue().field();
-                String name = prop.getKey();
-                String value = args.argString(name, null);
-                if (value != null) {
-                    Utils.setPowerProperty(sender, power, field, value);
-                    required.remove(field);
-                    settled.add(field);
-                }
-            }
-            for (Field field : argMap.values()
-                                     .stream()
-                                     .map(Pair::getValue)
-                                     .filter(PropertyInstance::required)
-                                     .sorted(Comparator.comparing(PropertyInstance::order))
-                                     .map(PropertyInstance::field)
-                                     .collect(Collectors.toList())) {
-                if (settled.contains(field)) continue;
-                String value = args.next();
-                if (value == null) {
-                    if (!required.isEmpty()) {
-                        throw new BadCommandException("message.power.required",
-                                required.stream().map(Field::getName).collect(Collectors.joining(", "))
-                        );
-                    } else {
-                        break;
-                    }
-                }
-                Utils.setPowerProperty(sender, power, field, value);
-                required.remove(field);
-                settled.add(field);
-            }
+            power = initPropertyHolder(sender, args, item, cls);
             item.addPower(key, power);
             ItemManager.refreshItem();
             ItemManager.save(item);
@@ -1109,7 +1094,191 @@ public class AdminHandler extends RPGCommandReceiver {
         }
     }
 
-    private void showPowerProp(CommandSender sender, NamespacedKey powerKey, PropertyInstance prop, Power powerObj) {
+
+    @SubCommand("marker")
+    @Attribute("power")
+    public void itemAddMarker(CommandSender sender, Arguments args) {
+        String itemStr = args.next();
+        String powerStr = args.next();
+        if (itemStr == null || (itemStr.equals("help") && getItem(itemStr, sender) == null)) {
+            msg(sender, "manual.marker.description");
+            msg(sender, "manual.marker.usage");
+            return;
+        }
+        if (getItem(itemStr, sender) != null && (powerStr == null || powerStr.equals("list"))) {
+            RPGItem item = getItem(itemStr, sender);
+            for (Marker marker : item.getMarkers()) {
+                msg(sender, "message.item.marker", marker.getLocalizedName(plugin.cfg.language), marker.getNamespacedKey().toString(), marker.displayText() == null ? I18n.getInstance(sender).format("message.marker.no_display") : marker.displayText());
+                if ("list".equals(powerStr)) {
+                    PowerManager.getProperties(marker.getNamespacedKey()).forEach(
+                            (name, prop) -> showProp(sender, marker.getNamespacedKey(), prop.getValue(), marker)
+                    );
+                }
+            }
+            return;
+        }
+        RPGItem item = getItem(itemStr, sender);
+        Pair<NamespacedKey, Class<? extends Marker>> keyClass = getMarkerClass(sender, powerStr);
+        if (keyClass == null || keyClass.getValue() == null) return;
+        Marker marker;
+        Class<? extends Marker> cls = keyClass.getValue();
+        NamespacedKey key = keyClass.getKey();
+        try {
+            marker = initPropertyHolder(sender, args, item, cls);
+            item.addMarker(key, marker);
+            ItemManager.refreshItem();
+            ItemManager.save(item);
+            msg(sender, "message.marker.ok");
+        } catch (Exception e) {
+            if (e instanceof CommandException) {
+                throw (CommandException) e;
+            }
+            plugin.getLogger().log(Level.WARNING, "Error adding marker " + powerStr + " to item " + itemStr + " " + item, e);
+            msg(sender, "internal.error.command_exception");
+        }
+    }
+
+
+    @SubCommand("condition")
+    @Attribute("power")
+    public void itemAddCondition(CommandSender sender, Arguments args) {
+        String itemStr = args.next();
+        String powerStr = args.next();
+        if (itemStr == null || (itemStr.equals("help") && getItem(itemStr, sender) == null)) {
+            msg(sender, "manual.condition.description");
+            msg(sender, "manual.condition.usage");
+            return;
+        }
+        if (getItem(itemStr, sender) != null && (powerStr == null || powerStr.equals("list"))) {
+            RPGItem item = getItem(itemStr, sender);
+            for (Condition condition : item.getConditions()) {
+                msg(sender, "message.item.condition", condition.getLocalizedName(plugin.cfg.language), condition.getNamespacedKey().toString(), condition.displayText() == null ? I18n.getInstance(sender).format("message.condition.no_display") : condition.displayText());
+                if ("list".equals(powerStr)) {
+                    PowerManager.getProperties(condition.getNamespacedKey()).forEach(
+                            (name, prop) -> showProp(sender, condition.getNamespacedKey(), prop.getValue(), condition)
+                    );
+                }
+            }
+            return;
+        }
+        RPGItem item = getItem(itemStr, sender);
+        Pair<NamespacedKey, Class<? extends Condition>> keyClass = getConditionClass(sender, powerStr);
+        if (keyClass == null || keyClass.getValue() == null) return;
+        Condition power;
+        Class<? extends Condition> cls = keyClass.getValue();
+        NamespacedKey key = keyClass.getKey();
+        try {
+            power = initPropertyHolder(sender, args, item, cls);
+            item.addCondition(key, power);
+            ItemManager.refreshItem();
+            ItemManager.save(item);
+            msg(sender, "message.power.ok");
+        } catch (Exception e) {
+            if (e instanceof CommandException) {
+                throw (CommandException) e;
+            }
+            plugin.getLogger().log(Level.WARNING, "Error adding power " + powerStr + " to item " + itemStr + " " + item, e);
+            msg(sender, "internal.error.command_exception");
+        }
+    }
+
+    @SubCommand("trigger")
+    @Attribute("power")
+    public void itemAddTrigger(CommandSender sender, Arguments args) {
+        String itemStr = args.next();
+        String powerStr = args.next();
+        if (itemStr == null || (itemStr.equals("help") && getItem(itemStr, sender) == null)) {
+            msg(sender, "manual.trigger.description");
+            msg(sender, "manual.trigger.usage");
+            return;
+        }
+        if (getItem(itemStr, sender) != null && (powerStr == null || powerStr.equals("list"))) {
+            RPGItem item = getItem(itemStr, sender);
+            for (Map.Entry<String, Trigger> t : item.getTriggers().entrySet()) {
+                Trigger trigger = t.getValue();
+                msg(sender, "message.item.trigger", t.getKey(), trigger.getLocalizedName(plugin.cfg.language), trigger.getNamespacedKey().toString());
+                if ("list".equals(powerStr)) {
+                    PowerManager.getProperties(trigger.getNamespacedKey()).forEach(
+                            (name, prop) -> showProp(sender, trigger.getNamespacedKey(), prop.getValue(), trigger)
+                    );
+                }
+            }
+            return;
+        }
+        String name = args.next();
+        RPGItem item = getItem(itemStr, sender);
+        Trigger base = Trigger.get(powerStr);
+        Trigger trigger = base.copy(name);
+        trigger.setItem(item);
+        try {
+            trigger = initPropertyHolder(sender, args, base.getClass(), trigger);
+            item.addTrigger(name, trigger);
+            ItemManager.refreshItem();
+            ItemManager.save(item);
+            msg(sender, "message.power.ok");
+        } catch (Exception e) {
+            if (e instanceof CommandException) {
+                throw (CommandException) e;
+            }
+            plugin.getLogger().log(Level.WARNING, "Error adding power " + powerStr + " to item " + itemStr + " " + item, e);
+            msg(sender, "internal.error.command_exception");
+        }
+    }
+
+    public <T extends PropertyHolder> T initPropertyHolder(CommandSender sender, Arguments args, RPGItem item, Class<? extends T> cls) throws IllegalAccessException {
+        T power = PowerManager.instantiate(cls);
+        power.setItem(item);
+        power.init(new YamlConfiguration());
+        return initPropertyHolder(sender, args, cls, power);
+    }
+
+    public <T extends PropertyHolder> T initPropertyHolder(CommandSender sender, Arguments args, Class<? extends T> cls, T power) throws IllegalAccessException {
+        Map<String, Pair<Method, PropertyInstance>> argMap = PowerManager.getProperties(cls);
+        Set<Field> settled = new HashSet<>();
+
+        List<Field> required = argMap.values().stream()
+                                     .map(Pair::getValue)
+                                     .filter(PropertyInstance::required)
+                                     .sorted(Comparator.comparing(PropertyInstance::order))
+                                     .map(PropertyInstance::field)
+                                     .collect(Collectors.toList());
+
+        for (Map.Entry<String, Pair<Method, PropertyInstance>> prop : argMap.entrySet()) {
+            Field field = prop.getValue().getValue().field();
+            String name = prop.getKey();
+            String value = args.argString(name, null);
+            if (value != null) {
+                Utils.setPowerProperty(sender, power, field, value);
+                required.remove(field);
+                settled.add(field);
+            }
+        }
+        for (Field field : argMap.values()
+                                 .stream()
+                                 .map(Pair::getValue)
+                                 .filter(PropertyInstance::required)
+                                 .sorted(Comparator.comparing(PropertyInstance::order))
+                                 .map(PropertyInstance::field)
+                                 .collect(Collectors.toList())) {
+            if (settled.contains(field)) continue;
+            String value = args.next();
+            if (value == null) {
+                if (!required.isEmpty()) {
+                    throw new BadCommandException("message.power.required",
+                            required.stream().map(Field::getName).collect(Collectors.joining(", "))
+                    );
+                } else {
+                    break;
+                }
+            }
+            Utils.setPowerProperty(sender, power, field, value);
+            required.remove(field);
+            settled.add(field);
+        }
+        return power;
+    }
+
+    private void showProp(CommandSender sender, NamespacedKey powerKey, PropertyInstance prop, PropertyHolder powerObj) {
         String name = prop.name();
         Meta meta = PowerManager.getMeta(powerKey);
         if (isTrivialProperty(meta, name)) {

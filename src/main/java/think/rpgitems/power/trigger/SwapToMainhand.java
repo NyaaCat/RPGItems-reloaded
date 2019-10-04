@@ -7,8 +7,12 @@ import think.rpgitems.power.PowerOffhandItem;
 import think.rpgitems.power.PowerResult;
 
 class SwapToMainhand extends Trigger<PlayerSwapHandItemsEvent, PowerOffhandItem, Boolean, Boolean> {
-    public SwapToMainhand() {
+    SwapToMainhand() {
         super(PlayerSwapHandItemsEvent.class, PowerOffhandItem.class, Boolean.class, Boolean.class, "SWAP_TO_MAINHAND");
+    }
+
+    public SwapToMainhand(String name) {
+        super(name, "SWAP_TO_MAINHAND", PlayerSwapHandItemsEvent.class, PowerOffhandItem.class, Boolean.class, Boolean.class);
     }
 
     @Override

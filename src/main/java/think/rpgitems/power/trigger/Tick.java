@@ -7,8 +7,12 @@ import think.rpgitems.power.PowerResult;
 import think.rpgitems.power.PowerTick;
 
 class Tick extends Trigger<Event, PowerTick, Void, Void> {
-    public Tick() {
+    Tick() {
         super(Event.class, PowerTick.class, Void.class, Void.class, "TICK");
+    }
+    
+    public Tick(String name) {
+        super(name, "TICK", Event.class, PowerTick.class, Void.class, Void.class);
     }
 
     @Override

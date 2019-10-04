@@ -8,8 +8,11 @@ import think.rpgitems.power.PowerLivingEntity;
 import think.rpgitems.power.PowerResult;
 
 class LivingEntity extends Trigger<Event, PowerLivingEntity, Void, Void> {
-    public LivingEntity() {
+    LivingEntity() {
         super(Event.class, PowerLivingEntity.class, Void.class, Void.class, "LIVINGENTITY");
+    }
+    public LivingEntity(String name) {
+        super(name, "LIVINGENTITY", Event.class, PowerLivingEntity.class, Void.class, Void.class);
     }
 
     @Override

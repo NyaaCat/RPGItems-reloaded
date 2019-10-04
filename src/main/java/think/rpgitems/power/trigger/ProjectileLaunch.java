@@ -7,8 +7,12 @@ import think.rpgitems.power.PowerProjectileLaunch;
 import think.rpgitems.power.PowerResult;
 
 class ProjectileLaunch extends Trigger<ProjectileLaunchEvent, PowerProjectileLaunch, Void, Void> {
-    public ProjectileLaunch() {
+    ProjectileLaunch() {
         super(ProjectileLaunchEvent.class, PowerProjectileLaunch.class, Void.class, Void.class, "PROJECTILE_LAUNCH");
+    }
+
+    public ProjectileLaunch(String name) {
+        super(name, "PROJECTILE_LAUNCH", ProjectileLaunchEvent.class, PowerProjectileLaunch.class, Void.class, Void.class);
     }
 
     @Override
