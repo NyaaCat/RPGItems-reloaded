@@ -4,6 +4,7 @@ import com.google.common.util.concurrent.AtomicDouble;
 import com.udojava.evalex.Expression;
 import org.bukkit.*;
 import org.bukkit.block.Block;
+import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.entity.ArmorStand;
 import org.bukkit.entity.Entity;
 import org.bukkit.entity.LivingEntity;
@@ -161,6 +162,30 @@ public class PowerBeam extends BasePower implements PowerPlain, PowerRightClick,
 
     @Property
     public String shapeParam = "{}";
+
+    @Override
+    public void init(ConfigurationSection section) {
+        if (section.contains("coneRange")) {
+            updateFromV1(section);
+        }
+        super.init(section);
+    }
+
+    private void updateFromV1(ConfigurationSection section) {
+        double cone = section.getDouble("coneRange");
+        int movementTicks = section.getInt("movementTicks");
+        int length = section.getInt("length");
+        double originSpeed = section.getDouble("speed");
+        double homingAngle = section.getDouble("homingAngle");
+        double homingRange = section.getDouble("homingRange");
+        String homingTargetMode = section.getString("homingTargetMode");
+        section.set("cone", cone);
+        section.set("speed", ((double) length) / ((double) movementTicks));
+        section.set("particleSpeed", originSpeed);
+        section.set("homing", homingAngle);
+        section.set("homingAngle", homingRange);
+        section.set("homingMode", homingTargetMode);
+    }
 
     private static Set<Material> transp = Stream.of(Material.values())
             .filter(material -> material.isBlock())
@@ -370,7 +395,7 @@ public class PowerBeam extends BasePower implements PowerPlain, PowerRightClick,
             if (Double.isInfinite(lengthPerSpawn)) {
                 return;
             }
-            if (mode.equals(Mode.BEAM)){
+            if (mode.equals(Mode.BEAM)) {
                 this.speed = 20 * length;
             }
             new RecursiveTask().runTaskAsynchronously(RPGItems.plugin);
@@ -387,8 +412,9 @@ public class PowerBeam extends BasePower implements PowerPlain, PowerRightClick,
                     double lengthInThisTick = getNextLength(spawnedLength, length) + lengthRemains.get();
                     int cycle = 0;
                     while ((lengthInThisTick -= lengthPerSpawn) > 0) {
+                        double lengthInThisSpawn = lengthPerSpawn;
                         if (spawnedLength.get() + lengthInThisTick > length) {
-                            lengthInThisTick = length - spawnedLength.get() + 0.1;
+                            lengthInThisSpawn = length - spawnedLength.get() + 0.1;
                         }
                         boolean isHit = tryHit(fromEntity, lastLocation, itemStack, bounced && hitSelfWhenBounced);
                         if (cycle++ > 2) {
@@ -404,10 +430,10 @@ public class PowerBeam extends BasePower implements PowerPlain, PowerRightClick,
                             cycle = 0;
                         }
                         spawnParticle(fromEntity, world, lastLocation, 1);
-                        Vector step = towards.normalize().multiply(lengthPerSpawn);
+                        Vector step = towards.normalize().multiply(lengthInThisSpawn);
                         lastLocation.add(step);
                         spawnedLength.addAndGet(lengthPerSpawn);
-                        homingCorrect(towards, lastLocation, targets.peek(), ticksBeforeHoming, () -> {
+                        homingCorrect(towards, lastLocation, lengthInThisTick, targets.peek(), ticksBeforeHoming, () -> {
                             if (homingMode.equals(HomingMode.ONE_TARGET)) targets.poll();
                         });
                         if (isHit) {
@@ -534,7 +560,7 @@ public class PowerBeam extends BasePower implements PowerPlain, PowerRightClick,
             }
         }
 
-        private Vector homingCorrect(Vector towards, Location lastLocation, Entity target, int i, Runnable runnable) {
+        private Vector homingCorrect(Vector towards, Location lastLocation, double lengthInThisTick, Entity target, int i, Runnable runnable) {
             if (target == null || i < ticksBeforeHoming) {
                 return towards;
             }
@@ -552,7 +578,7 @@ public class PowerBeam extends BasePower implements PowerPlain, PowerRightClick,
             Vector targetDirection = targetLocation.toVector().subtract(lastLocation.toVector());
             float angle = clone.angle(targetDirection);
             Vector crossProduct = clone.clone().getCrossProduct(targetDirection);
-            double actualAng = homing / spawnsPerBlock;
+            double actualAng = homing / 20 / (lengthInThisTick / lengthPerSpawn);
             if (angle > Math.toRadians(actualAng)) {
                 if (this.shape.equals(BeamShape.LEGACY_HOMING)) {
                     //↓a legacy but functionable way to rotate.
