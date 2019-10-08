@@ -165,8 +165,6 @@ public class PowerBeam extends BasePower implements PowerPlain, PowerRightClick,
 
     final Vector crosser = new Vector(1, 1, 1);
     private Random random = new Random();
-    private Vector yUnit = new Vector(0, 1, 0);
-    Vector gravityVector = new Vector(0, -gravity / 20, 0);
 
     @Override
     public @LangKey(skipCheck = true) String getName() {
@@ -285,15 +283,82 @@ public class PowerBeam extends BasePower implements PowerPlain, PowerRightClick,
         return PowerResult.noop();
     }
 
-    private class MovingTask extends BukkitRunnable {
+    private static class MovingTask extends BukkitRunnable {
         public int length = 10;
+        public Particle particle = Particle.LAVA;
+        public Mode mode = Mode.BEAM;
+        public int pierce = 0;
+        public boolean ignoreWall = true;
+        public double damage = 20;
+        public int flySpeed = 20;
+        public double offsetX = 0;
+        public double offsetY = 0;
+        public double offsetZ = 0;
+        public double spawnsPerBlock = 2;
+        public int cost = 0;
+        public long cooldown = 0;
+        public double cone = 30;
+        public double homing = 0;
+        public double homingAngle = 30;
+        public HomingMode homingMode = HomingMode.ONE_TARGET;
+        public Target homingTarget = Target.MOBS;
+        public int stepsBeforeHoming = 5;
+        public int burstCount = 1;
+        public int beamAmount = 1;
+        public int burstInterval = 1;
+        public int bounce = 0;
+        public boolean hitSelfWhenBounced = false;
+        public double gravity = 0;
+        public double speed = 0;
+        public boolean requireHurtByEntity = true;
+        public boolean suppressMelee = false;
+        public BeamShape shape = BeamShape.PLAIN;
+        public String shapeParam = "{}";
+        public Object extraData = null;
+        private PowerBeam power;
+
         private List<Entity> targets;
+        private Entity fromEntity;
+        private Location fromLocation;
+
 
         MovingTask() {
 
         }
 
         MovingTask(PowerBeam config) {
+            this.length = config.length;
+            this.particle = config.particle;
+            this.mode = config.mode;
+            this.pierce = config.pierce;
+            this.ignoreWall = config.ignoreWall;
+            this.damage = config.damage;
+            this.flySpeed = config.flySpeed;
+            this.offsetX = config.offsetX;
+            this.offsetY = config.offsetY;
+            this.offsetZ = config.offsetZ;
+            this.spawnsPerBlock = config.spawnsPerBlock;
+            this.cost = config.cost;
+            this.cooldown = config.cooldown;
+            this.cone = config.cone;
+            this.homing = config.homing;
+            this.homingAngle = config.homingAngle;
+            this.homingMode = config.homingMode;
+            this.homingTarget = config.homingTarget;
+            this.stepsBeforeHoming = config.stepsBeforeHoming;
+            this.burstCount = config.burstCount;
+            this.beamAmount = config.beamAmount;
+            this.burstInterval = config.burstInterval;
+            this.bounce = config.bounce;
+            this.hitSelfWhenBounced = config.hitSelfWhenBounced;
+            this.gravity = config.gravity;
+            this.speed = config.speed;
+            this.requireHurtByEntity = config.requireHurtByEntity;
+            this.suppressMelee = config.suppressMelee;
+            this.shape = config.shape;
+            this.shapeParam = config.shapeParam;
+            this.extraData = config.extraData;
+            power = config;
         }
 
         @Override
@@ -406,41 +471,44 @@ public class PowerBeam extends BasePower implements PowerPlain, PowerRightClick,
             Vector crossProduct = clone.clone().getCrossProduct(targetDirection);
             double actualAng = homingAngle / spawnsPerBlock;
             if (angle > Math.toRadians(actualAng)) {
-                //↓a legacy but functionable way to rotate.
-                //will create a enlarging circle
-                clone.add(clone.clone().getCrossProduct(crossProduct).normalize().multiply(-1 * Math.tan(actualAng)));
-                // ↓a better way to rotate.
-                // will create a exact circle.
-//            clone.rotateAroundAxis(crossProduct, actualAng);
+                if (this.shape.equals(BeamShape.LEGACY_HOMING)) {
+                    //↓a legacy but functionable way to rotate.
+                    //will create a enlarging circle
+                    clone.add(clone.clone().getCrossProduct(crossProduct).normalize().multiply(-1 * Math.tan(actualAng)));
+                }else {
+                    // ↓a better way to rotate.
+                    // will create a exact circle.}
+                    clone.rotateAroundAxis(crossProduct, actualAng);
+                }
             } else {
                 clone = targetDirection.normalize();
             }
             return clone;
         }
 
-        private LivingEntity getNextTarget(Vector towards, Location lastLocation, Entity from) {
-            int radius = Math.min(this.length, 300);
-            return Utils.getLivingEntitiesInCone(from.getNearbyEntities(radius, this.length, this.length).stream()
-                            .filter(entity -> entity instanceof LivingEntity && !entity.equals(from) && !entity.isDead())
-                            .map(entity -> ((LivingEntity) entity))
-                            .collect(Collectors.toList())
-                    , lastLocation.toVector(), homingRange, towards).stream()
-                    .filter(livingEntity -> {
-                        if (isUtilArmorStand(livingEntity)) {
-                            return false;
-                        }
-                        switch (homingTarget) {
-                            case MOBS:
-                                return !(livingEntity instanceof Player);
-                            case PLAYERS:
-                                return livingEntity instanceof Player && !((Player) livingEntity).getGameMode().equals(GameMode.SPECTATOR);
-                            case ALL:
-                                return !(livingEntity instanceof Player) || !((Player) livingEntity).getGameMode().equals(GameMode.SPECTATOR);
-                        }
-                        return true;
-                    })
-                    .findFirst().orElse(null);
-        }
+//        private LivingEntity getNextTarget(Vector towards, Location lastLocation, Entity from) {
+//            int radius = Math.min(this.length, 300);
+//            return Utils.getLivingEntitiesInCone(from.getNearbyEntities(radius, this.length, this.length).stream()
+//                            .filter(entity -> entity instanceof LivingEntity && !entity.equals(from) && !entity.isDead())
+//                            .map(entity -> ((LivingEntity) entity))
+//                            .collect(Collectors.toList())
+//                    , lastLocation.toVector(), homingAngle, towards).stream()
+//                    .filter(livingEntity -> {
+//                        if (isUtilArmorStand(livingEntity)) {
+//                            return false;
+//                        }
+//                        switch (homingTarget) {
+//                            case MOBS:
+//                                return !(livingEntity instanceof Player);
+//                            case PLAYERS:
+//                                return livingEntity instanceof Player && !((Player) livingEntity).getGameMode().equals(GameMode.SPECTATOR);
+//                            case ALL:
+//                                return !(livingEntity instanceof Player) || !((Player) livingEntity).getGameMode().equals(GameMode.SPECTATOR);
+//                        }
+//                        return true;
+//                    })
+//                    .findFirst().orElse(null);
+//        }
 
         private boolean spawnInWorld = false;
 
@@ -463,7 +531,7 @@ public class PowerBeam extends BasePower implements PowerPlain, PowerRightClick,
             double length = Double.isNaN(offsetLength) ? 0 : Math.max(offsetLength, 10);
             Collection<Entity> candidates = from.getWorld().getNearbyEntities(loc, length, length, length);
             boolean result = false;
-            if (!pierce) {
+            if (pierce > 0) {
                 List<Entity> collect = candidates.stream()
                         .filter(entity -> (entity instanceof LivingEntity) && (!isUtilArmorStand((LivingEntity) entity)) && (canHitSelf || !entity.equals(from)) && !entity.isDead())
                         .filter(entity -> canHit(loc, entity))
@@ -472,7 +540,7 @@ public class PowerBeam extends BasePower implements PowerPlain, PowerRightClick,
                 if (!collect.isEmpty()) {
                     Entity entity = collect.get(0);
                     if (entity instanceof LivingEntity) {
-                        LightContext.putTemp(from.getUniqueId(), DAMAGE_SOURCE, getNamespacedKey().toString());
+                        LightContext.putTemp(from.getUniqueId(), DAMAGE_SOURCE, power.getNamespacedKey().toString());
                         LightContext.putTemp(from.getUniqueId(), OVERRIDING_DAMAGE, damage);
                         LightContext.putTemp(from.getUniqueId(), SUPPRESS_MELEE, suppressMelee);
                         LightContext.putTemp(from.getUniqueId(), DAMAGE_SOURCE_ITEM, stack);
@@ -486,7 +554,7 @@ public class PowerBeam extends BasePower implements PowerPlain, PowerRightClick,
                         .filter(entity -> (entity instanceof LivingEntity) && (!isUtilArmorStand((LivingEntity) entity)) && (canHitSelf || !entity.equals(from)))
                         .filter(entity -> canHit(loc, entity))
                         .collect(Collectors.toList());
-                LightContext.putTemp(from.getUniqueId(), DAMAGE_SOURCE, getNamespacedKey().toString());
+                LightContext.putTemp(from.getUniqueId(), DAMAGE_SOURCE, power.getNamespacedKey().toString());
                 LightContext.putTemp(from.getUniqueId(), OVERRIDING_DAMAGE, damage);
                 LightContext.putTemp(from.getUniqueId(), SUPPRESS_MELEE, suppressMelee);
                 LightContext.putTemp(from.getUniqueId(), DAMAGE_SOURCE_ITEM, stack);
@@ -515,6 +583,8 @@ public class PowerBeam extends BasePower implements PowerPlain, PowerRightClick,
             return boundingBox.overlaps(particleBox) || particleBox.overlaps(boundingBox);
         }
 
+        Vector gravityVector = new Vector(0, -gravity / 20, 0);
+
         private Vector addGravity(Vector towards, double partsPerTick) {
             double gravityPerTick = (-gravity / 20d) / partsPerTick;
             gravityVector.setY(gravityPerTick);
@@ -523,6 +593,10 @@ public class PowerBeam extends BasePower implements PowerPlain, PowerRightClick,
 
         public void setTarget(List<Entity> targets) {
             this.targets = targets;
+        }
+
+        public void setFromEntity(Entity fromEntity) {
+            this.fromEntity = fromEntity;
         }
     }
 
@@ -537,11 +611,11 @@ public class PowerBeam extends BasePower implements PowerPlain, PowerRightClick,
 
     public static MovingTask buildBeam(PowerBeam config, Entity from, List<Entity> targets) {
         MovingTask movingTask = new MovingTask(config);
-        movingTask.setFrom(from);
+        movingTask.setFromEntity(from);
         movingTask.setTarget(targets);
     }
 
-    private boolean isUtilArmorStand(LivingEntity livingEntity) {
+    private static boolean isUtilArmorStand(LivingEntity livingEntity) {
         if (livingEntity instanceof ArmorStand) {
             ArmorStand arm = (ArmorStand) livingEntity;
             return arm.isMarker() && !arm.isVisible();
@@ -555,7 +629,7 @@ public class PowerBeam extends BasePower implements PowerPlain, PowerRightClick,
                         .filter(entity -> entity instanceof LivingEntity && !entity.equals(from) && !entity.isDead())
                         .map(entity -> ((LivingEntity) entity))
                         .collect(Collectors.toList())
-                , fromLocation.toVector(), homingRange, direction).stream()
+                , fromLocation.toVector(), homingAngle, direction).stream()
                 .filter(livingEntity -> {
                     if (isUtilArmorStand(livingEntity)) {
                         return false;
@@ -607,7 +681,9 @@ public class PowerBeam extends BasePower implements PowerPlain, PowerRightClick,
     public enum BeamShape {
         PLAIN(PlainBias.class, Void.class),
         DNA(DnaBias.class, DnaBias.DnaParams.class),
-        CIRCLE(CircleBias.class, CircleBias.CircleParams.class);
+        CIRCLE(CircleBias.class, CircleBias.CircleParams.class),
+        LEGACY_HOMING(PlainBias.class, Void.class)
+        ;
 
         private Class<? extends IBias> iBias;
         private Class<?> paramType;
