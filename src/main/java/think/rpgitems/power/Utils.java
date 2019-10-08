@@ -139,6 +139,43 @@ public class Utils {
         return newEntities;
     }
 
+    public static List<LivingEntity> getLivingEntitiesInConeSorted(List<LivingEntity> entities, org.bukkit.util.Vector startPos, double degrees, org.bukkit.util.Vector direction) {
+        Set<AngledEntity> newEntities = new TreeSet<>();
+        float relativeAngle = 0;
+        for (LivingEntity e : entities) {
+            org.bukkit.util.Vector relativePosition = e.getEyeLocation().toVector();
+            relativePosition.subtract(startPos);
+            relativeAngle = getAngleBetweenVectors(direction, relativePosition);
+            AngledEntity angledEntity = new AngledEntity(relativeAngle, e);
+            if (relativeAngle > degrees) continue;
+            newEntities.add(angledEntity);
+        }
+        return newEntities.stream().map(AngledEntity::getEntity).collect(Collectors.toList());
+    }
+
+    private static class AngledEntity implements Comparable<Double>{
+        double angle;
+        LivingEntity entity;
+
+        public AngledEntity(double angle, LivingEntity entity){
+            this.angle = angle;
+            this.entity = entity;
+        }
+
+        public LivingEntity getEntity() {
+            return entity;
+        }
+
+        public double getAngle() {
+            return angle;
+        }
+
+        @Override
+        public int compareTo(Double o) {
+            return ((Double)angle).compareTo(o);
+        }
+    }
+
     /**
      * Gets angle between vectors.
      *
