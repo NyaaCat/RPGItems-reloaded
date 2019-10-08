@@ -152,6 +152,12 @@ public class PowerBeam extends BasePower implements PowerPlain, PowerRightClick,
     @Property
     public boolean suppressMelee = false;
 
+    @Property
+    public BeamShape shape = BeamShape.PLAIN;
+
+    @Property
+    public String shapeParam = "{}";
+
     private Set<Material> transp = Stream.of(Material.values())
             .filter(material -> material.isBlock())
             .filter(material -> !material.isSolid() || !material.isOccluding())
@@ -635,6 +641,62 @@ public class PowerBeam extends BasePower implements PowerPlain, PowerRightClick,
     enum Target {
         MOBS, PLAYERS, ALL
     }
+
+    public enum BeamShape {
+        PLAIN(PlainBias.class, Void.class),
+        DNA(DnaBias.class, DnaBias.DnaParams.class),
+        CIRCLE(CircleBias.class, CircleBias.CircleParams.class);
+
+        private Class<? extends IBias> iBias;
+        private Class<?> paramType;
+
+        BeamShape(Class<? extends IBias> iBias, Class<?> paramType) {
+            this.iBias = iBias;
+            this.paramType = paramType;
+        }
+
+        public List<Vector> getBiases(Location location, Vector towards, MovingTask context, String params) {
+
+        }
+    }
+
+    interface IBias<T> {
+        List<Vector> getBiases(Location location, Vector towards, MovingTask context, T params);
+    }
+
+    static class PlainBias implements IBias<Void> {
+        @Override
+        public List<Vector> getBiases(Location location, Vector towards, MovingTask context, Void params) {
+            return null;
+        }
+    }
+
+    static class CircleBias implements IBias<CircleBias.CircleParams> {
+        private CircleParams params;
+
+        @Override
+        public List<Vector> getBiases(Location location, Vector towards, MovingTask context, CircleParams params) {
+            return null;
+        }
+
+        static class CircleParams {
+            public double r = 1;
+            public String rFunc = "";
+
+        }
+    }
+
+    static class DnaBias implements IBias<DnaBias.DnaParams> {
+        @Override
+        public List<Vector> getBiases(Location location, Vector towards, MovingTask context, DnaParams params) {
+            return null;
+        }
+
+        static class DnaParams {
+            double amount = 2;
+            double r = 1;
+            String rFunc = "";
+        }
 
     private enum HomingTargetMode {
         ONE_TARGET, MULTI_TARGET;
