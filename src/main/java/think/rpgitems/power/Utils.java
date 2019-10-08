@@ -155,7 +155,7 @@ public class Utils {
         return newEntities.stream().map(AngledEntity::getEntity).collect(Collectors.toList());
     }
 
-    private static class AngledEntity implements Comparable<Double>{
+    private static class AngledEntity implements Comparable<AngledEntity>{
         double angle;
         LivingEntity entity;
 
@@ -173,8 +173,8 @@ public class Utils {
         }
 
         @Override
-        public int compareTo(Double o) {
-            return ((Double)angle).compareTo(o);
+        public int compareTo(AngledEntity o) {
+            return Double.compare(angle, o.angle);
         }
     }
 
