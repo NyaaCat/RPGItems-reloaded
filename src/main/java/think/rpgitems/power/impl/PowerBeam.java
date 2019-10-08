@@ -157,13 +157,10 @@ public class PowerBeam extends BasePower implements PowerPlain, PowerRightClick,
             .filter(material -> !material.isSolid() || !material.isOccluding())
             .collect(Collectors.toSet());
 
-
-    @Override
-    public PowerResult<Void> fire(Player player, ItemStack stack) {
-        if (!checkCooldown(this, player, cooldown, true, true)) return PowerResult.cd();
-        if (!getItem().consumeDurability(stack, cost)) return PowerResult.cost();
-        return beam(player, stack);
-    }
+    final Vector crosser = new Vector(1, 1, 1);
+    private Random random = new Random();
+    private Vector yUnit = new Vector(0, 1, 0);
+    Vector gravityVector = new Vector(0, -gravity / 20, 0);
 
     @Override
     public @LangKey(skipCheck = true) String getName() {
@@ -173,6 +170,13 @@ public class PowerBeam extends BasePower implements PowerPlain, PowerRightClick,
     @Override
     public String displayText() {
         return null;
+    }
+
+    @Override
+    public PowerResult<Void> fire(Player player, ItemStack stack) {
+        if (!checkCooldown(this, player, cooldown, true, true)) return PowerResult.cd();
+        if (!getItem().consumeDurability(stack, cost)) return PowerResult.cost();
+        return beam(player, stack);
     }
 
     @Override
