@@ -239,8 +239,8 @@ public class PowerBeam extends BasePower implements PowerPlain, PowerRightClick,
                     for (int j = 0; j < beamAmount; j++) {
                         internalFireBeam(from, stack);
                     }
-                    if (bursted.getAndAdd(1) < currentBurstCount){
-                        new FireTask().runTaskLaterAsynchronously(RPGItems.plugin, currentBurstInterval)
+                    if (bursted.getAndAdd(1) < currentBurstCount) {
+                        new FireTask().runTaskLaterAsynchronously(RPGItems.plugin, currentBurstInterval);
                     }
                 }
             }
@@ -618,7 +618,7 @@ public class PowerBeam extends BasePower implements PowerPlain, PowerRightClick,
         }
 
         public List<Vector> getBiases(Location location, Vector towards, MovingTask context, String params) {
-
+            return null;
         }
     }
 
