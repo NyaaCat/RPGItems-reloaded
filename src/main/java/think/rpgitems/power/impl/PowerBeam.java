@@ -60,7 +60,7 @@ public class PowerBeam extends BasePower implements PowerPlain, PowerRightClick,
     public double damage = 20;
 
     @Property
-    public int flySpeed = 40;
+    public int speed = 20;
 //    public int movementTicks = 40;
 
     @Property
@@ -71,6 +71,9 @@ public class PowerBeam extends BasePower implements PowerPlain, PowerRightClick,
 
     @Property
     public double offsetZ = 0;
+
+    @Property
+    public double particleSpeed = 0;
 
     @Property
     public double spawnsPerBlock = 2;
@@ -93,7 +96,7 @@ public class PowerBeam extends BasePower implements PowerPlain, PowerRightClick,
 //    public boolean cone = false;
 
     @Property
-    public double cone = 30;
+    public double cone = 10;
 //    changed Name
 //    public double coneRange = 30;
 
@@ -114,7 +117,7 @@ public class PowerBeam extends BasePower implements PowerPlain, PowerRightClick,
     public Target homingTarget = Target.MOBS;
 
     @Property
-    public int stepsBeforeHoming = 5;
+    public int stepsBeforeHoming = 0;
 
     @Property
     public int burstCount = 1;
@@ -123,7 +126,7 @@ public class PowerBeam extends BasePower implements PowerPlain, PowerRightClick,
     public int beamAmount = 1;
 
     @Property
-    public int burstInterval = 1;
+    public int burstInterval = 10;
 
     @Property
     public int bounce = 0;
@@ -138,9 +141,6 @@ public class PowerBeam extends BasePower implements PowerPlain, PowerRightClick,
     @Serializer(ExtraDataSerializer.class)
     @Deserializer(ExtraDataSerializer.class)
     public Object extraData;
-
-    @Property
-    public double speed = 0;
 
     @Property
     public boolean requireHurtByEntity = true;
@@ -290,13 +290,12 @@ public class PowerBeam extends BasePower implements PowerPlain, PowerRightClick,
         public int pierce = 0;
         public boolean ignoreWall = true;
         public double damage = 20;
-        public int flySpeed = 20;
+        public int speed = 20;
         public double offsetX = 0;
         public double offsetY = 0;
         public double offsetZ = 0;
+        public double particleSpeed = 0;
         public double spawnsPerBlock = 2;
-        public int cost = 0;
-        public long cooldown = 0;
         public double cone = 30;
         public double homing = 0;
         public double homingAngle = 30;
@@ -309,8 +308,6 @@ public class PowerBeam extends BasePower implements PowerPlain, PowerRightClick,
         public int bounce = 0;
         public boolean hitSelfWhenBounced = false;
         public double gravity = 0;
-        public double speed = 0;
-        public boolean requireHurtByEntity = true;
         public boolean suppressMelee = false;
         public BeamShape shape = BeamShape.PLAIN;
         public String shapeParam = "{}";
@@ -335,13 +332,11 @@ public class PowerBeam extends BasePower implements PowerPlain, PowerRightClick,
             this.pierce = config.pierce;
             this.ignoreWall = config.ignoreWall;
             this.damage = config.damage;
-            this.flySpeed = config.flySpeed;
+            this.speed = config.speed;
             this.offsetX = config.offsetX;
             this.offsetY = config.offsetY;
             this.offsetZ = config.offsetZ;
             this.spawnsPerBlock = config.spawnsPerBlock;
-            this.cost = config.cost;
-            this.cooldown = config.cooldown;
             this.cone = config.cone;
             this.homing = config.homing;
             this.homingAngle = config.homingAngle;
@@ -354,8 +349,7 @@ public class PowerBeam extends BasePower implements PowerPlain, PowerRightClick,
             this.bounce = config.bounce;
             this.hitSelfWhenBounced = config.hitSelfWhenBounced;
             this.gravity = config.gravity;
-            this.speed = config.speed;
-            this.requireHurtByEntity = config.requireHurtByEntity;
+            this.particleSpeed = config.particleSpeed;
             this.suppressMelee = config.suppressMelee;
             this.shape = config.shape;
             this.shapeParam = config.shapeParam;
@@ -520,10 +514,10 @@ public class PowerBeam extends BasePower implements PowerPlain, PowerRightClick,
             }
             if (spawnInWorld) {
                 if (from instanceof Player) {
-                    ((Player) from).spawnParticle(this.particle, lastLocation, i / 2, offsetX, offsetY, offsetZ, speed, extraData);
+                    ((Player) from).spawnParticle(this.particle, lastLocation, i / 2, offsetX, offsetY, offsetZ, particleSpeed, extraData);
                 }
             } else {
-                world.spawnParticle(this.particle, lastLocation, i, offsetX, offsetY, offsetZ, speed, extraData, false);
+                world.spawnParticle(this.particle, lastLocation, i, offsetX, offsetY, offsetZ, particleSpeed, extraData, false);
             }
             spawnInWorld = !spawnInWorld;
         }
