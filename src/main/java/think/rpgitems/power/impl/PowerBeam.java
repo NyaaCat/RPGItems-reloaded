@@ -300,10 +300,6 @@ public class PowerBeam extends BasePower implements PowerPlain, PowerRightClick,
         return PowerResult.ok();
     }
 
-    private Random random = new Random();
-
-    private Vector yUnit = new Vector(0, 1, 0);
-
     @Override
     public PowerResult<Void> hurt(Player target, ItemStack stack, EntityDamageEvent event) {
         if (!requireHurtByEntity || event instanceof EntityDamageByEntityEvent) {
