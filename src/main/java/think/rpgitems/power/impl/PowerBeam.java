@@ -309,134 +309,278 @@ public class PowerBeam extends BasePower implements PowerPlain, PowerRightClick,
     }
 
     private class MovingTask extends BukkitRunnable {
-        private final LivingEntity from;
-        private int bounces;
-        private Vector towards;
-        private final ItemStack stack;
-        private final int amountPerSec;
-        private final List<BukkitRunnable> runnables = new LinkedList<>();
-        private Entity target;
-        boolean bounced = false;
+        public int length = 10;
+        private List<Entity> targets;
 
-        public MovingTask(LivingEntity from, Vector towards, int apS, double actualLength, Entity target, int bounces, ItemStack stack) {
-            this.from = from;
-            this.towards = towards;
-            this.stack = stack;
-            this.amountPerSec = apS / ((int) Math.floor(actualLength));
-            this.target = target;
-            this.bounces = bounces;
+        MovingTask() {
+
+        }
+
+        MovingTask(PowerBeam config) {
         }
 
         @Override
         public void run() {
-            World world = from.getWorld();
-            double lpT = ((double) length) / ((double) movementTicks);
-            double partsPerTick = lpT / lengthPerSpawn;
-            Location lastLocation = from.getEyeLocation();
-            towards.normalize();
-            final int[] finalI = {0};
-            BukkitRunnable bukkitRunnable = new BukkitRunnable() {
-                @Override
-                public void run() {
-                    try {
-                        boolean isStepHit = false;
-                        Vector step = new Vector(0, 0, 0);
-                        for (int k = 0; k < partsPerTick; k++) {
-                            boolean isHit = tryHit(from, lastLocation, stack, bounced && hitSelfWhenBounced);
-                            isStepHit = isHit || isStepHit;
-                            Block block = lastLocation.getBlock();
-                            if (transp.contains(block.getType())) {
-                                spawnParticle(from, world, lastLocation, (int) (amountPerSec / spawnsPerBlock));
-                            } else if (!ignoreWall) {
-                                if (bounces > 0) {
-                                    bounces--;
-                                    bounced = true;
-                                    makeBounce(block, towards, lastLocation.clone().subtract(step));
-                                } else {
-                                    this.cancel();
-                                    return;
-                                }
-                            }
-                            step = towards.clone().normalize().multiply(lengthPerSpawn);
-                            lastLocation.add(step);
-                            towards = addGravity(towards, partsPerTick);
+        }
 
-                            towards = homingCorrect(towards, lastLocation, target, finalI[0], () -> target = getNextTarget(from.getEyeLocation().getDirection(), from.getEyeLocation(), from));
+//        private final LivingEntity from;
+//        private int bounces;
+//        private Vector towards;
+//        private final ItemStack stack;
+//        private final int amountPerSec;
+//        private final List<BukkitRunnable> runnables = new LinkedList<>();
+//        private Entity target;
+//        boolean bounced = false;
+//
+//        public MovingTask(LivingEntity from, Vector towards, int apS, double actualLength, Entity target, int bounces, ItemStack stack) {
+//            this.from = from;
+//            this.towards = towards;
+//            this.stack = stack;
+//            this.amountPerSec = apS / ((int) Math.floor(actualLength));
+//            this.target = target;
+//            this.bounces = bounces;
+//        }
+//
+//        @Override
+//        public void run() {
+//            World world = from.getWorld();
+//            double lpT = ((double) length) / ((double) movementTicks);
+//            double partsPerTick = lpT / lengthPerSpawn;
+//            Location lastLocation = from.getEyeLocation();
+//            towards.normalize();
+//            final int[] finalI = {0};
+//            BukkitRunnable bukkitRunnable = new BukkitRunnable() {
+//                @Override
+//                public void run() {
+//                    try {
+//                        boolean isStepHit = false;
+//                        Vector step = new Vector(0, 0, 0);
+//                        for (int k = 0; k < partsPerTick; k++) {
+//                            boolean isHit = tryHit(from, lastLocation, stack, bounced && hitSelfWhenBounced);
+//                            isStepHit = isHit || isStepHit;
+//                            Block block = lastLocation.getBlock();
+//                            if (transp.contains(block.getType())) {
+//                                spawnParticle(from, world, lastLocation, (int) (amountPerSec / spawnsPerBlock));
+//                            } else if (!ignoreWall) {
+//                                if (bounces > 0) {
+//                                    bounces--;
+//                                    bounced = true;
+//                                    makeBounce(block, towards, lastLocation.clone().subtract(step));
+//                                } else {
+//                                    this.cancel();
+//                                    return;
+//                                }
+//                            }
+//                            step = towards.clone().normalize().multiply(lengthPerSpawn);
+//                            lastLocation.add(step);
+//                            towards = addGravity(towards, partsPerTick);
+//
+//                            towards = homingCorrect(towards, lastLocation, target, finalI[0], () -> target = getNextTarget(from.getEyeLocation().getDirection(), from.getEyeLocation(), from));
+//                        }
+//                        if (isStepHit && homingTargetMode.equals(HomingTargetMode.MULTI_TARGET)) {
+//                            target = getNextTarget(from.getEyeLocation().getDirection(), from.getEyeLocation(), from);
+//                        }
+//                        if (isStepHit && !pierce) {
+//                            this.cancel();
+//                            LightContext.clear();
+//                            return;
+//                        }
+//                        if (finalI[0] >= movementTicks) {
+//                            this.cancel();
+//                            LightContext.clear();
+//                        }
+//                        finalI[0]++;
+//                    } catch (Exception ex) {
+//                        from.getServer().getLogger().log(Level.WARNING, "", ex);
+//                        this.cancel();
+//                        LightContext.clear();
+//                    }
+//                }
+//            };
+//            bukkitRunnable.runTaskTimer(RPGItems.plugin, 0, 1);
+//        }
+
+        private void makeBounce(Block block, Vector towards, Location lastLocation) {
+            RayTraceResult rayTraceResult = block.rayTrace(lastLocation, towards, towards.length(), FluidCollisionMode.NEVER);
+            if (rayTraceResult == null) {
+                return;
+            } else {
+                towards.rotateAroundNonUnitAxis(rayTraceResult.getHitBlockFace().getDirection(), Math.toRadians(180)).multiply(-1);
+            }
+        }
+
+        private Vector homingCorrect(Vector towards, Location lastLocation, Entity target, int i, Runnable runnable) {
+            if (target == null || i < stepsBeforeHoming) {
+                return towards;
+            }
+            if (target.isDead()) {
+                runnable.run();
+            }
+            Location targetLocation;
+            if (target instanceof LivingEntity) {
+                targetLocation = ((LivingEntity) target).getEyeLocation();
+            } else {
+                targetLocation = target.getLocation();
+            }
+
+            Vector clone = towards.clone();
+            Vector targetDirection = targetLocation.toVector().subtract(lastLocation.toVector());
+            float angle = clone.angle(targetDirection);
+            Vector crossProduct = clone.clone().getCrossProduct(targetDirection);
+            double actualAng = homingAngle / spawnsPerBlock;
+            if (angle > Math.toRadians(actualAng)) {
+                //↓a legacy but functionable way to rotate.
+                //will create a enlarging circle
+                clone.add(clone.clone().getCrossProduct(crossProduct).normalize().multiply(-1 * Math.tan(actualAng)));
+                // ↓a better way to rotate.
+                // will create a exact circle.
+//            clone.rotateAroundAxis(crossProduct, actualAng);
+            } else {
+                clone = targetDirection.normalize();
+            }
+            return clone;
+        }
+
+        private LivingEntity getNextTarget(Vector towards, Location lastLocation, Entity from) {
+            int radius = Math.min(this.length, 300);
+            return Utils.getLivingEntitiesInCone(from.getNearbyEntities(radius, this.length, this.length).stream()
+                            .filter(entity -> entity instanceof LivingEntity && !entity.equals(from) && !entity.isDead())
+                            .map(entity -> ((LivingEntity) entity))
+                            .collect(Collectors.toList())
+                    , lastLocation.toVector(), homingRange, towards).stream()
+                    .filter(livingEntity -> {
+                        if (isUtilArmorStand(livingEntity)) {
+                            return false;
                         }
-                        if (isStepHit && homingTargetMode.equals(HomingTargetMode.MULTI_TARGET)) {
-                            target = getNextTarget(from.getEyeLocation().getDirection(), from.getEyeLocation(), from);
+                        switch (homingTarget) {
+                            case MOBS:
+                                return !(livingEntity instanceof Player);
+                            case PLAYERS:
+                                return livingEntity instanceof Player && !((Player) livingEntity).getGameMode().equals(GameMode.SPECTATOR);
+                            case ALL:
+                                return !(livingEntity instanceof Player) || !((Player) livingEntity).getGameMode().equals(GameMode.SPECTATOR);
                         }
-                        if (isStepHit && !pierce) {
-                            this.cancel();
-                            LightContext.clear();
-                            return;
-                        }
-                        if (finalI[0] >= movementTicks) {
-                            this.cancel();
-                            LightContext.clear();
-                        }
-                        finalI[0]++;
-                    } catch (Exception ex) {
-                        from.getServer().getLogger().log(Level.WARNING, "", ex);
-                        this.cancel();
+                        return true;
+                    })
+                    .findFirst().orElse(null);
+        }
+
+        private boolean spawnInWorld = false;
+
+        private void spawnParticle(LivingEntity from, World world, Location lastLocation, int i) {
+            if ((lastLocation.distance(from.getEyeLocation()) < 1)) {
+                return;
+            }
+            if (spawnInWorld) {
+                if (from instanceof Player) {
+                    ((Player) from).spawnParticle(this.particle, lastLocation, i / 2, offsetX, offsetY, offsetZ, speed, extraData);
+                }
+            } else {
+                world.spawnParticle(this.particle, lastLocation, i, offsetX, offsetY, offsetZ, speed, extraData, false);
+            }
+            spawnInWorld = !spawnInWorld;
+        }
+
+        private boolean tryHit(LivingEntity from, Location loc, ItemStack stack, boolean canHitSelf) {
+            double offsetLength = new Vector(offsetX, offsetY, offsetZ).length();
+            double length = Double.isNaN(offsetLength) ? 0 : Math.max(offsetLength, 10);
+            Collection<Entity> candidates = from.getWorld().getNearbyEntities(loc, length, length, length);
+            boolean result = false;
+            if (!pierce) {
+                List<Entity> collect = candidates.stream()
+                        .filter(entity -> (entity instanceof LivingEntity) && (!isUtilArmorStand((LivingEntity) entity)) && (canHitSelf || !entity.equals(from)) && !entity.isDead())
+                        .filter(entity -> canHit(loc, entity))
+                        .limit(1)
+                        .collect(Collectors.toList());
+                if (!collect.isEmpty()) {
+                    Entity entity = collect.get(0);
+                    if (entity instanceof LivingEntity) {
+                        LightContext.putTemp(from.getUniqueId(), DAMAGE_SOURCE, getNamespacedKey().toString());
+                        LightContext.putTemp(from.getUniqueId(), OVERRIDING_DAMAGE, damage);
+                        LightContext.putTemp(from.getUniqueId(), SUPPRESS_MELEE, suppressMelee);
+                        LightContext.putTemp(from.getUniqueId(), DAMAGE_SOURCE_ITEM, stack);
+                        ((LivingEntity) entity).damage(damage, from);
                         LightContext.clear();
                     }
+                    return true;
                 }
-            };
-            bukkitRunnable.runTaskTimer(RPGItems.plugin, 0, 1);
+            } else {
+                List<Entity> collect = candidates.stream()
+                        .filter(entity -> (entity instanceof LivingEntity) && (!isUtilArmorStand((LivingEntity) entity)) && (canHitSelf || !entity.equals(from)))
+                        .filter(entity -> canHit(loc, entity))
+                        .collect(Collectors.toList());
+                LightContext.putTemp(from.getUniqueId(), DAMAGE_SOURCE, getNamespacedKey().toString());
+                LightContext.putTemp(from.getUniqueId(), OVERRIDING_DAMAGE, damage);
+                LightContext.putTemp(from.getUniqueId(), SUPPRESS_MELEE, suppressMelee);
+                LightContext.putTemp(from.getUniqueId(), DAMAGE_SOURCE_ITEM, stack);
+
+                if (!collect.isEmpty()) {
+                    collect.stream()
+                            .map(entity -> ((LivingEntity) entity))
+                            .forEach(livingEntity -> {
+                                livingEntity.damage(damage, from);
+                            });
+                    result = true;
+                }
+                LightContext.clear();
+
+            }
+            return result;
+        }
+
+        private boolean canHit(Location loc, Entity entity) {
+            BoundingBox boundingBox = entity.getBoundingBox();
+            BoundingBox particleBox;
+            double x = Math.max(offsetX, 0.1);
+            double y = Math.max(offsetY, 0.1);
+            double z = Math.max(offsetZ, 0.1);
+            particleBox = BoundingBox.of(loc, x + 0.1, y + 0.1, z + 0.1);
+            return boundingBox.overlaps(particleBox) || particleBox.overlaps(boundingBox);
+        }
+
+        private Vector addGravity(Vector towards, double partsPerTick) {
+            double gravityPerTick = (-gravity / 20d) / partsPerTick;
+            gravityVector.setY(gravityPerTick);
+            return towards.add(gravityVector);
+        }
+
+        public void setTarget(List<Entity> targets) {
+            this.targets = targets;
         }
     }
 
-    private void makeBounce(Block block, Vector towards, Location lastLocation) {
-        RayTraceResult rayTraceResult = block.rayTrace(lastLocation, towards, towards.length(), FluidCollisionMode.NEVER);
-        if (rayTraceResult == null) {
-            return;
-        } else {
-            towards.rotateAroundNonUnitAxis(rayTraceResult.getHitBlockFace().getDirection(), Math.toRadians(180)).multiply(-1);
-        }
+    // can be called anywhere, maybe
+    public static MovingTask buildBeam(PowerBeam config, Vector towards, Location from) {
+
     }
 
-    private Vector homingCorrect(Vector towards, Location lastLocation, Entity target, int i, Runnable runnable) {
-        if (target == null || i < stepsBeforeHoming) {
-            return towards;
-        }
-        if (target.isDead()) {
-            runnable.run();
-        }
-        Location targetLocation;
-        if (target instanceof LivingEntity) {
-            targetLocation = ((LivingEntity) target).getEyeLocation();
-        } else {
-            targetLocation = target.getLocation();
-        }
+    public static MovingTask buildBeam(PowerBeam config, Vector towards, Location from, List<Entity> targets) {
 
-        Vector clone = towards.clone();
-        Vector targetDirection = targetLocation.toVector().subtract(lastLocation.toVector());
-        float angle = clone.angle(targetDirection);
-        Vector crossProduct = clone.clone().getCrossProduct(targetDirection);
-        double actualAng = homingAngle / spawnsPerBlock;
-        if (angle > Math.toRadians(actualAng)) {
-            //↓a legacy but functionable way to rotate.
-            //will create a enlarging circle
-            clone.add(clone.clone().getCrossProduct(crossProduct).normalize().multiply(-1 * Math.tan(actualAng)));
-            // ↓a better way to rotate.
-            // will create a exact circle.
-//            clone.rotateAroundAxis(crossProduct, actualAng);
-        } else {
-            clone = targetDirection.normalize();
-        }
-        return clone;
     }
 
-    private LivingEntity getNextTarget(Vector towards, Location lastLocation, Entity from) {
+    public static MovingTask buildBeam(PowerBeam config, Entity from, List<Entity> targets) {
+        MovingTask movingTask = new MovingTask(config);
+        movingTask.setFrom(from);
+        movingTask.setTarget(targets);
+    }
+
+    private boolean isUtilArmorStand(LivingEntity livingEntity) {
+        if (livingEntity instanceof ArmorStand) {
+            ArmorStand arm = (ArmorStand) livingEntity;
+            return arm.isMarker() && !arm.isVisible();
+        }
+        return false;
+    }
+
+    private List<Entity> getTargets(Vector direction, Location fromLocation, LivingEntity from) {
         int radius = Math.min(this.length, 300);
-        return Utils.getLivingEntitiesInCone(from.getNearbyEntities(radius, this.length, this.length).stream()
+        return Utils.getLivingEntitiesInConeSorted(from.getNearbyEntities(radius, this.length * 1.5, this.length * 1.5).stream()
                         .filter(entity -> entity instanceof LivingEntity && !entity.equals(from) && !entity.isDead())
                         .map(entity -> ((LivingEntity) entity))
                         .collect(Collectors.toList())
-                , lastLocation.toVector(), homingRange, towards).stream()
+                , fromLocation.toVector(), homingRange, direction).stream()
                 .filter(livingEntity -> {
-                    if (isUtilArmorStand(livingEntity)){
+                    if (isUtilArmorStand(livingEntity)) {
                         return false;
                     }
                     switch (homingTarget) {
@@ -448,89 +592,7 @@ public class PowerBeam extends BasePower implements PowerPlain, PowerRightClick,
                             return !(livingEntity instanceof Player) || !((Player) livingEntity).getGameMode().equals(GameMode.SPECTATOR);
                     }
                     return true;
-                })
-                .findFirst().orElse(null);
-    }
-
-    private boolean isUtilArmorStand(LivingEntity livingEntity) {
-        if(livingEntity instanceof ArmorStand){
-            ArmorStand arm = (ArmorStand) livingEntity;
-            return arm.isMarker() && !arm.isVisible();
-        }
-        return false;
-    }
-
-    private boolean spawnInWorld = false;
-
-    private void spawnParticle(LivingEntity from, World world, Location lastLocation, int i) {
-        if ((lastLocation.distance(from.getEyeLocation()) < 1)) {
-            return;
-        }
-        if (spawnInWorld) {
-            if (from instanceof Player) {
-                ((Player) from).spawnParticle(this.particle, lastLocation, i / 2, offsetX, offsetY, offsetZ, speed, extraData);
-            }
-        }else {
-            world.spawnParticle(this.particle, lastLocation, i, offsetX, offsetY, offsetZ, speed, extraData, false);
-        }
-        spawnInWorld = !spawnInWorld;
-    }
-
-    private boolean tryHit(LivingEntity from, Location loc, ItemStack stack, boolean canHitSelf) {
-        double offsetLength = new Vector(offsetX, offsetY, offsetZ).length();
-        double length = Double.isNaN(offsetLength) ? 0 : Math.max(offsetLength, 10);
-        Collection<Entity> candidates = from.getWorld().getNearbyEntities(loc, length, length, length);
-        boolean result = false;
-        if (!pierce) {
-            List<Entity> collect = candidates.stream()
-                    .filter(entity -> (entity instanceof LivingEntity) && (!isUtilArmorStand((LivingEntity) entity)) && (canHitSelf || !entity.equals(from)) && !entity.isDead())
-                    .filter(entity -> canHit(loc, entity))
-                    .limit(1)
-                    .collect(Collectors.toList());
-            if (!collect.isEmpty()) {
-                Entity entity = collect.get(0);
-                if (entity instanceof LivingEntity) {
-                    LightContext.putTemp(from.getUniqueId(), DAMAGE_SOURCE, getNamespacedKey().toString());
-                    LightContext.putTemp(from.getUniqueId(), OVERRIDING_DAMAGE, damage);
-                    LightContext.putTemp(from.getUniqueId(), SUPPRESS_MELEE, suppressMelee);
-                    LightContext.putTemp(from.getUniqueId(), DAMAGE_SOURCE_ITEM, stack);
-                    ((LivingEntity) entity).damage(damage, from);
-                    LightContext.clear();
-                }
-                return true;
-            }
-        } else {
-            List<Entity> collect = candidates.stream()
-                    .filter(entity -> (entity instanceof LivingEntity) && (!isUtilArmorStand((LivingEntity) entity)) && (canHitSelf || !entity.equals(from)))
-                    .filter(entity -> canHit(loc, entity))
-                    .collect(Collectors.toList());
-            LightContext.putTemp(from.getUniqueId(), DAMAGE_SOURCE, getNamespacedKey().toString());
-            LightContext.putTemp(from.getUniqueId(), OVERRIDING_DAMAGE, damage);
-            LightContext.putTemp(from.getUniqueId(), SUPPRESS_MELEE, suppressMelee);
-            LightContext.putTemp(from.getUniqueId(), DAMAGE_SOURCE_ITEM, stack);
-
-            if (!collect.isEmpty()) {
-                collect.stream()
-                        .map(entity -> ((LivingEntity) entity))
-                        .forEach(livingEntity -> {
-                            livingEntity.damage(damage, from);
-                        });
-                result = true;
-            }
-            LightContext.clear();
-
-        }
-        return result;
-    }
-
-    private boolean canHit(Location loc, Entity entity) {
-        BoundingBox boundingBox = entity.getBoundingBox();
-        BoundingBox particleBox;
-        double x = Math.max(offsetX, 0.1);
-        double y = Math.max(offsetY, 0.1);
-        double z = Math.max(offsetZ, 0.1);
-        particleBox = BoundingBox.of(loc, x + 0.1, y + 0.1, z + 0.1);
-        return boundingBox.overlaps(particleBox) || particleBox.overlaps(boundingBox);
+                }).collect(Collectors.toList());
     }
 
     private enum Mode {
