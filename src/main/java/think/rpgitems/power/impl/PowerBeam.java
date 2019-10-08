@@ -270,32 +270,12 @@ public class PowerBeam extends BasePower implements PowerPlain, PowerRightClick,
         }
 
 
-        Entity target = null;
-        if (from instanceof Player && homing) {
-            target = getNextTarget(from.getEyeLocation().getDirection(), fromLocation, from);
-//                    Utils.getLivingEntitiesInCone(Utils.getNearestLivingEntities(this, fromLocation, ((Player) from), Math.min(1000, length), 0), fromLocation.toVector(), homingRange, from.getEyeLocation().getDirection()).stream()
-//                    .filter(livingEntity -> {
-//                        switch (homingTarget) {
-//                            case MOBS:
-//                                return !(livingEntity instanceof Player);
-//                            case PLAYERS:
-//                                return livingEntity instanceof Player && !((Player) livingEntity).getGameMode().equals(GameMode.SPECTATOR);
-//                            case ALL:
-//                                return !(livingEntity instanceof Player) || !((Player) livingEntity).getGameMode().equals(GameMode.SPECTATOR);
-//                        }
-//                        return true;
-//                    })
-//                    .findFirst().orElse(null);
+        List<Entity> targets = null;
+        if (from instanceof Player && homing > 0) {
+            targets = getTargets(from.getEyeLocation().getDirection(), fromLocation, from);
         }
-
-        switch (mode) {
-            case BEAM:
-                new PlainTask(from, towards, amount, length, target, bounce, stack).runTask(RPGItems.plugin);
-                break;
-            case PROJECTILE:
-                new MovingTask(from, towards, amount, length, target, bounce, stack).runTask(RPGItems.plugin);
-                break;
-        }
+        MovingTask movingTask = buildBeam(this, from, targets);
+        movingTask.runTask(RPGItems.plugin);
         return PowerResult.ok();
     }
 
