@@ -36,6 +36,8 @@ import static think.rpgitems.power.Utils.checkCooldown;
  * Wrote & Maintained by ReinWD
  * if you have any issue, please send me email or @ReinWD in issues.
  * Accepted language: 中文, English.
+ * <p>
+ * Beam version 2.0
  */
 @PowerMeta(defaultTrigger = "RIGHT_CLICK", generalInterface = PowerPlain.class)
 public class PowerBeam extends BasePower implements PowerPlain, PowerRightClick, PowerLeftClick, PowerSneak, PowerSneaking, PowerSprint, PowerBowShoot, PowerHitTaken, PowerHit, PowerHurt {
@@ -46,13 +48,10 @@ public class PowerBeam extends BasePower implements PowerPlain, PowerRightClick,
     public Particle particle = Particle.LAVA;
 
     @Property
-    public int amount = 200;
-
-    @Property
     public Mode mode = Mode.BEAM;
 
     @Property
-    public boolean pierce = true;
+    public int pierce = 0;
 
     @Property
     public boolean ignoreWall = true;
@@ -61,7 +60,8 @@ public class PowerBeam extends BasePower implements PowerPlain, PowerRightClick,
     public double damage = 20;
 
     @Property
-    public int movementTicks = 40;
+    public int flySpeed = 40;
+//    public int movementTicks = 40;
 
     @Property
     public double offsetX = 0;
@@ -74,6 +74,7 @@ public class PowerBeam extends BasePower implements PowerPlain, PowerRightClick,
 
     @Property
     public double spawnsPerBlock = 2;
+
     double lengthPerSpawn = 1 / spawnsPerBlock;
 
     /**
@@ -87,23 +88,27 @@ public class PowerBeam extends BasePower implements PowerPlain, PowerRightClick,
     @Property
     public long cooldown = 0;
 
-    @Property
-    public boolean cone = false;
+//  used to judge legacy 1.0
+//    @Property
+//    public boolean cone = false;
 
     @Property
-    public double coneRange = 30;
+    public double cone = 30;
+//    changed Name
+//    public double coneRange = 30;
 
     @Property
-    public boolean homing = false;
+    public double homing = 0;
 
     @Property
-    public double homingAngle = 1;
+    public double homingAngle = 30;
+
+//    @Property
+//    public double homingRange = 30;
 
     @Property
-    public double homingRange = 30;
-
-    @Property
-    public HomingTargetMode homingTargetMode = HomingTargetMode.ONE_TARGET;
+    public HomingMode homingMode = HomingMode.ONE_TARGET;
+//    public HomingTargetMode homingTargetMode = HomingTargetMode.ONE_TARGET;
 
     @Property
     public Target homingTarget = Target.MOBS;
