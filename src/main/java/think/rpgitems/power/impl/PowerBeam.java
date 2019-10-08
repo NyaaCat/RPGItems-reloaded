@@ -23,7 +23,7 @@ import think.rpgitems.data.LightContext;
 import think.rpgitems.power.*;
 
 import java.util.*;
-import java.util.logging.Level;
+import java.util.concurrent.atomic.AtomicInteger;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -230,20 +230,21 @@ public class PowerBeam extends BasePower implements PowerPlain, PowerRightClick,
 
     private PowerResult<Void> beam(LivingEntity from, ItemStack stack) {
         if (burstCount > 0) {
-            for (int i = 0; i < burstCount; i++) {
-                new BukkitRunnable() {
-                    @Override
-                    public void run() {
-                        if (cone) {
-                            for (int j = 0; j < beamAmount; j++) {
-                                internalFireBeam(from, stack);
-                            }
-                        } else {
-                            internalFireBeam(from, stack);
-                        }
+            final int currentBurstCount = burstCount;
+            final int currentBurstInterval = burstInterval;
+            AtomicInteger bursted = new AtomicInteger(0);
+            class FireTask extends BukkitRunnable {
+                @Override
+                public void run() {
+                    for (int j = 0; j < beamAmount; j++) {
+                        internalFireBeam(from, stack);
                     }
-                }.runTaskLaterAsynchronously(RPGItems.plugin, i * burstInterval);
+                    if (bursted.getAndAdd(1) < currentBurstCount){
+                        new FireTask().runTaskLaterAsynchronously(RPGItems.plugin, currentBurstInterval)
+                    }
+                }
             }
+            new FireTask().runTaskAsynchronously(RPGItems.plugin);
             return PowerResult.ok();
         } else {
             return internalFireBeam(from, stack);
@@ -257,17 +258,15 @@ public class PowerBeam extends BasePower implements PowerPlain, PowerRightClick,
         Location fromLocation = from.getEyeLocation();
         Vector towards = from.getEyeLocation().getDirection();
 
-        if (cone) {
+        if (cone != 0) {
             double phi = random.nextDouble() * 360;
             double theta;
-            if (coneRange > 0) {
-                theta = random.nextDouble() * coneRange;
-                Vector clone = towards.clone();
-                Vector cross = clone.clone().add(crosser);
-                Vector vertical = clone.getCrossProduct(cross).getCrossProduct(towards);
-                towards.rotateAroundAxis(vertical, Math.toRadians(theta));
-                towards.rotateAroundAxis(clone, Math.toRadians(phi));
-            }
+            theta = random.nextDouble() * cone;
+            Vector clone = towards.clone();
+            Vector cross = clone.clone().add(crosser);
+            Vector vertical = clone.getCrossProduct(cross).getCrossProduct(towards);
+            towards.rotateAroundAxis(vertical, Math.toRadians(theta));
+            towards.rotateAroundAxis(clone, Math.toRadians(phi));
         }
 
 
