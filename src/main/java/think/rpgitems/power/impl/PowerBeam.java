@@ -251,8 +251,6 @@ public class PowerBeam extends BasePower implements PowerPlain, PowerRightClick,
         }
     }
 
-    final Vector crosser = new Vector(1, 1, 1);
-
     private PowerResult<Void> internalFireBeam(LivingEntity from, ItemStack stack) {
         lengthPerSpawn = 1 / spawnsPerBlock;
         Location fromLocation = from.getEyeLocation();
@@ -661,10 +659,9 @@ public class PowerBeam extends BasePower implements PowerPlain, PowerRightClick,
             double r = 1;
             String rFunc = "";
         }
+    }
 
     private enum HomingMode {
         ONE_TARGET, MULTI_TARGET, MOUSE_TRACK
-    }
-
     }
 }
