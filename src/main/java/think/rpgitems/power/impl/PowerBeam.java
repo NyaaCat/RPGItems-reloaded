@@ -270,7 +270,12 @@ public class PowerBeam extends BasePower implements PowerPlain, PowerRightClick,
         if (from instanceof Player && homing > 0) {
             targets = getTargets(from.getEyeLocation().getDirection(), fromLocation, from);
         }
-        MovingTask movingTask = buildBeam(this, from, targets);
+        MovingTask movingTask = new MovingTaskBuilder(this)
+                .fromEntity(from)
+                .towards(towards)
+                .targets(targets)
+                .itemStack(stack)
+                .build();
         movingTask.runTask(RPGItems.plugin);
         return PowerResult.ok();
     }
@@ -607,23 +612,41 @@ public class PowerBeam extends BasePower implements PowerPlain, PowerRightClick,
     }
 
     // can be called anywhere, maybe
-    public static MovingTask buildBeam(PowerBeam config, Vector towards, Location from) {
-        return buildBeam(config, towards, from, null);
-    }
+    class MovingTaskBuilder {
+        MovingTask movingTask;
 
-    public static MovingTask buildBeam(PowerBeam config, Vector towards, Location from, List<Entity> targets) {
-        MovingTask movingTask = new MovingTask(config);
-        movingTask.setFromLocation(from);
-        movingTask.setTowards(towards);
-        movingTask.setTarget(targets);
-        return movingTask;
-    }
+        public MovingTaskBuilder(PowerBeam power) {
+            this.movingTask = new MovingTask(power);
+        }
 
-    public static MovingTask buildBeam(PowerBeam config, Entity from, List<Entity> targets) {
-        MovingTask movingTask = new MovingTask(config);
-        movingTask.setFromEntity(from);
-        movingTask.setTarget(targets);
-        return movingTask;
+        public MovingTaskBuilder towards(Vector towards) {
+            movingTask.setTowards(towards);
+            return this;
+        }
+
+        public MovingTaskBuilder fromLocation(Location location) {
+            movingTask.setFromLocation(location);
+            return this;
+        }
+
+        public MovingTaskBuilder fromEntity(Entity entity) {
+            movingTask.setFromEntity(entity);
+            return this;
+        }
+
+        public MovingTaskBuilder targets(List<Entity> targets) {
+            movingTask.setTarget(targets);
+            return this;
+        }
+
+        public MovingTaskBuilder itemStack(ItemStack stack) {
+            movingTask.setItemStack(stack);
+            return this;
+        }
+
+        public MovingTask build() {
+            return movingTask;
+        }
     }
 
     private static boolean isUtilArmorStand(LivingEntity livingEntity) {
