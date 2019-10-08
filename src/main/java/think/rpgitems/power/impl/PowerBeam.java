@@ -698,7 +698,9 @@ public class PowerBeam extends BasePower implements PowerPlain, PowerRightClick,
             String rFunc = "";
         }
 
-    private enum HomingTargetMode {
-        ONE_TARGET, MULTI_TARGET;
+    private enum HomingMode {
+        ONE_TARGET, MULTI_TARGET, MOUSE_TRACK
+    }
+
     }
 }
