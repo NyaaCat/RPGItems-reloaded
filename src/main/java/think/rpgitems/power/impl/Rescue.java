@@ -110,7 +110,7 @@ public class Rescue extends BasePower {
             if (!checkCooldown(getPower(), target, getCooldown(), true, true)) return PowerResult.cd();
             if (!getItem().consumeDurability(stack, getCost())) return PowerResult.cost();
             rescueTime.put(target.getUniqueId(), System.currentTimeMillis());
-            target.sendMessage(I18n.formatDefault("power.rescue.info"));
+            target.sendTitle("", I18n.formatDefault("power.rescue.info"), 0, 40, 40);
             DamageCause cause = event.getCause();
             if (!canceled) {
                 target.addPotionEffect(new PotionEffect(PotionEffectType.HEALTH_BOOST, 2, 255));

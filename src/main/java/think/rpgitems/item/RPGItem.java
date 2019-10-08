@@ -4,6 +4,8 @@ import cat.nyaa.nyaacore.Message;
 import cat.nyaa.nyaacore.Pair;
 import cat.nyaa.nyaacore.utils.ItemStackUtils;
 import com.google.common.base.Strings;
+import com.google.common.cache.Cache;
+import com.google.common.cache.CacheBuilder;
 import com.google.common.collect.Multimap;
 import net.md_5.bungee.api.chat.BaseComponent;
 import net.md_5.bungee.api.chat.ClickEvent;
@@ -38,6 +40,7 @@ import think.rpgitems.RPGItems;
 import think.rpgitems.data.Context;
 import think.rpgitems.power.*;
 import think.rpgitems.power.marker.*;
+import think.rpgitems.power.propertymodifier.Modifier;
 import think.rpgitems.power.trigger.BaseTriggers;
 import think.rpgitems.power.trigger.Trigger;
 import think.rpgitems.utils.MaterialUtils;
@@ -46,7 +49,9 @@ import java.io.File;
 import java.lang.reflect.Method;
 import java.util.*;
 import java.util.Map.Entry;
+import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ThreadLocalRandom;
+import java.util.concurrent.TimeUnit;
 import java.util.logging.Level;
 import java.util.regex.Matcher;
 import java.util.stream.Collectors;
@@ -64,6 +69,10 @@ public class RPGItem {
     public static final NamespacedKey TAG_DURABILITY = new NamespacedKey(RPGItems.plugin, "durability");
     public static final NamespacedKey TAG_OWNER = new NamespacedKey(RPGItems.plugin, "owner");
     public static final NamespacedKey TAG_STACK_ID = new NamespacedKey(RPGItems.plugin, "stack_id");
+    public static final NamespacedKey TAG_MODIFIER = new NamespacedKey(RPGItems.plugin, "property_modifier");
+    public static final NamespacedKey TAG_VERSION = new NamespacedKey(RPGItems.plugin, "version");
+
+    private static final Cache<UUID, List<Modifier>> modifierCache = CacheBuilder.newBuilder().concurrencyLevel(1).expireAfterAccess(1, TimeUnit.MINUTES).build();
 
     static RPGItems plugin;
     private boolean ignoreWorldGuard = false;
@@ -822,6 +831,50 @@ public class RPGItem {
         return consumeDurability(stack, getBlockBreakingCost());
     }
 
+    public static List<Modifier> getModifiers(ItemStack stack) {
+        SubItemTagContainer tag = makeTag(Objects.requireNonNull(stack.getItemMeta()).getPersistentDataContainer(), TAG_MODIFIER);
+        return getModifiers(tag);
+    }
+
+    public static List<Modifier> getModifiers(Player player) {
+        SubItemTagContainer tag = makeTag(player.getPersistentDataContainer(), TAG_MODIFIER);
+        return getModifiers(tag);
+    }
+
+    private static List<Modifier> getModifiers(SubItemTagContainer tag) {
+        Optional<UUID> uuid = optUUID(tag, TAG_VERSION);
+        if (!uuid.isPresent()) {
+            uuid = Optional.of(UUID.randomUUID());
+            set(tag, TAG_VERSION, uuid.get());
+        }
+
+        try {
+            return modifierCache.get(uuid.get(), () -> getModifiersUncached(tag));
+        } catch (ExecutionException e) {
+            throw new RuntimeException(e);
+        } finally {
+            tag.tryDispose();
+        }
+    }
+
+    private static List<Modifier> getModifiersUncached(SubItemTagContainer tag) {
+        List<Modifier> ret = new ArrayList<>();
+        int i = 0;
+        try {
+            for (NamespacedKey key = PowerManager.parseKey(String.valueOf(i)); tag.has(key, PersistentDataType.TAG_CONTAINER); key = PowerManager.parseKey(String.valueOf(++i))) {
+                PersistentDataContainer container = getTag(tag, key);
+                String modifierName = getString(container, "modifier_name");
+                Class<? extends Modifier> modifierClass = PowerManager.getModifier(PowerManager.parseKey(modifierName));
+                Modifier modifier = PowerManager.instantiate(modifierClass);
+                modifier.init(container);
+                ret.add(modifier);
+            }
+            return ret;
+        } finally {
+            tag.commit();
+        }
+    }
+
     private <TEvent extends Event, TPower extends Pimpl, TResult, TReturn> boolean triggerPreCheck(Player player, ItemStack i, TEvent event, Trigger<TEvent, TPower, TResult, TReturn> trigger, List<TPower> powers) {
         if (i.getType().equals(Material.AIR)) return false;
         if (powers.isEmpty()) return false;
@@ -853,7 +906,7 @@ public class RPGItem {
     public <TEvent extends Event, TPower extends Pimpl, TResult, TReturn> TReturn power(Player player, ItemStack i, TEvent event, Trigger<TEvent, TPower, TResult, TReturn> trigger, Object context) {
         powerCustomTrigger(player, i, event, trigger, context);
 
-        List<TPower> powers = this.getPower(trigger, player);
+        List<TPower> powers = this.getPower(trigger, player, i);
         TReturn ret = trigger.def(player, i, event);
         if (!triggerPreCheck(player, i, event, trigger, powers)) return ret;
         try {
@@ -889,14 +942,6 @@ public class RPGItem {
                      .filter(e -> trigger.getClass().isInstance(e.getValue()))
                      .sorted(Comparator.comparing(en -> en.getValue().getPriority()))
                      .filter(e -> e.getValue().check(player, i, event)).forEach(e -> this.power(player, i, event, e.getValue(), context));
-    }
-
-    public void addTrigger(String name, Trigger trigger) {
-        triggers.put(name, trigger);
-    }
-
-    public List<Condition<?>> getConditions() {
-        return conditions;
     }
 
     public <TEvent extends Event, TPower extends Pimpl, TResult, TReturn> TReturn power(Player player, ItemStack i, TEvent event, Trigger<TEvent, TPower, TResult, TReturn> trigger) {
@@ -1327,12 +1372,12 @@ public class RPGItem {
         return msg;
     }
 
-    private <TEvent extends Event, T extends Pimpl, TResult, TReturn> List<T> getPower(Trigger<TEvent, T, TResult, TReturn> trigger, Player player) {
+    private <TEvent extends Event, T extends Pimpl, TResult, TReturn> List<T> getPower(Trigger<TEvent, T, TResult, TReturn> trigger, Player player, ItemStack stack) {
         return powers.stream()
                      .filter(p -> p.getTriggers().contains(trigger))
                      .map(p -> {
                          Class<? extends Power> cls = p.getClass();
-                         Power proxy = DynamicMethodInterceptor.create(p, player, cls, trigger);
+                         Power proxy = DynamicMethodInterceptor.create(p, player, cls, stack, trigger);
                          return PowerManager.createImpl(cls, proxy);
                      })
                      .map(p -> p.cast(trigger.getPowerClass()))
@@ -1341,9 +1386,9 @@ public class RPGItem {
 
     @SuppressWarnings("rawtypes")
     public static class DynamicMethodInterceptor implements MethodInterceptor {
-        private static WeakHashMap<Power, WeakHashMap<Player, Power>> cache = new WeakHashMap<>();
+        private static WeakHashMap<Player, WeakHashMap<ItemStack, WeakHashMap<Power, Power>>> cache = new WeakHashMap<>();
 
-        private static Power makeProxy(Power orig, Player player, Class<? extends Power> cls, Trigger trigger) {
+        private static Power makeProxy(Power orig, Player player, Class<? extends Power> cls, ItemStack stack, Trigger trigger) {
             Enhancer enhancer = new Enhancer();
             enhancer.setSuperclass(cls);
             enhancer.setInterfaces(new Class[]{trigger.getPowerClass()});
@@ -1351,9 +1396,10 @@ public class RPGItem {
             return (Power) enhancer.create();
         }
 
-        protected static Power create(Power orig, Player player, Class<? extends Power> cls, Trigger trigger) {
-            return cache.computeIfAbsent(orig, (k) -> new WeakHashMap<>())
-                        .computeIfAbsent(player, (p) -> makeProxy(orig, player, cls, trigger));
+        protected static Power create(Power orig, Player player, Class<? extends Power> cls, ItemStack stack, Trigger trigger) {
+            return cache.computeIfAbsent(player, (k) -> new WeakHashMap<>())
+                        .computeIfAbsent(stack, (p) -> new WeakHashMap<>())
+                        .computeIfAbsent(orig, (s) -> makeProxy(orig, player, cls, stack, trigger));
         }
 
         private final Power orig;
@@ -1374,12 +1420,35 @@ public class RPGItem {
                 throws Throwable {
             if (getters.containsKey(method)) {
                 PropertyInstance propertyInstance = getters.get(method);
-                if (propertyInstance.name().equals("cooldown")) {
-                    return ((int) methodProxy.invoke(orig, args) / 2);
+                Class<?> type = propertyInstance.field().getType();
+                // Numeric modifiers
+                if (type == int.class || type == Integer.class || type == float.class || type == Float.class || type == double.class || type == Double.class) {
+                    List<Modifier> playerModifiers = getModifiers(player);
+                    @SuppressWarnings("unchecked") List<Modifier<Double>> numberModifiers = playerModifiers.stream().filter(m -> (m.getModifierTargetType() == Double.class) && m.match(orig, propertyInstance)).map(m -> (Modifier<Double>) m).collect(Collectors.toList());
+                    Number value = (Number) methodProxy.invoke(orig, args);
+                    double origValue = value.doubleValue();
+                    for (Modifier<Double> numberModifier : numberModifiers) {
+                        origValue = numberModifier.apply(origValue);
+                    }
+                    if (int.class.equals(type) || Integer.class.equals(type)) {
+                        return (int) origValue;
+                    } else if (float.class.equals(type) || Float.class.equals(type)) {
+                        return (float) origValue;
+                    } else {
+                        return origValue;
+                    }
                 }
             }
             return methodProxy.invoke(orig, args);
         }
+    }
+
+    public void addTrigger(String name, Trigger trigger) {
+        triggers.put(name, trigger);
+    }
+
+    public List<Condition<?>> getConditions() {
+        return conditions;
     }
 
     public void deinit() {

@@ -113,6 +113,8 @@ public class ItemManager {
         itemByName.values().forEach(RPGItem::deinit);
         itemById = new HashMap<>();
         itemByName = new HashMap<>();
+        groupById = new HashMap<>();
+        groupByName = new HashMap<>();
         resetLock();
     }
 

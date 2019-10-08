@@ -1,16 +1,19 @@
 package think.rpgitems.utils;
 
+import cat.nyaa.nyaacore.utils.ItemStackUtils;
 import com.google.common.base.FinalizablePhantomReference;
 import com.google.common.base.FinalizableReferenceQueue;
 import com.google.common.collect.Sets;
 import org.bukkit.Bukkit;
 import org.bukkit.NamespacedKey;
 import org.bukkit.OfflinePlayer;
+import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.ItemMeta;
 import org.bukkit.persistence.PersistentDataAdapterContext;
 import org.bukkit.persistence.PersistentDataContainer;
 import org.bukkit.persistence.PersistentDataType;
 import think.rpgitems.RPGItems;
+import think.rpgitems.power.PowerManager;
 import think.rpgitems.power.Utils;
 
 import java.lang.ref.PhantomReference;
@@ -29,6 +32,7 @@ public final class ItemTagUtils {
     public static final PersistentDataType<byte[], UUID> BA_UUID = new UUIDPersistentDataType();
     public static final PersistentDataType<Byte, Boolean> BYTE_BOOLEAN = new BooleanPersistentDataType();
     public static final PersistentDataType<byte[], OfflinePlayer> BA_OFFLINE_PLAYER = new OfflinePlayerPersistentDataType();
+    public static final PersistentDataType<String, ItemStack> STRING_ITEMSTACK = new ItemStackPersistentDataType();
 
     private ItemTagUtils() {
         throw new IllegalStateException();
@@ -106,6 +110,10 @@ public final class ItemTagUtils {
         return container.get(key, PersistentDataType.STRING);
     }
 
+    public static String getString(PersistentDataContainer container, String key) {
+        return container.get(PowerManager.parseKey(key), PersistentDataType.STRING);
+    }
+
     public static byte[] getByteArray(PersistentDataContainer container, NamespacedKey key) {
         return container.get(key, PersistentDataType.BYTE_ARRAY);
     }
@@ -123,8 +131,7 @@ public final class ItemTagUtils {
     }
 
     public static Optional<UUID> optUUID(PersistentDataContainer container, NamespacedKey key) {
-        if (!container.has(key, BA_UUID)) return Optional.empty();
-        return Optional.of(container.get(key, BA_UUID));
+        return Optional.ofNullable(container.get(key, BA_UUID));
     }
 
     public static PersistentDataContainer getTag(PersistentDataContainer container, NamespacedKey key) {
@@ -133,6 +140,14 @@ public final class ItemTagUtils {
 
     public static OfflinePlayer getPlayer(PersistentDataContainer container, NamespacedKey key) {
         return container.get(key, BA_OFFLINE_PLAYER);
+    }
+
+    public static ItemStack getItemStack(PersistentDataContainer container, NamespacedKey key) {
+        return container.get(key, STRING_ITEMSTACK);
+    }
+
+    public static ItemStack getItemStack(PersistentDataContainer container, String key) {
+        return getItemStack(container, PowerManager.parseKey(key));
     }
 
     public static void set(PersistentDataContainer container, NamespacedKey key, boolean value) {
@@ -165,6 +180,10 @@ public final class ItemTagUtils {
 
     public static void set(PersistentDataContainer container, NamespacedKey key, String value) {
         container.set(key, PersistentDataType.STRING, value);
+    }
+
+    public static void set(PersistentDataContainer container, String key, String value) {
+        container.set(PowerManager.parseKey(key), PersistentDataType.STRING, value);
     }
 
     public static void set(PersistentDataContainer container, NamespacedKey key, byte[] value) {
@@ -286,6 +305,28 @@ public final class ItemTagUtils {
         }
     }
 
+    public static class ItemStackPersistentDataType implements PersistentDataType<String, ItemStack> {
+        @Override
+        public Class<String> getPrimitiveType() {
+            return String.class;
+        }
+
+        @Override
+        public Class<ItemStack> getComplexType() {
+            return ItemStack.class;
+        }
+
+        @Override
+        public String toPrimitive(ItemStack complex, PersistentDataAdapterContext context) {
+            return ItemStackUtils.itemToBase64(complex);
+        }
+
+        @Override
+        public ItemStack fromPrimitive(String primitive, PersistentDataAdapterContext context) {
+            return ItemStackUtils.itemFromBase64(primitive);
+        }
+    }
+
     public static class SubItemTagContainer implements PersistentDataContainer {
         private PersistentDataContainer parent;
         private PersistentDataContainer self;
@@ -348,6 +389,13 @@ public final class ItemTagUtils {
             self = null;
             if (!SubItemTagContainer.references.remove(reference)) {
                 RPGItems.logger.log(Level.SEVERE, "Double handled SubItemTagContainer found: " + this + ": " + key + "@" + parent);
+                new Exception().printStackTrace();
+            }
+        }
+
+        public void tryDispose() {
+            if (self != null) {
+                dispose();
             }
         }
 

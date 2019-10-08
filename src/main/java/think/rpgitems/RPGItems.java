@@ -95,6 +95,7 @@ public class RPGItems extends JavaPlugin {
         PowerManager.registerConditions(RPGItems.plugin, Power.class.getPackage().getName() + ".cond");
         PowerManager.registerPowers(RPGItems.plugin, Power.class.getPackage().getName() + ".impl");
         PowerManager.registerMarkers(RPGItems.plugin, Power.class.getPackage().getName() + ".marker");
+        PowerManager.registerModifiers(RPGItems.plugin, Power.class.getPackage().getName() + ".propertymodifier");
         saveDefaultConfig();
         Font.load();
         WGSupport.load();

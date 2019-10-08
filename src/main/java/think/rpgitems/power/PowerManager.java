@@ -2,6 +2,8 @@ package think.rpgitems.power;
 
 import cat.nyaa.nyaacore.Pair;
 import cat.nyaa.nyaacore.utils.ClassPathUtils;
+import com.google.common.cache.Cache;
+import com.google.common.cache.CacheBuilder;
 import com.google.common.collect.BiMap;
 import com.google.common.collect.HashBasedTable;
 import com.google.common.collect.HashBiMap;
@@ -10,13 +12,14 @@ import org.bukkit.command.CommandSender;
 import org.bukkit.plugin.Plugin;
 import think.rpgitems.AdminHandler;
 import think.rpgitems.RPGItems;
+import think.rpgitems.power.propertymodifier.Modifier;
 
 import javax.annotation.CheckForNull;
 import java.lang.reflect.Field;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
-import java.lang.reflect.Modifier;
 import java.util.*;
+import java.util.concurrent.TimeUnit;
 import java.util.function.BiFunction;
 import java.util.function.Consumer;
 import java.util.function.Function;
@@ -44,11 +47,15 @@ public class PowerManager {
 
     private static BiMap<NamespacedKey, Class<? extends Marker>> markers = HashBiMap.create();
 
+    private static BiMap<NamespacedKey, Class<? extends Modifier>> modifiers = HashBiMap.create();
+
     private static final HashBasedTable<Plugin, String, BiFunction<NamespacedKey, String, String>> descriptionResolvers = HashBasedTable.create();
 
     static final HashBasedTable<Class<? extends Pimpl>, Class<? extends Pimpl>, Function> adapters = HashBasedTable.create();
 
     private static final HashMap<NamespacedKey, NamespacedKey> overrides = new HashMap<>();
+
+    private static final HashMap<String, NamespacedKey> keyCache = new HashMap<>();
 
     private static void registerPower(Class<? extends Power> clazz) {
         NamespacedKey key = null;
@@ -69,7 +76,7 @@ public class PowerManager {
                 RPGItems.plugin.getLogger().log(Level.INFO, "Exception: {0}", e);
             }
             if (key != null) {
-                powers.remove(key);
+                powers.remove(key, clazz);
                 metas.remove(clazz);
                 properties.remove(clazz);
             }
@@ -77,7 +84,7 @@ public class PowerManager {
     }
 
     private static <T extends PropertyHolder> void register(Class<? extends T> clazz, BiMap<NamespacedKey, Class<? extends T>> registry) {
-        NamespacedKey key;
+        NamespacedKey key = null;
         try {
             registerMetas(clazz);
             T p = PowerManager.instantiate(clazz);
@@ -90,8 +97,9 @@ public class PowerManager {
             RPGItems.plugin.getLogger().log(Level.WARNING, "With {0}", clazz);
             metas.remove(clazz);
             properties.remove(clazz);
-            registry.remove(clazz);
-            return;
+            if (key != null) {
+                registry.remove(key, clazz);
+            }
         }
     }
 
@@ -108,6 +116,11 @@ public class PowerManager {
 
     private static void registerMarker(Class<? extends Marker> clazz) {
         register(clazz, markers);
+    }
+
+    @SuppressWarnings("rawtypes")
+    private static void registerModifier(Class<? extends Modifier> clazz) {
+        register(clazz, modifiers);
     }
 
 
@@ -171,7 +184,7 @@ public class PowerManager {
 
     public static <T extends PropertyHolder> void registerList(Plugin plugin, List<Class<? extends T>> list, Consumer<Class<? extends T>> register) {
         extensions.put(plugin.getName().toLowerCase(Locale.ROOT), plugin);
-        list.stream().filter(c -> !Modifier.isAbstract(c.getModifiers()) && !c.isInterface()).sorted(Comparator.comparing(Class::getCanonicalName)).forEach(register);
+        list.stream().filter(c -> !java.lang.reflect.Modifier.isAbstract(c.getModifiers()) && !c.isInterface()).sorted(Comparator.comparing(Class::getCanonicalName)).forEach(register);
     }
 
     public static void registerPowers(Plugin plugin, String basePackage) {
@@ -187,6 +200,11 @@ public class PowerManager {
         registerPackage(plugin, basePackage, Marker.class, (Consumer<Class<? extends Marker>>) PowerManager::registerMarker);
     }
 
+    @SuppressWarnings("rawtypes")
+    public static void registerModifiers(Plugin plugin, String basePackage) {
+        registerPackage(plugin, basePackage, Modifier.class, (Consumer<Class<? extends Modifier>>) PowerManager::registerModifier);
+}
+
     public static void addDescriptionResolver(Plugin plugin, BiFunction<NamespacedKey, String, String> descriptionResolver) {
         addDescriptionResolver(plugin, RPGItems.plugin.cfg.language, descriptionResolver);
     }
@@ -196,7 +214,7 @@ public class PowerManager {
     }
 
     public static NamespacedKey parseKey(String powerStr) throws UnknownExtensionException {
-        if (!powerStr.contains(":")) return new NamespacedKey(RPGItems.plugin, powerStr);
+        if (!powerStr.contains(":")) return keyCache.computeIfAbsent(powerStr.toLowerCase(), s -> new NamespacedKey(RPGItems.plugin, s));
         String[] split = powerStr.split(":");
         if (split.length != 2) {
             throw new IllegalArgumentException();
@@ -276,6 +294,12 @@ public class PowerManager {
     public static Class<? extends Marker> getMarker(NamespacedKey key) {
         return markers.get(overrides.computeIfAbsent(key, Function.identity()));
     }
+
+    @CheckForNull
+    public static Class<? extends Modifier> getModifier(NamespacedKey key) {
+        return modifiers.get(key);
+    }
+
 
     public static <T extends PropertyHolder> T instantiate(Class<T> clz) {
         try {

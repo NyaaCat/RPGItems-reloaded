@@ -26,14 +26,17 @@ import think.rpgitems.data.LightContext;
 import think.rpgitems.item.ItemManager;
 import think.rpgitems.item.RPGItem;
 import think.rpgitems.power.Pimpl;
+import think.rpgitems.power.PowerManager;
 import think.rpgitems.power.PowerSneak;
 import think.rpgitems.power.PowerSprint;
-import think.rpgitems.power.trigger.BaseTriggers;
-import think.rpgitems.power.trigger.Trigger;
 import think.rpgitems.power.marker.Ranged;
 import think.rpgitems.power.marker.RangedOnly;
+import think.rpgitems.power.propertymodifier.MulModifier;
+import think.rpgitems.power.trigger.BaseTriggers;
+import think.rpgitems.power.trigger.Trigger;
 import think.rpgitems.support.WGHandler;
 import think.rpgitems.support.WGSupport;
+import think.rpgitems.utils.ItemTagUtils;
 
 import java.util.*;
 import java.util.logging.Level;
@@ -41,6 +44,7 @@ import java.util.stream.Stream;
 
 import static think.rpgitems.RPGItems.logger;
 import static think.rpgitems.RPGItems.plugin;
+import static think.rpgitems.item.RPGItem.TAG_MODIFIER;
 import static think.rpgitems.power.Utils.maxWithCancel;
 import static think.rpgitems.power.Utils.minWithCancel;
 
@@ -51,9 +55,6 @@ public class Events implements Listener {
     public static final String SUPPRESS_MELEE = "SuppressMelee";
     public static final String SUPPRESS_PROJECTILE = "SuppressProjectile";
     public static final String DAMAGE_SOURCE_ITEM = "DamageSourceItem";
-    public static HashMap<String, Set<Integer>> drops = new HashMap<>();
-
-    static HashMap<String, Integer> recipeWindows = new HashMap<>();
 
     private static HashSet<Integer> removeProjectiles = new HashSet<>();
     private static HashMap<Integer, Integer> rpgProjectiles = new HashMap<>();
@@ -401,6 +402,16 @@ public class Events implements Listener {
     @EventHandler
     public void onPlayerJoin(PlayerJoinEvent e) {
         Player player = e.getPlayer();
+
+        player.getPersistentDataContainer().remove(TAG_MODIFIER);
+        ItemTagUtils.SubItemTagContainer container = ItemTagUtils.makeTag(player.getPersistentDataContainer(), TAG_MODIFIER);
+        ItemTagUtils.SubItemTagContainer modifier = ItemTagUtils.makeTag(container, PowerManager.parseKey("0"));
+        MulModifier mulModifier = new MulModifier();
+        mulModifier.targetProperty = "cooldown";
+        mulModifier.value = 0.5;
+        mulModifier.save(modifier);
+        modifier.commit();
+
         PlayerInventory in = player.getInventory();
         for (int i = 0; i < in.getSize(); i++) {
             ItemStack item = in.getItem(i);
