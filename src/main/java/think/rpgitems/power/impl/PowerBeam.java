@@ -320,6 +320,8 @@ public class PowerBeam extends BasePower implements PowerPlain, PowerRightClick,
         private List<Entity> targets;
         private Entity fromEntity;
         private Location fromLocation;
+        private Vector towards;
+        private Vector step;
 
 
         MovingTask() {
@@ -597,22 +599,37 @@ public class PowerBeam extends BasePower implements PowerPlain, PowerRightClick,
 
         public void setFromEntity(Entity fromEntity) {
             this.fromEntity = fromEntity;
+            this.fromLocation = fromEntity.getLocation();
+            this.towards = fromLocation.getDirection();
+        }
+
+        public void setFromLocation(Location from) {
+            this.fromLocation = from;
+        }
+
+        public void setTowards(Vector towards) {
+            this.towards = towards;
         }
     }
 
     // can be called anywhere, maybe
     public static MovingTask buildBeam(PowerBeam config, Vector towards, Location from) {
-
+        return buildBeam(config, towards, from, null);
     }
 
     public static MovingTask buildBeam(PowerBeam config, Vector towards, Location from, List<Entity> targets) {
-
+        MovingTask movingTask = new MovingTask(config);
+        movingTask.setFromLocation(from);
+        movingTask.setTowards(towards);
+        movingTask.setTarget(targets);
+        return movingTask;
     }
 
     public static MovingTask buildBeam(PowerBeam config, Entity from, List<Entity> targets) {
         MovingTask movingTask = new MovingTask(config);
         movingTask.setFromEntity(from);
         movingTask.setTarget(targets);
+        return movingTask;
     }
 
     private static boolean isUtilArmorStand(LivingEntity livingEntity) {
