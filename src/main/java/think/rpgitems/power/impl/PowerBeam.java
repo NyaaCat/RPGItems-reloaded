@@ -194,7 +194,7 @@ public class PowerBeam extends BasePower implements PowerPlain, PowerRightClick,
         if (!section.getBoolean("homing")) {
             homingAngle = 0;
         }else {
-            homing = blockPerSpawn / Math.cos(2 * Math.toRadians(homingAngle));
+            homing = blockPerSpawn / (2 *Math.cos( Math.toRadians(homingAngle)));
         }
         if(originalCone) {
             section.set("cone", cone);
