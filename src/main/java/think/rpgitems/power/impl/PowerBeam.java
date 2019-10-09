@@ -429,23 +429,23 @@ public class PowerBeam extends BasePower implements PowerPlain, PowerRightClick,
                     if (mode.equals(Mode.BEAM)) {
                         lengthToSpawn = length;
                     }
-                    boolean isHit = false;
+                    Set<UUID> hitMob = new HashSet<>();
+                    int hitCount = 0;
                     boolean firstHit = true;
                     while ((lengthToSpawn -= lengthPerSpawn) > 0) {
-                        if (!isHit) {
-                            isHit = tryHit(fromEntity, lastLocation, itemStack, bounced && hitSelfWhenBounced);
-                        }
-                        if (homingMode.equals(HomingMode.MOUSE_TRACK)) {
-                            Location location = fromEntity.getLocation();
-                            if (fromEntity instanceof LivingEntity) {
-                                location = ((LivingEntity) fromEntity).getEyeLocation();
-                            }
-                            targets = new LinkedList<>(getTargets(location.getDirection(), location, fromEntity, length, homingAngle, homingTarget));
-                        }
-                        if (cycle++ > 1 / lengthPerSpawn) {
-                            isHit = false;
-                            firstHit = true;
+                        hitMob.addAll(tryHit(fromEntity, lastLocation, itemStack, bounced && hitSelfWhenBounced));
+
+                        if (cycle++ > 2 / lengthPerSpawn) {
+                            hitMob.clear();
+                            hitCount = 0;
                             cycle = 0;
+                            if (homingMode.equals(HomingMode.MOUSE_TRACK)) {
+                                Location location = fromEntity.getLocation();
+                                if (fromEntity instanceof LivingEntity) {
+                                    location = ((LivingEntity) fromEntity).getEyeLocation();
+                                }
+                                targets = new LinkedList<>(getTargets(location.getDirection(), location, fromEntity, length, homingAngle, homingTarget));
+                            }
                         }
 
                         spawnParticle(fromEntity, world, lastLocation, 1);
@@ -475,10 +475,10 @@ public class PowerBeam extends BasePower implements PowerPlain, PowerRightClick,
                                 if (homingMode.equals(HomingMode.ONE_TARGET)) targets.poll();
                             });
                         }
-                        if (isHit && firstHit) {
-                            firstHit = false;
+                        int dHit = hitMob.size() - hitCount;
+                        if (dHit > 0) {
                             if (pierce > 0) {
-                                pierce--;
+                                pierce -= dHit;
                                 if (homingMode.equals(HomingMode.MULTI_TARGET)) {
                                     if (targets != null) {
                                         Entity poll = targets.poll();
@@ -579,7 +579,9 @@ public class PowerBeam extends BasePower implements PowerPlain, PowerRightClick,
             Vector targetDirection = targetLocation.toVector().subtract(lastLocation.toVector());
             float angle = clone.angle(targetDirection);
             Vector crossProduct = clone.clone().getCrossProduct(targetDirection);
-            double actualAng = (homing / 20) / (lengthInThisTick / lengthPerSpawn);
+            //legacy
+//            double actualAng = (homing / 20) / (lengthInThisTick / lengthPerSpawn);
+            double actualAng = Math.asin(towards.length() / (2 * homing));
             if (angle > Math.toRadians(actualAng)) {
                 if (this.shape.equals(BeamShape.LEGACY_HOMING)) {
                     //↓a legacy but functionable way to rotate.
@@ -617,64 +619,30 @@ public class PowerBeam extends BasePower implements PowerPlain, PowerRightClick,
 
         }
 
-        private boolean tryHit(Entity from, Location loc, ItemStack stack, boolean canHitSelf) {
-            if (from == null) return false;
+        private Collection<? extends UUID> tryHit(Entity from, Location loc, ItemStack stack, boolean canHitSelf) {
+            HashSet<UUID> hitMobs = new HashSet<>();
+            if (from == null) return hitMobs;
             double offsetLength = new Vector(offsetX, offsetY, offsetZ).length();
             double length = Double.isNaN(offsetLength) ? 0 : Math.max(offsetLength, 10);
             Collection<Entity> candidates = from.getWorld().getNearbyEntities(loc, length, length, length);
-            boolean result = false;
-            if (pierce > 0) {
-                List<Entity> collect = candidates.stream()
-                        .filter(entity -> (entity instanceof LivingEntity) && (!isUtilArmorStand((LivingEntity) entity)) && (canHitSelf || !entity.equals(from)) && !entity.isDead())
-                        .filter(entity -> canHit(loc, entity))
-                        .limit(1)
-                        .collect(Collectors.toList());
-                if (!collect.isEmpty()) {
-                    Entity entity = collect.get(0);
-                    if (entity instanceof LivingEntity) {
-                        new BukkitRunnable() {
-                            @Override
-                            public void run() {
-                                LightContext.putTemp(from.getUniqueId(), DAMAGE_SOURCE, power.getNamespacedKey().toString());
-                                LightContext.putTemp(from.getUniqueId(), OVERRIDING_DAMAGE, damage);
-                                LightContext.putTemp(from.getUniqueId(), SUPPRESS_MELEE, suppressMelee);
-                                LightContext.putTemp(from.getUniqueId(), DAMAGE_SOURCE_ITEM, stack);
-                                ((LivingEntity) entity).damage(damage, from);
-                                LightContext.clear();
-                            }
-                        }.runTask(RPGItems.plugin);
-
-                    }
-                    return true;
+            List<Entity> collect = candidates.stream()
+                    .filter(entity -> (entity instanceof LivingEntity) && (!isUtilArmorStand((LivingEntity) entity)) && (canHitSelf || !entity.equals(from)) && !entity.isDead())
+                    .filter(entity -> canHit(loc, entity))
+                    .limit(pierce)
+                    .collect(Collectors.toList());
+            if (!collect.isEmpty()) {
+                Entity entity = collect.get(0);
+                if (entity instanceof LivingEntity) {
+                    LightContext.putTemp(from.getUniqueId(), DAMAGE_SOURCE, power.getNamespacedKey().toString());
+                    LightContext.putTemp(from.getUniqueId(), OVERRIDING_DAMAGE, damage);
+                    LightContext.putTemp(from.getUniqueId(), SUPPRESS_MELEE, suppressMelee);
+                    LightContext.putTemp(from.getUniqueId(), DAMAGE_SOURCE_ITEM, stack);
+                    ((LivingEntity) entity).damage(damage, from);
+                    LightContext.clear();
+                    hitMobs.add(entity.getUniqueId());
                 }
-            } else {
-                List<Entity> collect = candidates.stream()
-                        .filter(entity -> (entity instanceof LivingEntity) && (!isUtilArmorStand((LivingEntity) entity)) && (canHitSelf || !entity.equals(from)))
-                        .filter(entity -> canHit(loc, entity))
-                        .collect(Collectors.toList());
-                new BukkitRunnable() {
-                    @Override
-                    public void run() {
-                        LightContext.putTemp(from.getUniqueId(), DAMAGE_SOURCE, power.getNamespacedKey().toString());
-                        LightContext.putTemp(from.getUniqueId(), OVERRIDING_DAMAGE, damage);
-                        LightContext.putTemp(from.getUniqueId(), SUPPRESS_MELEE, suppressMelee);
-                        LightContext.putTemp(from.getUniqueId(), DAMAGE_SOURCE_ITEM, stack);
-
-                        if (!collect.isEmpty()) {
-                            collect.stream()
-                                    .map(entity -> ((LivingEntity) entity))
-                                    .forEach(livingEntity -> {
-                                        livingEntity.damage(damage, from);
-                                    });
-
-                        }
-                        LightContext.clear();
-                    }
-                }.runTask(RPGItems.plugin);
-
-                result = true;
             }
-            return result;
+            return hitMobs;
         }
 
         private boolean canHit(Location loc, Entity entity) {
