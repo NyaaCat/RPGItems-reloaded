@@ -112,6 +112,9 @@ public class PowerBeam extends BasePower implements PowerPlain, PowerRightClick,
     public double homingAngle = 30;
 
     @Property
+    public double homingRange = 50;
+
+    @Property
     public HomingMode homingMode = HomingMode.ONE_TARGET;
 
     @Property
@@ -157,10 +160,10 @@ public class PowerBeam extends BasePower implements PowerPlain, PowerRightClick,
     public String speedBias = "";
 
     @Property
-    public BeamShape shape = BeamShape.PLAIN;
+    public Behavior behavior = Behavior.PLAIN;
 
     @Property
-    public String shapeParam = "{}";
+    public String behaviorParam = "{}";
 
     @Override
     public void init(ConfigurationSection section) {
@@ -195,9 +198,10 @@ public class PowerBeam extends BasePower implements PowerPlain, PowerRightClick,
         section.set("homingAngle", homingRange);
         section.set("homingMode", homingTargetMode);
         section.set("pierce", 50);
-        section.set("shape", "LEGACY_HOMING");
+        section.set("behavior", "LEGACY_HOMING");
         section.set("ticksBeforeHoming", ((int) Math.floor(stepsBeforeHoming / stepPerSecond / 20d)));
         section.set("ttl", ((int) Math.floor(length / spd)));
+        section.set("homingRange", length);
     }
 
     private static Set<Material> transp = Stream.of(Material.values())
@@ -309,7 +313,7 @@ public class PowerBeam extends BasePower implements PowerPlain, PowerRightClick,
 
         Queue<Entity> targets = null;
         if (from instanceof Player && homing > 0) {
-            targets = new LinkedList<>(getTargets(from.getEyeLocation().getDirection(), fromLocation, from, length, homingAngle, homingTarget));
+            targets = new LinkedList<>(getTargets(from.getEyeLocation().getDirection(), fromLocation, from, homingRange, homingAngle, homingTarget));
         }
         MovingTask movingTask = new MovingTaskBuilder(this)
                 .fromEntity(from)
@@ -330,6 +334,7 @@ public class PowerBeam extends BasePower implements PowerPlain, PowerRightClick,
     }
 
     private static class MovingTask extends BukkitRunnable {
+        private double homingRange;
         private int length = 10;
         private int ttl = 200;
         private Particle particle = Particle.LAVA;
@@ -352,8 +357,8 @@ public class PowerBeam extends BasePower implements PowerPlain, PowerRightClick,
         private boolean hitSelfWhenBounced = false;
         private double gravity = 0;
         private boolean suppressMelee = false;
-        private BeamShape shape = BeamShape.PLAIN;
-        private String shapeParam = "{}";
+        private Behavior behavior = Behavior.PLAIN;
+        private String behaviorParam = "{}";
         private Object extraData = null;
         private PowerBeam power;
         private String speedBias = "";
@@ -396,12 +401,13 @@ public class PowerBeam extends BasePower implements PowerPlain, PowerRightClick,
             this.gravity = config.gravity;
             this.particleSpeed = config.particleSpeed;
             this.suppressMelee = config.suppressMelee;
-            this.shape = config.shape;
-            this.shapeParam = config.shapeParam;
+            this.behavior = config.behavior;
+            this.behaviorParam = config.behaviorParam;
             this.extraData = config.extraData;
             this.speedBias = config.speedBias;
             this.homingAngle = config.homingAngle;
             this.homingTarget = config.homingTarget;
+            this.homingRange = config.homingRange;
             power = config;
             lengthPerSpawn = 1 / spawnsPerBlock;
         }
@@ -444,7 +450,7 @@ public class PowerBeam extends BasePower implements PowerPlain, PowerRightClick,
                                 if (fromEntity instanceof LivingEntity) {
                                     location = ((LivingEntity) fromEntity).getEyeLocation();
                                 }
-                                targets = new LinkedList<>(getTargets(location.getDirection(), location, fromEntity, length, homingAngle, homingTarget));
+                                targets = new LinkedList<>(getTargets(location.getDirection(), location, fromEntity, homingRange, homingAngle, homingTarget));
                             }
                         }
 
@@ -568,6 +574,8 @@ public class PowerBeam extends BasePower implements PowerPlain, PowerRightClick,
             }
         }
 
+        double legacyBonus = 0;
+
         private Vector homingCorrect(Vector towards, Location lastLocation, double lengthInThisTick, Entity target, int i, Supplier<Entity> runnable) {
             if (target == null || i < ticksBeforeHoming) {
                 return towards;
@@ -591,15 +599,14 @@ public class PowerBeam extends BasePower implements PowerPlain, PowerRightClick,
 //            double actualAng = (homing / 20) / (lengthInThisTick / lengthPerSpawn);
             double actualAng = Math.asin(towards.length() / (2 * homing));
             if (angle > Math.toRadians(actualAng)) {
-                if (this.shape.equals(BeamShape.LEGACY_HOMING)) {
-                    //↓a legacy but functionable way to rotate.
-                    //will create a enlarging circle
-                    clone.add(clone.clone().getCrossProduct(crossProduct).normalize().multiply(-1 * Math.tan(actualAng)));
-                } else {
-                    // ↓a better way to rotate.
-                    // will create a exact circle.}
-                    clone.rotateAroundAxis(crossProduct, actualAng);
+                if (this.behavior.equals(Behavior.LEGACY_HOMING)) {
+                    double lastActualAngle = Math.asin(towards.length() / (2 * homing + legacyBonus));
+                    legacyBonus += 2 * (lastActualAngle / (2*Math.PI));
+                    actualAng = Math.asin(towards.length() / (2 * homing+legacyBonus));
                 }
+                // ↓a better way to rotate.
+                // will create a exact circle.
+                clone.rotateAroundAxis(crossProduct, actualAng);
             } else {
                 clone = targetDirection.normalize();
             }
@@ -738,8 +745,8 @@ public class PowerBeam extends BasePower implements PowerPlain, PowerRightClick,
         return false;
     }
 
-    private static List<Entity> getTargets(Vector direction, Location fromLocation, Entity from, int range, double homingAngle, Target homingTarget) {
-        int radius = Math.min(range, 300);
+    private static List<Entity> getTargets(Vector direction, Location fromLocation, Entity from, double range, double homingAngle, Target homingTarget) {
+        double radius = Math.min(range, 300);
         return Utils.getLivingEntitiesInConeSorted(from.getNearbyEntities(radius, range * 1.5, range * 1.5).stream()
                         .filter(entity -> entity instanceof LivingEntity && !entity.equals(from) && !entity.isDead())
                         .map(entity -> ((LivingEntity) entity))
@@ -793,7 +800,7 @@ public class PowerBeam extends BasePower implements PowerPlain, PowerRightClick,
         MOBS, PLAYERS, ALL
     }
 
-    public enum BeamShape {
+    public enum Behavior {
         PLAIN(PlainBias.class, Void.class),
         DNA(DnaBias.class, DnaBias.DnaParams.class),
         CIRCLE(CircleBias.class, CircleBias.CircleParams.class),
@@ -802,7 +809,7 @@ public class PowerBeam extends BasePower implements PowerPlain, PowerRightClick,
         private Class<? extends IBias> iBias;
         private Class<?> paramType;
 
-        BeamShape(Class<? extends IBias> iBias, Class<?> paramType) {
+        Behavior(Class<? extends IBias> iBias, Class<?> paramType) {
             this.iBias = iBias;
             this.paramType = paramType;
         }
