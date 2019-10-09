@@ -174,33 +174,46 @@ public class PowerBeam extends BasePower implements PowerPlain, PowerRightClick,
     }
 
     private void updateFromV1(ConfigurationSection section) {
+        boolean originalCone = section.getBoolean("cone");
+        boolean pierce = section.getBoolean("pierce");
         double cone = section.getDouble("coneRange");
         int movementTicks = section.getInt("movementTicks");
         int length = section.getInt("length");
         double originSpeed = section.getDouble("speed");
+        double homing = 0;
         double homingAngle = section.getDouble("homingAngle");
         double homingRange = section.getDouble("homingRange");
         String homingTargetMode = section.getString("homingTargetMode");
         int stepsBeforeHoming = section.getInt("stepsBeforeHoming");
 
-        double spd = ((double) length) / ((double) movementTicks);
+        double spd = ((double) length*20) / ((double) movementTicks);
         int spawnsPerBlock = section.getInt("spawnsPerBlock");
         double blockPerSpawn = 1 / ((double) spawnsPerBlock);
         double stepPerSecond = spd / blockPerSpawn;
 
         if (!section.getBoolean("homing")) {
             homingAngle = 0;
+        }else {
+            homing = blockPerSpawn / Math.cos(2 * Math.toRadians(homingAngle));
         }
-        section.set("cone", cone);
+        if(originalCone) {
+            section.set("cone", cone);
+        }else {
+            section.set("cone", 0);
+        }
+        int pierceNum = 0;
+        if (pierce){
+            pierceNum = 50;
+        }
         section.set("speed", spd);
         section.set("particleSpeed", originSpeed);
-        section.set("homing", homingAngle);
+        section.set("homing", homing);
         section.set("homingAngle", homingRange);
         section.set("homingMode", homingTargetMode);
-        section.set("pierce", 50);
+        section.set("pierce", pierceNum);
         section.set("behavior", "LEGACY_HOMING");
-        section.set("ticksBeforeHoming", ((int) Math.floor(stepsBeforeHoming / stepPerSecond / 20d)));
-        section.set("ttl", ((int) Math.floor(length / spd)));
+        section.set("ticksBeforeHoming", stepsBeforeHoming);
+        section.set("ttl", ((int) Math.floor(length*20 / spd)));
         section.set("homingRange", length);
     }
 
@@ -420,6 +433,7 @@ public class PowerBeam extends BasePower implements PowerPlain, PowerRightClick,
                 return;
             }
             lastLocation = fromLocation;
+            towards.normalize();
             new RecursiveTask().runTask(RPGItems.plugin);
         }
 
@@ -456,7 +470,9 @@ public class PowerBeam extends BasePower implements PowerPlain, PowerRightClick,
 
                         spawnParticle(fromEntity, world, lastLocation, 1);
                         Vector step = towards.clone().normalize().multiply(lengthPerSpawn);
-                        if (gravity > 0) {
+                        if (gravity != 0 && (
+                                homing == 0 || currentTick.get() <= ticksBeforeHoming
+                        ) ) {
                             double partsPerTick = lengthInThisTick / lengthPerSpawn;
                             step.setY(step.getY() + getGravity(partsPerTick));
                         }
@@ -491,7 +507,7 @@ public class PowerBeam extends BasePower implements PowerPlain, PowerRightClick,
                             }
                         }
                         if (targets != null && homing > 0 && currentTick.get() > ticksBeforeHoming) {
-                            towards = homingCorrect(towards, lastLocation, lengthInThisTick, targets.peek(), ticksBeforeHoming, () -> {
+                            towards = homingCorrect(step, lastLocation, targets.peek(), ticksBeforeHoming, () -> {
                                 targets.removeIf(Entity::isDead);
                                 return targets.peek();
                             });
@@ -576,7 +592,7 @@ public class PowerBeam extends BasePower implements PowerPlain, PowerRightClick,
 
         double legacyBonus = 0;
 
-        private Vector homingCorrect(Vector towards, Location lastLocation, double lengthInThisTick, Entity target, int i, Supplier<Entity> runnable) {
+        private Vector homingCorrect(Vector towards, Location lastLocation, Entity target, int i, Supplier<Entity> runnable) {
             if (target == null || i < ticksBeforeHoming) {
                 return towards;
             }
@@ -601,7 +617,7 @@ public class PowerBeam extends BasePower implements PowerPlain, PowerRightClick,
             if (angle > Math.toRadians(actualAng)) {
                 if (this.behavior.equals(Behavior.LEGACY_HOMING)) {
                     double lastActualAngle = Math.asin(towards.length() / (2 * homing + legacyBonus));
-                    legacyBonus += 2 * (lastActualAngle / (2*Math.PI));
+                    legacyBonus += 0.5 * (lastActualAngle / (2*Math.PI));
                     actualAng = Math.asin(towards.length() / (2 * homing+legacyBonus));
                 }
                 // ↓a better way to rotate.
@@ -638,12 +654,12 @@ public class PowerBeam extends BasePower implements PowerPlain, PowerRightClick,
             HashSet<UUID> hitMobs = new HashSet<>();
             if (from == null) return hitMobs;
             double offsetLength = new Vector(offsetX, offsetY, offsetZ).length();
-            double length = Double.isNaN(offsetLength) ? 0 : Math.max(offsetLength, 10);
+            double length = Double.isNaN(offsetLength) ? 0.1 : Math.max(offsetLength, 10);
             Collection<Entity> candidates = from.getWorld().getNearbyEntities(loc, length, length, length);
             List<Entity> collect = candidates.stream()
                     .filter(entity -> (entity instanceof LivingEntity) && (!isUtilArmorStand((LivingEntity) entity)) && (canHitSelf || !entity.equals(from)) && !entity.isDead())
                     .filter(entity -> canHit(loc, entity))
-                    .limit(pierce)
+                    .limit(Math.max(pierce,1))
                     .collect(Collectors.toList());
             if (!collect.isEmpty()) {
                 Entity entity = collect.get(0);
@@ -787,6 +803,9 @@ public class PowerBeam extends BasePower implements PowerPlain, PowerRightClick,
 
         @Override
         public Optional set(String value) throws IllegalArgumentException {
+            if("null".equals(value)){
+                return Optional.empty();
+            }
             String[] split = value.split(",", 4);
             int r = Integer.parseInt(split[0]);
             int g = Integer.parseInt(split[1]);
