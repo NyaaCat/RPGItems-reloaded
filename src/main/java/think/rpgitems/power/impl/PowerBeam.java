@@ -502,7 +502,7 @@ public class PowerBeam extends BasePower implements PowerPlain, PowerRightClick,
                 }
             }
 
-
+            boolean reported = false;
 
             private double getNextLength(AtomicDouble spawnedLength, int length) {
                 Expression eval = new Expression(speedBias).with("x", new Expression.LazyNumber() {
@@ -532,7 +532,11 @@ public class PowerBeam extends BasePower implements PowerPlain, PowerRightClick,
                         v = (eval.eval().doubleValue());
                     } catch (Exception ignored) {
                         //todo: lang
-                        new Message("invalid expression, please contact Admin").send(fromEntity);
+                        if (!reported) {
+                            new Message("invalid expression, please contact Admin").send(fromEntity);
+                            reported = true;
+                        }
+
                     }
                 }
                 return speed * v / 20;
