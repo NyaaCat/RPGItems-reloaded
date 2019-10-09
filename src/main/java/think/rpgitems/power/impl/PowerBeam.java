@@ -51,6 +51,9 @@ public class PowerBeam extends BasePower implements PowerPlain, PowerRightClick,
     public int length = 10;
 
     @Property
+    public int ttl = 100;
+
+    @Property
     public Particle particle = Particle.LAVA;
 
     @Property
@@ -114,7 +117,7 @@ public class PowerBeam extends BasePower implements PowerPlain, PowerRightClick,
     public Target homingTarget = Target.MOBS;
 
     @Property
-    public int stepsBeforeHoming = 0;
+    public int ticksBeforeHoming = 0;
 
     @Property
     public int burstCount = 1;
@@ -174,17 +177,26 @@ public class PowerBeam extends BasePower implements PowerPlain, PowerRightClick,
         double homingAngle = section.getDouble("homingAngle");
         double homingRange = section.getDouble("homingRange");
         String homingTargetMode = section.getString("homingTargetMode");
+        int stepsBeforeHoming = section.getInt("stepsBeforeHoming");
+
+        double spd = ((double) length) / ((double) movementTicks);
+        int spawnsPerBlock = section.getInt("spawnsPerBlock");
+        double blockPerSpawn = 1 / ((double) spawnsPerBlock);
+        double stepPerSecond = spd / blockPerSpawn;
+
         if (!section.getBoolean("homing")) {
             homingAngle = 0;
         }
         section.set("cone", cone);
-        section.set("speed", ((double) length) / ((double) movementTicks));
+        section.set("speed", spd);
         section.set("particleSpeed", originSpeed);
         section.set("homing", homingAngle);
         section.set("homingAngle", homingRange);
         section.set("homingMode", homingTargetMode);
         section.set("pierce", 50);
         section.set("shape", "LEGACY_HOMING");
+        section.set("ticksBeforeHoming", ((int) Math.floor(stepsBeforeHoming / stepPerSecond / 20d)));
+        section.set("ttl", ((int) Math.floor(length / spd)));
     }
 
     private static Set<Material> transp = Stream.of(Material.values())
@@ -318,6 +330,7 @@ public class PowerBeam extends BasePower implements PowerPlain, PowerRightClick,
 
     private static class MovingTask extends BukkitRunnable {
         private int length = 10;
+        private int ttl = 200;
         private Particle particle = Particle.LAVA;
         private Mode mode = Mode.BEAM;
         private int pierce = 0;
@@ -352,7 +365,7 @@ public class PowerBeam extends BasePower implements PowerPlain, PowerRightClick,
 
         AtomicDouble lengthRemains = new AtomicDouble(0);
         AtomicDouble spawnedLength = new AtomicDouble(0);
-        AtomicInteger currentStep = new AtomicInteger(0);
+        AtomicInteger currentTick = new AtomicInteger(0);
         Vector gravityVector = new Vector(0, 0, 0);
         Location lastLocation;
         private ItemStack itemStack;
@@ -361,6 +374,7 @@ public class PowerBeam extends BasePower implements PowerPlain, PowerRightClick,
 
         MovingTask(PowerBeam config) {
             this.length = config.length;
+            this.ttl = config.ttl;
             this.particle = config.particle;
             this.mode = config.mode;
             this.pierce = config.pierce;
@@ -373,7 +387,7 @@ public class PowerBeam extends BasePower implements PowerPlain, PowerRightClick,
             this.spawnsPerBlock = config.spawnsPerBlock;
             this.homing = config.homing;
             this.homingMode = config.homingMode;
-            this.ticksBeforeHoming = config.stepsBeforeHoming;
+            this.ticksBeforeHoming = config.ticksBeforeHoming;
             this.bounce = config.bounce;
             this.hitSelfWhenBounced = config.hitSelfWhenBounced;
             this.gravity = config.gravity;
@@ -409,7 +423,7 @@ public class PowerBeam extends BasePower implements PowerPlain, PowerRightClick,
             public void run() {
                 try {
                     double lengthInThisTick = getNextLength(spawnedLength, length) + lengthRemains.get();
-                    if (lengthInThisTick <= 0)return;
+                    if (lengthInThisTick <= 0) return;
                     int cycle = 0;
                     double lengthToSpawn = lengthInThisTick;
                     if (mode.equals(Mode.BEAM)) {
@@ -456,7 +470,7 @@ public class PowerBeam extends BasePower implements PowerPlain, PowerRightClick,
                         }
                         lastLocation = nextLoc;
                         spawnedLength.addAndGet(lengthPerSpawn);
-                        if (targets != null && homing > 0) {
+                        if (targets != null && homing > 0 && currentTick.get() > ticksBeforeHoming) {
                             towards = homingCorrect(towards, lastLocation, lengthInThisTick, targets.peek(), ticksBeforeHoming, () -> {
                                 if (homingMode.equals(HomingMode.ONE_TARGET)) targets.poll();
                             });
@@ -475,11 +489,10 @@ public class PowerBeam extends BasePower implements PowerPlain, PowerRightClick,
                                 return;
                             }
                         }
-                        currentStep.getAndAdd(1);
                     }
 
                     lengthRemains.set(lengthToSpawn + lengthPerSpawn);
-                    if (spawnedLength.get() >= length) {
+                    if (spawnedLength.get() >= length || currentTick.addAndGet(1) > ttl) {
                         return;
                     }
                     new RecursiveTask().runTaskLater(RPGItems.plugin, 1);
@@ -502,7 +515,7 @@ public class PowerBeam extends BasePower implements PowerPlain, PowerRightClick,
                 }).with("t", new Expression.LazyNumber() {
                     @Override
                     public BigDecimal eval() {
-                        return BigDecimal.valueOf(currentStep.get() / 20d);
+                        return BigDecimal.valueOf(currentTick.get() / 20d);
                     }
 
                     @Override
@@ -539,7 +552,7 @@ public class PowerBeam extends BasePower implements PowerPlain, PowerRightClick,
                         }
                         towards.rotateAroundNonUnitAxis(relativeResult.getHitBlockFace().getDirection(), Math.toRadians(180)).multiply(-1);
                     }
-                }else{
+                } else {
                     if (hitBlockFace.getDirection().getY() > 0) {
                         gravityVector.multiply(-1);
                     }
