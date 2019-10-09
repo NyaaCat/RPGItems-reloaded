@@ -423,7 +423,7 @@ public class PowerBeam extends BasePower implements PowerPlain, PowerRightClick,
             public void run() {
                 try {
                     double lengthInThisTick = getNextLength(spawnedLength, length) + lengthRemains.get();
-                    if (lengthInThisTick <= 0) return;
+
                     int cycle = 0;
                     double lengthToSpawn = lengthInThisTick;
                     if (mode.equals(Mode.BEAM)) {
