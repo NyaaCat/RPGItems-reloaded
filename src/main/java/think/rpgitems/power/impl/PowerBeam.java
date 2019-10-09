@@ -30,6 +30,7 @@ import think.rpgitems.power.*;
 import java.math.BigDecimal;
 import java.util.*;
 import java.util.concurrent.atomic.AtomicInteger;
+import java.util.function.Supplier;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -371,6 +372,8 @@ public class PowerBeam extends BasePower implements PowerPlain, PowerRightClick,
         private ItemStack itemStack;
         boolean bounced = false;
         World world;
+        Set<UUID> hitMob = new HashSet<>();
+        int cycle = 0;
 
         MovingTask(PowerBeam config) {
             this.length = config.length;
@@ -424,14 +427,11 @@ public class PowerBeam extends BasePower implements PowerPlain, PowerRightClick,
                 try {
                     double lengthInThisTick = getNextLength(spawnedLength, length) + lengthRemains.get();
 
-                    int cycle = 0;
                     double lengthToSpawn = lengthInThisTick;
                     if (mode.equals(Mode.BEAM)) {
                         lengthToSpawn = length;
                     }
-                    Set<UUID> hitMob = new HashSet<>();
                     int hitCount = 0;
-                    boolean firstHit = true;
                     while ((lengthToSpawn -= lengthPerSpawn) > 0) {
                         hitMob.addAll(tryHit(fromEntity, lastLocation, itemStack, bounced && hitSelfWhenBounced));
 
@@ -470,24 +470,25 @@ public class PowerBeam extends BasePower implements PowerPlain, PowerRightClick,
                         }
                         lastLocation = nextLoc;
                         spawnedLength.addAndGet(lengthPerSpawn);
-                        if (targets != null && homing > 0 && currentTick.get() > ticksBeforeHoming) {
-                            towards = homingCorrect(towards, lastLocation, lengthInThisTick, targets.peek(), ticksBeforeHoming, () -> {
-                                if (homingMode.equals(HomingMode.ONE_TARGET)) targets.poll();
-                            });
-                        }
                         int dHit = hitMob.size() - hitCount;
                         if (dHit > 0) {
+                            hitCount = hitMob.size();
+                            pierce -= dHit;
                             if (pierce > 0) {
-                                pierce -= dHit;
                                 if (homingMode.equals(HomingMode.MULTI_TARGET)) {
                                     if (targets != null) {
-                                        Entity poll = targets.poll();
-                                        while (poll != null && poll.isDead()) poll = targets.poll();
+                                        targets.removeIf(entity -> hitMob.contains(entity.getUniqueId()));
                                     }
                                 }
                             } else {
                                 return;
                             }
+                        }
+                        if (targets != null && homing > 0 && currentTick.get() > ticksBeforeHoming) {
+                            towards = homingCorrect(towards, lastLocation, lengthInThisTick, targets.peek(), ticksBeforeHoming, () -> {
+                                targets.removeIf(Entity::isDead);
+                                return targets.peek();
+                            });
                         }
                     }
 
@@ -500,6 +501,8 @@ public class PowerBeam extends BasePower implements PowerPlain, PowerRightClick,
                     this.cancel();
                 }
             }
+
+
 
             private double getNextLength(AtomicDouble spawnedLength, int length) {
                 Expression eval = new Expression(speedBias).with("x", new Expression.LazyNumber() {
@@ -561,12 +564,13 @@ public class PowerBeam extends BasePower implements PowerPlain, PowerRightClick,
             }
         }
 
-        private Vector homingCorrect(Vector towards, Location lastLocation, double lengthInThisTick, Entity target, int i, Runnable runnable) {
+        private Vector homingCorrect(Vector towards, Location lastLocation, double lengthInThisTick, Entity target, int i, Supplier<Entity> runnable) {
             if (target == null || i < ticksBeforeHoming) {
                 return towards;
             }
             if (target.isDead()) {
-                runnable.run();
+                target = runnable.get();
+                if (target == null)return towards;
             }
             Location targetLocation;
             if (target instanceof LivingEntity) {
@@ -608,7 +612,7 @@ public class PowerBeam extends BasePower implements PowerPlain, PowerRightClick,
                     return;
                 }
                 if (spawnInWorld) {
-                    ((Player) from).spawnParticle(this.particle, lastLocation, i / 2, offsetX, offsetY, offsetZ, particleSpeed, extraData);
+                    ((Player) from).spawnParticle(this.particle, lastLocation, i, offsetX, offsetY, offsetZ, particleSpeed, extraData);
                 } else {
                     world.spawnParticle(this.particle, lastLocation, i, offsetX, offsetY, offsetZ, particleSpeed, extraData, false);
                 }
