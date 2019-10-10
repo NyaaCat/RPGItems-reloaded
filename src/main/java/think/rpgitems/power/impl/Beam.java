@@ -493,7 +493,7 @@ public class Beam extends BasePower {
                         spawnParticle(fromEntity, world, lastLocation, 1);
                         Vector step = towards.clone().normalize().multiply(lengthPerSpawn);
                         if (gravity != 0 && (
-                                homing == 0 || currentTick.get() <= ticksBeforeHoming
+                                homing == 0 || currentTick.get() < ticksBeforeHoming
                         ) ) {
                             double partsPerTick = lengthInThisTick / lengthPerSpawn;
                             step.setY(step.getY() + getGravity(partsPerTick));
@@ -528,8 +528,8 @@ public class Beam extends BasePower {
                                 return;
                             }
                         }
-                        if (targets != null && homing > 0 && currentTick.get() > ticksBeforeHoming) {
-                            towards = homingCorrect(step, lastLocation, targets.peek(), ticksBeforeHoming, () -> {
+                        if (targets != null && homing > 0 && currentTick.get() >= ticksBeforeHoming) {
+                            towards = homingCorrect(step, lastLocation, targets.peek(), () -> {
                                 targets.removeIf(Entity::isDead);
                                 return targets.peek();
                             });
@@ -614,8 +614,8 @@ public class Beam extends BasePower {
 
         double legacyBonus = 0;
 
-        private Vector homingCorrect(Vector towards, Location lastLocation, Entity target, int i, Supplier<Entity> runnable) {
-            if (target == null || i < ticksBeforeHoming) {
+        private Vector homingCorrect(Vector towards, Location lastLocation, Entity target, Supplier<Entity> runnable) {
+            if (target == null) {
                 return towards;
             }
             if (target.isDead()) {
