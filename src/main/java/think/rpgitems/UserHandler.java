@@ -10,7 +10,7 @@ import org.bukkit.inventory.ItemStack;
 import org.bukkit.persistence.PersistentDataContainer;
 import think.rpgitems.item.ItemManager;
 import think.rpgitems.item.RPGItem;
-import think.rpgitems.power.Attribute;
+import think.rpgitems.power.Completion;
 import think.rpgitems.power.RPGCommandReceiver;
 
 import java.util.Optional;
@@ -34,7 +34,7 @@ public class UserHandler extends RPGCommandReceiver {
     }
 
     @SubCommand(value = "info", permission = "info")
-    @Attribute("command")
+    @Completion("command")
     public void info(CommandSender sender, Arguments args) {
         Player p = asPlayer(sender);
         RPGItem item = getItem(sender, false);
@@ -49,7 +49,7 @@ public class UserHandler extends RPGCommandReceiver {
     }
 
     @SubCommand(value = "tomodel", permission = "tomodel")
-    @Attribute("command")
+    @Completion("command")
     public void toModel(CommandSender sender, Arguments args) {
         Player p = asPlayer(sender);
         RPGItem item = getItem(sender);

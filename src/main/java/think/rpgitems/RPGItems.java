@@ -151,7 +151,7 @@ public class RPGItems extends JavaPlugin {
                 return true;
             });
         }
-        AdminHandler adminCommandHandler = new AdminHandler(this, I18n.getInstance(cfg.language));
+        AdminCommands adminCommandHandler = new AdminCommands(this, I18n.getInstance(cfg.language));
         UserHandler userCommandHandler = new UserHandler(this, I18n.getInstance(cfg.language));
         getCommand("rpgitem").setExecutor(adminCommandHandler);
         getCommand("rpgitem").setTabCompleter(adminCommandHandler);

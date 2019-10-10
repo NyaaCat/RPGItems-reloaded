@@ -13,7 +13,7 @@ import org.bukkit.event.entity.EntityDamageEvent;
 import org.bukkit.event.entity.EntityShootBowEvent;
 import org.bukkit.event.player.PlayerInteractEvent;
 import org.bukkit.inventory.ItemStack;
-import think.rpgitems.AdminHandler;
+import think.rpgitems.AdminCommands;
 import think.rpgitems.I18n;
 import think.rpgitems.power.*;
 
@@ -298,7 +298,7 @@ public class ParticlePower extends BasePower {
                     ParticlePower.this.particle = null;
                     return Optional.empty();
                 }
-                throw new AdminHandler.CommandException("message.error.visualeffect", value);
+                throw new AdminCommands.CommandException("message.error.visualeffect", value);
             } catch (IllegalArgumentException e) {
                 DeprecatedEffect particleEffect = DeprecatedEffect.valueOf(value);
                 ParticlePower.this.effect = null;

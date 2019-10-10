@@ -11,7 +11,7 @@ import org.bukkit.event.entity.EntityDamageEvent;
 import org.bukkit.event.entity.EntityShootBowEvent;
 import org.bukkit.event.player.PlayerInteractEvent;
 import org.bukkit.inventory.ItemStack;
-import think.rpgitems.AdminHandler;
+import think.rpgitems.AdminCommands;
 import think.rpgitems.I18n;
 import think.rpgitems.RPGItems;
 import think.rpgitems.power.*;
@@ -48,7 +48,7 @@ public class Economy extends BasePower {
                 eco = VaultUtils.getVaultEconomy();
             } catch (RuntimeException e) {
                 RPGItems.plugin.getLogger().log(Level.SEVERE, "Vault Economy not found", e);
-                throw new AdminHandler.CommandException("message.error.economy");
+                throw new AdminCommands.CommandException("message.error.economy");
             }
         }
     }

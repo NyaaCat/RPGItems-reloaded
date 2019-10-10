@@ -34,12 +34,13 @@ import think.rpgitems.support.WGSupport;
 import think.rpgitems.utils.MaterialUtils;
 import think.rpgitems.utils.NetworkUtils;
 
-import java.io.*;
+import java.io.File;
+import java.io.FileOutputStream;
+import java.io.IOException;
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
 import java.nio.channels.FileChannel;
 import java.nio.channels.FileLock;
-import java.nio.charset.StandardCharsets;
 import java.nio.file.FileVisitResult;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -61,12 +62,64 @@ import static think.rpgitems.utils.ItemTagUtils.getInt;
 import static think.rpgitems.utils.ItemTagUtils.getTag;
 import static think.rpgitems.utils.NetworkUtils.Location.GIST;
 
-public class AdminHandler extends RPGCommandReceiver {
+public class AdminCommands extends RPGCommandReceiver {
     private final RPGItems plugin;
+    private final Map<String, String> subCommandCompletion = new HashMap<>();
 
-    AdminHandler(RPGItems plugin, I18n i18n) {
+    AdminCommands(RPGItems plugin, I18n i18n) {
         super(plugin, i18n);
         this.plugin = plugin;
+        Arrays.stream(getClass().getDeclaredMethods()).forEach(method -> {
+            if (method.getAnnotation(SubCommand.class) != null && method.getAnnotation(Completion.class) != null) {
+                subCommandCompletion.put(method.getAnnotation(SubCommand.class).value(), method.getAnnotation(Completion.class).value());
+            }
+        });
+    }
+
+    @Completion("")
+    public List<String> itemCompleter(CommandSender sender, Arguments arguments) {
+        List<String> completeStr = new ArrayList<>();
+        int len = arguments.getRawArgs().length;
+        switch (len) {
+            case 3:
+                completeStr.addAll(ItemManager.itemNames());
+                break;
+            case 4:
+                String cmd = arguments.getRawArgs()[1];
+                if (subCommandCompletion.containsKey(cmd)) {
+                    String comp = subCommandCompletion.get(cmd);
+                    completeStr.addAll(Arrays.asList(comp.split(":", 2)[1].split(",")));
+                }
+                break;
+        }
+        return filtered(arguments, completeStr);
+    }
+
+    @Completion("")
+    public List<String> attrCompleter(CommandSender sender, Arguments arguments) {
+        List<String> completeStr = new ArrayList<>();
+        int len = arguments.getRawArgs().length;
+        switch (len) {
+            case 3:
+                String cmd = arguments.getRawArgs()[1];
+                if (subCommandCompletion.containsKey(cmd)) {
+                    String comp = subCommandCompletion.get(cmd);
+                    completeStr.addAll(Arrays.asList(comp.split(":", 2)[1].split(",")));
+                }
+                break;
+        }
+        return filtered(arguments, completeStr);
+    }
+
+    private static List<String> filtered(Arguments arguments, List<String> completeStr) {
+        String next = "";
+        int remains = arguments.remains();
+        for (int i = 0; i < remains; i++) {
+            String next1 = arguments.next();
+            next = next1 == null ? next : next1;
+        }
+        String finalNext = next;
+        return completeStr.stream().filter(s -> s.startsWith(finalNext)).collect(Collectors.toList());
     }
 
     @Override
@@ -74,13 +127,27 @@ public class AdminHandler extends RPGCommandReceiver {
         return "";
     }
 
+    public static void msgs(CommandSender target, String template, Object... args) {
+        I18n i18n = I18n.getInstance(target);
+        target.sendMessage(i18n.getFormatted(template, args));
+    }
+
+    public static void msgs(CommandSender target, String template, Map<String, BaseComponent> map, Object... args) {
+        new Message("").append(I18n.getInstance(target).getFormatted(template, args), map).send(target);
+    }
+
+    @SubCommand("power")
+    public PowerCommands power;
+
+    @SubCommand("gen-wiki")
+    public WikiCommand wiki;
+
     @SubCommand("debug")
-    @Attribute("command")
     public void debug(CommandSender sender, Arguments args) {
         Player player = asPlayer(sender);
         ItemStack item = player.getInventory().getItemInMainHand();
         player.sendMessage(ItemStackUtils.itemToJson(item).replace(ChatColor.COLOR_CHAR, '&'));
-        if (item == null || item.getType() == Material.AIR) {
+        if (item.getType() == Material.AIR) {
             player.sendMessage("empty");
             return;
         }
@@ -89,24 +156,21 @@ public class AdminHandler extends RPGCommandReceiver {
             return;
         }
         ItemMeta meta = item.getItemMeta();
-        PersistentDataContainer tagContainer = meta.getPersistentDataContainer();
+        PersistentDataContainer tagContainer = Objects.requireNonNull(meta).getPersistentDataContainer();
         if (tagContainer.has(TAG_META, PersistentDataType.TAG_CONTAINER)) {
             int uid = getInt(getTag(tagContainer, TAG_META), TAG_ITEM_UID);
             player.sendMessage("new item: " + uid);
             Optional<RPGItem> rpgItem = ItemManager.getItem(uid);
             player.sendMessage("rpgItem: " + rpgItem.map(RPGItem::getName).orElse(null));
-            return;
         }
     }
 
     @SubCommand("save-all")
-    @Attribute("command")
     public void save(CommandSender sender, Arguments args) {
         ItemManager.save();
     }
 
     @SubCommand("reload")
-    @Attribute("command")
     public void reload(CommandSender sender, Arguments args) {
         plugin.cfg = new Configuration(plugin);
         plugin.cfg.load();
@@ -127,15 +191,14 @@ public class AdminHandler extends RPGCommandReceiver {
         if (!file.exists()) {
             file = new File(ItemManager.getItemsDir(), path);
             if (!file.exists()) {
-                msg(sender, "message.error.file_not_exists", path);
+                msgs(sender, "message.error.file_not_exists", path);
                 return;
             }
         }
         ItemManager.load(file, sender);
     }
 
-    @SubCommand("reloaditem")
-    @Attribute("item")
+    @SubCommand(value = "reloaditem", tabCompleter = "itemCompleter")
     public void reloadItem(CommandSender sender, Arguments args) throws IOException {
         RPGItem item = getItem(args.nextString(), sender, true);
         File file = item.getFile();
@@ -143,14 +206,14 @@ public class AdminHandler extends RPGCommandReceiver {
         if (plugin.cfg.itemFsLock) {
             Pair<File, FileLock> backup = ItemManager.getBackup(item);
             if (backup == null) {
-                msg(sender, "message.error.reloading_locked");
+                msgs(sender, "message.error.reloading_locked");
                 return;
             }
             FileLock fileLock = backup.getValue();
             ItemManager.remove(item, false);
             if (!file.exists() || file.isDirectory()) {
                 ItemManager.removeLock(item);
-                msg(sender, "message.item.file_deleted");
+                msgs(sender, "message.item.file_deleted");
                 return;
             }
             boolean load = ItemManager.load(file, sender);
@@ -170,7 +233,7 @@ public class AdminHandler extends RPGCommandReceiver {
                 if (backup != null) {
                     recoverBackup(sender, item, file, backup.getValue());
                 } else {
-                    msg(sender, "message.item.no_backup", item.getName());
+                    msgs(sender, "message.item.no_backup", item.getName());
                 }
             } else {
                 if (backup != null) {
@@ -185,20 +248,19 @@ public class AdminHandler extends RPGCommandReceiver {
     private void recoverBackup(CommandSender sender, RPGItem item, File file, FileLock fileLock) {
         try {
             File edited = ItemManager.unlockAndBackup(item, true);
-            msg(sender, "message.item.recovering", edited.getPath());
+            msgs(sender, "message.item.recovering", edited.getPath());
             try (FileChannel backupChannel = fileLock.channel(); FileChannel fileChannel = new FileOutputStream(file).getChannel()) {
                 fileChannel.transferFrom(backupChannel, 0, backupChannel.size());
             }
             ItemManager.load(file, sender);
         } catch (IOException e) {
-            msg(sender, "message.error.recovering", item.getName(), file.getPath(), e.getLocalizedMessage());
+            msgs(sender, "message.error.recovering", item.getName(), file.getPath(), e.getLocalizedMessage());
             plugin.getLogger().log(Level.SEVERE, "Error recovering backup for " + item.getName() + "." + file.getPath(), e);
             rethrow(e);
         }
     }
 
-    @SubCommand("backupitem")
-    @Attribute("item")
+    @SubCommand(value = "backupitem", tabCompleter = "itemCompleter")
     public void unlockItem(CommandSender sender, Arguments args) throws IOException {
         RPGItem item = getItem(args.nextString(), sender);
         File backup = ItemManager.unlockAndBackup(item, false);
@@ -212,9 +274,9 @@ public class AdminHandler extends RPGCommandReceiver {
         }
         ItemManager.addBackup(item, Pair.of(backup, lock));
         if (itemFsLock) {
-            msg(sender, "message.item.unlocked", item.getFile().getPath(), backup.getPath());
+            msgs(sender, "message.item.unlocked", item.getFile().getPath(), backup.getPath());
         } else {
-            msg(sender, "message.item.backedup", item.getFile().getPath(), backup.getPath());
+            msgs(sender, "message.item.backedup", item.getFile().getPath(), backup.getPath());
         }
     }
 
@@ -232,7 +294,7 @@ public class AdminHandler extends RPGCommandReceiver {
                 return FileVisitResult.CONTINUE;
             }
         });
-        msg(sender, "message.item.cleanbackup");
+        msgs(sender, "message.item.cleanbackup");
     }
 
     private static Pair<Integer, Integer> getPaging(int size, int perPage, Arguments args) {
@@ -244,8 +306,8 @@ public class AdminHandler extends RPGCommandReceiver {
         return Pair.of(max, page);
     }
 
-    @SubCommand("list")
-    @Attribute("command:name:,display:,type:")
+    @SubCommand(value = "list", tabCompleter = "attrCompleter")
+    @Completion("command:name:,display:,type:")
     public void listItems(CommandSender sender, Arguments args) {
         int perPage = RPGItems.plugin.cfg.itemPerPage;
         String nameSearch = args.argString("n", args.argString("name", ""));
@@ -257,7 +319,7 @@ public class AdminHandler extends RPGCommandReceiver {
                                          .sorted(Comparator.comparing(RPGItem::getName))
                                          .collect(Collectors.toList());
         if (items.size() == 0) {
-            msg(sender, "message.no_item");
+            msgs(sender, "message.no_item");
             return;
         }
         Pair<Integer, Integer> maxPage = getPaging(items.size(), perPage, args);
@@ -276,8 +338,8 @@ public class AdminHandler extends RPGCommandReceiver {
         );
     }
 
-    @SubCommand("listpower")
-    @Attribute("command:name:")
+    @SubCommand(value = "listpower", tabCompleter = "attrCompleter")
+    @Completion("command:name:")
     public void listPower(CommandSender sender, Arguments args) {
         int perPage = RPGItems.plugin.cfg.powerPerPage;
         String nameSearch = args.argString("n", args.argString("name", ""));
@@ -288,7 +350,7 @@ public class AdminHandler extends RPGCommandReceiver {
                                                  .sorted(Comparator.comparing(NamespacedKey::getKey))
                                                  .collect(Collectors.toList());
         if (powers.size() == 0) {
-            msg(sender, "message.power.not_found", nameSearch);
+            msgs(sender, "message.power.not_found", nameSearch);
             return;
         }
         Stream<NamespacedKey> stream = powers.stream();
@@ -302,27 +364,26 @@ public class AdminHandler extends RPGCommandReceiver {
 
         stream.forEach(
                 power -> {
-                    msg(sender, "message.power.key", power.toString());
-                    msg(sender, "message.power.description", PowerManager.getDescription(power, null));
+                    msgs(sender, "message.power.key", power.toString());
+                    msgs(sender, "message.power.description", PowerManager.getDescription(power, null));
                     PowerManager.getProperties(power).forEach(
                             (name, mp) -> showProp(sender, power, mp.getValue(), null)
                     );
-                    msg(sender, "message.line_separator");
+                    msgs(sender, "message.line_separator");
                 });
         sender.sendMessage(ChatColor.AQUA + "Powers: " + page + " / " + max);
     }
 
     @SubCommand("worldguard")
-    @Attribute("command")
     public void toggleWorldGuard(CommandSender sender, Arguments args) {
         if (!WGSupport.hasSupport()) {
-            msg(sender, "message.worldguard.error");
+            msgs(sender, "message.worldguard.error");
             return;
         }
         if (WGSupport.useWorldGuard) {
-            msg(sender, "message.worldguard.disable");
+            msgs(sender, "message.worldguard.disable");
         } else {
-            msg(sender, "message.worldguard.enable");
+            msgs(sender, "message.worldguard.enable");
         }
         WGSupport.useWorldGuard = !WGSupport.useWorldGuard;
         RPGItems.plugin.cfg.useWorldGuard = WGSupport.useWorldGuard;
@@ -330,81 +391,76 @@ public class AdminHandler extends RPGCommandReceiver {
     }
 
     @SubCommand("wgforcerefresh")
-    @Attribute("command")
     public void toggleForceRefresh(CommandSender sender, Arguments args) {
         if (!WGSupport.hasSupport()) {
-            msg(sender, "message.worldguard.error");
+            msgs(sender, "message.worldguard.error");
             return;
         }
         if (WGSupport.forceRefresh) {
-            msg(sender, "message.wgforcerefresh.disable");
+            msgs(sender, "message.wgforcerefresh.disable");
         } else {
-            msg(sender, "message.wgforcerefresh.enable");
+            msgs(sender, "message.wgforcerefresh.enable");
         }
         WGSupport.forceRefresh = !WGSupport.forceRefresh;
         RPGItems.plugin.cfg.wgForceRefresh = WGSupport.forceRefresh;
         RPGItems.plugin.cfg.save();
     }
 
-    @SubCommand("wgignore")
-    @Attribute("item")
+    @SubCommand(value = "wgignore", tabCompleter = "itemCompleter")
     public void itemToggleWorldGuard(CommandSender sender, Arguments args) {
         RPGItem item = getItem(args.nextString(), sender);
         if (!WGSupport.hasSupport()) {
-            msg(sender, "message.worldguard.error");
+            msgs(sender, "message.worldguard.error");
             return;
         }
         item.setIgnoreWorldGuard(!item.isIgnoreWorldGuard());
         if (item.isIgnoreWorldGuard()) {
-            msg(sender, "message.worldguard.override.active");
+            msgs(sender, "message.worldguard.override.active");
         } else {
-            msg(sender, "message.worldguard.override.disabled");
+            msgs(sender, "message.worldguard.override.disabled");
         }
         ItemManager.save(item);
     }
 
     @SubCommand("create")
-    @Attribute("item")
     public void createItem(CommandSender sender, Arguments args) {
         String itemName = args.nextString();
         RPGItem newItem = ItemManager.newItem(itemName.toLowerCase(), sender);
         if (newItem != null) {
-            msg(sender, "message.create.ok", itemName);
+            msgs(sender, "message.create.ok", itemName);
             ItemManager.save(newItem);
         } else {
-            msg(sender, "message.create.fail");
+            msgs(sender, "message.create.fail");
         }
     }
 
     @SubCommand("giveperms")
-    @Attribute("command")
     public void givePerms(CommandSender sender, Arguments args) {
         RPGItems.plugin.cfg.givePerms = !RPGItems.plugin.cfg.givePerms;
         if (RPGItems.plugin.cfg.givePerms) {
-            msg(sender, "message.giveperms.required");
+            msgs(sender, "message.giveperms.required");
         } else {
-            msg(sender, "message.giveperms.canceled");
+            msgs(sender, "message.giveperms.canceled");
         }
         RPGItems.plugin.cfg.save();
     }
 
-    @SubCommand("give")
-    @Attribute("item")
+    @SubCommand(value = "give", tabCompleter = "itemCompleter")
     public void giveItem(CommandSender sender, Arguments args) {
         String str = args.nextString();
         Optional<RPGItem> optItem = ItemManager.getItem(str);
         if (optItem.isPresent()) {
             RPGItem item = optItem.get();
             if ((plugin.cfg.givePerms || !sender.hasPermission("rpgitem")) && (!plugin.cfg.givePerms || !sender.hasPermission("rpgitem.give." + item.getName()))) {
-                msg(sender, "message.error.permission", str);
+                msgs(sender, "message.error.permission", str);
                 return;
             }
             if (args.length() == 2) {
                 if (sender instanceof Player) {
                     item.give((Player) sender, 1, false);
-                    msg(sender, "message.give.ok", item.getDisplayName());
+                    msgs(sender, "message.give.ok", item.getDisplayName());
                 } else {
-                    msg(sender, "message.give.console");
+                    msgs(sender, "message.give.console");
                 }
             } else {
                 Player player = args.nextPlayer();
@@ -415,8 +471,8 @@ public class AdminHandler extends RPGCommandReceiver {
                     count = 1;
                 }
                 item.give(player, count, false);
-                msg(sender, "message.give.to", item.getDisplayName() + ChatColor.AQUA, player.getName());
-                msg(player, "message.give.ok", item.getDisplayName());
+                msgs(sender, "message.give.to", item.getDisplayName() + ChatColor.AQUA, player.getName());
+                msgs(player, "message.give.ok", item.getDisplayName());
             }
         } else {
             Optional<ItemGroup> optGroup = ItemManager.getGroup(str);
@@ -425,51 +481,48 @@ public class AdminHandler extends RPGCommandReceiver {
             }
             ItemGroup group = optGroup.get();
             if ((plugin.cfg.givePerms || !sender.hasPermission("rpgitem")) && (!plugin.cfg.givePerms || !sender.hasPermission("rpgitem.give.group." + group.getName()))) {
-                msg(sender, "message.error.permission", str);
+                msgs(sender, "message.error.permission", str);
                 return;
             }
             if (sender instanceof Player) {
                 group.give(args.nextPlayerOrSender(), 1, true);
-                msg(sender, "message.give.ok", group.getName());
+                msgs(sender, "message.give.ok", group.getName());
             } else {
-                msg(sender, "message.give.console");
+                msgs(sender, "message.give.console");
             }
         }
 
     }
 
-    @SubCommand("remove")
-    @Attribute("item")
+    @SubCommand(value = "remove", tabCompleter = "itemCompleter")
     public void removeItem(CommandSender sender, Arguments args) {
         RPGItem item = getItem(args.nextString(), sender);
         ItemManager.remove(item, true);
-        msg(sender, "message.remove.ok", item.getName());
+        msgs(sender, "message.remove.ok", item.getName());
     }
 
-    @SubCommand("display")
-    @Attribute("item")
+    @SubCommand(value = "display", tabCompleter = "itemCompleter")
     public void itemDisplay(CommandSender sender, Arguments args) {
         RPGItem item = getItem(args.nextString(), sender);
         String value = args.consume();
         if (value != null) {
             item.setDisplayName(value);
-            msg(sender, "message.display.set", item.getName(), item.getDisplayName());
+            msgs(sender, "message.display.set", item.getName(), item.getDisplayName());
             ItemManager.refreshItem();
             ItemManager.save(item);
         } else {
-            msg(sender, "message.display.get", item.getName(), item.getDisplayName());
+            msgs(sender, "message.display.get", item.getName(), item.getDisplayName());
         }
     }
 
-    @SubCommand("damage")
-    @Attribute("item")
+    @SubCommand(value = "damage", tabCompleter = "itemCompleter")
     public void itemDamage(CommandSender sender, Arguments args) {
         RPGItem item = getItem(args.nextString(), sender);
         try {
             int damageMin = args.nextInt();
             int damageMax;
             if (damageMin > 32767) {
-                msg(sender, "message.error.damagetolarge");
+                msgs(sender, "message.error.damagetolarge");
                 return;
             }
             try {
@@ -479,34 +532,32 @@ public class AdminHandler extends RPGCommandReceiver {
             }
             item.setDamage(damageMin, damageMax);
             if (damageMin != damageMax) {
-                msg(sender, "message.damage.set.range", item.getName(), item.getDamageMin(), item.getDamageMax());
+                msgs(sender, "message.damage.set.range", item.getName(), item.getDamageMin(), item.getDamageMax());
             } else {
-                msg(sender, "message.damage.set.value", item.getName(), item.getDamageMin());
+                msgs(sender, "message.damage.set.value", item.getName(), item.getDamageMin());
             }
             ItemManager.refreshItem();
             ItemManager.save(item);
         } catch (BadCommandException e) {
-            msg(sender, "message.damage.get", item.getName(), item.getDamageMin(), item.getDamageMax());
+            msgs(sender, "message.damage.get", item.getName(), item.getDamageMin(), item.getDamageMax());
         }
     }
 
-    @SubCommand("armour")
-    @Attribute("item")
+    @SubCommand(value = "armour", tabCompleter = "itemCompleter")
     public void itemArmour(CommandSender sender, Arguments args) {
         RPGItem item = getItem(args.nextString(), sender);
         try {
             int armour = args.nextInt();
             item.setArmour(armour);
-            msg(sender, "message.armour.set", item.getName(), item.getArmour());
+            msgs(sender, "message.armour.set", item.getName(), item.getArmour());
             ItemManager.refreshItem();
             ItemManager.save(item);
         } catch (BadCommandException e) {
-            msg(sender, "message.armour.get", item.getName(), item.getArmour());
+            msgs(sender, "message.armour.get", item.getName(), item.getArmour());
         }
     }
 
-    @SubCommand("item")
-    @Attribute("item")
+    @SubCommand(value = "item", tabCompleter = "itemCompleter")
     public void itemItem(CommandSender sender, Arguments args) {
         RPGItem item = getItem(args.nextString(), sender);
         if (args.length() == 2) {
@@ -517,7 +568,7 @@ public class AdminHandler extends RPGCommandReceiver {
             String materialName = args.nextString();
             Material material = MaterialUtils.getMaterial(materialName, sender);
             if (material == null || !material.isItem()) {
-                msg(sender, "message.error.material", materialName);
+                msgs(sender, "message.error.material", materialName);
                 return;
             }
             item.setItem(material);
@@ -547,30 +598,29 @@ public class AdminHandler extends RPGCommandReceiver {
         }
     }
 
-    @SubCommand("print")
-    @Attribute("item")
+    @SubCommand(value = "print", tabCompleter = "itemCompleter")
     public void itemInfo(CommandSender sender, Arguments args) {
         RPGItem item = getItem(args.nextString(), sender, true);
         item.print(sender);
     }
 
-    @SubCommand("enchantment")
-    @Attribute("item:clone,clear")
+    @SubCommand(value = "enchantment", tabCompleter = "itemCompleter")
+    @Completion("item:clone,clear")
     public void itemEnchant(CommandSender sender, Arguments args) {
         RPGItem item = getItem(args.nextString(), sender);
         if (args.length() == 2) {
             if (item.getEnchantMap() != null) {
-                msg(sender, "message.enchantment.listing", item.getName());
+                msgs(sender, "message.enchantment.listing", item.getName());
                 if (item.getEnchantMap().size() == 0) {
-                    msg(sender, "message.enchantment.empty_ench");
+                    msgs(sender, "message.enchantment.empty_ench");
                 } else {
                     for (Enchantment ench : item.getEnchantMap().keySet()) {
-                        msg(sender, "message.enchantment.item",
+                        msgs(sender, "message.enchantment.item",
                                 ench.getKey().toString(), item.getEnchantMap().get(ench));
                     }
                 }
             } else {
-                msg(sender, "message.enchantment.no_ench");
+                msgs(sender, "message.enchantment.no_ench");
             }
         }
         String command = args.nextString();
@@ -579,7 +629,7 @@ public class AdminHandler extends RPGCommandReceiver {
                 if (sender instanceof Player) {
                     ItemStack hand = ((Player) sender).getInventory().getItemInMainHand();
                     if (hand.getType() == Material.AIR) {
-                        msg(sender, "message.enchantment.fail");
+                        msgs(sender, "message.enchantment.fail");
                     } else {
                         if (hand.getType() == Material.ENCHANTED_BOOK) {
                             EnchantmentStorageMeta meta = (EnchantmentStorageMeta) hand.getItemMeta();
@@ -592,10 +642,10 @@ public class AdminHandler extends RPGCommandReceiver {
                         item.rebuild();
                         ItemManager.refreshItem();
                         ItemManager.save(item);
-                        msg(sender, "message.enchantment.success");
+                        msgs(sender, "message.enchantment.success");
                     }
                 } else {
-                    msg(sender, "message.enchantment.fail");
+                    msgs(sender, "message.enchantment.fail");
                 }
             }
             break;
@@ -604,7 +654,7 @@ public class AdminHandler extends RPGCommandReceiver {
                 item.rebuild();
                 ItemManager.refreshItem();
                 ItemManager.save(item);
-                msg(sender, "message.enchantment.removed");
+                msgs(sender, "message.enchantment.removed");
             }
             break;
             default:
@@ -612,30 +662,8 @@ public class AdminHandler extends RPGCommandReceiver {
         }
     }
 
-    @SubCommand("removepower")
-    @Attribute("power")
-    public void itemRemovePower(CommandSender sender, Arguments args) {
-        RPGItem item = getItem(args.nextString(), sender);
-        String powerStr = args.nextString();
-        int nth = args.top() == null ? 1 : args.nextInt();
-        try {
-            Optional<? extends Power> op = getNthPower(sender, item, powerStr, nth);
-
-            if (op.isPresent()) {
-                item.removePower(op.get());
-                msg(sender, "message.power.removed", powerStr);
-                ItemManager.refreshItem();
-                ItemManager.save(item);
-            } else {
-                msg(sender, "message.power_property.power_notfound", powerStr, nth);
-            }
-        } catch (UnknownExtensionException e) {
-            msg(sender, "message.error.unknown.extension", e.getName());
-        }
-    }
-
-    @SubCommand("attributemode")
-    @Attribute("item:FULL_UPDATE,PARTIAL_UPDATE")
+    @SubCommand(value = "attributemode", tabCompleter = "itemCompleter")
+    @Completion("item:FULL_UPDATE,PARTIAL_UPDATE")
     public void setAttributeMode(CommandSender sender, Arguments arguments) {
         RPGItem item = getItem(arguments.nextString(), sender);
         switch (arguments.top()) {
@@ -655,8 +683,8 @@ public class AdminHandler extends RPGCommandReceiver {
         ItemManager.save(item);
     }
 
-    @SubCommand("description")
-    @Attribute("item:add,insert,set,remove")
+    @SubCommand(value = "description", tabCompleter = "itemCompleter")
+    @Completion("item:add,insert,set,remove")
     public void itemAddDescription(CommandSender sender, Arguments args) {
         RPGItem item = getItem(args.nextString(), sender);
         String command = args.nextString();
@@ -664,7 +692,7 @@ public class AdminHandler extends RPGCommandReceiver {
             case "add": {
                 String line = args.consumeString();
                 item.addDescription(ChatColor.WHITE + line);
-                msg(sender, "message.description.ok");
+                msgs(sender, "message.description.ok");
                 ItemManager.refreshItem();
                 ItemManager.save(item);
             }
@@ -674,13 +702,13 @@ public class AdminHandler extends RPGCommandReceiver {
                 String line = args.consumeString();
                 int Length = item.getDescription().size();
                 if (lineNo < 0 || lineNo >= Length) {
-                    msg(sender, "message.num_out_of_range", lineNo, 0, item.getDescription().size());
+                    msgs(sender, "message.num_out_of_range", lineNo, 0, item.getDescription().size());
                     return;
                 }
                 item.getDescription().add(lineNo, ChatColor.translateAlternateColorCodes('&', ChatColor.WHITE + line));
                 item.rebuild();
                 ItemManager.refreshItem();
-                msg(sender, "message.description.ok");
+                msgs(sender, "message.description.ok");
                 ItemManager.save(item);
             }
             break;
@@ -688,26 +716,26 @@ public class AdminHandler extends RPGCommandReceiver {
                 int lineNo = args.nextInt();
                 String line = args.consumeString();
                 if (lineNo < 0 || lineNo >= item.getDescription().size()) {
-                    msg(sender, "message.num_out_of_range", lineNo, 0, item.getDescription().size());
+                    msgs(sender, "message.num_out_of_range", lineNo, 0, item.getDescription().size());
                     return;
                 }
                 item.getDescription().set(lineNo, ChatColor.translateAlternateColorCodes('&', ChatColor.WHITE + line));
                 item.rebuild();
                 ItemManager.refreshItem();
-                msg(sender, "message.description.change");
+                msgs(sender, "message.description.change");
                 ItemManager.save(item);
             }
             break;
             case "remove": {
                 int lineNo = args.nextInt();
                 if (lineNo < 0 || lineNo >= item.getDescription().size()) {
-                    msg(sender, "message.num_out_of_range", lineNo, 0, item.getDescription().size());
+                    msgs(sender, "message.num_out_of_range", lineNo, 0, item.getDescription().size());
                     break;
                 }
                 item.getDescription().remove(lineNo);
                 item.rebuild();
                 ItemManager.refreshItem();
-                msg(sender, "message.description.remove");
+                msgs(sender, "message.description.remove");
                 ItemManager.save(item);
             }
             break;
@@ -716,138 +744,26 @@ public class AdminHandler extends RPGCommandReceiver {
         }
     }
 
-
-    @SubCommand("get")
-    @Attribute("property")
-    public void getItemPowerProperty(CommandSender sender, Arguments args) {
-        RPGItem item = getItem(args.nextString(), sender, true);
-        String powerStr = args.nextString();
-        int nth = args.nextInt();
-        String property = args.next();
-        Optional<? extends Power> power = getNthPower(sender, item, powerStr, nth);
-        if (!power.isPresent()) {
-            msg(sender, "message.power_property.power_notfound", powerStr, nth);
-            return;
-        }
-        Power pow = power.get();
-        YamlConfiguration conf = new YamlConfiguration();
-        if (property != null) {
-            Optional<Map.Entry<String, Pair<Method, PropertyInstance>>> prop = PowerManager.getProperties(item.getPowerKey(pow)).entrySet().stream().filter((pf) -> pf.getValue().getValue().name().equals(property)).findAny();
-            if (!prop.isPresent()) {
-                msg(sender, "message.power_property.property_notfound", property);
-                return;
-            }
-            Field field = prop.get().getValue().getValue().field();
-            String value = Utils.getProperty(pow, property, field);
-            msg(sender, "message.power_property.get", nth, pow.getName(), property, value);
-        } else {
-            pow.save(conf);
-            msg(sender, "message.power_property.all", nth, pow.getName(), conf.saveToString());
-        }
-    }
-
-    private Pair<NamespacedKey, Class<? extends Power>> getPowerClass(CommandSender sender, String powerStr) {
-        try {
-            NamespacedKey key = PowerManager.parseKey(powerStr);
-            Class<? extends Power> cls = PowerManager.getPower(key);
-            if (cls == null) {
-                msg(sender, "message.power.unknown", powerStr);
-            }
-            return Pair.of(key, cls);
-        } catch (UnknownExtensionException e) {
-            msg(sender, "message.error.unknown.extension", e.getName());
-            return null;
-        }
-    }
-
-    private Pair<NamespacedKey, Class<? extends Marker>> getMarkerClass(CommandSender sender, String markerStr) {
-        try {
-            NamespacedKey key = PowerManager.parseKey(markerStr);
-            Class<? extends Marker> cls = PowerManager.getMarker(key);
-            if (cls == null) {
-                msg(sender, "message.power.unknown", markerStr);
-            }
-            return Pair.of(key, cls);
-        } catch (UnknownExtensionException e) {
-            msg(sender, "message.error.unknown.extension", e.getName());
-            return null;
-        }
-    }
-
-    private Pair<NamespacedKey, Class<? extends Condition>> getConditionClass(CommandSender sender, String conditionStr) {
-        try {
-            NamespacedKey key = PowerManager.parseKey(conditionStr);
-            Class<? extends Condition> cls = PowerManager.getCondition(key);
-            if (cls == null) {
-                msg(sender, "message.power.unknown", conditionStr);
-            }
-            return Pair.of(key, cls);
-        } catch (UnknownExtensionException e) {
-            msg(sender, "message.error.unknown.extension", e.getName());
-            return null;
-        }
-    }
-
-
-    @SubCommand("set")
-    @Attribute("property")
-    public void setItemPowerProperty(CommandSender sender, Arguments args) throws IllegalAccessException {
-        RPGItem item = getItem(args.nextString(), sender);
-        String powerStr = args.nextString();
-        int nth = args.nextInt();
-        String property = args.nextString();
-        String val = args.nextString();
-        try {
-            Optional<? extends Power> op = getNthPower(sender, item, powerStr, nth);
-            if (op.isPresent()) {
-                Power pow = op.get();
-                PowerManager.setPowerProperty(sender, pow, property, val);
-            } else {
-                msg(sender, "message.power_property.power_notfound", powerStr, nth);
-                return;
-            }
-            item.rebuild();
-            ItemManager.refreshItem();
-            ItemManager.save(item);
-            msg(sender, "message.power_property.change");
-        } catch (UnknownExtensionException e) {
-            msg(sender, "message.error.unknown.extension", e.getName());
-
-        }
-    }
-
-    public Optional<? extends Power> getNthPower(CommandSender sender, RPGItem item, String power, int nth) {
-        Pair<NamespacedKey, Class<? extends Power>> powerClass = getPowerClass(sender, power);
-        if (powerClass == null || powerClass.getValue() == null) {
-            return Optional.empty();
-        }
-        NamespacedKey key = powerClass.getKey();
-        Class<? extends Power> cls = powerClass.getValue();
-        return item.getPower(key, cls).stream()
-                   .skip(nth - 1)
-                   .findFirst();
-    }
-
-    @SubCommand("cost")
-    @Attribute("item:breaking,hitting,hit,toggle")
+    @SubCommand(value = "cost", tabCompleter = "itemCompleter")
+    @Completion("item:breaking,hitting,hit,toggle")
     public void itemCost(CommandSender sender, Arguments args) {
         RPGItem item = getItem(args.nextString(), sender);
         String type = args.nextString();
         if (args.length() == 3) {
             switch (type) {
                 case "breaking":
-                    msg(sender, "message.cost.get", item.getBlockBreakingCost());
+                    msgs(sender, "message.cost.get", item.getBlockBreakingCost());
                     break;
                 case "hitting":
-                    msg(sender, "message.cost.get", item.getHittingCost());
+                    msgs(sender, "message.cost.get", item.getHittingCost());
                     break;
                 case "hit":
-                    msg(sender, "message.cost.get", item.getHitCost());
+                    msgs(sender, "message.cost.get", item.getHitCost());
                     break;
                 case "toggle":
                     item.setHitCostByDamage(!item.isHitCostByDamage());
                     ItemManager.save(item);
-                    msg(sender, "message.cost.hit_toggle." + (item.isHitCostByDamage() ? "enable" : "disable"));
+                    msgs(sender, "message.cost.hit_toggle." + (item.isHitCostByDamage() ? "enable" : "disable"));
                     break;
                 default:
                     throw new BadCommandException("message.error.invalid_option", type, "cost", "breaking,hitting,hit,toggle");
@@ -869,16 +785,16 @@ public class AdminHandler extends RPGCommandReceiver {
             }
 
             ItemManager.save(item);
-            msg(sender, "message.cost.change");
+            msgs(sender, "message.cost.change");
         }
     }
 
-    @SubCommand("durability")
-    @Attribute("item:infinite,default,bound")
+    @SubCommand(value = "durability", tabCompleter = "itemCompleter")
+    @Completion("item:infinite,default,bound")
     public void itemDurability(CommandSender sender, Arguments args) {
         RPGItem item = getItem(args.nextString(), sender);
         if (args.length() == 2) {
-            msg(sender, "message.durability.info", item.getMaxDurability(), item.getDefaultDurability(), item.getDurabilityLowerBound(), item.getDurabilityUpperBound());
+            msgs(sender, "message.durability.info", item.getMaxDurability(), item.getDefaultDurability(), item.getDurabilityLowerBound(), item.getDurabilityUpperBound());
             return;
         }
         String arg = args.nextString();
@@ -887,14 +803,14 @@ public class AdminHandler extends RPGCommandReceiver {
             item.setMaxDurability(durability);
             ItemManager.refreshItem();
             ItemManager.save(item);
-            msg(sender, "message.durability.max_and_default", String.valueOf(durability));
+            msgs(sender, "message.durability.max_and_default", String.valueOf(durability));
         } catch (NumberFormatException e) {
             switch (arg) {
                 case "infinite": {
                     item.setMaxDurability(-1);
                     ItemManager.refreshItem();
                     ItemManager.save(item);
-                    msg(sender, "message.durability.max_and_default", "infinite");
+                    msgs(sender, "message.durability.max_and_default", "infinite");
                 }
                 break;
                 case "default": {
@@ -906,7 +822,7 @@ public class AdminHandler extends RPGCommandReceiver {
                     item.setDefaultDurability(durability);
                     ItemManager.refreshItem();
                     ItemManager.save(item);
-                    msg(sender, "message.durability.default", String.valueOf(durability));
+                    msgs(sender, "message.durability.default", String.valueOf(durability));
                 }
                 break;
                 case "bound": {
@@ -915,7 +831,7 @@ public class AdminHandler extends RPGCommandReceiver {
                     item.setDurabilityBound(min, max);
                     ItemManager.refreshItem();
                     ItemManager.save(item);
-                    msg(sender, "message.durability.bound", String.valueOf(min), String.valueOf(max));
+                    msgs(sender, "message.durability.bound", String.valueOf(min), String.valueOf(max));
                 }
                 break;
                 default:
@@ -924,42 +840,38 @@ public class AdminHandler extends RPGCommandReceiver {
         }
     }
 
-    @SubCommand("permission")
-    @Attribute("item")
+    @SubCommand(value = "permission", tabCompleter = "itemCompleter")
     public void setPermission(CommandSender sender, Arguments args) {
         RPGItem item = getItem(args.nextString(), sender);
-        String permission = args.next();
+        String permission = args.nextString();
         boolean enabled = args.nextBoolean();
         item.setPermission(permission);
         item.setHasPermission(enabled);
         ItemManager.save(item);
-        msg(sender, "message.permission.success");
+        msgs(sender, "message.permission.success");
     }
 
-    @SubCommand("togglepowerlore")
-    @Attribute("item")
+    @SubCommand(value = "togglepowerlore", tabCompleter = "itemCompleter")
     public void togglePowerLore(CommandSender sender, Arguments args) {
         RPGItem item = getItem(args.nextString(), sender);
         item.setShowPowerText(!item.isShowPowerText());
         item.rebuild();
         ItemManager.refreshItem();
         ItemManager.save(item);
-        msg(sender, "message.toggleLore." + (item.isShowPowerText() ? "show" : "hide"));
+        msgs(sender, "message.toggleLore." + (item.isShowPowerText() ? "show" : "hide"));
     }
 
-    @SubCommand("togglearmorlore")
-    @Attribute("item")
+    @SubCommand(value = "togglearmorlore", tabCompleter = "itemCompleter")
     public void toggleArmorLore(CommandSender sender, Arguments args) {
         RPGItem item = getItem(args.nextString(), sender);
         item.setShowArmourLore(!item.isShowArmourLore());
         item.rebuild();
         ItemManager.refreshItem();
         ItemManager.save(item);
-        msg(sender, "message.toggleLore." + (item.isShowArmourLore() ? "show" : "hide"));
+        msgs(sender, "message.toggleLore." + (item.isShowArmourLore() ? "show" : "hide"));
     }
 
-    @SubCommand("additemflag")
-    @Attribute("item")
+    @SubCommand(value = "additemflag", tabCompleter = "itemCompleter")
     public void addItemFlag(CommandSender sender, Arguments args) {
         RPGItem item = getItem(args.nextString(), sender);
         ItemFlag flag = args.nextEnum(ItemFlag.class);
@@ -967,11 +879,10 @@ public class AdminHandler extends RPGCommandReceiver {
         item.rebuild();
         ItemManager.refreshItem();
         ItemManager.save(item);
-        msg(sender, "message.itemflag.add", flag.name());
+        msgs(sender, "message.itemflag.add", flag.name());
     }
 
-    @SubCommand("removeitemflag")
-    @Attribute("item")
+    @SubCommand(value = "removeitemflag", tabCompleter = "itemCompleter")
     public void removeItemFlag(CommandSender sender, Arguments args) {
         RPGItem item = getItem(args.nextString(), sender);
         ItemFlag flag = args.nextEnum(ItemFlag.class);
@@ -981,52 +892,49 @@ public class AdminHandler extends RPGCommandReceiver {
             item.rebuild();
             ItemManager.refreshItem();
             ItemManager.save(item);
-            msg(sender, "message.itemflag.remove", flag.name());
+            msgs(sender, "message.itemflag.remove", flag.name());
         } else {
-            msg(sender, "message.itemflag.notfound", flag.name());
+            msgs(sender, "message.itemflag.notfound", flag.name());
         }
     }
 
-    @SubCommand("customitemmodel")
-    @Attribute("item")
+    @SubCommand(value = "customitemmodel", tabCompleter = "itemCompleter")
     public void toggleCustomItemModel(CommandSender sender, Arguments args) {
         RPGItem item = getItem(args.nextString(), sender);
         item.setCustomItemModel(!item.isCustomItemModel());
         item.rebuild();
         ItemManager.refreshItem();
         ItemManager.save(item);
-        msg(sender, "message.customitemmodel." + (item.isCustomItemModel() ? "enable" : "disable"));
+        msgs(sender, "message.customitemmodel." + (item.isCustomItemModel() ? "enable" : "disable"));
     }
 
-    @SubCommand("togglebar")
-    @Attribute("item")
+    @SubCommand(value = "togglebar", tabCompleter = "itemCompleter")
     public void toggleBar(CommandSender sender, Arguments args) {
         RPGItem item = getItem(args.nextString(), sender);
         item.toggleBar();
         ItemManager.refreshItem();
         ItemManager.save(item);
-        msg(sender, "message.durability.toggle");
+        msgs(sender, "message.durability.toggle");
     }
 
-    @SubCommand("barformat")
-    @Attribute("item:DEFAULT,NUMERIC,NUMERIC_MINUS_ONE,NUMERIC_HEX,NUMERIC_HEX_MINUS_ONE,DEFAULT8")
+    @SubCommand(value = "barformat", tabCompleter = "itemCompleter")
+    @Completion("item:DEFAULT,NUMERIC,NUMERIC_MINUS_ONE,NUMERIC_HEX,NUMERIC_HEX_MINUS_ONE,DEFAULT8")
     public void toggleBarFormat(CommandSender sender, Arguments args) {
         RPGItem item = getItem(args.nextString(), sender);
         item.setBarFormat(args.nextEnum(BarFormat.class));
         item.rebuild();
         ItemManager.refreshItem();
         ItemManager.save(item);
-        msg(sender, "message.barformat." + item.getBarFormat().name());
+        msgs(sender, "message.barformat." + item.getBarFormat().name());
     }
 
     @SubCommand("version")
-    @Attribute("command")
     public void printVersion(CommandSender sender, Arguments args) {
-        msg(sender, "message.version", RPGItems.plugin.getDescription().getVersion());
+        msgs(sender, "message.version", RPGItems.plugin.getDescription().getVersion());
     }
 
-    @SubCommand("enchantmode")
-    @Attribute("item:DISALLOW,PERMISSION,ALLOW")
+    @SubCommand(value = "enchantmode", tabCompleter = "itemCompleter")
+    @Completion("item:DISALLOW,PERMISSION,ALLOW")
     public void toggleItemEnchantMode(CommandSender sender, Arguments args) {
         RPGItem item = getItem(args.nextString(), sender);
         if (args.top() != null) {
@@ -1035,11 +943,11 @@ public class AdminHandler extends RPGCommandReceiver {
             ItemManager.refreshItem();
             ItemManager.save(item);
         }
-        msg(sender, "message.enchantmode." + item.getEnchantMode().name(), item.getName());
+        msgs(sender, "message.enchantmode." + item.getEnchantMode().name(), item.getName());
     }
 
-    @SubCommand("damagemode")
-    @Attribute("item:FIXED,VANILLA,ADDITIONAL,MULTIPLY")
+    @SubCommand(value = "damagemode", tabCompleter = "itemCompleter")
+    @Completion("item:FIXED,VANILLA,ADDITIONAL,MULTIPLY")
     public void toggleItemDamageMode(CommandSender sender, Arguments args) {
         RPGItem item = getItem(args.nextString(), sender);
         if (args.top() != null) {
@@ -1048,67 +956,51 @@ public class AdminHandler extends RPGCommandReceiver {
             ItemManager.refreshItem();
             ItemManager.save(item);
         }
-        msg(sender, "message.damagemode." + item.getDamageMode().name(), item.getName());
+        msgs(sender, "message.damagemode." + item.getDamageMode().name(), item.getName());
     }
 
-    @SubCommand("power")
-    @Attribute("power")
-    public void itemAddPower(CommandSender sender, Arguments args) {
-        String itemStr = args.next();
-        String powerStr = args.next();
-        if (itemStr == null || (itemStr.equals("help") && getItem(itemStr, sender) == null)) {
-            msg(sender, "manual.power.description");
-            msg(sender, "manual.power.usage");
-            return;
-        }
-        if (getItem(itemStr, sender) != null && (powerStr == null || powerStr.equals("list"))) {
-            RPGItem item = getItem(itemStr, sender);
-            for (Power power : item.getPowers()) {
-                msg(sender, "message.item.power", power.getLocalizedName(plugin.cfg.language), power.getNamespacedKey().toString(), power.displayText() == null ? I18n.getInstance(sender).format("message.power.no_display") : power.displayText(), power.getTriggers().stream().map(Trigger::name).collect(Collectors.joining(",")));
-                if ("list".equals(powerStr)) {
-                    PowerManager.getProperties(power.getNamespacedKey()).forEach(
-                            (name, prop) -> showProp(sender, power.getNamespacedKey(), prop.getValue(), power)
-                    );
-                }
-            }
-            return;
-        }
-        RPGItem item = getItem(itemStr, sender);
-        Pair<NamespacedKey, Class<? extends Power>> keyClass = getPowerClass(sender, powerStr);
-        if (keyClass == null || keyClass.getValue() == null) return;
-        Power power;
-        Class<? extends Power> cls = keyClass.getValue();
-        NamespacedKey key = keyClass.getKey();
+    private Pair<NamespacedKey, Class<? extends Marker>> getMarkerClass(CommandSender sender, String markerStr) {
         try {
-            power = initPropertyHolder(sender, args, item, cls);
-            item.addPower(key, power);
-            ItemManager.refreshItem();
-            ItemManager.save(item);
-            msg(sender, "message.power.ok");
-        } catch (Exception e) {
-            if (e instanceof CommandException) {
-                throw (CommandException) e;
+            NamespacedKey key = PowerManager.parseKey(markerStr);
+            Class<? extends Marker> cls = PowerManager.getMarker(key);
+            if (cls == null) {
+                msgs(sender, "message.power.unknown", markerStr);
             }
-            plugin.getLogger().log(Level.WARNING, "Error adding power " + powerStr + " to item " + itemStr + " " + item, e);
-            msg(sender, "internal.error.command_exception");
+            return Pair.of(key, cls);
+        } catch (UnknownExtensionException e) {
+            msgs(sender, "message.error.unknown.extension", e.getName());
+            return null;
         }
     }
 
+    private Pair<NamespacedKey, Class<? extends Condition>> getConditionClass(CommandSender sender, String conditionStr) {
+        try {
+            NamespacedKey key = PowerManager.parseKey(conditionStr);
+            Class<? extends Condition> cls = PowerManager.getCondition(key);
+            if (cls == null) {
+                msgs(sender, "message.power.unknown", conditionStr);
+            }
+            return Pair.of(key, cls);
+        } catch (UnknownExtensionException e) {
+            msgs(sender, "message.error.unknown.extension", e.getName());
+            return null;
+        }
+    }
 
     @SubCommand("marker")
-    @Attribute("power")
+    @Completion("power")
     public void itemAddMarker(CommandSender sender, Arguments args) {
         String itemStr = args.next();
         String powerStr = args.next();
         if (itemStr == null || (itemStr.equals("help") && getItem(itemStr, sender) == null)) {
-            msg(sender, "manual.marker.description");
-            msg(sender, "manual.marker.usage");
+            msgs(sender, "manual.marker.description");
+            msgs(sender, "manual.marker.usage");
             return;
         }
         if (getItem(itemStr, sender) != null && (powerStr == null || powerStr.equals("list"))) {
             RPGItem item = getItem(itemStr, sender);
             for (Marker marker : item.getMarkers()) {
-                msg(sender, "message.item.marker", marker.getLocalizedName(plugin.cfg.language), marker.getNamespacedKey().toString(), marker.displayText() == null ? I18n.getInstance(sender).format("message.marker.no_display") : marker.displayText());
+                msgs(sender, "message.item.marker", marker.getLocalizedName(plugin.cfg.language), marker.getNamespacedKey().toString(), marker.displayText() == null ? I18n.getInstance(sender).format("message.marker.no_display") : marker.displayText());
                 if ("list".equals(powerStr)) {
                     PowerManager.getProperties(marker.getNamespacedKey()).forEach(
                             (name, prop) -> showProp(sender, marker.getNamespacedKey(), prop.getValue(), marker)
@@ -1128,31 +1020,31 @@ public class AdminHandler extends RPGCommandReceiver {
             item.addMarker(key, marker);
             ItemManager.refreshItem();
             ItemManager.save(item);
-            msg(sender, "message.marker.ok");
+            msgs(sender, "message.marker.ok");
         } catch (Exception e) {
             if (e instanceof CommandException) {
                 throw (CommandException) e;
             }
             plugin.getLogger().log(Level.WARNING, "Error adding marker " + powerStr + " to item " + itemStr + " " + item, e);
-            msg(sender, "internal.error.command_exception");
+            msgs(sender, "internal.error.command_exception");
         }
     }
 
-
+    @SuppressWarnings("rawtypes")
     @SubCommand("condition")
-    @Attribute("power")
+    @Completion("power")
     public void itemAddCondition(CommandSender sender, Arguments args) {
         String itemStr = args.next();
         String powerStr = args.next();
-        if (itemStr == null || (itemStr.equals("help") && getItem(itemStr, sender) == null)) {
-            msg(sender, "manual.condition.description");
-            msg(sender, "manual.condition.usage");
+        if (itemStr == null || itemStr.equals("help")) {
+            msgs(sender, "manual.condition.description");
+            msgs(sender, "manual.condition.usage");
             return;
         }
-        if (getItem(itemStr, sender) != null && (powerStr == null || powerStr.equals("list"))) {
+        if (powerStr == null || powerStr.equals("list")) {
             RPGItem item = getItem(itemStr, sender);
             for (Condition condition : item.getConditions()) {
-                msg(sender, "message.item.condition", condition.getLocalizedName(plugin.cfg.language), condition.getNamespacedKey().toString(), condition.displayText() == null ? I18n.getInstance(sender).format("message.condition.no_display") : condition.displayText());
+                msgs(sender, "message.item.condition", condition.getLocalizedName(plugin.cfg.language), condition.getNamespacedKey().toString(), condition.displayText() == null ? I18n.getInstance(sender).format("message.condition.no_display") : condition.displayText());
                 if ("list".equals(powerStr)) {
                     PowerManager.getProperties(condition.getNamespacedKey()).forEach(
                             (name, prop) -> showProp(sender, condition.getNamespacedKey(), prop.getValue(), condition)
@@ -1172,31 +1064,32 @@ public class AdminHandler extends RPGCommandReceiver {
             item.addCondition(key, power);
             ItemManager.refreshItem();
             ItemManager.save(item);
-            msg(sender, "message.power.ok");
+            msgs(sender, "message.power.ok");
         } catch (Exception e) {
             if (e instanceof CommandException) {
                 throw (CommandException) e;
             }
             plugin.getLogger().log(Level.WARNING, "Error adding power " + powerStr + " to item " + itemStr + " " + item, e);
-            msg(sender, "internal.error.command_exception");
+            msgs(sender, "internal.error.command_exception");
         }
     }
 
+    @SuppressWarnings("rawtypes")
     @SubCommand("trigger")
-    @Attribute("power")
+    @Completion("power")
     public void itemAddTrigger(CommandSender sender, Arguments args) {
         String itemStr = args.next();
         String powerStr = args.next();
-        if (itemStr == null || (itemStr.equals("help") && getItem(itemStr, sender) == null)) {
-            msg(sender, "manual.trigger.description");
-            msg(sender, "manual.trigger.usage");
+        if (itemStr == null || itemStr.equals("help")) {
+            msgs(sender, "manual.trigger.description");
+            msgs(sender, "manual.trigger.usage");
             return;
         }
-        if (getItem(itemStr, sender) != null && (powerStr == null || powerStr.equals("list"))) {
+        if (powerStr == null || powerStr.equals("list")) {
             RPGItem item = getItem(itemStr, sender);
             for (Map.Entry<String, Trigger> t : item.getTriggers().entrySet()) {
                 Trigger trigger = t.getValue();
-                msg(sender, "message.item.trigger", t.getKey(), trigger.getLocalizedName(plugin.cfg.language), trigger.getNamespacedKey().toString());
+                msgs(sender, "message.item.trigger", t.getKey(), trigger.getLocalizedName(plugin.cfg.language), trigger.getNamespacedKey().toString());
                 if ("list".equals(powerStr)) {
                     PowerManager.getProperties(trigger.getNamespacedKey()).forEach(
                             (name, prop) -> showProp(sender, trigger.getNamespacedKey(), prop.getValue(), trigger)
@@ -1208,33 +1101,36 @@ public class AdminHandler extends RPGCommandReceiver {
         String name = args.next();
         RPGItem item = getItem(itemStr, sender);
         Trigger base = Trigger.get(powerStr);
+        if (base == null) {
+            msgs(sender, "message.error.no_trigger", powerStr, String.join(", ", Trigger.keySet()));
+            return;
+        }
         Trigger trigger = base.copy(name);
         trigger.setItem(item);
         try {
-            trigger = initPropertyHolder(sender, args, base.getClass(), trigger);
+            trigger = setPropertyHolder(sender, args, base.getClass(), trigger, true);
             item.addTrigger(name, trigger);
             ItemManager.refreshItem();
             ItemManager.save(item);
-            msg(sender, "message.power.ok");
+            msgs(sender, "message.power.ok");
         } catch (Exception e) {
             if (e instanceof CommandException) {
                 throw (CommandException) e;
             }
             plugin.getLogger().log(Level.WARNING, "Error adding power " + powerStr + " to item " + itemStr + " " + item, e);
-            msg(sender, "internal.error.command_exception");
+            msgs(sender, "internal.error.command_exception");
         }
     }
 
-    public <T extends PropertyHolder> T initPropertyHolder(CommandSender sender, Arguments args, RPGItem item, Class<? extends T> cls) throws IllegalAccessException {
+    public static <T extends PropertyHolder> T initPropertyHolder(CommandSender sender, Arguments args, RPGItem item, Class<? extends T> cls) throws IllegalAccessException {
         T power = PowerManager.instantiate(cls);
         power.setItem(item);
         power.init(new YamlConfiguration());
-        return initPropertyHolder(sender, args, cls, power);
+        return setPropertyHolder(sender, args, cls, power, true);
     }
 
-    public <T extends PropertyHolder> T initPropertyHolder(CommandSender sender, Arguments args, Class<? extends T> cls, T power) throws IllegalAccessException {
+    public static <T extends PropertyHolder> T setPropertyHolder(CommandSender sender, Arguments args, Class<? extends T> cls, T power, boolean checkRequired) throws IllegalAccessException {
         Map<String, Pair<Method, PropertyInstance>> argMap = PowerManager.getProperties(cls);
-        Set<Field> settled = new HashSet<>();
 
         List<Field> required = argMap.values().stream()
                                      .map(Pair::getValue)
@@ -1250,63 +1146,44 @@ public class AdminHandler extends RPGCommandReceiver {
             if (value != null) {
                 Utils.setPowerProperty(sender, power, field, value);
                 required.remove(field);
-                settled.add(field);
             }
         }
-        for (Field field : argMap.values()
-                                 .stream()
-                                 .map(Pair::getValue)
-                                 .filter(PropertyInstance::required)
-                                 .sorted(Comparator.comparing(PropertyInstance::order))
-                                 .map(PropertyInstance::field)
-                                 .collect(Collectors.toList())) {
-            if (settled.contains(field)) continue;
-            String value = args.next();
-            if (value == null) {
-                if (!required.isEmpty()) {
-                    throw new BadCommandException("message.power.required",
-                            required.stream().map(Field::getName).collect(Collectors.joining(", "))
-                    );
-                } else {
-                    break;
-                }
-            }
-            Utils.setPowerProperty(sender, power, field, value);
-            required.remove(field);
-            settled.add(field);
+        if (checkRequired && !required.isEmpty()) {
+            throw new BadCommandException("message.property.required",
+                    required.stream().map(Field::getName).collect(Collectors.joining(", "))
+            );
         }
         return power;
     }
 
-    private void showProp(CommandSender sender, NamespacedKey powerKey, PropertyInstance prop, PropertyHolder powerObj) {
+    public static void showProp(CommandSender sender, NamespacedKey powerKey, PropertyInstance prop, PropertyHolder powerObj) {
         String name = prop.name();
         Meta meta = PowerManager.getMeta(powerKey);
         if (isTrivialProperty(meta, name)) {
             return;
         }
         String desc = PowerManager.getDescription(powerKey, name);
-        msg(sender, "message.power.property", name, Strings.isNullOrEmpty(desc) ? I18n.getInstance(sender).format("message.power.no_description") : desc);
+        msgs(sender, "message.power.property", name, Strings.isNullOrEmpty(desc) ? I18n.getInstance(sender).format("message.power.no_description") : desc);
         if (powerObj != null) {
-            msg(sender, "message.power.property_value", Utils.getProperty(powerObj, name, prop.field()));
+            msgs(sender, "message.power.property_value", Utils.getProperty(powerObj, name, prop.field()));
         }
     }
 
-    @SubCommand("clone")
-    @Attribute("item")
+    @SubCommand(value = "clone", tabCompleter = "itemCompleter")
     public void cloneItem(CommandSender sender, Arguments args) {
         RPGItem item = getItem(args.nextString(), sender, true);
         String name = args.nextString();
         RPGItem i = ItemManager.cloneItem(item, name);
         if (i != null) {
             ItemManager.save(i);
-            msg(sender, "message.cloneitem.success", item.getName(), i.getName());
+            msgs(sender, "message.cloneitem.success", item.getName(), i.getName());
         } else {
-            msg(sender, "message.cloneitem.fail", item.getName(), name);
+            msgs(sender, "message.cloneitem.fail", item.getName(), name);
         }
     }
 
-    @SubCommand("import")
-    @Attribute("command:GIST")
+    @SubCommand(value = "import", tabCompleter = "attrCompleter")
+    @Completion("command:GIST")
     public void download(CommandSender sender, Arguments args) {
         NetworkUtils.Location location = args.nextEnum(NetworkUtils.Location.class);
         String id = args.nextString();
@@ -1318,12 +1195,12 @@ public class AdminHandler extends RPGCommandReceiver {
                 downloadUrl(sender, args, id);
                 break;
             default:
-                msg(sender, "message.import.not_supported", location.name());
+                msgs(sender, "message.import.not_supported", location.name());
         }
     }
 
-    @SubCommand("export")
-    @Attribute("items:GIST")
+    @SubCommand(value = "export", tabCompleter = "itemCompleter")
+    @Completion("item:GIST")
     public void publish(CommandSender sender, Arguments args) {
         String itemsStr = args.nextString();
         NetworkUtils.Location location = args.top() == null ? GIST : args.nextEnum(NetworkUtils.Location.class);
@@ -1336,12 +1213,11 @@ public class AdminHandler extends RPGCommandReceiver {
             case URL:
                 throw new NotImplementedException();
             default:
-                msg(sender, "message.export.not_supported", location.name());
+                msgs(sender, "message.export.not_supported", location.name());
         }
     }
 
-    @SubCommand("author")
-    @Attribute("item")
+    @SubCommand(value = "author", tabCompleter = "itemCompleter")
     public void setAuthor(CommandSender sender, Arguments args) {
         RPGItem item = getItem(args.nextString(), sender);
         String author = args.next();
@@ -1354,16 +1230,16 @@ public class AdminHandler extends RPGCommandReceiver {
                 author = authorPlayer.getUniqueId().toString();
                 authorComponent = getAuthorComponent(authorPlayer, authorName);
             } else if (author.startsWith("@")) {
-                msg(sender, "message.error.player", author);
+                msgs(sender, "message.error.player", author);
                 return;
             }
             item.setAuthor(author);
-            msg(sender, "message.item.author.set", Collections.singletonMap("{author}", authorComponent), item.getName());
+            msgs(sender, "message.item.author.set", Collections.singletonMap("{author}", authorComponent), item.getName());
             ItemManager.save(item);
         } else {
             String authorText = item.getAuthor();
             if (Strings.isNullOrEmpty(authorText)) {
-                msg(sender, "message.item.author.na", item.getName());
+                msgs(sender, "message.item.author.na", item.getName());
                 return;
             }
             Bukkit.getScheduler().runTaskAsynchronously(plugin, () -> {
@@ -1375,7 +1251,7 @@ public class AdminHandler extends RPGCommandReceiver {
                     authorComponent = getAuthorComponent(authorPlayer, authorName);
                 } catch (IllegalArgumentException | InterruptedException | ExecutionException | TimeoutException ignored) {
                 }
-                msg(sender, "message.item.author.get", Collections.singletonMap("{author}", authorComponent), item.getName());
+                msgs(sender, "message.item.author.get", Collections.singletonMap("{author}", authorComponent), item.getName());
             });
         }
     }
@@ -1391,64 +1267,39 @@ public class AdminHandler extends RPGCommandReceiver {
         return authorComponent;
     }
 
-    @SubCommand("note")
-    @Attribute("item")
+    @SubCommand(value = "note", tabCompleter = "itemCompleter")
     public void setNote(CommandSender sender, Arguments args) {
         RPGItem item = getItem(args.nextString(), sender);
         String note = args.next();
         if (note != null) {
             item.setNote(note);
-            msg(sender, "message.item.note.set", item.getName(), note);
+            msgs(sender, "message.item.note.set", item.getName(), note);
             ItemManager.save(item);
         } else {
-            msg(sender, "message.item.note.get", item.getName(), item.getNote());
+            msgs(sender, "message.item.note.get", item.getName(), item.getNote());
         }
     }
 
-    @SubCommand("license")
-    @Attribute("item")
+    @SubCommand(value = "license", tabCompleter = "itemCompleter")
     public void setLicense(CommandSender sender, Arguments args) {
         RPGItem item = getItem(args.nextString(), sender);
         String license = args.next();
         if (license != null) {
             item.setLicense(license);
-            msg(sender, "message.item.license.set", item.getName(), license);
+            msgs(sender, "message.item.license.set", item.getName(), license);
             ItemManager.save(item);
         } else {
-            msg(sender, "message.item.license.get", item.getName(), item.getLicense());
+            msgs(sender, "message.item.license.get", item.getName(), item.getLicense());
         }
     }
 
-    @SubCommand("dump")
-    @Attribute("item")
+    @SubCommand(value = "dump", tabCompleter = "itemCompleter")
     public void dumpItem(CommandSender sender, Arguments args) {
         RPGItem item = getItem(args.nextString(), sender, true);
         YamlConfiguration yamlConfiguration = new YamlConfiguration();
         item.save(yamlConfiguration);
         String s = yamlConfiguration.saveToString();
-        msg(sender, "message.item.dump", item.getName(), s.replace(ChatColor.COLOR_CHAR + "", "\\u00A7"));
-    }
-
-    @SubCommand("reorder")
-    @Attribute("item")
-    public void reorder(CommandSender sender, Arguments args) {
-        RPGItem item = getItem(args.nextString(), sender);
-        int origin = args.nextInt();
-        int next = args.nextInt();
-        int size = item.getPowers().size();
-        if (next < 0 || next >= size) {
-            msg(sender, "message.num_out_of_range", next, 0, size);
-            return;
-        }
-        if (origin < 0 || origin >= size) {
-            msg(sender, "message.num_out_of_range", origin, 0, size);
-            return;
-        }
-        Power remove = item.getPowers().remove(origin);
-        item.getPowers().add(next, remove);
-        ItemManager.refreshItem();
-        ItemManager.save(item);
-        msg(sender, "message.power.reorder", item.getName(), remove.getName());
+        msgs(sender, "message.item.dump", item.getName(), s.replace(ChatColor.COLOR_CHAR + "", "\\u00A7"));
     }
 
     @SubCommand("creategroup")
@@ -1458,7 +1309,7 @@ public class AdminHandler extends RPGCommandReceiver {
         if (args.top() == null || !args.top().contains("/")) {
             group = ItemManager.newGroup(groupName, sender);
             if (group == null) {
-                msg(sender, "message.create.fail");
+                msgs(sender, "message.create.fail");
                 return;
             }
             while (args.top() != null) {
@@ -1469,20 +1320,20 @@ public class AdminHandler extends RPGCommandReceiver {
         } else {
             String regex = args.next();
             if (!regex.startsWith("/") || !regex.endsWith("/")) {
-                msg(sender, "message.error.invalid_regex");
+                msgs(sender, "message.error.invalid_regex");
                 return;
             } else {
                 regex = regex.substring(1, regex.length() - 1);
             }
             group = ItemManager.newGroup(groupName, regex, sender);
             if (group == null) {
-                msg(sender, "message.create.fail");
+                msgs(sender, "message.create.fail");
                 return;
             }
             ItemManager.save(group);
         }
         Set<RPGItem> items = group.getItems();
-        msg(sender, "message.group.header", group.getName(), items.size());
+        msgs(sender, "message.group.header", group.getName(), items.size());
         for (RPGItem item : items) {
             new Message("")
                     .append(I18n.getInstance(sender).format("message.item.list", item.getName()), Collections.singletonMap("{item}", item.getComponent(sender)))
@@ -1490,35 +1341,33 @@ public class AdminHandler extends RPGCommandReceiver {
         }
     }
 
-    @SubCommand("addtogroup")
-    @Attribute("item")
+    @SubCommand(value = "addtogroup", tabCompleter = "itemCompleter")
     public void addToGroup(CommandSender sender, Arguments args) {
         RPGItem item = getItem(args.nextString(), sender, true);
         String groupName = args.nextString();
         Optional<ItemGroup> optGroup = ItemManager.getGroup(groupName);
         if (!optGroup.isPresent()) {
-            msg(sender, "message.error.item", groupName);
+            msgs(sender, "message.error.item", groupName);
             return;
         }
         ItemGroup group = optGroup.get();
         group.addItem(item);
-        msg(sender, "message.group.header", group.getName(), group.getItemUids().size());
+        msgs(sender, "message.group.header", group.getName(), group.getItemUids().size());
         ItemManager.save(group);
     }
 
-    @SubCommand("removefromgroup")
-    @Attribute("item")
+    @SubCommand(value = "removefromgroup", tabCompleter = "itemCompleter")
     public void removeFromGroup(CommandSender sender, Arguments args) {
         RPGItem item = getItem(args.nextString(), sender, true);
         String groupName = args.nextString();
         Optional<ItemGroup> optGroup = ItemManager.getGroup(groupName);
         if (!optGroup.isPresent()) {
-            msg(sender, "message.error.item", groupName);
+            msgs(sender, "message.error.item", groupName);
             return;
         }
         ItemGroup group = optGroup.get();
         group.removeItem(item);
-        msg(sender, "message.group.header", group.getName(), group.getItemUids().size());
+        msgs(sender, "message.group.header", group.getName(), group.getItemUids().size());
         ItemManager.save(group);
     }
 
@@ -1527,14 +1376,14 @@ public class AdminHandler extends RPGCommandReceiver {
         String groupName = args.nextString();
         Optional<ItemGroup> optGroup = ItemManager.getGroup(groupName);
         if (!optGroup.isPresent()) {
-            msg(sender, "message.error.item", groupName);
+            msgs(sender, "message.error.item", groupName);
             return;
         }
         ItemGroup group = optGroup.get();
         Set<RPGItem> items = group.getItems();
-        msg(sender, "message.group.header", group.getName(), items.size());
+        msgs(sender, "message.group.header", group.getName(), items.size());
         if (!Strings.isNullOrEmpty(group.getNote())) {
-            msg(sender, "message.group.note", group.getNote());
+            msgs(sender, "message.group.note", group.getNote());
         }
         for (RPGItem item : items) {
             new Message("")
@@ -1548,251 +1397,19 @@ public class AdminHandler extends RPGCommandReceiver {
         String groupName = args.nextString();
         Optional<ItemGroup> optGroup = ItemManager.getGroup(groupName);
         if (!optGroup.isPresent()) {
-            msg(sender, "message.error.item", groupName);
+            msgs(sender, "message.error.item", groupName);
             return;
         }
         ItemGroup group = optGroup.get();
         ItemManager.remove(group, true);
-        msg(sender, "message.group.removed", group.getName());
+        msgs(sender, "message.group.removed", group.getName());
     }
 
-    @SuppressWarnings("ConstantConditions")
-    @SubCommand("gen-wiki")
-    @Attribute("command")
-    public void genWiki(CommandSender sender, Arguments args) throws IOException {
-        String lc = args.next();
-        Locale locale = Locale.forLanguageTag((lc == null ? RPGItems.plugin.cfg.language : lc).replace('_', '-'));
-        File wikiDir = new File(RPGItems.plugin.getDataFolder(), "wiki/");
-        if (!wikiDir.mkdirs()) {
-            if (!wikiDir.exists() || !wikiDir.isDirectory()) {
-                throw new IllegalStateException();
-            }
-        }
-
-        int customHeaderLine = -1;
-        int customDescriptionLine = -1;
-        int customPropertiesLine = -1;
-        int customExampleLine = -1;
-        int customNoteLine = -1;
-
-        String propertyName = null;
-        String propertyType = null;
-        String propertyDefaultValue = null;
-        String propertyRequired = null;
-        String propertyDescription = null;
-
-        String propertyDefaultTrigger = null;
-        String propertyAvailableTrigger = null;
-        String propertyImmutableTrigger = null;
-        String propertyMarker = null;
-
-        InputStream inputStream = plugin.getResource("Template_" + locale.toString() + ".md");
-        String newLine = System.getProperty("line.separator");
-        BufferedReader reader = new BufferedReader(new InputStreamReader(inputStream, StandardCharsets.UTF_8));
-        List<String> template = new ArrayList<>(100);
-        for (String line; (line = reader.readLine()) != null; ) {
-            if (line.contains("<!-- begin")) {
-                int current = template.size();
-                if (line.contains("beginCustomHeader")) {
-                    customHeaderLine = current;
-                } else if (line.contains("beginCustomDescription")) {
-                    customDescriptionLine = current;
-                } else if (line.contains("beginCustomProperties")) {
-                    customPropertiesLine = current;
-                } else if (line.contains("beginCustomExample")) {
-                    customExampleLine = current;
-                } else if (line.contains("beginCustomNote")) {
-                    customNoteLine = current;
-                }
-            }
-            if (line.contains("<!-- property")) {
-                String pattern = line.substring(line.indexOf("[") + 1, line.lastIndexOf("]")).replace("\\n", newLine);
-                if (line.contains("propertyName")) {
-                    propertyName = pattern;
-                } else if (line.contains("propertyType")) {
-                    propertyType = pattern;
-                } else if (line.contains("propertyDefaultValue")) {
-                    propertyDefaultValue = pattern;
-                } else if (line.contains("propertyRequired")) {
-                    propertyRequired = pattern;
-                } else if (line.contains("propertyDescription")) {
-                    propertyDescription = pattern;
-                } else if (line.contains("propertyDefaultTrigger")) {
-                    propertyDefaultTrigger = pattern;
-                } else if (line.contains("propertyAvailableTrigger")) {
-                    propertyAvailableTrigger = pattern;
-                } else if (line.contains("propertyImmutableTrigger")) {
-                    propertyImmutableTrigger = pattern;
-                } else if (line.contains("propertyMarker")) {
-                    propertyMarker = pattern;
-                }
-                continue;
-            }
-            template.add(line);
-        }
-
-        if (Stream.of(customHeaderLine, customDescriptionLine, customPropertiesLine, customExampleLine, customNoteLine)
-                  .anyMatch(i -> i == -1)) {
-            throw new IllegalArgumentException();
-        }
-
-        if (Stream.of(propertyName, propertyType, propertyDefaultValue, propertyRequired, propertyDescription, propertyDefaultTrigger, propertyAvailableTrigger, propertyImmutableTrigger, propertyMarker)
-                  .anyMatch(Objects::isNull)) {
-            throw new IllegalArgumentException();
-        }
-
-        Map<Class<? extends PropertyHolder>, Map<String, Pair<Method, PropertyInstance>>> allProperties = PowerManager.getProperties();
-
-        StringBuilder catalog = new StringBuilder("# Powers\n\n");
-
-        for (Map.Entry<Class<? extends PropertyHolder>, Map<String, Pair<Method, PropertyInstance>>> entry : allProperties.entrySet().stream().sorted(Comparator.comparing(e -> e.getKey().getCanonicalName(), String::compareToIgnoreCase)).collect(Collectors.toList())) {
-            Class<? extends PropertyHolder> clazz = entry.getKey();
-            Map<String, Pair<Method, PropertyInstance>> properties = entry.getValue();
-            PropertyHolder instance = PowerManager.instantiate(clazz);
-            String localizedName = instance.getLocalizedName(locale);
-            NamespacedKey namespacedKey = instance.getNamespacedKey();
-            StringBuilder propertiesDesc = new StringBuilder();
-            Meta meta = PowerManager.getMeta(clazz);
-            String powerDesc = PowerManager.getDescription(locale.toString(), namespacedKey, null);
-            Path file = wikiDir.toPath().resolve(instance.getName() + "-" + locale.toString() + ".md");
-
-            String catalogEntry = "* [" + localizedName + " " + "(" + namespacedKey.toString() + ")](./" + file.getFileName().toString().replace(".md", "") + ")\n";
-            catalogEntry += "  " + powerDesc + "\n";
-            catalog.append(catalogEntry);
-            StringBuilder customHeader = new StringBuilder();
-            StringBuilder customDescription = new StringBuilder();
-            StringBuilder customProperties = new StringBuilder();
-            StringBuilder customExample = new StringBuilder();
-            StringBuilder customNote = new StringBuilder();
-
-            if (file.toFile().exists()) {
-                List<String> old = Files.readAllLines(file, StandardCharsets.UTF_8);
-                Iterator<String> oldIterator = old.iterator();
-
-                while (oldIterator.hasNext()) {
-                    String current = oldIterator.next();
-                    if (current.contains("<!-- beginCustomHeader -->")) {
-                        while (oldIterator.hasNext()) {
-                            String chLine = oldIterator.next();
-                            if (chLine.contains("<!-- endCustomHeader -->")) {
-                                break;
-                            }
-                            customHeader.append(chLine).append("\n");
-                        }
-                        customHeader.delete(Math.max(customHeader.length() - 1, 0), customHeader.length());
-                    }
-                    if (current.contains("<!-- beginCustomDescription -->")) {
-                        while (oldIterator.hasNext()) {
-                            String chLine = oldIterator.next();
-                            if (chLine.contains("<!-- endCustomDescription -->")) {
-                                break;
-                            }
-                            customDescription.append(chLine).append("\n");
-                        }
-                        customDescription.delete(Math.max(customDescription.length() - 1, 0), customDescription.length());
-                    }
-                    if (current.contains("<!-- beginCustomProperties -->")) {
-                        while (oldIterator.hasNext()) {
-                            String chLine = oldIterator.next();
-                            if (chLine.contains("<!-- endCustomProperties -->")) {
-                                break;
-                            }
-                            customProperties.append(chLine).append("\n");
-                        }
-                        customProperties.delete(Math.max(customProperties.length() - 1, 0), customProperties.length());
-                    }
-                    if (current.contains("<!-- beginCustomExample -->")) {
-                        while (oldIterator.hasNext()) {
-                            String chLine = oldIterator.next();
-                            if (chLine.contains("<!-- endCustomExample -->")) {
-                                break;
-                            }
-                            customExample.append(chLine).append("\n");
-                        }
-                        customExample.delete(Math.max(customExample.length() - 1, 0), customExample.length());
-                    }
-                    if (current.contains("<!-- beginCustomNote -->")) {
-                        while (oldIterator.hasNext()) {
-                            String chLine = oldIterator.next();
-                            if (chLine.contains("<!-- endCustomNote -->")) {
-                                break;
-                            }
-                            customNote.append(chLine).append("\n");
-                        }
-                        customNote.delete(Math.max(customNote.length() - 1, 0), customNote.length());
-                    }
-                }
-            }
-            for (Map.Entry<String, Pair<Method, PropertyInstance>> propertyEntry : properties.entrySet()) {
-                String name = propertyEntry.getKey();
-                PropertyInstance property = propertyEntry.getValue().getValue();
-
-                if (isTrivialProperty(meta, name)) {
-                    continue;
-                }
-
-                propertiesDesc.append(propertyName.replace("${}", name));
-                propertiesDesc.append(propertyType.replace("${}", property.field().getGenericType().getTypeName().replaceAll("(java|think|org\\.bukkit)\\.([a-zA-Z0-9_$]+\\.)*", "").replace("<", "&lt;").replace(">", "&gt;")));
-                if (property.required()) {
-                    propertiesDesc.append(propertyRequired);
-                } else {
-                    String value = Utils.getProperty(instance, name, property.field());
-                    if (value != null && !value.trim().isEmpty()) {
-                        propertiesDesc.append(propertyDefaultValue.replace("${}", value));
-                    }
-                }
-                String description = PowerManager.getDescription(locale.toString(), namespacedKey, name);
-                propertiesDesc.append(propertyDescription.replace("${}", description == null ? I18n.getInstance(sender).format("message.power.no_description") : description));
-            }
-            List<String> powerTemplate = new ArrayList<>(template);
-            if (customNote.length() > 0) {
-                powerTemplate.add(customNoteLine + 1, customNote.toString());
-            }
-            if (customExample.length() > 0) {
-                powerTemplate.add(customExampleLine + 1, customExample.toString());
-            }
-            if (customProperties.length() > 0) {
-                powerTemplate.add(customPropertiesLine + 1, customProperties.toString());
-            }
-            if (customDescription.length() > 0) {
-                powerTemplate.add(customDescriptionLine + 1, customDescription.toString());
-            }
-            if (customHeader.length() > 0) {
-                powerTemplate.add(customHeaderLine + 1, customHeader.toString());
-            }
-            String fullTemplate = String.join(newLine, powerTemplate);
-            fullTemplate = fullTemplate.replace("${powerName}", localizedName);
-            fullTemplate = fullTemplate.replace("${namespacedKey}", namespacedKey.toString());
-            fullTemplate = fullTemplate.replace("${plugin}", PowerManager.getExtensions().get(namespacedKey.getNamespace()).getName());
-
-            if (meta.marker()) {
-                fullTemplate = fullTemplate.replace("${trigger}", propertyMarker);
-            } else if (instance instanceof Power) {
-                String defTriggers = ((Power) instance).getTriggers().stream().map(Trigger::name).map(s -> "`" + s + "`").sorted().collect(Collectors.joining(", "));
-                if (meta.immutableTrigger()) {
-                    String trigger = propertyImmutableTrigger.replace("${}", defTriggers);
-                    fullTemplate = fullTemplate.replace("${trigger}", trigger);
-                } else {
-                    String trigger = propertyDefaultTrigger.replace("${}", defTriggers);
-                    String available = PowerManager.getAcceptedValue(clazz, properties.get("triggers").getValue().field().getAnnotation(AcceptedValue.class)).stream().map(s -> "`" + s + "`").collect(Collectors.joining(", "));
-                    trigger += propertyAvailableTrigger.replace("${}", available);
-                    fullTemplate = fullTemplate.replace("${trigger}", trigger);
-                }
-            }
-
-            fullTemplate = fullTemplate.replace("${description}", powerDesc == null ? I18n.getInstance(sender).format("message.power.no_description") : powerDesc);
-            fullTemplate = fullTemplate.replace("${properties}", propertiesDesc.toString());
-            java.nio.file.Files.write(file, fullTemplate.getBytes(StandardCharsets.UTF_8));
-        }
-        Path catalogFile = wikiDir.toPath().resolve("powers-" + locale.toString() + ".md");
-        java.nio.file.Files.write(catalogFile, catalog.toString().getBytes(StandardCharsets.UTF_8));
-    }
-
-    private RPGItem getItem(String str, CommandSender sender) {
+    public static RPGItem getItem(String str, CommandSender sender) {
         return getItem(str, sender, false);
     }
 
-    private RPGItem getItem(String str, CommandSender sender, boolean readOnly) {
+    public static RPGItem getItem(String str, CommandSender sender, boolean readOnly) {
         Optional<RPGItem> item = ItemManager.getItem(str);
         if (!item.isPresent()) {
             try {
@@ -1846,13 +1463,13 @@ public class AdminHandler extends RPGCommandReceiver {
         Bukkit.getScheduler().runTaskAsynchronously(plugin, () -> {
             try {
                 String id = NetworkUtils.publishGist(result, token, description, isPublish);
-                Bukkit.getScheduler().runTask(plugin, () -> msg(sender, "message.export.gist.ed", id));
+                Bukkit.getScheduler().runTask(plugin, () -> msgs(sender, "message.export.gist.ed", id));
             } catch (InterruptedException | ExecutionException e) {
                 plugin.getLogger().log(Level.WARNING, "Error exporting gist", e);
-                Bukkit.getScheduler().runTask(plugin, () -> msg(sender, "message.export.gist.failed"));
+                Bukkit.getScheduler().runTask(plugin, () -> msgs(sender, "message.export.gist.failed"));
             } catch (TimeoutException e) {
                 plugin.getLogger().log(Level.WARNING, "Timeout exporting gist", e);
-                Bukkit.getScheduler().runTask(plugin, () -> msg(sender, "message.export.gist.timeout"));
+                Bukkit.getScheduler().runTask(plugin, () -> msgs(sender, "message.export.gist.timeout"));
             } catch (BadCommandException e) {
                 sender.sendMessage(e.getLocalizedMessage());
             }
@@ -1919,15 +1536,15 @@ public class AdminHandler extends RPGCommandReceiver {
                 if (ItemManager.hasId(uid)) {
                     Optional<RPGItem> currentItem = ItemManager.getItem(uid);
                     if (currentItem.isPresent()) {
-                        msg(sender, "message.import.conflict_uid", origin, currentItem.get().getName(), uid);
+                        msgs(sender, "message.import.conflict_uid", origin, currentItem.get().getName(), uid);
                     } else {
                         Optional<ItemGroup> currentGroup = ItemManager.getGroup(uid);
-                        msg(sender, "message.import.conflict_uid", origin, currentGroup.get().getName(), uid);
+                        msgs(sender, "message.import.conflict_uid", origin, currentGroup.get().getName(), uid);
                     }
                     return;
                 }
                 if (ItemManager.hasName(name)) {
-                    msg(sender, "message.import.conflict_name", name);
+                    msgs(sender, "message.import.conflict_name", name);
                     return;
                 }
 
@@ -1935,19 +1552,19 @@ public class AdminHandler extends RPGCommandReceiver {
                 items.add(item);
             } catch (InvalidConfigurationException e) {
                 plugin.getLogger().log(Level.WARNING, "Trying to load invalid config in " + k, e);
-                msg(sender, "message.import.invalid_conf", k);
+                msgs(sender, "message.import.invalid_conf", k);
                 return;
             } catch (UnknownPowerException e) {
-                msg(sender, "message.power.unknown", e.getKey().toString());
+                msgs(sender, "message.power.unknown", e.getKey().toString());
                 return;
             } catch (UnknownExtensionException e) {
-                msg(sender, "message.error.unknown.extension", e.getName());
+                msgs(sender, "message.error.unknown.extension", e.getName());
                 return;
             }
         }
         for (RPGItem item : items) {
             ItemManager.addItem(item);
-            msg(sender, "message.import.success", item.getName(), item.getUid());
+            msgs(sender, "message.import.success", item.getName(), item.getUid());
         }
         ItemManager.save();
     }

@@ -2,15 +2,13 @@ package think.rpgitems.power;
 
 import cat.nyaa.nyaacore.Pair;
 import cat.nyaa.nyaacore.utils.ClassPathUtils;
-import com.google.common.cache.Cache;
-import com.google.common.cache.CacheBuilder;
 import com.google.common.collect.BiMap;
 import com.google.common.collect.HashBasedTable;
 import com.google.common.collect.HashBiMap;
 import org.bukkit.NamespacedKey;
 import org.bukkit.command.CommandSender;
 import org.bukkit.plugin.Plugin;
-import think.rpgitems.AdminHandler;
+import think.rpgitems.AdminCommands;
 import think.rpgitems.RPGItems;
 import think.rpgitems.power.propertymodifier.Modifier;
 
@@ -19,7 +17,6 @@ import java.lang.reflect.Field;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.util.*;
-import java.util.concurrent.TimeUnit;
 import java.util.function.BiFunction;
 import java.util.function.Consumer;
 import java.util.function.Function;
@@ -150,6 +147,7 @@ public class PowerManager {
                                    .map(Property::order)
                                    .orElse(-1);
 
+
         return collect.stream()
                       .collect(
                               Collectors.toMap(
@@ -167,9 +165,9 @@ public class PowerManager {
                                                                                              )
                                                                         )
                                                                         .reduce((a, b) -> {
-                                                                            throw new IllegalArgumentException(p.getKey() + " " + name + " " + a.toString() + " " + b.toString());
+                                                                            throw new IllegalArgumentException("Duplicated property gettor found:" + p.getKey() + " " + name + " " + a.toString() + " " + b.toString());
                                                                         })
-                                                                        .orElseThrow(() -> new IllegalArgumentException(p.getKey() + " " + name)),
+                                                                        .orElseThrow(() -> new IllegalArgumentException("No property getter found: " + p.getKey() + " " + name)),
                                                   PropertyInstance.from(p.getKey(), p.getValue(), p.getValue().order() < requiredOrder));
                                       }
                               )
@@ -233,7 +231,7 @@ public class PowerManager {
         try {
             f = cls.getField(field);
         } catch (NoSuchFieldException e) {
-            throw new AdminHandler.CommandException("internal.error.invalid_command_arg", e);//TODO
+            throw new AdminCommands.CommandException("internal.error.invalid_command_arg", e);//TODO
         }
         Utils.setPowerProperty(sender, power, f, value);
     }

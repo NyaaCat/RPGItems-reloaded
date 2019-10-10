@@ -16,7 +16,7 @@ import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.ItemMeta;
 import org.bukkit.persistence.PersistentDataContainer;
 import org.bukkit.persistence.PersistentDataType;
-import think.rpgitems.AdminHandler;
+import think.rpgitems.AdminCommands;
 import think.rpgitems.I18n;
 import think.rpgitems.RPGItems;
 import think.rpgitems.power.UnknownExtensionException;
@@ -327,7 +327,7 @@ public class ItemManager {
                 lock(itemFile);
             } catch (Exception e) {
                 plugin.getLogger().log(Level.SEVERE, "Error verifying integrity for " + itemName + ".", e);
-                throw new AdminHandler.CommandException("message.error.verifying", e, itemName, e.getLocalizedMessage());
+                throw new AdminCommands.CommandException("message.error.verifying", e, itemName, e.getLocalizedMessage());
             }
         } catch (Exception e) {
             plugin.getLogger().log(Level.SEVERE, "Error saving " + itemName + ".", e);
@@ -342,7 +342,7 @@ public class ItemManager {
                     lock(itemFile);
                 } catch (Exception exRec) {
                     plugin.getLogger().log(Level.SEVERE, "Error recovering backup: " + backup, exRec);
-                    throw new AdminHandler.CommandException("message.error.recovering", exRec, itemName, backup.getPath(), exRec.getLocalizedMessage());
+                    throw new AdminCommands.CommandException("message.error.recovering", exRec, itemName, backup.getPath(), exRec.getLocalizedMessage());
                 }
             }
             rethrow(e);
@@ -368,7 +368,7 @@ public class ItemManager {
                 lock(itemFile);
             } catch (Exception e) {
                 plugin.getLogger().log(Level.SEVERE, "Error verifying integrity for " + itemName + ".", e);
-                throw new AdminHandler.CommandException("message.error.verifying", e, itemName, e.getLocalizedMessage());
+                throw new AdminCommands.CommandException("message.error.verifying", e, itemName, e.getLocalizedMessage());
             }
         } catch (Exception e) {
             plugin.getLogger().log(Level.SEVERE, "Error saving " + itemName + ".", e);

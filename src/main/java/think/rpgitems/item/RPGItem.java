@@ -34,7 +34,7 @@ import org.bukkit.persistence.PersistentDataContainer;
 import org.bukkit.persistence.PersistentDataType;
 import org.bukkit.potion.PotionEffect;
 import org.bukkit.potion.PotionEffectType;
-import think.rpgitems.AdminHandler;
+import think.rpgitems.AdminCommands;
 import think.rpgitems.I18n;
 import think.rpgitems.RPGItems;
 import think.rpgitems.data.Context;
@@ -1113,7 +1113,7 @@ public class RPGItem {
             UUID uuid = UUID.fromString(this.getAuthor());
             OfflinePlayer authorPlayer = Bukkit.getOfflinePlayer(uuid);
             author = authorPlayer.getName();
-            authorComponent = AdminHandler.getAuthorComponent(authorPlayer, author);
+            authorComponent = AdminCommands.getAuthorComponent(authorPlayer, author);
         } catch (IllegalArgumentException ignored) {
         }
 
@@ -1727,23 +1727,19 @@ public class RPGItem {
     }
 
     public List<Power> getPowers() {
-        return Collections.unmodifiableList(powers);
+        return powers;
     }
 
     public List<Marker> getMarkers() {
-        return Collections.unmodifiableList(markers);
+        return markers;
     }
 
     public Map<String, Trigger> getTriggers() {
-        return Collections.unmodifiableMap(triggers);
+        return triggers;
     }
 
     public NamespacedKey getPowerKey(Power power) {
         return Objects.requireNonNull(keys.get(power));
-    }
-
-    public int getTooltipWidth() {
-        return tooltipWidth;
     }
 
     public int getUid() {
