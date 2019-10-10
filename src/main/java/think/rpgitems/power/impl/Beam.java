@@ -660,7 +660,7 @@ public class Beam extends BasePower {
                 if ((lastLocation.distance(eyeLocation) < 1)) {
                     return;
                 }
-                if (spawnedLength.get() > 32 && spawnInWorld >=3) {
+                if (spawnInWorld >=3) {
                     ((Player) from).spawnParticle(this.particle, lastLocation, i, offsetX, offsetY, offsetZ, particleSpeed, extraData);
                     spawnInWorld = 0;
                 } else {
