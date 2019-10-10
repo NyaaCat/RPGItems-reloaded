@@ -613,12 +613,12 @@ public class PowerBeam extends BasePower implements PowerPlain, PowerRightClick,
             Vector crossProduct = clone.clone().getCrossProduct(targetDirection);
             //legacy
 //            double actualAng = (homing / 20) / (lengthInThisTick / lengthPerSpawn);
-            double actualAng = Math.asin(towards.length() / (2 * homing));
+            double actualAng = Math.asin(towards.length() / (homing));
             if (angle > Math.toRadians(actualAng)) {
                 if (this.behavior.equals(Behavior.LEGACY_HOMING)) {
-                    double lastActualAngle = Math.asin(towards.length() / (2 * homing + legacyBonus));
+                    double lastActualAngle = Math.asin(towards.length() / (homing + legacyBonus));
                     legacyBonus += 0.5 * (lastActualAngle / (2*Math.PI));
-                    actualAng = Math.asin(towards.length() / (2 * homing+legacyBonus));
+                    actualAng = Math.asin(towards.length() / ((homing+legacyBonus)));
                 }
                 // ↓a better way to rotate.
                 // will create a exact circle.
