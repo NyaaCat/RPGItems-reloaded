@@ -583,7 +583,7 @@ public class Beam extends BasePower {
 
                     }
                 }
-                return speed * v / 20;
+                return (speed + v) / 20;
             }
         }
 
