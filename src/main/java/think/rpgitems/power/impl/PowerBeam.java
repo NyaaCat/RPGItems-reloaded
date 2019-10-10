@@ -561,7 +561,7 @@ public class PowerBeam extends BasePower implements PowerPlain, PowerRightClick,
 
                     }
                 }
-                return speed * v / 20;
+                return (speed + v) / 20;
             }
         }
 
