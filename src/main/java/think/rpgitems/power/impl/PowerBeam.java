@@ -629,7 +629,7 @@ public class PowerBeam extends BasePower implements PowerPlain, PowerRightClick,
             return clone;
         }
 
-        private boolean spawnInWorld = false;
+        private double spawnInWorld = 0;
 
         private void spawnParticle(Entity from, World world, Location lastLocation, int i) {
             Location eyeLocation;
@@ -638,12 +638,13 @@ public class PowerBeam extends BasePower implements PowerPlain, PowerRightClick,
                 if ((lastLocation.distance(eyeLocation) < 1)) {
                     return;
                 }
-                if (spawnedLength.get() > 32 && spawnInWorld) {
+                if (spawnedLength.get() > 32 && spawnInWorld >=3) {
                     ((Player) from).spawnParticle(this.particle, lastLocation, i, offsetX, offsetY, offsetZ, particleSpeed, extraData);
+                    spawnInWorld = 0;
                 } else {
                     world.spawnParticle(this.particle, lastLocation, i, offsetX, offsetY, offsetZ, particleSpeed, extraData, false);
                 }
-                spawnInWorld = !spawnInWorld;
+                spawnInWorld++;
             } else {
                 world.spawnParticle(this.particle, lastLocation, i, offsetX, offsetY, offsetZ, particleSpeed, extraData, false);
             }
