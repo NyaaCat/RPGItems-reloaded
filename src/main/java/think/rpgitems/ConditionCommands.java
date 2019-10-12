@@ -12,7 +12,9 @@ import think.rpgitems.item.RPGItem;
 import think.rpgitems.power.*;
 import think.rpgitems.power.trigger.Trigger;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Comparator;
+import java.util.List;
 import java.util.logging.Level;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
@@ -20,10 +22,10 @@ import java.util.stream.Stream;
 
 import static think.rpgitems.AdminCommands.*;
 
-public class PowerCommands extends RPGCommandReceiver {
+public class ConditionCommands extends RPGCommandReceiver {
     private final RPGItems plugin;
 
-    public PowerCommands(RPGItems plugin, I18n i18n) {
+    public ConditionCommands(RPGItems plugin, I18n i18n) {
         super(plugin, i18n);
         this.plugin = plugin;
     }
@@ -33,12 +35,12 @@ public class PowerCommands extends RPGCommandReceiver {
         return "";
     }
 
-    private Pair<NamespacedKey, Class<? extends Power>> getPowerClass(CommandSender sender, String powerStr) {
+    private Pair<NamespacedKey, Class<? extends Condition>> getConditionClass(CommandSender sender, String conditionStr) {
         try {
-            NamespacedKey key = PowerManager.parseKey(powerStr);
-            Class<? extends Power> cls = PowerManager.getPower(key);
+            NamespacedKey key = PowerManager.parseKey(conditionStr);
+            Class<? extends Condition> cls = PowerManager.getCondition(key);
             if (cls == null) {
-                msgs(sender, "message.power.unknown", powerStr);
+                msgs(sender, "message.condition.unknown", conditionStr);
             }
             return Pair.of(key, cls);
         } catch (UnknownExtensionException e) {
@@ -55,7 +57,7 @@ public class PowerCommands extends RPGCommandReceiver {
                 completeStr.addAll(ItemManager.itemNames());
                 break;
             case 2:
-                completeStr.addAll(PowerManager.getPowers().keySet().stream().map(s -> PowerManager.hasExtension() ? s : s.getKey()).map(Object::toString).collect(Collectors.toList()));
+                completeStr.addAll(PowerManager.getConditions().keySet().stream().map(s -> PowerManager.hasExtension() ? s : s.getKey()).map(Object::toString).collect(Collectors.toList()));
                 break;
             default:
                 RPGItem item = getItem(arguments.nextString(), sender);
@@ -67,29 +69,29 @@ public class PowerCommands extends RPGCommandReceiver {
     @SubCommand(value = "add", tabCompleter = "addCompleter")
     public void add(CommandSender sender, Arguments args) {
         String itemStr = args.next();
-        String powerStr = args.next();
-        if (itemStr == null || itemStr.equals("help") || powerStr == null) {
-            msgs(sender, "manual.power.add.description");
-            msgs(sender, "manual.power.add.usage");
+        String conditionStr = args.next();
+        if (itemStr == null || itemStr.equals("help") || conditionStr == null) {
+            msgs(sender, "manual.condition.add.description");
+            msgs(sender, "manual.condition.add.usage");
             return;
         }
         RPGItem item = getItem(itemStr, sender);
-        Pair<NamespacedKey, Class<? extends Power>> keyClass = getPowerClass(sender, powerStr);
+        Pair<NamespacedKey, Class<? extends Condition>> keyClass = getConditionClass(sender, conditionStr);
         if (keyClass == null || keyClass.getValue() == null) return;
-        Power power;
-        Class<? extends Power> cls = keyClass.getValue();
+        Condition condition;
+        Class<? extends Condition> cls = keyClass.getValue();
         NamespacedKey key = keyClass.getKey();
         try {
-            power = initPropertyHolder(sender, args, item, cls);
-            item.addPower(key, power);
+            condition = initPropertyHolder(sender, args, item, cls);
+            item.addCondition(key, condition);
             ItemManager.refreshItem();
             ItemManager.save(item);
-            msg(sender, "message.power.ok");
+            msg(sender, "message.condition.ok");
         } catch (Exception e) {
             if (e instanceof BadCommandException) {
                 throw (BadCommandException) e;
             }
-            plugin.getLogger().log(Level.WARNING, "Error adding power " + powerStr + " to item " + itemStr + " " + item, e);
+            plugin.getLogger().log(Level.WARNING, "Error adding condition " + conditionStr + " to item " + itemStr + " " + item, e);
             msgs(sender, "internal.error.command_exception");
         }
     }
@@ -103,7 +105,7 @@ public class PowerCommands extends RPGCommandReceiver {
                 break;
             case 2:
                 RPGItem item = getItem(arguments.nextString(), sender);
-                completeStr.addAll(IntStream.range(0, item.getPowers().size()).mapToObj(String::valueOf).collect(Collectors.toList()));
+                completeStr.addAll(IntStream.range(0, item.getConditions().size()).mapToObj(String::valueOf).collect(Collectors.toList()));
                 break;
             default:
                 item = getItem(arguments.nextString(), sender);
@@ -116,38 +118,37 @@ public class PowerCommands extends RPGCommandReceiver {
     public void prop(CommandSender sender, Arguments args) throws IllegalAccessException {
         RPGItem item = getItem(args.nextString(), sender);
         if (args.top() == null) {
-            for (int i = 0; i < item.getPowers().size(); i++) {
-                Power power = item.getPowers().get(i);
-                showPower(sender, i, item, power);
+            for (int i = 0; i < item.getConditions().size(); i++) {
+                Condition condition = item.getConditions().get(i);
+                showCondition(sender, i, item, condition);
             }
             return;
         }
         int nth = args.nextInt();
         try {
-            Power power = item.getPowers().get(nth);
-            if (power == null) {
-                msgs(sender, "message.power.unknown", nth);
+            Condition condition = item.getConditions().get(nth);
+            if (condition == null) {
+                msgs(sender, "message.condition.unknown", nth);
                 return;
             }
             if (args.top() == null) {
-                showPower(sender, nth, item, power);
+                showCondition(sender, nth, item, condition);
                 return;
             }
-            setPropertyHolder(sender, args, power.getClass(), power, false);
+            setPropertyHolder(sender, args, condition.getClass(), condition, false);
             item.rebuild();
             ItemManager.refreshItem();
             ItemManager.save(item);
-            msgs(sender, "message.power.change");
+            msgs(sender, "message.condition.change");
         } catch (UnknownExtensionException e) {
             msgs(sender, "message.error.unknown.extension", e.getName());
         }
     }
 
-    public static void showPower(CommandSender sender, int nth, RPGItem item, Power power) {
-        msgs(sender, "message.item.power", nth, power.getLocalizedName(sender), power.getNamespacedKey().toString(), power.displayText() == null ? I18n.getInstance(sender).format("message.power.no_display") : power.displayText(), power.getTriggers().stream().map(Trigger::name).collect(Collectors.joining(",")));
-        NamespacedKey powerKey = item.getPropertyHolderKey(power);
-        PowerManager.getProperties(powerKey).forEach(
-                (name, prop) -> showProp(sender, powerKey, prop.getValue(), power)
+    public static void showCondition(CommandSender sender, int nth, RPGItem item, Condition condition) {
+        msgs(sender, "message.item.condition", nth, condition.getLocalizedName(sender), condition.getNamespacedKey().toString(), condition.displayText() == null ? I18n.getInstance(sender).format("message.power.no_display") : condition.displayText());
+        PowerManager.getProperties(item.getPropertyHolderKey(condition)).forEach(
+                (name, prop) -> showProp(sender, condition.getNamespacedKey(), prop.getValue(), condition)
         );
     }
 
@@ -160,7 +161,7 @@ public class PowerCommands extends RPGCommandReceiver {
                 break;
             case 2:
                 RPGItem item = getItem(arguments.nextString(), sender);
-                completeStr.addAll(IntStream.range(0, item.getPowers().size()).mapToObj(String::valueOf).collect(Collectors.toList()));
+                completeStr.addAll(IntStream.range(0, item.getConditions().size()).mapToObj(String::valueOf).collect(Collectors.toList()));
                 break;
         }
         return filtered(arguments, completeStr);
@@ -171,14 +172,13 @@ public class PowerCommands extends RPGCommandReceiver {
         RPGItem item = getItem(args.nextString(), sender);
         int nth = args.nextInt();
         try {
-            Power power = item.getPowers().get(nth);
-            if (power == null) {
-                msgs(sender, "message.power.unknown", nth);
+            Condition condition = item.getConditions().get(nth);
+            if (condition == null) {
+                msgs(sender, "message.condition.unknown", nth);
                 return;
             }
-            power.deinit();
-            item.getPowers().remove(nth);
-            msgs(sender, "message.power.removed");
+            item.getConditions().remove(nth);
+            msgs(sender, "message.condition.removed");
         } catch (UnknownExtensionException e) {
             msgs(sender, "message.error.unknown.extension", e.getName());
         }
@@ -188,34 +188,34 @@ public class PowerCommands extends RPGCommandReceiver {
     public void list(CommandSender sender, Arguments args) {
         int perPage = RPGItems.plugin.cfg.powerPerPage;
         String nameSearch = args.argString("n", args.argString("name", ""));
-        List<NamespacedKey> powers = PowerManager.getPowers()
+        List<NamespacedKey> conditions = PowerManager.getConditions()
                                                  .keySet()
                                                  .stream()
                                                  .filter(i -> i.getKey().contains(nameSearch))
                                                  .sorted(Comparator.comparing(NamespacedKey::getKey))
                                                  .collect(Collectors.toList());
-        if (powers.size() == 0) {
-            msgs(sender, "message.power.not_found", nameSearch);
+        if (conditions.size() == 0) {
+            msgs(sender, "message.condition.not_found", nameSearch);
             return;
         }
-        Stream<NamespacedKey> stream = powers.stream();
-        Pair<Integer, Integer> maxPage = getPaging(powers.size(), perPage, args);
+        Stream<NamespacedKey> stream = conditions.stream();
+        Pair<Integer, Integer> maxPage = getPaging(conditions.size(), perPage, args);
         int page = maxPage.getValue();
         int max = maxPage.getKey();
         stream = stream
                          .skip((page - 1) * perPage)
                          .limit(perPage);
-        sender.sendMessage(ChatColor.AQUA + "Powers: " + page + " / " + max);
+        sender.sendMessage(ChatColor.AQUA + "Conditions: " + page + " / " + max);
 
         stream.forEach(
-                power -> {
-                    msgs(sender, "message.power.key", power.toString());
-                    msgs(sender, "message.power.description", PowerManager.getDescription(power, null));
-                    PowerManager.getProperties(power).forEach(
-                            (name, mp) -> showProp(sender, power, mp.getValue(), null)
+                condition -> {
+                    msgs(sender, "message.condition.key", condition.toString());
+                    msgs(sender, "message.condition.description", PowerManager.getDescription(condition, null));
+                    PowerManager.getProperties(condition).forEach(
+                            (name, mp) -> showProp(sender, condition, mp.getValue(), null)
                     );
                     msgs(sender, "message.line_separator");
                 });
-        sender.sendMessage(ChatColor.AQUA + "Powers: " + page + " / " + max);
+        sender.sendMessage(ChatColor.AQUA + "Conditions: " + page + " / " + max);
     }
 }

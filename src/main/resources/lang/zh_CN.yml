@@ -144,7 +144,7 @@ message:
     get: '物品 ''%s'' 材质为 {itemName} (%s): %d '
     list: '%s - {item}'
     print: '{itemName}'
-    power: 技能 %s (%s)：%s &r[%s]
+    power: 技能 %d %s (%s)：%s &r[%s]
     dump: '物品 %s:
 
       %s'

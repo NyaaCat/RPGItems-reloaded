@@ -79,12 +79,11 @@ public class AdminCommands extends RPGCommandReceiver {
     @Completion("")
     public List<String> itemCompleter(CommandSender sender, Arguments arguments) {
         List<String> completeStr = new ArrayList<>();
-        int len = arguments.getRawArgs().length;
-        switch (len) {
-            case 3:
+        switch (arguments.remains()) {
+            case 1:
                 completeStr.addAll(ItemManager.itemNames());
                 break;
-            case 4:
+            case 2:
                 String cmd = arguments.getRawArgs()[1];
                 if (subCommandCompletion.containsKey(cmd)) {
                     String comp = subCommandCompletion.get(cmd);
@@ -98,10 +97,9 @@ public class AdminCommands extends RPGCommandReceiver {
     @Completion("")
     public List<String> attrCompleter(CommandSender sender, Arguments arguments) {
         List<String> completeStr = new ArrayList<>();
-        int len = arguments.getRawArgs().length;
-        switch (len) {
-            case 3:
-                String cmd = arguments.getRawArgs()[1];
+        switch (arguments.remains()) {
+            case 1:
+                String cmd = arguments.getRawArgs()[0];
                 if (subCommandCompletion.containsKey(cmd)) {
                     String comp = subCommandCompletion.get(cmd);
                     completeStr.addAll(Arrays.asList(comp.split(":", 2)[1].split(",")));
@@ -111,15 +109,9 @@ public class AdminCommands extends RPGCommandReceiver {
         return filtered(arguments, completeStr);
     }
 
-    private static List<String> filtered(Arguments arguments, List<String> completeStr) {
-        String next = "";
-        int remains = arguments.remains();
-        for (int i = 0; i < remains; i++) {
-            String next1 = arguments.next();
-            next = next1 == null ? next : next1;
-        }
-        String finalNext = next;
-        return completeStr.stream().filter(s -> s.startsWith(finalNext)).collect(Collectors.toList());
+    public static List<String> filtered(Arguments arguments, List<String> completeStr) {
+        String[] rawArgs = arguments.getRawArgs();
+        return completeStr.stream().filter(s -> s.startsWith(rawArgs[rawArgs.length - 1])).collect(Collectors.toList());
     }
 
     @Override
@@ -297,7 +289,7 @@ public class AdminCommands extends RPGCommandReceiver {
         msgs(sender, "message.item.cleanbackup");
     }
 
-    private static Pair<Integer, Integer> getPaging(int size, int perPage, Arguments args) {
+    public static Pair<Integer, Integer> getPaging(int size, int perPage, Arguments args) {
         int max = (int) Math.ceil(size / (double) perPage);
         int page = args.top() == null ? 1 : args.nextInt();
         if (!(0 < page && page <= max)) {
@@ -336,42 +328,6 @@ public class AdminCommands extends RPGCommandReceiver {
                                 .append(I18n.getInstance(sender).format("message.item.list", item.getName()), Collections.singletonMap("{item}", item.getComponent(sender)))
                                 .send(sender)
         );
-    }
-
-    @SubCommand(value = "listpower", tabCompleter = "attrCompleter")
-    @Completion("command:name:")
-    public void listPower(CommandSender sender, Arguments args) {
-        int perPage = RPGItems.plugin.cfg.powerPerPage;
-        String nameSearch = args.argString("n", args.argString("name", ""));
-        List<NamespacedKey> powers = PowerManager.getPowers()
-                                                 .keySet()
-                                                 .stream()
-                                                 .filter(i -> i.getKey().contains(nameSearch))
-                                                 .sorted(Comparator.comparing(NamespacedKey::getKey))
-                                                 .collect(Collectors.toList());
-        if (powers.size() == 0) {
-            msgs(sender, "message.power.not_found", nameSearch);
-            return;
-        }
-        Stream<NamespacedKey> stream = powers.stream();
-        Pair<Integer, Integer> maxPage = getPaging(powers.size(), perPage, args);
-        int page = maxPage.getValue();
-        int max = maxPage.getKey();
-        stream = stream
-                         .skip((page - 1) * perPage)
-                         .limit(perPage);
-        sender.sendMessage(ChatColor.AQUA + "Powers: " + page + " / " + max);
-
-        stream.forEach(
-                power -> {
-                    msgs(sender, "message.power.key", power.toString());
-                    msgs(sender, "message.power.description", PowerManager.getDescription(power, null));
-                    PowerManager.getProperties(power).forEach(
-                            (name, mp) -> showProp(sender, power, mp.getValue(), null)
-                    );
-                    msgs(sender, "message.line_separator");
-                });
-        sender.sendMessage(ChatColor.AQUA + "Powers: " + page + " / " + max);
     }
 
     @SubCommand("worldguard")
@@ -987,93 +943,6 @@ public class AdminCommands extends RPGCommandReceiver {
         }
     }
 
-    @SubCommand("marker")
-    @Completion("power")
-    public void itemAddMarker(CommandSender sender, Arguments args) {
-        String itemStr = args.next();
-        String powerStr = args.next();
-        if (itemStr == null || (itemStr.equals("help") && getItem(itemStr, sender) == null)) {
-            msgs(sender, "manual.marker.description");
-            msgs(sender, "manual.marker.usage");
-            return;
-        }
-        if (getItem(itemStr, sender) != null && (powerStr == null || powerStr.equals("list"))) {
-            RPGItem item = getItem(itemStr, sender);
-            for (Marker marker : item.getMarkers()) {
-                msgs(sender, "message.item.marker", marker.getLocalizedName(plugin.cfg.language), marker.getNamespacedKey().toString(), marker.displayText() == null ? I18n.getInstance(sender).format("message.marker.no_display") : marker.displayText());
-                if ("list".equals(powerStr)) {
-                    PowerManager.getProperties(marker.getNamespacedKey()).forEach(
-                            (name, prop) -> showProp(sender, marker.getNamespacedKey(), prop.getValue(), marker)
-                    );
-                }
-            }
-            return;
-        }
-        RPGItem item = getItem(itemStr, sender);
-        Pair<NamespacedKey, Class<? extends Marker>> keyClass = getMarkerClass(sender, powerStr);
-        if (keyClass == null || keyClass.getValue() == null) return;
-        Marker marker;
-        Class<? extends Marker> cls = keyClass.getValue();
-        NamespacedKey key = keyClass.getKey();
-        try {
-            marker = initPropertyHolder(sender, args, item, cls);
-            item.addMarker(key, marker);
-            ItemManager.refreshItem();
-            ItemManager.save(item);
-            msgs(sender, "message.marker.ok");
-        } catch (Exception e) {
-            if (e instanceof CommandException) {
-                throw (CommandException) e;
-            }
-            plugin.getLogger().log(Level.WARNING, "Error adding marker " + powerStr + " to item " + itemStr + " " + item, e);
-            msgs(sender, "internal.error.command_exception");
-        }
-    }
-
-    @SuppressWarnings("rawtypes")
-    @SubCommand("condition")
-    @Completion("power")
-    public void itemAddCondition(CommandSender sender, Arguments args) {
-        String itemStr = args.next();
-        String powerStr = args.next();
-        if (itemStr == null || itemStr.equals("help")) {
-            msgs(sender, "manual.condition.description");
-            msgs(sender, "manual.condition.usage");
-            return;
-        }
-        if (powerStr == null || powerStr.equals("list")) {
-            RPGItem item = getItem(itemStr, sender);
-            for (Condition condition : item.getConditions()) {
-                msgs(sender, "message.item.condition", condition.getLocalizedName(plugin.cfg.language), condition.getNamespacedKey().toString(), condition.displayText() == null ? I18n.getInstance(sender).format("message.condition.no_display") : condition.displayText());
-                if ("list".equals(powerStr)) {
-                    PowerManager.getProperties(condition.getNamespacedKey()).forEach(
-                            (name, prop) -> showProp(sender, condition.getNamespacedKey(), prop.getValue(), condition)
-                    );
-                }
-            }
-            return;
-        }
-        RPGItem item = getItem(itemStr, sender);
-        Pair<NamespacedKey, Class<? extends Condition>> keyClass = getConditionClass(sender, powerStr);
-        if (keyClass == null || keyClass.getValue() == null) return;
-        Condition power;
-        Class<? extends Condition> cls = keyClass.getValue();
-        NamespacedKey key = keyClass.getKey();
-        try {
-            power = initPropertyHolder(sender, args, item, cls);
-            item.addCondition(key, power);
-            ItemManager.refreshItem();
-            ItemManager.save(item);
-            msgs(sender, "message.power.ok");
-        } catch (Exception e) {
-            if (e instanceof CommandException) {
-                throw (CommandException) e;
-            }
-            plugin.getLogger().log(Level.WARNING, "Error adding power " + powerStr + " to item " + itemStr + " " + item, e);
-            msgs(sender, "internal.error.command_exception");
-        }
-    }
-
     @SuppressWarnings("rawtypes")
     @SubCommand("trigger")
     @Completion("power")
@@ -1154,19 +1023,6 @@ public class AdminCommands extends RPGCommandReceiver {
             );
         }
         return power;
-    }
-
-    public static void showProp(CommandSender sender, NamespacedKey powerKey, PropertyInstance prop, PropertyHolder powerObj) {
-        String name = prop.name();
-        Meta meta = PowerManager.getMeta(powerKey);
-        if (isTrivialProperty(meta, name)) {
-            return;
-        }
-        String desc = PowerManager.getDescription(powerKey, name);
-        msgs(sender, "message.power.property", name, Strings.isNullOrEmpty(desc) ? I18n.getInstance(sender).format("message.power.no_description") : desc);
-        if (powerObj != null) {
-            msgs(sender, "message.power.property_value", Utils.getProperty(powerObj, name, prop.field()));
-        }
     }
 
     @SubCommand(value = "clone", tabCompleter = "itemCompleter")

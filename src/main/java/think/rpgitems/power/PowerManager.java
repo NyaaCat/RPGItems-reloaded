@@ -7,10 +7,12 @@ import com.google.common.collect.HashBasedTable;
 import com.google.common.collect.HashBiMap;
 import org.bukkit.NamespacedKey;
 import org.bukkit.command.CommandSender;
+import org.bukkit.event.Event;
 import org.bukkit.plugin.Plugin;
 import think.rpgitems.AdminCommands;
 import think.rpgitems.RPGItems;
 import think.rpgitems.power.propertymodifier.Modifier;
+import think.rpgitems.power.trigger.Trigger;
 
 import javax.annotation.CheckForNull;
 import java.lang.reflect.Field;
@@ -270,6 +272,15 @@ public class PowerManager {
         return Collections.unmodifiableMap(powers);
     }
 
+    public static Map<NamespacedKey, Class<? extends Condition>> getConditions() {
+        return Collections.unmodifiableMap(conditions);
+    }
+
+
+    public static Map<NamespacedKey, Class<? extends Marker>> getMarkers() {
+        return Collections.unmodifiableMap(markers);
+    }
+
     public static Map<String, Pair<Method, PropertyInstance>> getProperties(Class<? extends PropertyHolder> cls) {
         return Collections.unmodifiableMap(properties.get(cls));
     }
@@ -324,7 +335,7 @@ public class PowerManager {
         return getDescription(RPGItems.plugin.cfg.language, power, property);
     }
 
-    static boolean hasExtension() {
+    public static boolean hasExtension() {
         return extensions.size() > 1;
     }
 

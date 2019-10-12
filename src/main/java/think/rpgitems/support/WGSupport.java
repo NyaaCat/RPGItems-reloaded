@@ -139,7 +139,7 @@ public class WGSupport {
 
         if (powers == null) return Event.Result.ALLOW;
         for (Pimpl power : powers) {
-            String powerName = item.getPowerKey(power.getPower()).toString();
+            String powerName = item.getPropertyHolderKey(power.getPower()).toString();
             if (notEnabled(disabledPower, enabledPower, powerName)) return Event.Result.DENY;
         }
         return Event.Result.ALLOW;
@@ -147,6 +147,7 @@ public class WGSupport {
 
     public static Event.Result canUse(Player player, RPGItem item, Collection<? extends Pimpl> powers, boolean showWarn) {
         Event.Result result = canUse(player, item, powers);
+
         if (result == Event.Result.DENY && showWarn) {
             String message = warningMessageByPlayer.get(player.getUniqueId());
             if (message != null) {

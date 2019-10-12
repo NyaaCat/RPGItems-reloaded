@@ -1,7 +1,10 @@
 package think.rpgitems.power;
 
 import org.bukkit.NamespacedKey;
+import org.bukkit.command.CommandSender;
 import org.bukkit.configuration.ConfigurationSection;
+import org.bukkit.entity.Player;
+import think.rpgitems.RPGItems;
 import think.rpgitems.item.RPGItem;
 
 import java.util.Locale;
@@ -58,6 +61,10 @@ public interface PropertyHolder {
      */
     default String getLocalizedName(String locale) {
         return getName();
+    }
+
+    default String getLocalizedName(CommandSender sender) {
+        return getLocalizedName((sender instanceof Player) ? ((Player) sender).getLocale() : RPGItems.plugin.cfg.language);
     }
 
     /**

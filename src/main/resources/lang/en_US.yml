@@ -166,7 +166,7 @@ message:
     get: 'Item ''%s'' item is {itemName} (%s): %d '
     list: '%s - {item}'
     print: '{itemName}'
-    power: 'Power %s (%s)：%s &r[%s]'
+    power: 'Power %d %s (%s)：%s &r[%s]'
     dump: |-
       Item %s:
 

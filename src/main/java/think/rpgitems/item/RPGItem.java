@@ -422,7 +422,7 @@ public class RPGItem {
         int i = 0;
         for (Power p : powers) {
             MemoryConfiguration pConfig = new MemoryConfiguration();
-            pConfig.set("powerName", getPowerKey(p).toString());
+            pConfig.set("powerName", getPropertyHolderKey(p).toString());
             p.save(pConfig);
             powerConfigs.set(Integer.toString(i), pConfig);
             i++;
@@ -1286,7 +1286,7 @@ public class RPGItem {
     }
 
     public <T extends Power> List<T> getPower(NamespacedKey key, Class<T> power) {
-        return powers.stream().filter(p -> p.getClass().equals(power) && getPowerKey(p).equals(key)).map(power::cast).collect(Collectors.toList());
+        return powers.stream().filter(p -> p.getClass().equals(power) && getPropertyHolderKey(p).equals(key)).map(power::cast).collect(Collectors.toList());
     }
 
     public void addPower(NamespacedKey key, Power power) {
@@ -1738,7 +1738,7 @@ public class RPGItem {
         return triggers;
     }
 
-    public NamespacedKey getPowerKey(Power power) {
+    public NamespacedKey getPropertyHolderKey(PropertyHolder power) {
         return Objects.requireNonNull(keys.get(power));
     }
 
