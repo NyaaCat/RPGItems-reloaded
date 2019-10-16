@@ -200,20 +200,44 @@ message:
   wgforcerefresh:
     enable: Worldguard 自定义标志强制刷新已启用
     disable: Worldguard 自定义标志强制刷新已禁用
-  power:
-    ok: 技能已添加
-    not_found: 未找到满足 %s 的技能
-    unknown: 未知技能 %s
-    removed: 技能 %s 已移除
-    required: '缺少必选参数: %s'
-    key: '&3&l技能 &r%s'
+  propertyHolder:
+    required: 缺少必填属性
     description: '&3&l-| &r%s'
     property: '&b-| %s： &r%s'
     property_value: '&b-| &r%s'
-    no_display: 无说明
     no_description: '&7 暂无说明'
-    reorder: 物品 %s 的技能 %s 已调整顺序
+  power:
+    ok: 技能 %s 已添加至 %d 号位
+    unknown: 未知技能 %s
+    removed: 技能 %s 已从 %d 号位移除
+    key: "&3&l技能 &r%s&3&l"
+    no_display: 无说明
+    not_found: 未找到满足 %s 的技能
+    reorder: 技能 %s 已调整至 %d 号位
     ignored_trigger: 忽略物品%3$s技能%2$s的未知触发%1$s
+    show: '技能 %d - %s (%s)：%s &r[%s]'
+  marker:
+    ok: 标志 %s 已添加
+    unknown: 未知标志 %s
+    removed: 标志 %s 已移除
+    key: "&3&l标志 '&r%s&3&l'"
+    not_found: 未找到满足 %s 的标志
+    show: '标志 %s (%s)：%s'
+  condition:
+    ok: 条件 %s 已添加
+    unknown: 未知条件 %s
+    removed: 条件 %s 已移除
+    key: "&3&l条件 '&r%s&3&l'"
+    not_found: 未找到满足 %s 的条件
+    show: '条件 %s - %s (%s)：%s'
+  trigger:
+    ok: 触发 %s 已添加
+    unknown_base: '未知基触发 %s。可选项：%s'
+    unknown: 未知触发 %s
+    removed: 触发 %s 已移除
+    key: "&3&l触发 '&r%s&3&l'"
+    not_found: 未找到满足 %s 的触发
+    show: '触发 %s - base %s (%s)：%s'
   toggleLore:
     show: 文字已显示
     hide: 文字已隐藏
@@ -386,481 +410,488 @@ power:
     critical: 百分之 %.1f 的几率暴击 %.1f 倍
     backstab: 百分之 %.1f 的几率背刺 %.1f 倍
   gunfu: 子弹会自动追踪敌人 (%.1fs cooldown)
-  properties:
-    base:
-      id: 此条件/选择器的ID。
-      cooldown: 技能的冷却时间，以游戏刻为单位。
-      display: 技能的提示文字。
-      cost: 技能的耐久消耗量。
-      isStatic: 是否仅在触发开始时测试条件。
-      isCritical: 条件失败时是否中止当前触发。
-      triggers: 技能的触发。
-      conditions: 技能的条件。
-      selectors: 应用到本技能的选择器。
-    aoe:
-      main_name: 范围效果
-      main_description: 对周围实体施放状态效果。可使用选择器。
-      range: 有效范围，方块。
-      type: 状态效果。
-      duration: 持续时间，游戏刻。
-      amplifier: 效果倍率。
-      selfapplication: 是否对自身使用。
-      name: 技能的提示文字。
-    aoecommand:
-      main_name: 范围命令
-      main_description: 对周围实体执行命令。可使用选择器。
-      command: 要执行的命令
-      rm: 最小距离，方块。
-      r: 最大距离，方块。
-      facing: 有效视角，度。
-      permission: 执行指令所需的临时权限
-      c: 实体的最大数量。
-      type: 实体的类型
-      mustsee: 是否必须要看见实体
-      range: 有效方块范围。
-      selfapplication: 是否应用于触发的玩家。
-    arrow:
-      main_name: 射出一矢
-      main_description: 发射一支箭。
-    attachments:
-      main_name: 配件
-      main_description: 可以使用其他 RPGItem 作为配件。将会触发配件上的 ATTACHMENT 触发
-      allowedSlots: 可以使用的装备栏
-      allowedInvSlots: 可以使用的背包格，-1为禁用背包
-      limit: 配件数量
-      allowedItems: 可以使用的 RPGItem
-    attract:
-      main_name: 吸引
-      main_description: 吸引附近的怪物到玩家
-      radius: 有效半径。
-      maxSpeed: 最大速度。
-      duration: 主动触发的持续时间。
-      attractingTickCost: 吸引时每刻的耐久消耗。
-      attractingEntityTickCost: 吸引时每个实体每刻的耐久消耗。
-      attractPlayer: 是否允许吸引玩家。
-    attributemodifier:
-      main_name: 属性修改
-      main_description: 修改玩家/物品属性
-      amount: 数值
-      attribute: 属性
-      name: 属性名称
-      operation: 操作
-      slot: 物品栏位
-      uuidLeast: UUID 后半部分
-      uuidMost: UUID 前半部分
-    chancecondition:
-      main_name: 概率条件
-      main_description: 一定概率成功的条件
-      chancePercentage: 成功率
-    charge:
-      main_name: 勇气绝杀
-      main_description: 冲刺时增加伤害
-      percentage: 冲刺时伤害提升的比例
-      speedPercentage: 速度高于默认速度时，每一倍速度的伤害提升
-      cap: 最大伤害
-    color:
-      main_name: 颜色
-      main_description: 暂时不可用
-      wool: 暂时不可用
-      clay: 暂时不可用
-      glass: 暂时不可用
-    command:
-      main_name: 命令
-      main_description: 执行一条命令。
-      command: 执行的命令
-      permission: 执行指令所需的临时权限
-    commandhit:
-      main_name: 击中命令
-      main_description: 击中目标时执行一条命令。
-      command: 执行的命令
-      permission: 执行指令所需的临时权限
-      minDamage: 触发最小的伤害
-    consume:
-      main_name: 消耗
-      main_description: 移除一份当前物品。
-      isRight: 用于触发技能的鼠标键
-    consumehit:
-      main_name: 击中消耗
-      main_description: 击中目标时移除一份当前物品。
-    criticalhit:
-      main_name: 背刺暴击
-      main_description: 暴击几率%%让攻击乘以暴击倍率。在背刺情况下，额外背刺几率%%让攻击乘以背刺倍率。
-      backstabChance: 背刺几率
-      backstabFactor: 背刺倍率
-      chance: 暴击几率
-      factor: 暴击倍率
-      setBaseDamage: 是否设为基础伤害（伤害增益可叠加）
-    deathcommand:
-      main_name: 即死命令
-      main_description: 以 1/chance 的几率杀死目标并执行命令
-      chance: 触发几率， 1/n
-      command: 执行的命令
-      count: 执行命令的次数
-      desc: 技能的提示文字
-    deflect:
-      main_name: 弹反
-      main_description: 弹反射来的箭矢或火球
-      facing: 最大有效视角，度
-      cooldownpassive: 被动弹反的冷却时间
-      duration: 持续时间
-      chance: 被动弹反的百分比几率
-      deflectCost: 每次弹反的耐久消耗量。
-    delayedcommand:
-      main_name: 延迟命令
-      main_description: 在一段时间后执行命令
-      delay: 执行命令前的延迟
-      command: 执行的命令
-      permission: 执行指令所需的临时权限
-    dummy:
-      main_name: 空
-      main_description: 什么都不做
-      successResult: 成功时的结果
-      costResult: 无法消耗耐久时的结果
-      cooldownResult: 冷却时的结果
-      checkDurabilityBound: 是否检查物品的耐久边界
-      showCDWarning: 是否显示冷却消息
-      cooldownKey: 冷却时间的标识
-    durabilitycondition:
-      main_name: 耐久条件
-      main_description: 要求耐久在一定范围内
-      durabilityMin: 耐久需大于该值
-      durabilityMax: 耐久需小于该值
-    economy:
-      main_name: 经济
-      main_description: 向玩家付款或扣款
-      amountToPlayer: 向玩家支付的数量（可为负）
-      showFailMessage: 失败时显示经济插件的消息
-      abortOnFailure: 失败时中止
-    equipmentcondition:
-      main_name: 装备条件
-      main_description: 要求玩家穿特定装备
-      slots: 装备栏
-      material: 玩家需要装备的材质
-      itemStack: 玩家需要装备的物品
-      rpgitem: 玩家需要装备的 RPGItem
-      matchAllSlot: 是否要求所有装备栏匹配
-    evalcondition:
-      main_name: 动态条件
-      main_description: 根据变量动态计算结果
-      expression: 计算条件结果的表达式
-    evaldamage:
-      main_name: 动态伤害
-      main_description: 根据变量动态计算伤害
-      display: 显示名称
-      expression: 计算伤害的表达式
-      setBaseDamage: 是否设为基础伤害（伤害增益可叠加）
-    explosion:
-      main_name: 爆炸
-      main_description: 制造一个玩家产生的爆炸
-      chance: 触发几率，百分比
-      power: 爆炸威力。 4 为 TNT 的爆炸威力
-      distance: 最远距离
-    fire:
-      main_name: 喷火
-      main_description: 发射一个火焰方块，点燃击中的实体
-      distance: 最远有效距离
-      burnduration: 火焰持续时间
-    fireball:
-      main_name: 火球
-      main_description: 发射一个火球
-    flame:
-      main_name: 火焰附加
-      main_description: 点燃被击中的目标
-      burntime: 火焰持续时间
-    food:
-      main_name: 食用
-      main_description: 食用后回复饱食度
-      foodpoints: 饱食度
-    forcefield:
-      main_name: 力场护盾
-      main_description: 在玩家周围用屏障生成一个力场护盾
-      radius: 护盾的半径
-      height: 护盾的高度
-      base: 护盾的地基
-      ttl: 护盾的持续时间
-    glove:
-      main_name: 鬼手
-      main_description: 捕获一个实体
-      maxDistance: 最大距离
-      maxTicks: 捕获的最长时间
-      throwSpeed: 捕获结束后实体投掷速度
-    gunfu:
-      main_name: 枪斗术
-      main_description: 使弹射物自动追踪敌人
-      distance: 最大索敌距离
-      viewAngle: 最大索敌视角，度
-      maxTicks: 最大追踪时间，游戏刻
-      initVelFactor: 初速度倍率
-      velFactor: 每刻速度改变倍率
-    headshot:
-      main_name: 爆头
-      main_description: 弹射物爆头时增加伤害
-      factor: 伤害倍率。造成 factor * damage 伤害
-      particleEnemy: 是否显示被爆头粒子效果
-      soundEnemy: 是否显示被爆头粒子音效
-      soundSelf: 是否显示爆头粒子音效
-      setBaseDamage: 是否设为基础伤害（伤害增益可叠加）
-    ice:
-      main_name: 冰冻
-      main_description: 发射一个冰方块，在击中处生成一个大冰块
-    knockup:
-      main_name: 击飞
-      main_description: 将目标击飞到空中
-      chance: 触发几率， 1/n
-      power: 击飞的力度
-    lastresultcondition:
-      main_name: 结果条件
-      main_description: 要求上一个执行的技能返回特定的结果
-      okResults: 允许的结果
-      failOnNoResult: 是否在不存在上一个执行的技能时失败
-    lifesteal:
-      main_name: 吸血
-      main_description: 按造成的攻击伤害回血
-      chance: 触发几率，百分比
-      factor: 吸血量的系数
-    lightning:
-      main_name: 闪电
-      main_description: 在击中处降下一道闪电
-      chance: 触发几率，1/n
-    lorefilter:
-      main_name: Lore 过滤
-      main_description: 保留指定的 Lore
-      regex: 正则表达式
-      desc: 技能的提示文字
-      find: 是否只需要在lore中找到该正则表达式。
-    noimmutabletick:
-      main_name: 取消无敌时间
-      main_description: 取消被攻击怪物的无敌时间
-    mount:
-      main_name: 骑乘
-      main_description: 骑乘生物
-      maxDistance: 生物的最远距离
-      maxTicks: 最长骑乘时间
-    particle:
-      main_name: 粒子效果
-      main_description: 触发后生成粒子效果
-      effect: 视觉效果
-      particle: 粒子效果
-      particleCount: 粒子效果的数量
-      material: 粒子效果的材质
-      dustColor: 尘埃粒子效果的颜色
-      dustSize: 尘埃粒子效果的大小
-      offsetX: X 偏移
-      offsetY: Y 偏移
-      offsetZ: Z 偏移
-      extra: 附加数据
-      force: 强制显示粒子
-    particlebarrier:
-      main_name: 粒子屏障
-      main_description: 将受到的攻击转化为效果
-      projected: 是否为投射屏障
-      energyDecay: 能量每秒的衰减
-      energyPerBarrier: 满盾能提供的能量
-      barrierHealth: 满盾的生命值
-      energyPerLevel: 每级力量效果所需要的能量
-      effect: 屏障的效果
-    particletick:
-      main_name: 佩戴粒子效果
-      main_description: 佩戴后按照一定间隔生成粒子效果
-      interval: 间隔时间，游戏刻
-      effect: 视觉效果
-      particle: 粒子效果
-      particleCount: 粒子效果的数量
-      material: 粒子效果的材质
-      dustColor: 尘埃粒子效果的颜色
-      dustSize: 尘埃粒子效果的大小
-      offsetX: X 偏移
-      offsetY: Y 偏移
-      offsetZ: Z 偏移
-      extra: 附加数据
-      force: 强制显示粒子
-    potionhit:
-      main_name: 击中效果
-      main_description: 击中后对目标施放状态效果
-      type: 状态效果
-      duration: 持续时间，游戏刻
-      amplifier: 效果倍率
-      chance: 触发几率，1/n
-    potionself:
-      main_name: 自身效果
-      main_description: 对自身施放状态效果
-      duration: 持续时间，游戏刻
-      amplifier: 效果倍率
-      type: 状态效果
-    potiontick:
-      main_name: 佩戴状态效果
-      main_description: 佩戴后按照一定间隔施放状态效果
-      amplifier: 效果倍率
-      effect: 状态效果
-      interval: 间隔时间，游戏刻
-      duration: 持续时间，游戏刻
-      clear: 清除状态效果而非施放
-    projectile:
-      main_name: 弹射物
-      main_description: 发射弹射物
-      isCone: 是否以锥形发射弹射物
-      projectileType: 弹射物类型
-      range: 弹射物的散射角
-      amount: 弹射物的数量
-      speed: 弹射物速度
-      gravity: 弹射物是否受到重力影响
-      burstCount: 发射次数
-      burstInterval: 每次发射之间的间隔
-      setFireballDirection: 是否设置火球的方向使其不偏离
-      yield: 爆炸物的爆炸半径
-      isIncendiary: 爆炸物是否会点火
-    pumpkin:
-      main_name: 南瓜头
-      main_description: 攻击僵尸或者骷髅时给他们戴上南瓜头
-      chance: 触发几率，百分比
-      drop: 南瓜头掉落几率
-    rainbow:
-      main_name: 彩虹羊毛
-      main_description: 发射彩色羊毛方块
-      count: 数量
-      isFire: 发射火方块
-    ranged:
-      main_name: 远程攻击
-      main_description: 标记武器能远程攻击
-      rm: 最小距离
-      r: 最大距离
-    rangedonly:
-      main_name: 仅远程攻击
-      main_description: 标记武器仅能远程攻击
-      rm: 最小距离
-      r: 最大距离
-    realdamage:
-      main_name: 真实伤害
-      main_description: 对目标造成真实伤害但不会杀死它
-      realDamage: 真实伤害量
-      minDamage: 触发该技能的最小伤害
-    repair:
-      main_name: 修理
-      main_description: 用指定材料修理物品
-      material: 修理用材料
-      durability: 修复耐久值
-      isSneak: 修理时是否需要潜行
-      abortOnSuccess: 修理成功后中止后续技能
-      abortOnFailure: 修理失败时中止后续技能
-      amount: 所需材料数量
-      mode: 是否允许耐久溢出
-      customMessage: 材料不足时的自定义提示
-      showFailMsg: 是否显示提示
-      allowBreak: 是否允许以负耐久修爆物品
-    rescue:
-      main_name: 拯救
-      main_description: 受到过量伤害或者血量即将低于指定值时拯救玩家
-      healthTrigger: 血量触发
-      useBed: 是否回床（而非出生点）
-      inPlace: 是否原地拯救
-      damageTrigger: 伤害触发
-    rumble:
-      main_name: 裂地猛击
-      main_description: 沿着地面发射冲击波，击飞击中的实体
-      power: 击飞力度
-      distance: 最大距离
-    scoreboard:
-      main_name: 计分板
-      main_description: 添加或移除玩家的计分板标签或队伍
-      tag: 需要添加或移除的标签，`TO_ADD,!TO_REMOVE`
-      team: 需要加入或离开的队伍，`JOIN,!LEAVE`
-      abortOnSuccess: 成功后中止后续技能
-    scoreboardcondition:
-      main_name: 计分板条件
-      main_description: 玩家的计分板需满足的条件
-      score: 计分板分数范围，`score_name:min,max another_score_name:min,max`
-      tag: 计分板标签，`MUST_HAVE,!MUST_NOT_HAVE`
-      team: 计分板队伍，`MUST_ON,!MUST_NOT_ON`
-    selector:
-      main_name: 选择器
-      main_description: 对AOE技能的选择器
-      id: 选择器的 ID，应在物品上唯一
-      type: 目标实体类型
-      count: 目标实体最大数量
-      x: X坐标基准位置，可用波浪线
-      y: Y坐标基准位置，可用波浪线
-      z: Z坐标基准位置，可用波浪线
-      r: 距基准位置最长距离
-      rm: 距基准位置最短距离
-      dx: 距基准位置最大x轴偏移量
-      dy: 距基准位置最大y轴偏移量
-      dz: 距基准位置最大z轴偏移量
-      score: 计分板分数范围，`score_name:min,max another_score_name:min,max`
-      tag: 计分板标签，`MUST_HAVE,!MUST_NOT_HAVE`
-      team: 计分板队伍，`MUST_ON,!MUST_NOT_ON`
-    shulkerbullet:
-      main_name: 潜影子弹
-      main_description: 发射一枚潜影子弹，
-      range: 索敌范围
-    skyhook:
-      main_name: 钩爪
-      main_description: 发射钩爪钩住指定方块
-      railMaterial: 可以钩的材质
-      hookDistance: 可以钩的距离
-      hookingTickCost: 钩子每 tick 的消耗
-    stuck:
-      main_name: 定身
-      main_description: 定身目标
-      chance: 触发几率，1/n
-      cost: 击中实体定身的消耗
-      costAoe: 范围定身触发消耗
-      costPerEntity: 范围定身每个实体的消耗
-      range: 范围定身的范围
-      facing: 定身最大视角
-      duration: 持续时间
-    teleport:
-      main_name: 传送
-      main_description: 传送到视线方向或者弹射物击中位置
-      distance: 最大距离
-      targetMode: 寻找传送点的模式
-    throw:
-      main_name: 投掷实体
-      main_description: 生成并投掷实体
-      speed: 投掷速度
-      entityName: 实体名称
-      entityData: 实体 NBT 数据
-      isPersistent: 实体是否保留在世界存档
-    tippedarrow:
-      main_name: 药箭
-      main_description: 发射药箭
-      type: 药箭的状态效果
-      duration: 持续时间，游戏刻
-      amplifier: 效果倍率
-    tntcannon:
-      main_name: TNT 大炮
-      main_description: 发射 TNT
-    torch:
-      main_name: 火把
-      main_description: 投掷火把点亮区域
-    translocator:
-      main_name: 传送信标
-      main_description: 投掷信标，之后传送到信标位置
-      tpCost: 传送所需消耗
-      setupCost: 建立信标所需消耗
-    unbreakable:
-      main_name: 无法破坏
-      main_description: 标记该物品为不可破坏
-    airborne:
-      main_name: 空中处决技
-      main_description: 空中或飞行时造成更多伤害
-      percentage: 空中或飞行时造成伤害增加的百分比
-      cap: 该技能所能造成的最高伤害值
-    andcondition:
-      main_name: And 条件
-      main_description: 要求所有条件满足
-    orcondition:
-      main_name: Or 条件
-      main_description: 要求有至少一项满足
-    sound:
-      main_name: 声音
-      main_description: 播放声音
-      pitch: 音高
-      volume: 音量
-      sound: 播放的声音
-    xorcondition:
-      main_name: XOR 条件
-      main_description: 要求所有条件结果的异或值为真
-      init: 初始值
+properties:
+  base:
+    id: 此条件/选择器的ID。
+    cooldown: 技能的冷却时间，以游戏刻为单位。
+    display: 技能的提示文字。
+    displayText: 技能的提示文字。
+    displayName: 技能的显示名称。
+    cost: 技能的耐久消耗量。
+    isStatic: 是否仅在触发开始时测试条件。
+    isCritical: 条件失败时是否中止当前触发。
+    triggers: 技能的触发。
+    conditions: 技能的条件。
+    selectors: 应用到本技能的选择器。
+    priority: 触发的优先级。
+    requiredContext: 使用的上下文。
+    targetItem: 修改器的目标物品。
+    targetPower: 修改器的目标技能。
+    targetProperty: 修改器的目标属性。
+  aoe:
+    main_name: 范围效果
+    main_description: 对周围实体施放状态效果。可使用选择器。
+    range: 有效范围，方块。
+    type: 状态效果。
+    duration: 持续时间，游戏刻。
+    amplifier: 效果倍率。
+    selfapplication: 是否对自身使用。
+    name: 技能的提示文字。
+  aoecommand:
+    main_name: 范围命令
+    main_description: 对周围实体执行命令。可使用选择器。
+    command: 要执行的命令
+    rm: 最小距离，方块。
+    r: 最大距离，方块。
+    facing: 有效视角，度。
+    permission: 执行指令所需的临时权限
+    c: 实体的最大数量。
+    type: 实体的类型
+    mustsee: 是否必须要看见实体
+    range: 有效方块范围。
+    selfapplication: 是否应用于触发的玩家。
+  arrow:
+    main_name: 射出一矢
+    main_description: 发射一支箭。
+  attachments:
+    main_name: 配件
+    main_description: 可以使用其他 RPGItem 作为配件。将会触发配件上的 ATTACHMENT 触发
+    allowedSlots: 可以使用的装备栏
+    allowedInvSlots: 可以使用的背包格，-1为禁用背包
+    limit: 配件数量
+    allowedItems: 可以使用的 RPGItem
+  attract:
+    main_name: 吸引
+    main_description: 吸引附近的怪物到玩家
+    radius: 有效半径。
+    maxSpeed: 最大速度。
+    duration: 主动触发的持续时间。
+    attractingTickCost: 吸引时每刻的耐久消耗。
+    attractingEntityTickCost: 吸引时每个实体每刻的耐久消耗。
+    attractPlayer: 是否允许吸引玩家。
+  attributemodifier:
+    main_name: 属性修改
+    main_description: 修改玩家/物品属性
+    amount: 数值
+    attribute: 属性
+    name: 属性名称
+    operation: 操作
+    slot: 物品栏位
+    uuidLeast: UUID 后半部分
+    uuidMost: UUID 前半部分
+  chancecondition:
+    main_name: 概率条件
+    main_description: 一定概率成功的条件
+    chancePercentage: 成功率
+  charge:
+    main_name: 勇气绝杀
+    main_description: 冲刺时增加伤害
+    percentage: 冲刺时伤害提升的比例
+    speedPercentage: 速度高于默认速度时，每一倍速度的伤害提升
+    cap: 最大伤害
+  color:
+    main_name: 颜色
+    main_description: 暂时不可用
+    wool: 暂时不可用
+    clay: 暂时不可用
+    glass: 暂时不可用
+  command:
+    main_name: 命令
+    main_description: 执行一条命令。
+    command: 执行的命令
+    permission: 执行指令所需的临时权限
+  commandhit:
+    main_name: 击中命令
+    main_description: 击中目标时执行一条命令。
+    command: 执行的命令
+    permission: 执行指令所需的临时权限
+    minDamage: 触发最小的伤害
+  consume:
+    main_name: 消耗
+    main_description: 移除一份当前物品。
+    isRight: 用于触发技能的鼠标键
+  consumehit:
+    main_name: 击中消耗
+    main_description: 击中目标时移除一份当前物品。
+  criticalhit:
+    main_name: 背刺暴击
+    main_description: 暴击几率%%让攻击乘以暴击倍率。在背刺情况下，额外背刺几率%%让攻击乘以背刺倍率。
+    backstabChance: 背刺几率
+    backstabFactor: 背刺倍率
+    chance: 暴击几率
+    factor: 暴击倍率
+    setBaseDamage: 是否设为基础伤害（伤害增益可叠加）
+  deathcommand:
+    main_name: 即死命令
+    main_description: 以 1/chance 的几率杀死目标并执行命令
+    chance: 触发几率， 1/n
+    command: 执行的命令
+    count: 执行命令的次数
+    desc: 技能的提示文字
+  deflect:
+    main_name: 弹反
+    main_description: 弹反射来的箭矢或火球
+    facing: 最大有效视角，度
+    cooldownpassive: 被动弹反的冷却时间
+    duration: 持续时间
+    chance: 被动弹反的百分比几率
+    deflectCost: 每次弹反的耐久消耗量。
+  delayedcommand:
+    main_name: 延迟命令
+    main_description: 在一段时间后执行命令
+    delay: 执行命令前的延迟
+    command: 执行的命令
+    permission: 执行指令所需的临时权限
+  dummy:
+    main_name: 空
+    main_description: 什么都不做
+    successResult: 成功时的结果
+    costResult: 无法消耗耐久时的结果
+    cooldownResult: 冷却时的结果
+    checkDurabilityBound: 是否检查物品的耐久边界
+    showCDWarning: 是否显示冷却消息
+    cooldownKey: 冷却时间的标识
+  durabilitycondition:
+    main_name: 耐久条件
+    main_description: 要求耐久在一定范围内
+    durabilityMin: 耐久需大于该值
+    durabilityMax: 耐久需小于该值
+  economy:
+    main_name: 经济
+    main_description: 向玩家付款或扣款
+    amountToPlayer: 向玩家支付的数量（可为负）
+    showFailMessage: 失败时显示经济插件的消息
+    abortOnFailure: 失败时中止
+  equipmentcondition:
+    main_name: 装备条件
+    main_description: 要求玩家穿特定装备
+    slots: 装备栏
+    material: 玩家需要装备的材质
+    itemStack: 玩家需要装备的物品
+    rpgitem: 玩家需要装备的 RPGItem
+    matchAllSlot: 是否要求所有装备栏匹配
+  evalcondition:
+    main_name: 动态条件
+    main_description: 根据变量动态计算结果
+    expression: 计算条件结果的表达式
+  evaldamage:
+    main_name: 动态伤害
+    main_description: 根据变量动态计算伤害
+    display: 显示名称
+    expression: 计算伤害的表达式
+    setBaseDamage: 是否设为基础伤害（伤害增益可叠加）
+  explosion:
+    main_name: 爆炸
+    main_description: 制造一个玩家产生的爆炸
+    chance: 触发几率，百分比
+    power: 爆炸威力。 4 为 TNT 的爆炸威力
+    distance: 最远距离
+  fire:
+    main_name: 喷火
+    main_description: 发射一个火焰方块，点燃击中的实体
+    distance: 最远有效距离
+    burnduration: 火焰持续时间
+  fireball:
+    main_name: 火球
+    main_description: 发射一个火球
+  flame:
+    main_name: 火焰附加
+    main_description: 点燃被击中的目标
+    burntime: 火焰持续时间
+  food:
+    main_name: 食用
+    main_description: 食用后回复饱食度
+    foodpoints: 饱食度
+  forcefield:
+    main_name: 力场护盾
+    main_description: 在玩家周围用屏障生成一个力场护盾
+    radius: 护盾的半径
+    height: 护盾的高度
+    base: 护盾的地基
+    ttl: 护盾的持续时间
+  glove:
+    main_name: 鬼手
+    main_description: 捕获一个实体
+    maxDistance: 最大距离
+    maxTicks: 捕获的最长时间
+    throwSpeed: 捕获结束后实体投掷速度
+  gunfu:
+    main_name: 枪斗术
+    main_description: 使弹射物自动追踪敌人
+    distance: 最大索敌距离
+    viewAngle: 最大索敌视角，度
+    maxTicks: 最大追踪时间，游戏刻
+    initVelFactor: 初速度倍率
+    velFactor: 每刻速度改变倍率
+  headshot:
+    main_name: 爆头
+    main_description: 弹射物爆头时增加伤害
+    factor: 伤害倍率。造成 factor * damage 伤害
+    particleEnemy: 是否显示被爆头粒子效果
+    soundEnemy: 是否显示被爆头粒子音效
+    soundSelf: 是否显示爆头粒子音效
+    setBaseDamage: 是否设为基础伤害（伤害增益可叠加）
+  ice:
+    main_name: 冰冻
+    main_description: 发射一个冰方块，在击中处生成一个大冰块
+  knockup:
+    main_name: 击飞
+    main_description: 将目标击飞到空中
+    chance: 触发几率， 1/n
+    power: 击飞的力度
+  lastresultcondition:
+    main_name: 结果条件
+    main_description: 要求上一个执行的技能返回特定的结果
+    okResults: 允许的结果
+    failOnNoResult: 是否在不存在上一个执行的技能时失败
+  lifesteal:
+    main_name: 吸血
+    main_description: 按造成的攻击伤害回血
+    chance: 触发几率，百分比
+    factor: 吸血量的系数
+  lightning:
+    main_name: 闪电
+    main_description: 在击中处降下一道闪电
+    chance: 触发几率，1/n
+  lorefilter:
+    main_name: Lore 过滤
+    main_description: 保留指定的 Lore
+    regex: 正则表达式
+    desc: 技能的提示文字
+    find: 是否只需要在lore中找到该正则表达式。
+  noimmutabletick:
+    main_name: 取消无敌时间
+    main_description: 取消被攻击怪物的无敌时间
+  mount:
+    main_name: 骑乘
+    main_description: 骑乘生物
+    maxDistance: 生物的最远距离
+    maxTicks: 最长骑乘时间
+  particle:
+    main_name: 粒子效果
+    main_description: 触发后生成粒子效果
+    effect: 视觉效果
+    particle: 粒子效果
+    particleCount: 粒子效果的数量
+    material: 粒子效果的材质
+    dustColor: 尘埃粒子效果的颜色
+    dustSize: 尘埃粒子效果的大小
+    offsetX: X 偏移
+    offsetY: Y 偏移
+    offsetZ: Z 偏移
+    extra: 附加数据
+    force: 强制显示粒子
+  particlebarrier:
+    main_name: 粒子屏障
+    main_description: 将受到的攻击转化为效果
+    projected: 是否为投射屏障
+    energyDecay: 能量每秒的衰减
+    energyPerBarrier: 满盾能提供的能量
+    barrierHealth: 满盾的生命值
+    energyPerLevel: 每级力量效果所需要的能量
+    effect: 屏障的效果
+  particletick:
+    main_name: 佩戴粒子效果
+    main_description: 佩戴后按照一定间隔生成粒子效果
+    interval: 间隔时间，游戏刻
+    effect: 视觉效果
+    particle: 粒子效果
+    particleCount: 粒子效果的数量
+    material: 粒子效果的材质
+    dustColor: 尘埃粒子效果的颜色
+    dustSize: 尘埃粒子效果的大小
+    offsetX: X 偏移
+    offsetY: Y 偏移
+    offsetZ: Z 偏移
+    extra: 附加数据
+    force: 强制显示粒子
+  potionhit:
+    main_name: 击中效果
+    main_description: 击中后对目标施放状态效果
+    type: 状态效果
+    duration: 持续时间，游戏刻
+    amplifier: 效果倍率
+    chance: 触发几率，1/n
+  potionself:
+    main_name: 自身效果
+    main_description: 对自身施放状态效果
+    duration: 持续时间，游戏刻
+    amplifier: 效果倍率
+    type: 状态效果
+  potiontick:
+    main_name: 佩戴状态效果
+    main_description: 佩戴后按照一定间隔施放状态效果
+    amplifier: 效果倍率
+    effect: 状态效果
+    interval: 间隔时间，游戏刻
+    duration: 持续时间，游戏刻
+    clear: 清除状态效果而非施放
+  projectile:
+    main_name: 弹射物
+    main_description: 发射弹射物
+    isCone: 是否以锥形发射弹射物
+    projectileType: 弹射物类型
+    range: 弹射物的散射角
+    amount: 弹射物的数量
+    speed: 弹射物速度
+    gravity: 弹射物是否受到重力影响
+    burstCount: 发射次数
+    burstInterval: 每次发射之间的间隔
+    setFireballDirection: 是否设置火球的方向使其不偏离
+    yield: 爆炸物的爆炸半径
+    isIncendiary: 爆炸物是否会点火
+  pumpkin:
+    main_name: 南瓜头
+    main_description: 攻击僵尸或者骷髅时给他们戴上南瓜头
+    chance: 触发几率，百分比
+    drop: 南瓜头掉落几率
+  rainbow:
+    main_name: 彩虹羊毛
+    main_description: 发射彩色羊毛方块
+    count: 数量
+    isFire: 发射火方块
+  ranged:
+    main_name: 远程攻击
+    main_description: 标记武器能远程攻击
+    rm: 最小距离
+    r: 最大距离
+  rangedonly:
+    main_name: 仅远程攻击
+    main_description: 标记武器仅能远程攻击
+    rm: 最小距离
+    r: 最大距离
+  realdamage:
+    main_name: 真实伤害
+    main_description: 对目标造成真实伤害但不会杀死它
+    realDamage: 真实伤害量
+    minDamage: 触发该技能的最小伤害
+  repair:
+    main_name: 修理
+    main_description: 用指定材料修理物品
+    material: 修理用材料
+    durability: 修复耐久值
+    isSneak: 修理时是否需要潜行
+    abortOnSuccess: 修理成功后中止后续技能
+    abortOnFailure: 修理失败时中止后续技能
+    amount: 所需材料数量
+    mode: 是否允许耐久溢出
+    customMessage: 材料不足时的自定义提示
+    showFailMsg: 是否显示提示
+    allowBreak: 是否允许以负耐久修爆物品
+  rescue:
+    main_name: 拯救
+    main_description: 受到过量伤害或者血量即将低于指定值时拯救玩家
+    healthTrigger: 血量触发
+    useBed: 是否回床（而非出生点）
+    inPlace: 是否原地拯救
+    damageTrigger: 伤害触发
+  rumble:
+    main_name: 裂地猛击
+    main_description: 沿着地面发射冲击波，击飞击中的实体
+    power: 击飞力度
+    distance: 最大距离
+  scoreboard:
+    main_name: 计分板
+    main_description: 添加或移除玩家的计分板标签或队伍
+    tag: 需要添加或移除的标签，`TO_ADD,!TO_REMOVE`
+    team: 需要加入或离开的队伍，`JOIN,!LEAVE`
+    abortOnSuccess: 成功后中止后续技能
+  scoreboardcondition:
+    main_name: 计分板条件
+    main_description: 玩家的计分板需满足的条件
+    score: 计分板分数范围，`score_name:min,max another_score_name:min,max`
+    tag: 计分板标签，`MUST_HAVE,!MUST_NOT_HAVE`
+    team: 计分板队伍，`MUST_ON,!MUST_NOT_ON`
+  selector:
+    main_name: 选择器
+    main_description: 对AOE技能的选择器
+    id: 选择器的 ID，应在物品上唯一
+    type: 目标实体类型
+    count: 目标实体最大数量
+    x: X坐标基准位置，可用波浪线
+    y: Y坐标基准位置，可用波浪线
+    z: Z坐标基准位置，可用波浪线
+    r: 距基准位置最长距离
+    rm: 距基准位置最短距离
+    dx: 距基准位置最大x轴偏移量
+    dy: 距基准位置最大y轴偏移量
+    dz: 距基准位置最大z轴偏移量
+    score: 计分板分数范围，`score_name:min,max another_score_name:min,max`
+    tag: 计分板标签，`MUST_HAVE,!MUST_NOT_HAVE`
+    team: 计分板队伍，`MUST_ON,!MUST_NOT_ON`
+  shulkerbullet:
+    main_name: 潜影子弹
+    main_description: 发射一枚潜影子弹，
+    range: 索敌范围
+  skyhook:
+    main_name: 钩爪
+    main_description: 发射钩爪钩住指定方块
+    railMaterial: 可以钩的材质
+    hookDistance: 可以钩的距离
+    hookingTickCost: 钩子每 tick 的消耗
+  stuck:
+    main_name: 定身
+    main_description: 定身目标
+    chance: 触发几率，1/n
+    cost: 击中实体定身的消耗
+    costAoe: 范围定身触发消耗
+    costPerEntity: 范围定身每个实体的消耗
+    range: 范围定身的范围
+    facing: 定身最大视角
+    duration: 持续时间
+  teleport:
+    main_name: 传送
+    main_description: 传送到视线方向或者弹射物击中位置
+    distance: 最大距离
+    targetMode: 寻找传送点的模式
+  throw:
+    main_name: 投掷实体
+    main_description: 生成并投掷实体
+    speed: 投掷速度
+    entityName: 实体名称
+    entityData: 实体 NBT 数据
+    isPersistent: 实体是否保留在世界存档
+  tippedarrow:
+    main_name: 药箭
+    main_description: 发射药箭
+    type: 药箭的状态效果
+    duration: 持续时间，游戏刻
+    amplifier: 效果倍率
+  tntcannon:
+    main_name: TNT 大炮
+    main_description: 发射 TNT
+  torch:
+    main_name: 火把
+    main_description: 投掷火把点亮区域
+  translocator:
+    main_name: 传送信标
+    main_description: 投掷信标，之后传送到信标位置
+    tpCost: 传送所需消耗
+    setupCost: 建立信标所需消耗
+  unbreakable:
+    main_name: 无法破坏
+    main_description: 标记该物品为不可破坏
+  airborne:
+    main_name: 空中处决技
+    main_description: 空中或飞行时造成更多伤害
+    percentage: 空中或飞行时造成伤害增加的百分比
+    cap: 该技能所能造成的最高伤害值
+  andcondition:
+    main_name: And 条件
+    main_description: 要求所有条件满足
+  orcondition:
+    main_name: Or 条件
+    main_description: 要求有至少一项满足
+  sound:
+    main_name: 声音
+    main_description: 播放声音
+    pitch: 音高
+    volume: 音量
+    sound: 播放的声音
+  xorcondition:
+    main_name: XOR 条件
+    main_description: 要求所有条件结果的异或值为真
+    init: 初始值
 manual:
   give:
     description: 将物品给与施令者或特定玩家

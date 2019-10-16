@@ -1742,6 +1742,10 @@ public class RPGItem {
         return Objects.requireNonNull(keys.get(power));
     }
 
+    public NamespacedKey removePropertyHolderKey(PropertyHolder power) {
+        return Objects.requireNonNull(keys.remove(power));
+    }
+
     public int getUid() {
         return uid;
     }

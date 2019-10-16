@@ -943,54 +943,6 @@ public class AdminCommands extends RPGCommandReceiver {
         }
     }
 
-    @SuppressWarnings("rawtypes")
-    @SubCommand("trigger")
-    @Completion("power")
-    public void itemAddTrigger(CommandSender sender, Arguments args) {
-        String itemStr = args.next();
-        String powerStr = args.next();
-        if (itemStr == null || itemStr.equals("help")) {
-            msgs(sender, "manual.trigger.description");
-            msgs(sender, "manual.trigger.usage");
-            return;
-        }
-        if (powerStr == null || powerStr.equals("list")) {
-            RPGItem item = getItem(itemStr, sender);
-            for (Map.Entry<String, Trigger> t : item.getTriggers().entrySet()) {
-                Trigger trigger = t.getValue();
-                msgs(sender, "message.item.trigger", t.getKey(), trigger.getLocalizedName(plugin.cfg.language), trigger.getNamespacedKey().toString());
-                if ("list".equals(powerStr)) {
-                    PowerManager.getProperties(trigger.getNamespacedKey()).forEach(
-                            (name, prop) -> showProp(sender, trigger.getNamespacedKey(), prop.getValue(), trigger)
-                    );
-                }
-            }
-            return;
-        }
-        String name = args.next();
-        RPGItem item = getItem(itemStr, sender);
-        Trigger base = Trigger.get(powerStr);
-        if (base == null) {
-            msgs(sender, "message.error.no_trigger", powerStr, String.join(", ", Trigger.keySet()));
-            return;
-        }
-        Trigger trigger = base.copy(name);
-        trigger.setItem(item);
-        try {
-            trigger = setPropertyHolder(sender, args, base.getClass(), trigger, true);
-            item.addTrigger(name, trigger);
-            ItemManager.refreshItem();
-            ItemManager.save(item);
-            msgs(sender, "message.power.ok");
-        } catch (Exception e) {
-            if (e instanceof CommandException) {
-                throw (CommandException) e;
-            }
-            plugin.getLogger().log(Level.WARNING, "Error adding power " + powerStr + " to item " + itemStr + " " + item, e);
-            msgs(sender, "internal.error.command_exception");
-        }
-    }
-
     public static <T extends PropertyHolder> T initPropertyHolder(CommandSender sender, Arguments args, RPGItem item, Class<? extends T> cls) throws IllegalAccessException {
         T power = PowerManager.instantiate(cls);
         power.setItem(item);

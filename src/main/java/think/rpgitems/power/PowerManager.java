@@ -56,6 +56,21 @@ public class PowerManager {
 
     private static final HashMap<String, NamespacedKey> keyCache = new HashMap<>();
 
+    public static void clear() {
+        properties.clear();
+        metas.clear();
+        extensions.clear();
+        extensions.put("rpgitems", RPGItems.plugin);
+        powers.clear();
+        conditions.clear();
+        markers.clear();
+        modifiers.clear();
+        descriptionResolvers.clear();
+        adapters.clear();
+        overrides.clear();
+        keyCache.clear();
+    }
+
     private static void registerPower(Class<? extends Power> clazz) {
         NamespacedKey key = null;
         try {
@@ -156,21 +171,23 @@ public class PowerManager {
                                       p -> p.getKey().getName(),
                                       p -> {
                                           String name = p.getKey().getName();
-                                          return Pair.of(!Power.class.isAssignableFrom(cls) || metas.get(cls).marker() ? null :
-                                                                 methods.stream()
-                                                                        .filter(
-                                                                                m -> m.getParameterCount() == 0 &&
-                                                                                             (m.getName().toLowerCase(Locale.ROOT).equals("get" + name.toLowerCase(Locale.ROOT))
-                                                                                                      || m.getName().toLowerCase(Locale.ROOT).equals("is" + name.toLowerCase(Locale.ROOT))
-                                                                                                      || m.getName().toLowerCase(Locale.ROOT).equals(name.toLowerCase(Locale.ROOT))
-                                                                                                      || m.getName().toLowerCase(Locale.ROOT).replaceAll("(is)|(get)", "").equals(name.toLowerCase(Locale.ROOT).replaceAll("(is)|(get)", ""))
-                                                                                             )
-                                                                        )
-                                                                        .reduce((a, b) -> {
-                                                                            throw new IllegalArgumentException("Duplicated property gettor found:" + p.getKey() + " " + name + " " + a.toString() + " " + b.toString());
-                                                                        })
-                                                                        .orElseThrow(() -> new IllegalArgumentException("No property getter found: " + p.getKey() + " " + name)),
+                                          Pair<Method, PropertyInstance> pair = Pair.of(!Power.class.isAssignableFrom(cls) || metas.get(cls).marker() ? null :
+                                                                                              methods.stream()
+                                                                                                     .filter(
+                                                                                                             m -> m.getParameterCount() == 0 &&
+                                                                                                                          (m.getName().toLowerCase(Locale.ROOT).equals("get" + name.toLowerCase(Locale.ROOT))
+                                                                                                                                   || m.getName().toLowerCase(Locale.ROOT).equals("is" + name.toLowerCase(Locale.ROOT))
+                                                                                                                                   || m.getName().toLowerCase(Locale.ROOT).equals(name.toLowerCase(Locale.ROOT))
+                                                                                                                                   || m.getName().toLowerCase(Locale.ROOT).replaceAll("(is)|(get)", "").equals(name.toLowerCase(Locale.ROOT).replaceAll("(is)|(get)", ""))
+                                                                                                                          )
+                                                                                                     )
+                                                                                                     .reduce((a, b) -> {
+                                                                                                         throw new IllegalArgumentException("Duplicated property gettor found:" + p.getKey() + " " + name + " " + a.toString() + " " + b.toString());
+                                                                                                     })
+                                                                                                     .orElseThrow(() -> new IllegalArgumentException("No property getter found: " + p.getKey() + " " + name)),
                                                   PropertyInstance.from(p.getKey(), p.getValue(), p.getValue().order() < requiredOrder));
+                                          // RPGItems.plugin.cfg.enabledLanguages.forEach(lang -> PowerManager.getDescription())
+                                          return pair;
                                       }
                               )
                       );

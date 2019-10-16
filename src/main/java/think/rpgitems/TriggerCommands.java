@@ -2,18 +2,22 @@ package think.rpgitems;
 
 import cat.nyaa.nyaacore.Pair;
 import cat.nyaa.nyaacore.cmdreceiver.Arguments;
-import cat.nyaa.nyaacore.cmdreceiver.BadCommandException;
 import cat.nyaa.nyaacore.cmdreceiver.SubCommand;
 import org.bukkit.ChatColor;
 import org.bukkit.NamespacedKey;
 import org.bukkit.command.CommandSender;
 import think.rpgitems.item.ItemManager;
 import think.rpgitems.item.RPGItem;
-import think.rpgitems.power.*;
+import think.rpgitems.power.Completion;
+import think.rpgitems.power.PowerManager;
+import think.rpgitems.power.RPGCommandReceiver;
+import think.rpgitems.power.UnknownExtensionException;
+import think.rpgitems.power.trigger.Trigger;
 
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
+import java.util.Set;
 import java.util.logging.Level;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
@@ -21,10 +25,10 @@ import java.util.stream.Stream;
 
 import static think.rpgitems.AdminCommands.*;
 
-public class MarkerCommands extends RPGCommandReceiver {
+public class TriggerCommands extends RPGCommandReceiver {
     private final RPGItems plugin;
 
-    public MarkerCommands(RPGItems plugin, I18n i18n) {
+    public TriggerCommands(RPGItems plugin, I18n i18n) {
         super(plugin, i18n);
         this.plugin = plugin;
     }
@@ -32,20 +36,6 @@ public class MarkerCommands extends RPGCommandReceiver {
     @Override
     public String getHelpPrefix() {
         return "";
-    }
-
-    private Pair<NamespacedKey, Class<? extends Marker>> getMarkerClass(CommandSender sender, String markerStr) {
-        try {
-            NamespacedKey key = PowerManager.parseKey(markerStr);
-            Class<? extends Marker> cls = PowerManager.getMarker(key);
-            if (cls == null) {
-                msgs(sender, "message.marker.unknown", markerStr);
-            }
-            return Pair.of(key, cls);
-        } catch (UnknownExtensionException e) {
-            msgs(sender, "message.error.unknown.extension", e.getName());
-            return null;
-        }
     }
 
     @Completion("")
@@ -56,7 +46,7 @@ public class MarkerCommands extends RPGCommandReceiver {
                 completeStr.addAll(ItemManager.itemNames());
                 break;
             case 2:
-                completeStr.addAll(PowerManager.getMarkers().keySet().stream().map(s -> PowerManager.hasExtension() ? s : s.getKey()).map(Object::toString).collect(Collectors.toList()));
+                completeStr.addAll(Trigger.keySet());
                 break;
             default:
                 RPGItem item = getItem(arguments.nextString(), sender);
@@ -68,29 +58,32 @@ public class MarkerCommands extends RPGCommandReceiver {
     @SubCommand(value = "add", tabCompleter = "addCompleter")
     public void add(CommandSender sender, Arguments args) {
         String itemStr = args.next();
-        String markerStr = args.next();
-        if (itemStr == null || itemStr.equals("help") || markerStr == null) {
-            msgs(sender, "manual.marker.add.description");
-            msgs(sender, "manual.marker.add.usage");
+        String powerStr = args.next();
+        if (itemStr == null || itemStr.equals("help")) {
+            msgs(sender, "manual.trigger.description");
+            msgs(sender, "manual.trigger.usage");
             return;
         }
+        String name = args.next();
         RPGItem item = getItem(itemStr, sender);
-        Pair<NamespacedKey, Class<? extends Marker>> keyClass = getMarkerClass(sender, markerStr);
-        if (keyClass == null || keyClass.getValue() == null) return;
-        Marker marker;
-        Class<? extends Marker> cls = keyClass.getValue();
-        NamespacedKey key = keyClass.getKey();
+        Trigger base = Trigger.get(powerStr);
+        if (base == null) {
+            msgs(sender, "message.trigger.unknown_base", powerStr, String.join(", ", Trigger.keySet()));
+            return;
+        }
+        Trigger trigger = base.copy(name);
+        trigger.setItem(item);
         try {
-            marker = initPropertyHolder(sender, args, item, cls);
-            item.addMarker(key, marker);
+            trigger = setPropertyHolder(sender, args, base.getClass(), trigger, true);
+            item.addTrigger(name, trigger);
             ItemManager.refreshItem();
             ItemManager.save(item);
-            msg(sender, "message.marker.ok", markerStr);
+            msgs(sender, "message.trigger.ok");
         } catch (Exception e) {
-            if (e instanceof BadCommandException) {
-                throw (BadCommandException) e;
+            if (e instanceof CommandException) {
+                throw (CommandException) e;
             }
-            plugin.getLogger().log(Level.WARNING, "Error adding marker " + markerStr + " to item " + itemStr + " " + item, e);
+            plugin.getLogger().log(Level.WARNING, "Error adding trigger " + powerStr + " to item " + itemStr + " " + item, e);
             msgs(sender, "internal.error.command_exception");
         }
     }
@@ -104,7 +97,7 @@ public class MarkerCommands extends RPGCommandReceiver {
                 break;
             case 2:
                 RPGItem item = getItem(arguments.nextString(), sender);
-                completeStr.addAll(IntStream.range(0, item.getMarkers().size()).mapToObj(String::valueOf).collect(Collectors.toList()));
+                completeStr.addAll(IntStream.range(0, item.getTriggers().size()).mapToObj(String::valueOf).collect(Collectors.toList()));
                 break;
             default:
                 item = getItem(arguments.nextString(), sender);
@@ -117,38 +110,34 @@ public class MarkerCommands extends RPGCommandReceiver {
     public void prop(CommandSender sender, Arguments args) throws IllegalAccessException {
         RPGItem item = getItem(args.nextString(), sender);
         if (args.top() == null) {
-            for (int i = 0; i < item.getMarkers().size(); i++) {
-                Marker marker = item.getMarkers().get(i);
-                showMarker(sender, item, marker);
-            }
+            item.getTriggers().forEach((n, t) -> showTrigger(sender, item, t));
             return;
         }
-        int nth = args.nextInt();
+        String name = args.nextString();
         try {
-            Marker marker = item.getMarkers().get(nth);
-            if (marker == null) {
-                msgs(sender, "message.marker.unknown", nth);
+            Trigger trigger = item.getTriggers().get(name);
+            if (trigger == null) {
+                msgs(sender, "message.trigger.unknown", name);
                 return;
             }
             if (args.top() == null) {
-                showMarker(sender, item, marker);
+                showTrigger(sender, item, trigger);
                 return;
             }
-            setPropertyHolder(sender, args, marker.getClass(), marker, false);
+            setPropertyHolder(sender, args, trigger.getClass(), trigger, false);
             item.rebuild();
             ItemManager.refreshItem();
             ItemManager.save(item);
-            msgs(sender, "message.marker.change");
+            msgs(sender, "message.trigger.change");
         } catch (UnknownExtensionException e) {
             msgs(sender, "message.error.unknown.extension", e.getName());
         }
     }
 
-    public void showMarker(CommandSender sender, RPGItem item, Marker marker) {
-        msgs(sender, "message.marker.show", marker.getLocalizedName(sender), marker.getNamespacedKey().toString(), marker.displayText() == null ? I18n.getInstance(sender).format("message.marker.no_display") : marker.displayText());
-        NamespacedKey markerKey = item.getPropertyHolderKey(marker);
-        PowerManager.getProperties(markerKey).forEach(
-                (name, prop) -> showProp(sender, markerKey, prop.getValue(), marker)
+    public static void showTrigger(CommandSender sender, RPGItem item, Trigger trigger) {
+        msgs(sender, "message.trigger.show", trigger.name(), trigger.getBase(), trigger.getLocalizedName(sender), trigger.getNamespacedKey().toString());
+        PowerManager.getProperties(item.getPropertyHolderKey(trigger)).forEach(
+                (name, prop) -> showProp(sender, trigger.getNamespacedKey(), prop.getValue(), trigger)
         );
     }
 
@@ -161,7 +150,7 @@ public class MarkerCommands extends RPGCommandReceiver {
                 break;
             case 2:
                 RPGItem item = getItem(arguments.nextString(), sender);
-                completeStr.addAll(IntStream.range(0, item.getMarkers().size()).mapToObj(String::valueOf).collect(Collectors.toList()));
+                completeStr.addAll(item.getTriggers().keySet());
                 break;
         }
         return filtered(arguments, completeStr);
@@ -170,36 +159,27 @@ public class MarkerCommands extends RPGCommandReceiver {
     @SubCommand(value = "remove", tabCompleter = "removeCompleter")
     public void remove(CommandSender sender, Arguments args) {
         RPGItem item = getItem(args.nextString(), sender);
-        int nth = args.nextInt();
-        try {
-            Marker marker = item.getMarkers().get(nth);
-            if (marker == null) {
-                msgs(sender, "message.marker.unknown", nth);
-                return;
-            }
-            item.getMarkers().remove(nth);
-            msgs(sender, "message.marker.removed");
-        } catch (UnknownExtensionException e) {
-            msgs(sender, "message.error.unknown.extension", e.getName());
+        String name = args.nextString();
+        Trigger trigger = item.getTriggers().get(name);
+        if (trigger == null) {
+            msgs(sender, "message.trigger.unknown", name);
+            return;
         }
+        item.getTriggers().remove(name);
+        msgs(sender, "message.trigger.removed");
     }
 
     @SubCommand("list")
     public void list(CommandSender sender, Arguments args) {
         int perPage = RPGItems.plugin.cfg.powerPerPage;
         String nameSearch = args.argString("n", args.argString("name", ""));
-        List<NamespacedKey> markers = PowerManager.getMarkers()
-                                                 .keySet()
-                                                 .stream()
-                                                 .filter(i -> i.getKey().contains(nameSearch))
-                                                 .sorted(Comparator.comparing(NamespacedKey::getKey))
-                                                 .collect(Collectors.toList());
-        if (markers.size() == 0) {
+        Set<String> triggers = Trigger.keySet();
+        if (triggers.size() == 0) {
             msgs(sender, "message.marker.not_found", nameSearch);
             return;
         }
-        Stream<NamespacedKey> stream = markers.stream();
-        Pair<Integer, Integer> maxPage = getPaging(markers.size(), perPage, args);
+        Stream<String> stream = triggers.stream();
+        Pair<Integer, Integer> maxPage = getPaging(triggers.size(), perPage, args);
         int page = maxPage.getValue();
         int max = maxPage.getKey();
         stream = stream
@@ -208,11 +188,12 @@ public class MarkerCommands extends RPGCommandReceiver {
         sender.sendMessage(ChatColor.AQUA + "Markers: " + page + " / " + max);
 
         stream.forEach(
-                marker -> {
-                    msgs(sender, "message.marker.key", marker.toString());
-                    msgs(sender, "message.marker.description", PowerManager.getDescription(marker, null));
-                    PowerManager.getProperties(marker).forEach(
-                            (name, mp) -> showProp(sender, marker, mp.getValue(), null)
+                trigger -> {
+                    Trigger base = Trigger.valueOf(trigger);
+                    msgs(sender, "message.trigger.key", trigger);
+                    msgs(sender, "message.trigger.description", PowerManager.getDescription(base.getNamespacedKey(), null));
+                    PowerManager.getProperties(base.getClass()).forEach(
+                            (name, mp) -> showProp(sender, base.getNamespacedKey(), mp.getValue(), null)
                     );
                     msgs(sender, "message.line_separator");
                 });

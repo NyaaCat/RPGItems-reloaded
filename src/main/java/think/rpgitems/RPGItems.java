@@ -45,6 +45,7 @@ public class RPGItems extends JavaPlugin {
     public void onLoad() {
         plugin = this;
         logger = this.getLogger();
+        PowerManager.clear();
 
         String versionDesc = getDescription().getVersion();
         Pattern serialPattern = Pattern.compile("(\\d+)\\.(\\d+)\\.(\\d+)-mc([\\d.]+)");
@@ -69,33 +70,34 @@ public class RPGItems extends JavaPlugin {
         cfg = new Configuration(this);
         cfg.load();
         cfg.enabledLanguages.forEach(lang -> new I18n(this, lang));
-
-        new BaseTriggers();
-        PowerManager.registerAdapter(PowerPlain.class, PowerOffhandClick.class, p -> getWrapper(p, PowerOffhandClick.class, "offhandClick"));
-        PowerManager.registerAdapter(PowerPlain.class, PowerSprint.class, p -> getWrapper(p, PowerSprint.class, "sprint"));
-        PowerManager.registerAdapter(PowerPlain.class, PowerSneak.class, p -> getWrapper(p, PowerSneak.class, "sneak"));
-        PowerManager.registerAdapter(PowerPlain.class, PowerAttachment.class, p -> getWrapper(p, PowerAttachment.class, "attachment"));
         cfg.enabledLanguages.forEach(lang ->
                                              PowerManager.addDescriptionResolver(RPGItems.plugin, lang, (power, property) -> {
                                                  I18n i18n = I18n.getInstance(lang);
                                                  if (property == null) {
-                                                     String powerKey = "power.properties." + power.getKey() + ".main_description";
+                                                     String powerKey = "properties." + power.getKey() + ".main_description";
                                                      return I18n.formatDefault(powerKey);
                                                  }
-                                                 String key = "power.properties." + power.getKey() + "." + property;
+                                                 String key = "properties." + power.getKey() + "." + property;
                                                  if (i18n.hasKey(key)) {
                                                      return I18n.formatDefault(key);
                                                  }
-                                                 String baseKey = "power.properties.base." + property;
+                                                 String baseKey = "properties.base." + property;
                                                  if (i18n.hasKey(baseKey)) {
                                                      return I18n.formatDefault(baseKey);
                                                  }
                                                  return null;
                                              }));
+        logger.log(Level.INFO, "Loading powers...");
+        new BaseTriggers();
+        PowerManager.registerAdapter(PowerPlain.class, PowerOffhandClick.class, p -> getWrapper(p, PowerOffhandClick.class, "offhandClick"));
+        PowerManager.registerAdapter(PowerPlain.class, PowerSprint.class, p -> getWrapper(p, PowerSprint.class, "sprint"));
+        PowerManager.registerAdapter(PowerPlain.class, PowerSneak.class, p -> getWrapper(p, PowerSneak.class, "sneak"));
+        PowerManager.registerAdapter(PowerPlain.class, PowerAttachment.class, p -> getWrapper(p, PowerAttachment.class, "attachment"));
         PowerManager.registerConditions(RPGItems.plugin, Power.class.getPackage().getName() + ".cond");
         PowerManager.registerPowers(RPGItems.plugin, Power.class.getPackage().getName() + ".impl");
         PowerManager.registerMarkers(RPGItems.plugin, Power.class.getPackage().getName() + ".marker");
         PowerManager.registerModifiers(RPGItems.plugin, Power.class.getPackage().getName() + ".propertymodifier");
+        logger.log(Level.INFO, "Powers loaded.");
         saveDefaultConfig();
         Font.load();
         WGSupport.load();

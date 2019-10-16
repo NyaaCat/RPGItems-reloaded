@@ -166,7 +166,6 @@ message:
     get: 'Item ''%s'' item is {itemName} (%s): %d '
     list: '%s - {item}'
     print: '{itemName}'
-    power: 'Power %d %s (%s)：%s &r[%s]'
     dump: |-
       Item %s:
 
@@ -231,20 +230,44 @@ message:
   wgforcerefresh:
     enable: Worldguard custom flag force refresh enabled
     disable: Worldguard custom flag force refresh disabled
-  power:
-    ok: Power added
-    unknown: Unknown power %s
-    removed: Power %s removed
+  propertyHolder:
     required: "Missing required argument: %s"
-    key: "&3&lPower '&r%s&3&l'"
     description: '&3&l-| &r%s'
     property: '&b-| %s: &r%s'
     property_value: '&b-| &r%s'
-    no_display: No display text
     no_description: '&7No description yet'
+  power:
+    ok: Power %s added at %d
+    unknown: Unknown power %s
+    removed: Power %s removed at  %d
+    key: "&3&lPower '&r%s&3&l'"
+    no_display: No display text
     not_found: No power found for %s
-    reorder: Reordered item %s's power %s
+    reorder: Reordered power %s to %d
     ignored_trigger: Ignoring unknown trigger %s on power %s for item %s
+    show: 'Power %d - %s (%s)：%s &r[%s]'
+  marker:
+    ok: Marker %s added
+    unknown: Unknown marker %s
+    removed: Marker %s removed
+    key: "&3&lMarker '&r%s&3&l'"
+    not_found: No marker found for %s
+    show: 'Marker %s (%s)：%s'
+  condition:
+    ok: Condition %s added
+    unknown: Unknown condition %s
+    removed: Condition %s removed
+    key: "&3&lCondition '&r%s&3&l'"
+    not_found: No condition found for %s
+    show: 'Condition %s - %s (%s)：%s'
+  trigger:
+    ok: Trigger %s added
+    unknown_base: 'Unknown base trigger %s. Available: %s'
+    unknown: Unknown trigger %s
+    removed: Trigger %s removed
+    key: "&3&lTrigger '&r%s&3&l'"
+    not_found: No trigger found for %s
+    show: 'Trigger %s - base %s (%s)：%s'
   toggleLore:
     show: Lore now been displayed
     hide: Lore now been hid
@@ -385,481 +408,490 @@ power:
   explosion: '%.1f%% chance to create a explosion of power %.1f'
   headshot: 'Deal %.1f damage when headshot'
   gunfu: "Projectiles will track a enemy (%.1fs cooldown)"
-  properties:
-    base:
-      id: ID of this condition/selector.
-      cooldown: Cooldown of the power, in ticks.
-      display: Display text of this power.
-      cost: Durability cost of the power.
-      isStatic: Whether only check this condition once.
-      isCritical: Whether abort current trigger if this condition fails.
-      triggers: Triggers of this power.
-      conditions: Conditions of this power.
-      selectors: Selectors for this power.
-    airborne:
-      main_name: Airborne
-      main_description: Do more damage when gliding
-      percentage: Damage increase in percentage when gliding
-      cap: Maximum damage done by this power
-    andcondition:
-      main_name: And Condition
-      main_description: Condition that requires all its Conditions are met
-    aoe:
-      main_name: AOE Effect
-      main_description: Apply effect to entities in range. PowerSelector is applicable.
-      range: Effective range in blocks.
-      duration: Duration of applied effect, in ticks.
-      amplifier: Amplifier of applied effect.
-      type: Type of applied effect.
-      selfapplication: Whether to apply effect on triggering player.
-      name: Display text of the power.
-    aoecommand:
-      main_name: AOE Command
-      main_description: Run command for entities in range. PowerSelector is applicable.
-      range: Effective range in blocks.
-      command: Command to be executed
-      permission: Permission that will be given to user executing command
-      type: Type of entities
-      r: Maximum range in blocks.
-      rm: Minimum range in blocks.
-      facing: Maximum effective view angle in degrees.
-      c: Maximum count of entities.
-      mustsee: Whether only apply to the entities within line of sight
-      selfapplication: Whether to apply command on triggering player.
-    arrow:
-      main_name: Arrow
-      main_description: Fire an arrow.
-    attachments:
-      main_name: Attachments
-      main_description: Can use other RPGItems as attachments. Firing this power will trigger ATTACHMENT trigger of attachments.
-      allowedSlots: allowed equipment slot
-      allowedInvSlots: allowed inventory slot number. -1 to disable inventory
-      limit: maximum number of attachments
-      allowedItems: RPGItems/Groups' id or name that are leagal attachment for this item
-    attract:
-      main_name: Attract
-      main_description: Pull around mobs in to player
-      radius: Effective range in blocks.
-      maxSpeed: Maximum speed when attracting.
-      duration: Duration of this power when triggered by click in tick.
-      attractingTickCost: Durability cost per tick when attracting.
-      attractingEntityTickCost: Durability cost per entity one tick when attracting.
-      attractPlayer: Whether allow attracting player.
-    attributemodifier:
-      main_name: Attribute Modifier
-      main_description: Add Attribute Modifier
-      amount: Amount
-      attribute: Attribute
-      name: Name
-      operation: Operation
-      slot: Slot
-      uuidLeast: UUID least
-      uuidMost: UUID most
-    chancecondition:
-      main_name: Chance Condition
-      main_description: Condition that met by chance
-      chancePercentage: chance, in percentage
-    charge:
-      main_name: Charge
-      main_description: Do more damage when sprinting
-      percentage: Damage increase in percentage when sprinting
-      speedPercentage: Damage increase in percentage when faster than default
-      cap: Maximum damage done by this power
-    color:
-      main_name: Color
-      main_description: NOT AVAILABLE YET
-      wool: N/A
-      clay: N/A
-      glass: N/A
-    command:
-      main_name: Command
-      main_description: Run a command on click.
-      command: Command to be executed
-      permission: Permission that will be given to user executing command
-    commandhit:
-      main_name: Command Hit
-      main_description: Run a command when hits someting.
-      command: Command to be executed
-      permission: Permission that will be given to user executing command
-      minDamage: Minimum damage to trigger
-    consume:
-      main_name: Consume
-      main_description: Remove one item on click.
-      isRight: Mouse button to trigger the power
-    consumehit:
-      main_name: Consume Hit
-      main_description: Remove one item when hits something.
-    criticalhit:
-      main_name: Critical Hit and Backstab
-      main_description: With a chance%% to deal more damage. With a backstabChance%% to deal more damage when backstabing.
-      backstabChance: Chance of triggering backstab, in percentage
-      backstabFactor: Factor of backstab damage. E.g. deals (damage * backstabFactor) damage
-      chance: Chance of triggering critical hit, in percentage
-      factor: Factor of critical hit damage. E.g. deals (damage * factor) damage
-      setBaseDamage: Whether to set event base damage to final damage to allow stacking of damage power.
-    deathcommand:
-      main_name: Death Command
-      main_description: With a 1/chance to kill the target then execute the command for count times
-      chance: Chance of triggering this power, 1/n
-      command: Command to be executed
-      count: Times to run the command
-      desc: Description in display text
-    deflect:
-      main_name: Deflect
-      main_description: Deflect arrows or fireballs towards player
-      facing: Maximum effective view angle in degrees
-      cooldownpassive: Cooldown time of this power in passive mode
-      duration: Duration of this power, in ticks
-      chance: Chance in percentage of triggering this power in passive mode
-      deflectCost: Cost for each deflect
-    delayedcommand:
-      main_name: Delayed Command
-      main_description: Run command on click with a delay
-      delay: Delay before executing command
-      command: Command to be executed
-      permission: Permission that will be given to user executing command
-    dummy:
-      main_name: Dummy
-      main_description: Won't do anything but give you fine control
-      successResult: Result returned when success
-      costResult: Result returned when failed to comsume durability
-      cooldownResult: Result returned when in cooldown
-      checkDurabilityBound: If to check durability bound of this item
-      showCDWarning: Show cooldown warning
-      cooldownKey: Key for cooldowning
-    durabilitycondition:
-      main_name: Durability Condition
-      main_description: Condition that requires item's durability in a range
-      durabilityMin: Durability should great than durabilityMin
-      durabilityMax: Durability should less than durabilityMax
-    economy:
-      main_name: Economy
-      main_description: Deposit to or withdraw from player
-      amountToPlayer: Amount of money will transfer to player (can be negative)
-      showFailMessage: Show fail message from economy provider
-      abortOnFailure: Abort on failure
-    equipmentcondition:
-      main_name: Equipment Condition
-      main_description: Condition that requires player wear some item
-      slots: Equipment slots
-      material: Material that player should wears
-      itemStack: Item that player should wears
-      rpgitem: RPGItem that player should wears
-      matchAllSlot: Whether to require all slot to match
-    evalcondition:
-      main_name: Eval Condition
-      main_description: Calculate condition dynamicly
-      expression: Expression to compute condition
-    evaldamage:
-      main_name: Eval Damage
-      main_description: Calculate damage dynamicly
-      display: Display name
-      expression: Expression to compute damage
-      setBaseDamage: Whether to set event base damage to final damage to allow stacking of damage power.
-    explosion:
-      main_name: Explosion
-      main_description: Make a explosion that caused by the player
-      chance: Chance of triggering this power, in percentage
-      power: Power of explosion. 4 for TNT
-      distance: Maximum distance
-    fire:
-      main_name: Fire
-      main_description: Fire an fireblock that burns entities hit
-      distance: Maximum distance
-      burnduration: Duration of the fire, in ticks
-    fireball:
-      main_name: Fireball
-      main_description: Fire an fireball
-    flame:
-      main_name: Flame
-      main_description: Set the target on fire on hit
-      burntime: Duration of the fire, in ticks
-    food:
-      main_name: Food
-      main_description: Restore food points when eaten
-      foodpoints: Food Points
-    forcefield:
-      main_name: Force Field
-      main_description: Creates a force field around the player
-      radius: Radius of force field
-      height: Height of force field
-      base: Base of force field
-      ttl: Time to live
-    glove:
-      main_name: Glove
-      main_description: Catch an entity
-      maxDistance: Maximum distance to catch
-      maxTicks: Maximum ticks catching
-      throwSpeed: Speed throwing entity
-    gunfu:
-      main_name: Gun Fu
-      main_description: Make projectiles track enemies
-      distance: Maximum distance to lock enemy
-      viewAngle: Maximum view angle to lock enemy
-      maxTicks: Maximum ticks tracking
-      initVelFactor: Factor of init velocity
-      velFactor: Factor of velocity change per tick
-    headshot:
-      main_name: Headshot
-      main_description: Increase damage when headshot
-      factor: Factor of headshot damage. E.g. deals (damage * factor) damage
-      particleEnemy: Whether to show particle at enemy location
-      soundEnemy: Whether to play sound at enemy location
-      soundSelf: Whether to play sound at player location
-      setBaseDamage: Whether to set event base damage to final damage to allow stacking of damage power.
-    ice:
-      main_name: Ice
-      main_description: Fire an ice block, then create a box of ice on impact
-    knockup:
-      main_name: Knockup
-      main_description: Send the hit target flying
-      chance: Chance of triggering this power, 1/n
-      power: Power of knock up
-    lastresultcondition:
-      main_name: Last Result Condition
-      main_description: Requires result of last power is in a set
-      okResults: Allowed result
-      failOnNoResult: Whether fails when no power
-    lifesteal:
-      main_name: Lifesteal
-      main_description: Restore health by damage dealt
-      chance: Chance of triggering this power, in percentage
-      factor: Factor of life steal
-    lightning:
-      main_name: Lightning
-      main_description: Strike the hit target with lightning
-      chance: Chance of triggering this power, 1/n
-    lorefilter:
-      main_name: Lore Filter
-      main_description: Preserve all lore lines match the regex
-      regex: Regex to filter the lore
-      desc: Display text
-      find: Only requires the regex finds in lore line (instead of matches).
-    mount:
-      main_name: Mount
-      main_description: Ride an entity
-      maxDistance: Maximum distance to ride
-      maxTicks: Maximum ticks riding
-    noimmutabletick:
-      main_name: No Immutable Tick
-      main_description: Cancel the damage delay (no-damage-tick)
-    orcondition:
-      main_name: Or Condition
-      main_description: Condition that requires at least one of its Conditions are met
-    particle:
-      main_name: Particle
-      main_description: Spawn some particles around the user
-      effect: Name of visual effect
-      particle: Name of particle effect
-      particleCount: Count of particle
-      material: Material of dust particle
-      dustColor: Color of dust particle
-      dustSize: Size of dust particle
-      offsetX: Offset X
-      offsetY: Offset Y
-      offsetZ: Offset Z
-      extra: Extra data
-      force: Force show particle
-    particlebarrier:
-      main_name: Particle Barrier
-      main_description: Spawn a barrier that redirecting energy of incoming attacks to strength
-      projected: Whether this barrier can be projected
-      energyDecay: Decay of energy per second
-      energyPerBarrier: Total energy gained when a barrier was broken
-      barrierHealth: Health of a new barrier
-      energyPerLevel: Energy required per level of strength effect
-      effect: Effect of particle barrier
-    particletick:
-      main_name: Particle Tick
-      main_description: Spawn some particles around the user when equipped
-      interval: Interval of particle effect
-      effect: Name of visual effect
-      particle: Name of particle effect
-      particleCount: Count of particle
-      material: Material of dust particle
-      dustColor: Color of dust particle
-      dustSize: Size of dust particle
-      offsetX: Offset X
-      offsetY: Offset Y
-      offsetZ: Offset Z
-      extra: Extra data
-      force: Force show particle
-    potionhit:
-      main_name: Potion Hit
-      main_description: Apply effect to enemy when hit
-      duration: Duration of potion effect, in ticks
-      amplifier: Amplifier of potion effect
-      type: Type of potion effect
-      chance: Chance of triggering this power, 1/n
-    potionself:
-      main_name: Potion Self
-      main_description: Apply effect to player when used
-      duration: Time of potion effect, in ticks
-      amplifier: Amplifier of potion effect
-      type: Type of potion effect
-    potiontick:
-      main_name: Potion Tick
-      main_description: Apply effect to player when equipped
-      duration: Time of potion effect, in ticks
-      amplifier: Amplifier of potion effect
-      effect: Type of potion effect
-      interval: Interval of this power
-      clear: Whether to remove the effect instead of adding it
-    projectile:
-      main_name: Projectile
-      main_description: Launches projectile
-      isCone: Whether launch projectiles in cone
-      projectileType: Type of projectiles
-      range: Range will projectiles spread, in degree
-      amount: Amount of projectiles
-      speed: Speed of projectiles
-      gravity: Whether the projectile have gravity
-      burstCount: Burst count
-      burstInterval: Interval between bursts
-      setFireballDirection: Whether to set Fireball' direction so it won't curve
-      yield: Radius affected by this Explosive's explosion
-      isIncendiary: Whether this Explosive's explosion causes fire
-    pumpkin:
-      main_name: Pumpkin
-      main_description: When hit skeleton or zombie, make them wear pumpkin head
-      chance: Chance of triggering this power, in percentage
-      drop: Drop chance of the pumpkin, 0.0~1.0
-    rainbow:
-      main_name: Rainbow
-      main_description: Fire blocks of coloured wool
-      count: Count of blocks
-      isFire: Whether launch fire instead of wool
-    ranged:
-      main_name: Ranged
-      main_description: Mark this item as ranged
-      rm: Minimum radius
-      r: Maximum radius
-    rangedonly:
-      main_name: Ranged Only
-      main_description: Mark this item as ranged only
-      rm: Minimum radius
-      r: Maximum radius
-    realdamage:
-      main_name: Real Damage
-      main_description: Do real damage to entity hit but won't kill it
-      realDamage: Damage of this power
-      minDamage: Minimum damage to trigger
-    repair:
-      main_name: Repair
-      main_description: Repair the item with some material
-      material: Material to be consumed
-      durability: Durability to be repaired
-      isSneak: Whether require sneaking to trigger this power
-      abortOnSuccess: Abort subsequence execution of powers when success
-      abortOnFailure: Abort subsequence execution of powers when fail
-      amount: Amount of material required
-      mode: Whether allow repairing when durability would overflow
-      customMessage: Custom message when not enought material
-      showFailMsg: Whether to show message when not enought material
-      allowBreak: Allow repairing with negative durability to breaking the item
-    rescue:
-      main_name: Rescue
-      main_description: Rescue player on low health or receiving high damage
-      healthTrigger: Health trigger of rescue
-      useBed: Whether use bed instead of home
-      inPlace: Whether rescue in place instead of teleport
-      damageTrigger: Damage trigger of rescue
-    rumble:
-      main_name: Rumble
-      main_description: Sends a shockwave through the ground and sends any hit entities flying
-      power: Power of rumble
-      distance: Maximum distance of rumble
-    scoreboard:
-      main_name: Scoreboard
-      main_description: Add/remove tag/team to/from player's scoreboard
-      tag: Tag(s) to add and remove, `TO_ADD,!TO_REMOVE`
-      team: Team(s) to join and leave, `JOIN,!LEAVE`
-      abortOnSuccess: Abort subsequence execution of powers when success
-    scoreboardcondition:
-      main_name: Scoreboard Condition
-      main_description: Condition that add requirements of player's scoreboard
-      score: Selecting targets by score(s), `score_name:min,max another_score_name:min,max`
-      tag: Selecting targets by tag(s), `MUST_HAVE,!MUST_NOT_HAVE`
-      team: Selecting targets by team(s), `MUST_ON,!MUST_NOT_ON`
-    selector:
-      main_name: Selector
-      main_description: Provide a selector for some AOE power
-      id: ID of this power, should be unique on this item
-      type: Type(s) of target entities
-      count: Count of target entities
-      x: X-coordinate of reference position, tilde notation is available. Use player's current position if empty
-      y: Y-coordinate of reference position, tilde notation is available. Use player's current position if empty
-      z: Z-coordinate of reference position, tilde notation is available. Use player's current position if empty
-      r: Selects only targets less than r blocks from reference position
-      rm: Selects only targets more than rm blocks from reference position
-      dx: Selects only targets less than dx blocks in X-axis from reference position
-      dy: Selects only targets less than dx blocks in Y-axis from reference position
-      dz: Selects only targets less than dx blocks in Z-axis from reference position
-      score: Selecting targets by score(s), `score_name:min,max another_score_name:min,max`
-      tag: Selecting targets by tag(s), `MUST_HAVE,!MUST_NOT_HAVE`
-      team: Selecting targets by team(s), `MUST_ON,!MUST_NOT_ON`
-    shulkerbullet:
-      main_name: Shulker Bullect
-      main_description: Launches shulker bullet when right clicked, target nearest entity in front of player
-      range: Range of target finding
-    skyhook:
-      main_name: Sky Hook
-      main_description: Hook on to some material
-      railMaterial: Material that can hooks on
-      hookDistance: Maximum distance
-      hookingTickCost: Cost per tick hooking
-    sound:
-      main_name: Sound
-      main_description: Play a sound
-      pitch: Pitch of sound
-      volume: Volume of sound
-      sound: Sound to be played
-    stuck:
-      main_name: Stuck
-      main_description: Make target stuck
-      chance: Chance of triggering this power, 1/n
-      cost: Cost of this power (hit)
-      costAoe: Cost of this power (right click)
-      costPerEntity: Cost of this power (right click per entity)
-      range: Range of AOE
-      facing: Maximum effective view angle in degrees
-      duration: Duration of this power in tick
-    teleport:
-      main_name: Teleport
-      main_description: teleport you in the direction you're looking in or to the place where the projectile hit
-      distance: Maximum distance
-      targetMode: Mode of finding teleport target
-    throw:
-      main_name: Throw
-      main_description: Spawn and throw a entity
-      speed: Speed of entity thrown
-      entityName: Name of entity thrown
-      entityData: NBT data of entity
-      isPersistent: Whether to make entity persistent
-    tippedarrow:
-      main_name: Tipped Arrow
-      main_description: Fire an tipped arrow
-      type: Type of potion effect
-      duration: Duration of potion effect, in ticks
-      amplifier: Amplifier of potion effect
-    tntcannon:
-      main_name: TNT Cannon
-      main_description: Fire active tnt
-    torch:
-      main_name: Torch
-      main_description: Shoots torches to light up an area
-    translocator:
-      main_name: Translocator
-      main_description: Throw an translocator and teleport to it later
-      tpCost: Cost to teleport to the translocator
-      setupCost: Cost to setup an translocator
-    unbreakable:
-      main_name: Unbreakable
-      main_description: Mark this item as unbreakable
-    xorcondition:
-      main_name: Xor Condition
-      main_description: Condition that xor all its Conditions
-      init: Init value
+properties:
+  base:
+    id: ID of this condition/selector.
+    cooldown: Cooldown of the power, in ticks.
+    display: Display text of this power.
+    displayText: Display text of this power.
+    displayName: Display name of this power.
+    cost: Durability cost of the power.
+    isStatic: Whether only check this condition once.
+    isCritical: Whether abort current trigger if this condition fails.
+    triggers: Triggers of this power.
+    conditions: Conditions of this power.
+    selectors: Selectors for this power.
+    priority: Priority of this custom trigger.
+    requiredContext: Context key used by this power.
+    requireHurtByEntity: Whether only run this power when hurt by entity.
+    targetItem: Target item of this modifier.
+    targetPower: Target power of this modifier.
+    targetProperty: Target property of this modifier.
+  airborne:
+    main_name: Airborne
+    main_description: Do more damage when gliding
+    percentage: Damage increase in percentage when gliding
+    cap: Maximum damage done by this power
+  andcondition:
+    main_name: And Condition
+    main_description: Condition that requires all its Conditions are met
+  aoe:
+    main_name: AOE Effect
+    main_description: Apply effect to entities in range. PowerSelector is applicable.
+    range: Effective range in blocks.
+    duration: Duration of applied effect, in ticks.
+    amplifier: Amplifier of applied effect.
+    type: Type of applied effect.
+    selfapplication: Whether to apply effect on triggering player.
+    name: Display text of the power.
+  aoecommand:
+    main_name: AOE Command
+    main_description: Run command for entities in range. PowerSelector is applicable.
+    range: Effective range in blocks.
+    command: Command to be executed
+    permission: Permission that will be given to user executing command
+    type: Type of entities
+    r: Maximum range in blocks.
+    rm: Minimum range in blocks.
+    facing: Maximum effective view angle in degrees.
+    c: Maximum count of entities.
+    mustsee: Whether only apply to the entities within line of sight
+    selfapplication: Whether to apply command on triggering player.
+  arrow:
+    main_name: Arrow
+    main_description: Fire an arrow.
+  attachments:
+    main_name: Attachments
+    main_description: Can use other RPGItems as attachments. Firing this power will trigger ATTACHMENT trigger of attachments.
+    allowedSlots: allowed equipment slot
+    allowedInvSlots: allowed inventory slot number. -1 to disable inventory
+    limit: maximum number of attachments
+    allowedItems: RPGItems/Groups' id or name that are leagal attachment for this item
+  attract:
+    main_name: Attract
+    main_description: Pull around mobs in to player
+    radius: Effective range in blocks.
+    maxSpeed: Maximum speed when attracting.
+    duration: Duration of this power when triggered by click in tick.
+    attractingTickCost: Durability cost per tick when attracting.
+    attractingEntityTickCost: Durability cost per entity one tick when attracting.
+    attractPlayer: Whether allow attracting player.
+  attributemodifier:
+    main_name: Attribute Modifier
+    main_description: Add Attribute Modifier
+    amount: Amount
+    attribute: Attribute
+    name: Name
+    operation: Operation
+    slot: Slot
+    uuidLeast: UUID least
+    uuidMost: UUID most
+  chancecondition:
+    main_name: Chance Condition
+    main_description: Condition that met by chance
+    chancePercentage: chance, in percentage
+  charge:
+    main_name: Charge
+    main_description: Do more damage when sprinting
+    percentage: Damage increase in percentage when sprinting
+    speedPercentage: Damage increase in percentage when faster than default
+    cap: Maximum damage done by this power
+  color:
+    main_name: Color
+    main_description: NOT AVAILABLE YET
+    wool: N/A
+    clay: N/A
+    glass: N/A
+  command:
+    main_name: Command
+    main_description: Run a command on click.
+    command: Command to be executed
+    permission: Permission that will be given to user executing command
+  commandhit:
+    main_name: Command Hit
+    main_description: Run a command when hits someting.
+    command: Command to be executed
+    permission: Permission that will be given to user executing command
+    minDamage: Minimum damage to trigger
+  consume:
+    main_name: Consume
+    main_description: Remove one item on click.
+    isRight: Mouse button to trigger the power
+  consumehit:
+    main_name: Consume Hit
+    main_description: Remove one item when hits something.
+  criticalhit:
+    main_name: Critical Hit and Backstab
+    main_description: With a chance%% to deal more damage. With a backstabChance%% to deal more damage when backstabing.
+    backstabChance: Chance of triggering backstab, in percentage
+    backstabFactor: Factor of backstab damage. E.g. deals (damage * backstabFactor) damage
+    chance: Chance of triggering critical hit, in percentage
+    factor: Factor of critical hit damage. E.g. deals (damage * factor) damage
+    setBaseDamage: Whether to set event base damage to final damage to allow stacking of damage power.
+  deathcommand:
+    main_name: Death Command
+    main_description: With a 1/chance to kill the target then execute the command for count times
+    chance: Chance of triggering this power, 1/n
+    command: Command to be executed
+    count: Times to run the command
+    desc: Description in display text
+  deflect:
+    main_name: Deflect
+    main_description: Deflect arrows or fireballs towards player
+    facing: Maximum effective view angle in degrees
+    cooldownpassive: Cooldown time of this power in passive mode
+    duration: Duration of this power, in ticks
+    chance: Chance in percentage of triggering this power in passive mode
+    deflectCost: Cost for each deflect
+  delayedcommand:
+    main_name: Delayed Command
+    main_description: Run command on click with a delay
+    delay: Delay before executing command
+    command: Command to be executed
+    permission: Permission that will be given to user executing command
+  dummy:
+    main_name: Dummy
+    main_description: Won't do anything but give you fine control
+    successResult: Result returned when success
+    costResult: Result returned when failed to comsume durability
+    cooldownResult: Result returned when in cooldown
+    checkDurabilityBound: If to check durability bound of this item
+    showCDWarning: Show cooldown warning
+    cooldownKey: Key for cooldowning
+  durabilitycondition:
+    main_name: Durability Condition
+    main_description: Condition that requires item's durability in a range
+    durabilityMin: Durability should great than durabilityMin
+    durabilityMax: Durability should less than durabilityMax
+  economy:
+    main_name: Economy
+    main_description: Deposit to or withdraw from player
+    amountToPlayer: Amount of money will transfer to player (can be negative)
+    showFailMessage: Show fail message from economy provider
+    abortOnFailure: Abort on failure
+  equipmentcondition:
+    main_name: Equipment Condition
+    main_description: Condition that requires player wear some item
+    slots: Equipment slots
+    material: Material that player should wears
+    itemStack: Item that player should wears
+    rpgitem: RPGItem that player should wears
+    matchAllSlot: Whether to require all slot to match
+  evalcondition:
+    main_name: Eval Condition
+    main_description: Calculate condition dynamicly
+    expression: Expression to compute condition
+  evaldamage:
+    main_name: Eval Damage
+    main_description: Calculate damage dynamicly
+    display: Display name
+    expression: Expression to compute damage
+    setBaseDamage: Whether to set event base damage to final damage to allow stacking of damage power.
+  explosion:
+    main_name: Explosion
+    main_description: Make a explosion that caused by the player
+    chance: Chance of triggering this power, in percentage
+    power: Power of explosion. 4 for TNT
+    distance: Maximum distance
+  fire:
+    main_name: Fire
+    main_description: Fire an fireblock that burns entities hit
+    distance: Maximum distance
+    burnduration: Duration of the fire, in ticks
+  fireball:
+    main_name: Fireball
+    main_description: Fire an fireball
+  flame:
+    main_name: Flame
+    main_description: Set the target on fire on hit
+    burntime: Duration of the fire, in ticks
+  food:
+    main_name: Food
+    main_description: Restore food points when eaten
+    foodpoints: Food Points
+  forcefield:
+    main_name: Force Field
+    main_description: Creates a force field around the player
+    radius: Radius of force field
+    height: Height of force field
+    base: Base of force field
+    ttl: Time to live
+  glove:
+    main_name: Glove
+    main_description: Catch an entity
+    maxDistance: Maximum distance to catch
+    maxTicks: Maximum ticks catching
+    throwSpeed: Speed throwing entity
+  gunfu:
+    main_name: Gun Fu
+    main_description: Make projectiles track enemies
+    distance: Maximum distance to lock enemy
+    viewAngle: Maximum view angle to lock enemy
+    maxTicks: Maximum ticks tracking
+    initVelFactor: Factor of init velocity
+    velFactor: Factor of velocity change per tick
+  headshot:
+    main_name: Headshot
+    main_description: Increase damage when headshot
+    factor: Factor of headshot damage. E.g. deals (damage * factor) damage
+    particleEnemy: Whether to show particle at enemy location
+    soundEnemy: Whether to play sound at enemy location
+    soundSelf: Whether to play sound at player location
+    setBaseDamage: Whether to set event base damage to final damage to allow stacking of damage power.
+  ice:
+    main_name: Ice
+    main_description: Fire an ice block, then create a box of ice on impact
+  knockup:
+    main_name: Knockup
+    main_description: Send the hit target flying
+    chance: Chance of triggering this power, 1/n
+    power: Power of knock up
+  lastresultcondition:
+    main_name: Last Result Condition
+    main_description: Requires result of last power is in a set
+    okResults: Allowed result
+    failOnNoResult: Whether fails when no power
+  lifesteal:
+    main_name: Lifesteal
+    main_description: Restore health by damage dealt
+    chance: Chance of triggering this power, in percentage
+    factor: Factor of life steal
+  lightning:
+    main_name: Lightning
+    main_description: Strike the hit target with lightning
+    chance: Chance of triggering this power, 1/n
+  lorefilter:
+    main_name: Lore Filter
+    main_description: Preserve all lore lines match the regex
+    regex: Regex to filter the lore
+    desc: Display text
+    find: Only requires the regex finds in lore line (instead of matches).
+  mount:
+    main_name: Mount
+    main_description: Ride an entity
+    maxDistance: Maximum distance to ride
+    maxTicks: Maximum ticks riding
+  noimmutabletick:
+    main_name: No Immutable Tick
+    main_description: Cancel the damage delay (no-damage-tick)
+  orcondition:
+    main_name: Or Condition
+    main_description: Condition that requires at least one of its Conditions are met
+  particle:
+    main_name: Particle
+    main_description: Spawn some particles around the user
+    effect: Name of visual effect
+    particle: Name of particle effect
+    particleCount: Count of particle
+    material: Material of dust particle
+    dustColor: Color of dust particle
+    dustSize: Size of dust particle
+    offsetX: Offset X
+    offsetY: Offset Y
+    offsetZ: Offset Z
+    extra: Extra data
+    force: Force show particle
+  particlebarrier:
+    main_name: Particle Barrier
+    main_description: Spawn a barrier that redirecting energy of incoming attacks to strength
+    projected: Whether this barrier can be projected
+    energyDecay: Decay of energy per second
+    energyPerBarrier: Total energy gained when a barrier was broken
+    barrierHealth: Health of a new barrier
+    energyPerLevel: Energy required per level of strength effect
+    effect: Effect of particle barrier
+  particletick:
+    main_name: Particle Tick
+    main_description: Spawn some particles around the user when equipped
+    interval: Interval of particle effect
+    effect: Name of visual effect
+    particle: Name of particle effect
+    particleCount: Count of particle
+    material: Material of dust particle
+    dustColor: Color of dust particle
+    dustSize: Size of dust particle
+    offsetX: Offset X
+    offsetY: Offset Y
+    offsetZ: Offset Z
+    extra: Extra data
+    force: Force show particle
+  potionhit:
+    main_name: Potion Hit
+    main_description: Apply effect to enemy when hit
+    duration: Duration of potion effect, in ticks
+    amplifier: Amplifier of potion effect
+    type: Type of potion effect
+    chance: Chance of triggering this power, 1/n
+  potionself:
+    main_name: Potion Self
+    main_description: Apply effect to player when used
+    duration: Time of potion effect, in ticks
+    amplifier: Amplifier of potion effect
+    type: Type of potion effect
+  potiontick:
+    main_name: Potion Tick
+    main_description: Apply effect to player when equipped
+    duration: Time of potion effect, in ticks
+    amplifier: Amplifier of potion effect
+    effect: Type of potion effect
+    interval: Interval of this power
+    clear: Whether to remove the effect instead of adding it
+  projectile:
+    main_name: Projectile
+    main_description: Launches projectile
+    isCone: Whether launch projectiles in cone
+    projectileType: Type of projectiles
+    range: Range will projectiles spread, in degree
+    amount: Amount of projectiles
+    speed: Speed of projectiles
+    gravity: Whether the projectile have gravity
+    burstCount: Burst count
+    burstInterval: Interval between bursts
+    setFireballDirection: Whether to set Fireball' direction so it won't curve
+    yield: Radius affected by this Explosive's explosion
+    isIncendiary: Whether this Explosive's explosion causes fire
+  pumpkin:
+    main_name: Pumpkin
+    main_description: When hit skeleton or zombie, make them wear pumpkin head
+    chance: Chance of triggering this power, in percentage
+    drop: Drop chance of the pumpkin, 0.0~1.0
+  rainbow:
+    main_name: Rainbow
+    main_description: Fire blocks of coloured wool
+    count: Count of blocks
+    isFire: Whether launch fire instead of wool
+  ranged:
+    main_name: Ranged
+    main_description: Mark this item as ranged
+    rm: Minimum radius
+    r: Maximum radius
+  rangedonly:
+    main_name: Ranged Only
+    main_description: Mark this item as ranged only
+    rm: Minimum radius
+    r: Maximum radius
+  realdamage:
+    main_name: Real Damage
+    main_description: Do real damage to entity hit but won't kill it
+    realDamage: Damage of this power
+    minDamage: Minimum damage to trigger
+  repair:
+    main_name: Repair
+    main_description: Repair the item with some material
+    material: Material to be consumed
+    durability: Durability to be repaired
+    isSneak: Whether require sneaking to trigger this power
+    abortOnSuccess: Abort subsequence execution of powers when success
+    abortOnFailure: Abort subsequence execution of powers when fail
+    amount: Amount of material required
+    mode: Whether allow repairing when durability would overflow
+    customMessage: Custom message when not enought material
+    showFailMsg: Whether to show message when not enought material
+    allowBreak: Allow repairing with negative durability to breaking the item
+  rescue:
+    main_name: Rescue
+    main_description: Rescue player on low health or receiving high damage
+    healthTrigger: Health trigger of rescue
+    useBed: Whether use bed instead of home
+    inPlace: Whether rescue in place instead of teleport
+    damageTrigger: Damage trigger of rescue
+  rumble:
+    main_name: Rumble
+    main_description: Sends a shockwave through the ground and sends any hit entities flying
+    power: Power of rumble
+    distance: Maximum distance of rumble
+  scoreboard:
+    main_name: Scoreboard
+    main_description: Add/remove tag/team to/from player's scoreboard
+    tag: Tag(s) to add and remove, `TO_ADD,!TO_REMOVE`
+    team: Team(s) to join and leave, `JOIN,!LEAVE`
+    abortOnSuccess: Abort subsequence execution of powers when success
+  scoreboardcondition:
+    main_name: Scoreboard Condition
+    main_description: Condition that add requirements of player's scoreboard
+    score: Selecting targets by score(s), `score_name:min,max another_score_name:min,max`
+    tag: Selecting targets by tag(s), `MUST_HAVE,!MUST_NOT_HAVE`
+    team: Selecting targets by team(s), `MUST_ON,!MUST_NOT_ON`
+  selector:
+    main_name: Selector
+    main_description: Provide a selector for some AOE power
+    id: ID of this power, should be unique on this item
+    type: Type(s) of target entities
+    count: Count of target entities
+    x: X-coordinate of reference position, tilde notation is available. Use player's current position if empty
+    y: Y-coordinate of reference position, tilde notation is available. Use player's current position if empty
+    z: Z-coordinate of reference position, tilde notation is available. Use player's current position if empty
+    r: Selects only targets less than r blocks from reference position
+    rm: Selects only targets more than rm blocks from reference position
+    dx: Selects only targets less than dx blocks in X-axis from reference position
+    dy: Selects only targets less than dx blocks in Y-axis from reference position
+    dz: Selects only targets less than dx blocks in Z-axis from reference position
+    score: Selecting targets by score(s), `score_name:min,max another_score_name:min,max`
+    tag: Selecting targets by tag(s), `MUST_HAVE,!MUST_NOT_HAVE`
+    team: Selecting targets by team(s), `MUST_ON,!MUST_NOT_ON`
+  shulkerbullet:
+    main_name: Shulker Bullect
+    main_description: Launches shulker bullet when right clicked, target nearest entity in front of player
+    range: Range of target finding
+  skyhook:
+    main_name: Sky Hook
+    main_description: Hook on to some material
+    railMaterial: Material that can hooks on
+    hookDistance: Maximum distance
+    hookingTickCost: Cost per tick hooking
+  sound:
+    main_name: Sound
+    main_description: Play a sound
+    pitch: Pitch of sound
+    volume: Volume of sound
+    sound: Sound to be played
+  stuck:
+    main_name: Stuck
+    main_description: Make target stuck
+    chance: Chance of triggering this power, 1/n
+    cost: Cost of this power (hit)
+    costAoe: Cost of this power (right click)
+    costPerEntity: Cost of this power (right click per entity)
+    range: Range of AOE
+    facing: Maximum effective view angle in degrees
+    duration: Duration of this power in tick
+  teleport:
+    main_name: Teleport
+    main_description: teleport you in the direction you're looking in or to the place where the projectile hit
+    distance: Maximum distance
+    targetMode: Mode of finding teleport target
+  throw:
+    main_name: Throw
+    main_description: Spawn and throw a entity
+    speed: Speed of entity thrown
+    entityName: Name of entity thrown
+    entityData: NBT data of entity
+    isPersistent: Whether to make entity persistent
+  tippedarrow:
+    main_name: Tipped Arrow
+    main_description: Fire an tipped arrow
+    type: Type of potion effect
+    duration: Duration of potion effect, in ticks
+    amplifier: Amplifier of potion effect
+  tntcannon:
+    main_name: TNT Cannon
+    main_description: Fire active tnt
+  torch:
+    main_name: Torch
+    main_description: Shoots torches to light up an area
+  translocator:
+    main_name: Translocator
+    main_description: Throw an translocator and teleport to it later
+    tpCost: Cost to teleport to the translocator
+    setupCost: Cost to setup an translocator
+  unbreakable:
+    main_name: Unbreakable
+    main_description: Mark this item as unbreakable
+  xorcondition:
+    main_name: Xor Condition
+    main_description: Condition that xor all its Conditions
+    init: Init value
+
 manual:
   reload:
     description: Reload the plugin

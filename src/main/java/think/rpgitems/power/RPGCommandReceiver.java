@@ -212,9 +212,9 @@ public abstract class RPGCommandReceiver extends CommandReceiver {
             return;
         }
         String desc = PowerManager.getDescription(powerKey, name);
-        msgs(sender, "message.power.property", name, Strings.isNullOrEmpty(desc) ? I18n.getInstance(sender).format("message.power.no_description") : desc);
+        msgs(sender, "message.propertyHolder.property", name, Strings.isNullOrEmpty(desc) ? I18n.getInstance(sender).format("message.propertyHolder.no_description") : desc);
         if (powerObj != null) {
-            msgs(sender, "message.power.property_value", Utils.getProperty(powerObj, name, prop.field()));
+            msgs(sender, "message.propertyHolder.property_value", Utils.getProperty(powerObj, name, prop.field()));
         }
     }
 

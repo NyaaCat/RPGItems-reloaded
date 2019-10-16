@@ -934,11 +934,11 @@ public class Beam extends BasePower {
                             internalFireBeam(from, stack);
                         }
                         if (bursted.addAndGet(1) < currentBurstCount) {
-                            new FireTask().runTaskLaterAsynchronously(RPGItems.plugin, currentBurstInterval);
+                            new FireTask().runTaskLater(RPGItems.plugin, currentBurstInterval);
                         }
                     }
                 }
-                new FireTask().runTaskAsynchronously(RPGItems.plugin);
+                new FireTask().runTask(RPGItems.plugin);
                 return PowerResult.ok();
             } else {
                 return internalFireBeam(from, stack);

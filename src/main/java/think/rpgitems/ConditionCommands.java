@@ -86,7 +86,7 @@ public class ConditionCommands extends RPGCommandReceiver {
             item.addCondition(key, condition);
             ItemManager.refreshItem();
             ItemManager.save(item);
-            msg(sender, "message.condition.ok");
+            msg(sender, "message.condition.ok", conditionStr, condition.getName());
         } catch (Exception e) {
             if (e instanceof BadCommandException) {
                 throw (BadCommandException) e;
@@ -120,7 +120,7 @@ public class ConditionCommands extends RPGCommandReceiver {
         if (args.top() == null) {
             for (int i = 0; i < item.getConditions().size(); i++) {
                 Condition condition = item.getConditions().get(i);
-                showCondition(sender, i, item, condition);
+                showCondition(sender, item, condition);
             }
             return;
         }
@@ -132,7 +132,7 @@ public class ConditionCommands extends RPGCommandReceiver {
                 return;
             }
             if (args.top() == null) {
-                showCondition(sender, nth, item, condition);
+                showCondition(sender, item, condition);
                 return;
             }
             setPropertyHolder(sender, args, condition.getClass(), condition, false);
@@ -145,8 +145,8 @@ public class ConditionCommands extends RPGCommandReceiver {
         }
     }
 
-    public static void showCondition(CommandSender sender, int nth, RPGItem item, Condition condition) {
-        msgs(sender, "message.item.condition", nth, condition.getLocalizedName(sender), condition.getNamespacedKey().toString(), condition.displayText() == null ? I18n.getInstance(sender).format("message.power.no_display") : condition.displayText());
+    public static void showCondition(CommandSender sender, RPGItem item, Condition condition) {
+        msgs(sender, "message.condition.show", condition.id(), condition.getLocalizedName(sender), condition.getNamespacedKey().toString(), condition.displayText() == null ? I18n.getInstance(sender).format("message.power.no_display") : condition.displayText());
         PowerManager.getProperties(item.getPropertyHolderKey(condition)).forEach(
                 (name, prop) -> showProp(sender, condition.getNamespacedKey(), prop.getValue(), condition)
         );

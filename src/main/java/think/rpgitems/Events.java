@@ -402,16 +402,6 @@ public class Events implements Listener {
     @EventHandler
     public void onPlayerJoin(PlayerJoinEvent e) {
         Player player = e.getPlayer();
-
-        player.getPersistentDataContainer().remove(TAG_MODIFIER);
-        ItemTagUtils.SubItemTagContainer container = ItemTagUtils.makeTag(player.getPersistentDataContainer(), TAG_MODIFIER);
-        ItemTagUtils.SubItemTagContainer modifier = ItemTagUtils.makeTag(container, PowerManager.parseKey("0"));
-        MulModifier mulModifier = new MulModifier();
-        mulModifier.targetProperty = "cooldown";
-        mulModifier.value = 0.5;
-        mulModifier.save(modifier);
-        modifier.commit();
-
         PlayerInventory in = player.getInventory();
         for (int i = 0; i < in.getSize(); i++) {
             ItemStack item = in.getItem(i);

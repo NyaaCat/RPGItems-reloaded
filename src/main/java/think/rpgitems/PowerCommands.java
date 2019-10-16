@@ -84,7 +84,7 @@ public class PowerCommands extends RPGCommandReceiver {
             item.addPower(key, power);
             ItemManager.refreshItem();
             ItemManager.save(item);
-            msg(sender, "message.power.ok");
+            msg(sender, "message.power.ok", powerStr, item.getPowers().size() - 1);
         } catch (Exception e) {
             if (e instanceof BadCommandException) {
                 throw (BadCommandException) e;
@@ -144,7 +144,7 @@ public class PowerCommands extends RPGCommandReceiver {
     }
 
     public static void showPower(CommandSender sender, int nth, RPGItem item, Power power) {
-        msgs(sender, "message.item.power", nth, power.getLocalizedName(sender), power.getNamespacedKey().toString(), power.displayText() == null ? I18n.getInstance(sender).format("message.power.no_display") : power.displayText(), power.getTriggers().stream().map(Trigger::name).collect(Collectors.joining(",")));
+        msgs(sender, "message.marker.show", nth, power.getLocalizedName(sender), power.getNamespacedKey().toString(), power.displayText() == null ? I18n.getInstance(sender).format("message.power.no_display") : power.displayText(), power.getTriggers().stream().map(Trigger::name).collect(Collectors.joining(",")));
         NamespacedKey powerKey = item.getPropertyHolderKey(power);
         PowerManager.getProperties(powerKey).forEach(
                 (name, prop) -> showProp(sender, powerKey, prop.getValue(), power)
@@ -178,10 +178,32 @@ public class PowerCommands extends RPGCommandReceiver {
             }
             power.deinit();
             item.getPowers().remove(nth);
-            msgs(sender, "message.power.removed");
+            NamespacedKey key = item.removePropertyHolderKey(power);
+            msgs(sender, "message.power.removed", key.toString(), nth);
         } catch (UnknownExtensionException e) {
             msgs(sender, "message.error.unknown.extension", e.getName());
         }
+    }
+
+    @SubCommand("reorder")
+    public void reorder(CommandSender sender, Arguments args) {
+        RPGItem item = getItem(args.nextString(), sender);
+        int origin = args.nextInt();
+        int next = args.nextInt();
+        int size = item.getPowers().size();
+        if (next < 0 || next >= size) {
+            msg(sender, "message.num_out_of_range", next, 0, size);
+            return;
+        }
+        if (origin < 0 || origin >= size) {
+            msg(sender, "message.num_out_of_range", origin, 0, size);
+            return;
+        }
+        Power remove = item.getPowers().remove(origin);
+        item.getPowers().add(next, remove);
+        ItemManager.refreshItem();
+        ItemManager.save(item);
+        msg(sender, "message.power.reorder", remove.getName(), next);
     }
 
     @SubCommand("list")
