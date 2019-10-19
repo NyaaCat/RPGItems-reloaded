@@ -12,7 +12,9 @@ import think.rpgitems.item.RPGItem;
 import think.rpgitems.power.*;
 import think.rpgitems.power.trigger.Trigger;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Comparator;
+import java.util.List;
 import java.util.logging.Level;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
@@ -33,7 +35,7 @@ public class PowerCommands extends RPGCommandReceiver {
         return "";
     }
 
-    private Pair<NamespacedKey, Class<? extends Power>> getPowerClass(CommandSender sender, String powerStr) {
+    private static Pair<NamespacedKey, Class<? extends Power>> getPowerClass(CommandSender sender, String powerStr) {
         try {
             NamespacedKey key = PowerManager.parseKey(powerStr);
             Class<? extends Power> cls = PowerManager.getPower(key);
@@ -59,7 +61,12 @@ public class PowerCommands extends RPGCommandReceiver {
                 break;
             default:
                 RPGItem item = getItem(arguments.nextString(), sender);
-                return resolveProperties(sender, item, arguments.getRawArgs()[arguments.getRawArgs().length - 1], arguments, true);
+                String last = arguments.getRawArgs()[arguments.getRawArgs().length - 1];
+                String powerKey = arguments.nextString();
+                Pair<NamespacedKey, Class<? extends Power>> powerClass = getPowerClass(sender, powerKey);
+                if (powerClass != null) {
+                    return resolveProperties(sender, item, powerClass.getValue(), powerClass.getKey(), last, arguments, true);
+                }
         }
         return filtered(arguments, completeStr);
     }
@@ -103,13 +110,57 @@ public class PowerCommands extends RPGCommandReceiver {
                 break;
             case 2:
                 RPGItem item = getItem(arguments.nextString(), sender);
-                completeStr.addAll(IntStream.range(0, item.getPowers().size()).mapToObj(String::valueOf).collect(Collectors.toList()));
+                completeStr.addAll(IntStream.range(0, item.getPowers().size()).mapToObj(i -> i + "-" + item.getPowers().get(i).getNamespacedKey()).collect(Collectors.toList()));
                 break;
             default:
                 item = getItem(arguments.nextString(), sender);
-                return resolveProperties(sender, item, arguments.getRawArgs()[arguments.getRawArgs().length - 1], arguments, false);
+                Power nextPower = nextPower(item, sender, arguments);
+                return resolveProperties(sender, item, nextPower.getClass(), nextPower.getNamespacedKey(), arguments.getRawArgs()[arguments.getRawArgs().length - 1], arguments, false);
         }
         return filtered(arguments, completeStr);
+    }
+
+    private static Power nextPower(RPGItem item, CommandSender sender, Arguments args) {
+        String next = args.top();
+        if (next.contains("-")) {
+            next = args.nextString();
+            String p1 = next.split("-", 2)[0];
+            String p2 = next.split("-", 2)[1];
+            try {
+                int nth = Integer.parseInt(p1);
+                Power power = item.getPowers().get(nth);
+                if (power == null) {
+                    throw new BadCommandException("message.power.unknown", nth);
+                }
+                Pair<NamespacedKey, Class<? extends Power>> keyClass = getPowerClass(sender, p2);
+                if (keyClass == null || !power.getNamespacedKey().equals(keyClass.getKey())) {
+                    throw new BadCommandException("message.power.unknown", p2);
+                }
+                return power;
+            } catch (NumberFormatException ignore) {
+                Pair<NamespacedKey, Class<? extends Power>> keyClass = getPowerClass(sender, p1);
+                if (keyClass == null) {
+                    throw new BadCommandException("message.power.unknown", p1);
+                }
+                try {
+                    int nth = Integer.parseInt(p2);
+                    Power power = item.getPower(keyClass.getKey(), keyClass.getValue()).get(nth);
+                    if (power == null) {
+                        throw new BadCommandException("message.power.unknown", nth);
+                    }
+                    return power;
+                } catch (NumberFormatException ignored) {
+                    throw new BadCommandException("message.power.unknown", p2);
+                }
+            }
+        } else {
+            int nth = args.nextInt();
+            Power power = item.getPowers().get(nth);
+            if (power == null) {
+                throw new BadCommandException("message.power.unknown", nth);
+            }
+            return power;
+        }
     }
 
     @SubCommand(value = "prop", tabCompleter = "propCompleter")
@@ -122,15 +173,10 @@ public class PowerCommands extends RPGCommandReceiver {
             }
             return;
         }
-        int nth = args.nextInt();
         try {
-            Power power = item.getPowers().get(nth);
-            if (power == null) {
-                msgs(sender, "message.power.unknown", nth);
-                return;
-            }
+            Power power = nextPower(item, sender, args);
             if (args.top() == null) {
-                showPower(sender, nth, item, power);
+                showPower(sender, item.getPowers().indexOf(power), item, power);
                 return;
             }
             setPropertyHolder(sender, args, power.getClass(), power, false);

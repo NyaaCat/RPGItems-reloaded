@@ -46,11 +46,16 @@ public class TriggerCommands extends RPGCommandReceiver {
                 completeStr.addAll(ItemManager.itemNames());
                 break;
             case 2:
+                break;
+            case 3:
                 completeStr.addAll(Trigger.keySet());
                 break;
             default:
                 RPGItem item = getItem(arguments.nextString(), sender);
-                return resolveProperties(sender, item, arguments.getRawArgs()[arguments.getRawArgs().length - 1], arguments, true);
+                arguments.nextString();
+                String base = arguments.nextString();
+                Trigger trigger = Trigger.get(base);
+                return resolveProperties(sender, item, trigger.getClass(), trigger.getNamespacedKey(), arguments.getRawArgs()[arguments.getRawArgs().length - 1], arguments, true);
         }
         return filtered(arguments, completeStr);
     }
@@ -101,7 +106,9 @@ public class TriggerCommands extends RPGCommandReceiver {
                 break;
             default:
                 item = getItem(arguments.nextString(), sender);
-                return resolveProperties(sender, item, arguments.getRawArgs()[arguments.getRawArgs().length - 1], arguments, false);
+                Trigger trigger = item.getTriggers().get(arguments.nextString());
+                Trigger base = Trigger.get(trigger.getBase());
+                return resolveProperties(sender, item, base.getClass(), base.getNamespacedKey(), arguments.getRawArgs()[arguments.getRawArgs().length - 1], arguments, false);
         }
         return filtered(arguments, completeStr);
     }

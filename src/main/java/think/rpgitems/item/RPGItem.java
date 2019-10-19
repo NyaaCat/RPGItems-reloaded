@@ -1285,8 +1285,16 @@ public class RPGItem {
         return subclass ? markers.stream().filter(marker::isInstance).map(marker::cast).collect(Collectors.toList()) : getMarker(marker);
     }
 
+    public <T extends Marker> List<T> getMarker(NamespacedKey key, Class<T> marker) {
+        return markers.stream().filter(p -> p.getClass().equals(marker) && getPropertyHolderKey(p).equals(key)).map(marker::cast).collect(Collectors.toList());
+    }
+
     public <T extends Power> List<T> getPower(NamespacedKey key, Class<T> power) {
         return powers.stream().filter(p -> p.getClass().equals(power) && getPropertyHolderKey(p).equals(key)).map(power::cast).collect(Collectors.toList());
+    }
+
+    public Condition<?> getCondition(String id) {
+        return conditions.stream().filter(c -> c.id().equals(id)).findAny().orElse(null);
     }
 
     public void addPower(NamespacedKey key, Power power) {

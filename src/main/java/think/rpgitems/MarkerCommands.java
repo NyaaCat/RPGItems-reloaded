@@ -34,7 +34,7 @@ public class MarkerCommands extends RPGCommandReceiver {
         return "";
     }
 
-    private Pair<NamespacedKey, Class<? extends Marker>> getMarkerClass(CommandSender sender, String markerStr) {
+    private static Pair<NamespacedKey, Class<? extends Marker>> getMarkerClass(CommandSender sender, String markerStr) {
         try {
             NamespacedKey key = PowerManager.parseKey(markerStr);
             Class<? extends Marker> cls = PowerManager.getMarker(key);
@@ -60,7 +60,12 @@ public class MarkerCommands extends RPGCommandReceiver {
                 break;
             default:
                 RPGItem item = getItem(arguments.nextString(), sender);
-                return resolveProperties(sender, item, arguments.getRawArgs()[arguments.getRawArgs().length - 1], arguments, true);
+                String last = arguments.getRawArgs()[arguments.getRawArgs().length - 1];
+                String conditionKey = arguments.nextString();
+                Pair<NamespacedKey, Class<? extends Marker>> keyClass = getMarkerClass(sender, conditionKey);
+                if (keyClass != null) {
+                    return resolveProperties(sender, item, keyClass.getValue(), keyClass.getKey(), last, arguments, true);
+                }
         }
         return filtered(arguments, completeStr);
     }
@@ -95,6 +100,49 @@ public class MarkerCommands extends RPGCommandReceiver {
         }
     }
 
+    private static Marker nextMarker(RPGItem item, CommandSender sender, Arguments args) {
+        String next = args.top();
+        if (next.contains("-")) {
+            next = args.nextString();
+            String p1 = next.split("-", 2)[0];
+            String p2 = next.split("-", 2)[1];
+            try {
+                int nth = Integer.parseInt(p1);
+                Marker marker = item.getMarkers().get(nth);
+                if (marker == null) {
+                    throw new BadCommandException("message.marker.unknown", nth);
+                }
+                Pair<NamespacedKey, Class<? extends Marker>> keyClass = getMarkerClass(sender, p2);
+                if (keyClass == null || !marker.getNamespacedKey().equals(keyClass.getKey())) {
+                    throw new BadCommandException("message.marker.unknown", p2);
+                }
+                return marker;
+            } catch (NumberFormatException ignore) {
+                Pair<NamespacedKey, Class<? extends Marker>> keyClass = getMarkerClass(sender, p1);
+                if (keyClass == null) {
+                    throw new BadCommandException("message.marker.unknown", p1);
+                }
+                try {
+                    int nth = Integer.parseInt(p2);
+                    Marker marker = item.getMarker(keyClass.getKey(), keyClass.getValue()).get(nth);
+                    if (marker == null) {
+                        throw new BadCommandException("message.marker.unknown", nth);
+                    }
+                    return marker;
+                } catch (NumberFormatException ignored) {
+                    throw new BadCommandException("message.marker.unknown", p2);
+                }
+            }
+        } else {
+            int nth = args.nextInt();
+            Marker marker = item.getMarkers().get(nth);
+            if (marker == null) {
+                throw new BadCommandException("message.marker.unknown", nth);
+            }
+            return marker;
+        }
+    }
+
     @Completion("")
     public List<String> propCompleter(CommandSender sender, Arguments arguments) {
         List<String> completeStr = new ArrayList<>();
@@ -104,11 +152,12 @@ public class MarkerCommands extends RPGCommandReceiver {
                 break;
             case 2:
                 RPGItem item = getItem(arguments.nextString(), sender);
-                completeStr.addAll(IntStream.range(0, item.getMarkers().size()).mapToObj(String::valueOf).collect(Collectors.toList()));
+                completeStr.addAll(IntStream.range(0, item.getMarkers().size()).mapToObj(i -> i + "-" + item.getMarkers().get(i).getNamespacedKey()).collect(Collectors.toList()));
                 break;
             default:
                 item = getItem(arguments.nextString(), sender);
-                return resolveProperties(sender, item, arguments.getRawArgs()[arguments.getRawArgs().length - 1], arguments, false);
+                Marker nextMarker = nextMarker(item, sender, arguments);
+                return resolveProperties(sender, item, nextMarker.getClass(), nextMarker.getNamespacedKey(), arguments.getRawArgs()[arguments.getRawArgs().length - 1], arguments, false);
         }
         return filtered(arguments, completeStr);
     }
@@ -125,11 +174,7 @@ public class MarkerCommands extends RPGCommandReceiver {
         }
         int nth = args.nextInt();
         try {
-            Marker marker = item.getMarkers().get(nth);
-            if (marker == null) {
-                msgs(sender, "message.marker.unknown", nth);
-                return;
-            }
+            Marker marker = nextMarker(item, sender, args);
             if (args.top() == null) {
                 showMarker(sender, item, marker);
                 return;

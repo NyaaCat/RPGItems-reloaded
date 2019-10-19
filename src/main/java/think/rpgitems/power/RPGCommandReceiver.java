@@ -12,7 +12,6 @@ import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
 import think.rpgitems.I18n;
 import think.rpgitems.RPGItems;
-import think.rpgitems.item.ItemManager;
 import think.rpgitems.item.RPGItem;
 import think.rpgitems.power.marker.Selector;
 import think.rpgitems.power.trigger.Trigger;
@@ -25,7 +24,6 @@ import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 import static think.rpgitems.AdminCommands.msgs;
-import static think.rpgitems.power.PowerManager.powers;
 
 public abstract class RPGCommandReceiver extends CommandReceiver {
     public final LanguageRepository i18n;
@@ -120,25 +118,7 @@ public abstract class RPGCommandReceiver extends CommandReceiver {
         return enumValues.stream().filter(n -> n.startsWith(incompleteValue)).map(n -> base + (next ? "" : ",") + n).collect(Collectors.toList());
     }
 
-    public static List<String> resolveProperties(CommandSender sender, RPGItem item, String last, Arguments cmd, boolean newPower) {
-        NamespacedKey powerKey;
-        if (newPower) {
-            try {
-                String powName = cmd.nextString();
-                powerKey = PowerManager.parseKey(powName);
-            } catch (UnknownExtensionException e) {
-                return Collections.emptyList();
-            }
-        } else {
-            int nth = cmd.nextInt();
-            Power power = item.getPowers().get(nth);
-            if (power != null) {
-                powerKey = item.getPropertyHolderKey(power);
-            } else {
-                return Collections.emptyList();
-            }
-        }
-        Class<? extends Power> power = PowerManager.getPower(powerKey);
+    public static List<String> resolveProperties(CommandSender sender, RPGItem item, Class<? extends PropertyHolder> power, NamespacedKey powerKey, String last, Arguments cmd, boolean newPower) {
         if (power == null) return Collections.emptyList();
         Map<String, Pair<Method, PropertyInstance>> argMap = PowerManager.getProperties(power);
         Set<Field> settled = new HashSet<>();

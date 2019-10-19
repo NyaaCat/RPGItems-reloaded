@@ -10,7 +10,6 @@ import org.bukkit.command.CommandSender;
 import think.rpgitems.item.ItemManager;
 import think.rpgitems.item.RPGItem;
 import think.rpgitems.power.*;
-import think.rpgitems.power.trigger.Trigger;
 
 import java.util.ArrayList;
 import java.util.Comparator;
@@ -35,7 +34,7 @@ public class ConditionCommands extends RPGCommandReceiver {
         return "";
     }
 
-    private Pair<NamespacedKey, Class<? extends Condition>> getConditionClass(CommandSender sender, String conditionStr) {
+    private static Pair<NamespacedKey, Class<? extends Condition>> getConditionClass(CommandSender sender, String conditionStr) {
         try {
             NamespacedKey key = PowerManager.parseKey(conditionStr);
             Class<? extends Condition> cls = PowerManager.getCondition(key);
@@ -61,7 +60,12 @@ public class ConditionCommands extends RPGCommandReceiver {
                 break;
             default:
                 RPGItem item = getItem(arguments.nextString(), sender);
-                return resolveProperties(sender, item, arguments.getRawArgs()[arguments.getRawArgs().length - 1], arguments, true);
+                String last = arguments.getRawArgs()[arguments.getRawArgs().length - 1];
+                String conditionKey = arguments.nextString();
+                Pair<NamespacedKey, Class<? extends Condition>> keyClass = getConditionClass(sender, conditionKey);
+                if (keyClass != null) {
+                    return resolveProperties(sender, item, keyClass.getValue(), keyClass.getKey(), last, arguments, true);
+                }
         }
         return filtered(arguments, completeStr);
     }
@@ -95,7 +99,7 @@ public class ConditionCommands extends RPGCommandReceiver {
             msgs(sender, "internal.error.command_exception");
         }
     }
-
+    
     @Completion("")
     public List<String> propCompleter(CommandSender sender, Arguments arguments) {
         List<String> completeStr = new ArrayList<>();
@@ -105,11 +109,12 @@ public class ConditionCommands extends RPGCommandReceiver {
                 break;
             case 2:
                 RPGItem item = getItem(arguments.nextString(), sender);
-                completeStr.addAll(IntStream.range(0, item.getConditions().size()).mapToObj(String::valueOf).collect(Collectors.toList()));
+                completeStr.addAll(item.getConditions().stream().map(Condition::id).collect(Collectors.toList()));
                 break;
             default:
                 item = getItem(arguments.nextString(), sender);
-                return resolveProperties(sender, item, arguments.getRawArgs()[arguments.getRawArgs().length - 1], arguments, false);
+                Condition nextCondition = item.getCondition(arguments.nextString());
+                return resolveProperties(sender, item, nextCondition.getClass(), nextCondition.getNamespacedKey(), arguments.getRawArgs()[arguments.getRawArgs().length - 1], arguments, false);
         }
         return filtered(arguments, completeStr);
     }
@@ -124,13 +129,8 @@ public class ConditionCommands extends RPGCommandReceiver {
             }
             return;
         }
-        int nth = args.nextInt();
         try {
-            Condition condition = item.getConditions().get(nth);
-            if (condition == null) {
-                msgs(sender, "message.condition.unknown", nth);
-                return;
-            }
+            Condition condition = item.getCondition(args.nextString());
             if (args.top() == null) {
                 showCondition(sender, item, condition);
                 return;
@@ -189,11 +189,11 @@ public class ConditionCommands extends RPGCommandReceiver {
         int perPage = RPGItems.plugin.cfg.powerPerPage;
         String nameSearch = args.argString("n", args.argString("name", ""));
         List<NamespacedKey> conditions = PowerManager.getConditions()
-                                                 .keySet()
-                                                 .stream()
-                                                 .filter(i -> i.getKey().contains(nameSearch))
-                                                 .sorted(Comparator.comparing(NamespacedKey::getKey))
-                                                 .collect(Collectors.toList());
+                                                     .keySet()
+                                                     .stream()
+                                                     .filter(i -> i.getKey().contains(nameSearch))
+                                                     .sorted(Comparator.comparing(NamespacedKey::getKey))
+                                                     .collect(Collectors.toList());
         if (conditions.size() == 0) {
             msgs(sender, "message.condition.not_found", nameSearch);
             return;
