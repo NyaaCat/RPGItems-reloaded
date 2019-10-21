@@ -14,18 +14,25 @@ String minorVersion = 8
 String minecraftVersion = "1.14.4"
 Grgit repo = Grgit.open(currentDir: project.projectDir)
 
-String branchArtifactId = "rpgitems"
-
 String branch = System.getenv("BRANCH_NAME") == null ? repo.branch.current().name : System.getenv("BRANCH_NAME")
 String buildNumber = System.getenv("BUILD_NUMBER") == null ? "686936"             : System.getenv("BUILD_NUMBER")
 String mavenDirectory = System.getenv("MAVEN_DIR") == null ? "$projectDir/repo"   : System.getenv("MAVEN_DIR")
 String jdDirectory = System.getenv("JAVADOCS_DIR") == null ? null                 : System.getenv("JAVADOCS_DIR")
 Commit commit = repo.head()
 String commitHash = commit.abbreviatedId
+
 boolean mainBranch = minecraftVersion == branch
+boolean releasing = commit.shortMessage.contains("[release]")
+
+archivesBaseName = "RPGItems-mc$minecraftVersion"
+version = "$majorVersion.$minorVersion-$buildNumber"
+
+String mavenVersion = releasing ? version : "$majorVersion.$minorVersion-SNAPSHOT"
 
 if (!mainBranch) {
-    branchArtifactId += branch.replace(minecraftVersion, "")
+    String branchAddon = branch.replace(minecraftVersion, "")
+    version = "$majorVersion.$minorVersion$branchAddon-$buildNumber"
+    mavenVersion = releasing ? version : "$majorVersion.$minorVersion$branchAddon-SNAPSHOT"
 }
 
 sourceCompatibility = 1.8
@@ -78,10 +85,6 @@ dependencies {
     }
 }
 
-boolean releasing = commit.shortMessage.contains("[release]")
-version = releasing ? "$majorVersion.$minorVersion-mc$minecraftVersion-$buildNumber" : "$majorVersion.$minorVersion-mc$minecraftVersion-SNAPSHOT"
-archivesBaseName = "RPGItems"
-
 tasks.withType(ProcessResources) {
     with copySpec {
         filteringCharset = 'UTF-8'
@@ -103,8 +106,8 @@ publishing {
                 artifacts = [jar, apiJar, javadocJar, sourcesJar]
             }
             groupId "cat.nyaa"
-            artifactId branchArtifactId
-            version "$version"
+            artifactId "rpgitems"
+            version "$mavenVersion"
         }
     }
     repositories {
@@ -126,7 +129,6 @@ shadowJar {
 }
 
 task apiJar(type: Jar) {
-    archiveClassifier.set('api')
     includeEmptyDirs = false
     from sourceSets.main.output.classesDirs
     include('**/think/rpgitems/RPGItems.class')
@@ -149,7 +151,7 @@ task javadocJar(type: Jar, dependsOn: javadoc) {
 
 // write javadocs to an external folder which can be served via nginx
 if (jdDirectory != null) {
-    javadoc.destinationDir = file("${jdDirectory}/rpgitems-${version}")
+    javadoc.destinationDir = file("${jdDirectory}/rpgitems-${mavenVersion}")
 }
 
 javadoc {
