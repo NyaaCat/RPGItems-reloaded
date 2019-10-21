@@ -168,7 +168,7 @@ javadoc {
         links 'https://docs.oracle.com/javase/8/docs/api/'
         links 'https://hub.spigotmc.org/javadocs/spigot/'
         links 'https://google.github.io/guava/releases/21.0/api/docs/'
-        links 'https://nyaacat.github.io/NyaaCentral/NyaaCore/6.3-mc1.13.2/javadoc/'
+        links 'https://ci.nyaacat.com/javadocs/nyaacore-7.0.349/'
         links 'https://ci.md-5.net/job/BungeeCord/ws/chat/target/apidocs/'
         links 'https://netty.io/4.1/api/'
 
