@@ -1,8 +1,5 @@
 pipeline {
     agent any
-    options {
-      skipStagesAfterUnstable()
-    }
     stages {
         stage('Build') {
             steps {
@@ -14,6 +11,7 @@ pipeline {
     post {
         always {
             archiveArtifacts artifacts: 'build/libs/RPGItems-*.jar', fingerprint: true
+            cleanWs()
         }
     }
 }
