@@ -15,6 +15,7 @@ import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.nio.charset.Charset;
 import java.util.HashMap;
+import java.util.IllegalFormatConversionException;
 import java.util.Map;
 
 public class I18n extends LanguageRepository {
@@ -130,6 +131,32 @@ public class I18n extends LanguageRepository {
 
     public static I18n getInstance(String lang) {
         return instances.getOrDefault(lang, instances.get(RPGItems.plugin.cfg.language));
+    }
+
+    /**
+     * Get the language item then format with `para` by {@link String#format(String, Object...)}
+     */
+    @Override
+    public String getFormatted(String key, Object... para) {
+        String val = map.get(key);
+        if (val == null) {
+            return super.getFormatted(key, para);
+        } else {
+            try {
+                return String.format(val, para);
+            } catch (IllegalFormatConversionException e) {
+                e.printStackTrace();
+                getPlugin().getLogger().warning("Corrupted language key: " + key);
+                getPlugin().getLogger().warning("val: " + val);
+                StringBuilder keyBuilder = new StringBuilder();
+                for (Object obj : para) {
+                    keyBuilder.append("#<").append(obj.toString()).append(">");
+                }
+                String params = keyBuilder.toString();
+                getPlugin().getLogger().warning("params: " + params);
+                return "CORRUPTED_LANG<" + key + ">" + params;
+            }
+        }
     }
 
     @Override

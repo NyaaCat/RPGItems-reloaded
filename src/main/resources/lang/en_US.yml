@@ -143,7 +143,7 @@ message:
   version: |-
     RPGItem v%s ({GIT_BRANCH} branch, {GIT_HASH})
 
-    Copyright © 2017 NyaaCat Developers
+    Copyright © 2019 NyaaCat Developers
     Copyright © 2013 TheCreeperOfRedstone
     License MIT
 
