@@ -80,6 +80,7 @@ dependencies {
 
 boolean releasing = commit.shortMessage.contains("[release]")
 version = releasing ? "$majorVersion.$minorVersion-mc$minecraftVersion-$buildNumber" : "$majorVersion.$minorVersion-mc$minecraftVersion-SNAPSHOT"
+archivesBaseName = "RPGItems"
 
 tasks.withType(ProcessResources) {
     with copySpec {
@@ -125,8 +126,10 @@ shadowJar {
 }
 
 task apiJar(type: Jar) {
+    archiveClassifier.set('api')
     includeEmptyDirs = false
     from sourceSets.main.output.classesDirs
+    include('**/think/rpgitems/RPGItems.class')
     include('**/think/rpgitems/Events.class')
     include('**/think/rpgitems/api/')
     include('**/think/rpgitems/item/')
@@ -171,7 +174,7 @@ javadoc {
         windowTitle = "RPGItems Javadoc"
         docTitle = "<b>RPGItems</b> " + version
         if (!mainBranch) {
-            fullVersion += branch.replace(minecraftVersion, "")
+            docTitle += branch.replace(minecraftVersion, "")
         }
     }
 }
