@@ -554,9 +554,6 @@ public class Events implements Listener {
         } else if (ev.getDamager() instanceof Projectile) {
             projectileDamager(ev);
         }
-        if (ev.getEntity() instanceof Player) {
-            playerHit(ev);
-        }
     }
 
     private void playerDamager(EntityDamageByEntityEvent e) {
@@ -692,23 +689,30 @@ public class Events implements Listener {
         e.setDamage(damage);
     }
 
-    private void playerHit(EntityDamageByEntityEvent e) {
-        Player player = (Player) e.getEntity();
-        ItemStack[] armour = player.getInventory().getArmorContents();
-        boolean hasRPGItem = false;
-        double damage = e.getDamage();
-        for (ItemStack pArmour : armour) {
-            RPGItem pRItem = ItemManager.toRPGItem(pArmour).orElse(null);
-            if (pRItem == null) {
-                continue;
+    @EventHandler(priority = EventPriority.HIGH, ignoreCancelled = true)
+    public void onPlayerHit(EntityDamageEvent e) {
+        if (e.getEntity() instanceof Player) {
+            Player player = (Player) e.getEntity();
+            ItemStack[] armour = player.getInventory().getArmorContents();
+            boolean hasRPGItem = false;
+            double damage = e.getDamage();
+            for (ItemStack pArmour : armour) {
+                RPGItem pRItem = ItemManager.toRPGItem(pArmour).orElse(null);
+                if (pRItem == null) {
+                    continue;
+                }
+                hasRPGItem = true;
+                Entity damager = null;
+                if (e instanceof EntityDamageByEntityEvent) {
+                    damager = ((EntityDamageByEntityEvent) e).getDamager();
+                }
+                damage = pRItem.takeDamage(player, damage, pArmour, damager);
             }
-            hasRPGItem = true;
-            damage = pRItem.takeDamage(player, damage, pArmour, e.getDamager());
+            if (hasRPGItem) {
+                player.getInventory().setArmorContents(armour);
+            }
+            e.setDamage(damage);
         }
-        if (hasRPGItem) {
-            player.getInventory().setArmorContents(armour);
-        }
-        e.setDamage(damage);
     }
 
     @EventHandler(priority = EventPriority.HIGHEST, ignoreCancelled = true)
@@ -745,6 +749,5 @@ public class Events implements Listener {
         if (ItemManager.toRPGItem(e.getItem()).isPresent()) {
             e.setCancelled(true);
         }
-
     }
 }

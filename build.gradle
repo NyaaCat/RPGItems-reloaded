@@ -6,19 +6,25 @@ plugins {
 }
 
 import org.ajoberstar.grgit.Grgit
+import org.ajoberstar.grgit.Commit
 import org.apache.tools.ant.filters.ReplaceTokens
 
 String majorVersion = 3
-String minorVersion = 7
+String minorVersion = 8
 String minecraftVersion = "1.14.4"
 Grgit repo = Grgit.open(currentDir: project.projectDir)
 
 String branchArtifactId = "rpgitems"
 
-String branch = System.getenv("TRAVIS_BRANCH") == null ? repo.branch.current().name : System.getenv("TRAVIS_BRANCH")
-boolean mainBranch = System.getenv("MAIN_BRANCH") == null ? false : Boolean.parseBoolean(System.getenv("MAIN_BRANCH"))
-String commit = repo.head().abbreviatedId
-if (minecraftVersion != branch) {
+String branch = System.getenv("BRANCH_NAME") == null ? repo.branch.current().name : System.getenv("BRANCH_NAME")
+String buildNumber = System.getenv("BUILD_NUMBER") == null ? "686936"             : System.getenv("BUILD_NUMBER")
+String mavenDirectory = System.getenv("MAVEN_DIR") == null ? "$projectDir/repo"   : System.getenv("MAVEN_DIR")
+String jdDirectory = System.getenv("JAVADOCS_DIR") == null ? null                 : System.getenv("JAVADOCS_DIR")
+Commit commit = repo.head()
+String commitHash = commit.abbreviatedId
+boolean mainBranch = minecraftVersion == branch
+
+if (!mainBranch) {
     branchArtifactId += branch.replace(minecraftVersion, "")
 }
 
@@ -46,8 +52,6 @@ shadowJar {
 }
 
 dependencies {
-    // compileOnly files('lib/spigot-1.13.2.jar')
-    // compileOnly files('lib/patched_1.13.2.jar')
     api "org.spigotmc:spigot-api:$minecraftVersion-R0.1-SNAPSHOT"
     if (gradle.hasProperty("useLocalDependencies") && gradle.useLocalDependencies) {
         api project(":NyaaCore")
@@ -60,11 +64,6 @@ dependencies {
     compileOnly 'org.ow2.asm:asm:7.0'
     compileOnly 'cglib:cglib-nodep:3.2.12'
     shadow 'cglib:cglib-nodep:3.2.12'
-
-    // implementation files('lib/worldedit-bukkit-7.0.0-SNAPSHOT-dist.jar')
-    // implementation files('lib/worldguard-legacy-7.0.0-SNAPSHOT-dist.jar')
-
-//    implementation('cat.nyaa:EffectLib:nyaa-v1.0')
 
     implementation('com.sk89q.worldguard:worldguard-core:7.0.1-SNAPSHOT')
     implementation('com.sk89q.worldguard:worldguard-bukkit:7.0.1-SNAPSHOT') {
@@ -79,34 +78,24 @@ dependencies {
     }
 }
 
-tasks.withType(JavaCompile) {
-    options.fork = true
-    options.forkOptions.jvmArgs += ["-Duser.language=en"]
-}
-
-String fullVersionString = System.getenv("FULL_VERSION_STRING")
-boolean releasing = fullVersionString == null ? false : Boolean.parseBoolean(System.getenv("RELEASING"))
+boolean releasing = commit.shortMessage.contains("[release]")
+version = releasing ? "$majorVersion.$minorVersion-mc$minecraftVersion-$buildNumber" : "$majorVersion.$minorVersion-mc$minecraftVersion-SNAPSHOT"
 
 tasks.withType(ProcessResources) {
     with copySpec {
         filteringCharset = 'UTF-8'
         from 'src/main/resources/lang'
         into 'lang'
-        filter(ReplaceTokens, tokens: ['GIT_BRANCH': branch, 'GIT_HASH': commit], beginToken: '{', endToken: '}')
+        filter(ReplaceTokens, tokens: ['GIT_BRANCH': branch, 'GIT_HASH': commitHash], beginToken: '{', endToken: '}')
+    }
+    filesMatching("**/plugin.yml") {
+        expand 'version': project.version
     }
 }
 
+
 publishing {
     publications {
-        mavenSnapshot(MavenPublication) {
-            from components.java
-            afterEvaluate {
-                artifacts = [jar, apiJar, javadocJar, sourcesJar]
-            }
-            groupId "cat.nyaa"
-            artifactId branchArtifactId
-            version "$majorVersion.$minorVersion-mc$minecraftVersion-SNAPSHOT"
-        }
         mavenRelease(MavenPublication) {
             from components.java
             afterEvaluate {
@@ -114,30 +103,23 @@ publishing {
             }
             groupId "cat.nyaa"
             artifactId branchArtifactId
-            version "$fullVersionString"
+            version "$version"
         }
     }
     repositories {
         maven {
-            url "$buildDir/repo"
+            url "$mavenDirectory"
         }
     }
 }
 
-tasks.withType(PublishToMavenRepository) {
-    onlyIf {
-        (publication == publishing.publications.mavenSnapshot) ||
-                (releasing && mainBranch && (publication == publishing.publications.mavenRelease))
-    }
-}
-
 jar {
-    classifier = 'core'
+    archiveClassifier.set('core')
     dependsOn shadowJar
 }
 
 shadowJar {
-    classifier = 'release'
+    archiveClassifier.set('release')
     // relocate 'net.sf.cglib', 'cat.nyaa.cglib'
     configurations = [project.configurations.shadow]
 }
@@ -153,13 +135,18 @@ task apiJar(type: Jar) {
 }
 
 task sourcesJar(type: Jar) {
-    classifier = 'sources'
+    archiveClassifier.set('sources')
     from sourceSets.main.java.srcDirs
 }
 
 task javadocJar(type: Jar, dependsOn: javadoc) {
-    classifier = 'javadoc'
+    archiveClassifier.set('javadoc')
     from javadoc.destinationDir
+}
+
+// write javadocs to an external folder which can be served via nginx
+if (jdDirectory != null) {
+    javadoc.destinationDir = file("${jdDirectory}/rpgitems-${version}")
 }
 
 javadoc {
@@ -182,14 +169,9 @@ javadoc {
         }
 
         windowTitle = "RPGItems Javadoc"
-        String fullVersion = System.getenv("FULL_VERSION_STRING")
-        if (fullVersion != null) {
-            if (minecraftVersion != branch) {
-                fullVersion += " (" + branch + ")"
-            }
-            docTitle = "<b>RPGItems</b> " + fullVersion
-        } else {
-            docTitle = "<b>RPGItems</b>"
+        docTitle = "<b>RPGItems</b> " + version
+        if (!mainBranch) {
+            fullVersion += branch.replace(minecraftVersion, "")
         }
     }
 }

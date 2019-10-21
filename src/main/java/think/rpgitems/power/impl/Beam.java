@@ -37,9 +37,9 @@ import static think.rpgitems.Events.*;
 import static think.rpgitems.power.Utils.checkCooldown;
 
 /**
- * @author <a href="mailto:ReinWDD@gmail.com">ReinWD</a>ReinWD
+ * @author <a href="mailto:ReinWDD@gmail.com">ReinWD</a>
  *
- * Wrote & Maintained by ReinWD
+ * Wrote &amp; Maintained by ReinWD
  * if you have any issue, please send me email or @ReinWD in issues.
  * Accepted language: 中文, English.
  */

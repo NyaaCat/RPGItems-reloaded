@@ -1,7 +1,7 @@
 name: RPGItems
 main: think.rpgitems.RPGItems
 description: "RPGItems"
-version: 3.8.686986-mc1.13.2
+version: ${version}
 depend: [NyaaCore,LangUtils]
 softdepend: [WorldGuard,NyaaUtils]
 authors: [Taiterio,cyilin,RecursiveG,Librazy]
