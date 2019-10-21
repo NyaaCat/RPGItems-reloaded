@@ -5,8 +5,9 @@ plugins {
     id 'org.ajoberstar.grgit' version '3.0.0'
 }
 
-import org.ajoberstar.grgit.Grgit
+
 import org.ajoberstar.grgit.Commit
+import org.ajoberstar.grgit.Grgit
 import org.apache.tools.ant.filters.ReplaceTokens
 
 String majorVersion = 3
@@ -147,6 +148,14 @@ task sourcesJar(type: Jar) {
 task javadocJar(type: Jar, dependsOn: javadoc) {
     archiveClassifier.set('javadoc')
     from javadoc.destinationDir
+}
+
+task checkRelease() {
+    doLast {
+        if (!releasing) {
+            throw new GradleException("This is a canary version, use with caution!")
+        }
+    }
 }
 
 // write javadocs to an external folder which can be served via nginx

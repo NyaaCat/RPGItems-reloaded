@@ -3,10 +3,13 @@ pipeline {
     stages {
         stage('Build') {
             steps {
-                sh './gradlew build'
                 sh './gradlew publish'
+                warnError('This is a canary build!') {
+                  sh './gradlew -q checkRelease'
+                }
             }
         }
+
     }
     post {
         always {
