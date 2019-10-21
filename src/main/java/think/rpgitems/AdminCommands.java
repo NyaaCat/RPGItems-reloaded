@@ -29,7 +29,6 @@ import think.rpgitems.item.ItemGroup;
 import think.rpgitems.item.ItemManager;
 import think.rpgitems.item.RPGItem;
 import think.rpgitems.power.*;
-import think.rpgitems.power.trigger.Trigger;
 import think.rpgitems.support.WGSupport;
 import think.rpgitems.utils.MaterialUtils;
 import think.rpgitems.utils.NetworkUtils;
@@ -460,7 +459,7 @@ public class AdminCommands extends RPGCommandReceiver {
     @SubCommand(value = "display", tabCompleter = "itemCompleter")
     public void itemDisplay(CommandSender sender, Arguments args) {
         RPGItem item = getItem(args.nextString(), sender);
-        String value = args.consume();
+        String value = consume(args);
         if (value != null) {
             item.setDisplayName(value);
             msgs(sender, "message.display.set", item.getName(), item.getDisplayName());
@@ -646,7 +645,7 @@ public class AdminCommands extends RPGCommandReceiver {
         String command = args.nextString();
         switch (command) {
             case "add": {
-                String line = args.consumeString();
+                String line = consumeString(args);
                 item.addDescription(ChatColor.WHITE + line);
                 msgs(sender, "message.description.ok");
                 ItemManager.refreshItem();
@@ -655,7 +654,7 @@ public class AdminCommands extends RPGCommandReceiver {
             break;
             case "insert": {
                 int lineNo = args.nextInt();
-                String line = args.consumeString();
+                String line = consumeString(args);
                 int Length = item.getDescription().size();
                 if (lineNo < 0 || lineNo >= Length) {
                     msgs(sender, "message.num_out_of_range", lineNo, 0, item.getDescription().size());
@@ -670,7 +669,7 @@ public class AdminCommands extends RPGCommandReceiver {
             break;
             case "set": {
                 int lineNo = args.nextInt();
-                String line = args.consumeString();
+                String line = consumeString(args);
                 if (lineNo < 0 || lineNo >= item.getDescription().size()) {
                     msgs(sender, "message.num_out_of_range", lineNo, 0, item.getDescription().size());
                     return;
@@ -1410,5 +1409,26 @@ public class AdminCommands extends RPGCommandReceiver {
         public String getLocalizedMessage() {
             return I18n.getInstance(RPGItems.plugin.cfg.language).format(msg_internal, objs);
         }
+    }
+
+    protected static String consume(Arguments arguments) {
+        if (arguments.top() == null) {
+            return null;
+        }
+        StringBuilder sb = new StringBuilder();
+        while (true) {
+            String next = arguments.next();
+            sb.append(next);
+            if (arguments.top() == null) {
+                return sb.toString();
+            }
+            sb.append(" ");
+        }
+    }
+
+    protected static String consumeString(Arguments arguments) {
+        String str = consume(arguments);
+        if (str == null) throw new CommandException("internal.error.no_more_string");
+        return str;
     }
 }
