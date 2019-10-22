@@ -410,6 +410,7 @@ power:
     critical: 百分之 %.1f 的几率暴击 %.1f 倍
     backstab: 百分之 %.1f 的几率背刺 %.1f 倍
   gunfu: 子弹会自动追踪敌人 (%.1fs cooldown)
+  beam: 发射粒子束攻击敌人
 properties:
   base:
     id: 此条件/选择器的ID。
@@ -428,6 +429,39 @@ properties:
     targetItem: 修改器的目标物品。
     targetPower: 修改器的目标技能。
     targetProperty: 修改器的目标属性。
+  beam:
+    main_name: 粒子束
+    main_description: 发射飞行的粒子束，粒子束有多种参数控制其行为。
+    length: 粒子前进的总长度，方块。(length或ttl之一到达时结束)
+    ttl: 粒子存在的时间，游戏刻。(length或ttl之一到达时结束)
+    particle: 生成的粒子类型。
+    mode: 生成模式，激光模式或投射模式。
+    pierce: 每条粒子束可总计击中的生物数量。
+    ignoreWall: 粒子束是否无视固体方块。
+    damage: 粒子束击中伤害。
+    speed: 粒子束飞行速度，方块。
+    offsetX: 粒子生成的X轴范围，方块。（影响粒子束判定体积）
+    offsetY: 粒子生成的Y轴范围，方块。（影响粒子束判定体积）
+    offsetZ: 粒子生成的Z轴范围，方块。（影响粒子束判定体积）
+    particleSpeed: 粒子生成参数speed，参考/particle 。
+    spawnsPerBlock: 每方块生成粒子的次数，值越高粒子束越密集。
+    cone: 偏移角，度。
+    homing: 粒子束追踪目标的转弯半径，方块。（0代表不追踪）
+    homingAngle: 粒子束锁定目标角度，度。
+    homingRange: 粒子束锁定目标的范围，方块。
+    homingMode: 粒子束锁定目标的模式。
+    ticksBeforeHoming: 启动追踪的延迟，游戏刻。
+    burstCount: 每次触发发射的粒子束波数。
+    beamAmount: 每波发射的粒子束条数。
+    burstInterval: 每波发射之间的间隔，游戏刻。
+    bounce: 命中固体方块后可以反弹的总次数。
+    hitSelfWhenBounced: 命中固体方块并反弹后是否可以命中自身。
+    gravity: 粒子受到的重力加速度，方块/秒^2。（追踪开始后失效）
+    extraData: 粒子的颜色参数（r,g,b,size），输入null可以置空。
+    speedBias: 额外速度函数表达式（请确保表达式符合规则）。
+    behavior: 粒子束的行为。
+    behaviorParam: 粒子束行为的参数，JSON格式。
+
   aoe:
     main_name: 范围效果
     main_description: 对周围实体施放状态效果。可使用选择器。

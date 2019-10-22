@@ -408,6 +408,7 @@ power:
   explosion: '%.1f%% chance to create a explosion of power %.1f'
   headshot: 'Deal %.1f damage when headshot'
   gunfu: "Projectiles will track a enemy (%.1fs cooldown)"
+  beam: "Fire a beam to attack enemy"
 properties:
   base:
     id: ID of this condition/selector.
@@ -427,6 +428,38 @@ properties:
     targetItem: Target item of this modifier.
     targetPower: Target power of this modifier.
     targetProperty: Target property of this modifier.
+  beam:
+    main_name: beam
+    main_description: Fires a beam, controlled by parameters.
+    length: Total length of this beam (beam ends when either length or ttl reached)
+    ttl: Times to live (beam ends when either length or ttl reached)
+    particle: Particle type.
+    mode: Spawning mode, Beam or Projectile.
+    pierce: Numbers of Mob a beam can pierce throuth.
+    ignoreWall: Wheather a flying beam ignore solid blocks.
+    damage: Damage of beam.
+    speed: Fly speed.
+    offsetX: X offset of particle.(increases hitbox)
+    offsetY: Y offset of particle.(increases hitbox)
+    offsetZ: Z offset of particle.(increases hitbox)
+    particleSpeed: Particle parameter 'speed'.
+    spawnsPerBlock: Particle spawning times in a block, higher sPB increases particle density.
+    cone: Fires at a random direction in cone.
+    homing: Turning radius during homing, 0 for not homing.
+    homingAngle: Target locking cone angle.
+    homingRange: Target locing range.
+    homingMode: Target select mode.
+    ticksBeforeHoming: Ticks before homing starts.
+    burstCount: Burst times.
+    beamAmount: Beam amount in each burst.
+    burstInterval: Interval between bursts.
+    bounce: Bounce times when beam hit a block.
+    hitSelfWhenBounced: Will beam hit yourself when it bounces back.
+    gravity: Gravity on beam, blocks/s^2. (disabled when homing starts)
+    extraData: Particle parameter (r,g,b,size), input null for empty.
+    speedBias: Expression for calculating speed.
+    behavior: Behavior of beam.
+    behaviorParam: Parameters for 'behavior', formatted in JSON.
   airborne:
     main_name: Airborne
     main_description: Do more damage when gliding
