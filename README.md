@@ -8,6 +8,15 @@ The RPGItems2 plugin continued from [TheCreeperOfRedstone/RPG-Items-2](https://g
 
 Discord Server: [![Discord](https://img.shields.io/discord/486394125206421524.svg?logo=discord&link=https%3A%2F%2Fdiscord.gg%QeVy8Yd)](https://discord.gg/QeVy8Yd)
 
+## Downloads
+
+### [Recommended `1.14.4` version 3.8 *Alpha* download](https://ci.nyaacat.com/job/RPGItems-reloaded/job/1.14.4/lastStableBuild/artifact/build/libs/RPGItems-mc1.14.4-3.8-*-release.jar)
+
+Other 1.14.4 builds can be found at [our Jenkins](https://ci.nyaacat.com/job/RPGItems-reloaded/job/1.14.4/)
+
+1.7 ~ 1.13.2 builds can be found in the [Releases Page](https://github.com/NyaaCat/RPGItems-reloaded/releases).
+Please choose builds with prefixes matching your server version. Some version use code from [NBT API](https://www.spigotmc.org/resources/item-entity-tile-nbt-api.7939/) internally.
+
 ## Status
 
 The develop branch is `1.14.4` version 3.8 and is *in alpha*. **Ensure you have latest Spigot/Paper and NyaaCore**. Some commands and item file format are updated. RPGItems 3.8 is coming with lots of new feature, and it should fully compatible with 3.7 item file. **Note: item file format update are one-way! Backup your 3.7 item files in case you need them later**
@@ -16,11 +25,6 @@ The stable branch is `1.13.2` version 3.7 compatibles with **Spigot/Paper 1.13.2
 Old branches (1.7 ~ 1.13.1) are no longer maintained.  
 Critical bug fix (e.g. item duplication) may be backported upon request (by opening a issue).  
 Backport PR is welcomed.
-
-All builds can be found in the [Releases Page](https://github.com/NyaaCat/RPGItems-reloaded/releases).
-Please choose builds with prefixes matching your server version.
-
-Some version of this plugin use code from [NBT API](https://www.spigotmc.org/resources/item-entity-tile-nbt-api.7939/) internally.
 
 ## Resources
 
