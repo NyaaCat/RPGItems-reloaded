@@ -112,7 +112,7 @@ public class Throw extends BasePower {
 
         @Override
         public PowerResult<Void> fire(Player player, ItemStack stack) {
-            if (checkAndSetCooldown(getPower(), player, getCooldown(), true, true, getEntityName() + getEntityData()) && getItem().consumeDurability(stack, getCost())) {
+            if (checkAndSetCooldown(getPower(), player, getCooldown(), true, true, getItem().getUid() + "." + getEntityName() + getEntityData()) && getItem().consumeDurability(stack, getCost())) {
                 summonEntity(player);
                 return PowerResult.ok();
             }

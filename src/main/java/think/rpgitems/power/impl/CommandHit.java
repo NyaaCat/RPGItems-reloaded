@@ -62,7 +62,7 @@ public class CommandHit extends Command {
         @Override
         public PowerResult<Void> fire(Player player, ItemStack stack, LivingEntity entity, Double damage) {
             if (damage == null || damage < getMinDamage()) return PowerResult.noop();
-            if (!checkAndSetCooldown(getPower(), player, getCooldown(), true, false, getCommand()))
+            if (!checkAndSetCooldown(getPower(), player, getCooldown(), true, false, getItem().getUid() + "." + getCommand()))
                 return PowerResult.cd();
             if (!getItem().consumeDurability(stack, getCost())) return PowerResult.cost();
 

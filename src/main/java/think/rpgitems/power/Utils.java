@@ -220,10 +220,10 @@ public class Utils {
         } else {
             if (showWarn) {
                 I18n i18n = I18n.getInstance(player.getLocale());
-                if (showPower || (!Strings.isNullOrEmpty(power.getLocalizedDisplayName()) && !power.getLocalizedDisplayName().equals(power.getLocalizedName(RPGItems.plugin.cfg.language)))) {
-                    player.sendMessage(I18n.formatDefault("message.cooldown.power", ((double) (cooldown - nowTick)) / 20d, power.getLocalizedDisplayName()));
+                if (showPower) {
+                    player.sendMessage(i18n.format("message.cooldown.power", ((double) (cooldown - nowTick)) / 20d, power.getItem().getDisplayName(), power.getLocalizedName(player)));
                 } else {
-                    player.sendMessage(I18n.formatDefault("message.cooldown.general", ((double) (cooldown - nowTick)) / 20d));
+                    player.sendMessage(i18n.format("message.cooldown.general", ((double) (cooldown - nowTick)) / 20d, power.getItem().getDisplayName()));
                 }
             }
             return false;

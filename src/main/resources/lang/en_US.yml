@@ -98,8 +98,8 @@ message:
   help:
     for: Showing help for '%s'
   cooldown:
-    general: You must wait %.1f seconds
-    power: You must wait %.1f seconds before using %s
+    general: You must wait %.1f seconds before using %s
+    power: You must wait %.1f seconds before using %s&r's %s
   give:
     ok: You were given %s
     to: Gave %s to %s

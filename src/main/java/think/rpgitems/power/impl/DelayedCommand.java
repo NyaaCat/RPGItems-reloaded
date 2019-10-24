@@ -48,7 +48,7 @@ public class DelayedCommand extends Command {
 
         @Override
         public PowerResult<Void> fire(Player target, ItemStack stack) {
-            if (!checkAndSetCooldown(getPower(), target, getCooldown(), true, false, getCommand()))
+            if (!checkAndSetCooldown(getPower(), target, getCooldown(), true, false, getItem().getUid() + "." + getCommand()))
                 return PowerResult.cd();
             if (!getItem().consumeDurability(stack, getCost())) return PowerResult.cost();
             (new BukkitRunnable() {

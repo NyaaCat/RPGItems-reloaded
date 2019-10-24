@@ -73,6 +73,9 @@ public class Dummy extends BasePower {
     @Property
     public boolean showCDWarning = true;
 
+    @Property
+    public boolean globalCooldown = false;
+
     @Override
     public void init(ConfigurationSection section) {
         if (section.isBoolean("ignoreDurabilityBound")) {
@@ -178,6 +181,10 @@ public class Dummy extends BasePower {
         return showCDWarning;
     }
 
+    public boolean isGlobalCooldown() {
+        return globalCooldown;
+    }
+
     public class Impl implements PowerHit, PowerHitTaken, PowerLeftClick, PowerRightClick, PowerOffhandClick, PowerProjectileHit, PowerSneak, PowerSneaking, PowerSprint, PowerOffhandItem, PowerMainhandItem, PowerTick, PowerPlain, PowerLivingEntity, PowerHurt, PowerBowShoot {
 
         @Override
@@ -192,7 +199,7 @@ public class Dummy extends BasePower {
 
         @Override
         public PowerResult<Void> fire(Player player, ItemStack stack, LivingEntity entity, Double damage) {
-            if (!checkAndSetCooldown(getPower(), player, getCooldown(), isShowCDWarning(), false, getCooldownKey()))
+            if (!checkAndSetCooldown(getPower(), player, getCooldown(), isShowCDWarning(), false, (isGlobalCooldown() ? "" : (getItem().getUid() + ".")) + getCooldownKey()))
                 return PowerResult.of(getCooldownResult());
             int damageCost = getCost();
             if (damage != null && isCostByDamage()) {
