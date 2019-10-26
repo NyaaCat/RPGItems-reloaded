@@ -508,7 +508,7 @@ public class Utils {
                     if (!v.isPresent()) return;
                     field.set(power, v.get());
                 } catch (IllegalArgumentException e) {
-                    new Message(I18n.formatDefault(st.message(), value)).send(sender);
+                    new Message(i18n.format(st.message(), value)).send(sender);
                 }
             } else {
                 if (field.getType().equals(int.class) || field.getType().equals(Integer.class)) {

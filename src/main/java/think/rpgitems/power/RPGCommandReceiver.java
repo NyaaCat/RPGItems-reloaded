@@ -176,7 +176,7 @@ public abstract class RPGCommandReceiver extends CommandReceiver {
     public static void actionBarTip(CommandSender sender, NamespacedKey power, String property) {
         if (sender instanceof Player) {
             Bukkit.getScheduler().runTask(RPGItems.plugin, () -> {
-                String description = PowerManager.getDescription(power, property);
+                String description = PowerManager.getDescription(((Player) sender).getLocale(), power, property);
                 if (description == null) {
                     return;
                 }
@@ -187,12 +187,16 @@ public abstract class RPGCommandReceiver extends CommandReceiver {
 
     public static void showProp(CommandSender sender, NamespacedKey powerKey, PropertyInstance prop, PropertyHolder powerObj) {
         String name = prop.name();
+        String locale = RPGItems.plugin.cfg.language;
+        if (sender instanceof Player) {
+            locale = ((Player) sender).getLocale();
+        }
         Meta meta = PowerManager.getMeta(powerKey);
         if (isTrivialProperty(meta, name)) {
             return;
         }
-        String desc = PowerManager.getDescription(powerKey, name);
-        msgs(sender, "message.propertyHolder.property", name, Strings.isNullOrEmpty(desc) ? I18n.getInstance(sender).format("message.propertyHolder.no_description") : desc);
+        String desc = PowerManager.getDescription(locale, powerKey, name);
+        msgs(sender, "message.propertyHolder.property", name, Strings.isNullOrEmpty(desc) ? I18n.getInstance(locale).format("message.propertyHolder.no_description") : desc);
         if (powerObj != null) {
             msgs(sender, "message.propertyHolder.property_value", Utils.getProperty(powerObj, name, prop.field()));
         }

@@ -83,7 +83,7 @@ public class AdminCommands extends RPGCommandReceiver {
                 completeStr.addAll(ItemManager.itemNames());
                 break;
             case 2:
-                String cmd = arguments.getRawArgs()[1];
+                String cmd = arguments.getRawArgs()[0];
                 if (subCommandCompletion.containsKey(cmd)) {
                     String comp = subCommandCompletion.get(cmd);
                     completeStr.addAll(Arrays.asList(comp.split(":", 2)[1].split(",")));

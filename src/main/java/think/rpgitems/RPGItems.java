@@ -75,15 +75,15 @@ public class RPGItems extends JavaPlugin {
                                                  I18n i18n = I18n.getInstance(lang);
                                                  if (property == null) {
                                                      String powerKey = "properties." + power.getKey() + ".main_description";
-                                                     return I18n.formatDefault(powerKey);
+                                                     return i18n.format(powerKey);
                                                  }
                                                  String key = "properties." + power.getKey() + "." + property;
                                                  if (i18n.hasKey(key)) {
-                                                     return I18n.formatDefault(key);
+                                                     return i18n.format(key);
                                                  }
                                                  String baseKey = "properties.base." + property;
                                                  if (i18n.hasKey(baseKey)) {
-                                                     return I18n.formatDefault(baseKey);
+                                                     return i18n.format(baseKey);
                                                  }
                                                  return null;
                                              }));

@@ -148,7 +148,7 @@ public class PowerManager {
 
 
     private static Map<String, Pair<Method, PropertyInstance>> scanProperties(Class<? extends PropertyHolder> cls) {
-        RPGItems.logger.severe("Scanning class " + cls.toGenericString());
+        RPGItems.logger.finest( "Scanning class " + cls.toGenericString());
         List<Method> methods = Arrays.stream(cls.getMethods()).collect(Collectors.toList());
         List<Pair<Field, Property>> collect = getAllFields(cls)
                                                       .stream()
@@ -227,7 +227,7 @@ public class PowerManager {
     }
 
     public static void addDescriptionResolver(Plugin plugin, String locale, BiFunction<NamespacedKey, String, String> descriptionResolver) {
-        descriptionResolvers.put(plugin, locale, descriptionResolver);
+        descriptionResolvers.put(plugin, locale.toLowerCase(Locale.ROOT), descriptionResolver);
     }
 
     public static NamespacedKey parseKey(String powerStr) throws UnknownExtensionException {
@@ -342,10 +342,10 @@ public class PowerManager {
 
     public static String getDescription(String locale, NamespacedKey power, String property) {
         Plugin plugin = extensions.get(power.getNamespace());
-        if (!PowerManager.descriptionResolvers.contains(plugin, locale)) {
+        if (!PowerManager.descriptionResolvers.contains(plugin, locale.toLowerCase(Locale.ROOT))) {
             return null;
         }
-        return PowerManager.descriptionResolvers.get(plugin, locale).apply(power, property);
+        return PowerManager.descriptionResolvers.get(plugin, locale.toLowerCase(Locale.ROOT)).apply(power, property);
     }
 
     public static String getDescription(NamespacedKey power, String property) {

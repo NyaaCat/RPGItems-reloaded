@@ -26,7 +26,7 @@ public class I18n extends LanguageRepository {
     protected Map<String, String> map = new HashMap<>();
 
     public I18n(RPGItems plugin, String lang) {
-        instances.put(lang, this);
+        instances.put(lang.toLowerCase(), this);
         this.plugin = plugin;
         this.lang = lang;
         loadResourceLanguage(lang);
@@ -130,7 +130,7 @@ public class I18n extends LanguageRepository {
     }
 
     public static I18n getInstance(String lang) {
-        return instances.getOrDefault(lang, instances.get(RPGItems.plugin.cfg.language));
+        return instances.getOrDefault(lang.toLowerCase(), instances.get(RPGItems.plugin.cfg.language.toLowerCase()));
     }
 
     /**
@@ -157,6 +157,12 @@ public class I18n extends LanguageRepository {
                 return "CORRUPTED_LANG<" + key + ">" + params;
             }
         }
+    }
+
+    @Override
+    public boolean hasKey(String key) {
+        if (map.containsKey(key)) return true;
+        return super.hasKey(key);
     }
 
     @Override
