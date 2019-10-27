@@ -253,6 +253,7 @@ public class Utils {
     @SuppressWarnings("unchecked")
     public static void saveProperty(PropertyHolder p, ConfigurationSection section, String property, Field field) throws IllegalAccessException {
         Serializer getter = field.getAnnotation(Serializer.class);
+        field.setAccessible(true);
         Object val = field.get(p);
         if (val == null) return;
         if (getter != null) {

@@ -15,13 +15,13 @@ import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.*;
+import java.util.logging.Level;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 public class WikiCommand extends RPGCommandReceiver {
 
-    public
-    WikiCommand(RPGItems plugin, LanguageRepository i18n) {
+    public WikiCommand(RPGItems plugin, LanguageRepository i18n) {
         super(plugin, i18n);
     }
 
@@ -111,12 +111,18 @@ public class WikiCommand extends RPGCommandReceiver {
 
         Map<Class<? extends PropertyHolder>, Map<String, Pair<Method, PropertyInstance>>> allProperties = PowerManager.getProperties();
 
-        StringBuilder catalog = new StringBuilder("# Powers\n\n");
+        Map<String, StringBuilder> catalogs = new HashMap<>(4);
+        catalogs.put("condition", new StringBuilder("# Conditions\n\n"));
+        catalogs.put("power", new StringBuilder("# Powers\n\n"));
+        catalogs.put("marker", new StringBuilder("# Markers\n\n"));
+        catalogs.put("trigger", new StringBuilder("# Triggers\n\n"));
+        catalogs.put("modifier", new StringBuilder("# Modifiers\n\n"));
 
         for (Map.Entry<Class<? extends PropertyHolder>, Map<String, Pair<Method, PropertyInstance>>> entry : allProperties.entrySet().stream().sorted(Comparator.comparing(e -> e.getKey().getCanonicalName(), String::compareToIgnoreCase)).collect(Collectors.toList())) {
             Class<? extends PropertyHolder> clazz = entry.getKey();
             Map<String, Pair<Method, PropertyInstance>> properties = entry.getValue();
-            PropertyHolder instance = PowerManager.instantiate(clazz);
+            PropertyHolder instance = Trigger.class.isAssignableFrom(clazz) ? Trigger.values().stream().filter(p -> p.getClass().equals(clazz)).findAny().get() : PowerManager.instantiate(clazz);
+            String type = instance.getPropertyHolderType();
             String localizedName = instance.getLocalizedName(locale);
             NamespacedKey namespacedKey = instance.getNamespacedKey();
             StringBuilder propertiesDesc = new StringBuilder();
@@ -126,7 +132,9 @@ public class WikiCommand extends RPGCommandReceiver {
 
             String catalogEntry = "* [" + localizedName + " " + "(" + namespacedKey.toString() + ")](./" + file.getFileName().toString().replace(".md", "") + ")\n";
             catalogEntry += "  " + powerDesc + "\n";
-            catalog.append(catalogEntry);
+            RPGItems.logger.log(Level.INFO, "Generating wiki for " + instance.getPropertyHolderType() + " " + instance.getLocalizedName(locale));
+
+            catalogs.get(type).append(catalogEntry);
             StringBuilder customHeader = new StringBuilder();
             StringBuilder customDescription = new StringBuilder();
             StringBuilder customProperties = new StringBuilder();
@@ -191,11 +199,11 @@ public class WikiCommand extends RPGCommandReceiver {
                     }
                 }
             }
-            for (Map.Entry<String, Pair<Method, PropertyInstance>> propertyEntry : properties.entrySet()) {
+            for (Map.Entry<String, Pair<Method, PropertyInstance>> propertyEntry : properties.entrySet().stream().sorted(Map.Entry.comparingByKey()).collect(Collectors.toList())) {
                 String name = propertyEntry.getKey();
                 PropertyInstance property = propertyEntry.getValue().getValue();
 
-                if (isTrivialProperty(meta, name)) {
+                if (!type.equals("trigger") && isTrivialProperty(meta, name)) {
                     continue;
                 }
 
@@ -233,7 +241,9 @@ public class WikiCommand extends RPGCommandReceiver {
             fullTemplate = fullTemplate.replace("${namespacedKey}", namespacedKey.toString());
             fullTemplate = fullTemplate.replace("${plugin}", PowerManager.getExtensions().get(namespacedKey.getNamespace()).getName());
 
-            if (meta.marker()) {
+            if (meta == null) {
+                fullTemplate = fullTemplate.replace("${trigger}", "");
+            } else if (meta.marker()) {
                 fullTemplate = fullTemplate.replace("${trigger}", propertyMarker);
             } else if (instance instanceof Power) {
                 String defTriggers = ((Power) instance).getTriggers().stream().map(Trigger::name).map(s -> "`" + s + "`").sorted().collect(Collectors.joining(", "));
@@ -252,8 +262,15 @@ public class WikiCommand extends RPGCommandReceiver {
             fullTemplate = fullTemplate.replace("${properties}", propertiesDesc.toString());
             java.nio.file.Files.write(file, fullTemplate.getBytes(StandardCharsets.UTF_8));
         }
-        Path catalogFile = wikiDir.toPath().resolve("powers-" + locale.toString() + ".md");
-        java.nio.file.Files.write(catalogFile, catalog.toString().getBytes(StandardCharsets.UTF_8));
+        catalogs.entrySet().forEach(e -> {
+            try {
+                Path catalogFile = wikiDir.toPath().resolve(e.getKey() + "-" + locale.toString() + ".md");
+                Files.write(catalogFile, e.getValue().toString().getBytes(StandardCharsets.UTF_8));
+            } catch (IOException ex) {
+                RPGItems.logger.log(Level.WARNING, "Error saving wiki catalog" + e.getKey(), ex);
+            }
+        });
+
     }
 
     @Override
