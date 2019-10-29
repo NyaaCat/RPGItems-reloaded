@@ -130,6 +130,18 @@ public class AdminCommands extends RPGCommandReceiver {
     @SubCommand("power")
     public PowerCommands power;
 
+    @SubCommand("condition")
+    public ConditionCommands condition;
+    
+    @SubCommand("marker")
+    public MarkerCommands marker;
+    
+    @SubCommand("trigger")
+    public MarkerCommands trigger;
+
+    // @SubCommand("modifier")
+    // public ModifierCommands modifier;
+
     @SubCommand("gen-wiki")
     public WikiCommand wiki;
 
@@ -912,34 +924,6 @@ public class AdminCommands extends RPGCommandReceiver {
             ItemManager.save(item);
         }
         msgs(sender, "message.damagemode." + item.getDamageMode().name(), item.getName());
-    }
-
-    private Pair<NamespacedKey, Class<? extends Marker>> getMarkerClass(CommandSender sender, String markerStr) {
-        try {
-            NamespacedKey key = PowerManager.parseKey(markerStr);
-            Class<? extends Marker> cls = PowerManager.getMarker(key);
-            if (cls == null) {
-                msgs(sender, "message.power.unknown", markerStr);
-            }
-            return Pair.of(key, cls);
-        } catch (UnknownExtensionException e) {
-            msgs(sender, "message.error.unknown.extension", e.getName());
-            return null;
-        }
-    }
-
-    private Pair<NamespacedKey, Class<? extends Condition>> getConditionClass(CommandSender sender, String conditionStr) {
-        try {
-            NamespacedKey key = PowerManager.parseKey(conditionStr);
-            Class<? extends Condition> cls = PowerManager.getCondition(key);
-            if (cls == null) {
-                msgs(sender, "message.power.unknown", conditionStr);
-            }
-            return Pair.of(key, cls);
-        } catch (UnknownExtensionException e) {
-            msgs(sender, "message.error.unknown.extension", e.getName());
-            return null;
-        }
     }
 
     public static <T extends PropertyHolder> T initPropertyHolder(CommandSender sender, Arguments args, RPGItem item, Class<? extends T> cls) throws IllegalAccessException {

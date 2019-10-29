@@ -297,6 +297,10 @@ public class PowerManager {
     public static Map<NamespacedKey, Class<? extends Marker>> getMarkers() {
         return Collections.unmodifiableMap(markers);
     }
+    
+    public static Map<NamespacedKey, Class<? extends Modifier>> getModifiers() {
+        return Collections.unmodifiableMap(modifiers);
+    }
 
     public static Map<String, Pair<Method, PropertyInstance>> getProperties(Class<? extends PropertyHolder> cls) {
         return Collections.unmodifiableMap(properties.get(cls));

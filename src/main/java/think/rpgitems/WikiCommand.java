@@ -111,7 +111,7 @@ public class WikiCommand extends RPGCommandReceiver {
 
         Map<Class<? extends PropertyHolder>, Map<String, Pair<Method, PropertyInstance>>> allProperties = PowerManager.getProperties();
 
-        Map<String, StringBuilder> catalogs = new HashMap<>(4);
+        Map<String, StringBuilder> catalogs = new HashMap<>(5);
         catalogs.put("condition", new StringBuilder("# Conditions\n\n"));
         catalogs.put("power", new StringBuilder("# Powers\n\n"));
         catalogs.put("marker", new StringBuilder("# Markers\n\n"));
