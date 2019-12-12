@@ -591,6 +591,7 @@ public class PowerBeam extends BasePower implements PowerPlain, PowerRightClick,
         }
 
         double legacyBonus = 0;
+        double lastCorrected = 0;
 
         private Vector homingCorrect(Vector towards, Location lastLocation, Entity target, Supplier<Entity> runnable) {
             if (target == null) {
@@ -611,20 +612,26 @@ public class PowerBeam extends BasePower implements PowerPlain, PowerRightClick,
             Vector targetDirection = targetLocation.toVector().subtract(lastLocation.toVector());
             float angle = clone.angle(targetDirection);
             Vector crossProduct = clone.clone().getCrossProduct(targetDirection);
+            //make sure path is a circle
+            if (lastCorrected>0){
+                clone.rotateAroundAxis(crossProduct, lastCorrected);
+            }
             //legacy
 //            double actualAng = (homing / 20) / (lengthInThisTick / lengthPerSpawn);
-            double actualAng = Math.asin(towards.length() / (homing));
-            if (angle > Math.toRadians(actualAng)) {
+            double actualAng = Math.asin(towards.length() / (2 * homing));
+            if (angle > actualAng) {
                 if (this.behavior.equals(Behavior.LEGACY_HOMING)) {
-                    double lastActualAngle = Math.asin(towards.length() / (homing + legacyBonus));
-                    legacyBonus += 0.5 * (lastActualAngle / (2*Math.PI));
-                    actualAng = Math.asin(towards.length() / ((homing+legacyBonus)));
+                    double lastActualAngle = Math.asin(towards.length() / (2*(homing + legacyBonus)));
+                    legacyBonus += (lastActualAngle / (Math.PI));
+                    actualAng = Math.asin(towards.length() / (2 * (homing+legacyBonus)));
                 }
                 // ↓a better way to rotate.
                 // will create a exact circle.
                 clone.rotateAroundAxis(crossProduct, actualAng);
+                lastCorrected = actualAng;
             } else {
                 clone = targetDirection.normalize();
+                lastCorrected = 0;
             }
             return clone;
         }
