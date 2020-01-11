@@ -150,6 +150,10 @@ public class EvalDamage extends BasePower {
                 }
 
                 BigDecimal result = ex.eval();
+                double ret = result.doubleValue();
+                if (isSetBaseDamage()) {
+                    event.setDamage(ret);
+                }
                 return PowerResult.ok(result.doubleValue());
             } catch (Expression.ExpressionException ex) {
                 RPGItems.plugin.getLogger().log(Level.WARNING, "bad expression: " + getExpression(), ex);
