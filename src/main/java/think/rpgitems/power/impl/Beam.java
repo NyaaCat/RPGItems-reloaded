@@ -82,7 +82,7 @@ public class Beam extends BasePower {
     public double particleSpeed = 0;
 
     @Property
-    public double spawnsPerBlock = 2;
+    public double particleDensity = 2;
 
     /**
      * Cost of this power
@@ -209,6 +209,7 @@ public class Beam extends BasePower {
         section.set("ticksBeforeHoming", stepsBeforeHoming);
         section.set("ttl", ((int) Math.floor(length*20 / spd)));
         section.set("homingRange", length);
+        section.set("particleDensity", spawnsPerBlock);
     }
 
     private static Set<Material> transp = Stream.of(Material.values())
@@ -321,8 +322,8 @@ public class Beam extends BasePower {
         return pierce;
     }
 
-    public double getSpawnsPerBlock() {
-        return spawnsPerBlock;
+    public double getParticleDensity() {
+        return particleDensity;
     }
 
     public double getSpeed() {
@@ -382,7 +383,7 @@ public class Beam extends BasePower {
         private double offsetY = 0;
         private double offsetZ = 0;
         private double particleSpeed = 0;
-        private double spawnsPerBlock = 2;
+        private double particleDensity = 2;
         private double homing = 0;
         private double homingAngle = 30;
         private Target homingTarget = Target.MOBS;
@@ -427,7 +428,7 @@ public class Beam extends BasePower {
             this.offsetX = config.getOffsetX();
             this.offsetY = config.getOffsetY();
             this.offsetZ = config.getOffsetZ();
-            this.spawnsPerBlock = config.getSpawnsPerBlock();
+            this.particleDensity = config.getParticleDensity();
             this.homing = config.getHoming();
             this.homingMode = config.getHomingMode();
             this.ticksBeforeHoming = config.getTicksBeforeHoming();
@@ -444,7 +445,7 @@ public class Beam extends BasePower {
             this.homingTarget = config.getHomingTarget();
             this.homingRange = config.getHomingRange();
             power = config;
-            lengthPerSpawn = 1 / spawnsPerBlock;
+            lengthPerSpawn = 1 / particleDensity;
         }
 
         @Override
