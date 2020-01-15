@@ -178,7 +178,7 @@ public class ConditionCommands extends RPGCommandReceiver {
                 return;
             }
             item.getConditions().remove(nth);
-            msgs(sender, "message.condition.removed");
+            msgs(sender, "message.condition.removed", String.valueOf(nth));
         } catch (UnknownExtensionException e) {
             msgs(sender, "message.error.unknown.extension", e.getName());
         }
