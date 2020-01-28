@@ -1,7 +1,9 @@
 package think.rpgitems.power.cond;
 
+import cat.nyaa.nyaacore.utils.ItemStackUtils;
 import com.google.common.cache.Cache;
 import com.google.common.cache.CacheBuilder;
+import org.bukkit.Bukkit;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.PlayerInventory;
@@ -16,10 +18,16 @@ import java.util.*;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.function.Supplier;
+import java.util.logging.Level;
 import java.util.stream.Stream;
 
 @Meta(marker = true)
 public class SlotCondition extends BaseCondition<Void> {
+
+    public SlotCondition(){
+        slots.add(Slots.ARMOR);
+    }
+
     @Property(required = true, order = 0)
     public String id = "defaultSlot";
     @Property
@@ -49,8 +57,9 @@ public class SlotCondition extends BaseCondition<Void> {
         return critical;
     }
 
-    final static String slotConditionKey = "rpgitem:slotCondition.counter";
+    final static String slotConditionKey = "rpgitem:slotCondition.counter:";
     final static UUID slotConditionExistence = UUID.randomUUID();
+    final static Map<String, Integer> itemStackChecked = new HashMap<>();
 
     @Override
     public PowerResult<Void> check(Player player, ItemStack stack, Map<PropertyHolder, PowerResult<?>> context) {
@@ -62,13 +71,24 @@ public class SlotCondition extends BaseCondition<Void> {
                 @Override
                 public void run() {
                     LightContext.clear();
+                    itemStackChecked.clear();
                 }
             }.runTaskLater(RPGItems.plugin, 1);
         }
-        Optional<Object> temp = LightContext.getTemp(player.getUniqueId(), slotConditionKey);
+
+        Optional<RPGItem> rpgItem = ItemManager.toRPGItem(stack);
+        if (!rpgItem.isPresent()){
+            Bukkit.getLogger().log(Level.FINER, "item is not a RGI, this shouldn't happen");
+            return PowerResult.fail();
+        }
+        String s = rpgItem.get().getName();
+        Integer id = itemStackChecked.computeIfAbsent(s, s1 -> itemStackChecked.size());
+
+        final String key = slotConditionKey + s;
+        Optional<Object> temp = LightContext.getTemp(player.getUniqueId(), key);
         int triggered = 0;
         if (!temp.isPresent()) {
-            LightContext.putTemp(player.getUniqueId(), slotConditionKey, triggered);
+            LightContext.putTemp(player.getUniqueId(), key, triggered);
         } else {
             triggered = ((int) temp.get());
         }
@@ -76,7 +96,7 @@ public class SlotCondition extends BaseCondition<Void> {
         for (Slots slots1 : slots) {
             res = (slots1.eval(player.getInventory(), stack));
             if (res && count-- <= 0) {
-                LightContext.putTemp(player.getUniqueId(), slotConditionKey, triggered + 1);
+                LightContext.putTemp(player.getUniqueId(), key, triggered + 1);
                 return PowerResult.ok();
             }
         }
