@@ -543,7 +543,7 @@ public class Beam extends BasePower {
                     }
 
                     lengthRemains.set(lengthToSpawn + lengthPerSpawn);
-                    if (spawnedLength.get() >= length || currentTick.addAndGet(1) > ttl) {
+                    if (spawnedLength.get() >= length || currentTick.addAndGet(1) > ttl || mode == Mode.BEAM) {
                         return;
                     }
                     new RecursiveTask().runTaskLater(RPGItems.plugin, 1);
@@ -715,7 +715,7 @@ public class Beam extends BasePower {
         private boolean canHit(Location loc, Entity entity) {
             BoundingBox boundingBox = entity.getBoundingBox();
             BoundingBox particleBox;
-            double initalBias = 0.1 + initialBias;
+            double initalBias = 0.2;
             double x = Math.max(offsetX, initalBias);
             double y = Math.max(offsetY, initalBias);
             double z = Math.max(offsetZ, initalBias);
