@@ -18,6 +18,7 @@ import org.bukkit.event.player.PlayerInteractEvent;
 import org.bukkit.event.player.PlayerToggleSneakEvent;
 import org.bukkit.event.player.PlayerToggleSprintEvent;
 import org.bukkit.inventory.ItemStack;
+import org.bukkit.inventory.MainHand;
 import org.bukkit.scheduler.BukkitRunnable;
 import org.bukkit.util.BoundingBox;
 import org.bukkit.util.RayTraceResult;
@@ -415,6 +416,7 @@ public class Beam extends BasePower {
         World world;
         Set<UUID> hitMob = new HashSet<>();
         int cycle = 0;
+        private double initialBias = 0.2;
 
         MovingTask(Beam config) {
             this.length = config.getLength();
@@ -488,6 +490,9 @@ public class Beam extends BasePower {
                                     location = ((LivingEntity) fromEntity).getEyeLocation();
                                 }
                                 targets = new LinkedList<>(getTargets(location.getDirection(), location, fromEntity, homingRange, homingAngle, homingTarget));
+                                if(targets.isEmpty()){
+                                    targets.add(fromEntity);
+                                }
                             }
                         }
 
@@ -710,10 +715,11 @@ public class Beam extends BasePower {
         private boolean canHit(Location loc, Entity entity) {
             BoundingBox boundingBox = entity.getBoundingBox();
             BoundingBox particleBox;
-            double x = Math.max(offsetX, 0.1);
-            double y = Math.max(offsetY, 0.1);
-            double z = Math.max(offsetZ, 0.1);
-            particleBox = BoundingBox.of(loc, x + 0.1, y + 0.1, z + 0.1);
+            double initalBias = 0.1 + initialBias;
+            double x = Math.max(offsetX, initalBias);
+            double y = Math.max(offsetY, initalBias);
+            double z = Math.max(offsetZ, initalBias);
+            particleBox = BoundingBox.of(loc, x + initalBias, y + initalBias, z + initalBias);
             return boundingBox.overlaps(particleBox) || particleBox.overlaps(boundingBox);
         }
 
@@ -730,11 +736,41 @@ public class Beam extends BasePower {
         public void setFromEntity(Entity fromEntity) {
             this.fromEntity = fromEntity;
             if (fromEntity instanceof LivingEntity) {
-                this.fromLocation = ((LivingEntity) fromEntity).getEyeLocation();
+                if(fromEntity instanceof Player){
+                    MainHand mainHand = ((Player) fromEntity).getMainHand();
+                    Vector direction = ((Player) fromEntity).getEyeLocation().getDirection();
+                    Vector upDirection = crossProduct(direction).multiply(this.initialBias);
+                    if (mainHand.equals(MainHand.LEFT)){
+                        upDirection.rotateAroundAxis(direction, Math.toRadians(60));
+                    }else if (mainHand.equals(MainHand.RIGHT)){
+                        upDirection.rotateAroundAxis(direction, Math.toRadians(-60));
+                    }
+                    this.fromLocation = ((LivingEntity) fromEntity).getEyeLocation();
+
+                    fromLocation.add(upDirection);
+                }else {
+                    this.fromLocation = ((LivingEntity) fromEntity).getEyeLocation();
+                }
             } else {
                 this.fromLocation = fromEntity.getLocation();
             }
             this.towards = fromLocation.getDirection();
+        }
+
+        final Vector yAxis = new Vector(0,1,0);
+        final Vector xAxis = new Vector(1,0,0);
+
+        private Vector crossProduct(Vector towards) {
+            Vector cross1 = null;
+            Vector upDirection = null;
+            if (towards.getX() == 0 && towards.getZ() == 0){
+                cross1 = towards.clone().getCrossProduct(xAxis);
+                upDirection = xAxis;
+            }else {
+                cross1 = towards.clone().getCrossProduct(yAxis);
+                upDirection = towards.clone().getCrossProduct(cross1);
+            }
+            return upDirection.normalize();
         }
 
         public void setFromLocation(Location from) {
