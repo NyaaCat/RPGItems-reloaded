@@ -179,7 +179,13 @@ public class AOEDamage extends BasePower {
                     continue;
                 }
                 if (getDelay() <= 0) {
+                    Context.instance().putTemp(player.getUniqueId(), OVERRIDING_DAMAGE, getDamage());
+                    Context.instance().putTemp(player.getUniqueId(), SUPPRESS_MELEE, isSuppressMelee());
+                    Context.instance().putTemp(player.getUniqueId(), DAMAGE_SOURCE_ITEM, stack);
                     e.damage(getDamage(), player);
+                    Context.instance().putTemp(player.getUniqueId(), SUPPRESS_MELEE, isSuppressMelee());
+                    Context.instance().putTemp(player.getUniqueId(), OVERRIDING_DAMAGE, null);
+                    Context.instance().removeTemp(player.getUniqueId(), DAMAGE_SOURCE_ITEM);
                 } else {
                     (new BukkitRunnable() {
                         @Override
