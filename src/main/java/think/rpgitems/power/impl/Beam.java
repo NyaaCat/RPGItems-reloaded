@@ -181,23 +181,23 @@ public class Beam extends BasePower {
         String homingTargetMode = section.getString("homingTargetMode");
         int stepsBeforeHoming = section.getInt("stepsBeforeHoming");
 
-        double spd = ((double) length*20) / ((double) movementTicks);
+        double spd = ((double) length * 20) / ((double) movementTicks);
         int spawnsPerBlock = section.getInt("spawnsPerBlock");
         double blockPerSpawn = 1 / ((double) spawnsPerBlock);
         double stepPerSecond = spd / blockPerSpawn;
 
         if (!section.getBoolean("homing")) {
             homingAngle = 0;
-        }else {
-            homing = blockPerSpawn / (2 *Math.cos( Math.toRadians(homingAngle)));
+        } else {
+            homing = blockPerSpawn / (2 * Math.cos(Math.toRadians(homingAngle)));
         }
-        if(originalCone) {
+        if (originalCone) {
             section.set("cone", cone);
-        }else {
+        } else {
             section.set("cone", 0);
         }
         int pierceNum = 0;
-        if (pierce){
+        if (pierce) {
             pierceNum = 50;
         }
         section.set("speed", spd);
@@ -208,7 +208,7 @@ public class Beam extends BasePower {
         section.set("pierce", pierceNum);
         section.set("behavior", "LEGACY_HOMING");
         section.set("ticksBeforeHoming", stepsBeforeHoming);
-        section.set("ttl", ((int) Math.floor(length*20 / spd)));
+        section.set("ttl", ((int) Math.floor(length * 20 / spd)));
         section.set("homingRange", length);
         section.set("particleDensity", spawnsPerBlock);
     }
@@ -490,7 +490,7 @@ public class Beam extends BasePower {
                                     location = ((LivingEntity) fromEntity).getEyeLocation();
                                 }
                                 targets = new LinkedList<>(getTargets(location.getDirection(), location, fromEntity, homingRange, homingAngle, homingTarget));
-                                if(targets.isEmpty()){
+                                if (targets.isEmpty()) {
                                     targets.add(fromEntity);
                                 }
                             }
@@ -500,7 +500,7 @@ public class Beam extends BasePower {
                         Vector step = towards.clone().normalize().multiply(lengthPerSpawn);
                         if (gravity != 0 && (
                                 homing == 0 || currentTick.get() < ticksBeforeHoming
-                        ) ) {
+                        )) {
                             double partsPerTick = lengthInThisTick / lengthPerSpawn;
                             step.setY(step.getY() + getGravity(partsPerTick));
                         }
@@ -627,7 +627,7 @@ public class Beam extends BasePower {
             }
             if (target.isDead()) {
                 target = runnable.get();
-                if (target == null)return towards;
+                if (target == null) return towards;
             }
             Location targetLocation;
             if (target instanceof LivingEntity) {
@@ -641,7 +641,7 @@ public class Beam extends BasePower {
             float angle = clone.angle(targetDirection);
             Vector crossProduct = clone.clone().getCrossProduct(targetDirection);
             //make sure path is a circle
-            if (lastCorrected>0){
+            if (lastCorrected > 0) {
                 clone.rotateAroundAxis(crossProduct, lastCorrected);
             }
             //legacy
@@ -649,9 +649,9 @@ public class Beam extends BasePower {
             double actualAng = Math.asin(towards.length() / (2 * homing));
             if (angle > actualAng) {
                 if (this.behavior.equals(Behavior.LEGACY_HOMING)) {
-                    double lastActualAngle = Math.asin(towards.length() / (2*(homing + legacyBonus)));
+                    double lastActualAngle = Math.asin(towards.length() / (2 * (homing + legacyBonus)));
                     legacyBonus += (lastActualAngle / (Math.PI));
-                    actualAng = Math.asin(towards.length() / (2 * (homing+legacyBonus)));
+                    actualAng = Math.asin(towards.length() / (2 * (homing + legacyBonus)));
                 }
                 // ↓a better way to rotate.
                 // will create a exact circle.
@@ -673,7 +673,7 @@ public class Beam extends BasePower {
                 if ((lastLocation.distance(eyeLocation) < 1)) {
                     return;
                 }
-                if (spawnInWorld >=3) {
+                if (spawnInWorld >= 3) {
                     ((Player) from).spawnParticle(this.particle, lastLocation, i, offsetX, offsetY, offsetZ, particleSpeed, extraData);
                     spawnInWorld = 0;
                 } else {
@@ -695,7 +695,7 @@ public class Beam extends BasePower {
             List<Entity> collect = candidates.stream()
                     .filter(entity -> (entity instanceof LivingEntity) && (!isUtilArmorStand((LivingEntity) entity)) && (canHitSelf || !entity.equals(from)) && !entity.isDead())
                     .filter(entity -> canHit(loc, entity))
-                    .limit(Math.max(pierce,1))
+                    .limit(Math.max(pierce, 1))
                     .collect(Collectors.toList());
             if (!collect.isEmpty()) {
                 Entity entity = collect.get(0);
@@ -736,19 +736,19 @@ public class Beam extends BasePower {
         public void setFromEntity(Entity fromEntity) {
             this.fromEntity = fromEntity;
             if (fromEntity instanceof LivingEntity) {
-                if(fromEntity instanceof Player){
+                if (fromEntity instanceof Player) {
                     MainHand mainHand = ((Player) fromEntity).getMainHand();
                     Vector direction = ((Player) fromEntity).getEyeLocation().getDirection();
                     Vector upDirection = crossProduct(direction).multiply(this.initialBias);
-                    if (mainHand.equals(MainHand.LEFT)){
+                    if (mainHand.equals(MainHand.LEFT)) {
                         upDirection.rotateAroundAxis(direction, Math.toRadians(60));
-                    }else if (mainHand.equals(MainHand.RIGHT)){
+                    } else if (mainHand.equals(MainHand.RIGHT)) {
                         upDirection.rotateAroundAxis(direction, Math.toRadians(-60));
                     }
                     this.fromLocation = ((LivingEntity) fromEntity).getEyeLocation();
 
                     fromLocation.add(upDirection);
-                }else {
+                } else {
                     this.fromLocation = ((LivingEntity) fromEntity).getEyeLocation();
                 }
             } else {
@@ -757,16 +757,16 @@ public class Beam extends BasePower {
             this.towards = fromLocation.getDirection();
         }
 
-        final Vector yAxis = new Vector(0,1,0);
-        final Vector xAxis = new Vector(1,0,0);
+        final Vector yAxis = new Vector(0, 1, 0);
+        final Vector xAxis = new Vector(1, 0, 0);
 
         private Vector crossProduct(Vector towards) {
             Vector cross1 = null;
             Vector upDirection = null;
-            if (towards.getX() == 0 && towards.getZ() == 0){
+            if (towards.getX() == 0 && towards.getZ() == 0) {
                 cross1 = towards.clone().getCrossProduct(xAxis);
                 upDirection = xAxis;
-            }else {
+            } else {
                 cross1 = towards.clone().getCrossProduct(yAxis);
                 upDirection = towards.clone().getCrossProduct(cross1);
             }
@@ -831,7 +831,7 @@ public class Beam extends BasePower {
     private static List<Entity> getTargets(Vector direction, Location fromLocation, Entity from, double range, double homingAngle, Target homingTarget) {
         double radius = Math.min(range, 300);
         return Utils.getLivingEntitiesInConeSorted(from.getNearbyEntities(radius, range * 1.5, range * 1.5).stream()
-                        .filter(entity -> entity instanceof LivingEntity && !entity.equals(from) && !entity.isDead())
+                        .filter(entity -> entity instanceof LivingEntity && !entity.equals(from) && !entity.isDead() && from.getLocation().distance(entity.getLocation()) < range)
                         .map(entity -> ((LivingEntity) entity))
                         .collect(Collectors.toList())
                 , fromLocation.toVector(), homingAngle, direction).stream()
@@ -870,7 +870,7 @@ public class Beam extends BasePower {
 
         @Override
         public Optional set(String value) throws IllegalArgumentException {
-            if("null".equals(value)){
+            if ("null".equals(value)) {
                 return Optional.empty();
             }
             String[] split = value.split(",", 4);
