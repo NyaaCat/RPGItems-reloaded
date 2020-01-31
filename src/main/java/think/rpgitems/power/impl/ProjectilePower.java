@@ -71,9 +71,9 @@ public class ProjectilePower extends BasePower {
     @Property
     public boolean setFireballDirection = false;
     @Property
-    public Double yield = null;
+    public Double yield = 0d;
     @Property
-    public Boolean isIncendiary = null;
+    public Boolean isIncendiary = false;
     @AcceptedValue({
             "skull",
             "fireball",

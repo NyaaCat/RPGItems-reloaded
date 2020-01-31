@@ -39,7 +39,7 @@ import static think.rpgitems.power.Utils.checkCooldown;
 
 /**
  * @author <a href="mailto:ReinWDD@gmail.com">ReinWD</a>
- *
+ * <p>
  * Wrote &amp; Maintained by ReinWD
  * if you have any issue, please send me email or @ReinWD in issues.
  * Accepted language: 中文, English.
@@ -162,8 +162,13 @@ public class Beam extends BasePower {
 
     @Override
     public void init(ConfigurationSection section) {
+        //check new version var name
         if (section.contains("coneRange")) {
             updateFromV1(section);
+        }
+        if (section.contains("spawnsPerBlock")){
+            int spawnsPerBlock = section.getInt("spawnsPerBlock");
+            section.set("particleDensity", spawnsPerBlock);
         }
         super.init(section);
     }
@@ -210,7 +215,6 @@ public class Beam extends BasePower {
         section.set("ticksBeforeHoming", stepsBeforeHoming);
         section.set("ttl", ((int) Math.floor(length * 20 / spd)));
         section.set("homingRange", length);
-        section.set("particleDensity", spawnsPerBlock);
     }
 
     private static Set<Material> transp = Stream.of(Material.values())

@@ -9,6 +9,7 @@ import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.PlayerInventory;
 import org.bukkit.scheduler.BukkitRunnable;
 import think.rpgitems.RPGItems;
+import think.rpgitems.data.Context;
 import think.rpgitems.data.LightContext;
 import think.rpgitems.item.ItemManager;
 import think.rpgitems.item.RPGItem;
@@ -65,16 +66,16 @@ public class SlotCondition extends BaseCondition<Void> {
     public PowerResult<Void> check(Player player, ItemStack stack, Map<PropertyHolder, PowerResult<?>> context) {
         boolean res = false;
         //make sure context is cleared in next tick.
-        Optional<Object> existence = LightContext.getTemp(slotConditionExistence, slotConditionKey);
-        if (!existence.isPresent()) {
-            new BukkitRunnable() {
-                @Override
-                public void run() {
-                    LightContext.clear();
-                    itemStackChecked.clear();
-                }
-            }.runTaskLater(RPGItems.plugin, 1);
-        }
+//        Optional<Object> existence = LightContext.getTemp(slotConditionExistence, slotConditionKey);
+//        if (!existence.isPresent()) {
+//            new BukkitRunnable() {
+//                @Override
+//                public void run() {
+//                    LightContext.clear();
+//                    itemStackChecked.clear();
+//                }
+//            }.runTaskLater(RPGItems.plugin, 1);
+//        }
 
         Optional<RPGItem> rpgItem = ItemManager.toRPGItem(stack);
         if (!rpgItem.isPresent()){
@@ -85,18 +86,19 @@ public class SlotCondition extends BaseCondition<Void> {
         Integer id = itemStackChecked.computeIfAbsent(s, s1 -> itemStackChecked.size());
 
         final String key = slotConditionKey + s;
-        Optional<Object> temp = LightContext.getTemp(player.getUniqueId(), key);
+
+        Integer temp = (Integer) Context.instance().get(player.getUniqueId(), key);
         int triggered = 0;
-        if (!temp.isPresent()) {
-            LightContext.putTemp(player.getUniqueId(), key, triggered);
+        if (temp == null) {
+            Context.instance().putTemp(player.getUniqueId(), key, triggered);
         } else {
-            triggered = ((int) temp.get());
+            triggered = temp;
         }
         int count = triggered;
         for (Slots slots1 : slots) {
             res = (slots1.eval(player.getInventory(), stack));
             if (res && count-- <= 0) {
-                LightContext.putTemp(player.getUniqueId(), key, triggered + 1);
+                Context.instance().putTemp(player.getUniqueId(), key, triggered + 1);
                 return PowerResult.ok();
             }
         }

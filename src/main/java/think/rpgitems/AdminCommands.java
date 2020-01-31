@@ -757,7 +757,7 @@ public class AdminCommands extends RPGCommandReceiver {
     }
 
     @SubCommand(value = "durability", tabCompleter = "itemCompleter")
-    @Completion("item:infinite,default,bound")
+    @Completion("item:infinite,default,bound,togglebar,barformat")
     public void itemDurability(CommandSender sender, Arguments args) {
         RPGItem item = getItem(args.nextString(), sender);
         if (args.length() == 2) {
@@ -801,6 +801,12 @@ public class AdminCommands extends RPGCommandReceiver {
                     msgs(sender, "message.durability.bound", String.valueOf(min), String.valueOf(max));
                 }
                 break;
+                case "togglebar":
+                    toggleBar(sender, args);
+                    break;
+                case "barformat":
+                    toggleBarFormat(sender, args);
+                    break;
                 default:
                     throw new BadCommandException("message.error.invalid_option", arg, "durability", "value,infinite,togglebar,default,bound");
             }
@@ -875,7 +881,7 @@ public class AdminCommands extends RPGCommandReceiver {
         msgs(sender, "message.customitemmodel." + (item.isCustomItemModel() ? "enable" : "disable"));
     }
 
-    @SubCommand(value = "togglebar", tabCompleter = "itemCompleter")
+//    @SubCommand(value = "togglebar", tabCompleter = "itemCompleter")
     public void toggleBar(CommandSender sender, Arguments args) {
         RPGItem item = getItem(args.nextString(), sender);
         item.toggleBar();
@@ -884,7 +890,7 @@ public class AdminCommands extends RPGCommandReceiver {
         msgs(sender, "message.durability.toggle");
     }
 
-    @SubCommand(value = "barformat", tabCompleter = "itemCompleter")
+//    @SubCommand(value = "barformat", tabCompleter = "itemCompleter")
     @Completion("item:DEFAULT,NUMERIC,NUMERIC_MINUS_ONE,NUMERIC_HEX,NUMERIC_HEX_MINUS_ONE,DEFAULT8")
     public void toggleBarFormat(CommandSender sender, Arguments args) {
         RPGItem item = getItem(args.nextString(), sender);

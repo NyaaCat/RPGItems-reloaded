@@ -1171,7 +1171,11 @@ public class RPGItem {
             return Optional.empty();
         }
         ItemMeta itemMeta = item.getItemMeta();
-        SubItemTagContainer tagContainer = makeTag(Objects.requireNonNull(itemMeta), TAG_META);
+        //Power Consume will make this null in triggerPostFire().
+        if(itemMeta == null){
+            return Optional.empty();
+        }
+        SubItemTagContainer tagContainer = makeTag(itemMeta, TAG_META);
         int durability = computeIfAbsent(tagContainer, TAG_DURABILITY, PersistentDataType.INTEGER, this::getDefaultDurability);
         tagContainer.commit();
         item.setItemMeta(itemMeta);
