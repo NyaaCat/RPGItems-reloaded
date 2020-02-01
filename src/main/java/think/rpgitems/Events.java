@@ -606,9 +606,9 @@ public class Events implements Listener {
         if (!(entity instanceof LivingEntity)) return;
         if (rItem != null) {
             damage = maxWithCancel(rItem.power(player, item, e, BaseTriggers.HIT).orElse(null), damage);
-            ItemStack[] inventory = player.getInventory().getContents();
-            runGlobalHitTrigger(e, player, damage, rItem.getDamageType(), inventory);
         }
+        ItemStack[] inventory = player.getInventory().getContents();
+        runGlobalHitTrigger(e, player, damage, rItem == null ? "" : rItem.getDamageType(), inventory);
     }
 
     private void projectileDamager(EntityDamageByEntityEvent e) {
