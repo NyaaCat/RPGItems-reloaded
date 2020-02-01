@@ -1,9 +1,6 @@
 package think.rpgitems.power.impl;
 
-import org.bukkit.Color;
-import org.bukkit.Effect;
-import org.bukkit.Material;
-import org.bukkit.Particle;
+import org.bukkit.*;
 import org.bukkit.block.data.BlockData;
 import org.bukkit.entity.Entity;
 import org.bukkit.entity.LivingEntity;
@@ -11,10 +8,13 @@ import org.bukkit.entity.Player;
 import org.bukkit.event.entity.EntityDamageByEntityEvent;
 import org.bukkit.event.entity.EntityDamageEvent;
 import org.bukkit.event.entity.EntityShootBowEvent;
+import org.bukkit.event.entity.ProjectileHitEvent;
 import org.bukkit.event.player.PlayerInteractEvent;
 import org.bukkit.inventory.ItemStack;
 import think.rpgitems.AdminCommands;
 import think.rpgitems.I18n;
+import think.rpgitems.event.BeamHitBlockEvent;
+import think.rpgitems.event.BeamHitEntityEvent;
 import think.rpgitems.power.*;
 
 import java.util.Optional;
@@ -86,6 +86,18 @@ public class ParticlePower extends BasePower {
             }
         } else {
             player.getWorld().spawnParticle(getParticle(), player.getLocation(), getParticleCount(), getOffsetX(), getOffsetY(), getOffsetZ(), getExtra(), getData(), isForce());
+        }
+    }
+
+    void spawnParticle(World world, Location location) {
+        if (getParticle() == null) {
+            if (getEffect() == Effect.SMOKE) {
+                world.playEffect(location.add(0, 2, 0), getEffect(), 4);
+            } else {
+                world.playEffect(location, getEffect(), 0);
+            }
+        } else {
+            world.spawnParticle(getParticle(), location, getParticleCount(), getOffsetX(), getOffsetY(), getOffsetZ(), getExtra(), getData(), isForce());
         }
     }
 
@@ -227,7 +239,7 @@ public class ParticlePower extends BasePower {
         }
     }
 
-    public class Impl implements PowerRightClick, PowerLeftClick, PowerPlain, PowerHit, PowerHitTaken, PowerHurt, PowerBowShoot {
+    public class Impl implements PowerRightClick, PowerLeftClick, PowerPlain, PowerHit, PowerHitTaken, PowerHurt, PowerBowShoot, PowerBeamHit, PowerProjectileHit {
 
         @Override
         public PowerResult<Double> takeHit(Player target, ItemStack stack, double damage, EntityDamageEvent event) {
@@ -278,6 +290,31 @@ public class ParticlePower extends BasePower {
             if (!getItem().consumeDurability(stack, getCost())) return PowerResult.cost();
             spawnParticle(entity);
             return PowerResult.ok().with(damage);
+        }
+
+        @Override
+        public PowerResult<Double> hitEntity(Player player, ItemStack stack, LivingEntity entity, double damage, BeamHitEntityEvent event) {
+            if (!checkCooldown(getPower(), player, getCooldown(), true, true)) return PowerResult.cd();
+            if (!getItem().consumeDurability(stack, getCost())) return PowerResult.cost();
+            Location location = entity.getLocation();
+            spawnParticle(entity.getWorld(), location);
+            return PowerResult.ok(damage);
+        }
+
+        @Override
+        public PowerResult<Void> hitBlock(Player player, ItemStack stack, Location location, BeamHitBlockEvent event) {
+            if (!checkCooldown(getPower(), player, getCooldown(), true, true)) return PowerResult.cd();
+            if (!getItem().consumeDurability(stack, getCost())) return PowerResult.cost();
+            spawnParticle(player.getWorld(), location);
+            return PowerResult.ok();
+        }
+
+        @Override
+        public PowerResult<Void> projectileHit(Player player, ItemStack stack, ProjectileHitEvent event) {
+            if (!checkCooldown(getPower(), player, getCooldown(), true, true)) return PowerResult.cd();
+            if (!getItem().consumeDurability(stack, getCost())) return PowerResult.cost();
+            spawnParticle(player.getWorld(), event.getEntity().getLocation());
+            return PowerResult.ok();
         }
     }
 

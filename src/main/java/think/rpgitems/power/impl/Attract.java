@@ -7,16 +7,20 @@ import org.bukkit.entity.Player;
 import org.bukkit.event.entity.EntityDamageByEntityEvent;
 import org.bukkit.event.entity.EntityDamageEvent;
 import org.bukkit.event.entity.EntityShootBowEvent;
+import org.bukkit.event.entity.ProjectileHitEvent;
 import org.bukkit.event.player.PlayerInteractEvent;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.scheduler.BukkitRunnable;
 import org.bukkit.util.Vector;
 import think.rpgitems.I18n;
 import think.rpgitems.RPGItems;
+import think.rpgitems.event.BeamHitBlockEvent;
+import think.rpgitems.event.BeamHitEntityEvent;
 import think.rpgitems.power.*;
 import think.rpgitems.power.trigger.BaseTriggers;
 
 import java.util.List;
+import java.util.function.Supplier;
 
 import static think.rpgitems.power.Utils.checkCooldown;
 import static think.rpgitems.power.Utils.getNearbyEntities;
@@ -123,7 +127,7 @@ public class Attract extends BasePower {
         return requireHurtByEntity;
     }
 
-    public class Impl implements PowerTick, PowerLeftClick, PowerRightClick, PowerPlain, PowerSneaking, PowerHurt, PowerHitTaken, PowerBowShoot {
+    public class Impl implements PowerTick, PowerLeftClick, PowerRightClick, PowerPlain, PowerSneaking, PowerHurt, PowerHitTaken, PowerBowShoot, PowerBeamHit, PowerProjectileHit{
 
         @Override
         public PowerResult<Double> takeHit(Player target, ItemStack stack, double damage, EntityDamageEvent event) {
@@ -135,6 +139,10 @@ public class Attract extends BasePower {
 
         @Override
         public PowerResult<Void> fire(Player player, ItemStack stack) {
+            return attract(player, stack);
+        }
+
+        private PowerResult<Void> fire(Player player, ItemStack stack, Supplier<List<Entity>> supplier) {
             if (!checkCooldown(getPower(), player, getCooldown(), true, true)) return PowerResult.cd();
             if (!getItem().consumeDurability(stack, getCost())) return PowerResult.cost();
             new BukkitRunnable() {
@@ -146,7 +154,7 @@ public class Attract extends BasePower {
                         this.cancel();
                         return;
                     }
-                    attract(player, stack);
+                    attract(player, stack, supplier);
                 }
             }.runTaskTimer(RPGItems.plugin, 0, 1);
             return PowerResult.ok();
@@ -157,7 +165,7 @@ public class Attract extends BasePower {
             return Attract.this;
         }
 
-        private PowerResult<Void> attract(Player player, ItemStack stack) {
+        private PowerResult<Void> attract(Player player, ItemStack stack, Supplier<List<Entity>> supplier) {
             if (!player.isOnline() || player.isDead()) {
                 return PowerResult.noop();
             }
@@ -165,7 +173,7 @@ public class Attract extends BasePower {
                 return PowerResult.noop();
             }
             double factor = Math.sqrt(getRadius() - 1.0) / getMaxSpeed();
-            List<Entity> entities = getNearbyEntities(getPower(), player.getLocation(), player, getRadius());
+            List<Entity> entities = supplier.get();
             if (entities.isEmpty()) return null;
             if (!getItem().consumeDurability(stack, getAttractingTickCost())) return null;
             for (Entity e : entities) {
@@ -200,6 +208,10 @@ public class Attract extends BasePower {
             return attract(player, stack);
         }
 
+        private PowerResult<Void> attract(Player player, ItemStack stack) {
+            return attract(player, stack, () -> getNearbyEntities(getPower(), player.getLocation(), player, getRadius()));
+        }
+
         @Override
         public PowerResult<Void> sneaking(Player player, ItemStack stack) {
             return attract(player, stack);
@@ -218,6 +230,22 @@ public class Attract extends BasePower {
         @Override
         public PowerResult<Float> bowShoot(Player player, ItemStack stack, EntityShootBowEvent event) {
             return fire(player, stack).with(event.getForce());
+        }
+
+        @Override
+        public PowerResult<Double> hitEntity(Player player, ItemStack stack, LivingEntity entity, double damage, BeamHitEntityEvent event) {
+            Location location = entity.getLocation();
+            return fire(player, stack, () -> getNearbyEntities(getPower(), location, player, getRadius())).with(damage);
+        }
+
+        @Override
+        public PowerResult<Void> hitBlock(Player player, ItemStack stack, Location location, BeamHitBlockEvent event) {
+            return fire(player, stack, () -> getNearbyEntities(getPower(), location, player, getRadius()));
+        }
+
+        @Override
+        public PowerResult<Void> projectileHit(Player player, ItemStack stack, ProjectileHitEvent event) {
+            return fire(player, stack, () -> getNearbyEntities(getPower(), event.getEntity().getLocation(), player, getRadius()));
         }
     }
 }

@@ -1,18 +1,24 @@
 package think.rpgitems.power.impl;
 
 import org.bukkit.Effect;
+import org.bukkit.Location;
 import org.bukkit.entity.Entity;
 import org.bukkit.entity.LivingEntity;
 import org.bukkit.entity.Player;
 import org.bukkit.event.entity.EntityDamageByEntityEvent;
 import org.bukkit.event.entity.EntityShootBowEvent;
+import org.bukkit.event.entity.ProjectileHitEvent;
 import org.bukkit.event.player.PlayerInteractEvent;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.potion.PotionEffect;
 import org.bukkit.potion.PotionEffectType;
 import think.rpgitems.I18n;
+import think.rpgitems.event.BeamHitBlockEvent;
+import think.rpgitems.event.BeamHitEntityEvent;
 import think.rpgitems.power.*;
 import think.rpgitems.utils.PotionEffectUtils;
+
+import java.util.Collection;
 
 import static think.rpgitems.power.Utils.checkCooldown;
 import static think.rpgitems.power.Utils.getNearbyEntities;
@@ -114,7 +120,7 @@ public class AOE extends BasePower {
         return cooldown;
     }
 
-    public class Impl implements PowerRightClick, PowerLeftClick, PowerOffhandClick, PowerPlain, PowerHit, PowerBowShoot {
+    public class Impl implements PowerRightClick, PowerLeftClick, PowerOffhandClick, PowerPlain, PowerHit, PowerBowShoot, PowerBeamHit, PowerProjectileHit {
         @Override
         public PowerResult<Void> rightClick(final Player player, ItemStack stack, PlayerInteractEvent event) {
             return fire(player, stack);
@@ -122,15 +128,24 @@ public class AOE extends BasePower {
 
         @Override
         public PowerResult<Void> fire(Player player, ItemStack stack) {
+            return fire(player.getLocation(), player, stack, getNearbyEntities(getPower(), player.getLocation(), player, getRange()));
+        }
+
+        private PowerResult<Void> fire(Location center, Player player, ItemStack itemStack, Collection<Entity> entityList){
             if (!checkCooldown(getPower(), player, getCooldown(), true, true)) return PowerResult.cd();
-            if (!getItem().consumeDurability(stack, getCost())) return PowerResult.cost();
+            if (!getItem().consumeDurability(itemStack, getCost())) return PowerResult.cost();
+
+            int range = getRange();
+
             PotionEffect effect = new PotionEffect(getType(), getDuration(), getAmplifier() - 1);
-            if (isSelfapplication()) {
-                player.addPotionEffect(effect);
-            }
-            player.getWorld().playEffect(player.getLocation(), Effect.POTION_BREAK, getType().getColor().asRGB());
-            for (Entity ent : getNearbyEntities(getPower(), player.getLocation(), player, getRange())) {
-                if (ent instanceof LivingEntity && !player.equals(ent)) {
+            player.getWorld().playEffect(center, Effect.POTION_BREAK, getType().getColor().asRGB());
+
+            for (Entity ent : entityList) {
+                if (player.equals(ent) && isSelfapplication()) {
+                    player.addPotionEffect(effect);
+                    continue;
+                }
+                if (ent instanceof LivingEntity && ent.getLocation().distance(center) <= range) {
                     ((LivingEntity) ent).addPotionEffect(effect);
                 }
             }
@@ -160,6 +175,18 @@ public class AOE extends BasePower {
         @Override
         public PowerResult<Float> bowShoot(Player player, ItemStack stack, EntityShootBowEvent event) {
             return fire(player, stack).with(event.getForce());
+        }
+
+        @Override
+        public PowerResult<Void> hitBlock(Player player, ItemStack stack, Location location, BeamHitBlockEvent event) {
+            Location center = event.getLocation();
+            return fire(center, player, stack, getNearbyEntities(getPower(), center, player, getRange()));
+        }
+
+        @Override
+        public PowerResult<Void> projectileHit(Player player, ItemStack stack, ProjectileHitEvent event) {
+            Location center = event.getEntity().getLocation();
+            return fire(center, player, stack, getNearbyEntities(getPower(), center, player, getRange()));
         }
     }
 }

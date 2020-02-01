@@ -1,14 +1,22 @@
 package think.rpgitems.power.impl;
 
 import org.bukkit.Bukkit;
+import org.bukkit.Location;
+import org.bukkit.entity.Entity;
 import org.bukkit.entity.LivingEntity;
 import org.bukkit.entity.Player;
 import org.bukkit.event.entity.EntityDamageByEntityEvent;
+import org.bukkit.event.entity.ProjectileHitEvent;
 import org.bukkit.event.player.PlayerInteractEvent;
 import org.bukkit.inventory.ItemStack;
+import think.rpgitems.event.BeamHitBlockEvent;
+import think.rpgitems.event.BeamHitEntityEvent;
 import think.rpgitems.power.*;
 
+import java.util.ArrayList;
+import java.util.Collection;
 import java.util.List;
+import java.util.stream.Collectors;
 
 import static think.rpgitems.power.Utils.*;
 
@@ -103,7 +111,7 @@ public class AOECommand extends Command {
         return selfapplication;
     }
 
-    public class Impl implements PowerPlain, PowerRightClick, PowerLeftClick, PowerHit {
+    public class Impl implements PowerPlain, PowerRightClick, PowerLeftClick, PowerHit, PowerBeamHit, PowerProjectileHit{
         @Override
         public PowerResult<Void> rightClick(Player player, ItemStack stack, PlayerInteractEvent event) {
             return fire(player, stack);
@@ -111,6 +119,12 @@ public class AOECommand extends Command {
 
         @Override
         public PowerResult<Void> fire(Player player, ItemStack stack) {
+            List<LivingEntity> nearbyEntities = getNearestLivingEntities(getPower(), player.getLocation(), player, getR(), getRm());
+            List<LivingEntity> livingEntitiesInCone = getLivingEntitiesInCone(nearbyEntities, player.getEyeLocation().toVector(), getFacing(), player.getEyeLocation().getDirection());
+            return fire(player, stack, livingEntitiesInCone);
+        }
+
+        private PowerResult<Void> fire(Player player, ItemStack stack, List<LivingEntity> entitiesInCone){
             if (!checkAndSetCooldown(getPower(), player, getCooldown(), true, false, getItem().getUid() + "." + getCommand()))
                 return PowerResult.cd();
             if (!getItem().consumeDurability(stack, getCost())) return PowerResult.cost();
@@ -128,16 +142,14 @@ public class AOECommand extends Command {
                 boolean forMobs = getType().equalsIgnoreCase("mobs");
                 int count = getC();
                 if (getType().equalsIgnoreCase("entity") || forPlayers || forMobs) {
-                    List<LivingEntity> nearbyEntities = getNearestLivingEntities(getPower(), player.getLocation(), player, getR(), getRm());
-                    List<LivingEntity> ent = getLivingEntitiesInCone(nearbyEntities, player.getEyeLocation().toVector(), getFacing(), player.getEyeLocation().getDirection());
-                    LivingEntity[] entities = ent.toArray(new LivingEntity[0]);
+                    LivingEntity[] entities = entitiesInCone.toArray(new LivingEntity[0]);
                     for (int i = 0; i < count && i < entities.length; ++i) {
                         String cmd = usercmd;
                         LivingEntity e = entities[i];
                         if ((isMustsee() && !player.hasLineOfSight(e))
-                                    || (!isSelfapplication() && e == player)
-                                    || (forPlayers && !(e instanceof Player))
-                                    || (forMobs && e instanceof Player)
+                                || (!isSelfapplication() && e == player)
+                                || (forPlayers && !(e instanceof Player))
+                                || (forMobs && e instanceof Player)
                         ) {
                             ++count;
                             continue;
@@ -167,6 +179,26 @@ public class AOECommand extends Command {
         @Override
         public PowerResult<Double> hit(Player player, ItemStack stack, LivingEntity entity, double damage, EntityDamageByEntityEvent event) {
             return fire(player, stack).with(damage);
+        }
+
+        @Override
+        public PowerResult<Void> hitBlock(Player player, ItemStack stack, Location location, BeamHitBlockEvent event) {
+            int r = getR();
+            List<LivingEntity> nearbyEntities = getNearbyEntities(getPower(), location, player, r).stream()
+                    .filter(entity -> entity instanceof LivingEntity)
+                    .map(entity ->  ((LivingEntity) entity))
+                    .collect(Collectors.toList());
+            return fire(player, stack, nearbyEntities);
+        }
+
+        @Override
+        public PowerResult<Void> projectileHit(Player player, ItemStack stack, ProjectileHitEvent event) {
+            int r = getR();
+            List<LivingEntity> nearbyEntities = getNearbyEntities(getPower(), event.getEntity().getLocation(), player, r).stream()
+                    .filter(entity -> entity instanceof LivingEntity)
+                    .map(entity ->  ((LivingEntity) entity))
+                    .collect(Collectors.toList());
+            return fire(player, stack, nearbyEntities);
         }
     }
 }

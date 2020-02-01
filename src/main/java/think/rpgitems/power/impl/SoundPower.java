@@ -8,8 +8,10 @@ import org.bukkit.entity.Player;
 import org.bukkit.event.entity.EntityDamageByEntityEvent;
 import org.bukkit.event.entity.EntityDamageEvent;
 import org.bukkit.event.entity.EntityShootBowEvent;
+import org.bukkit.event.entity.ProjectileHitEvent;
 import org.bukkit.event.player.PlayerInteractEvent;
 import org.bukkit.inventory.ItemStack;
+import think.rpgitems.event.BeamHitBlockEvent;
 import think.rpgitems.power.*;
 
 import static think.rpgitems.power.Utils.checkCooldown;
@@ -94,7 +96,7 @@ public class SoundPower extends BasePower {
         return requireHurtByEntity;
     }
 
-    public class Impl implements PowerLeftClick, PowerRightClick, PowerPlain, PowerHit, PowerBowShoot, PowerHitTaken, PowerHurt {
+    public class Impl implements PowerLeftClick, PowerRightClick, PowerPlain, PowerHit, PowerBowShoot, PowerHitTaken, PowerHurt, PowerBeamHit, PowerProjectileHit {
 
         @Override
         public PowerResult<Void> leftClick(Player player, ItemStack stack, PlayerInteractEvent event) {
@@ -104,7 +106,7 @@ public class SoundPower extends BasePower {
         @Override
         public PowerResult<Void> fire(Player player, ItemStack stack) {
             if (!checkCooldown(getPower(), player, getCooldown(), true, true)) return PowerResult.cd();
-            return this.sound(player, stack);
+            return this.sound(player, stack, player.getLocation());
         }
 
         @Override
@@ -112,9 +114,8 @@ public class SoundPower extends BasePower {
             return SoundPower.this;
         }
 
-        private PowerResult<Void> sound(Entity player, ItemStack stack) {
+        private PowerResult<Void> sound(Entity player, ItemStack stack, Location location) {
             if (!getItem().consumeDurability(stack, getCost())) return PowerResult.cost();
-            Location location = player.getLocation();
             location.getWorld().playSound(location, getSound(), getVolume(), getPitch());
             return PowerResult.ok();
         }
@@ -127,7 +128,7 @@ public class SoundPower extends BasePower {
         @Override
         public PowerResult<Double> hit(Player player, ItemStack stack, LivingEntity entity, double damage, EntityDamageByEntityEvent event) {
             if (!checkCooldown(getPower(), player, getCooldown(), true, true)) return PowerResult.cd();
-            return sound(entity, stack).with(damage);
+            return sound(entity, stack, entity.getLocation()).with(damage);
         }
 
         @Override
@@ -149,6 +150,18 @@ public class SoundPower extends BasePower {
                 return fire(target, stack);
             }
             return PowerResult.noop();
+        }
+
+        @Override
+        public PowerResult<Void> hitBlock(Player player, ItemStack stack, Location location, BeamHitBlockEvent event) {
+            if (!checkCooldown(getPower(), player, getCooldown(), true, true)) return PowerResult.cd();
+            return sound(player, stack, location);
+        }
+
+        @Override
+        public PowerResult<Void> projectileHit(Player player, ItemStack stack, ProjectileHitEvent event) {
+            if (!checkCooldown(getPower(), player, getCooldown(), true, true)) return PowerResult.cd();
+            return sound(player, stack, event.getEntity().getLocation());
         }
     }
 }

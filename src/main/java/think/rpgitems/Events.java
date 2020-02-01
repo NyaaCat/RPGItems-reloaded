@@ -23,6 +23,8 @@ import org.bukkit.projectiles.ProjectileSource;
 import org.bukkit.scheduler.BukkitRunnable;
 import think.rpgitems.data.Context;
 import think.rpgitems.data.LightContext;
+import think.rpgitems.event.BeamHitBlockEvent;
+import think.rpgitems.event.BeamHitEntityEvent;
 import think.rpgitems.item.ItemManager;
 import think.rpgitems.item.RPGItem;
 import think.rpgitems.power.Pimpl;
@@ -761,4 +763,48 @@ public class Events implements Listener {
             e.setCancelled(true);
         }
     }
+
+    @EventHandler(ignoreCancelled = true, priority = EventPriority.HIGH)
+    public void onBeamHitBlock(BeamHitBlockEvent event){
+        Entity from = event.getFrom();
+        if (!(from instanceof Player))return;
+        Player player = (Player) from;
+
+        RPGItem rItem = ItemManager.toRPGItem(event.getItemStack()).orElse(null);
+        if (rItem == null)return;
+
+        rItem.power(player, event.getItemStack(), event, BaseTriggers.BEAM_HIT_BLOCK, null);
+//        ItemStack itemInMainHand = player.getInventory().getItemInMainHand();
+//        ItemStack[] contents = player.getInventory().getContents();
+//        for (ItemStack content : contents) {
+//            if (content == null) continue;
+//            if (content.equals(itemInMainHand))continue;
+//            RPGItem rpgItem = ItemManager.toRPGItem(content).orElse(null);
+//            if (rpgItem == null) continue;
+//
+//            rpgItem.power(player, content, event, BaseTriggers.BEAM_HIT_BLOCK, null);
+//        }
+    }
+
+    @EventHandler(ignoreCancelled = true, priority = EventPriority.HIGH)
+    public void onBeamHitEntity(BeamHitEntityEvent event){
+        Entity from = event.getFrom();
+        if (!(from instanceof Player))return;
+        Player player = (Player) from;
+
+        RPGItem rItem = ItemManager.toRPGItem(event.getItemStack()).orElse(null);
+        if (rItem == null)return;
+
+        rItem.power(player, event.getItemStack(), event, BaseTriggers.BEAM_HIT_ENTITY, null);
+//        ItemStack itemInMainHand = player.getInventory().getItemInMainHand();
+//        ItemStack[] contents = player.getInventory().getContents();
+//        for (ItemStack content : contents) {
+//            if (content == null) continue;
+//            RPGItem rpgItem = ItemManager.toRPGItem(content).orElse(null);
+//            if (rpgItem == null) continue;
+//
+//            rpgItem.power(player, content, event, BaseTriggers.BEAM_HIT_ENTITY, null);
+//        }
+    }
+
 }

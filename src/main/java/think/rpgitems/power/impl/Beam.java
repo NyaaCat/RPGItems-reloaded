@@ -25,6 +25,8 @@ import org.bukkit.util.RayTraceResult;
 import org.bukkit.util.Vector;
 import think.rpgitems.RPGItems;
 import think.rpgitems.data.LightContext;
+import think.rpgitems.event.BeamHitBlockEvent;
+import think.rpgitems.event.BeamHitEntityEvent;
 import think.rpgitems.power.*;
 
 import java.math.BigDecimal;
@@ -376,7 +378,7 @@ public class Beam extends BasePower {
 
     private static class MovingTask extends BukkitRunnable {
         private double homingRange;
-        private int length = 10;
+        private double length = 10;
         private int ttl = 200;
         private Particle particle = Particle.LAVA;
         private Mode mode = Mode.BEAM;
@@ -482,7 +484,7 @@ public class Beam extends BasePower {
                     }
                     int hitCount = 0;
                     while ((lengthToSpawn -= lengthPerSpawn) > 0) {
-                        hitMob.addAll(tryHit(fromEntity, lastLocation, itemStack, bounced && hitSelfWhenBounced));
+                        hitMob.addAll(tryHit(fromEntity, lastLocation, itemStack, bounced && hitSelfWhenBounced, hitMob));
 
                         if (cycle++ > 2 / lengthPerSpawn) {
                             hitMob.clear();
@@ -514,7 +516,10 @@ public class Beam extends BasePower {
                                         nextLoc.getBlockY() != lastLocation.getBlockY() ||
                                         nextLoc.getBlockZ() != lastLocation.getBlockZ()
                         )) {
-                            if (!transp.contains(nextLoc.getBlock().getType())) {
+                            Block block = nextLoc.getBlock();
+                            if (!transp.contains(block.getType())) {
+                                BeamHitBlockEvent beamHitBlockEvent = new BeamHitBlockEvent(fromEntity, block, lastLocation, itemStack);
+                                Bukkit.getPluginManager().callEvent(beamHitBlockEvent);
                                 if (bounce > 0) {
                                     bounce--;
                                     bounced = true;
@@ -556,45 +561,46 @@ public class Beam extends BasePower {
                 }
             }
 
-            boolean reported = false;
+        }
 
-            private double getNextLength(AtomicDouble spawnedLength, int length) {
-                Expression eval = new Expression(speedBias).with("x", new Expression.LazyNumber() {
-                    @Override
-                    public BigDecimal eval() {
-                        return BigDecimal.valueOf(spawnedLength.get() / ((double) length));
-                    }
+        boolean reported = false;
 
-                    @Override
-                    public String getString() {
-                        return String.valueOf(spawnedLength.get() / ((double) length));
-                    }
-                }).with("t", new Expression.LazyNumber() {
-                    @Override
-                    public BigDecimal eval() {
-                        return BigDecimal.valueOf(currentTick.get() / 20d);
-                    }
-
-                    @Override
-                    public String getString() {
-                        return null;
-                    }
-                });
-                double v = 1;
-                if (!"".equals(speedBias)) {
-                    try {
-                        v = (eval.eval().doubleValue());
-                    } catch (Exception ignored) {
-                        //todo: lang
-                        if (!reported) {
-                            new Message("invalid expression, please contact Admin").send(fromEntity);
-                            reported = true;
-                        }
-
-                    }
+        private double getNextLength(AtomicDouble spawnedLength, double length) {
+            Expression eval = new Expression(speedBias).with("x", new Expression.LazyNumber() {
+                @Override
+                public BigDecimal eval() {
+                    return BigDecimal.valueOf(spawnedLength.get() / ((double) length));
                 }
-                return (speed + v) / 20;
+
+                @Override
+                public String getString() {
+                    return String.valueOf(spawnedLength.get() / ((double) length));
+                }
+            }).with("t", new Expression.LazyNumber() {
+                @Override
+                public BigDecimal eval() {
+                    return BigDecimal.valueOf(currentTick.get() / 20d);
+                }
+
+                @Override
+                public String getString() {
+                    return null;
+                }
+            });
+            double v = 1;
+            if (!"".equals(speedBias)) {
+                try {
+                    v = (eval.eval().doubleValue());
+                } catch (Exception ignored) {
+                    //todo: lang
+                    if (!reported) {
+                        new Message("invalid expression, please contact Admin").send(fromEntity);
+                        reported = true;
+                    }
+
+                }
             }
+            return (speed + v) / 20;
         }
 
         private void makeBounce(Block block, Vector towards, Vector step, Location lastLocation) {
@@ -690,20 +696,23 @@ public class Beam extends BasePower {
 
         }
 
-        private Collection<? extends UUID> tryHit(Entity from, Location loc, ItemStack stack, boolean canHitSelf) {
+        private Collection<? extends UUID> tryHit(Entity from, Location loc, ItemStack stack, boolean canHitSelf, Set<UUID> hitMob) {
             HashSet<UUID> hitMobs = new HashSet<>();
             if (from == null) return hitMobs;
             double offsetLength = new Vector(offsetX, offsetY, offsetZ).length();
             double length = Double.isNaN(offsetLength) ? 0.1 : Math.max(offsetLength, 10);
             Collection<Entity> candidates = from.getWorld().getNearbyEntities(loc, length, length, length);
             List<Entity> collect = candidates.stream()
-                    .filter(entity -> (entity instanceof LivingEntity) && (!isUtilArmorStand((LivingEntity) entity)) && (canHitSelf || !entity.equals(from)) && !entity.isDead())
+                    .filter(entity -> (entity instanceof LivingEntity) && (!isUtilArmorStand((LivingEntity) entity)) && (canHitSelf || !entity.equals(from)) && !entity.isDead() && !hitMob.contains(entity.getUniqueId()))
                     .filter(entity -> canHit(loc, entity))
                     .limit(Math.max(pierce, 1))
                     .collect(Collectors.toList());
             if (!collect.isEmpty()) {
                 Entity entity = collect.get(0);
                 if (entity instanceof LivingEntity) {
+                    BeamHitEntityEvent beamHitEntityEvent = new BeamHitEntityEvent(from, ((LivingEntity) entity), stack, damage, loc, getBoundingBox(loc), towards.clone().normalize().multiply(getNextLength(spawnedLength, length*20)));
+                    Bukkit.getPluginManager().callEvent(beamHitEntityEvent);
+                    double damage = beamHitEntityEvent.getDamage();
                     LightContext.putTemp(from.getUniqueId(), DAMAGE_SOURCE, power.getNamespacedKey().toString());
                     LightContext.putTemp(from.getUniqueId(), OVERRIDING_DAMAGE, damage);
                     LightContext.putTemp(from.getUniqueId(), SUPPRESS_MELEE, suppressMelee);
@@ -718,13 +727,17 @@ public class Beam extends BasePower {
 
         private boolean canHit(Location loc, Entity entity) {
             BoundingBox boundingBox = entity.getBoundingBox();
-            BoundingBox particleBox;
+            BoundingBox particleBox = getBoundingBox(loc);
+
+            return boundingBox.overlaps(particleBox) || particleBox.overlaps(boundingBox);
+        }
+
+        private BoundingBox getBoundingBox(Location loc) {
             double initalBias = 0.2;
             double x = Math.max(offsetX, initalBias);
             double y = Math.max(offsetY, initalBias);
             double z = Math.max(offsetZ, initalBias);
-            particleBox = BoundingBox.of(loc, x + initalBias, y + initalBias, z + initalBias);
-            return boundingBox.overlaps(particleBox) || particleBox.overlaps(boundingBox);
+            return BoundingBox.of(loc, x + initalBias, y + initalBias, z + initalBias);
         }
 
         private double getGravity(double partsPerTick) {

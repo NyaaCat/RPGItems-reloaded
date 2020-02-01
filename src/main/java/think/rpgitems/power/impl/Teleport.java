@@ -3,7 +3,9 @@ package think.rpgitems.power.impl;
 import cat.nyaa.nyaacore.Pair;
 import org.bukkit.*;
 import org.bukkit.block.Block;
+import org.bukkit.entity.LivingEntity;
 import org.bukkit.entity.Player;
+import org.bukkit.entity.Projectile;
 import org.bukkit.event.entity.EntityShootBowEvent;
 import org.bukkit.event.entity.ProjectileHitEvent;
 import org.bukkit.event.player.PlayerInteractEvent;
@@ -16,7 +18,11 @@ import org.bukkit.util.RayTraceResult;
 import org.bukkit.util.Vector;
 import think.rpgitems.I18n;
 import think.rpgitems.RPGItems;
+import think.rpgitems.event.BeamHitBlockEvent;
+import think.rpgitems.event.BeamHitEntityEvent;
 import think.rpgitems.power.*;
+
+import java.util.function.Supplier;
 
 import static think.rpgitems.power.Utils.checkCooldown;
 
@@ -86,17 +92,30 @@ public class Teleport extends BasePower {
         RAY_TRACING
     }
 
-    public class Impl implements PowerSneak, PowerLeftClick, PowerSprint, PowerRightClick, PowerProjectileHit, PowerPlain, PowerBowShoot {
+    public class Impl implements PowerSneak, PowerLeftClick, PowerSprint, PowerRightClick, PowerProjectileHit, PowerPlain, PowerBowShoot, PowerBeamHit {
 
         @Override
         public PowerResult<Void> rightClick(Player player, ItemStack stack, PlayerInteractEvent event) {
             return fire(player, stack);
         }
 
-        public PowerResult<Void> fire(Player player, ItemStack stack) {
+        public PowerResult<Void> fire(Player player, ItemStack stack, Supplier<Location> supplier) {
             if (!checkCooldown(getPower(), player, getCooldown(), true, true)) return PowerResult.cd();
             if (!getItem().consumeDurability(stack, getCost())) return PowerResult.cost();
+            Location newLoc = supplier.get();
             World world = player.getWorld();
+            Vector velocity = player.getVelocity();
+            boolean gliding = player.isGliding();
+            player.teleport(newLoc);
+            if (gliding) {
+                player.setVelocity(velocity);
+            }
+            world.playEffect(newLoc, Effect.ENDER_SIGNAL, 0);
+            world.playSound(newLoc, Sound.ENTITY_ENDERMAN_TELEPORT, 1.0f, 0.3f);
+            return PowerResult.ok();
+        }
+
+        private Location getNewLoc(Player player, World world) {
             Location location = player.getLocation();
             Location start = location.clone().add(new Vector(0, 1.6, 0));
             Location eyeLocation = player.getEyeLocation();
@@ -149,18 +168,10 @@ public class Teleport extends BasePower {
                     break;
                 }
             }
-
             newLoc.setPitch(eyeLocation.getPitch());
             newLoc.setYaw(eyeLocation.getYaw());
-            Vector velocity = player.getVelocity();
-            boolean gliding = player.isGliding();
-            player.teleport(newLoc);
-            if (gliding) {
-                player.setVelocity(velocity);
-            }
-            world.playEffect(newLoc, Effect.ENDER_SIGNAL, 0);
-            world.playSound(newLoc, Sound.ENTITY_ENDERMAN_TELEPORT, 1.0f, 0.3f);
-            return PowerResult.ok();
+
+            return newLoc;
         }
 
         @Override
@@ -194,17 +205,39 @@ public class Teleport extends BasePower {
             if (!getItem().consumeDurability(stack, getCost())) return PowerResult.cost();
             World world = player.getWorld();
             Location start = player.getLocation();
-            Location newLoc = event.getEntity().getLocation();
+            Location newLoc = getEntityLocation(player, event.getEntity());
             if (start.distanceSquared(newLoc) >= getDistance() * getDistance()) {
                 player.sendMessage(I18n.formatDefault("message.too.far"));
                 return PowerResult.noop();
             }
-            newLoc.setPitch(start.getPitch());
-            newLoc.setYaw(start.getYaw());
             player.teleport(newLoc);
             world.playEffect(newLoc, Effect.ENDER_SIGNAL, 0);
             world.playSound(newLoc, Sound.ENTITY_ENDERMAN_TELEPORT, 1.0f, 0.3f);
             return PowerResult.ok();
+        }
+
+        private Location getEntityLocation(Player player, Projectile entity) {
+            Location start = player.getLocation();
+            Location newLoc = entity.getLocation();
+            newLoc.setPitch(start.getPitch());
+            newLoc.setYaw(start.getYaw());
+            return newLoc;
+        }
+
+        @Override
+        public PowerResult<Double> hitEntity(Player player, ItemStack stack, LivingEntity entity, double damage, BeamHitEntityEvent event) {
+            return fire(player, stack, () -> entity.getLocation()).with(damage);
+        }
+
+        @Override
+        public PowerResult<Void> hitBlock(Player player, ItemStack stack, Location location, BeamHitBlockEvent event) {
+            return fire(player, stack, () -> location);
+        }
+
+        @Override
+        public PowerResult<Void> fire(Player player, ItemStack stack) {
+            World world = player.getWorld();
+            return fire(player, stack, () -> getNewLoc(player, world));
         }
     }
 }

@@ -7,6 +7,8 @@ import org.bukkit.event.player.PlayerInteractEvent;
 import org.bukkit.event.player.PlayerSwapHandItemsEvent;
 import org.bukkit.event.player.PlayerToggleSneakEvent;
 import org.bukkit.event.player.PlayerToggleSprintEvent;
+import think.rpgitems.event.BeamHitBlockEvent;
+import think.rpgitems.event.BeamHitEntityEvent;
 import think.rpgitems.power.*;
 
 import java.util.Optional;
@@ -34,4 +36,6 @@ public final class BaseTriggers {
     public static final Trigger<Event, PowerLocation, Void, Void> LOCATION = new Location();
     public static final Trigger<Event, PowerLivingEntity, Void, Void> LIVINGENTITY = new LivingEntity();
     public static final Trigger<Event, PowerTick, Void, Void> TICK_OFFHAND = new TickOffhand();
+    public static final Trigger<BeamHitBlockEvent, PowerBeamHit, Void, Void> BEAM_HIT_BLOCK = new BeamHit<>(BeamHitBlockEvent.class, Void.class, Void.class, "BEAM_HIT_BLOCK");
+    public static final Trigger<BeamHitEntityEvent, PowerBeamHit, Double, Optional<Double>> BEAM_HIT_ENTITY = new BeamHit<>(BeamHitEntityEvent.class, Double.class, Optional.class, "BEAM_HIT_ENTITY");
 }
