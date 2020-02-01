@@ -16,8 +16,11 @@ import org.bukkit.enchantments.Enchantment;
 import org.bukkit.entity.Entity;
 import org.bukkit.entity.LivingEntity;
 import org.bukkit.entity.Player;
+import org.bukkit.entity.Projectile;
+import org.bukkit.event.entity.EntityDamageEvent;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.permissions.PermissionAttachment;
+import org.bukkit.projectiles.ProjectileSource;
 import org.bukkit.scoreboard.Objective;
 import org.bukkit.util.BoundingBox;
 import org.bukkit.util.Vector;
@@ -26,6 +29,7 @@ import think.rpgitems.I18n;
 import think.rpgitems.RPGItems;
 import think.rpgitems.data.Context;
 import think.rpgitems.data.Font;
+import think.rpgitems.item.RPGItem;
 import think.rpgitems.power.marker.Selector;
 import think.rpgitems.power.trigger.Trigger;
 import think.rpgitems.utils.MaterialUtils;
@@ -854,5 +858,50 @@ public class Utils {
                 };
             }
         };
+    }
+
+    public static double eval(Player player, double damage, EntityDamageEvent event, Entity damager, RPGItem rpgItems) {
+        Expression ex = new Expression(rpgItems.getArmourExpression());
+        ex
+                .and("damage", BigDecimal.valueOf(damage))
+                .and("finalDamage", Utils.lazyNumber(event::getFinalDamage))
+                .and("isDamageByEntity", damager == null ? BigDecimal.ONE : BigDecimal.ZERO)
+                .and("playerYaw", Utils.lazyNumber(() -> (double) player.getLocation().getYaw()))
+                .and("playerPitch", Utils.lazyNumber(() -> (double) player.getLocation().getPitch()))
+                .and("playerX", Utils.lazyNumber(() -> player.getLocation().getX()))
+                .and("playerY", Utils.lazyNumber(() -> player.getLocation().getY()))
+                .and("playerZ", Utils.lazyNumber(() -> player.getLocation().getZ()))
+                .and("playerLastDamage", Utils.lazyNumber(player::getLastDamage))
+                .and("cause", event.getCause().name());
+        ex.addLazyFunction(Utils.scoreBoard(player));
+        ex.addLazyFunction(Utils.context(player));
+        ex.addLazyFunction(Utils.now());
+
+        if (damager != null) {
+            boolean byProjectile = false;
+            Entity ent = damager;
+            if (ent instanceof Projectile) {
+                ProjectileSource shooter = ((Projectile) ent).getShooter();
+                if (shooter instanceof Entity) {
+                    ent = (Entity) shooter;
+                    byProjectile = true;
+                }
+            }
+            Entity entity = ent;
+            ex
+                    .and("damagerType", damager.getType().name())
+                    .and("isDamageByProjectile", byProjectile ? BigDecimal.ONE : BigDecimal.ZERO)
+                    .and("damagerTicksLived", Utils.lazyNumber(() -> (double) damager.getTicksLived()))
+                    .and("distance", Utils.lazyNumber(() -> player.getLocation().distance(entity.getLocation())))
+                    .and("entityType", entity.getType().name())
+                    .and("entityYaw", Utils.lazyNumber(() -> (double) entity.getLocation().getYaw()))
+                    .and("entityPitch", Utils.lazyNumber(() -> (double) entity.getLocation().getPitch()))
+                    .and("entityX", Utils.lazyNumber(() -> entity.getLocation().getX()))
+                    .and("entityY", Utils.lazyNumber(() -> entity.getLocation().getY()))
+                    .and("entityZ", Utils.lazyNumber(() -> entity.getLocation().getZ()));
+        }
+
+        BigDecimal result = ex.eval();
+        return result.doubleValue();
     }
 }

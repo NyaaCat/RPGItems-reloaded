@@ -24,7 +24,10 @@ import org.bukkit.enchantments.Enchantment;
 import org.bukkit.entity.Entity;
 import org.bukkit.entity.LivingEntity;
 import org.bukkit.entity.Player;
+import org.bukkit.entity.Projectile;
 import org.bukkit.event.Event;
+import org.bukkit.event.entity.EntityDamageByEntityEvent;
+import org.bukkit.event.entity.EntityDamageEvent;
 import org.bukkit.inventory.ItemFlag;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.Damageable;
@@ -34,6 +37,7 @@ import org.bukkit.persistence.PersistentDataContainer;
 import org.bukkit.persistence.PersistentDataType;
 import org.bukkit.potion.PotionEffect;
 import org.bukkit.potion.PotionEffectType;
+import org.bukkit.projectiles.ProjectileSource;
 import think.rpgitems.AdminCommands;
 import think.rpgitems.I18n;
 import think.rpgitems.RPGItems;
@@ -47,6 +51,7 @@ import think.rpgitems.utils.MaterialUtils;
 
 import java.io.File;
 import java.lang.reflect.Method;
+import java.math.BigDecimal;
 import java.util.*;
 import java.util.Map.Entry;
 import java.util.concurrent.ExecutionException;
@@ -71,6 +76,7 @@ public class RPGItem {
     public static final NamespacedKey TAG_STACK_ID = new NamespacedKey(RPGItems.plugin, "stack_id");
     public static final NamespacedKey TAG_MODIFIER = new NamespacedKey(RPGItems.plugin, "property_modifier");
     public static final NamespacedKey TAG_VERSION = new NamespacedKey(RPGItems.plugin, "version");
+    public static final String DAMAGE_TYPE = "RGI_DAMAGE_TYPE";
 
     private static final Cache<UUID, List<Modifier>> modifierCache = CacheBuilder.newBuilder().concurrencyLevel(1).expireAfterAccess(1, TimeUnit.MINUTES).build();
 
@@ -107,6 +113,8 @@ public class RPGItem {
     private DamageMode damageMode = DamageMode.FIXED;
     private AttributeMode attributeMode = AttributeMode.PARTIAL_UPDATE;
     private int armour = 0;
+    private String armourExpression = "";
+    private String damageType = "";
     private boolean canBeOwned = false;
     private boolean hasStackId = false;
     private boolean alwaysAllowMelee = false;
@@ -189,6 +197,8 @@ public class RPGItem {
         setDamageMin(s.getInt("damageMin"));
         setDamageMax(s.getInt("damageMax"));
         setArmour(s.getInt("armour", 0), false);
+        setArmourExpression(s.getString("armourExpression", ""));
+        setDamageType(s.getString("DamageType", ""));
         setAttributeMode(AttributeMode.valueOf(s.getString("attributemode", "PARTIAL_UPDATE")));
         String materialName = s.getString("item");
         setItem(MaterialUtils.getMaterial(materialName, Bukkit.getConsoleSender()));
@@ -320,6 +330,10 @@ public class RPGItem {
         rebuild();
     }
 
+    public void setArmourExpression(String armour) {
+        this.armourExpression = armour;
+    }
+
     private void loadPower(ConfigurationSection section, String powerName) throws UnknownPowerException {
         NamespacedKey key = PowerManager.parseKey(powerName);
         Class<? extends Power> power = PowerManager.getPower(key);
@@ -400,6 +414,8 @@ public class RPGItem {
         s.set("damageMin", getDamageMin());
         s.set("damageMax", getDamageMax());
         s.set("armour", getArmour());
+        s.set("armourExpression", getArmourExpression());
+        s.set("DamageType", getDamageType());
         s.set("attributemode", attributeMode.name());
         ArrayList<String> descriptionConv = new ArrayList<>(getDescription());
         for (int i = 0; i < descriptionConv.size(); i++) {
@@ -490,6 +506,18 @@ public class RPGItem {
         s.set("customItemModel", isCustomItemModel());
         s.set("barFormat", getBarFormat().name());
         s.set("alwaysAllowMelee", isAlwaysAllowMelee());
+    }
+
+    public String getDamageType() {
+        return this.damageType;
+    }
+
+    public void setDamageType(String damageType) {
+        this.damageType = damageType;
+    }
+
+    public String getArmourExpression() {
+        return armourExpression;
     }
 
     public void updateItem(ItemStack item) {

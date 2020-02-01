@@ -14,6 +14,7 @@ import java.util.Optional;
 public final class BaseTriggers {
     public static final Trigger<EntityShootBowEvent, PowerBowShoot, Float, Optional<Float>> BOW_SHOOT = new BowShoot();
     public static final Trigger<EntityDamageByEntityEvent, PowerHit, Double, Optional<Double>> HIT = new Hit();
+    public static final Trigger<EntityDamageByEntityEvent, PowerHit, Double, Optional<Double>> HIT_GLOBAL = new HitGlobal();
     public static final Trigger<ProjectileHitEvent, PowerProjectileHit, Void, Void> PROJECTILE_HIT = new ProjectileHit();
     public static final Trigger<EntityDamageEvent, PowerHitTaken, Double, Optional<Double>> HIT_TAKEN = new HitTaken();
     public static final Trigger<EntityDamageEvent, PowerHurt, Void, Void> HURT = new Hurt();

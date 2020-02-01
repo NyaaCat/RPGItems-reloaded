@@ -8,6 +8,7 @@ import cat.nyaa.nyaacore.cmdreceiver.SubCommand;
 import cat.nyaa.nyaacore.utils.ItemStackUtils;
 import cat.nyaa.nyaacore.utils.OfflinePlayerUtils;
 import com.google.common.base.Strings;
+import com.udojava.evalex.Expression;
 import net.md_5.bungee.api.chat.BaseComponent;
 import net.md_5.bungee.api.chat.ComponentBuilder;
 import net.md_5.bungee.api.chat.HoverEvent;
@@ -18,13 +19,16 @@ import org.bukkit.command.CommandSender;
 import org.bukkit.configuration.InvalidConfigurationException;
 import org.bukkit.configuration.file.YamlConfiguration;
 import org.bukkit.enchantments.Enchantment;
+import org.bukkit.entity.Entity;
 import org.bukkit.entity.Player;
+import org.bukkit.entity.Projectile;
 import org.bukkit.inventory.ItemFlag;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.EnchantmentStorageMeta;
 import org.bukkit.inventory.meta.ItemMeta;
 import org.bukkit.persistence.PersistentDataContainer;
 import org.bukkit.persistence.PersistentDataType;
+import org.bukkit.projectiles.ProjectileSource;
 import think.rpgitems.item.ItemGroup;
 import think.rpgitems.item.ItemManager;
 import think.rpgitems.item.RPGItem;
@@ -38,6 +42,7 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
+import java.math.BigDecimal;
 import java.nio.channels.FileChannel;
 import java.nio.channels.FileLock;
 import java.nio.file.FileVisitResult;
@@ -132,10 +137,10 @@ public class AdminCommands extends RPGCommandReceiver {
 
     @SubCommand("condition")
     public ConditionCommands condition;
-    
+
     @SubCommand("marker")
     public MarkerCommands marker;
-    
+
     @SubCommand("trigger")
     public MarkerCommands trigger;
 
@@ -316,11 +321,11 @@ public class AdminCommands extends RPGCommandReceiver {
         String nameSearch = args.argString("n", args.argString("name", ""));
         String displaySearch = args.argString("d", args.argString("display", ""));
         List<RPGItem> items = ItemManager.items()
-                                         .stream()
-                                         .filter(i -> i.getName().contains(nameSearch))
-                                         .filter(i -> i.getDisplayName().contains(displaySearch))
-                                         .sorted(Comparator.comparing(RPGItem::getName))
-                                         .collect(Collectors.toList());
+                .stream()
+                .filter(i -> i.getName().contains(nameSearch))
+                .filter(i -> i.getDisplayName().contains(displaySearch))
+                .sorted(Comparator.comparing(RPGItem::getName))
+                .collect(Collectors.toList());
         if (items.size() == 0) {
             msgs(sender, "message.no_item");
             return;
@@ -330,14 +335,14 @@ public class AdminCommands extends RPGCommandReceiver {
         int max = maxPage.getKey();
         Stream<RPGItem> stream =
                 items.stream()
-                     .skip((page - 1) * perPage)
-                     .limit(perPage);
+                        .skip((page - 1) * perPage)
+                        .limit(perPage);
         sender.sendMessage(ChatColor.AQUA + "RPGItems: " + page + " / " + max);
 
         stream.forEach(
                 item -> new Message("")
-                                .append(I18n.getInstance(sender).format("message.item.list", item.getName()), Collections.singletonMap("{item}", item.getComponent(sender)))
-                                .send(sender)
+                        .append(I18n.getInstance(sender).format("message.item.list", item.getName()), Collections.singletonMap("{item}", item.getComponent(sender)))
+                        .send(sender)
         );
     }
 
@@ -637,12 +642,12 @@ public class AdminCommands extends RPGCommandReceiver {
             case "FULL_UPDATE":
                 item.setAttributeMode(FULL_UPDATE);
                 new Message("").append(I18n.getInstance(sender).format("message.attributemode.set", "FULL_UPDATE"), item.toItemStack())
-                               .send(sender);
+                        .send(sender);
                 break;
             case "PARTIAL_UPDATE":
                 item.setAttributeMode(PARTIAL_UPDATE);
                 new Message("").append(I18n.getInstance(sender).format("message.attributemode.set", "PARTIAL_UPDATE"), item.toItemStack())
-                               .send(sender);
+                        .send(sender);
                 break;
             default:
                 throw new BadCommandException("accepted value: FULL_UPDATE,PARTIAL_UPDATE");
@@ -881,7 +886,7 @@ public class AdminCommands extends RPGCommandReceiver {
         msgs(sender, "message.customitemmodel." + (item.isCustomItemModel() ? "enable" : "disable"));
     }
 
-//    @SubCommand(value = "togglebar", tabCompleter = "itemCompleter")
+    //    @SubCommand(value = "togglebar", tabCompleter = "itemCompleter")
     public void toggleBar(CommandSender sender, Arguments args) {
         RPGItem item = getItem(args.nextString(), sender);
         item.toggleBar();
@@ -890,7 +895,7 @@ public class AdminCommands extends RPGCommandReceiver {
         msgs(sender, "message.durability.toggle");
     }
 
-//    @SubCommand(value = "barformat", tabCompleter = "itemCompleter")
+    //    @SubCommand(value = "barformat", tabCompleter = "itemCompleter")
     @Completion("item:DEFAULT,NUMERIC,NUMERIC_MINUS_ONE,NUMERIC_HEX,NUMERIC_HEX_MINUS_ONE,DEFAULT8")
     public void toggleBarFormat(CommandSender sender, Arguments args) {
         RPGItem item = getItem(args.nextString(), sender);
@@ -943,11 +948,11 @@ public class AdminCommands extends RPGCommandReceiver {
         Map<String, Pair<Method, PropertyInstance>> argMap = PowerManager.getProperties(cls);
 
         List<Field> required = argMap.values().stream()
-                                     .map(Pair::getValue)
-                                     .filter(PropertyInstance::required)
-                                     .sorted(Comparator.comparing(PropertyInstance::order))
-                                     .map(PropertyInstance::field)
-                                     .collect(Collectors.toList());
+                .map(Pair::getValue)
+                .filter(PropertyInstance::required)
+                .sorted(Comparator.comparing(PropertyInstance::order))
+                .map(PropertyInstance::field)
+                .collect(Collectors.toList());
 
         for (Map.Entry<String, Pair<Method, PropertyInstance>> prop : argMap.entrySet()) {
             Field field = prop.getValue().getValue().field();
@@ -1200,6 +1205,115 @@ public class AdminCommands extends RPGCommandReceiver {
         ItemGroup group = optGroup.get();
         ItemManager.remove(group, true);
         msgs(sender, "message.group.removed", group.getName());
+    }
+
+    @SubCommand(value = "damageType", tabCompleter = "damageTypeCompleter")
+    public void damageType(CommandSender sender, Arguments args) {
+        String item = args.nextString();
+
+        RPGItem rpgItem = ItemManager.getItem(item).orElse(null);
+        if (rpgItem == null) {
+            msgs(sender, "message.error.item", item);
+            return;
+        }
+
+        String damageType = args.top();
+        if (damageType == null) {
+            msgs(sender, "message.damagetype.set", rpgItem.getDamageType());
+        }
+        rpgItem.setDamageType(damageType);
+        ItemManager.save(rpgItem);
+        rpgItem.rebuild();
+        msgs(sender, "message.damagetype.set", damageType);
+    }
+
+    public List<String> damageTypeCompleter(CommandSender sender, Arguments arguments) {
+        List<String> completeStr = new ArrayList<>();
+        switch (arguments.remains()) {
+            case 1:
+                completeStr.addAll(ItemManager.itemNames());
+                break;
+            case 2:
+                completeStr.add("melee");
+                completeStr.add("ranged");
+                completeStr.add("magic");
+                completeStr.add("summon");
+                break;
+        }
+        return filtered(arguments, completeStr);
+    }
+
+    @SubCommand(value = "armorExpression", tabCompleter = "damageExpressionCompleter")
+    public void armorExpression(CommandSender sender, Arguments args) {
+        String item = args.nextString();
+
+        RPGItem rpgItem = ItemManager.getItem(item).orElse(null);
+        if (rpgItem == null) {
+            msgs(sender, "message.error.item", item);
+            return;
+        }
+
+        String expr = args.top();
+        if (expr == null) {
+            msgs(sender, "message.armor_expression.set", rpgItem.getDamageType());
+        }
+        if (testExpr(expr)) {
+            rpgItem.setArmourExpression(expr);
+            ItemManager.save(rpgItem);
+            rpgItem.rebuild();
+            msgs(sender, "message.armor_expression.set", expr);
+        } else {
+            msgs(sender, "message.error.invalid_expression", expr);
+        }
+    }
+
+    public static boolean testExpr(String expr) {
+        try{
+            Expression ex = new Expression(expr);
+            ex
+                    .and("damage", BigDecimal.valueOf(100))
+                    .and("finalDamage", Utils.lazyNumber(() -> 100d))
+                    .and("isDamageByEntity", BigDecimal.ONE )
+                    .and("playerYaw", Utils.lazyNumber(() -> 0d))
+                    .and("playerPitch", Utils.lazyNumber(() -> 0d))
+                    .and("playerX", Utils.lazyNumber(() -> 0d))
+                    .and("playerY", Utils.lazyNumber(() -> 0d))
+                    .and("playerZ", Utils.lazyNumber(() -> 0d))
+                    .and("playerLastDamage", Utils.lazyNumber(() -> 0d))
+                    .and("cause", "LAVA");
+            ex.addLazyFunction(Utils.now());
+            ex
+                        .and("damagerType", "zombie")
+                        .and("isDamageByProjectile", BigDecimal.ONE)
+                        .and("damagerTicksLived", Utils.lazyNumber(() -> 0d))
+                        .and("distance", Utils.lazyNumber(() -> 0d))
+                        .and("entityType", "zombie")
+                        .and("entityYaw", Utils.lazyNumber(() -> 0d))
+                        .and("entityPitch", Utils.lazyNumber(() -> 0d))
+                        .and("entityX", Utils.lazyNumber(() -> 0d))
+                        .and("entityY", Utils.lazyNumber(() -> 0d))
+                        .and("entityZ", Utils.lazyNumber(() -> 0d));
+            BigDecimal result = ex.eval();
+            return true;
+        }catch (Exception e) {
+            return false;
+        }
+    }
+
+    public List<String> damageExpressionCompleter(CommandSender sender, Arguments arguments) {
+        List<String> completeStr = new ArrayList<>();
+        switch (arguments.remains()) {
+            case 1:
+                completeStr.addAll(ItemManager.itemNames());
+                break;
+            case 2:
+                completeStr.add("melee");
+                completeStr.add("ranged");
+                completeStr.add("magic");
+                completeStr.add("summon");
+                break;
+        }
+        return filtered(arguments, completeStr);
     }
 
     public static RPGItem getItem(String str, CommandSender sender) {
