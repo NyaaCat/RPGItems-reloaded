@@ -807,10 +807,10 @@ public class AdminCommands extends RPGCommandReceiver {
                 }
                 break;
                 case "togglebar":
-                    toggleBar(sender, args);
+                    toggleBar(sender, args, item);
                     break;
                 case "barformat":
-                    toggleBarFormat(sender, args);
+                    toggleBarFormat(sender, args, item);
                     break;
                 default:
                     throw new BadCommandException("message.error.invalid_option", arg, "durability", "value,infinite,togglebar,default,bound");
@@ -887,8 +887,7 @@ public class AdminCommands extends RPGCommandReceiver {
     }
 
     //    @SubCommand(value = "togglebar", tabCompleter = "itemCompleter")
-    public void toggleBar(CommandSender sender, Arguments args) {
-        RPGItem item = getItem(args.nextString(), sender);
+    public void toggleBar(CommandSender sender, Arguments args, RPGItem item) {
         item.toggleBar();
         ItemManager.refreshItem();
         ItemManager.save(item);
@@ -897,8 +896,7 @@ public class AdminCommands extends RPGCommandReceiver {
 
     //    @SubCommand(value = "barformat", tabCompleter = "itemCompleter")
     @Completion("item:DEFAULT,NUMERIC,NUMERIC_MINUS_ONE,NUMERIC_HEX,NUMERIC_HEX_MINUS_ONE,DEFAULT8")
-    public void toggleBarFormat(CommandSender sender, Arguments args) {
-        RPGItem item = getItem(args.nextString(), sender);
+    public void toggleBarFormat(CommandSender sender, Arguments args, RPGItem item) {
         item.setBarFormat(args.nextEnum(BarFormat.class));
         item.rebuild();
         ItemManager.refreshItem();

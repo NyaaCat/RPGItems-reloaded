@@ -172,7 +172,6 @@ public class MarkerCommands extends RPGCommandReceiver {
             }
             return;
         }
-        int nth = args.nextInt();
         try {
             Marker marker = nextMarker(item, sender, args);
             if (args.top() == null) {
@@ -206,7 +205,7 @@ public class MarkerCommands extends RPGCommandReceiver {
                 break;
             case 2:
                 RPGItem item = getItem(arguments.nextString(), sender);
-                completeStr.addAll(IntStream.range(0, item.getMarkers().size()).mapToObj(String::valueOf).collect(Collectors.toList()));
+                completeStr.addAll(IntStream.range(0, item.getMarkers().size()).mapToObj(i -> i + "-" + item.getMarkers().get(i).getNamespacedKey()).collect(Collectors.toList()));
                 break;
         }
         return filtered(arguments, completeStr);
@@ -215,15 +214,25 @@ public class MarkerCommands extends RPGCommandReceiver {
     @SubCommand(value = "remove", tabCompleter = "removeCompleter")
     public void remove(CommandSender sender, Arguments args) {
         RPGItem item = getItem(args.nextString(), sender);
-        int nth = args.nextInt();
+        Marker marker = nextMarker(item, sender, args);
         try {
-            Marker marker = item.getMarkers().get(nth);
-            if (marker == null) {
-                msgs(sender, "message.marker.unknown", nth);
+            int nth = -1;
+            List<Marker> markers = item.getMarkers();
+            for (int i = 0; i < markers.size(); i++) {
+                Marker marker1 = markers.get(i);
+                if (marker1.equals(marker)){
+                    nth = i;
+                    break;
+                }
+            }
+            if (nth < 0 || nth >=markers.size()){
+                msgs(sender, "message.num_out_of_range", nth, 0, markers.size());
                 return;
             }
             item.getMarkers().remove(nth);
-            msgs(sender, "message.marker.removed");
+            item.rebuild();
+            ItemManager.save(item);
+            msgs(sender, "message.marker.removed", String.valueOf(nth));
         } catch (UnknownExtensionException e) {
             msgs(sender, "message.error.unknown.extension", e.getName());
         }

@@ -34,10 +34,10 @@ public class ConditionCommands extends RPGCommandReceiver {
         return "";
     }
 
-    private static Pair<NamespacedKey, Class<? extends Condition>> getConditionClass(CommandSender sender, String conditionStr) {
+    private static Pair<NamespacedKey, Class<? extends Condition<?>>> getConditionClass(CommandSender sender, String conditionStr) {
         try {
             NamespacedKey key = PowerManager.parseKey(conditionStr);
-            Class<? extends Condition> cls = PowerManager.getCondition(key);
+            Class<? extends Condition<?>> cls = PowerManager.getCondition(key);
             if (cls == null) {
                 msgs(sender, "message.condition.unknown", conditionStr);
             }
@@ -62,7 +62,7 @@ public class ConditionCommands extends RPGCommandReceiver {
                 RPGItem item = getItem(arguments.nextString(), sender);
                 String last = arguments.getRawArgs()[arguments.getRawArgs().length - 1];
                 String conditionKey = arguments.nextString();
-                Pair<NamespacedKey, Class<? extends Condition>> keyClass = getConditionClass(sender, conditionKey);
+                Pair<NamespacedKey, Class<? extends Condition<?>>> keyClass = getConditionClass(sender, conditionKey);
                 if (keyClass != null) {
                     return resolveProperties(sender, item, keyClass.getValue(), keyClass.getKey(), last, arguments, true);
                 }
@@ -80,7 +80,7 @@ public class ConditionCommands extends RPGCommandReceiver {
             return;
         }
         RPGItem item = getItem(itemStr, sender);
-        Pair<NamespacedKey, Class<? extends Condition>> keyClass = getConditionClass(sender, conditionStr);
+        Pair<NamespacedKey, Class<? extends Condition<?>>> keyClass = getConditionClass(sender, conditionStr);
         if (keyClass == null || keyClass.getValue() == null) return;
         Condition condition;
         Class<? extends Condition> cls = keyClass.getValue();
@@ -109,14 +109,57 @@ public class ConditionCommands extends RPGCommandReceiver {
                 break;
             case 2:
                 RPGItem item = getItem(arguments.nextString(), sender);
-                completeStr.addAll(item.getConditions().stream().map(Condition::id).collect(Collectors.toList()));
+                completeStr.addAll(IntStream.range(0, item.getConditions().size()).mapToObj(i -> i + "-" + item.getConditions().get(i).getNamespacedKey()).collect(Collectors.toList()));
                 break;
             default:
                 item = getItem(arguments.nextString(), sender);
-                Condition nextCondition = item.getCondition(arguments.nextString());
+                Condition<?> nextCondition = nextCondition(item, sender, arguments);
                 return resolveProperties(sender, item, nextCondition.getClass(), nextCondition.getNamespacedKey(), arguments.getRawArgs()[arguments.getRawArgs().length - 1], arguments, false);
         }
         return filtered(arguments, completeStr);
+    }
+
+    private Condition<?> nextCondition(RPGItem item, CommandSender sender, Arguments args) {
+        String next = args.top();
+        if (next.contains("-")) {
+            next = args.nextString();
+            String p1 = next.split("-", 2)[0];
+            String p2 = next.split("-", 2)[1];
+            try {
+                int nth = Integer.parseInt(p1);
+                Condition<?> condition = item.getConditions().get(nth);
+                if (condition == null) {
+                    throw new BadCommandException("message.condition.unknown", nth);
+                }
+                Pair<NamespacedKey, Class<? extends Condition<?>>> keyClass = getConditionClass(sender, p2);
+                if (keyClass == null || !condition.getNamespacedKey().equals(keyClass.getKey())) {
+                    throw new BadCommandException("message.condition.unknown", p2);
+                }
+                return condition;
+            } catch (NumberFormatException ignore) {
+                Pair<NamespacedKey, Class<? extends Condition<?>>> keyClass = getConditionClass(sender, p1);
+                if (keyClass == null) {
+                    throw new BadCommandException("message.condition.unknown", p1);
+                }
+                try {
+                    int nth = Integer.parseInt(p2);
+                    Condition<?> condition = item.getCondition(keyClass.getKey(), keyClass.getValue()).get(nth);
+                    if (condition == null) {
+                        throw new BadCommandException("message.condition.unknown", nth);
+                    }
+                    return condition;
+                } catch (NumberFormatException ignored) {
+                    throw new BadCommandException("message.condition.unknown", p2);
+                }
+            }
+        } else {
+            int nth = args.nextInt();
+            Condition<?> condition = item.getConditions().get(nth);
+            if (condition == null) {
+                throw new BadCommandException("message.condition.unknown", nth);
+            }
+            return condition;
+        }
     }
 
     @SubCommand(value = "prop", tabCompleter = "propCompleter")
@@ -124,13 +167,13 @@ public class ConditionCommands extends RPGCommandReceiver {
         RPGItem item = getItem(args.nextString(), sender);
         if (args.top() == null) {
             for (int i = 0; i < item.getConditions().size(); i++) {
-                Condition condition = item.getConditions().get(i);
+                Condition<?> condition = item.getConditions().get(i);
                 showCondition(sender, item, condition);
             }
             return;
         }
         try {
-            Condition condition = item.getCondition(args.nextString());
+            Condition<?> condition = nextCondition(item, sender, args);
             if (args.top() == null) {
                 showCondition(sender, item, condition);
                 return;
@@ -161,7 +204,7 @@ public class ConditionCommands extends RPGCommandReceiver {
                 break;
             case 2:
                 RPGItem item = getItem(arguments.nextString(), sender);
-                completeStr.addAll(IntStream.range(0, item.getConditions().size()).mapToObj(String::valueOf).collect(Collectors.toList()));
+                completeStr.addAll(IntStream.range(0, item.getConditions().size()).mapToObj(i -> i + "-" + item.getConditions().get(i).getNamespacedKey()).collect(Collectors.toList()));
                 break;
         }
         return filtered(arguments, completeStr);
@@ -170,15 +213,24 @@ public class ConditionCommands extends RPGCommandReceiver {
     @SubCommand(value = "remove", tabCompleter = "removeCompleter")
     public void remove(CommandSender sender, Arguments args) {
         RPGItem item = getItem(args.nextString(), sender);
-        int nth = args.nextInt();
+        Condition<?> condition = nextCondition(item, sender, args);
         try {
-            Condition condition = item.getConditions().get(nth);
-            if (condition == null) {
-                msgs(sender, "message.condition.unknown", nth);
+            int nth = -1;
+            List<Condition<?>> conditions = item.getConditions();
+            for (int i = 0; i < conditions.size(); i++) {
+                Condition<?> condition1 = conditions.get(i);
+                if (condition1.equals(condition)){
+                    nth = i;
+                }
+            }
+            if (nth < 0 || nth > conditions.size()){
+                msgs(sender, "message.num_out_of_range", nth, 0, conditions.size());
                 return;
             }
             item.getConditions().remove(nth);
             msgs(sender, "message.condition.removed", String.valueOf(nth));
+            item.rebuild();
+            ItemManager.save(item);
         } catch (UnknownExtensionException e) {
             msgs(sender, "message.error.unknown.extension", e.getName());
         }

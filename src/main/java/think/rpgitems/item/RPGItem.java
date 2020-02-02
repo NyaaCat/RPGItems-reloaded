@@ -1340,6 +1340,10 @@ public class RPGItem {
         return powers.stream().filter(p -> p.getClass().equals(power) && getPropertyHolderKey(p).equals(key)).map(power::cast).collect(Collectors.toList());
     }
 
+    public <T extends Condition<?>> List<T> getCondition(NamespacedKey key, Class<T> condition) {
+        return powers.stream().filter(p -> p.getClass().equals(condition) && getPropertyHolderKey(p).equals(key)).map(condition::cast).collect(Collectors.toList());
+    }
+
     public Condition<?> getCondition(String id) {
         return conditions.stream().filter(c -> c.id().equals(id)).findAny().orElse(null);
     }
