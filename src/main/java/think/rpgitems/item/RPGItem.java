@@ -140,6 +140,7 @@ public class RPGItem {
         this.name = name;
         this.uid = uid;
         this.setAuthor(author instanceof Player ? ((Player) author).getUniqueId().toString() : plugin.cfg.defaultAuthor);
+        setEnchantMode(plugin.cfg.defaultEnchantMode);
         setItem(Material.WOODEN_SWORD);
         setDisplayName(getItem().toString());
         getItemFlags().add(ItemFlag.HIDE_ATTRIBUTES);
