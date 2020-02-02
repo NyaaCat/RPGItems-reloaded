@@ -24,10 +24,7 @@ import org.bukkit.enchantments.Enchantment;
 import org.bukkit.entity.Entity;
 import org.bukkit.entity.LivingEntity;
 import org.bukkit.entity.Player;
-import org.bukkit.entity.Projectile;
 import org.bukkit.event.Event;
-import org.bukkit.event.entity.EntityDamageByEntityEvent;
-import org.bukkit.event.entity.EntityDamageEvent;
 import org.bukkit.inventory.ItemFlag;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.Damageable;
@@ -37,7 +34,6 @@ import org.bukkit.persistence.PersistentDataContainer;
 import org.bukkit.persistence.PersistentDataType;
 import org.bukkit.potion.PotionEffect;
 import org.bukkit.potion.PotionEffectType;
-import org.bukkit.projectiles.ProjectileSource;
 import think.rpgitems.AdminCommands;
 import think.rpgitems.I18n;
 import think.rpgitems.RPGItems;
@@ -51,7 +47,6 @@ import think.rpgitems.utils.MaterialUtils;
 
 import java.io.File;
 import java.lang.reflect.Method;
-import java.math.BigDecimal;
 import java.util.*;
 import java.util.Map.Entry;
 import java.util.concurrent.ExecutionException;
@@ -585,8 +580,28 @@ public class RPGItem {
                 meta.addEnchant(e.getKey(), Math.max(meta.getEnchantLevel(e.getKey()), e.getValue()), true);
             }
         }
+        checkAndMakeUnique(rpgitemsTagContainer);
         rpgitemsTagContainer.commit();
         item.setItemMeta(refreshAttributeModifiers(meta));
+    }
+
+    private final static NamespacedKey RGI_UNIQUE_MARK = new NamespacedKey(RPGItems.plugin, "RGI_UNIQUE_MARK");
+    private final static NamespacedKey RGI_UNIQUE_ID = new NamespacedKey(RPGItems.plugin, "RGI_UNIQUE_ID");
+
+    private void checkAndMakeUnique(SubItemTagContainer meta) {
+        List<Unique> markers = getMarker(Unique.class);
+        if (!markers.isEmpty()) {
+            Unique unique = markers.get(0);
+            if(unique.enabled){
+                if (!meta.has(RGI_UNIQUE_MARK, PersistentDataType.BYTE)) {
+                    meta.set(RGI_UNIQUE_MARK, PersistentDataType.BYTE, (byte) 0);
+                }
+                meta.set(RGI_UNIQUE_ID, PersistentDataType.STRING, UUID.randomUUID().toString());
+            }else {
+                meta.remove(RGI_UNIQUE_MARK);
+                meta.remove(RGI_UNIQUE_ID);
+            }
+        }
     }
 
     private void addDurabilityBar(PersistentDataContainer meta, List<String> lore) {
