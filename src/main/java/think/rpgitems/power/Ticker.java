@@ -29,6 +29,9 @@ public class Ticker extends BukkitRunnable {
                     continue;
                 RPGItem rgi = item.get();
                 rgi.power(player, part, null, BaseTriggers.TICK);
+                if (player.isSneaking()) {
+                    rgi.power(player, part, null, BaseTriggers.SNEAKING);
+                }
             }
             ItemStack itemInMainHand = player.getInventory().getItemInMainHand();
             ItemStack itemInOffHand = player.getInventory().getItemInOffHand();
@@ -43,6 +46,9 @@ public class Ticker extends BukkitRunnable {
             }
             if (offhand.isPresent()) {
                 offhand.get().power(player, itemInOffHand, null, BaseTriggers.TICK_OFFHAND);
+                if (player.isSneaking()) {
+                    offhand.get().power(player, itemInOffHand, null, BaseTriggers.SNEAKING);
+                }
             }
         }
     }
