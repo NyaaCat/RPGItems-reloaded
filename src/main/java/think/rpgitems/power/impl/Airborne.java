@@ -14,7 +14,7 @@ import think.rpgitems.power.*;
  * Do more damage when gliding
  * </p>
  */
-@Meta(immutableTrigger = true, implClass = Airborne.Impl.class)
+@Meta(defaultTrigger = "HIT", immutableTrigger = true, implClass = Airborne.Impl.class)
 public class Airborne extends BasePower {
     @Property
     public int percentage = 50;

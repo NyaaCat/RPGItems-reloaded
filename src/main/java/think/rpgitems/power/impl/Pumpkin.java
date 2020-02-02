@@ -21,7 +21,7 @@ import java.util.Random;
  * </p>
  */
 @SuppressWarnings("WeakerAccess")
-@Meta(immutableTrigger = true, implClass = Pumpkin.Impl.class)
+@Meta(defaultTrigger = "HIT", immutableTrigger = true, implClass = Pumpkin.Impl.class)
 public class Pumpkin extends BasePower {
     private static final Random rand = new Random();
     @Property(order = 0)

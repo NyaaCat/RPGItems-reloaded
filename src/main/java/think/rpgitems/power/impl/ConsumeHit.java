@@ -16,7 +16,7 @@ import static think.rpgitems.power.Utils.checkCooldown;
  * The consume power will remove one item when player hits something. With {@link #cooldown cooldown} time (ticks).
  * </p>
  */
-@Meta(immutableTrigger = true, implClass = ConsumeHit.Impl.class)
+@Meta(defaultTrigger = "HIT", immutableTrigger = true, implClass = ConsumeHit.Impl.class)
 public class ConsumeHit extends BasePower {
     @Property(order = 0)
     public int cooldown = 0;

@@ -19,7 +19,7 @@ import think.rpgitems.event.BeamHitBlockEvent;
 import think.rpgitems.event.BeamHitEntityEvent;
 import think.rpgitems.power.*;
 
-@Meta(immutableTrigger = true, implClass = Headshot.Impl.class)
+@Meta(defaultTrigger = "HIT", immutableTrigger = true, implClass = Headshot.Impl.class)
 public class Headshot extends BasePower {
 
     @Property
