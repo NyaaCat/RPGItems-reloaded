@@ -272,7 +272,7 @@ public class PowerCommands extends RPGCommandReceiver {
                     break;
                 }
             }
-            if (nth <= 0 || nth >= powers.size()) {
+            if (nth < 0 || nth >= powers.size()) {
                 msg(sender, "message.num_out_of_range", nth, 0, powers.size());
                 return;
             }
