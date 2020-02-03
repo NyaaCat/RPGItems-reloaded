@@ -39,6 +39,7 @@ import think.rpgitems.I18n;
 import think.rpgitems.RPGItems;
 import think.rpgitems.data.Context;
 import think.rpgitems.power.*;
+import think.rpgitems.power.cond.SlotCondition;
 import think.rpgitems.power.marker.*;
 import think.rpgitems.power.propertymodifier.Modifier;
 import think.rpgitems.power.trigger.BaseTriggers;
@@ -591,7 +592,9 @@ public class RPGItem {
 
     private void checkAndMakeUnique(SubItemTagContainer meta) {
         List<Unique> markers = getMarker(Unique.class);
-        if (!markers.isEmpty()) {
+        List<SlotCondition> conditions = getConditions(SlotCondition.class);
+
+        if (!markers.isEmpty() ) {
             Unique unique = markers.get(0);
             if(unique.enabled){
                 if (!meta.has(RGI_UNIQUE_MARK, PersistentDataType.BYTE)) {
@@ -602,6 +605,12 @@ public class RPGItem {
                 meta.remove(RGI_UNIQUE_MARK);
                 meta.remove(RGI_UNIQUE_ID);
             }
+        }
+        if(!conditions.isEmpty()){
+            if (!meta.has(RGI_UNIQUE_MARK, PersistentDataType.BYTE)) {
+                meta.set(RGI_UNIQUE_MARK, PersistentDataType.BYTE, (byte) 0);
+            }
+            meta.set(RGI_UNIQUE_ID, PersistentDataType.STRING, UUID.randomUUID().toString());
         }
     }
 
@@ -1327,6 +1336,10 @@ public class RPGItem {
 
     public <T extends Marker> List<T> getMarker(Class<T> marker) {
         return markers.stream().filter(p -> p.getClass().equals(marker)).map(marker::cast).collect(Collectors.toList());
+    }
+
+    public <T extends Condition<?>> List<T> getConditions(Class<T> condition) {
+        return conditions.stream().filter(p -> p.getClass().equals(condition)).map(condition::cast).collect(Collectors.toList());
     }
 
     public <T extends Marker> List<T> getMarker(Class<T> marker, boolean subclass) {
