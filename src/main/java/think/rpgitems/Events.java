@@ -504,6 +504,11 @@ public class Events implements Listener {
             while (it.hasNext()) {
                 ItemStack item = it.next();
                 ItemManager.toRPGItem(item).ifPresent(rpgItem -> rpgItem.updateItem(item));
+            }
+            PlayerInventory inventory1 = p.getInventory();
+            it = inventory1.iterator();
+            while (it.hasNext()) {
+                ItemStack item = it.next();
                 ItemManager.toRPGItem(item).ifPresent(rpgItem -> rpgItem.updateItem(item));
             }
         } catch (ArrayIndexOutOfBoundsException ex) {
