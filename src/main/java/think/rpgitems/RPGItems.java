@@ -45,7 +45,6 @@ public class RPGItems extends JavaPlugin {
     public void onLoad() {
         plugin = this;
         logger = this.getLogger();
-        PowerManager.clear();
 
         String versionDesc = getDescription().getVersion();
         Pattern serialPattern = Pattern.compile("(\\d+)\\.(\\d+)\\.(\\d+)-mc([\\d.]+)");
@@ -87,6 +86,15 @@ public class RPGItems extends JavaPlugin {
                                                  }
                                                  return null;
                                              }));
+        loadPowers();
+        saveDefaultConfig();
+        Font.load();
+        WGSupport.load();
+        loadExtensions();
+    }
+
+    void loadPowers() {
+        PowerManager.clear();
         logger.log(Level.INFO, "Loading powers...");
         new BaseTriggers();
         PowerManager.registerAdapter(PowerPlain.class, PowerOffhandClick.class, p -> getWrapper(p, PowerOffhandClick.class, "offhandClick"));
@@ -98,10 +106,6 @@ public class RPGItems extends JavaPlugin {
         PowerManager.registerMarkers(RPGItems.plugin, Power.class.getPackage().getName() + ".marker");
         PowerManager.registerModifiers(RPGItems.plugin, Power.class.getPackage().getName() + ".propertymodifier");
         logger.log(Level.INFO, "Powers loaded.");
-        saveDefaultConfig();
-        Font.load();
-        WGSupport.load();
-        loadExtensions();
     }
 
     public void loadExtensions() {

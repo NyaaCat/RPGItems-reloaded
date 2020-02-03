@@ -183,12 +183,13 @@ public class AdminCommands extends RPGCommandReceiver {
         plugin.cfg = new Configuration(plugin);
         plugin.cfg.load();
         plugin.cfg.enabledLanguages.forEach(lang -> new I18n(plugin, lang));
+        plugin.loadPowers();
         WGSupport.reload();
-        ItemManager.reload(plugin);
         plugin.managedPlugins.forEach(Bukkit.getPluginManager()::disablePlugin);
         plugin.managedPlugins.clear();
         plugin.loadExtensions();
         plugin.managedPlugins.forEach(Bukkit.getPluginManager()::enablePlugin);
+        ItemManager.reload(plugin);
         sender.sendMessage(ChatColor.GREEN + "[RPGItems] Reloaded RPGItems.");
     }
 
