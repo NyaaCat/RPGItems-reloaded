@@ -36,7 +36,12 @@ public class SoundPower extends BasePower {
     public String display = "Plays sound";
     @Property
     public int cooldown = 0;
+    @Property
+    public PlayLocation playLocation = PlayLocation.HIT_LOCATION;
 
+    public enum PlayLocation{
+        SELF, HIT_LOCATION;
+    }
     @Property
     public boolean requireHurtByEntity = true;
 
@@ -128,7 +133,12 @@ public class SoundPower extends BasePower {
         @Override
         public PowerResult<Double> hit(Player player, ItemStack stack, LivingEntity entity, double damage, EntityDamageByEntityEvent event) {
             if (!checkCooldown(getPower(), player, getCooldown(), true, true)) return PowerResult.cd();
-            return sound(entity, stack, entity.getLocation()).with(damage);
+            Location location = entity.getLocation();
+            if (playLocation.equals(PlayLocation.HIT_LOCATION)) {
+            }else if (playLocation.equals(PlayLocation.SELF)){
+                location = player.getLocation();
+            }
+            return sound(entity, stack, location).with(damage);
         }
 
         @Override
@@ -155,13 +165,22 @@ public class SoundPower extends BasePower {
         @Override
         public PowerResult<Void> hitBlock(Player player, ItemStack stack, Location location, BeamHitBlockEvent event) {
             if (!checkCooldown(getPower(), player, getCooldown(), true, true)) return PowerResult.cd();
+            if (playLocation.equals(PlayLocation.HIT_LOCATION)) {
+            }else if (playLocation.equals(PlayLocation.SELF)){
+                location = player.getLocation();
+            }
             return sound(player, stack, location);
         }
 
         @Override
         public PowerResult<Void> projectileHit(Player player, ItemStack stack, ProjectileHitEvent event) {
             if (!checkCooldown(getPower(), player, getCooldown(), true, true)) return PowerResult.cd();
-            return sound(player, stack, event.getEntity().getLocation());
+            Location location = event.getEntity().getLocation();
+            if (playLocation.equals(PlayLocation.HIT_LOCATION)) {
+            }else if (playLocation.equals(PlayLocation.SELF)){
+                location = player.getLocation();
+            }
+            return sound(player, stack, location);
         }
     }
 }

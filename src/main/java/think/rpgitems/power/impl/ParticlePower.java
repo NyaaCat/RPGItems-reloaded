@@ -74,6 +74,13 @@ public class ParticlePower extends BasePower {
     public boolean force = false;
 
     @Property
+    public PlayLocation playLocation = PlayLocation.HIT_LOCATION;
+
+    public enum PlayLocation{
+        SELF, HIT_LOCATION;
+    }
+
+    @Property
     public boolean requireHurtByEntity = true;
     private Object data = null;
 
@@ -288,7 +295,11 @@ public class ParticlePower extends BasePower {
         @Override
         public PowerResult<Double> hit(Player player, ItemStack stack, LivingEntity entity, double damage, EntityDamageByEntityEvent event) {
             if (!getItem().consumeDurability(stack, getCost())) return PowerResult.cost();
-            spawnParticle(entity);
+            if (playLocation.equals(PlayLocation.HIT_LOCATION)) {
+                spawnParticle(entity);
+            }else if (playLocation.equals(PlayLocation.SELF)){
+                spawnParticle(player);
+            }
             return PowerResult.ok().with(damage);
         }
 
@@ -297,6 +308,10 @@ public class ParticlePower extends BasePower {
             if (!checkCooldown(getPower(), player, getCooldown(), true, true)) return PowerResult.cd();
             if (!getItem().consumeDurability(stack, getCost())) return PowerResult.cost();
             Location location = entity.getLocation();
+            if (playLocation.equals(PlayLocation.HIT_LOCATION)) {
+            }else if (playLocation.equals(PlayLocation.SELF)){
+                location = player.getLocation();
+            }
             spawnParticle(entity.getWorld(), location);
             return PowerResult.ok(damage);
         }
@@ -305,7 +320,12 @@ public class ParticlePower extends BasePower {
         public PowerResult<Void> hitBlock(Player player, ItemStack stack, Location location, BeamHitBlockEvent event) {
             if (!checkCooldown(getPower(), player, getCooldown(), true, true)) return PowerResult.cd();
             if (!getItem().consumeDurability(stack, getCost())) return PowerResult.cost();
-            spawnParticle(player.getWorld(), location);
+            Location loc = location;
+            if (playLocation.equals(PlayLocation.HIT_LOCATION)) {
+            }else if (playLocation.equals(PlayLocation.SELF)){
+                loc = player.getLocation();
+            }
+            spawnParticle(player.getWorld(), loc);
             return PowerResult.ok();
         }
 
@@ -313,7 +333,11 @@ public class ParticlePower extends BasePower {
         public PowerResult<Void> projectileHit(Player player, ItemStack stack, ProjectileHitEvent event) {
             if (!checkCooldown(getPower(), player, getCooldown(), true, true)) return PowerResult.cd();
             if (!getItem().consumeDurability(stack, getCost())) return PowerResult.cost();
-            spawnParticle(player.getWorld(), event.getEntity().getLocation());
+            Location loc = event.getEntity().getLocation();
+            if (playLocation.equals(PlayLocation.HIT_LOCATION)) {
+            }else if (playLocation.equals(PlayLocation.SELF)){
+                loc = player.getLocation();
+            }
             return PowerResult.ok();
         }
     }
