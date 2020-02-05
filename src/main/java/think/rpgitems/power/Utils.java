@@ -68,7 +68,7 @@ public class Utils {
                 }
             }
         }
-        power.getItem().getPowers().stream().filter(pow -> pow instanceof Selector).forEach(
+        power.getItem().getMarkers().stream().filter(pow -> pow instanceof Selector).forEach(
                 selector -> {
                     if (power.getSelectors().contains(((Selector) selector).id())) {
                         ((Selector) selector).inPlaceFilter(player, entities);
