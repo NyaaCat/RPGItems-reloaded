@@ -101,6 +101,10 @@ public class SoundPower extends BasePower {
         return requireHurtByEntity;
     }
 
+    public PlayLocation getPlayLocation() {
+        return playLocation;
+    }
+
     public class Impl implements PowerLeftClick, PowerRightClick, PowerPlain, PowerHit, PowerBowShoot, PowerHitTaken, PowerHurt, PowerBeamHit, PowerProjectileHit {
 
         @Override

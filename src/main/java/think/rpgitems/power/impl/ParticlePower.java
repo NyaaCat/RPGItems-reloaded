@@ -168,6 +168,10 @@ public class ParticlePower extends BasePower {
         return dustSize;
     }
 
+    public PlayLocation getPlayLocation() {
+        return playLocation;
+    }
+
     /**
      * Cooldown time of this power
      */
