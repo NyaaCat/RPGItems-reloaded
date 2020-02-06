@@ -28,11 +28,18 @@ public class DelayedCommand extends Command {
     @Property(order = 0)
     public int delay = 20;
 
+    @Property
+    public boolean cmdInPlace = false;
+
     /**
      * Delay before executing command
      */
     public int getDelay() {
         return delay;
+    }
+
+    public boolean isCmdInPlace() {
+        return cmdInPlace;
     }
 
     @Override
@@ -51,10 +58,20 @@ public class DelayedCommand extends Command {
             if (!checkAndSetCooldown(getPower(), target, getCooldown(), true, false, getItem().getUid() + "." + getCommand()))
                 return PowerResult.cd();
             if (!getItem().consumeDurability(stack, getCost())) return PowerResult.cost();
+            String cmd;
+            if (!cmdInPlace) {
+                cmd = handlePlayerPlaceHolder(target, getCommand());
+            }else {
+                cmd = null;
+            }
             (new BukkitRunnable() {
                 @Override
                 public void run() {
-                    executeCommand(target);
+                    if (cmd == null){
+                        executeCommand(target);
+                    }else {
+                        executeCommand(target, cmd);
+                    }
                 }
             }).runTaskLater(RPGItems.plugin, getDelay());
             return PowerResult.ok();

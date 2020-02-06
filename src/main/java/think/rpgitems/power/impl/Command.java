@@ -45,9 +45,9 @@ public class Command extends BasePower {
 
     public static String handlePlayerPlaceHolder(Player player, String cmd) {
         cmd = cmd.replaceAll("\\{player}", player.getName());
-        cmd = cmd.replaceAll("\\{player\\.x}", Float.toString(-player.getLocation().getBlockX()));
-        cmd = cmd.replaceAll("\\{player\\.y}", Float.toString(-player.getLocation().getBlockY()));
-        cmd = cmd.replaceAll("\\{player\\.z}", Float.toString(-player.getLocation().getBlockZ()));
+        cmd = cmd.replaceAll("\\{player\\.x}", Double.toString(player.getLocation().getX()));
+        cmd = cmd.replaceAll("\\{player\\.y}", Double.toString(player.getLocation().getY()));
+        cmd = cmd.replaceAll("\\{player\\.z}", Double.toString(player.getLocation().getZ()));
         cmd = cmd.replaceAll("\\{player\\.yaw}", Float.toString(90 + player.getEyeLocation().getYaw()));
         cmd = cmd.replaceAll("\\{player\\.pitch}", Float.toString(-player.getEyeLocation().getPitch()));
         cmd = cmd.replaceAll("\\{yaw}", Float.toString(player.getLocation().getYaw() + 90));
@@ -142,9 +142,13 @@ public class Command extends BasePower {
          * @return PowerResult
          */
         protected PowerResult<Void> executeCommand(Player player) {
+            String cmd = handlePlayerPlaceHolder(player, getCommand());
+            return executeCommand(player, cmd);
+        }
+
+        protected PowerResult<Void> executeCommand(Player player, String cmd) {
             if (!player.isOnline()) return PowerResult.noop();
 
-            String cmd = handlePlayerPlaceHolder(player, getCommand());
             if (getPermission().equals("console")) {
                 Bukkit.dispatchCommand(Bukkit.getConsoleSender(), cmd);
             } else {
