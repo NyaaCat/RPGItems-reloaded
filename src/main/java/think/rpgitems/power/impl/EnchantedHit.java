@@ -7,7 +7,7 @@ import org.bukkit.event.entity.EntityDamageByEntityEvent;
 import org.bukkit.inventory.ItemStack;
 import think.rpgitems.power.*;
 
-@Meta(defaultTrigger = "HIT", immutableTrigger = true, implClass = EnchantedHit.Impl.class)
+@Meta(defaultTrigger = "HIT", implClass = EnchantedHit.Impl.class)
 public class EnchantedHit extends BasePower {
 
     @Property

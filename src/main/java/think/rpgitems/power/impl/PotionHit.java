@@ -19,7 +19,7 @@ import java.util.Random;
  * </p>
  */
 @SuppressWarnings("WeakerAccess")
-@Meta(defaultTrigger = "HIT", immutableTrigger = true, generalInterface = PowerLivingEntity.class, implClass = PotionHit.Impl.class)
+@Meta(defaultTrigger = "HIT", generalInterface = PowerLivingEntity.class, implClass = PotionHit.Impl.class)
 public class PotionHit extends BasePower {
 
     @Property

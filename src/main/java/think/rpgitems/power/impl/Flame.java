@@ -14,7 +14,7 @@ import think.rpgitems.power.*;
  * </p>
  */
 @SuppressWarnings("WeakerAccess")
-@Meta(defaultTrigger = "HIT", immutableTrigger = true, generalInterface = PowerLivingEntity.class, implClass = Flame.Impl.class)
+@Meta(defaultTrigger = "HIT", generalInterface = PowerLivingEntity.class, implClass = Flame.Impl.class)
 public class Flame extends BasePower {
 
     @Property(order = 0)

@@ -15,7 +15,7 @@ import think.rpgitems.power.*;
  * Do more damage when sprinting
  * </p>
  */
-@Meta(defaultTrigger = "HIT", immutableTrigger = true, implClass = Charge.Impl.class)
+@Meta(defaultTrigger = "HIT", implClass = Charge.Impl.class)
 public class Charge extends BasePower {
 
     @Property
