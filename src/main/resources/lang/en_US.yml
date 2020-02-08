@@ -1105,7 +1105,9 @@ manual:
   clone:
     description: Clone item as new item
     usage: "/rpgitem clone {item} <newItem>"
-
+manual:
+  no_description: No description for this yet.
+  no_usage: No usage information for this yet.
 item:
   hand: One handed
   type: Sword
