@@ -4,7 +4,6 @@ import cat.nyaa.nyaacore.configuration.PluginConfigure;
 import org.bukkit.plugin.java.JavaPlugin;
 import think.rpgitems.item.RPGItem;
 
-import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;

@@ -683,6 +683,10 @@ public class Beam extends BasePower {
                 if ((lastLocation.distance(eyeLocation) < 1)) {
                     return;
                 }
+                // color for note need count to be 0.
+                if (this.particle.equals(Particle.NOTE)){
+                    i = 0;
+                }
                 if (spawnInWorld >= 3) {
                     ((Player) from).spawnParticle(this.particle, lastLocation, i, offsetX, offsetY, offsetZ, particleSpeed, extraData);
                     spawnInWorld = 0;
