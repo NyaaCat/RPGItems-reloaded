@@ -894,7 +894,7 @@ public class RPGItem {
         return getModifiers(tag);
     }
 
-    private static List<Modifier> getModifiers(SubItemTagContainer tag) {
+    public static List<Modifier> getModifiers(SubItemTagContainer tag) {
         Optional<UUID> uuid = optUUID(tag, TAG_VERSION);
         if (!uuid.isPresent()) {
             uuid = Optional.of(UUID.randomUUID());

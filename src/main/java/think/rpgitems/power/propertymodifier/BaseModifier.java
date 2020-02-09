@@ -21,15 +21,22 @@ import static think.rpgitems.utils.ItemTagUtils.set;
 
 public abstract class BaseModifier<T> extends BasePropertyHolder implements Modifier<T> {
     @Property(order = 0, required = true)
-    public String targetItem;
+    public String id;
     @Property(order = 1, required = true)
-    public String targetPower;
+    public String targetItem;
     @Property(order = 2, required = true)
+    public String targetPower;
+    @Property(order = 3, required = true)
     public String targetProperty;
 
     @Override
     public String getPropertyHolderType() {
         return "modifier";
+    }
+
+    @Override
+    public String id() {
+        return id;
     }
 
     public void init(PersistentDataContainer section) {

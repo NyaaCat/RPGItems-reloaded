@@ -14,5 +14,7 @@ public interface Modifier<T> extends Function<T, T>, PropertyHolder {
 
     boolean match(Power orig, PropertyInstance propertyInstance);
 
+    String id();
+
     Class<T> getModifierTargetType();
 }
