@@ -71,6 +71,9 @@ public class Configuration extends PluginConfigure {
     @Serializable(name = "item.defaults.enchant_mode")
     public RPGItem.EnchantMode defaultEnchantMode = RPGItem.EnchantMode.DISALLOW;
 
+    @Serializable(name = "item.defaults.allow_anvil_enchant")
+    public boolean allowAnvilEnchant = true;
+
     @Serializable(name = "item.defaults.note")
     public String defaultNote;
 

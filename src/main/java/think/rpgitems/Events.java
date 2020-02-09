@@ -39,6 +39,7 @@ import think.rpgitems.support.WGHandler;
 import think.rpgitems.support.WGSupport;
 
 import java.util.*;
+import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.logging.Level;
 import java.util.stream.Stream;
 
@@ -526,8 +527,19 @@ public class Events implements Listener {
                 ItemStack ind2 = e.getView().getItem(1);
                 Optional<RPGItem> opt1 = ItemManager.toRPGItem(ind1);
                 Optional<RPGItem> opt2 = ItemManager.toRPGItem(ind2);
-                opt1.ifPresent(item -> checkEnchantPerm(e, p, item));
-                opt2.ifPresent(item -> checkEnchantPerm(e, p, item));
+                AtomicBoolean hasRGI = new AtomicBoolean(false);
+                opt1.ifPresent(item -> {
+                    checkEnchantPerm(e, p, item);
+                    hasRGI.set(true);
+                });
+                opt2.ifPresent(item -> {
+                    checkEnchantPerm(e, p, item);
+                    hasRGI.set(true);
+                });
+
+                if (hasRGI.get() && !plugin.cfg.allowAnvilEnchant){
+                    e.setCancelled(true);
+                }
             }
         }
     }
