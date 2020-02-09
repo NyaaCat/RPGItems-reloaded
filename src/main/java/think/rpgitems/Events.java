@@ -221,7 +221,15 @@ public class Events implements Listener {
         float force = e.getForce();
         if (entity instanceof Player) {
             ItemStack bow = e.getBow();
-            force = ItemManager.toRPGItem(bow).flatMap(rpgItem -> rpgItem.power(((Player) entity), bow, e, BaseTriggers.BOW_SHOOT)).orElse(force);
+            Optional<RPGItem> rpgItem = ItemManager.toRPGItem(bow);
+            force = rpgItem.flatMap(rpgItem1 -> {
+                registerRPGProjectile(rpgItem1, bow, (Player) entity);
+                return rpgItem1.power(((Player) entity), bow, e, BaseTriggers.BOW_SHOOT);
+            }).orElse(force);
+            if (e.isCancelled()) {
+                autoRemoveProjectile(entity.getEntityId());
+                return;
+            }
         }
         if (force == -1) {
             e.setCancelled(true);
@@ -251,7 +259,9 @@ public class Events implements Listener {
             return;
         }
 
-        ItemStack item = player.getInventory().getItemInMainHand();
+        ItemStack itemInMainHand = player.getInventory().getItemInMainHand();
+        ItemStack itemInOffHand = player.getInventory().getItemInOffHand();
+        ItemStack item = itemInMainHand;
         RPGItem rItem = ItemManager.toRPGItem(item).orElse(null);
         if (entity instanceof Trident) {
             item = TridentUtils.getTridentItemStack((Trident) entity);
@@ -268,21 +278,44 @@ public class Events implements Listener {
             TridentUtils.setTridentItemStack((Trident) entity, fakeItem);
         } else {
             if (rItem == null) {
-                item = player.getInventory().getItemInOffHand();
+                item = itemInOffHand;
                 rItem = ItemManager.toRPGItem(item).orElse(null);
                 if (rItem == null) {
                     return;
                 }
             }
         }
-        if (!rItem.hasMarker(Ranged.class) && !rItem.hasMarker(RangedOnly.class) && item.getType() != Material.BOW && item.getType() != Material.SNOWBALL && item.getType() != Material.EGG && item.getType() != Material.POTION && item.getType() != Material.TRIDENT) {
+        if (!isThrowable(item)) {
             return;
         }
+        boolean isOffhand = itemInOffHand == item;
+        // treated in bow shoot event & trident util
+        // if minecraft update again, this should be considered.
+        if (isChargeable(item) || (isOffhand && isThrowable(itemInMainHand))){
+            return;
+        }
+
         if (ItemManager.canUse(player, rItem) == Event.Result.DENY) {
             return;
         }
         registerRPGProjectile(e.getEntity().getEntityId(), rItem.getUid());
         rItem.power(player, item, e, BaseTriggers.LAUNCH_PROJECTILE);
+    }
+
+    private boolean isChargeable(ItemStack itemStack) {
+        return itemStack.getType().equals(Material.BOW)
+                || itemStack.getType().equals(Material.CROSSBOW);
+    }
+
+    private boolean isThrowable(ItemStack itemStack) {
+        return itemStack.getType().equals(Material.BOW)
+                        || itemStack.getType().equals(Material.CROSSBOW)
+                        || itemStack.getType() == Material.SNOWBALL
+                        || itemStack.getType() == Material.EGG
+                        || itemStack.getType() == Material.POTION
+                        || itemStack.getType() == Material.TRIDENT
+                        || itemStack.getType() == Material.ENDER_PEARL
+                        || itemStack.getType() == Material.ENDER_EYE;
     }
 
     @EventHandler
@@ -544,11 +577,11 @@ public class Events implements Listener {
         }
     }
 
-    public void checkEnchantPerm(Cancellable e, HumanEntity p, RPGItem item) {
-        RPGItem.EnchantMode enchantMode = item.getEnchantMode();
+    public void checkEnchantPerm(Cancellable e, HumanEntity p, RPGItem itemStack) {
+        RPGItem.EnchantMode enchantMode = itemStack.getEnchantMode();
         if (enchantMode == RPGItem.EnchantMode.DISALLOW) {
             e.setCancelled(true);
-        } else if (enchantMode == RPGItem.EnchantMode.PERMISSION && !(p.hasPermission("rpgitem.enchant." + item.getName()) || p.hasPermission("rpgitem.enchant." + item.getUid()))) {
+        } else if (enchantMode == RPGItem.EnchantMode.PERMISSION && !(p.hasPermission("rpgitem.enchant." + itemStack.getName()) || p.hasPermission("rpgitem.enchant." + itemStack.getUid()))) {
             e.setCancelled(true);
         }
     }
