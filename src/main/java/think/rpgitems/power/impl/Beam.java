@@ -64,7 +64,7 @@ public class Beam extends BasePower {
     public int pierce = 0;
 
     @Property
-    public boolean ignoreWall = true;
+    public boolean ignoreWall = false;
 
     @Property
     public double damage = 20;
