@@ -842,10 +842,8 @@ public class Beam extends BasePower {
         }
 
         public MovingTaskBuilder color(Color nextColor) {
-            if (movingTask.extraData == null) {
-                movingTask.extraData = new Particle.DustOptions(nextColor, 0.4f);
-            }else if (movingTask.extraData instanceof Particle.DustOptions){
-                movingTask.extraData = new Particle.DustOptions(nextColor, ((Particle.DustOptions) movingTask.extraData).getSize());
+            if (movingTask.extraData != null && movingTask.extraData instanceof Particle.DustOptions) {
+                    movingTask.extraData = new Particle.DustOptions(nextColor, ((Particle.DustOptions) movingTask.extraData).getSize());
             }
             return this;
         }
