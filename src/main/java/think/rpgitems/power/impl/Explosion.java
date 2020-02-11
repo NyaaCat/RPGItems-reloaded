@@ -11,11 +11,15 @@ import org.bukkit.event.entity.ProjectileHitEvent;
 import org.bukkit.event.player.PlayerInteractEvent;
 import org.bukkit.inventory.ItemStack;
 import think.rpgitems.I18n;
+import think.rpgitems.data.LightContext;
 import think.rpgitems.event.BeamHitBlockEvent;
 import think.rpgitems.event.BeamHitEntityEvent;
 import think.rpgitems.power.*;
 
 import java.util.concurrent.ThreadLocalRandom;
+
+import static think.rpgitems.Events.*;
+import static think.rpgitems.Events.DAMAGE_SOURCE_ITEM;
 
 @Meta(defaultTrigger = {"PROJECTILE_HIT"}, generalInterface = PowerPlain.class, implClass = Explosion.Impl.class)
 public class Explosion extends BasePower {
@@ -83,6 +87,9 @@ public class Explosion extends BasePower {
         public PowerResult<Void> fire(Player player, ItemStack stack, Location location) {
             if (ThreadLocalRandom.current().nextDouble(100) < getChance()) {
                 if (!getItem().consumeDurability(stack, getCost())) return PowerResult.cost();
+                LightContext.putTemp(player.getUniqueId(), DAMAGE_SOURCE, getPower().getNamespacedKey().toString());
+                LightContext.putTemp(player.getUniqueId(), SUPPRESS_MELEE, false);
+                LightContext.putTemp(player.getUniqueId(), DAMAGE_SOURCE_ITEM, stack);
                 boolean explosion = NmsUtils.createExplosion(location.getWorld(), player, location.getX(), location.getY(), location.getZ(), getExplosionPower(), false, false);
                 return explosion ? PowerResult.ok() : PowerResult.fail();
             }

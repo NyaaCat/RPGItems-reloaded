@@ -39,6 +39,7 @@ import think.rpgitems.support.WGHandler;
 import think.rpgitems.support.WGSupport;
 
 import java.util.*;
+import java.util.concurrent.ThreadLocalRandom;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.logging.Level;
 import java.util.stream.Stream;
@@ -643,6 +644,14 @@ public class Events implements Listener {
         }
 
         RPGItem rItem = ItemManager.toRPGItem(item).orElse(null);
+
+        if (rItem != null && e.getCause().equals(EntityDamageEvent.DamageCause.BLOCK_EXPLOSION) || e.getCause().equals(EntityDamageEvent.DamageCause.ENTITY_EXPLOSION)){
+            int damageMin = rItem.getDamageMin();
+            int damageMax = rItem.getDamageMax();
+            double dmg = damageMin < damageMax ? ThreadLocalRandom.current().nextDouble(damageMin, damageMax) : damageMax;
+            overridingDamage = Optional.of(dmg);
+        }
+
         double originDamage = e.getDamage();
         double damage = originDamage;
         if (rItem != null && !overridingDamage.isPresent()) {
