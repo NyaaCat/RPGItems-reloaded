@@ -224,7 +224,7 @@ public class Events implements Listener {
             ItemStack bow = e.getBow();
             Optional<RPGItem> rpgItem = ItemManager.toRPGItem(bow);
             force = rpgItem.flatMap(rpgItem1 -> {
-                registerRPGProjectile(rpgItem1, bow, (Player) entity);
+                registerRPGProjectile(e.getProjectile().getEntityId(), rpgItem1.getUid());
                 return rpgItem1.power(((Player) entity), bow, e, BaseTriggers.BOW_SHOOT);
             }).orElse(force);
             if (e.isCancelled()) {
