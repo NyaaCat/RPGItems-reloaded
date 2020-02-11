@@ -157,7 +157,7 @@ public class Beam extends BasePower {
     public String speedBias = "";
 
     @Property
-    public Behavior behavior = Behavior.PLAIN;
+    public List<Behavior> behavior = new ArrayList<>();
 
     @Property
     public String behaviorParam = "{}";
@@ -224,14 +224,14 @@ public class Beam extends BasePower {
             .filter(material -> !material.isSolid() || !material.isOccluding())
             .collect(Collectors.toSet());
 
-    final Vector crosser = new Vector(1, 1, 1);
+    final Vector crosser = new Vector(0, 1, 0);
     private Random random = new Random();
 
     public int getBeamAmount() {
         return beamAmount;
     }
 
-    public Behavior getBehavior() {
+    public List<Behavior> getBehavior() {
         return behavior;
     }
 
@@ -376,6 +376,7 @@ public class Beam extends BasePower {
         return requireHurtByEntity;
     }
 
+
     private static class MovingTask extends BukkitRunnable {
         private double homingRange;
         private double length = 10;
@@ -400,7 +401,7 @@ public class Beam extends BasePower {
         private boolean hitSelfWhenBounced = false;
         private double gravity = 0;
         private boolean suppressMelee = false;
-        private Behavior behavior = Behavior.PLAIN;
+        private List<Behavior> behavior = new ArrayList<>();
         private String behaviorParam = "{}";
         private Object extraData = null;
         private Beam power;
@@ -658,7 +659,7 @@ public class Beam extends BasePower {
 //            double actualAng = (homing / 20) / (lengthInThisTick / lengthPerSpawn);
             double actualAng = Math.asin(towards.length() / (2 * homing));
             if (angle > actualAng) {
-                if (this.behavior.equals(Behavior.LEGACY_HOMING)) {
+                if (this.behavior.contains(Behavior.LEGACY_HOMING)) {
                     double lastActualAngle = Math.asin(towards.length() / (2 * (homing + legacyBonus)));
                     legacyBonus += (lastActualAngle / (Math.PI));
                     actualAng = Math.asin(towards.length() / (2 * (homing + legacyBonus)));
@@ -839,6 +840,15 @@ public class Beam extends BasePower {
         public MovingTask build() {
             return movingTask;
         }
+
+        public MovingTaskBuilder color(Color nextColor) {
+            if (movingTask.extraData == null) {
+                movingTask.extraData = new Particle.DustOptions(nextColor, 0.4f);
+            }else if (movingTask.extraData instanceof Particle.DustOptions){
+                movingTask.extraData = new Particle.DustOptions(nextColor, ((Particle.DustOptions) movingTask.extraData).getSize());
+            }
+            return this;
+        }
     }
 
     private static boolean isUtilArmorStand(LivingEntity livingEntity) {
@@ -907,11 +917,19 @@ public class Beam extends BasePower {
         MOBS, PLAYERS, ALL
     }
 
+    //behavior params
+    //todo: config them in specific class
+    static int currentColor = 0;
+
     public enum Behavior {
         PLAIN(PlainBias.class, Void.class),
         DNA(DnaBias.class, DnaBias.DnaParams.class),
         CIRCLE(CircleBias.class, CircleBias.CircleParams.class),
-        LEGACY_HOMING(PlainBias.class, Void.class);
+        LEGACY_HOMING(PlainBias.class, Void.class),
+        RAINBOW_COLOR(RainbowColor.class, Void.class),
+        CONED(Coned.class, Void.class),
+        FLAT(Flat.class, Void.class);
+
 
         private Class<? extends IBias> iBias;
         private Class<?> paramType;
@@ -926,8 +944,44 @@ public class Beam extends BasePower {
         }
     }
 
+    static final Color[] colors = {
+            Color.RED,
+            Color.ORANGE,
+            Color.YELLOW,
+            Color.LIME,
+            Color.AQUA,
+            Color.BLUE,
+            Color.FUCHSIA
+    };
+
+    Color getNextColor(int tick) {
+        Color r = colors[(tick/10) % colors.length];
+        return r;
+    }
+
     interface IBias<T> {
         List<Vector> getBiases(Location location, Vector towards, MovingTask context, T params);
+    }
+
+    static class RainbowColor implements IBias<Void>{
+        @Override
+        public List<Vector> getBiases(Location location, Vector towards, MovingTask context, Void params) {
+            return null;
+        }
+    }
+
+    static class Flat implements IBias<Void> {
+        @Override
+        public List<Vector> getBiases(Location location, Vector towards, MovingTask context, Void params) {
+            return null;
+        }
+    }
+
+    static class Coned implements IBias<Void> {
+        @Override
+        public List<Vector> getBiases(Location location, Vector towards, MovingTask context, Void params) {
+            return null;
+        }
     }
 
     static class PlainBias implements IBias<Void> {
@@ -969,7 +1023,7 @@ public class Beam extends BasePower {
         ONE_TARGET, MULTI_TARGET, MOUSE_TRACK
     }
 
-    public class Impl implements PowerPlain, PowerRightClick, PowerLeftClick, PowerSneak, PowerSneaking, PowerSprint, PowerBowShoot, PowerHitTaken, PowerHit, PowerHurt {
+    public class Impl implements PowerPlain, PowerRightClick, PowerLeftClick, PowerSneak, PowerSneaking, PowerSprint, PowerBowShoot, PowerHitTaken, PowerHit, PowerHurt, PowerTick {
         @Override
         public PowerResult<Void> leftClick(Player player, ItemStack stack, PlayerInteractEvent event) {
             return fire(player, stack);
@@ -1014,13 +1068,24 @@ public class Beam extends BasePower {
             Location fromLocation = from.getEyeLocation();
             Vector towards = from.getEyeLocation().getDirection();
 
+            double phi = random.nextDouble() * 360;
+            double theta = 0;
             if (getCone() != 0) {
-                double phi = random.nextDouble() * 360;
-                double theta;
                 theta = random.nextDouble() * getCone();
+                if (getBehavior().contains(Behavior.CONED)){
+                    theta = (random.nextDouble() * getCone()/2) + (getCone() / 2);
+                }else if (getBehavior().contains(Behavior.FLAT)){
+                    phi = random.nextBoolean()? 0 : 180;
+                }
                 Vector clone = towards.clone();
-                Vector cross = clone.clone().add(crosser);
-                Vector vertical = clone.getCrossProduct(cross).getCrossProduct(towards);
+                Vector vertical;
+                if (clone.getX() == 0 && clone.getZ() == 0){
+                    Location loclone = from.getEyeLocation().clone();
+                    loclone.setPitch(0);
+                    vertical = loclone.toVector();
+                }else {
+                     vertical = clone.getCrossProduct(crosser).getCrossProduct(towards);
+                }
                 towards.rotateAroundAxis(vertical, Math.toRadians(theta));
                 towards.rotateAroundAxis(clone, Math.toRadians(phi));
             }
@@ -1030,11 +1095,16 @@ public class Beam extends BasePower {
             if (from instanceof Player && getHoming() > 0) {
                 targets = new LinkedList<>(getTargets(from.getEyeLocation().getDirection(), fromLocation, from, getHomingRange(), getHomingAngle(), getHomingTarget()));
             }
-            MovingTask movingTask = new MovingTaskBuilder(Beam.this)
+            MovingTaskBuilder movingTaskBuilder = new MovingTaskBuilder(Beam.this)
                     .fromEntity(from)
                     .towards(towards)
                     .targets(targets)
-                    .itemStack(stack)
+                    .itemStack(stack);
+            if (getBehavior().contains(Behavior.RAINBOW_COLOR)){
+                Color nextColor = getNextColor((int) from.getWorld().getTime());
+                movingTaskBuilder.color(nextColor);
+            }
+            MovingTask movingTask = movingTaskBuilder
                     .build();
             movingTask.runTask(RPGItems.plugin);
             return PowerResult.ok();
@@ -1084,6 +1154,11 @@ public class Beam extends BasePower {
                 return fire(target, stack);
             }
             return PowerResult.noop();
+        }
+
+        @Override
+        public PowerResult<Void> tick(Player player, ItemStack stack) {
+            return fire(player, stack);
         }
     }
 }
