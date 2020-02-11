@@ -12,6 +12,7 @@ import org.bukkit.event.entity.ProjectileHitEvent;
 import org.bukkit.event.player.PlayerInteractEvent;
 import org.bukkit.inventory.ItemStack;
 import think.rpgitems.event.BeamHitBlockEvent;
+import think.rpgitems.event.BeamHitEntityEvent;
 import think.rpgitems.power.*;
 
 import static think.rpgitems.power.Utils.checkCooldown;
@@ -164,6 +165,17 @@ public class SoundPower extends BasePower {
                 return fire(target, stack);
             }
             return PowerResult.noop();
+        }
+
+        @Override
+        public PowerResult<Double> hitEntity(Player player, ItemStack stack, LivingEntity entity, double damage, BeamHitEntityEvent event) {
+            if (!checkCooldown(getPower(), player, getCooldown(), true, true)) return PowerResult.cd();
+            Location location = entity.getLocation();
+            if (playLocation.equals(PlayLocation.HIT_LOCATION)) {
+            }else if (playLocation.equals(PlayLocation.SELF)){
+                location = player.getLocation();
+            }
+            return sound(player, stack, location).with(damage);
         }
 
         @Override
