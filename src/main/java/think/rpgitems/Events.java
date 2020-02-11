@@ -666,6 +666,8 @@ public class Events implements Listener {
         e.setDamage(damage);
         if (!(entity instanceof LivingEntity)) return;
         if (rItem != null) {
+            String damageType = rItem.getDamageType();
+            Context.instance().putTemp(player.getUniqueId(), DAMAGE_TYPE, damageType);
             damage = maxWithCancel(rItem.power(player, item, e, BaseTriggers.HIT).orElse(null), damage);
         }
         ItemStack[] inventory = player.getInventory().getContents();
@@ -730,8 +732,10 @@ public class Events implements Listener {
         e.setDamage(damage);
         if (!(e.getEntity() instanceof LivingEntity)) return;
         ItemStack[] armorContents = player.getInventory().getContents();
+        String damageType = rItem.getDamageType();
+        Context.instance().putTemp(player.getUniqueId(), DAMAGE_TYPE, damageType);
         damage = maxWithCancel(rItem.power(player, item, e, BaseTriggers.HIT).orElse(null), damage);
-        runGlobalHitTrigger(e, player, damage, rItem.getDamageType(), armorContents);
+        runGlobalHitTrigger(e, player, damage, damageType, armorContents);
     }
 
     private void runGlobalHitTrigger(EntityDamageByEntityEvent e, Player player, double damage, String damageType, ItemStack[] itemStacks) {
