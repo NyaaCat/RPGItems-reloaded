@@ -1049,7 +1049,7 @@ public class Beam extends BasePower {
 
     private static Queue<RoundedConeInfo> internalCones(Beam beam, LivingEntity from, int amount) {
         Queue<RoundedConeInfo> infos = new LinkedList<>();
-        double initialPhi = random.nextDouble() * 360;
+        double initialPhi = beam.getInitialRotation();
         double phiStep = 360 / amount;
         double thetaStep = beam.getCone() * 2 / amount;
         List<Behavior> behaviors = beam.getBehavior();
