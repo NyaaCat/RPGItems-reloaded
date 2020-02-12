@@ -163,10 +163,10 @@ public class Beam extends BasePower {
     public String behaviorParam = "{}";
 
     @Property
-    public double initialPhi = 0;
+    public double initialRotation = 0;
 
-    public double getInitialPhi() {
-        return initialPhi;
+    public double getInitialRotation() {
+        return initialRotation;
     }
 
     @Override
