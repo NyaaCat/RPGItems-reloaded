@@ -686,11 +686,15 @@ public class Beam extends BasePower {
 
         private void spawnParticle(Entity from, World world, Location lastLocation, int i) {
             Location eyeLocation;
+            if(this.mode.equals(Mode.PROJECTILE) && extraData instanceof Particle.DustOptions){
+                extraData = new Particle.DustOptions(getNextColor(), ((Particle.DustOptions) extraData).getSize());
+            }
             if (from instanceof Player) {
                 eyeLocation = ((Player) from).getEyeLocation();
                 if ((lastLocation.distance(eyeLocation) < 1)) {
                     return;
                 }
+
                 // color for note need count to be 0.
                 if (this.particle.equals(Particle.NOTE)){
                     i = 0;
@@ -960,7 +964,7 @@ public class Beam extends BasePower {
             Color.fromRGB(0xFF40FF)  //FUCHSIA
     };
 
-    Color getNextColor() {
+    static Color getNextColor() {
         int l = (int) ((System.currentTimeMillis() / 200)% colors.length);
         Color r = colors[l];
         return r;
