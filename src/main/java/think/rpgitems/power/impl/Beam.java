@@ -686,7 +686,7 @@ public class Beam extends BasePower {
 
         private void spawnParticle(Entity from, World world, Location lastLocation, int i) {
             Location eyeLocation;
-            if(this.mode.equals(Mode.PROJECTILE) && extraData instanceof Particle.DustOptions){
+            if(this.mode.equals(Mode.PROJECTILE) && this.behavior.contains(Behavior.RAINBOW_COLOR) && extraData instanceof Particle.DustOptions){
                 extraData = new Particle.DustOptions(getNextColor(), ((Particle.DustOptions) extraData).getSize());
             }
             if (from instanceof Player) {
