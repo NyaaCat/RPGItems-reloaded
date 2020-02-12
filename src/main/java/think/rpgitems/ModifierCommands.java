@@ -87,7 +87,8 @@ public class ModifierCommands extends RPGCommandReceiver {
             msgs(sender, "manual.modifier.add.usage");
             return;
         }
-        PersistentDataContainer container = getRootContainer(sender, args, baseStr);
+        Pair<Pair<ItemStack, ItemMeta>, PersistentDataContainer> rootContainer = getRootContainer(sender, args, baseStr);
+        PersistentDataContainer container = rootContainer.getValue();
         String modifierStr = args.nextString();
 
         Pair<NamespacedKey, Class<? extends Modifier>> keyClass = getModifierClass(sender, modifierStr);
@@ -101,6 +102,9 @@ public class ModifierCommands extends RPGCommandReceiver {
             SubItemTagContainer modifierTag = ItemTagUtils.makeTag(modifierContainer, seq);
             modifier.save(modifierTag);
             modifierTag.commit();
+            if (rootContainer.getKey() != null){
+                saveItem(rootContainer.getKey());
+            }
             msg(sender, "message.modifier.ok", modifierStr);
         } catch (Exception e) {
             if (e instanceof BadCommandException) {
@@ -111,6 +115,12 @@ public class ModifierCommands extends RPGCommandReceiver {
         }
     }
 
+    private void saveItem(Pair<ItemStack, ItemMeta> pair) {
+        ItemStack key = pair.getKey();
+        ItemMeta value = pair.getValue();
+        key.setItemMeta(value);
+    }
+
     private NamespacedKey nextAvailable(PersistentDataContainer modifierContainer) {
         int i = 0;
         for (NamespacedKey key = PowerManager.parseKey(String.valueOf(i)); modifierContainer.has(key, PersistentDataType.TAG_CONTAINER); key = PowerManager.parseKey(String.valueOf(i))) {
@@ -119,18 +129,26 @@ public class ModifierCommands extends RPGCommandReceiver {
         return PowerManager.parseKey(String.valueOf(i));
     }
 
-    private PersistentDataContainer getRootContainer(CommandSender sender, Arguments arguments, String baseStr) {
+    private Pair<Pair<ItemStack, ItemMeta>, PersistentDataContainer> getRootContainer(CommandSender sender, Arguments arguments, String baseStr) {
         PersistentDataContainer container;
+        ItemStack item = null;
+        ItemMeta meta = null;
+        Pair<ItemStack, ItemMeta> metaPair = null;
         if (baseStr.toLowerCase(Locale.ROOT).equals("hand") && sender instanceof Player) {
             arguments.next();
-            ItemStack item = ((Player) sender).getInventory().getItemInMainHand();
-            ItemMeta meta = item.getItemMeta();
+            item = ((Player) sender).getInventory().getItemInMainHand();
+            meta = item.getItemMeta();
             container = meta.getPersistentDataContainer();
         } else {
             Player player = arguments.nextPlayer();
             container = player.getPersistentDataContainer();
         }
-        return container;
+
+        if (item != null){
+            metaPair = new Pair<>(item, meta);
+        }
+
+        return new Pair<>(metaPair, container);
     }
 
     @Completion("")
@@ -143,7 +161,8 @@ public class ModifierCommands extends RPGCommandReceiver {
                 break;
             case 2: {
                 String baseStr = arguments.top();
-                PersistentDataContainer container = getRootContainer(sender, arguments, baseStr);
+                Pair<Pair<ItemStack, ItemMeta>, PersistentDataContainer> rootContainer = getRootContainer(sender, arguments, baseStr);
+                PersistentDataContainer container = rootContainer.getValue();
                 SubItemTagContainer modifierContainer = ItemTagUtils.makeTag(container, TAG_MODIFIER);
                 List<Modifier> modifiers = RPGItem.getModifiers(modifierContainer);
                 completeStr.addAll(modifiers.stream().map(Modifier::id).collect(Collectors.toList()));
@@ -151,7 +170,8 @@ public class ModifierCommands extends RPGCommandReceiver {
             }
             default: {
                 String baseStr = arguments.top();
-                PersistentDataContainer container = getRootContainer(sender, arguments, baseStr);
+                Pair<Pair<ItemStack, ItemMeta>, PersistentDataContainer> rootContainer = getRootContainer(sender, arguments, baseStr);
+                PersistentDataContainer container = rootContainer.getValue();
                 Pair<Integer, Modifier> nextModifier = nextModifier(container, sender, arguments);
                 Modifier modifier = nextModifier.getValue();
                 return resolveProperties(sender, null, modifier.getClass(), modifier.getNamespacedKey(), arguments.getRawArgs()[arguments.getRawArgs().length - 1], arguments, false);
@@ -163,7 +183,8 @@ public class ModifierCommands extends RPGCommandReceiver {
     @SubCommand(value = "prop", tabCompleter = "propCompleter")
     public void prop(CommandSender sender, Arguments args) throws IllegalAccessException {
         String baseStr = args.top();
-        PersistentDataContainer container = getRootContainer(sender, args, baseStr);
+        Pair<Pair<ItemStack, ItemMeta>, PersistentDataContainer> rootContainer = getRootContainer(sender, args, baseStr);
+        PersistentDataContainer container = rootContainer.getValue();
         try {
             Pair<Integer, Modifier> modifierPair = nextModifier(container, sender, args);
             Modifier modifier = modifierPair.getValue();
@@ -179,6 +200,9 @@ public class ModifierCommands extends RPGCommandReceiver {
             SubItemTagContainer m = ItemTagUtils.makeTag(modifierContainer, namespacedKey);
             modifier.save(m);
             m.commit();
+            if (rootContainer.getKey() != null){
+                saveItem(rootContainer.getKey());
+            }
             msgs(sender, "message.marker.change");
         } catch (UnknownExtensionException e) {
             msgs(sender, "message.error.unknown.extension", e.getName());
@@ -207,7 +231,8 @@ public class ModifierCommands extends RPGCommandReceiver {
     @SubCommand(value = "remove", tabCompleter = "propCompleter")
     public void remove(CommandSender sender, Arguments args) {
         String baseStr = args.top();
-        PersistentDataContainer container = getRootContainer(sender, args, baseStr);
+        Pair<Pair<ItemStack, ItemMeta>, PersistentDataContainer> rootContainer = getRootContainer(sender, args, baseStr);
+        PersistentDataContainer container = rootContainer.getValue();
         try {
             Pair<Integer, Modifier> modifierPair = nextModifier(container, sender, args);
             SubItemTagContainer modifierContainer = makeTag(container, TAG_MODIFIER);
@@ -226,6 +251,9 @@ public class ModifierCommands extends RPGCommandReceiver {
             }
             modifierContainer.remove(lastKey);
             modifierContainer.commit();
+            if (rootContainer.getKey() != null){
+                saveItem(rootContainer.getKey());
+            }
             msgs(sender, "message.modifier.remove");
         } catch (UnknownExtensionException e) {
             msgs(sender, "message.error.unknown.extension", e.getName());
