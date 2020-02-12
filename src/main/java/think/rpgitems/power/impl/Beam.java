@@ -162,6 +162,13 @@ public class Beam extends BasePower {
     @Property
     public String behaviorParam = "{}";
 
+    @Property
+    public double initalCone = 0;
+
+    public double getInitalCone() {
+        return initalCone;
+    }
+
     @Override
     public void init(ConfigurationSection section) {
         //check new version var name
