@@ -224,8 +224,8 @@ public class Beam extends BasePower {
             .filter(material -> !material.isSolid() || !material.isOccluding())
             .collect(Collectors.toSet());
 
-    final Vector crosser = new Vector(0, 1, 0);
-    private Random random = new Random();
+    static final Vector crosser = new Vector(0, 1, 0);
+    private static Random random = new Random();
 
     public int getBeamAmount() {
         return beamAmount;
@@ -926,7 +926,8 @@ public class Beam extends BasePower {
         LEGACY_HOMING(PlainBias.class, Void.class),
         RAINBOW_COLOR(RainbowColor.class, Void.class),
         CONED(Coned.class, Void.class),
-        FLAT(Flat.class, Void.class);
+        FLAT(Flat.class, Void.class),
+        UNIFORMED(Uniformed.class, Void.class);
 
 
         private Class<? extends IBias> iBias;
@@ -943,17 +944,18 @@ public class Beam extends BasePower {
     }
 
     static final Color[] colors = {
-            Color.RED,
-            Color.ORANGE,
-            Color.YELLOW,
-            Color.LIME,
-            Color.AQUA,
-            Color.BLUE,
-            Color.FUCHSIA
+            Color.fromRGB(0xFF2040), //RED
+            Color.fromRGB(0xFF9020), //ORANGE
+            Color.fromRGB(0xFFFF40), //YELLOW
+            Color.fromRGB(0x40FF40), //LIME
+            Color.fromRGB(0x40FFFF), //AQUA
+            Color.fromRGB(0x4040FF), //BLUE
+            Color.fromRGB(0xFF40FF)  //FUCHSIA
     };
 
-    Color getNextColor(int tick) {
-        Color r = colors[(tick/10) % colors.length];
+    Color getNextColor() {
+        int l = (int) ((System.currentTimeMillis() / 200)% colors.length);
+        Color r = colors[l];
         return r;
     }
 
@@ -1017,8 +1019,79 @@ public class Beam extends BasePower {
         }
     }
 
+    static class Uniformed implements IBias<Void> {
+        @Override
+        public List<Vector> getBiases(Location location, Vector towards, MovingTask context, Void params) {
+            return null;
+        }
+    }
+
     private enum HomingMode {
         ONE_TARGET, MULTI_TARGET, MOUSE_TRACK
+    }
+
+    private static class RoundedConeInfo{
+        double phi;
+        double theta;
+
+        public RoundedConeInfo(double theta, double phi) {
+            this.theta = theta;
+            this.phi = phi;
+        }
+    }
+
+    private static Queue<RoundedConeInfo> internalCones(Beam beam, LivingEntity from, int amount) {
+        Queue<RoundedConeInfo> infos = new LinkedList<>();
+        double initialPhi = random.nextDouble() * 360;
+        double phiStep = 360 / amount;
+        double thetaStep = beam.getCone() * 2 / amount;
+        List<Behavior> behaviors = beam.getBehavior();
+        for (int i = 0; i < amount; i++) {
+            RoundedConeInfo roundedConeInfo = internalCone(beam, from);
+            if (behaviors.contains(Behavior.CONED)){
+                roundedConeInfo.theta = beam.getCone();
+            }
+            if (behaviors.contains(Behavior.UNIFORMED)){
+                roundedConeInfo.phi = initialPhi + (i * phiStep);
+            }
+            if (behaviors.contains(Behavior.FLAT)){
+                if (behaviors.contains(Behavior.UNIFORMED) ){
+                    roundedConeInfo.theta = (thetaStep * i) - beam.getCone();
+                    roundedConeInfo.phi = 0;
+                }else {
+                    roundedConeInfo.phi = random.nextBoolean()? 0 : 180;
+                }
+            }
+
+            infos.offer(roundedConeInfo);
+        }
+
+        return infos;
+    }
+
+    private static RoundedConeInfo internalCone(Beam beam, LivingEntity from) {
+        double phi = random.nextDouble() * 360;
+        double theta = 0;
+        if (beam.getCone() != 0) {
+            theta = random.nextDouble() * beam.getCone();
+        }
+        return new RoundedConeInfo(theta, phi);
+    }
+
+    private static Vector makeCone(Location fromLocation, Vector towards, RoundedConeInfo coneInfo){
+        Vector clone = towards.clone();
+        Vector vertical;
+        if (clone.getX() == 0 && clone.getZ() == 0){
+            Location loclone = fromLocation.clone();
+            loclone.setPitch(0);
+            vertical = loclone.toVector();
+        }else {
+            vertical = clone.getCrossProduct(crosser).getCrossProduct(towards);
+        }
+        Vector rotated = clone.clone();
+        rotated.rotateAroundAxis(vertical, Math.toRadians(coneInfo.theta));
+        rotated.rotateAroundAxis(clone, Math.toRadians(coneInfo.phi));
+        return rotated;
     }
 
     public class Impl implements PowerPlain, PowerRightClick, PowerLeftClick, PowerSneak, PowerSneaking, PowerSprint, PowerBowShoot, PowerHitTaken, PowerHit, PowerHurt, PowerTick {
@@ -1040,6 +1113,7 @@ public class Beam extends BasePower {
         }
 
         private PowerResult<Void> beam(LivingEntity from, ItemStack stack) {
+            Queue<RoundedConeInfo> roundedConeInfo = internalCones(Beam.this, from, getBeamAmount());
             if (getBurstCount() > 0) {
                 final int currentBurstCount = getBurstCount();
                 final int currentBurstInterval = getBurstInterval();
@@ -1048,7 +1122,7 @@ public class Beam extends BasePower {
                     @Override
                     public void run() {
                         for (int j = 0; j < getBeamAmount(); j++) {
-                            internalFireBeam(from, stack);
+                            internalFireBeam(from, stack, roundedConeInfo);
                         }
                         if (bursted.addAndGet(1) < currentBurstCount) {
                             new FireTask().runTaskLater(RPGItems.plugin, currentBurstInterval);
@@ -1062,32 +1136,20 @@ public class Beam extends BasePower {
             }
         }
 
-        private PowerResult<Void> internalFireBeam(LivingEntity from, ItemStack stack) {
+        private PowerResult<Void> internalFireBeam(LivingEntity from, ItemStack stack){
+            LinkedList<RoundedConeInfo> infos = new LinkedList<>();
+            return internalFireBeam(from, stack, infos);
+        }
+
+        private PowerResult<Void> internalFireBeam(LivingEntity from, ItemStack stack, Queue<RoundedConeInfo> coneInfo) {
             Location fromLocation = from.getEyeLocation();
             Vector towards = from.getEyeLocation().getDirection();
 
-            double phi = random.nextDouble() * 360;
-            double theta = 0;
-            if (getCone() != 0) {
-                theta = random.nextDouble() * getCone();
-                if (getBehavior().contains(Behavior.CONED)){
-                    theta = (random.nextDouble() * getCone()/2) + (getCone() / 2);
-                }else if (getBehavior().contains(Behavior.FLAT)){
-                    phi = random.nextBoolean()? 0 : 180;
-                }
-                Vector clone = towards.clone();
-                Vector vertical;
-                if (clone.getX() == 0 && clone.getZ() == 0){
-                    Location loclone = from.getEyeLocation().clone();
-                    loclone.setPitch(0);
-                    vertical = loclone.toVector();
-                }else {
-                     vertical = clone.getCrossProduct(crosser).getCrossProduct(towards);
-                }
-                towards.rotateAroundAxis(vertical, Math.toRadians(theta));
-                towards.rotateAroundAxis(clone, Math.toRadians(phi));
+            RoundedConeInfo poll = coneInfo.poll();
+            if (poll == null){
+                poll = internalCone(Beam.this, from);
             }
-
+            towards = makeCone(fromLocation, towards, poll);
 
             Queue<Entity> targets = null;
             if (from instanceof Player && getHoming() > 0) {
@@ -1099,7 +1161,7 @@ public class Beam extends BasePower {
                     .targets(targets)
                     .itemStack(stack);
             if (getBehavior().contains(Behavior.RAINBOW_COLOR)){
-                Color nextColor = getNextColor((int) from.getWorld().getTime());
+                Color nextColor = getNextColor();
                 movingTaskBuilder.color(nextColor);
             }
             MovingTask movingTask = movingTaskBuilder
