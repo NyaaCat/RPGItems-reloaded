@@ -11,6 +11,8 @@ import org.bukkit.event.entity.EntityShootBowEvent;
 import org.bukkit.event.entity.ProjectileHitEvent;
 import org.bukkit.event.player.PlayerInteractEvent;
 import org.bukkit.inventory.ItemStack;
+import org.bukkit.scheduler.BukkitRunnable;
+import think.rpgitems.RPGItems;
 import think.rpgitems.event.BeamHitBlockEvent;
 import think.rpgitems.event.BeamHitEntityEvent;
 import think.rpgitems.power.*;
@@ -37,6 +39,13 @@ public class SoundPower extends BasePower {
     public String display = "Plays sound";
     @Property
     public int cooldown = 0;
+    @Property
+    public int delay = 0;
+
+    public int getDelay() {
+        return delay;
+    }
+
     @Property
     public PlayLocation playLocation = PlayLocation.HIT_LOCATION;
 
@@ -106,7 +115,7 @@ public class SoundPower extends BasePower {
         return playLocation;
     }
 
-    public class Impl implements PowerLeftClick, PowerRightClick, PowerPlain, PowerHit, PowerBowShoot, PowerHitTaken, PowerHurt, PowerBeamHit, PowerProjectileHit {
+    public class Impl implements PowerLeftClick, PowerRightClick, PowerPlain, PowerHit, PowerBowShoot, PowerHitTaken, PowerHurt, PowerBeamHit, PowerProjectileHit, PowerTick, PowerSneaking {
 
         @Override
         public PowerResult<Void> leftClick(Player player, ItemStack stack, PlayerInteractEvent event) {
@@ -126,7 +135,16 @@ public class SoundPower extends BasePower {
 
         private PowerResult<Void> sound(Entity player, ItemStack stack, Location location) {
             if (!getItem().consumeDurability(stack, getCost())) return PowerResult.cost();
-            location.getWorld().playSound(location, getSound(), getVolume(), getPitch());
+            if (getDelay()>0){
+                new BukkitRunnable() {
+                    @Override
+                    public void run() {
+                        location.getWorld().playSound(location, getSound(), getVolume(), getPitch());
+                    }
+                }.runTaskLater(RPGItems.plugin, getDelay());
+            }else {
+                location.getWorld().playSound(location, getSound(), getVolume(), getPitch());
+            }
             return PowerResult.ok();
         }
 
@@ -197,6 +215,18 @@ public class SoundPower extends BasePower {
                 location = player.getLocation();
             }
             return sound(player, stack, location);
+        }
+
+        @Override
+        public PowerResult<Void> sneaking(Player player, ItemStack stack) {
+            if (!checkCooldown(getPower(), player, getCooldown(), true, true)) return PowerResult.cd();
+            return sound(player, stack, player.getEyeLocation());
+        }
+
+        @Override
+        public PowerResult<Void> tick(Player player, ItemStack stack) {
+            if (!checkCooldown(getPower(), player, getCooldown(), true, true)) return PowerResult.cd();
+            return sound(player, stack, player.getEyeLocation());
         }
     }
 }
