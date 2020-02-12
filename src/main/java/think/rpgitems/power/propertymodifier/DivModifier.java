@@ -16,7 +16,7 @@ public class DivModifier extends BaseModifier<Double> implements DoubleModifier 
     }
 
     @Override
-    public Double apply(Double t) {
-        return t / value;
+    public Double apply(RgiParameter t) {
+        return t.getValue() / value;
     }
 }

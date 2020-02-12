@@ -144,8 +144,8 @@ public class AdminCommands extends RPGCommandReceiver {
     @SubCommand("trigger")
     public MarkerCommands trigger;
 
-    // @SubCommand("modifier")
-    // public ModifierCommands modifier;
+     @SubCommand("modifier")
+     public ModifierCommands modifier;
 
     @SubCommand("gen-wiki")
     public WikiCommand wiki;

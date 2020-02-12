@@ -4,7 +4,7 @@ import think.rpgitems.power.Meta;
 import think.rpgitems.power.Property;
 
 @Meta(marker = true)
-public class MulModifier extends BaseModifier<Double>  implements DoubleModifier {
+public class MulModifier extends BaseModifier<Double> implements DoubleModifier {
     @Property
     public double value;
 
@@ -14,7 +14,7 @@ public class MulModifier extends BaseModifier<Double>  implements DoubleModifier
     }
 
     @Override
-    public Double apply(Double t) {
-        return t * value;
+    public Double apply(RgiParameter t) {
+        return t.getValue() * value;
     }
 }

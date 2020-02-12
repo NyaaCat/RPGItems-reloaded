@@ -221,7 +221,9 @@ public class ModifierCommands extends RPGCommandReceiver {
             modifierContainer.remove(currentKey);
             NamespacedKey lastKey = PowerManager.parseKey(String.valueOf(i));
             PersistentDataContainer lastContainer = getTag(modifierContainer, lastKey);
-            set(modifierContainer, currentKey, lastContainer);
+            if (lastContainer != null){
+                set(modifierContainer, currentKey, lastContainer);
+            }
             modifierContainer.remove(lastKey);
             modifierContainer.commit();
             msgs(sender, "message.modifier.remove");

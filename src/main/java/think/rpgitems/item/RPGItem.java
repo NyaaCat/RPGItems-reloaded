@@ -42,6 +42,7 @@ import think.rpgitems.power.*;
 import think.rpgitems.power.cond.SlotCondition;
 import think.rpgitems.power.marker.*;
 import think.rpgitems.power.propertymodifier.Modifier;
+import think.rpgitems.power.propertymodifier.RgiParameter;
 import think.rpgitems.power.trigger.BaseTriggers;
 import think.rpgitems.power.trigger.Trigger;
 import think.rpgitems.utils.MaterialUtils;
@@ -1465,7 +1466,7 @@ public class RPGItem {
             Enhancer enhancer = new Enhancer();
             enhancer.setSuperclass(cls);
             enhancer.setInterfaces(new Class[]{trigger.getPowerClass()});
-            enhancer.setCallback(new DynamicMethodInterceptor(orig, player));
+            enhancer.setCallback(new DynamicMethodInterceptor(orig, player, stack));
             return (Power) enhancer.create();
         }
 
@@ -1478,14 +1479,16 @@ public class RPGItem {
         private final Power orig;
         private final Player player;
         private final Map<Method, PropertyInstance> getters;
+        private ItemStack stack;
 
-        protected DynamicMethodInterceptor(Power orig, Player player) {
+        protected DynamicMethodInterceptor(Power orig, Player player, ItemStack stack) {
             this.orig = orig;
             this.player = player;
             this.getters = PowerManager.getProperties(orig.getClass())
                                        .entrySet()
                                        .stream()
                                        .collect(Collectors.toMap(e -> e.getValue().getKey(), e -> e.getValue().getValue()));
+            this.stack = stack;
         }
 
         @Override
@@ -1501,7 +1504,8 @@ public class RPGItem {
                     Number value = (Number) methodProxy.invoke(orig, args);
                     double origValue = value.doubleValue();
                     for (Modifier<Double> numberModifier : numberModifiers) {
-                        origValue = numberModifier.apply(origValue);
+                        RgiParameter param = new RgiParameter(orig.getItem(), orig, stack, origValue);
+                        origValue = numberModifier.apply(param);
                     }
                     if (int.class.equals(type) || Integer.class.equals(type)) {
                         return (int) origValue;

@@ -13,7 +13,7 @@ public class PlusModifier extends BaseModifier<Double>  implements DoubleModifie
         return "plusmodifier";
     }
     @Override
-    public Double apply(Double t) {
-        return t + value;
+    public Double apply(RgiParameter t) {
+        return t.getValue() + value;
     }
 }
