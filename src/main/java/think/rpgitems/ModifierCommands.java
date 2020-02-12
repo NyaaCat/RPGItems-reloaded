@@ -70,13 +70,11 @@ public class ModifierCommands extends RPGCommandReceiver {
                 completeStr.addAll(PowerManager.getModifiers().keySet().stream().map(s -> PowerManager.hasExtension() ? s : s.getKey()).map(Object::toString).collect(Collectors.toList()));
                 break;
             default:
-                RPGItem item = getItem(arguments.nextString(), sender);
-                String last = arguments.getRawArgs()[arguments.getRawArgs().length - 1];
-                String modifierKey = arguments.nextString();
-                Pair<NamespacedKey, Class<? extends Modifier>> keyClass = getModifierClass(sender, modifierKey);
-                if (keyClass != null) {
-                    return resolveProperties(sender, item, keyClass.getValue(), keyClass.getKey(), last, arguments, true);
-                }
+                arguments.next();
+                String mod = arguments.next();
+                NamespacedKey namespacedKey = PowerManager.parseKey(mod);
+                Class<? extends Modifier> modifier = PowerManager.getModifier(namespacedKey);
+                return resolveProperties(sender, null, modifier, namespacedKey, arguments.getRawArgs()[arguments.getRawArgs().length - 1], arguments, false);
         }
         return filtered(arguments, completeStr);
     }
@@ -94,11 +92,9 @@ public class ModifierCommands extends RPGCommandReceiver {
 
         Pair<NamespacedKey, Class<? extends Modifier>> keyClass = getModifierClass(sender, modifierStr);
         if (keyClass == null || keyClass.getValue() == null) return;
-        Modifier modifier;
         Class<? extends Modifier> cls = keyClass.getValue();
-        NamespacedKey key = keyClass.getKey();
         try {
-            modifier = initPropertyHolder(sender, args, null, cls);
+            Modifier modifier = initPropertyHolder(sender, args, null, cls);
             SubItemTagContainer modifierContainer = ItemTagUtils.makeTag(container, TAG_MODIFIER);
             set(modifierContainer, TAG_VERSION, UUID.randomUUID());
             NamespacedKey seq = nextAvailable(modifierContainer);

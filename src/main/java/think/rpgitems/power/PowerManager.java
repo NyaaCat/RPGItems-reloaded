@@ -37,6 +37,8 @@ public class PowerManager {
 
     private static final Map<String, Plugin> extensions = new HashMap<>();
 
+    private static BiMap<NamespacedKey, Class<? extends PropertyHolder>> all = HashBiMap.create();
+
     /**
      * Power by name, and name by power
      */
@@ -61,6 +63,7 @@ public class PowerManager {
         metas.clear();
         extensions.clear();
         extensions.put("rpgitems", RPGItems.plugin);
+        all.clear();
         powers.clear();
         conditions.clear();
         markers.clear();
@@ -78,6 +81,7 @@ public class PowerManager {
             Power p = PowerManager.instantiate(clazz);
             key = p.getNamespacedKey();
             if (key != null) {
+                all.put(key, clazz);
                 powers.put(key, clazz);
             } else {
                 return;
@@ -91,6 +95,7 @@ public class PowerManager {
             }
             if (key != null) {
                 powers.remove(key, clazz);
+                all.remove(key, clazz);
                 metas.remove(clazz);
                 properties.remove(clazz);
             }
@@ -104,6 +109,7 @@ public class PowerManager {
             T p = PowerManager.instantiate(clazz);
             key = p.getNamespacedKey();
             if (key != null) {
+                all.put(key, clazz);
                 registry.put(key, clazz);
             }
         } catch (Exception e) {
@@ -112,6 +118,7 @@ public class PowerManager {
             metas.remove(clazz);
             properties.remove(clazz);
             if (key != null) {
+                all.remove(key, clazz);
                 registry.remove(key, clazz);
             }
         }
@@ -307,7 +314,7 @@ public class PowerManager {
     }
 
     public static Map<String, Pair<Method, PropertyInstance>> getProperties(NamespacedKey key) {
-        return getProperties(powers.get(key));
+        return getProperties(all.get(key));
     }
 
     @CheckForNull
