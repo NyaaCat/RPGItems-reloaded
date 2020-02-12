@@ -886,7 +886,9 @@ public class RPGItem {
     }
 
     public static List<Modifier> getModifiers(ItemStack stack) {
-        SubItemTagContainer tag = makeTag(Objects.requireNonNull(stack.getItemMeta()).getPersistentDataContainer(), TAG_MODIFIER);
+        ItemMeta itemMeta = stack.getItemMeta();
+        if (itemMeta == null)return new ArrayList<>();
+        SubItemTagContainer tag = makeTag(Objects.requireNonNull(itemMeta).getPersistentDataContainer(), TAG_MODIFIER);
         return getModifiers(tag);
     }
 
