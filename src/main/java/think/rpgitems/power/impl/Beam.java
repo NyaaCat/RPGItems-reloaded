@@ -163,10 +163,10 @@ public class Beam extends BasePower {
     public String behaviorParam = "{}";
 
     @Property
-    public double initalCone = 0;
+    public double initialPhi = 0;
 
-    public double getInitalCone() {
-        return initalCone;
+    public double getInitialPhi() {
+        return initialPhi;
     }
 
     @Override
