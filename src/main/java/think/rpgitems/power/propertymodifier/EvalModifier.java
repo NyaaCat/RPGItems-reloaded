@@ -22,9 +22,9 @@ public class EvalModifier extends BaseModifier<Double> implements DoubleModifier
     }
 
     @Override
-    public Double apply(RgiParameter t) {
+    public Double apply(RgiParameter<Double> t) {
         Expression expression = new Expression(this.expression);
         expression.and("durability", Utils.lazyNumber(() -> Double.valueOf(t.getItem().getItemStackDurability(t.getItemStack()).orElse(0))));
-        return expression.and("value", new BigDecimal(t.getValue())).eval().doubleValue();
+        return expression.and("value", BigDecimal.valueOf(t.getValue())).eval().doubleValue();
     }
 }

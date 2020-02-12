@@ -28,6 +28,8 @@ public abstract class BaseModifier<T> extends BasePropertyHolder implements Modi
     public String targetPower;
     @Property(order = 3, required = true)
     public String targetProperty;
+    @Property(order = 4, required = true)
+    public int priority;
 
     @Override
     public String getPropertyHolderType() {
@@ -37,6 +39,11 @@ public abstract class BaseModifier<T> extends BasePropertyHolder implements Modi
     @Override
     public String id() {
         return id;
+    }
+
+    @Override
+    public int priority() {
+        return priority;
     }
 
     public void init(PersistentDataContainer section) {

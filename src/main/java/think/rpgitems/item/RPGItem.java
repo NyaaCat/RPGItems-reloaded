@@ -1497,14 +1497,17 @@ public class RPGItem {
             if (getters.containsKey(method)) {
                 PropertyInstance propertyInstance = getters.get(method);
                 Class<?> type = propertyInstance.field().getType();
+                List<Modifier> playerModifiers = getModifiers(player);
+                List<Modifier> stackModifiers = getModifiers(stack);
+                List<Modifier> modifiers = Stream.concat(playerModifiers.stream(), stackModifiers.stream()).sorted(Comparator.comparing(Modifier::priority)).collect(Collectors.toList());
                 // Numeric modifiers
                 if (type == int.class || type == Integer.class || type == float.class || type == Float.class || type == double.class || type == Double.class) {
-                    List<Modifier> playerModifiers = getModifiers(player);
-                    @SuppressWarnings("unchecked") List<Modifier<Double>> numberModifiers = playerModifiers.stream().filter(m -> (m.getModifierTargetType() == Double.class) && m.match(orig, propertyInstance)).map(m -> (Modifier<Double>) m).collect(Collectors.toList());
+
+                    @SuppressWarnings("unchecked") List<Modifier<Double>> numberModifiers = modifiers.stream().filter(m -> (m.getModifierTargetType() == Double.class) && m.match(orig, propertyInstance)).map(m -> (Modifier<Double>) m).collect(Collectors.toList());
                     Number value = (Number) methodProxy.invoke(orig, args);
                     double origValue = value.doubleValue();
                     for (Modifier<Double> numberModifier : numberModifiers) {
-                        RgiParameter param = new RgiParameter(orig.getItem(), orig, stack, origValue);
+                        RgiParameter param = new RgiParameter<>(orig.getItem(), orig, stack, origValue);
                         origValue = numberModifier.apply(param);
                     }
                     if (int.class.equals(type) || Integer.class.equals(type)) {

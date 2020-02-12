@@ -29,6 +29,7 @@ import java.util.stream.Stream;
 
 import static think.rpgitems.AdminCommands.*;
 import static think.rpgitems.item.RPGItem.TAG_MODIFIER;
+import static think.rpgitems.item.RPGItem.TAG_VERSION;
 import static think.rpgitems.utils.ItemTagUtils.*;
 
 public class ModifierCommands extends RPGCommandReceiver {
@@ -99,6 +100,7 @@ public class ModifierCommands extends RPGCommandReceiver {
         try {
             modifier = initPropertyHolder(sender, args, null, cls);
             SubItemTagContainer modifierContainer = ItemTagUtils.makeTag(container, TAG_MODIFIER);
+            set(modifierContainer, TAG_VERSION, UUID.randomUUID());
             NamespacedKey seq = nextAvailable(modifierContainer);
             SubItemTagContainer modifierTag = ItemTagUtils.makeTag(modifierContainer, seq);
             modifier.save(modifierTag);
@@ -175,6 +177,7 @@ public class ModifierCommands extends RPGCommandReceiver {
             }
             setPropertyHolder(sender, args, modifier.getClass(), modifier, false);
             SubItemTagContainer modifierContainer = ItemTagUtils.makeTag(container, TAG_MODIFIER);
+            set(modifierContainer, TAG_VERSION, UUID.randomUUID());
             NamespacedKey namespacedKey = PowerManager.parseKey(String.valueOf(modifierPair.getKey()));
             modifierContainer.remove(namespacedKey);
             SubItemTagContainer m = ItemTagUtils.makeTag(modifierContainer, namespacedKey);
@@ -212,6 +215,7 @@ public class ModifierCommands extends RPGCommandReceiver {
         try {
             Pair<Integer, Modifier> modifierPair = nextModifier(container, sender, args);
             SubItemTagContainer modifierContainer = makeTag(container, TAG_MODIFIER);
+            set(modifierContainer, TAG_VERSION, UUID.randomUUID());
             NamespacedKey currentKey = PowerManager.parseKey(String.valueOf(modifierPair.getKey()));
             int i = 0;
             for (NamespacedKey key = PowerManager.parseKey(String.valueOf(i)); modifierContainer.has(key, PersistentDataType.TAG_CONTAINER); key = PowerManager.parseKey(String.valueOf(i))) {

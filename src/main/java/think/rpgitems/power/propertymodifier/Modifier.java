@@ -7,7 +7,7 @@ import think.rpgitems.power.PropertyInstance;
 
 import java.util.function.Function;
 
-public interface Modifier<T> extends Function<RgiParameter, T>, PropertyHolder {
+public interface Modifier<T> extends Function<RgiParameter<T>, T>, PropertyHolder {
     void init(PersistentDataContainer section);
 
     void save(PersistentDataContainer section);
@@ -15,6 +15,8 @@ public interface Modifier<T> extends Function<RgiParameter, T>, PropertyHolder {
     boolean match(Power orig, PropertyInstance propertyInstance);
 
     String id();
+
+    int priority();
 
     Class<T> getModifierTargetType();
 }

@@ -5,13 +5,13 @@ import think.rpgitems.item.RPGItem;
 import think.rpgitems.power.Pimpl;
 import think.rpgitems.power.Power;
 
-public class RgiParameter {
+public class RgiParameter<T> {
     RPGItem item;
     Power power;
     ItemStack itemStack;
-    private double value;
+    private T value;
 
-    public RgiParameter(RPGItem item, Power power, ItemStack itemStack, double value) {
+    public RgiParameter(RPGItem item, Power power, ItemStack itemStack, T value) {
         this.item = item;
         this.power = power;
         this.itemStack = itemStack;
@@ -30,7 +30,7 @@ public class RgiParameter {
         return itemStack;
     }
 
-    public Double getValue() {
+    public T getValue() {
         return value;
     }
 }

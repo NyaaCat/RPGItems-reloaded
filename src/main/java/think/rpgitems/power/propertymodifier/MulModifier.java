@@ -14,7 +14,7 @@ public class MulModifier extends BaseModifier<Double> implements DoubleModifier 
     }
 
     @Override
-    public Double apply(RgiParameter t) {
+    public Double apply(RgiParameter<Double> t) {
         return t.getValue() * value;
     }
 }
