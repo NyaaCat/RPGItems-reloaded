@@ -342,6 +342,7 @@ public class ParticlePower extends BasePower {
             }else if (playLocation.equals(PlayLocation.SELF)){
                 loc = player.getLocation();
             }
+            spawnParticle(player.getWorld(), loc);
             return PowerResult.ok();
         }
     }
