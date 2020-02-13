@@ -65,7 +65,7 @@ dependencies {
         api project(":NyaaCore")
         api project(":LanguageUtils")
     } else {
-        api "cat.nyaa:nyaacore:7.0-SNAPSHOT"
+        api "cat.nyaa:nyaacore:7.1-SNAPSHOT"
     }
 
     compileOnly 'io.netty:netty-all:4.1.25.Final' // netty is shadowed inside spigot jar
@@ -168,7 +168,7 @@ javadoc {
         links 'https://docs.oracle.com/javase/8/docs/api/'
         links 'https://hub.spigotmc.org/javadocs/spigot/'
         links 'https://google.github.io/guava/releases/21.0/api/docs/'
-        links 'https://ci.nyaacat.com/javadocs/nyaacore-7.0.349/'
+        links 'https://ci.nyaacat.com/javadocs/nyaacore-7.1.350/'
         links 'https://ci.md-5.net/job/BungeeCord/ws/chat/target/apidocs/'
         links 'https://netty.io/4.1/api/'
 
