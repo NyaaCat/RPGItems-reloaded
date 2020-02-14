@@ -18,7 +18,7 @@ public class CriticalHit extends BasePower {
     public double chance = 20;
 
     @Property
-    public double backstabChance = 20;
+    public double backstabChance = 0;
 
     @Property
     public double factor = 1.5;
