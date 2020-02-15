@@ -28,6 +28,7 @@ import think.rpgitems.data.LightContext;
 import think.rpgitems.event.BeamHitBlockEvent;
 import think.rpgitems.event.BeamHitEntityEvent;
 import think.rpgitems.power.*;
+import think.rpgitems.utils.WeightedPair;
 
 import java.math.BigDecimal;
 import java.util.*;
@@ -238,6 +239,10 @@ public class Beam extends BasePower {
         return beamAmount;
     }
 
+    public double getInitialRotation() {
+        return initialRotation;
+    }
+
     public List<Behavior> getBehavior() {
         return behavior;
     }
@@ -383,6 +388,62 @@ public class Beam extends BasePower {
         return requireHurtByEntity;
     }
 
+    @Override
+    public void init(ConfigurationSection section) {
+        //check new version var name
+        if (section.contains("coneRange")) {
+            updateFromV1(section);
+        }
+        if (section.contains("spawnsPerBlock")){
+            int spawnsPerBlock = section.getInt("spawnsPerBlock");
+            section.set("particleDensity", spawnsPerBlock);
+        }
+        super.init(section);
+    }
+
+    private void updateFromV1(ConfigurationSection section) {
+        boolean originalCone = section.getBoolean("cone");
+        boolean pierce = section.getBoolean("pierce");
+        double cone = section.getDouble("coneRange");
+        int movementTicks = section.getInt("movementTicks");
+        int length = section.getInt("length");
+        double originSpeed = section.getDouble("speed");
+        double homing = 0;
+        double homingAngle = section.getDouble("homingAngle");
+        double homingRange = section.getDouble("homingRange");
+        String homingTargetMode = section.getString("homingTargetMode");
+        int stepsBeforeHoming = section.getInt("stepsBeforeHoming");
+
+        double spd = ((double) length * 20) / ((double) movementTicks);
+        int spawnsPerBlock = section.getInt("spawnsPerBlock");
+        double blockPerSpawn = 1 / ((double) spawnsPerBlock);
+        double stepPerSecond = spd / blockPerSpawn;
+
+        if (!section.getBoolean("homing")) {
+            homingAngle = 0;
+        } else {
+            homing = blockPerSpawn / (2 * Math.cos(Math.toRadians(homingAngle)));
+        }
+        if (originalCone) {
+            section.set("cone", cone);
+        } else {
+            section.set("cone", 0);
+        }
+        int pierceNum = 0;
+        if (pierce) {
+            pierceNum = 50;
+        }
+        section.set("speed", spd);
+        section.set("particleSpeed", originSpeed);
+        section.set("homing", homing);
+        section.set("homingAngle", homingRange);
+        section.set("homingMode", homingTargetMode);
+        section.set("pierce", pierceNum);
+        section.set("behavior", "LEGACY_HOMING");
+        section.set("ticksBeforeHoming", stepsBeforeHoming);
+        section.set("ttl", ((int) Math.floor(length * 20 / spd)));
+        section.set("homingRange", length);
+    }
 
     private static class MovingTask extends BukkitRunnable {
         private double homingRange;
@@ -815,8 +876,33 @@ public class Beam extends BasePower {
         }
     }
 
+    public static class ExtraDataSerializer implements Getter<Object>, Setter<Object> {
+        @Override
+        public String get(Object object) {
+            if (object instanceof Particle.DustOptions) {
+                Color color = ((Particle.DustOptions) object).getColor();
+                return color.getRed() + "," + color.getGreen() + "," + color.getBlue() + "," + ((Particle.DustOptions) object).getSize();
+            }
+            return "";
+        }
+
+        @Override
+        public Optional set(String value) throws IllegalArgumentException {
+            if ("null".equals(value)) {
+                return Optional.empty();
+            }
+            String[] split = value.split(",", 4);
+            int r = Integer.parseInt(split[0]);
+            int g = Integer.parseInt(split[1]);
+            int b = Integer.parseInt(split[2]);
+            float size = Float.parseFloat(split[3]);
+            return Optional.of(new Particle.DustOptions(Color.fromRGB(r, g, b), size));
+        }
+    }
+
+
     // can be called anywhere, maybe
-    class MovingTaskBuilder {
+    public static class MovingTaskBuilder {
         MovingTask movingTask;
 
         public MovingTaskBuilder(Beam power) {
@@ -891,44 +977,23 @@ public class Beam extends BasePower {
                 }).collect(Collectors.toList());
     }
 
-    private enum Mode {
+    enum Mode {
         BEAM,
         PROJECTILE,
         ;
-
-    }
-
-    public class ExtraDataSerializer implements Getter, Setter {
-        @Override
-        public String get(Object object) {
-            if (object instanceof Particle.DustOptions) {
-                Color color = ((Particle.DustOptions) object).getColor();
-                return color.getRed() + "," + color.getGreen() + "," + color.getBlue() + "," + ((Particle.DustOptions) object).getSize();
-            }
-            return "";
-        }
-
-        @Override
-        public Optional set(String value) throws IllegalArgumentException {
-            if ("null".equals(value)) {
-                return Optional.empty();
-            }
-            String[] split = value.split(",", 4);
-            int r = Integer.parseInt(split[0]);
-            int g = Integer.parseInt(split[1]);
-            int b = Integer.parseInt(split[2]);
-            float size = Float.parseFloat(split[3]);
-            return Optional.of(new Particle.DustOptions(Color.fromRGB(r, g, b), size));
-        }
     }
 
     enum Target {
         MOBS, PLAYERS, ALL
     }
 
-    //behavior params
-    //todo: config them in specific class
-    static int currentColor = 0;
+    enum HomingMode {
+        ONE_TARGET, MULTI_TARGET, MOUSE_TRACK
+    }
+
+    enum FiringLocation{
+        SELF, TARGET;
+    }
 
     public enum Behavior {
         PLAIN(PlainBias.class, Void.class),
@@ -954,6 +1019,9 @@ public class Beam extends BasePower {
         }
     }
 
+    //behavior params
+    //todo: config them in specific class
+    static int currentColor = 0;
     static final Color[] colors = {
             Color.fromRGB(0xFF2040), //RED
             Color.fromRGB(0xFF9020), //ORANGE
@@ -1035,10 +1103,6 @@ public class Beam extends BasePower {
         public List<Vector> getBiases(Location location, Vector towards, MovingTask context, Void params) {
             return null;
         }
-    }
-
-    private enum HomingMode {
-        ONE_TARGET, MULTI_TARGET, MOUSE_TRACK
     }
 
     private static class RoundedConeInfo{
@@ -1124,7 +1188,6 @@ public class Beam extends BasePower {
         }
 
         private PowerResult<Void> beam(LivingEntity from, ItemStack stack) {
-            Queue<RoundedConeInfo> roundedConeInfo = internalCones(Beam.this, from, getBeamAmount());
             if (getBurstCount() > 0) {
                 final int currentBurstCount = getBurstCount();
                 final int currentBurstInterval = getBurstInterval();
@@ -1133,6 +1196,7 @@ public class Beam extends BasePower {
                     @Override
                     public void run() {
                         for (int j = 0; j < getBeamAmount(); j++) {
+                            Queue<RoundedConeInfo> roundedConeInfo = internalCones(Beam.this, from, getBeamAmount());
                             internalFireBeam(from, stack, roundedConeInfo);
                         }
                         if (bursted.addAndGet(1) < currentBurstCount) {
