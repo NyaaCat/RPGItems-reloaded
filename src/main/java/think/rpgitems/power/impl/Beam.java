@@ -1383,13 +1383,15 @@ public class Beam extends BasePower {
 
             MovingTaskBuilder movingTaskBuilder = new MovingTaskBuilder(Beam.this)
                     .fromEntity(from)
-                    .fromLocation(fromLocation)
                     .towards(towards)
                     .targets(targets)
                     .itemStack(stack);
             if (getBehavior().contains(Behavior.RAINBOW_COLOR)){
                 Color nextColor = getNextColor();
                 movingTaskBuilder.color(nextColor);
+            }
+            if (!getFiringLocation().equals(FiringLocation.SELF)){
+                movingTaskBuilder.fromLocation(fromLocation);
             }
             MovingTask movingTask = movingTaskBuilder
                     .build();
