@@ -175,8 +175,8 @@ public class Attract extends BasePower {
             }
             double factor = Math.sqrt(getRadius() - 1.0) / getMaxSpeed();
             List<Entity> entities = supplier.get();
-            if (entities.isEmpty()) return null;
-            if (!getItem().consumeDurability(stack, getAttractingTickCost())) return null;
+            if (entities.isEmpty()) return PowerResult.ok();
+            if (!getItem().consumeDurability(stack, getAttractingTickCost())) return PowerResult.ok();
             for (Entity e : entities) {
                 if (e instanceof LivingEntity
                             && (isAttractPlayer() || !(e instanceof Player))) {
@@ -189,7 +189,7 @@ public class Attract extends BasePower {
                     if (Double.isInfinite(newVelocity)) {
                         newVelocity = 0;
                     }
-                    Vector direction = locPlayer.subtract(locTarget).toVector().normalize();
+                    Vector direction = locPlayer.clone().subtract(locTarget).toVector().normalize();
                     e.setVelocity(direction.multiply(newVelocity));
                 }
             }

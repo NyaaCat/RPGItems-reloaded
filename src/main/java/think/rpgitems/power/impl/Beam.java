@@ -1406,18 +1406,16 @@ public class Beam extends BasePower {
             double r = coneInfo.r;
             double phi = coneInfo.rPhi;
             double theta = coneInfo.rTheta;
+
+            Vector base = yAxis.clone();
             if (getBehavior().contains(Behavior.CAST_LOCATION_ROTATED)){
-                Location clone = direction.clone();
-                clone.setX(normalDir.getX());
-                clone.setY(normalDir.getY());
-                clone.setZ(normalDir.getZ());
-                direction = clone;
+                base = normalDir;
             }
 
             Vector cross1;
             Vector cross2;
             Vector dv = direction.getDirection();
-            if (dv.equals(yAxis)){
+            if (dv.getZ() == 0 && dv.getX()==0){
                 Location clone = direction.clone();
                 clone.setPitch(0);
                 cross1 = clone.getDirection().getCrossProduct(yAxis).normalize();
@@ -1426,9 +1424,9 @@ public class Beam extends BasePower {
             }
             cross2 = cross1.getCrossProduct(dv);
 
-            Vector clone = normalDir.clone();
+            Vector clone = base.clone();
             clone.rotateAroundAxis(cross1, Math.toRadians(theta));
-            clone.rotateAroundAxis(cross2, Math.toRadians(phi));
+            clone.rotateAroundAxis(base, Math.toRadians(phi));
             clone.normalize().multiply(r);
             return targetingLocation.clone().add(clone);
         }
