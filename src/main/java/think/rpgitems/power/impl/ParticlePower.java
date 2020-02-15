@@ -338,17 +338,17 @@ public class ParticlePower extends BasePower {
         public PowerResult<Double> hitEntity(Player player, ItemStack stack, LivingEntity entity, double damage, BeamHitEntityEvent event) {
             if (!checkCooldown(getPower(), player, getCooldown(), true, true)) return PowerResult.cd();
             if (!getItem().consumeDurability(stack, getCost())) return PowerResult.cost();
-            Location location = entity.getLocation();
-            if (playLocation.equals(PlayLocation.HIT_LOCATION)) {
-            }else if (playLocation.equals(PlayLocation.SELF)){
-                location = player.getLocation();
-            }
+
             int delay = getDelay();
-            Location finalLocation = location;
             new BukkitRunnable(){
                 @Override
                 public void run() {
-                    spawnParticle(entity.getWorld(), finalLocation);
+                    Location location = event.getLoc();
+                    if (playLocation.equals(PlayLocation.HIT_LOCATION)) {
+                    }else if (playLocation.equals(PlayLocation.SELF)){
+                        location = player.getLocation();
+                    }
+                    spawnParticle(entity.getWorld(), location);
                 }
             }.runTaskLater(RPGItems.plugin, delay);
             return PowerResult.ok(damage);
@@ -359,6 +359,7 @@ public class ParticlePower extends BasePower {
             if (!checkCooldown(getPower(), player, getCooldown(), true, true)) return PowerResult.cd();
             if (!getItem().consumeDurability(stack, getCost())) return PowerResult.cost();
 
+            int delay = getDelay();
             new BukkitRunnable(){
                 @Override
                 public void run() {
@@ -379,6 +380,7 @@ public class ParticlePower extends BasePower {
             if (!checkCooldown(getPower(), player, getCooldown(), true, true)) return PowerResult.cd();
             if (!getItem().consumeDurability(stack, getCost())) return PowerResult.cost();
 
+            int delay = getDelay();
             new BukkitRunnable(){
                 @Override
                 public void run() {
