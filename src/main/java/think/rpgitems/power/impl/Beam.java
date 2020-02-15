@@ -38,7 +38,7 @@ import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 import static think.rpgitems.Events.*;
-import static think.rpgitems.power.Utils.checkCooldown;
+import static think.rpgitems.power.Utils.*;
 
 /**
  * @author <a href="mailto:ReinWDD@gmail.com">ReinWD</a>
@@ -166,66 +166,31 @@ public class Beam extends BasePower {
     @Property
     public double initialRotation = 0;
 
-    public double getInitialRotation() {
-        return initialRotation;
-    }
+    @Property
+    public FiringLocation firingLocation = FiringLocation.SELF;
 
-    @Override
-    public void init(ConfigurationSection section) {
-        //check new version var name
-        if (section.contains("coneRange")) {
-            updateFromV1(section);
-        }
-        if (section.contains("spawnsPerBlock")){
-            int spawnsPerBlock = section.getInt("spawnsPerBlock");
-            section.set("particleDensity", spawnsPerBlock);
-        }
-        super.init(section);
-    }
+    /*
+    *   following 3 property format like:
+    *   "<lower_value>,<upper_value>:<weight> <lower_value2>,<upper_value2> <fixed_value>:<weight> ......"
+    *   actual value will works like this:
+    *   weighted pick one <>,<>:<> from all defined values. Weight is 1 by default.
+    *   random generate a value from <lower_value> to <upper_value>, or <fixed_value>.
+    *
+    */
+    @Property
+    @Serializer(RangedValueSerializer.class)
+    @Deserializer(RangedValueSerializer.class)
+    public RangedDoubleValue FiringR = RangedDoubleValue.of("10,15");
 
-    private void updateFromV1(ConfigurationSection section) {
-        boolean originalCone = section.getBoolean("cone");
-        boolean pierce = section.getBoolean("pierce");
-        double cone = section.getDouble("coneRange");
-        int movementTicks = section.getInt("movementTicks");
-        int length = section.getInt("length");
-        double originSpeed = section.getDouble("speed");
-        double homing = 0;
-        double homingAngle = section.getDouble("homingAngle");
-        double homingRange = section.getDouble("homingRange");
-        String homingTargetMode = section.getString("homingTargetMode");
-        int stepsBeforeHoming = section.getInt("stepsBeforeHoming");
+    @Property
+    @Serializer(RangedValueSerializer.class)
+    @Deserializer(RangedValueSerializer.class)
+    public RangedDoubleValue FiringTheta = RangedDoubleValue.of("0,10");
 
-        double spd = ((double) length * 20) / ((double) movementTicks);
-        int spawnsPerBlock = section.getInt("spawnsPerBlock");
-        double blockPerSpawn = 1 / ((double) spawnsPerBlock);
-        double stepPerSecond = spd / blockPerSpawn;
-
-        if (!section.getBoolean("homing")) {
-            homingAngle = 0;
-        } else {
-            homing = blockPerSpawn / (2 * Math.cos(Math.toRadians(homingAngle)));
-        }
-        if (originalCone) {
-            section.set("cone", cone);
-        } else {
-            section.set("cone", 0);
-        }
-        int pierceNum = 0;
-        if (pierce) {
-            pierceNum = 50;
-        }
-        section.set("speed", spd);
-        section.set("particleSpeed", originSpeed);
-        section.set("homing", homing);
-        section.set("homingAngle", homingRange);
-        section.set("homingMode", homingTargetMode);
-        section.set("pierce", pierceNum);
-        section.set("behavior", "LEGACY_HOMING");
-        section.set("ticksBeforeHoming", stepsBeforeHoming);
-        section.set("ttl", ((int) Math.floor(length * 20 / spd)));
-        section.set("homingRange", length);
-    }
+    @Property
+    @Serializer(RangedValueSerializer.class)
+    @Deserializer(RangedValueSerializer.class)
+    public RangedDoubleValue FiringPhi = RangedDoubleValue.of("0,360");
 
     private static Set<Material> transp = Stream.of(Material.values())
             .filter(material -> material.isBlock())
@@ -900,6 +865,87 @@ public class Beam extends BasePower {
         }
     }
 
+    public static class RangedDoubleValue {
+        List<WeightedPair<Double, Double>> ranges = new ArrayList<>();
+
+        public int getSplitSize(){
+            return ranges.size();
+        }
+
+        public double random(){
+            WeightedPair<Double, Double> pair = weightedRandomPick(ranges);
+            if (pair.getKey().equals(pair.getValue())){
+                return pair.getKey();
+            }
+            double range = pair.getValue() - pair.getKey();
+            double selected = random.nextDouble() * range + pair.getKey();
+            return selected;
+        }
+
+        public static RangedDoubleValue of(String s) {
+            RangedDoubleValue value = new RangedDoubleValue();
+            String[] split = s.split(" ");
+            for (String s1 : split) {
+                value.ranges.add(parse(s1));
+            }
+            return value;
+        }
+
+        private static WeightedPair<Double, Double> parse(String s1) {
+            String s = s1;
+            int weight;
+            double lower, upper;
+            if (s1.contains(":")) {
+                String [] split = s1.split(":");
+                weight = Integer.parseInt(split[1]);
+                s = split[0];
+            }else {
+                weight = 1;
+            }
+            if (s.contains(",")) {
+                String[] split = s.split(",");
+                double a1 = Double.parseDouble(split[0]);
+                double a2= Double.parseDouble(split[1]);
+                lower = Math.min(a1, a2);
+                upper = Math.max(a1, a2);
+            }else {
+                lower = upper = Double.parseDouble(s);
+            }
+            return new WeightedPair<>(lower, upper, weight);
+        }
+
+        @Override
+        public String toString() {
+            StringBuilder sb = new StringBuilder();
+            this.ranges.forEach(weightedPair -> {
+                Double key = weightedPair.getKey();
+                Double value = weightedPair.getValue();
+                int weight = weightedPair.getWeight();
+                if (key.equals(value)){
+                    sb.append(String.format("%.2f", value));
+                }else {
+                    sb.append(String.format("%.2f,%.2f", key, value));
+                }
+                if (weight!=1){
+                    sb.append(String.format(":%d", weight));
+                }
+                sb.append(" ");
+            });
+            return sb.toString();
+        }
+    }
+
+    public static class RangedValueSerializer implements Getter<RangedDoubleValue>, Setter<RangedDoubleValue> {
+        @Override
+        public String get(RangedDoubleValue object) {
+            return object.toString();
+        }
+
+        @Override
+        public Optional<RangedDoubleValue> set(String value) throws IllegalArgumentException {
+            return Optional.of(RangedDoubleValue.of(value));
+        }
+    }
 
     // can be called anywhere, maybe
     public static class MovingTaskBuilder {

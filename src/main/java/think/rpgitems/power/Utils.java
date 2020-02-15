@@ -33,6 +33,7 @@ import think.rpgitems.item.RPGItem;
 import think.rpgitems.power.marker.Selector;
 import think.rpgitems.power.trigger.Trigger;
 import think.rpgitems.utils.MaterialUtils;
+import think.rpgitems.utils.Weightable;
 
 import java.lang.reflect.Field;
 import java.lang.reflect.Modifier;
@@ -40,6 +41,7 @@ import java.lang.reflect.ParameterizedType;
 import java.math.BigDecimal;
 import java.nio.ByteBuffer;
 import java.util.*;
+import java.util.concurrent.ThreadLocalRandom;
 import java.util.function.Supplier;
 import java.util.logging.Level;
 import java.util.regex.Pattern;
@@ -903,5 +905,27 @@ public class Utils {
 
         BigDecimal result = ex.eval();
         return result.doubleValue();
+    }
+
+    public static <T extends Weightable> T weightedRandomPick(Collection<T> collection) {
+        int sum = collection.stream().mapToInt(Weightable::getWeight)
+                .sum();
+        if (sum == 0) {
+            return collection.stream().findAny().orElse(null);
+        }
+        ThreadLocalRandom random = ThreadLocalRandom.current();
+        int selected = random.nextInt(sum);
+        Iterator<Pair<T, Integer>> iterator = collection.stream().map(t -> new Pair<>(t, t.getWeight())).iterator();
+        int count = 0;
+        while (iterator.hasNext()) {
+            Pair<T, Integer> next = iterator.next();
+            Integer i = next.getValue();
+            int nextCount = count + i;
+            if (count <= selected && nextCount > selected) {
+                return next.getKey();
+            }
+            count = nextCount;
+        }
+        return collection.stream().findAny().orElse(null);
     }
 }
