@@ -928,4 +928,8 @@ public class Utils {
         }
         return collection.stream().findAny().orElse(null);
     }
-}
+
+    public static <T> T randomPick(List<T> list) {
+        ThreadLocalRandom random = ThreadLocalRandom.current();
+        return list.isEmpty() ? null : list.get(random.nextInt(list.size()));
+    }}

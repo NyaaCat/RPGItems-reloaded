@@ -898,6 +898,25 @@ public class Beam extends BasePower {
             return ranges.size();
         }
 
+        Double totalLength = null;
+
+        public double getTotalLength(){
+            if (totalLength == null){
+                synchronized (this) {
+                    if(totalLength == null){
+                        totalLength = ranges.stream()
+                                .mapToDouble(pair -> length(pair))
+                                .sum();
+                    }
+                }
+            }
+            return totalLength;
+        }
+
+        private double length(WeightedPair<Double, Double> pair) {
+            return Math.abs(pair.getValue() - pair.getKey());
+        }
+
         public double random(){
             WeightedPair<Double, Double> pair = weightedRandomPick(ranges);
             if (pair.getKey().equals(pair.getValue())){
@@ -943,21 +962,54 @@ public class Beam extends BasePower {
         @Override
         public String toString() {
             StringBuilder sb = new StringBuilder();
-            this.ranges.forEach(weightedPair -> {
+            List<WeightedPair<Double, Double>> weightedPairs = this.ranges;
+            for (int i = 0; i < weightedPairs.size(); i++) {
+                WeightedPair<Double, Double> weightedPair = weightedPairs.get(i);
                 Double key = weightedPair.getKey();
                 Double value = weightedPair.getValue();
                 int weight = weightedPair.getWeight();
-                if (key.equals(value)){
-                    sb.append(String.format("%.2f", value));
-                }else {
-                    sb.append(String.format("%.2f,%.2f", key, value));
+                if (key.equals(value)) {
+                    sb.append(String.format("%.4f", value));
+                } else {
+                    sb.append(String.format("%.4f,%.4f", key, value));
                 }
-                if (weight!=1){
+                if (weight != 1) {
                     sb.append(String.format(":%d", weight));
                 }
-                sb.append(" ");
-            });
+                if (i!= weightedPairs.size()) {
+                    sb.append(" ");
+                }
+            }
             return sb.toString();
+        }
+
+        public double uniformed(double initialPhi, double i, int amount) {
+            if (getSplitSize() == 0){
+                return initialPhi;
+            }
+            double totalLength = getTotalLength();
+            double selected = initialPhi + (totalLength / amount) * i;
+            return select(selected);
+        }
+
+        private double select(double selected) {
+            double totalLength = getTotalLength();
+            if (selected != totalLength){
+                selected = selected % totalLength;
+            }
+
+            double remain = selected;
+            double result = selected;
+            for (int i = 0; i < getSplitSize(); i++) {
+                WeightedPair<Double, Double> pair = ranges.get(i);
+                double length = length(pair);
+                if (remain >= 0 && remain <= length){
+                    result = pair.getKey() + remain;
+                    break;
+                }
+                remain -= length;
+            }
+            return result;
         }
     }
 
@@ -1200,22 +1252,26 @@ public class Beam extends BasePower {
     }
 
     private static Queue<RoundedConeInfo> internalCones(Beam beam, int amount, int burstCount) {
+        List<Behavior> behaviors = beam.getBehavior();
+        boolean uniformed = behaviors.contains(Behavior.UNIFORMED);
+        boolean flat = behaviors.contains(Behavior.FLAT);
         Queue<RoundedConeInfo> infos = new LinkedList<>();
         for (int i = 0; i < burstCount; i++) {
             double initialPhi = beam.getInitialRotation();
-            double phiStep = 360 / amount;
-            double thetaStep = beam.getCone() * 2 / amount;
-            List<Behavior> behaviors = beam.getBehavior();
+            int steps = Math.max(amount - 1, 1);
+            double phiStep = 360 / steps;
+            double thetaStep = beam.getCone() * 2 / steps;
             for (int j = 0; j < amount; j++) {
                 RoundedConeInfo roundedConeInfo = internalCone(beam);
                 if (behaviors.contains(Behavior.CONED)){
                     roundedConeInfo.theta = beam.getCone();
                 }
-                if (behaviors.contains(Behavior.UNIFORMED)){
-                    roundedConeInfo.phi = initialPhi + (i * phiStep);
+                if (uniformed){
+                    roundedConeInfo.phi = initialPhi + (j * phiStep);
+                    roundedConeInfo.rPhi = beam.getFiringPhi().uniformed(initialPhi, j, steps);
                 }
-                if (behaviors.contains(Behavior.FLAT)){
-                    if (behaviors.contains(Behavior.UNIFORMED) ){
+                if (flat){
+                    if (uniformed){
                         roundedConeInfo.theta = (thetaStep * i) - beam.getCone();
                         roundedConeInfo.phi = 0;
                     }else {
