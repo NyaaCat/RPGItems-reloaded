@@ -1258,7 +1258,7 @@ public class Beam extends BasePower {
         Queue<RoundedConeInfo> infos = new LinkedList<>();
         for (int i = 0; i < burstCount; i++) {
             double initialPhi = beam.getInitialRotation();
-            int steps = Math.max(amount - 1, 1);
+            int steps = Math.max(amount, 1);
             double phiStep = 360 / steps;
             double thetaStep = beam.getCone() * 2 / steps;
             for (int j = 0; j < amount; j++) {
