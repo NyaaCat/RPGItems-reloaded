@@ -139,10 +139,11 @@ public class Attract extends BasePower {
 
         @Override
         public PowerResult<Void> fire(Player player, ItemStack stack) {
-            return attract(player, stack);
+            Location location = player.getLocation();
+            return fire(player, location, stack, () -> getNearbyEntities(getPower(), location, player, getRadius()));
         }
 
-        private PowerResult<Void> fire(Player player, ItemStack stack, Supplier<List<Entity>> supplier) {
+        private PowerResult<Void> fire(Player player, Location location, ItemStack stack, Supplier<List<Entity>> supplier) {
             if (!checkCooldown(getPower(), player, getCooldown(), true, true)) return PowerResult.cd();
             if (!getItem().consumeDurability(stack, getCost())) return PowerResult.cost();
             new BukkitRunnable() {
@@ -154,7 +155,7 @@ public class Attract extends BasePower {
                         this.cancel();
                         return;
                     }
-                    attract(player, stack, supplier);
+                    attract(player, location, stack, supplier);
                 }
             }.runTaskTimer(RPGItems.plugin, 0, 1);
             return PowerResult.ok();
@@ -165,7 +166,7 @@ public class Attract extends BasePower {
             return Attract.this;
         }
 
-        private PowerResult<Void> attract(Player player, ItemStack stack, Supplier<List<Entity>> supplier) {
+        private PowerResult<Void> attract(Player player, Location location, ItemStack stack, Supplier<List<Entity>> supplier) {
             if (!player.isOnline() || player.isDead()) {
                 return PowerResult.noop();
             }
@@ -181,7 +182,7 @@ public class Attract extends BasePower {
                             && (isAttractPlayer() || !(e instanceof Player))) {
                     if (!getItem().consumeDurability(stack, getAttractingEntityTickCost())) break;
                     Location locTarget = e.getLocation();
-                    Location locPlayer = player.getLocation();
+                    Location locPlayer = location;
                     double d = locTarget.distance(locPlayer);
                     if (d < 1 || d > getRadius()) continue;
                     double newVelocity = Math.sqrt(d - 1) / factor;
@@ -209,7 +210,8 @@ public class Attract extends BasePower {
         }
 
         private PowerResult<Void> attract(Player player, ItemStack stack) {
-            return attract(player, stack, () -> getNearbyEntities(getPower(), player.getLocation(), player, getRadius()));
+            Location location = player.getLocation();
+            return attract(player, location,stack, () -> getNearbyEntities(getPower(), player.getLocation(), player, getRadius()));
         }
 
         @Override
@@ -234,18 +236,19 @@ public class Attract extends BasePower {
 
         @Override
         public PowerResult<Double> hitEntity(Player player, ItemStack stack, LivingEntity entity, double damage, BeamHitEntityEvent event) {
-            Location location = entity.getLocation();
-            return fire(player, stack, () -> getNearbyEntities(getPower(), location, player, getRadius())).with(damage);
+            Location location = event.getLoc();
+            return fire(player, location, stack, () -> getNearbyEntities(getPower(), location, player, getRadius())).with(damage);
         }
 
         @Override
         public PowerResult<Void> hitBlock(Player player, ItemStack stack, Location location, BeamHitBlockEvent event) {
-            return fire(player, stack, () -> getNearbyEntities(getPower(), location, player, getRadius()));
+            return fire(player, location, stack, () -> getNearbyEntities(getPower(), location, player, getRadius()));
         }
 
         @Override
         public PowerResult<Void> projectileHit(Player player, ItemStack stack, ProjectileHitEvent event) {
-            return fire(player, stack, () -> getNearbyEntities(getPower(), event.getEntity().getLocation(), player, getRadius()));
+            Location location = event.getEntity().getLocation();
+            return fire(player, location, stack, () -> getNearbyEntities(getPower(), location, player, getRadius()));
         }
     }
 }
