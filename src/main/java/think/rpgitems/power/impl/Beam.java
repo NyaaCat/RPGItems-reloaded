@@ -1,6 +1,7 @@
 package think.rpgitems.power.impl;
 
 import cat.nyaa.nyaacore.Message;
+import cat.nyaa.nyaacore.Pair;
 import com.google.common.util.concurrent.AtomicDouble;
 import com.udojava.evalex.Expression;
 import org.bukkit.*;
@@ -34,7 +35,6 @@ import java.util.function.Supplier;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
-import static cat.nyaa.nyaacore.utils.RayTraceUtils.getDistanceToBlock;
 import static think.rpgitems.Events.*;
 import static think.rpgitems.power.Utils.checkCooldown;
 import static think.rpgitems.power.Utils.weightedRandomPick;
@@ -193,6 +193,9 @@ public class Beam extends BasePower {
 
     @Property
     public double firingRange = 64;
+
+    @Property
+    public boolean castOff = false;
 
     private static Set<Material> transp = Stream.of(Material.values())
             .filter(material -> material.isBlock())
@@ -375,6 +378,10 @@ public class Beam extends BasePower {
         return requireHurtByEntity;
     }
 
+    public boolean isCastOff() {
+        return castOff;
+    }
+
     @Override
     public void init(ConfigurationSection section) {
         //check new version var name
@@ -552,9 +559,6 @@ public class Beam extends BasePower {
                                     location = ((LivingEntity) fromEntity).getEyeLocation();
                                 }
                                 targets = new LinkedList<>(getTargets(location.getDirection(), location, fromEntity, homingRange, homingAngle, homingTarget));
-                                if (targets.isEmpty()) {
-                                    targets.add(fromEntity);
-                                }
                             }
                         }
 
@@ -888,7 +892,7 @@ public class Beam extends BasePower {
     }
 
     public static class RangedDoubleValue {
-        List<WeightedPair<Double, Double>> ranges = new ArrayList<>();
+        private List<WeightedPair<Double, Double>> ranges = new ArrayList<>();
 
         public int getSplitSize(){
             return ranges.size();
@@ -1025,7 +1029,7 @@ public class Beam extends BasePower {
     private static List<Entity> getTargets(Vector direction, Location fromLocation, Entity from, double range, double homingAngle, Target homingTarget) {
         double radius = Math.min(range, 300);
         return Utils.getLivingEntitiesInConeSorted(from.getNearbyEntities(radius, range * 1.5, range * 1.5).stream()
-                        .filter(entity -> entity instanceof LivingEntity && !entity.equals(from) && isUtilArmorStand((LivingEntity) entity) &&  !entity.isDead() && from.getLocation().distance(entity.getLocation()) < range)
+                        .filter(entity -> entity instanceof LivingEntity && !entity.equals(from) && !isUtilArmorStand((LivingEntity) entity) &&  !entity.isDead() && from.getLocation().distance(entity.getLocation()) < range)
                         .map(entity -> ((LivingEntity) entity))
                         .collect(Collectors.toList())
                 , fromLocation.toVector(), homingAngle, direction).stream()
@@ -1182,38 +1186,46 @@ public class Beam extends BasePower {
         double phi;
         double theta;
 
-        public RoundedConeInfo(double theta, double phi) {
+        double r;
+        double rPhi;
+        double rTheta;
+
+        public RoundedConeInfo(double theta, double phi, double r, double rPhi, double rTheta) {
             this.theta = theta;
             this.phi = phi;
+            this.r = r;
+            this.rPhi = rPhi;
+            this.rTheta = rTheta;
         }
     }
 
-    private static Queue<RoundedConeInfo> internalCones(Beam beam, int amount) {
+    private static Queue<RoundedConeInfo> internalCones(Beam beam, int amount, int burstCount) {
         Queue<RoundedConeInfo> infos = new LinkedList<>();
-        double initialPhi = beam.getInitialRotation();
-        double phiStep = 360 / amount;
-        double thetaStep = beam.getCone() * 2 / amount;
-        List<Behavior> behaviors = beam.getBehavior();
-        for (int i = 0; i < amount; i++) {
-            RoundedConeInfo roundedConeInfo = internalCone(beam);
-            if (behaviors.contains(Behavior.CONED)){
-                roundedConeInfo.theta = beam.getCone();
-            }
-            if (behaviors.contains(Behavior.UNIFORMED)){
-                roundedConeInfo.phi = initialPhi + (i * phiStep);
-            }
-            if (behaviors.contains(Behavior.FLAT)){
-                if (behaviors.contains(Behavior.UNIFORMED) ){
-                    roundedConeInfo.theta = (thetaStep * i) - beam.getCone();
-                    roundedConeInfo.phi = 0;
-                }else {
-                    roundedConeInfo.phi = random.nextBoolean()? 0 : 180;
+        for (int i = 0; i < burstCount; i++) {
+            double initialPhi = beam.getInitialRotation();
+            double phiStep = 360 / amount;
+            double thetaStep = beam.getCone() * 2 / amount;
+            List<Behavior> behaviors = beam.getBehavior();
+            for (int j = 0; j < amount; j++) {
+                RoundedConeInfo roundedConeInfo = internalCone(beam);
+                if (behaviors.contains(Behavior.CONED)){
+                    roundedConeInfo.theta = beam.getCone();
                 }
+                if (behaviors.contains(Behavior.UNIFORMED)){
+                    roundedConeInfo.phi = initialPhi + (i * phiStep);
+                }
+                if (behaviors.contains(Behavior.FLAT)){
+                    if (behaviors.contains(Behavior.UNIFORMED) ){
+                        roundedConeInfo.theta = (thetaStep * i) - beam.getCone();
+                        roundedConeInfo.phi = 0;
+                    }else {
+                        roundedConeInfo.phi = random.nextBoolean()? 0 : 180;
+                    }
+                }
+
+                infos.offer(roundedConeInfo);
             }
-
-            infos.offer(roundedConeInfo);
         }
-
         return infos;
     }
 
@@ -1223,7 +1235,12 @@ public class Beam extends BasePower {
         if (beam.getCone() != 0) {
             theta = random.nextDouble() * beam.getCone();
         }
-        return new RoundedConeInfo(theta, phi);
+
+        double r = beam.getFiringR().random();
+        double rPhi = beam.getFiringPhi().random();
+        double rTheta = beam.getFiringTheta().random();
+
+        return new RoundedConeInfo(theta, phi, r, rPhi, rTheta);
     }
 
     private static Vector makeCone(Location fromLocation, Vector towards, RoundedConeInfo coneInfo){
@@ -1261,16 +1278,34 @@ public class Beam extends BasePower {
         }
 
         private PowerResult<Void> beam(LivingEntity from, ItemStack stack) {
+
+            Location fromLocation = from.getEyeLocation().clone();
+            Vector towards = from.getEyeLocation().getDirection().clone();
+            Vector normal = yAxis.clone();
+            Queue<RoundedConeInfo> roundedConeInfo = internalCones(Beam.this, getBeamAmount(), Math.max(getBurstCount(), 1));
+
+            Deque <Entity> targets = null;
+            if (from instanceof Player && getHoming() > 0) {
+                targets = new LinkedList<>(getTargets(towards, fromLocation, from, getHomingRange(), getHomingAngle(), getHomingTarget()));
+            }
+
+            Pair<Location, Vector> result = internalRayTrace(from, fromLocation, towards, targets);
+            fromLocation = result.getKey();
+            normal = result.getValue();
+
             if (getBurstCount() > 0) {
                 final int currentBurstCount = getBurstCount();
                 final int currentBurstInterval = getBurstInterval();
                 AtomicInteger bursted = new AtomicInteger(0);
+
+                Location finalFromLocation = fromLocation;
+                Vector finalNormal = normal;
+                Deque<Entity> finalTargets = targets;
                 class FireTask extends BukkitRunnable {
                     @Override
                     public void run() {
                         for (int j = 0; j < getBeamAmount(); j++) {
-                            Queue<RoundedConeInfo> roundedConeInfo = internalCones(Beam.this, getBeamAmount());
-                            internalFireBeam(from, stack, roundedConeInfo);
+                            internalFireBeam(from, finalFromLocation, towards, finalNormal, stack, roundedConeInfo, finalTargets);
                         }
                         if (bursted.addAndGet(1) < currentBurstCount) {
                             new FireTask().runTaskLater(RPGItems.plugin, currentBurstInterval);
@@ -1280,60 +1315,70 @@ public class Beam extends BasePower {
                 new FireTask().runTask(RPGItems.plugin);
                 return PowerResult.ok();
             } else {
-                return internalFireBeam(from, stack);
+                return internalFireBeam(from, stack, roundedConeInfo, targets);
             }
         }
 
-        private PowerResult<Void> internalFireBeam(LivingEntity from, ItemStack stack){
-            LinkedList<RoundedConeInfo> infos = new LinkedList<>();
-            return internalFireBeam(from, stack, infos);
-        }
-
-        private PowerResult<Void> internalFireBeam(LivingEntity from, ItemStack stack, Queue<RoundedConeInfo> coneInfo) {
-            Location fromLocation = from.getEyeLocation();
-            Vector towards = from.getEyeLocation().getDirection();
-
-            Deque <Entity> targets = null;
-            if (from instanceof Player && getHoming() > 0) {
-                targets = new LinkedList<>(getTargets(from.getEyeLocation().getDirection(), fromLocation, from, getHomingRange(), getHomingAngle(), getHomingTarget()));
-            }
-
+        private Pair<Location, Vector> internalRayTrace(LivingEntity from, Location fromLocation, Vector towards, Deque<Entity> targets) {
             Vector hitPosition;
             if (getFiringLocation().equals(FiringLocation.TARGET)){
-                RayTraceResult rayTraceResult = from.getWorld().rayTrace(from.getEyeLocation(), from.getEyeLocation().getDirection(), getLength(), FluidCollisionMode.NEVER, true, 0.1,
+                RayTraceResult rayTraceResult = from.getWorld().rayTrace(fromLocation, towards, getLength(), FluidCollisionMode.NEVER, true, 0.1,
                         e -> e != null &&
-                            (e instanceof LivingEntity || e.getType() == EntityType.ITEM_FRAME) &&
-                            !(e instanceof LivingEntity && !((LivingEntity) e).isCollidable()) &&
-                            e.getUniqueId() != from.getUniqueId() &&
-                            !(e instanceof Player && ((Player) e).getGameMode() == GameMode.SPECTATOR));
-                Vector normalDir = new Vector(0,1,0);
+                                (e instanceof LivingEntity || e.getType() == EntityType.ITEM_FRAME) &&
+                                !(e instanceof LivingEntity && !((LivingEntity) e).isCollidable()) &&
+                                e.getUniqueId() != from.getUniqueId() &&
+                                !(e instanceof Player && ((Player) e).getGameMode() == GameMode.SPECTATOR));
+                towards = new Vector(0,1,0);
                 if (rayTraceResult != null){
                     Entity hitEntity = rayTraceResult.getHitEntity();
-                    Block hitBlock = rayTraceResult.getHitBlock();
                     if (hitEntity != null && targets != null) {
                         targets.addFirst(hitEntity);
                     }else {
                         BlockFace hitBlockFace = rayTraceResult.getHitBlockFace();
                         if (hitBlockFace != null) {
-                            normalDir = hitBlockFace.getDirection();
+                            towards = hitBlockFace.getDirection();
                         }
                     }
-                    hitPosition = rayTraceResult == null?
-                            from.getTargetBlock(transp, (int) getFiringRange()).getLocation().toVector()
-                            : rayTraceResult.getHitPosition();
+                    hitPosition = rayTraceResult.getHitPosition();
                 }else{
                     hitPosition = from.getTargetBlock(transp, (int) getFiringRange()).getLocation().toVector();
                 }
+                fromLocation = new Location(from.getWorld(), hitPosition.getX(), hitPosition.getY(), hitPosition.getZ(), fromLocation.getYaw(), fromLocation.getPitch());
+            }
+            return new Pair<>(fromLocation, towards);
+        }
 
-                Location castLoc = new Location(from.getWorld(), hitPosition.getX(), hitPosition.getY(), hitPosition.getZ());
-                fromLocation = internalFiringLocation(castLoc, normalDir);
-                towards = castLoc.subtract(fromLocation).toVector();
+        private PowerResult<Void> internalFireBeam(LivingEntity from, ItemStack stack, Queue<RoundedConeInfo> coneInfo, Deque<Entity> targets){
+            return internalFireBeam(from, from.getEyeLocation(), from.getEyeLocation().getDirection(), yAxis.clone(), stack, coneInfo, targets);
+        }
+
+        private PowerResult<Void> internalFireBeam(LivingEntity from, Location castLocation, Vector towards, Vector normalDir, ItemStack stack, Queue<RoundedConeInfo> coneInfo, Deque<Entity> targets) {
+            Location fromLocation = castLocation;
+
+            if (!isCastOff()){
+                fromLocation = from.getEyeLocation();
+                towards = from.getEyeLocation().getDirection();
+                if (getHoming() > 0 && (!isCastOff() || getHomingMode().equals(HomingMode.MULTI_TARGET) || getHomingMode().equals(HomingMode.MOUSE_TRACK))){
+                    targets = new LinkedList<>(getTargets(towards, fromLocation, from, getHomingRange(), getHomingAngle(), getHomingTarget()));
+                }
+
+                if (getFiringLocation().equals(FiringLocation.TARGET)) {
+                    Pair<Location, Vector> result = internalRayTrace(from, fromLocation, towards, targets);
+                    castLocation = result.getKey();
+                    normalDir = result.getValue();
+                }
             }
 
             RoundedConeInfo poll = coneInfo.poll();
             if (poll == null){
                 poll = internalCone(Beam.this);
             }
+
+            if (getFiringLocation().equals(FiringLocation.TARGET)){
+                fromLocation = internalFiringLocation(castLocation, normalDir, fromLocation, poll);
+                towards = castLocation.clone().subtract(fromLocation).toVector();
+            }
+
             towards = makeCone(fromLocation, towards, poll);
 
             MovingTaskBuilder movingTaskBuilder = new MovingTaskBuilder(Beam.this)
@@ -1355,25 +1400,33 @@ public class Beam extends BasePower {
         private final Vector xAxis = new Vector(1, 0, 0);
         private final Vector yAxis = new Vector(0, 1, 0);
 
-        private Location internalFiringLocation(Location targetingLocation, Vector normalDir) {
-            double r = getFiringR().random();
-            double phi = getFiringPhi().random();
-            double theta = getFiringTheta().random();
-            Vector direction = yAxis.clone();
+        private Location internalFiringLocation(Location targetingLocation, Vector normalDir, Location direction, RoundedConeInfo coneInfo) {
+            double r = coneInfo.r;
+            double phi = coneInfo.rPhi;
+            double theta = coneInfo.rTheta;
             if (getBehavior().contains(Behavior.CAST_LOCATION_ROTATED)){
-                direction = normalDir.clone();
+                Location clone = direction.clone();
+                clone.setX(normalDir.getX());
+                clone.setY(normalDir.getY());
+                clone.setZ(normalDir.getZ());
+                direction = clone;
             }
 
             Vector cross1;
-            if (direction.equals(yAxis)){
-                cross1 = direction.getCrossProduct(xAxis).normalize();
+            Vector cross2;
+            Vector dv = direction.getDirection();
+            if (dv.equals(yAxis)){
+                Location clone = direction.clone();
+                clone.setPitch(0);
+                cross1 = clone.getDirection().getCrossProduct(yAxis).normalize();
             }else {
-                cross1= direction.getCrossProduct(yAxis).normalize();
+                cross1= dv.getCrossProduct(yAxis).normalize();
             }
+            cross2 = cross1.getCrossProduct(dv);
 
-            Vector clone = direction.clone();
+            Vector clone = normalDir.clone();
             clone.rotateAroundAxis(cross1, Math.toRadians(theta));
-            clone.rotateAroundAxis(direction, Math.toRadians(phi));
+            clone.rotateAroundAxis(cross2, Math.toRadians(phi));
             clone.normalize().multiply(r);
             return targetingLocation.clone().add(clone);
         }
