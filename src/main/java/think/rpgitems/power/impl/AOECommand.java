@@ -8,6 +8,7 @@ import org.bukkit.entity.Player;
 import org.bukkit.event.entity.EntityDamageByEntityEvent;
 import org.bukkit.event.entity.ProjectileHitEvent;
 import org.bukkit.event.player.PlayerInteractEvent;
+import org.bukkit.event.player.PlayerToggleSneakEvent;
 import org.bukkit.inventory.ItemStack;
 import think.rpgitems.event.BeamHitBlockEvent;
 import think.rpgitems.event.BeamHitEntityEvent;
@@ -111,7 +112,7 @@ public class AOECommand extends Command {
         return selfapplication;
     }
 
-    public class Impl implements PowerPlain, PowerRightClick, PowerLeftClick, PowerHit, PowerBeamHit, PowerProjectileHit{
+    public class Impl implements PowerPlain, PowerRightClick, PowerLeftClick, PowerHit, PowerBeamHit, PowerProjectileHit, PowerSneak{
         @Override
         public PowerResult<Void> rightClick(Player player, ItemStack stack, PlayerInteractEvent event) {
             return fire(player, stack);
@@ -212,6 +213,11 @@ public class AOECommand extends Command {
                     .collect(Collectors.toList());
 
             return fire(player, stack, nearbyEntities);
+        }
+
+        @Override
+        public PowerResult<Void> sneak(Player player, ItemStack stack, PlayerToggleSneakEvent event) {
+            return fire(player, stack);
         }
     }
 }
