@@ -781,12 +781,14 @@ public class Beam extends BasePower {
                     BeamHitEntityEvent beamHitEntityEvent = new BeamHitEntityEvent(from, ((LivingEntity) entity), stack, damage, loc, getBoundingBox(loc), towards.clone().normalize().multiply(getNextLength(spawnedLength, length*20)));
                     Bukkit.getPluginManager().callEvent(beamHitEntityEvent);
                     double damage = beamHitEntityEvent.getDamage();
-                    LightContext.putTemp(from.getUniqueId(), DAMAGE_SOURCE, power.getNamespacedKey().toString());
-                    LightContext.putTemp(from.getUniqueId(), OVERRIDING_DAMAGE, damage);
-                    LightContext.putTemp(from.getUniqueId(), SUPPRESS_MELEE, suppressMelee);
-                    LightContext.putTemp(from.getUniqueId(), DAMAGE_SOURCE_ITEM, stack);
-                    ((LivingEntity) entity).damage(damage, from);
-                    LightContext.clear();
+                    if (damage > 0) {
+                        LightContext.putTemp(from.getUniqueId(), DAMAGE_SOURCE, power.getNamespacedKey().toString());
+                        LightContext.putTemp(from.getUniqueId(), OVERRIDING_DAMAGE, damage);
+                        LightContext.putTemp(from.getUniqueId(), SUPPRESS_MELEE, suppressMelee);
+                        LightContext.putTemp(from.getUniqueId(), DAMAGE_SOURCE_ITEM, stack);
+                        ((LivingEntity) entity).damage(damage, from);
+                        LightContext.clear();
+                    }
                     hitMobs.add(entity.getUniqueId());
                 }
             }

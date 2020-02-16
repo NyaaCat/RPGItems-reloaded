@@ -136,6 +136,7 @@ public class Selector extends BaseMarker {
 
     public static Map<String, Pair<Integer, Integer>> parseScore(String limit) {
         Map<String, Pair<Integer, Integer>> result = new HashMap<>();
+        if(limit.equals(""))return result;
         Arrays.stream(limit.split("\\s")).forEach(s -> {
             String name = s.split(":")[0];
             String range = s.split(":")[1];

@@ -1,10 +1,13 @@
 package think.rpgitems.power.impl;
 
 import org.bukkit.ChatColor;
+import org.bukkit.Location;
 import org.bukkit.entity.LivingEntity;
 import org.bukkit.entity.Player;
 import org.bukkit.event.entity.EntityDamageByEntityEvent;
 import org.bukkit.inventory.ItemStack;
+import think.rpgitems.event.BeamHitBlockEvent;
+import think.rpgitems.event.BeamHitEntityEvent;
 import think.rpgitems.power.*;
 
 import static think.rpgitems.power.Utils.attachPermission;
@@ -53,7 +56,7 @@ public class CommandHit extends Command {
         return ChatColor.GREEN + getDisplay();
     }
 
-    public class Impl implements PowerHit, PowerLivingEntity {
+    public class Impl implements PowerHit, PowerLivingEntity, PowerBeamHit {
         @Override
         public PowerResult<Double> hit(Player player, ItemStack stack, LivingEntity entity, double damage, EntityDamageByEntityEvent event) {
             return fire(player, stack, entity, damage).with(damage);
@@ -105,6 +108,16 @@ public class CommandHit extends Command {
                 if (getPermission().equals("*"))
                     player.setOp(wasOp);
             }
+        }
+
+        @Override
+        public PowerResult<Double> hitEntity(Player player, ItemStack stack, LivingEntity entity, double damage, BeamHitEntityEvent event) {
+            return fire(player, stack, entity, damage).with(damage);
+        }
+
+        @Override
+        public PowerResult<Void> hitBlock(Player player, ItemStack stack, Location location, BeamHitBlockEvent event) {
+            return PowerResult.noop();
         }
     }
 }

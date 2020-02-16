@@ -182,12 +182,24 @@ public class AOECommand extends Command {
         }
 
         @Override
+        public PowerResult<Double> hitEntity(Player player, ItemStack stack, LivingEntity entity, double damage, BeamHitEntityEvent event) {
+            int r = getR();
+            List<LivingEntity> nearbyEntities = getNearbyEntities(getPower(), player.getLocation(), player, r).stream()
+                    .filter(entity1 -> entity1 instanceof LivingEntity)
+                    .map(entity1 ->  ((LivingEntity) entity))
+                    .collect(Collectors.toList());
+
+            return fire(player, stack, nearbyEntities).with(damage);
+        }
+
+        @Override
         public PowerResult<Void> hitBlock(Player player, ItemStack stack, Location location, BeamHitBlockEvent event) {
             int r = getR();
             List<LivingEntity> nearbyEntities = getNearbyEntities(getPower(), location, player, r).stream()
                     .filter(entity -> entity instanceof LivingEntity)
                     .map(entity ->  ((LivingEntity) entity))
                     .collect(Collectors.toList());
+
             return fire(player, stack, nearbyEntities);
         }
 
@@ -198,6 +210,7 @@ public class AOECommand extends Command {
                     .filter(entity -> entity instanceof LivingEntity)
                     .map(entity ->  ((LivingEntity) entity))
                     .collect(Collectors.toList());
+
             return fire(player, stack, nearbyEntities);
         }
     }
