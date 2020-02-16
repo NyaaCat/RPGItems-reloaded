@@ -1274,7 +1274,7 @@ public class Beam extends BasePower {
                 }
                 if (flat){
                     if (uniformed){
-                        roundedConeInfo.theta = (thetaStep * i) - beam.getCone();
+                        roundedConeInfo.theta = (thetaStep * j) - beam.getCone();
                         roundedConeInfo.phi = 0;
                     }else {
                         roundedConeInfo.phi = random.nextBoolean()? 0 : 180;
