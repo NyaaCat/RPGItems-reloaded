@@ -23,6 +23,7 @@ import think.rpgitems.event.BeamHitEntityEvent;
 import think.rpgitems.power.*;
 
 import java.util.List;
+import java.util.function.Supplier;
 import java.util.stream.Collectors;
 
 import static java.lang.Double.max;
@@ -71,6 +72,16 @@ public class AOEDamage extends BasePower {
 
     @Property
     public boolean suppressMelee = false;
+
+    @Property
+    public boolean selectAfterDelay = false;
+
+    /**
+     * Select target after delay.
+     */
+    public boolean isSelectAfterDelay() {
+        return selectAfterDelay;
+    }
 
     /**
      * Maximum view angle
@@ -165,21 +176,24 @@ public class AOEDamage extends BasePower {
 
         @Override
         public PowerResult<Void> fire(Player player, ItemStack stack) {
-            List<LivingEntity> nearbyEntities = getNearestLivingEntities(getPower(), player.getLocation(), player, getRange(), getMinrange());
-            List<LivingEntity> ent = getLivingEntitiesInCone(nearbyEntities, player.getEyeLocation().toVector(), getAngle(), player.getEyeLocation().getDirection());
-            return fire(player, stack, ent);
+            return fire(player, stack, () -> {
+                List<LivingEntity> nearbyEntities = getNearestLivingEntities(getPower(), player.getLocation(), player, getRange(), getMinrange());
+                List<LivingEntity> ent = getLivingEntitiesInCone(nearbyEntities, player.getEyeLocation().toVector(), getAngle(), player.getEyeLocation().getDirection());
+                return ent;
+            });
         }
 
-        private PowerResult<Void> fire(Player player, ItemStack stack, List<LivingEntity> entitiesInCone){
+        private PowerResult<Void> fire(Player player, ItemStack stack, Supplier<List<LivingEntity>> supplier){
             if (!checkCooldown(getPower(), player, getCooldown(), true, true)) return PowerResult.cd();
             if (!getItem().consumeDurability(stack, getCost())) return PowerResult.cost();
             Context.instance().putTemp(player.getUniqueId(), DAMAGE_SOURCE, getNamespacedKey().toString());
             Context.instance().putTemp(player.getUniqueId(), OVERRIDING_DAMAGE, getDamage());
             Context.instance().putTemp(player.getUniqueId(), SUPPRESS_MELEE, isSuppressMelee());
             if (isSelfapplication()) dealDamage(player, getDamage());
-            LivingEntity[] entities = entitiesInCone.toArray(new LivingEntity[0]);
+            LivingEntity[] entities = supplier.get().toArray(new LivingEntity[0]);
             int c = getCount();
-            for (int i = 0; i < c && i < entities.length; ++i) {
+            if (getDelay() <= 0) {
+                for (int i = 0; i < c && i < entities.length; ++i) {
                 LivingEntity e = entities[i];
                 if ((isMustsee() && !player.hasLineOfSight(e))
                         || (e == player)
@@ -188,7 +202,6 @@ public class AOEDamage extends BasePower {
                     c++;
                     continue;
                 }
-                if (getDelay() <= 0) {
                     Context.instance().putTemp(player.getUniqueId(), OVERRIDING_DAMAGE, getDamage());
                     Context.instance().putTemp(player.getUniqueId(), SUPPRESS_MELEE, isSuppressMelee());
                     Context.instance().putTemp(player.getUniqueId(), DAMAGE_SOURCE_ITEM, stack);
@@ -196,22 +209,38 @@ public class AOEDamage extends BasePower {
                     Context.instance().putTemp(player.getUniqueId(), SUPPRESS_MELEE, isSuppressMelee());
                     Context.instance().putTemp(player.getUniqueId(), OVERRIDING_DAMAGE, null);
                     Context.instance().removeTemp(player.getUniqueId(), DAMAGE_SOURCE_ITEM);
-                } else {
+                }
+            } else {
                     (new BukkitRunnable() {
                         @Override
                         public void run() {
-                            Context.instance().putTemp(player.getUniqueId(), OVERRIDING_DAMAGE, getDamage());
-                            Context.instance().putTemp(player.getUniqueId(), SUPPRESS_MELEE, isSuppressMelee());
-                            Context.instance().putTemp(player.getUniqueId(), DAMAGE_SOURCE_ITEM, stack);
-                            e.damage(getDamage(), player);
-                            Context.instance().putTemp(player.getUniqueId(), SUPPRESS_MELEE, isSuppressMelee());
-                            Context.instance().putTemp(player.getUniqueId(), OVERRIDING_DAMAGE, null);
-                            Context.instance().removeTemp(player.getUniqueId(), DAMAGE_SOURCE_ITEM);
+                            LivingEntity[] entities1 = entities;
+                            if (isSelectAfterDelay()){
+                                entities1 = supplier.get().toArray(new LivingEntity[0]);
+                            }
+                            int c = getCount();
+
+                            for (int i = 0; i < c && i < entities1.length; ++i) {
+                                LivingEntity e = entities1[i];
+                                if ((isMustsee() && !player.hasLineOfSight(e))
+                                        || (e == player)
+                                        || (!isIncluePlayers() && e instanceof Player)
+                                ) {
+                                    c++;
+                                    continue;
+                                }
+                                Context.instance().putTemp(player.getUniqueId(), OVERRIDING_DAMAGE, getDamage());
+                                Context.instance().putTemp(player.getUniqueId(), SUPPRESS_MELEE, isSuppressMelee());
+                                Context.instance().putTemp(player.getUniqueId(), DAMAGE_SOURCE_ITEM, stack);
+                                e.damage(getDamage(), player);
+                                Context.instance().putTemp(player.getUniqueId(), SUPPRESS_MELEE, isSuppressMelee());
+                                Context.instance().putTemp(player.getUniqueId(), OVERRIDING_DAMAGE, null);
+                                Context.instance().removeTemp(player.getUniqueId(), DAMAGE_SOURCE_ITEM);
+                            }
                         }
                     }).runTaskLater(RPGItems.plugin, getDelay());
                 }
 
-            }
             return PowerResult.ok();
         }
 
@@ -286,7 +315,7 @@ public class AOEDamage extends BasePower {
         public PowerResult<Double> hitEntity(Player player, ItemStack stack, LivingEntity entity, double damage, BeamHitEntityEvent event) {
             Location location = entity.getLocation();
             int range = getRange();
-            return fire(player, stack, getNearbyEntities(player, location, range)).with(damage);
+            return fire(player, stack, () -> getNearbyEntities(player, location, range)).with(damage);
         }
 
         private List<LivingEntity> getNearbyEntities(Player player, Location location, int range) {
@@ -299,13 +328,13 @@ public class AOEDamage extends BasePower {
         @Override
         public PowerResult<Void> hitBlock(Player player, ItemStack stack, Location location, BeamHitBlockEvent event) {
             int range = getRange();
-            return fire(player, stack, getNearbyEntities(player, location, range));
+            return fire(player, stack, () -> getNearbyEntities(player, location, range));
         }
 
         @Override
         public PowerResult<Void> projectileHit(Player player, ItemStack stack, ProjectileHitEvent event) {
             int range = getRange();
-            return fire(player, stack, getNearbyEntities(player, event.getEntity().getLocation(), range));
+            return fire(player, stack, () -> getNearbyEntities(player, event.getEntity().getLocation(), range));
         }
     }
 
