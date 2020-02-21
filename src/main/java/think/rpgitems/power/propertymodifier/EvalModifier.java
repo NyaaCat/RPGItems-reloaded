@@ -9,6 +9,7 @@ import think.rpgitems.power.Utils;
 
 import java.math.BigDecimal;
 import java.util.Optional;
+import java.util.concurrent.ThreadLocalRandom;
 import java.util.function.Function;
 
 @Meta(marker = true)
@@ -25,6 +26,8 @@ public class EvalModifier extends BaseModifier<Double> implements DoubleModifier
     public Double apply(RgiParameter<Double> t) {
         Expression expression = new Expression(this.expression);
         expression.and("durability", Utils.lazyNumber(() -> Double.valueOf(t.getItem().getItemStackDurability(t.getItemStack()).orElse(0))));
+        expression.and("random", Utils.lazyNumber(() -> ThreadLocalRandom.current().nextDouble()));
+        expression.and("time", Utils.lazyNumber(() -> (double) (System.currentTimeMillis() / 50)));
         return expression.and("value", BigDecimal.valueOf(t.getValue())).eval().doubleValue();
     }
 }
