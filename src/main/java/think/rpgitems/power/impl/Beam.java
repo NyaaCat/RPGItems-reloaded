@@ -990,8 +990,8 @@ public class Beam extends BasePower {
                 return initialPhi;
             }
             double totalLength = getTotalLength();
-            double selected = initialPhi + (totalLength / amount) * i;
-            return select(selected);
+            double selected = (totalLength / amount) * i;
+            return initialPhi + select(selected);
         }
 
         private double select(double selected) {
@@ -1380,7 +1380,7 @@ public class Beam extends BasePower {
         private Pair<Location, Vector> internalRayTrace(LivingEntity from, Location fromLocation, Vector towards, Deque<Entity> targets) {
             Vector hitPosition;
             if (getFiringLocation().equals(FiringLocation.TARGET)){
-                RayTraceResult rayTraceResult = from.getWorld().rayTrace(fromLocation, towards, getLength(), FluidCollisionMode.NEVER, true, 0.1,
+                RayTraceResult rayTraceResult = from.getWorld().rayTrace(fromLocation, towards, getFiringRange(), FluidCollisionMode.NEVER, true, 0.1,
                         e -> e != null &&
                                 (e instanceof LivingEntity || e.getType() == EntityType.ITEM_FRAME) &&
                                 !(e instanceof LivingEntity && !((LivingEntity) e).isCollidable()) &&
