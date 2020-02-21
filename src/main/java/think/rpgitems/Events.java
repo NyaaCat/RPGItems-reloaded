@@ -1,5 +1,6 @@
 package think.rpgitems;
 
+import cat.nyaa.nyaacore.utils.RayTraceUtils;
 import cat.nyaa.nyaacore.utils.TridentUtils;
 import org.bukkit.Bukkit;
 import org.bukkit.Material;
@@ -32,7 +33,6 @@ import think.rpgitems.power.PowerSneak;
 import think.rpgitems.power.PowerSprint;
 import think.rpgitems.power.Utils;
 import think.rpgitems.power.marker.Ranged;
-import think.rpgitems.power.marker.RangedOnly;
 import think.rpgitems.power.trigger.BaseTriggers;
 import think.rpgitems.power.trigger.Trigger;
 import think.rpgitems.support.WGHandler;
@@ -329,6 +329,10 @@ public class Events implements Listener {
             return;
         RPGItem rItem = ItemManager.toRPGItem(e.getItem()).orElse(null);
         if (rItem == null) return;
+        Entity playerTarget = RayTraceUtils.getTargetEntity(player);
+        if (!(playerTarget instanceof ItemFrame) && (im.isEdible() || im.isRecord() || isPlacable(im) || isItemConsumer(e.getClickedBlock()))){
+            e.setCancelled(true);
+        }
         if (e.getHand() == EquipmentSlot.OFF_HAND) {
             rItem.power(player, e.getItem(), e, BaseTriggers.OFFHAND_CLICK);
         } else if (action == Action.RIGHT_CLICK_AIR) {
@@ -338,6 +342,83 @@ public class Events implements Listener {
             rItem.power(player, e.getItem(), e, BaseTriggers.RIGHT_CLICK);
         } else if (action == Action.LEFT_CLICK_AIR || action == Action.LEFT_CLICK_BLOCK) {
             rItem.power(player, e.getItem(), e, BaseTriggers.LEFT_CLICK);
+        }
+    }
+
+    private boolean isPlacable(Material im) {
+        switch(im){
+            case ARMOR_STAND:
+            case MINECART:
+            case CHEST_MINECART:
+            case COMMAND_BLOCK_MINECART:
+            case FURNACE_MINECART:
+            case TNT_MINECART:
+            case HOPPER_MINECART:
+            case END_CRYSTAL:
+            case PRISMARINE_CRYSTALS:
+            case BUCKET:
+            case LAVA_BUCKET:
+            case WATER_BUCKET:
+            case COD_BUCKET:
+            case PUFFERFISH_BUCKET:
+            case SALMON_BUCKET:
+            case TROPICAL_FISH_BUCKET:
+            case SADDLE:
+            case LEAD:
+            case BOWL:
+
+            return true;
+        }
+        return false;
+    }
+
+    private boolean isTools(Material im) {
+        switch(im){
+            //<editor-fold>
+            case BOW:
+            case CROSSBOW:
+            case DIAMOND_AXE:
+            case GOLDEN_AXE:
+            case IRON_AXE:
+            case STONE_AXE:
+            case WOODEN_AXE:
+            case DIAMOND_PICKAXE:
+            case GOLDEN_PICKAXE:
+            case IRON_PICKAXE:
+            case STONE_PICKAXE:
+            case WOODEN_PICKAXE:
+            case DIAMOND_HOE:
+            case GOLDEN_HOE:
+            case IRON_HOE:
+            case STONE_HOE:
+            case WOODEN_HOE:
+            case DIAMOND_SHOVEL:
+            case GOLDEN_SHOVEL:
+            case IRON_SHOVEL:
+            case STONE_SHOVEL:
+            case WOODEN_SHOVEL:
+            case FISHING_ROD:
+            case SHEARS:
+            case LEAD:
+            case FLINT_AND_STEEL:
+                //</editor-fold>
+                return true;
+        }
+        return false;
+    }
+
+    public boolean isItemConsumer(Block im) {
+        if (im == null)return false;
+        switch (im.getType()) {
+            // <editor-fold defaultstate="collapsed" desc="isInteractable">
+            case COMPOSTER:
+            case JUKEBOX:
+            case FLOWER_POT:
+
+                // </editor-fold>
+                return true;
+            default:
+                return false;
         }
     }
 
