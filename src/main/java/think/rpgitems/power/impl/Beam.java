@@ -168,6 +168,9 @@ public class Beam extends BasePower {
     @Property
     public FiringLocation firingLocation = FiringLocation.SELF;
 
+    @Property
+    public boolean effectOnly = false;
+
     /*
     *   following 3 property format like:
     *   "<lower_value>,<upper_value>:<weight> <lower_value2>,<upper_value2> <fixed_value>:<weight> ......"
@@ -382,6 +385,10 @@ public class Beam extends BasePower {
         return castOff;
     }
 
+    public boolean isEffectOnly() {
+        return effectOnly;
+    }
+
     @Override
     public void init(ConfigurationSection section) {
         //check new version var name
@@ -468,6 +475,7 @@ public class Beam extends BasePower {
         private Object extraData = null;
         private Beam power;
         private String speedBias = "";
+        private boolean effectOnly = false;
 
         private Queue<Entity> targets = new LinkedList<>();
         private Entity fromEntity;
@@ -515,6 +523,7 @@ public class Beam extends BasePower {
             this.homingAngle = config.getHomingAngle();
             this.homingTarget = config.getHomingTarget();
             this.homingRange = config.getHomingRange();
+            this.effectOnly = config.isEffectOnly();
             power = config;
             lengthPerSpawn = 1 / particleDensity;
         }
@@ -766,7 +775,7 @@ public class Beam extends BasePower {
 
         private Collection<? extends UUID> tryHit(Entity from, Location loc, ItemStack stack, boolean canHitSelf, Set<UUID> hitMob) {
             HashSet<UUID> hitMobs = new HashSet<>();
-            if (from == null) return hitMobs;
+            if (from == null || this.effectOnly) return hitMobs;
             double offsetLength = new Vector(offsetX, offsetY, offsetZ).length();
             double length = Double.isNaN(offsetLength) ? 0.1 : Math.max(offsetLength, 10);
             Collection<Entity> candidates = from.getWorld().getNearbyEntities(loc, length, length, length);
