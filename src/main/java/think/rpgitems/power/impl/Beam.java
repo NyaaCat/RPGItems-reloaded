@@ -994,13 +994,13 @@ public class Beam extends BasePower {
             return sb.toString();
         }
 
-        public double uniformed(double initialPhi, double i, int amount) {
+        public double uniformed(double i, int amount) {
             if (getSplitSize() == 0){
-                return initialPhi;
+                return 0;
             }
             double totalLength = getTotalLength();
             double selected = (totalLength / amount) * i;
-            return initialPhi + select(selected);
+            return select(selected);
         }
 
         private double select(double selected) {
@@ -1253,12 +1253,15 @@ public class Beam extends BasePower {
         double rPhi;
         double rTheta;
 
-        public RoundedConeInfo(double theta, double phi, double r, double rPhi, double rTheta) {
+        double initalRotation;
+
+        public RoundedConeInfo(double theta, double phi, double r, double rPhi, double rTheta, double initalRotation) {
             this.theta = theta;
             this.phi = phi;
             this.r = r;
             this.rPhi = rPhi;
             this.rTheta = rTheta;
+            this.initalRotation = initalRotation;
         }
     }
 
@@ -1268,7 +1271,6 @@ public class Beam extends BasePower {
         boolean flat = behaviors.contains(Behavior.FLAT);
         Queue<RoundedConeInfo> infos = new LinkedList<>();
         for (int i = 0; i < burstCount; i++) {
-            double initialPhi = beam.getInitialRotation();
             int steps = Math.max(amount, 1);
             double phiStep = 360 / steps;
             double thetaStep = beam.getCone() * 2 / steps;
@@ -1278,8 +1280,8 @@ public class Beam extends BasePower {
                     roundedConeInfo.theta = beam.getCone();
                 }
                 if (uniformed){
-                    roundedConeInfo.phi = initialPhi + (j * phiStep);
-                    roundedConeInfo.rPhi = beam.getFiringPhi().uniformed(initialPhi, j, steps);
+                    roundedConeInfo.phi = (j * phiStep);
+                    roundedConeInfo.rPhi = beam.getFiringPhi().uniformed(j, steps);
                 }
                 if (flat){
                     if (uniformed){
@@ -1307,7 +1309,7 @@ public class Beam extends BasePower {
         double rPhi = beam.getFiringPhi().random();
         double rTheta = beam.getFiringTheta().random();
 
-        return new RoundedConeInfo(theta, phi, r, rPhi, rTheta);
+        return new RoundedConeInfo(theta, phi, r, rPhi, rTheta, beam.getInitialRotation());
     }
 
     private static Vector makeCone(Location fromLocation, Vector towards, RoundedConeInfo coneInfo){
@@ -1318,11 +1320,11 @@ public class Beam extends BasePower {
             loclone.setPitch(0);
             vertical = loclone.toVector();
         }else {
-            vertical = clone.getCrossProduct(crosser).getCrossProduct(towards);
+            vertical = clone.getCrossProduct(crosser);
         }
         Vector rotated = clone.clone();
         rotated.rotateAroundAxis(vertical, Math.toRadians(coneInfo.theta));
-        rotated.rotateAroundAxis(clone, Math.toRadians(coneInfo.phi));
+        rotated.rotateAroundAxis(clone, Math.toRadians(coneInfo.phi + coneInfo.initalRotation));
         return rotated;
     }
 
