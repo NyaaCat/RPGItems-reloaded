@@ -18,6 +18,7 @@ import think.rpgitems.event.BeamHitBlockEvent;
 import think.rpgitems.event.BeamHitEntityEvent;
 import think.rpgitems.power.*;
 import think.rpgitems.power.trigger.BaseTriggers;
+import think.rpgitems.utils.cast.CastUtils;
 
 import java.util.List;
 import java.util.function.Supplier;
@@ -56,6 +57,25 @@ public class Attract extends BasePower {
 
     @Property
     public boolean requireHurtByEntity = true;
+
+    @Property
+    public FiringLocation firingLocation = FiringLocation.SELF;
+
+    @Property
+    public double range = 20;
+
+    public double getRange() {
+        return range;
+    }
+
+    public FiringLocation getFiringLocation() {
+        return firingLocation;
+    }
+
+    public enum FiringLocation{
+        SELF, TARGET;
+    }
+
 
     /**
      * Hooking Cost Pre-Entity-Tick
@@ -140,7 +160,15 @@ public class Attract extends BasePower {
         @Override
         public PowerResult<Void> fire(Player player, ItemStack stack) {
             Location location = player.getLocation();
-            return fire(player, location, stack, () -> getNearbyEntities(getPower(), location, player, getRadius()));
+            List<Entity> nearbyEntities;
+            if (getFiringLocation().equals(FiringLocation.TARGET)){
+                CastUtils.CastLocation result = CastUtils.rayTrace(player, player.getEyeLocation(), player.getEyeLocation().getDirection(), getRange());
+                nearbyEntities = getNearbyEntities(getPower(), result.getTargetLocation(), player, getRadius());
+            }else {
+                nearbyEntities = getNearbyEntities(getPower(), location, player, getRadius());
+            }
+
+            return fire(player, location, stack, () -> nearbyEntities);
         }
 
         private PowerResult<Void> fire(Player player, Location location, ItemStack stack, Supplier<List<Entity>> supplier) {

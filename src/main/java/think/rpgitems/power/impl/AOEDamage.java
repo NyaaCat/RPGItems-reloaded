@@ -1,7 +1,6 @@
 package think.rpgitems.power.impl;
 
 import org.bukkit.Location;
-import org.bukkit.World;
 import org.bukkit.attribute.Attribute;
 import org.bukkit.entity.LivingEntity;
 import org.bukkit.entity.Player;
@@ -21,6 +20,7 @@ import think.rpgitems.data.Context;
 import think.rpgitems.event.BeamHitBlockEvent;
 import think.rpgitems.event.BeamHitEntityEvent;
 import think.rpgitems.power.*;
+import think.rpgitems.utils.cast.CastUtils;
 
 import java.util.List;
 import java.util.function.Supplier;
@@ -75,6 +75,17 @@ public class AOEDamage extends BasePower {
 
     @Property
     public boolean selectAfterDelay = false;
+
+    @Property
+    public FiringLocation firingLocation = FiringLocation.SELF;
+
+    public FiringLocation getFiringLocation() {
+        return firingLocation;
+    }
+
+    public enum FiringLocation{
+        SELF, TARGET;
+    }
 
     /**
      * Select target after delay.
@@ -177,8 +188,16 @@ public class AOEDamage extends BasePower {
         @Override
         public PowerResult<Void> fire(Player player, ItemStack stack) {
             return fire(player, stack, () -> {
-                List<LivingEntity> nearbyEntities = getNearestLivingEntities(getPower(), player.getLocation(), player, getRange(), getMinrange());
-                List<LivingEntity> ent = getLivingEntitiesInCone(nearbyEntities, player.getEyeLocation().toVector(), getAngle(), player.getEyeLocation().getDirection());
+                List<LivingEntity> nearbyEntities;
+                List<LivingEntity> ent;
+                if(firingLocation.equals(FiringLocation.TARGET)){
+                    CastUtils.CastLocation castLocation = CastUtils.rayTrace(player, player.getEyeLocation(), player.getEyeLocation().getDirection(), getRange());
+                    Location targetLocation = castLocation.getTargetLocation();
+                    ent = getNearestLivingEntities(getPower(), targetLocation, player, getRange(), getMinrange());
+                }else {
+                    nearbyEntities = getNearestLivingEntities(getPower(), player.getLocation(), player, getRange(), getMinrange());
+                    ent = getLivingEntitiesInCone(nearbyEntities, player.getEyeLocation().toVector(), getAngle(), player.getEyeLocation().getDirection());
+                }
                 return ent;
             });
         }

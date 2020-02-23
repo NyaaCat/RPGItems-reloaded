@@ -16,6 +16,7 @@ import think.rpgitems.RPGItems;
 import think.rpgitems.event.BeamHitBlockEvent;
 import think.rpgitems.event.BeamHitEntityEvent;
 import think.rpgitems.power.*;
+import think.rpgitems.utils.cast.CastUtils;
 
 import static think.rpgitems.power.Utils.checkCooldown;
 
@@ -49,8 +50,15 @@ public class SoundPower extends BasePower {
     @Property
     public PlayLocation playLocation = PlayLocation.HIT_LOCATION;
 
+    @Property
+    public double targetRange = 20;
+
+    public double getTargetRange() {
+        return targetRange;
+    }
+
     public enum PlayLocation{
-        SELF, HIT_LOCATION;
+        SELF, HIT_LOCATION, TARGET;
     }
     @Property
     public boolean requireHurtByEntity = true;
@@ -125,7 +133,12 @@ public class SoundPower extends BasePower {
         @Override
         public PowerResult<Void> fire(Player player, ItemStack stack) {
             if (!checkCooldown(getPower(), player, getCooldown(), true, true)) return PowerResult.cd();
-            return this.sound(player, stack, player.getLocation());
+            Location location = player.getLocation();
+            if (getPlayLocation().equals(PlayLocation.TARGET)){
+                CastUtils.CastLocation castLocation = CastUtils.rayTrace(player, player.getEyeLocation(), player.getEyeLocation().getDirection(), getTargetRange());
+                location = castLocation.getTargetLocation();
+            }
+            return this.sound(player, stack, location);
         }
 
         @Override

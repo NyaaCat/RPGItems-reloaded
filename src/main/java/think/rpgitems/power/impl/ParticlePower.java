@@ -18,6 +18,7 @@ import think.rpgitems.RPGItems;
 import think.rpgitems.event.BeamHitBlockEvent;
 import think.rpgitems.event.BeamHitEntityEvent;
 import think.rpgitems.power.*;
+import think.rpgitems.utils.cast.CastUtils;
 
 import java.util.Optional;
 
@@ -81,12 +82,19 @@ public class ParticlePower extends BasePower {
     @Property
     public int delay = 0;
 
+    @Property
+    public double range = 20;
+
+    public double getRange() {
+        return range;
+    }
+
     public int getDelay() {
         return delay;
     }
 
     public enum PlayLocation{
-        SELF, HIT_LOCATION;
+        SELF, HIT_LOCATION, TARGET;
     }
 
     @Property
@@ -274,10 +282,18 @@ public class ParticlePower extends BasePower {
             if (!checkCooldown(getPower(), player, getCooldown(), true, true)) return PowerResult.cd();
             if (!getItem().consumeDurability(stack, getCost())) return PowerResult.cost();
             int delay = getDelay();
+            Location playLocation = player.getLocation();
+            PlayLocation playLocation1 = getPlayLocation();
+            if (playLocation1.equals(PlayLocation.TARGET)){
+                CastUtils.CastLocation castLocation = CastUtils.rayTrace(player, player.getEyeLocation(), player.getEyeLocation().getDirection(), getRange());
+                playLocation = castLocation.getTargetLocation();
+            }
+
+            final Location finalPlayLocation = playLocation;
             new BukkitRunnable(){
                 @Override
                 public void run() {
-                    spawnParticle(player);
+                    spawnParticle(player.getWorld(), finalPlayLocation);
                 }
             }.runTaskLater(RPGItems.plugin, delay);
             return PowerResult.ok();
