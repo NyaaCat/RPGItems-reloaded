@@ -51,10 +51,10 @@ public class SoundPower extends BasePower {
     public PlayLocation playLocation = PlayLocation.HIT_LOCATION;
 
     @Property
-    public double targetRange = 20;
+    public double firingRange = 20;
 
-    public double getTargetRange() {
-        return targetRange;
+    public double getFiringRange() {
+        return firingRange;
     }
 
     public enum PlayLocation{
@@ -135,7 +135,7 @@ public class SoundPower extends BasePower {
             if (!checkCooldown(getPower(), player, getCooldown(), true, true)) return PowerResult.cd();
             Location location = player.getLocation();
             if (getPlayLocation().equals(PlayLocation.TARGET)){
-                CastUtils.CastLocation castLocation = CastUtils.rayTrace(player, player.getEyeLocation(), player.getEyeLocation().getDirection(), getTargetRange());
+                CastUtils.CastLocation castLocation = CastUtils.rayTrace(player, player.getEyeLocation(), player.getEyeLocation().getDirection(), getFiringRange());
                 location = castLocation.getTargetLocation();
             }
             return this.sound(player, stack, location);

@@ -62,10 +62,10 @@ public class Attract extends BasePower {
     public FiringLocation firingLocation = FiringLocation.SELF;
 
     @Property
-    public double range = 20;
+    public double firingRange = 64;
 
-    public double getRange() {
-        return range;
+    public double getFiringRange() {
+        return firingRange;
     }
 
     public FiringLocation getFiringLocation() {
@@ -162,7 +162,8 @@ public class Attract extends BasePower {
             Location location = player.getLocation();
             List<Entity> nearbyEntities;
             if (getFiringLocation().equals(FiringLocation.TARGET)){
-                CastUtils.CastLocation result = CastUtils.rayTrace(player, player.getEyeLocation(), player.getEyeLocation().getDirection(), getRange());
+                CastUtils.CastLocation result = CastUtils.rayTrace(player, player.getEyeLocation(), player.getEyeLocation().getDirection(), getFiringRange());
+                location = result.getTargetLocation();
                 nearbyEntities = getNearbyEntities(getPower(), result.getTargetLocation(), player, getRadius());
             }else {
                 nearbyEntities = getNearbyEntities(getPower(), location, player, getRadius());

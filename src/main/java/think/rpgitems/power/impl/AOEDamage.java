@@ -77,10 +77,17 @@ public class AOEDamage extends BasePower {
     public boolean selectAfterDelay = false;
 
     @Property
+    public double firingRange = 64;
+
+    @Property
     public FiringLocation firingLocation = FiringLocation.SELF;
 
     public FiringLocation getFiringLocation() {
         return firingLocation;
+    }
+
+    public double getFiringRange() {
+        return firingRange;
     }
 
     public enum FiringLocation{
@@ -191,7 +198,7 @@ public class AOEDamage extends BasePower {
                 List<LivingEntity> nearbyEntities;
                 List<LivingEntity> ent;
                 if(firingLocation.equals(FiringLocation.TARGET)){
-                    CastUtils.CastLocation castLocation = CastUtils.rayTrace(player, player.getEyeLocation(), player.getEyeLocation().getDirection(), getRange());
+                    CastUtils.CastLocation castLocation = CastUtils.rayTrace(player, player.getEyeLocation(), player.getEyeLocation().getDirection(), getFiringRange());
                     Location targetLocation = castLocation.getTargetLocation();
                     ent = getNearestLivingEntities(getPower(), targetLocation, player, getRange(), getMinrange());
                 }else {

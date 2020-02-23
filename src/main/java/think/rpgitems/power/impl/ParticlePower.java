@@ -83,10 +83,10 @@ public class ParticlePower extends BasePower {
     public int delay = 0;
 
     @Property
-    public double range = 20;
+    public double firingRange = 20;
 
-    public double getRange() {
-        return range;
+    public double getFiringRange() {
+        return firingRange;
     }
 
     public int getDelay() {
@@ -285,7 +285,7 @@ public class ParticlePower extends BasePower {
             Location playLocation = player.getLocation();
             PlayLocation playLocation1 = getPlayLocation();
             if (playLocation1.equals(PlayLocation.TARGET)){
-                CastUtils.CastLocation castLocation = CastUtils.rayTrace(player, player.getEyeLocation(), player.getEyeLocation().getDirection(), getRange());
+                CastUtils.CastLocation castLocation = CastUtils.rayTrace(player, player.getEyeLocation(), player.getEyeLocation().getDirection(), getFiringRange());
                 playLocation = castLocation.getTargetLocation();
             }
 
