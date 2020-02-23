@@ -1253,6 +1253,9 @@ public class Beam extends BasePower {
             }
 
             if (getFiringLocation().equals(FiringLocation.TARGET)){
+                if (!getBehavior().contains(Behavior.CAST_LOCATION_ROTATED)){
+                    normalDir = yAxis.clone();
+                }
                 fromLocation = CastUtils.parseFiringLocation(castLocation, normalDir, fromLocation, poll);
                 towards = castLocation.clone().subtract(fromLocation).toVector();
             }
