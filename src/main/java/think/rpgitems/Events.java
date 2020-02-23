@@ -96,13 +96,20 @@ public class Events implements Listener {
         return localItemStacks.remove(entityId);
     }
 
-    public static void registerRPGProjectile(RPGItem rpgItem, ItemStack itemStack, Player player) {
+    private static Map<UUID, UUID> projectileRegisterMap = new HashMap<>();
+
+    public static void registerRPGProjectile(RPGItem rpgItem, ItemStack itemStack, Player player, LivingEntity source) {
         if (projectilePlayer != null) {
             throw new IllegalStateException();
         }
         Events.projectileRpgItem = rpgItem;
         Events.projectileItemStack = itemStack;
         Events.projectilePlayer = player;
+        projectileRegisterMap.put(source.getUniqueId(), player.getUniqueId());
+    }
+
+    public static void registerRPGProjectile(RPGItem rpgItem, ItemStack itemStack, Player player) {
+        registerRPGProjectile(rpgItem, itemStack, player, player);
     }
 
     public static void registerRPGProjectile(int entityId, int uid) {
@@ -178,6 +185,9 @@ public class Events implements Listener {
         }
         if (rpgProjectiles.containsKey(entity.getEntityId())) {
             try {
+                if (entity instanceof Trident && entity.getScoreboardTags().contains("rgi_projectile")){
+                    ((Trident) entity).setPickupStatus(AbstractArrow.PickupStatus.DISALLOWED);
+                }
                 RPGItem rItem = ItemManager.getItem(rpgProjectiles.get(entity.getEntityId())).orElse(null);
 
                 if (rItem == null || !(entity.getShooter() instanceof Player))
@@ -246,8 +256,10 @@ public class Events implements Listener {
     public void onProjectileFire(ProjectileLaunchEvent e) {
         Projectile entity = e.getEntity();
         ProjectileSource shooter = entity.getShooter();
-        if (!(shooter instanceof Player)) return;
-        Player player = (Player) shooter;
+        if (!(shooter instanceof Player) &&
+                !((shooter instanceof LivingEntity) && ((LivingEntity) shooter).getScoreboardTags().contains("casted_projectile_source"))
+        ) return;
+        Player player = (shooter instanceof Player) ? (Player) shooter : Bukkit.getPlayer(projectileRegisterMap.get(((LivingEntity) shooter).getUniqueId()));
         if (projectilePlayer != null) {
             if (projectilePlayer != player) {
                 throw new IllegalStateException();
@@ -257,6 +269,7 @@ public class Events implements Listener {
             projectileRpgItem = null;
             projectilePlayer = null;
             projectileItemStack = null;
+            projectileRegisterMap.remove(((LivingEntity) shooter).getUniqueId());
             return;
         }
 
