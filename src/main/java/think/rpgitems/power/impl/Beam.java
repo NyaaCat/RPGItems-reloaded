@@ -1,7 +1,6 @@
 package think.rpgitems.power.impl;
 
 import cat.nyaa.nyaacore.Message;
-import cat.nyaa.nyaacore.Pair;
 import com.google.common.util.concurrent.AtomicDouble;
 import com.udojava.evalex.Expression;
 import org.bukkit.*;
@@ -26,7 +25,10 @@ import think.rpgitems.data.LightContext;
 import think.rpgitems.event.BeamHitBlockEvent;
 import think.rpgitems.event.BeamHitEntityEvent;
 import think.rpgitems.power.*;
-import think.rpgitems.utils.WeightedPair;
+import think.rpgitems.utils.cast.CastUtils;
+import think.rpgitems.utils.cast.RangedDoubleValue;
+import think.rpgitems.utils.cast.RangedValueSerializer;
+import think.rpgitems.utils.cast.RoundedConeInfo;
 
 import java.math.BigDecimal;
 import java.util.*;
@@ -37,7 +39,7 @@ import java.util.stream.Stream;
 
 import static think.rpgitems.Events.*;
 import static think.rpgitems.power.Utils.checkCooldown;
-import static think.rpgitems.power.Utils.weightedRandomPick;
+import static think.rpgitems.utils.cast.CastUtils.makeCone;
 
 /**
  * @author <a href="mailto:ReinWDD@gmail.com">ReinWD</a>
@@ -205,7 +207,6 @@ public class Beam extends BasePower {
             .filter(material -> !material.isSolid() || !material.isOccluding())
             .collect(Collectors.toSet());
 
-    static final Vector crosser = new Vector(0, 1, 0);
     private static Random random = new Random();
 
     public FiringLocation getFiringLocation() {
@@ -587,8 +588,10 @@ public class Beam extends BasePower {
                         )) {
                             Block block = nextLoc.getBlock();
                             if (!transp.contains(block.getType())) {
-                                BeamHitBlockEvent beamHitBlockEvent = new BeamHitBlockEvent(fromEntity, block, lastLocation, itemStack);
-                                Bukkit.getPluginManager().callEvent(beamHitBlockEvent);
+                                if (!MovingTask.this.effectOnly) {
+                                    BeamHitBlockEvent beamHitBlockEvent = new BeamHitBlockEvent(fromEntity, block, lastLocation, itemStack);
+                                    Bukkit.getPluginManager().callEvent(beamHitBlockEvent);
+                                }
                                 if (bounce > 0) {
                                     bounce--;
                                     bounced = true;
@@ -902,140 +905,6 @@ public class Beam extends BasePower {
         }
     }
 
-    public static class RangedDoubleValue {
-        private List<WeightedPair<Double, Double>> ranges = new ArrayList<>();
-
-        public int getSplitSize(){
-            return ranges.size();
-        }
-
-        Double totalLength = null;
-
-        public double getTotalLength(){
-            if (totalLength == null){
-                synchronized (this) {
-                    if(totalLength == null){
-                        totalLength = ranges.stream()
-                                .mapToDouble(pair -> length(pair))
-                                .sum();
-                    }
-                }
-            }
-            return totalLength;
-        }
-
-        private double length(WeightedPair<Double, Double> pair) {
-            return Math.abs(pair.getValue() - pair.getKey());
-        }
-
-        public double random(){
-            WeightedPair<Double, Double> pair = weightedRandomPick(ranges);
-            if (pair.getKey().equals(pair.getValue())){
-                return pair.getKey();
-            }
-            double range = pair.getValue() - pair.getKey();
-            double selected = random.nextDouble() * range + pair.getKey();
-            return selected;
-        }
-
-        public static RangedDoubleValue of(String s) {
-            RangedDoubleValue value = new RangedDoubleValue();
-            String[] split = s.split(" ");
-            for (String s1 : split) {
-                value.ranges.add(parse(s1));
-            }
-            return value;
-        }
-
-        private static WeightedPair<Double, Double> parse(String s1) {
-            String s = s1;
-            int weight;
-            double lower, upper;
-            if (s1.contains(":")) {
-                String [] split = s1.split(":");
-                weight = Integer.parseInt(split[1]);
-                s = split[0];
-            }else {
-                weight = 1;
-            }
-            if (s.contains(",")) {
-                String[] split = s.split(",");
-                double a1 = Double.parseDouble(split[0]);
-                double a2= Double.parseDouble(split[1]);
-                lower = Math.min(a1, a2);
-                upper = Math.max(a1, a2);
-            }else {
-                lower = upper = Double.parseDouble(s);
-            }
-            return new WeightedPair<>(lower, upper, weight);
-        }
-
-        @Override
-        public String toString() {
-            StringBuilder sb = new StringBuilder();
-            List<WeightedPair<Double, Double>> weightedPairs = this.ranges;
-            for (int i = 0; i < weightedPairs.size(); i++) {
-                WeightedPair<Double, Double> weightedPair = weightedPairs.get(i);
-                Double key = weightedPair.getKey();
-                Double value = weightedPair.getValue();
-                int weight = weightedPair.getWeight();
-                if (key.equals(value)) {
-                    sb.append(String.format("%.4f", value));
-                } else {
-                    sb.append(String.format("%.4f,%.4f", key, value));
-                }
-                if (weight != 1) {
-                    sb.append(String.format(":%d", weight));
-                }
-                if (i!= weightedPairs.size()) {
-                    sb.append(" ");
-                }
-            }
-            return sb.toString();
-        }
-
-        public double uniformed(double i, int amount) {
-            if (getSplitSize() == 0){
-                return 0;
-            }
-            double totalLength = getTotalLength();
-            double selected = (totalLength / amount) * i;
-            return select(selected);
-        }
-
-        private double select(double selected) {
-            double totalLength = getTotalLength();
-            if (selected != totalLength){
-                selected = selected % totalLength;
-            }
-
-            double remain = selected;
-            double result = selected;
-            for (int i = 0; i < getSplitSize(); i++) {
-                WeightedPair<Double, Double> pair = ranges.get(i);
-                double length = length(pair);
-                if (remain >= 0 && remain <= length){
-                    result = pair.getKey() + remain;
-                    break;
-                }
-                remain -= length;
-            }
-            return result;
-        }
-    }
-
-    public static class RangedValueSerializer implements Getter<RangedDoubleValue>, Setter<RangedDoubleValue> {
-        @Override
-        public String get(RangedDoubleValue object) {
-            return object.toString();
-        }
-
-        @Override
-        public Optional<RangedDoubleValue> set(String value) throws IllegalArgumentException {
-            return Optional.of(RangedDoubleValue.of(value));
-        }
-    }
-
     // can be called anywhere, maybe
     public static class MovingTaskBuilder {
         MovingTask movingTask;
@@ -1244,26 +1113,7 @@ public class Beam extends BasePower {
             return null;
         }
     }
-
-    private static class RoundedConeInfo{
-        double phi;
-        double theta;
-
-        double r;
-        double rPhi;
-        double rTheta;
-
-        double initalRotation;
-
-        public RoundedConeInfo(double theta, double phi, double r, double rPhi, double rTheta, double initalRotation) {
-            this.theta = theta;
-            this.phi = phi;
-            this.r = r;
-            this.rPhi = rPhi;
-            this.rTheta = rTheta;
-            this.initalRotation = initalRotation;
-        }
-    }
+    private final Vector yAxis = new Vector(0, 1, 0);
 
     private static Queue<RoundedConeInfo> internalCones(Beam beam, int amount, int burstCount) {
         List<Behavior> behaviors = beam.getBehavior();
@@ -1277,18 +1127,18 @@ public class Beam extends BasePower {
             for (int j = 0; j < amount; j++) {
                 RoundedConeInfo roundedConeInfo = internalCone(beam);
                 if (behaviors.contains(Behavior.CONED)){
-                    roundedConeInfo.theta = beam.getCone();
+                    roundedConeInfo.setTheta(beam.getCone());
                 }
                 if (uniformed){
-                    roundedConeInfo.phi = (j * phiStep);
-                    roundedConeInfo.rPhi = beam.getFiringPhi().uniformed(j, steps);
+                    roundedConeInfo.setPhi(j * phiStep);
+                    roundedConeInfo.setRPhi(beam.getFiringPhi().uniformed(j, steps));
                 }
                 if (flat){
                     if (uniformed){
-                        roundedConeInfo.theta = (thetaStep * j) - beam.getCone();
-                        roundedConeInfo.phi = 0;
+                        roundedConeInfo.setTheta((thetaStep * j) - beam.getCone());
+                        roundedConeInfo.setPhi(0);
                     }else {
-                        roundedConeInfo.phi = random.nextBoolean()? 0 : 180;
+                        roundedConeInfo.setPhi(random.nextBoolean()? 0 : 180);
                     }
                 }
 
@@ -1310,22 +1160,6 @@ public class Beam extends BasePower {
         double rTheta = beam.getFiringTheta().random();
 
         return new RoundedConeInfo(theta, phi, r, rPhi, rTheta, beam.getInitialRotation());
-    }
-
-    private static Vector makeCone(Location fromLocation, Vector towards, RoundedConeInfo coneInfo){
-        Vector clone = towards.clone();
-        Vector vertical;
-        if (clone.getX() == 0 && clone.getZ() == 0){
-            Location loclone = fromLocation.clone();
-            loclone.setPitch(0);
-            vertical = loclone.toVector();
-        }else {
-            vertical = clone.getCrossProduct(crosser);
-        }
-        Vector rotated = clone.clone();
-        rotated.rotateAroundAxis(vertical, Math.toRadians(coneInfo.theta));
-        rotated.rotateAroundAxis(clone, Math.toRadians(coneInfo.phi + coneInfo.initalRotation));
-        return rotated;
     }
 
     public class Impl implements PowerPlain, PowerRightClick, PowerLeftClick, PowerSneak, PowerSneaking, PowerSprint, PowerBowShoot, PowerHitTaken, PowerHit, PowerHurt, PowerTick {
@@ -1358,9 +1192,12 @@ public class Beam extends BasePower {
                 targets = new LinkedList<>(getTargets(towards, fromLocation, from, getHomingRange(), getHomingAngle(), getHomingTarget()));
             }
 
-            Pair<Location, Vector> result = internalRayTrace(from, fromLocation, towards, targets);
-            fromLocation = result.getKey();
-            normal = result.getValue();
+            CastUtils.CastLocation result = CastUtils.rayTrace(from, fromLocation, towards, getFiringRange());
+            fromLocation = result.getTargetLocation();
+            normal = result.getNormalDirection();
+            if (result.getHitEntity()!=null && targets != null){
+                targets.addFirst(result.getHitEntity());
+            }
 
             if (getBurstCount() > 0) {
                 final int currentBurstCount = getBurstCount();
@@ -1388,34 +1225,6 @@ public class Beam extends BasePower {
             }
         }
 
-        private Pair<Location, Vector> internalRayTrace(LivingEntity from, Location fromLocation, Vector towards, Deque<Entity> targets) {
-            Vector hitPosition;
-            if (getFiringLocation().equals(FiringLocation.TARGET)){
-                RayTraceResult rayTraceResult = from.getWorld().rayTrace(fromLocation, towards, getFiringRange(), FluidCollisionMode.NEVER, true, 0.1,
-                        e -> e != null &&
-                                (e instanceof LivingEntity || e.getType() == EntityType.ITEM_FRAME) &&
-                                !(e instanceof LivingEntity && !((LivingEntity) e).isCollidable()) &&
-                                e.getUniqueId() != from.getUniqueId() &&
-                                !(e instanceof Player && ((Player) e).getGameMode() == GameMode.SPECTATOR));
-                towards = new Vector(0,1,0);
-                if (rayTraceResult != null){
-                    Entity hitEntity = rayTraceResult.getHitEntity();
-                    if (hitEntity != null && targets != null) {
-                        targets.addFirst(hitEntity);
-                    }else {
-                        BlockFace hitBlockFace = rayTraceResult.getHitBlockFace();
-                        if (hitBlockFace != null) {
-                            towards = hitBlockFace.getDirection();
-                        }
-                    }
-                    hitPosition = rayTraceResult.getHitPosition();
-                }else{
-                    hitPosition = from.getTargetBlock(transp, (int) getFiringRange()).getLocation().toVector();
-                }
-                fromLocation = new Location(from.getWorld(), hitPosition.getX(), hitPosition.getY(), hitPosition.getZ(), fromLocation.getYaw(), fromLocation.getPitch());
-            }
-            return new Pair<>(fromLocation, towards);
-        }
 
         private PowerResult<Void> internalFireBeam(LivingEntity from, ItemStack stack, Queue<RoundedConeInfo> coneInfo, Deque<Entity> targets){
             return internalFireBeam(from, from.getEyeLocation(), from.getEyeLocation().getDirection(), yAxis.clone(), stack, coneInfo, targets);
@@ -1432,9 +1241,9 @@ public class Beam extends BasePower {
                 }
 
                 if (getFiringLocation().equals(FiringLocation.TARGET)) {
-                    Pair<Location, Vector> result = internalRayTrace(from, fromLocation, towards, targets);
-                    castLocation = result.getKey();
-                    normalDir = result.getValue();
+                    CastUtils.CastLocation result = CastUtils.rayTrace(from, fromLocation, towards, getFiringRange());
+                    castLocation = result.getTargetLocation();
+                    normalDir = result.getNormalDirection();
                 }
             }
 
@@ -1444,7 +1253,7 @@ public class Beam extends BasePower {
             }
 
             if (getFiringLocation().equals(FiringLocation.TARGET)){
-                fromLocation = internalFiringLocation(castLocation, normalDir, fromLocation, poll);
+                fromLocation = CastUtils.parseFiringLocation(castLocation, normalDir, fromLocation, poll);
                 towards = castLocation.clone().subtract(fromLocation).toVector();
             }
 
@@ -1466,38 +1275,6 @@ public class Beam extends BasePower {
                     .build();
             movingTask.runTask(RPGItems.plugin);
             return PowerResult.ok();
-        }
-
-        private final Vector xAxis = new Vector(1, 0, 0);
-        private final Vector yAxis = new Vector(0, 1, 0);
-
-        private Location internalFiringLocation(Location targetingLocation, Vector normalDir, Location direction, RoundedConeInfo coneInfo) {
-            double r = coneInfo.r;
-            double phi = coneInfo.rPhi;
-            double theta = coneInfo.rTheta;
-
-            Vector base = yAxis.clone();
-            if (getBehavior().contains(Behavior.CAST_LOCATION_ROTATED)){
-                base = normalDir;
-            }
-
-            Vector cross1;
-            Vector cross2;
-            Vector dv = direction.getDirection();
-            if (dv.getZ() == 0 && dv.getX()==0){
-                Location clone = direction.clone();
-                clone.setPitch(0);
-                cross1 = clone.getDirection().getCrossProduct(yAxis).normalize();
-            }else {
-                cross1= dv.getCrossProduct(yAxis).normalize();
-            }
-            cross2 = cross1.getCrossProduct(dv);
-
-            Vector clone = base.clone();
-            clone.rotateAroundAxis(cross1, Math.toRadians(theta));
-            clone.rotateAroundAxis(base, Math.toRadians(phi));
-            clone.normalize().multiply(r);
-            return targetingLocation.clone().add(clone);
         }
 
         @Override
