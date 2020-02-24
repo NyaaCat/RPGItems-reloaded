@@ -160,16 +160,12 @@ public class Attract extends BasePower {
         @Override
         public PowerResult<Void> fire(Player player, ItemStack stack) {
             Location location = player.getLocation();
-            List<Entity> nearbyEntities;
             if (getFiringLocation().equals(FiringLocation.TARGET)){
                 CastUtils.CastLocation result = CastUtils.rayTrace(player, player.getEyeLocation(), player.getEyeLocation().getDirection(), getFiringRange());
                 location = result.getTargetLocation();
-                nearbyEntities = getNearbyEntities(getPower(), result.getTargetLocation(), player, getRadius());
-            }else {
-                nearbyEntities = getNearbyEntities(getPower(), location, player, getRadius());
             }
-
-            return fire(player, location, stack, () -> nearbyEntities);
+            Location finalLocation = location;
+            return fire(player, location, stack, () -> getNearbyEntities(getPower(), finalLocation, player, getRadius()));
         }
 
         private PowerResult<Void> fire(Player player, Location location, ItemStack stack, Supplier<List<Entity>> supplier) {

@@ -197,7 +197,7 @@ public class AOEDamage extends BasePower {
             return fire(player, stack, () -> {
                 List<LivingEntity> nearbyEntities;
                 List<LivingEntity> ent;
-                if(firingLocation.equals(FiringLocation.TARGET)){
+                if(getFiringLocation().equals(FiringLocation.TARGET)){
                     CastUtils.CastLocation castLocation = CastUtils.rayTrace(player, player.getEyeLocation(), player.getEyeLocation().getDirection(), getFiringRange());
                     Location targetLocation = castLocation.getTargetLocation();
                     ent = getNearestLivingEntities(getPower(), targetLocation, player, getRange(), getMinrange());

@@ -131,15 +131,8 @@ public class ProjectilePower extends BasePower {
     @Property
     public boolean castOff = false;
 
-    @Property
-    public double castRange = 64;
-
     public double getInitialRotation() {
         return initialRotation;
-    }
-
-    public double getCastRange() {
-        return castRange;
     }
 
     public FiringLocation getFiringLocation() {
