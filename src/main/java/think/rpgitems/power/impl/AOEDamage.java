@@ -82,6 +82,13 @@ public class AOEDamage extends BasePower {
     @Property
     public FiringLocation firingLocation = FiringLocation.SELF;
 
+    @Property
+    public boolean castOff = false;
+
+    public boolean isCastOff() {
+        return castOff;
+    }
+
     public FiringLocation getFiringLocation() {
         return firingLocation;
     }
@@ -194,12 +201,27 @@ public class AOEDamage extends BasePower {
 
         @Override
         public PowerResult<Void> fire(Player player, ItemStack stack) {
+            Supplier<Location> traceResultSupplier = player::getEyeLocation;
+            if (getFiringLocation().equals(FiringLocation.TARGET)){
+                if (isCastOff()) {
+                    CastUtils.CastLocation castLocation = CastUtils.rayTrace(player, player.getEyeLocation(), player.getEyeLocation().getDirection(), getFiringRange());
+                    Location targetLocation = castLocation.getTargetLocation();
+                    traceResultSupplier = () -> targetLocation;
+                }else {
+                    traceResultSupplier = () -> {
+                        CastUtils.CastLocation castLocation = CastUtils.rayTrace(player, player.getEyeLocation(), player.getEyeLocation().getDirection(), getFiringRange());
+                        Location targetLocation = castLocation.getTargetLocation();
+                        return targetLocation;
+                    };
+                }
+            }
+
+            Supplier<Location> finalTraceResultSupplier = traceResultSupplier;
             return fire(player, stack, () -> {
                 List<LivingEntity> nearbyEntities;
                 List<LivingEntity> ent;
                 if(getFiringLocation().equals(FiringLocation.TARGET)){
-                    CastUtils.CastLocation castLocation = CastUtils.rayTrace(player, player.getEyeLocation(), player.getEyeLocation().getDirection(), getFiringRange());
-                    Location targetLocation = castLocation.getTargetLocation();
+                    Location targetLocation = finalTraceResultSupplier.get();
                     ent = getNearestLivingEntities(getPower(), targetLocation, player, getRange(), getMinrange());
                 }else {
                     nearbyEntities = getNearestLivingEntities(getPower(), player.getLocation(), player, getRange(), getMinrange());
