@@ -91,6 +91,7 @@ public class Explosion extends BasePower {
                 LightContext.putTemp(player.getUniqueId(), SUPPRESS_MELEE, false);
                 LightContext.putTemp(player.getUniqueId(), DAMAGE_SOURCE_ITEM, stack);
                 boolean explosion = NmsUtils.createExplosion(location.getWorld(), player, location.getX(), location.getY(), location.getZ(), getExplosionPower(), false, false);
+                LightContext.clear();
                 return explosion ? PowerResult.ok() : PowerResult.fail();
             }
             return PowerResult.noop();
