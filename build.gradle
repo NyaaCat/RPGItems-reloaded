@@ -53,6 +53,7 @@ repositories {
     maven { name 'vault-repo'; url 'https://jitpack.io' }
     maven { name 'NyaaCat'; url 'https://ci.nyaacat.com/maven/' }
     maven { name 'EssentialsX'; url 'https://ci.ender.zone/plugin/repository/everything' }
+    maven { name 'aikar';     url 'https://repo.aikar.co/content/groups/aikar/' }
 }
 
 shadowJar {
