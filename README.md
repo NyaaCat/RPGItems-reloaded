@@ -10,9 +10,9 @@ Discord Server: [![Discord](https://img.shields.io/discord/486394125206421524.sv
 
 ## Downloads
 
-### [Recommended `1.14.4` version 3.8 *Alpha* download](https://ci.nyaacat.com/job/RPGItems-reloaded/job/1.14.4/lastStableBuild/artifact/build/libs/RPGItems-mc1.14.4-3.8-*-release.jar)
+### [Recommended `1.15.2` version 3.8 *Alpha* download](https://ci.nyaacat.com/job/RPGItems-reloaded/job/1.15.2/lastStableBuild/artifact/build/libs/RPGItems-mc1.15.2-3.8-*-release.jar)
 
-Other 1.14.4 builds can be found at [our Jenkins](https://ci.nyaacat.com/job/RPGItems-reloaded/job/1.14.4/)
+1.14.4 builds can be found at [our Jenkins](https://ci.nyaacat.com/job/RPGItems-reloaded/job/1.14.4/)
 
 1.7 ~ 1.13.2 builds can be found in the [Releases Page](https://github.com/NyaaCat/RPGItems-reloaded/releases).
 Please choose builds with prefixes matching your server version. Some version use code from [NBT API](https://www.spigotmc.org/resources/item-entity-tile-nbt-api.7939/) internally.
