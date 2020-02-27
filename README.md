@@ -10,7 +10,7 @@ Discord Server: [![Discord](https://img.shields.io/discord/486394125206421524.sv
 
 ## Downloads
 
-### [Recommended `1.15.2` version 3.8 *Alpha* download](https://ci.nyaacat.com/job/RPGItems-reloaded/job/1.15.2/lastStableBuild/artifact/build/libs/RPGItems-mc1.15.2-3.8-*-release.jar)
+### [Recommended `1.15.2` version 3.8 *Alpha* download](https://ci.nyaacat.com/job/RPGItems-reloaded/job/1.15/lastStableBuild/artifact/build/libs/RPGItems-mc1.15-3.8-*-release.jar)
 
 1.14.4 builds can be found at [our Jenkins](https://ci.nyaacat.com/job/RPGItems-reloaded/job/1.14.4/)
 
