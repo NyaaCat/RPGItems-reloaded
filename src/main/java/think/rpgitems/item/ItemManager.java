@@ -2,6 +2,9 @@ package think.rpgitems.item;
 
 import cat.nyaa.nyaacore.Message;
 import cat.nyaa.nyaacore.Pair;
+import cat.nyaa.nyaacore.utils.ItemStackUtils;
+import com.google.common.cache.Cache;
+import com.google.common.cache.CacheBuilder;
 import com.sun.nio.file.ExtendedOpenOption;
 import org.bukkit.Bukkit;
 import org.bukkit.Material;
@@ -33,7 +36,9 @@ import java.nio.file.Path;
 import java.nio.file.StandardCopyOption;
 import java.nio.file.StandardOpenOption;
 import java.util.*;
+import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ThreadLocalRandom;
+import java.util.concurrent.TimeUnit;
 import java.util.logging.Level;
 
 import static think.rpgitems.item.RPGItem.*;
@@ -487,12 +492,20 @@ public class ItemManager {
         return toRPGItem(item, true);
     }
 
+    private static Cache<String, ItemMeta> metaCache = CacheBuilder.newBuilder()
+            .expireAfterAccess(10, TimeUnit.MINUTES)
+            .initialCapacity(1024)
+            .build();
+
     public static Optional<RPGItem> toRPGItem(ItemStack item, boolean ignoreModel) {
         if (item == null || item.getType() == Material.AIR)
             return Optional.empty();
         if (!item.hasItemMeta())
             return Optional.empty();
-        ItemMeta meta = item.getItemMeta();
+
+        ItemMeta meta = getMeta(item);
+        if (meta == null)return Optional.empty();
+
         PersistentDataContainer tagContainer = Objects.requireNonNull(meta).getPersistentDataContainer();
         if (tagContainer.has(TAG_META, PersistentDataType.TAG_CONTAINER)) {
             PersistentDataContainer metaTag = getTag(tagContainer, TAG_META);
@@ -504,6 +517,18 @@ public class ItemManager {
             return ItemManager.getItem(uid);
         }
         return Optional.empty();
+    }
+
+    private static ItemMeta getMeta(ItemStack itemStack) {
+        if (!itemStack.hasItemMeta())return null;
+        String base64 = ItemStackUtils.itemToBase64(itemStack);
+        try {
+            return metaCache.get(base64, itemStack::getItemMeta);
+        } catch (ExecutionException e) {
+            plugin.getLogger().log(Level.WARNING, "Exception creating meta cache. Please report this problem", e);
+            e.printStackTrace();
+            return null;
+        }
     }
 
     public static ItemInfo parseItemInfo(ItemStack item) {
