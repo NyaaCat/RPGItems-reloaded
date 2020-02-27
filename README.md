@@ -1,4 +1,4 @@
-# RPGItems [![Build Status](https://ci.nyaacat.com/buildStatus/icon?job=RPGItems-reloaded%2F1.14.4)](https://ci.nyaacat.com/job/RPGItems-reloaded/job/1.14.4/)
+# RPGItems [![Build Status](https://ci.nyaacat.com/buildStatus/icon?job=RPGItems-reloaded%2F1.15)](https://ci.nyaacat.com/job/RPGItems-reloaded/job/1.15/)
 
 The RPGItems2 plugin continued from [TheCreeperOfRedstone/RPG-Items-2](https://github.com/TheCreeperOfRedstone/RPG-Items-2)
 
