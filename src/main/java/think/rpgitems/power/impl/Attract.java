@@ -195,9 +195,6 @@ public class Attract extends BasePower {
             if (!player.isOnline() || player.isDead()) {
                 return PowerResult.noop();
             }
-            if (!triggers.contains(BaseTriggers.TICK) && !stack.equals(player.getInventory().getItemInMainHand())) {
-                return PowerResult.noop();
-            }
             double factor = Math.sqrt(getRadius() - 1.0) / getMaxSpeed();
             List<Entity> entities = supplier.get();
             if (entities.isEmpty()) return PowerResult.ok();
