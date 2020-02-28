@@ -17,7 +17,7 @@ public class RPGItems {
      * @return The RPGItem or null
      */
     public RPGItem toRPGItem(ItemStack itemstack) {
-        return ItemManager.toRPGItem(itemstack).orElse(null);
+        return ItemManager.toRPGItemByMeta(itemstack).orElse(null);
     }
 
     public boolean isEqual(ItemStack a, ItemStack b) {

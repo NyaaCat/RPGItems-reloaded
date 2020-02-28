@@ -3,6 +3,7 @@ package think.rpgitems.item;
 import cat.nyaa.nyaacore.Message;
 import cat.nyaa.nyaacore.Pair;
 import cat.nyaa.nyaacore.utils.ItemStackUtils;
+import cat.nyaa.nyaacore.utils.ItemTagUtils;
 import com.google.common.base.Strings;
 import com.google.common.cache.Cache;
 import com.google.common.cache.CacheBuilder;
@@ -74,6 +75,8 @@ public class RPGItem {
     public static final NamespacedKey TAG_MODIFIER = new NamespacedKey(RPGItems.plugin, "property_modifier");
     public static final NamespacedKey TAG_VERSION = new NamespacedKey(RPGItems.plugin, "version");
     public static final String DAMAGE_TYPE = "RGI_DAMAGE_TYPE";
+    public static final String TAG_NBTCOMPOUND_UID = "rpgitem_uid";
+    public static final String TAG_NBTCOMPOUND_IS_MODEL = "rpgitem_is_model";
 
     private static final Cache<UUID, List<Modifier>> modifierCache = CacheBuilder.newBuilder().concurrencyLevel(1).expireAfterAccess(1, TimeUnit.MINUTES).build();
 
@@ -586,6 +589,13 @@ public class RPGItem {
         checkAndMakeUnique(rpgitemsTagContainer);
         rpgitemsTagContainer.commit();
         item.setItemMeta(refreshAttributeModifiers(meta));
+        try {
+            ItemTagUtils.setInt(item, TAG_NBTCOMPOUND_UID, uid);
+        } catch (NoSuchFieldException e) {
+            e.printStackTrace();
+        } catch (IllegalAccessException e) {
+            e.printStackTrace();
+        }
     }
 
     private final static NamespacedKey RGI_UNIQUE_MARK = new NamespacedKey(RPGItems.plugin, "RGI_UNIQUE_MARK");
@@ -1128,6 +1138,13 @@ public class RPGItem {
         meta.remove(TAG_OWNER);
         meta.remove(TAG_STACK_ID);
         set(meta, TAG_IS_MODEL, true);
+        try {
+            ItemTagUtils.setBoolean(itemStack, TAG_NBTCOMPOUND_IS_MODEL, true);
+        } catch (NoSuchFieldException e) {
+            e.printStackTrace();
+        } catch (IllegalAccessException e) {
+            e.printStackTrace();
+        }
         meta.commit();
         itemMeta.setDisplayName(getDisplayName());
         itemStack.setItemMeta(itemMeta);

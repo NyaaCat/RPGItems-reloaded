@@ -2,7 +2,6 @@ package think.rpgitems.item;
 
 import cat.nyaa.nyaacore.Message;
 import cat.nyaa.nyaacore.Pair;
-import cat.nyaa.nyaacore.utils.ItemStackUtils;
 import com.google.common.cache.Cache;
 import com.google.common.cache.CacheBuilder;
 import com.sun.nio.file.ExtendedOpenOption;
@@ -36,7 +35,6 @@ import java.nio.file.Path;
 import java.nio.file.StandardCopyOption;
 import java.nio.file.StandardOpenOption;
 import java.util.*;
-import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ThreadLocalRandom;
 import java.util.concurrent.TimeUnit;
 import java.util.logging.Level;
@@ -126,11 +124,11 @@ public class ItemManager {
     public static void refreshItem() {
         for (Player player : Bukkit.getOnlinePlayers()) {
             for (ItemStack item : player.getInventory()) {
-                Optional<RPGItem> rpgItem = ItemManager.toRPGItem(item);
+                Optional<RPGItem> rpgItem = ItemManager.toRPGItemByMeta(item);
                 rpgItem.ifPresent(r -> r.updateItem(item));
             }
             for (ItemStack item : player.getInventory().getArmorContents()) {
-                Optional<RPGItem> rpgItem = ItemManager.toRPGItem(item);
+                Optional<RPGItem> rpgItem = ItemManager.toRPGItemByMeta(item);
                 rpgItem.ifPresent(r -> r.updateItem(item));
             }
         }
@@ -503,8 +501,30 @@ public class ItemManager {
         if (!item.hasItemMeta())
             return Optional.empty();
 
-        ItemMeta meta = getMeta(item);
-        if (meta == null)return Optional.empty();
+        Optional<Integer> uid = cat.nyaa.nyaacore.utils.ItemTagUtils.getInt(item, TAG_NBTCOMPOUND_UID);
+        Optional<Boolean> isModel = cat.nyaa.nyaacore.utils.ItemTagUtils.getBoolean(item, TAG_NBTCOMPOUND_IS_MODEL);
+
+        if (!uid.isPresent()) {
+            return Optional.empty();
+        }
+        if (ignoreModel && isModel.orElse(false)) {
+            return Optional.empty();
+        }
+        return ItemManager.getItem(uid.get());
+    }
+
+    public static Optional<RPGItem> toRPGItemByMeta(ItemStack item) {
+        return toRPGItemByMeta(item, true);
+    }
+
+    public static Optional<RPGItem> toRPGItemByMeta(ItemStack item, boolean ignoreModel) {
+        if (item == null || item.getType() == Material.AIR)
+            return Optional.empty();
+        if (!item.hasItemMeta())
+            return Optional.empty();
+
+        ItemMeta meta = item.getItemMeta();
+        if (meta == null) return Optional.empty();
 
         PersistentDataContainer tagContainer = Objects.requireNonNull(meta).getPersistentDataContainer();
         if (tagContainer.has(TAG_META, PersistentDataType.TAG_CONTAINER)) {
@@ -517,20 +537,6 @@ public class ItemManager {
             return ItemManager.getItem(uid);
         }
         return Optional.empty();
-    }
-
-    private static ItemMeta getMeta(ItemStack itemStack) {
-        if (!itemStack.hasItemMeta())return null;
-
-        try {
-            byte[] bytes = ItemStackUtils.itemToBinary(itemStack);
-            long hash = hash(bytes);
-            return metaCache.get(hash, itemStack::getItemMeta);
-        } catch (ExecutionException | IOException  e) {
-            plugin.getLogger().log(Level.WARNING, "Exception creating meta cache. Please report this problem", e);
-            e.printStackTrace();
-            return null;
-        }
     }
 
     private static final long OFFSET_BASIS = 2166136261L;// 32位offset basis

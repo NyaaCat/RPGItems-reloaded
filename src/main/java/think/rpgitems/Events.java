@@ -534,10 +534,10 @@ public class Events implements Listener {
         PlayerInventory in = player.getInventory();
         for (int i = 0; i < in.getSize(); i++) {
             ItemStack item = in.getItem(i);
-            ItemManager.toRPGItem(item).ifPresent(rpgItem -> rpgItem.updateItem(item));
+            ItemManager.toRPGItemByMeta(item).ifPresent(rpgItem -> rpgItem.updateItem(item));
         }
         for (ItemStack item : player.getInventory().getArmorContents()) {
-            ItemManager.toRPGItem(item).ifPresent(rpgItem -> rpgItem.updateItem(item));
+            ItemManager.toRPGItemByMeta(item).ifPresent(rpgItem -> rpgItem.updateItem(item));
         }
         if (WGSupport.hasSupport() && WGSupport.useWorldGuard) {
             WGHandler.onPlayerJoin(e);
@@ -632,13 +632,13 @@ public class Events implements Listener {
         try {
             while (it.hasNext()) {
                 ItemStack item = it.next();
-                ItemManager.toRPGItem(item).ifPresent(rpgItem -> rpgItem.updateItem(item));
+                ItemManager.toRPGItemByMeta(item).ifPresent(rpgItem -> rpgItem.updateItem(item));
             }
             PlayerInventory inventory1 = p.getInventory();
             it = inventory1.iterator();
             while (it.hasNext()) {
                 ItemStack item = it.next();
-                ItemManager.toRPGItem(item).ifPresent(rpgItem -> rpgItem.updateItem(item));
+                ItemManager.toRPGItemByMeta(item).ifPresent(rpgItem -> rpgItem.updateItem(item));
             }
         } catch (ArrayIndexOutOfBoundsException ex) {
             logger.log(Level.WARNING, "Exception when InventoryOpenEvent. May be harmless.", ex);
@@ -653,8 +653,8 @@ public class Events implements Listener {
                 HumanEntity p = e.getWhoClicked();
                 ItemStack ind1 = e.getView().getItem(0);
                 ItemStack ind2 = e.getView().getItem(1);
-                Optional<RPGItem> opt1 = ItemManager.toRPGItem(ind1);
-                Optional<RPGItem> opt2 = ItemManager.toRPGItem(ind2);
+                Optional<RPGItem> opt1 = ItemManager.toRPGItemByMeta(ind1);
+                Optional<RPGItem> opt2 = ItemManager.toRPGItemByMeta(ind2);
                 AtomicBoolean hasRGI = new AtomicBoolean(false);
                 opt1.ifPresent(item -> {
                     checkEnchantPerm(e, p, item);
