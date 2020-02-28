@@ -492,7 +492,7 @@ public class ItemManager {
         return toRPGItem(item, true);
     }
 
-    private static Cache<String, ItemMeta> metaCache = CacheBuilder.newBuilder()
+    private static Cache<Long, ItemMeta> metaCache = CacheBuilder.newBuilder()
             .expireAfterAccess(10, TimeUnit.MINUTES)
             .initialCapacity(1024)
             .build();
@@ -521,14 +521,28 @@ public class ItemManager {
 
     private static ItemMeta getMeta(ItemStack itemStack) {
         if (!itemStack.hasItemMeta())return null;
-        String base64 = ItemStackUtils.itemToBase64(itemStack);
+
         try {
-            return metaCache.get(base64, itemStack::getItemMeta);
-        } catch (ExecutionException e) {
+            byte[] bytes = ItemStackUtils.itemToBinary(itemStack);
+            long hash = hash(bytes);
+            return metaCache.get(hash, itemStack::getItemMeta);
+        } catch (ExecutionException | IOException  e) {
             plugin.getLogger().log(Level.WARNING, "Exception creating meta cache. Please report this problem", e);
             e.printStackTrace();
             return null;
         }
+    }
+
+    private static final long OFFSET_BASIS = 2166136261L;// 32位offset basis
+    private static final long PRIME = 16777619; // 32位prime
+
+    public static long hash(byte[] src) {
+        long hash = OFFSET_BASIS;
+        for (byte b : src) {
+            hash ^= b;
+            hash *= PRIME;
+        }
+        return hash;
     }
 
     public static ItemInfo parseItemInfo(ItemStack item) {
