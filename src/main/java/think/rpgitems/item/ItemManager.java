@@ -501,8 +501,9 @@ public class ItemManager {
         if (!item.hasItemMeta())
             return Optional.empty();
 
-        Optional<Integer> uid = cat.nyaa.nyaacore.utils.ItemTagUtils.getInt(item, TAG_NBTCOMPOUND_UID);
-        Optional<Boolean> isModel = cat.nyaa.nyaacore.utils.ItemTagUtils.getBoolean(item, TAG_NBTCOMPOUND_IS_MODEL);
+        Optional<Integer> uid = cat.nyaa.nyaacore.utils.ItemTagUtils.getInt(item, NBT_UID);
+        Optional<Integer> itemUuid = cat.nyaa.nyaacore.utils.ItemTagUtils.getInt(item, NBT_ITEM_UUID);
+        Optional<Boolean> isModel = cat.nyaa.nyaacore.utils.ItemTagUtils.getBoolean(item, NBT_IS_MODEL);
 
         if (!uid.isPresent()) {
             return Optional.empty();

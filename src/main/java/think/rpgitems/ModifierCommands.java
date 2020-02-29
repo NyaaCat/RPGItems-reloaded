@@ -14,7 +14,6 @@ import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.ItemMeta;
 import org.bukkit.persistence.PersistentDataContainer;
 import org.bukkit.persistence.PersistentDataType;
-import think.rpgitems.item.ItemManager;
 import think.rpgitems.item.RPGItem;
 import think.rpgitems.power.*;
 import think.rpgitems.power.propertymodifier.Modifier;
@@ -105,6 +104,7 @@ public class ModifierCommands extends RPGCommandReceiver {
             if (rootContainer.getKey() != null){
                 saveItem(rootContainer.getKey());
             }
+            RPGItem.invalidateModifierCache();
             msg(sender, "message.modifier.ok", modifierStr);
         } catch (Exception e) {
             if (e instanceof BadCommandException) {
@@ -203,6 +203,7 @@ public class ModifierCommands extends RPGCommandReceiver {
             if (rootContainer.getKey() != null){
                 saveItem(rootContainer.getKey());
             }
+            RPGItem.invalidateModifierCache();
             msgs(sender, "message.marker.change");
         } catch (UnknownExtensionException e) {
             msgs(sender, "message.error.unknown.extension", e.getName());
@@ -254,6 +255,7 @@ public class ModifierCommands extends RPGCommandReceiver {
             if (rootContainer.getKey() != null){
                 saveItem(rootContainer.getKey());
             }
+            RPGItem.invalidateModifierCache();
             msgs(sender, "message.modifier.remove");
         } catch (UnknownExtensionException e) {
             msgs(sender, "message.error.unknown.extension", e.getName());

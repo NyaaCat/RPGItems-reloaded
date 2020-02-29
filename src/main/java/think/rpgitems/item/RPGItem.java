@@ -75,8 +75,9 @@ public class RPGItem {
     public static final NamespacedKey TAG_MODIFIER = new NamespacedKey(RPGItems.plugin, "property_modifier");
     public static final NamespacedKey TAG_VERSION = new NamespacedKey(RPGItems.plugin, "version");
     public static final String DAMAGE_TYPE = "RGI_DAMAGE_TYPE";
-    public static final String TAG_NBTCOMPOUND_UID = "rpgitem_uid";
-    public static final String TAG_NBTCOMPOUND_IS_MODEL = "rpgitem_is_model";
+    public static final String NBT_UID = "rpgitem_uid";
+    public static final String NBT_ITEM_UUID = "rpgitem_item_uuid";
+    public static final String NBT_IS_MODEL = "rpgitem_is_model";
 
     private static final Cache<UUID, List<Modifier>> modifierCache = CacheBuilder.newBuilder().concurrencyLevel(1).expireAfterAccess(1, TimeUnit.MINUTES).build();
 
@@ -590,7 +591,11 @@ public class RPGItem {
         rpgitemsTagContainer.commit();
         item.setItemMeta(refreshAttributeModifiers(meta));
         try {
-            ItemTagUtils.setInt(item, TAG_NBTCOMPOUND_UID, uid);
+            ItemTagUtils.setInt(item, NBT_UID, uid);
+            if (!ItemTagUtils.getString(item, NBT_ITEM_UUID).isPresent()) {
+                UUID uuid = UUID.randomUUID();
+                ItemTagUtils.setString(item, NBT_ITEM_UUID, uuid.toString());
+            }
         } catch (NoSuchFieldException e) {
             e.printStackTrace();
         } catch (IllegalAccessException e) {
@@ -599,8 +604,8 @@ public class RPGItem {
     }
 
     private final static NamespacedKey RGI_UNIQUE_MARK = new NamespacedKey(RPGItems.plugin, "RGI_UNIQUE_MARK");
-    private final static NamespacedKey RGI_UNIQUE_ID = new NamespacedKey(RPGItems.plugin, "RGI_UNIQUE_ID");
 
+    private final static NamespacedKey RGI_UNIQUE_ID = new NamespacedKey(RPGItems.plugin, "RGI_UNIQUE_ID");
     private void checkAndMakeUnique(SubItemTagContainer meta) {
         List<Unique> markers = getMarker(Unique.class);
         List<SlotCondition> conditions = getConditions(SlotCondition.class);
@@ -896,10 +901,30 @@ public class RPGItem {
     }
 
     public static List<Modifier> getModifiers(ItemStack stack) {
-        ItemMeta itemMeta = stack.getItemMeta();
-        if (itemMeta == null)return new ArrayList<>();
-        SubItemTagContainer tag = makeTag(Objects.requireNonNull(itemMeta).getPersistentDataContainer(), TAG_MODIFIER);
-        return getModifiers(tag);
+        Optional<String> opt = ItemTagUtils.getString(stack, NBT_ITEM_UUID);
+        if (!opt.isPresent()){
+            Optional<RPGItem> rpgItemOpt = ItemManager.toRPGItemByMeta(stack);
+            if (!rpgItemOpt.isPresent()){
+                return Collections.emptyList();
+            }
+            RPGItem rpgItem = rpgItemOpt.get();
+            rpgItem.updateItem(stack);
+            Optional<String> opt1 = ItemTagUtils.getString(stack, NBT_ITEM_UUID);
+            if (!opt1.isPresent()) {
+                return Collections.emptyList();
+            }
+            opt = opt1;
+        }
+
+        UUID key = UUID.fromString(opt.get());
+        List<Modifier> modifiers = modifierCache.getIfPresent(key);
+        if (modifiers == null){
+            ItemMeta itemMeta = stack.getItemMeta();
+            if (itemMeta == null)return new ArrayList<>();
+            SubItemTagContainer tag = makeTag(Objects.requireNonNull(itemMeta).getPersistentDataContainer(), TAG_MODIFIER);
+            modifiers = getModifiers(tag, key);
+        }
+        return modifiers;
     }
 
     public static List<Modifier> getModifiers(Player player) {
@@ -907,11 +932,19 @@ public class RPGItem {
         return getModifiers(tag);
     }
 
+
     public static List<Modifier> getModifiers(SubItemTagContainer tag) {
-        Optional<UUID> uuid = optUUID(tag, TAG_VERSION);
-        if (!uuid.isPresent()) {
+        return getModifiers(tag, null);
+    }
+
+    public static void invalidateModifierCache() {
+        modifierCache.invalidateAll();
+    }
+
+    public static List<Modifier> getModifiers(SubItemTagContainer tag, UUID key) {
+        Optional<UUID> uuid = Optional.ofNullable(key);
+        if (!uuid.isPresent()){
             uuid = Optional.of(UUID.randomUUID());
-            set(tag, TAG_VERSION, uuid.get());
         }
 
         try {
@@ -1139,7 +1172,7 @@ public class RPGItem {
         meta.remove(TAG_STACK_ID);
         set(meta, TAG_IS_MODEL, true);
         try {
-            ItemTagUtils.setBoolean(itemStack, TAG_NBTCOMPOUND_IS_MODEL, true);
+            ItemTagUtils.setBoolean(itemStack, NBT_IS_MODEL, true);
         } catch (NoSuchFieldException e) {
             e.printStackTrace();
         } catch (IllegalAccessException e) {
