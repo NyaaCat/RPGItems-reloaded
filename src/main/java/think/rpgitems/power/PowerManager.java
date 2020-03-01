@@ -368,7 +368,7 @@ public class PowerManager {
     }
 
     public static Meta getMeta(NamespacedKey key) {
-        return getMeta(powers.get(key));
+        return getMeta(all.get(key));
     }
 
     public static Meta getMeta(Class<? extends PropertyHolder> cls) {
