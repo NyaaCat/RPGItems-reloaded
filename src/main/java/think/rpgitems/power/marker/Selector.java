@@ -9,6 +9,7 @@ import org.bukkit.OfflinePlayer;
 import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.entity.Entity;
 import org.bukkit.entity.EntityType;
+import org.bukkit.entity.LivingEntity;
 import org.bukkit.entity.Player;
 import org.bukkit.scoreboard.Objective;
 import org.bukkit.scoreboard.Score;
@@ -17,6 +18,7 @@ import org.bukkit.scoreboard.Team;
 import think.rpgitems.I18n;
 import think.rpgitems.power.Meta;
 import think.rpgitems.power.Property;
+import think.rpgitems.power.Utils;
 
 import java.util.*;
 import java.util.concurrent.TimeUnit;
@@ -185,7 +187,7 @@ public class Selector extends BaseMarker {
 
     public void inPlaceFilter(Player p, List<Entity> entities) {
         Location ref = reference(p);
-        List<Entity> ents = entities.stream().filter(entity -> inRadius(entity, ref, r, rm)).collect(Collectors.toList());
+        List<Entity> ents = entities.stream().filter(entity -> !Utils.isUtilArmorStand(entity) && inRadius(entity, ref, r, rm)).collect(Collectors.toList());
         if (Stream.of(dx, dy, dz).anyMatch(Objects::nonNull))
             ents = ents.stream().filter(entity -> inVolume(entity, ref, dx, dy, dz)).collect(Collectors.toList());
         if (type != null) {

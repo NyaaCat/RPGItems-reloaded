@@ -13,10 +13,7 @@ import org.bukkit.command.CommandSender;
 import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.configuration.file.YamlConfiguration;
 import org.bukkit.enchantments.Enchantment;
-import org.bukkit.entity.Entity;
-import org.bukkit.entity.LivingEntity;
-import org.bukkit.entity.Player;
-import org.bukkit.entity.Projectile;
+import org.bukkit.entity.*;
 import org.bukkit.event.entity.EntityDamageEvent;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.permissions.PermissionAttachment;
@@ -932,4 +929,13 @@ public class Utils {
     public static <T> T randomPick(List<T> list) {
         ThreadLocalRandom random = ThreadLocalRandom.current();
         return list.isEmpty() ? null : list.get(random.nextInt(list.size()));
-    }}
+    }
+
+    public static boolean isUtilArmorStand(Entity livingEntity) {
+        if (livingEntity instanceof ArmorStand) {
+            ArmorStand arm = (ArmorStand) livingEntity;
+            return arm.isMarker() && !arm.isVisible();
+        }
+        return false;
+    }
+}

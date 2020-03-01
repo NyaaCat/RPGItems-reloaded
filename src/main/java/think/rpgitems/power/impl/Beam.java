@@ -39,6 +39,7 @@ import java.util.stream.Stream;
 
 import static think.rpgitems.Events.*;
 import static think.rpgitems.power.Utils.checkCooldown;
+import static think.rpgitems.power.Utils.isUtilArmorStand;
 import static think.rpgitems.utils.cast.CastUtils.makeCone;
 
 /**
@@ -948,14 +949,6 @@ public class Beam extends BasePower {
             }
             return this;
         }
-    }
-
-    private static boolean isUtilArmorStand(LivingEntity livingEntity) {
-        if (livingEntity instanceof ArmorStand) {
-            ArmorStand arm = (ArmorStand) livingEntity;
-            return arm.isMarker() && !arm.isVisible();
-        }
-        return false;
     }
 
     private static List<Entity> getTargets(Vector direction, Location fromLocation, Entity from, double range, double homingAngle, Target homingTarget) {
