@@ -29,6 +29,7 @@ import org.bukkit.inventory.meta.ItemMeta;
 import org.bukkit.persistence.PersistentDataContainer;
 import org.bukkit.persistence.PersistentDataType;
 import org.bukkit.projectiles.ProjectileSource;
+import org.bukkit.scheduler.BukkitRunnable;
 import think.rpgitems.item.ItemGroup;
 import think.rpgitems.item.ItemManager;
 import think.rpgitems.item.RPGItem;
@@ -432,6 +433,7 @@ public class AdminCommands extends RPGCommandReceiver {
                 if (sender instanceof Player) {
                     item.give((Player) sender, 1, false);
                     msgs(sender, "message.give.ok", item.getDisplayName());
+                    refreshPlayer((Player) sender);
                 } else {
                     msgs(sender, "message.give.console");
                 }
@@ -444,6 +446,7 @@ public class AdminCommands extends RPGCommandReceiver {
                     count = 1;
                 }
                 item.give(player, count, false);
+                refreshPlayer(player);
                 msgs(sender, "message.give.to", item.getDisplayName() + ChatColor.AQUA, player.getName());
                 msgs(player, "message.give.ok", item.getDisplayName());
             }
@@ -458,13 +461,27 @@ public class AdminCommands extends RPGCommandReceiver {
                 return;
             }
             if (sender instanceof Player) {
-                group.give(args.nextPlayerOrSender(), 1, true);
+                Player player = args.nextPlayerOrSender();
+                group.give(player, 1, true);
+                refreshPlayer(player);
                 msgs(sender, "message.give.ok", group.getName());
             } else {
                 msgs(sender, "message.give.console");
             }
         }
 
+    }
+
+    private void refreshPlayer(Player player) {
+        new BukkitRunnable(){
+            @Override
+            public void run() {
+                for (ItemStack item : player.getInventory()) {
+                    Optional<RPGItem> rpgItem = ItemManager.toRPGItemByMeta(item);
+                    rpgItem.ifPresent(r -> r.updateItem(item));
+                }
+            }
+        }.runTaskLater(RPGItems.plugin, 1);
     }
 
     @SubCommand(value = "remove", tabCompleter = "itemCompleter")

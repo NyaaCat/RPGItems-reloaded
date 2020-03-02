@@ -928,8 +928,13 @@ public class RPGItem {
     }
 
     public static List<Modifier> getModifiers(Player player) {
-        SubItemTagContainer tag = makeTag(player.getPersistentDataContainer(), TAG_MODIFIER);
-        return getModifiers(tag);
+        UUID key = player.getUniqueId();
+        List<Modifier> modifiers = modifierCache.getIfPresent(key);
+        if (modifiers == null){
+            SubItemTagContainer tag = makeTag(player.getPersistentDataContainer(), TAG_MODIFIER);
+            modifiers = getModifiers(tag, key);
+        }
+        return modifiers;
     }
 
 
