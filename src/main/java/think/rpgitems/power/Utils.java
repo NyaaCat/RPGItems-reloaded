@@ -62,7 +62,7 @@ public class Utils {
         Collection<Entity> nearbyEntities = l.getWorld().getNearbyEntities(l, dx, dy, dz);
         if (!nearbyEntities.isEmpty()) {
             for (Entity e : nearbyEntities) {
-                if (l.distance(e.getLocation()) <= radius) {
+                if (!Utils.isUtilArmorStand(e) && l.distance(e.getLocation()) <= radius) {
                     entities.add(e);
                 }
             }
@@ -103,7 +103,7 @@ public class Utils {
     public static List<LivingEntity> getNearestLivingEntities(Power power, Location l, Player player, double radius, double min) {
         final List<Map.Entry<LivingEntity, Double>> entities = new ArrayList<>();
         for (Entity e : getNearbyEntities(power, l, player, radius)) {
-            if (e instanceof LivingEntity && !player.equals(e)) {
+            if (e instanceof LivingEntity && !player.equals(e) && !Utils.isUtilArmorStand(e)) {
                 double d = l.distance(e.getLocation());
                 if (d <= radius && d >= min) {
                     entities.add(new AbstractMap.SimpleImmutableEntry<>((LivingEntity) e, d));
@@ -130,6 +130,7 @@ public class Utils {
         float relativeAngle = 0;
         float minAngle = 180;
         for (LivingEntity e : entities) {
+            if (Utils.isUtilArmorStand(e)) continue;
             org.bukkit.util.Vector relativePosition = e.getEyeLocation().toVector();
             relativePosition.subtract(startPos);
             relativeAngle = getAngleBetweenVectors(direction, relativePosition);
@@ -148,6 +149,7 @@ public class Utils {
         Set<AngledEntity> newEntities = new TreeSet<>();
         float relativeAngle = 0;
         for (LivingEntity e : entities) {
+            if (isUtilArmorStand(e))continue;
             org.bukkit.util.Vector relativePosition = e.getEyeLocation().toVector();
             relativePosition.subtract(startPos);
             relativeAngle = getAngleBetweenVectors(direction, relativePosition);
