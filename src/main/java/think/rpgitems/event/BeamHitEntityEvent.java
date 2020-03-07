@@ -10,7 +10,7 @@ import org.bukkit.util.BoundingBox;
 import org.bukkit.util.Vector;
 
 public class BeamHitEntityEvent extends Event {
-    public static HandlerList handlerList = new HandlerList();
+    public static final HandlerList handlerList = new HandlerList();
 
     @Override
     public HandlerList getHandlers() {

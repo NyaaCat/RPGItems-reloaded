@@ -15,6 +15,7 @@ import org.bukkit.util.BoundingBox;
 import org.bukkit.util.Vector;
 import think.rpgitems.I18n;
 import think.rpgitems.data.Context;
+import think.rpgitems.event.BeamEndEvent;
 import think.rpgitems.event.BeamHitBlockEvent;
 import think.rpgitems.event.BeamHitEntityEvent;
 import think.rpgitems.power.*;
@@ -149,6 +150,11 @@ public class Headshot extends BasePower {
 
         @Override
         public PowerResult<Void> hitBlock(Player player, ItemStack stack, Location location, BeamHitBlockEvent event) {
+            return PowerResult.fail();
+        }
+
+        @Override
+        public PowerResult<Void> beamEnd(Player player, ItemStack stack, Location location, BeamEndEvent event) {
             return PowerResult.fail();
         }
     }

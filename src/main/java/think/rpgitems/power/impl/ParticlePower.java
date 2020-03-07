@@ -15,6 +15,7 @@ import org.bukkit.scheduler.BukkitRunnable;
 import think.rpgitems.AdminCommands;
 import think.rpgitems.I18n;
 import think.rpgitems.RPGItems;
+import think.rpgitems.event.BeamEndEvent;
 import think.rpgitems.event.BeamHitBlockEvent;
 import think.rpgitems.event.BeamHitEntityEvent;
 import think.rpgitems.power.*;
@@ -372,6 +373,27 @@ public class ParticlePower extends BasePower {
 
         @Override
         public PowerResult<Void> hitBlock(Player player, ItemStack stack, Location location, BeamHitBlockEvent event) {
+            if (!checkCooldown(getPower(), player, getCooldown(), true, true)) return PowerResult.cd();
+            if (!getItem().consumeDurability(stack, getCost())) return PowerResult.cost();
+
+            int delay = getDelay();
+            new BukkitRunnable(){
+                @Override
+                public void run() {
+                    Location loc = location;
+                    if (playLocation.equals(PlayLocation.HIT_LOCATION)) {
+                    }else if (playLocation.equals(PlayLocation.SELF)){
+                        loc = player.getLocation();
+                    }
+                    spawnParticle(player.getWorld(), loc);
+                }
+            }.runTaskLater(RPGItems.plugin, delay);
+
+            return PowerResult.ok();
+        }
+
+        @Override
+        public PowerResult<Void> beamEnd(Player player, ItemStack stack, Location location, BeamEndEvent event) {
             if (!checkCooldown(getPower(), player, getCooldown(), true, true)) return PowerResult.cd();
             if (!getItem().consumeDurability(stack, getCost())) return PowerResult.cost();
 

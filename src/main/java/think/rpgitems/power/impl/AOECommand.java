@@ -10,6 +10,7 @@ import org.bukkit.event.entity.ProjectileHitEvent;
 import org.bukkit.event.player.PlayerInteractEvent;
 import org.bukkit.event.player.PlayerToggleSneakEvent;
 import org.bukkit.inventory.ItemStack;
+import think.rpgitems.event.BeamEndEvent;
 import think.rpgitems.event.BeamHitBlockEvent;
 import think.rpgitems.event.BeamHitEntityEvent;
 import think.rpgitems.power.*;
@@ -201,6 +202,16 @@ public class AOECommand extends Command {
                     .map(entity ->  ((LivingEntity) entity))
                     .collect(Collectors.toList());
 
+            return fire(player, stack, nearbyEntities);
+        }
+
+        @Override
+        public PowerResult<Void> beamEnd(Player player, ItemStack stack, Location location, BeamEndEvent event) {
+            int r = getR();
+            List<LivingEntity> nearbyEntities = getNearbyEntities(getPower(), location, player, r).stream()
+                    .filter(entity -> entity instanceof LivingEntity)
+                    .map(entity ->  ((LivingEntity) entity))
+                    .collect(Collectors.toList());
             return fire(player, stack, nearbyEntities);
         }
 

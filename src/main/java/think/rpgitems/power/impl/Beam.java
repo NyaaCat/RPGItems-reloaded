@@ -22,6 +22,7 @@ import org.bukkit.util.RayTraceResult;
 import org.bukkit.util.Vector;
 import think.rpgitems.RPGItems;
 import think.rpgitems.data.LightContext;
+import think.rpgitems.event.BeamEndEvent;
 import think.rpgitems.event.BeamHitBlockEvent;
 import think.rpgitems.event.BeamHitEntityEvent;
 import think.rpgitems.power.*;
@@ -478,6 +479,8 @@ public class Beam extends BasePower {
         private Beam power;
         private String speedBias = "";
         private boolean effectOnly = false;
+        private final FiringLocation firingLocation;
+        public double firingR = 0;
 
         private Queue<Entity> targets = new LinkedList<>();
         private Entity fromEntity;
@@ -526,6 +529,7 @@ public class Beam extends BasePower {
             this.homingTarget = config.getHomingTarget();
             this.homingRange = config.getHomingRange();
             this.effectOnly = config.isEffectOnly();
+            this.firingLocation = config.getFiringLocation();
             power = config;
             lengthPerSpawn = 1 / particleDensity;
         }
@@ -587,17 +591,21 @@ public class Beam extends BasePower {
                                         nextLoc.getBlockY() != lastLocation.getBlockY() ||
                                         nextLoc.getBlockZ() != lastLocation.getBlockZ()
                         )) {
-                            Block block = nextLoc.getBlock();
-                            if (!transp.contains(block.getType())) {
-                                if (!MovingTask.this.effectOnly) {
-                                    BeamHitBlockEvent beamHitBlockEvent = new BeamHitBlockEvent(fromEntity, block, lastLocation, itemStack);
-                                    Bukkit.getPluginManager().callEvent(beamHitBlockEvent);
+                            if(!(firingLocation.equals(FiringLocation.TARGET) && spawnedLength.get() < firingR)){
+                                Block block = nextLoc.getBlock();
+                                if (!transp.contains(block.getType())) {
+                                    if (!MovingTask.this.effectOnly) {
+                                        BeamHitBlockEvent beamHitBlockEvent = new BeamHitBlockEvent(fromEntity, block, lastLocation, itemStack);
+                                        Bukkit.getPluginManager().callEvent(beamHitBlockEvent);
+                                    }
+                                    if (bounce > 0) {
+                                        bounce--;
+                                        bounced = true;
+                                        makeBounce(nextLoc.getBlock(), towards, step, lastLocation);
+                                    } else {
+                                        return;
+                                    }
                                 }
-                                if (bounce > 0) {
-                                    bounce--;
-                                    bounced = true;
-                                    makeBounce(nextLoc.getBlock(), towards, step, lastLocation);
-                                } else return;
                             }
                         }
                         lastLocation = nextLoc;
@@ -626,12 +634,19 @@ public class Beam extends BasePower {
 
                     lengthRemains.set(lengthToSpawn + lengthPerSpawn);
                     if (spawnedLength.get() >= length || currentTick.addAndGet(1) > ttl || mode == Mode.BEAM) {
+                        callEnd();
                         return;
                     }
                     new RecursiveTask().runTaskLater(RPGItems.plugin, 1);
                 } catch (Exception e) {
                     this.cancel();
                 }
+            }
+
+            private BeamEndEvent callEnd(){
+                BeamEndEvent beamEndEvent = new BeamEndEvent(fromEntity, lastLocation, itemStack);
+                Bukkit.getPluginManager().callEvent(beamEndEvent);
+                return beamEndEvent;
             }
 
         }
@@ -947,6 +962,11 @@ public class Beam extends BasePower {
             if (movingTask.extraData != null && movingTask.extraData instanceof Particle.DustOptions) {
                     movingTask.extraData = new Particle.DustOptions(nextColor, ((Particle.DustOptions) movingTask.extraData).getSize());
             }
+            return this;
+        }
+
+        public MovingTaskBuilder firingR(double r) {
+            movingTask.firingR = r;
             return this;
         }
     }
@@ -1265,7 +1285,8 @@ public class Beam extends BasePower {
                 movingTaskBuilder.color(nextColor);
             }
             if (!getFiringLocation().equals(FiringLocation.SELF)){
-                movingTaskBuilder.fromLocation(fromLocation);
+                movingTaskBuilder.fromLocation(fromLocation)
+                        .firingR(poll.getR());
             }
             MovingTask movingTask = movingTaskBuilder
                     .build();

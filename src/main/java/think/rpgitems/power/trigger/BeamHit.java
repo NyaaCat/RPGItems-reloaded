@@ -3,6 +3,7 @@ package think.rpgitems.power.trigger;
 import org.bukkit.entity.Player;
 import org.bukkit.event.Event;
 import org.bukkit.inventory.ItemStack;
+import think.rpgitems.event.BeamEndEvent;
 import think.rpgitems.event.BeamHitBlockEvent;
 import think.rpgitems.event.BeamHitEntityEvent;
 import think.rpgitems.power.Pimpl;
@@ -23,6 +24,11 @@ public class BeamHit<TEvent extends Event, TResult, TReturn> extends Trigger<TEv
         }else if (event instanceof BeamHitEntityEvent){
             BeamHitEntityEvent event1 = (BeamHitEntityEvent) event;
             return (PowerResult<TResult>) powerBeamHit.hitEntity(player, i, event1.getEntity(), event1.getDamage(), event1);
-        }else return PowerResult.fail();
+        }else if (event instanceof BeamEndEvent){
+            BeamEndEvent event1 = (BeamEndEvent) event;
+            return (PowerResult<TResult>) powerBeamHit.beamEnd(player, i, event1.getLocation(), event1);
+        }else {
+            return PowerResult.fail();
+        }
     }
 }

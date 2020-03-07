@@ -24,6 +24,7 @@ import org.bukkit.projectiles.ProjectileSource;
 import org.bukkit.scheduler.BukkitRunnable;
 import think.rpgitems.data.Context;
 import think.rpgitems.data.LightContext;
+import think.rpgitems.event.BeamEndEvent;
 import think.rpgitems.event.BeamHitBlockEvent;
 import think.rpgitems.event.BeamHitEntityEvent;
 import think.rpgitems.item.ItemManager;
@@ -962,6 +963,18 @@ public class Events implements Listener {
 //
 //            rpgItem.power(player, content, event, BaseTriggers.BEAM_HIT_ENTITY, null);
 //        }
+    }
+
+    @EventHandler(ignoreCancelled = true, priority = EventPriority.HIGH)
+    public void onBeamEnd(BeamEndEvent event) {
+        Entity from = event.getFromEntity();
+        if (!(from instanceof Player)) return;
+        Player player = (Player) from;
+
+        RPGItem rItem = ItemManager.toRPGItem(event.getItemStack()).orElse(null);
+        if (rItem == null) return;
+
+        rItem.power(player, event.getItemStack(), event, BaseTriggers.BEAM_END, null);
     }
 
 }
