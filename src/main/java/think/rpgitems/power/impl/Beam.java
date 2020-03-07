@@ -591,7 +591,7 @@ public class Beam extends BasePower {
                                         nextLoc.getBlockY() != lastLocation.getBlockY() ||
                                         nextLoc.getBlockZ() != lastLocation.getBlockZ()
                         )) {
-                            if(!(firingLocation.equals(FiringLocation.TARGET) && spawnedLength.get() < firingR)){
+                            if(!(firingLocation.equals(FiringLocation.TARGET) && spawnedLength.get() < (firingR - 1))){
                                 Block block = nextLoc.getBlock();
                                 if (!transp.contains(block.getType())) {
                                     if (!MovingTask.this.effectOnly) {
