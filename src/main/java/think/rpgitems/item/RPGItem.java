@@ -141,6 +141,7 @@ public class RPGItem {
     private int pluginVersion;
     private int pluginSerial;
     private List<String> lore;
+    private int customModelData;
 
     public RPGItem(String name, int uid, CommandSender author) {
         this.name = name;
@@ -278,6 +279,7 @@ public class RPGItem {
 
         setShowPowerText(s.getBoolean("showPowerText", true));
         setShowArmourLore(s.getBoolean("showArmourLore", true));
+        setCustomModelData(s.getInt("customModelData",  -1));
 
         if (s.isConfigurationSection("enchantments")) {
             ConfigurationSection enchConf = s.getConfigurationSection("enchantments");
@@ -330,6 +332,14 @@ public class RPGItem {
         }
         setAlwaysAllowMelee(s.getBoolean("alwaysAllowMelee", false));
         rebuild();
+    }
+
+    private int getCustomModelData() {
+        return customModelData;
+    }
+
+    private void setCustomModelData(int customModelData) {
+        this.customModelData = customModelData;
     }
 
     public void setArmourExpression(String armour) {
@@ -484,6 +494,7 @@ public class RPGItem {
         s.set("showPowerText", isShowPowerText());
         s.set("showArmourLore", isShowArmourLore());
         s.set("damageMode", getDamageMode().name());
+        s.set("customModelData", getCustomModelData());
 
         Map<Enchantment, Integer> enchantMap = getEnchantMap();
         if (enchantMap != null) {
@@ -572,6 +583,11 @@ public class RPGItem {
         }
         meta.removeItemFlags(meta.getItemFlags().toArray(new ItemFlag[0]));
 
+        if (getCustomModelData() != -1) {
+            meta.setCustomModelData(customModelData);
+        }else{
+            meta.setCustomModelData(null);
+        }
         for (ItemFlag flag : getItemFlags()) {
             meta.addItemFlags(flag);
         }
