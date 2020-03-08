@@ -94,6 +94,14 @@ public class CastUtils {
         return rotated;
     }
 
+    public static CastLocation of(Location location, LivingEntity target, Vector normal) {
+        CastLocation castLocation = new CastLocation();
+        castLocation.normalDirection = normal;
+        castLocation.hitEntity = target;
+        castLocation.targetLocation = location;
+        return castLocation;
+    }
+
     public static class CastLocation {
         Location targetLocation;
         Entity hitEntity;

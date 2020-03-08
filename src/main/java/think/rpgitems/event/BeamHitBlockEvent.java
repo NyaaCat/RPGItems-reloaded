@@ -6,6 +6,7 @@ import org.bukkit.entity.Entity;
 import org.bukkit.event.Event;
 import org.bukkit.event.HandlerList;
 import org.bukkit.inventory.ItemStack;
+import think.rpgitems.power.impl.Beam;
 
 public class BeamHitBlockEvent extends Event {
     public static final HandlerList handlerList = new HandlerList();
@@ -21,12 +22,14 @@ public class BeamHitBlockEvent extends Event {
     private final Block hitBlock;
     private Location location;
     private final ItemStack itemStack;
+    private int depth;
 
-    public BeamHitBlockEvent(Entity from, Block hitBlock, Location location, ItemStack itemStack){
+    public BeamHitBlockEvent(Entity from, Block hitBlock, Location location, ItemStack itemStack, int depth){
         this.from = from;
         this.hitBlock = hitBlock;
         this.location = location;
         this.itemStack = itemStack;
+        this.depth = depth;
     }
 
     public Location getLocation() {
@@ -43,5 +46,9 @@ public class BeamHitBlockEvent extends Event {
 
     public ItemStack getItemStack() {
         return itemStack;
+    }
+
+    public int getDepth() {
+        return depth;
     }
 }

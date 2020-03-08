@@ -8,6 +8,7 @@ import org.bukkit.event.HandlerList;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.util.BoundingBox;
 import org.bukkit.util.Vector;
+import think.rpgitems.power.impl.Beam;
 
 public class BeamHitEntityEvent extends Event {
     public static final HandlerList handlerList = new HandlerList();
@@ -28,8 +29,9 @@ public class BeamHitEntityEvent extends Event {
     private final Location loc;
     private final BoundingBox boundingBox;
     private final Vector velocity;
+    private int depth;
 
-    public BeamHitEntityEvent(Entity from, LivingEntity entity, ItemStack itemStack, double damage, Location loc, BoundingBox boundingBox, Vector vector){
+    public BeamHitEntityEvent(Entity from, LivingEntity entity, ItemStack itemStack, double damage, Location loc, BoundingBox boundingBox, Vector vector, int depth){
         this.from = from;
         this.entity = entity;
         this.itemStack = itemStack;
@@ -37,6 +39,7 @@ public class BeamHitEntityEvent extends Event {
         this.loc = loc;
         this.boundingBox = boundingBox;
         this.velocity = vector;
+        this.depth = depth;
     }
 
     public BoundingBox getBoundingBox() {
@@ -71,4 +74,7 @@ public class BeamHitEntityEvent extends Event {
         return loc;
     }
 
+    public int getDepth() {
+        return depth;
+    }
 }

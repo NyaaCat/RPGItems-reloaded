@@ -9,6 +9,7 @@ import think.rpgitems.event.BeamHitEntityEvent;
 import think.rpgitems.power.Pimpl;
 import think.rpgitems.power.PowerBeamHit;
 import think.rpgitems.power.PowerResult;
+import think.rpgitems.power.impl.Beam;
 
 public class BeamHit<TEvent extends Event, TResult, TReturn> extends Trigger<TEvent, PowerBeamHit, TResult, TReturn> {
 

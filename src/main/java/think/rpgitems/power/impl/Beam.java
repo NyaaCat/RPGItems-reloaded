@@ -481,6 +481,7 @@ public class Beam extends BasePower {
         private boolean effectOnly = false;
         private final FiringLocation firingLocation;
         public double firingR = 0;
+        private int triggerDepth = 0;
 
         private Queue<Entity> targets = new LinkedList<>();
         private Entity fromEntity;
@@ -595,7 +596,7 @@ public class Beam extends BasePower {
                                 Block block = nextLoc.getBlock();
                                 if (!transp.contains(block.getType())) {
                                     if (!MovingTask.this.effectOnly) {
-                                        BeamHitBlockEvent beamHitBlockEvent = new BeamHitBlockEvent(fromEntity, block, lastLocation, itemStack);
+                                        BeamHitBlockEvent beamHitBlockEvent = new BeamHitBlockEvent(fromEntity, block, lastLocation, itemStack, triggerDepth);
                                         Bukkit.getPluginManager().callEvent(beamHitBlockEvent);
                                     }
                                     if (bounce > 0) {
@@ -634,17 +635,20 @@ public class Beam extends BasePower {
 
                     lengthRemains.set(lengthToSpawn + lengthPerSpawn);
                     if (spawnedLength.get() >= length || currentTick.addAndGet(1) > ttl || mode == Mode.BEAM) {
-                        callEnd();
+                        if (!effectOnly) {
+                            callEnd();
+                        }
                         return;
                     }
                     new RecursiveTask().runTaskLater(RPGItems.plugin, 1);
                 } catch (Exception e) {
                     this.cancel();
+                    e.printStackTrace();
                 }
             }
 
             private BeamEndEvent callEnd(){
-                BeamEndEvent beamEndEvent = new BeamEndEvent(fromEntity, lastLocation, itemStack);
+                BeamEndEvent beamEndEvent = new BeamEndEvent(fromEntity, lastLocation, itemStack, triggerDepth);
                 Bukkit.getPluginManager().callEvent(beamEndEvent);
                 return beamEndEvent;
             }
@@ -806,7 +810,7 @@ public class Beam extends BasePower {
             if (!collect.isEmpty()) {
                 Entity entity = collect.get(0);
                 if (entity instanceof LivingEntity) {
-                    BeamHitEntityEvent beamHitEntityEvent = new BeamHitEntityEvent(from, ((LivingEntity) entity), stack, damage, loc, getBoundingBox(loc), towards.clone().normalize().multiply(getNextLength(spawnedLength, length*20)));
+                    BeamHitEntityEvent beamHitEntityEvent = new BeamHitEntityEvent(from, ((LivingEntity) entity), stack, damage, loc, getBoundingBox(loc), towards.clone().normalize().multiply(getNextLength(spawnedLength, length*20)), triggerDepth);
                     Bukkit.getPluginManager().callEvent(beamHitEntityEvent);
                     double damage = beamHitEntityEvent.getDamage();
                     if (damage > 0) {
@@ -967,6 +971,11 @@ public class Beam extends BasePower {
 
         public MovingTaskBuilder firingR(double r) {
             movingTask.firingR = r;
+            return this;
+        }
+
+        public MovingTaskBuilder triggerDepth(int depth) {
+            movingTask.triggerDepth = depth;
             return this;
         }
     }
@@ -1175,7 +1184,7 @@ public class Beam extends BasePower {
         return new RoundedConeInfo(theta, phi, r, rPhi, rTheta, beam.getInitialRotation());
     }
 
-    public class Impl implements PowerPlain, PowerRightClick, PowerLeftClick, PowerSneak, PowerSneaking, PowerSprint, PowerBowShoot, PowerHitTaken, PowerHit, PowerHurt, PowerTick {
+    public class Impl implements PowerPlain, PowerRightClick, PowerLeftClick, PowerSneak, PowerSneaking, PowerSprint, PowerBowShoot, PowerHitTaken, PowerHit, PowerHurt, PowerTick, PowerBeamHit {
         @Override
         public PowerResult<Void> leftClick(Player player, ItemStack stack, PlayerInteractEvent event) {
             return fire(player, stack);
@@ -1188,28 +1197,44 @@ public class Beam extends BasePower {
             return beam(player, stack);
         }
 
+        public PowerResult<Void> fire(Player player, ItemStack stack, Location castLocation, LivingEntity target, int depth) {
+            if (!checkCooldown(getPower(), player, getCooldown(), true, true)) return PowerResult.cd();
+            if (!getItem().consumeDurability(stack, getCost())) return PowerResult.cost();
+
+            CastUtils.CastLocation loc = CastUtils.of(castLocation, target, yAxis.clone());
+            return beam(player, stack, loc, depth);
+        }
+
         @Override
         public Power getPower() {
             return Beam.this;
         }
 
         private PowerResult<Void> beam(LivingEntity from, ItemStack stack) {
+            Location fromLocation = from.getEyeLocation().clone();
+            Vector towards = from.getEyeLocation().getDirection().clone();
 
+            CastUtils.CastLocation result = CastUtils.rayTrace(from, fromLocation, towards, getFiringRange());
+            return beam(from, stack, result, 0);
+        }
+
+        private PowerResult<Void> beam(LivingEntity from, ItemStack stack, CastUtils.CastLocation castLocation, int depth){
             Location fromLocation = from.getEyeLocation().clone();
             Vector towards = from.getEyeLocation().getDirection().clone();
             Vector normal = yAxis.clone();
-            Queue<RoundedConeInfo> roundedConeInfo = internalCones(Beam.this, getBeamAmount(), Math.max(getBurstCount(), 1));
 
+            Queue<RoundedConeInfo> roundedConeInfo = internalCones(Beam.this, getBeamAmount(), Math.max(getBurstCount(), 1));
             Deque <Entity> targets = null;
+
             if (from instanceof Player && getHoming() > 0) {
                 targets = new LinkedList<>(getTargets(towards, fromLocation, from, getHomingRange(), getHomingAngle(), getHomingTarget()));
             }
-
-            CastUtils.CastLocation result = CastUtils.rayTrace(from, fromLocation, towards, getFiringRange());
-            fromLocation = result.getTargetLocation();
-            normal = result.getNormalDirection();
-            if (result.getHitEntity()!=null && targets != null){
-                targets.addFirst(result.getHitEntity());
+            if (castLocation != null){
+                fromLocation = castLocation.getTargetLocation();
+                normal = castLocation.getNormalDirection();
+                if (castLocation.getHitEntity()!=null && targets != null){
+                    targets.addFirst(castLocation.getHitEntity());
+                }
             }
 
             if (getBurstCount() > 0) {
@@ -1224,7 +1249,7 @@ public class Beam extends BasePower {
                     @Override
                     public void run() {
                         for (int j = 0; j < getBeamAmount(); j++) {
-                            internalFireBeam(from, finalFromLocation, towards, finalNormal, stack, roundedConeInfo, finalTargets);
+                            internalFireBeam(from, finalFromLocation, towards, finalNormal, stack, roundedConeInfo, finalTargets, depth);
                         }
                         if (bursted.addAndGet(1) < currentBurstCount) {
                             new FireTask().runTaskLater(RPGItems.plugin, currentBurstInterval);
@@ -1234,16 +1259,16 @@ public class Beam extends BasePower {
                 new FireTask().runTask(RPGItems.plugin);
                 return PowerResult.ok();
             } else {
-                return internalFireBeam(from, stack, roundedConeInfo, targets);
+                return internalFireBeam(from, stack, roundedConeInfo, targets, depth);
             }
         }
 
 
-        private PowerResult<Void> internalFireBeam(LivingEntity from, ItemStack stack, Queue<RoundedConeInfo> coneInfo, Deque<Entity> targets){
-            return internalFireBeam(from, from.getEyeLocation(), from.getEyeLocation().getDirection(), yAxis.clone(), stack, coneInfo, targets);
+        private PowerResult<Void> internalFireBeam(LivingEntity from, ItemStack stack, Queue<RoundedConeInfo> coneInfo, Deque<Entity> targets, int depth){
+            return internalFireBeam(from, from.getEyeLocation(), from.getEyeLocation().getDirection(), yAxis.clone(), stack, coneInfo, targets, depth);
         }
 
-        private PowerResult<Void> internalFireBeam(LivingEntity from, Location castLocation, Vector towards, Vector normalDir, ItemStack stack, Queue<RoundedConeInfo> coneInfo, Deque<Entity> targets) {
+        private PowerResult<Void> internalFireBeam(LivingEntity from, Location castLocation, Vector towards, Vector normalDir, ItemStack stack, Queue<RoundedConeInfo> coneInfo, Deque<Entity> targets, int depth) {
             Location fromLocation = castLocation;
 
             if (!isCastOff()){
@@ -1279,7 +1304,8 @@ public class Beam extends BasePower {
                     .fromEntity(from)
                     .towards(towards)
                     .targets(targets)
-                    .itemStack(stack);
+                    .itemStack(stack)
+                    .triggerDepth(depth);
             if (getBehavior().contains(Behavior.RAINBOW_COLOR)){
                 Color nextColor = getNextColor();
                 movingTaskBuilder.color(nextColor);
@@ -1321,7 +1347,8 @@ public class Beam extends BasePower {
 
         @Override
         public PowerResult<Double> hit(Player player, ItemStack stack, LivingEntity entity, double damage, EntityDamageByEntityEvent event) {
-            return fire(player, stack).with(event.getDamage());
+
+            return fire(player, stack, entity.getLocation(), entity, 1).with(event.getDamage());
         }
 
         @Override
@@ -1343,6 +1370,24 @@ public class Beam extends BasePower {
         @Override
         public PowerResult<Void> tick(Player player, ItemStack stack) {
             return fire(player, stack);
+        }
+
+        @Override
+        public PowerResult<Double> hitEntity(Player player, ItemStack stack, LivingEntity entity, double damage, BeamHitEntityEvent event) {
+            if (event.getDepth() >= 1) return PowerResult.noop();
+            return fire(player, stack, event.getLoc(), entity, event.getDepth() + 1).with(damage);
+        }
+
+        @Override
+        public PowerResult<Void> hitBlock(Player player, ItemStack stack, Location location, BeamHitBlockEvent event) {
+            if (event.getDepth() >= 1) return PowerResult.noop();
+            return fire(player, stack, location, null, event.getDepth() + 1);
+        }
+
+        @Override
+        public PowerResult<Void> beamEnd(Player player, ItemStack stack, Location location, BeamEndEvent event) {
+            if (event.getDepth() >= 1) return PowerResult.noop();
+            return fire(player, stack, location, null, event.getDepth() + 1);
         }
     }
 }
