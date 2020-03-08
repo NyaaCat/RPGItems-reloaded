@@ -505,6 +505,16 @@ public class AdminCommands extends RPGCommandReceiver {
         }
     }
 
+    @SubCommand(value = "customModel", tabCompleter = "itemCompleter")
+    public void itemCustomModel(CommandSender sender, Arguments args) {
+        RPGItem item = getItem(args.nextString(), sender);
+        int customModelData = args.nextInt();
+        item.setCustomModelData(customModelData);
+        ItemManager.refreshItem();
+        ItemManager.save(item);
+        msgs(sender, "message.custom_model_data.set", customModelData);
+    }
+
     @SubCommand(value = "damage", tabCompleter = "itemCompleter")
     public void itemDamage(CommandSender sender, Arguments args) {
         RPGItem item = getItem(args.nextString(), sender);
@@ -532,6 +542,8 @@ public class AdminCommands extends RPGCommandReceiver {
             msgs(sender, "message.damage.get", item.getName(), item.getDamageMin(), item.getDamageMax());
         }
     }
+
+
 
     @SubCommand(value = "armour", tabCompleter = "itemCompleter")
     public void itemArmour(CommandSender sender, Arguments args) {

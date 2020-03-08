@@ -334,11 +334,11 @@ public class RPGItem {
         rebuild();
     }
 
-    private int getCustomModelData() {
+    public int getCustomModelData() {
         return customModelData;
     }
 
-    private void setCustomModelData(int customModelData) {
+    public void setCustomModelData(int customModelData) {
         this.customModelData = customModelData;
     }
 
