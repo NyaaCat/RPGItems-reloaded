@@ -1584,9 +1584,9 @@ public class RPGItem {
                         origValue = numberModifier.apply(param);
                     }
                     if (int.class.equals(type) || Integer.class.equals(type)) {
-                        return (int) origValue;
+                        return (int) Math.round(origValue);
                     } else if (float.class.equals(type) || Float.class.equals(type)) {
-                        return (float) origValue;
+                        return (float) Math.round(origValue);
                     } else {
                         return origValue;
                     }
