@@ -709,13 +709,15 @@ public class Beam extends BasePower {
                         if (relativeResult.getHitBlockFace().getDirection().getY() > 0) {
                             gravityVector.multiply(-1);
                         }
-                        towards.rotateAroundNonUnitAxis(relativeResult.getHitBlockFace().getDirection(), Math.toRadians(180)).multiply(-1);
+                        towards.rotateAroundAxis(relativeResult.getHitBlockFace().getDirection(), Math.toRadians(180)).multiply(-1);
+                        step.rotateAroundAxis(relativeResult.getHitBlockFace().getDirection(), Math.toRadians(180)).multiply(-1);
                     }
                 } else {
                     if (hitBlockFace.getDirection().getY() > 0) {
                         gravityVector.multiply(-1);
                     }
-                    towards.rotateAroundNonUnitAxis(hitBlockFace.getDirection(), Math.toRadians(180)).multiply(-1);
+                    towards.rotateAroundAxis(hitBlockFace.getDirection(), Math.toRadians(180)).multiply(-1);
+                    step.rotateAroundAxis(hitBlockFace.getDirection(), Math.toRadians(180)).multiply(-1);
                 }
             }
         }
