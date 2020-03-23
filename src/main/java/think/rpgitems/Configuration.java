@@ -86,6 +86,12 @@ public class Configuration extends PluginConfigure {
     @Serializable(name = "general.item.show_loaded")
     public boolean itemShowLoaded = false;
 
+    // enable for better performance
+    // note: all new given items will not stack
+    // and can not be used in trades!
+    @Serializable(name = "general.item.item_stack_uuid")
+    public boolean itemStackUuid = true;
+
     @SuppressWarnings("unused")
     @Serializable(name = "unused.locale_inv", alias = {"general.locale_inv", "localeInv"})
     public boolean oldLocaleInv = false;

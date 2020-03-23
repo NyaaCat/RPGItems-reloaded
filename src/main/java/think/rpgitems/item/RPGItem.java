@@ -608,9 +608,11 @@ public class RPGItem {
         item.setItemMeta(refreshAttributeModifiers(meta));
         try {
             ItemTagUtils.setInt(item, NBT_UID, uid);
-            if (!ItemTagUtils.getString(item, NBT_ITEM_UUID).isPresent()) {
-                UUID uuid = UUID.randomUUID();
-                ItemTagUtils.setString(item, NBT_ITEM_UUID, uuid.toString());
+            if (RPGItems.plugin.cfg.itemStackUuid) {
+                if (!ItemTagUtils.getString(item, NBT_ITEM_UUID).isPresent()) {
+                    UUID uuid = UUID.randomUUID();
+                    ItemTagUtils.setString(item, NBT_ITEM_UUID, uuid.toString());
+                }
             }
         } catch (NoSuchFieldException e) {
             e.printStackTrace();
