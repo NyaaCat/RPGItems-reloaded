@@ -51,7 +51,9 @@ public enum Preset {
                         "UNLUCK",
                         "SLOW_FALLING",
                         "CONDUIT_POWER",
-                        "DOLPHINS_GRACE");
+                        "DOLPHINS_GRACE",
+                        "BAD_OMEN",
+                        "HERO_OF_THE_VILLAGE");
             case TRIGGERS:
                 return Power.getTriggers(PowerManager.getMeta(cls).implClass()).stream().map(Trigger::name).collect(Collectors.toList());
             case VISUAL_EFFECT:
