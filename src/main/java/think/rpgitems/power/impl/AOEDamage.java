@@ -17,6 +17,7 @@ import org.bukkit.potion.PotionEffectType;
 import org.bukkit.scheduler.BukkitRunnable;
 import think.rpgitems.RPGItems;
 import think.rpgitems.data.Context;
+import think.rpgitems.data.LightContext;
 import think.rpgitems.event.BeamEndEvent;
 import think.rpgitems.event.BeamHitBlockEvent;
 import think.rpgitems.event.BeamHitEntityEvent;
@@ -251,13 +252,13 @@ public class AOEDamage extends BasePower {
                     c++;
                     continue;
                 }
-                    Context.instance().putTemp(player.getUniqueId(), OVERRIDING_DAMAGE, getDamage());
-                    Context.instance().putTemp(player.getUniqueId(), SUPPRESS_MELEE, isSuppressMelee());
-                    Context.instance().putTemp(player.getUniqueId(), DAMAGE_SOURCE_ITEM, stack);
+                    LightContext.putTemp(player.getUniqueId(), OVERRIDING_DAMAGE, getDamage());
+                    LightContext.putTemp(player.getUniqueId(), SUPPRESS_MELEE, isSuppressMelee());
+                    LightContext.putTemp(player.getUniqueId(), DAMAGE_SOURCE_ITEM, stack);
                     e.damage(getDamage(), player);
-                    Context.instance().putTemp(player.getUniqueId(), SUPPRESS_MELEE, isSuppressMelee());
-                    Context.instance().putTemp(player.getUniqueId(), OVERRIDING_DAMAGE, null);
-                    Context.instance().removeTemp(player.getUniqueId(), DAMAGE_SOURCE_ITEM);
+                    LightContext.removeTemp(player.getUniqueId(), SUPPRESS_MELEE);
+                    LightContext.removeTemp(player.getUniqueId(), OVERRIDING_DAMAGE);
+                    LightContext.removeTemp(player.getUniqueId(), DAMAGE_SOURCE_ITEM);
                 }
             } else {
                     (new BukkitRunnable() {
@@ -278,13 +279,13 @@ public class AOEDamage extends BasePower {
                                     c++;
                                     continue;
                                 }
-                                Context.instance().putTemp(player.getUniqueId(), OVERRIDING_DAMAGE, getDamage());
-                                Context.instance().putTemp(player.getUniqueId(), SUPPRESS_MELEE, isSuppressMelee());
-                                Context.instance().putTemp(player.getUniqueId(), DAMAGE_SOURCE_ITEM, stack);
+                                LightContext.putTemp(player.getUniqueId(), OVERRIDING_DAMAGE, getDamage());
+                                LightContext.putTemp(player.getUniqueId(), SUPPRESS_MELEE, isSuppressMelee());
+                                LightContext.putTemp(player.getUniqueId(), DAMAGE_SOURCE_ITEM, stack);
                                 e.damage(getDamage(), player);
-                                Context.instance().putTemp(player.getUniqueId(), SUPPRESS_MELEE, isSuppressMelee());
-                                Context.instance().putTemp(player.getUniqueId(), OVERRIDING_DAMAGE, null);
-                                Context.instance().removeTemp(player.getUniqueId(), DAMAGE_SOURCE_ITEM);
+                                LightContext.putTemp(player.getUniqueId(), SUPPRESS_MELEE, isSuppressMelee());
+                                LightContext.putTemp(player.getUniqueId(), OVERRIDING_DAMAGE, null);
+                                LightContext.removeTemp(player.getUniqueId(), DAMAGE_SOURCE_ITEM);
                             }
                         }
                     }).runTaskLater(RPGItems.plugin, getDelay());
