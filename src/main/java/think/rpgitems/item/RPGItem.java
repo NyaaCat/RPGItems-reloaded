@@ -1588,7 +1588,7 @@ public class RPGItem {
                     if (int.class.equals(type) || Integer.class.equals(type)) {
                         return (int) Math.round(origValue);
                     } else if (float.class.equals(type) || Float.class.equals(type)) {
-                        return (float) Math.round(origValue);
+                        return (float) (origValue);
                     } else {
                         return origValue;
                     }
