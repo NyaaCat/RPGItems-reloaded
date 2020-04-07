@@ -4,6 +4,7 @@ import org.bukkit.Effect;
 import org.bukkit.Location;
 import org.bukkit.entity.Entity;
 import org.bukkit.entity.LivingEntity;
+import org.bukkit.entity.Mob;
 import org.bukkit.entity.Player;
 import org.bukkit.event.entity.EntityDamageByEntityEvent;
 import org.bukkit.event.entity.EntityShootBowEvent;
@@ -12,6 +13,7 @@ import org.bukkit.event.player.PlayerInteractEvent;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.potion.PotionEffect;
 import org.bukkit.potion.PotionEffectType;
+import org.bukkit.util.Vector;
 import think.rpgitems.I18n;
 import think.rpgitems.event.BeamEndEvent;
 import think.rpgitems.event.BeamHitBlockEvent;
@@ -20,9 +22,10 @@ import think.rpgitems.power.*;
 import think.rpgitems.utils.PotionEffectUtils;
 
 import java.util.Collection;
+import java.util.List;
+import java.util.stream.Collectors;
 
-import static think.rpgitems.power.Utils.checkCooldown;
-import static think.rpgitems.power.Utils.getNearbyEntities;
+import static think.rpgitems.power.Utils.*;
 
 /**
  * Power aoe.
@@ -57,6 +60,35 @@ public class AOE extends BasePower {
     public String display = null;
     @Property
     public int cost = 0;
+    @Property
+    public int count = -1;
+
+
+    /**
+     * a cone angle from player eye location to center.
+     * or eye direction if two points is near.
+     * similar to AOEDamage.
+     */
+    @Property
+    public int angle = 180;
+    @Property
+    public Target target = Target.ALL;
+
+    enum Target {
+        MOBS, PLAYERS, ALL
+    }
+
+    public int getCount() {
+        return count;
+    }
+
+    public int getAngle() {
+        return angle;
+    }
+
+    public Target getTarget() {
+        return target;
+    }
 
     /**
      * Cost of this power
@@ -129,7 +161,7 @@ public class AOE extends BasePower {
 
         @Override
         public PowerResult<Void> fire(Player player, ItemStack stack) {
-            return fire(player.getLocation(), player, stack, getNearbyEntities(getPower(), player.getLocation(), player, getRange()));
+            return fire(player.getEyeLocation(), player, stack, getNearbyEntities(getPower(), player.getLocation(), player, getRange()));
         }
 
         private PowerResult<Void> fire(Location center, Player player, ItemStack itemStack, Collection<Entity> entityList){
@@ -139,17 +171,36 @@ public class AOE extends BasePower {
             int range = getRange();
 
             PotionEffect effect = new PotionEffect(getType(), getDuration(), getAmplifier() - 1);
-            player.getWorld().playEffect(center, Effect.POTION_BREAK, getType().getColor().asRGB());
+//            player.getWorld().playEffect(center, Effect.POTION_BREAK, getType().getColor().asRGB());
 
-            for (Entity ent : entityList) {
-                if (player.equals(ent) && isSelfapplication()) {
-                    player.addPotionEffect(effect);
-                    continue;
-                }
-                if (ent instanceof LivingEntity && ent.getLocation().distance(center) <= range) {
-                    ((LivingEntity) ent).addPotionEffect(effect);
-                }
+            List<LivingEntity> collect = entityList.stream().filter(entity -> entity instanceof LivingEntity)
+                    .map(entity -> ((LivingEntity) entity))
+                    .collect(Collectors.toList());
+            Vector subtract = center.clone().subtract(player.getEyeLocation()).toVector();
+            if (center.distance(player.getEyeLocation()) < 1){
+                subtract = player.getEyeLocation().getDirection();
             }
+            getLivingEntitiesInConeSorted(collect, center.toVector(), getAngle(), subtract)
+                    .stream()
+                    .filter(entity -> {
+                        switch (getTarget()) {
+                            case MOBS:
+                                return entity instanceof Mob;
+                            case PLAYERS:
+                                return entity instanceof Player;
+                            default:
+                                return true;
+                        }
+                    })
+                    .limit(getCount() == -1 ? Integer.MAX_VALUE : getCount())
+                    .forEach(ent -> {
+                        if (player.equals(ent) && isSelfapplication()) {
+                            player.addPotionEffect(effect);
+                        }
+                        if (ent != null && ent.getLocation().distance(center) <= range) {
+                            ent.addPotionEffect(effect);
+                        }
+                    });
             return PowerResult.ok();
         }
 
