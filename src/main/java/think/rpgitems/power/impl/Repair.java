@@ -163,7 +163,7 @@ public class Repair extends BasePower {
 
         @Override
         public PowerResult<Void> fire(Player player, ItemStack stack) {
-            if (!checkCooldown(getPower(), player, getCooldown(), true, true)) PowerResult.cd();
+            if (!checkCooldown(getPower(), player, getCooldown(), true, true)) return PowerResult.cd();
             int max = getItem().getMaxDurability();
             int repairCount = 0;
             for (int i = 0; i < getAmount(); i++) {
