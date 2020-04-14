@@ -331,7 +331,7 @@ public class ParticlePower extends BasePower {
         @Override
         public PowerResult<Double> hit(Player player, ItemStack stack, LivingEntity entity, double damage, EntityDamageByEntityEvent event) {
             if (!getItem().consumeDurability(stack, getCost())) return PowerResult.cost();
-            if (playLocation.equals(PlayLocation.HIT_LOCATION)) {
+            if (getPlayLocation().equals(PlayLocation.HIT_LOCATION)) {
                 int delay = getDelay();
                 new BukkitRunnable(){
                     @Override
@@ -339,7 +339,7 @@ public class ParticlePower extends BasePower {
                         spawnParticle(entity);
                     }
                 }.runTaskLater(RPGItems.plugin, delay);
-            }else if (playLocation.equals(PlayLocation.SELF)){
+            }else if (getPlayLocation().equals(PlayLocation.SELF)){
                 int delay = getDelay();
                 new BukkitRunnable(){
                     @Override
@@ -361,8 +361,8 @@ public class ParticlePower extends BasePower {
                 @Override
                 public void run() {
                     Location location = event.getLoc();
-                    if (playLocation.equals(PlayLocation.HIT_LOCATION)) {
-                    }else if (playLocation.equals(PlayLocation.SELF)){
+                    if (getPlayLocation().equals(PlayLocation.HIT_LOCATION)) {
+                    }else if (getPlayLocation().equals(PlayLocation.SELF)){
                         location = player.getLocation();
                     }
                     spawnParticle(entity.getWorld(), location);
@@ -381,8 +381,8 @@ public class ParticlePower extends BasePower {
                 @Override
                 public void run() {
                     Location loc = location;
-                    if (playLocation.equals(PlayLocation.HIT_LOCATION)) {
-                    }else if (playLocation.equals(PlayLocation.SELF)){
+                    if (getPlayLocation().equals(PlayLocation.HIT_LOCATION)) {
+                    }else if (getPlayLocation().equals(PlayLocation.SELF)){
                         loc = player.getLocation();
                     }
                     spawnParticle(player.getWorld(), loc);
@@ -402,8 +402,8 @@ public class ParticlePower extends BasePower {
                 @Override
                 public void run() {
                     Location loc = location;
-                    if (playLocation.equals(PlayLocation.HIT_LOCATION)) {
-                    }else if (playLocation.equals(PlayLocation.SELF)){
+                    if (getPlayLocation().equals(PlayLocation.HIT_LOCATION)) {
+                    }else if (getPlayLocation().equals(PlayLocation.SELF)){
                         loc = player.getLocation();
                     }
                     spawnParticle(player.getWorld(), loc);
@@ -423,8 +423,8 @@ public class ParticlePower extends BasePower {
                 @Override
                 public void run() {
                     Location loc = event.getEntity().getLocation();
-                    if (playLocation.equals(PlayLocation.HIT_LOCATION)) {
-                    }else if (playLocation.equals(PlayLocation.SELF)){
+                    if (getPlayLocation().equals(PlayLocation.HIT_LOCATION)) {
+                    }else if (getPlayLocation().equals(PlayLocation.SELF)){
                         loc = player.getLocation();
                     }
                     spawnParticle(player.getWorld(), loc);

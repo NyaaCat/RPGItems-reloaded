@@ -171,8 +171,8 @@ public class SoundPower extends BasePower {
         public PowerResult<Double> hit(Player player, ItemStack stack, LivingEntity entity, double damage, EntityDamageByEntityEvent event) {
             if (!checkCooldown(getPower(), player, getCooldown(), true, true)) return PowerResult.cd();
             Location location = entity.getLocation();
-            if (playLocation.equals(PlayLocation.HIT_LOCATION)) {
-            }else if (playLocation.equals(PlayLocation.SELF)){
+            if (getPlayLocation().equals(PlayLocation.HIT_LOCATION)) {
+            }else if (getPlayLocation().equals(PlayLocation.SELF)){
                 location = player.getLocation();
             }
             return sound(entity, stack, location).with(damage);
@@ -203,8 +203,8 @@ public class SoundPower extends BasePower {
         public PowerResult<Double> hitEntity(Player player, ItemStack stack, LivingEntity entity, double damage, BeamHitEntityEvent event) {
             if (!checkCooldown(getPower(), player, getCooldown(), true, true)) return PowerResult.cd();
             Location location = entity.getLocation();
-            if (playLocation.equals(PlayLocation.HIT_LOCATION)) {
-            }else if (playLocation.equals(PlayLocation.SELF)){
+            if (getPlayLocation().equals(PlayLocation.HIT_LOCATION)) {
+            }else if (getPlayLocation().equals(PlayLocation.SELF)){
                 location = player.getLocation();
             }
             return sound(player, stack, location).with(damage);
@@ -213,8 +213,8 @@ public class SoundPower extends BasePower {
         @Override
         public PowerResult<Void> hitBlock(Player player, ItemStack stack, Location location, BeamHitBlockEvent event) {
             if (!checkCooldown(getPower(), player, getCooldown(), true, true)) return PowerResult.cd();
-            if (playLocation.equals(PlayLocation.HIT_LOCATION)) {
-            }else if (playLocation.equals(PlayLocation.SELF)){
+            if (getPlayLocation().equals(PlayLocation.HIT_LOCATION)) {
+            }else if (getPlayLocation().equals(PlayLocation.SELF)){
                 location = player.getLocation();
             }
             return sound(player, stack, location);
@@ -223,8 +223,8 @@ public class SoundPower extends BasePower {
         @Override
         public PowerResult<Void> beamEnd(Player player, ItemStack stack, Location location, BeamEndEvent event) {
             if (!checkCooldown(getPower(), player, getCooldown(), true, true)) return PowerResult.cd();
-            if (playLocation.equals(PlayLocation.HIT_LOCATION)) {
-            }else if (playLocation.equals(PlayLocation.SELF)){
+            if (getPlayLocation().equals(PlayLocation.HIT_LOCATION)) {
+            }else if (getPlayLocation().equals(PlayLocation.SELF)){
                 location = player.getLocation();
             }
             return sound(player, stack, location);
@@ -234,8 +234,8 @@ public class SoundPower extends BasePower {
         public PowerResult<Void> projectileHit(Player player, ItemStack stack, ProjectileHitEvent event) {
             if (!checkCooldown(getPower(), player, getCooldown(), true, true)) return PowerResult.cd();
             Location location = event.getEntity().getLocation();
-            if (playLocation.equals(PlayLocation.HIT_LOCATION)) {
-            }else if (playLocation.equals(PlayLocation.SELF)){
+            if (getPlayLocation().equals(PlayLocation.HIT_LOCATION)) {
+            }else if (getPlayLocation().equals(PlayLocation.SELF)){
                 location = player.getLocation();
             }
             return sound(player, stack, location);
