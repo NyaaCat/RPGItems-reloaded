@@ -263,6 +263,10 @@ public class Events implements Listener {
         Player player = (shooter instanceof Player) ? (Player) shooter : Bukkit.getPlayer(projectileRegisterMap.get(((LivingEntity) shooter).getUniqueId()));
         if (projectilePlayer != null) {
             if (projectilePlayer != player) {
+                projectileRpgItem = null;
+                projectilePlayer = null;
+                projectileItemStack = null;
+                projectileRegisterMap.remove(((LivingEntity) shooter).getUniqueId());
                 throw new IllegalStateException();
             }
             registerRPGProjectile(e.getEntity().getEntityId(), projectileRpgItem.getUid());
