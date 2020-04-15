@@ -387,7 +387,7 @@ public class ProjectilePower extends BasePower {
                                 castLocation1 = CastUtils.rayTrace(player, player.getEyeLocation(), player.getEyeLocation().getDirection(), getFiringRange());
                             }
                             burstTask.put(uuid, this.getTaskId());
-                            if (count-- > 0) {
+                            if (count-- > 0 && player.isOnline()) {
                                 fire(player, stack, castLocation1, speedFactor);
                                 return;
                             }
