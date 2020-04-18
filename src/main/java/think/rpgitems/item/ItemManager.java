@@ -530,7 +530,8 @@ public class ItemManager {
         PersistentDataContainer tagContainer = Objects.requireNonNull(meta).getPersistentDataContainer();
         if (tagContainer.has(TAG_META, PersistentDataType.TAG_CONTAINER)) {
             PersistentDataContainer metaTag = getTag(tagContainer, TAG_META);
-            int uid = getInt(metaTag, TAG_ITEM_UID);
+            Integer uid = getInt(metaTag, TAG_ITEM_UID);
+            if (uid == null)return Optional.empty();
             Optional<Boolean> optIsModel = optBoolean(metaTag, TAG_IS_MODEL);
             if (ignoreModel && optIsModel.orElse(false)) {
                 return Optional.empty();
