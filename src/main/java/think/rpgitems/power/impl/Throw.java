@@ -1,11 +1,13 @@
 package think.rpgitems.power.impl;
 
+import cat.nyaa.nyaacore.utils.NmsUtils;
 import cat.nyaa.nyaacore.utils.ReflectionUtils;
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
 import org.bukkit.Location;
 import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.entity.Entity;
+import org.bukkit.entity.EntityType;
 import org.bukkit.entity.Player;
 import org.bukkit.entity.Projectile;
 import org.bukkit.event.entity.EntityDamageByEntityEvent;
@@ -128,30 +130,25 @@ public class Throw extends BasePower {
         private void summonEntity(Player player) {
             try {
                 Location loc = player.getEyeLocation().clone();
-                Class craftWorld = ReflectionUtils.getOBCClass("CraftWorld");
-                Method getHandleMethod = ReflectionUtils.getMethod(craftWorld, "getHandle");
-                Object worldServer = getHandleMethod.invoke(loc.getWorld());
-                Class<?> chunkRegionLoader = ReflectionUtils.getNMSClass("ChunkRegionLoader");
                 Class<?> mojangsonParser = ReflectionUtils.getNMSClass("MojangsonParser");
                 Method getTagFromJson = mojangsonParser.getMethod("parse", String.class);
                 Class<?> nbtTagCompound = ReflectionUtils.getNMSClass("NBTTagCompound");
                 Method setString = nbtTagCompound.getMethod("setString", String.class, String.class);
-                Class<?> nmsEntity = ReflectionUtils.getNMSClass("Entity");
-                Method getUUID = nmsEntity.getMethod("getUniqueID");
-                Method setPositionRotation = nmsEntity.getMethod("setPositionRotation", double.class, double.class, double.class, float.class, float.class);
-                Method spawnEntity = chunkRegionLoader.getMethod("a", nbtTagCompound, ReflectionUtils.getNMSClass("World"), double.class, double.class, double.class, boolean.class);
+                Entity entity = player.getWorld().spawnEntity(loc, EntityType.valueOf(getEntityName()));
                 Object nbt;
+                String s = getEntityData().replaceAll("\\{player}", player.getName()).replaceAll("\\{playerUUID}", player.getUniqueId().toString());
                 try {
-                    nbt = getTagFromJson.invoke(null, getEntityData().replaceAll("\\{player}", player.getName()).replaceAll("\\{playerUUID}", player.getUniqueId().toString()));
+                    nbt = getTagFromJson.invoke(null, s);
                 } catch (Exception e) {
                     player.sendMessage(e.getCause().getMessage());
                     return;
                 }
-                setString.invoke(nbt, "id", getEntityName());
-                Object entity = spawnEntity.invoke(null, nbt, worldServer, loc.getX(), loc.getY(), loc.getZ(), true);
+//                setString.invoke(nbt, "id", getEntityName());
                 if (entity != null) {
-                    setPositionRotation.invoke(entity, loc.getX(), loc.getY(), loc.getZ(), loc.getYaw(), loc.getPitch());
-                    UUID uuid = (UUID) getUUID.invoke(entity);
+                    NmsUtils.setEntityTag(entity, (String) s);
+                    entity.setRotation(loc.getYaw(), loc.getPitch());
+//                    setPositionRotation.invoke(entity, loc.getX(), loc.getY(), loc.getZ(), loc.getYaw(), loc.getPitch());
+                    UUID uuid = entity.getUniqueId();
                     Entity e = Bukkit.getEntity(uuid);
                     if (e != null) {
                         if (e instanceof Projectile) {
@@ -161,7 +158,7 @@ public class Throw extends BasePower {
                         e.setPersistent(isPersistent());
                     }
                 }
-            } catch (IllegalAccessException | InvocationTargetException | NoSuchMethodException e) {
+            } catch (NoSuchMethodException e) {
                 RPGItems.plugin.getLogger().log(Level.WARNING, "Execption spawning entity in " + getItem().getName(), e);
             }
         }
