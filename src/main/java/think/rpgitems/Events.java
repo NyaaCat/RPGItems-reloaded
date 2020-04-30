@@ -180,6 +180,9 @@ public class Events implements Listener {
         final Projectile entity = e.getEntity();
         if (removeProjectiles.contains(entity.getEntityId())) {
             Bukkit.getScheduler().runTask(plugin, () -> {
+                if (e.getHitEntity() != null && e.getEntity() instanceof AbstractArrow && ((AbstractArrow) e.getEntity()).getPierceLevel() > 0 ) {
+                    return;
+                }
                 removeProjectiles.remove(entity.getEntityId());
                 entity.remove();
             });
@@ -222,7 +225,12 @@ public class Events implements Listener {
                     rItem.power(player, item, e, BaseTriggers.PROJECTILE_HIT);
                 }
             } finally {
-                Bukkit.getScheduler().runTask(plugin, () -> rpgProjectiles.remove(entity.getEntityId()));
+                Bukkit.getScheduler().runTask(plugin, () -> {
+                    if (e.getHitEntity() != null && e.getEntity() instanceof AbstractArrow && ((AbstractArrow) e.getEntity()).getPierceLevel() > 0 ) {
+                        return;
+                    }
+                    rpgProjectiles.remove(entity.getEntityId());
+                });
             }
         }
     }
