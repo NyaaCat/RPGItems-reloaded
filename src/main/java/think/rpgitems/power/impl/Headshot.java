@@ -143,7 +143,7 @@ public class Headshot extends BasePower {
         @Override
         public PowerResult<Double> hitEntity(Player player, ItemStack stack, LivingEntity entity, double damage, BeamHitEntityEvent event) {
             EntityDamageByEntityEvent fake = new EntityDamageByEntityEvent(player, player, EntityDamageEvent.DamageCause.CUSTOM, damage);
-            PowerResult<Double> check = check(player, entity, stack, damage, event.getVelocity(), event.getBoundingBox(), entity.getBoundingBox(), fake);
+            PowerResult<Double> check = check(player, entity, stack, damage, event.getVelocity(), event.getBoundingBox().expand(0.5), entity.getBoundingBox(), fake);
             event.setDamage(fake.getDamage());
             return check;
         }
