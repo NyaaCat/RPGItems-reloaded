@@ -17,6 +17,7 @@ import think.rpgitems.event.BeamHitBlockEvent;
 import think.rpgitems.event.BeamHitEntityEvent;
 import think.rpgitems.power.*;
 
+import javax.annotation.Nullable;
 import java.util.concurrent.ThreadLocalRandom;
 
 import static think.rpgitems.Events.*;
@@ -70,7 +71,7 @@ public class Explosion extends BasePower {
         return explosionPower;
     }
 
-    public class Impl implements PowerLeftClick, PowerRightClick, PowerPlain, PowerHit, PowerProjectileHit, PowerLocation, PowerBeamHit {
+    public class Impl implements PowerLeftClick, PowerRightClick, PowerPlain, PowerHit, PowerProjectileHit, PowerLocation, PowerBeamHit, PowerLivingEntity {
 
         @Override
         public PowerResult<Void> leftClick(Player player, ItemStack stack, PlayerInteractEvent event) {
@@ -145,6 +146,13 @@ public class Explosion extends BasePower {
         @Override
         public PowerResult<Void> beamEnd(Player player, ItemStack stack, Location location, BeamEndEvent event) {
             return fire(player, stack, location);
+        }
+
+        @Override
+        public PowerResult<Void> fire(Player player, ItemStack stack, LivingEntity entity, @Nullable Double value) {
+            Block targetBlock = entity.getTargetBlock(null, getDistance());
+            if (targetBlock == null) return PowerResult.noop();
+            return fire(player, stack, targetBlock.getLocation());
         }
     }
 }

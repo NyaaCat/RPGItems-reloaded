@@ -58,9 +58,6 @@ public class SoundPower extends BasePower {
         return firingRange;
     }
 
-    public enum PlayLocation{
-        SELF, HIT_LOCATION, TARGET;
-    }
     @Property
     public boolean requireHurtByEntity = true;
 

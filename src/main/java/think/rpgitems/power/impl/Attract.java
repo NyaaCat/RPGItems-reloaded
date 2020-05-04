@@ -21,6 +21,7 @@ import think.rpgitems.power.*;
 import think.rpgitems.power.trigger.BaseTriggers;
 import think.rpgitems.utils.cast.CastUtils;
 
+import javax.annotation.Nullable;
 import java.util.List;
 import java.util.function.Supplier;
 
@@ -148,7 +149,7 @@ public class Attract extends BasePower {
         return requireHurtByEntity;
     }
 
-    public class Impl implements PowerTick, PowerLeftClick, PowerRightClick, PowerPlain, PowerSneaking, PowerHurt, PowerHitTaken, PowerBowShoot, PowerBeamHit, PowerProjectileHit{
+    public class Impl implements PowerTick, PowerLeftClick, PowerRightClick, PowerPlain, PowerSneaking, PowerHurt, PowerHitTaken, PowerBowShoot, PowerBeamHit, PowerProjectileHit, PowerLivingEntity{
 
         @Override
         public PowerResult<Double> takeHit(Player target, ItemStack stack, double damage, EntityDamageEvent event) {
@@ -277,6 +278,17 @@ public class Attract extends BasePower {
         public PowerResult<Void> projectileHit(Player player, ItemStack stack, ProjectileHitEvent event) {
             Location location = event.getEntity().getLocation();
             return fire(player, location, stack, () -> getNearbyEntities(getPower(), location, player, getRadius()));
+        }
+
+        @Override
+        public PowerResult<Void> fire(Player player, ItemStack stack, LivingEntity entity, @Nullable Double value) {
+            Location location = entity.getLocation();
+            if (getFiringLocation().equals(FiringLocation.TARGET)){
+                CastUtils.CastLocation result = CastUtils.rayTrace(entity, entity.getEyeLocation(), entity.getEyeLocation().getDirection(), getFiringRange());
+                location = result.getTargetLocation();
+            }
+            Location finalLocation = location;
+            return fire(player, location, stack, () -> getNearbyEntities(getPower(), finalLocation, player, getRadius()));
         }
     }
 }

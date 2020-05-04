@@ -17,6 +17,7 @@ import think.rpgitems.RPGItems;
 import think.rpgitems.data.Context;
 import think.rpgitems.power.*;
 
+import javax.annotation.Nullable;
 import java.util.List;
 import java.util.Random;
 
@@ -91,7 +92,7 @@ public class Rumble extends BasePower {
         return power;
     }
 
-    public class Impl implements PowerRightClick, PowerLeftClick, PowerSneak, PowerSprint, PowerPlain, PowerBowShoot {
+    public class Impl implements PowerRightClick, PowerLeftClick, PowerSneak, PowerSprint, PowerPlain, PowerBowShoot, PowerLivingEntity{
         @Override
         public PowerResult<Void> leftClick(Player player, ItemStack stack, PlayerInteractEvent event) {
             return fire(player, stack);
@@ -103,6 +104,10 @@ public class Rumble extends BasePower {
             if (!getItem().consumeDurability(stack, getCost())) return PowerResult.cost();
             final Location location = player.getLocation().add(0, -0.2, 0);
             final Vector direction = player.getLocation().getDirection();
+            return fire(player, location, direction);
+        }
+
+        private PowerResult<Void> fire(Player player, Location location, Vector direction) {
             direction.setY(0);
             direction.normalize();
             BukkitRunnable task = new BukkitRunnable() {
@@ -199,6 +204,11 @@ public class Rumble extends BasePower {
         @Override
         public PowerResult<Void> sprint(Player player, ItemStack stack, PlayerToggleSprintEvent event) {
             return fire(player, stack);
+        }
+
+        @Override
+        public PowerResult<Void> fire(Player player, ItemStack stack, LivingEntity entity, @Nullable Double value) {
+            return fire(player, entity.getLocation(), entity.getLocation().getDirection());
         }
     }
 

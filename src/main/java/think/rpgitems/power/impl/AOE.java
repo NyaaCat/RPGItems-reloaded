@@ -21,6 +21,7 @@ import think.rpgitems.event.BeamHitEntityEvent;
 import think.rpgitems.power.*;
 import think.rpgitems.utils.PotionEffectUtils;
 
+import javax.annotation.Nullable;
 import java.util.Collection;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -153,7 +154,7 @@ public class AOE extends BasePower {
         return cooldown;
     }
 
-    public class Impl implements PowerRightClick, PowerLeftClick, PowerOffhandClick, PowerPlain, PowerHit, PowerBowShoot, PowerBeamHit, PowerProjectileHit {
+    public class Impl implements PowerRightClick, PowerLeftClick, PowerOffhandClick, PowerPlain, PowerHit, PowerBowShoot, PowerBeamHit, PowerProjectileHit, PowerLivingEntity {
         @Override
         public PowerResult<Void> rightClick(final Player player, ItemStack stack, PlayerInteractEvent event) {
             return fire(player, stack);
@@ -245,6 +246,11 @@ public class AOE extends BasePower {
         public PowerResult<Void> beamEnd(Player player, ItemStack stack, Location location, BeamEndEvent event) {
             Location center = location;
             return fire(center, player, stack, getNearbyEntities(getPower(), center, player, getRange()));
+        }
+
+        @Override
+        public PowerResult<Void> fire(Player player, ItemStack stack, LivingEntity entity, @Nullable Double value) {
+            return fire(entity.getEyeLocation(), player, stack, getNearbyEntities(getPower(), entity.getLocation(), player, getRange()));
         }
     }
 }

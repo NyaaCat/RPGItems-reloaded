@@ -31,6 +31,7 @@ import think.rpgitems.utils.cast.RangedDoubleValue;
 import think.rpgitems.utils.cast.RangedValueSerializer;
 import think.rpgitems.utils.cast.RoundedConeInfo;
 
+import javax.annotation.Nullable;
 import java.math.BigDecimal;
 import java.util.*;
 import java.util.concurrent.atomic.AtomicInteger;
@@ -1186,7 +1187,7 @@ public class Beam extends BasePower {
         return new RoundedConeInfo(theta, phi, r, rPhi, rTheta, beam.getInitialRotation());
     }
 
-    public class Impl implements PowerPlain, PowerRightClick, PowerLeftClick, PowerSneak, PowerSneaking, PowerSprint, PowerBowShoot, PowerHitTaken, PowerHit, PowerHurt, PowerTick, PowerBeamHit {
+    public class Impl implements PowerPlain, PowerRightClick, PowerLeftClick, PowerSneak, PowerSneaking, PowerSprint, PowerBowShoot, PowerHitTaken, PowerHit, PowerHurt, PowerTick, PowerBeamHit, PowerLivingEntity {
         @Override
         public PowerResult<Void> leftClick(Player player, ItemStack stack, PlayerInteractEvent event) {
             return fire(player, stack);
@@ -1226,9 +1227,9 @@ public class Beam extends BasePower {
             Vector normal = yAxis.clone();
 
             Queue<RoundedConeInfo> roundedConeInfo = internalCones(Beam.this, getBeamAmount(), Math.max(getBurstCount(), 1));
-            Deque <Entity> targets = null;
+            Deque<Entity> targets = null;
 
-            if (from instanceof Player && getHoming() > 0) {
+            if (getHoming() > 0) {
                 targets = new LinkedList<>(getTargets(towards, fromLocation, from, getHomingRange(), getHomingAngle(), getHomingTarget()));
             }
             if (castLocation != null){
@@ -1390,6 +1391,11 @@ public class Beam extends BasePower {
         public PowerResult<Void> beamEnd(Player player, ItemStack stack, Location location, BeamEndEvent event) {
             if (event.getDepth() >= 1) return PowerResult.noop();
             return fire(player, stack, location, null, event.getDepth() + 1);
+        }
+
+        @Override
+        public PowerResult<Void> fire(Player player, ItemStack stack, LivingEntity entity, @Nullable Double value) {
+            return beam(entity, stack);
         }
     }
 }

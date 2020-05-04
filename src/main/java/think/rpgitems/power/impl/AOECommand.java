@@ -15,6 +15,7 @@ import think.rpgitems.event.BeamHitBlockEvent;
 import think.rpgitems.event.BeamHitEntityEvent;
 import think.rpgitems.power.*;
 
+import javax.annotation.Nullable;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
@@ -113,7 +114,7 @@ public class AOECommand extends Command {
         return selfapplication;
     }
 
-    public class Impl implements PowerPlain, PowerRightClick, PowerLeftClick, PowerHit, PowerBeamHit, PowerProjectileHit, PowerSneak{
+    public class Impl implements PowerPlain, PowerRightClick, PowerLeftClick, PowerHit, PowerBeamHit, PowerProjectileHit, PowerSneak, PowerLivingEntity{
         @Override
         public PowerResult<Void> rightClick(Player player, ItemStack stack, PlayerInteractEvent event) {
             return fire(player, stack);
@@ -229,6 +230,13 @@ public class AOECommand extends Command {
         @Override
         public PowerResult<Void> sneak(Player player, ItemStack stack, PlayerToggleSneakEvent event) {
             return fire(player, stack);
+        }
+
+        @Override
+        public PowerResult<Void> fire(Player player, ItemStack stack, LivingEntity entity, @Nullable Double value) {
+            List<LivingEntity> nearbyEntities = getNearestLivingEntities(getPower(), entity.getLocation(), player, getR(), getRm());
+            List<LivingEntity> livingEntitiesInCone = getLivingEntitiesInCone(nearbyEntities, entity.getEyeLocation().toVector(), getFacing(), entity.getEyeLocation().getDirection());
+            return fire(player, stack, livingEntitiesInCone);
         }
     }
 }

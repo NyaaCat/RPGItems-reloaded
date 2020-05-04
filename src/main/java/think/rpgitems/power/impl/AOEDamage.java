@@ -24,6 +24,7 @@ import think.rpgitems.event.BeamHitEntityEvent;
 import think.rpgitems.power.*;
 import think.rpgitems.utils.cast.CastUtils;
 
+import javax.annotation.Nullable;
 import java.util.List;
 import java.util.function.Supplier;
 import java.util.stream.Collectors;
@@ -194,7 +195,7 @@ public class AOEDamage extends BasePower {
         return suppressMelee;
     }
 
-    public class Impl implements PowerOffhandClick, PowerPlain, PowerLeftClick, PowerRightClick, PowerHit, PowerSprint, PowerSneak, PowerHurt, PowerHitTaken, PowerTick, PowerBowShoot, PowerSneaking, PowerBeamHit, PowerProjectileHit {
+    public class Impl implements PowerOffhandClick, PowerPlain, PowerLeftClick, PowerRightClick, PowerHit, PowerSprint, PowerSneak, PowerHurt, PowerHitTaken, PowerTick, PowerBowShoot, PowerSneaking, PowerBeamHit, PowerProjectileHit, PowerLivingEntity{
 
         @Override
         public PowerResult<Void> rightClick(final Player player, ItemStack stack, PlayerInteractEvent event) {
@@ -391,6 +392,38 @@ public class AOEDamage extends BasePower {
         public PowerResult<Void> projectileHit(Player player, ItemStack stack, ProjectileHitEvent event) {
             int range = getRange();
             return fire(player, stack, () -> getNearbyEntities(player, event.getEntity().getLocation(), range));
+        }
+
+        @Override
+        public PowerResult<Void> fire(Player player, ItemStack stack, LivingEntity entity, @Nullable Double value) {
+            Supplier<Location> traceResultSupplier = entity::getEyeLocation;
+            if (getFiringLocation().equals(FiringLocation.TARGET)){
+                if (isCastOff()) {
+                    CastUtils.CastLocation castLocation = CastUtils.rayTrace(entity, entity.getEyeLocation(), entity.getEyeLocation().getDirection(), getFiringRange());
+                    Location targetLocation = castLocation.getTargetLocation();
+                    traceResultSupplier = () -> targetLocation;
+                }else {
+                    traceResultSupplier = () -> {
+                        CastUtils.CastLocation castLocation = CastUtils.rayTrace(entity, entity.getEyeLocation(), entity.getEyeLocation().getDirection(), getFiringRange());
+                        Location targetLocation = castLocation.getTargetLocation();
+                        return targetLocation;
+                    };
+                }
+            }
+
+            Supplier<Location> finalTraceResultSupplier = traceResultSupplier;
+            return fire(player, stack, () -> {
+                List<LivingEntity> nearbyEntities;
+                List<LivingEntity> ent;
+                if(getFiringLocation().equals(FiringLocation.TARGET)){
+                    Location targetLocation = finalTraceResultSupplier.get();
+                    ent = getNearestLivingEntities(getPower(), targetLocation, player, getRange(), getMinrange());
+                }else {
+                    nearbyEntities = getNearestLivingEntities(getPower(), player.getLocation(), player, getRange(), getMinrange());
+                    ent = getLivingEntitiesInCone(nearbyEntities, player.getEyeLocation().toVector(), getAngle(), player.getEyeLocation().getDirection());
+                }
+                return ent;
+            });
         }
     }
 

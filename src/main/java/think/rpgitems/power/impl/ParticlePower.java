@@ -21,9 +21,11 @@ import think.rpgitems.event.BeamHitEntityEvent;
 import think.rpgitems.power.*;
 import think.rpgitems.utils.cast.CastUtils;
 
+import javax.annotation.Nullable;
 import java.util.Optional;
 
 import static think.rpgitems.power.Utils.checkCooldown;
+import static think.rpgitems.power.Utils.sweep;
 
 /**
  * Power particle.
@@ -92,10 +94,6 @@ public class ParticlePower extends BasePower {
 
     public int getDelay() {
         return delay;
-    }
-
-    public enum PlayLocation{
-        SELF, HIT_LOCATION, TARGET;
     }
 
     @Property
@@ -268,7 +266,7 @@ public class ParticlePower extends BasePower {
         }
     }
 
-    public class Impl implements PowerRightClick, PowerLeftClick, PowerPlain, PowerHit, PowerHitTaken, PowerHurt, PowerBowShoot, PowerBeamHit, PowerProjectileHit {
+    public class Impl implements PowerRightClick, PowerLeftClick, PowerPlain, PowerHit, PowerHitTaken, PowerHurt, PowerBowShoot, PowerBeamHit, PowerProjectileHit, PowerLivingEntity {
 
         @Override
         public PowerResult<Double> takeHit(Player target, ItemStack stack, double damage, EntityDamageEvent event) {
@@ -282,7 +280,6 @@ public class ParticlePower extends BasePower {
         public PowerResult<Void> fire(Player player, ItemStack stack) {
             if (!checkCooldown(getPower(), player, getCooldown(), true, true)) return PowerResult.cd();
             if (!getItem().consumeDurability(stack, getCost())) return PowerResult.cost();
-            int delay = getDelay();
             Location playLocation = player.getLocation();
             PlayLocation playLocation1 = getPlayLocation();
             if (playLocation1.equals(PlayLocation.TARGET)){
@@ -290,11 +287,15 @@ public class ParticlePower extends BasePower {
                 playLocation = castLocation.getTargetLocation();
             }
 
-            final Location finalPlayLocation = playLocation;
+            return fire(playLocation);
+        }
+
+        private PowerResult<Void> fire(Location playLocation) {
+            int delay = getDelay();
             new BukkitRunnable(){
                 @Override
                 public void run() {
-                    spawnParticle(player.getWorld(), finalPlayLocation);
+                    spawnParticle(playLocation.getWorld(), playLocation);
                 }
             }.runTaskLater(RPGItems.plugin, delay);
             return PowerResult.ok();
@@ -432,6 +433,27 @@ public class ParticlePower extends BasePower {
             }.runTaskLater(RPGItems.plugin, delay);
 
             return PowerResult.ok();
+        }
+
+        @Override
+        public PowerResult<Void> fire(Player player, ItemStack stack, LivingEntity entity, @Nullable Double value) {
+            if (!checkCooldown(getPower(), player, getCooldown(), true, true)) return PowerResult.cd();
+            if (!getItem().consumeDurability(stack, getCost())) return PowerResult.cost();
+            Location location = player.getLocation();
+            PlayLocation playLocation = getPlayLocation();
+            switch (playLocation){
+                case SELF:
+                    break;
+                case HIT_LOCATION:
+                case TARGET:
+                    CastUtils.CastLocation castLocation = CastUtils.rayTrace(entity, entity.getEyeLocation(), entity.getEyeLocation().getDirection(), getFiringRange());
+                    location = castLocation.getTargetLocation();
+                    break;
+                case ENTITY:
+                    location = entity.getLocation();
+                    break;
+            }
+            return fire(location);
         }
     }
 

@@ -1,12 +1,15 @@
 package think.rpgitems.power.impl;
 
 import org.bukkit.Sound;
+import org.bukkit.entity.LivingEntity;
 import org.bukkit.entity.Player;
 import org.bukkit.entity.TNTPrimed;
 import org.bukkit.event.player.PlayerInteractEvent;
 import org.bukkit.inventory.ItemStack;
 import think.rpgitems.I18n;
 import think.rpgitems.power.*;
+
+import javax.annotation.Nullable;
 
 import static think.rpgitems.power.Utils.checkCooldown;
 
@@ -48,7 +51,7 @@ public class TNTCannon extends BasePower {
         return cooldown;
     }
 
-    public class Impl implements PowerRightClick {
+    public class Impl implements PowerRightClick, PowerLivingEntity {
         @Override
         public PowerResult<Void> rightClick(Player player, ItemStack stack, PlayerInteractEvent event) {
             if (!checkCooldown(getPower(), player, getCooldown(), true, true)) return PowerResult.cd();
@@ -63,5 +66,14 @@ public class TNTCannon extends BasePower {
         public Power getPower() {
             return TNTCannon.this;
         }
+
+        @Override
+        public PowerResult<Void> fire(Player player, ItemStack stack, LivingEntity entity, @Nullable Double value) {
+            if (!checkCooldown(getPower(), player, getCooldown(), true, true)) return PowerResult.cd();
+            if (!getItem().consumeDurability(stack, getCost())) return PowerResult.cost();
+            player.getWorld().playSound(entity.getLocation(), Sound.ENTITY_ARROW_SHOOT, 1.0f, 1.0f);
+            TNTPrimed tnt = player.getWorld().spawn(entity.getLocation().add(0, 1.8, 0), TNTPrimed.class);
+            tnt.setVelocity(entity.getLocation().getDirection().multiply(2d));
+            return PowerResult.ok();        }
     }
 }
