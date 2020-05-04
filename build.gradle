@@ -138,6 +138,8 @@ task apiJar(type: Jar) {
     include('**/think/rpgitems/api/')
     include('**/think/rpgitems/item/')
     include('**/think/rpgitems/power/')
+    include('**/think/rpgitems/event/')
+    include('**/think/rpgitems/utils/')
     exclude('**/think/rpgitems/power/impl/')
 }
 
