@@ -19,6 +19,8 @@ import think.rpgitems.event.BeamHitEntityEvent;
 import think.rpgitems.power.*;
 import think.rpgitems.utils.cast.CastUtils;
 
+import javax.annotation.Nullable;
+
 import static think.rpgitems.power.Utils.checkCooldown;
 
 /**
@@ -27,7 +29,20 @@ import static think.rpgitems.power.Utils.checkCooldown;
  * Play a sound
  * </p>
  */
-@Meta(defaultTrigger = "RIGHT_CLICK", generalInterface = PowerPlain.class, implClass = SoundPower.Impl.class)
+@Meta(defaultTrigger = "RIGHT_CLICK", generalInterface = {
+        PowerLeftClick.class,
+        PowerRightClick.class,
+        PowerPlain.class,
+        PowerSneak.class,
+        PowerLivingEntity.class,
+        PowerSprint.class,
+        PowerHurt.class,
+        PowerHit.class,
+        PowerHitTaken.class,
+        PowerBowShoot.class,
+        PowerBeamHit.class,
+        PowerLocation.class
+}, implClass = SoundPower.Impl.class)
 public class SoundPower extends BasePower {
     @Property
     public float pitch = 1.0f;
@@ -121,7 +136,7 @@ public class SoundPower extends BasePower {
         return playLocation;
     }
 
-    public class Impl implements PowerLeftClick, PowerRightClick, PowerPlain, PowerHit, PowerBowShoot, PowerHitTaken, PowerHurt, PowerBeamHit, PowerProjectileHit, PowerTick, PowerSneaking {
+    public class Impl implements PowerLeftClick, PowerRightClick, PowerPlain, PowerHit, PowerBowShoot, PowerHitTaken, PowerHurt, PowerBeamHit, PowerProjectileHit, PowerTick, PowerSneaking, PowerLivingEntity, PowerLocation {
 
         @Override
         public PowerResult<Void> leftClick(Player player, ItemStack stack, PlayerInteractEvent event) {
@@ -248,6 +263,27 @@ public class SoundPower extends BasePower {
         public PowerResult<Void> tick(Player player, ItemStack stack) {
             if (!checkCooldown(getPower(), player, getCooldown(), true, true)) return PowerResult.cd();
             return sound(player, stack, player.getEyeLocation());
+        }
+
+        @Override
+        public PowerResult<Void> fire(Player player, ItemStack stack, LivingEntity entity, @Nullable Double value) {
+            if (!checkCooldown(getPower(), player, getCooldown(), true, true)) return PowerResult.cd();
+            Location location = entity.getLocation();
+            if (getPlayLocation().equals(PlayLocation.HIT_LOCATION)) {
+            }else if (getPlayLocation().equals(PlayLocation.SELF)){
+                location = player.getLocation();
+            }
+            return sound(player, stack, location);
+        }
+
+        @Override
+        public PowerResult<Void> fire(Player player, ItemStack stack, Location location) {
+            if (!checkCooldown(getPower(), player, getCooldown(), true, true)) return PowerResult.cd();
+            if (getPlayLocation().equals(PlayLocation.HIT_LOCATION)) {
+            }else if (getPlayLocation().equals(PlayLocation.SELF)){
+                location = player.getLocation();
+            }
+            return sound(player, stack, location);
         }
     }
 }

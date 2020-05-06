@@ -28,7 +28,20 @@ import static think.rpgitems.power.Utils.checkAndSetCooldown;
  * Won't do anything but give you fine control.
  * </p>
  */
-@Meta(defaultTrigger = "RIGHT_CLICK", generalInterface = {PowerLivingEntity.class, PowerPlain.class}, implClass = Dummy.Impl.class)
+@Meta(defaultTrigger = "RIGHT_CLICK", generalInterface = {
+        PowerLeftClick.class,
+        PowerRightClick.class,
+        PowerPlain.class,
+        PowerSneak.class,
+        PowerLivingEntity.class,
+        PowerSprint.class,
+        PowerHurt.class,
+        PowerHit.class,
+        PowerHitTaken.class,
+        PowerBowShoot.class,
+        PowerBeamHit.class,
+        PowerLocation.class
+}, implClass = Dummy.Impl.class)
 public class Dummy extends BasePower {
 
     @Property

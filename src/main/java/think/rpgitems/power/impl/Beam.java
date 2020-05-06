@@ -51,7 +51,20 @@ import static think.rpgitems.utils.cast.CastUtils.makeCone;
  * if you have any issue, please send me email or @ReinWD in issues.
  * Accepted language: 中文, English.
  */
-@Meta(defaultTrigger = "RIGHT_CLICK", generalInterface = PowerPlain.class, implClass = Beam.Impl.class)
+@Meta(defaultTrigger = "RIGHT_CLICK", generalInterface = {
+        PowerLeftClick.class,
+        PowerRightClick.class,
+        PowerPlain.class,
+        PowerSneak.class,
+        PowerLivingEntity.class,
+        PowerSprint.class,
+        PowerHurt.class,
+        PowerHit.class,
+        PowerHitTaken.class,
+        PowerBowShoot.class,
+        PowerBeamHit.class,
+        PowerLocation.class
+}, implClass = Beam.Impl.class)
 public class Beam extends BasePower {
     @Property
     public int length = 10;
@@ -1395,6 +1408,8 @@ public class Beam extends BasePower {
 
         @Override
         public PowerResult<Void> fire(Player player, ItemStack stack, LivingEntity entity, @Nullable Double value) {
+            if (!checkCooldown(getPower(), player, getCooldown(), true, true)) return PowerResult.cd();
+            if (!getItem().consumeDurability(stack, getCost())) return PowerResult.cost();
             return beam(entity, stack);
         }
     }

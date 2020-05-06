@@ -26,6 +26,7 @@ import think.rpgitems.event.BeamHitEntityEvent;
 import think.rpgitems.power.*;
 import think.rpgitems.power.marker.Selector;
 
+import javax.annotation.Nullable;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
@@ -33,7 +34,20 @@ import java.util.concurrent.TimeUnit;
 
 import static think.rpgitems.power.Utils.checkCooldown;
 
-@Meta(defaultTrigger = "RIGHT_CLICK", generalInterface = PowerPlain.class, implClass = Scoreboard.Impl.class)
+@Meta(defaultTrigger = "RIGHT_CLICK", generalInterface = {
+        PowerLeftClick.class,
+        PowerRightClick.class,
+        PowerPlain.class,
+        PowerSneak.class,
+        PowerLivingEntity.class,
+        PowerSprint.class,
+        PowerHurt.class,
+        PowerHit.class,
+        PowerHitTaken.class,
+        PowerBowShoot.class,
+        PowerBeamHit.class,
+        PowerLocation.class
+}, implClass = Scoreboard.Impl.class)
 public class Scoreboard extends BasePower {
 
     private static LoadingCache<String, Pair<Set<String>, Set<String>>> teamCache = CacheBuilder
@@ -142,7 +156,7 @@ public class Scoreboard extends BasePower {
         NO_OP, ADD_SCORE, SET_SCORE, RESET_SCORE
     }
 
-    public class Impl implements PowerHit, PowerHitTaken, PowerHurt, PowerLeftClick, PowerRightClick, PowerOffhandClick, PowerProjectileHit, PowerSneak, PowerSprint, PowerOffhandItem, PowerMainhandItem, PowerTick, PowerSneaking, PowerPlain, PowerBowShoot, PowerBeamHit {
+    public class Impl implements PowerHit, PowerHitTaken, PowerHurt, PowerLeftClick, PowerRightClick, PowerOffhandClick, PowerProjectileHit, PowerSneak, PowerSprint, PowerOffhandItem, PowerMainhandItem, PowerTick, PowerSneaking, PowerPlain, PowerBowShoot, PowerBeamHit, PowerLivingEntity, PowerLocation{
 
         @Override
         public PowerResult<Void> leftClick(Player player, ItemStack stack, PlayerInteractEvent event) {
@@ -301,6 +315,16 @@ public class Scoreboard extends BasePower {
 
         @Override
         public PowerResult<Void> beamEnd(Player player, ItemStack stack, Location location, BeamEndEvent event) {
+            return fire(player, stack);
+        }
+
+        @Override
+        public PowerResult<Void> fire(Player player, ItemStack stack, LivingEntity entity, @Nullable Double value) {
+            return fire(player, stack);
+        }
+
+        @Override
+        public PowerResult<Void> fire(Player player, ItemStack stack, Location location) {
             return fire(player, stack);
         }
     }

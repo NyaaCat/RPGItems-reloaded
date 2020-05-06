@@ -38,7 +38,20 @@ import static think.rpgitems.power.Utils.*;
  * as well if not set via {@link #selfapplication selfapplication}.
  * </p>
  */
-@Meta(defaultTrigger = "RIGHT_CLICK", withSelectors = true, generalInterface = PowerPlain.class, implClass = AOE.Impl.class)
+@Meta(defaultTrigger = "RIGHT_CLICK", withSelectors = true, generalInterface = {
+        PowerLeftClick.class,
+        PowerRightClick.class,
+        PowerPlain.class,
+        PowerSneak.class,
+        PowerLivingEntity.class,
+        PowerSprint.class,
+        PowerHurt.class,
+        PowerHit.class,
+        PowerHitTaken.class,
+        PowerBowShoot.class,
+        PowerBeamHit.class,
+        PowerLocation.class
+}, implClass = AOE.Impl.class)
 public class AOE extends BasePower {
 
     @Property(order = 0)
@@ -154,7 +167,7 @@ public class AOE extends BasePower {
         return cooldown;
     }
 
-    public class Impl implements PowerRightClick, PowerLeftClick, PowerOffhandClick, PowerPlain, PowerHit, PowerBowShoot, PowerBeamHit, PowerProjectileHit, PowerLivingEntity {
+    public class Impl implements PowerRightClick, PowerLeftClick, PowerOffhandClick, PowerPlain, PowerHit, PowerBowShoot, PowerBeamHit, PowerProjectileHit, PowerLivingEntity, PowerLocation {
         @Override
         public PowerResult<Void> rightClick(final Player player, ItemStack stack, PlayerInteractEvent event) {
             return fire(player, stack);
@@ -251,6 +264,11 @@ public class AOE extends BasePower {
         @Override
         public PowerResult<Void> fire(Player player, ItemStack stack, LivingEntity entity, @Nullable Double value) {
             return fire(entity.getEyeLocation(), player, stack, getNearbyEntities(getPower(), entity.getLocation(), player, getRange()));
+        }
+
+        @Override
+        public PowerResult<Void> fire(Player player, ItemStack stack, Location location) {
+            return fire(location, player, stack, getNearbyEntities(getPower(), location, player, getRange()));
         }
     }
 }

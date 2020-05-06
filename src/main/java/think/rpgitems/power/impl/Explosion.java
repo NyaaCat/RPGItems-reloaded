@@ -23,7 +23,20 @@ import java.util.concurrent.ThreadLocalRandom;
 import static think.rpgitems.Events.*;
 import static think.rpgitems.Events.DAMAGE_SOURCE_ITEM;
 
-@Meta(defaultTrigger = {"PROJECTILE_HIT"}, generalInterface = PowerPlain.class, implClass = Explosion.Impl.class)
+@Meta(defaultTrigger = {"PROJECTILE_HIT"}, generalInterface = {
+        PowerLeftClick.class,
+        PowerRightClick.class,
+        PowerPlain.class,
+        PowerSneak.class,
+        PowerLivingEntity.class,
+        PowerSprint.class,
+        PowerHurt.class,
+        PowerHit.class,
+        PowerHitTaken.class,
+        PowerBowShoot.class,
+        PowerBeamHit.class,
+        PowerLocation.class
+}, implClass = Explosion.Impl.class)
 public class Explosion extends BasePower {
 
     @Property

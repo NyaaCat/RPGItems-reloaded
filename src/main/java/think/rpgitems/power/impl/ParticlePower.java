@@ -33,7 +33,20 @@ import static think.rpgitems.power.Utils.sweep;
  * When right clicked, spawn some particles around the user.
  * </p>
  */
-@Meta(defaultTrigger = "RIGHT_CLICK", generalInterface = PowerPlain.class, implClass = ParticlePower.Impl.class)
+@Meta(defaultTrigger = "RIGHT_CLICK", generalInterface = {
+        PowerLeftClick.class,
+        PowerRightClick.class,
+        PowerPlain.class,
+        PowerSneak.class,
+        PowerLivingEntity.class,
+        PowerSprint.class,
+        PowerHurt.class,
+        PowerHit.class,
+        PowerHitTaken.class,
+        PowerBowShoot.class,
+        PowerBeamHit.class,
+        PowerLocation.class
+        }, implClass = ParticlePower.Impl.class)
 public class ParticlePower extends BasePower {
     @Property(order = 0, required = true)
     @Serializer(EffectSetter.class)
@@ -266,7 +279,7 @@ public class ParticlePower extends BasePower {
         }
     }
 
-    public class Impl implements PowerRightClick, PowerLeftClick, PowerPlain, PowerHit, PowerHitTaken, PowerHurt, PowerBowShoot, PowerBeamHit, PowerProjectileHit, PowerLivingEntity {
+    public class Impl implements PowerRightClick, PowerLeftClick, PowerPlain, PowerHit, PowerHitTaken, PowerHurt, PowerBowShoot, PowerBeamHit, PowerProjectileHit, PowerLivingEntity, PowerLocation {
 
         @Override
         public PowerResult<Double> takeHit(Player target, ItemStack stack, double damage, EntityDamageEvent event) {
@@ -451,6 +464,19 @@ public class ParticlePower extends BasePower {
                     break;
                 case ENTITY:
                     location = entity.getLocation();
+                    break;
+            }
+            return fire(location);
+        }
+
+        @Override
+        public PowerResult<Void> fire(Player player, ItemStack stack, Location location) {
+            if (!checkCooldown(getPower(), player, getCooldown(), true, true)) return PowerResult.cd();
+            if (!getItem().consumeDurability(stack, getCost())) return PowerResult.cost();
+            PlayLocation playLocation = getPlayLocation();
+            switch (playLocation){
+                case SELF:
+                    location = player.getLocation();
                     break;
             }
             return fire(location);

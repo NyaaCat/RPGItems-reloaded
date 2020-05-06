@@ -20,7 +20,20 @@ import java.util.logging.Level;
 
 import static think.rpgitems.power.Utils.checkCooldown;
 
-@Meta(defaultTrigger = "RIGHT_CLICK", generalInterface = PowerPlain.class, implClass = Economy.Impl.class, note = "Requires Vault plugin and a Vault-Compatible economy plugin")
+@Meta(defaultTrigger = "RIGHT_CLICK", generalInterface = {
+        PowerLeftClick.class,
+        PowerRightClick.class,
+        PowerPlain.class,
+        PowerSneak.class,
+        PowerLivingEntity.class,
+        PowerSprint.class,
+        PowerHurt.class,
+        PowerHit.class,
+        PowerHitTaken.class,
+        PowerBowShoot.class,
+        PowerBeamHit.class,
+        PowerLocation.class
+}, implClass = Economy.Impl.class, note = "Requires Vault plugin and a Vault-Compatible economy plugin")
 public class Economy extends BasePower {
 
     private static net.milkbowl.vault.economy.Economy eco;
