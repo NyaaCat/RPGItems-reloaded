@@ -40,8 +40,7 @@ import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 import static think.rpgitems.Events.*;
-import static think.rpgitems.power.Utils.checkCooldown;
-import static think.rpgitems.power.Utils.isUtilArmorStand;
+import static think.rpgitems.power.Utils.*;
 import static think.rpgitems.utils.cast.CastUtils.makeCone;
 
 /**
@@ -999,7 +998,9 @@ public class Beam extends BasePower {
     private static List<Entity> getTargets(Vector direction, Location fromLocation, Entity from, double range, double homingAngle, Target homingTarget) {
         double radius = Math.min(range, 300);
         return Utils.getLivingEntitiesInConeSorted(from.getNearbyEntities(radius, range * 1.5, range * 1.5).stream()
-                        .filter(entity -> entity instanceof LivingEntity && !entity.equals(from) && !isUtilArmorStand((LivingEntity) entity) &&  !entity.isDead() && from.getLocation().distance(entity.getLocation()) < range)
+                        .filter(entity -> entity instanceof LivingEntity && !entity.equals(from) && !isUtilArmorStand(entity) &&
+                                !entity.getScoreboardTags().contains(INVALID_TARGET)
+                                && !entity.isDead() && from.getLocation().distance(entity.getLocation()) < range)
                         .map(entity -> ((LivingEntity) entity))
                         .collect(Collectors.toList())
                 , fromLocation.toVector(), homingAngle, direction).stream()

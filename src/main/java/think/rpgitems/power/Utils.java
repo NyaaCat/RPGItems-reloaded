@@ -46,6 +46,7 @@ import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 public class Utils {
+    public static final String INVALID_TARGET = "RGI_INVALID_TARGET";
 
     private static LoadingCache<String, List<String>> permissionCache = CacheBuilder
                                                                                 .newBuilder()
