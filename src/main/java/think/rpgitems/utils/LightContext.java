@@ -1,4 +1,4 @@
-package think.rpgitems.data;
+package think.rpgitems.utils;
 
 import java.util.HashMap;
 import java.util.Map;
