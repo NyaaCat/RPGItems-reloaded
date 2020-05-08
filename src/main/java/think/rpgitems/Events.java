@@ -101,6 +101,7 @@ public class Events implements Listener {
 
     public static void registerRPGProjectile(RPGItem rpgItem, ItemStack itemStack, Player player, LivingEntity source) {
         if (projectilePlayer != null) {
+            projectilePlayer = null;
             throw new IllegalStateException();
         }
         Events.projectileRpgItem = rpgItem;
@@ -266,7 +267,7 @@ public class Events implements Listener {
         Projectile entity = e.getEntity();
         ProjectileSource shooter = entity.getShooter();
         if (!(shooter instanceof Player) &&
-                !((shooter instanceof LivingEntity) && ((LivingEntity) shooter).getScoreboardTags().contains("casted_projectile_source"))
+                !((shooter instanceof Entity) && projectileRegisterMap.containsKey(((Entity) shooter).getUniqueId()))
         ) return;
         Player player = (shooter instanceof Player) ? (Player) shooter : Bukkit.getPlayer(projectileRegisterMap.get(((LivingEntity) shooter).getUniqueId()));
         if (projectilePlayer != null) {
