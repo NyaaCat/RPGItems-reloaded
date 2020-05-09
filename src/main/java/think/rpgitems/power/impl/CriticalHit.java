@@ -63,10 +63,6 @@ public class CriticalHit extends BasePower {
         return setBaseDamage;
     }
 
-    public void setSetBaseDamage(boolean setBaseDamage) {
-        this.setBaseDamage = setBaseDamage;
-    }
-
     public class Impl implements PowerHit {
         @Override
         public PowerResult<Double> hit(Player player, ItemStack stack, LivingEntity entity, double damage, EntityDamageByEntityEvent event) {

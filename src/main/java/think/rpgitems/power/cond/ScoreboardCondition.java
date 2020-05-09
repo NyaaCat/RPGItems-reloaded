@@ -22,17 +22,17 @@ import static think.rpgitems.power.marker.Selector.*;
 @Meta(marker = true)
 public class ScoreboardCondition extends BaseCondition<Void> {
 
-    private static LoadingCache<String, Map<String, Pair<Integer, Integer>>> scoreCache = CacheBuilder
+    private static final LoadingCache<String, Map<String, Pair<Integer, Integer>>> scoreCache = CacheBuilder
                                                                                                   .newBuilder()
                                                                                                   .concurrencyLevel(1)
                                                                                                   .expireAfterAccess(1, TimeUnit.DAYS)
                                                                                                   .build(CacheLoader.from(Selector::parseScore));
-    private static LoadingCache<String, Pair<Set<String>, Set<String>>> teamCache = CacheBuilder
+    private static final LoadingCache<String, Pair<Set<String>, Set<String>>> teamCache = CacheBuilder
                                                                                             .newBuilder()
                                                                                             .concurrencyLevel(1)
                                                                                             .expireAfterAccess(1, TimeUnit.DAYS)
                                                                                             .build(CacheLoader.from(Selector::parse));
-    private static LoadingCache<String, Pair<Set<String>, Set<String>>> tagCache = CacheBuilder
+    private static final LoadingCache<String, Pair<Set<String>, Set<String>>> tagCache = CacheBuilder
                                                                                            .newBuilder()
                                                                                            .concurrencyLevel(1)
                                                                                            .expireAfterAccess(1, TimeUnit.DAYS)
