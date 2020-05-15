@@ -48,8 +48,7 @@ import java.util.stream.Stream;
 import static think.rpgitems.RPGItems.logger;
 import static think.rpgitems.RPGItems.plugin;
 import static think.rpgitems.item.RPGItem.DAMAGE_TYPE;
-import static think.rpgitems.power.Utils.maxWithCancel;
-import static think.rpgitems.power.Utils.minWithCancel;
+import static think.rpgitems.power.Utils.*;
 
 public class Events implements Listener {
 
@@ -776,7 +775,7 @@ public class Events implements Listener {
         if (rItem != null) {
             String damageType = rItem.getDamageType();
             Context.instance().putTemp(player.getUniqueId(), DAMAGE_TYPE, damageType);
-            damage = maxWithCancel(rItem.power(player, item, e, BaseTriggers.HIT).orElse(null), damage);
+            damage = valueOrDefault(rItem.power(player, item, e, BaseTriggers.HIT).orElse(null), damage);
         }
         ItemStack[] inventory = player.getInventory().getContents();
         runGlobalHitTrigger(e, player, damage, rItem == null ? "" : rItem.getDamageType(), inventory);
@@ -854,7 +853,7 @@ public class Events implements Listener {
             RPGItem rpgItem = ItemManager.toRPGItem(itemStack).orElse(null);
             if (rpgItem == null) continue;
             Context.instance().putTemp(player.getUniqueId(), DAMAGE_TYPE, damageType);
-            damage = (maxWithCancel(rpgItem.power(player, itemStack, e, BaseTriggers.HIT_GLOBAL).orElse(null), damage));
+            damage = (valueOrDefault(rpgItem.power(player, itemStack, e, BaseTriggers.HIT_GLOBAL).orElse(null), damage));
         }
         if (damage == -1) {
             e.setCancelled(true);
