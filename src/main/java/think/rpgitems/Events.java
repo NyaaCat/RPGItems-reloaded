@@ -841,7 +841,7 @@ public class Events implements Listener {
         ItemStack[] armorContents = player.getInventory().getContents();
         String damageType = rItem.getDamageType();
         Context.instance().putTemp(player.getUniqueId(), DAMAGE_TYPE, damageType);
-        damage = maxWithCancel(rItem.power(player, item, e, BaseTriggers.HIT).orElse(null), damage);
+        damage = valueOrDefault(rItem.power(player, item, e, BaseTriggers.HIT).orElse(null), damage);
         runGlobalHitTrigger(e, player, damage, damageType, armorContents);
     }
 
@@ -855,11 +855,11 @@ public class Events implements Listener {
             Context.instance().putTemp(player.getUniqueId(), DAMAGE_TYPE, damageType);
             damage = (valueOrDefault(rpgItem.power(player, itemStack, e, BaseTriggers.HIT_GLOBAL).orElse(null), damage));
         }
-        if (damage == -1) {
+        if (damage <= 0) {
             e.setCancelled(true);
             e.setDamage(0);
         }
-        e.setDamage(damage);
+        e.setDamage(Math.max(damage, 0));
     }
 
     @EventHandler(priority = EventPriority.HIGH, ignoreCancelled = true)
