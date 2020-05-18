@@ -210,17 +210,17 @@ public class Utils {
         return checkAndSetCooldown(power, player, cdTicks, showWarn, showPower, "cooldown." + power.getItem().getUid() + "." + power.getNamespacedKey().toString());
     }
 
-    public static boolean checkAndSetCooldown(Power power, Player player, long cooldownTime, boolean showWarn, boolean showPower, String key) {
+    public static boolean checkAndSetCooldown(Power power, Player player, long cooldownTick, boolean showWarn, boolean showPower, String key) {
         long cooldown;
         Long value = (Long) Context.instance().get(player.getUniqueId(), key);
-        long nowTick = System.currentTimeMillis() / 50;
+        long nowTick = Context.getCurrentMillis();
         if (value == null) {
             cooldown = nowTick;
         } else {
             cooldown = value;
         }
         if (cooldown <= nowTick) {
-            long cd = nowTick + cooldownTime;
+            long cd = nowTick + cooldownTick * 50;
             Context.instance().put(player.getUniqueId(), key, cd, cd);
             return true;
         } else {

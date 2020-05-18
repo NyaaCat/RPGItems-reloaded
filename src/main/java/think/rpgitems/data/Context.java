@@ -264,7 +264,7 @@ public class Context {
     /**
      * @return monotonic current millis
      */
-    private long getCurrentMillis() {
+    public static long getCurrentMillis() {
         return System.nanoTime() / 1000000L;
     }
 
