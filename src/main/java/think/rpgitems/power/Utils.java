@@ -213,23 +213,23 @@ public class Utils {
     public static boolean checkAndSetCooldown(Power power, Player player, long cooldownTick, boolean showWarn, boolean showPower, String key) {
         long cooldown;
         Long value = (Long) Context.instance().get(player.getUniqueId(), key);
-        long nowTick = Context.getCurrentMillis();
+        long nowTime = Context.getCurrentMillis();
         if (value == null) {
-            cooldown = nowTick;
+            cooldown = nowTime;
         } else {
             cooldown = value;
         }
-        if (cooldown <= nowTick) {
-            long cd = nowTick + cooldownTick * 50;
+        if (cooldown <= nowTime) {
+            long cd = nowTime + cooldownTick * 50;
             Context.instance().put(player.getUniqueId(), key, cd, cd);
             return true;
         } else {
             if (showWarn) {
                 I18n i18n = I18n.getInstance(player.getLocale());
                 if (showPower) {
-                    player.sendMessage(i18n.format("message.cooldown.power", ((double) (cooldown - nowTick)) / 20d, power.getItem().getDisplayName(), power.getLocalizedName(player)));
+                    player.sendMessage(i18n.format("message.cooldown.power", ((double) (cooldown - nowTime)) / 50d / 20d, power.getItem().getDisplayName(), power.getLocalizedName(player)));
                 } else {
-                    player.sendMessage(i18n.format("message.cooldown.general", ((double) (cooldown - nowTick)) / 20d, power.getItem().getDisplayName()));
+                    player.sendMessage(i18n.format("message.cooldown.general", ((double) (cooldown - nowTime)) / 50d / 20d, power.getItem().getDisplayName()));
                 }
             }
             return false;
