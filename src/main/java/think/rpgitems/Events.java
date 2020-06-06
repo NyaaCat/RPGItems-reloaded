@@ -936,9 +936,8 @@ public class Events implements Listener {
 
     @EventHandler(ignoreCancelled = true, priority = EventPriority.HIGH)
     public void onBeamHitBlock(BeamHitBlockEvent event){
-        Entity from = event.getFrom();
-        if (!(from instanceof Player))return;
-        Player player = (Player) from;
+        Player player = event.getPlayer();
+        if (player == null)return;
 
         RPGItem rItem = ItemManager.toRPGItem(event.getItemStack()).orElse(null);
         if (rItem == null)return;
@@ -958,9 +957,8 @@ public class Events implements Listener {
 
     @EventHandler(ignoreCancelled = true, priority = EventPriority.HIGH)
     public void onBeamHitEntity(BeamHitEntityEvent event){
-        Entity from = event.getFrom();
-        if (!(from instanceof Player))return;
-        Player player = (Player) from;
+        Player player = event.getPlayer();
+        if (player == null)return;
 
         RPGItem rItem = ItemManager.toRPGItem(event.getItemStack()).orElse(null);
         if (rItem == null)return;
@@ -979,9 +977,8 @@ public class Events implements Listener {
 
     @EventHandler(ignoreCancelled = true, priority = EventPriority.HIGH)
     public void onBeamEnd(BeamEndEvent event) {
-        Entity from = event.getFromEntity();
-        if (!(from instanceof Player)) return;
-        Player player = (Player) from;
+        Player player = event.getPlayer();
+        if (player == null)return;
 
         RPGItem rItem = ItemManager.toRPGItem(event.getItemStack()).orElse(null);
         if (rItem == null) return;
