@@ -4,17 +4,17 @@ import cat.nyaa.nyaacore.Pair;
 import com.google.common.cache.CacheBuilder;
 import com.google.common.cache.CacheLoader;
 import com.google.common.cache.LoadingCache;
+import org.bukkit.Bukkit;
 import org.bukkit.Location;
 import org.bukkit.entity.LivingEntity;
 import org.bukkit.entity.Player;
+import org.bukkit.event.EventHandler;
+import org.bukkit.event.Listener;
 import org.bukkit.event.entity.EntityDamageByEntityEvent;
 import org.bukkit.event.entity.EntityDamageEvent;
 import org.bukkit.event.entity.EntityShootBowEvent;
 import org.bukkit.event.entity.ProjectileHitEvent;
-import org.bukkit.event.player.PlayerInteractEvent;
-import org.bukkit.event.player.PlayerSwapHandItemsEvent;
-import org.bukkit.event.player.PlayerToggleSneakEvent;
-import org.bukkit.event.player.PlayerToggleSprintEvent;
+import org.bukkit.event.player.*;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.scheduler.BukkitRunnable;
 import org.bukkit.scoreboard.Objective;
@@ -27,9 +27,7 @@ import think.rpgitems.power.*;
 import think.rpgitems.power.marker.Selector;
 
 import javax.annotation.Nullable;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Set;
+import java.util.*;
 import java.util.concurrent.TimeUnit;
 
 import static think.rpgitems.power.Utils.checkCooldown;
@@ -156,6 +154,64 @@ public class Scoreboard extends BasePower {
         NO_OP, ADD_SCORE, SET_SCORE, RESET_SCORE
     }
 
+    private static TagReverser tagReverser = new TagReverser();
+    private static boolean tagReverserInited = false;
+    public static class TagReverser implements Listener {
+        private Map<UUID, List<TagReverseTask>> reverseTaskMap = new HashMap<>();
+        private void init(){
+            Bukkit.getPluginManager().registerEvents(this, RPGItems.plugin);
+            tagReverserInited = true;
+        }
+
+        @EventHandler
+        public void onLogout(PlayerQuitEvent event){
+            Player player = event.getPlayer();
+            UUID uniqueId = player.getUniqueId();
+            List<TagReverseTask> tagReverseTasks = reverseTaskMap.computeIfAbsent(uniqueId, uuid -> new ArrayList<>());
+            tagReverseTasks.forEach(TagReverseTask::revert);
+            tagReverseTasks.clear();
+        }
+
+        public void submitReverse(List<String> added, List<String> removed, Player player, int delay){
+            if (!tagReverserInited){
+                init();
+            }
+            List<TagReverseTask> tagReverseTasks = reverseTaskMap.computeIfAbsent(player.getUniqueId(), uuid -> new ArrayList<>());
+            tagReverseTasks.add(new TagReverseTask(added, removed, player).runLater(delay, tagReverseTasks));
+        }
+    }
+    private static class TagReverseTask{
+        private final List<String>added;
+        private final List<String>removed;
+        private final Player player;
+        boolean reverted = false;
+
+        public TagReverseTask(List<String> added, List<String> removed, Player player) {
+            this.added = added;
+            this.removed = removed;
+            this.player = player;
+        }
+
+        public void revert() {
+            if(reverted){return;}
+            added.forEach(player::removeScoreboardTag);
+            removed.forEach(player::addScoreboardTag);
+            reverted = true;
+        }
+
+        public TagReverseTask runLater(int delay, List<TagReverseTask> tagReverseTasks){
+            new BukkitRunnable(){
+                @Override
+                public void run() {
+                    revert();
+                    tagReverseTasks.remove(TagReverseTask.this);
+                }
+            }.runTaskLater(RPGItems.plugin, delay);
+            return this;
+        }
+    }
+
+
     public class Impl implements PowerHit, PowerHitTaken, PowerHurt, PowerLeftClick, PowerRightClick, PowerOffhandClick, PowerProjectileHit, PowerSneak, PowerSprint, PowerOffhandItem, PowerMainhandItem, PowerTick, PowerSneaking, PowerPlain, PowerBowShoot, PowerBeamHit, PowerLivingEntity, PowerLocation{
 
         @Override
@@ -214,14 +270,7 @@ public class Scoreboard extends BasePower {
                     }
                 });
                 if (isReverseTagAfterDelay()) {
-                    removeTask = new BukkitRunnable() {
-                        @Override
-                        public void run() {
-                            addedTags.forEach(player::removeScoreboardTag);
-                            removedTags.forEach(player::addScoreboardTag);
-                        }
-                    };
-                    removeTask.runTaskLater(RPGItems.plugin, getDelay());
+                    tagReverser.submitReverse(addedTags, removedTags, player, (int) getDelay());
                 }
             }
             return isAbortOnSuccess() ? PowerResult.abort() : PowerResult.ok();
