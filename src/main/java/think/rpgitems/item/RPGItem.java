@@ -1535,7 +1535,7 @@ public class RPGItem {
 
     @SuppressWarnings("rawtypes")
     public static class DynamicMethodInterceptor implements MethodInterceptor {
-        private static WeakHashMap<Player, WeakHashMap<ItemStack, WeakHashMap<Power, Power>>> cache = new WeakHashMap<>();
+        private static WeakHashMap<Player, WeakHashMap<ItemStackWrapper, WeakHashMap<Power, Power>>> cache = new WeakHashMap<>();
 
         private static Power makeProxy(Power orig, Player player, Class<? extends Power> cls, ItemStack stack, Trigger trigger) {
             Enhancer enhancer = new Enhancer();
@@ -1547,7 +1547,7 @@ public class RPGItem {
 
         protected static Power create(Power orig, Player player, Class<? extends Power> cls, ItemStack stack, Trigger trigger) {
             return cache.computeIfAbsent(player, (k) -> new WeakHashMap<>())
-                        .computeIfAbsent(stack, (p) -> new WeakHashMap<>())
+                        .computeIfAbsent(ItemStackWrapper.of(stack), (p) -> new WeakHashMap<>())
                         .computeIfAbsent(orig, (s) -> makeProxy(orig, player, cls, stack, trigger));
         }
 
