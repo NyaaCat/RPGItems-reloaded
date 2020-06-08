@@ -210,7 +210,7 @@ public class Events implements Listener {
                             item = player.getInventory().getItemInOffHand();
                             hItem = ItemManager.toRPGItem(item).orElse(null);
                             if (rItem != hItem) {
-                                return;
+//                                return;
                             }
                         }
                     }
@@ -810,7 +810,7 @@ public class Events implements Listener {
                 item = player.getInventory().getItemInOffHand();
                 hItem = ItemManager.toRPGItem(item).orElse(null);
                 if (rItem != hItem) {
-                    return;
+//                    return;
                 }
             }
         }
