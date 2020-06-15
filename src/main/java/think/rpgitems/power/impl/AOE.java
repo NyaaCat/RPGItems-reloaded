@@ -24,6 +24,7 @@ import think.rpgitems.utils.PotionEffectUtils;
 import javax.annotation.Nullable;
 import java.util.Collection;
 import java.util.List;
+import java.util.Objects;
 import java.util.stream.Collectors;
 
 import static think.rpgitems.power.Utils.*;
@@ -190,6 +191,9 @@ public class AOE extends BasePower {
             List<LivingEntity> collect = entityList.stream().filter(entity -> entity instanceof LivingEntity)
                     .map(entity -> ((LivingEntity) entity))
                     .collect(Collectors.toList());
+            if (!Objects.equals(center.getWorld(), player.getEyeLocation().getWorld())){
+                return PowerResult.noop();
+            }
             Vector subtract = center.clone().subtract(player.getEyeLocation()).toVector();
             if (center.distance(player.getEyeLocation()) < 1){
                 subtract = player.getEyeLocation().getDirection();
@@ -211,7 +215,7 @@ public class AOE extends BasePower {
                         if (player.equals(ent) && isSelfapplication()) {
                             player.addPotionEffect(effect);
                         }
-                        if (ent != null && ent.getLocation().distance(center) <= range) {
+                        if (ent != null && Objects.equals(ent.getLocation().getWorld(), center.getWorld()) && ent.getLocation().distance(center) <= range) {
                             ent.addPotionEffect(effect);
                         }
                     });
