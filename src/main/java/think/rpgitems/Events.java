@@ -60,7 +60,7 @@ public class Events implements Listener {
 
     private static HashSet<Integer> removeProjectiles = new HashSet<>();
     private static HashMap<Integer, Integer> rpgProjectiles = new HashMap<>();
-    private static Map<UUID, ItemStack> localItemStacks = new HashMap<>();
+    private static Map<UUID, ItemStack> localItemStacks = new WeakHashMap<>();
 
     private static RPGItem projectileRpgItem;
     private static ItemStack projectileItemStack;
@@ -207,7 +207,7 @@ public class Events implements Listener {
                         if (rItem == null) throw new IllegalStateException();
                     } else {
                         if (rItem != hItem) {
-                            item = player.getInventory().getItemInOffHand();
+//                            item = player.getInventory().getItemInOffHand();
                             hItem = ItemManager.toRPGItem(item).orElse(null);
                             if (rItem != hItem) {
 //                                return;
@@ -277,6 +277,7 @@ public class Events implements Listener {
                 projectileRegisterMap.remove(((LivingEntity) shooter).getUniqueId());
                 throw new IllegalStateException();
             }
+            registerLocalItemStack(e.getEntity().getUniqueId(), projectileItemStack);
             registerRPGProjectile(e.getEntity().getEntityId(), projectileRpgItem.getUid());
             projectileRpgItem.power(player, projectileItemStack, e, BaseTriggers.LAUNCH_PROJECTILE);
             projectileRpgItem = null;
@@ -807,7 +808,7 @@ public class Events implements Listener {
             if (rItem == null) throw new IllegalStateException();
         } else {
             if (rItem != hItem) {
-                item = player.getInventory().getItemInOffHand();
+//                item = player.getInventory().getItemInOffHand();
                 hItem = ItemManager.toRPGItem(item).orElse(null);
                 if (rItem != hItem) {
 //                    return;
