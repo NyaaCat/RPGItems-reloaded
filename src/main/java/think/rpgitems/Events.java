@@ -60,7 +60,7 @@ public class Events implements Listener {
 
     private static HashSet<Integer> removeProjectiles = new HashSet<>();
     private static HashMap<Integer, Integer> rpgProjectiles = new HashMap<>();
-    private static Map<UUID, ItemStack> localItemStacks = new WeakHashMap<>();
+    private static Map<UUID, ItemStack> localItemStacks = new HashMap<>();
 
     private static RPGItem projectileRpgItem;
     private static ItemStack projectileItemStack;
@@ -88,15 +88,11 @@ public class Events implements Listener {
         return localItemStacks.containsKey(entityId);
     }
 
-    public static ItemStack getLocalItemStack(UUID entityId) {
-        return localItemStacks.get(entityId);
-    }
-
     public static ItemStack removeLocalItemStack(UUID entityId) {
         return localItemStacks.remove(entityId);
     }
 
-    private static Map<UUID, UUID> projectileRegisterMap = new HashMap<>();
+    private static Map<UUID, UUID> projectileRegisterMap = new WeakHashMap<>();
 
     public static void registerRPGProjectile(RPGItem rpgItem, ItemStack itemStack, Player player, LivingEntity source) {
         if (projectilePlayer != null) {
@@ -202,7 +198,7 @@ public class Events implements Listener {
                     RPGItem hItem = ItemManager.toRPGItem(item).orElse(null);
 
                     if (hasLocalItemStack(entity.getUniqueId())) {
-                        item = getLocalItemStack(entity.getUniqueId());
+                        item = removeLocalItemStack(entity.getUniqueId());
                         rItem = ItemManager.toRPGItem(item).orElse(null);
                         if (rItem == null) throw new IllegalStateException();
                     } else {
@@ -803,7 +799,7 @@ public class Events implements Listener {
         RPGItem hItem = ItemManager.toRPGItem(item).orElse(null);
 
         if (hasLocalItemStack(projectile.getUniqueId())) {
-            item = getLocalItemStack(projectile.getUniqueId());
+            item = removeLocalItemStack(projectile.getUniqueId());
             rItem = ItemManager.toRPGItem(item).orElse(null);
             if (rItem == null) throw new IllegalStateException();
         } else {
