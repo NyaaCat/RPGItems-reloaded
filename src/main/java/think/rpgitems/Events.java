@@ -92,6 +92,10 @@ public class Events implements Listener {
         return localItemStacks.remove(entityId);
     }
 
+    public static ItemStack getLocalItemStack(UUID entityId) {
+        return localItemStacks.get(entityId);
+    }
+
     private static Map<UUID, UUID> projectileRegisterMap = new WeakHashMap<>();
 
     public static void registerRPGProjectile(RPGItem rpgItem, ItemStack itemStack, Player player, LivingEntity source) {
@@ -197,8 +201,15 @@ public class Events implements Listener {
                     ItemStack item = player.getInventory().getItemInMainHand();
                     RPGItem hItem = ItemManager.toRPGItem(item).orElse(null);
 
-                    if (hasLocalItemStack(entity.getUniqueId())) {
-                        item = removeLocalItemStack(entity.getUniqueId());
+                    final UUID projectileUuid = entity.getUniqueId();
+                    if (hasLocalItemStack(projectileUuid)) {
+                        item = getLocalItemStack(projectileUuid);
+                        new BukkitRunnable(){
+                            @Override
+                            public void run() {
+                                removeLocalItemStack(projectileUuid);
+                            }
+                        }.runTaskLater(plugin, 1);
                         rItem = ItemManager.toRPGItem(item).orElse(null);
                         if (rItem == null) throw new IllegalStateException();
                     } else {
@@ -206,7 +217,7 @@ public class Events implements Listener {
 //                            item = player.getInventory().getItemInOffHand();
                             hItem = ItemManager.toRPGItem(item).orElse(null);
                             if (rItem != hItem) {
-//                                return;
+                                return;
                             }
                         }
                     }
@@ -799,7 +810,7 @@ public class Events implements Listener {
         RPGItem hItem = ItemManager.toRPGItem(item).orElse(null);
 
         if (hasLocalItemStack(projectile.getUniqueId())) {
-            item = removeLocalItemStack(projectile.getUniqueId());
+            item = getLocalItemStack(projectile.getUniqueId());
             rItem = ItemManager.toRPGItem(item).orElse(null);
             if (rItem == null) throw new IllegalStateException();
         } else {
