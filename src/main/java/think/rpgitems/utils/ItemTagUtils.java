@@ -19,10 +19,7 @@ import think.rpgitems.power.Utils;
 import java.lang.ref.PhantomReference;
 import java.lang.ref.Reference;
 import java.lang.ref.WeakReference;
-import java.util.Optional;
-import java.util.OptionalInt;
-import java.util.Set;
-import java.util.UUID;
+import java.util.*;
 import java.util.function.Function;
 import java.util.function.Supplier;
 import java.util.logging.Level;
@@ -360,6 +357,12 @@ public final class ItemTagUtils {
         @Override
         public <T, Z> Z getOrDefault(NamespacedKey key, PersistentDataType<T, Z> type, Z defaultValue) {
             return self.getOrDefault(key, type, defaultValue);
+        }
+
+        @Override
+        public Set<NamespacedKey> getKeys() {
+            //todo check this
+            return Collections.singleton(key);
         }
 
         @Override
