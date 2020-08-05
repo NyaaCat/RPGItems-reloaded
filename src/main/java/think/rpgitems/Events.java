@@ -23,7 +23,6 @@ import org.bukkit.metadata.FixedMetadataValue;
 import org.bukkit.projectiles.ProjectileSource;
 import org.bukkit.scheduler.BukkitRunnable;
 import think.rpgitems.data.Context;
-import think.rpgitems.utils.LightContext;
 import think.rpgitems.event.BeamEndEvent;
 import think.rpgitems.event.BeamHitBlockEvent;
 import think.rpgitems.event.BeamHitEntityEvent;
@@ -38,6 +37,7 @@ import think.rpgitems.power.trigger.BaseTriggers;
 import think.rpgitems.power.trigger.Trigger;
 import think.rpgitems.support.WGHandler;
 import think.rpgitems.support.WGSupport;
+import think.rpgitems.utils.LightContext;
 
 import java.util.*;
 import java.util.concurrent.ThreadLocalRandom;
@@ -48,7 +48,6 @@ import java.util.stream.Stream;
 import static think.rpgitems.RPGItems.logger;
 import static think.rpgitems.RPGItems.plugin;
 import static think.rpgitems.item.RPGItem.DAMAGE_TYPE;
-import static think.rpgitems.power.Utils.*;
 
 public class Events implements Listener {
 
@@ -910,6 +909,20 @@ public class Events implements Listener {
     public void onPlayerHitTaken(EntityDamageEvent ev) {
         if (ev.getEntity() instanceof Player) {
             ev.setDamage(playerHitTaken((Player) ev.getEntity(), ev));
+            double finalDamage = ev.getFinalDamage();
+            Player entity = (Player)ev.getEntity();
+            if (finalDamage >= entity.getHealth()){
+                triggerRescue(entity, ev);
+            }
+        }
+    }
+
+    private void triggerRescue(Player entity, EntityDamageEvent ev) {
+        double ret = ev.getDamage();
+        for (ItemStack item : entity.getInventory().getContents()) {
+            RPGItem ri = ItemManager.toRPGItem(item).orElse(null);
+            if (ri == null) continue;
+            ri.power(entity, item, ev, BaseTriggers.DYING);
         }
     }
 
