@@ -39,6 +39,9 @@ public class EquipmentCondition extends BaseCondition<Void> {
     @Property
     public boolean matchAllSlot = false;
 
+    @Property
+    public boolean requireEmpty = false;
+
     @Override
     public String id() {
         return id;
@@ -104,6 +107,9 @@ public class EquipmentCondition extends BaseCondition<Void> {
     }
 
     public boolean match(ItemStack stack) {
+        if (requireEmpty){
+            return stack == null || stack.getType().isAir();
+        }
         if (stack == null) return material == null && itemStack == null && rpgitem == null;
         if (material != null && !stack.getType().equals(material)) {
             return false;
