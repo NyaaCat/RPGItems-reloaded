@@ -730,13 +730,6 @@ public class Utils {
         return Math.min(a, b);
     }
 
-    public static Double valueOrDefault(Double a, Double b){
-        if (a == null){
-            return b;
-        }
-        else return a;
-    }
-
     public static Expression.LazyNumber lazyNumber(Supplier<Double> f) {
         return new Expression.LazyNumber() {
             @Override
