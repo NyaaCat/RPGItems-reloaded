@@ -105,7 +105,7 @@ publishing {
         mavenRelease(MavenPublication) {
             from components.java
             afterEvaluate {
-                artifacts = [jar, apiJar, javadocJar, sourcesJar]
+                artifacts = [jar, apiJar, sourcesJar]
             }
             groupId "cat.nyaa"
             artifactId "rpgitems"
