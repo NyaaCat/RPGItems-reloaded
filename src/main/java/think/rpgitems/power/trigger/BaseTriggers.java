@@ -20,6 +20,7 @@ public final class BaseTriggers {
     public static final Trigger<EntityDamageByEntityEvent, PowerHit, Double, Optional<Double>> HIT_GLOBAL = new HitGlobal();
     public static final Trigger<ProjectileHitEvent, PowerProjectileHit, Void, Void> PROJECTILE_HIT = new ProjectileHit();
     public static final Trigger<EntityDamageEvent, PowerHitTaken, Double, Optional<Double>> HIT_TAKEN = new HitTaken();
+    public static final Trigger<EntityDamageEvent, PowerHitTaken, Void, Optional<Void>> DYING = new Dying();
     public static final Trigger<EntityDamageEvent, PowerHurt, Void, Void> HURT = new Hurt();
     public static final Trigger<PlayerInteractEvent, PowerLeftClick, Void, Void> LEFT_CLICK = new LeftClick();
     public static final Trigger<PlayerInteractEvent, PowerRightClick, Void, Void> RIGHT_CLICK = new RightClick();
@@ -40,5 +41,4 @@ public final class BaseTriggers {
     public static final Trigger<BeamHitBlockEvent, PowerBeamHit, Void, Void> BEAM_HIT_BLOCK = new BeamHit<>(BeamHitBlockEvent.class, Void.class, Void.class, "BEAM_HIT_BLOCK");
     public static final Trigger<BeamHitEntityEvent, PowerBeamHit, Double, Optional<Double>> BEAM_HIT_ENTITY = new BeamHit<>(BeamHitEntityEvent.class, Double.class, Optional.class, "BEAM_HIT_ENTITY");
     public static final Trigger<BeamEndEvent, PowerBeamHit, Double, Optional<Double>> BEAM_END = new BeamHit<>(BeamEndEvent.class, Double.class, Optional.class, "BEAM_END");
-
 }
