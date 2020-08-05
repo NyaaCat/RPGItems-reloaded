@@ -783,7 +783,7 @@ public class Events implements Listener {
         if (rItem != null) {
             String damageType = rItem.getDamageType();
             Context.instance().putTemp(player.getUniqueId(), DAMAGE_TYPE, damageType);
-            damage = valueOrDefault(rItem.power(player, item, e, BaseTriggers.HIT).orElse(null), damage);
+            damage = rItem.power(player, item, e, BaseTriggers.HIT).orElse(damage);
         }
         ItemStack[] inventory = player.getInventory().getContents();
         runGlobalHitTrigger(e, player, damage, rItem == null ? "" : rItem.getDamageType(), inventory);
@@ -849,7 +849,7 @@ public class Events implements Listener {
         ItemStack[] armorContents = player.getInventory().getContents();
         String damageType = rItem.getDamageType();
         Context.instance().putTemp(player.getUniqueId(), DAMAGE_TYPE, damageType);
-        damage = valueOrDefault(rItem.power(player, item, e, BaseTriggers.HIT).orElse(null), damage);
+        damage = rItem.power(player, item, e, BaseTriggers.HIT).orElse(damage);
         runGlobalHitTrigger(e, player, damage, damageType, armorContents);
     }
 
@@ -861,7 +861,7 @@ public class Events implements Listener {
             RPGItem rpgItem = ItemManager.toRPGItem(itemStack).orElse(null);
             if (rpgItem == null) continue;
             Context.instance().putTemp(player.getUniqueId(), DAMAGE_TYPE, damageType);
-            damage = (valueOrDefault(rpgItem.power(player, itemStack, e, BaseTriggers.HIT_GLOBAL).orElse(null), damage));
+            damage = rpgItem.power(player, itemStack, e, BaseTriggers.HIT_GLOBAL).orElse(damage);
         }
         if (damage <= 0) {
             e.setCancelled(true);
@@ -918,7 +918,7 @@ public class Events implements Listener {
         for (ItemStack item : e.getInventory().getContents()) {
             RPGItem ri = ItemManager.toRPGItem(item).orElse(null);
             if (ri == null) continue;
-            ret = minWithCancel(ri.power(e, item, ev, BaseTriggers.HIT_TAKEN).orElse(null), ret);
+            ret = ri.power(e, item, ev, BaseTriggers.HIT_TAKEN).orElse(ret);
         }
         return ret;
     }
