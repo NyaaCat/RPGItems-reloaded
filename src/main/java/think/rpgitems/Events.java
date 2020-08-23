@@ -3,6 +3,7 @@ package think.rpgitems;
 import cat.nyaa.nyaacore.utils.RayTraceUtils;
 import cat.nyaa.nyaacore.utils.TridentUtils;
 import org.bukkit.Bukkit;
+import org.bukkit.Location;
 import org.bukkit.Material;
 import org.bukkit.OfflinePlayer;
 import org.bukkit.block.Block;
@@ -224,7 +225,13 @@ public class Events implements Listener {
 
                     List<Ranged> ranged = rItem.getMarker(Ranged.class, true);
                     if (!ranged.isEmpty()) {
-                        double distance = player.getLocation().distance(e.getEntity().getLocation());
+
+                        Location locationP = player.getLocation();
+                        Location locationE = e.getEntity().getLocation();
+                        if(!locationE.getWorld().equals(locationE)){
+                            return;
+                        }
+                        double distance = locationP.distance(locationE);
                         if (ranged.get(0).rm > distance || distance > ranged.get(0).r) {
                             return;
                         }
