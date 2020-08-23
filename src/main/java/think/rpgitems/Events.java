@@ -4,6 +4,7 @@ import cat.nyaa.nyaacore.utils.RayTraceUtils;
 import cat.nyaa.nyaacore.utils.TridentUtils;
 import org.bukkit.Bukkit;
 import org.bukkit.Material;
+import org.bukkit.OfflinePlayer;
 import org.bukkit.block.Block;
 import org.bukkit.entity.*;
 import org.bukkit.event.*;
@@ -274,7 +275,16 @@ public class Events implements Listener {
         if (!(shooter instanceof Player) &&
                 !((shooter instanceof Entity) && projectileRegisterMap.containsKey(((Entity) shooter).getUniqueId()))
         ) return;
-        Player player = (shooter instanceof Player) ? (Player) shooter : Bukkit.getPlayer(projectileRegisterMap.get(((LivingEntity) shooter).getUniqueId()));
+        OfflinePlayer ofp = (shooter instanceof Player) ? (Player) shooter : Bukkit.getOfflinePlayer(projectileRegisterMap.get(((LivingEntity) shooter).getUniqueId()));
+        if (!ofp.isOnline()){
+            projectileRpgItem = null;
+            projectilePlayer = null;
+            projectileItemStack = null;
+            projectileRegisterMap.remove(((LivingEntity) shooter).getUniqueId());
+            e.setCancelled(true);
+            return;
+        }
+        Player player = ofp.getPlayer();
         if (projectilePlayer != null) {
             if (projectilePlayer != player) {
                 projectileRpgItem = null;
