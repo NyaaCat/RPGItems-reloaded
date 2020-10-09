@@ -228,7 +228,7 @@ public class Events implements Listener {
 
                         Location locationP = player.getLocation();
                         Location locationE = e.getEntity().getLocation();
-                        if(!locationE.getWorld().equals(locationE)){
+                        if(!locationE.getWorld().equals(locationP.getWorld())){
                             return;
                         }
                         double distance = locationP.distance(locationE);
