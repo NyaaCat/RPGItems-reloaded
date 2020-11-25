@@ -1,5 +1,6 @@
 package think.rpgitems.support;
 
+import cat.nyaa.nyaacore.utils.HexColorUtils;
 import com.sk89q.worldguard.LocalPlayer;
 import com.sk89q.worldguard.WorldGuard;
 import com.sk89q.worldguard.bukkit.WorldGuardPlugin;
@@ -151,7 +152,7 @@ public class WGSupport {
         if (result == Event.Result.DENY && showWarn) {
             String message = warningMessageByPlayer.get(player.getUniqueId());
             if (message != null) {
-                player.sendMessage(ChatColor.translateAlternateColorCodes('&', message));
+                player.sendMessage(HexColorUtils.hexColored(message));
             }
         }
         return result;

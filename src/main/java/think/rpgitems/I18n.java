@@ -1,6 +1,7 @@
 package think.rpgitems;
 
 import cat.nyaa.nyaacore.LanguageRepository;
+import cat.nyaa.nyaacore.utils.HexColorUtils;
 import org.bukkit.ChatColor;
 import org.bukkit.command.CommandSender;
 import org.bukkit.configuration.ConfigurationSection;
@@ -68,7 +69,7 @@ public class I18n extends LanguageRepository {
             if (section.isString(key)) {
                 if (path.startsWith("internal") && ignoreInternal) continue;
                 if (!path.startsWith("internal") && ignoreNormal) continue;
-                map.put(path, ChatColor.translateAlternateColorCodes('&', section.getString(key)));
+                map.put(path, HexColorUtils.hexColored(section.getString(key)));
             } else if (section.isConfigurationSection(key)) {
                 loadLanguageSection(map, section.getConfigurationSection(key), path + ".", ignoreInternal, ignoreNormal);
             }

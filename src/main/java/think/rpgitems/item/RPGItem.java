@@ -2,6 +2,7 @@ package think.rpgitems.item;
 
 import cat.nyaa.nyaacore.Message;
 import cat.nyaa.nyaacore.Pair;
+import cat.nyaa.nyaacore.utils.HexColorUtils;
 import cat.nyaa.nyaacore.utils.ItemStackUtils;
 import cat.nyaa.nyaacore.utils.ItemTagUtils;
 import com.google.common.base.Strings;
@@ -194,7 +195,7 @@ public class RPGItem {
         setDisplayName(display);
         List<String> desc = s.getStringList("description");
         for (int i = 0; i < desc.size(); i++) {
-            desc.set(i, ChatColor.translateAlternateColorCodes('&', desc.get(i)));
+            desc.set(i, HexColorUtils.hexColored(desc.get(i)));
         }
         setDescription(desc);
         setDamageMin(s.getInt("damageMin"));
@@ -1495,7 +1496,7 @@ public class RPGItem {
 
 
     public void addDescription(String str) {
-        getDescription().add(ChatColor.translateAlternateColorCodes('&', str));
+        getDescription().add(HexColorUtils.hexColored(str));
         rebuild();
     }
 
@@ -1720,7 +1721,7 @@ public class RPGItem {
     }
 
     public void setDisplayName(String displayName) {
-        this.displayName = ChatColor.translateAlternateColorCodes('&', displayName);
+        this.displayName = HexColorUtils.hexColored(displayName);
     }
 
     public int getDurabilityLowerBound() {

@@ -5,6 +5,7 @@ import cat.nyaa.nyaacore.Pair;
 import cat.nyaa.nyaacore.cmdreceiver.Arguments;
 import cat.nyaa.nyaacore.cmdreceiver.BadCommandException;
 import cat.nyaa.nyaacore.cmdreceiver.SubCommand;
+import cat.nyaa.nyaacore.utils.HexColorUtils;
 import cat.nyaa.nyaacore.utils.ItemStackUtils;
 import cat.nyaa.nyaacore.utils.OfflinePlayerUtils;
 import com.google.common.base.Strings;
@@ -707,7 +708,7 @@ public class AdminCommands extends RPGCommandReceiver {
                     msgs(sender, "message.num_out_of_range", lineNo, 0, item.getDescription().size());
                     return;
                 }
-                item.getDescription().add(lineNo, ChatColor.translateAlternateColorCodes('&', ChatColor.WHITE + line));
+                item.getDescription().add(lineNo, HexColorUtils.hexColored(ChatColor.WHITE + line));
                 item.rebuild();
                 ItemManager.refreshItem();
                 msgs(sender, "message.description.ok");
@@ -721,7 +722,7 @@ public class AdminCommands extends RPGCommandReceiver {
                     msgs(sender, "message.num_out_of_range", lineNo, 0, item.getDescription().size());
                     return;
                 }
-                item.getDescription().set(lineNo, ChatColor.translateAlternateColorCodes('&', ChatColor.WHITE + line));
+                item.getDescription().set(lineNo, HexColorUtils.hexColored(ChatColor.WHITE + line));
                 item.rebuild();
                 ItemManager.refreshItem();
                 msgs(sender, "message.description.change");
