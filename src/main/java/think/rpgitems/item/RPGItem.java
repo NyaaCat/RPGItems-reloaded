@@ -349,9 +349,21 @@ public class RPGItem {
         setAlwaysAllowMelee(s.getBoolean("alwaysAllowMelee", false));
         this.setIsTemplate(s.getBoolean("isTemplate", false));
         templates.clear();
-        templates.addAll(s.getStringList("templates"));
+        ConfigurationSection templatesList = s.getConfigurationSection("templates");
+        if (templatesList != null) {
+            for (String sectionKey : templatesList.getKeys(false)) {
+                String tmp = (String) templatesList.get(sectionKey);
+                templates.add(tmp);
+            }
+        }
         templatePlaceholders.clear();
-        templatePlaceholders.addAll(s.getStringList("templatePlaceholders"));
+        ConfigurationSection templatePlaceholdersList = s.getConfigurationSection("templatePlaceholders");
+        if (templatePlaceholdersList != null) {
+            for (String sectionKey : templatePlaceholdersList.getKeys(false)) {
+                String tmp = (String) templatePlaceholdersList.get(sectionKey);
+                templatePlaceholders.add(tmp);
+            }
+        }
         rebuild();
     }
 
@@ -560,8 +572,20 @@ public class RPGItem {
         s.set("alwaysAllowMelee", isAlwaysAllowMelee());
 
         s.set("isTemplate",isTemplate());
-        s.set("templates", getTemplates());
-        s.set("templatePlaceHolder", getTemplatePlaceHolders());
+        ConfigurationSection templatesConfigs = s.createSection("templates");
+        Set<String> templates = getTemplates();
+        Iterator<String> it = templates.iterator();
+        for (i = 0; i < templates.size(); i++) {
+            String next = it.next();
+            templatesConfigs.set(String.valueOf(i), next);
+        }
+        ConfigurationSection templatePlaceHolderConfigs = s.createSection("templatePlaceHolder");
+        Set<String> templatePlaceHolders = getTemplatePlaceHolders();
+        Iterator<String> it1 = templatePlaceHolders.iterator();
+        for (i = 0; i < templatePlaceHolders.size(); i++) {
+            String next = it1.next();
+            templatePlaceHolderConfigs.set(String.valueOf(i), next);
+        }
     }
 
 
@@ -1487,6 +1511,10 @@ public class RPGItem {
     }
 
     private void addPower(NamespacedKey key, Power power, boolean update) {
+        if ("".equals(power.getPlaceholderId())){
+            String placeholderId = power.getName() + "-" + getPowers().stream().filter(power1 -> power1.getName().equals(power.getName())).count();
+            power.setPlaceholderId(placeholderId);
+        }
         powers.add(power);
         keys.put(power, key);
         String placeholderId = power.getPlaceholderId();
@@ -1514,6 +1542,10 @@ public class RPGItem {
     }
 
     private void addCondition(NamespacedKey key, Condition<?> condition, boolean update) {
+        if ("".equals(condition.getPlaceholderId())){
+            String placeholderId = condition.getName() + "-" + getConditions().stream().filter(power1 -> power1.getName().equals(condition.getName())).count();
+            condition.setPlaceholderId(placeholderId);
+        }
         conditions.add(condition);
         keys.put(condition, key);
         String placeholderId = condition.getPlaceholderId();
@@ -1540,12 +1572,14 @@ public class RPGItem {
     }
 
     private void addMarker(NamespacedKey key, Marker marker, boolean update) {
+        if ("".equals(marker.getPlaceholderId())){
+            String placeholderId = marker.getName() + "-" + getConditions().stream().filter(power1 -> power1.getName().equals(marker.getName())).count();
+            marker.setPlaceholderId(placeholderId);
+        }
         markers.add(marker);
         keys.put(marker, key);
         String placeholderId = marker.getPlaceholderId();
-        if (!"".equals(placeholderId)){
-            placeholders.put(placeholderId, marker);
-        }
+        placeholders.put(placeholderId, marker);
         if (update) {
             rebuild();
         }
