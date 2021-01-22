@@ -143,6 +143,9 @@ public class RPGItem {
     private int pluginSerial;
     private List<String> lore;
     private int customModelData;
+    private boolean isTemplate;
+    private Set<String> templates = new HashSet<>();
+    private Set<String> templatePlaceholders = new HashSet<>();
 
     public RPGItem(String name, int uid, CommandSender author) {
         this.name = name;
@@ -332,6 +335,11 @@ public class RPGItem {
             setDamageMode(DamageMode.FIXED);
         }
         setAlwaysAllowMelee(s.getBoolean("alwaysAllowMelee", false));
+        this.setIsTemplate(s.getBoolean("isTemplate", false));
+        templates.clear();
+        templates.addAll(s.getStringList("templates"));
+        templatePlaceholders.clear();
+        templatePlaceholders.addAll(s.getStringList("templatePlaceholders"));
         rebuild();
     }
 
@@ -520,7 +528,12 @@ public class RPGItem {
         s.set("customItemModel", isCustomItemModel());
         s.set("barFormat", getBarFormat().name());
         s.set("alwaysAllowMelee", isAlwaysAllowMelee());
+
+        s.set("isTemplate",isTemplate());
+        s.set("templates", getTemplates());
+        s.set("templates", getTemplatePlaceHolders());
     }
+
 
     public String getDamageType() {
         return this.damageType;
@@ -1972,6 +1985,27 @@ public class RPGItem {
 
     public void setAttributeMode(AttributeMode attributeMode) {
         this.attributeMode = attributeMode;
+    }
+
+    public boolean isTemplate() {
+        return isTemplate;
+    }
+
+    public void setIsTemplate(boolean template) {
+        isTemplate = template;
+    }
+
+    public boolean isTemplateOf(String templateName){
+        return templates.contains(templateName);
+    }
+
+    public Set<String> getTemplates(){
+        return templates;
+    }
+
+
+    private Set<String> getTemplatePlaceHolders() {
+        return templatePlaceholders;
     }
 
     public AttributeMode getAttributeMode() {
