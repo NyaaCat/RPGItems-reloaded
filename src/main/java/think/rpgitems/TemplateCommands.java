@@ -8,14 +8,16 @@ import cat.nyaa.nyaacore.cmdreceiver.SubCommand;
 import org.bukkit.command.CommandSender;
 import think.rpgitems.item.ItemManager;
 import think.rpgitems.item.RPGItem;
+import think.rpgitems.power.PlaceholderHolder;
 import think.rpgitems.power.Power;
 import think.rpgitems.power.Property;
 import think.rpgitems.power.RPGCommandReceiver;
 
 import java.lang.reflect.Field;
-import java.lang.reflect.Method;
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 public class TemplateCommands extends RPGCommandReceiver {
     public TemplateCommands(RPGItems plugin, LanguageRepository i18n) {
@@ -45,14 +47,42 @@ public class TemplateCommands extends RPGCommandReceiver {
         new Message("").append(I18n.getInstance(sender).format("command.template.create.success", itemName)).send(sender);
     }
 
+    @SubCommand("delete")
+    public void onDelete(CommandSender sender, Arguments arguments){
+        String itemName = arguments.nextString();
+        RPGItem rpgItem = ItemManager.getItem(itemName).orElseThrow(BadCommandException::new);
+        rpgItem.setIsTemplate(false);
+        new Message("").append(I18n.getInstance(sender).format("command.template.delete.success", itemName)).send(sender);
+    }
+
+    @SubCommand("apply")
+    public void onApply(CommandSender sender, Arguments arguments){
+        String itemName = arguments.nextString();
+        RPGItem target = ItemManager.getItem(itemName).orElseThrow(BadCommandException::new);
+        boolean isTemplate = target.isTemplate();
+        I18n i18n = I18n.getInstance(sender);
+        if (!isTemplate){
+            new Message("").append(i18n.format("command.template.not_template")).send(sender);
+            return;
+        }
+        Set<RPGItem> toUpdate = new HashSet<>();
+        ItemManager.items().stream().filter(rpgItem -> rpgItem.isTemplateOf(itemName))
+                .forEach(rpgItem -> {
+                    rpgItem.updateFromTemplate(target);
+                    toUpdate.add(rpgItem);
+                });
+        toUpdate.forEach(ItemManager::save);
+    }
+
+
     private void sendBadMsg(CommandSender sender, String s) {
         I18n i18n = I18n.getInstance(sender);
         new Message("").append(i18n.format("command.template.bad_placeholder", s));
     }
 
     /**
-     *
-     *
+     * check syntax of placeholders
+     * &lt;powerid:propName&gt;
      * @param rpgItem
      * @param placeHolder
      * @return bad place holders
@@ -70,7 +100,7 @@ public class TemplateCommands extends RPGCommandReceiver {
                 }
                 powerid = split[0];
                 propName = split[1];
-                Power power = rpgItem.getPower(powerid);
+                PlaceholderHolder power = rpgItem.getPlaceholderHolder(powerid);
                 Class<?> aClass = power.getClass();
                 while (aClass != null){
                     Field declaredField;

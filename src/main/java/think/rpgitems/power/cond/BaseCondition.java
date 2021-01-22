@@ -18,6 +18,34 @@ public abstract class BaseCondition<T> extends BasePropertyHolder implements Ser
     @Property
     public Set<String> conditions = new HashSet<>();
 
+    @Property
+    public Set<String> tags = new HashSet<>();
+
+    @Override
+    public String getPlaceholderId() {
+        return this.id();
+    }
+
+    @Override
+    public void setPlaceholderId(String id) {
+        //todo
+    }
+
+    @Override
+    public Set<String> getTags() {
+        return tags;
+    }
+
+    @Override
+    public void addTag(String tag) {
+        tags.add(tag);
+    }
+
+    @Override
+    public void removeTag(String tag) {
+        tags.remove(tag);
+    }
+
     @Override
     public Set<String> getConditions() {
         return Collections.unmodifiableSet(conditions);

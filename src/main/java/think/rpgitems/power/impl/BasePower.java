@@ -26,7 +26,7 @@ public abstract class BasePower extends BasePropertyHolder implements Serializab
     @Property
     public String powerId = "";
     @Property
-    public Set<String> powerTag = new HashSet<>();
+    public Set<String> powerTags = new HashSet<>();
 
     @Override
     public String displayName() {
@@ -56,16 +56,41 @@ public abstract class BasePower extends BasePropertyHolder implements Serializab
         this.powerId = powerId;
     }
 
-    public Set<String> getPowerTag() {
-        return powerTag;
+    public Set<String> getPowerTags() {
+        return powerTags;
     }
 
     public void addPowerTag(String tag){
-        powerTag.add(tag);
+        powerTags.add(tag);
     }
 
     public void removePowerTag(String tag){
-        powerTag.remove(tag);
+        powerTags.remove(tag);
+    }
+
+    @Override
+    public String getPlaceholderId() {
+        return getPowerId();
+    }
+
+    @Override
+    public void setPlaceholderId(String id) {
+        this.setPowerId(id);
+    }
+
+    @Override
+    public Set<String> getTags() {
+        return getPowerTags();
+    }
+
+    @Override
+    public void addTag(String tag) {
+        addPowerTag(tag);
+    }
+
+    @Override
+    public void removeTag(String tag) {
+        removePowerTag(tag);
     }
 
     @Override

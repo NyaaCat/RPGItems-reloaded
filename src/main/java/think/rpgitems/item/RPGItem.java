@@ -42,6 +42,7 @@ import think.rpgitems.RPGItems;
 import think.rpgitems.data.Context;
 import think.rpgitems.power.*;
 import think.rpgitems.power.cond.SlotCondition;
+import think.rpgitems.power.impl.BasePower;
 import think.rpgitems.power.marker.*;
 import think.rpgitems.power.propertymodifier.Modifier;
 import think.rpgitems.power.propertymodifier.RgiParameter;
@@ -50,6 +51,7 @@ import think.rpgitems.power.trigger.Trigger;
 import think.rpgitems.utils.MaterialUtils;
 
 import java.io.File;
+import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.util.*;
 import java.util.Map.Entry;
@@ -1547,9 +1549,61 @@ public class RPGItem {
                      .collect(Collectors.toList());
     }
 
-    public Power getPower(String powerid) {
+    public PlaceholderHolder getPlaceholderHolder(String powerid) {
         //todo
         return null;
+    }
+
+    public PlaceholderHolder replacePlaceholder(String powerId, PlaceholderHolder powerid) {
+        //todo
+        return null;
+    }
+
+
+
+    public void updateFromTemplate(RPGItem target) {
+        Set<String> templatePlaceHolders = target.getTemplatePlaceHolders();
+        Map<String, List<String>> powerMap = new LinkedHashMap<>();
+        Map<String, Object> valMap = new LinkedHashMap<>();
+        //extract original val from self
+        templatePlaceHolders.forEach(s -> {
+            String[] split = s.split(":");
+            PlaceholderHolder power = getPlaceholderHolder(split[0]);
+            String propName = Character.toUpperCase(split[1].charAt(0)) + split[1].substring(1);
+            Object origVal = null;
+            try {
+                origVal = power.getClass().getMethod("get" + propName).invoke(power);
+                List<String> strings = powerMap.computeIfAbsent(split[0], (str) -> new ArrayList<>());
+                strings.add(s);
+                valMap.put(s, origVal);
+            } catch (IllegalAccessException | InvocationTargetException | NoSuchMethodException e) {
+                e.printStackTrace();
+                throw new RuntimeException();
+            }
+        });
+        //replace powers & fill placeholders
+        target.getPowers().forEach(power -> {
+            if (power instanceof BasePower) {
+                String powerId = ((BasePower) power).getPowerId();
+                PlaceholderHolder replaced = replacePlaceholder(powerId, power);
+                List<String> strings = powerMap.get(powerId);
+                if (strings != null){
+                    strings.forEach(s ->{
+                        String[] split = s.split(":");
+                        String propName = Character.toUpperCase(split[1].charAt(0)) + split[1].substring(1);
+                        Object origVal = valMap.get(s);
+                        try {
+                            replaced.getClass().getMethod("set" + propName, Object.class).invoke(power, origVal);
+                        } catch (IllegalAccessException | InvocationTargetException | NoSuchMethodException e) {
+                            e.printStackTrace();
+                            throw new RuntimeException();
+                        }
+                    });
+                }
+            }
+        });
+
+        ItemManager.save(this);
     }
 
     @SuppressWarnings("rawtypes")
@@ -2006,6 +2060,10 @@ public class RPGItem {
 
     public Set<String> getTemplates(){
         return templates;
+    }
+
+    public void setTemplateOf(String templateName){
+        this.templates.add(templateName);
     }
 
     public void setTemplatePlaceHolders(List<String> placeHolder) {
