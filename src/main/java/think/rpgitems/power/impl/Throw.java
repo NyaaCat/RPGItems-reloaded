@@ -19,7 +19,6 @@ import think.rpgitems.RPGItems;
 import think.rpgitems.power.*;
 import think.rpgitems.power.trigger.BaseTriggers;
 
-import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.util.Collections;
 import java.util.UUID;

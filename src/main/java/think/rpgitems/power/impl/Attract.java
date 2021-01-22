@@ -18,7 +18,6 @@ import think.rpgitems.event.BeamEndEvent;
 import think.rpgitems.event.BeamHitBlockEvent;
 import think.rpgitems.event.BeamHitEntityEvent;
 import think.rpgitems.power.*;
-import think.rpgitems.power.trigger.BaseTriggers;
 import think.rpgitems.utils.cast.CastUtils;
 
 import javax.annotation.Nullable;

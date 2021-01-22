@@ -10,7 +10,6 @@ import org.bukkit.event.entity.EntityDamageEvent;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.projectiles.ProjectileSource;
 import think.rpgitems.RPGItems;
-import think.rpgitems.item.RPGItem;
 import think.rpgitems.power.*;
 
 import java.math.BigDecimal;

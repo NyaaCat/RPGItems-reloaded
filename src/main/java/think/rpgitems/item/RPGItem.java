@@ -42,7 +42,7 @@ import think.rpgitems.RPGItems;
 import think.rpgitems.data.Context;
 import think.rpgitems.power.*;
 import think.rpgitems.power.cond.SlotCondition;
-import think.rpgitems.power.impl.BasePower;
+import think.rpgitems.power.BasePower;
 import think.rpgitems.power.marker.*;
 import think.rpgitems.power.propertymodifier.Modifier;
 import think.rpgitems.power.propertymodifier.RgiParameter;

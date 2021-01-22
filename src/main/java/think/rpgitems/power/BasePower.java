@@ -1,4 +1,4 @@
-package think.rpgitems.power.impl;
+package think.rpgitems.power;
 
 import think.rpgitems.power.*;
 import think.rpgitems.power.trigger.Trigger;

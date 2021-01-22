@@ -25,7 +25,6 @@ import javax.annotation.Nullable;
 import java.util.Optional;
 
 import static think.rpgitems.power.Utils.checkCooldown;
-import static think.rpgitems.power.Utils.sweep;
 
 /**
  * Power particle.
