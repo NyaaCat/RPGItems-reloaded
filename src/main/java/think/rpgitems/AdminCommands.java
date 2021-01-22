@@ -152,6 +152,9 @@ public class AdminCommands extends RPGCommandReceiver {
     @SubCommand("gen-wiki")
     public WikiCommand wiki;
 
+    @SubCommand("template")
+    public TemplateCommands templateCommand;
+
     @SubCommand("debug")
     public void debug(CommandSender sender, Arguments args) {
         Player player = asPlayer(sender);

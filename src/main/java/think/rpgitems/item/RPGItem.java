@@ -531,7 +531,7 @@ public class RPGItem {
 
         s.set("isTemplate",isTemplate());
         s.set("templates", getTemplates());
-        s.set("templates", getTemplatePlaceHolders());
+        s.set("templatePlaceHolder", getTemplatePlaceHolders());
     }
 
 
@@ -1547,6 +1547,11 @@ public class RPGItem {
                      .collect(Collectors.toList());
     }
 
+    public Power getPower(String powerid) {
+        //todo
+        return null;
+    }
+
     @SuppressWarnings("rawtypes")
     public static class DynamicMethodInterceptor implements MethodInterceptor {
         private static WeakHashMap<Player, WeakHashMap<ItemStackWrapper, WeakHashMap<Power, Power>>> cache = new WeakHashMap<>();
@@ -2003,6 +2008,18 @@ public class RPGItem {
         return templates;
     }
 
+    public void setTemplatePlaceHolders(List<String> placeHolder) {
+        this.templatePlaceholders.clear();
+        this.templatePlaceholders.addAll(placeHolder);
+    }
+
+    public void addTemplatePlaceHolder(String placeHolder){
+        this.templatePlaceholders.add(placeHolder);
+    }
+
+    public void removeTemplatePlaceHolder(String placeHolder){
+        this.templatePlaceholders.remove(placeHolder);
+    }
 
     private Set<String> getTemplatePlaceHolders() {
         return templatePlaceholders;
