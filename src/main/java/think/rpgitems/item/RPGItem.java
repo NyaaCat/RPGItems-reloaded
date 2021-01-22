@@ -22,6 +22,7 @@ import org.bukkit.block.Block;
 import org.bukkit.command.CommandSender;
 import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.configuration.MemoryConfiguration;
+import org.bukkit.configuration.file.YamlConfiguration;
 import org.bukkit.enchantments.Enchantment;
 import org.bukkit.entity.Entity;
 import org.bukkit.entity.LivingEntity;
@@ -59,6 +60,7 @@ import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ThreadLocalRandom;
 import java.util.concurrent.TimeUnit;
 import java.util.logging.Level;
+import java.util.logging.Logger;
 import java.util.regex.Matcher;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
@@ -98,6 +100,7 @@ public class RPGItem {
     private List<Power> powers = new ArrayList<>();
     private List<Condition<?>> conditions = new ArrayList<>();
     private List<Marker> markers = new ArrayList<>();
+    private Map<String, PlaceholderHolder> placeholders= new HashMap<>();
     @SuppressWarnings("rawtypes")
     private Map<String, Trigger> triggers = new HashMap<>();
     private HashMap<PropertyHolder, NamespacedKey> keys = new HashMap<>();
@@ -220,6 +223,7 @@ public class RPGItem {
         setIgnoreWorldGuard(s.getBoolean("ignoreWorldGuard", false));
         setCanBeOwned(s.getBoolean("canBeOwned", false));
         setHasStackId(s.getBoolean("hasStackId", false));
+        placeholders.clear();
         // Powers
         ConfigurationSection powerList = s.getConfigurationSection("powers");
         if (powerList != null) {
@@ -263,6 +267,12 @@ public class RPGItem {
             }
         }
 
+        Map<String, List<PlaceholderHolder>> duplicatePlaceholderIds = checkDuplicatePlaceholderIds();
+        if (!duplicatePlaceholderIds.isEmpty()){
+            Logger logger = RPGItems.plugin.getLogger();
+            String duplicateMsg = getDuplicatePlaceholderMsg(duplicatePlaceholderIds);
+            logger.log(Level.WARNING, duplicateMsg);
+        }
         setHasPermission(s.getBoolean("haspermission", false));
         setPermission(s.getString("permission", "rpgitem.item." + name));
         setCustomItemModel(s.getBoolean("customItemModel", false));
@@ -343,6 +353,24 @@ public class RPGItem {
         templatePlaceholders.clear();
         templatePlaceholders.addAll(s.getStringList("templatePlaceholders"));
         rebuild();
+    }
+
+    public String getDuplicatePlaceholderMsg(Map<String, List<PlaceholderHolder>> duplicatePlaceholderIds) {
+        StringBuilder stringBuilder = new StringBuilder();
+        stringBuilder.append("duplicate placeholder key found in item: ")
+                .append(getName()).append("\n");
+        duplicatePlaceholderIds.forEach((k,v)->{
+            stringBuilder.append("key: ")
+                    .append(k)
+                    .append(", values: [");
+            v.forEach((ph) ->{
+                stringBuilder.append(ph.toString());
+                stringBuilder.append(",");
+            });
+            stringBuilder.append("]");
+        });
+        String msg = stringBuilder.toString();
+        return msg;
     }
 
     public int getCustomModelData() {
@@ -1461,6 +1489,10 @@ public class RPGItem {
     private void addPower(NamespacedKey key, Power power, boolean update) {
         powers.add(power);
         keys.put(power, key);
+        String placeholderId = power.getPlaceholderId();
+        if (!"".equals(placeholderId)){
+            placeholders.put(placeholderId, power);
+        }
         if (update) {
             rebuild();
         }
@@ -1469,6 +1501,10 @@ public class RPGItem {
     public void removePower(Power power) {
         powers.remove(power);
         keys.remove(power);
+        String placeholderId = power.getPlaceholderId();
+        if (!"".equals(placeholderId)){
+            placeholders.remove(placeholderId, power);
+        }
         power.deinit();
         rebuild();
     }
@@ -1480,6 +1516,10 @@ public class RPGItem {
     private void addCondition(NamespacedKey key, Condition<?> condition, boolean update) {
         conditions.add(condition);
         keys.put(condition, key);
+        String placeholderId = condition.getPlaceholderId();
+        if (!"".equals(placeholderId)){
+            placeholders.put(placeholderId, condition);
+        }
         if (update) {
             rebuild();
         }
@@ -1488,6 +1528,10 @@ public class RPGItem {
     public void removeCondition(Condition<?> condition) {
         conditions.remove(condition);
         keys.remove(condition);
+        String placeholderId = condition.getPlaceholderId();
+        if (!"".equals(placeholderId)){
+            placeholders.remove(placeholderId, condition);
+        }
         rebuild();
     }
 
@@ -1498,6 +1542,10 @@ public class RPGItem {
     private void addMarker(NamespacedKey key, Marker marker, boolean update) {
         markers.add(marker);
         keys.put(marker, key);
+        String placeholderId = marker.getPlaceholderId();
+        if (!"".equals(placeholderId)){
+            placeholders.put(placeholderId, marker);
+        }
         if (update) {
             rebuild();
         }
@@ -1506,9 +1554,39 @@ public class RPGItem {
     public void removeMarker(Marker marker) {
         markers.remove(marker);
         keys.remove(marker);
+        String placeholderId = marker.getPlaceholderId();
+        if (!"".equals(placeholderId)){
+            placeholders.remove(placeholderId, marker);
+        }
         rebuild();
     }
 
+    public Map<String, List<PlaceholderHolder>> checkDuplicatePlaceholderIds(){
+        Map<String, List<PlaceholderHolder>> ids = new HashMap<>();
+        List<Power> powers = getPowers();
+        List<Condition<?>> conditions = getConditions();
+        List<Marker> markers = getMarkers();
+        Stream.concat(
+                Stream.concat(
+                        powers.stream().map(ph -> ((PlaceholderHolder) ph)),
+                        conditions.stream().map(ph -> ((PlaceholderHolder) ph))),
+                markers.stream().map(ph -> ((PlaceholderHolder) ph))
+        ).forEach(placeholder -> {
+            String placeholderId = placeholder.getPlaceholderId();
+            if("".equals(placeholderId)){
+                return;
+            }
+            List<PlaceholderHolder> placeholderHolders = ids.computeIfAbsent(placeholderId, (s) -> new ArrayList<>());
+            placeholderHolders.add(placeholder);
+        });
+        Map<String, List<PlaceholderHolder>> result = new HashMap<>();
+        ids.forEach((key, value) ->{
+            if (value.size()>1){
+                result.put(key, value);
+            }
+        });
+        return result;
+    }
 
     public void addDescription(String str) {
         getDescription().add(HexColorUtils.hexColored(str));
@@ -1549,14 +1627,57 @@ public class RPGItem {
                      .collect(Collectors.toList());
     }
 
-    public PlaceholderHolder getPlaceholderHolder(String powerid) {
-        //todo
-        return null;
+    public PlaceholderHolder getPlaceholderHolder(String placeholderId) {
+        return placeholders.get(placeholderId);
     }
 
-    public PlaceholderHolder replacePlaceholder(String powerId, PlaceholderHolder powerid) {
-        //todo
-        return null;
+    public PlaceholderHolder replacePlaceholder(String powerId, PlaceholderHolder placeHolder) {
+        YamlConfiguration yamlConfiguration = new YamlConfiguration();
+        PlaceholderHolder oldPh = placeholders.get(powerId);
+        PlaceholderHolder newPh = null;
+        if (oldPh == null){
+            return null;
+        }
+        placeHolder.save(yamlConfiguration);
+        if (oldPh instanceof Power){
+            int i = powers.indexOf(oldPh);
+            if (i == -1){
+                throw new IllegalStateException();
+            }
+            Class<? extends Power> pwClz = ((Power) oldPh).getClass();
+            Power pow = PowerManager.instantiate(pwClz);
+            pow.setItem(this);
+            pow.init(yamlConfiguration);
+            powers.set(i, pow);
+            newPh = pow;
+        }else if (oldPh instanceof Condition){
+            int i = conditions.indexOf(oldPh);
+            if (i == -1){
+                throw new IllegalStateException();
+            }
+            Class<? extends Condition> pwClz = ((Condition<?>) oldPh).getClass();
+            Condition<?> pow = PowerManager.instantiate(pwClz);
+            pow.setItem(this);
+            pow.init(yamlConfiguration);
+            conditions.set(i, pow);
+            newPh = pow;
+        }else if (oldPh instanceof Marker){
+            int i = markers.indexOf(oldPh);
+            if (i == -1){
+                throw new IllegalStateException();
+            }
+            Class<? extends Marker> pwClz = ((Marker) oldPh).getClass();
+            Marker pow = PowerManager.instantiate(pwClz);
+            pow.setItem(this);
+            pow.init(yamlConfiguration);
+            markers.set(i, pow);
+            newPh = pow;
+        }
+        if(newPh == null){
+            return null;
+        }
+        placeholders.put(powerId, newPh);
+        return newPh;
     }
 
 

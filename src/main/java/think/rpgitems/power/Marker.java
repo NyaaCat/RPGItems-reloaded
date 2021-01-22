@@ -8,7 +8,7 @@ import javax.annotation.Nullable;
 /**
  * Base interface for all powers
  */
-public interface Marker extends PropertyHolder {
+public interface Marker extends PropertyHolder, TagHolder, PlaceholderHolder {
 
     /**
      * Display name of this power

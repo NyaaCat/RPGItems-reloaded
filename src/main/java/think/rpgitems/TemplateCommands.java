@@ -9,7 +9,6 @@ import org.bukkit.command.CommandSender;
 import think.rpgitems.item.ItemManager;
 import think.rpgitems.item.RPGItem;
 import think.rpgitems.power.PlaceholderHolder;
-import think.rpgitems.power.Power;
 import think.rpgitems.power.Property;
 import think.rpgitems.power.RPGCommandReceiver;
 
@@ -82,7 +81,7 @@ public class TemplateCommands extends RPGCommandReceiver {
 
     /**
      * check syntax of placeholders
-     * &lt;powerid:propName&gt;
+     * &lt;placeholderId:propName&gt;
      * @param rpgItem
      * @param placeHolder
      * @return bad place holders

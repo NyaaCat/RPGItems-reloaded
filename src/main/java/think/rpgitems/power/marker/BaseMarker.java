@@ -9,7 +9,7 @@ import java.util.Set;
 /**
  * Base class containing common methods and fields.
  */
-public abstract class BaseMarker extends BasePropertyHolder implements Serializable, Marker, TagHolder, PlaceholderHolder {
+public abstract class BaseMarker extends BasePropertyHolder implements Serializable, Marker {
     @Property
     public String markerId = "";
     @Property
