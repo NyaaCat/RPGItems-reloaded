@@ -23,6 +23,10 @@ public abstract class BasePower extends BasePropertyHolder implements Serializab
     public Set<String> conditions = new HashSet<>();
     @Property
     public String requiredContext;
+    @Property
+    public String powerId = "";
+    @Property
+    public Set<String> powerTag = new HashSet<>();
 
     @Override
     public String displayName() {
@@ -42,6 +46,26 @@ public abstract class BasePower extends BasePropertyHolder implements Serializab
     @Override
     public Set<String> getConditions() {
         return Collections.unmodifiableSet(conditions);
+    }
+
+    public String getPowerId() {
+        return powerId;
+    }
+
+    public void setPowerId(String powerId) {
+        this.powerId = powerId;
+    }
+
+    public Set<String> getPowerTag() {
+        return powerTag;
+    }
+
+    public void addPowerTag(String tag){
+        powerTag.add(tag);
+    }
+
+    public void removePowerTag(String tag){
+        powerTag.remove(tag);
     }
 
     @Override
