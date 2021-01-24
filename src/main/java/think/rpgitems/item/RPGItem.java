@@ -43,7 +43,6 @@ import think.rpgitems.RPGItems;
 import think.rpgitems.data.Context;
 import think.rpgitems.power.*;
 import think.rpgitems.power.cond.SlotCondition;
-import think.rpgitems.power.BasePower;
 import think.rpgitems.power.marker.*;
 import think.rpgitems.power.propertymodifier.Modifier;
 import think.rpgitems.power.propertymodifier.RgiParameter;
@@ -1518,9 +1517,7 @@ public class RPGItem {
         powers.add(power);
         keys.put(power, key);
         String placeholderId = power.getPlaceholderId();
-        if (!"".equals(placeholderId)){
-            placeholders.put(placeholderId, power);
-        }
+        placeholders.put(placeholderId, power);
         if (update) {
             rebuild();
         }
@@ -1549,9 +1546,7 @@ public class RPGItem {
         conditions.add(condition);
         keys.put(condition, key);
         String placeholderId = condition.getPlaceholderId();
-        if (!"".equals(placeholderId)){
-            placeholders.put(placeholderId, condition);
-        }
+        placeholders.put(placeholderId, condition);
         if (update) {
             rebuild();
         }
@@ -1597,22 +1592,16 @@ public class RPGItem {
 
     public Map<String, List<PlaceholderHolder>> checkDuplicatePlaceholderIds(){
         Map<String, List<PlaceholderHolder>> ids = new HashMap<>();
-        List<Power> powers = getPowers();
-        List<Condition<?>> conditions = getConditions();
-        List<Marker> markers = getMarkers();
-        Stream.concat(
-                Stream.concat(
-                        powers.stream().map(ph -> ((PlaceholderHolder) ph)),
-                        conditions.stream().map(ph -> ((PlaceholderHolder) ph))),
-                markers.stream().map(ph -> ((PlaceholderHolder) ph))
-        ).forEach(placeholder -> {
-            String placeholderId = placeholder.getPlaceholderId();
-            if("".equals(placeholderId)){
-                return;
-            }
-            List<PlaceholderHolder> placeholderHolders = ids.computeIfAbsent(placeholderId, (s) -> new ArrayList<>());
-            placeholderHolders.add(placeholder);
-        });
+        getPlaceholdersStream()
+                .map(ph -> ((PlaceholderHolder) ph))
+                .forEach(placeholder -> {
+                    String placeholderId = placeholder.getPlaceholderId();
+                    if("".equals(placeholderId)){
+                        return;
+                    }
+                    List<PlaceholderHolder> placeholderHolders = ids.computeIfAbsent(placeholderId, (s) -> new ArrayList<>());
+                    placeholderHolders.add(placeholder);
+                });
         Map<String, List<PlaceholderHolder>> result = new HashMap<>();
         ids.forEach((key, value) ->{
             if (value.size()>1){
@@ -1620,6 +1609,17 @@ public class RPGItem {
             }
         });
         return result;
+    }
+
+    private Stream<PlaceholderHolder> getPlaceholdersStream() {
+        List<Power> powers = getPowers();
+        List<Condition<?>> conditions = getConditions();
+        List<Marker> markers = getMarkers();
+        return Stream.concat(
+                Stream.concat(
+                        powers.stream().map(ph -> ((PlaceholderHolder) ph)),
+                        conditions.stream().map(ph -> ((PlaceholderHolder) ph))),
+                markers.stream());
     }
 
     public void addDescription(String str) {
@@ -1710,13 +1710,16 @@ public class RPGItem {
         if(newPh == null){
             return null;
         }
+
+        NamespacedKey remove = keys.remove(oldPh);
+        keys.put(newPh, remove);
         placeholders.put(powerId, newPh);
         return newPh;
     }
 
 
 
-    public void updateFromTemplate(RPGItem target) {
+    public void updateFromTemplate(RPGItem target) throws UnknownPowerException {
         Set<String> templatePlaceHolders = target.getTemplatePlaceHolders();
         Map<String, List<String>> powerMap = new LinkedHashMap<>();
         Map<String, Object> valMap = new LinkedHashMap<>();
@@ -1736,10 +1739,12 @@ public class RPGItem {
                 throw new RuntimeException();
             }
         });
+
+        copyFromTemplate(target);
+
         //replace powers & fill placeholders
-        target.getPowers().forEach(power -> {
-            if (power instanceof BasePower) {
-                String powerId = ((BasePower) power).getPowerId();
+        target.getPlaceholdersStream().forEach(power -> {
+                String powerId = power.getPlaceholderId();
                 PlaceholderHolder replaced = replacePlaceholder(powerId, power);
                 List<String> strings = powerMap.get(powerId);
                 if (strings != null){
@@ -1755,10 +1760,37 @@ public class RPGItem {
                         }
                     });
                 }
-            }
         });
 
         ItemManager.save(this);
+    }
+
+    private void copyFromTemplate(RPGItem target) throws UnknownPowerException {
+        List<Power> powers = new ArrayList<>(getPowers());
+        List<Marker> markers =  new ArrayList<>(getMarkers());
+        List<Condition<?>> conditions =  new ArrayList<>(getConditions());
+        boolean isTemplate = isTemplate();
+        Set<String> templates =  new HashSet<>(getTemplates());
+        placeholders.clear();
+
+        //copy other settings,
+        YamlConfiguration config = new YamlConfiguration();
+        target.save(config);
+        this.restore(config);
+
+        this.powers = powers;
+        this.markers = markers;
+        this.conditions = conditions;
+        this.isTemplate = isTemplate;
+        this.templates = templates;
+        this.rebuildPlaceholder();
+    }
+
+    private void rebuildPlaceholder() {
+        placeholders.clear();
+        getPlaceholdersStream().forEach(placeholderHolder -> {
+            placeholders.put(placeholderHolder.getPlaceholderId(), placeholderHolder);
+        });
     }
 
     @SuppressWarnings("rawtypes")

@@ -11,6 +11,7 @@ import think.rpgitems.item.RPGItem;
 import think.rpgitems.power.PlaceholderHolder;
 import think.rpgitems.power.Property;
 import think.rpgitems.power.RPGCommandReceiver;
+import think.rpgitems.power.UnknownPowerException;
 
 import java.lang.reflect.Field;
 import java.util.ArrayList;
@@ -67,7 +68,12 @@ public class TemplateCommands extends RPGCommandReceiver {
         Set<RPGItem> toUpdate = new HashSet<>();
         ItemManager.items().stream().filter(rpgItem -> rpgItem.isTemplateOf(itemName))
                 .forEach(rpgItem -> {
-                    rpgItem.updateFromTemplate(target);
+                    try {
+                        rpgItem.updateFromTemplate(target);
+                    } catch (UnknownPowerException e) {
+                        e.printStackTrace();
+                        sender.sendMessage("error applying template: " + e.toString());
+                    }
                     toUpdate.add(rpgItem);
                 });
         toUpdate.forEach(ItemManager::save);
