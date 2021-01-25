@@ -12,7 +12,7 @@ import org.apache.tools.ant.filters.ReplaceTokens
 
 String majorVersion = 3
 String minorVersion = 8
-String minecraftVersion = "1.16.1"
+String minecraftVersion = "1.16"
 Grgit repo = Grgit.open(currentDir: project.projectDir)
 
 String branch = System.getenv("BRANCH_NAME") == null ? repo.branch.current().name : System.getenv("BRANCH_NAME")
