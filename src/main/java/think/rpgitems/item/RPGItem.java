@@ -1567,7 +1567,7 @@ public class RPGItem {
 
     private void addMarker(NamespacedKey key, Marker marker, boolean update) {
         if ("".equals(marker.getPlaceholderId())){
-            String placeholderId = marker.getName() + "-" + getConditions().stream().filter(power1 -> power1.getName().equals(marker.getName())).count();
+            String placeholderId = marker.getName() + "-" + getMarkers().stream().filter(power1 -> power1.getName().equals(marker.getName())).count();
             marker.setPlaceholderId(placeholderId);
         }
         markers.add(marker);
