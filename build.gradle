@@ -12,7 +12,10 @@ import org.apache.tools.ant.filters.ReplaceTokens
 
 String majorVersion = 3
 String minorVersion = 8
-String minecraftVersion = "1.16"
+String minecraftMajorVersion = "1.16"
+String minecraftMinorVersion = "4"
+String minecraftVersion = "${minecraftMajorVersion}.${minecraftMinorVersion}"
+
 Grgit repo = Grgit.open(currentDir: project.projectDir)
 
 String branch = System.getenv("BRANCH_NAME") == null ? repo.branch.current().name : System.getenv("BRANCH_NAME")
@@ -22,7 +25,7 @@ String jdDirectory = System.getenv("JAVADOCS_DIR") == null ? null               
 Commit commit = repo.head()
 String commitHash = commit.abbreviatedId
 
-boolean mainBranch = minecraftVersion == branch
+boolean mainBranch = minecraftMajorVersion == branch
 boolean releasing = commit.shortMessage.contains("[release]")
 
 archivesBaseName = "RPGItems-mc$minecraftVersion"
@@ -31,7 +34,7 @@ version = "$majorVersion.$minorVersion-$buildNumber"
 String mavenVersion = releasing ? version : "$majorVersion.$minorVersion-SNAPSHOT"
 
 if (!mainBranch) {
-    String branchAddon = branch.replace(minecraftVersion, "")
+    String branchAddon = branch.replace(minecraftMajorVersion, "")
     version = "$majorVersion.$minorVersion$branchAddon-$buildNumber"
     mavenVersion = releasing ? version : "$majorVersion.$minorVersion$branchAddon-SNAPSHOT"
 }
@@ -188,7 +191,7 @@ javadoc {
         windowTitle = "RPGItems Javadoc"
         docTitle = "<b>RPGItems</b> " + version
         if (!mainBranch) {
-            docTitle += branch.replace(minecraftVersion, "")
+            docTitle += branch.replace(minecraftMajorVersion, "")
         }
     }
 }
