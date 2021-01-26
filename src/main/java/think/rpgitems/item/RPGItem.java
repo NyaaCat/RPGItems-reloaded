@@ -51,7 +51,7 @@ import think.rpgitems.power.trigger.Trigger;
 import think.rpgitems.utils.MaterialUtils;
 
 import java.io.File;
-import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.Field;
 import java.lang.reflect.Method;
 import java.util.*;
 import java.util.Map.Entry;
@@ -355,7 +355,6 @@ public class RPGItem {
                 templates.add(tmp);
             }
         }
-        templatePlaceholders.clear();
         ConfigurationSection templatePlaceholdersList = s.getConfigurationSection("templatePlaceholders");
         if (templatePlaceholdersList != null) {
             for (String sectionKey : templatePlaceholdersList.getKeys(false)) {
@@ -578,7 +577,7 @@ public class RPGItem {
             String next = it.next();
             templatesConfigs.set(String.valueOf(i), next);
         }
-        ConfigurationSection templatePlaceHolderConfigs = s.createSection("templatePlaceHolder");
+        ConfigurationSection templatePlaceHolderConfigs = s.createSection("templatePlaceholders");
         Set<String> templatePlaceHolders = getTemplatePlaceHolders();
         Iterator<String> it1 = templatePlaceHolders.iterator();
         for (i = 0; i < templatePlaceHolders.size(); i++) {
@@ -1727,14 +1726,14 @@ public class RPGItem {
         templatePlaceHolders.forEach(s -> {
             String[] split = s.split(":");
             PlaceholderHolder power = getPlaceholderHolder(split[0]);
-            String propName = Character.toUpperCase(split[1].charAt(0)) + split[1].substring(1);
+            String propName = split[1];
             Object origVal = null;
             try {
-                origVal = power.getClass().getMethod("get" + propName).invoke(power);
+                origVal = getPropVal(power.getClass(), propName, power);
                 List<String> strings = powerMap.computeIfAbsent(split[0], (str) -> new ArrayList<>());
                 strings.add(s);
                 valMap.put(s, origVal);
-            } catch (IllegalAccessException | InvocationTargetException | NoSuchMethodException e) {
+            } catch (IllegalAccessException e) {
                 e.printStackTrace();
                 throw new RuntimeException();
             }
@@ -1750,11 +1749,11 @@ public class RPGItem {
                 if (strings != null){
                     strings.forEach(s ->{
                         String[] split = s.split(":");
-                        String propName = Character.toUpperCase(split[1].charAt(0)) + split[1].substring(1);
+                        String propName = split[1];
                         Object origVal = valMap.get(s);
                         try {
-                            replaced.getClass().getMethod("set" + propName, Object.class).invoke(power, origVal);
-                        } catch (IllegalAccessException | InvocationTargetException | NoSuchMethodException e) {
+                            setPropVal(replaced.getClass(), propName, replaced, origVal);
+                        } catch (IllegalAccessException e) {
                             e.printStackTrace();
                             throw new RuntimeException();
                         }
@@ -1765,6 +1764,35 @@ public class RPGItem {
         ItemManager.save(this);
     }
 
+    private Object getPropVal(Class<?> aClass, String propName, PlaceholderHolder placeholder) throws IllegalAccessException {
+        Field getMethod = getField(aClass, propName);
+        getMethod.setAccessible(true);
+        return getMethod.get(placeholder);
+    }
+
+    private void setPropVal(Class<?> aClass, String propName, PlaceholderHolder placeholder, Object value) throws IllegalAccessException {
+        Field getMethod = getField(aClass, propName);
+        getMethod.setAccessible(true);
+        getMethod.set(placeholder, value);
+    }
+
+
+    private Field getField(Class<?> aClass, String methodName) {
+        Field getMethod = null;
+        while (true){
+            try{
+                getMethod = aClass.getDeclaredField(methodName);
+                break;
+            }catch (NoSuchFieldException e){
+                aClass = aClass.getSuperclass();
+            }
+            if (aClass == null){
+                throw new RuntimeException("invalid placeholder");
+            }
+        }
+        return getMethod;
+    }
+
     private void copyFromTemplate(RPGItem target) throws UnknownPowerException {
         List<Power> powers = new ArrayList<>(getPowers());
         List<Marker> markers =  new ArrayList<>(getMarkers());
@@ -1772,6 +1800,9 @@ public class RPGItem {
         boolean isTemplate = isTemplate();
         Set<String> templates =  new HashSet<>(getTemplates());
         placeholders.clear();
+        this.powers.clear();
+        this.markers.clear();
+        this.conditions.clear();
 
         //copy other settings,
         YamlConfiguration config = new YamlConfiguration();
