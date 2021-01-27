@@ -1824,6 +1824,10 @@ public class RPGItem {
         });
     }
 
+    public List<String> getTemplatePlaceholders() {
+        return new ArrayList<>(templatePlaceholders);
+    }
+
     @SuppressWarnings("rawtypes")
     public static class DynamicMethodInterceptor implements MethodInterceptor {
         private static WeakHashMap<Player, WeakHashMap<ItemStackWrapper, WeakHashMap<Power, Power>>> cache = new WeakHashMap<>();

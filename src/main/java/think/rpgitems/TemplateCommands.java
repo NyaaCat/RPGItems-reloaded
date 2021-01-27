@@ -79,7 +79,7 @@ public class TemplateCommands extends RPGCommandReceiver {
     @SubCommand("placeholder")
     PlaceholderCommands placeholderCommands = new PlaceholderCommands(RPGItems.plugin, I18n.getInstance(RPGItems.plugin.cfg.language));
 
-    public class PlaceholderCommands extends CommandReceiver{
+    public static class PlaceholderCommands extends CommandReceiver{
 
         /**
          * @param plugin for logging purpose only
@@ -156,17 +156,8 @@ public class TemplateCommands extends RPGCommandReceiver {
                 return;
             }
             new Message("").append(I18n.getInstance(sender).format("command.template.placeholder.itemName", name)).send(sender);
-            rpgItem.getPlaceholdersStream().forEach(placeholderHolder -> {
-                String type = "unknown";
-                if (placeholderHolder instanceof Power){
-                    type = "power";
-                }else if (placeholderHolder instanceof Marker){
-                    type = "marker";
-                }else if (placeholderHolder instanceof Condition){
-                    type = "condition";
-                }
-                String placeholderId = placeholderHolder.getPlaceholderId();
-                new Message("").append(I18n.getInstance(sender).format("command.template.placeholder.info", type, placeholderId)).send(sender);
+            rpgItem.getTemplatePlaceholders().forEach(placeholderHolder -> {
+                new Message("").append(I18n.getInstance(sender).format("command.template.placeholder.info", placeholderHolder)).send(sender);
             });
         }
 
@@ -177,7 +168,7 @@ public class TemplateCommands extends RPGCommandReceiver {
     }
 
 
-    private void sendBadMsg(CommandSender sender, String s) {
+    private static void sendBadMsg(CommandSender sender, String s) {
         I18n i18n = I18n.getInstance(sender);
         new Message("").append(i18n.format("command.template.bad_placeholder", s));
     }
@@ -189,7 +180,7 @@ public class TemplateCommands extends RPGCommandReceiver {
      * @param placeHolder
      * @return bad place holders
      */
-    private List<String> checkPlaceHolder(RPGItem rpgItem, List<String> placeHolder) {
+    private static List<String> checkPlaceHolder(RPGItem rpgItem, List<String> placeHolder) {
         List<String> ret = new ArrayList<>();
         placeHolder.forEach(s ->{
             try{
