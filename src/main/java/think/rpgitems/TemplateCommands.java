@@ -1,23 +1,20 @@
 package think.rpgitems;
 
+import cat.nyaa.nyaacore.ILocalizer;
 import cat.nyaa.nyaacore.LanguageRepository;
 import cat.nyaa.nyaacore.Message;
 import cat.nyaa.nyaacore.cmdreceiver.Arguments;
 import cat.nyaa.nyaacore.cmdreceiver.BadCommandException;
+import cat.nyaa.nyaacore.cmdreceiver.CommandReceiver;
 import cat.nyaa.nyaacore.cmdreceiver.SubCommand;
 import org.bukkit.command.CommandSender;
+import org.bukkit.plugin.Plugin;
 import think.rpgitems.item.ItemManager;
 import think.rpgitems.item.RPGItem;
-import think.rpgitems.power.PlaceholderHolder;
-import think.rpgitems.power.Property;
-import think.rpgitems.power.RPGCommandReceiver;
-import think.rpgitems.power.UnknownPowerException;
+import think.rpgitems.power.*;
 
 import java.lang.reflect.Field;
-import java.util.ArrayList;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
+import java.util.*;
 
 public class TemplateCommands extends RPGCommandReceiver {
     public TemplateCommands(RPGItems plugin, LanguageRepository i18n) {
@@ -77,6 +74,106 @@ public class TemplateCommands extends RPGCommandReceiver {
                     toUpdate.add(rpgItem);
                 });
         toUpdate.forEach(ItemManager::save);
+    }
+
+    @SubCommand("placeholder")
+    PlaceholderCommands placeholderCommands = new PlaceholderCommands(RPGItems.plugin, I18n.getInstance(RPGItems.plugin.cfg.language));
+
+    public class PlaceholderCommands extends CommandReceiver{
+
+        /**
+         * @param plugin for logging purpose only
+         * @param _i18n
+         */
+        public PlaceholderCommands(Plugin plugin, ILocalizer _i18n) {
+            super(plugin, _i18n);
+        }
+
+        @SubCommand("add")
+        public void onAdd(CommandSender sender, Arguments arguments){
+            String itemName = arguments.nextString();
+
+            RPGItem rpgItem = ItemManager.getItem(itemName).orElse(null);
+            if (rpgItem == null) {
+                new Message("").append(I18n.getInstance(sender).format("message.item.cant.find")).send(sender);
+                return;
+            }
+
+            List<String> toAdd = new ArrayList<>();
+            while (arguments.remains() > 0){
+                toAdd.add(arguments.nextString());
+            }
+
+            String name = rpgItem.getName();
+            if (!rpgItem.isTemplate()){
+                new Message("").append(I18n.getInstance(sender).format("command.template.placeholder.not_template", name)).send(sender);
+                return;
+            }
+            List<String> badPlaceHolders = checkPlaceHolder(rpgItem, toAdd);
+            if (!badPlaceHolders.isEmpty()){
+                badPlaceHolders.forEach(s ->{
+                    sendBadMsg(sender, s);
+                });
+                return;
+            }
+            toAdd.forEach(s -> {
+                rpgItem.addTemplatePlaceHolder(s);
+                new Message("").append(I18n.getInstance(sender).format("command.template.placeholder.add.success", name, s)).send(sender);
+            });
+
+        }
+
+        @SubCommand("remove")
+        public void onRemove(CommandSender sender, Arguments arguments){
+            String itemName = arguments.nextString();
+            String toRemove = arguments.nextString();
+            RPGItem rpgItem = ItemManager.getItem(itemName).orElse(null);
+            if (rpgItem == null) {
+                new Message("").append(I18n.getInstance(sender).format("message.item.cant.find")).send(sender);
+                return;
+            }
+            String name = rpgItem.getName();
+            if (!rpgItem.isTemplate()){
+                new Message("").append(I18n.getInstance(sender).format("command.template.placeholder.not_template", name)).send(sender);
+                return;
+            }
+            rpgItem.removeTemplatePlaceHolder(toRemove);
+            new Message("").append(I18n.getInstance(sender).format("command.template.placeholder.remove.success", name)).send(sender);
+
+        }
+
+        @SubCommand("list")
+        public void onList(CommandSender sender, Arguments arguments){
+            String itemName = arguments.nextString();
+            RPGItem rpgItem = ItemManager.getItem(itemName).orElse(null);
+            if (rpgItem == null) {
+                new Message("").append(I18n.getInstance(sender).format("message.item.cant.find")).send(sender);
+                return;
+            }
+            String name = rpgItem.getName();
+            if (!rpgItem.isTemplate()){
+                new Message("").append(I18n.getInstance(sender).format("command.template.placeholder.not_template", name)).send(sender);
+                return;
+            }
+            new Message("").append(I18n.getInstance(sender).format("command.template.placeholder.itemName", name)).send(sender);
+            rpgItem.getPlaceholdersStream().forEach(placeholderHolder -> {
+                String type = "unknown";
+                if (placeholderHolder instanceof Power){
+                    type = "power";
+                }else if (placeholderHolder instanceof Marker){
+                    type = "marker";
+                }else if (placeholderHolder instanceof Condition){
+                    type = "condition";
+                }
+                String placeholderId = placeholderHolder.getPlaceholderId();
+                new Message("").append(I18n.getInstance(sender).format("command.template.placeholder.info", type, placeholderId)).send(sender);
+            });
+        }
+
+        @Override
+        public String getHelpPrefix() {
+            return null;
+        }
     }
 
 

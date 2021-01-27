@@ -1610,7 +1610,7 @@ public class RPGItem {
         return result;
     }
 
-    private Stream<PlaceholderHolder> getPlaceholdersStream() {
+    public Stream<PlaceholderHolder> getPlaceholdersStream() {
         List<Power> powers = getPowers();
         List<Condition<?>> conditions = getConditions();
         List<Marker> markers = getMarkers();
