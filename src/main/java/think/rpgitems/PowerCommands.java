@@ -216,7 +216,7 @@ public class PowerCommands extends RPGCommandReceiver {
     }
 
     public static void showPower(CommandSender sender, int nth, RPGItem item, Power power) {
-        msgs(sender, "message.marker.show", nth, power.getLocalizedName(sender), power.getNamespacedKey().toString(), power.displayText() == null ? I18n.getInstance(sender).format("message.power.no_display") : power.displayText(), power.getTriggers().stream().map(Trigger::name).collect(Collectors.joining(",")));
+        msgs(sender, "message.power.show", nth, power.getLocalizedName(sender), power.getNamespacedKey().toString(), power.displayText() == null ? I18n.getInstance(sender).format("message.power.no_display") : power.displayText(), power.getTriggers().stream().map(Trigger::name).collect(Collectors.joining(",")));
         NamespacedKey powerKey = item.getPropertyHolderKey(power);
         PowerManager.getProperties(powerKey).forEach(
                 (name, prop) -> showProp(sender, powerKey, prop.getValue(), power)

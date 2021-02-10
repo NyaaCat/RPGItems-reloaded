@@ -59,7 +59,7 @@ public class TemplateCommands extends RPGCommandReceiver {
         boolean isTemplate = target.isTemplate();
         I18n i18n = I18n.getInstance(sender);
         if (!isTemplate){
-            new Message("").append(i18n.format("command.template.not_template")).send(sender);
+            new Message("").append(i18n.format("command.template.not_template", itemName)).send(sender);
             return;
         }
         Set<RPGItem> toUpdate = new HashSet<>();
@@ -74,6 +74,7 @@ public class TemplateCommands extends RPGCommandReceiver {
                     toUpdate.add(rpgItem);
                 });
         toUpdate.forEach(ItemManager::save);
+        new Message("").append(i18n.format("command.template.apply.success", itemName)).send(sender);
     }
 
     @SubCommand("placeholder")
