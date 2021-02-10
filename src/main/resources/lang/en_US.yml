@@ -6,13 +6,6 @@ message:
       disable: cost on being hit set to fixed value
     change: cost set
     get: "cost %d durability"
-  recipe:
-    removed: Recipe removed
-    '3': in the shape of the crafting
-    '4': recipe that you want the item to
-    '1': Do not change. Use the empty slots
-    '2': Place items in the empty spaces
-    '5': have
   customitemmodel:
     disable: Custom item model disabled
     enable: Custom item model enabled
@@ -89,9 +82,6 @@ message:
     all: |-
       %d th power '%s''s properties:
       %s
-  drop:
-    get: The chance that '%s' will drop from '%s' is %.2f%%
-    set: The chance that '%s' will drop from '%s' was set to %.2f%%
   command:
     usage: 'Command usage for: /%s (%s)'
     info: More detailed help on http://rpgitems2.webs.com/ or /rpgitem help [terms]
@@ -246,6 +236,7 @@ message:
     reorder: Reordered power %s to %d
     ignored_trigger: Ignoring unknown trigger %s on power %s for item %s
     show: 'Power %d - %s (%s)：%s &r[%s]'
+    change: Item's power property has been changed
   marker:
     ok: Marker %s added
     unknown: Unknown marker %s
@@ -253,6 +244,7 @@ message:
     key: "&3&lMarker '&r%s&3&l'"
     not_found: No marker found for %s
     show: 'Marker %s (%s)：%s'
+    change: Item's marker property has been changed
   condition:
     ok: Condition %s added
     unknown: Unknown condition %s
@@ -260,6 +252,7 @@ message:
     key: "&3&lCondition '&r%s&3&l'"
     not_found: No condition found for %s
     show: 'Condition %s - %s (%s)：%s'
+    changed: Item's condition property has been changed
   trigger:
     ok: Trigger %s added
     unknown_base: 'Unknown base trigger %s. Available: %s'
@@ -268,6 +261,14 @@ message:
     key: "&3&lTrigger '&r%s&3&l'"
     not_found: No trigger found for %s
     show: 'Trigger %s - base %s (%s)：%s'
+  modifier:
+    ok: Modifier %s added
+    unknown: Unknown modifier %s
+    removed: Modifier %s removed
+    key: "&3&lModifier '&r%s&3&l'"
+    not_found: No modifier found for %s
+    show: '修饰 %s - %s (%s)：%s'
+    change: Item's modifier property has been changed
   toggleLore:
     show: Lore now been displayed
     hide: Lore now been hid
@@ -340,6 +341,8 @@ message:
     is: This is a model item
   attributemode:
     set: item {itemName} 's attribute mode set to %s
+  custom_model_data:
+    set: Item's custom model data has been set to %s
 power:
   airborne: 'Damage increase by %d%% when gliding'
   charge: 'Damage increase with speed, by %d%% when sprinting'
@@ -926,73 +929,60 @@ properties:
     init: Init value
 
 manual:
+  addtogroup:
+    description: Add an item to a item group
+    usage: /rpgitem addtogroup {group} {item}
+  armorExpression:
+    description: Set an item's armor expression.
+    usage: /rpgitem armorExpression {item} <expression>
+  attributemode:
+    description: Set an item's attributemode.
+    usage: /rpgitem attributemode {item} <value>
+  author:
+    description: Display the author of item.
+    usage: /rpgitem author {item}
   reload:
-    description: Reload the plugin
-    usage: "/rpgitem reload"
-
+    description: Reload the plugin.
+    usage: /rpgitem reload
   list:
-    description: List RPGItems
-    usage: "/rpgitem list [page]"
-
+    description: List RPGItems.
+    usage: /rpgitem list [page]
   worldguard:
     description: Toggles worldguard support.
-    usage: "/rpgitem worldguard"
-
+    usage: /rpgitem worldguard
   wgcustomflag:
     description: Toggles worldguard custom flag support.
-    usage: "/rpgitem wgcustomflag"
-
+    usage: /rpgitem wgcustomflag
   wgforcerefresh:
     description: Toggles worldguard force refresh.
-    usage: "/rpgitem wgforcerefresh"
-
+    usage: /rpgitem wgforcerefresh
   wgignore:
     description: Whether item ignore WorldGruad PvP protect.
-    usage: "/rpgitem wgignore {item}"
-
+    usage: /rpgitem wgignore {item}
   create:
     description: Create item with specified name
-    usage: "/rpgitem create <name>"
-
+    usage: /rpgitem create <name>
   giveperms:
     description: Toggles give requiring permissions
-    usage: "/rpgitem giveperms"
-
+    usage: /rpgitem giveperms
   give:
     description: Gives the item to the user of the command or a player
-    usage: "/rpgitem give {item} [player]"
-
+    usage: /rpgitem give {item} [player]
   remove:
     description: Remove the item from plugin
-    usage: "/rpgitem remove {item}"
-
+    usage: /rpgitem remove {item}
   display:
     description: Set item name to value
-    usage: "/rpgitem display {item} <value>"
-
-  quality:
-    description: Show/set item quality. Currently no actual usage in plugin.
-    usage: "/rpgitem quality {item} [value]"
-
+    usage: /rpgitem display {item} <value>
   damage:
     description: |-
       Show/set item damage value. Available options:
       [value] - Set damage to a fixed value. /rpgitem test_item damage 15
       [min] [max] - Set damage to a random value in a range. /rpgitem test_item damage 10 20
-    usage: "/rpgitem damage {item} [option]"
-
+    usage: /rpgitem damage {item} [option]
   armour:
     description: Show/set item armour
-    usage: "/rpgitem armour {item} [value]"
-
-  type:
-    description: Show/set type text for item. Type text is displayed at right under item name.
-    usage: "/rpgitem type {item} [value]"
-
-  hand:
-    description: Show/set hand text for item. Hand text is displayed at left under item name.
-    usage: "/rpgitem hand {item} [value]"
-
+    usage: /rpgitem armour {item} [value]
   item:
     description: |-
       Set ITEM material to item or with additional options.
@@ -1000,50 +990,19 @@ manual:
         [item id] - Set to an item as material.
         [item id] hex [string] - Set to item material with specified color.
         [item id] [damage value] - Set to item material with specified damage value.
-    usage: "/rpgitem item {item} [options|value]"
-
+    usage: /rpgitem item {item} [options|value]
   print:
     description: Print item status
-    usage: "/rpgitem print {item}"
-
+    usage: /rpgitem print {item}
   enchantment:
     description: List/clone or clear enchantments in hand to item.
-    usage: "/rpgitem enchantment {item} [clone|clear]"
-
+    usage: /rpgitem enchantment {item} [clone|clear]
   removepower:
     description:  Remove the power from item. If the item have multiple specified power, the first match (pit fall) will be removed.
-    usage: "/rpgitem removepower {item} <power>"
-
+    usage: /rpgitem removepower {item} <power>
   description:
     description:  Add/remove or replace text to item description/lore. Formatting codes are supported with & symbol. Line number starts from 0.
-    usage: "/rpgitem description {item} <add <value>|set <line> <value>| remove <line>>"
-
-  removerecipe:
-    description:  Remove item recipe
-    usage: "/rpgitem removerecipe {item}"
-
-  recipe:
-    description:  Add item recipe
-    usage: "/rpgitem recipe {item}"
-
-  drop:
-    description:  Show/set item drop chance from a specified entity
-    usage: "/rpgitem drop {item} <entity> [chance]"
-
-  get:
-    description: |-
-      Get power property of item.
-      E.g, check test_item first potionhit power's duration property:
-      /rpgitem test_item get potionhit 1 duration
-    usage: "/rpgitem get {item} <power> <index> <property>"
-
-  set:
-    description: |-
-      Set power property of item to value.
-      E.g, set the second aoecommand power command attribute, to spawn a ignited creeper at each entity location:
-      /rpgitem test_item set aoecommand 2 command summon creeper {entity.x} {entity.y} {entity.y} {ignited:1,Fuse:5}
-    usage: "/rpgitem set {item} <power> <index> <property> <value>"
-
+    usage: /rpgitem description {item} <add <value>|set <line> <value>| remove <line>>
   cost:
     description: |-
       Show/set durability cost.
@@ -1053,8 +1012,7 @@ manual:
         toggle - Whether durability cost when being hit should based on damage.
         hitting | hitting [value|integer] - Show/set durability cost when hit other entities with this item.
       Note: values can be negative, thus hit/hitting/breaking will increase item durability.
-    usage: "/rpgitem cost {item} <option>"
-
+    usage: /rpgitem cost {item} <option>
   durability:
     description: |-
       Show/set item durability maximum/default value or other option.
@@ -1064,48 +1022,148 @@ manual:
         default - Set default durability to value - /rpgitem test_item durability default 100
         togglebar - Set durability bar to show/hide - /rpgitem test_item durability togglebar
         bound - Set item durability lower and upper bounds - /rpgitem test_item durability bound 10 100
-    usage: "/rpgitem durability {item} <option>"
-
+    usage: /rpgitem durability {item} <option>
   permission:
     description: Set item permission
-    usage: "/rpgitem permission {item} <permission> <true|false>"
-
+    usage: /rpgitem permission {item} <permission> <true|false>
+  power:
+    description: Set power for an item.
+    usage: /rpgitem power [option] {item} <power> <properties> [optionalProperties]
   togglepowerlore:
     description: Toggle power lore display for item.
-    usage: "/rpgitem togglepowerlore {item}"
-
+    usage: /rpgitem togglepowerlore {item}
   togglearmorlore:
     description: Toggle armor lore display for item.
-    usage: "/rpgitem togglearmorlore {item}"
-
+    usage: /rpgitem togglearmorlore {item}
   additemflag:
     description: Add item flag.
-    usage: "/rpgitem additemflag {item} <itemflag>"
-
+    usage: /rpgitem additemflag {item} <itemflag>
   removeitemflag:
     description: Remove item flag
-    usage: "/rpgitem removeitemflag {item} <itemflag>"
-
+    usage: /rpgitem removeitemflag {item} <itemflag>
   customitemmodel:
     description: Toggle custom item model support for item.
-    usage: "/rpgitem customitemmodel {item}"
-
+    usage: /rpgitem customitemmodel {item}
   version:
     description: Display version infomation of RPGItem.
-    usage: "/rpgitem version"
-
+    usage: /rpgitem version
   damagemode:
-    description: Show/set damagemode of item
-    usage: "/rpgitem damagemode {item} [damagemode]"
-
-  power:
-    description: Add power to item
-    usage: "/rpgitem power {item} <power> <properties> [optionalProperties]"
-
+    description: Display/set damagemode of item
+    usage: /rpgitem damagemode {item} [damagemode]
   clone:
     description: Clone item as new item
-    usage: "/rpgitem clone {item} <newItem>"
-manual:
+    usage: /rpgitem clone {item} <newItem>
+  creategroup:
+    description: Create a RPGItems Group
+    usage: /rpgitem creategroup <group>
+  backupitem:
+    description: Backup a RPGItem
+    usage: /rpgitem backupitem {item}
+  cleanbackup:
+    description: Clean all RPGItems' backup
+    usage: /rpgitem cleanbackup
+  condition:
+    description: Set condition for an item.
+    usage: /rpgitem condition [option] {item} <condition> <properties> [optionalProperties]
+  customModel:
+    description: Set item's custom model ID.
+    usage: /rpgitem customModel {item} <value>
+  damageType:
+    description: Set item's damagetype.
+    usage: /rpgitem damageType {item} <value>
+  debug:
+    description: Debug the item in your mainhand.
+    usage: /rpgitem debug
+  dump:
+    description: Dump an item.
+    usage: /rpgitem dump {item}
+  enchantmode:
+    description: Set item's enchantmode.
+    usage: /rpgitem enchantmode {item} <value>
+  export:
+    description: Export a specific item to Gist.
+    usage: /rpgitem export {item} <gist>
+  gen-wiki:
+    description: Generate wiki files in plugin's directory.
+    usage: /rpgitem gen-wiki
+  help:
+    description: Display RPGItems plugin's usage.
+    usage: /rpgitem help
+  import:
+    description: Import item from Gist.
+    usage: /rpgitem import [link] [name|optional]
+  license:
+    description: Display the lisence of item.
+    usage: /rpgitem lisence {item}
+  listgroup:
+    description: List items in a group
+    usage: /rpgitem listgroup {group}
+  loadfile:
+    description: Load an item from local file.
+    usage: /rpgitem loadfile {file}
+  marker:
+    description: Set marker for an item.
+    usage: /rpgitem marker [option] {item} <properties> [optionalProperties]
+  modifier:
+    description: Set modifer for an item.(TBD)
+    usage: /rpgitem modifier [option] {item} <properties> [optionalProperties]
+  note:
+    description: Set an item's information.
+    usage: /rpgitem note {item} <value>
+  reloaditem:
+    description: Reload a specific item.
+    usage: /rpgitem reloaditem {item}
+  removefromgroup:
+    description: Remove an item from the item group.
+    usage: /rpgitem removefromegroup {item} {group}
+  removegroup:
+    description: Remove an item group.
+    usage: /rpgitem removegroup {group}
+  save-all:
+    description: Save all items.
+    usage: /rpgitem save-all
+  template:
+    description: Set an item template.
+    usage: /rpgitem template [option]
+  trigger:
+    description: Set trigger for an item.
+    usage: /rpgitem trigger [option] {item} <properties>
+  add:
+    description: Add power/condition/marker/modifier to an item
+    usage: /rpgitem <power|condition|marker|modifier> add {item} <properties>
+  reorder:
+    description: Change item's power
+    usage: /rpgitem power reorder {item} <power> <power>
+  prop:
+    description: Display/change Item's power/conditon/marker/modifier.
+    usage: /rpgitem <power|condition|marker|modifier> prop {item} [optionalProperties]
+  apply:
+    description: Apply the template to items.
+    usage: /rpgitem template apply {item}
+    delete:
+      description: Delete specific template.
+      usage: /rpgitem template delete {item}
+    placeholder:
+      description: Set powers placeholder of the template,the parameters specified by the placeholder will not change when template is applied.
+      usage: /rpgitem template placeholder <option> {item} <powerId:property>
+  command:
+    template:
+      apply:
+        success: The template %s has been applied to items.
+      create:
+        success: Successfully created template with item %s .
+      delete:
+        success: Delete the template %s
+      not_template: Item %s is not a valid template.
+      placeholder:
+        not_template: Item %s is not a valid template.
+        add:
+          success: Added placeholder to template %s
+        remove:
+          success: Removed placeholder from template %s
+        itemName: 'Item: %s'
+        info: 'Placeholder info: %s'
+        bad_placeholder: Invalid placeholder %s
   no_description: No description for this yet.
   no_usage: No usage information for this yet.
 item:
