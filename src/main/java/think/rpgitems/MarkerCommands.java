@@ -31,7 +31,7 @@ public class MarkerCommands extends RPGCommandReceiver {
 
     @Override
     public String getHelpPrefix() {
-        return "";
+        return "marker";
     }
 
     private static Pair<NamespacedKey, Class<? extends Marker>> getMarkerClass(CommandSender sender, String markerStr) {

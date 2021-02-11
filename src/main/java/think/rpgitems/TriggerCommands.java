@@ -35,7 +35,7 @@ public class TriggerCommands extends RPGCommandReceiver {
 
     @Override
     public String getHelpPrefix() {
-        return "";
+        return "trigger";
     }
 
     @Completion("")

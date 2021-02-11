@@ -71,6 +71,8 @@ message:
   armour:
     get: Item '%s' armour is '%d%%'
     set: Item '%s' armour set to '%d%%'
+  property:
+    required: The power need these properties %s
   power_property:
     property_notfound: Unknown property  %s
     not_vaild_bool: '''%s'' is not an valid boolean'
@@ -198,10 +200,6 @@ message:
     ADDITIONAL: Item '%s' damage mode set to additional damage (vanilla minecraft damage plus RPGItem damage)
     MULTIPLY: Item '%s' damage mode set to multiply damage (vanilla minecraft damage multiply by RPGItem damage)
     VANILLA: Item '%s' damage mode set to vanilla damage (use vanilla minecraft damage)
-  quality:
-    get: Item '%s' quality is '%s'
-    note: 'Qualities:'
-    set: Item '%s' quality set to '%s'
   giveperms:
     required: Give now requires permissions
     canceled: Give now does not require permissions
@@ -237,6 +235,7 @@ message:
     ignored_trigger: Ignoring unknown trigger %s on power %s for item %s
     show: 'Power %d - %s (%s)：%s &r[%s]'
     change: Item's power property has been changed
+    description: "&3&lDescription: '&r%s'"
   marker:
     ok: Marker %s added
     unknown: Unknown marker %s
@@ -245,6 +244,7 @@ message:
     not_found: No marker found for %s
     show: 'Marker %s (%s)：%s'
     change: Item's marker property has been changed
+    description: "&3&lDescription: '&r%s'"
   condition:
     ok: Condition %s added
     unknown: Unknown condition %s
@@ -253,6 +253,7 @@ message:
     not_found: No condition found for %s
     show: 'Condition %s - %s (%s)：%s'
     changed: Item's condition property has been changed
+    description: "&3&lDescription: '&r%s'"
   trigger:
     ok: Trigger %s added
     unknown_base: 'Unknown base trigger %s. Available: %s'
@@ -261,6 +262,7 @@ message:
     key: "&3&lTrigger '&r%s&3&l'"
     not_found: No trigger found for %s
     show: 'Trigger %s - base %s (%s)：%s'
+    description: "&3&lDescription: '&r%s'"
   modifier:
     ok: Modifier %s added
     unknown: Unknown modifier %s
@@ -269,6 +271,7 @@ message:
     not_found: No modifier found for %s
     show: '修饰 %s - %s (%s)：%s'
     change: Item's modifier property has been changed
+    description: "&3&lDescription: '&r%s'"
   toggleLore:
     show: Lore now been displayed
     hide: Lore now been hid
@@ -1027,6 +1030,21 @@ manual:
     description: Set item permission
     usage: /rpgitem permission {item} <permission> <true|false>
   power:
+    add:
+      description: Add power to an item
+      usage: /rpgitem power add {item} <properties> [optionalProperties]
+    remove:
+      description: Remove a power from an item
+      usage: /rpgitem power remove {item} <properties>
+    prop:
+      description: Display/change the item's power
+      usage: /rpgitem power prop {item} <properties> [optionalProperties]
+    list:
+      description: List all powers
+      usage: /rpgitem power list
+    help:
+      description: Show help of power command
+      usage: /rpgitem power [help]
     description: Set power for an item.
     usage: /rpgitem power [option] {item} <power> <properties> [optionalProperties]
   togglepowerlore:
@@ -1063,6 +1081,21 @@ manual:
     description: Clean all RPGItems' backup
     usage: /rpgitem cleanbackup
   condition:
+    add:
+      description: Add condition to an item
+      usage: /rpgitem power add {item} <properties> [optionalProperties]
+    remove:
+      description: Remove a condition from an item
+      usage: /rpgitem power remove {item} <properties>
+    prop:
+      description: Display/change the item's condition
+      usage: /rpgitem power prop {item} <properties> [optionalProperties]
+    list:
+      description: List all conditions
+      usage: /rpgitem power list
+    help:
+      description: Show help of condition command
+      usage: /rpgitem power [help]
     description: Set condition for an item.
     usage: /rpgitem condition [option] {item} <condition> <properties> [optionalProperties]
   customModel:
@@ -1102,9 +1135,39 @@ manual:
     description: Load an item from local file.
     usage: /rpgitem loadfile {file}
   marker:
+    add:
+      description: Add marker to an item
+      usage: /rpgitem power add {item} <properties> [optionalProperties]
+    remove:
+      description: Remove a marker from an item
+      usage: /rpgitem power remove {item} <properties>
+    prop:
+      description: Display/change the item's marker
+      usage: /rpgitem power prop {item} <properties> [optionalProperties]
+    list:
+      description: List all markers
+      usage: /rpgitem power list
+    help:
+      description: Show help of marker command
+      usage: /rpgitem power [help]
     description: Set marker for an item.
     usage: /rpgitem marker [option] {item} <properties> [optionalProperties]
   modifier:
+    add:
+      description: Add modifier to an item
+      usage: /rpgitem power add {item} <properties> [optionalProperties]
+    remove:
+      description: Remove a modifier from an item
+      usage: /rpgitem power remove {item} <properties>
+    prop:
+      description: Display/change the item's modifier
+      usage: /rpgitem power prop {item} <properties> [optionalProperties]
+    list:
+      description: List all modifiers
+      usage: /rpgitem power list
+    help:
+      description: Show help of modifier command
+      usage: /rpgitem power [help]
     description: Set modifer for an item.(TBD)
     usage: /rpgitem modifier [option] {item} <properties> [optionalProperties]
   note:
@@ -1123,29 +1186,22 @@ manual:
     description: Save all items.
     usage: /rpgitem save-all
   template:
-    description: Set an item template.
-    usage: /rpgitem template [option]
-  trigger:
-    description: Set trigger for an item.
-    usage: /rpgitem trigger [option] {item} <properties>
-  add:
-    description: Add power/condition/marker/modifier to an item
-    usage: /rpgitem <power|condition|marker|modifier> add {item} <properties>
-  reorder:
-    description: Change item's power
-    usage: /rpgitem power reorder {item} <power> <power>
-  prop:
-    description: Display/change Item's power/conditon/marker/modifier.
-    usage: /rpgitem <power|condition|marker|modifier> prop {item} [optionalProperties]
-  apply:
-    description: Apply the template to items.
-    usage: /rpgitem template apply {item}
+    create:
+      description: Create a template with item
+    apply:
+      description: Apply the template to items.
+      usage: /rpgitem template apply {item}
     delete:
       description: Delete specific template.
       usage: /rpgitem template delete {item}
     placeholder:
       description: Set powers placeholder of the template,the parameters specified by the placeholder will not change when template is applied.
       usage: /rpgitem template placeholder <option> {item} <powerId:property>
+    description: Set an item template.
+    usage: /rpgitem template [option]
+  trigger:
+    description: Set trigger for an item.
+    usage: /rpgitem trigger [option] {item} <properties>
   command:
     template:
       apply:
@@ -1167,8 +1223,6 @@ manual:
   no_description: No description for this yet.
   no_usage: No usage information for this yet.
 item:
-  hand: One handed
-  type: Sword
   armour: Armour
   additionaldamage: "Additional %s Damage"
   multiplydamage: "Times %s Damage"

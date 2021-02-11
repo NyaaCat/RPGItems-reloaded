@@ -21,6 +21,11 @@ public class TemplateCommands extends RPGCommandReceiver {
         super(plugin, i18n);
     }
 
+    @Override
+    public String getHelpPrefix() {
+        return "template";
+    }
+
     @SubCommand("create")
     public void onCreate(CommandSender sender, Arguments arguments){
         String itemName = arguments.nextString();
@@ -223,8 +228,4 @@ public class TemplateCommands extends RPGCommandReceiver {
         target.sendMessage(i18n.getFormatted(template, args));
     }
 
-    @Override
-    public String getHelpPrefix() {
-        return null;
-    }
 }
