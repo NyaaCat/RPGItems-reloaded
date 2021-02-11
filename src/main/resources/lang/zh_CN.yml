@@ -1154,6 +1154,7 @@ manual:
     add:
       description: 给物品添加标志
       usage: /rpgitem marker add {item} <properties> [optionalProperties]
+      usage: /rpgitem marker add {item} <properties>
     remove:
       description: 从物品上移除标志
       usage: /rpgitem marker remove {item} <properties>
@@ -1184,6 +1185,9 @@ manual:
     help:
       description: 查看modifier命令的帮助
       usage: /rpgitem modifier [help]
+    description: 设置物品的标志
+    usage: /rpgitem marker [option] {item} <properties> [optionalProperties]
+  modifier:
     description: 设置物品的修饰（未实现）
     usage: /rpgitem modifier [option] {item} <properties> [optionalProperties]
   note:
@@ -1222,6 +1226,24 @@ manual:
   trigger:
     description: 设置物品的触发
     usage: /rpgitem trigger [option] {item} <properties>
+  add:
+    description: 给物品添加技能/条件/标志/修饰
+    usage: /rpgitem <power|condition|marker|modifier> add {item} <properties>
+  reorder:
+    description: 调整物品技能的顺序位
+    usage: /rpgitem power reorder {item} <power> <power>
+  prop:
+    description: 显示/修改物品的技能/条件/标志/修饰
+    usage: /rpgitem <power|condition|marker|modifier> prop {item} [optionalProperties]
+  apply:
+    description: 对物品应用指定模板
+    usage: /rpgitem template apply {item}
+  delete:
+    description: 删除指定模板
+    usage: /rpgitem template delete {item}
+  placeholder:
+    description: 设定模板的技能占位符，被设定的技能指定参数在应用模板时不会发生变化
+    usage: /rpgitem template placeholder <option> {item} <powerId:property>
 command:
   template:
     apply:

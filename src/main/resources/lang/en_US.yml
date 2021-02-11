@@ -1168,6 +1168,9 @@ manual:
     help:
       description: Show help of modifier command
       usage: /rpgitem power [help]
+    description: Set marker for an item.
+    usage: /rpgitem marker [option] {item} <properties> [optionalProperties]
+  modifier:
     description: Set modifer for an item.(TBD)
     usage: /rpgitem modifier [option] {item} <properties> [optionalProperties]
   note:
@@ -1191,6 +1194,23 @@ manual:
     apply:
       description: Apply the template to items.
       usage: /rpgitem template apply {item}
+    description: Set an item template.
+    usage: /rpgitem template [option]
+  trigger:
+    description: Set trigger for an item.
+    usage: /rpgitem trigger [option] {item} <properties>
+  add:
+    description: Add power/condition/marker/modifier to an item
+    usage: /rpgitem <power|condition|marker|modifier> add {item} <properties>
+  reorder:
+    description: Change item's power
+    usage: /rpgitem power reorder {item} <power> <power>
+  prop:
+    description: Display/change Item's power/conditon/marker/modifier.
+    usage: /rpgitem <power|condition|marker|modifier> prop {item} [optionalProperties]
+  apply:
+    description: Apply the template to items.
+    usage: /rpgitem template apply {item}
     delete:
       description: Delete specific template.
       usage: /rpgitem template delete {item}
