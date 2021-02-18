@@ -32,7 +32,7 @@ public class PowerCommands extends RPGCommandReceiver {
 
     @Override
     public String getHelpPrefix() {
-        return "";
+        return "power";
     }
 
     private static Pair<NamespacedKey, Class<? extends Power>> getPowerClass(CommandSender sender, String powerStr) {

@@ -7,12 +7,10 @@ import com.google.common.collect.HashBasedTable;
 import com.google.common.collect.HashBiMap;
 import org.bukkit.NamespacedKey;
 import org.bukkit.command.CommandSender;
-import org.bukkit.event.Event;
 import org.bukkit.plugin.Plugin;
 import think.rpgitems.AdminCommands;
 import think.rpgitems.RPGItems;
 import think.rpgitems.power.propertymodifier.Modifier;
-import think.rpgitems.power.trigger.Trigger;
 
 import javax.annotation.CheckForNull;
 import java.lang.reflect.Field;

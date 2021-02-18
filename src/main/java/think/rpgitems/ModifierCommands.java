@@ -41,7 +41,7 @@ public class ModifierCommands extends RPGCommandReceiver {
 
     @Override
     public String getHelpPrefix() {
-        return "";
+        return "modifier";
     }
 
     private static Pair<NamespacedKey, Class<? extends Modifier>> getModifierClass(CommandSender sender, String modifierStr) {

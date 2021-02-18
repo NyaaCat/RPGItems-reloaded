@@ -31,7 +31,7 @@ public class ConditionCommands extends RPGCommandReceiver {
 
     @Override
     public String getHelpPrefix() {
-        return "";
+        return "condition";
     }
 
     private static Pair<NamespacedKey, Class<? extends Condition<?>>> getConditionClass(CommandSender sender, String conditionStr) {

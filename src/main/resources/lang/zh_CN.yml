@@ -46,6 +46,8 @@ message:
   armour:
     get: 物品 '%s' 护甲为 '%d%%'
     set: 物品 '%s' 护甲已设置为 '%d%%'
+  property:
+    required: 此技能至少需要输入以下属性参数 %s
   power_property:
     property_notfound: 未知技能属性 %s
     not_vaild_bool: '''%s'' 不是一个有效的布尔值'
@@ -175,10 +177,6 @@ message:
     MULTIPLY: 物品 '%s' 伤害模式设定为乘法伤害（原版伤害乘以RPG伤害）
     ADDITIONAL: 物品 '%s' 伤害模式设定为附加伤害（原版伤害加RPG伤害）
     VANILLA: 物品 '%s' 伤害模式设定为原版伤害
-  quality:
-    get: 物品 '%s' 品质为 '%s'
-    note: '品质:'
-    set: 物品 '%s' 品质已设置为 '%s'
   giveperms:
     required: 给予现在需要权限
     canceled: 给予现在不需要权限
@@ -207,6 +205,7 @@ message:
     ignored_trigger: 忽略物品%3$s技能%2$s的未知触发%1$s
     show: '技能 %d - %s (%s)：%s &r[%s]'
     change: 物品技能参数已更改
+    description: "&3&l描述: '&r%s'"
   marker:
     ok: 标志 %s 已添加
     unknown: 未知标志 %s
@@ -215,6 +214,7 @@ message:
     not_found: 未找到满足 %s 的标志
     show: '标志 %s - (%s)：%s'
     change: 物品标志参数已更改
+    description: "&3&l描述: '&r%s'"
   condition:
     ok: 条件 %s 已添加
     unknown: 未知条件 %s
@@ -223,6 +223,7 @@ message:
     not_found: 未找到满足 %s 的条件
     show: '条件 %s - %s (%s)：%s'
     change: 物品条件参数已更改
+    description: "&3&l描述: '&r%s'"
   trigger:
     ok: 触发 %s 已添加
     unknown_base: '未知基触发 %s。可选项：%s'
@@ -231,6 +232,7 @@ message:
     key: "&3&l触发 '&r%s&3&l'"
     not_found: 未找到满足 %s 的触发
     show: '触发 %s - base %s (%s)：%s'
+    description: "&3&l描述: '&r%s'"
   modifier:
     ok: 修饰 %s 已添加
     unknown: 未知修饰 %s
@@ -239,6 +241,7 @@ message:
     not_found: 未找到满足 %s 的修饰
     show: '修饰 %s - %s (%s)：%s'
     change: 物品修饰参数已更改
+    description: "&3&l描述: '&r%s'"
   toggleLore:
     show: 文字已显示
     hide: 文字已隐藏
@@ -1002,6 +1005,9 @@ manual:
     list:
       description: 列出所有的技能
       usage: /rpgitem power list
+    help:
+      description: 查看power命令的帮助
+      usage: /rpgitem power [help]
     description: 设置物品的技能
     usage: /rpgitem power [option] {item} <power> <properties> [optionalProperties]
   list:
@@ -1103,6 +1109,9 @@ manual:
     list:
       description: 列出所有的条件
       usage: /rpgitem condition list
+    help:
+      description: 查看condition命令的帮助
+      usage: /rpgitem condition [help]
     description: 设置物品激活技能时需要的条件
     usage: /rpgitem condition [option] {item} <condition> <properties> [optionalProperties]
   customModel:
@@ -1144,6 +1153,7 @@ manual:
   marker:
     add:
       description: 给物品添加标志
+      usage: /rpgitem marker add {item} <properties> [optionalProperties]
       usage: /rpgitem marker add {item} <properties>
     remove:
       description: 从物品上移除标志
@@ -1154,6 +1164,27 @@ manual:
     list:
       description: 列出所有的标志
       usage: /rpgitem marker list
+    help:
+      description: 查看marker命令的帮助
+      usage: /rpgitem marker [help]
+    description: 设置物品的标志
+    usage: /rpgitem marker [option] {item} <properties> [optionalProperties]
+  modifier:
+    add:
+      description: 给物品添加修饰
+      usage: /rpgitem modifier add {item} <properties> [optionalProperties]
+    remove:
+      description: 从物品上移除修饰
+      usage: /rpgitem modifier remove {item} <properties>
+    prop:
+      description: 展示/修改物品的修饰
+      usage: /rpgitem modifier prop {item} <properties> [optionalProperties]
+    list:
+      description: 列出所有的修饰
+      usage: /rpgitem modifier list
+    help:
+      description: 查看modifier命令的帮助
+      usage: /rpgitem modifier [help]
     description: 设置物品的标志
     usage: /rpgitem marker [option] {item} <properties> [optionalProperties]
   modifier:
@@ -1175,6 +1206,21 @@ manual:
     description: 保存所有物品
     usage: /rpgitem save-all
   template:
+    create:
+      description: 以特定物品创建模板
+      usage: /rpgitem template create {item}
+    apply:
+      description: 对物品应用指定模板
+      usage: /rpgitem template apply {item}
+    delete:
+      description: 删除指定模板
+      usage: /rpgitem template delete {item}
+    placeholder:
+      description: 设定模板的技能占位符，被设定的技能指定参数在应用模板时不会发生变化
+      usage: /rpgitem template placeholder <option> {item} <powerId:property>
+    help:
+      description: 查看template命令的帮助
+      usage: /rpgitem template [help]
     description: 设置物品的模板
     usage: /rpgitem template [option]
   trigger:
@@ -1217,8 +1263,6 @@ command:
       info: 已添加的技能占位符：%s
       bad_placeholder: 无效占位符 %s
 item:
-  hand: 单手
-  type: 剑
   armour: 护甲
   additionaldamage: 附加 %s 伤害
   multiplydamage: '%s 倍伤害'
