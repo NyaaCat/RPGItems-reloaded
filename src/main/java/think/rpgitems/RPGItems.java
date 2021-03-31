@@ -11,7 +11,9 @@ import org.bukkit.inventory.ItemStack;
 import org.bukkit.plugin.InvalidDescriptionException;
 import org.bukkit.plugin.InvalidPluginException;
 import org.bukkit.plugin.Plugin;
+import org.bukkit.plugin.PluginDescriptionFile;
 import org.bukkit.plugin.java.JavaPlugin;
+import org.bukkit.plugin.java.JavaPluginLoader;
 import think.rpgitems.data.Font;
 import think.rpgitems.item.ItemManager;
 import think.rpgitems.power.*;
@@ -40,6 +42,15 @@ public class RPGItems extends JavaPlugin {
     public static RPGItems plugin;
     List<Plugin> managedPlugins = new ArrayList<>();
     public Configuration cfg;
+
+    //constructors are used in tests.
+    public RPGItems() {
+        super();
+    }
+    //constructors are used in tests.
+    public RPGItems(JavaPluginLoader loader, PluginDescriptionFile description, File dataFolder, File file) {
+        super(loader, description, dataFolder, file);
+    }
 
     @Override
     public void onLoad() {
@@ -142,14 +153,16 @@ public class RPGItems extends JavaPlugin {
             throw new IllegalStateException();
         }
 
-        if (Bukkit.class.getPackage().getImplementationVersion().startsWith("git-Bukkit-")) {
+        String implementationVersion = Bukkit.class.getPackage().getImplementationVersion();
+        //may null in test environment
+        if (implementationVersion != null && implementationVersion.startsWith("git-Bukkit-")) {
             Bukkit.getConsoleSender().sendMessage(ChatColor.RED + "======================================");
             Bukkit.getConsoleSender().sendMessage(ChatColor.RED + "RPGItems plugin requires Spigot API, Please make sure you are using Spigot.");
             Bukkit.getConsoleSender().sendMessage(ChatColor.RED + "======================================");
         }
         try {
             Bukkit.spigot();
-        } catch (NoSuchMethodError e) {
+        } catch (Throwable e) {
             getCommand("rpgitem").setExecutor((sender, command, label, args) -> {
                 sender.sendMessage(ChatColor.RED + "======================================");
                 sender.sendMessage(ChatColor.RED + "RPGItems plugin requires Spigot API, Please make sure you are using Spigot.");
