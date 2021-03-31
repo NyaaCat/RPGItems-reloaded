@@ -10,8 +10,8 @@ import org.ajoberstar.grgit.Commit
 import org.ajoberstar.grgit.Grgit
 import org.apache.tools.ant.filters.ReplaceTokens
 
-String majorVersion = 3
-String minorVersion = 8
+String majorVersion = 4
+String minorVersion = 0
 String minecraftMajorVersion = "1.16"
 String minecraftMinorVersion = "4"
 String minecraftVersion = "${minecraftMajorVersion}.${minecraftMinorVersion}"
