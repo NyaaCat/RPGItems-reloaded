@@ -151,6 +151,7 @@ public class RPGItem {
     private Set<String> templates = new HashSet<>();
     private Set<String> templatePlaceholders = new HashSet<>();
     private String quality;
+    private String type = "item";
 
     public RPGItem(String name, int uid, CommandSender author) {
         this.name = name;
@@ -297,6 +298,7 @@ public class RPGItem {
         setShowArmourLore(s.getBoolean("showArmourLore", true));
         setCustomModelData(s.getInt("customModelData",  -1));
         setQuality(s.getString("quality", null));
+        setType(s.getString("item", "item"));
 
         if (s.isConfigurationSection("enchantments")) {
             ConfigurationSection enchConf = s.getConfigurationSection("enchantments");
@@ -571,8 +573,9 @@ public class RPGItem {
         s.set("barFormat", getBarFormat().name());
         s.set("alwaysAllowMelee", isAlwaysAllowMelee());
 
-        s.set("isTemplate",isTemplate());
-        s.set("quality",getQuality());
+        s.set("isTemplate", isTemplate());
+        s.set("quality", getQuality());
+        s.set("type", getType());
         ConfigurationSection templatesConfigs = s.createSection("templates");
         Set<String> templates = getTemplates();
         Iterator<String> it = templates.iterator();
@@ -2315,6 +2318,14 @@ public class RPGItem {
 
     public void setQuality(String quality) {
         this.quality = quality;
+    }
+
+    public String getType() {
+        return type;
+    }
+
+    public void setType(String type) {
+        this.type = type;
     }
 
     public void removeTemplatePlaceHolder(String placeHolder){
