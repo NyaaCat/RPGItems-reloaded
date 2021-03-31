@@ -68,8 +68,6 @@ import static org.bukkit.ChatColor.COLOR_CHAR;
 import static think.rpgitems.utils.ItemTagUtils.*;
 
 public class RPGItem {
-    @Deprecated
-    public static final int MC_ENCODED_ID_LENGTH = 16;
     public static final NamespacedKey TAG_META = new NamespacedKey(RPGItems.plugin, "meta");
     public static final NamespacedKey TAG_ITEM_UID = new NamespacedKey(RPGItems.plugin, "item_uid");
     public static final NamespacedKey TAG_IS_MODEL = new NamespacedKey(RPGItems.plugin, "is_model");
@@ -647,7 +645,7 @@ public class RPGItem {
         if (qualityPrefix != null){
             if (meta.hasDisplayName() && !meta.getDisplayName().startsWith(qualityPrefix)){
                 String displayName = meta.getDisplayName();
-                meta.setDisplayName(qualityPrefix + displayName);
+                meta.setDisplayName(HexColorUtils.hexColored(qualityPrefix) + displayName);
             }
         }
 
