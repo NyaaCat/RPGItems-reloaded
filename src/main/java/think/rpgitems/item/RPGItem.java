@@ -150,6 +150,7 @@ public class RPGItem {
     private boolean isTemplate;
     private Set<String> templates = new HashSet<>();
     private Set<String> templatePlaceholders = new HashSet<>();
+    private String quality;
 
     public RPGItem(String name, int uid, CommandSender author) {
         this.name = name;
@@ -295,6 +296,7 @@ public class RPGItem {
         setShowPowerText(s.getBoolean("showPowerText", true));
         setShowArmourLore(s.getBoolean("showArmourLore", true));
         setCustomModelData(s.getInt("customModelData",  -1));
+        setQuality(s.getString("quality", null));
 
         if (s.isConfigurationSection("enchantments")) {
             ConfigurationSection enchConf = s.getConfigurationSection("enchantments");
@@ -570,6 +572,7 @@ public class RPGItem {
         s.set("alwaysAllowMelee", isAlwaysAllowMelee());
 
         s.set("isTemplate",isTemplate());
+        s.set("quality",getQuality());
         ConfigurationSection templatesConfigs = s.createSection("templates");
         Set<String> templates = getTemplates();
         Iterator<String> it = templates.iterator();
@@ -635,6 +638,15 @@ public class RPGItem {
             lore.add("mcMMO Ability Tool");
         lore.addAll(reservedLores);
         meta.setLore(lore);
+
+        //quality prefix
+        String qualityPrefix = plugin.cfg.qualityPrefixes.get(getQuality());
+        if (qualityPrefix != null){
+            if (meta.hasDisplayName() && !meta.getDisplayName().startsWith(qualityPrefix)){
+                String displayName = meta.getDisplayName();
+                meta.setDisplayName(qualityPrefix + displayName);
+            }
+        }
 
         if (loreOnly) {
             rpgitemsTagContainer.commit();
@@ -2295,6 +2307,14 @@ public class RPGItem {
 
     public void addTemplatePlaceHolder(String placeHolder){
         this.templatePlaceholders.add(placeHolder);
+    }
+
+    public String getQuality() {
+        return quality;
+    }
+
+    public void setQuality(String quality) {
+        this.quality = quality;
     }
 
     public void removeTemplatePlaceHolder(String placeHolder){

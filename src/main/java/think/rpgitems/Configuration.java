@@ -4,7 +4,9 @@ import cat.nyaa.nyaacore.configuration.PluginConfigure;
 import org.bukkit.plugin.java.JavaPlugin;
 import think.rpgitems.item.RPGItem;
 
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -95,4 +97,14 @@ public class Configuration extends PluginConfigure {
     @SuppressWarnings("unused")
     @Serializable(name = "unused.locale_inv", alias = {"general.locale_inv", "localeInv"})
     public boolean oldLocaleInv = false;
+
+    @Serializable(name = "item.quality")
+    public Map<String, String> qualityPrefixes = new HashMap<>();
+    {
+        qualityPrefixes.put("trash", "&7");
+        qualityPrefixes.put("normal", "&f");
+        qualityPrefixes.put("rare", "&b");
+        qualityPrefixes.put("epic", "&3");
+        qualityPrefixes.put("legendary", "&e");
+    }
 }
