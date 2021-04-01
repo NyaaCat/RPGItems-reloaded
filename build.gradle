@@ -65,7 +65,7 @@ shadowJar {
 }
 
 dependencies {
-    testImplementation 'com.github.seeseemelk:MockBukkit-v1.16:0.25.0'
+    testImplementation 'com.github.seeseemelk:MockBukkit-v1.16:0.32.0'
     testImplementation group: 'junit', name: 'junit', version: '4.12'
 
     api "org.spigotmc:spigot-api:$minecraftVersion-R0.1-SNAPSHOT"
