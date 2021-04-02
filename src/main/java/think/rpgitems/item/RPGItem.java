@@ -42,6 +42,7 @@ import think.rpgitems.I18n;
 import think.rpgitems.RPGItems;
 import think.rpgitems.data.Context;
 import think.rpgitems.power.*;
+import think.rpgitems.power.chain.PowerChain;
 import think.rpgitems.power.cond.SlotCondition;
 import think.rpgitems.power.marker.*;
 import think.rpgitems.power.propertymodifier.Modifier;
@@ -86,7 +87,7 @@ public class RPGItem {
     static RPGItems plugin;
 
     // Powers
-    private List<Power> powers = new ArrayList<>();
+    private List<PowerChain> chains = new ArrayList<>();
     private List<Condition<?>> conditions = new ArrayList<>();
     private List<Marker> markers = new ArrayList<>();
     @SuppressWarnings("rawtypes")
@@ -388,7 +389,7 @@ public class RPGItem {
     private void savePowers(ConfigurationSection s) {
         ConfigurationSection powerConfigs = s.createSection("powers");
         int i = 0;
-        for (Power p : powers) {
+        for (Power p : getPowers()) {
             MemoryConfiguration pConfig = new MemoryConfiguration();
             pConfig.set("powerName", getPropertyHolderKey(p).toString());
             p.save(pConfig);
@@ -901,7 +902,8 @@ public class RPGItem {
     }
 
     private Map<Condition<?>, PowerResult<?>> checkStaticCondition(Player player, ItemStack i, List<Condition<?>> conds) {
-        Set<String> ids = powers.stream().flatMap(p -> p.getConditions().stream()).collect(Collectors.toSet());
+        //todo adapt chain framework
+        Set<String> ids = getPowers().stream().flatMap(p -> p.getConditions().stream()).collect(Collectors.toSet());
         List<Condition<?>> statics = conds.stream().filter(Condition::isStatic).filter(p -> ids.contains(p.id())).collect(Collectors.toList());
         Map<Condition<?>, PowerResult<?>> result = new LinkedHashMap<>();
         for (Condition<?> c : statics) {
@@ -1313,11 +1315,12 @@ public class RPGItem {
     }
 
     public <T extends Power> List<T> getPower(NamespacedKey key, Class<T> power) {
-        return powers.stream().filter(p -> p.getClass().equals(power) && getPropertyHolderKey(p).equals(key)).map(power::cast).collect(Collectors.toList());
+        return getPowers().stream().filter(p -> p.getClass().equals(power) && getPropertyHolderKey(p).equals(key)).map(power::cast).collect(Collectors.toList());
     }
 
     public <T extends Condition<?>> List<T> getCondition(NamespacedKey key, Class<T> condition) {
-        return powers.stream().filter(p -> p.getClass().equals(condition) && getPropertyHolderKey(p).equals(key)).map(condition::cast).collect(Collectors.toList());
+        //todo adapt chain framework
+        return getPowers().stream().filter(p -> p.getClass().equals(condition) && getPropertyHolderKey(p).equals(key)).map(condition::cast).collect(Collectors.toList());
     }
 
     public Condition<?> getCondition(String id) {
@@ -1329,7 +1332,8 @@ public class RPGItem {
     }
 
     private void addPower(NamespacedKey key, Power power, boolean update) {
-        powers.add(power);
+        //todo adapt chain framework
+//        powers.add(power);
         keys.put(power, key);
         if (update) {
             rebuild();
@@ -1337,7 +1341,8 @@ public class RPGItem {
     }
 
     public void removePower(Power power) {
-        powers.remove(power);
+        //todo adapt chain framework
+ //        powers.remove(power);
         keys.remove(power);
         power.deinit();
         rebuild();
@@ -1407,7 +1412,7 @@ public class RPGItem {
     }
 
     private <TEvent extends Event, T extends Pimpl, TResult, TReturn> List<T> getPower(Trigger<TEvent, T, TResult, TReturn> trigger, Player player, ItemStack stack) {
-        return powers.stream()
+        return getPowers().stream()
                      .filter(p -> p.getTriggers().contains(trigger))
                      .map(p -> {
                          Class<? extends Power> cls = p.getClass();
@@ -1492,7 +1497,7 @@ public class RPGItem {
     }
 
     public void deinit() {
-        powers.forEach(Power::deinit);
+        getPowers().forEach(Power::deinit);
     }
 
     public int getArmour() {
@@ -1767,7 +1772,9 @@ public class RPGItem {
     }
 
     public List<Power> getPowers() {
-        return powers;
+        return chains.stream()
+                .flatMap(powerChain -> powerChain.getPowers().stream())
+                .collect(Collectors.toList());
     }
 
     public List<Marker> getMarkers() {
