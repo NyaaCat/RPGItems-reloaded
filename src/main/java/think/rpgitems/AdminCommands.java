@@ -152,9 +152,6 @@ public class AdminCommands extends RPGCommandReceiver {
     @SubCommand("gen-wiki")
     public WikiCommand wiki;
 
-    @SubCommand("template")
-    public TemplateCommands templateCommand;
-
     @SubCommand("meta")
     public MetaCommands metaCommands;
 

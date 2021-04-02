@@ -1205,24 +1205,7 @@ manual:
   save-all:
     description: 保存所有物品
     usage: /rpgitem save-all
-  template:
-    create:
-      description: 以特定物品创建模板
-      usage: /rpgitem template create {item}
-    apply:
-      description: 对物品应用指定模板
-      usage: /rpgitem template apply {item}
-    delete:
-      description: 删除指定模板
-      usage: /rpgitem template delete {item}
-    placeholder:
-      description: 设定模板的技能占位符，被设定的技能指定参数在应用模板时不会发生变化
-      usage: /rpgitem template placeholder <option> {item} <powerId:property>
-    help:
-      description: 查看template命令的帮助
-      usage: /rpgitem template [help]
-    description: 设置物品的模板
-    usage: /rpgitem template [option]
+
   trigger:
     description: 设置物品的触发
     usage: /rpgitem trigger [option] {item} <properties>
@@ -1235,33 +1218,6 @@ manual:
   prop:
     description: 显示/修改物品的技能/条件/标志/修饰
     usage: /rpgitem <power|condition|marker|modifier> prop {item} [optionalProperties]
-  apply:
-    description: 对物品应用指定模板
-    usage: /rpgitem template apply {item}
-  delete:
-    description: 删除指定模板
-    usage: /rpgitem template delete {item}
-  placeholder:
-    description: 设定模板的技能占位符，被设定的技能指定参数在应用模板时不会发生变化
-    usage: /rpgitem template placeholder <option> {item} <powerId:property>
-command:
-  template:
-    apply:
-      success: 已为以 %s 为模板的物品应用属性
-    create:
-      success: 成功以物品 %s 创建模板
-    delete:
-      success: 成功删除模板 %s
-    not_template: 物品 %s 不是一个有效模板
-    placeholder:
-      not_template: 物品 %s 不是一个有效模板
-      add:
-        success: 已为模板 %s 创建技能占位符 %s
-      remove:
-        success: 已为模板 %s 移除技能占位符
-      itemName: 物品名：%s
-      info: 已添加的技能占位符：%s
-      bad_placeholder: 无效占位符 %s
 item:
   armour: 护甲
   additionaldamage: 附加 %s 伤害

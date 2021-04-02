@@ -6,7 +6,7 @@ import org.bukkit.inventory.ItemStack;
 import java.util.Map;
 import java.util.Set;
 
-public interface Condition<T> extends PropertyHolder, PlaceholderHolder, TagHolder {
+public interface Condition<T> extends PropertyHolder, TagHolder {
 
     String id();
 

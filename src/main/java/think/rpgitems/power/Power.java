@@ -16,7 +16,7 @@ import java.util.stream.Stream;
 /**
  * Base interface for all powers
  */
-public interface Power extends PropertyHolder, PlaceholderHolder, TagHolder {
+public interface Power extends PropertyHolder, TagHolder {
 
     /**
      * Display name of this power

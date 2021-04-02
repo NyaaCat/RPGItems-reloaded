@@ -16,16 +16,6 @@ public abstract class BaseMarker extends BasePropertyHolder implements Serializa
     public Set<String> tags = new HashSet<>();
 
     @Override
-    public String getPlaceholderId() {
-        return markerId;
-    }
-
-    @Override
-    public void setPlaceholderId(String id) {
-        this.markerId = id;
-    }
-
-    @Override
     public Set<String> getTags() {
         return tags;
     }

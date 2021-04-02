@@ -22,16 +22,6 @@ public abstract class BaseCondition<T> extends BasePropertyHolder implements Ser
     public Set<String> tags = new HashSet<>();
 
     @Override
-    public String getPlaceholderId() {
-        return this.id();
-    }
-
-    @Override
-    public void setPlaceholderId(String id) {
-        //todo
-    }
-
-    @Override
     public Set<String> getTags() {
         return tags;
     }

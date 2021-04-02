@@ -97,7 +97,6 @@ public class RPGItem {
     private List<Power> powers = new ArrayList<>();
     private List<Condition<?>> conditions = new ArrayList<>();
     private List<Marker> markers = new ArrayList<>();
-    private Map<String, PlaceholderHolder> placeholders= new HashMap<>();
     @SuppressWarnings("rawtypes")
     private Map<String, Trigger> triggers = new HashMap<>();
     private HashMap<PropertyHolder, NamespacedKey> keys = new HashMap<>();
@@ -145,9 +144,6 @@ public class RPGItem {
     private int pluginSerial;
     private List<String> lore;
     private int customModelData;
-    private boolean isTemplate;
-    private Set<String> templates = new HashSet<>();
-    private Set<String> templatePlaceholders = new HashSet<>();
     private String quality;
     private String type = "item";
 
@@ -222,7 +218,6 @@ public class RPGItem {
         setIgnoreWorldGuard(s.getBoolean("ignoreWorldGuard", false));
         setCanBeOwned(s.getBoolean("canBeOwned", false));
         setHasStackId(s.getBoolean("hasStackId", false));
-        placeholders.clear();
         // Powers
         ConfigurationSection powerList = s.getConfigurationSection("powers");
         if (powerList != null) {
@@ -266,12 +261,6 @@ public class RPGItem {
             }
         }
 
-        Map<String, List<PlaceholderHolder>> duplicatePlaceholderIds = checkDuplicatePlaceholderIds();
-        if (!duplicatePlaceholderIds.isEmpty()){
-            Logger logger = RPGItems.plugin.getLogger();
-            String duplicateMsg = getDuplicatePlaceholderMsg(duplicatePlaceholderIds);
-            logger.log(Level.WARNING, duplicateMsg);
-        }
         setHasPermission(s.getBoolean("haspermission", false));
         setPermission(s.getString("permission", "rpgitem.item." + name));
         setCustomItemModel(s.getBoolean("customItemModel", false));
@@ -348,41 +337,7 @@ public class RPGItem {
             setDamageMode(DamageMode.FIXED);
         }
         setAlwaysAllowMelee(s.getBoolean("alwaysAllowMelee", false));
-        this.setIsTemplate(s.getBoolean("isTemplate", false));
-        templates.clear();
-        ConfigurationSection templatesList = s.getConfigurationSection("templates");
-        if (templatesList != null) {
-            for (String sectionKey : templatesList.getKeys(false)) {
-                String tmp = (String) templatesList.get(sectionKey);
-                templates.add(tmp);
-            }
-        }
-        ConfigurationSection templatePlaceholdersList = s.getConfigurationSection("templatePlaceholders");
-        if (templatePlaceholdersList != null) {
-            for (String sectionKey : templatePlaceholdersList.getKeys(false)) {
-                String tmp = (String) templatePlaceholdersList.get(sectionKey);
-                templatePlaceholders.add(tmp);
-            }
-        }
         rebuild();
-    }
-
-    public String getDuplicatePlaceholderMsg(Map<String, List<PlaceholderHolder>> duplicatePlaceholderIds) {
-        StringBuilder stringBuilder = new StringBuilder();
-        stringBuilder.append("duplicate placeholder key found in item: ")
-                .append(getName()).append("\n");
-        duplicatePlaceholderIds.forEach((k,v)->{
-            stringBuilder.append("key: ")
-                    .append(k)
-                    .append(", values: [");
-            v.forEach((ph) ->{
-                stringBuilder.append(ph.toString());
-                stringBuilder.append(",");
-            });
-            stringBuilder.append("]");
-        });
-        String msg = stringBuilder.toString();
-        return msg;
     }
 
     public int getCustomModelData() {
@@ -571,23 +526,8 @@ public class RPGItem {
         s.set("barFormat", getBarFormat().name());
         s.set("alwaysAllowMelee", isAlwaysAllowMelee());
 
-        s.set("isTemplate", isTemplate());
         s.set("quality", getQuality());
         s.set("type", getType());
-        ConfigurationSection templatesConfigs = s.createSection("templates");
-        Set<String> templates = getTemplates();
-        Iterator<String> it = templates.iterator();
-        for (i = 0; i < templates.size(); i++) {
-            String next = it.next();
-            templatesConfigs.set(String.valueOf(i), next);
-        }
-        ConfigurationSection templatePlaceHolderConfigs = s.createSection("templatePlaceholders");
-        Set<String> templatePlaceHolders = getTemplatePlaceHolders();
-        Iterator<String> it1 = templatePlaceHolders.iterator();
-        for (i = 0; i < templatePlaceHolders.size(); i++) {
-            String next = it1.next();
-            templatePlaceHolderConfigs.set(String.valueOf(i), next);
-        }
     }
 
 
@@ -1522,14 +1462,8 @@ public class RPGItem {
     }
 
     private void addPower(NamespacedKey key, Power power, boolean update) {
-        if ("".equals(power.getPlaceholderId())){
-            String placeholderId = power.getName() + "-" + getPowers().stream().filter(power1 -> power1.getName().equals(power.getName())).count();
-            power.setPlaceholderId(placeholderId);
-        }
-        powers.add(power);
+           powers.add(power);
         keys.put(power, key);
-        String placeholderId = power.getPlaceholderId();
-        placeholders.put(placeholderId, power);
         if (update) {
             rebuild();
         }
@@ -1538,10 +1472,6 @@ public class RPGItem {
     public void removePower(Power power) {
         powers.remove(power);
         keys.remove(power);
-        String placeholderId = power.getPlaceholderId();
-        if (!"".equals(placeholderId)){
-            placeholders.remove(placeholderId, power);
-        }
         power.deinit();
         rebuild();
     }
@@ -1551,14 +1481,8 @@ public class RPGItem {
     }
 
     private void addCondition(NamespacedKey key, Condition<?> condition, boolean update) {
-        if ("".equals(condition.getPlaceholderId())){
-            String placeholderId = condition.getName() + "-" + getConditions().stream().filter(power1 -> power1.getName().equals(condition.getName())).count();
-            condition.setPlaceholderId(placeholderId);
-        }
         conditions.add(condition);
         keys.put(condition, key);
-        String placeholderId = condition.getPlaceholderId();
-        placeholders.put(placeholderId, condition);
         if (update) {
             rebuild();
         }
@@ -1567,10 +1491,6 @@ public class RPGItem {
     public void removeCondition(Condition<?> condition) {
         conditions.remove(condition);
         keys.remove(condition);
-        String placeholderId = condition.getPlaceholderId();
-        if (!"".equals(placeholderId)){
-            placeholders.remove(placeholderId, condition);
-        }
         rebuild();
     }
 
@@ -1579,14 +1499,8 @@ public class RPGItem {
     }
 
     private void addMarker(NamespacedKey key, Marker marker, boolean update) {
-        if ("".equals(marker.getPlaceholderId())){
-            String placeholderId = marker.getName() + "-" + getMarkers().stream().filter(power1 -> power1.getName().equals(marker.getName())).count();
-            marker.setPlaceholderId(placeholderId);
-        }
         markers.add(marker);
         keys.put(marker, key);
-        String placeholderId = marker.getPlaceholderId();
-        placeholders.put(placeholderId, marker);
         if (update) {
             rebuild();
         }
@@ -1595,43 +1509,7 @@ public class RPGItem {
     public void removeMarker(Marker marker) {
         markers.remove(marker);
         keys.remove(marker);
-        String placeholderId = marker.getPlaceholderId();
-        if (!"".equals(placeholderId)){
-            placeholders.remove(placeholderId, marker);
-        }
         rebuild();
-    }
-
-    public Map<String, List<PlaceholderHolder>> checkDuplicatePlaceholderIds(){
-        Map<String, List<PlaceholderHolder>> ids = new HashMap<>();
-        getPlaceholdersStream()
-                .map(ph -> ((PlaceholderHolder) ph))
-                .forEach(placeholder -> {
-                    String placeholderId = placeholder.getPlaceholderId();
-                    if("".equals(placeholderId)){
-                        return;
-                    }
-                    List<PlaceholderHolder> placeholderHolders = ids.computeIfAbsent(placeholderId, (s) -> new ArrayList<>());
-                    placeholderHolders.add(placeholder);
-                });
-        Map<String, List<PlaceholderHolder>> result = new HashMap<>();
-        ids.forEach((key, value) ->{
-            if (value.size()>1){
-                result.put(key, value);
-            }
-        });
-        return result;
-    }
-
-    public Stream<PlaceholderHolder> getPlaceholdersStream() {
-        List<Power> powers = getPowers();
-        List<Condition<?>> conditions = getConditions();
-        List<Marker> markers = getMarkers();
-        return Stream.concat(
-                Stream.concat(
-                        powers.stream().map(ph -> ((PlaceholderHolder) ph)),
-                        conditions.stream().map(ph -> ((PlaceholderHolder) ph))),
-                markers.stream());
     }
 
     public void addDescription(String str) {
@@ -1671,174 +1549,6 @@ public class RPGItem {
                      })
                      .map(p -> p.cast(trigger.getPowerClass()))
                      .collect(Collectors.toList());
-    }
-
-    public PlaceholderHolder getPlaceholderHolder(String placeholderId) {
-        return placeholders.get(placeholderId);
-    }
-
-    public PlaceholderHolder replacePlaceholder(String powerId, PlaceholderHolder placeHolder) {
-        YamlConfiguration yamlConfiguration = new YamlConfiguration();
-        PlaceholderHolder oldPh = placeholders.get(powerId);
-        PlaceholderHolder newPh = null;
-        if (oldPh == null){
-            return null;
-        }
-        placeHolder.save(yamlConfiguration);
-        if (oldPh instanceof Power){
-            int i = powers.indexOf(oldPh);
-            if (i == -1){
-                throw new IllegalStateException();
-            }
-            Class<? extends Power> pwClz = ((Power) oldPh).getClass();
-            Power pow = PowerManager.instantiate(pwClz);
-            pow.setItem(this);
-            pow.init(yamlConfiguration);
-            powers.set(i, pow);
-            newPh = pow;
-        }else if (oldPh instanceof Condition){
-            int i = conditions.indexOf(oldPh);
-            if (i == -1){
-                throw new IllegalStateException();
-            }
-            Class<? extends Condition> pwClz = ((Condition<?>) oldPh).getClass();
-            Condition<?> pow = PowerManager.instantiate(pwClz);
-            pow.setItem(this);
-            pow.init(yamlConfiguration);
-            conditions.set(i, pow);
-            newPh = pow;
-        }else if (oldPh instanceof Marker){
-            int i = markers.indexOf(oldPh);
-            if (i == -1){
-                throw new IllegalStateException();
-            }
-            Class<? extends Marker> pwClz = ((Marker) oldPh).getClass();
-            Marker pow = PowerManager.instantiate(pwClz);
-            pow.setItem(this);
-            pow.init(yamlConfiguration);
-            markers.set(i, pow);
-            newPh = pow;
-        }
-        if(newPh == null){
-            return null;
-        }
-
-        NamespacedKey remove = keys.remove(oldPh);
-        keys.put(newPh, remove);
-        placeholders.put(powerId, newPh);
-        return newPh;
-    }
-
-
-
-    public void updateFromTemplate(RPGItem target) throws UnknownPowerException {
-        Set<String> templatePlaceHolders = target.getTemplatePlaceHolders();
-        Map<String, List<String>> powerMap = new LinkedHashMap<>();
-        Map<String, Object> valMap = new LinkedHashMap<>();
-        //extract original val from self
-        templatePlaceHolders.forEach(s -> {
-            String[] split = s.split(":");
-            PlaceholderHolder power = getPlaceholderHolder(split[0]);
-            String propName = split[1];
-            Object origVal = null;
-            try {
-                origVal = getPropVal(power.getClass(), propName, power);
-                List<String> strings = powerMap.computeIfAbsent(split[0], (str) -> new ArrayList<>());
-                strings.add(s);
-                valMap.put(s, origVal);
-            } catch (IllegalAccessException e) {
-                e.printStackTrace();
-                throw new RuntimeException();
-            }
-        });
-
-        copyFromTemplate(target);
-
-        //replace powers & fill placeholders
-        target.getPlaceholdersStream().forEach(power -> {
-                String powerId = power.getPlaceholderId();
-                PlaceholderHolder replaced = replacePlaceholder(powerId, power);
-                List<String> strings = powerMap.get(powerId);
-                if (strings != null){
-                    strings.forEach(s ->{
-                        String[] split = s.split(":");
-                        String propName = split[1];
-                        Object origVal = valMap.get(s);
-                        try {
-                            setPropVal(replaced.getClass(), propName, replaced, origVal);
-                        } catch (IllegalAccessException e) {
-                            e.printStackTrace();
-                            throw new RuntimeException();
-                        }
-                    });
-                }
-        });
-
-        ItemManager.save(this);
-    }
-
-    private Object getPropVal(Class<?> aClass, String propName, PlaceholderHolder placeholder) throws IllegalAccessException {
-        Field getMethod = getField(aClass, propName);
-        getMethod.setAccessible(true);
-        return getMethod.get(placeholder);
-    }
-
-    private void setPropVal(Class<?> aClass, String propName, PlaceholderHolder placeholder, Object value) throws IllegalAccessException {
-        Field getMethod = getField(aClass, propName);
-        getMethod.setAccessible(true);
-        getMethod.set(placeholder, value);
-    }
-
-
-    private Field getField(Class<?> aClass, String methodName) {
-        Field getMethod = null;
-        while (true){
-            try{
-                getMethod = aClass.getDeclaredField(methodName);
-                break;
-            }catch (NoSuchFieldException e){
-                aClass = aClass.getSuperclass();
-            }
-            if (aClass == null){
-                throw new RuntimeException("invalid placeholder");
-            }
-        }
-        return getMethod;
-    }
-
-    private void copyFromTemplate(RPGItem target) throws UnknownPowerException {
-        List<Power> powers = new ArrayList<>(getPowers());
-        List<Marker> markers =  new ArrayList<>(getMarkers());
-        List<Condition<?>> conditions =  new ArrayList<>(getConditions());
-        boolean isTemplate = isTemplate();
-        Set<String> templates =  new HashSet<>(getTemplates());
-        placeholders.clear();
-        this.powers.clear();
-        this.markers.clear();
-        this.conditions.clear();
-
-        //copy other settings,
-        YamlConfiguration config = new YamlConfiguration();
-        target.save(config);
-        this.restore(config);
-
-        this.powers = powers;
-        this.markers = markers;
-        this.conditions = conditions;
-        this.isTemplate = isTemplate;
-        this.templates = templates;
-        this.rebuildPlaceholder();
-    }
-
-    private void rebuildPlaceholder() {
-        placeholders.clear();
-        getPlaceholdersStream().forEach(placeholderHolder -> {
-            placeholders.put(placeholderHolder.getPlaceholderId(), placeholderHolder);
-        });
-    }
-
-    public List<String> getTemplatePlaceholders() {
-        return new ArrayList<>(templatePlaceholders);
     }
 
     @SuppressWarnings("rawtypes")
@@ -2281,35 +1991,6 @@ public class RPGItem {
         this.attributeMode = attributeMode;
     }
 
-    public boolean isTemplate() {
-        return isTemplate;
-    }
-
-    public void setIsTemplate(boolean template) {
-        isTemplate = template;
-    }
-
-    public boolean isTemplateOf(String templateName){
-        return templates.contains(templateName);
-    }
-
-    public Set<String> getTemplates(){
-        return templates;
-    }
-
-    public void setTemplateOf(String templateName){
-        this.templates.add(templateName);
-    }
-
-    public void setTemplatePlaceHolders(List<String> placeHolder) {
-        this.templatePlaceholders.clear();
-        this.templatePlaceholders.addAll(placeHolder);
-    }
-
-    public void addTemplatePlaceHolder(String placeHolder){
-        this.templatePlaceholders.add(placeHolder);
-    }
-
     public String getQuality() {
         return quality;
     }
@@ -2324,14 +2005,6 @@ public class RPGItem {
 
     public void setType(String type) {
         this.type = type;
-    }
-
-    public void removeTemplatePlaceHolder(String placeHolder){
-        this.templatePlaceholders.remove(placeHolder);
-    }
-
-    private Set<String> getTemplatePlaceHolders() {
-        return templatePlaceholders;
     }
 
     public AttributeMode getAttributeMode() {

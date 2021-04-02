@@ -69,16 +69,6 @@ public abstract class BasePower extends BasePropertyHolder implements Serializab
     }
 
     @Override
-    public String getPlaceholderId() {
-        return getPowerId();
-    }
-
-    @Override
-    public void setPlaceholderId(String id) {
-        this.setPowerId(id);
-    }
-
-    @Override
     public Set<String> getTags() {
         return getPowerTags();
     }
