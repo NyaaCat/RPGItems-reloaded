@@ -84,14 +84,6 @@ public class RPGItem {
     private static final Cache<UUID, List<Modifier>> modifierCache = CacheBuilder.newBuilder().concurrencyLevel(1).expireAfterAccess(1, TimeUnit.MINUTES).build();
 
     static RPGItems plugin;
-    private boolean ignoreWorldGuard = false;
-    private List<String> description = new ArrayList<>();
-    private boolean showPowerText = true;
-    private boolean showArmourLore = true;
-    private Map<Enchantment, Integer> enchantMap = null;
-    private List<ItemFlag> itemFlags = new ArrayList<>();
-    private boolean customItemModel = false;
-    private EnchantMode enchantMode = EnchantMode.DISALLOW;
 
     // Powers
     private List<Power> powers = new ArrayList<>();
@@ -102,50 +94,12 @@ public class RPGItem {
     private HashMap<PropertyHolder, NamespacedKey> keys = new HashMap<>();
     private File file;
 
-    private NamespacedKey namespacedKey;
-    private Material item;
-    private int dataValue;
     private int id;
     private int uid;
     private String name;
-    private boolean hasPermission;
-    private String permission;
-    private String displayName;
-    private int damageMin = 0;
-    private int damageMax = 3;
-    private DamageMode damageMode = DamageMode.FIXED;
-    private AttributeMode attributeMode = AttributeMode.PARTIAL_UPDATE;
-    private int armour = 0;
-    private String armourExpression = "";
-    private String damageType = "";
-    private boolean canBeOwned = false;
-    private boolean hasStackId = false;
-    private boolean alwaysAllowMelee = false;
+    int tooltipWidth = 150;
 
-    private String author = plugin.cfg.defaultAuthor;
-    private String note = plugin.cfg.defaultNote;
-    private String license = plugin.cfg.defaultLicense;
-
-    private int tooltipWidth = 150;
-    // Durability
-    private int maxDurability = -1;
-    private boolean hasDurabilityBar = plugin.cfg.forceBar;
-    private int defaultDurability;
-    private int durabilityLowerBound;
-    private int durabilityUpperBound;
-    private BarFormat barFormat = BarFormat.DEFAULT;
-
-    private int blockBreakingCost = 0;
-    private int hittingCost = 0;
-    private int hitCost = 0;
-    private boolean hitCostByDamage = false;
-    private String mcVersion;
-    private int pluginVersion;
-    private int pluginSerial;
-    private List<String> lore;
-    private int customModelData;
-    private String quality;
-    private String type = "item";
+    RPGItemMeta rpgItemMeta = new RPGItemMeta();
 
     public RPGItem(String name, int uid, CommandSender author) {
         this.name = name;
@@ -186,38 +140,7 @@ public class RPGItem {
     }
 
     private void restore(ConfigurationSection s) throws UnknownPowerException, UnknownExtensionException {
-        setAuthor(s.getString("author", ""));
-        setNote(s.getString("note", ""));
-        setLicense(s.getString("license", ""));
-        setPluginVersion(s.getInt("pluginVersion", 0));
-        setPluginSerial(s.getInt("pluginSerial", 0));
-        setMcVersion(s.getString("mcVersion", ""));
 
-        String display = s.getString("display");
-
-        setDisplayName(display);
-        List<String> desc = s.getStringList("description");
-        for (int i = 0; i < desc.size(); i++) {
-            desc.set(i, HexColorUtils.hexColored(desc.get(i)));
-        }
-        setDescription(desc);
-        setDamageMin(s.getInt("damageMin"));
-        setDamageMax(s.getInt("damageMax"));
-        setArmour(s.getInt("armour", 0), false);
-        setArmourExpression(s.getString("armourExpression", ""));
-        setDamageType(s.getString("DamageType", ""));
-        setAttributeMode(AttributeMode.valueOf(s.getString("attributemode", "PARTIAL_UPDATE")));
-        String materialName = s.getString("item");
-        setItem(MaterialUtils.getMaterial(materialName, Bukkit.getConsoleSender()));
-        ItemMeta itemMeta = Bukkit.getItemFactory().getItemMeta(getItem());
-        if (itemMeta instanceof LeatherArmorMeta) {
-            setDataValue(s.getInt("item_colour"));
-        } else if (itemMeta instanceof Damageable) {
-            setDataValue(s.getInt("item_data"));
-        }
-        setIgnoreWorldGuard(s.getBoolean("ignoreWorldGuard", false));
-        setCanBeOwned(s.getBoolean("canBeOwned", false));
-        setHasStackId(s.getBoolean("hasStackId", false));
         // Powers
         ConfigurationSection powerList = s.getConfigurationSection("powers");
         if (powerList != null) {
@@ -341,15 +264,15 @@ public class RPGItem {
     }
 
     public int getCustomModelData() {
-        return customModelData;
+        return rpgItemMeta.customModelData;
     }
 
     public void setCustomModelData(int customModelData) {
-        this.customModelData = customModelData;
+        this.rpgItemMeta.customModelData = customModelData;
     }
 
     public void setArmourExpression(String armour) {
-        this.armourExpression = armour;
+        this.rpgItemMeta.armourExpression = armour;
     }
 
     private void loadPower(ConfigurationSection section, String powerName) throws UnknownPowerException {
@@ -412,46 +335,57 @@ public class RPGItem {
 
 
     @SuppressWarnings("rawtypes")
-    public void save(ConfigurationSection s) {
+    public void save(ConfigurationSection s){
         s.set("name", name);
         if (id != 0) {
             s.set("id", id);
         }
         s.set("uid", uid);
 
-        s.set("author", getAuthor());
-        s.set("note", getNote());
-        s.set("license", getLicense());
+        savePowers(s);
+        saveConditions(s);
+        saveMarkers(s);
+        saveTriggers(s);
+        rpgItemMeta.save(s);
+    }
 
-        s.set("mcVersion", getMcVersion());
-        s.set("pluginSerial", getPluginSerial());
-
-        s.set("haspermission", isHasPermission());
-        s.set("permission", getPermission());
-        s.set("display", getDisplayName().replaceAll("" + COLOR_CHAR, "&"));
-        s.set("damageMin", getDamageMin());
-        s.set("damageMax", getDamageMax());
-        s.set("armour", getArmour());
-        s.set("armourExpression", getArmourExpression());
-        s.set("DamageType", getDamageType());
-        s.set("attributemode", attributeMode.name());
-        ArrayList<String> descriptionConv = new ArrayList<>(getDescription());
-        for (int i = 0; i < descriptionConv.size(); i++) {
-            descriptionConv.set(i, descriptionConv.get(i).replaceAll("" + COLOR_CHAR, "&"));
+    private void saveTriggers(ConfigurationSection s) {
+        int i = 0;
+        ConfigurationSection triggerConfigs = s.createSection("triggers");
+        for (Entry<String, Trigger> p : triggers.entrySet()) {
+            MemoryConfiguration pConfig = new MemoryConfiguration();
+            p.getValue().save(pConfig);
+            pConfig.set("base", p.getValue().getBase());
+            triggerConfigs.set(p.getKey(), pConfig);
+            i++;
         }
-        s.set("description", descriptionConv);
-        s.set("item", getItem().toString());
-        s.set("ignoreWorldGuard", isIgnoreWorldGuard());
-        s.set("canBeOwned", isCanBeOwned());
-        s.set("hasStackId", isHasStackId());
+    }
 
-        ItemMeta itemMeta = Bukkit.getItemFactory().getItemMeta(getItem());
-
-        if (itemMeta instanceof LeatherArmorMeta) {
-            s.set("item_colour", getDataValue());
-        } else if (itemMeta instanceof Damageable) {
-            s.set("item_data", getDataValue());
+    private void saveMarkers(ConfigurationSection s) {
+        ConfigurationSection markerConfigs = s.createSection("markers");
+        int i = 0;
+        for (Marker p : markers) {
+            MemoryConfiguration pConfig = new MemoryConfiguration();
+            pConfig.set("markerName", p.getNamespacedKey().toString());
+            p.save(pConfig);
+            markerConfigs.set(Integer.toString(i), pConfig);
+            i++;
         }
+    }
+
+    private void saveConditions(ConfigurationSection s) {
+        ConfigurationSection conditionConfigs = s.createSection("conditions");
+        int i = 0;
+        for (Condition<?> p : conditions) {
+            MemoryConfiguration pConfig = new MemoryConfiguration();
+            pConfig.set("conditionName", p.getNamespacedKey().toString());
+            p.save(pConfig);
+            conditionConfigs.set(Integer.toString(i), pConfig);
+            i++;
+        }
+    }
+
+    private void savePowers(ConfigurationSection s) {
         ConfigurationSection powerConfigs = s.createSection("powers");
         int i = 0;
         for (Power p : powers) {
@@ -461,86 +395,18 @@ public class RPGItem {
             powerConfigs.set(Integer.toString(i), pConfig);
             i++;
         }
-        ConfigurationSection conditionConfigs = s.createSection("conditions");
-        i = 0;
-        for (Condition<?> p : conditions) {
-            MemoryConfiguration pConfig = new MemoryConfiguration();
-            pConfig.set("conditionName", p.getNamespacedKey().toString());
-            p.save(pConfig);
-            conditionConfigs.set(Integer.toString(i), pConfig);
-            i++;
-        }
-        ConfigurationSection markerConfigs = s.createSection("markers");
-        i = 0;
-        for (Marker p : markers) {
-            MemoryConfiguration pConfig = new MemoryConfiguration();
-            pConfig.set("markerName", p.getNamespacedKey().toString());
-            p.save(pConfig);
-            markerConfigs.set(Integer.toString(i), pConfig);
-            i++;
-        }
-        ConfigurationSection triggerConfigs = s.createSection("triggers");
-        for (Entry<String, Trigger> p : triggers.entrySet()) {
-            MemoryConfiguration pConfig = new MemoryConfiguration();
-            p.getValue().save(pConfig);
-            pConfig.set("base", p.getValue().getBase());
-            triggerConfigs.set(p.getKey(), pConfig);
-            i++;
-        }
-
-        s.set("hitCost", getHitCost());
-        s.set("hittingCost", getHittingCost());
-        s.set("blockBreakingCost", getBlockBreakingCost());
-        s.set("hitCostByDamage", isHitCostByDamage());
-        s.set("maxDurability", getMaxDurability());
-        s.set("defaultDurability", getDefaultDurability());
-        s.set("durabilityLowerBound", getDurabilityLowerBound());
-        s.set("durabilityUpperBound", getDurabilityUpperBound());
-        s.set("hasDurabilityBar", isHasDurabilityBar());
-        s.set("showPowerText", isShowPowerText());
-        s.set("showArmourLore", isShowArmourLore());
-        s.set("damageMode", getDamageMode().name());
-        s.set("customModelData", getCustomModelData());
-
-        Map<Enchantment, Integer> enchantMap = getEnchantMap();
-        if (enchantMap != null) {
-            ConfigurationSection ench = s.createSection("enchantments");
-            for (Enchantment e : enchantMap.keySet()) {
-                ench.set(e.getKey().getKey(), enchantMap.get(e));
-            }
-        } else {
-            s.set("enchantments", null);
-        }
-        s.set("enchantMode", enchantMode.name());
-        List<ItemFlag> itemFlags = getItemFlags();
-        if (!itemFlags.isEmpty()) {
-            List<String> tmp = new ArrayList<>();
-            for (ItemFlag flag : itemFlags) {
-                tmp.add(flag.name());
-            }
-            s.set("itemFlags", tmp);
-        } else {
-            s.set("itemFlags", null);
-        }
-        s.set("customItemModel", isCustomItemModel());
-        s.set("barFormat", getBarFormat().name());
-        s.set("alwaysAllowMelee", isAlwaysAllowMelee());
-
-        s.set("quality", getQuality());
-        s.set("type", getType());
     }
 
-
     public String getDamageType() {
-        return this.damageType;
+        return this.rpgItemMeta.damageType;
     }
 
     public void setDamageType(String damageType) {
-        this.damageType = damageType;
+        this.rpgItemMeta.damageType = damageType;
     }
 
     public String getArmourExpression() {
-        return armourExpression;
+        return rpgItemMeta.armourExpression;
     }
 
     public void updateItem(ItemStack item) {
@@ -603,7 +469,7 @@ public class RPGItem {
         meta.removeItemFlags(meta.getItemFlags().toArray(new ItemFlag[0]));
 
         if (getCustomModelData() != -1) {
-            meta.setCustomModelData(customModelData);
+            meta.setCustomModelData(getCustomModelData());
         }else{
             meta.setCustomModelData(null);
         }
@@ -755,7 +621,7 @@ public class RPGItem {
     private ItemMeta refreshAttributeModifiers(ItemMeta itemMeta) {
         List<AttributeModifier> attributeModifiers = getMarker(AttributeModifier.class);
         Multimap<Attribute, org.bukkit.attribute.AttributeModifier> old = itemMeta.getAttributeModifiers();
-        if (attributeMode.equals(AttributeMode.FULL_UPDATE)) {
+        if (getAttributeMode().equals(AttributeMode.FULL_UPDATE)) {
             if (old != null && !old.isEmpty()) {
                 old.forEach(itemMeta::removeAttributeModifier);
             }
@@ -1371,6 +1237,7 @@ public class RPGItem {
     public void give(Player player, int count, boolean wear) {
         ItemStack itemStack = toItemStack();
         itemStack.setAmount(count);
+        Material item = getItem();
         if (wear) {
             if (
                     item.equals(Material.CHAINMAIL_HELMET) ||
@@ -1462,7 +1329,7 @@ public class RPGItem {
     }
 
     private void addPower(NamespacedKey key, Power power, boolean update) {
-           powers.add(power);
+        powers.add(power);
         keys.put(power, key);
         if (update) {
             rebuild();
@@ -1629,23 +1496,23 @@ public class RPGItem {
     }
 
     public int getArmour() {
-        return armour;
+        return rpgItemMeta.armour;
     }
 
     public boolean isAlwaysAllowMelee() {
-        return alwaysAllowMelee;
+        return rpgItemMeta.alwaysAllowMelee;
     }
 
     public boolean isCanBeOwned() {
-        return canBeOwned;
+        return rpgItemMeta.canBeOwned;
     }
 
     public boolean isHasStackId() {
-        return hasStackId;
+        return rpgItemMeta.hasStackId;
     }
 
     public void setAlwaysAllowMelee(boolean alwaysAllowMelee) {
-        this.alwaysAllowMelee = alwaysAllowMelee;
+        this.rpgItemMeta.alwaysAllowMelee = alwaysAllowMelee;
     }
 
     public void setArmour(int a) {
@@ -1653,46 +1520,46 @@ public class RPGItem {
     }
 
     public void setArmour(int a, boolean update) {
-        armour = a;
+        this.rpgItemMeta.armour = a;
         if (update) {
             rebuild();
         }
     }
 
     public String getAuthor() {
-        return author;
+        return rpgItemMeta.author;
     }
 
     public void setAuthor(String author) {
-        this.author = author;
+        this.rpgItemMeta.author = author;
     }
 
     public int getBlockBreakingCost() {
-        return blockBreakingCost;
+        return rpgItemMeta.blockBreakingCost;
     }
 
     public void setBlockBreakingCost(int blockBreakingCost) {
-        this.blockBreakingCost = blockBreakingCost;
+        this.rpgItemMeta.blockBreakingCost = blockBreakingCost;
     }
 
     public int getDamageMax() {
-        return damageMax;
+        return rpgItemMeta.damageMax;
     }
 
     public void setCanBeOwned(boolean canBeOwned) {
-        this.canBeOwned = canBeOwned;
+        this.rpgItemMeta.canBeOwned = canBeOwned;
     }
 
     private void setDamageMax(int damageMax) {
-        this.damageMax = damageMax;
+        this.rpgItemMeta.damageMax = damageMax;
     }
 
     public int getDamageMin() {
-        return damageMin;
+        return rpgItemMeta.damageMin;
     }
 
     private void setDamageMin(int damageMin) {
-        this.damageMin = damageMin;
+        this.rpgItemMeta.damageMin = damageMin;
     }
 
     public void setDamage(int min, int max) {
@@ -1702,59 +1569,59 @@ public class RPGItem {
     }
 
     public DamageMode getDamageMode() {
-        return damageMode;
+        return rpgItemMeta.damageMode;
     }
 
     public void setDamageMode(DamageMode damageMode) {
-        this.damageMode = damageMode;
+        this.rpgItemMeta.damageMode = damageMode;
     }
 
     public int getDataValue() {
-        return dataValue;
+        return rpgItemMeta.dataValue;
     }
 
     public void setDataValue(int dataValue) {
-        this.dataValue = dataValue;
+        this.rpgItemMeta.dataValue = dataValue;
     }
 
     public int getDefaultDurability() {
-        return defaultDurability;
+        return rpgItemMeta.defaultDurability;
     }
 
     public void setDefaultDurability(int newVal) {
-        defaultDurability = newVal;
+        this.rpgItemMeta.defaultDurability = newVal;
     }
 
     public List<String> getDescription() {
-        return description;
+        return this.rpgItemMeta.description;
     }
 
     public void setDescription(List<String> description) {
-        this.description = description;
+        this.rpgItemMeta.description = description;
     }
 
     public String getDisplayName() {
-        return displayName;
+        return rpgItemMeta.displayName;
     }
 
     public void setDisplayName(String displayName) {
-        this.displayName = HexColorUtils.hexColored(displayName);
+        this.rpgItemMeta.displayName = HexColorUtils.hexColored(displayName);
     }
 
     public int getDurabilityLowerBound() {
-        return durabilityLowerBound;
+        return rpgItemMeta.durabilityLowerBound;
     }
 
     public void setDurabilityLowerBound(int durabilityLowerBound) {
-        this.durabilityLowerBound = durabilityLowerBound;
+        this.rpgItemMeta.durabilityLowerBound = durabilityLowerBound;
     }
 
     public int getDurabilityUpperBound() {
-        return durabilityUpperBound;
+        return rpgItemMeta.durabilityUpperBound;
     }
 
     public void setDurabilityUpperBound(int durabilityUpperBound) {
-        this.durabilityUpperBound = durabilityUpperBound;
+        this.rpgItemMeta.durabilityUpperBound = durabilityUpperBound;
     }
 
     public void setDurabilityBound(int min, int max) {
@@ -1763,11 +1630,11 @@ public class RPGItem {
     }
 
     public Map<Enchantment, Integer> getEnchantMap() {
-        return enchantMap;
+        return this.rpgItemMeta.enchantMap;
     }
 
     public void setEnchantMap(Map<Enchantment, Integer> enchantMap) {
-        this.enchantMap = enchantMap;
+        this.rpgItemMeta.enchantMap = enchantMap;
     }
 
     public File getFile() {
@@ -1775,11 +1642,11 @@ public class RPGItem {
     }
 
     public EnchantMode getEnchantMode() {
-        return enchantMode;
+        return rpgItemMeta.enchantMode;
     }
 
     public void setEnchantMode(EnchantMode enchantMode) {
-        this.enchantMode = enchantMode;
+        this.rpgItemMeta.enchantMode = enchantMode;
     }
 
     void setFile(File itemFile) {
@@ -1787,72 +1654,72 @@ public class RPGItem {
     }
 
     public int getHitCost() {
-        return hitCost;
+        return rpgItemMeta.hitCost;
     }
 
     public void setHasStackId(boolean hasStackId) {
-        this.hasStackId = hasStackId;
+        this.rpgItemMeta.hasStackId = hasStackId;
     }
 
     public void setHitCost(int hitCost) {
-        this.hitCost = hitCost;
+        this.rpgItemMeta.hitCost = hitCost;
     }
 
     public int getHittingCost() {
-        return hittingCost;
+        return rpgItemMeta.hittingCost;
     }
 
     public void setHittingCost(int hittingCost) {
-        this.hittingCost = hittingCost;
+        this.rpgItemMeta.hittingCost = hittingCost;
     }
 
     public Material getItem() {
-        return item;
+        return rpgItemMeta.item;
     }
 
     public void setItem(Material material) {
-        item = material;
+        this.rpgItemMeta.item = material;
     }
 
     public List<ItemFlag> getItemFlags() {
-        return itemFlags;
+        return this.rpgItemMeta.itemFlags;
     }
 
     public void setItemFlags(List<ItemFlag> itemFlags) {
-        this.itemFlags = itemFlags;
+        this.rpgItemMeta.itemFlags = itemFlags;
     }
 
     public String getLicense() {
-        return license;
+        return rpgItemMeta.license;
     }
 
     public void setLicense(String license) {
-        this.license = license;
+        this.rpgItemMeta.license = license;
     }
 
     public List<String> getLore() {
-        return Collections.unmodifiableList(lore);
+        return Collections.unmodifiableList(this.rpgItemMeta.lore);
     }
 
     private void setLore(List<String> lore) {
-        this.lore = lore;
+        this.rpgItemMeta.lore = lore;
     }
 
     public int getMaxDurability() {
-        return maxDurability;
+        return rpgItemMeta.maxDurability;
     }
 
     public void setMaxDurability(int newVal) {
-        maxDurability = newVal <= 0 ? -1 : newVal;
-        setDefaultDurability(maxDurability);
+        this.rpgItemMeta.maxDurability = newVal <= 0 ? -1 : newVal;
+        setDefaultDurability(this.rpgItemMeta.maxDurability);
     }
 
     public String getMcVersion() {
-        return mcVersion;
+        return rpgItemMeta.mcVersion;
     }
 
     public void setMcVersion(String mcVersion) {
-        this.mcVersion = mcVersion;
+        this.rpgItemMeta.mcVersion = mcVersion;
     }
 
     public String getName() {
@@ -1860,43 +1727,43 @@ public class RPGItem {
     }
 
     public NamespacedKey getNamespacedKey() {
-        return namespacedKey;
+        return rpgItemMeta.namespacedKey;
     }
 
     public void setNamespacedKey(NamespacedKey namespacedKey) {
-        this.namespacedKey = namespacedKey;
+        this.rpgItemMeta.namespacedKey = namespacedKey;
     }
 
     public String getNote() {
-        return note;
+        return rpgItemMeta.note;
     }
 
     public void setNote(String note) {
-        this.note = note;
+        this.rpgItemMeta.note = note;
     }
 
     public String getPermission() {
-        return Strings.isNullOrEmpty(permission) ? "rpgitems.item.use." + getName() : permission;
+        return Strings.isNullOrEmpty(this.rpgItemMeta.permission) ? "rpgitems.item.use." + getName() : this.rpgItemMeta.permission;
     }
 
     public void setPermission(String p) {
-        permission = p;
+        this.rpgItemMeta.permission = p;
     }
 
     public int getPluginVersion() {
-        return pluginVersion;
+        return rpgItemMeta.pluginVersion;
     }
 
     public void setPluginVersion(int pluginVersion) {
-        this.pluginVersion = pluginVersion;
+        this.rpgItemMeta.pluginVersion = pluginVersion;
     }
 
     public int getPluginSerial() {
-        return pluginSerial;
+        return rpgItemMeta.pluginSerial;
     }
 
     public void setPluginSerial(int pluginSerial) {
-        this.pluginSerial = pluginSerial;
+        this.rpgItemMeta.pluginSerial = pluginSerial;
     }
 
     public List<Power> getPowers() {
@@ -1924,91 +1791,91 @@ public class RPGItem {
     }
 
     public boolean isCustomItemModel() {
-        return customItemModel;
+        return rpgItemMeta.customItemModel;
     }
 
     public void setCustomItemModel(boolean customItemModel) {
-        this.customItemModel = customItemModel;
+        this.rpgItemMeta.customItemModel = customItemModel;
     }
 
     public boolean isHasDurabilityBar() {
-        return hasDurabilityBar;
+        return rpgItemMeta.hasDurabilityBar;
     }
 
     public void setHasDurabilityBar(boolean hasDurabilityBar) {
-        this.hasDurabilityBar = hasDurabilityBar;
+        this.rpgItemMeta.hasDurabilityBar = hasDurabilityBar;
     }
 
     public boolean isHasPermission() {
-        return hasPermission;
+        return rpgItemMeta.hasPermission;
     }
 
     public void setHasPermission(boolean b) {
-        hasPermission = b;
+        this.rpgItemMeta.hasPermission = b;
     }
 
     public boolean isHitCostByDamage() {
-        return hitCostByDamage;
+        return rpgItemMeta.hitCostByDamage;
     }
 
     public void setHitCostByDamage(boolean hitCostByDamage) {
-        this.hitCostByDamage = hitCostByDamage;
+        this.rpgItemMeta.hitCostByDamage = hitCostByDamage;
     }
 
     public boolean isIgnoreWorldGuard() {
-        return ignoreWorldGuard;
+        return rpgItemMeta.ignoreWorldGuard;
     }
 
     public void setIgnoreWorldGuard(boolean ignoreWorldGuard) {
-        this.ignoreWorldGuard = ignoreWorldGuard;
+        this.rpgItemMeta.ignoreWorldGuard = ignoreWorldGuard;
     }
 
     public BarFormat getBarFormat() {
-        return barFormat;
+        return rpgItemMeta.barFormat;
     }
 
     public void setBarFormat(BarFormat barFormat) {
-        this.barFormat = barFormat;
+        this.rpgItemMeta.barFormat = barFormat;
     }
 
     public boolean isShowArmourLore() {
-        return showArmourLore;
+        return rpgItemMeta.showArmourLore;
     }
 
     public void setShowArmourLore(boolean showArmourLore) {
-        this.showArmourLore = showArmourLore;
+        this.rpgItemMeta.showArmourLore = showArmourLore;
     }
 
     public boolean isShowPowerText() {
-        return showPowerText;
+        return rpgItemMeta.showPowerText;
     }
 
     public void setShowPowerText(boolean showPowerText) {
-        this.showPowerText = showPowerText;
+        this.rpgItemMeta.showPowerText = showPowerText;
     }
 
     public void setAttributeMode(AttributeMode attributeMode) {
-        this.attributeMode = attributeMode;
+        this.rpgItemMeta.attributeMode = attributeMode;
     }
 
     public String getQuality() {
-        return quality;
+        return rpgItemMeta.quality;
     }
 
     public void setQuality(String quality) {
-        this.quality = quality;
+        this.rpgItemMeta.quality = quality;
     }
 
     public String getType() {
-        return type;
+        return rpgItemMeta.type;
     }
 
     public void setType(String type) {
-        this.type = type;
+        this.rpgItemMeta.type = type;
     }
 
     public AttributeMode getAttributeMode() {
-        return attributeMode;
+        return rpgItemMeta.attributeMode;
     }
 
     public enum DamageMode {
