@@ -7,7 +7,7 @@ import org.bukkit.inventory.ItemStack;
 import javax.annotation.CheckReturnValue;
 import javax.annotation.Nullable;
 
-public interface PowerLivingEntity extends Pimpl {
+public interface PowerLivingEntity<P extends Power> extends Pimpl<P> {
 
     /**
      * A trigger that fire a power with an entity and an double value (usually the damage)
@@ -19,5 +19,5 @@ public interface PowerLivingEntity extends Pimpl {
      * @return PowerResult
      */
     @CheckReturnValue
-    PowerResult<Void> fire(Player player, ItemStack stack, LivingEntity entity, @Nullable Double value);
+    PowerResult<Void> fire(P power, Player player, ItemStack stack, LivingEntity entity, @Nullable Double value);
 }

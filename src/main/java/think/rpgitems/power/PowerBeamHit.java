@@ -10,15 +10,15 @@ import think.rpgitems.event.BeamHitEntityEvent;
 
 import javax.annotation.CheckReturnValue;
 
-public interface PowerBeamHit extends Pimpl{
+public interface PowerBeamHit<P extends Power> extends Pimpl<P> {
     @CheckReturnValue
-    default PowerResult<Double> hitEntity(Player player, ItemStack stack, LivingEntity entity, double damage, BeamHitEntityEvent event){
+    default PowerResult<Double> hitEntity(P power, Player player, ItemStack stack, LivingEntity entity, double damage, BeamHitEntityEvent event) {
         return PowerResult.fail();
     }
 
     @CheckReturnValue
-    PowerResult<Void> hitBlock(Player player, ItemStack stack, Location location, BeamHitBlockEvent event);
+    PowerResult<Void> hitBlock(P power, Player player, ItemStack stack, Location location, BeamHitBlockEvent event);
 
     @CheckReturnValue
-    PowerResult<Void> beamEnd(Player player, ItemStack stack, Location location, BeamEndEvent event);
+    PowerResult<Void> beamEnd(P power, Player player, ItemStack stack, Location location, BeamEndEvent event);
 }

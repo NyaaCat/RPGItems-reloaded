@@ -9,7 +9,7 @@ import javax.annotation.CheckReturnValue;
 /**
  * Triggers when RPG Projectile hits
  */
-public interface PowerProjectileHit extends Pimpl {
+public interface PowerProjectileHit<P extends Power> extends Pimpl<P> {
     /**
      * Calls when {@code player} using {@code stack} has launched a projectile {@code arrow} and it hit something
      *
@@ -19,5 +19,5 @@ public interface PowerProjectileHit extends Pimpl {
      * @return PowerResult
      */
     @CheckReturnValue
-    PowerResult<Void> projectileHit(Player player, ItemStack stack, ProjectileHitEvent event);
+    PowerResult<Void> projectileHit(P power, Player player, ItemStack stack, ProjectileHitEvent event);
 }

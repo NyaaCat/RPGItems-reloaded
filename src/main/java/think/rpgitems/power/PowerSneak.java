@@ -9,7 +9,7 @@ import javax.annotation.CheckReturnValue;
 /**
  * Triggers when player sneaks
  */
-public interface PowerSneak extends Pimpl {
+public interface PowerSneak<P extends Power> extends Pimpl<P> {
     /**
      * Calls when {@code player} using {@code stack} sneaks
      *
@@ -19,5 +19,5 @@ public interface PowerSneak extends Pimpl {
      * @return PowerResult
      */
     @CheckReturnValue
-    PowerResult<Void> sneak(Player player, ItemStack stack, PlayerToggleSneakEvent event);
+    PowerResult<Void> sneak(P power, Player player, ItemStack stack, PlayerToggleSneakEvent event);
 }

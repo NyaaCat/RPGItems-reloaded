@@ -1,8 +1,9 @@
 package think.rpgitems.power;
 
-public interface Pimpl {
-
-    Power getPower();
+public interface Pimpl<P extends Power> {
+    default Class<P> getPowerClass() {
+        return null;
+    }
 
     default <T extends Pimpl> T cast(Class<T> powerClass) {
         if (powerClass.isInstance(this)) {

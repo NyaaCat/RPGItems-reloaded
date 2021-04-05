@@ -6,7 +6,7 @@ import org.bukkit.inventory.ItemStack;
 
 import javax.annotation.CheckReturnValue;
 
-public interface PowerLocation extends Pimpl {
+public interface PowerLocation<P extends Power> extends Pimpl<P> {
 
     /**
      * A trigger that fire a power with an location
@@ -17,5 +17,5 @@ public interface PowerLocation extends Pimpl {
      * @return PowerResult
      */
     @CheckReturnValue
-    PowerResult<Void> fire(Player player, ItemStack stack, Location location);
+    PowerResult<Void> fire(P power, Player player, ItemStack stack, Location location);
 }

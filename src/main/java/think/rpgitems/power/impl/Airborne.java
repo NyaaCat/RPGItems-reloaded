@@ -47,27 +47,27 @@ public class Airborne extends BasePower {
         return setBaseDamage;
     }
 
-    class Impl implements PowerHit {
+    public static class Impl implements PowerHit<Airborne> {
 
         @Override
-        public PowerResult<Double> hit(Player player, ItemStack stack, LivingEntity entity, double damage, EntityDamageByEntityEvent event) {
+        public PowerResult<Double> hit(Airborne power, Player player, ItemStack stack, LivingEntity entity, double damage, EntityDamageByEntityEvent event) {
             if (!player.isGliding())
                 return PowerResult.noop();
             double originDamage = damage;
-            damage = damage * (1 + getPercentage() / 100.0);
-            damage = Math.max(Math.min(damage, getCap()), originDamage);
+            damage = damage * (1 + power.getPercentage() / 100.0);
+            damage = Math.max(Math.min(damage, power.getCap()), originDamage);
             if (damage > originDamage) {
                 player.playSound(player.getLocation(), Sound.ENTITY_BAT_TAKEOFF, 0.1f, 0.1f);
             }
-            if (isSetBaseDamage()) {
+            if (power.isSetBaseDamage()) {
                 event.setDamage(damage);
             }
             return PowerResult.ok(damage);
         }
 
         @Override
-        public Power getPower() {
-            return Airborne.this;
+        public Class<Airborne> getPowerClass() {
+            return Airborne.class;
         }
     }
 }

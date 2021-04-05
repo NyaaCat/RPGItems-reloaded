@@ -80,8 +80,8 @@ public class Attract extends BasePower {
         return firingLocation;
     }
 
-    public enum FiringLocation{
-        SELF, TARGET;
+    public enum FiringLocation {
+        SELF, TARGET
     }
 
 
@@ -141,30 +141,30 @@ public class Attract extends BasePower {
         return requireHurtByEntity;
     }
 
-    public class Impl implements PowerTick, PowerLeftClick, PowerRightClick, PowerPlain, PowerSneaking, PowerHurt, PowerHitTaken, PowerBowShoot, PowerBeamHit, PowerProjectileHit, PowerLivingEntity, PowerLocation{
+    public static class Impl implements PowerTick<Attract>, PowerLeftClick<Attract>, PowerRightClick<Attract>, PowerPlain<Attract>, PowerSneaking<Attract>, PowerHurt<Attract>, PowerHitTaken<Attract>, PowerBowShoot<Attract>, PowerBeamHit<Attract>, PowerProjectileHit<Attract>, PowerLivingEntity<Attract>, PowerLocation<Attract> {
 
         @Override
-        public PowerResult<Double> takeHit(Player target, ItemStack stack, double damage, EntityDamageEvent event) {
-            if (!isRequireHurtByEntity() || event instanceof EntityDamageByEntityEvent) {
-                return fire(target, stack).with(damage);
+        public PowerResult<Double> takeHit(Attract power, Player target, ItemStack stack, double damage, EntityDamageEvent event) {
+            if (!power.isRequireHurtByEntity() || event instanceof EntityDamageByEntityEvent) {
+                return fire(power, target, stack).with(damage);
             }
             return PowerResult.noop();
         }
 
         @Override
-        public PowerResult<Void> fire(Player player, ItemStack stack) {
+        public PowerResult<Void> fire(Attract power, Player player, ItemStack stack) {
             Location location = player.getLocation();
-            if (getFiringLocation().equals(FiringLocation.TARGET)){
-                CastUtils.CastLocation result = CastUtils.rayTrace(player, player.getEyeLocation(), player.getEyeLocation().getDirection(), getFiringRange());
+            if (power.getFiringLocation().equals(FiringLocation.TARGET)) {
+                CastUtils.CastLocation result = CastUtils.rayTrace(player, player.getEyeLocation(), player.getEyeLocation().getDirection(), power.getFiringRange());
                 location = result.getTargetLocation();
             }
             Location finalLocation = location;
-            return fire(player, location, stack, () -> getNearbyEntities(getPower(), finalLocation, player, getRadius()));
+            return fire(power, player, location, stack, () -> getNearbyEntities(power, finalLocation, player, power.getRadius()));
         }
 
-        private PowerResult<Void> fire(Player player, Location location, ItemStack stack, Supplier<List<Entity>> supplier) {
+        private PowerResult<Void> fire(Attract power, Player player, Location location, ItemStack stack, Supplier<List<Entity>> supplier) {
             new BukkitRunnable() {
-                int dur = getDuration();
+                int dur = power.getDuration();
 
                 @Override
                 public void run() {
@@ -172,33 +172,33 @@ public class Attract extends BasePower {
                         this.cancel();
                         return;
                     }
-                    attract(player, location, stack, supplier);
+                    attract(power, player, location, stack, supplier);
                 }
             }.runTaskTimer(RPGItems.plugin, 0, 1);
             return PowerResult.ok();
         }
 
         @Override
-        public Power getPower() {
-            return Attract.this;
+        public Class<Attract> getPowerClass() {
+            return Attract.class;
         }
 
-        private PowerResult<Void> attract(Player player, Location location, ItemStack stack, Supplier<List<Entity>> supplier) {
+        private PowerResult<Void> attract(Attract power, Player player, Location location, ItemStack stack, Supplier<List<Entity>> supplier) {
             if (!player.isOnline() || player.isDead()) {
                 return PowerResult.noop();
             }
-            double factor = Math.sqrt(getRadius() - 1.0) / getMaxSpeed();
+            double factor = Math.sqrt(power.getRadius() - 1.0) / power.getMaxSpeed();
             List<Entity> entities = supplier.get();
             if (entities.isEmpty()) return PowerResult.ok();
-            if (!getItem().consumeDurability(stack, getAttractingTickCost())) return PowerResult.ok();
+            if (!power.getItem().consumeDurability(stack, power.getAttractingTickCost())) return PowerResult.ok();
             for (Entity e : entities) {
                 if (e instanceof LivingEntity
-                            && (isAttractPlayer() || !(e instanceof Player))) {
-                    if (!getItem().consumeDurability(stack, getAttractingEntityTickCost())) break;
+                            && (power.isAttractPlayer() || !(e instanceof Player))) {
+                    if (!power.getItem().consumeDurability(stack, power.getAttractingEntityTickCost())) break;
                     Location locTarget = e.getLocation();
                     Location locPlayer = location;
                     double d = locTarget.distance(locPlayer);
-                    if (d < 1 || d > getRadius()) continue;
+                    if (d < 1 || d > power.getRadius()) continue;
                     double newVelocity = Math.sqrt(d - 1) / factor;
                     if (Double.isInfinite(newVelocity)) {
                         newVelocity = 0;
@@ -211,79 +211,79 @@ public class Attract extends BasePower {
         }
 
         @Override
-        public PowerResult<Void> hurt(Player target, ItemStack stack, EntityDamageEvent event) {
-            if (!isRequireHurtByEntity() || event instanceof EntityDamageByEntityEvent) {
-                return fire(target, stack);
+        public PowerResult<Void> hurt(Attract power, Player target, ItemStack stack, EntityDamageEvent event) {
+            if (!power.isRequireHurtByEntity() || event instanceof EntityDamageByEntityEvent) {
+                return fire(power, target, stack);
             }
             return PowerResult.noop();
         }
 
         @Override
-        public PowerResult<Void> tick(Player player, ItemStack stack) {
-            return attract(player, stack);
+        public PowerResult<Void> tick(Attract power, Player player, ItemStack stack) {
+            return attract(power, player, stack);
         }
 
-        private PowerResult<Void> attract(Player player, ItemStack stack) {
+        private PowerResult<Void> attract(Attract power, Player player, ItemStack stack) {
             Location location = player.getLocation();
-            return attract(player, location,stack, () -> getNearbyEntities(getPower(), player.getLocation(), player, getRadius()));
+            return attract(power, player, location, stack, () -> getNearbyEntities(power, player.getLocation(), player, power.getRadius()));
         }
 
         @Override
-        public PowerResult<Void> sneaking(Player player, ItemStack stack) {
-            return attract(player, stack);
+        public PowerResult<Void> sneaking(Attract power, Player player, ItemStack stack) {
+            return attract(power, player, stack);
         }
 
         @Override
-        public PowerResult<Void> leftClick(Player player, ItemStack stack, PlayerInteractEvent event) {
-            return fire(player, stack);
+        public PowerResult<Void> leftClick(Attract power, Player player, ItemStack stack, PlayerInteractEvent event) {
+            return fire(power, player, stack);
         }
 
         @Override
-        public PowerResult<Void> rightClick(Player player, ItemStack stack, PlayerInteractEvent event) {
-            return fire(player, stack);
+        public PowerResult<Void> rightClick(Attract power, Player player, ItemStack stack, PlayerInteractEvent event) {
+            return fire(power, player, stack);
         }
 
         @Override
-        public PowerResult<Float> bowShoot(Player player, ItemStack stack, EntityShootBowEvent event) {
-            return fire(player, stack).with(event.getForce());
+        public PowerResult<Float> bowShoot(Attract power, Player player, ItemStack stack, EntityShootBowEvent event) {
+            return fire(power, player, stack).with(event.getForce());
         }
 
         @Override
-        public PowerResult<Double> hitEntity(Player player, ItemStack stack, LivingEntity entity, double damage, BeamHitEntityEvent event) {
+        public PowerResult<Double> hitEntity(Attract power, Player player, ItemStack stack, LivingEntity entity, double damage, BeamHitEntityEvent event) {
             Location location = event.getLoc();
-            return fire(player, location, stack, () -> getNearbyEntities(getPower(), location, player, getRadius())).with(damage);
+            return fire(power, player, location, stack, () -> getNearbyEntities(power, location, player, power.getRadius())).with(damage);
         }
 
         @Override
-        public PowerResult<Void> hitBlock(Player player, ItemStack stack, Location location, BeamHitBlockEvent event) {
-            return fire(player, location, stack, () -> getNearbyEntities(getPower(), location, player, getRadius()));
+        public PowerResult<Void> hitBlock(Attract power, Player player, ItemStack stack, Location location, BeamHitBlockEvent event) {
+            return fire(power, player, location, stack, () -> getNearbyEntities(power, location, player, power.getRadius()));
         }
 
         @Override
-        public PowerResult<Void> beamEnd(Player player, ItemStack stack, Location location, BeamEndEvent event) {
-            return fire(player, location, stack, () -> getNearbyEntities(getPower(), location, player, getRadius()));
+        public PowerResult<Void> beamEnd(Attract power, Player player, ItemStack stack, Location location, BeamEndEvent event) {
+            return fire(power, player, location, stack, () -> getNearbyEntities(power, location, player, power.getRadius()));
         }
 
         @Override
-        public PowerResult<Void> projectileHit(Player player, ItemStack stack, ProjectileHitEvent event) {
+        public PowerResult<Void> projectileHit(Attract power, Player player, ItemStack stack, ProjectileHitEvent event) {
             Location location = event.getEntity().getLocation();
-            return fire(player, location, stack, () -> getNearbyEntities(getPower(), location, player, getRadius()));
+            return fire(power, player, location, stack, () -> getNearbyEntities(power, location, player, power.getRadius()));
         }
 
         @Override
-        public PowerResult<Void> fire(Player player, ItemStack stack, LivingEntity entity, @Nullable Double value) {
+        public PowerResult<Void> fire(Attract power, Player player, ItemStack stack, LivingEntity entity, @Nullable Double value) {
             Location location = entity.getLocation();
-            if (getFiringLocation().equals(FiringLocation.TARGET)){
-                CastUtils.CastLocation result = CastUtils.rayTrace(entity, entity.getEyeLocation(), entity.getEyeLocation().getDirection(), getFiringRange());
+            if (power.getFiringLocation().equals(FiringLocation.TARGET)) {
+                CastUtils.CastLocation result = CastUtils.rayTrace(entity, entity.getEyeLocation(), entity.getEyeLocation().getDirection(), power.getFiringRange());
                 location = result.getTargetLocation();
             }
             Location finalLocation = location;
-            return fire(player, location, stack, () -> getNearbyEntities(getPower(), finalLocation, player, getRadius()));
+            return fire(power, player, location, stack, () -> getNearbyEntities(power, finalLocation, player, power.getRadius()));
         }
 
         @Override
-        public PowerResult<Void> fire(Player player, ItemStack stack, Location location) {
-            return fire(player, location, stack, () -> getNearbyEntities(getPower(), location, player, getRadius()));
+        public PowerResult<Void> fire(Attract power, Player player, ItemStack stack, Location location) {
+            return fire(power, player, location, stack, () -> getNearbyEntities(power, location, player, power.getRadius()));
         }
     }
 }

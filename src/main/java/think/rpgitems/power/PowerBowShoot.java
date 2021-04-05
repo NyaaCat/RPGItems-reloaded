@@ -6,8 +6,8 @@ import org.bukkit.inventory.ItemStack;
 
 import javax.annotation.CheckReturnValue;
 
-public interface PowerBowShoot extends Pimpl {
+public interface PowerBowShoot<P extends Power> extends Pimpl<P> {
 
     @CheckReturnValue
-    PowerResult<Float> bowShoot(Player player, ItemStack stack, EntityShootBowEvent event);
+    PowerResult<Float> bowShoot(P power, Player player, ItemStack stack, EntityShootBowEvent event);
 }

@@ -8,7 +8,7 @@ import javax.annotation.CheckReturnValue;
 /**
  * Triggers when player is sneaking
  */
-public interface PowerSneaking extends Pimpl {
+public interface PowerSneaking<P extends Power> extends Pimpl<P> {
     /**
      * Calls per tick when {@code player} using {@code stack} sneaking
      *
@@ -17,5 +17,5 @@ public interface PowerSneaking extends Pimpl {
      * @return PowerResult
      */
     @CheckReturnValue
-    PowerResult<Void> sneaking(Player player, ItemStack stack);
+    PowerResult<Void> sneaking(P power, Player player, ItemStack stack);
 }

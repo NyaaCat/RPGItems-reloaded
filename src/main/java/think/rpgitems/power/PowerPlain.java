@@ -8,7 +8,7 @@ import javax.annotation.CheckReturnValue;
 /**
  * Plain triggers for powers that do not requires a event
  */
-public interface PowerPlain extends Pimpl {
+public interface PowerPlain<P extends Power> extends Pimpl<P> {
     /**
      * Simply trigger this power
      *
@@ -17,5 +17,5 @@ public interface PowerPlain extends Pimpl {
      * @return PowerResult
      */
     @CheckReturnValue
-    PowerResult<Void> fire(Player player, ItemStack stack);
+    PowerResult<Void> fire(P power, Player player, ItemStack stack);
 }

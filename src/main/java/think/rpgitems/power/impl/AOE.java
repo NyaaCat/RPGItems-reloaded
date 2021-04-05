@@ -147,21 +147,21 @@ public class AOE extends BasePower {
         return range;
     }
 
-    public class Impl implements PowerRightClick, PowerLeftClick, PowerOffhandClick, PowerPlain, PowerHit, PowerBowShoot, PowerBeamHit, PowerProjectileHit, PowerLivingEntity, PowerLocation {
+    public static class Impl implements PowerRightClick<AOE>, PowerLeftClick<AOE>, PowerOffhandClick<AOE>, PowerPlain<AOE>, PowerHit<AOE>, PowerBowShoot<AOE>, PowerBeamHit<AOE>, PowerProjectileHit<AOE>, PowerLivingEntity<AOE>, PowerLocation<AOE> {
         @Override
-        public PowerResult<Void> rightClick(final Player player, ItemStack stack, PlayerInteractEvent event) {
-            return fire(player, stack);
+        public PowerResult<Void> rightClick(AOE power, final Player player, ItemStack stack, PlayerInteractEvent event) {
+            return fire(power, player, stack);
         }
 
         @Override
-        public PowerResult<Void> fire(Player player, ItemStack stack) {
-            return fire(player.getEyeLocation(), player, stack, getNearbyEntities(getPower(), player.getLocation(), player, getRange()));
+        public PowerResult<Void> fire(AOE power, Player player, ItemStack stack) {
+            return fire(power, player.getEyeLocation(), player, getNearbyEntities(power, player.getLocation(), player, power.getRange()));
         }
 
-        private PowerResult<Void> fire(Location center, Player player, ItemStack itemStack, Collection<Entity> entityList){
-            int range = getRange();
+        private PowerResult<Void> fire(AOE power, Location center, Player player, Collection<Entity> entityList){
+            int range = power.getRange();
 
-            PotionEffect effect = new PotionEffect(getType(), getDuration(), getAmplifier() - 1);
+            PotionEffect effect = new PotionEffect(power.getType(), power.getDuration(), power.getAmplifier() - 1);
 //            player.getWorld().playEffect(center, Effect.POTION_BREAK, getType().getColor().asRGB());
 
             List<LivingEntity> collect = entityList.stream().filter(entity -> entity instanceof LivingEntity)
@@ -174,10 +174,10 @@ public class AOE extends BasePower {
             if (center.distance(player.getEyeLocation()) < 1){
                 subtract = player.getEyeLocation().getDirection();
             }
-            getLivingEntitiesInConeSorted(collect, center.toVector(), getAngle(), subtract)
+            getLivingEntitiesInConeSorted(collect, center.toVector(), power.getAngle(), subtract)
                     .stream()
                     .filter(entity -> {
-                        switch (getTarget()) {
+                        switch (power.getTarget()) {
                             case MOBS:
                                 return entity instanceof Mob;
                             case PLAYERS:
@@ -186,9 +186,9 @@ public class AOE extends BasePower {
                                 return true;
                         }
                     })
-                    .limit(getCount() == -1 ? Integer.MAX_VALUE : getCount())
+                    .limit(power.getCount() == -1 ? Integer.MAX_VALUE : power.getCount())
                     .forEach(ent -> {
-                        if (player.equals(ent) && isSelfapplication()) {
+                        if (player.equals(ent) && power.isSelfapplication()) {
                             player.addPotionEffect(effect);
                         }
                         if (ent != null && Objects.equals(ent.getLocation().getWorld(), center.getWorld()) && ent.getLocation().distance(center) <= range) {
@@ -199,56 +199,56 @@ public class AOE extends BasePower {
         }
 
         @Override
-        public Power getPower() {
-            return AOE.this;
+        public Class<AOE> getPowerClass() {
+            return AOE.class;
         }
 
         @Override
-        public PowerResult<Void> leftClick(final Player player, ItemStack stack, PlayerInteractEvent event) {
-            return fire(player, stack);
+        public PowerResult<Void> leftClick(AOE power, final Player player, ItemStack stack, PlayerInteractEvent event) {
+            return fire(power, player, stack);
         }
 
         @Override
-        public PowerResult<Void> offhandClick(final Player player, ItemStack stack, PlayerInteractEvent event) {
-            return fire(player, stack);
+        public PowerResult<Void> offhandClick(AOE power, final Player player, ItemStack stack, PlayerInteractEvent event) {
+            return fire(power, player, stack);
         }
 
         @Override
-        public PowerResult<Double> hit(Player player, ItemStack stack, LivingEntity entity, double damage, EntityDamageByEntityEvent event) {
-            return fire(player, stack).with(damage);
+        public PowerResult<Double> hit(AOE power, Player player, ItemStack stack, LivingEntity entity, double damage, EntityDamageByEntityEvent event) {
+            return fire(power, player, stack).with(damage);
         }
 
         @Override
-        public PowerResult<Float> bowShoot(Player player, ItemStack stack, EntityShootBowEvent event) {
-            return fire(player, stack).with(event.getForce());
+        public PowerResult<Float> bowShoot(AOE power, Player player, ItemStack stack, EntityShootBowEvent event) {
+            return fire(power, player, stack).with(event.getForce());
         }
 
         @Override
-        public PowerResult<Void> hitBlock(Player player, ItemStack stack, Location location, BeamHitBlockEvent event) {
+        public PowerResult<Void> hitBlock(AOE power, Player player, ItemStack stack, Location location, BeamHitBlockEvent event) {
             Location center = event.getLocation();
-            return fire(center, player, stack, getNearbyEntities(getPower(), center, player, getRange()));
+            return fire(power, center, player, getNearbyEntities(power, center, player, power.getRange()));
         }
 
         @Override
-        public PowerResult<Void> projectileHit(Player player, ItemStack stack, ProjectileHitEvent event) {
+        public PowerResult<Void> projectileHit(AOE power, Player player, ItemStack stack, ProjectileHitEvent event) {
             Location center = event.getEntity().getLocation();
-            return fire(center, player, stack, getNearbyEntities(getPower(), center, player, getRange()));
+            return fire(power, center, player, getNearbyEntities(power, center, player, power.getRange()));
         }
 
         @Override
-        public PowerResult<Void> beamEnd(Player player, ItemStack stack, Location location, BeamEndEvent event) {
+        public PowerResult<Void> beamEnd(AOE power, Player player, ItemStack stack, Location location, BeamEndEvent event) {
             Location center = location;
-            return fire(center, player, stack, getNearbyEntities(getPower(), center, player, getRange()));
+            return fire(power, center, player, getNearbyEntities(power, center, player, power.getRange()));
         }
 
         @Override
-        public PowerResult<Void> fire(Player player, ItemStack stack, LivingEntity entity, @Nullable Double value) {
-            return fire(entity.getEyeLocation(), player, stack, getNearbyEntities(getPower(), entity.getLocation(), player, getRange()));
+        public PowerResult<Void> fire(AOE power, Player player, ItemStack stack, LivingEntity entity, @Nullable Double value) {
+            return fire(power, entity.getEyeLocation(), player, getNearbyEntities(power, entity.getLocation(), player, power.getRange()));
         }
 
         @Override
-        public PowerResult<Void> fire(Player player, ItemStack stack, Location location) {
-            return fire(location, player, stack, getNearbyEntities(getPower(), location, player, getRange()));
+        public PowerResult<Void> fire(AOE power, Player player, ItemStack stack, Location location) {
+            return fire(power, location, player, getNearbyEntities(power, location, player, power.getRange()));
         }
     }
 }

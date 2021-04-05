@@ -6,6 +6,6 @@ import org.bukkit.inventory.ItemStack;
 
 import javax.annotation.Nullable;
 
-public interface PowerEntity extends Pimpl {
-    PowerResult<Void> fire(Player player, ItemStack stack, Entity entity, @Nullable Double value);
+public interface PowerEntity<P extends Power> extends Pimpl<P> {
+    PowerResult<Void> fire(P power, Player player, ItemStack stack, Entity entity, @Nullable Double value);
 }

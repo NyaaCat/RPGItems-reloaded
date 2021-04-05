@@ -10,7 +10,7 @@ import javax.annotation.CheckReturnValue;
 /**
  * Triggers when player swap offhand item to main hand
  */
-public interface PowerOffhandItem extends Pimpl {
+public interface PowerOffhandItem<P extends Power> extends Pimpl<P> {
 
     /**
      * Calls when {@code player} swap offhand item to mainhand
@@ -21,7 +21,7 @@ public interface PowerOffhandItem extends Pimpl {
      * @return PowerResult with proposed event continuation
      */
     @CheckReturnValue
-    PowerResult<Boolean> swapToMainhand(Player player, ItemStack stack, PlayerSwapHandItemsEvent event);
+    PowerResult<Boolean> swapToMainhand(P power, Player player, ItemStack stack, PlayerSwapHandItemsEvent event);
 
     /**
      * Calls when {@code player} click offhand item in inventory
@@ -32,7 +32,7 @@ public interface PowerOffhandItem extends Pimpl {
      * @return PowerResult with proposed event continuation
      */
     @CheckReturnValue
-    default PowerResult<Boolean> pickupOffhand(Player player, ItemStack stack, InventoryClickEvent event) {
+    default PowerResult<Boolean> pickupOffhand(P power, Player player, ItemStack stack, InventoryClickEvent event) {
         return PowerResult.noop();
     }
 }

@@ -9,7 +9,7 @@ import javax.annotation.CheckReturnValue;
 /**
  * Triggers when left click
  */
-public interface PowerLeftClick extends Pimpl {
+public interface PowerLeftClick<P extends Power> extends Pimpl<P> {
     /**
      * Calls when {@code player} using {@code stack} left clicks {@code clicked}
      *
@@ -19,5 +19,5 @@ public interface PowerLeftClick extends Pimpl {
      * @return PowerResult
      */
     @CheckReturnValue
-    PowerResult<Void> leftClick(Player player, ItemStack stack, PlayerInteractEvent event);
+    PowerResult<Void> leftClick(P power, Player player, ItemStack stack, PlayerInteractEvent event);
 }

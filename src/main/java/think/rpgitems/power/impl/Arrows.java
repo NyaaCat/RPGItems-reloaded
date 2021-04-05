@@ -28,18 +28,17 @@ public class Arrows extends BasePower {
         return I18n.formatDefault("power.arrow", (double) 0);
     }
 
-    public class Impl implements PowerRightClick, PowerLeftClick, PowerPlain {
+    public static class Impl implements PowerRightClick<Arrows>, PowerLeftClick<Arrows>, PowerPlain<Arrows> {
 
         @Override
-        public PowerResult<Void> rightClick(Player player, ItemStack stack, PlayerInteractEvent event) {
-            return fire(player, stack);
+        public PowerResult<Void> rightClick(Arrows power, Player player, ItemStack stack, PlayerInteractEvent event) {
+            return fire(power, player, stack);
         }
 
-        @SuppressWarnings("deprecation")
         @Override
-        public PowerResult<Void> fire(Player player, ItemStack stack) {
+        public PowerResult<Void> fire(Arrows power, Player player, ItemStack stack) {
             player.playSound(player.getLocation(), Sound.ENTITY_ARROW_SHOOT, 1.0f, 1.0f);
-            Events.registerRPGProjectile(getPower().getItem(), stack, player);
+            Events.registerRPGProjectile(power.getItem(), stack, player);
             Arrow arrow = player.launchProjectile(org.bukkit.entity.Arrow.class);
             arrow.setPickupStatus(org.bukkit.entity.Arrow.PickupStatus.DISALLOWED);
             Events.autoRemoveProjectile(arrow.getEntityId());
@@ -48,13 +47,13 @@ public class Arrows extends BasePower {
         }
 
         @Override
-        public Power getPower() {
-            return Arrows.this;
+        public Class<Arrows> getPowerClass() {
+            return Arrows.class;
         }
 
         @Override
-        public PowerResult<Void> leftClick(Player player, ItemStack stack, PlayerInteractEvent event) {
-            return fire(player, stack);
+        public PowerResult<Void> leftClick(Arrows power, Player player, ItemStack stack, PlayerInteractEvent event) {
+            return fire(power, player, stack);
         }
     }
 }

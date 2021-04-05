@@ -1,7 +1,6 @@
 package think.rpgitems.power;
 
 import org.bukkit.entity.Player;
-import org.bukkit.event.entity.ProjectileHitEvent;
 import org.bukkit.event.entity.ProjectileLaunchEvent;
 import org.bukkit.inventory.ItemStack;
 
@@ -10,7 +9,7 @@ import javax.annotation.CheckReturnValue;
 /**
  * Triggers when RPG Projectile launches
  */
-public interface PowerProjectileLaunch extends Pimpl {
+public interface PowerProjectileLaunch<P extends Power> extends Pimpl<P> {
     /**
      * Calls when {@code player} using {@code stack} launching a projectile {@code arrow}
      *
@@ -20,5 +19,5 @@ public interface PowerProjectileLaunch extends Pimpl {
      * @return PowerResult
      */
     @CheckReturnValue
-    PowerResult<Void> projectileLaunch(Player player, ItemStack stack, ProjectileLaunchEvent event);
+    PowerResult<Void> projectileLaunch(P power, Player player, ItemStack stack, ProjectileLaunchEvent event);
 }

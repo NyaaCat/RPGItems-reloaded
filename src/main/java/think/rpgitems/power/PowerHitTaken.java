@@ -9,7 +9,7 @@ import javax.annotation.CheckReturnValue;
 /**
  * Triggers when being hit
  */
-public interface PowerHitTaken extends Pimpl {
+public interface PowerHitTaken<P extends Power> extends Pimpl<P> {
     /**
      * Calls when {@code target} using {@code stack} being hit in {@code event}
      *
@@ -20,5 +20,5 @@ public interface PowerHitTaken extends Pimpl {
      * @return PowerResult with proposed damage
      */
     @CheckReturnValue
-    PowerResult<Double> takeHit(Player target, ItemStack stack, double damage, EntityDamageEvent event);
+    PowerResult<Double> takeHit(P power, Player target, ItemStack stack, double damage, EntityDamageEvent event);
 }

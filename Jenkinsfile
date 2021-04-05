@@ -4,8 +4,12 @@ pipeline {
         stage('Build') {
             steps {
                 sh './gradlew publish'
-                warnError('This is a canary build!') {
-                  sh './gradlew -q checkRelease'
+                try {
+                    sh './gradlew -q checkRelease'
+                }
+                catch (exc) {
+                    echo 'This is a canary build!'
+                    currentBuild.result = 'UNSTABLE'
                 }
             }
         }
