@@ -299,8 +299,8 @@ public class AOEDamage extends BasePower {
                                 LightContext.putTemp(player.getUniqueId(), SUPPRESS_MELEE, isSuppressMelee());
                                 LightContext.putTemp(player.getUniqueId(), DAMAGE_SOURCE_ITEM, stack);
                                 e.damage(getDamage(), player);
-                                LightContext.putTemp(player.getUniqueId(), SUPPRESS_MELEE, isSuppressMelee());
-                                LightContext.putTemp(player.getUniqueId(), OVERRIDING_DAMAGE, null);
+                                LightContext.removeTemp(player.getUniqueId(), SUPPRESS_MELEE);
+                                LightContext.removeTemp(player.getUniqueId(), OVERRIDING_DAMAGE);
                                 LightContext.removeTemp(player.getUniqueId(), DAMAGE_SOURCE_ITEM);
                             }
                         }
