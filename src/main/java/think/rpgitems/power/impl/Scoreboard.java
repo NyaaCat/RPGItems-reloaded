@@ -260,11 +260,13 @@ public class Scoreboard extends BasePower {
                     }
                 }
                 tag.getKey().forEach(tag1 -> {
+                    tag1 = tag1.replaceAll("\\{player}", player.getName());
                     if (player.addScoreboardTag(tag1)) {
                         addedTags.add(tag1);
                     }
                 });
                 tag.getValue().forEach(tag1 -> {
+                    tag1 = tag1.replaceAll("\\{player}", player.getName());
                     if (player.removeScoreboardTag(tag1)) {
                         removedTags.add(tag1);
                     }

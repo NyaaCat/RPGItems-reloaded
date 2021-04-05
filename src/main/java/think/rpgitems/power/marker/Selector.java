@@ -240,8 +240,22 @@ public class Selector extends BaseMarker {
         Set<String> tags = e.getScoreboardTags();
         if (tagLimit.getValue() == null) return tags.isEmpty();
         if (tagLimit.getKey() == null) return !tags.isEmpty();
-        return tags.containsAll(tagLimit.getKey())
-                       && tags.stream().noneMatch(t -> tagLimit.getValue().contains(t));
+
+        final Set<String> mustHave = tagLimit.getKey().stream().map(tag1 -> {
+            if (e instanceof Player){
+                return tag1.replaceAll("\\{player}", e.getName());
+            }
+            return tag1;
+        }).collect(Collectors.toSet());
+        final Set<String> mustNotHave = tagLimit.getValue().stream().map(tag1 -> {
+            if (e instanceof Player){
+                return tag1.replaceAll("\\{player}", e.getName());
+            }
+            return tag1;
+        }).collect(Collectors.toSet());
+
+        return tags.containsAll(mustHave)
+                       && tags.stream().noneMatch(t -> mustNotHave.contains(t));
     }
 
     public static boolean matchTeam(Entity e, Scoreboard s, Pair<Set<String>, Set<String>> teamLimit) {
