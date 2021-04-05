@@ -22,32 +22,47 @@ import java.util.concurrent.ThreadLocalRandom;
 import static think.rpgitems.power.Utils.weightedRandomPick;
 
 public class CastUtils {
+    /**
+     * legacy
+     * @see #rayTrace(Location, Vector, double, LivingEntity).
+     */
+    @Deprecated
     public static CastLocation rayTrace(LivingEntity from, Location fromLocation, Vector towards, double range) {
+        return rayTrace(fromLocation, towards, range, from);
+    }
+
+    public static CastLocation rayTrace(Location fromLocation, Vector towards, double range, LivingEntity from) {
         Vector hitPosition;
         CastLocation castLocation = new CastLocation();
-        RayTraceResult rayTraceResult = from.getWorld().rayTrace(fromLocation, towards, range, FluidCollisionMode.NEVER, true, 0.1,
+
+        RayTraceResult rayTraceResult = fromLocation.getWorld().rayTrace(fromLocation, towards, range, FluidCollisionMode.NEVER, true, 0.1,
                 e -> e != null &&
                         (e instanceof LivingEntity || e.getType() == EntityType.ITEM_FRAME) &&
                         !(e instanceof LivingEntity && !((LivingEntity) e).isCollidable()) &&
-                        e.getUniqueId() != from.getUniqueId() &&
+                        (from == null || e.getUniqueId() != from.getUniqueId()) &&
                         !(e instanceof Player && ((Player) e).getGameMode() == GameMode.SPECTATOR));
-        towards = new Vector(0, 1, 0);
+        Vector normal = new Vector(0, 1, 0);
         if (rayTraceResult != null) {
             castLocation.hitEntity = rayTraceResult.getHitEntity();
             BlockFace hitBlockFace = rayTraceResult.getHitBlockFace();
             if (hitBlockFace != null) {
-                towards = hitBlockFace.getDirection();
+                normal = hitBlockFace.getDirection();
             }
             hitPosition = rayTraceResult.getHitPosition();
         } else {
-            Location clone = from.getEyeLocation().clone();
+            Location clone = fromLocation.clone();
             hitPosition = clone.add(clone.getDirection().normalize().multiply(range)).toVector();
         }
-        fromLocation = new Location(from.getWorld(), hitPosition.getX(), hitPosition.getY(), hitPosition.getZ(), fromLocation.getYaw(), fromLocation.getPitch());
-        castLocation.targetLocation = fromLocation;
-        castLocation.normalDirection = towards;
+
+        Location targetLocation = new Location(fromLocation.getWorld(), hitPosition.getX(), hitPosition.getY(), hitPosition.getZ(), fromLocation.getYaw(), fromLocation.getPitch());
+        castLocation.targetLocation = targetLocation;
+        castLocation.normalDirection = normal;
 
         return castLocation;
+    }
+
+    public static CastLocation rayTrace(Location fromLocation, Vector towards, double range) {
+        return rayTrace(fromLocation, towards, range, null);
     }
 
     private static final Vector yAxis = new Vector(0, 1, 0);

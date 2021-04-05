@@ -19,7 +19,7 @@ import java.util.*;
 /**
  * represents a set of Powers that triggers in the same time.
  * It's very useful to create organized, maintainable power list.
- * also can be used to create
+ * also can be used to create effects.
  * @author ReinWD
  * @since v4.0
  */
@@ -62,7 +62,6 @@ public class PowerChain {
         return false;
     }
 
-
     //todo update old version cost & cooldown
     public PowerResult<?> doCost(RPGItem item, ItemStack itemStack){
         //todo adapt this in lower level framework
@@ -78,51 +77,6 @@ public class PowerChain {
             return PowerResult.cd();
         return PowerResult.noop();
     }
-
-    /**
-     * @return
-     * @see LocationVector
-     */
-    public LocationVector getTriggeringLocationVector(){
-        //todo add function parameter
-        LocationVector locationVector = new LocationVector();
-        //todo build location vector
-        throw new UnsupportedOperationException();
-    }
-
-    /**
-     * @see think.rpgitems.power.impl.Beam
-     */
-    //todo ↓ fold this, assigned to ReinWD,
-    //<editor-fold desc="beam related">
-    public LocationVector rayTrace(Location start, Vector direction, double length){
-        return rayTrace(start, direction, length, FluidCollisionMode.NEVER);
-    }
-
-    public LocationVector rayTrace(Location start, Vector direction, double length, FluidCollisionMode fluidCollisionMode) {
-        //todo implement this
-        throw new UnsupportedOperationException();
-    }
-
-    public CastUtils.CastLocation doCast(Location fromLocation, Vector towards, double range, LivingEntity from){
-        //todo implement this
-        if (from == null) {
-            //todo implement this
-        }
-        throw new UnsupportedOperationException();
-    }
-
-    public CastUtils.CastLocation doCast(Location fromLocation, Vector towards, double range){
-        //todo implement this
-        return doCast(fromLocation, towards, range, null);
-    }
-
-    public List<Entity> getNearbyEntities(LocationVector locationVector){
-        //todo implement this
-        throw new UnsupportedOperationException();
-    }
-
-    //</editor-fold>
 
     //<editor-fold desc="getters&setters">
     public List<String> getChainTags() {

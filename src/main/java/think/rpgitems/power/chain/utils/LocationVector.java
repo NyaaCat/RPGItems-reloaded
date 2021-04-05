@@ -1,15 +1,23 @@
 package think.rpgitems.power.chain.utils;
 
 import org.bukkit.Location;
-import org.bukkit.entity.LivingEntity;
+import org.bukkit.entity.Entity;
 import org.bukkit.util.Vector;
+
+import java.util.ArrayList;
+import java.util.List;
 
 
 /**
  * information needed to trigger a power.
- * include a center point, a vector, a target point (raytracing) and a target entity (nullable)
+ * include a center point, a vector, a target point (raytracing) and a target entity list (nullable)
  */
 public class LocationVector {
+    public LocationVector(Location center, Vector vector) {
+        this.center = center;
+        this.vector = vector;
+    }
+
     Location center;
 
     /**
@@ -24,11 +32,34 @@ public class LocationVector {
     /**
      * nullable
      */
-    LivingEntity target;
+    List<Entity> targets = new ArrayList<>();
 
-    /**
-     * nonnull
-     * best to be lazy loaded.
-     */
-    Location targetPoint;
+    //<editor-fold desc="getters&setters" defaultstate="collapsed">
+    public Location getCenter() {
+        return center;
+    }
+
+    public void setCenter(Location center) {
+        this.center = center;
+    }
+
+    public Vector getVector() {
+        return vector;
+    }
+
+    public void setVector(Vector vector) {
+        this.vector = vector;
+    }
+
+    public List<Entity> getTargets(Location startLocation, Vector towards, double length, double angle) {
+        if (targets.isEmpty()){
+            //todo implement this
+        }
+        return targets;
+    }
+
+    public void offerTarget(Entity hitEntity) {
+        targets.add(0, hitEntity);
+    }
+    //</editor-fold>
 }
