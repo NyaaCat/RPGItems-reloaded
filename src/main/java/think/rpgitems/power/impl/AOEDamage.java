@@ -17,11 +17,11 @@ import org.bukkit.potion.PotionEffectType;
 import org.bukkit.scheduler.BukkitRunnable;
 import think.rpgitems.RPGItems;
 import think.rpgitems.data.Context;
-import think.rpgitems.utils.LightContext;
 import think.rpgitems.event.BeamEndEvent;
 import think.rpgitems.event.BeamHitBlockEvent;
 import think.rpgitems.event.BeamHitEntityEvent;
 import think.rpgitems.power.*;
+import think.rpgitems.utils.LightContext;
 import think.rpgitems.utils.cast.CastUtils;
 
 import javax.annotation.Nullable;
@@ -33,7 +33,6 @@ import static java.lang.Double.max;
 import static java.lang.Double.min;
 import static think.rpgitems.Events.*;
 import static think.rpgitems.power.Utils.*;
-import static think.rpgitems.power.Utils.getNearbyEntities;
 
 /**
  * Power AOEDamage.
@@ -256,6 +255,8 @@ public class AOEDamage extends BasePower {
             if (isSelfapplication()) dealDamage(player, getDamage());
             LivingEntity[] entities = supplier.get().toArray(new LivingEntity[0]);
             int c = getCount();
+            int hitEntities = 0;
+
             if (getDelay() <= 0) {
                 for (int i = 0; i < c && i < entities.length; ++i) {
                 LivingEntity e = entities[i];
@@ -266,6 +267,7 @@ public class AOEDamage extends BasePower {
                     c++;
                     continue;
                 }
+                    hitEntities++;
                     LightContext.putTemp(player.getUniqueId(), OVERRIDING_DAMAGE, getDamage());
                     LightContext.putTemp(player.getUniqueId(), SUPPRESS_MELEE, isSuppressMelee());
                     LightContext.putTemp(player.getUniqueId(), DAMAGE_SOURCE_ITEM, stack);
@@ -305,7 +307,7 @@ public class AOEDamage extends BasePower {
                     }).runTaskLater(RPGItems.plugin, getDelay());
                 }
 
-            return PowerResult.ok();
+            return hitEntities > 0 ? PowerResult.ok() : PowerResult.noop();
         }
 
         @Override
