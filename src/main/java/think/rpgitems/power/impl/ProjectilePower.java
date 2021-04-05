@@ -31,8 +31,6 @@ import java.util.UUID;
 import java.util.concurrent.ThreadLocalRandom;
 import java.util.concurrent.TimeUnit;
 
-import static think.rpgitems.power.Utils.checkCooldown;
-
 /**
  * Power projectile.
  * <p>
@@ -69,8 +67,7 @@ public class ProjectilePower extends BasePower {
      * Y_axis.
      */
     private static final Vector y_axis = new Vector(0, 1, 0);
-    @Property(order = 0)
-    public int cooldown = 0;
+
     @Property(order = 1)
     public boolean isCone = false;
     @Property
@@ -81,8 +78,6 @@ public class ProjectilePower extends BasePower {
     public int amount = 5;
     @Property(order = 5)
     public double speed = 1;
-    @Property
-    public int cost = 0;
     @Property
     public int burstCount = 1;
     @Property
@@ -178,7 +173,6 @@ public class ProjectilePower extends BasePower {
 
     @Override
     public void init(ConfigurationSection section) {
-        cooldown = section.getInt("cooldownTime");
         super.init(section);
         if (getYield() != null && getYield() == -1) {
             yield = null;
@@ -210,13 +204,6 @@ public class ProjectilePower extends BasePower {
         return burstInterval;
     }
 
-    /**
-     * Cost of this power
-     */
-    public int getCost() {
-        return cost;
-    }
-
     public Boolean getIncendiary() {
         return isIncendiary;
     }
@@ -228,7 +215,7 @@ public class ProjectilePower extends BasePower {
 
     @Override
     public String displayText() {
-        return I18n.formatDefault(isCone() ? "power.projectile.cone" : "power.projectile.display", getProjectileType(getProjectileType()), (double) getCooldown() / 20d);
+        return I18n.formatDefault(isCone() ? "power.projectile.cone" : "power.projectile.display", getProjectileType(getProjectileType()), 0);
     }
 
     /**
@@ -264,13 +251,6 @@ public class ProjectilePower extends BasePower {
      */
     public Class<? extends Projectile> getProjectileType() {
         return projectileType;
-    }
-
-    /**
-     * Cooldown time of this power
-     */
-    public int getCooldown() {
-        return cooldown;
     }
 
     /**
@@ -373,8 +353,6 @@ public class ProjectilePower extends BasePower {
         }
 
         public PowerResult<Void> fire(Player player, ItemStack stack, float speedFactor) {
-            if (!checkCooldown(getPower(), player, getCooldown(), true, true)) return PowerResult.cd();
-            if (!getItem().consumeDurability(stack, getCost())) return PowerResult.cost();
             CastUtils.CastLocation castLocation = null;
             if (getFiringLocation().equals(FiringLocation.TARGET)) {
                 castLocation = CastUtils.rayTrace(player, player.getEyeLocation(), player.getEyeLocation().getDirection(), getFiringRange());
@@ -539,8 +517,6 @@ public class ProjectilePower extends BasePower {
 
         @Override
         public PowerResult<Void> fire(Player player, ItemStack stack, LivingEntity entity, Double value) {
-            if (!checkCooldown(getPower(), player, getCooldown(), true, true)) return PowerResult.cd();
-            if (!getItem().consumeDurability(stack, getCost())) return PowerResult.cost();
             CastUtils.CastLocation castLocation = null;
             if (getFiringLocation().equals(FiringLocation.TARGET)) {
                 castLocation = CastUtils.rayTrace(entity, entity.getEyeLocation(), entity.getEyeLocation().getDirection(), getFiringRange());

@@ -8,25 +8,14 @@ import org.bukkit.inventory.ItemStack;
 import think.rpgitems.I18n;
 import think.rpgitems.power.*;
 
-import static think.rpgitems.power.Utils.checkCooldown;
-
 /**
  * Power consumehit.
  * <p>
- * The consume power will remove one item when player hits something. With {@link #cooldown cooldown} time (ticks).
+ * The consume power will remove one item when player hits something.
  * </p>
  */
 @Meta(defaultTrigger = "HIT", implClass = ConsumeHit.Impl.class)
 public class ConsumeHit extends BasePower {
-    @Property(order = 0)
-    public int cooldown = 0;
-
-    /**
-     * Cooldown time of this power
-     */
-    public int getCooldown() {
-        return cooldown;
-    }
 
     @Override
     public String getName() {
@@ -41,7 +30,6 @@ public class ConsumeHit extends BasePower {
     public class Impl implements PowerHit {
         @Override
         public PowerResult<Double> hit(final Player player, ItemStack stack, LivingEntity entity, double damage, EntityDamageByEntityEvent event) {
-            if (!checkCooldown(getPower(), player, getCooldown(), false, true)) return PowerResult.cd();
             int count = stack.getAmount() - 1;
             if (count == 0) {
                 stack.setAmount(0);

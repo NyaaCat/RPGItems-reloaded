@@ -13,7 +13,6 @@ import think.rpgitems.power.Power;
 import think.rpgitems.power.PowerResult;
 import think.rpgitems.power.Property;
 
-import static think.rpgitems.power.Utils.checkAndSetCooldown;
 
 /**
  * Power delayedcommand.
@@ -55,9 +54,6 @@ public class DelayedCommand extends Command {
 
         @Override
         public PowerResult<Void> fire(Player target, ItemStack stack) {
-            if (!checkAndSetCooldown(getPower(), target, getCooldown(), true, false, getItem().getUid() + "." + getCommand()))
-                return PowerResult.cd();
-            if (!getItem().consumeDurability(stack, getCost())) return PowerResult.cost();
             String cmd;
             if (!cmdInPlace) {
                 cmd = handlePlayerPlaceHolder(target, getCommand());

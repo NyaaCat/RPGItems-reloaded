@@ -23,8 +23,6 @@ import static think.rpgitems.power.Utils.*;
 
 @Meta(immutableTrigger = true, withSelectors = true, implClass = Glove.Impl.class)
 public class Glove extends BasePower {
-    @Property(order = 0)
-    public int cooldown = 20;
     @Property(order = 1)
     public int maxDistance = 5;
     @Property(order = 2)
@@ -47,11 +45,7 @@ public class Glove extends BasePower {
 
     @Override
     public String displayText() {
-        return I18n.formatDefault("power.glove", (double) getCooldown() / 20D);
-    }
-
-    public int getCooldown() {
-        return cooldown;
+        return I18n.formatDefault("power.glove", (0) / 20D);
     }
 
     public double getThrowSpeed() {
@@ -70,7 +64,6 @@ public class Glove extends BasePower {
                 }
                 return PowerResult.ok();
             }
-            if (!checkCooldown(getPower(), player, getCooldown(), true, true)) return PowerResult.cd();
 
             List<LivingEntity> entities = getLivingEntitiesInCone(getNearestLivingEntities(getPower(), player.getEyeLocation(), player, getMaxDistance(), 0), player.getLocation().toVector(), 30, player.getLocation().getDirection());
             for (LivingEntity entity : entities) {

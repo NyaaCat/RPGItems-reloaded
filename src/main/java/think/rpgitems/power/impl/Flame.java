@@ -19,15 +19,6 @@ public class Flame extends BasePower {
 
     @Property(order = 0)
     public int burntime = 20;
-    @Property
-    public int cost = 0;
-
-    /**
-     * Cost of this power
-     */
-    public int getCost() {
-        return cost;
-    }
 
     @Override
     public String getName() {
@@ -55,7 +46,6 @@ public class Flame extends BasePower {
 
         @Override
         public PowerResult<Void> fire(Player player, ItemStack stack, LivingEntity entity, Double value) {
-            if (!getItem().consumeDurability(stack, getCost())) return PowerResult.cost();
             entity.setFireTicks(getBurntime());
             return PowerResult.ok();
         }

@@ -24,8 +24,6 @@ import java.util.Collections;
 import java.util.UUID;
 import java.util.logging.Level;
 
-import static think.rpgitems.power.Utils.checkAndSetCooldown;
-
 /**
  * Power throw.
  * <p>
@@ -38,16 +36,12 @@ public class Throw extends BasePower {
     public String entityData = "";
     @Property(order = 4)
     public String entityName = "";
-    @Property(order = 1)
-    public int cooldown = 0;
     @Property(order = 3)
     public double speed = 3;
     @Property(order = 0)
     public String display = "throw entity";
     @Property(order = 6)
     public boolean isPersistent;
-    @Property
-    public int cost = 0;
 
     @Property
     public boolean requireHurtByEntity = true;
@@ -57,14 +51,6 @@ public class Throw extends BasePower {
         boolean isRight = section.getBoolean("isRight", true);
         triggers = Collections.singleton(isRight ? BaseTriggers.RIGHT_CLICK : BaseTriggers.LEFT_CLICK);
         super.init(section);
-    }
-
-    public int getCooldown() {
-        return cooldown;
-    }
-
-    public int getCost() {
-        return cost;
     }
 
     public String getEntityData() {
@@ -113,11 +99,8 @@ public class Throw extends BasePower {
 
         @Override
         public PowerResult<Void> fire(Player player, ItemStack stack) {
-            if (checkAndSetCooldown(getPower(), player, getCooldown(), true, true, getItem().getUid() + "." + getEntityName() + getEntityData()) && getItem().consumeDurability(stack, getCost())) {
-                summonEntity(player);
-                return PowerResult.ok();
-            }
-            return PowerResult.noop();
+            summonEntity(player);
+            return PowerResult.ok();
         }
 
         @Override

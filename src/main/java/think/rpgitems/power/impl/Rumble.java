@@ -23,7 +23,6 @@ import java.util.Random;
 
 import static think.rpgitems.Events.DAMAGE_SOURCE;
 import static think.rpgitems.Events.OVERRIDING_DAMAGE;
-import static think.rpgitems.power.Utils.checkCooldown;
 import static think.rpgitems.power.Utils.getNearbyEntities;
 
 /**
@@ -38,24 +37,13 @@ import static think.rpgitems.power.Utils.getNearbyEntities;
 @Meta(defaultTrigger = "RIGHT_CLICK", withSelectors = true, generalInterface = PowerPlain.class, implClass = Rumble.Impl.class)
 public class Rumble extends BasePower {
 
-    @Property(order = 0)
-    public int cooldown = 0;
     @Property(order = 1)
     public int power = 2;
     @Property(order = 2, required = true)
     public int distance = 15;
-    @Property
-    public int cost = 0;
 
     @Property
     public double damage = 0;
-
-    /**
-     * Cost of this power
-     */
-    public int getCost() {
-        return cost;
-    }
 
     public double getDamage() {
         return damage;
@@ -75,14 +63,7 @@ public class Rumble extends BasePower {
 
     @Override
     public String displayText() {
-        return I18n.formatDefault("power.rumble", (double) getCooldown() / 20d);
-    }
-
-    /**
-     * Cooldown time of this power
-     */
-    public int getCooldown() {
-        return cooldown;
+        return I18n.formatDefault("power.rumble", (double) 0 / 20d);
     }
 
     /**
@@ -100,8 +81,6 @@ public class Rumble extends BasePower {
 
         @Override
         public PowerResult<Void> fire(final Player player, ItemStack stack) {
-            if (!checkCooldown(getPower(), player, getCooldown(), true, true)) return PowerResult.cd();
-            if (!getItem().consumeDurability(stack, getCost())) return PowerResult.cost();
             final Location location = player.getLocation().add(0, -0.2, 0);
             final Vector direction = player.getLocation().getDirection();
             return fire(player, location, direction);

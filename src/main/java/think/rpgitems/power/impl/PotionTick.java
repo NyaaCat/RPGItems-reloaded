@@ -10,7 +10,6 @@ import think.rpgitems.power.*;
 import think.rpgitems.utils.PotionEffectUtils;
 
 import static java.lang.Double.min;
-import static think.rpgitems.power.Utils.checkAndSetCooldown;
 
 /**
  * Power potiontick.
@@ -30,21 +29,12 @@ public class PotionTick extends BasePower {
     public PotionEffectType effect = PotionEffectType.SPEED;
     @Property(order = 0)
     public int amplifier = 1;
-    @Property
-    public int cost = 0;
     @Property(order = 2)
     public int interval = 0;
     @Property(order = 3)
     public int duration = 60;
     @Property
     public boolean clear = false;
-
-    /**
-     * Cost of this power
-     */
-    public int getCost() {
-        return cost;
-    }
 
     /**
      * Duration of this power
@@ -100,9 +90,6 @@ public class PotionTick extends BasePower {
         }
 
         private PowerResult<Void> fire(Player player, ItemStack stack) {
-            if (!checkAndSetCooldown(getPower(), player, getInterval(), false, true, getItem().getUid() + "." + "potiontick." + getEffect().getName()))
-                return PowerResult.cd();
-            if (!getItem().consumeDurability(stack, getCost())) return PowerResult.cost();
             double health = player.getHealth();
             boolean hasEffect = false;
             for (PotionEffect potionEffect : player.getActivePotionEffects()) {

@@ -4,10 +4,14 @@ import org.bukkit.FluidCollisionMode;
 import org.bukkit.Location;
 import org.bukkit.entity.Entity;
 import org.bukkit.entity.LivingEntity;
+import org.bukkit.entity.Player;
+import org.bukkit.inventory.ItemStack;
 import org.bukkit.util.Vector;
 import think.rpgitems.item.RPGItem;
 import think.rpgitems.power.Condition;
 import think.rpgitems.power.Power;
+import think.rpgitems.power.PowerResult;
+import think.rpgitems.power.Utils;
 import think.rpgitems.power.chain.utils.LocationVector;
 import think.rpgitems.power.trigger.Trigger;
 import think.rpgitems.utils.cast.CastParameter;
@@ -23,13 +27,19 @@ import java.util.*;
  * @since v4.0
  */
 public class PowerChain {
+    private RPGItem ITEM;
+
     private String chainId;
+    private String displayName;
     private List<String> chainTags = new ArrayList<>();
     private List<Power> powers = new ArrayList<>();
     @SuppressWarnings("rawtypes")
     private Map<String, Trigger> triggers = new HashMap<>();
     private Set<Condition<?>>conditions = new HashSet<>();
+
     private int cooldown = 0;
+    private boolean showCDWarning = false;
+
     private int cost = 0;
     private boolean castoff = false;
     private CastParameter castParameter = new CastParameter();
@@ -46,15 +56,20 @@ public class PowerChain {
     }
 
 
-    public void doCost(RPGItem item, int amount, boolean force, boolean breakItem){
-        //todo extract cost related code here
-        //params can be modified freely
-
+    //todo update old version cost & cooldown
+    public PowerResult<?> doCost(RPGItem item, ItemStack itemStack){
+        //todo adapt this in lower level framework
+        if (!item.consumeDurability(itemStack, getCost())){
+            return PowerResult.cost();
+        }
+        return PowerResult.noop();
     }
 
-    public boolean checkCooldown(){
-        //todo extract cd related code here
-        return false;
+    public PowerResult<?> checkCooldown(Player player){
+        //todo adapt this in lower level framework
+        if (!Utils.checkCooldown(this, player, getCooldown(), true, true))
+            return PowerResult.cd();
+        return PowerResult.noop();
     }
 
     /**
@@ -153,6 +168,30 @@ public class PowerChain {
 
     public void setCost(int cost) {
         this.cost = cost;
+    }
+
+    public boolean isShowCDWarning() {
+        return showCDWarning;
+    }
+
+    public void setShowCDWarning(boolean showCDWarning) {
+        this.showCDWarning = showCDWarning;
+    }
+
+    public RPGItem getItem() {
+        return ITEM;
+    }
+
+    public void setItem(RPGItem item) {
+        this.ITEM = item;
+    }
+
+    public String getDisplayName() {
+        return displayName;
+    }
+
+    public void setDisplayName(String displayName) {
+        this.displayName = displayName;
     }
 
     //</editor-fold>

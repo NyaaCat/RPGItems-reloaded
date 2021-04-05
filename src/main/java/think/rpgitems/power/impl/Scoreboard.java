@@ -30,8 +30,6 @@ import javax.annotation.Nullable;
 import java.util.*;
 import java.util.concurrent.TimeUnit;
 
-import static think.rpgitems.power.Utils.checkCooldown;
-
 @Meta(defaultTrigger = "RIGHT_CLICK", generalInterface = {
         PowerLeftClick.class,
         PowerRightClick.class,
@@ -63,15 +61,11 @@ public class Scoreboard extends BasePower {
     @Property
     public String team;
     @Property
-    public int cooldown = 0;
-    @Property
     public ScoreboardOperation scoreOperation = ScoreboardOperation.NO_OP;
     @Property
     public int value = 0;
     @Property
     public String objective = "";
-    @Property
-    public int cost = 0;
     @Property
     public boolean reverseTagAfterDelay = false;
     @Property
@@ -81,20 +75,6 @@ public class Scoreboard extends BasePower {
     @Property
     public boolean requireHurtByEntity = true;
     private BukkitRunnable removeTask;
-
-    /**
-     * Cooldown time of this power
-     */
-    public int getCooldown() {
-        return cooldown;
-    }
-
-    /**
-     * Cost of this power
-     */
-    public int getCost() {
-        return cost;
-    }
 
     public long getDelay() {
         return delay;
@@ -221,9 +201,6 @@ public class Scoreboard extends BasePower {
 
         @Override
         public PowerResult<Void> fire(Player player, ItemStack stack) {
-            if (!checkCooldown(getPower(), player, getCooldown(), true, true)) return PowerResult.cd();
-            if (!getItem().consumeDurability(stack, getCost())) return PowerResult.cost();
-
             org.bukkit.scoreboard.Scoreboard scoreboard = player.getScoreboard();
 
             Objective objective = scoreboard.getObjective(getObjective());

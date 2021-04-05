@@ -39,7 +39,6 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Random;
 
-import static think.rpgitems.power.Utils.checkCooldown;
 import static think.rpgitems.power.Utils.getNearbyEntities;
 
 /**
@@ -54,27 +53,16 @@ import static think.rpgitems.power.Utils.getNearbyEntities;
 @Meta(defaultTrigger = "RIGHT_CLICK", withSelectors = true, generalInterface = PowerPlain.class, implClass = Fire.Impl.class)
 public class Fire extends BasePower {
 
-    @Property(order = 0)
-    public int cooldown = 0;
     @Property(order = 1)
     public int distance = 15;
     @Property(order = 2)
     public int burnduration = 40;
-    @Property
-    public int cost = 0;
 
     /**
      * Duration of the fire, in ticks
      */
     public int getBurnduration() {
         return burnduration;
-    }
-
-    /**
-     * Cost of this power
-     */
-    public int getCost() {
-        return cost;
     }
 
     /**
@@ -91,14 +79,7 @@ public class Fire extends BasePower {
 
     @Override
     public String displayText() {
-        return I18n.formatDefault("power.fire", (double) getCooldown() / 20d);
-    }
-
-    /**
-     * Cooldown time of this power
-     */
-    public int getCooldown() {
-        return cooldown;
+        return I18n.formatDefault("power.fire", (0) / 20d);
     }
 
     public class Impl implements PowerRightClick, PowerLeftClick, PowerSneak, PowerSprint, PowerPlain {
@@ -110,8 +91,6 @@ public class Fire extends BasePower {
 
         @Override
         public PowerResult<Void> fire(Player player, ItemStack stack) {
-            if (!checkCooldown(getPower(), player, getCooldown(), true, true)) return PowerResult.cd();
-            if (!getItem().consumeDurability(stack, getCost())) return PowerResult.cost();
             player.playSound(player.getLocation(), Sound.ITEM_FLINTANDSTEEL_USE, 1.0f, 1.2f);
             final List<Block> fireblocks = new ArrayList<>();
             final FallingBlock block = player.getWorld().spawnFallingBlock(player.getLocation().add(0, 1.8, 0), Material.FIRE.createBlockData());

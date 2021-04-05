@@ -45,8 +45,6 @@ public class Stuck extends BasePower {
     @Property
     public int chance = 3;
     @Property
-    public int cost = 0;
-    @Property
     public int costAoe = 0;
     @Property
     public int costPerEntity = 0;
@@ -56,8 +54,6 @@ public class Stuck extends BasePower {
     public double facing = 30;
     @Property(order = 1)
     public int duration = 100;
-    @Property(order = 0)
-    public int cooldown = 0;
     @Property
     public boolean requireHurtByEntity = true;
     private Random random = new Random();
@@ -115,13 +111,6 @@ public class Stuck extends BasePower {
     }
 
     /**
-     * Cost of this power (hit)
-     */
-    public int getCost() {
-        return cost;
-    }
-
-    /**
      * Cost of this power (right click)
      */
     public int getCostAoe() {
@@ -149,7 +138,7 @@ public class Stuck extends BasePower {
 
     @Override
     public String displayText() {
-        return I18n.formatDefault("power.stuck", (int) ((1d / (double) getChance()) * 100d), getDuration(), (double) getCooldown() / 20d);
+        return I18n.formatDefault("power.stuck", (int) ((1d / (double) getChance()) * 100d), getDuration(), (double) 0 / 20d);
     }
 
     /**
@@ -157,13 +146,6 @@ public class Stuck extends BasePower {
      */
     public int getChance() {
         return chance;
-    }
-
-    /**
-     * Cooldown time of this power
-     */
-    public int getCooldown() {
-        return cooldown;
     }
 
     @Override
@@ -197,8 +179,6 @@ public class Stuck extends BasePower {
 
         @Override
         public PowerResult<Void> fire(Player player, ItemStack stack) {
-            if (!checkCooldown(getPower(), player, getCooldown(), true, true)) return PowerResult.cd();
-            if (!getItem().consumeDurability(stack, getCostAoe())) return PowerResult.cost();
             List<LivingEntity> entities = getLivingEntitiesInCone(getNearestLivingEntities(getPower(), player.getEyeLocation(), player, getRange(), 0), player.getLocation().toVector(), getFacing(), player.getLocation().getDirection());
             entities.forEach(entity -> {
                         if (!getItem().consumeDurability(stack, getCostPerEntity())) return;
@@ -240,9 +220,7 @@ public class Stuck extends BasePower {
 
         @Override
         public PowerResult<Double> hit(Player player, ItemStack stack, LivingEntity entity, double damage, EntityDamageByEntityEvent event) {
-            if (!checkCooldown(getPower(), player, getCooldown(), true, true)) return PowerResult.cd();
             if (random.nextInt(getChance()) == 0) {
-                if (!getItem().consumeDurability(stack, getCost())) return PowerResult.cost();
                 stucked.put(entity.getUniqueId(), System.currentTimeMillis());
                 entity.addPotionEffect(new PotionEffect(PotionEffectType.SLOW, getDuration(), 10), true);
                 // entity.addPotionEffect(new PotionEffect(PotionEffectType.JUMP, duration, 128), true);

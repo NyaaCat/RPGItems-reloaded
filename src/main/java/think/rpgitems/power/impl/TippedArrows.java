@@ -11,8 +11,6 @@ import think.rpgitems.I18n;
 import think.rpgitems.power.*;
 import think.rpgitems.utils.PotionEffectUtils;
 
-import static think.rpgitems.power.Utils.checkCooldown;
-
 /**
  * Power tippedarrow.
  * <p>
@@ -24,8 +22,6 @@ import static think.rpgitems.power.Utils.checkCooldown;
 @Meta(immutableTrigger = true, implClass = TippedArrows.Impl.class)
 public class TippedArrows extends BasePower {
 
-    @Property(order = 0)
-    public int cooldown = 0;
     @Property(order = 3, required = true)
     public int amplifier = 1;
     @Property(order = 2)
@@ -35,15 +31,6 @@ public class TippedArrows extends BasePower {
     @AcceptedValue(preset = Preset.POTION_EFFECT_TYPE)
     @Property(order = 1)
     public PotionEffectType type = PotionEffectType.POISON;
-    @Property
-    public int cost = 0;
-
-    /**
-     * Cost of this power
-     */
-    public int getCost() {
-        return cost;
-    }
 
     @Override
     public String getName() {
@@ -52,7 +39,7 @@ public class TippedArrows extends BasePower {
 
     @Override
     public String displayText() {
-        return I18n.formatDefault("power.tippedarrow", getType().getName().toLowerCase().replaceAll("_", " "), getAmplifier() + 1, ((double) getDuration()) / 20d, (double) getCooldown() / 20d);
+        return I18n.formatDefault("power.tippedarrow", getType().getName().toLowerCase().replaceAll("_", " "), getAmplifier() + 1, ((double) getDuration()) / 20d, (0) / 20d);
     }
 
     /**
@@ -76,18 +63,9 @@ public class TippedArrows extends BasePower {
         return duration;
     }
 
-    /**
-     * Cooldown time of this power
-     */
-    public int getCooldown() {
-        return cooldown;
-    }
-
     public class Impl implements PowerRightClick {
         @Override
         public PowerResult<Void> rightClick(Player player, ItemStack stack, PlayerInteractEvent event) {
-            if (!checkCooldown(getPower(), player, getCooldown(), true, true)) return PowerResult.cd();
-            if (!getItem().consumeDurability(stack, getCost())) return PowerResult.cost();
             player.playSound(player.getLocation(), Sound.ENTITY_ARROW_SHOOT, 1.0f, 1.0f);
             Events.registerRPGProjectile(getPower().getItem(), stack, player);
             org.bukkit.entity.TippedArrow arrow = player.launchProjectile(org.bukkit.entity.TippedArrow.class);

@@ -37,8 +37,6 @@ import java.util.UUID;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
 
-import static think.rpgitems.power.Utils.checkCooldown;
-
 @Meta(defaultTrigger = {"RIGHT_CLICK", "TICK"}, generalInterface = PowerPlain.class, implClass = ParticleBarrier.Impl.class)
 public class ParticleBarrier extends BasePower {
 
@@ -63,10 +61,7 @@ public class ParticleBarrier extends BasePower {
     public double energyPerLevel = 10;
     @Property
     public boolean projected = false;
-    @Property
-    public int cooldown = 0;
-    @Property
-    public int cost = 0;
+
     @Deserializer(PotionEffectUtils.class)
     @Serializer(PotionEffectUtils.class)
     @Property(order = 1, required = true)
@@ -139,17 +134,6 @@ public class ParticleBarrier extends BasePower {
         return event;
     }
 
-    public int getCooldown() {
-        return cooldown;
-    }
-
-    /**
-     * Cost of this power
-     */
-    public int getCost() {
-        return cost;
-    }
-
     /**
      * Type of potion effect
      */
@@ -193,8 +177,6 @@ public class ParticleBarrier extends BasePower {
         @SuppressWarnings("unchecked")
         @Override
         public PowerResult<Void> fire(Player player, ItemStack stack) {
-            if (!checkCooldown(getPower(), player, getCooldown(), true, true)) return PowerResult.cd();
-            if (!getItem().consumeDurability(stack, getCost())) return PowerResult.cost();
             if (!isProjected()) {
                 barrier(player, player);
                 return PowerResult.ok();

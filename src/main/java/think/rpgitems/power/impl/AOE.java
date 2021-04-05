@@ -52,9 +52,6 @@ import static think.rpgitems.power.Utils.*;
         PowerLocation.class
 }, implClass = AOE.Impl.class)
 public class AOE extends BasePower {
-
-    @Property(order = 0)
-    public int cooldown = 0;
     @Property(order = 4, required = true)
     public int amplifier = 1;
     @Property(order = 3)
@@ -71,8 +68,6 @@ public class AOE extends BasePower {
     public PotionEffectType type;
     @Property(alias = "name")
     public String display = null;
-    @Property
-    public int cost = 0;
     @Property
     public int count = -1;
 
@@ -103,13 +98,6 @@ public class AOE extends BasePower {
         return target;
     }
 
-    /**
-     * Cost of this power
-     */
-    public int getCost() {
-        return cost;
-    }
-
     @Override
     public String getName() {
         return "aoe";
@@ -117,7 +105,7 @@ public class AOE extends BasePower {
 
     @Override
     public String displayText() {
-        return getDisplay() != null ? getDisplay() : I18n.formatDefault("power.aoe.display", getType().getName(), getAmplifier(), getDuration(), isSelfapplication() ? I18n.formatDefault("power.aoe.selfapplication.including") : I18n.formatDefault("power.aoe.selfapplication.excluding"), getRange(), (double) getCooldown() / 20d);
+        return getDisplay() != null ? getDisplay() : I18n.formatDefault("power.aoe.display", getType().getName(), getAmplifier(), getDuration(), isSelfapplication() ? I18n.formatDefault("power.aoe.selfapplication.including") : I18n.formatDefault("power.aoe.selfapplication.excluding"), getRange(), 0);
     }
 
     public String getDisplay() {
@@ -159,13 +147,6 @@ public class AOE extends BasePower {
         return range;
     }
 
-    /**
-     * Cooldown time of this power
-     */
-    public int getCooldown() {
-        return cooldown;
-    }
-
     public class Impl implements PowerRightClick, PowerLeftClick, PowerOffhandClick, PowerPlain, PowerHit, PowerBowShoot, PowerBeamHit, PowerProjectileHit, PowerLivingEntity, PowerLocation {
         @Override
         public PowerResult<Void> rightClick(final Player player, ItemStack stack, PlayerInteractEvent event) {
@@ -178,9 +159,6 @@ public class AOE extends BasePower {
         }
 
         private PowerResult<Void> fire(Location center, Player player, ItemStack itemStack, Collection<Entity> entityList){
-            if (!checkCooldown(getPower(), player, getCooldown(), true, true)) return PowerResult.cd();
-            if (!getItem().consumeDurability(itemStack, getCost())) return PowerResult.cost();
-
             int range = getRange();
 
             PotionEffect effect = new PotionEffect(getType(), getDuration(), getAmplifier() - 1);

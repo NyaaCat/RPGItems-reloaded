@@ -25,17 +25,8 @@ public class Knockup extends BasePower {
     public int chance = 20;
     @Property(order = 1, alias = "power")
     public double knockUpPower = 2;
-    @Property
-    public int cost = 0;
 
     private Random rand = new Random();
-
-    /**
-     * Cost of this power
-     */
-    public int getCost() {
-        return cost;
-    }
 
     /**
      * Power of knock up
@@ -65,7 +56,6 @@ public class Knockup extends BasePower {
 
         @Override
         public PowerResult<Double> hit(Player player, ItemStack stack, LivingEntity entity, double damage, EntityDamageByEntityEvent event) {
-            if (!getItem().consumeDurability(stack, getCost())) return PowerResult.cost();
             if (rand.nextInt(getChance()) == 0) {
                 Bukkit.getScheduler().runTask(RPGItems.plugin, () -> entity.setVelocity(player.getLocation().getDirection().setY(getKnockUpPower())));
             }

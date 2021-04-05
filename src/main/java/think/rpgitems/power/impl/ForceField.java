@@ -21,8 +21,6 @@ import think.rpgitems.power.*;
 import java.util.HashSet;
 import java.util.Set;
 
-import static think.rpgitems.power.Utils.checkCooldown;
-
 /**
  * Power forcefield.
  * <p>
@@ -34,8 +32,6 @@ import static think.rpgitems.power.Utils.checkCooldown;
 @SuppressWarnings("WeakerAccess")
 @Meta(defaultTrigger = "RIGHT_CLICK", generalInterface = PowerPlain.class, implClass = ForceField.Impl.class)
 public class ForceField extends BasePower {
-    @Property(order = 0)
-    public int cooldown = 200;
     @Property(order = 1)
     public int radius = 5;
     @Property(order = 2)
@@ -44,8 +40,6 @@ public class ForceField extends BasePower {
     public int base = -15;
     @Property(order = 4, required = true)
     public int ttl = 100;
-    @Property
-    public int cost = 0;
 
     @Property
     public boolean requireHurtByEntity = true;
@@ -76,13 +70,6 @@ public class ForceField extends BasePower {
         return list;
     }
 
-    /**
-     * Cost of this power
-     */
-    public int getCost() {
-        return cost;
-    }
-
     @Override
     public String getName() {
         return "forcefield";
@@ -90,7 +77,7 @@ public class ForceField extends BasePower {
 
     @Override
     public String displayText() {
-        return I18n.formatDefault("power.forcefield", getRadius(), getHeight(), getBase(), (double) getTtl() / 20d, (double) getCooldown() / 20d);
+        return I18n.formatDefault("power.forcefield", getRadius(), getHeight(), getBase(), (double) getTtl() / 20d, (0) / 20d);
     }
 
     /**
@@ -119,13 +106,6 @@ public class ForceField extends BasePower {
      */
     public int getTtl() {
         return ttl;
-    }
-
-    /**
-     * Cooldown time of this power
-     */
-    public int getCooldown() {
-        return cooldown;
     }
 
     public boolean isRequireHurtByEntity() {
@@ -261,8 +241,6 @@ public class ForceField extends BasePower {
 
         @Override
         public PowerResult<Void> fire(Player player, ItemStack stack) {
-            if (!checkCooldown(getPower(), player, getCooldown(), true, true)) return PowerResult.cd();
-            if (!getItem().consumeDurability(stack, getCost())) return PowerResult.cost();
             World w = player.getWorld();
             int x = player.getLocation().getBlockX();
             int y = player.getLocation().getBlockY();

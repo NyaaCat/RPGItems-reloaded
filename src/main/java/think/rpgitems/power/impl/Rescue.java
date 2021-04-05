@@ -15,8 +15,6 @@ import think.rpgitems.power.*;
 import java.util.UUID;
 import java.util.concurrent.TimeUnit;
 
-import static think.rpgitems.power.Utils.checkCooldown;
-
 /**
  * Power rescue.
  * <p>
@@ -36,19 +34,8 @@ public class Rescue extends BasePower {
     public boolean useBed = true;
     @Property(order = 3)
     public boolean inPlace = false;
-    @Property(order = 0)
-    public int cooldown = 0;
-    @Property
-    public int cost = 0;
     @Property
     public double damageTrigger = 1024;
-
-    /**
-     * Cost of this power
-     */
-    public int getCost() {
-        return cost;
-    }
 
     /**
      * Damage trigger of rescue
@@ -64,7 +51,7 @@ public class Rescue extends BasePower {
 
     @Override
     public String displayText() {
-        return I18n.formatDefault("power.rescue.display", ((double) getHealthTrigger()) / 2, (double) getCooldown() / 20d);
+        return I18n.formatDefault("power.rescue.display", ((double) getHealthTrigger()) / 2, (double) 0 / 20d);
     }
 
     /**
@@ -72,13 +59,6 @@ public class Rescue extends BasePower {
      */
     public int getHealthTrigger() {
         return healthTrigger;
-    }
-
-    /**
-     * Cooldown time of this power
-     */
-    public int getCooldown() {
-        return cooldown;
     }
 
     /**
@@ -107,8 +87,6 @@ public class Rescue extends BasePower {
         }
 
         private PowerResult<Double> rescue(Player target, ItemStack stack, EntityDamageEvent event, boolean canceled) {
-            if (!checkCooldown(getPower(), target, getCooldown(), true, true)) return PowerResult.cd();
-            if (!getItem().consumeDurability(stack, getCost())) return PowerResult.cost();
             rescueTime.put(target.getUniqueId(), System.currentTimeMillis());
             target.sendTitle("", I18n.formatDefault("power.rescue.info"), 0, 40, 40);
             DamageCause cause = event.getCause();

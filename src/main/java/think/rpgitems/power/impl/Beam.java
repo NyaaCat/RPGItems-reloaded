@@ -104,17 +104,6 @@ public class Beam extends BasePower {
     @Property
     public double particleDensity = 2;
 
-    /**
-     * Cost of this power
-     */
-    @Property
-    public int cost = 0;
-    /**
-     * Cooldown time of this power
-     */
-    @Property
-    public long cooldown = 0;
-
 //  used to judge legacy 1.0
 //    @Property
 //    public boolean cone = false;
@@ -383,14 +372,6 @@ public class Beam extends BasePower {
      */
     public boolean isSuppressMelee() {
         return suppressMelee;
-    }
-
-    public int getCost() {
-        return cost;
-    }
-
-    public long getCooldown() {
-        return cooldown;
     }
 
     public boolean isRequireHurtByEntity() {
@@ -1215,15 +1196,10 @@ public class Beam extends BasePower {
 
         @Override
         public PowerResult<Void> fire(Player player, ItemStack stack) {
-            if (!checkCooldown(getPower(), player, getCooldown(), true, true)) return PowerResult.cd();
-            if (!getItem().consumeDurability(stack, getCost())) return PowerResult.cost();
             return beam(player, player, stack);
         }
 
         public PowerResult<Void> fire(Player player, ItemStack stack, Location castLocation, LivingEntity target, int depth) {
-            if (!checkCooldown(getPower(), player, getCooldown(), true, true)) return PowerResult.cd();
-            if (!getItem().consumeDurability(stack, getCost())) return PowerResult.cost();
-
             CastUtils.CastLocation loc = CastUtils.of(castLocation, target, yAxis.clone());
             return beam(player, player, stack, loc, depth);
         }
@@ -1416,8 +1392,6 @@ public class Beam extends BasePower {
 
         @Override
         public PowerResult<Void> fire(Player player, ItemStack stack, LivingEntity entity, @Nullable Double value) {
-            if (!checkCooldown(getPower(), player, getCooldown(), true, true)) return PowerResult.cd();
-            if (!getItem().consumeDurability(stack, getCost())) return PowerResult.cost();
             return beam(player, entity, stack);
         }
     }

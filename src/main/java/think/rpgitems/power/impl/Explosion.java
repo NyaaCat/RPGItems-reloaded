@@ -49,16 +49,6 @@ public class Explosion extends BasePower {
     @Property(alias = "power")
     public float explosionPower = 4.0f;
 
-    @Property
-    public int cost = 0;
-
-    /**
-     * Cost of this power
-     */
-    public int getCost() {
-        return cost;
-    }
-
     public int getDistance() {
         return distance;
     }
@@ -101,7 +91,6 @@ public class Explosion extends BasePower {
         @Override
         public PowerResult<Void> fire(Player player, ItemStack stack, Location location) {
             if (ThreadLocalRandom.current().nextDouble(100) < getChance()) {
-                if (!getItem().consumeDurability(stack, getCost())) return PowerResult.cost();
                 LightContext.putTemp(player.getUniqueId(), DAMAGE_SOURCE, getPower().getNamespacedKey().toString());
                 LightContext.putTemp(player.getUniqueId(), SUPPRESS_MELEE, false);
                 LightContext.putTemp(player.getUniqueId(), DAMAGE_SOURCE_ITEM, stack);

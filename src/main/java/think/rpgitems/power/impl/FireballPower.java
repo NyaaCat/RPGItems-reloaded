@@ -27,8 +27,6 @@ import think.rpgitems.Events;
 import think.rpgitems.I18n;
 import think.rpgitems.power.*;
 
-import static think.rpgitems.power.Utils.checkCooldown;
-
 /**
  * Power fireball.
  * <p>
@@ -38,18 +36,6 @@ import static think.rpgitems.power.Utils.checkCooldown;
 @Meta(defaultTrigger = "RIGHT_CLICK", generalInterface = PowerPlain.class, implClass = FireballPower.Impl.class)
 public class FireballPower extends BasePower {
 
-    @Property(order = 0)
-    public int cooldown = 0;
-    @Property
-    public int cost = 0;
-
-    /**
-     * Cost of this power
-     */
-    public int getCost() {
-        return cost;
-    }
-
     @Override
     public String getName() {
         return "fireball";
@@ -57,15 +43,9 @@ public class FireballPower extends BasePower {
 
     @Override
     public String displayText() {
-        return I18n.formatDefault("power.fireball", (double) getCooldown() / 20d);
+        return I18n.formatDefault("power.fireball", 0);
     }
 
-    /**
-     * Cooldown time of this power
-     */
-    public int getCooldown() {
-        return cooldown;
-    }
 
     public class Impl implements PowerRightClick, PowerLeftClick, PowerSprint, PowerSneak, PowerPlain {
 
@@ -77,8 +57,6 @@ public class FireballPower extends BasePower {
         @Override
         @SuppressWarnings("deprecation")
         public PowerResult<Void> fire(Player player, ItemStack stack) {
-            if (!checkCooldown(getPower(), player, getCooldown(), true, true)) return PowerResult.cd();
-            if (!getItem().consumeDurability(stack, getCost())) return PowerResult.cost();
             player.playSound(player.getLocation(), Sound.ENTITY_GHAST_SHOOT, 1.0f, 1.0f);
             Events.registerRPGProjectile(getPower().getItem(), stack, player);
             SmallFireball entity = player.launchProjectile(SmallFireball.class);

@@ -25,8 +25,6 @@ import think.rpgitems.power.*;
 
 import java.util.function.Supplier;
 
-import static think.rpgitems.power.Utils.checkCooldown;
-
 /**
  * Power teleport.
  * <p>
@@ -42,20 +40,9 @@ public class Teleport extends BasePower {
 
     @Property(order = 1)
     public int distance = 5;
-    @Property(order = 0)
-    public int cooldown = 0;
-    @Property
-    public int cost = 0;
 
     @Property
     public TargetMode targetMode = TargetMode.DEFAULT;
-
-    /**
-     * Cost of this power
-     */
-    public int getCost() {
-        return cost;
-    }
 
     @Override
     public String getName() {
@@ -64,7 +51,7 @@ public class Teleport extends BasePower {
 
     @Override
     public String displayText() {
-        return I18n.formatDefault("power.teleport", getDistance(), (double) getCooldown() / 20d);
+        return I18n.formatDefault("power.teleport", getDistance(), (double) 0 / 20d);
     }
 
     /**
@@ -72,13 +59,6 @@ public class Teleport extends BasePower {
      */
     public int getDistance() {
         return distance;
-    }
-
-    /**
-     * Cooldown time of this power
-     */
-    public int getCooldown() {
-        return cooldown;
     }
 
     public TargetMode getTargetMode() {
@@ -101,8 +81,6 @@ public class Teleport extends BasePower {
         }
 
         public PowerResult<Void> fire(Player player, ItemStack stack, Supplier<Location> supplier) {
-            if (!checkCooldown(getPower(), player, getCooldown(), true, true)) return PowerResult.cd();
-            if (!getItem().consumeDurability(stack, getCost())) return PowerResult.cost();
             Location newLoc = supplier.get();
             World world = player.getWorld();
             Vector velocity = player.getVelocity();
@@ -202,8 +180,6 @@ public class Teleport extends BasePower {
 
         @Override
         public PowerResult<Void> projectileHit(Player player, ItemStack stack, ProjectileHitEvent event) {
-            if (!checkCooldown(getPower(), player, getCooldown(), true, true)) return PowerResult.cd();
-            if (!getItem().consumeDurability(stack, getCost())) return PowerResult.cost();
             World world = player.getWorld();
             Location start = player.getLocation();
             Location newLoc = getEntityLocation(player, event.getEntity());

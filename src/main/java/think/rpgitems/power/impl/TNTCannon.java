@@ -11,8 +11,6 @@ import think.rpgitems.power.*;
 
 import javax.annotation.Nullable;
 
-import static think.rpgitems.power.Utils.checkCooldown;
-
 /**
  * Power tntcannon.
  * <p>
@@ -22,18 +20,6 @@ import static think.rpgitems.power.Utils.checkCooldown;
 @Meta(immutableTrigger = true, implClass = TNTCannon.Impl.class)
 public class TNTCannon extends BasePower {
 
-    @Property(order = 0)
-    public int cooldown = 0;
-    @Property
-    public int cost = 0;
-
-    /**
-     * Cost of this power
-     */
-    public int getCost() {
-        return cost;
-    }
-
     @Override
     public String getName() {
         return "tntcannon";
@@ -41,21 +27,12 @@ public class TNTCannon extends BasePower {
 
     @Override
     public String displayText() {
-        return I18n.formatDefault("power.tntcannon", (double) getCooldown() / 20d);
-    }
-
-    /**
-     * Cooldown time of this power
-     */
-    public int getCooldown() {
-        return cooldown;
+        return I18n.formatDefault("power.tntcannon", (0) / 20d);
     }
 
     public class Impl implements PowerRightClick, PowerLivingEntity {
         @Override
         public PowerResult<Void> rightClick(Player player, ItemStack stack, PlayerInteractEvent event) {
-            if (!checkCooldown(getPower(), player, getCooldown(), true, true)) return PowerResult.cd();
-            if (!getItem().consumeDurability(stack, getCost())) return PowerResult.cost();
             player.playSound(player.getLocation(), Sound.ENTITY_ARROW_SHOOT, 1.0f, 1.0f);
             TNTPrimed tnt = player.getWorld().spawn(player.getLocation().add(0, 1.8, 0), TNTPrimed.class);
             tnt.setVelocity(player.getLocation().getDirection().multiply(2d));
@@ -69,8 +46,6 @@ public class TNTCannon extends BasePower {
 
         @Override
         public PowerResult<Void> fire(Player player, ItemStack stack, LivingEntity entity, @Nullable Double value) {
-            if (!checkCooldown(getPower(), player, getCooldown(), true, true)) return PowerResult.cd();
-            if (!getItem().consumeDurability(stack, getCost())) return PowerResult.cost();
             player.getWorld().playSound(entity.getLocation(), Sound.ENTITY_ARROW_SHOOT, 1.0f, 1.0f);
             TNTPrimed tnt = player.getWorld().spawn(entity.getLocation().add(0, 1.8, 0), TNTPrimed.class);
             tnt.setVelocity(entity.getLocation().getDirection().multiply(2d));

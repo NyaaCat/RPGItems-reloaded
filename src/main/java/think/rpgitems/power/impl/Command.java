@@ -17,7 +17,6 @@ import think.rpgitems.power.trigger.BaseTriggers;
 import java.util.Collections;
 
 import static think.rpgitems.power.Utils.attachPermission;
-import static think.rpgitems.power.Utils.checkAndSetCooldown;
 
 /**
  * Power command.
@@ -35,10 +34,6 @@ public class Command extends BasePower {
     public String display = "Runs command";
     @Property(order = 8)
     public String permission = "";
-    @Property(order = 1)
-    public int cooldown = 0;
-    @Property
-    public int cost = 0;
 
     @Property
     public boolean requireHurtByEntity = true;
@@ -69,20 +64,6 @@ public class Command extends BasePower {
      */
     public String getCommand() {
         return command;
-    }
-
-    /**
-     * Cooldown time of this power
-     */
-    public int getCooldown() {
-        return cooldown;
-    }
-
-    /**
-     * Cost of this power
-     */
-    public int getCost() {
-        return cost;
     }
 
     @Override
@@ -124,9 +105,6 @@ public class Command extends BasePower {
 
         @Override
         public PowerResult<Void> fire(Player target, ItemStack stack) {
-            if (!checkAndSetCooldown(getPower(), target, getCooldown(), true, false, getItem().getUid() + "." + getCommand()))
-                return PowerResult.cd();
-            if (!getItem().consumeDurability(stack, getCost())) return PowerResult.cost();
             return executeCommand(target);
         }
 

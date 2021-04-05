@@ -27,6 +27,7 @@ import think.rpgitems.RPGItems;
 import think.rpgitems.data.Context;
 import think.rpgitems.data.Font;
 import think.rpgitems.item.RPGItem;
+import think.rpgitems.power.chain.PowerChain;
 import think.rpgitems.power.marker.Selector;
 import think.rpgitems.power.trigger.Trigger;
 import think.rpgitems.utils.MaterialUtils;
@@ -39,6 +40,7 @@ import java.math.BigDecimal;
 import java.nio.ByteBuffer;
 import java.util.*;
 import java.util.concurrent.ThreadLocalRandom;
+import java.util.function.BiConsumer;
 import java.util.function.Supplier;
 import java.util.logging.Level;
 import java.util.regex.Pattern;
@@ -210,7 +212,23 @@ public class Utils {
         return checkAndSetCooldown(power, player, cdTicks, showWarn, showPower, "cooldown." + power.getItem().getUid() + "." + power.getNamespacedKey().toString());
     }
 
+    public static boolean checkCooldown(PowerChain power, Player player, long cdTicks, boolean showWarn, boolean showPower) {
+        return checkAndSetCooldown(power, player, cdTicks, showWarn, showPower, "cooldown." + power.getItem().getUid() + "." + power.getChainId());
+    }
+
+    public static boolean checkAndSetCooldown(PowerChain power, Player player, long cooldownTick, boolean showWarn, boolean showPower, String key) {
+        return checkCooldown(player, cooldownTick, showWarn, key, (cooldown, nowTime) -> {
+            showCDWarning(player, power, cooldown, nowTime, showPower);
+        });
+    }
+
     public static boolean checkAndSetCooldown(Power power, Player player, long cooldownTick, boolean showWarn, boolean showPower, String key) {
+        return checkCooldown(player, cooldownTick, showWarn, key, (cooldown, nowTime) -> {
+            showCDWarning(player, power, cooldown, nowTime, showPower);
+        });
+    }
+
+    private static boolean checkCooldown(Player player, long cooldownTick, boolean showWarn, String key, BiConsumer<Long, Long> cdWarning) {
         long cooldown;
         Long value = (Long) Context.instance().get(player.getUniqueId(), key);
         long nowTime = Context.getCurrentMillis();
@@ -225,14 +243,27 @@ public class Utils {
             return true;
         } else {
             if (showWarn) {
-                I18n i18n = I18n.getInstance(player.getLocale());
-                if (showPower) {
-                    player.sendMessage(i18n.format("message.cooldown.power", ((double) (cooldown - nowTime)) / 50d / 20d, power.getItem().getDisplayName(), power.getLocalizedName(player)));
-                } else {
-                    player.sendMessage(i18n.format("message.cooldown.general", ((double) (cooldown - nowTime)) / 50d / 20d, power.getItem().getDisplayName()));
-                }
+                cdWarning.accept(cooldown, nowTime);
             }
             return false;
+        }
+    }
+
+    private static void showCDWarning(Player player, Power power, long cooldown, long nowTime, boolean showPower) {
+        I18n i18n = I18n.getInstance(player.getLocale());
+        if (showPower) {
+            player.sendMessage(i18n.format("message.cooldown.power", ((double) (cooldown - nowTime)) / 50d / 20d, power.getItem().getDisplayName(), power.getLocalizedName(player)));
+        } else {
+            player.sendMessage(i18n.format("message.cooldown.general", ((double) (cooldown - nowTime)) / 50d / 20d, power.getItem().getDisplayName()));
+        }
+    }
+
+    private static void showCDWarning(Player player, PowerChain power, long cooldown, long nowTime, boolean showPower) {
+        I18n i18n = I18n.getInstance(player.getLocale());
+        if (showPower) {
+            player.sendMessage(i18n.format("message.cooldown.power", ((double) (cooldown - nowTime)) / 50d / 20d, power.getItem().getDisplayName(), power.getDisplayName()));
+        } else {
+            player.sendMessage(i18n.format("message.cooldown.general", ((double) (cooldown - nowTime)) / 50d / 20d, power.getItem().getDisplayName()));
         }
     }
 

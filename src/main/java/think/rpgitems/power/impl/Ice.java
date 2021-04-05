@@ -20,7 +20,6 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Random;
 
-import static think.rpgitems.power.Utils.checkCooldown;
 import static think.rpgitems.power.Utils.getNearbyEntities;
 
 /**
@@ -34,18 +33,6 @@ import static think.rpgitems.power.Utils.getNearbyEntities;
 @Meta(defaultTrigger = "RIGHT_CLICK", withSelectors = true, generalInterface = PowerPlain.class, implClass = Ice.Impl.class)
 public class Ice extends BasePower {
 
-    @Property(order = 0)
-    public int cooldown = 0;
-    @Property
-    public int cost = 0;
-
-    /**
-     * Cost of this power
-     */
-    public int getCost() {
-        return cost;
-    }
-
     @Override
     public String getName() {
         return "ice";
@@ -53,14 +40,7 @@ public class Ice extends BasePower {
 
     @Override
     public String displayText() {
-        return I18n.formatDefault("power.ice", (double) getCooldown() / 20d);
-    }
-
-    /**
-     * Cooldown time of this power
-     */
-    public int getCooldown() {
-        return cooldown;
+        return I18n.formatDefault("power.ice", 0);
     }
 
     public class Impl implements PowerRightClick, PowerLeftClick, PowerSprint, PowerSneak, PowerPlain, PowerBowShoot {
@@ -72,8 +52,6 @@ public class Ice extends BasePower {
 
         @Override
         public PowerResult<Void> fire(Player player, ItemStack stack) {
-            if (!checkCooldown(getPower(), player, getCooldown(), true, true)) return PowerResult.cd();
-            if (!getItem().consumeDurability(stack, getCost())) return PowerResult.cost();
             player.playSound(player.getLocation(), Sound.ENTITY_EGG_THROW, 1.0f, 0.1f);
 
             // launch an ice block

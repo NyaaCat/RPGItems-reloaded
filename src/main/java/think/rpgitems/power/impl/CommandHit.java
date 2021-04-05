@@ -12,7 +12,6 @@ import think.rpgitems.event.BeamHitEntityEvent;
 import think.rpgitems.power.*;
 
 import static think.rpgitems.power.Utils.attachPermission;
-import static think.rpgitems.power.Utils.checkAndSetCooldown;
 
 
 /**
@@ -66,9 +65,6 @@ public class CommandHit extends Command {
         @Override
         public PowerResult<Void> fire(Player player, ItemStack stack, LivingEntity entity, Double damage) {
             if (damage == null || damage < getMinDamage()) return PowerResult.noop();
-            if (!checkAndSetCooldown(getPower(), player, getCooldown(), true, false, getItem().getUid() + "." + getCommand()))
-                return PowerResult.cd();
-            if (!getItem().consumeDurability(stack, getCost())) return PowerResult.cost();
 
             return executeCommand(player, entity, damage);
         }

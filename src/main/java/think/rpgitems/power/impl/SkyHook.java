@@ -23,8 +23,6 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.UUID;
 
-import static think.rpgitems.power.Utils.checkCooldown;
-
 /**
  * Power skyhook.
  * <p>
@@ -40,10 +38,6 @@ public class SkyHook extends BasePower {
     @Property(order = 0)
     public Material railMaterial = Material.GLASS;
     @Property
-    public int cooldown = 0;
-    @Property
-    public int cost = 0;
-    @Property
     public int hookingTickCost = 0;
     @Deserializer(MaterialUtils.class)
     @Property(order = 1, required = true)
@@ -56,18 +50,9 @@ public class SkyHook extends BasePower {
 
     @Override
     public void save(ConfigurationSection s) {
-        s.set("cost", getCost());
         s.set("hookingTickCost", getHookingTickCost());
-        s.set("cooldown", getCooldown());
         s.set("railMaterial", getRailMaterial().toString());
         s.set("hookDistance", getHookDistance());
-    }
-
-    /**
-     * Cost of this power
-     */
-    public int getCost() {
-        return cost;
     }
 
     /**
@@ -75,13 +60,6 @@ public class SkyHook extends BasePower {
      */
     public int getHookingTickCost() {
         return hookingTickCost;
-    }
-
-    /**
-     * Cooldown time of this power
-     */
-    public int getCooldown() {
-        return cooldown;
     }
 
     /**
@@ -117,8 +95,6 @@ public class SkyHook extends BasePower {
 
         @Override
         public PowerResult<Void> fire(final Player player, ItemStack stack) {
-            if (!checkCooldown(getPower(), player, getCooldown(), true, true)) return PowerResult.cd();
-            if (!getItem().consumeDurability(stack, getCost())) return PowerResult.cost();
             Boolean isHooking = hooking.get(player.getUniqueId());
             if (isHooking == null) {
                 isHooking = false;

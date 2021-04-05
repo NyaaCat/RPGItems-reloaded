@@ -28,24 +28,12 @@ import static think.rpgitems.power.Utils.*;
 @Meta(defaultTrigger = "RIGHT_CLICK", withSelectors = true, generalInterface = PowerPlain.class, implClass = ShulkerBulletPower.Impl.class)
 public class ShulkerBulletPower extends BasePower {
 
-    @Property(order = 0)
-    public int cooldown = 0;
-    @Property
-    public int cost = 0;
     @Property(order = 1)
     public double range = 10;
 
     @Override
     public void init(ConfigurationSection s) {
-        cooldown = s.getInt("cooldownTime");
         super.init(s);
-    }
-
-    /**
-     * Cost of this power
-     */
-    public int getCost() {
-        return cost;
     }
 
     @Override
@@ -55,14 +43,7 @@ public class ShulkerBulletPower extends BasePower {
 
     @Override
     public String displayText() {
-        return I18n.formatDefault("power.shulkerbullet", (double) getCooldown() / 20d);
-    }
-
-    /**
-     * Cooldown time of this power
-     */
-    public int getCooldown() {
-        return cooldown;
+        return I18n.formatDefault("power.shulkerbullet", (double) 0 / 20d);
     }
 
     /**
@@ -81,8 +62,6 @@ public class ShulkerBulletPower extends BasePower {
         @Override
         @SuppressWarnings("deprecation")
         public PowerResult<Void> fire(Player player, ItemStack stack) {
-            if (!checkCooldown(getPower(), player, getCooldown(), true, true)) return PowerResult.cd();
-            if (!getItem().consumeDurability(stack, getCost())) return PowerResult.cost();
             Events.registerRPGProjectile(getItem(), stack, player);
             org.bukkit.entity.ShulkerBullet bullet = player.launchProjectile(org.bukkit.entity.ShulkerBullet.class, player.getEyeLocation().getDirection());
             bullet.setPersistent(false);

@@ -9,8 +9,6 @@ import think.rpgitems.Events;
 import think.rpgitems.I18n;
 import think.rpgitems.power.*;
 
-import static think.rpgitems.power.Utils.checkCooldown;
-
 /**
  * Power arrow.
  * <p>
@@ -20,18 +18,6 @@ import static think.rpgitems.power.Utils.checkCooldown;
 @Meta(defaultTrigger = "RIGHT_CLICK", generalInterface = PowerPlain.class, implClass = Arrows.Impl.class)
 public class Arrows extends BasePower {
 
-    @Property(order = 0)
-    public int cooldown = 0;
-    @Property
-    public int cost = 0;
-
-    /**
-     * Cost of this power
-     */
-    public int getCost() {
-        return cost;
-    }
-
     @Override
     public String getName() {
         return "arrow";
@@ -39,14 +25,7 @@ public class Arrows extends BasePower {
 
     @Override
     public String displayText() {
-        return I18n.formatDefault("power.arrow", (double) getCooldown() / 20d);
-    }
-
-    /**
-     * Cooldown time of this power
-     */
-    public int getCooldown() {
-        return cooldown;
+        return I18n.formatDefault("power.arrow", (double) 0);
     }
 
     public class Impl implements PowerRightClick, PowerLeftClick, PowerPlain {
@@ -59,8 +38,6 @@ public class Arrows extends BasePower {
         @SuppressWarnings("deprecation")
         @Override
         public PowerResult<Void> fire(Player player, ItemStack stack) {
-            if (!checkCooldown(getPower(), player, getCooldown(), true, true)) return PowerResult.cd();
-            if (!getItem().consumeDurability(stack, getCost())) return PowerResult.cost();
             player.playSound(player.getLocation(), Sound.ENTITY_ARROW_SHOOT, 1.0f, 1.0f);
             Events.registerRPGProjectile(getPower().getItem(), stack, player);
             Arrow arrow = player.launchProjectile(org.bukkit.entity.Arrow.class);

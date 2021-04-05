@@ -24,7 +24,6 @@ import javax.annotation.Nullable;
 import java.util.List;
 import java.util.function.Supplier;
 
-import static think.rpgitems.power.Utils.checkCooldown;
 import static think.rpgitems.power.Utils.getNearbyEntities;
 
 /**
@@ -57,14 +56,9 @@ public class Attract extends BasePower {
     @Property
     public int duration = 5;
     @Property
-    public int cost = 0;
-    @Property
     public int attractingTickCost = 0;
     @Property
     public int attractingEntityTickCost = 0;
-
-    @Property
-    public int cooldown = 0;
 
     @Property
     public boolean attractPlayer;
@@ -103,20 +97,6 @@ public class Attract extends BasePower {
      */
     public int getAttractingTickCost() {
         return attractingTickCost;
-    }
-
-    /**
-     * Cooldown time of this power
-     */
-    public int getCooldown() {
-        return cooldown;
-    }
-
-    /**
-     * Cost of this power
-     */
-    public int getCost() {
-        return cost;
     }
 
     /**
@@ -183,8 +163,6 @@ public class Attract extends BasePower {
         }
 
         private PowerResult<Void> fire(Player player, Location location, ItemStack stack, Supplier<List<Entity>> supplier) {
-            if (!checkCooldown(getPower(), player, getCooldown(), true, true)) return PowerResult.cd();
-            if (!getItem().consumeDurability(stack, getCost())) return PowerResult.cost();
             new BukkitRunnable() {
                 int dur = getDuration();
 

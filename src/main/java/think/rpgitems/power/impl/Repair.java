@@ -22,8 +22,6 @@ import think.rpgitems.power.trigger.BaseTriggers;
 
 import java.util.Collections;
 
-import static think.rpgitems.power.Utils.checkCooldown;
-
 /**
  * Power repair.
  * <p>
@@ -32,10 +30,6 @@ import static think.rpgitems.power.Utils.checkCooldown;
  */
 @Meta(defaultTrigger = "RIGHT_CLICK", generalInterface = PowerPlain.class, implClass = Repair.Impl.class)
 public class Repair extends BasePower {
-
-    @Property
-    public int cooldown = 0;
-
     @Property(order = 2, required = true)
     public int durability = 20;
 
@@ -82,13 +76,6 @@ public class Repair extends BasePower {
 
     public int getAmount() {
         return amount;
-    }
-
-    /**
-     * Cooldown time of this power
-     */
-    public int getCooldown() {
-        return cooldown;
     }
 
     public String getCustomMessage() {
@@ -163,7 +150,6 @@ public class Repair extends BasePower {
 
         @Override
         public PowerResult<Void> fire(Player player, ItemStack stack) {
-            if (!checkCooldown(getPower(), player, getCooldown(), true, true)) return PowerResult.cd();
             int max = getItem().getMaxDurability();
             int repairCount = 0;
             for (int i = 0; i < getAmount(); i++) {

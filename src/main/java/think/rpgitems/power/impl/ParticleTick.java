@@ -10,8 +10,6 @@ import think.rpgitems.power.trigger.Trigger;
 import java.util.Collections;
 import java.util.Set;
 
-import static think.rpgitems.power.Utils.checkCooldown;
-
 /**
  * Power particletick.
  * <p>
@@ -56,8 +54,6 @@ public class ParticleTick extends ParticlePower {
 
         @Override
         public PowerResult<Void> fire(Player player, ItemStack stack) {
-            if (!checkCooldown(getPower(), player, getInterval(), false, true)) return PowerResult.cd();
-            if (!getItem().consumeDurability(stack, getCost())) return PowerResult.cost();
             spawnParticle(player);
             return PowerResult.ok();
         }

@@ -24,8 +24,6 @@ import think.rpgitems.utils.cast.CastUtils;
 import javax.annotation.Nullable;
 import java.util.Optional;
 
-import static think.rpgitems.power.Utils.checkCooldown;
-
 /**
  * Power particle.
  * <p>
@@ -57,12 +55,6 @@ public class ParticlePower extends BasePower {
     @Serializer(ParticleSetter.class)
     @Deserializer(value = ParticleSetter.class)
     public Particle particle = null;
-
-    @Property
-    public int cost = 0;
-
-    @Property
-    public int cooldown = 0;
 
     @Property
     public Material material;
@@ -200,20 +192,6 @@ public class ParticlePower extends BasePower {
         return playLocation;
     }
 
-    /**
-     * Cooldown time of this power
-     */
-    public int getCooldown() {
-        return cooldown;
-    }
-
-    /**
-     * Cost of this power
-     */
-    public int getCost() {
-        return cost;
-    }
-
     @Override
     public String getName() {
         return "particle";
@@ -290,8 +268,6 @@ public class ParticlePower extends BasePower {
 
         @Override
         public PowerResult<Void> fire(Player player, ItemStack stack) {
-            if (!checkCooldown(getPower(), player, getCooldown(), true, true)) return PowerResult.cd();
-            if (!getItem().consumeDurability(stack, getCost())) return PowerResult.cost();
             Location playLocation = player.getLocation();
             PlayLocation playLocation1 = getPlayLocation();
             if (playLocation1.equals(PlayLocation.TARGET)){
@@ -343,7 +319,6 @@ public class ParticlePower extends BasePower {
 
         @Override
         public PowerResult<Double> hit(Player player, ItemStack stack, LivingEntity entity, double damage, EntityDamageByEntityEvent event) {
-            if (!getItem().consumeDurability(stack, getCost())) return PowerResult.cost();
             if (getPlayLocation().equals(PlayLocation.HIT_LOCATION)) {
                 int delay = getDelay();
                 new BukkitRunnable(){
@@ -366,9 +341,6 @@ public class ParticlePower extends BasePower {
 
         @Override
         public PowerResult<Double> hitEntity(Player player, ItemStack stack, LivingEntity entity, double damage, BeamHitEntityEvent event) {
-            if (!checkCooldown(getPower(), player, getCooldown(), true, true)) return PowerResult.cd();
-            if (!getItem().consumeDurability(stack, getCost())) return PowerResult.cost();
-
             int delay = getDelay();
             new BukkitRunnable(){
                 @Override
@@ -386,9 +358,6 @@ public class ParticlePower extends BasePower {
 
         @Override
         public PowerResult<Void> hitBlock(Player player, ItemStack stack, Location location, BeamHitBlockEvent event) {
-            if (!checkCooldown(getPower(), player, getCooldown(), true, true)) return PowerResult.cd();
-            if (!getItem().consumeDurability(stack, getCost())) return PowerResult.cost();
-
             int delay = getDelay();
             new BukkitRunnable(){
                 @Override
@@ -407,9 +376,6 @@ public class ParticlePower extends BasePower {
 
         @Override
         public PowerResult<Void> beamEnd(Player player, ItemStack stack, Location location, BeamEndEvent event) {
-            if (!checkCooldown(getPower(), player, getCooldown(), true, true)) return PowerResult.cd();
-            if (!getItem().consumeDurability(stack, getCost())) return PowerResult.cost();
-
             int delay = getDelay();
             new BukkitRunnable(){
                 @Override
@@ -428,9 +394,6 @@ public class ParticlePower extends BasePower {
 
         @Override
         public PowerResult<Void> projectileHit(Player player, ItemStack stack, ProjectileHitEvent event) {
-            if (!checkCooldown(getPower(), player, getCooldown(), true, true)) return PowerResult.cd();
-            if (!getItem().consumeDurability(stack, getCost())) return PowerResult.cost();
-
             int delay = getDelay();
             new BukkitRunnable(){
                 @Override
@@ -449,8 +412,6 @@ public class ParticlePower extends BasePower {
 
         @Override
         public PowerResult<Void> fire(Player player, ItemStack stack, LivingEntity entity, @Nullable Double value) {
-            if (!checkCooldown(getPower(), player, getCooldown(), true, true)) return PowerResult.cd();
-            if (!getItem().consumeDurability(stack, getCost())) return PowerResult.cost();
             Location location = player.getLocation();
             PlayLocation playLocation = getPlayLocation();
             switch (playLocation){
@@ -470,8 +431,6 @@ public class ParticlePower extends BasePower {
 
         @Override
         public PowerResult<Void> fire(Player player, ItemStack stack, Location location) {
-            if (!checkCooldown(getPower(), player, getCooldown(), true, true)) return PowerResult.cd();
-            if (!getItem().consumeDurability(stack, getCost())) return PowerResult.cost();
             PlayLocation playLocation = getPlayLocation();
             switch (playLocation){
                 case SELF:

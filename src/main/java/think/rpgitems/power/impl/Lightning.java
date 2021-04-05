@@ -23,17 +23,8 @@ import java.util.Random;
 public class Lightning extends BasePower {
     @Property(order = 0)
     public int chance = 20;
-    @Property
-    public int cost = 0;
 
     private Random random = new Random();
-
-    /**
-     * Cost of this power
-     */
-    public int getCost() {
-        return cost;
-    }
 
     @Override
     public String getName() {
@@ -67,7 +58,6 @@ public class Lightning extends BasePower {
         @Override
         public PowerResult<Void> fire(Player player, ItemStack stack, Location location) {
             if (getRandom().nextInt(getChance()) == 0) {
-                if (!getItem().consumeDurability(stack, getCost())) return PowerResult.cost();
                 location.getWorld().strikeLightning(location);
                 Context.instance().putExpiringSeconds(player.getUniqueId(), "lightning.location", location, 3);
                 return PowerResult.ok();

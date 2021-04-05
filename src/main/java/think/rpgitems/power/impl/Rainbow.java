@@ -17,8 +17,6 @@ import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.Random;
 
-import static think.rpgitems.power.Utils.checkCooldown;
-
 /**
  * Power rainbow.
  * <p>
@@ -30,23 +28,12 @@ import static think.rpgitems.power.Utils.checkCooldown;
 @Meta(defaultTrigger = "RIGHT_CLICK", generalInterface = PowerPlain.class, implClass = Rainbow.Impl.class)
 public class Rainbow extends BasePower {
 
-    @Property(order = 0)
-    public int cooldown = 0;
     @Property(order = 1)
     public int count = 5;
     @Property(order = 2)
     public boolean isFire = false;
-    @Property
-    public int cost = 0;
 
     private Random random = new Random();
-
-    /**
-     * Cost of this power
-     */
-    public int getCost() {
-        return cost;
-    }
 
     @Override
     public String getName() {
@@ -55,7 +42,7 @@ public class Rainbow extends BasePower {
 
     @Override
     public String displayText() {
-        return I18n.formatDefault("power.rainbow", getCount(), (double) getCooldown() / 20d);
+        return I18n.formatDefault("power.rainbow", getCount(), (double) 0 / 20d);
     }
 
     /**
@@ -63,13 +50,6 @@ public class Rainbow extends BasePower {
      */
     public int getCount() {
         return count;
-    }
-
-    /**
-     * Cooldown time of this power
-     */
-    public int getCooldown() {
-        return cooldown;
     }
 
     /**
@@ -88,8 +68,6 @@ public class Rainbow extends BasePower {
 
         @Override
         public PowerResult<Void> fire(Player player, ItemStack stack) {
-            if (!checkCooldown(getPower(), player, getCooldown(), true, true)) return PowerResult.cd();
-            if (!getItem().consumeDurability(stack, getCost())) return PowerResult.cost();
             player.playSound(player.getLocation(), Sound.ENTITY_ARROW_SHOOT, 1.0f, 1.0f);
             final ArrayList<FallingBlock> blocks = new ArrayList<>();
             for (int i = 0; i < getCount(); i++) {

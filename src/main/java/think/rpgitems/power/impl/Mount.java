@@ -22,8 +22,6 @@ import static think.rpgitems.power.Utils.*;
 
 @Meta(immutableTrigger = true, withSelectors = true, implClass = Mount.Impl.class)
 public class Mount extends BasePower {
-    @Property(order = 0)
-    public int cooldown = 0;
     @Property(order = 1)
     public int maxDistance = 5;
     @Property(order = 2)
@@ -44,18 +42,13 @@ public class Mount extends BasePower {
 
     @Override
     public String displayText() {
-        return I18n.formatDefault("power.mount", (double) getCooldown() / 20D);
-    }
-
-    public int getCooldown() {
-        return cooldown;
+        return I18n.formatDefault("power.mount", (0) / 20D);
     }
 
     public class Impl implements PowerRightClick {
 
         @Override
         public PowerResult<Void> rightClick(Player player, ItemStack stack, PlayerInteractEvent event) {
-            if (!checkCooldown(getPower(), player, getCooldown(), true, true)) return PowerResult.cd();
             if (player.isInsideVehicle()) {
                 return PowerResult.fail();
             }

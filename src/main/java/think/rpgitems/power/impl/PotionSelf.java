@@ -16,8 +16,6 @@ import think.rpgitems.I18n;
 import think.rpgitems.power.*;
 import think.rpgitems.utils.PotionEffectUtils;
 
-import static think.rpgitems.power.Utils.checkCooldown;
-
 /**
  * Power potionself.
  * <p>
@@ -29,14 +27,10 @@ import static think.rpgitems.power.Utils.checkCooldown;
 @Meta(defaultTrigger = "RIGHT_CLICK", generalInterface = PowerPlain.class, implClass = PotionSelf.Impl.class)
 public class PotionSelf extends BasePower {
 
-    @Property(order = 0)
-    public int cooldown = 0;
     @Property(order = 2)
     public int amplifier = 1;
     @Property(order = 1)
     public int duration = 20;
-    @Property
-    public int cost = 0;
     @Deserializer(PotionEffectUtils.class)
     @Serializer(PotionEffectUtils.class)
     @Property(order = 3, required = true)
@@ -58,20 +52,6 @@ public class PotionSelf extends BasePower {
         }
 
         super.init(section);
-    }
-
-    /**
-     * Cooldown time of this power
-     */
-    public int getCooldown() {
-        return cooldown;
-    }
-
-    /**
-     * Cost of this power
-     */
-    public int getCost() {
-        return cost;
     }
 
     @Override
@@ -127,8 +107,6 @@ public class PotionSelf extends BasePower {
 
         @Override
         public PowerResult<Void> fire(Player player, ItemStack stack) {
-            if (!checkCooldown(getPower(), player, getCooldown(), true, true)) return PowerResult.cd();
-            if (!getItem().consumeDurability(stack, getCost())) return PowerResult.cost();
             if (isClear()) {
                 player.removePotionEffect(getType());
             } else {

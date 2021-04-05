@@ -21,8 +21,6 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Random;
 
-import static think.rpgitems.power.Utils.checkCooldown;
-
 /**
  * Power torch.
  * <p>
@@ -31,10 +29,6 @@ import static think.rpgitems.power.Utils.checkCooldown;
  */
 @Meta(defaultTrigger = "RIGHT_CLICK", generalInterface = PowerPlain.class, implClass = Torch.Impl.class)
 public class Torch extends BasePower {
-    @Property(order = 0)
-    public int cooldown = 0;
-    @Property
-    public int cost = 0;
 
     private List<BlockFace> getPossibleFaces(Location loc) {
         List<BlockFace> faces = new ArrayList<>();
@@ -51,13 +45,6 @@ public class Torch extends BasePower {
         return faces;
     }
 
-    /**
-     * Cost of this power
-     */
-    public int getCost() {
-        return cost;
-    }
-
     @Override
     public String getName() {
         return "torch";
@@ -65,14 +52,7 @@ public class Torch extends BasePower {
 
     @Override
     public String displayText() {
-        return I18n.formatDefault("power.torch", (double) getCooldown() / 20d);
-    }
-
-    /**
-     * Cooldown time of this power
-     */
-    public int getCooldown() {
-        return cooldown;
+        return I18n.formatDefault("power.torch", (0) / 20d);
     }
 
     public class Impl implements PowerPlain, PowerLeftClick, PowerRightClick, PowerBowShoot {
@@ -85,8 +65,6 @@ public class Torch extends BasePower {
 
         @Override
         public PowerResult<Void> fire(final Player player, ItemStack stack) {
-            if (!checkCooldown(getPower(), player, getCooldown(), true, true)) return PowerResult.cd();
-            if (!getItem().consumeDurability(stack, getCost())) return PowerResult.cost();
             player.playSound(player.getLocation(), Sound.ITEM_FLINTANDSTEEL_USE, 1.0f, 0.8f);
             final FallingBlock block = player.getWorld().spawnFallingBlock(player.getLocation().add(0, 1.8, 0), Material.TORCH.createBlockData());
             block.setVelocity(player.getLocation().getDirection().multiply(2d));

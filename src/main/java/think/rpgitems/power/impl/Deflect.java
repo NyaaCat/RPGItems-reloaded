@@ -25,7 +25,7 @@ import static think.rpgitems.power.Utils.*;
  * Power deflect.
  * <p>
  * Deflect arrows or fireballs towards player within {@link #facing} when
- * 1. manual triggered when some of initiative trigger are enabled with a cooldown of {@link #cooldown} and duration {@link #duration}
+ * 1. manual triggered when some of initiative trigger are enabled with a duration {@link #duration}
  * 2. auto triggered when {@link BaseTriggers#HIT_TAKEN} is enabled with a chance of {@link #chance} and a cooldown of {@link #cooldownpassive}
  * </p>
  */
@@ -34,12 +34,8 @@ import static think.rpgitems.power.Utils.*;
 public class Deflect extends BasePower {
 
     private static Map<UUID, Long> time = new HashMap<>();
-    @Property(order = 2)
-    public int cooldown = 0;
     @Property(order = 4)
     public int cooldownpassive = 0;
-    @Property
-    public int cost = 0;
     @Property
     public int deflectCost = 0;
     @Property
@@ -87,13 +83,6 @@ public class Deflect extends BasePower {
     }
 
     /**
-     * Cost of this power
-     */
-    public int getCost() {
-        return cost;
-    }
-
-    /**
      * Cost of each deflecting
      */
     public int getDeflectCost() {
@@ -121,14 +110,7 @@ public class Deflect extends BasePower {
 
     @Override
     public String displayText() {
-        return I18n.formatDefault("power.deflect", (double) getCooldown() / 20d);
-    }
-
-    /**
-     * Cooldown time of this power
-     */
-    public int getCooldown() {
-        return cooldown;
+        return I18n.formatDefault("power.deflect", (0) / 20d);
     }
 
     public static Map<UUID, Long> getTime() {
@@ -213,10 +195,6 @@ public class Deflect extends BasePower {
 
         @Override
         public PowerResult<Void> fire(Player player, ItemStack stack) {
-            if (!checkAndSetCooldown(getPower(), player, getCooldown(), true, true, getItem().getUid() + "." + "deflect.initiative"))
-                return PowerResult.noop();
-            if (!getItem().consumeDurability(stack, getCost()))
-                return PowerResult.cost();
             getTime().put(player.getUniqueId(), System.currentTimeMillis() / 50 + getDuration());
             return PowerResult.ok();
         }

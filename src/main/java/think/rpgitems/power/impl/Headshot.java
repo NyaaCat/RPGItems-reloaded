@@ -27,9 +27,6 @@ public class Headshot extends BasePower {
     public double factor = 1.5;
 
     @Property
-    public int cost = 0;
-
-    @Property
     public boolean particleEnemy = true;
 
     @Property
@@ -40,13 +37,6 @@ public class Headshot extends BasePower {
 
     @Property
     public boolean setBaseDamage = false;
-
-    /**
-     * Cost of this power
-     */
-    public int getCost() {
-        return cost;
-    }
 
     @Override
     public String getName() {
@@ -117,7 +107,6 @@ public class Headshot extends BasePower {
             }
             if (hs) {
                 Context.instance().putExpiringSeconds(player.getUniqueId(), "headshot.target", entity, 3);
-                if (!getItem().consumeDurability(stack, getCost())) return PowerResult.cost();
                 if (isSoundSelf()) {
                     player.getWorld().playSound(player.getLocation(), Sound.BLOCK_ANVIL_PLACE, 1, 3);
                 }

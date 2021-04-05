@@ -28,15 +28,6 @@ public class Pumpkin extends BasePower {
     public int chance = 20;
     @Property(order = 1, required = true)
     public double drop = 0;
-    @Property
-    public int cost = 0;
-
-    /**
-     * Cost of this power
-     */
-    public int getCost() {
-        return cost;
-    }
 
     /**
      * Drop chance of the pumpkin
@@ -66,7 +57,6 @@ public class Pumpkin extends BasePower {
 
         @Override
         public PowerResult<Double> hit(Player player, ItemStack stack, LivingEntity entity, double damage, EntityDamageByEntityEvent event) {
-            if (!getItem().consumeDurability(stack, getCost())) return PowerResult.cost();
             if (rand.nextInt(getChance()) != 0) return PowerResult.noop();
             if (entity instanceof Skeleton || entity instanceof Zombie) {
                 if (entity.getEquipment().getHelmet() == null || entity.getEquipment().getHelmet().getType() == Material.AIR) {

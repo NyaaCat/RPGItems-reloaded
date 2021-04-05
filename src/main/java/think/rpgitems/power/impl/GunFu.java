@@ -32,10 +32,6 @@ import static think.rpgitems.power.Utils.*;
 @Meta(immutableTrigger = true, withSelectors = true, implClass = GunFu.Impl.class)
 public class GunFu extends BasePower {
 
-    @Property(order = 0, alias = "cooldownTime")
-    public int cooldown = 0;
-    @Property
-    public int cost = 0;
     @Property(order = 1)
     public double distance = 20;
     @Property
@@ -59,13 +55,6 @@ public class GunFu extends BasePower {
     @Override
     public void init(ConfigurationSection s) {
         super.init(s);
-    }
-
-    /**
-     * Cost of this power
-     */
-    public int getCost() {
-        return cost;
     }
 
     public int getDelay() {
@@ -98,14 +87,7 @@ public class GunFu extends BasePower {
 
     @Override
     public String displayText() {
-        return I18n.formatDefault("power.gunfu", (double) getCooldown() / 20d);
-    }
-
-    /**
-     * Cooldown time of this power
-     */
-    public int getCooldown() {
-        return cooldown;
+        return I18n.formatDefault("power.gunfu", (0) / 20d);
     }
 
     public double getVelFactor() {
@@ -123,8 +105,6 @@ public class GunFu extends BasePower {
 
         @Override
         public PowerResult<Float> bowShoot(Player player, ItemStack stack, EntityShootBowEvent event) {
-            if (!checkCooldown(getPower(), player, getCooldown(), true, true)) return PowerResult.cd();
-            if (!getItem().consumeDurability(stack, getCost())) return PowerResult.cost();
             if (event.getProjectile() instanceof Projectile) {
                 return run(player, (Projectile) event.getProjectile(), event.getForce());
             }
@@ -170,8 +150,6 @@ public class GunFu extends BasePower {
         @Override
         @SuppressWarnings("deprecation")
         public PowerResult<Void> projectileLaunch(Player player, ItemStack stack, ProjectileLaunchEvent event) {
-            if (!checkCooldown(getPower(), player, getCooldown(), true, true)) return PowerResult.cd();
-            if (!getItem().consumeDurability(stack, getCost())) return PowerResult.cost();
             Projectile projectile = event.getEntity();
             return run(player, projectile, 1).with(null);
         }

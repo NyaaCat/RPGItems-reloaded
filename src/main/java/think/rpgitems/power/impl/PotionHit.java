@@ -33,8 +33,6 @@ public class PotionHit extends BasePower {
     public int duration = 20;
     @Property(order = 2)
     public int amplifier = 1;
-    @Property
-    public int cost = 0;
 
     private Random rand = new Random();
 
@@ -43,13 +41,6 @@ public class PotionHit extends BasePower {
      */
     public int getAmplifier() {
         return amplifier;
-    }
-
-    /**
-     * Cost of this power
-     */
-    public int getCost() {
-        return cost;
     }
 
     /**
@@ -99,7 +90,6 @@ public class PotionHit extends BasePower {
             if (getRand().nextInt(getChance()) != 0) {
                 return PowerResult.noop();
             }
-            if (!getItem().consumeDurability(stack, getCost())) return PowerResult.cost();
             entity.addPotionEffect(new PotionEffect(getType(), getDuration(), getAmplifier()), true);
             return PowerResult.ok();
         }

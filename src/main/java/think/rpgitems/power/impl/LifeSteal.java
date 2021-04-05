@@ -39,18 +39,9 @@ public class LifeSteal extends BasePower {
     @Property(order = 0)
     public int chance = 20;
     @Property
-    public int cost = 0;
-    @Property
     public double factor = 1;
 
     private Random random = new Random();
-
-    /**
-     * Cost of this power
-     */
-    public int getCost() {
-        return cost;
-    }
 
     /**
      * Factor of life steal
@@ -90,7 +81,6 @@ public class LifeSteal extends BasePower {
         @Override
         public PowerResult<Void> fire(Player player, ItemStack stack, LivingEntity entity, Double damage) {
             if (getRandom().nextInt(getChance()) == 0 && damage != null) {
-                if (!getItem().consumeDurability(stack, getCost())) return PowerResult.cost();
                 player.setHealth(Math.max(Math.min(player.getHealth() + damage * getFactor(), player.getAttribute(Attribute.GENERIC_MAX_HEALTH).getValue()), 0.01));
                 return PowerResult.ok();
             }

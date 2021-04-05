@@ -13,7 +13,6 @@ import think.rpgitems.power.*;
 
 import static java.lang.Double.max;
 import static java.lang.Double.min;
-import static think.rpgitems.power.Utils.checkCooldown;
 
 
 /**
@@ -26,28 +25,10 @@ import static think.rpgitems.power.Utils.checkCooldown;
 @Meta(defaultTrigger = "HIT", implClass = RealDamage.Impl.class)
 public class RealDamage extends BasePower {
 
-    @Property(order = 0)
-    public int cooldown = 0;
-    @Property
-    public int cost = 0;
     @Property(order = 1, required = true)
     public double realDamage = 0;
     @Property
     public double minDamage = 0;
-
-    /**
-     * Cooldown time of this power
-     */
-    public int getCooldown() {
-        return cooldown;
-    }
-
-    /**
-     * Cost of this power
-     */
-    public int getCost() {
-        return cost;
-    }
 
     /**
      * Minimum damage to trigger
@@ -78,8 +59,6 @@ public class RealDamage extends BasePower {
         @Override
         public PowerResult<Double> hit(Player player, ItemStack stack, LivingEntity entity, double damage, EntityDamageByEntityEvent event) {
             if (damage < getMinDamage()) return PowerResult.noop();
-            if (!checkCooldown(getPower(), player, getCooldown(), true, true)) return PowerResult.cd();
-            if (!getItem().consumeDurability(stack, getCost())) return PowerResult.cost();
             if (entity.hasPotionEffect(PotionEffectType.DAMAGE_RESISTANCE)) {
                 PotionEffect e = entity.getPotionEffect(PotionEffectType.DAMAGE_RESISTANCE);
                 if (e.getAmplifier() >= 4) return PowerResult.noop();

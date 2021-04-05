@@ -59,9 +59,6 @@ import static think.rpgitems.power.Utils.getNearbyEntities;
         PowerLocation.class
 }, implClass = AOEDamage.Impl.class)
 public class AOEDamage extends BasePower {
-
-    @Property
-    public int cooldown = 0;
     @Property
     public int range = 10;
     @Property
@@ -78,8 +75,6 @@ public class AOEDamage extends BasePower {
     public boolean mustsee = false;
     @Property
     public String name = null;
-    @Property
-    public int cost = 0;
     @Property
     public double damage = 0;
 
@@ -129,20 +124,6 @@ public class AOEDamage extends BasePower {
      */
     public double getAngle() {
         return angle;
-    }
-
-    /**
-     * Cooldown time of this power
-     */
-    public int getCooldown() {
-        return cooldown;
-    }
-
-    /**
-     * Cost of this power
-     */
-    public int getCost() {
-        return cost;
     }
 
     /**
@@ -248,8 +229,6 @@ public class AOEDamage extends BasePower {
         }
 
         private PowerResult<Void> fire(Player player, ItemStack stack, Supplier<List<LivingEntity>> supplier){
-            if (!checkCooldown(getPower(), player, getCooldown(), true, true)) return PowerResult.cd();
-            if (!getItem().consumeDurability(stack, getCost())) return PowerResult.cost();
             Context.instance().putTemp(player.getUniqueId(), DAMAGE_SOURCE, getNamespacedKey().toString());
             Context.instance().putTemp(player.getUniqueId(), OVERRIDING_DAMAGE, getDamage());
             Context.instance().putTemp(player.getUniqueId(), SUPPRESS_MELEE, isSuppressMelee());

@@ -32,21 +32,12 @@ public class DeathCommand extends BasePower {
     public String desc = "";
     @Property(order = 2)
     public int count = 1;
-    @Property
-    public int cost = 0;
 
     /**
      * Command to be executed
      */
     public String getCommand() {
         return command;
-    }
-
-    /**
-     * Cost of this power
-     */
-    public int getCost() {
-        return cost;
     }
 
     /**
@@ -88,7 +79,6 @@ public class DeathCommand extends BasePower {
         @Override
         public PowerResult<Double> hit(Player player, ItemStack stack, LivingEntity entity, double damage, EntityDamageByEntityEvent event) {
             if (getRand().nextInt(getChance()) == 0) {
-                if (!getItem().consumeDurability(stack, getCost())) return PowerResult.cost();
                 Location loc = entity.getLocation();
                 int x = (int) loc.getX();
                 int y = (int) loc.getY();

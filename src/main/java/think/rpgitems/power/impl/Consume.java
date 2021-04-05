@@ -33,8 +33,6 @@ import think.rpgitems.power.trigger.BaseTriggers;
 
 import java.util.Collections;
 
-import static think.rpgitems.power.Utils.checkCooldown;
-
 /**
  * Power consume.
  * <p>
@@ -44,11 +42,6 @@ import static think.rpgitems.power.Utils.checkCooldown;
  */
 @Meta(defaultTrigger = "RIGHT_CLICK", generalInterface = PowerPlain.class, implClass = Consume.Impl.class)
 public class Consume extends BasePower {
-    @Property(order = 1)
-    public int cooldown = 0;
-
-    @Property
-    public int cost = 0;
 
     @Property
     public boolean requireHurtByEntity = true;
@@ -58,20 +51,6 @@ public class Consume extends BasePower {
         boolean isRight = section.getBoolean("isRight", true);
         triggers = Collections.singleton(isRight ? BaseTriggers.RIGHT_CLICK : BaseTriggers.LEFT_CLICK);
         super.init(section);
-    }
-
-    /**
-     * Cooldown time of this power
-     */
-    public int getCooldown() {
-        return cooldown;
-    }
-
-    /**
-     * Cost of this power
-     */
-    public int getCost() {
-        return cost;
     }
 
     @Override
@@ -95,8 +74,6 @@ public class Consume extends BasePower {
         }
 
         public PowerResult<Void> fire(final Player player, ItemStack s) {
-            if (!checkCooldown(getPower(), player, getCooldown(), false, true)) return PowerResult.cd();
-            if (!getItem().consumeDurability(s, getCost())) return PowerResult.cost();
             int count = s.getAmount() - 1;
             if (count == 0) {
                 s.setAmount(0);
