@@ -8,10 +8,7 @@ import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.util.Vector;
 import think.rpgitems.item.RPGItem;
-import think.rpgitems.power.Condition;
-import think.rpgitems.power.Power;
-import think.rpgitems.power.PowerResult;
-import think.rpgitems.power.Utils;
+import think.rpgitems.power.*;
 import think.rpgitems.power.chain.utils.LocationVector;
 import think.rpgitems.power.trigger.Trigger;
 import think.rpgitems.utils.cast.CastParameter;
@@ -50,9 +47,19 @@ public class PowerChain {
      * @param trigger
      * @return whether a trigger can trigger a power.
      */
-    public boolean supportTrigger(Power power, String trigger){
-        //todo implement this
-        throw new UnsupportedOperationException();
+    @SuppressWarnings("rawtypes")
+    public static boolean isCompatibleTrigger(Power power, String trigger){
+        final Trigger trigger1 = Trigger.get(trigger);
+        if (trigger1 == null) {
+            return false;
+        }
+        final Class<? extends Power> pClass = power.getClass();
+        final Meta annotation = pClass.getAnnotation(Meta.class);
+        if (annotation != null){
+            final Class powerClass = trigger1.getPowerClass();
+            return annotation.implClass().isAssignableFrom(powerClass);
+        }
+        return false;
     }
 
 
