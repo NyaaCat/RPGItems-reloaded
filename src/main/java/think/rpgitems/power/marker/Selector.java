@@ -196,7 +196,13 @@ public class Selector extends BaseMarker {
         }
         if (tag != null) {
             Pair<Set<String>, Set<String>> t = tagCache.getUnchecked(tag);
-            ents = ents.stream().filter(entity -> matchTag(entity, t)).collect(Collectors.toList());
+            Set<String> mustHave = t.getKey();
+            Set<String> mustNotHave = t.getKey();
+            Pair<Set<String>, Set<String>> tag = Pair.of(
+                    mustHave.stream().map(s -> s.replaceAll("\\{player}", p.getName())).collect(Collectors.toSet()),
+                    mustNotHave.stream().map(s -> s.replaceAll("\\{player}", p.getName())).collect(Collectors.toSet())
+                    );
+            ents = ents.stream().filter(entity -> matchTag(entity, tag)).collect(Collectors.toList());
         }
         if (team != null) {
             Pair<Set<String>, Set<String>> t = teamCache.getUnchecked(team);
