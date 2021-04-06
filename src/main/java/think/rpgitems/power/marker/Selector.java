@@ -197,7 +197,7 @@ public class Selector extends BaseMarker {
         if (tag != null) {
             Pair<Set<String>, Set<String>> t = tagCache.getUnchecked(tag);
             Set<String> mustHave = t.getKey();
-            Set<String> mustNotHave = t.getKey();
+            Set<String> mustNotHave = t.getValue();
             Pair<Set<String>, Set<String>> tag = Pair.of(
                     mustHave.stream().map(s -> s.replaceAll("\\{player}", p.getName())).collect(Collectors.toSet()),
                     mustNotHave.stream().map(s -> s.replaceAll("\\{player}", p.getName())).collect(Collectors.toSet())
