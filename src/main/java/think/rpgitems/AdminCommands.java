@@ -155,6 +155,9 @@ public class AdminCommands extends RPGCommandReceiver {
     @SubCommand("template")
     public TemplateCommands templateCommand;
 
+    @SubCommand("meta")
+    public MetaCommands metaCommands;
+
     @SubCommand("debug")
     public void debug(CommandSender sender, Arguments args) {
         Player player = asPlayer(sender);
