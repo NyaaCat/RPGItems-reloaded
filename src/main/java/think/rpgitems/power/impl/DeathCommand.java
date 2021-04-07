@@ -75,25 +75,25 @@ public class DeathCommand extends BasePower {
         return rand;
     }
 
-    public class Impl implements PowerHit {
+    public static class Impl implements PowerHit<DeathCommand> {
         @Override
-        public PowerResult<Double> hit(Player player, ItemStack stack, LivingEntity entity, double damage, EntityDamageByEntityEvent event) {
-            if (getRand().nextInt(getChance()) == 0) {
+        public PowerResult<Double> hit(DeathCommand power, Player player, ItemStack stack, LivingEntity entity, double damage, EntityDamageByEntityEvent event) {
+            if (getRand().nextInt(power.getChance()) == 0) {
                 Location loc = entity.getLocation();
                 int x = (int) loc.getX();
                 int y = (int) loc.getY();
                 int z = (int) loc.getZ();
                 entity.setHealth(0);
-                String cmd = getCommand().replace("${x}", String.valueOf(x)).replace("${y}", String.valueOf(y)).replace("${z}", String.valueOf(z));
-                for (int i = 0; i < getCount(); i++) Bukkit.dispatchCommand(Bukkit.getConsoleSender(), cmd);
+                String cmd = power.getCommand().replace("${x}", String.valueOf(x)).replace("${y}", String.valueOf(y)).replace("${z}", String.valueOf(z));
+                for (int i = 0; i < power.getCount(); i++) Bukkit.dispatchCommand(Bukkit.getConsoleSender(), cmd);
                 return PowerResult.ok(damage);
             }
             return PowerResult.noop();
         }
 
         @Override
-        public Power getPower() {
-            return DeathCommand.this;
+        public Class<? extends DeathCommand> getPowerClass() {
+            return DeathCommand.class;
         }
     }
 }

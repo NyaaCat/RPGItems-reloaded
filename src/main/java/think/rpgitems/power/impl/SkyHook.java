@@ -161,7 +161,7 @@ public class SkyHook extends BasePower {
         }
 
         @Override
-        public Power getPower() {
+        public Power getPowerClass() {
             return SkyHook.this;
         }
 

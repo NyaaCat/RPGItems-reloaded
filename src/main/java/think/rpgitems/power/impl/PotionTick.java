@@ -113,7 +113,7 @@ public class PotionTick extends BasePower {
         }
 
         @Override
-        public Power getPower() {
+        public Power getPowerClass() {
             return PotionTick.this;
         }
 

@@ -104,7 +104,7 @@ public class Throw extends BasePower {
         }
 
         @Override
-        public Power getPower() {
+        public Power getPowerClass() {
             return Throw.this;
         }
 

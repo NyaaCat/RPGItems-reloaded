@@ -209,7 +209,7 @@ public class Attachments extends BasePower {
         }
 
         @Override
-        public Power getPower() {
+        public Power getPowerClass() {
             return Attachments.this;
         }
     }

@@ -254,7 +254,7 @@ public class Scoreboard extends BasePower {
         }
 
         @Override
-        public Power getPower() {
+        public Power getPowerClass() {
             return Scoreboard.this;
         }
 

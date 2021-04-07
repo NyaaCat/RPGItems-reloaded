@@ -129,7 +129,7 @@ public class Ice extends BasePower {
         }
 
         @Override
-        public Power getPower() {
+        public Power getPowerClass() {
             return Ice.this;
         }
 

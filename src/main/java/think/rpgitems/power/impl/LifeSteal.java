@@ -88,7 +88,7 @@ public class LifeSteal extends BasePower {
         }
 
         @Override
-        public Power getPower() {
+        public Power getPowerClass() {
             return LifeSteal.this;
         }
     }

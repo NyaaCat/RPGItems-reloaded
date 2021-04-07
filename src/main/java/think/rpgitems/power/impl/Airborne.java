@@ -66,7 +66,7 @@ public class Airborne extends BasePower {
         }
 
         @Override
-        public Class<Airborne> getPowerClass() {
+        public Class<? extends Airborne> getPowerClass() {
             return Airborne.class;
         }
     }

@@ -164,7 +164,7 @@ public class AOECommand extends Command {
         }
 
         @Override
-        public Class<AOECommand> getPowerClass() {
+        public Class<? extends AOECommand> getPowerClass() {
             return AOECommand.class;
         }
 

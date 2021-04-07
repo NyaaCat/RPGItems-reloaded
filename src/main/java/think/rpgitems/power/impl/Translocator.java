@@ -131,7 +131,7 @@ public class Translocator extends BasePower {
         }
 
         @Override
-        public Power getPower() {
+        public Power getPowerClass() {
             return Translocator.this;
         }
 

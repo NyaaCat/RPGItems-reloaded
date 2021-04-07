@@ -22,7 +22,7 @@ public class RgiParameter<T> {
         return item;
     }
 
-    public Power getPower() {
+    public Power getPowerClass() {
         return power;
     }
 

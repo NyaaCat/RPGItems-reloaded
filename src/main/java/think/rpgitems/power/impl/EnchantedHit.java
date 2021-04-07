@@ -59,29 +59,28 @@ public class EnchantedHit extends BasePower {
     private enum Mode {
         ADDITION,
         MULTIPLICATION,
-        ;
     }
 
-    public class Impl implements PowerHit {
+    public static class Impl implements PowerHit<EnchantedHit> {
         @Override
-        public PowerResult<Double> hit(Player player, ItemStack stack, LivingEntity entity, double damage, EntityDamageByEntityEvent event) {
-            int enchLevel = stack.getEnchantmentLevel(getEnchantmentType());
-            if (getMode() == Mode.ADDITION) {
-                damage += (enchLevel * getAmountPerLevel());
+        public PowerResult<Double> hit(EnchantedHit power, Player player, ItemStack stack, LivingEntity entity, double damage, EntityDamageByEntityEvent event) {
+            int enchLevel = stack.getEnchantmentLevel(power.getEnchantmentType());
+            if (power.getMode() == Mode.ADDITION) {
+                damage += (enchLevel * power.getAmountPerLevel());
             }
-            if (getMode() == Mode.MULTIPLICATION) {
-                damage *= Math.pow(getAmountPerLevel(), enchLevel);
+            if (power.getMode() == Mode.MULTIPLICATION) {
+                damage *= Math.pow(power.getAmountPerLevel(), enchLevel);
             }
             if (damage < 0) damage = 0;
-            if (isSetBaseDamage()) {
+            if (power.isSetBaseDamage()) {
                 event.setDamage(damage);
             }
             return PowerResult.ok(damage);
         }
 
         @Override
-        public Power getPower() {
-            return EnchantedHit.this;
+        public Class<? extends EnchantedHit> getPowerClass() {
+            return EnchantedHit.class;
         }
     }
 }

@@ -202,133 +202,133 @@ public class Dummy extends BasePower {
         return globalCooldown;
     }
 
-    public class Impl implements PowerHit, PowerHitTaken, PowerLeftClick, PowerRightClick, PowerOffhandClick, PowerProjectileHit, PowerSneak, PowerSneaking, PowerSprint, PowerOffhandItem, PowerMainhandItem, PowerTick, PowerPlain, PowerLivingEntity, PowerHurt, PowerBowShoot, PowerBeamHit {
+    public static class Impl implements PowerHit<Dummy>, PowerHitTaken<Dummy>, PowerLeftClick<Dummy>, PowerRightClick<Dummy>, PowerOffhandClick<Dummy>, PowerProjectileHit<Dummy>, PowerSneak<Dummy>, PowerSneaking<Dummy>, PowerSprint<Dummy>, PowerOffhandItem<Dummy>, PowerMainhandItem<Dummy>, PowerTick<Dummy>, PowerPlain<Dummy>, PowerLivingEntity<Dummy>, PowerHurt<Dummy>, PowerBowShoot<Dummy>, PowerBeamHit<Dummy> {
 
         @Override
-        public PowerResult<Void> leftClick(Player player, ItemStack stack, PlayerInteractEvent event) {
-            return fire(player, stack);
+        public PowerResult<Void> leftClick(Dummy power, Player player, ItemStack stack, PlayerInteractEvent event) {
+            return fire(power, player, stack);
         }
 
         @Override
-        public PowerResult<Void> fire(Player player, ItemStack stack) {
-            return fire(player, stack, null, null);
+        public PowerResult<Void> fire(Dummy power, Player player, ItemStack stack) {
+            return fire(power, player, stack, null, null);
         }
 
         @Override
-        public PowerResult<Void> fire(Player player, ItemStack stack, LivingEntity entity, Double damage) {
-            if (!checkAndSetCooldown(getPower(), player, getCooldown(), isShowCDWarning(), false, (isGlobalCooldown() ? "" : (getItem().getUid() + ".")) + getCooldownKey()))
-                return PowerResult.of(getCooldownResult());
-            int damageCost = getCost();
-            if (damage != null && isCostByDamage()) {
+        public PowerResult<Void> fire(Dummy power, Player player, ItemStack stack, LivingEntity entity, Double damage) {
+            if (!checkAndSetCooldown(power, player, power.getCooldown(), power.isShowCDWarning(), false, (power.isGlobalCooldown() ? "" : (power.getItem().getUid() + ".")) + power.getCooldownKey()))
+                return PowerResult.of(power.getCooldownResult());
+            int damageCost = power.getCost();
+            if (damage != null && power.isCostByDamage()) {
                 if (damage < 0) damage = 0d;
-                damageCost = (int) Math.round(damage * getCost() / 100d);
+                damageCost = (int) Math.round(damage * power.getCost() / 100d);
             }
             int finalCost = damageCost;
-            if (isCostByEnchantment()) {
-                Enchantment ench = Enchantment.getByKey(NamespacedKey.minecraft(getEnchantmentType()));
+            if (power.isCostByEnchantment()) {
+                Enchantment ench = Enchantment.getByKey(NamespacedKey.minecraft(power.getEnchantmentType()));
                 if (ench == null) return PowerResult.fail();
-                double costPercentage = (stack.getEnchantmentLevel(ench) * getEnchCostPercentage() / 100d);
+                double costPercentage = (stack.getEnchantmentLevel(ench) * power.getEnchCostPercentage() / 100d);
                 if (finalCost < 0) {
                     finalCost = (int) Math.round(Math.random() <= costPercentage ? Math.floor(damageCost * costPercentage) : Math.ceil(finalCost * costPercentage));
                 } else {
                     finalCost = (int) Math.round(Math.random() <= costPercentage ? Math.ceil(damageCost * costPercentage) : Math.floor(finalCost * costPercentage));
                 }
-                if (isDoEnchReduceCost()) finalCost = damageCost - finalCost;
+                if (power.isDoEnchReduceCost()) finalCost = damageCost - finalCost;
             }
-            if (!getItem().consumeDurability(stack, finalCost, isCheckDurabilityBound()))
-                return PowerResult.of(getCostResult());
-            return PowerResult.of(getSuccessResult());
+            if (!power.getItem().consumeDurability(stack, finalCost, power.isCheckDurabilityBound()))
+                return PowerResult.of(power.getCostResult());
+            return PowerResult.of(power.getSuccessResult());
         }
 
         @Override
-        public Power getPower() {
-            return Dummy.this;
+        public Class<? extends Dummy> getPowerClass() {
+            return Dummy.class;
         }
 
         @Override
-        public PowerResult<Void> rightClick(Player player, ItemStack stack, PlayerInteractEvent event) {
-            return fire(player, stack);
+        public PowerResult<Void> rightClick(Dummy power, Player player, ItemStack stack, PlayerInteractEvent event) {
+            return fire(power, player, stack);
         }
 
         @Override
-        public PowerResult<Double> hit(Player player, ItemStack stack, LivingEntity entity, double damage, EntityDamageByEntityEvent event) {
-            return fire(player, stack, entity, damage).with(damage);
+        public PowerResult<Double> hit(Dummy power, Player player, ItemStack stack, LivingEntity entity, double damage, EntityDamageByEntityEvent event) {
+            return fire(power, player, stack, entity, damage).with(damage);
         }
 
         @Override
-        public PowerResult<Double> takeHit(Player target, ItemStack stack, double damage, EntityDamageEvent event) {
-            if (!isRequireHurtByEntity() || event instanceof EntityDamageByEntityEvent) {
-                return fire(target, stack, null, damage).with(damage);
-            }
-            return PowerResult.noop();
-        }
-
-        @Override
-        public PowerResult<Void> hurt(Player target, ItemStack stack, EntityDamageEvent event) {
-            if (!isRequireHurtByEntity() || event instanceof EntityDamageByEntityEvent) {
-                return fire(target, stack, null, event.getDamage());
+        public PowerResult<Double> takeHit(Dummy power, Player target, ItemStack stack, double damage, EntityDamageEvent event) {
+            if (!power.isRequireHurtByEntity() || event instanceof EntityDamageByEntityEvent) {
+                return fire(power, target, stack, null, damage).with(damage);
             }
             return PowerResult.noop();
         }
 
         @Override
-        public PowerResult<Void> offhandClick(Player player, ItemStack stack, PlayerInteractEvent event) {
-            return fire(player, stack);
+        public PowerResult<Void> hurt(Dummy power, Player target, ItemStack stack, EntityDamageEvent event) {
+            if (!power.isRequireHurtByEntity() || event instanceof EntityDamageByEntityEvent) {
+                return fire(power, target, stack, null, event.getDamage());
+            }
+            return PowerResult.noop();
         }
 
         @Override
-        public PowerResult<Void> projectileHit(Player player, ItemStack stack, ProjectileHitEvent event) {
-            return fire(player, stack);
+        public PowerResult<Void> offhandClick(Dummy power, Player player, ItemStack stack, PlayerInteractEvent event) {
+            return fire(power, player, stack);
         }
 
         @Override
-        public PowerResult<Void> sneak(Player player, ItemStack stack, PlayerToggleSneakEvent event) {
-            return fire(player, stack);
+        public PowerResult<Void> projectileHit(Dummy power, Player player, ItemStack stack, ProjectileHitEvent event) {
+            return fire(power, player, stack);
         }
 
         @Override
-        public PowerResult<Void> sprint(Player player, ItemStack stack, PlayerToggleSprintEvent event) {
-            return fire(player, stack);
+        public PowerResult<Void> sneak(Dummy power, Player player, ItemStack stack, PlayerToggleSneakEvent event) {
+            return fire(power, player, stack);
         }
 
         @Override
-        public PowerResult<Boolean> swapToMainhand(Player player, ItemStack stack, PlayerSwapHandItemsEvent event) {
-            return fire(player, stack).with(true);
+        public PowerResult<Void> sprint(Dummy power, Player player, ItemStack stack, PlayerToggleSprintEvent event) {
+            return fire(power, player, stack);
         }
 
         @Override
-        public PowerResult<Boolean> swapToOffhand(Player player, ItemStack stack, PlayerSwapHandItemsEvent event) {
-            return fire(player, stack).with(true);
+        public PowerResult<Boolean> swapToMainhand(Dummy power, Player player, ItemStack stack, PlayerSwapHandItemsEvent event) {
+            return fire(power, player, stack).with(true);
         }
 
         @Override
-        public PowerResult<Void> tick(Player player, ItemStack stack) {
-            return fire(player, stack);
+        public PowerResult<Boolean> swapToOffhand(Dummy power, Player player, ItemStack stack, PlayerSwapHandItemsEvent event) {
+            return fire(power, player, stack).with(true);
         }
 
         @Override
-        public PowerResult<Void> sneaking(Player player, ItemStack stack) {
-            return fire(player, stack);
+        public PowerResult<Void> tick(Dummy power, Player player, ItemStack stack) {
+            return fire(power, player, stack);
         }
 
         @Override
-        public PowerResult<Float> bowShoot(Player player, ItemStack itemStack, EntityShootBowEvent e) {
-            return fire(player, itemStack).with(e.getForce());
+        public PowerResult<Void> sneaking(Dummy power, Player player, ItemStack stack) {
+            return fire(power, player, stack);
         }
 
         @Override
-        public PowerResult<Double> hitEntity(Player player, ItemStack stack, LivingEntity entity, double damage, BeamHitEntityEvent event) {
-            return fire(player, stack, entity, damage).with(damage);
+        public PowerResult<Float> bowShoot(Dummy power, Player player, ItemStack itemStack, EntityShootBowEvent e) {
+            return fire(power, player, itemStack).with(e.getForce());
         }
 
         @Override
-        public PowerResult<Void> hitBlock(Player player, ItemStack stack, Location location, BeamHitBlockEvent event) {
-            return fire(player, stack);
+        public PowerResult<Double> hitEntity(Dummy power, Player player, ItemStack stack, LivingEntity entity, double damage, BeamHitEntityEvent event) {
+            return fire(power, player, stack, entity, damage).with(damage);
         }
 
         @Override
-        public PowerResult<Void> beamEnd(Player player, ItemStack stack, Location location, BeamEndEvent event) {
-            return fire(player, stack);
+        public PowerResult<Void> hitBlock(Dummy power, Player player, ItemStack stack, Location location, BeamHitBlockEvent event) {
+            return fire(power, player, stack);
+        }
+
+        @Override
+        public PowerResult<Void> beamEnd(Dummy power, Player player, ItemStack stack, Location location, BeamEndEvent event) {
+            return fire(power, player, stack);
         }
     }
 }

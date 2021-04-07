@@ -136,7 +136,7 @@ public class SoundPower extends BasePower {
         }
 
         @Override
-        public Power getPower() {
+        public Power getPowerClass() {
             return SoundPower.this;
         }
 

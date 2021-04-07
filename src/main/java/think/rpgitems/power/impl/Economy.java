@@ -99,67 +99,67 @@ public class Economy extends BasePower {
         return showFailMessage;
     }
 
-    public class Impl implements PowerRightClick, PowerLeftClick, PowerPlain, PowerHit, PowerHurt, PowerHitTaken, PowerBowShoot {
+    public static class Impl implements PowerRightClick<Economy>, PowerLeftClick<Economy>, PowerPlain<Economy>, PowerHit<Economy>, PowerHurt<Economy>, PowerHitTaken<Economy>, PowerBowShoot<Economy> {
 
 
         @Override
-        public PowerResult<Double> takeHit(Player target, ItemStack stack, double damage, EntityDamageEvent event) {
-            if (!isRequireHurtByEntity() || event instanceof EntityDamageByEntityEvent) {
-                return fire(target, stack).with(damage);
+        public PowerResult<Double> takeHit(Economy power, Player target, ItemStack stack, double damage, EntityDamageEvent event) {
+            if (!power.isRequireHurtByEntity() || event instanceof EntityDamageByEntityEvent) {
+                return fire(power, target, stack).with(damage);
             }
             return PowerResult.noop();
         }
 
         @Override
-        public PowerResult<Void> fire(Player player, ItemStack stack) {
-            if (!checkCooldown(getPower(), player, getCooldown(), true, true))
-                return isAbortOnFailure() ? PowerResult.abort() : PowerResult.cd();
+        public PowerResult<Void> fire(Economy power, Player player, ItemStack stack) {
+            if (!checkCooldown(power, player, power.getCooldown(), true, true))
+                return power.isAbortOnFailure() ? PowerResult.abort() : PowerResult.cd();
             EconomyResponse economyResponse;
-            if (getAmountToPlayer() > 0) {
-                economyResponse = eco.depositPlayer(player, getAmountToPlayer());
+            if (power.getAmountToPlayer() > 0) {
+                economyResponse = eco.depositPlayer(player, power.getAmountToPlayer());
             } else {
-                economyResponse = eco.withdrawPlayer(player, -getAmountToPlayer());
+                economyResponse = eco.withdrawPlayer(player, -power.getAmountToPlayer());
             }
             if (economyResponse.transactionSuccess()) {
                 return PowerResult.ok();
             }
-            if (isShowFailMessage()) {
+            if (power.isShowFailMessage()) {
                 new Message(economyResponse.errorMessage).send(player);
             }
-            return isAbortOnFailure() ? PowerResult.abort() : PowerResult.fail();
+            return power.isAbortOnFailure() ? PowerResult.abort() : PowerResult.fail();
         }
 
         @Override
-        public Power getPower() {
-            return Economy.this;
+        public Class<? extends Economy> getPowerClass() {
+            return Economy.class;
         }
 
         @Override
-        public PowerResult<Void> hurt(Player target, ItemStack stack, EntityDamageEvent event) {
-            if (!isRequireHurtByEntity() || event instanceof EntityDamageByEntityEvent) {
-                return fire(target, stack);
+        public PowerResult<Void> hurt(Economy power, Player target, ItemStack stack, EntityDamageEvent event) {
+            if (!power.isRequireHurtByEntity() || event instanceof EntityDamageByEntityEvent) {
+                return fire(power, target, stack);
             }
             return PowerResult.noop();
         }
 
         @Override
-        public PowerResult<Void> leftClick(Player player, ItemStack stack, PlayerInteractEvent event) {
-            return fire(player, stack);
+        public PowerResult<Void> leftClick(Economy power, Player player, ItemStack stack, PlayerInteractEvent event) {
+            return fire(power, player, stack);
         }
 
         @Override
-        public PowerResult<Void> rightClick(Player player, ItemStack stack, PlayerInteractEvent event) {
-            return fire(player, stack);
+        public PowerResult<Void> rightClick(Economy power, Player player, ItemStack stack, PlayerInteractEvent event) {
+            return fire(power, player, stack);
         }
 
         @Override
-        public PowerResult<Float> bowShoot(Player player, ItemStack stack, EntityShootBowEvent event) {
-            return fire(player, stack).with(event.getForce());
+        public PowerResult<Float> bowShoot(Economy power, Player player, ItemStack stack, EntityShootBowEvent event) {
+            return fire(power, player, stack).with(event.getForce());
         }
 
         @Override
-        public PowerResult<Double> hit(Player player, ItemStack stack, LivingEntity entity, double damage, EntityDamageByEntityEvent event) {
-            return fire(player, stack).with(damage);
+        public PowerResult<Double> hit(Economy power, Player player, ItemStack stack, LivingEntity entity, double damage, EntityDamageByEntityEvent event) {
+            return fire(power, player, stack).with(damage);
         }
     }
 }

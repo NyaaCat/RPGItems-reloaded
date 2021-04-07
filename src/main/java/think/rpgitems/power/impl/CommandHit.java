@@ -56,22 +56,22 @@ public class CommandHit extends Command {
         return ChatColor.GREEN + getDisplay();
     }
 
-    public class Impl implements PowerHit, PowerLivingEntity, PowerBeamHit {
+    public static class Impl implements PowerHit<CommandHit>, PowerLivingEntity<CommandHit>, PowerBeamHit<CommandHit> {
         @Override
-        public PowerResult<Double> hit(Player player, ItemStack stack, LivingEntity entity, double damage, EntityDamageByEntityEvent event) {
-            return fire(player, stack, entity, damage).with(damage);
+        public PowerResult<Double> hit(CommandHit power, Player player, ItemStack stack, LivingEntity entity, double damage, EntityDamageByEntityEvent event) {
+            return fire(power, player, stack, entity, damage).with(damage);
         }
 
         @Override
-        public PowerResult<Void> fire(Player player, ItemStack stack, LivingEntity entity, Double damage) {
-            if (damage == null || damage < getMinDamage()) return PowerResult.noop();
+        public PowerResult<Void> fire(CommandHit power, Player player, ItemStack stack, LivingEntity entity, Double damage) {
+            if (damage == null || damage < power.getMinDamage()) return PowerResult.noop();
 
-            return executeCommand(player, entity, damage);
+            return executeCommand(power, player, entity, damage);
         }
 
         @Override
-        public Power getPower() {
-            return CommandHit.this;
+        public Class<? extends CommandHit> getPowerClass() {
+            return CommandHit.class;
         }
 
         /**
@@ -82,16 +82,16 @@ public class CommandHit extends Command {
          * @param damage damage
          * @return PowerResult with proposed damage
          */
-        protected PowerResult<Void> executeCommand(Player player, LivingEntity e, double damage) {
+        protected PowerResult<Void> executeCommand(CommandHit power, Player player, LivingEntity e, double damage) {
             if (!player.isOnline()) return PowerResult.noop();
 
-            attachPermission(player, getPermission());
+            attachPermission(player, power.getPermission());
             boolean wasOp = player.isOp();
             try {
-                if (getPermission().equals("*"))
+                if (power.getPermission().equals("*"))
                     player.setOp(true);
 
-                String cmd = getCommand();
+                String cmd = power.getCommand();
 
                 cmd = handleEntityPlaceHolder(e, cmd);
 
@@ -102,23 +102,23 @@ public class CommandHit extends Command {
                 boolean result = player.performCommand(cmd);
                 return result ? PowerResult.ok() : PowerResult.fail();
             } finally {
-                if (getPermission().equals("*"))
+                if (power.getPermission().equals("*"))
                     player.setOp(wasOp);
             }
         }
 
         @Override
-        public PowerResult<Double> hitEntity(Player player, ItemStack stack, LivingEntity entity, double damage, BeamHitEntityEvent event) {
-            return fire(player, stack, entity, damage).with(damage);
+        public PowerResult<Double> hitEntity(CommandHit power, Player player, ItemStack stack, LivingEntity entity, double damage, BeamHitEntityEvent event) {
+            return fire(power, player, stack, entity, damage).with(damage);
         }
 
         @Override
-        public PowerResult<Void> hitBlock(Player player, ItemStack stack, Location location, BeamHitBlockEvent event) {
+        public PowerResult<Void> hitBlock(CommandHit power, Player player, ItemStack stack, Location location, BeamHitBlockEvent event) {
             return PowerResult.noop();
         }
 
         @Override
-        public PowerResult<Void> beamEnd(Player player, ItemStack stack, Location location, BeamEndEvent event) {
+        public PowerResult<Void> beamEnd(CommandHit power, Player player, ItemStack stack, Location location, BeamEndEvent event) {
             return PowerResult.noop();
         }
     }

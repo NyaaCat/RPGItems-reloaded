@@ -52,12 +52,12 @@ public class EvalDamage extends BasePower {
         return setBaseDamage;
     }
 
-    public class Impl implements PowerHit, PowerHitTaken {
+    public static class Impl implements PowerHit<EvalDamage>, PowerHitTaken<EvalDamage> {
         // Feel free to add variable below
         @Override
-        public PowerResult<Double> hit(Player player, ItemStack stack, LivingEntity entity, double damage, EntityDamageByEntityEvent event) {
+        public PowerResult<Double> hit(EvalDamage power, Player player, ItemStack stack, LivingEntity entity, double damage, EntityDamageByEntityEvent event) {
             try {
-                Expression ex = new Expression(getExpression());
+                Expression ex = new Expression(power.getExpression());
                 boolean byProjectile = false;
                 Entity damager = event.getDamager();
                 if (damager instanceof Projectile) {
@@ -88,14 +88,14 @@ public class EvalDamage extends BasePower {
 
                 BigDecimal result = ex.eval();
                 double ret = result.doubleValue();
-                if (isSetBaseDamage()) {
+                if (power.isSetBaseDamage()) {
                     event.setDamage(ret);
                 }
                 return PowerResult.ok(ret);
             } catch (Expression.ExpressionException ex) {
-                RPGItems.plugin.getLogger().log(Level.WARNING, "bad expression: " + getExpression(), ex);
+                RPGItems.plugin.getLogger().log(Level.WARNING, "bad expression: " + power.getExpression(), ex);
                 if (player.isOp() || player.hasPermission("rpgitem")) {
-                    player.sendMessage("bad expression: " + getExpression());
+                    player.sendMessage("bad expression: " + power.getExpression());
                     player.sendMessage(ex.getMessage());
                 }
                 return PowerResult.fail();
@@ -103,11 +103,11 @@ public class EvalDamage extends BasePower {
         }
 
         @Override
-        public PowerResult<Double> takeHit(Player player, ItemStack stack, double damage, EntityDamageEvent event) {
+        public PowerResult<Double> takeHit(EvalDamage power, Player player, ItemStack stack, double damage, EntityDamageEvent event) {
             boolean byEntity = event instanceof EntityDamageByEntityEvent;
             try {
 
-                Expression ex = new Expression(getExpression());
+                Expression ex = new Expression(power.getExpression());
                 ex
                         .and("damage", BigDecimal.valueOf(damage))
                         .and("finalDamage", Utils.lazyNumber(event::getFinalDamage))
@@ -150,14 +150,14 @@ public class EvalDamage extends BasePower {
 
                 BigDecimal result = ex.eval();
                 double ret = result.doubleValue();
-                if (isSetBaseDamage()) {
+                if (power.isSetBaseDamage()) {
                     event.setDamage(ret);
                 }
                 return PowerResult.ok(result.doubleValue());
             } catch (Expression.ExpressionException ex) {
-                RPGItems.plugin.getLogger().log(Level.WARNING, "bad expression: " + getExpression(), ex);
+                RPGItems.plugin.getLogger().log(Level.WARNING, "bad expression: " + power.getExpression(), ex);
                 if (player.isOp() || player.hasPermission("rpgitem")) {
-                    player.sendMessage("bad expression: " + getExpression());
+                    player.sendMessage("bad expression: " + power.getExpression());
                     player.sendMessage(ex.getMessage());
                 }
                 return PowerResult.fail();
@@ -165,8 +165,8 @@ public class EvalDamage extends BasePower {
         }
 
         @Override
-        public Power getPower() {
-            return EvalDamage.this;
+        public Class<? extends EvalDamage> getPowerClass() {
+            return EvalDamage.class;
         }
     }
 }

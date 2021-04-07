@@ -288,7 +288,7 @@ public class AOEDamage extends BasePower {
         }
 
         @Override
-        public Class<AOEDamage> getPowerClass() {
+        public Class<? extends AOEDamage> getPowerClass() {
             return AOEDamage.class;
         }
 

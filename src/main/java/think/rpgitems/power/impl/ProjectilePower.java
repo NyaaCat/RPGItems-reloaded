@@ -391,7 +391,7 @@ public class ProjectilePower extends BasePower {
         }
 
         @Override
-        public Power getPower() {
+        public Power getPowerClass() {
             return ProjectilePower.this;
         }
 

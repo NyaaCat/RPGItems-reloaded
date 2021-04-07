@@ -193,7 +193,7 @@ public class ParticleBarrier extends BasePower {
         }
 
         @Override
-        public Power getPower() {
+        public Power getPowerClass() {
             return ParticleBarrier.this;
         }
 

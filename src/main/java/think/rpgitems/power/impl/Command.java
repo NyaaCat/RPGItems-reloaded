@@ -97,42 +97,80 @@ public class Command extends BasePower {
         return requireHurtByEntity;
     }
 
-    public class Impl implements PowerRightClick, PowerLeftClick, PowerSprint, PowerSneak, PowerHurt, PowerHitTaken, PowerPlain, PowerBowShoot {
+    public static class Impl extends Base implements PowerRightClick<Command>, PowerLeftClick<Command>, PowerSprint<Command>, PowerSneak<Command>, PowerHurt<Command>, PowerHitTaken<Command>, PowerPlain<Command>, PowerBowShoot<Command> {
         @Override
-        public PowerResult<Void> leftClick(Player player, ItemStack stack, PlayerInteractEvent event) {
-            return fire(player, stack);
+        public PowerResult<Void> leftClick(Command power, Player player, ItemStack stack, PlayerInteractEvent event) {
+            return fire(power, player, stack);
         }
 
         @Override
-        public PowerResult<Void> fire(Player target, ItemStack stack) {
-            return executeCommand(target);
+        public PowerResult<Void> fire(Command power, Player target, ItemStack stack) {
+            return executeCommand(power, target);
         }
 
         @Override
-        public Power getPower() {
-            return Command.this;
+        public Class<? extends Command> getPowerClass() {
+            return Command.class;
         }
 
+        @Override
+        public PowerResult<Void> sneak(Command power, Player player, ItemStack stack, PlayerToggleSneakEvent event) {
+            return fire(power, player, stack);
+        }
+
+        @Override
+        public PowerResult<Void> sprint(Command power, Player player, ItemStack stack, PlayerToggleSprintEvent event) {
+            return fire(power, player, stack);
+        }
+
+        @Override
+        public PowerResult<Void> hurt(Command power, Player target, ItemStack stack, EntityDamageEvent event) {
+            if (!power.isRequireHurtByEntity() || event instanceof EntityDamageByEntityEvent) {
+                return fire(power, target, stack);
+            }
+            return PowerResult.noop();
+        }
+
+        @Override
+        public PowerResult<Double> takeHit(Command power, Player target, ItemStack stack, double damage, EntityDamageEvent event) {
+            if (!power.isRequireHurtByEntity() || event instanceof EntityDamageByEntityEvent) {
+                return fire(power, target, stack).with(damage);
+            }
+            return PowerResult.noop();
+        }
+
+        @Override
+        public PowerResult<Float> bowShoot(Command power, Player player, ItemStack stack, EntityShootBowEvent event) {
+            return fire(power, player, stack).with(event.getForce());
+        }
+
+        @Override
+        public PowerResult<Void> rightClick(Command power, Player player, ItemStack stack, PlayerInteractEvent event) {
+            return fire(power, player, stack);
+        }
+    }
+
+    public static class Base {
         /**
          * Execute command
          *
          * @param player player
          * @return PowerResult
          */
-        protected PowerResult<Void> executeCommand(Player player) {
-            String cmd = handlePlayerPlaceHolder(player, getCommand());
-            return executeCommand(player, cmd);
+        protected PowerResult<Void> executeCommand(Command power, Player player) {
+            String cmd = Command.handlePlayerPlaceHolder(player, power.getCommand());
+            return executeCommand(power, player, cmd);
         }
 
-        protected PowerResult<Void> executeCommand(Player player, String cmd) {
+        protected PowerResult<Void> executeCommand(Command power, Player player, String cmd) {
             if (!player.isOnline()) return PowerResult.noop();
 
-            if (getPermission().equals("console")) {
+            if (power.getPermission().equals("console")) {
                 Bukkit.dispatchCommand(Bukkit.getConsoleSender(), cmd);
             } else {
                 boolean wasOp = player.isOp();
-                attachPermission(player, getPermission());
-                if (getPermission().equals("*")) {
+                attachPermission(player, power.getPermission());
+                if (power.getPermission().equals("*")) {
                     try {
                         player.setOp(true);
                         player.performCommand(cmd);
@@ -147,41 +185,6 @@ public class Command extends BasePower {
             }
             return PowerResult.ok();
         }
-
-        @Override
-        public PowerResult<Void> sneak(Player player, ItemStack stack, PlayerToggleSneakEvent event) {
-            return fire(player, stack);
-        }
-
-        @Override
-        public PowerResult<Void> sprint(Player player, ItemStack stack, PlayerToggleSprintEvent event) {
-            return fire(player, stack);
-        }
-
-        @Override
-        public PowerResult<Void> hurt(Player target, ItemStack stack, EntityDamageEvent event) {
-            if (!isRequireHurtByEntity() || event instanceof EntityDamageByEntityEvent) {
-                return fire(target, stack);
-            }
-            return PowerResult.noop();
-        }
-
-        @Override
-        public PowerResult<Double> takeHit(Player target, ItemStack stack, double damage, EntityDamageEvent event) {
-            if (!isRequireHurtByEntity() || event instanceof EntityDamageByEntityEvent) {
-                return fire(target, stack).with(damage);
-            }
-            return PowerResult.noop();
-        }
-
-        @Override
-        public PowerResult<Float> bowShoot(Player player, ItemStack stack, EntityShootBowEvent event) {
-            return fire(player, stack).with(event.getForce());
-        }
-
-        @Override
-        public PowerResult<Void> rightClick(Player player, ItemStack stack, PlayerInteractEvent event) {
-            return fire(player, stack);
-        }
     }
+
 }

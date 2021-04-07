@@ -45,7 +45,7 @@ public class NoImmutableTick extends BasePower {
         }
 
         @Override
-        public Power getPower() {
+        public Power getPowerClass() {
             return NoImmutableTick.this;
         }
     }

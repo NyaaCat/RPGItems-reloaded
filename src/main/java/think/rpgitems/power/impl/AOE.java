@@ -199,7 +199,7 @@ public class AOE extends BasePower {
         }
 
         @Override
-        public Class<AOE> getPowerClass() {
+        public Class<? extends AOE> getPowerClass() {
             return AOE.class;
         }
 

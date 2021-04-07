@@ -117,10 +117,10 @@ public class Deflect extends BasePower {
         return time;
     }
 
-    public class Impl implements PowerHitTaken, PowerRightClick, PowerLeftClick, PowerPlain, PowerBowShoot {
+    public static class Impl implements PowerHitTaken<Deflect>, PowerRightClick<Deflect>, PowerLeftClick<Deflect>, PowerPlain<Deflect>, PowerBowShoot<Deflect> {
 
         @Override
-        public PowerResult<Double> takeHit(Player target, ItemStack stack, double damage, EntityDamageEvent event) {
+        public PowerResult<Double> takeHit(Deflect power, Player target, ItemStack stack, double damage, EntityDamageEvent event) {
             if (!(target.getInventory().getItemInMainHand().equals(stack) || target.getInventory().getItemInOffHand().equals(stack))) {
                 return PowerResult.noop();
             }
@@ -134,25 +134,25 @@ public class Deflect extends BasePower {
             boolean activated = System.currentTimeMillis() / 50 < getTime().getOrDefault(target.getUniqueId(), 0L);
 
             if (!activated) {
-                if (!triggers.contains(BaseTriggers.HIT_TAKEN)
-                            || ThreadLocalRandom.current().nextInt(0, 100) >= getChance())
+                if (!power.triggers.contains(BaseTriggers.HIT_TAKEN)
+                            || ThreadLocalRandom.current().nextInt(0, 100) >= power.getChance())
                     return PowerResult.noop();
-                if (!checkCooldown(getPower(), target, getCooldownpassive(), false, true)) return PowerResult.cd();
+                if (!checkCooldown(power, target, power.getCooldownpassive(), false, true)) return PowerResult.cd();
             }
 
-            if (!getItem().consumeDurability(stack, getDeflectCost())) return PowerResult.cost();
+            if (!power.getItem().consumeDurability(stack, power.getDeflectCost())) return PowerResult.cost();
 
             Projectile p = (Projectile) byEntityEvent.getDamager();
             if (!(p.getShooter() instanceof LivingEntity)) return PowerResult.noop();
             LivingEntity source = (LivingEntity) p.getShooter();
             Vector relativePosition = target.getEyeLocation().toVector();
             relativePosition.subtract(source.getEyeLocation().toVector());
-            if (getAngleBetweenVectors(target.getEyeLocation().getDirection(), relativePosition.multiply(-1)) < getFacing()
+            if (getAngleBetweenVectors(target.getEyeLocation().getDirection(), relativePosition.multiply(-1)) < power.getFacing()
                         && (p instanceof SmallFireball || p instanceof LargeFireball || p instanceof Arrow)) {
                 event.setCancelled(true);
                 target.getLocation().getWorld().playSound(target.getLocation(), Sound.ITEM_SHIELD_BLOCK, 1.0f, 3.0f);
                 Projectile t = target.launchProjectile(p.getClass());
-                Events.registerRPGProjectile(t.getEntityId(), getItem().getUid());
+                Events.registerRPGProjectile(t.getEntityId(), power.getItem().getUid());
                 if (p instanceof TippedArrow) {
                     TippedArrow tippedArrowP = (TippedArrow) p;
                     TippedArrow tippedArrowT = (TippedArrow) t;
@@ -184,29 +184,29 @@ public class Deflect extends BasePower {
         }
 
         @Override
-        public Power getPower() {
-            return Deflect.this;
+        public Class<? extends Deflect> getPowerClass() {
+            return Deflect.class;
         }
 
         @Override
-        public PowerResult<Void> rightClick(Player player, ItemStack stack, PlayerInteractEvent event) {
-            return fire(player, stack);
+        public PowerResult<Void> rightClick(Deflect power, Player player, ItemStack stack, PlayerInteractEvent event) {
+            return fire(power, player, stack);
         }
 
         @Override
-        public PowerResult<Void> fire(Player player, ItemStack stack) {
-            getTime().put(player.getUniqueId(), System.currentTimeMillis() / 50 + getDuration());
+        public PowerResult<Void> fire(Deflect power, Player player, ItemStack stack) {
+            getTime().put(player.getUniqueId(), System.currentTimeMillis() / 50 + power.getDuration());
             return PowerResult.ok();
         }
 
         @Override
-        public PowerResult<Void> leftClick(Player player, ItemStack stack, PlayerInteractEvent event) {
-            return fire(player, stack);
+        public PowerResult<Void> leftClick(Deflect power, Player player, ItemStack stack, PlayerInteractEvent event) {
+            return fire(power, player, stack);
         }
 
         @Override
-        public PowerResult<Float> bowShoot(Player player, ItemStack stack, EntityShootBowEvent event) {
-            return fire(player, stack).with(event.getForce());
+        public PowerResult<Float> bowShoot(Deflect power, Player player, ItemStack stack, EntityShootBowEvent event) {
+            return fire(power, player, stack).with(event.getForce());
         }
     }
 }

@@ -179,7 +179,7 @@ public class Attract extends BasePower {
         }
 
         @Override
-        public Class<Attract> getPowerClass() {
+        public Class<? extends Attract> getPowerClass() {
             return Attract.class;
         }
 

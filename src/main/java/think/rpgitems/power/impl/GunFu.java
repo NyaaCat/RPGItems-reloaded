@@ -112,7 +112,7 @@ public class GunFu extends BasePower {
         }
 
         @Override
-        public Power getPower() {
+        public Power getPowerClass() {
             return GunFu.this;
         }
 

@@ -27,9 +27,9 @@ public class ConsumeHit extends BasePower {
         return I18n.formatDefault("power.consumehit");
     }
 
-    public class Impl implements PowerHit {
+    public static class Impl implements PowerHit<ConsumeHit> {
         @Override
-        public PowerResult<Double> hit(final Player player, ItemStack stack, LivingEntity entity, double damage, EntityDamageByEntityEvent event) {
+        public PowerResult<Double> hit(ConsumeHit power, final Player player, ItemStack stack, LivingEntity entity, double damage, EntityDamageByEntityEvent event) {
             int count = stack.getAmount() - 1;
             if (count == 0) {
                 stack.setAmount(0);
@@ -41,8 +41,8 @@ public class ConsumeHit extends BasePower {
         }
 
         @Override
-        public Power getPower() {
-            return ConsumeHit.this;
+        public Class<? extends ConsumeHit> getPowerClass() {
+            return ConsumeHit.class;
         }
     }
 }

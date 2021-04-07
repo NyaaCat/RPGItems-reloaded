@@ -63,24 +63,24 @@ public class CriticalHit extends BasePower {
         return setBaseDamage;
     }
 
-    public class Impl implements PowerHit {
+    public static class Impl implements PowerHit<CriticalHit> {
         @Override
-        public PowerResult<Double> hit(Player player, ItemStack stack, LivingEntity entity, double damage, EntityDamageByEntityEvent event) {
-            if (ThreadLocalRandom.current().nextDouble(100) < getChance()) {
-                damage *= getFactor();
+        public PowerResult<Double> hit(CriticalHit power, Player player, ItemStack stack, LivingEntity entity, double damage, EntityDamageByEntityEvent event) {
+            if (ThreadLocalRandom.current().nextDouble(100) < power.getChance()) {
+                damage *= power.getFactor();
             }
-            if (getAngleBetweenVectors(((LivingEntity) event.getEntity()).getEyeLocation().getDirection(), player.getEyeLocation().getDirection()) < 90 && ThreadLocalRandom.current().nextDouble(100) < getBackstabChance()) {
-                damage *= getBackstabFactor();
+            if (getAngleBetweenVectors(((LivingEntity) event.getEntity()).getEyeLocation().getDirection(), player.getEyeLocation().getDirection()) < 90 && ThreadLocalRandom.current().nextDouble(100) < power.getBackstabChance()) {
+                damage *= power.getBackstabFactor();
             }
-            if (isSetBaseDamage()) {
+            if (power.isSetBaseDamage()) {
                 event.setDamage(damage);
             }
             return PowerResult.ok(damage);
         }
 
         @Override
-        public Power getPower() {
-            return CriticalHit.this;
+        public Class<? extends CriticalHit> getPowerClass() {
+            return CriticalHit.class;
         }
     }
 }

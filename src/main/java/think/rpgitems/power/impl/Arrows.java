@@ -47,7 +47,7 @@ public class Arrows extends BasePower {
         }
 
         @Override
-        public Class<Arrows> getPowerClass() {
+        public Class<? extends Arrows> getPowerClass() {
             return Arrows.class;
         }
 

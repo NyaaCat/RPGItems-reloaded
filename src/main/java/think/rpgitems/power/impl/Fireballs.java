@@ -33,8 +33,8 @@ import think.rpgitems.power.*;
  * The fireball power will fire an fireball on right click.
  * </p>
  */
-@Meta(defaultTrigger = "RIGHT_CLICK", generalInterface = PowerPlain.class, implClass = FireballPower.Impl.class)
-public class FireballPower extends BasePower {
+@Meta(defaultTrigger = "RIGHT_CLICK", generalInterface = PowerPlain.class, implClass = Fireballs.Impl.class)
+public class Fireballs extends BasePower {
 
     @Override
     public String getName() {
@@ -47,41 +47,41 @@ public class FireballPower extends BasePower {
     }
 
 
-    public class Impl implements PowerRightClick, PowerLeftClick, PowerSprint, PowerSneak, PowerPlain {
+    public static class Impl implements PowerRightClick<Fireballs>, PowerLeftClick<Fireballs>, PowerSprint<Fireballs>, PowerSneak<Fireballs>, PowerPlain<Fireballs> {
 
         @Override
-        public PowerResult<Void> rightClick(Player player, ItemStack stack, PlayerInteractEvent event) {
-            return fire(player, stack);
+        public PowerResult<Void> rightClick(Fireballs power, Player player, ItemStack stack, PlayerInteractEvent event) {
+            return fire(power, player, stack);
         }
 
         @Override
         @SuppressWarnings("deprecation")
-        public PowerResult<Void> fire(Player player, ItemStack stack) {
+        public PowerResult<Void> fire(Fireballs power, Player player, ItemStack stack) {
             player.playSound(player.getLocation(), Sound.ENTITY_GHAST_SHOOT, 1.0f, 1.0f);
-            Events.registerRPGProjectile(getPower().getItem(), stack, player);
+            Events.registerRPGProjectile(power.getItem(), stack, player);
             SmallFireball entity = player.launchProjectile(SmallFireball.class);
             entity.setPersistent(false);
             return PowerResult.ok();
         }
 
         @Override
-        public Power getPower() {
-            return FireballPower.this;
+        public Class<? extends Fireballs> getPowerClass() {
+            return Fireballs.class;
         }
 
         @Override
-        public PowerResult<Void> leftClick(Player player, ItemStack stack, PlayerInteractEvent event) {
-            return fire(player, stack);
+        public PowerResult<Void> leftClick(Fireballs power, Player player, ItemStack stack, PlayerInteractEvent event) {
+            return fire(power, player, stack);
         }
 
         @Override
-        public PowerResult<Void> sneak(Player player, ItemStack stack, PlayerToggleSneakEvent event) {
-            return fire(player, stack);
+        public PowerResult<Void> sneak(Fireballs power, Player player, ItemStack stack, PlayerToggleSneakEvent event) {
+            return fire(power, player, stack);
         }
 
         @Override
-        public PowerResult<Void> sprint(Player player, ItemStack stack, PlayerToggleSprintEvent event) {
-            return fire(player, stack);
+        public PowerResult<Void> sprint(Fireballs power, Player player, ItemStack stack, PlayerToggleSprintEvent event) {
+            return fire(power, player, stack);
         }
     }
 }

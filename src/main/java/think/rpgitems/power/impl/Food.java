@@ -54,26 +54,26 @@ public class Food extends BasePower {
         return foodpoints;
     }
 
-    public class Impl implements PowerRightClick {
+    public static class Impl implements PowerRightClick<Food> {
         @Override
-        public PowerResult<Void> rightClick(final Player player, ItemStack stack, PlayerInteractEvent event) {
+        public PowerResult<Void> rightClick(Food power, final Player player, ItemStack stack, PlayerInteractEvent event) {
             ItemStack item = player.getInventory().getItemInMainHand();
             int count = item.getAmount() - 1;
             if (count == 0) {
-                int newFoodPoint = player.getFoodLevel() + getFoodpoints();
+                int newFoodPoint = player.getFoodLevel() + power.getFoodpoints();
                 if (newFoodPoint > 20) newFoodPoint = 20;
                 player.setFoodLevel(newFoodPoint);
                 Bukkit.getScheduler().scheduleSyncDelayedTask(RPGItems.plugin, () -> player.getInventory().setItemInMainHand(new ItemStack(Material.AIR)), 1L);
             } else {
-                player.setFoodLevel(player.getFoodLevel() + getFoodpoints());
+                player.setFoodLevel(player.getFoodLevel() + power.getFoodpoints());
                 item.setAmount(count);
             }
             return PowerResult.ok();
         }
 
         @Override
-        public Power getPower() {
-            return Food.this;
+        public Class<? extends Food> getPowerClass() {
+            return Food.class;
         }
     }
 }

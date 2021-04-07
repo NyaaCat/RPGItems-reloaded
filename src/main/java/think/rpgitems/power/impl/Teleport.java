@@ -154,7 +154,7 @@ public class Teleport extends BasePower {
         }
 
         @Override
-        public Power getPower() {
+        public Power getPowerClass() {
             return Teleport.this;
         }
 

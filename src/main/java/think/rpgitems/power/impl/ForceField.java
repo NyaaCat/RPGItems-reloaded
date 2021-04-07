@@ -45,7 +45,7 @@ public class ForceField extends BasePower {
     public boolean requireHurtByEntity = true;
 
     /* copied from wikipedia */
-    private Set<Location> circlePoints(World w, int x0, int y0, int radius, int l) {
+    private static Set<Location> circlePoints(World w, int x0, int y0, int radius, int l) {
         int x = radius;
         int y = 0;
         int decisionOver2 = 1 - x;   // Decision criterion divided by 2 evaluated at x=r, y=0
@@ -232,65 +232,65 @@ public class ForceField extends BasePower {
         }
     }
 
-    public class Impl implements PowerHitTaken, PowerLeftClick, PowerRightClick, PowerSneak, PowerSprint, PowerPlain, PowerHurt {
+    public static class Impl implements PowerHitTaken<ForceField>, PowerLeftClick<ForceField>, PowerRightClick<ForceField>, PowerSneak<ForceField>, PowerSprint<ForceField>, PowerPlain<ForceField>, PowerHurt<ForceField> {
 
         @Override
-        public PowerResult<Void> leftClick(Player player, ItemStack stack, PlayerInteractEvent event) {
-            return fire(player, stack);
+        public PowerResult<Void> leftClick(ForceField power, Player player, ItemStack stack, PlayerInteractEvent event) {
+            return fire(power, player, stack);
         }
 
         @Override
-        public PowerResult<Void> fire(Player player, ItemStack stack) {
+        public PowerResult<Void> fire(ForceField power, Player player, ItemStack stack) {
             World w = player.getWorld();
             int x = player.getLocation().getBlockX();
             int y = player.getLocation().getBlockY();
             int z = player.getLocation().getBlockZ();
-            int l = y + getBase();
+            int l = y + power.getBase();
             if (l < 1) l = 1;
             if (l > 255) return PowerResult.noop();
-            int h = y + getBase() + getHeight();
+            int h = y + power.getBase() + power.getHeight();
             if (h > 255) h = 255;
             if (h < 1) return PowerResult.noop();
 
-            buildWallTask tsk = new buildWallTask(w, circlePoints(w, x, z, getRadius(), l), l, h, getTtl());
+            buildWallTask tsk = new buildWallTask(w, circlePoints(w, x, z, power.getRadius(), l), l, h, power.getTtl());
             tsk.setId(Bukkit.getScheduler().scheduleSyncRepeatingTask(RPGItems.plugin, tsk, 1, 1));
             return PowerResult.ok();
         }
 
         @Override
-        public Power getPower() {
-            return ForceField.this;
+        public Class<? extends ForceField> getPowerClass() {
+            return ForceField.class;
         }
 
         @Override
-        public PowerResult<Void> rightClick(Player player, ItemStack stack, PlayerInteractEvent event) {
-            return fire(player, stack);
+        public PowerResult<Void> rightClick(ForceField power, Player player, ItemStack stack, PlayerInteractEvent event) {
+            return fire(power, player, stack);
         }
 
         @Override
-        public PowerResult<Double> takeHit(Player target, ItemStack stack, double damage, EntityDamageEvent event) {
-            if (!isRequireHurtByEntity() || event instanceof EntityDamageByEntityEvent) {
-                return fire(target, stack).with(damage);
+        public PowerResult<Double> takeHit(ForceField power, Player target, ItemStack stack, double damage, EntityDamageEvent event) {
+            if (!power.isRequireHurtByEntity() || event instanceof EntityDamageByEntityEvent) {
+                return fire(power, target, stack).with(damage);
             }
             return PowerResult.noop();
         }
 
         @Override
-        public PowerResult<Void> hurt(Player target, ItemStack stack, EntityDamageEvent event) {
-            if (!isRequireHurtByEntity() || event instanceof EntityDamageByEntityEvent) {
-                return fire(target, stack);
+        public PowerResult<Void> hurt(ForceField power, Player target, ItemStack stack, EntityDamageEvent event) {
+            if (!power.isRequireHurtByEntity() || event instanceof EntityDamageByEntityEvent) {
+                return fire(power, target, stack);
             }
             return PowerResult.noop();
         }
 
         @Override
-        public PowerResult<Void> sneak(Player player, ItemStack stack, PlayerToggleSneakEvent event) {
-            return fire(player, stack);
+        public PowerResult<Void> sneak(ForceField power, Player player, ItemStack stack, PlayerToggleSneakEvent event) {
+            return fire(power, player, stack);
         }
 
         @Override
-        public PowerResult<Void> sprint(Player player, ItemStack stack, PlayerToggleSprintEvent event) {
-            return fire(player, stack);
+        public PowerResult<Void> sprint(ForceField power, Player player, ItemStack stack, PlayerToggleSprintEvent event) {
+            return fire(power, player, stack);
         }
     }
 

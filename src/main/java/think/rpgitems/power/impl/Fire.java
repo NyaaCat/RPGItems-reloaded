@@ -82,15 +82,15 @@ public class Fire extends BasePower {
         return I18n.formatDefault("power.fire", (0) / 20d);
     }
 
-    public class Impl implements PowerRightClick, PowerLeftClick, PowerSneak, PowerSprint, PowerPlain {
+    public static class Impl implements PowerRightClick<Fire>, PowerLeftClick<Fire>, PowerSneak<Fire>, PowerSprint<Fire>, PowerPlain<Fire> {
 
         @Override
-        public PowerResult<Void> rightClick(final Player player, ItemStack stack, PlayerInteractEvent event) {
-            return fire(player, stack);
+        public PowerResult<Void> rightClick(Fire power, final Player player, ItemStack stack, PlayerInteractEvent event) {
+            return fire(power, player, stack);
         }
 
         @Override
-        public PowerResult<Void> fire(Player player, ItemStack stack) {
+        public PowerResult<Void> fire(Fire power, Player player, ItemStack stack) {
             player.playSound(player.getLocation(), Sound.ITEM_FLINTANDSTEEL_USE, 1.0f, 1.2f);
             final List<Block> fireblocks = new ArrayList<>();
             final FallingBlock block = player.getWorld().spawnFallingBlock(player.getLocation().add(0, 1.8, 0), Material.FIRE.createBlockData());
@@ -126,7 +126,7 @@ public class Fire extends BasePower {
                             }
                         }
                         location.add(direction);
-                        if (count >= getDistance()) {
+                        if (count >= power.getDistance()) {
                             finishedFire = true;
                         }
                         count++;
@@ -156,10 +156,10 @@ public class Fire extends BasePower {
                             blockDead = true;
                         }
                     } else {
-                        List<Entity> ents = getNearbyEntities(getPower(), block.getLocation(), player, 1, 0, 1, 0);
+                        List<Entity> ents = getNearbyEntities(power, block.getLocation(), player, 1, 0, 1, 0);
                         for (Entity ent : ents)
                             if (ent instanceof Damageable)
-                                ent.setFireTicks(getBurnduration());
+                                ent.setFireTicks(power.getBurnduration());
                     }
 
                     if (finishedFire && blockDead)
@@ -171,23 +171,23 @@ public class Fire extends BasePower {
         }
 
         @Override
-        public Power getPower() {
-            return Fire.this;
+        public Class<? extends Fire> getPowerClass() {
+            return Fire.class;
         }
 
         @Override
-        public PowerResult<Void> leftClick(final Player player, ItemStack stack, PlayerInteractEvent event) {
-            return fire(player, stack);
+        public PowerResult<Void> leftClick(Fire power, final Player player, ItemStack stack, PlayerInteractEvent event) {
+            return fire(power, player, stack);
         }
 
         @Override
-        public PowerResult<Void> sneak(Player player, ItemStack stack, PlayerToggleSneakEvent event) {
-            return fire(player, stack);
+        public PowerResult<Void> sneak(Fire power, Player player, ItemStack stack, PlayerToggleSneakEvent event) {
+            return fire(power, player, stack);
         }
 
         @Override
-        public PowerResult<Void> sprint(Player player, ItemStack stack, PlayerToggleSprintEvent event) {
-            return fire(player, stack);
+        public PowerResult<Void> sprint(Fire power, Player player, ItemStack stack, PlayerToggleSprintEvent event) {
+            return fire(power, player, stack);
         }
     }
 }

@@ -2,6 +2,7 @@ package think.rpgitems.power.impl;
 
 import cat.nyaa.nyaacore.utils.NmsUtils;
 import org.bukkit.Location;
+import org.bukkit.Material;
 import org.bukkit.block.Block;
 import org.bukkit.entity.LivingEntity;
 import org.bukkit.entity.Player;
@@ -74,27 +75,27 @@ public class Explosion extends BasePower {
         return explosionPower;
     }
 
-    public class Impl implements PowerLeftClick, PowerRightClick, PowerPlain, PowerHit, PowerProjectileHit, PowerLocation, PowerBeamHit, PowerLivingEntity {
+    public static class Impl implements PowerLeftClick<Explosion>, PowerRightClick<Explosion>, PowerPlain<Explosion>, PowerHit<Explosion>, PowerProjectileHit<Explosion>, PowerLocation<Explosion>, PowerBeamHit<Explosion>, PowerLivingEntity<Explosion> {
 
         @Override
-        public PowerResult<Void> leftClick(Player player, ItemStack stack, PlayerInteractEvent event) {
-            return fire(player, stack);
+        public PowerResult<Void> leftClick(Explosion power, Player player, ItemStack stack, PlayerInteractEvent event) {
+            return fire(power, player, stack);
         }
 
         @Override
-        public PowerResult<Void> fire(Player player, ItemStack stack) {
-            Block targetBlock = player.getTargetBlock(null, getDistance());
+        public PowerResult<Void> fire(Explosion power, Player player, ItemStack stack) {
+            Block targetBlock = player.getTargetBlock(null, power.getDistance());
             if (targetBlock == null) return PowerResult.noop();
-            return fire(player, stack, targetBlock.getLocation());
+            return fire(power, player, stack, targetBlock.getLocation());
         }
 
         @Override
-        public PowerResult<Void> fire(Player player, ItemStack stack, Location location) {
-            if (ThreadLocalRandom.current().nextDouble(100) < getChance()) {
-                LightContext.putTemp(player.getUniqueId(), DAMAGE_SOURCE, getPower().getNamespacedKey().toString());
+        public PowerResult<Void> fire(Explosion power, Player player, ItemStack stack, Location location) {
+            if (ThreadLocalRandom.current().nextDouble(100) < power.getChance()) {
+                LightContext.putTemp(player.getUniqueId(), DAMAGE_SOURCE, power.getNamespacedKey().toString());
                 LightContext.putTemp(player.getUniqueId(), SUPPRESS_MELEE, false);
                 LightContext.putTemp(player.getUniqueId(), DAMAGE_SOURCE_ITEM, stack);
-                boolean explosion = NmsUtils.createExplosion(location.getWorld(), player, location.getX(), location.getY(), location.getZ(), getExplosionPower(), false, false);
+                boolean explosion = NmsUtils.createExplosion(location.getWorld(), player, location.getX(), location.getY(), location.getZ(), power.getExplosionPower(), false, false);
                 LightContext.clear();
                 return explosion ? PowerResult.ok() : PowerResult.fail();
             }
@@ -102,59 +103,61 @@ public class Explosion extends BasePower {
         }
 
         @Override
-        public PowerResult<Void> rightClick(Player player, ItemStack stack, PlayerInteractEvent event) {
-            return fire(player, stack);
+        public PowerResult<Void> rightClick(Explosion power, Player player, ItemStack stack, PlayerInteractEvent event) {
+            return fire(power, player, stack);
         }
 
         @Override
-        public PowerResult<Double> hit(Player player, ItemStack stack, LivingEntity entity, double damage, EntityDamageByEntityEvent event) {
+        public PowerResult<Double> hit(Explosion power, Player player, ItemStack stack, LivingEntity entity, double damage, EntityDamageByEntityEvent event) {
             Location location = entity.getLocation();
             Location start = player.getLocation();
-            if (start.distanceSquared(location) >= getDistance() * getDistance()) {
+            if (start.distanceSquared(location) >= power.getDistance() * power.getDistance()) {
                 player.sendMessage(I18n.formatDefault("message.too.far"));
                 return PowerResult.noop();
             }
-            return fire(player, stack, location).with(damage);
+            return fire(power, player, stack, location).with(damage);
         }
 
         @Override
-        public PowerResult<Void> projectileHit(Player player, ItemStack stack, ProjectileHitEvent event) {
+        public PowerResult<Void> projectileHit(Explosion power, Player player, ItemStack stack, ProjectileHitEvent event) {
             Projectile hit = event.getEntity();
             Location location = hit.getLocation();
             Location start = player.getLocation();
-            if (start.distanceSquared(location) >= getDistance() * getDistance()) {
+            if (start.distanceSquared(location) >= power.getDistance() * power.getDistance()) {
                 player.sendMessage(I18n.formatDefault("message.too.far"));
                 return PowerResult.noop();
             }
-            return fire(player, stack, location);
+            return fire(power, player, stack, location);
         }
 
         @Override
-        public Power getPower() {
-            return Explosion.this;
+        public Class<? extends Explosion> getPowerClass() {
+            return Explosion.class;
         }
 
         @Override
-        public PowerResult<Double> hitEntity(Player player, ItemStack stack, LivingEntity entity, double damage, BeamHitEntityEvent event) {
+        public PowerResult<Double> hitEntity(Explosion power, Player player, ItemStack stack, LivingEntity entity, double damage, BeamHitEntityEvent event) {
             Location location = entity.getLocation();
-            return fire(player, stack, location).with(damage);
+            return fire(power, player, stack, location).with(damage);
         }
 
         @Override
-        public PowerResult<Void> hitBlock(Player player, ItemStack stack, Location location, BeamHitBlockEvent event) {
-            return fire(player, stack, location);
+        public PowerResult<Void> hitBlock(Explosion power, Player player, ItemStack stack, Location location, BeamHitBlockEvent event) {
+            return fire(power, player, stack, location);
         }
 
         @Override
-        public PowerResult<Void> beamEnd(Player player, ItemStack stack, Location location, BeamEndEvent event) {
-            return fire(player, stack, location);
+        public PowerResult<Void> beamEnd(Explosion power, Player player, ItemStack stack, Location location, BeamEndEvent event) {
+            return fire(power, player, stack, location);
         }
 
         @Override
-        public PowerResult<Void> fire(Player player, ItemStack stack, LivingEntity entity, @Nullable Double value) {
-            Block targetBlock = entity.getTargetBlock(null, getDistance());
-            if (targetBlock == null) return PowerResult.noop();
-            return fire(player, stack, targetBlock.getLocation());
+        public PowerResult<Void> fire(Explosion power, Player player, ItemStack stack, LivingEntity entity, @Nullable Double value) {
+            Block targetBlock = entity.getTargetBlock(null, power.getDistance());
+            if (targetBlock == null
+                        || targetBlock.getBlockData().getMaterial().isAir()
+            ) return PowerResult.noop();
+            return fire(power, player, stack, targetBlock.getLocation());
         }
     }
 }

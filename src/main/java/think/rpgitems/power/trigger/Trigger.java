@@ -163,7 +163,7 @@ public abstract class Trigger<TEvent extends Event, TPower extends Pimpl, TResul
         return overrideResult.with(null);
     }
 
-    public Class<TPower> getPowerClass() {
+    public Class<? extends TPower> getPowerClass() {
         return powerClass;
     }
 

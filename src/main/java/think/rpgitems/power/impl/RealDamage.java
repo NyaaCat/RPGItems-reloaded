@@ -74,7 +74,7 @@ public class RealDamage extends BasePower {
         }
 
         @Override
-        public Power getPower() {
+        public Power getPowerClass() {
             return RealDamage.this;
         }
     }

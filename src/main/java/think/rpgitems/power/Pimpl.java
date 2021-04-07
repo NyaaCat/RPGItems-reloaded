@@ -1,7 +1,7 @@
 package think.rpgitems.power;
 
 public interface Pimpl<P extends Power> {
-    default Class<P> getPowerClass() {
+    default Class<? extends P> getPowerClass() {
         return null;
     }
 

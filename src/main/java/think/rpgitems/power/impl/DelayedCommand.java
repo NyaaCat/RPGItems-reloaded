@@ -8,10 +8,7 @@ import org.bukkit.event.player.PlayerToggleSprintEvent;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.scheduler.BukkitRunnable;
 import think.rpgitems.RPGItems;
-import think.rpgitems.power.Meta;
-import think.rpgitems.power.Power;
-import think.rpgitems.power.PowerResult;
-import think.rpgitems.power.Property;
+import think.rpgitems.power.*;
 
 
 /**
@@ -46,17 +43,17 @@ public class DelayedCommand extends Command {
         return "delayedcommand";
     }
 
-    public class Impl extends Command.Impl {
+    public static class Impl extends Command.Base implements PowerRightClick<DelayedCommand>, PowerLeftClick<DelayedCommand>, PowerSprint<DelayedCommand>, PowerSneak<DelayedCommand>, PowerHurt<DelayedCommand>, PowerPlain<DelayedCommand> {
         @Override
-        public PowerResult<Void> leftClick(final Player player, ItemStack stack, PlayerInteractEvent event) {
-            return fire(player, stack);
+        public PowerResult<Void> leftClick(DelayedCommand power, final Player player, ItemStack stack, PlayerInteractEvent event) {
+            return fire(power, player, stack);
         }
 
         @Override
-        public PowerResult<Void> fire(Player target, ItemStack stack) {
+        public PowerResult<Void> fire(DelayedCommand power, Player target, ItemStack stack) {
             String cmd;
-            if (!cmdInPlace) {
-                cmd = handlePlayerPlaceHolder(target, getCommand());
+            if (!power.isCmdInPlace()) {
+                cmd = handlePlayerPlaceHolder(target, power.getCommand());
             }else {
                 cmd = null;
             }
@@ -64,38 +61,38 @@ public class DelayedCommand extends Command {
                 @Override
                 public void run() {
                     if (cmd == null){
-                        executeCommand(target);
+                        executeCommand(power, target);
                     }else {
-                        executeCommand(target, cmd);
+                        executeCommand(power, target, cmd);
                     }
                 }
-            }).runTaskLater(RPGItems.plugin, getDelay());
+            }).runTaskLater(RPGItems.plugin, power.getDelay());
             return PowerResult.ok();
         }
 
         @Override
-        public Power getPower() {
-            return DelayedCommand.this;
+        public Class<? extends DelayedCommand> getPowerClass() {
+            return DelayedCommand.class;
         }
 
         @Override
-        public PowerResult<Void> sneak(Player player, ItemStack stack, PlayerToggleSneakEvent event) {
-            return fire(player, stack);
+        public PowerResult<Void> sneak(DelayedCommand power, Player player, ItemStack stack, PlayerToggleSneakEvent event) {
+            return fire(power, player, stack);
         }
 
         @Override
-        public PowerResult<Void> sprint(Player player, ItemStack stack, PlayerToggleSprintEvent event) {
-            return fire(player, stack);
+        public PowerResult<Void> sprint(DelayedCommand power, Player player, ItemStack stack, PlayerToggleSprintEvent event) {
+            return fire(power, player, stack);
         }
 
         @Override
-        public PowerResult<Void> hurt(Player target, ItemStack stack, EntityDamageEvent event) {
-            return fire(target, stack);
+        public PowerResult<Void> hurt(DelayedCommand power, Player target, ItemStack stack, EntityDamageEvent event) {
+            return fire(power, target, stack);
         }
 
         @Override
-        public PowerResult<Void> rightClick(final Player player, ItemStack stack, PlayerInteractEvent event) {
-            return fire(player, stack);
+        public PowerResult<Void> rightClick(DelayedCommand power, final Player player, ItemStack stack, PlayerInteractEvent event) {
+            return fire(power, player, stack);
         }
     }
 }

@@ -73,7 +73,7 @@ public class Lightning extends BasePower {
         }
 
         @Override
-        public Power getPower() {
+        public Power getPowerClass() {
             return Lightning.this;
         }
     }

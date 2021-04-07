@@ -161,7 +161,7 @@ public class Rumble extends BasePower {
         }
 
         @Override
-        public Power getPower() {
+        public Power getPowerClass() {
             return Rumble.this;
         }
 

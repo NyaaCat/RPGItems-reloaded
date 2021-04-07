@@ -117,7 +117,7 @@ public class Glove extends BasePower {
         }
 
         @Override
-        public Power getPower() {
+        public Power getPowerClass() {
             return Glove.this;
         }
     }

@@ -59,7 +59,7 @@ public class ParticleTick extends ParticlePower {
         }
 
         @Override
-        public Power getPower() {
+        public Power getPowerClass() {
             return ParticleTick.this;
         }
 

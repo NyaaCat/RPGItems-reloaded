@@ -37,22 +37,22 @@ public class Flame extends BasePower {
         return burntime;
     }
 
-    public class Impl implements PowerHit, PowerLivingEntity {
+    public static class Impl implements PowerHit<Flame>, PowerLivingEntity<Flame> {
 
         @Override
-        public PowerResult<Double> hit(Player player, ItemStack stack, LivingEntity entity, double damage, EntityDamageByEntityEvent event) {
-            return fire(player, stack, entity, damage).with(damage);
+        public PowerResult<Double> hit(Flame power, Player player, ItemStack stack, LivingEntity entity, double damage, EntityDamageByEntityEvent event) {
+            return fire(power, player, stack, entity, damage).with(damage);
         }
 
         @Override
-        public PowerResult<Void> fire(Player player, ItemStack stack, LivingEntity entity, Double value) {
-            entity.setFireTicks(getBurntime());
+        public PowerResult<Void> fire(Flame power, Player player, ItemStack stack, LivingEntity entity, Double value) {
+            entity.setFireTicks(power.getBurntime());
             return PowerResult.ok();
         }
 
         @Override
-        public Power getPower() {
-            return Flame.this;
+        public Class<? extends Flame> getPowerClass() {
+            return Flame.class;
         }
     }
 }
