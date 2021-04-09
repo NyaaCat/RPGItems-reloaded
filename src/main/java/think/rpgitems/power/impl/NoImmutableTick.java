@@ -5,6 +5,7 @@ import org.bukkit.entity.LivingEntity;
 import org.bukkit.entity.Player;
 import org.bukkit.event.entity.EntityDamageByEntityEvent;
 import org.bukkit.inventory.ItemStack;
+import org.bukkit.scheduler.BukkitRunnable;
 import think.rpgitems.I18n;
 import think.rpgitems.RPGItems;
 import think.rpgitems.power.*;
@@ -39,8 +40,12 @@ public class NoImmutableTick extends BasePower {
 
         @Override
         public PowerResult<Double> hit(Player player, ItemStack stack, LivingEntity entity, double damage, EntityDamageByEntityEvent event) {
-            Bukkit.getScheduler().runTaskLater(RPGItems.plugin, () -> entity.setNoDamageTicks(getImmuneTime() + 10), 0);
-            Bukkit.getScheduler().runTaskLater(RPGItems.plugin, () -> entity.setNoDamageTicks(getImmuneTime() + 10), 1);
+            new BukkitRunnable(){
+                @Override
+                public void run() {
+                    entity.setNoDamageTicks(getImmuneTime());
+                }
+            }.runTaskLater(RPGItems.plugin, 1);
             return PowerResult.ok(damage);
         }
 
