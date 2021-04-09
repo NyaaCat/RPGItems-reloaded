@@ -210,8 +210,11 @@ public class AOE extends BasePower {
                     })
                     .limit(getCount() == -1 ? Integer.MAX_VALUE : getCount())
                     .forEach(ent -> {
-                        if (player.equals(ent) && isSelfapplication()) {
-                            player.addPotionEffect(effect);
+                        if (player.equals(ent)) {
+                            if(isSelfapplication()){
+                                player.addPotionEffect(effect);
+                            }
+                            return;
                         }
                         if (ent != null && Objects.equals(ent.getLocation().getWorld(), center.getWorld()) && ent.getLocation().distance(center) <= range) {
                             ent.addPotionEffect(effect);
