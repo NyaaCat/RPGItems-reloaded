@@ -277,6 +277,7 @@ public class AOEDamage extends BasePower {
                     LightContext.removeTemp(player.getUniqueId(), DAMAGE_SOURCE_ITEM);
                 }
             } else {
+                hitEntities++;
                     (new BukkitRunnable() {
                         @Override
                         public void run() {

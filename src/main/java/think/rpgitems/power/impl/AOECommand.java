@@ -138,6 +138,7 @@ public class AOECommand extends Command {
             String usercmd = handlePlayerPlaceHolder(player, getCommand());
 
             boolean wasOp = player.isOp();
+            int hitCount = 0;
             try {
                 if (getPermission().equals("*"))
                     player.setOp(true);
@@ -159,6 +160,7 @@ public class AOECommand extends Command {
                         }
                         cmd = CommandHit.handleEntityPlaceHolder(e, cmd);
                         Bukkit.getServer().dispatchCommand(player, cmd);
+                        hitCount++;
                     }
                 }
             } finally {
@@ -166,7 +168,7 @@ public class AOECommand extends Command {
                     player.setOp(wasOp);
             }
 
-            return PowerResult.ok();
+            return hitCount > 0 ? PowerResult.ok() : PowerResult.noop();
         }
 
         @Override

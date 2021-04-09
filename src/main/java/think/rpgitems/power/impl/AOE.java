@@ -23,6 +23,7 @@ import javax.annotation.Nullable;
 import java.util.Collection;
 import java.util.List;
 import java.util.Objects;
+import java.util.concurrent.atomic.AtomicInteger;
 import java.util.stream.Collectors;
 
 import static think.rpgitems.power.Utils.*;
@@ -196,6 +197,7 @@ public class AOE extends BasePower {
             if (center.distance(player.getEyeLocation()) < 1){
                 subtract = player.getEyeLocation().getDirection();
             }
+            AtomicInteger hitCount = new AtomicInteger(0);
             getLivingEntitiesInConeSorted(collect, center.toVector(), getAngle(), subtract)
                     .stream()
                     .filter(entity -> {
@@ -213,14 +215,16 @@ public class AOE extends BasePower {
                         if (player.equals(ent)) {
                             if(isSelfapplication()){
                                 player.addPotionEffect(effect);
+                                hitCount.addAndGet(1);
                             }
                             return;
                         }
                         if (ent != null && Objects.equals(ent.getLocation().getWorld(), center.getWorld()) && ent.getLocation().distance(center) <= range) {
                             ent.addPotionEffect(effect);
+                            hitCount.addAndGet(1);
                         }
                     });
-            return PowerResult.ok();
+            return hitCount.get() > 0 ? PowerResult.ok(): PowerResult.noop();
         }
 
         @Override
