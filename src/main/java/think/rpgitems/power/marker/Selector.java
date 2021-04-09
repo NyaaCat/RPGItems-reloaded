@@ -4,6 +4,7 @@ import cat.nyaa.nyaacore.Pair;
 import com.google.common.cache.CacheBuilder;
 import com.google.common.cache.CacheLoader;
 import com.google.common.cache.LoadingCache;
+import org.bukkit.GameMode;
 import org.bukkit.Location;
 import org.bukkit.OfflinePlayer;
 import org.bukkit.configuration.ConfigurationSection;
@@ -55,6 +56,12 @@ public class Selector extends BaseMarker {
                                                                              .concurrencyLevel(1)
                                                                              .expireAfterAccess(1, TimeUnit.DAYS)
                                                                              .build(CacheLoader.from(Selector::parseType));
+    private static LoadingCache<String,Pair<Set<GameMode>, Set<GameMode>>> gameModeCache = CacheBuilder
+            .newBuilder()
+            .concurrencyLevel(1)
+            .expireAfterAccess(1, TimeUnit.DAYS)
+            .build(CacheLoader.from(Selector::parseGameMode));
+
     @Property(order = 0, required = true)
     public String id;
     /**
@@ -136,6 +143,16 @@ public class Selector extends BaseMarker {
     @Property
     public String team;
 
+    /**
+     * Selecting targets by gameModes, According to the following format
+     * `MAY_ON,!MUST_NOT_ON`
+     * MUST_NOT_ON any gameMode
+     * MAY_ON any gameMode
+     * all MAY_ON has effect
+     */
+    @Property
+    public String gameMode;
+
     public static Map<String, Pair<Integer, Integer>> parseScore(String limit) {
         Map<String, Pair<Integer, Integer>> result = new HashMap<>();
         if(limit.equals(""))return result;
@@ -153,6 +170,31 @@ public class Selector extends BaseMarker {
 
     private static Set<EntityType> parseType(String type) {
         return Arrays.stream(type.split(",")).map(String::toUpperCase).map(EntityType::valueOf).collect(Collectors.toSet());
+    }
+
+
+    private static Pair<Set<GameMode>, Set<GameMode>> parseGameMode(String str) {
+        final Pair<Set<GameMode>, Set<GameMode>> result = Pair.of(new HashSet<>(), new HashSet<>());
+        final String[] split = str.split(",");
+        for (String gameMode : split) {
+            try{
+                boolean mustNot = gameMode.startsWith("!");
+                if (mustNot){
+                    gameMode = gameMode.substring(1);
+                }
+                final GameMode gameMode1 = GameMode.valueOf(gameMode);
+                if (mustNot){
+                    //value means mustNot
+                    result.getValue().add(gameMode1);
+                }else {
+                    //key means may
+                    result.getKey().add(gameMode1);
+                }
+            }catch (Exception e){
+                continue;
+            }
+        }
+        return result;
     }
 
     public static Pair<Set<String>, Set<String>> parse(String limit) {
@@ -211,6 +253,18 @@ public class Selector extends BaseMarker {
         if (score != null) {
             Map<String, Pair<Integer, Integer>> t = scoreCache.getUnchecked(score);
             ents = ents.stream().filter(entity -> matchScore(entity, p.getScoreboard(), t)).collect(Collectors.toList());
+        }
+        if (gameMode != null) {
+            Pair<Set<GameMode>, Set<GameMode>> t = gameModeCache.getUnchecked(gameMode);
+            final Set<GameMode> mayOn = t.getKey();
+            final Set<GameMode> mustNotOn = t.getValue();
+            ents = ents.stream().filter(entity -> entity instanceof Player)
+                    .map(entity -> ((Player) entity))
+                    .filter(player -> {
+                        final GameMode gameMode = player.getGameMode();
+                        return mayOn.contains(gameMode) && !mustNotOn.contains(gameMode);
+                    })
+                    .collect(Collectors.toList());
         }
         entities.clear();
         entities.addAll(ents);
