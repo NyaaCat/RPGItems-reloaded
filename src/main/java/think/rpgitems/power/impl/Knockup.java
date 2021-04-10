@@ -45,6 +45,10 @@ public class Knockup extends BasePower {
         return I18n.formatDefault("power.knockup", (int) ((1d / (double) getChance()) * 100d));
     }
 
+    protected Random getRand() {
+        return rand;
+    }
+
     /**
      * Chance of triggering this power
      */
@@ -52,19 +56,19 @@ public class Knockup extends BasePower {
         return chance;
     }
 
-    public class Impl implements PowerHit {
+    public static class Impl implements PowerHit<Knockup> {
 
         @Override
-        public PowerResult<Double> hit(Player player, ItemStack stack, LivingEntity entity, double damage, EntityDamageByEntityEvent event) {
-            if (rand.nextInt(getChance()) == 0) {
-                Bukkit.getScheduler().runTask(RPGItems.plugin, () -> entity.setVelocity(player.getLocation().getDirection().setY(getKnockUpPower())));
+        public PowerResult<Double> hit(Knockup power, Player player, ItemStack stack, LivingEntity entity, double damage, EntityDamageByEntityEvent event) {
+            if (power.getRand().nextInt(power.getChance()) == 0) {
+                Bukkit.getScheduler().runTask(RPGItems.plugin, () -> entity.setVelocity(player.getLocation().getDirection().setY(power.getKnockUpPower())));
             }
             return PowerResult.ok(damage);
         }
 
         @Override
-        public Power getPowerClass() {
-            return Knockup.this;
+        public Class<? extends Knockup> getPowerClass() {
+            return Knockup.class;
         }
     }
 }

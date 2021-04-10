@@ -53,8 +53,8 @@ import java.util.concurrent.TimeUnit;
         PowerBowShoot.class,
         PowerBeamHit.class,
         PowerLocation.class
-}, implClass = ProjectilePower.Impl.class)
-public class ProjectilePower extends BasePower {
+}, implClass = Projectiles.Impl.class)
+public class Projectiles extends BasePower {
     /**
      * Z_axis.
      */
@@ -169,7 +169,11 @@ public class ProjectilePower extends BasePower {
         SELF, TARGET;
     }
 
-    private Cache<UUID, Integer> burstTask = CacheBuilder.newBuilder().expireAfterAccess(1, TimeUnit.MINUTES).concurrencyLevel(2).build();
+    private final Cache<UUID, Integer> burstTask = CacheBuilder.newBuilder().expireAfterAccess(1, TimeUnit.MINUTES).concurrencyLevel(2).build();
+
+    public Cache<UUID, Integer> getBurstTask() {
+        return burstTask;
+    }
 
     @Override
     public void init(ConfigurationSection section) {
@@ -336,63 +340,64 @@ public class ProjectilePower extends BasePower {
         }
     }
 
-    public class Impl implements PowerRightClick, PowerLeftClick, PowerSneak, PowerSprint, PowerHitTaken, PowerHit, PowerLivingEntity, PowerPlain, PowerBowShoot, PowerHurt {
+    public static class Impl implements PowerRightClick<Projectiles>, PowerLeftClick<Projectiles>, PowerSneak<Projectiles>, PowerSprint<Projectiles>, PowerHitTaken<Projectiles>, PowerHit<Projectiles>, PowerLivingEntity<Projectiles>, PowerPlain<Projectiles>, PowerBowShoot<Projectiles>, PowerHurt<Projectiles> {
 
 
         @Override
-        public PowerResult<Double> takeHit(Player target, ItemStack stack, double damage, EntityDamageEvent event) {
-            if (!isRequireHurtByEntity() || event instanceof EntityDamageByEntityEvent) {
-                return fire(target, stack).with(damage);
+        public PowerResult<Double> takeHit(Projectiles power, Player target, ItemStack stack, double damage, EntityDamageEvent event) {
+            if (!power.isRequireHurtByEntity() || event instanceof EntityDamageByEntityEvent) {
+                return fire(power, target, stack).with(damage);
             }
             return PowerResult.noop();
         }
 
         @Override
-        public PowerResult<Void> fire(Player player, ItemStack stack) {
-            return fire(player, stack, 1);
+        public PowerResult<Void> fire(Projectiles power, Player player, ItemStack stack) {
+            return fire(power, player, stack, 1);
         }
 
-        public PowerResult<Void> fire(Player player, ItemStack stack, float speedFactor) {
+        public PowerResult<Void> fire(Projectiles power, Player player, ItemStack stack, float speedFactor) {
             CastUtils.CastLocation castLocation = null;
-            if (getFiringLocation().equals(FiringLocation.TARGET)) {
-                castLocation = CastUtils.rayTrace(player, player.getEyeLocation(), player.getEyeLocation().getDirection(), getFiringRange());
+            if (power.getFiringLocation().equals(FiringLocation.TARGET)) {
+                castLocation = CastUtils.rayTrace(player, player.getEyeLocation(), player.getEyeLocation().getDirection(), power.getFiringRange());
             }
-            fire(player, player, stack, speedFactor, castLocation);
+            fire(power, player, player, stack, speedFactor, castLocation);
             UUID uuid = player.getUniqueId();
-            if (getBurstCount() > 1) {
+            Cache<UUID, Integer> burstTask = power.getBurstTask();
+            if (power.getBurstCount() > 1) {
                 Integer prev = burstTask.getIfPresent(uuid);
                 if (prev != null) {
                     Bukkit.getScheduler().cancelTask(prev);
                 }
                 CastUtils.CastLocation finalCastLocation = castLocation;
                 BukkitTask bukkitTask = (new BukkitRunnable() {
-                    int count = getBurstCount() - 1;
+                    int count = power.getBurstCount() - 1;
 
                     @Override
                     public void run() {
                         if (player.getInventory().getItemInMainHand().equals(stack)) {
                             CastUtils.CastLocation castLocation1 = finalCastLocation;
-                            if (!isCastOff()){
-                                castLocation1 = CastUtils.rayTrace(player, player.getEyeLocation(), player.getEyeLocation().getDirection(), getFiringRange());
+                            if (!power.isCastOff()){
+                                castLocation1 = CastUtils.rayTrace(player, player.getEyeLocation(), player.getEyeLocation().getDirection(), power.getFiringRange());
                             }
                             burstTask.put(uuid, this.getTaskId());
                             if (count-- > 0 && player.isOnline()) {
-                                fire(player, player, stack, speedFactor, castLocation1);
+                                fire(power, player, player, stack, speedFactor, castLocation1);
                                 return;
                             }
                         }
                         burstTask.invalidate(uuid);
                         this.cancel();
                     }
-                }).runTaskTimer(RPGItems.plugin, getBurstInterval(), getBurstInterval());
+                }).runTaskTimer(RPGItems.plugin, power.getBurstInterval(), power.getBurstInterval());
                 burstTask.put(uuid, bukkitTask.getTaskId());
             }
             return PowerResult.ok();
         }
 
         @Override
-        public Power getPowerClass() {
-            return ProjectilePower.this;
+        public Class<? extends Projectiles> getPowerClass() {
+            return Projectiles.class;
         }
 
         private RoundedConeInfo generateConeInfo(double cone, RangedDoubleValue firingR, RangedDoubleValue firingTheta, RangedDoubleValue firingPhi, double initialRotation) {
@@ -408,11 +413,11 @@ public class ProjectilePower extends BasePower {
             return new RoundedConeInfo(theta, phi, r, rPhi, rTheta, initialRotation);
         }
 
-        private void fire(Player player, LivingEntity source, ItemStack stack, float speedFactor, CastUtils.CastLocation castLocation) {
+        private void fire(Projectiles power, Player player, LivingEntity source, ItemStack stack, float speedFactor, CastUtils.CastLocation castLocation) {
 
-            for (int i = 0; i < (isCone() ? getAmount() : 1); i++) {
-                RoundedConeInfo roundedConeInfo = generateConeInfo(isCone() ? getRange() : 0, getFiringR(), getFiringTheta(), getFiringPhi(), getInitialRotation());
-                if (getFiringLocation().equals(FiringLocation.TARGET) && castLocation != null) {
+            for (int i = 0; i < (power.isCone() ? power.getAmount() : 1); i++) {
+                RoundedConeInfo roundedConeInfo = generateConeInfo(power.isCone() ? power.getRange() : 0, power.getFiringR(), power.getFiringTheta(), power.getFiringPhi(), power.getInitialRotation());
+                if (power.getFiringLocation().equals(FiringLocation.TARGET) && castLocation != null) {
                     Location targetLocation = castLocation.getTargetLocation();
                     Location fireLocation = CastUtils.parseFiringLocation(targetLocation, y_axis, player.getEyeLocation(), roundedConeInfo);
                     World world = player.getWorld();
@@ -435,44 +440,44 @@ public class ProjectilePower extends BasePower {
                     }).runTaskLater(RPGItems.plugin, 1);
                     source = spawn;
                 }
-                fire(player, source, stack, roundedConeInfo, speedFactor);
+                fire(power, player, source, stack, roundedConeInfo, speedFactor);
             }
 
         }
 
-        private void fire(Player player, LivingEntity source, ItemStack stack, RoundedConeInfo roundedConeInfo, float speedFactor) {
+        private void fire(Projectiles power, Player player, LivingEntity source, ItemStack stack, RoundedConeInfo roundedConeInfo, float speedFactor) {
             Vector direction1 = source.getEyeLocation().getDirection();
             Vector v = CastUtils.makeCone(source.getEyeLocation(), direction1, roundedConeInfo);
-            Events.registerRPGProjectile(getPower().getItem(), stack, player, source);
-            org.bukkit.entity.Projectile projectile = source.launchProjectile(getProjectileType(), v.clone().normalize().multiply(getSpeed() * speedFactor));
+            Events.registerRPGProjectile(power.getItem(), stack, player, source);
+            org.bukkit.entity.Projectile projectile = source.launchProjectile(power.getProjectileType(), v.clone().normalize().multiply(power.getSpeed() * speedFactor));
             if (projectile instanceof AbstractArrow) {
                 ((AbstractArrow) projectile).setPickupStatus(AbstractArrow.PickupStatus.DISALLOWED);
                 projectile.addScoreboardTag("rgi_projectile");
             }
             projectile.setShooter(player);
-            handleProjectile(v, projectile);
+            handleProjectile(power, v, projectile);
         }
 
         @SuppressWarnings("deprecation")
-        private void handleProjectile(Vector v, org.bukkit.entity.Projectile projectile) {
+        private void handleProjectile(Projectiles power, Vector v, org.bukkit.entity.Projectile projectile) {
             projectile.setPersistent(false);
-            projectile.setGravity(isGravity());
+            projectile.setGravity(power.isGravity());
             if (projectile instanceof Explosive) {
-                if (getYield() != null) {
-                    ((Explosive) projectile).setYield(getYield().floatValue());
+                if (power.getYield() != null) {
+                    ((Explosive) projectile).setYield(power.getYield().floatValue());
                 }
-                if (getIncendiary() != null) {
-                    ((Explosive) projectile).setIsIncendiary(getIncendiary());
+                if (power.getIncendiary() != null) {
+                    ((Explosive) projectile).setIsIncendiary(power.getIncendiary());
                 }
             }
-            if (projectile instanceof Fireball && isSetFireballDirection()) {
-                ((Fireball) projectile).setDirection(v.clone().normalize().multiply(getSpeed()));
+            if (projectile instanceof Fireball && power.isSetFireballDirection()) {
+                ((Fireball) projectile).setDirection(v.clone().normalize().multiply(power.getSpeed()));
             }
-            if (Arrow.class.isAssignableFrom(getProjectileType())) {
+            if (Arrow.class.isAssignableFrom(power.getProjectileType())) {
                 Events.autoRemoveProjectile(projectile.getEntityId());
                 ((Arrow) projectile).setPickupStatus(Arrow.PickupStatus.DISALLOWED);
             }
-            if (!isGravity()) {
+            if (!power.isGravity()) {
                 (new BukkitRunnable() {
                     @Override
                     public void run() {
@@ -483,83 +488,84 @@ public class ProjectilePower extends BasePower {
         }
 
         @Override
-        public PowerResult<Void> hurt(Player target, ItemStack stack, EntityDamageEvent event) {
-            if (!isRequireHurtByEntity() || event instanceof EntityDamageByEntityEvent) {
-                return fire(target, stack);
+        public PowerResult<Void> hurt(Projectiles power, Player target, ItemStack stack, EntityDamageEvent event) {
+            if (!power.isRequireHurtByEntity() || event instanceof EntityDamageByEntityEvent) {
+                return fire(power, target, stack);
             }
             return PowerResult.noop();
         }
 
         @Override
-        public PowerResult<Void> rightClick(Player player, ItemStack stack, PlayerInteractEvent event) {
-            return fire(player, stack);
+        public PowerResult<Void> rightClick(Projectiles power, Player player, ItemStack stack, PlayerInteractEvent event) {
+            return fire(power, player, stack);
         }
 
         @Override
-        public PowerResult<Void> leftClick(Player player, ItemStack stack, PlayerInteractEvent event) {
-            return fire(player, stack);
+        public PowerResult<Void> leftClick(Projectiles power, Player player, ItemStack stack, PlayerInteractEvent event) {
+            return fire(power, player, stack);
         }
 
         @Override
-        public PowerResult<Double> hit(Player player, ItemStack stack, LivingEntity entity, double damage, EntityDamageByEntityEvent event) {
-            return fire(player, stack).with(damage);
+        public PowerResult<Double> hit(Projectiles power, Player player, ItemStack stack, LivingEntity entity, double damage, EntityDamageByEntityEvent event) {
+            return fire(power, player, stack).with(damage);
         }
 
         @Override
-        public PowerResult<Void> sneak(Player player, ItemStack stack, PlayerToggleSneakEvent event) {
-            return fire(player, stack);
+        public PowerResult<Void> sneak(Projectiles power, Player player, ItemStack stack, PlayerToggleSneakEvent event) {
+            return fire(power, player, stack);
         }
 
         @Override
-        public PowerResult<Void> sprint(Player player, ItemStack stack, PlayerToggleSprintEvent event) {
-            return fire(player, stack);
+        public PowerResult<Void> sprint(Projectiles power, Player player, ItemStack stack, PlayerToggleSprintEvent event) {
+            return fire(power, player, stack);
         }
 
         @Override
-        public PowerResult<Void> fire(Player player, ItemStack stack, LivingEntity entity, Double value) {
+        public PowerResult<Void> fire(Projectiles power, Player player, ItemStack stack, LivingEntity entity, Double value) {
             CastUtils.CastLocation castLocation = null;
-            if (getFiringLocation().equals(FiringLocation.TARGET)) {
-                castLocation = CastUtils.rayTrace(entity, entity.getEyeLocation(), entity.getEyeLocation().getDirection(), getFiringRange());
+            if (power.getFiringLocation().equals(FiringLocation.TARGET)) {
+                castLocation = CastUtils.rayTrace(entity, entity.getEyeLocation(), entity.getEyeLocation().getDirection(), power.getFiringRange());
             }
-            fire(player, entity, stack, 1, castLocation);
+            fire(power, player, entity, stack, 1, castLocation);
             UUID uuid = player.getUniqueId();
-            if (getBurstCount() > 1) {
+            Cache<UUID, Integer> burstTask = power.getBurstTask();
+            if (power.getBurstCount() > 1) {
                 Integer prev = burstTask.getIfPresent(uuid);
                 if (prev != null) {
                     Bukkit.getScheduler().cancelTask(prev);
                 }
                 CastUtils.CastLocation finalCastLocation = castLocation;
                 BukkitTask bukkitTask = (new BukkitRunnable() {
-                    int count = getBurstCount() - 1;
+                    int count = power.getBurstCount() - 1;
 
                     @Override
                     public void run() {
                         if (player.getInventory().getItemInMainHand().equals(stack)) {
                             CastUtils.CastLocation castLocation1 = finalCastLocation;
-                            if (!isCastOff()){
-                                castLocation1 = CastUtils.rayTrace(entity, entity.getEyeLocation(), entity.getEyeLocation().getDirection(), getFiringRange());
+                            if (!power.isCastOff()){
+                                castLocation1 = CastUtils.rayTrace(entity, entity.getEyeLocation(), entity.getEyeLocation().getDirection(), power.getFiringRange());
                             }
                             burstTask.put(uuid, this.getTaskId());
                             if (count-- > 0) {
-                                fire(player, entity, stack, 1, finalCastLocation);
+                                fire(power, player, entity, stack, 1, finalCastLocation);
                                 return;
                             }
                         }
                         burstTask.invalidate(uuid);
                         this.cancel();
                     }
-                }).runTaskTimer(RPGItems.plugin, getBurstInterval(), getBurstInterval());
+                }).runTaskTimer(RPGItems.plugin, power.getBurstInterval(), power.getBurstInterval());
                 burstTask.put(uuid, bukkitTask.getTaskId());
             }
             return PowerResult.ok();
         }
 
         @Override
-        public PowerResult<Float> bowShoot(Player player, ItemStack itemStack, EntityShootBowEvent e) {
-            if (isSuppressArrow()) {
+        public PowerResult<Float> bowShoot(Projectiles power, Player player, ItemStack itemStack, EntityShootBowEvent e) {
+            if (power.isSuppressArrow()) {
                 e.setCancelled(true);
             }
-            return fire(player, itemStack, isApplyForce() ? e.getForce() : 1).with(isSuppressArrow() ? -1 : e.getForce());
+            return fire(power, player, itemStack, power.isApplyForce() ? e.getForce() : 1).with(power.isSuppressArrow() ? -1 : e.getForce());
         }
     }
 }

@@ -43,8 +43,8 @@ import java.util.Optional;
         PowerBowShoot.class,
         PowerBeamHit.class,
         PowerLocation.class
-        }, implClass = ParticlePower.Impl.class)
-public class ParticlePower extends BasePower {
+        }, implClass = Particles.Impl.class)
+public class Particles extends BasePower {
     @Property(order = 0, required = true)
     @Serializer(EffectSetter.class)
     @Deserializer(value = EffectSetter.class, message = "message.error.visualeffect")
@@ -256,83 +256,83 @@ public class ParticlePower extends BasePower {
         }
     }
 
-    public class Impl implements PowerRightClick, PowerLeftClick, PowerPlain, PowerHit, PowerHitTaken, PowerHurt, PowerBowShoot, PowerBeamHit, PowerProjectileHit, PowerLivingEntity, PowerLocation {
+    public static class Impl implements PowerRightClick<Particles>, PowerLeftClick<Particles>, PowerPlain<Particles>, PowerHit<Particles>, PowerHitTaken<Particles>, PowerHurt<Particles>, PowerBowShoot<Particles>, PowerBeamHit<Particles>, PowerProjectileHit<Particles>, PowerLivingEntity<Particles>, PowerLocation<Particles> {
 
         @Override
-        public PowerResult<Double> takeHit(Player target, ItemStack stack, double damage, EntityDamageEvent event) {
-            if (!isRequireHurtByEntity() || event instanceof EntityDamageByEntityEvent) {
-                return fire(target, stack).with(damage);
+        public PowerResult<Double> takeHit(Particles power, Player target, ItemStack stack, double damage, EntityDamageEvent event) {
+            if (!power.isRequireHurtByEntity() || event instanceof EntityDamageByEntityEvent) {
+                return fire(power, target, stack).with(damage);
             }
             return PowerResult.noop();
         }
 
         @Override
-        public PowerResult<Void> fire(Player player, ItemStack stack) {
+        public PowerResult<Void> fire(Particles power, Player player, ItemStack stack) {
             Location playLocation = player.getLocation();
-            PlayLocation playLocation1 = getPlayLocation();
+            PlayLocation playLocation1 = power.getPlayLocation();
             if (playLocation1.equals(PlayLocation.TARGET)){
-                CastUtils.CastLocation castLocation = CastUtils.rayTrace(player, player.getEyeLocation(), player.getEyeLocation().getDirection(), getFiringRange());
+                CastUtils.CastLocation castLocation = CastUtils.rayTrace(player, player.getEyeLocation(), player.getEyeLocation().getDirection(), power.getFiringRange());
                 playLocation = castLocation.getTargetLocation();
             }
 
-            return fire(playLocation);
+            return fire(power, playLocation);
         }
 
-        private PowerResult<Void> fire(Location playLocation) {
-            int delay = getDelay();
+        private PowerResult<Void> fire(Particles power, Location playLocation) {
+            int delay = power.getDelay();
             new BukkitRunnable(){
                 @Override
                 public void run() {
-                    spawnParticle(playLocation.getWorld(), playLocation);
+                    power.spawnParticle(playLocation.getWorld(), playLocation);
                 }
             }.runTaskLater(RPGItems.plugin, delay);
             return PowerResult.ok();
         }
 
         @Override
-        public Power getPowerClass() {
-            return ParticlePower.this;
+        public Class<? extends Particles> getPowerClass() {
+            return Particles.class;
         }
 
         @Override
-        public PowerResult<Void> hurt(Player target, ItemStack stack, EntityDamageEvent event) {
-            if (!isRequireHurtByEntity() || event instanceof EntityDamageByEntityEvent) {
-                return fire(target, stack);
+        public PowerResult<Void> hurt(Particles power, Player target, ItemStack stack, EntityDamageEvent event) {
+            if (!power.isRequireHurtByEntity() || event instanceof EntityDamageByEntityEvent) {
+                return fire(power, target, stack);
             }
             return PowerResult.noop();
         }
 
         @Override
-        public PowerResult<Void> rightClick(Player player, ItemStack stack, PlayerInteractEvent event) {
-            return fire(player, stack);
+        public PowerResult<Void> rightClick(Particles power, Player player, ItemStack stack, PlayerInteractEvent event) {
+            return fire(power, player, stack);
         }
 
         @Override
-        public PowerResult<Float> bowShoot(Player player, ItemStack stack, EntityShootBowEvent event) {
-            return fire(player, stack).with(event.getForce());
+        public PowerResult<Float> bowShoot(Particles power, Player player, ItemStack stack, EntityShootBowEvent event) {
+            return fire(power, player, stack).with(event.getForce());
         }
 
         @Override
-        public PowerResult<Void> leftClick(Player player, ItemStack stack, PlayerInteractEvent event) {
-            return fire(player, stack);
+        public PowerResult<Void> leftClick(Particles power, Player player, ItemStack stack, PlayerInteractEvent event) {
+            return fire(power, player, stack);
         }
 
         @Override
-        public PowerResult<Double> hit(Player player, ItemStack stack, LivingEntity entity, double damage, EntityDamageByEntityEvent event) {
-            if (getPlayLocation().equals(PlayLocation.HIT_LOCATION)) {
-                int delay = getDelay();
+        public PowerResult<Double> hit(Particles power, Player player, ItemStack stack, LivingEntity entity, double damage, EntityDamageByEntityEvent event) {
+            if (power.getPlayLocation().equals(PlayLocation.HIT_LOCATION)) {
+                int delay = power.getDelay();
                 new BukkitRunnable(){
                     @Override
                     public void run() {
-                        spawnParticle(entity);
+                        power.spawnParticle(entity);
                     }
                 }.runTaskLater(RPGItems.plugin, delay);
-            }else if (getPlayLocation().equals(PlayLocation.SELF)){
-                int delay = getDelay();
+            }else if (power.getPlayLocation().equals(PlayLocation.SELF)){
+                int delay = power.getDelay();
                 new BukkitRunnable(){
                     @Override
                     public void run() {
-                        spawnParticle(player);
+                        power.spawnParticle(player);
                     }
                 }.runTaskLater(RPGItems.plugin, delay);
             }
@@ -340,34 +340,34 @@ public class ParticlePower extends BasePower {
         }
 
         @Override
-        public PowerResult<Double> hitEntity(Player player, ItemStack stack, LivingEntity entity, double damage, BeamHitEntityEvent event) {
-            int delay = getDelay();
+        public PowerResult<Double> hitEntity(Particles power, Player player, ItemStack stack, LivingEntity entity, double damage, BeamHitEntityEvent event) {
+            int delay = power.getDelay();
             new BukkitRunnable(){
                 @Override
                 public void run() {
                     Location location = event.getLoc();
-                    if (getPlayLocation().equals(PlayLocation.HIT_LOCATION)) {
-                    }else if (getPlayLocation().equals(PlayLocation.SELF)){
+                    if (power.getPlayLocation().equals(PlayLocation.HIT_LOCATION)) {
+                    }else if (power.getPlayLocation().equals(PlayLocation.SELF)){
                         location = player.getLocation();
                     }
-                    spawnParticle(entity.getWorld(), location);
+                    power.spawnParticle(entity.getWorld(), location);
                 }
             }.runTaskLater(RPGItems.plugin, delay);
             return PowerResult.ok(damage);
         }
 
         @Override
-        public PowerResult<Void> hitBlock(Player player, ItemStack stack, Location location, BeamHitBlockEvent event) {
-            int delay = getDelay();
+        public PowerResult<Void> hitBlock(Particles power, Player player, ItemStack stack, Location location, BeamHitBlockEvent event) {
+            int delay = power.getDelay();
             new BukkitRunnable(){
                 @Override
                 public void run() {
                     Location loc = location;
-                    if (getPlayLocation().equals(PlayLocation.HIT_LOCATION)) {
-                    }else if (getPlayLocation().equals(PlayLocation.SELF)){
+                    if (power.getPlayLocation().equals(PlayLocation.HIT_LOCATION)) {
+                    }else if (power.getPlayLocation().equals(PlayLocation.SELF)){
                         loc = player.getLocation();
                     }
-                    spawnParticle(player.getWorld(), loc);
+                    power.spawnParticle(player.getWorld(), loc);
                 }
             }.runTaskLater(RPGItems.plugin, delay);
 
@@ -375,17 +375,17 @@ public class ParticlePower extends BasePower {
         }
 
         @Override
-        public PowerResult<Void> beamEnd(Player player, ItemStack stack, Location location, BeamEndEvent event) {
-            int delay = getDelay();
+        public PowerResult<Void> beamEnd(Particles power, Player player, ItemStack stack, Location location, BeamEndEvent event) {
+            int delay = power.getDelay();
             new BukkitRunnable(){
                 @Override
                 public void run() {
                     Location loc = location;
-                    if (getPlayLocation().equals(PlayLocation.HIT_LOCATION)) {
-                    }else if (getPlayLocation().equals(PlayLocation.SELF)){
+                    if (power.getPlayLocation().equals(PlayLocation.HIT_LOCATION)) {
+                    }else if (power.getPlayLocation().equals(PlayLocation.SELF)){
                         loc = player.getLocation();
                     }
-                    spawnParticle(player.getWorld(), loc);
+                    power.spawnParticle(player.getWorld(), loc);
                 }
             }.runTaskLater(RPGItems.plugin, delay);
 
@@ -393,17 +393,17 @@ public class ParticlePower extends BasePower {
         }
 
         @Override
-        public PowerResult<Void> projectileHit(Player player, ItemStack stack, ProjectileHitEvent event) {
-            int delay = getDelay();
+        public PowerResult<Void> projectileHit(Particles power, Player player, ItemStack stack, ProjectileHitEvent event) {
+            int delay = power.getDelay();
             new BukkitRunnable(){
                 @Override
                 public void run() {
                     Location loc = event.getEntity().getLocation();
-                    if (getPlayLocation().equals(PlayLocation.HIT_LOCATION)) {
-                    }else if (getPlayLocation().equals(PlayLocation.SELF)){
+                    if (power.getPlayLocation().equals(PlayLocation.HIT_LOCATION)) {
+                    }else if (power.getPlayLocation().equals(PlayLocation.SELF)){
                         loc = player.getLocation();
                     }
-                    spawnParticle(player.getWorld(), loc);
+                    power.spawnParticle(player.getWorld(), loc);
                 }
             }.runTaskLater(RPGItems.plugin, delay);
 
@@ -411,33 +411,33 @@ public class ParticlePower extends BasePower {
         }
 
         @Override
-        public PowerResult<Void> fire(Player player, ItemStack stack, LivingEntity entity, @Nullable Double value) {
+        public PowerResult<Void> fire(Particles power, Player player, ItemStack stack, LivingEntity entity, @Nullable Double value) {
             Location location = player.getLocation();
-            PlayLocation playLocation = getPlayLocation();
+            PlayLocation playLocation = power.getPlayLocation();
             switch (playLocation){
                 case SELF:
                     break;
                 case HIT_LOCATION:
                 case TARGET:
-                    CastUtils.CastLocation castLocation = CastUtils.rayTrace(entity, entity.getEyeLocation(), entity.getEyeLocation().getDirection(), getFiringRange());
+                    CastUtils.CastLocation castLocation = CastUtils.rayTrace(entity, entity.getEyeLocation(), entity.getEyeLocation().getDirection(), power.getFiringRange());
                     location = castLocation.getTargetLocation();
                     break;
                 case ENTITY:
                     location = entity.getLocation();
                     break;
             }
-            return fire(location);
+            return fire(power, location);
         }
 
         @Override
-        public PowerResult<Void> fire(Player player, ItemStack stack, Location location) {
-            PlayLocation playLocation = getPlayLocation();
+        public PowerResult<Void> fire(Particles power, Player player, ItemStack stack, Location location) {
+            PlayLocation playLocation = power.getPlayLocation();
             switch (playLocation){
                 case SELF:
                     location = player.getLocation();
                     break;
             }
-            return fire(location);
+            return fire(power, location);
         }
     }
 
@@ -450,19 +450,19 @@ public class ParticlePower extends BasePower {
 
         @Override
         public Optional<Effect> set(String value) {
-            ParticlePower.this.data = null;
+            Particles.this.data = null;
             try {
                 Effect eff = Effect.valueOf(value.toUpperCase());
                 if (eff.getType() == Effect.Type.VISUAL) {
-                    ParticlePower.this.effect = eff;
-                    ParticlePower.this.particle = null;
+                    Particles.this.effect = eff;
+                    Particles.this.particle = null;
                     return Optional.empty();
                 }
                 throw new AdminCommands.CommandException("message.error.visualeffect", value);
             } catch (IllegalArgumentException e) {
                 DeprecatedEffect particleEffect = DeprecatedEffect.valueOf(value);
-                ParticlePower.this.effect = null;
-                ParticlePower.this.particle = particleEffect.getParticle();
+                Particles.this.effect = null;
+                Particles.this.particle = particleEffect.getParticle();
                 return Optional.empty();
             }
         }
@@ -476,9 +476,9 @@ public class ParticlePower extends BasePower {
 
         @Override
         public Optional<org.bukkit.Particle> set(String value) {
-            ParticlePower.this.data = null;
-            ParticlePower.this.effect = null;
-            ParticlePower.this.particle = org.bukkit.Particle.valueOf(value);
+            Particles.this.data = null;
+            Particles.this.effect = null;
+            Particles.this.particle = org.bukkit.Particle.valueOf(value);
             return Optional.empty();
         }
     }

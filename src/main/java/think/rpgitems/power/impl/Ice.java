@@ -43,15 +43,15 @@ public class Ice extends BasePower {
         return I18n.formatDefault("power.ice", 0);
     }
 
-    public class Impl implements PowerRightClick, PowerLeftClick, PowerSprint, PowerSneak, PowerPlain, PowerBowShoot {
+    public static class Impl implements PowerRightClick<Ice>, PowerLeftClick<Ice>, PowerSprint<Ice>, PowerSneak<Ice>, PowerPlain<Ice>, PowerBowShoot<Ice> {
 
         @Override
-        public PowerResult<Void> rightClick(final Player player, ItemStack stack, PlayerInteractEvent event) {
-            return fire(player, stack);
+        public PowerResult<Void> rightClick(Ice power, final Player player, ItemStack stack, PlayerInteractEvent event) {
+            return fire(power, player, stack);
         }
 
         @Override
-        public PowerResult<Void> fire(Player player, ItemStack stack) {
+        public PowerResult<Void> fire(Ice power, Player player, ItemStack stack) {
             player.playSound(player.getLocation(), Sound.ENTITY_EGG_THROW, 1.0f, 0.1f);
 
             // launch an ice block
@@ -64,7 +64,7 @@ public class Ice extends BasePower {
                     boolean hit = false;
                     World world = block.getWorld();
 
-                    List<Entity> entities = getNearbyEntities(getPower(), block.getLocation(), player, 1);
+                    List<Entity> entities = getNearbyEntities(power, block.getLocation(), player, 1);
                     for (Entity e : entities) {
                         if (e != player && e != block) {
                             hit = true;
@@ -129,28 +129,28 @@ public class Ice extends BasePower {
         }
 
         @Override
-        public Power getPowerClass() {
-            return Ice.this;
+        public Class<? extends Ice> getPowerClass() {
+            return Ice.class;
         }
 
         @Override
-        public PowerResult<Void> leftClick(Player player, ItemStack stack, PlayerInteractEvent event) {
-            return fire(player, stack);
+        public PowerResult<Void> leftClick(Ice power, Player player, ItemStack stack, PlayerInteractEvent event) {
+            return fire(power,player, stack);
         }
 
         @Override
-        public PowerResult<Float> bowShoot(Player player, ItemStack stack, EntityShootBowEvent event) {
-            return fire(player, stack).with(event.getForce());
+        public PowerResult<Float> bowShoot(Ice power, Player player, ItemStack stack, EntityShootBowEvent event) {
+            return fire(power,player, stack).with(event.getForce());
         }
 
         @Override
-        public PowerResult<Void> sneak(Player player, ItemStack stack, PlayerToggleSneakEvent event) {
-            return fire(player, stack);
+        public PowerResult<Void> sneak(Ice power, Player player, ItemStack stack, PlayerToggleSneakEvent event) {
+            return fire(power,player, stack);
         }
 
         @Override
-        public PowerResult<Void> sprint(Player player, ItemStack stack, PlayerToggleSprintEvent event) {
-            return fire(player, stack);
+        public PowerResult<Void> sprint(Ice power, Player player, ItemStack stack, PlayerToggleSprintEvent event) {
+            return fire(power,player, stack);
         }
     }
 }

@@ -167,24 +167,24 @@ public class ParticleBarrier extends BasePower {
         return projected;
     }
 
-    public class Impl implements PowerPlain, PowerRightClick, PowerLeftClick, PowerTick, PowerBowShoot {
+    public static class Impl implements PowerPlain<ParticleBarrier>, PowerRightClick<ParticleBarrier>, PowerLeftClick<ParticleBarrier>, PowerTick<ParticleBarrier>, PowerBowShoot<ParticleBarrier> {
 
         @Override
-        public PowerResult<Void> leftClick(Player player, ItemStack stack, PlayerInteractEvent event) {
-            return fire(player, stack);
+        public PowerResult<Void> leftClick(ParticleBarrier power, Player player, ItemStack stack, PlayerInteractEvent event) {
+            return fire(power, player, stack);
         }
 
         @SuppressWarnings("unchecked")
         @Override
-        public PowerResult<Void> fire(Player player, ItemStack stack) {
-            if (!isProjected()) {
-                barrier(player, player);
+        public PowerResult<Void> fire(ParticleBarrier power, Player player, ItemStack stack) {
+            if (!power.isProjected()) {
+                barrier(power, player, player);
                 return PowerResult.ok();
             } else {
                 List<LivingEntity> livingEntities = RayTraceUtils.rayTraceEntities(player, 32);
                 Optional<LivingEntity> optionalPlayer = livingEntities.stream().min(Comparator.comparing(p -> p.getLocation().distanceSquared(player.getLocation())));
                 if (optionalPlayer.isPresent()) {
-                    barrier(player, optionalPlayer.get());
+                    barrier(power, player, optionalPlayer.get());
                     return PowerResult.ok();
                 } else {
                     return PowerResult.fail();
@@ -193,13 +193,13 @@ public class ParticleBarrier extends BasePower {
         }
 
         @Override
-        public Power getPowerClass() {
-            return ParticleBarrier.this;
+        public Class<? extends ParticleBarrier> getPowerClass() {
+            return ParticleBarrier.class;
         }
 
         @SuppressWarnings("deprecation")
-        private void barrier(Player source, LivingEntity target) {
-            getBarriers().put(target.getUniqueId(), getBarrierHealth());
+        private void barrier(ParticleBarrier power, Player source, LivingEntity target) {
+            getBarriers().put(target.getUniqueId(), power.getBarrierHealth());
             getBarrierSources().put(target.getUniqueId(), source.getUniqueId());
             Location eyeLocation = target.getEyeLocation();
             Location base = eyeLocation.clone();
@@ -265,24 +265,24 @@ public class ParticleBarrier extends BasePower {
         }
 
         @Override
-        public PowerResult<Void> rightClick(Player player, ItemStack stack, PlayerInteractEvent event) {
-            return fire(player, stack);
+        public PowerResult<Void> rightClick(ParticleBarrier power, Player player, ItemStack stack, PlayerInteractEvent event) {
+            return fire(power, player, stack);
         }
 
         @Override
-        public PowerResult<Float> bowShoot(Player player, ItemStack stack, EntityShootBowEvent event) {
-            return fire(player, stack).with(event.getForce());
+        public PowerResult<Float> bowShoot(ParticleBarrier power, Player player, ItemStack stack, EntityShootBowEvent event) {
+            return fire(power, player, stack).with(event.getForce());
         }
 
         @Override
-        public PowerResult<Void> tick(Player player, ItemStack stack) {
+        public PowerResult<Void> tick(ParticleBarrier power, Player player, ItemStack stack) {
             Pair<Long, Double> pair = getEnergys().getIfPresent(player.getUniqueId());
             if (pair == null) return PowerResult.noop();
             long currentTimeMillis = System.currentTimeMillis();
-            double energy = pair.getValue() - (currentTimeMillis - pair.getKey()) * getEnergyDecay() / 1000;
+            double energy = pair.getValue() - (currentTimeMillis - pair.getKey()) * power.getEnergyDecay() / 1000;
             if (energy <= 0) return PowerResult.noop();
-            int level = (int) (energy / getEnergyPerLevel());
-            player.addPotionEffect(new PotionEffect(getEffect(), 5, level));
+            int level = (int) (energy / power.getEnergyPerLevel());
+            player.addPotionEffect(new PotionEffect(power.getEffect(), 5, level));
             return PowerResult.ok();
         }
     }

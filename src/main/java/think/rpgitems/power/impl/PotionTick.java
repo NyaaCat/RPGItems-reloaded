@@ -83,29 +83,29 @@ public class PotionTick extends BasePower {
         return amplifier;
     }
 
-    public class Impl implements PowerTick, PowerSneaking {
+    public static class Impl implements PowerTick<PotionTick>, PowerSneaking<PotionTick> {
         @Override
-        public PowerResult<Void> tick(Player player, ItemStack stack) {
-            return fire(player, stack);
+        public PowerResult<Void> tick(PotionTick power, Player player, ItemStack stack) {
+            return fire(power, player, stack);
         }
 
-        private PowerResult<Void> fire(Player player, ItemStack stack) {
+        private PowerResult<Void> fire(PotionTick power, Player player, ItemStack stack) {
             double health = player.getHealth();
             boolean hasEffect = false;
             for (PotionEffect potionEffect : player.getActivePotionEffects()) {
-                if (potionEffect.getType().equals(getEffect())) {
+                if (potionEffect.getType().equals(power.getEffect())) {
                     hasEffect = true;
-                    if (isClear()) {
-                        player.removePotionEffect(getEffect());
-                    } else if (potionEffect.getDuration() <= 5 || potionEffect.getAmplifier() < getAmplifier())
-                        player.addPotionEffect(new PotionEffect(getEffect(), getDuration(), getAmplifier(), true), true);
+                    if (power.isClear()) {
+                        player.removePotionEffect(power.getEffect());
+                    } else if (potionEffect.getDuration() <= 5 || potionEffect.getAmplifier() < power.getAmplifier())
+                        player.addPotionEffect(new PotionEffect(power.getEffect(), power.getDuration(), power.getAmplifier(), true), true);
                     break;
                 }
             }
-            if (!hasEffect && !isClear()) {
-                player.addPotionEffect(new PotionEffect(getEffect(), getDuration(), getAmplifier(), true), true);
+            if (!hasEffect && !power.isClear()) {
+                player.addPotionEffect(new PotionEffect(power.getEffect(), power.getDuration(), power.getAmplifier(), true), true);
             }
-            if (getEffect().equals(PotionEffectType.HEALTH_BOOST) && health > 0) {
+            if (power.getEffect().equals(PotionEffectType.HEALTH_BOOST) && health > 0) {
                 health = min(health, player.getAttribute(Attribute.GENERIC_MAX_HEALTH).getValue());
                 player.setHealth(health);
             }
@@ -113,13 +113,13 @@ public class PotionTick extends BasePower {
         }
 
         @Override
-        public Power getPowerClass() {
-            return PotionTick.this;
+        public Class<? extends PotionTick> getPowerClass() {
+            return PotionTick.class;
         }
 
         @Override
-        public PowerResult<Void> sneaking(Player player, ItemStack stack) {
-            return fire(player, stack);
+        public PowerResult<Void> sneaking(PotionTick power, Player player, ItemStack stack) {
+            return fire(power, player, stack);
         }
     }
 }

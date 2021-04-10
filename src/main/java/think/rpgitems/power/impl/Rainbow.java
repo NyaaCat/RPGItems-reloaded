@@ -33,7 +33,11 @@ public class Rainbow extends BasePower {
     @Property(order = 2)
     public boolean isFire = false;
 
-    private Random random = new Random();
+    public Random getRandom() {
+        return random;
+    }
+
+    private final Random random = new Random();
 
     @Override
     public String getName() {
@@ -59,20 +63,21 @@ public class Rainbow extends BasePower {
         return isFire;
     }
 
-    public class Impl implements PowerRightClick, PowerPlain, PowerBowShoot {
+    public static class Impl implements PowerRightClick<Rainbow>, PowerPlain<Rainbow>, PowerBowShoot<Rainbow> {
 
         @Override
-        public PowerResult<Void> rightClick(Player player, ItemStack stack, PlayerInteractEvent event) {
-            return fire(player, stack);
+        public PowerResult<Void> rightClick(Rainbow power, Player player, ItemStack stack, PlayerInteractEvent event) {
+            return fire(power, player, stack);
         }
 
         @Override
-        public PowerResult<Void> fire(Player player, ItemStack stack) {
+        public PowerResult<Void> fire(Rainbow power, Player player, ItemStack stack) {
             player.playSound(player.getLocation(), Sound.ENTITY_ARROW_SHOOT, 1.0f, 1.0f);
             final ArrayList<FallingBlock> blocks = new ArrayList<>();
-            for (int i = 0; i < getCount(); i++) {
+            Random random = power.getRandom();
+            for (int i = 0; i < power.getCount(); i++) {
                 FallingBlock block;
-                if (!isFire()) {
+                if (!power.isFire()) {
                     block = player.getWorld().spawnFallingBlock(player.getLocation().add(0, 1.8, 0), Tag.WOOL.getValues().toArray(new Material[16])[random.nextInt(16)].createBlockData());
                 } else {
                     block = player.getWorld().spawnFallingBlock(player.getLocation().add(0, 1.8, 0), Material.FIRE.createBlockData());
@@ -93,7 +98,7 @@ public class Rainbow extends BasePower {
                         Location loc = l.next();
                         if (random.nextBoolean()) {
                             Block b = loc.getBlock();
-                            if ((isFire() && b.getType() == Material.FIRE) || (!isFire() && Tag.WOOL.isTagged(b.getType()))) {
+                            if ((power.isFire() && b.getType() == Material.FIRE) || (!power.isFire() && Tag.WOOL.isTagged(b.getType()))) {
                                 loc.getWorld().playEffect(loc, Effect.STEP_SOUND, b.getType());
                                 b.setType(Material.AIR);
                             }
@@ -123,13 +128,13 @@ public class Rainbow extends BasePower {
         }
 
         @Override
-        public Power getPowerClass() {
-            return Rainbow.this;
+        public Class<? extends Rainbow> getPowerClass() {
+            return Rainbow.class;
         }
 
         @Override
-        public PowerResult<Float> bowShoot(Player player, ItemStack stack, EntityShootBowEvent event) {
-            return fire(player, stack).with(event.getForce());
+        public PowerResult<Float> bowShoot(Rainbow power, Player player, ItemStack stack, EntityShootBowEvent event) {
+            return fire(power, player, stack).with(event.getForce());
         }
     }
 }

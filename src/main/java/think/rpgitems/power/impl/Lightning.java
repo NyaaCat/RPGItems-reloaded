@@ -47,17 +47,17 @@ public class Lightning extends BasePower {
         return random;
     }
 
-    public class Impl implements PowerHit, PowerProjectileHit, PowerLocation {
+    public static class Impl implements PowerHit<Lightning>, PowerProjectileHit<Lightning>, PowerLocation<Lightning> {
 
         @Override
-        public PowerResult<Double> hit(Player player, ItemStack stack, LivingEntity entity, double damage, EntityDamageByEntityEvent event) {
+        public PowerResult<Double> hit(Lightning power, Player player, ItemStack stack, LivingEntity entity, double damage, EntityDamageByEntityEvent event) {
             Location location = entity.getLocation();
-            return fire(player, stack, location).with(damage);
+            return fire(power, player, stack, location).with(damage);
         }
 
         @Override
-        public PowerResult<Void> fire(Player player, ItemStack stack, Location location) {
-            if (getRandom().nextInt(getChance()) == 0) {
+        public PowerResult<Void> fire(Lightning power, Player player, ItemStack stack, Location location) {
+            if (power.getRandom().nextInt(power.getChance()) == 0) {
                 location.getWorld().strikeLightning(location);
                 Context.instance().putExpiringSeconds(player.getUniqueId(), "lightning.location", location, 3);
                 return PowerResult.ok();
@@ -66,15 +66,15 @@ public class Lightning extends BasePower {
         }
 
         @Override
-        public PowerResult<Void> projectileHit(Player player, ItemStack stack, ProjectileHitEvent event) {
+        public PowerResult<Void> projectileHit(Lightning power, Player player, ItemStack stack, ProjectileHitEvent event) {
             Projectile hit = event.getEntity();
             Location location = hit.getLocation();
-            return fire(player, stack, location);
+            return fire(power, player, stack, location);
         }
 
         @Override
-        public Power getPowerClass() {
-            return Lightning.this;
+        public Class<? extends Lightning> getPowerClass() {
+            return Lightning.class;
         }
     }
 }

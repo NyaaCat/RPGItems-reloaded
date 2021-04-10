@@ -52,20 +52,20 @@ public class Glove extends BasePower {
         return throwSpeed;
     }
 
-    public class Impl implements PowerRightClick {
+    public static class Impl implements PowerRightClick<Glove> {
         @Override
-        public PowerResult<Void> rightClick(Player player, ItemStack stack, PlayerInteractEvent event) {
+        public PowerResult<Void> rightClick(Glove power, Player player, ItemStack stack, PlayerInteractEvent event) {
             if (!player.getPassengers().isEmpty()) {
                 Entity entity = player.getPassengers().get(0);
                 entity.leaveVehicle();
-                if (getThrowSpeed() > 0.0D) {
+                if (power.getThrowSpeed() > 0.0D) {
                     player.getWorld().playSound(player.getLocation(), Sound.ENTITY_EGG_THROW, 1.0F, 1.0F);
-                    entity.setVelocity(player.getLocation().getDirection().multiply(getThrowSpeed()));
+                    entity.setVelocity(player.getLocation().getDirection().multiply(power.getThrowSpeed()));
                 }
                 return PowerResult.ok();
             }
 
-            List<LivingEntity> entities = getLivingEntitiesInCone(getNearestLivingEntities(getPower(), player.getEyeLocation(), player, getMaxDistance(), 0), player.getLocation().toVector(), 30, player.getLocation().getDirection());
+            List<LivingEntity> entities = getLivingEntitiesInCone(getNearestLivingEntities(power, player.getEyeLocation(), player, power.getMaxDistance(), 0), player.getLocation().toVector(), 30, player.getLocation().getDirection());
             for (LivingEntity entity : entities) {
                 if (entity.isValid() && entity.getType() != EntityType.ARMOR_STAND && !entity.isInsideVehicle() &&
                             entity.getPassengers().isEmpty() && player.hasLineOfSight(entity) && player.addPassenger(entity)) {
@@ -89,7 +89,7 @@ public class Glove extends BasePower {
 
                         @Override
                         public void run() {
-                            if (getTicks() >= getMaxTicks() || player.getPassengers().isEmpty() || entity.isDead()) {
+                            if (getTicks() >= power.getMaxTicks() || player.getPassengers().isEmpty() || entity.isDead()) {
                                 cancel();
                                 if (finalListener != null) {
                                     HandlerList.unregisterAll(finalListener);
@@ -117,8 +117,8 @@ public class Glove extends BasePower {
         }
 
         @Override
-        public Power getPowerClass() {
-            return Glove.this;
+        public Class<? extends Glove> getPowerClass() {
+            return Glove.class ;
         }
     }
 }

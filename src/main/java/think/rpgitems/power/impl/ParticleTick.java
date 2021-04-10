@@ -19,7 +19,7 @@ import java.util.Set;
  */
 @SuppressWarnings("WeakerAccess")
 @Meta(defaultTrigger = "TICK", implClass = ParticleTick.Impl.class)
-public class ParticleTick extends ParticlePower {
+public class ParticleTick extends Particles {
     @Property(order = 1)
     public int interval = 15;
 
@@ -45,27 +45,27 @@ public class ParticleTick extends ParticlePower {
         return Collections.singleton(BaseTriggers.TICK);
     }
 
-    public class Impl implements PowerTick, PowerSneaking, PowerPlain {
+    public static class Impl implements PowerTick<ParticleTick>, PowerSneaking<ParticleTick>, PowerPlain<ParticleTick> {
 
         @Override
-        public PowerResult<Void> tick(Player player, ItemStack stack) {
-            return fire(player, stack);
+        public PowerResult<Void> tick(ParticleTick power, Player player, ItemStack stack) {
+            return fire(power, player, stack);
         }
 
         @Override
-        public PowerResult<Void> fire(Player player, ItemStack stack) {
-            spawnParticle(player);
+        public PowerResult<Void> fire(ParticleTick power, Player player, ItemStack stack) {
+            power.spawnParticle(player);
             return PowerResult.ok();
         }
 
         @Override
-        public Power getPowerClass() {
-            return ParticleTick.this;
+        public Class<? extends ParticleTick> getPowerClass() {
+            return ParticleTick.class;
         }
 
         @Override
-        public PowerResult<Void> sneaking(Player player, ItemStack stack) {
-            return fire(player, stack);
+        public PowerResult<Void> sneaking(ParticleTick power, Player player, ItemStack stack) {
+            return fire(power, player, stack);
         }
     }
 }

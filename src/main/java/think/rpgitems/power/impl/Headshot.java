@@ -68,18 +68,18 @@ public class Headshot extends BasePower {
         return soundSelf;
     }
 
-    public class Impl implements PowerHit, PowerBeamHit{
+    public static class Impl implements PowerHit<Headshot>, PowerBeamHit<Headshot> {
 
         @Override
-        public PowerResult<Double> hit(Player player, ItemStack stack, LivingEntity entity, double damage, EntityDamageByEntityEvent event) {
+        public PowerResult<Double> hit(Headshot power, Player player, ItemStack stack, LivingEntity entity, double damage, EntityDamageByEntityEvent event) {
             if (!(event.getDamager() instanceof Projectile)) {
                 return PowerResult.noop();
             }
             Projectile damager = (Projectile) event.getDamager();
-            return check(player, entity, stack, damage, damager.getVelocity(), damager.getBoundingBox(), entity.getBoundingBox(), event);
+            return check(power, player, entity, stack, damage, damager.getVelocity(), damager.getBoundingBox(), entity.getBoundingBox(), event);
         }
 
-        private PowerResult<Double> check(Player player, LivingEntity entity, ItemStack stack, double damage, Vector velocity, BoundingBox damagerOrigBb, BoundingBox entityBb, EntityDamageByEntityEvent event){
+        private PowerResult<Double> check(Headshot power, Player player, LivingEntity entity, ItemStack stack, double damage, Vector velocity, BoundingBox damagerOrigBb, BoundingBox entityBb, EntityDamageByEntityEvent event){
             double maxAxis = Math.max(entityBb.getHeight(), Math.max(entityBb.getWidthX(), entityBb.getWidthZ()));
             double minAxis = Math.min(entityBb.getHeight(), Math.min(entityBb.getWidthX(), entityBb.getWidthZ()));
             double maximum = minAxis * minAxis;
@@ -107,43 +107,43 @@ public class Headshot extends BasePower {
             }
             if (hs) {
                 Context.instance().putExpiringSeconds(player.getUniqueId(), "headshot.target", entity, 3);
-                if (isSoundSelf()) {
+                if (power.isSoundSelf()) {
                     player.getWorld().playSound(player.getLocation(), Sound.BLOCK_ANVIL_PLACE, 1, 3);
                 }
-                if (isSoundEnemy()) {
+                if (power.isSoundEnemy()) {
                     entity.getWorld().playSound(entity.getLocation(), Sound.ENTITY_GHAST_HURT, 1, 3);
                 }
-                if (isParticleEnemy()) {
+                if (power.isParticleEnemy()) {
                     entity.getWorld().spawnParticle(Particle.REDSTONE, entity.getLocation(), 2, new Particle.DustOptions(Color.RED, 10));
                 }
-                if (isSetBaseDamage()) {
-                    event.setDamage(damage * getFactor());
+                if (power.isSetBaseDamage()) {
+                    event.setDamage(damage * power.getFactor());
                 }
-                return PowerResult.ok(damage * getFactor());
+                return PowerResult.ok(damage * power.getFactor());
             }
             return PowerResult.fail();
         }
 
         @Override
-        public Power getPowerClass() {
-            return Headshot.this;
+        public Class<? extends Headshot> getPowerClass() {
+            return Headshot.class;
         }
 
         @Override
-        public PowerResult<Double> hitEntity(Player player, ItemStack stack, LivingEntity entity, double damage, BeamHitEntityEvent event) {
+        public PowerResult<Double> hitEntity(Headshot power, Player player, ItemStack stack, LivingEntity entity, double damage, BeamHitEntityEvent event) {
             EntityDamageByEntityEvent fake = new EntityDamageByEntityEvent(player, player, EntityDamageEvent.DamageCause.CUSTOM, damage);
-            PowerResult<Double> check = check(player, entity, stack, damage, event.getVelocity(), event.getBoundingBox().expand(0.5), entity.getBoundingBox(), fake);
+            PowerResult<Double> check = check(power, player, entity, stack, damage, event.getVelocity(), event.getBoundingBox().expand(0.5), entity.getBoundingBox(), fake);
             event.setDamage(fake.getDamage());
             return check;
         }
 
         @Override
-        public PowerResult<Void> hitBlock(Player player, ItemStack stack, Location location, BeamHitBlockEvent event) {
+        public PowerResult<Void> hitBlock(Headshot power, Player player, ItemStack stack, Location location, BeamHitBlockEvent event) {
             return PowerResult.fail();
         }
 
         @Override
-        public PowerResult<Void> beamEnd(Player player, ItemStack stack, Location location, BeamEndEvent event) {
+        public PowerResult<Void> beamEnd(Headshot power, Player player, ItemStack stack, Location location, BeamEndEvent event) {
             return PowerResult.fail();
         }
     }

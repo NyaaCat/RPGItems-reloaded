@@ -101,30 +101,30 @@ public class GunFu extends BasePower {
         return viewAngle;
     }
 
-    public class Impl implements PowerProjectileLaunch, PowerBowShoot {
+    public static class Impl implements PowerProjectileLaunch<GunFu>, PowerBowShoot<GunFu> {
 
         @Override
-        public PowerResult<Float> bowShoot(Player player, ItemStack stack, EntityShootBowEvent event) {
+        public PowerResult<Float> bowShoot(GunFu power, Player player, ItemStack stack, EntityShootBowEvent event) {
             if (event.getProjectile() instanceof Projectile) {
-                return run(player, (Projectile) event.getProjectile(), event.getForce());
+                return run(power, player, (Projectile) event.getProjectile(), event.getForce());
             }
             return noop();
         }
 
         @Override
-        public Power getPowerClass() {
-            return GunFu.this;
+        public Class<? extends GunFu> getPowerClass() {
+            return GunFu.class;
         }
 
-        public PowerResult<Float> run(Player player, Projectile projectile, float force) {
-            List<LivingEntity> entities = getLivingEntitiesInCone(getNearestLivingEntities(getPower(), player.getEyeLocation(), player, getDistance(), 0), player.getLocation().toVector(), getViewAngle(), player.getLocation().getDirection()).stream().filter(player::hasLineOfSight).collect(Collectors.toList());
-            projectile.setVelocity(projectile.getVelocity().multiply(getInitVelFactor()));
+        public PowerResult<Float> run(GunFu power, Player player, Projectile projectile, float force) {
+            List<LivingEntity> entities = getLivingEntitiesInCone(getNearestLivingEntities(power, player.getEyeLocation(), player, power.getDistance(), 0), player.getLocation().toVector(), power.getViewAngle(), player.getLocation().getDirection()).stream().filter(player::hasLineOfSight).collect(Collectors.toList());
+            projectile.setVelocity(projectile.getVelocity().multiply(power.getInitVelFactor()));
             if (!entities.isEmpty()) {
                 LivingEntity target = entities.get(0);
                 Context.instance().putExpiringSeconds(player.getUniqueId(), "gunfu.target", target, 3);
                 new BukkitRunnable() {
 
-                    private int ticks = getMaxTicks();
+                    private int ticks = power.getMaxTicks();
 
                     @Override
                     public void run() {
@@ -135,23 +135,22 @@ public class GunFu extends BasePower {
                         Vector origVel = projectile.getVelocity();
                         double v = origVel.length();
                         Vector rel = target.getEyeLocation().toVector().subtract(projectile.getLocation().toVector()).normalize().multiply(v);
-                        double velFac = getVelFactor() * (getForceFactor() - force);
+                        double velFac = power.getVelFactor() * (power.getForceFactor() - force);
                         rel.multiply(velFac).add(origVel.multiply(1 - velFac));
                         projectile.setVelocity(rel);
                         if (projectile instanceof Fireball) {
                             ((Fireball) projectile).setDirection(rel.normalize());
                         }
                     }
-                }.runTaskTimer(RPGItems.plugin, getDelay(), 0);
+                }.runTaskTimer(RPGItems.plugin, power.getDelay(), 0);
             }
-            return ok(force * (float) getInitVelFactor());
+            return ok(force * (float) power.getInitVelFactor());
         }
 
         @Override
-        @SuppressWarnings("deprecation")
-        public PowerResult<Void> projectileLaunch(Player player, ItemStack stack, ProjectileLaunchEvent event) {
+        public PowerResult<Void> projectileLaunch(GunFu power, Player player, ItemStack stack, ProjectileLaunchEvent event) {
             Projectile projectile = event.getEntity();
-            return run(player, projectile, 1).with(null);
+            return run(power, player, projectile, 1).with(null);
         }
     }
 }

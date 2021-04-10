@@ -35,18 +35,18 @@ public class NoImmutableTick extends BasePower {
         return I18n.formatDefault("power.noimmutabletick");
     }
 
-    public class Impl implements PowerHit {
+    public static class Impl implements PowerHit<NoImmutableTick> {
 
         @Override
-        public PowerResult<Double> hit(Player player, ItemStack stack, LivingEntity entity, double damage, EntityDamageByEntityEvent event) {
-            Bukkit.getScheduler().runTaskLater(RPGItems.plugin, () -> entity.setNoDamageTicks(getImmuneTime() + 10), 0);
-            Bukkit.getScheduler().runTaskLater(RPGItems.plugin, () -> entity.setNoDamageTicks(getImmuneTime() + 10), 1);
+        public PowerResult<Double> hit(NoImmutableTick power, Player player, ItemStack stack, LivingEntity entity, double damage, EntityDamageByEntityEvent event) {
+            Bukkit.getScheduler().runTaskLater(RPGItems.plugin, () -> entity.setNoDamageTicks(power.getImmuneTime() + 10), 0);
+            Bukkit.getScheduler().runTaskLater(RPGItems.plugin, () -> entity.setNoDamageTicks(power.getImmuneTime() + 10), 1);
             return PowerResult.ok(damage);
         }
 
         @Override
-        public Power getPowerClass() {
-            return NoImmutableTick.this;
+        public Class<? extends NoImmutableTick> getPowerClass() {
+            return NoImmutableTick.class;
         }
     }
 }

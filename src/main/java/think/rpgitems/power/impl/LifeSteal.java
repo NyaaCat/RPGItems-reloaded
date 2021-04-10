@@ -71,25 +71,25 @@ public class LifeSteal extends BasePower {
         return random;
     }
 
-    public class Impl implements PowerHit, PowerLivingEntity {
+    public static class Impl implements PowerHit<LifeSteal>, PowerLivingEntity<LifeSteal> {
 
         @Override
-        public PowerResult<Double> hit(Player player, ItemStack stack, LivingEntity entity, double damage, EntityDamageByEntityEvent event) {
-            return fire(player, stack, entity, damage).with(damage);
+        public PowerResult<Double> hit(LifeSteal power, Player player, ItemStack stack, LivingEntity entity, double damage, EntityDamageByEntityEvent event) {
+            return fire(power, player, stack, entity, damage).with(damage);
         }
 
         @Override
-        public PowerResult<Void> fire(Player player, ItemStack stack, LivingEntity entity, Double damage) {
-            if (getRandom().nextInt(getChance()) == 0 && damage != null) {
-                player.setHealth(Math.max(Math.min(player.getHealth() + damage * getFactor(), player.getAttribute(Attribute.GENERIC_MAX_HEALTH).getValue()), 0.01));
+        public PowerResult<Void> fire(LifeSteal power, Player player, ItemStack stack, LivingEntity entity, Double damage) {
+            if (power.getRandom().nextInt(power.getChance()) == 0 && damage != null) {
+                player.setHealth(Math.max(Math.min(player.getHealth() + damage * power.getFactor(), player.getAttribute(Attribute.GENERIC_MAX_HEALTH).getValue()), 0.01));
                 return PowerResult.ok();
             }
             return PowerResult.noop();
         }
 
         @Override
-        public Power getPowerClass() {
-            return LifeSteal.this;
+        public Class<? extends LifeSteal> getPowerClass() {
+            return LifeSteal.class;
         }
     }
 }

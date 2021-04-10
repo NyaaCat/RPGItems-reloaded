@@ -6,6 +6,7 @@ import org.bukkit.entity.Player;
 import org.bukkit.entity.Skeleton;
 import org.bukkit.entity.Zombie;
 import org.bukkit.event.entity.EntityDamageByEntityEvent;
+import org.bukkit.inventory.EntityEquipment;
 import org.bukkit.inventory.ItemStack;
 import think.rpgitems.I18n;
 import think.rpgitems.power.*;
@@ -53,23 +54,27 @@ public class Pumpkin extends BasePower {
         return chance;
     }
 
-    public class Impl implements PowerHit {
+    public static class Impl implements PowerHit<Pumpkin> {
 
         @Override
-        public PowerResult<Double> hit(Player player, ItemStack stack, LivingEntity entity, double damage, EntityDamageByEntityEvent event) {
-            if (rand.nextInt(getChance()) != 0) return PowerResult.noop();
+        public PowerResult<Double> hit(Pumpkin power, Player player, ItemStack stack, LivingEntity entity, double damage, EntityDamageByEntityEvent event) {
+            if (rand.nextInt(power.getChance()) != 0) return PowerResult.noop();
             if (entity instanceof Skeleton || entity instanceof Zombie) {
-                if (entity.getEquipment().getHelmet() == null || entity.getEquipment().getHelmet().getType() == Material.AIR) {
-                    entity.getEquipment().setHelmet(new ItemStack(Material.CARVED_PUMPKIN));
-                    entity.getEquipment().setHelmetDropChance((float) getDrop());
+                EntityEquipment equipment = entity.getEquipment();
+                if (equipment == null) {
+                    return PowerResult.noop();
+                }
+                if (equipment.getHelmet() == null || equipment.getHelmet().getType() == Material.AIR) {
+                    equipment.setHelmet(new ItemStack(Material.CARVED_PUMPKIN));
+                    equipment.setHelmetDropChance((float) power.getDrop());
                 }
             }
             return PowerResult.ok(damage);
         }
 
         @Override
-        public Power getPowerClass() {
-            return Pumpkin.this;
+        public Class<? extends Pumpkin> getPowerClass() {
+            return Pumpkin.class;
         }
     }
 }

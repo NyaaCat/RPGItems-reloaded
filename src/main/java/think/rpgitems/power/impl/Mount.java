@@ -45,14 +45,14 @@ public class Mount extends BasePower {
         return I18n.formatDefault("power.mount", (0) / 20D);
     }
 
-    public class Impl implements PowerRightClick {
+    public static class Impl implements PowerRightClick<Mount> {
 
         @Override
-        public PowerResult<Void> rightClick(Player player, ItemStack stack, PlayerInteractEvent event) {
+        public PowerResult<Void> rightClick(Mount power, Player player, ItemStack stack, PlayerInteractEvent event) {
             if (player.isInsideVehicle()) {
                 return PowerResult.fail();
             }
-            List<LivingEntity> entities = getLivingEntitiesInCone(getNearestLivingEntities(getPower(), player.getEyeLocation(), player, getMaxDistance(), 0), player.getLocation().toVector(), 30, player.getLocation().getDirection());
+            List<LivingEntity> entities = getLivingEntitiesInCone(getNearestLivingEntities(power, player.getEyeLocation(), player, power.getMaxDistance(), 0), player.getLocation().toVector(), 30, player.getLocation().getDirection());
             for (LivingEntity entity : entities) {
                 if (entity.isValid() && entity.getType() != EntityType.ARMOR_STAND && !entity.isInsideVehicle() &&
                             entity.getPassengers().isEmpty() && player.hasLineOfSight(entity) && entity.addPassenger(player)) {
@@ -72,7 +72,7 @@ public class Mount extends BasePower {
 
                         @Override
                         public void run() {
-                            if (ticks >= getMaxTicks() || entity.isDead() || entity.getPassengers().isEmpty() || player.isDead()) {
+                            if (ticks >= power.getMaxTicks() || entity.isDead() || entity.getPassengers().isEmpty() || player.isDead()) {
                                 cancel();
                                 HandlerList.unregisterAll(listener);
                                 if (!entity.isDead() && !entity.getPassengers().isEmpty()) {
@@ -91,8 +91,8 @@ public class Mount extends BasePower {
         }
 
         @Override
-        public Power getPowerClass() {
-            return Mount.this;
+        public Class<? extends Mount> getPowerClass() {
+            return Mount.class;
         }
     }
 }

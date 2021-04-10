@@ -78,25 +78,25 @@ public class PotionHit extends BasePower {
         return rand;
     }
 
-    public class Impl implements PowerHit, PowerLivingEntity {
+    public static class Impl implements PowerHit<PotionHit>, PowerLivingEntity<PotionHit> {
         @Override
-        public PowerResult<Double> hit(Player player, ItemStack stack, LivingEntity entity, double damage, EntityDamageByEntityEvent event) {
-            return fire(player, stack, entity, damage).with(damage);
+        public PowerResult<Double> hit(PotionHit power, Player player, ItemStack stack, LivingEntity entity, double damage, EntityDamageByEntityEvent event) {
+            return fire(power, player, stack, entity, damage).with(damage);
         }
 
 
         @Override
-        public PowerResult<Void> fire(Player player, ItemStack stack, LivingEntity entity, Double value) {
-            if (getRand().nextInt(getChance()) != 0) {
+        public PowerResult<Void> fire(PotionHit power, Player player, ItemStack stack, LivingEntity entity, Double value) {
+            if (power.getRand().nextInt(power.getChance()) != 0) {
                 return PowerResult.noop();
             }
-            entity.addPotionEffect(new PotionEffect(getType(), getDuration(), getAmplifier()), true);
+            entity.addPotionEffect(new PotionEffect(power.getType(), power.getDuration(), power.getAmplifier()), true);
             return PowerResult.ok();
         }
 
         @Override
-        public Power getPowerClass() {
-            return PotionHit.this;
+        public Class<? extends PotionHit> getPowerClass() {
+            return PotionHit.class;
         }
     }
 }

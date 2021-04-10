@@ -96,66 +96,66 @@ public class PotionSelf extends BasePower {
         return requireHurtByEntity;
     }
 
-    public class Impl implements PowerRightClick, PowerLeftClick, PowerSneak, PowerSprint, PowerHit, PowerHitTaken, PowerPlain, PowerHurt, PowerBowShoot {
+    public static class Impl implements PowerRightClick<PotionSelf>, PowerLeftClick<PotionSelf>, PowerSneak<PotionSelf>, PowerSprint<PotionSelf>, PowerHit<PotionSelf>, PowerHitTaken<PotionSelf>, PowerPlain<PotionSelf>, PowerHurt<PotionSelf>, PowerBowShoot<PotionSelf> {
         @Override
-        public PowerResult<Double> takeHit(Player target, ItemStack stack, double damage, EntityDamageEvent event) {
-            if (!isRequireHurtByEntity() || event instanceof EntityDamageByEntityEvent) {
-                return fire(target, stack).with(damage);
+        public PowerResult<Double> takeHit(PotionSelf power, Player target, ItemStack stack, double damage, EntityDamageEvent event) {
+            if (!power.isRequireHurtByEntity() || event instanceof EntityDamageByEntityEvent) {
+                return fire(power, target, stack).with(damage);
             }
             return PowerResult.noop();
         }
 
         @Override
-        public PowerResult<Void> fire(Player player, ItemStack stack) {
-            if (isClear()) {
-                player.removePotionEffect(getType());
+        public PowerResult<Void> fire(PotionSelf power, Player player, ItemStack stack) {
+            if (power.isClear()) {
+                player.removePotionEffect(power.getType());
             } else {
-                player.addPotionEffect(new PotionEffect(getType(), getDuration(), getAmplifier()), true);
+                player.addPotionEffect(new PotionEffect(power.getType(), power.getDuration(), power.getAmplifier()), true);
             }
             return PowerResult.ok();
         }
 
         @Override
-        public Power getPowerClass() {
-            return PotionSelf.this;
+        public Class<? extends PotionSelf> getPowerClass() {
+            return PotionSelf.class;
         }
 
         @Override
-        public PowerResult<Void> hurt(Player target, ItemStack stack, EntityDamageEvent event) {
-            if (!isRequireHurtByEntity() || event instanceof EntityDamageByEntityEvent) {
-                return fire(target, stack);
+        public PowerResult<Void> hurt(PotionSelf power, Player target, ItemStack stack, EntityDamageEvent event) {
+            if (!power.isRequireHurtByEntity() || event instanceof EntityDamageByEntityEvent) {
+                return fire(power, target, stack);
             }
             return PowerResult.noop();
         }
 
         @Override
-        public PowerResult<Void> rightClick(Player player, ItemStack stack, PlayerInteractEvent event) {
-            return fire(player, stack);
+        public PowerResult<Void> rightClick(PotionSelf power, Player player, ItemStack stack, PlayerInteractEvent event) {
+            return fire(power, player, stack);
         }
 
         @Override
-        public PowerResult<Void> leftClick(Player player, ItemStack stack, PlayerInteractEvent event) {
-            return fire(player, stack);
+        public PowerResult<Void> leftClick(PotionSelf power, Player player, ItemStack stack, PlayerInteractEvent event) {
+            return fire(power, player, stack);
         }
 
         @Override
-        public PowerResult<Float> bowShoot(Player player, ItemStack stack, EntityShootBowEvent event) {
-            return fire(player, stack).with(event.getForce());
+        public PowerResult<Float> bowShoot(PotionSelf power, Player player, ItemStack stack, EntityShootBowEvent event) {
+            return fire(power, player, stack).with(event.getForce());
         }
 
         @Override
-        public PowerResult<Void> sneak(Player player, ItemStack stack, PlayerToggleSneakEvent event) {
-            return fire(player, stack);
+        public PowerResult<Void> sneak(PotionSelf power, Player player, ItemStack stack, PlayerToggleSneakEvent event) {
+            return fire(power, player, stack);
         }
 
         @Override
-        public PowerResult<Void> sprint(Player player, ItemStack stack, PlayerToggleSprintEvent event) {
-            return fire(player, stack);
+        public PowerResult<Void> sprint(PotionSelf power, Player player, ItemStack stack, PlayerToggleSprintEvent event) {
+            return fire(power, player, stack);
         }
 
         @Override
-        public PowerResult<Double> hit(Player player, ItemStack stack, LivingEntity entity, double damage, EntityDamageByEntityEvent event) {
-            return fire(player, stack).with(damage);
+        public PowerResult<Double> hit(PotionSelf power, Player player, ItemStack stack, LivingEntity entity, double damage, EntityDamageByEntityEvent event) {
+            return fire(power, player, stack).with(damage);
         }
     }
 }

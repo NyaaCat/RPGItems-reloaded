@@ -54,11 +54,11 @@ public class RealDamage extends BasePower {
         return realDamage;
     }
 
-    public class Impl implements PowerHit {
+    public static class Impl implements PowerHit<RealDamage> {
 
         @Override
-        public PowerResult<Double> hit(Player player, ItemStack stack, LivingEntity entity, double damage, EntityDamageByEntityEvent event) {
-            if (damage < getMinDamage()) return PowerResult.noop();
+        public PowerResult<Double> hit(RealDamage power, Player player, ItemStack stack, LivingEntity entity, double damage, EntityDamageByEntityEvent event) {
+            if (damage < power.getMinDamage()) return PowerResult.noop();
             if (entity.hasPotionEffect(PotionEffectType.DAMAGE_RESISTANCE)) {
                 PotionEffect e = entity.getPotionEffect(PotionEffectType.DAMAGE_RESISTANCE);
                 if (e.getAmplifier() >= 4) return PowerResult.noop();
@@ -66,7 +66,7 @@ public class RealDamage extends BasePower {
             Context.instance().putExpiringSeconds(player.getUniqueId(), "realdamage.target", entity, 3);
 
             double health = entity.getHealth();
-            double newHealth = health - getRealDamage();
+            double newHealth = health - power.getRealDamage();
             newHealth = max(newHealth, 0.1);//Bug workaround
             newHealth = min(newHealth, entity.getAttribute(Attribute.GENERIC_MAX_HEALTH).getValue());
             entity.setHealth(newHealth);
@@ -74,8 +74,8 @@ public class RealDamage extends BasePower {
         }
 
         @Override
-        public Power getPowerClass() {
-            return RealDamage.this;
+        public Class<? extends RealDamage> getPowerClass() {
+            return RealDamage.class;
         }
     }
 }
