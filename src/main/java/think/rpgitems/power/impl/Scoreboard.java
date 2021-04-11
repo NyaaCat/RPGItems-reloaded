@@ -74,6 +74,11 @@ public class Scoreboard extends BasePower {
     public boolean abortOnSuccess = false;
     @Property
     public boolean requireHurtByEntity = true;
+
+    public BukkitRunnable getRemoveTask() {
+        return removeTask;
+    }
+
     private BukkitRunnable removeTask;
 
     public long getDelay() {
@@ -192,27 +197,27 @@ public class Scoreboard extends BasePower {
     }
 
 
-    public class Impl implements PowerHit, PowerHitTaken, PowerHurt, PowerLeftClick, PowerRightClick, PowerOffhandClick, PowerProjectileHit, PowerSneak, PowerSprint, PowerOffhandItem, PowerMainhandItem, PowerTick, PowerSneaking, PowerPlain, PowerBowShoot, PowerBeamHit, PowerLivingEntity, PowerLocation{
+    public static class Impl implements PowerHit<Scoreboard>, PowerHitTaken<Scoreboard>, PowerHurt<Scoreboard>, PowerLeftClick<Scoreboard>, PowerRightClick<Scoreboard>, PowerOffhandClick<Scoreboard>, PowerProjectileHit<Scoreboard>, PowerSneak<Scoreboard>, PowerSprint<Scoreboard>, PowerOffhandItem<Scoreboard>, PowerMainhandItem<Scoreboard>, PowerTick<Scoreboard>, PowerSneaking<Scoreboard>, PowerPlain<Scoreboard>, PowerBowShoot<Scoreboard>, PowerBeamHit<Scoreboard>, PowerLivingEntity<Scoreboard>, PowerLocation<Scoreboard> {
 
         @Override
-        public PowerResult<Void> leftClick(Player player, ItemStack stack, PlayerInteractEvent event) {
-            return fire(player, stack);
+        public PowerResult<Void> leftClick(Scoreboard power, Player player, ItemStack stack, PlayerInteractEvent event) {
+            return fire(power, player, stack);
         }
 
         @Override
-        public PowerResult<Void> fire(Player player, ItemStack stack) {
+        public PowerResult<Void> fire(Scoreboard power, Player player, ItemStack stack) {
             org.bukkit.scoreboard.Scoreboard scoreboard = player.getScoreboard();
 
-            Objective objective = scoreboard.getObjective(getObjective());
+            Objective objective = scoreboard.getObjective(power.getObjective());
             if (objective != null) {
                 Score sc = objective.getScore(player.getName());
                 int ori = sc.getScore();
-                switch (getScoreOperation()) {
+                switch (power.getScoreOperation()) {
                     case ADD_SCORE:
-                        sc.setScore(ori + getValue());
+                        sc.setScore(ori + power.getValue());
                         break;
                     case SET_SCORE:
-                        sc.setScore(getValue());
+                        sc.setScore(power.getValue());
                         break;
                     case RESET_SCORE:
                         sc.setScore(0);
@@ -220,20 +225,20 @@ public class Scoreboard extends BasePower {
                     default:
                 }
             }
-            if (getTeam() != null) {
-                Pair<Set<String>, Set<String>> team = teamCache.getUnchecked(getTeam());
+            if (power.getTeam() != null) {
+                Pair<Set<String>, Set<String>> team = teamCache.getUnchecked(power.getTeam());
                 team.getKey().stream().map(scoreboard::getTeam).forEach(t -> t.addEntry(player.getName()));
                 team.getValue().stream().map(scoreboard::getTeam).forEach(t -> t.removeEntry(player.getName()));
             }
 
-            if (getTag() != null) {
-                Pair<Set<String>, Set<String>> tag = tagCache.getUnchecked(getTag());
+            if (power.getTag() != null) {
+                Pair<Set<String>, Set<String>> tag = tagCache.getUnchecked(power.getTag());
                 List<String> addedTags = new ArrayList<>();
                 List<String> removedTags = new ArrayList<>();
-                if (removeTask != null) {
-                    if (!removeTask.isCancelled()) {
-                        removeTask.cancel();
-                        removeTask.run();
+                if (power.getRemoveTask() != null) {
+                    if (!power.getRemoveTask().isCancelled()) {
+                        power.getRemoveTask().cancel();
+                        power.getRemoveTask().run();
                     }
                 }
                 tag.getKey().forEach(tag1 -> {
@@ -246,112 +251,112 @@ public class Scoreboard extends BasePower {
                         removedTags.add(tag1);
                     }
                 });
-                if (isReverseTagAfterDelay()) {
-                    tagReverser.submitReverse(addedTags, removedTags, player, (int) getDelay());
+                if (power.isReverseTagAfterDelay()) {
+                    tagReverser.submitReverse(addedTags, removedTags, player, (int) power.getDelay());
                 }
             }
-            return isAbortOnSuccess() ? PowerResult.abort() : PowerResult.ok();
+            return power.isAbortOnSuccess() ? PowerResult.abort() : PowerResult.ok();
         }
 
         @Override
-        public Power getPowerClass() {
-            return Scoreboard.this;
+        public Class<? extends Scoreboard> getPowerClass() {
+            return Scoreboard.class;
         }
 
         @Override
-        public PowerResult<Void> rightClick(Player player, ItemStack stack, PlayerInteractEvent event) {
-            return fire(player, stack);
+        public PowerResult<Void> rightClick(Scoreboard power, Player player, ItemStack stack, PlayerInteractEvent event) {
+            return fire(power, player, stack);
         }
 
         @Override
-        public PowerResult<Double> hit(Player player, ItemStack stack, LivingEntity entity, double damage, EntityDamageByEntityEvent event) {
-            return fire(player, stack).with(damage);
+        public PowerResult<Double> hit(Scoreboard power, Player player, ItemStack stack, LivingEntity entity, double damage, EntityDamageByEntityEvent event) {
+            return fire(power, player, stack).with(damage);
         }
 
         @Override
-        public PowerResult<Double> takeHit(Player target, ItemStack stack, double damage, EntityDamageEvent event) {
-            if (!isRequireHurtByEntity() || event instanceof EntityDamageByEntityEvent) {
-                return fire(target, stack).with(damage);
+        public PowerResult<Double> takeHit(Scoreboard power, Player target, ItemStack stack, double damage, EntityDamageEvent event) {
+            if (!power.isRequireHurtByEntity() || event instanceof EntityDamageByEntityEvent) {
+                return fire(power, target, stack).with(damage);
             }
             return PowerResult.noop();
         }
 
         @Override
-        public PowerResult<Void> hurt(Player target, ItemStack stack, EntityDamageEvent event) {
-            if (!isRequireHurtByEntity() || event instanceof EntityDamageByEntityEvent) {
-                return fire(target, stack);
+        public PowerResult<Void> hurt(Scoreboard power, Player target, ItemStack stack, EntityDamageEvent event) {
+            if (!power.isRequireHurtByEntity() || event instanceof EntityDamageByEntityEvent) {
+                return fire(power, target, stack);
             }
             return PowerResult.noop();
         }
 
         @Override
-        public PowerResult<Void> offhandClick(Player player, ItemStack stack, PlayerInteractEvent event) {
-            return fire(player, stack);
+        public PowerResult<Void> offhandClick(Scoreboard power, Player player, ItemStack stack, PlayerInteractEvent event) {
+            return fire(power, player, stack);
         }
 
         @Override
-        public PowerResult<Void> projectileHit(Player player, ItemStack stack, ProjectileHitEvent event) {
-            return fire(player, stack);
+        public PowerResult<Void> projectileHit(Scoreboard power, Player player, ItemStack stack, ProjectileHitEvent event) {
+            return fire(power, player, stack);
         }
 
         @Override
-        public PowerResult<Void> sneak(Player player, ItemStack stack, PlayerToggleSneakEvent event) {
-            return fire(player, stack);
+        public PowerResult<Void> sneak(Scoreboard power, Player player, ItemStack stack, PlayerToggleSneakEvent event) {
+            return fire(power, player, stack);
         }
 
         @Override
-        public PowerResult<Void> sprint(Player player, ItemStack stack, PlayerToggleSprintEvent event) {
-            return fire(player, stack);
+        public PowerResult<Void> sprint(Scoreboard power, Player player, ItemStack stack, PlayerToggleSprintEvent event) {
+            return fire(power, player, stack);
         }
 
         @Override
-        public PowerResult<Float> bowShoot(Player player, ItemStack itemStack, EntityShootBowEvent e) {
-            return fire(player, itemStack).with(e.getForce());
+        public PowerResult<Float> bowShoot(Scoreboard power, Player player, ItemStack itemStack, EntityShootBowEvent e) {
+            return fire(power, player, itemStack).with(e.getForce());
         }
 
         @Override
-        public PowerResult<Boolean> swapToMainhand(Player player, ItemStack stack, PlayerSwapHandItemsEvent event) {
-            return fire(player, stack).with(true);
+        public PowerResult<Boolean> swapToMainhand(Scoreboard power, Player player, ItemStack stack, PlayerSwapHandItemsEvent event) {
+            return fire(power, player, stack).with(true);
         }
 
         @Override
-        public PowerResult<Boolean> swapToOffhand(Player player, ItemStack stack, PlayerSwapHandItemsEvent event) {
-            return fire(player, stack).with(true);
+        public PowerResult<Boolean> swapToOffhand(Scoreboard power, Player player, ItemStack stack, PlayerSwapHandItemsEvent event) {
+            return fire(power, player, stack).with(true);
         }
 
         @Override
-        public PowerResult<Void> tick(Player player, ItemStack stack) {
-            return fire(player, stack);
+        public PowerResult<Void> tick(Scoreboard power, Player player, ItemStack stack) {
+            return fire(power, player, stack);
         }
 
         @Override
-        public PowerResult<Void> sneaking(Player player, ItemStack stack) {
-            return fire(player, stack);
+        public PowerResult<Void> sneaking(Scoreboard power, Player player, ItemStack stack) {
+            return fire(power, player, stack);
         }
 
         @Override
-        public PowerResult<Double> hitEntity(Player player, ItemStack stack, LivingEntity entity, double damage, BeamHitEntityEvent event) {
-            return fire(player, stack).with(damage);
+        public PowerResult<Double> hitEntity(Scoreboard power, Player player, ItemStack stack, LivingEntity entity, double damage, BeamHitEntityEvent event) {
+            return fire(power, player, stack).with(damage);
         }
 
         @Override
-        public PowerResult<Void> hitBlock(Player player, ItemStack stack, Location location, BeamHitBlockEvent event) {
-            return fire(player, stack);
+        public PowerResult<Void> hitBlock(Scoreboard power, Player player, ItemStack stack, Location location, BeamHitBlockEvent event) {
+            return fire(power, player, stack);
         }
 
         @Override
-        public PowerResult<Void> beamEnd(Player player, ItemStack stack, Location location, BeamEndEvent event) {
-            return fire(player, stack);
+        public PowerResult<Void> beamEnd(Scoreboard power, Player player, ItemStack stack, Location location, BeamEndEvent event) {
+            return fire(power, player, stack);
         }
 
         @Override
-        public PowerResult<Void> fire(Player player, ItemStack stack, LivingEntity entity, @Nullable Double value) {
-            return fire(player, stack);
+        public PowerResult<Void> fire(Scoreboard power, Player player, ItemStack stack, LivingEntity entity, @Nullable Double value) {
+            return fire(power, player, stack);
         }
 
         @Override
-        public PowerResult<Void> fire(Player player, ItemStack stack, Location location) {
-            return fire(player, stack);
+        public PowerResult<Void> fire(Scoreboard power, Player player, ItemStack stack, Location location) {
+            return fire(power, player, stack);
         }
     }
 }

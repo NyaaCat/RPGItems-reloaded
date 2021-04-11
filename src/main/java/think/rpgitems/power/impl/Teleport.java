@@ -73,14 +73,14 @@ public class Teleport extends BasePower {
         RAY_TRACING
     }
 
-    public class Impl implements PowerSneak, PowerLeftClick, PowerSprint, PowerRightClick, PowerProjectileHit, PowerPlain, PowerBowShoot, PowerBeamHit {
+    public static class Impl implements PowerSneak<Teleport>, PowerLeftClick<Teleport>, PowerSprint<Teleport>, PowerRightClick<Teleport>, PowerProjectileHit<Teleport>, PowerPlain<Teleport>, PowerBowShoot<Teleport>, PowerBeamHit<Teleport> {
 
         @Override
-        public PowerResult<Void> rightClick(Player player, ItemStack stack, PlayerInteractEvent event) {
-            return fire(player, stack);
+        public PowerResult<Void> rightClick(Teleport power, Player player, ItemStack stack, PlayerInteractEvent event) {
+            return fire(power, player, stack);
         }
 
-        public PowerResult<Void> fire(Player player, ItemStack stack, Supplier<Location> supplier) {
+        public PowerResult<Void> fire(Teleport power, Player player, ItemStack stack, Supplier<Location> supplier) {
             Location newLoc = supplier.get();
             World world = player.getWorld();
             Vector velocity = player.getVelocity();
@@ -94,7 +94,7 @@ public class Teleport extends BasePower {
             return PowerResult.ok();
         }
 
-        private Location getNewLoc(Player player, World world) {
+        private Location getNewLoc(Teleport power, Player player, World world) {
             Location location = player.getLocation();
             Location start = location.clone().add(new Vector(0, 1.6, 0));
             Location eyeLocation = player.getEyeLocation();
@@ -103,21 +103,21 @@ public class Teleport extends BasePower {
             Location newLoc = lastSafe.getLocation();
 
             boolean ignorePassable = true;
-            switch (getTargetMode()) {
+            switch (power.getTargetMode()) {
                 case RAY_TRACING_EXACT:
                 case RAY_TRACING_EXACT_SWEEP:
                     ignorePassable = false;
                 case RAY_TRACING:
                 case RAY_TRACING_SWEEP: {
-                    RayTraceResult result = player.getWorld().rayTraceBlocks(eyeLocation, direction, getDistance(), FluidCollisionMode.NEVER, ignorePassable);
+                    RayTraceResult result = player.getWorld().rayTraceBlocks(eyeLocation, direction, power.getDistance(), FluidCollisionMode.NEVER, ignorePassable);
                     Block firstUnsafe = result == null ? null : result.getHitBlock();
                     if (firstUnsafe == null) {
-                        newLoc = location.add(direction.clone().multiply(getDistance()));
+                        newLoc = location.add(direction.clone().multiply(power.getDistance()));
                         break;
                     } else {
                         newLoc = result.getHitPosition().toLocation(world);
                     }
-                    if (getTargetMode() == TargetMode.RAY_TRACING || getTargetMode() == TargetMode.RAY_TRACING_EXACT) {
+                    if (power.getTargetMode() == TargetMode.RAY_TRACING || power.getTargetMode() == TargetMode.RAY_TRACING_EXACT) {
                         break;
                     }
                     Vector move = newLoc.toVector().subtract(location.toVector());
@@ -130,7 +130,7 @@ public class Teleport extends BasePower {
                 }
                 case DEFAULT: {
                     try {
-                        BlockIterator bi = new BlockIterator(player, getDistance());
+                        BlockIterator bi = new BlockIterator(player, power.getDistance());
                         while (bi.hasNext()) {
                             Block block = bi.next();
                             if (!block.getType().isSolid() || (block.getType() == Material.AIR)) {
@@ -154,36 +154,36 @@ public class Teleport extends BasePower {
         }
 
         @Override
-        public Power getPowerClass() {
-            return Teleport.this;
+        public Class<? extends Teleport> getPowerClass() {
+            return Teleport.class;
         }
 
         @Override
-        public PowerResult<Void> leftClick(Player player, ItemStack stack, PlayerInteractEvent event) {
-            return fire(player, stack);
+        public PowerResult<Void> leftClick(Teleport power, Player player, ItemStack stack, PlayerInteractEvent event) {
+            return fire(power, player, stack);
         }
 
         @Override
-        public PowerResult<Void> sneak(Player player, ItemStack stack, PlayerToggleSneakEvent event) {
-            return fire(player, stack);
+        public PowerResult<Void> sneak(Teleport power, Player player, ItemStack stack, PlayerToggleSneakEvent event) {
+            return fire(power, player, stack);
         }
 
         @Override
-        public PowerResult<Void> sprint(Player player, ItemStack stack, PlayerToggleSprintEvent event) {
-            return fire(player, stack);
+        public PowerResult<Void> sprint(Teleport power, Player player, ItemStack stack, PlayerToggleSprintEvent event) {
+            return fire(power, player, stack);
         }
 
         @Override
-        public PowerResult<Float> bowShoot(Player player, ItemStack itemStack, EntityShootBowEvent e) {
-            return fire(player, itemStack).with(e.getForce());
+        public PowerResult<Float> bowShoot(Teleport power, Player player, ItemStack itemStack, EntityShootBowEvent e) {
+            return fire(power, player, itemStack).with(e.getForce());
         }
 
         @Override
-        public PowerResult<Void> projectileHit(Player player, ItemStack stack, ProjectileHitEvent event) {
+        public PowerResult<Void> projectileHit(Teleport power, Player player, ItemStack stack, ProjectileHitEvent event) {
             World world = player.getWorld();
             Location start = player.getLocation();
-            Location newLoc = getEntityLocation(player, event.getEntity());
-            if (start.distanceSquared(newLoc) >= getDistance() * getDistance()) {
+            Location newLoc = getEntityLocation(power, player, event.getEntity());
+            if (start.distanceSquared(newLoc) >= power.getDistance() * power.getDistance()) {
                 player.sendMessage(I18n.formatDefault("message.too.far"));
                 return PowerResult.noop();
             }
@@ -193,7 +193,7 @@ public class Teleport extends BasePower {
             return PowerResult.ok();
         }
 
-        private Location getEntityLocation(Player player, Projectile entity) {
+        private Location getEntityLocation(Teleport power, Player player, Projectile entity) {
             Location start = player.getLocation();
             Location newLoc = entity.getLocation();
             newLoc.setPitch(start.getPitch());
@@ -202,24 +202,24 @@ public class Teleport extends BasePower {
         }
 
         @Override
-        public PowerResult<Double> hitEntity(Player player, ItemStack stack, LivingEntity entity, double damage, BeamHitEntityEvent event) {
-            return fire(player, stack, () -> entity.getLocation()).with(damage);
+        public PowerResult<Double> hitEntity(Teleport power, Player player, ItemStack stack, LivingEntity entity, double damage, BeamHitEntityEvent event) {
+            return fire(power, player, stack, entity::getLocation).with(damage);
         }
 
         @Override
-        public PowerResult<Void> hitBlock(Player player, ItemStack stack, Location location, BeamHitBlockEvent event) {
-            return fire(player, stack, () -> location);
+        public PowerResult<Void> hitBlock(Teleport power, Player player, ItemStack stack, Location location, BeamHitBlockEvent event) {
+            return fire(power, player, stack, () -> location);
         }
 
         @Override
-        public PowerResult<Void> beamEnd(Player player, ItemStack stack, Location location, BeamEndEvent event) {
-            return fire(player, stack, () -> location);
+        public PowerResult<Void> beamEnd(Teleport power, Player player, ItemStack stack, Location location, BeamEndEvent event) {
+            return fire(power, player, stack, () -> location);
         }
 
         @Override
-        public PowerResult<Void> fire(Player player, ItemStack stack) {
+        public PowerResult<Void> fire(Teleport power, Player player, ItemStack stack) {
             World world = player.getWorld();
-            return fire(player, stack, () -> getNewLoc(player, world));
+            return fire(power, player, stack, () -> getNewLoc(power, player, world));
         }
     }
 }

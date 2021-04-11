@@ -138,58 +138,58 @@ public class Repair extends BasePower {
         ALWAYS,
     }
 
-    public class Impl implements PowerRightClick, PowerLeftClick, PowerPlain, PowerHitTaken, PowerHurt, PowerBowShoot {
+    public static class Impl implements PowerRightClick<Repair>, PowerLeftClick<Repair>, PowerPlain<Repair>, PowerHitTaken<Repair>, PowerHurt<Repair>, PowerBowShoot<Repair> {
 
         @Override
-        public PowerResult<Double> takeHit(Player target, ItemStack stack, double damage, EntityDamageEvent event) {
-            if (!isRequireHurtByEntity() || event instanceof EntityDamageByEntityEvent) {
-                return fire(target, stack).with(damage);
+        public PowerResult<Double> takeHit(Repair power, Player target, ItemStack stack, double damage, EntityDamageEvent event) {
+            if (!power.isRequireHurtByEntity() || event instanceof EntityDamageByEntityEvent) {
+                return fire(power, target, stack).with(damage);
             }
             return PowerResult.noop();
         }
 
         @Override
-        public PowerResult<Void> fire(Player player, ItemStack stack) {
-            int max = getItem().getMaxDurability();
+        public PowerResult<Void> fire(Repair power, Player player, ItemStack stack) {
+            int max = power.getItem().getMaxDurability();
             int repairCount = 0;
-            for (int i = 0; i < getAmount(); i++) {
-                int itemDurability = getItem().getItemStackDurability(stack).orElseThrow(() -> new IllegalStateException("Repair is not allowed on item without durability"));
+            for (int i = 0; i < power.getAmount(); i++) {
+                int itemDurability = power.getItem().getItemStackDurability(stack).orElseThrow(() -> new IllegalStateException("Repair is not allowed on item without durability"));
                 int delta = max - itemDurability;
-                if (getMode() != RepairMode.ALWAYS) {
+                if (power.getMode() != RepairMode.ALWAYS) {
                     if (max == -1 || delta == 0) {
                         break;
                     }
-                    if (getDurability() > delta && getMode() != RepairMode.ALLOW_OVER) {
+                    if (power.getDurability() > delta && power.getMode() != RepairMode.ALLOW_OVER) {
                         break;
                     }
                 }
-                if (!isAllowBreak() && getDurability() + itemDurability < 0) {
+                if (!power.isAllowBreak() && power.getDurability() + itemDurability < 0) {
                     break;
                 }
-                if (removeItem(player.getInventory(), getMaterial(), 1)) {
-                    getItem().setItemStackDurability(stack, Math.min(itemDurability + getDurability(), max));
+                if (removeItem(player.getInventory(), power.getMaterial(), 1)) {
+                    power.getItem().setItemStackDurability(stack, Math.min(itemDurability + power.getDurability(), max));
                     repairCount++;
                 } else {
-                    if (isShowFailMsg()) {
-                        BaseComponent msg = Strings.isNullOrEmpty(getCustomMessage()) ?
-                                                    new TextComponent(I18n.formatDefault("message.error.need_material", (getMaterial().hasItemMeta() && getMaterial().getItemMeta().hasDisplayName()) ? getMaterial().getItemMeta().getDisplayName() : getMaterial().getType().getKey().toString())) :
-                                                    new TextComponent(getCustomMessage());
-                        HoverEvent hover = new HoverEvent(HoverEvent.Action.SHOW_ITEM, new BaseComponent[]{new TextComponent(ItemStackUtils.itemToJson(getMaterial()))});
+                    if (power.isShowFailMsg()) {
+                        BaseComponent msg = Strings.isNullOrEmpty(power.getCustomMessage()) ?
+                                                    new TextComponent(I18n.formatDefault("message.error.need_material", (power.getMaterial().hasItemMeta() && power.getMaterial().getItemMeta().hasDisplayName()) ? power.getMaterial().getItemMeta().getDisplayName() : power.getMaterial().getType().getKey().toString())) :
+                                                    new TextComponent(power.getCustomMessage());
+                        HoverEvent hover = new HoverEvent(HoverEvent.Action.SHOW_ITEM, new BaseComponent[]{new TextComponent(ItemStackUtils.itemToJson(power.getMaterial()))});
                         msg.setHoverEvent(hover);
                         new Message("").append(msg).send(player);
                     }
-                    return isAbortOnFailure() ? PowerResult.abort() : PowerResult.fail();
+                    return power.isAbortOnFailure() ? PowerResult.abort() : PowerResult.fail();
                 }
             }
             if (repairCount == 0) {
                 return PowerResult.noop();
             }
-            return isAbortOnSuccess() ? PowerResult.abort() : PowerResult.ok();
+            return power.isAbortOnSuccess() ? PowerResult.abort() : PowerResult.ok();
         }
 
         @Override
-        public Power getPowerClass() {
-            return Repair.this;
+        public Class<? extends Repair> getPowerClass() {
+            return Repair.class;
         }
 
         private boolean removeItem(Inventory inventory, ItemStack item, int amount) {
@@ -210,32 +210,32 @@ public class Repair extends BasePower {
         }
 
         @Override
-        public PowerResult<Void> hurt(Player target, ItemStack stack, EntityDamageEvent event) {
-            if (!isRequireHurtByEntity() || event instanceof EntityDamageByEntityEvent) {
-                return fire(target, stack);
+        public PowerResult<Void> hurt(Repair power, Player target, ItemStack stack, EntityDamageEvent event) {
+            if (!power.isRequireHurtByEntity() || event instanceof EntityDamageByEntityEvent) {
+                return fire(power, target, stack);
             }
             return PowerResult.noop();
         }
 
         @Override
-        public PowerResult<Void> rightClick(Player player, ItemStack stack, PlayerInteractEvent event) {
-            if (player.isSneaking() == isSneak()) {
-                return fire(player, stack);
+        public PowerResult<Void> rightClick(Repair power, Player player, ItemStack stack, PlayerInteractEvent event) {
+            if (player.isSneaking() == power.isSneak()) {
+                return fire(power, player, stack);
             }
             return PowerResult.noop();
         }
 
         @Override
-        public PowerResult<Void> leftClick(Player player, ItemStack stack, PlayerInteractEvent event) {
-            if (player.isSneaking() == isSneak()) {
-                return fire(player, stack);
+        public PowerResult<Void> leftClick(Repair power, Player player, ItemStack stack, PlayerInteractEvent event) {
+            if (player.isSneaking() == power.isSneak()) {
+                return fire(power, player, stack);
             }
             return PowerResult.noop();
         }
 
         @Override
-        public PowerResult<Float> bowShoot(Player player, ItemStack itemStack, EntityShootBowEvent e) {
-            return fire(player, itemStack).with(e.getForce());
+        public PowerResult<Float> bowShoot(Repair power, Player player, ItemStack itemStack, EntityShootBowEvent e) {
+            return fire(power, player, itemStack).with(e.getForce());
         }
     }
 }

@@ -26,7 +26,7 @@ import static think.rpgitems.RPGItems.plugin;
 @Meta(immutableTrigger = true, implClass = Translocator.Impl.class)
 public class Translocator extends BasePower {
 
-    public static Cache<UUID, UUID> translocatorPlayerMap = CacheBuilder.newBuilder()
+    public static final Cache<UUID, UUID> translocatorPlayerMap = CacheBuilder.newBuilder()
                                                                         .expireAfterAccess(10, TimeUnit.MINUTES)
                                                                         .removalListener(n -> {
                                                                             UUID armorStandUUID = (UUID) n.getKey();
@@ -37,7 +37,7 @@ public class Translocator extends BasePower {
                                                                                 }
                                                                             });
                                                                         }).build();
-    private static Cache<UUID, UUID> playerTranslocatorMap = CacheBuilder.newBuilder()
+    private static final Cache<UUID, UUID> playerTranslocatorMap = CacheBuilder.newBuilder()
                                                                          .expireAfterAccess(10, TimeUnit.MINUTES)
                                                                          .removalListener(n -> {
                                                                              UUID armorStandUUID = (UUID) n.getValue();
@@ -86,9 +86,9 @@ public class Translocator extends BasePower {
         return tpCost;
     }
 
-    public class Impl implements PowerMainhandItem, PowerOffhandItem {
+    public static class Impl implements PowerMainhandItem<Translocator>, PowerOffhandItem<Translocator> {
         @Override
-        public PowerResult<Boolean> swapToMainhand(Player player, ItemStack stack, PlayerSwapHandItemsEvent event) {
+        public PowerResult<Boolean> swapToMainhand(Translocator power, Player player, ItemStack stack, PlayerSwapHandItemsEvent event) {
             UUID translocatorUUID = playerTranslocatorMap.getIfPresent(player.getUniqueId());
             if (translocatorUUID == null) {
                 return PowerResult.fail();
@@ -115,7 +115,7 @@ public class Translocator extends BasePower {
         }
 
         @Override
-        public PowerResult<Boolean> pickupOffhand(Player player, ItemStack stack, InventoryClickEvent event) {
+        public PowerResult<Boolean> pickupOffhand(Translocator power, Player player, ItemStack stack, InventoryClickEvent event) {
             UUID armorStandUUID = playerTranslocatorMap.getIfPresent(player.getUniqueId());
             if (armorStandUUID == null) {
                 return PowerResult.fail();
@@ -131,14 +131,14 @@ public class Translocator extends BasePower {
         }
 
         @Override
-        public Power getPowerClass() {
-            return Translocator.this;
+        public Class<? extends Translocator> getPowerClass() {
+            return Translocator.class;
         }
 
         @SuppressWarnings("deprecation")
         @Override
-        public PowerResult<Boolean> swapToOffhand(Player player, ItemStack stack, PlayerSwapHandItemsEvent event) {
-            SpectralArrow arrow = player.launchProjectile(SpectralArrow.class, player.getLocation().getDirection().multiply(getSpeed()));
+        public PowerResult<Boolean> swapToOffhand(Translocator power, Player player, ItemStack stack, PlayerSwapHandItemsEvent event) {
+            SpectralArrow arrow = player.launchProjectile(SpectralArrow.class, player.getLocation().getDirection().multiply(power.getSpeed()));
             arrow.setPickupStatus(Arrow.PickupStatus.DISALLOWED);
             arrow.setPersistent(false);
             arrow.setBounce(true);
@@ -176,7 +176,7 @@ public class Translocator extends BasePower {
         }
 
         @Override
-        public PowerResult<Boolean> placeOffhand(Player player, ItemStack stack, InventoryClickEvent event) {
+        public PowerResult<Boolean> placeOffhand(Translocator power, Player player, ItemStack stack, InventoryClickEvent event) {
             return PowerResult.ok(false);
         }
     }

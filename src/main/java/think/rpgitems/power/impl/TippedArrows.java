@@ -63,20 +63,20 @@ public class TippedArrows extends BasePower {
         return duration;
     }
 
-    public class Impl implements PowerRightClick {
+    public static class Impl implements PowerRightClick<TippedArrows> {
         @Override
-        public PowerResult<Void> rightClick(Player player, ItemStack stack, PlayerInteractEvent event) {
+        public PowerResult<Void> rightClick(TippedArrows power, Player player, ItemStack stack, PlayerInteractEvent event) {
             player.playSound(player.getLocation(), Sound.ENTITY_ARROW_SHOOT, 1.0f, 1.0f);
-            Events.registerRPGProjectile(getPower().getItem(), stack, player);
+            Events.registerRPGProjectile(power.getItem(), stack, player);
             org.bukkit.entity.TippedArrow arrow = player.launchProjectile(org.bukkit.entity.TippedArrow.class);
-            arrow.addCustomEffect(new PotionEffect(getType(), getDuration(), getAmplifier()), true);
+            arrow.addCustomEffect(new PotionEffect(power.getType(), power.getDuration(), power.getAmplifier()), true);
             Events.autoRemoveProjectile(arrow.getEntityId());
             return PowerResult.ok();
         }
 
         @Override
-        public Power getPowerClass() {
-            return TippedArrows.this;
+        public Class<? extends TippedArrows> getPowerClass() {
+            return TippedArrows.class;
         }
     }
 }

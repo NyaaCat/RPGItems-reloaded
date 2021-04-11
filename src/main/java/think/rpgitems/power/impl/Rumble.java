@@ -73,20 +73,20 @@ public class Rumble extends BasePower {
         return power;
     }
 
-    public class Impl implements PowerRightClick, PowerLeftClick, PowerSneak, PowerSprint, PowerPlain, PowerBowShoot, PowerLivingEntity{
+    public static class Impl implements PowerRightClick<Rumble>, PowerLeftClick<Rumble>, PowerSneak<Rumble>, PowerSprint<Rumble>, PowerPlain<Rumble>, PowerBowShoot<Rumble>, PowerLivingEntity<Rumble> {
         @Override
-        public PowerResult<Void> leftClick(Player player, ItemStack stack, PlayerInteractEvent event) {
-            return fire(player, stack);
+        public PowerResult<Void> leftClick(Rumble power, Player player, ItemStack stack, PlayerInteractEvent event) {
+            return fire(power, player, stack);
         }
 
         @Override
-        public PowerResult<Void> fire(final Player player, ItemStack stack) {
+        public PowerResult<Void> fire(Rumble power, final Player player, ItemStack stack) {
             final Location location = player.getLocation().add(0, -0.2, 0);
             final Vector direction = player.getLocation().getDirection();
-            return fire(player, location, direction);
+            return fire(power, player, location, direction);
         }
 
-        private PowerResult<Void> fire(Player player, Location location, Vector direction) {
+        private PowerResult<Void> fire(Rumble power, Player player, Location location, Vector direction) {
             direction.setY(0);
             direction.normalize();
             BukkitRunnable task = new BukkitRunnable() {
@@ -108,7 +108,7 @@ public class Rumble extends BasePower {
                             temp.getWorld().playEffect(temp, Effect.STEP_SOUND, block.getType());
                         }
                     }
-                    List<Entity> near = getNearbyEntities(Rumble.this, location, player, 1.5);
+                    List<Entity> near = getNearbyEntities(power, location, player, 1.5);
                     boolean hit = false;
                     Random random = new Random();
                     for (Entity e : near) {
@@ -118,7 +118,7 @@ public class Rumble extends BasePower {
                         }
                     }
                     if (hit) {
-                        near = getNearbyEntities(Rumble.this, location, player, power * 2 + 1);
+                        near = getNearbyEntities(power, location, player, power.getPower() * 2 + 1);
                         for (Entity e : near) {
                             if (e != player) {
                                 if (e instanceof ItemFrame || e instanceof Painting) {
@@ -126,27 +126,27 @@ public class Rumble extends BasePower {
                                     continue;
                                 }
                                 if (e.getLocation().distance(location) <= 2.5)
-                                    e.setVelocity(new Vector(random.nextGaussian() / 4d, 1d + random.nextDouble() * (double) power, random.nextGaussian() / 4d));
+                                    e.setVelocity(new Vector(random.nextGaussian() / 4d, 1d + random.nextDouble() * (double) power.getPower(), random.nextGaussian() / 4d));
 
                                 if (!(e instanceof LivingEntity)) {
                                     continue;
                                 }
-                                if (getDamage() > 0) {
-                                    Context.instance().putTemp(player.getUniqueId(), DAMAGE_SOURCE, getNamespacedKey().toString());
-                                    Context.instance().putTemp(player.getUniqueId(), OVERRIDING_DAMAGE, getDamage());
-                                    ((LivingEntity) e).damage(getDamage(), player);
+                                if (power.getDamage() > 0) {
+                                    Context.instance().putTemp(player.getUniqueId(), DAMAGE_SOURCE, power.getNamespacedKey().toString());
+                                    Context.instance().putTemp(player.getUniqueId(), OVERRIDING_DAMAGE, power.getDamage());
+                                    ((LivingEntity) e).damage(power.getDamage(), player);
                                     Context.instance().putTemp(player.getUniqueId(), OVERRIDING_DAMAGE, null);
                                     Context.instance().putTemp(player.getUniqueId(), DAMAGE_SOURCE, null);
 
                                 }
                             }
                         }
-                        location.getWorld().createExplosion(location.getX(), location.getY(), location.getZ(), power, false, false); // Trigger the explosion after all hanging entities have been protected
+                        location.getWorld().createExplosion(location.getX(), location.getY(), location.getZ(), power.getPower(), false, false); // Trigger the explosion after all hanging entities have been protected
                         cancel();
                         return;
                     }
                     location.add(direction);
-                    if (getCount() >= getDistance()) {
+                    if (getCount() >= power.getDistance()) {
                         cancel();
                     }
                     count = getCount() + 1;
@@ -161,33 +161,33 @@ public class Rumble extends BasePower {
         }
 
         @Override
-        public Power getPowerClass() {
-            return Rumble.this;
+        public Class<? extends Rumble> getPowerClass() {
+            return Rumble.class;
         }
 
         @Override
-        public PowerResult<Void> rightClick(Player player, ItemStack stack, PlayerInteractEvent event) {
-            return fire(player, stack);
+        public PowerResult<Void> rightClick(Rumble power, Player player, ItemStack stack, PlayerInteractEvent event) {
+            return fire(power, player, stack);
         }
 
         @Override
-        public PowerResult<Float> bowShoot(Player player, ItemStack stack, EntityShootBowEvent event) {
-            return fire(player, stack).with(event.getForce());
+        public PowerResult<Float> bowShoot(Rumble power, Player player, ItemStack stack, EntityShootBowEvent event) {
+            return fire(power, player, stack).with(event.getForce());
         }
 
         @Override
-        public PowerResult<Void> sneak(Player player, ItemStack stack, PlayerToggleSneakEvent event) {
-            return fire(player, stack);
+        public PowerResult<Void> sneak(Rumble power, Player player, ItemStack stack, PlayerToggleSneakEvent event) {
+            return fire(power, player, stack);
         }
 
         @Override
-        public PowerResult<Void> sprint(Player player, ItemStack stack, PlayerToggleSprintEvent event) {
-            return fire(player, stack);
+        public PowerResult<Void> sprint(Rumble power, Player player, ItemStack stack, PlayerToggleSprintEvent event) {
+            return fire(power, player, stack);
         }
 
         @Override
-        public PowerResult<Void> fire(Player player, ItemStack stack, LivingEntity entity, @Nullable Double value) {
-            return fire(player, entity.getLocation(), entity.getLocation().getDirection());
+        public PowerResult<Void> fire(Rumble power, Player player, ItemStack stack, LivingEntity entity, @Nullable Double value) {
+            return fire(power, player, entity.getLocation(), entity.getLocation().getDirection());
         }
     }
 

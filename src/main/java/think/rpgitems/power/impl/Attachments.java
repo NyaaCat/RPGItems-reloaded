@@ -72,20 +72,20 @@ public class Attachments extends BasePower {
         return requireHurtByEntity;
     }
 
-    public class Impl implements PowerTick, PowerRightClick, PowerLeftClick, PowerOffhandClick, PowerPlain, PowerHit, PowerSneaking, PowerHurt, PowerHitTaken, PowerBowShoot {
+    public static class Impl implements PowerTick<Attachments>, PowerRightClick<Attachments>, PowerLeftClick<Attachments>, PowerOffhandClick<Attachments>, PowerPlain<Attachments>, PowerHit<Attachments>, PowerSneaking<Attachments>, PowerHurt<Attachments>, PowerHitTaken<Attachments>, PowerBowShoot<Attachments> {
 
         @Override
-        public PowerResult<Void> tick(Player player, ItemStack stack) {
-            return fire(player, stack);
+        public PowerResult<Void> tick(Attachments power, Player player, ItemStack stack) {
+            return fire(power, player, stack);
         }
 
         @Override
-        public PowerResult<Void> fire(Player player, ItemStack stack) {
-            return fire(player, stack, null);
+        public PowerResult<Void> fire(Attachments power, Player player, ItemStack stack) {
+            return fire(power, player, stack, null);
         }
 
-        public PowerResult<Void> fire(Player player, ItemStack stack, Event event) {
-            Set<RPGItem> allow = (getAllowedItems() == null || getAllowedItems().isEmpty()) ? null : getAllowedItems().stream().flatMap(s -> {
+        public PowerResult<Void> fire(Attachments power, Player player, ItemStack stack, Event event) {
+            Set<RPGItem> allow = (power.getAllowedItems() == null || power.getAllowedItems().isEmpty()) ? null : power.getAllowedItems().stream().flatMap(s -> {
                 try {
                     int uid = Integer.parseInt(s);
                     Set<RPGItem> items = ItemManager.getItems(uid);
@@ -98,8 +98,8 @@ public class Attachments extends BasePower {
             int num = 0;
             ItemStack itemStack = null;
             PlayerInventory inventory = player.getInventory();
-            if (getAllowedSlots() != null) {
-                for (EquipmentSlot allowedSlot : getAllowedSlots()) {
+            if (power.getAllowedSlots() != null) {
+                for (EquipmentSlot allowedSlot : power.getAllowedSlots()) {
                     switch (allowedSlot) {
                         case HAND:
                             itemStack = inventory.getItemInMainHand();
@@ -120,27 +120,27 @@ public class Attachments extends BasePower {
                             itemStack = inventory.getHelmet();
                             break;
                     }
-                    if (attach(player, stack, event, itemStack, allow)) {
+                    if (attach(power, player, stack, event, itemStack, allow)) {
                         num += 1;
                     }
-                    if (num >= getLimit()) return PowerResult.ok();
+                    if (num >= power.getLimit()) return PowerResult.ok();
                 }
             }
-            if (getAllowedInvSlots() == null || getAllowedInvSlots().isEmpty()) {
+            if (power.getAllowedInvSlots() == null || power.getAllowedInvSlots().isEmpty()) {
                 for (ItemStack envSlot : inventory.getContents()) {
-                    if (attach(player, stack, event, envSlot, allow)) {
+                    if (attach(power, player, stack, event, envSlot, allow)) {
                         num += 1;
                     }
-                    if (num >= getLimit()) return PowerResult.ok();
+                    if (num >= power.getLimit()) return PowerResult.ok();
                 }
             } else {
-                for (int envSlot : getAllowedInvSlots()) {
+                for (int envSlot : power.getAllowedInvSlots()) {
                     if (envSlot < 0) break;
                     itemStack = inventory.getItem(envSlot);
-                    if (attach(player, stack, event, itemStack, allow)) {
+                    if (attach(power, player, stack, event, itemStack, allow)) {
                         num += 1;
                     }
-                    if (num >= getLimit()) return PowerResult.ok();
+                    if (num >= power.getLimit()) return PowerResult.ok();
                 }
             }
 
@@ -151,7 +151,7 @@ public class Attachments extends BasePower {
             }
         }
 
-        public boolean attach(Player player, ItemStack stack, Event event, ItemStack itemStack, Set<RPGItem> allow) {
+        public boolean attach(Attachments power, Player player, ItemStack stack, Event event, ItemStack itemStack, Set<RPGItem> allow) {
             if (itemStack == null) return false;
             if (itemStack.equals(stack)) return false;
             Optional<RPGItem> optItem = ItemManager.toRPGItem(itemStack);
@@ -163,54 +163,54 @@ public class Attachments extends BasePower {
         }
 
         @Override
-        public PowerResult<Void> sneaking(Player player, ItemStack stack) {
-            return fire(player, stack);
+        public PowerResult<Void> sneaking(Attachments power, Player player, ItemStack stack) {
+            return fire(power, player, stack);
         }
 
         @Override
-        public PowerResult<Double> takeHit(Player target, ItemStack stack, double damage, EntityDamageEvent event) {
-            if (!isRequireHurtByEntity() || event instanceof EntityDamageByEntityEvent) {
-                return fire(target, stack, event).with(damage);
+        public PowerResult<Double> takeHit(Attachments power, Player target, ItemStack stack, double damage, EntityDamageEvent event) {
+            if (!power.isRequireHurtByEntity() || event instanceof EntityDamageByEntityEvent) {
+                return fire(power, target, stack, event).with(damage);
             }
             return PowerResult.noop();
         }
 
         @Override
-        public PowerResult<Void> hurt(Player target, ItemStack stack, EntityDamageEvent event) {
-            if (!isRequireHurtByEntity() || event instanceof EntityDamageByEntityEvent) {
-                return fire(target, stack, event);
+        public PowerResult<Void> hurt(Attachments power, Player target, ItemStack stack, EntityDamageEvent event) {
+            if (!power.isRequireHurtByEntity() || event instanceof EntityDamageByEntityEvent) {
+                return fire(power, target, stack, event);
             }
             return PowerResult.noop();
         }
 
         @Override
-        public PowerResult<Double> hit(Player player, ItemStack stack, LivingEntity entity, double damage, EntityDamageByEntityEvent event) {
-            return fire(player, stack, event).with(damage);
+        public PowerResult<Double> hit(Attachments power, Player player, ItemStack stack, LivingEntity entity, double damage, EntityDamageByEntityEvent event) {
+            return fire(power, player, stack, event).with(damage);
         }
 
         @Override
-        public PowerResult<Void> leftClick(Player player, ItemStack stack, PlayerInteractEvent event) {
-            return fire(player, stack, event);
+        public PowerResult<Void> leftClick(Attachments power, Player player, ItemStack stack, PlayerInteractEvent event) {
+            return fire(power, player, stack, event);
         }
 
         @Override
-        public PowerResult<Void> offhandClick(Player player, ItemStack stack, PlayerInteractEvent event) {
-            return fire(player, stack, event);
+        public PowerResult<Void> offhandClick(Attachments power, Player player, ItemStack stack, PlayerInteractEvent event) {
+            return fire(power, player, stack, event);
         }
 
         @Override
-        public PowerResult<Void> rightClick(Player player, ItemStack stack, PlayerInteractEvent event) {
-            return fire(player, stack, event);
+        public PowerResult<Void> rightClick(Attachments power, Player player, ItemStack stack, PlayerInteractEvent event) {
+            return fire(power, player, stack, event);
         }
 
         @Override
-        public PowerResult<Float> bowShoot(Player player, ItemStack stack, EntityShootBowEvent event) {
-            return fire(player, stack).with(event.getForce());
+        public PowerResult<Float> bowShoot(Attachments power, Player player, ItemStack stack, EntityShootBowEvent event) {
+            return fire(power, player, stack).with(event.getForce());
         }
 
         @Override
-        public Power getPowerClass() {
-            return Attachments.this;
+        public Class<? extends Attachments> getPowerClass() {
+            return Attachments.class;
         }
     }
 }

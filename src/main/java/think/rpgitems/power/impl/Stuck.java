@@ -167,23 +167,23 @@ public class Stuck extends BasePower {
         return requireHurtByEntity;
     }
 
-    public class Impl implements PowerLeftClick, PowerRightClick, PowerPlain, PowerHit, PowerBowShoot, PowerHitTaken, PowerHurt {
+    public static class Impl implements PowerLeftClick<Stuck>, PowerRightClick<Stuck>, PowerPlain<Stuck>, PowerHit<Stuck>, PowerBowShoot<Stuck>, PowerHitTaken<Stuck>, PowerHurt<Stuck> {
 
         @Override
-        public PowerResult<Double> takeHit(Player target, ItemStack stack, double damage, EntityDamageEvent event) {
-            if (!isRequireHurtByEntity() || event instanceof EntityDamageByEntityEvent) {
-                return fire(target, stack).with(damage);
+        public PowerResult<Double> takeHit(Stuck power, Player target, ItemStack stack, double damage, EntityDamageEvent event) {
+            if (!power.isRequireHurtByEntity() || event instanceof EntityDamageByEntityEvent) {
+                return fire(power, target, stack).with(damage);
             }
             return PowerResult.noop();
         }
 
         @Override
-        public PowerResult<Void> fire(Player player, ItemStack stack) {
-            List<LivingEntity> entities = getLivingEntitiesInCone(getNearestLivingEntities(getPower(), player.getEyeLocation(), player, getRange(), 0), player.getLocation().toVector(), getFacing(), player.getLocation().getDirection());
+        public PowerResult<Void> fire(Stuck power, Player player, ItemStack stack) {
+            List<LivingEntity> entities = getLivingEntitiesInCone(getNearestLivingEntities(power, player.getEyeLocation(), player, power.getRange(), 0), player.getLocation().toVector(), power.getFacing(), player.getLocation().getDirection());
             entities.forEach(entity -> {
-                        if (!getItem().consumeDurability(stack, getCostPerEntity())) return;
+                        if (!power.getItem().consumeDurability(stack, power.getCostPerEntity())) return;
                         stucked.put(entity.getUniqueId(), System.currentTimeMillis());
-                        entity.addPotionEffect(new PotionEffect(PotionEffectType.SLOW, getDuration(), 10), true);
+                        entity.addPotionEffect(new PotionEffect(PotionEffectType.SLOW, power.getDuration(), 10), true);
 //                    entity.addPotionEffect(new PotionEffect(PotionEffectType.JUMP, duration, 128), true);
                     }
             );
@@ -191,38 +191,38 @@ public class Stuck extends BasePower {
         }
 
         @Override
-        public Power getPowerClass() {
-            return Stuck.this;
+        public Class<? extends Stuck> getPowerClass() {
+            return Stuck.class;
         }
 
         @Override
-        public PowerResult<Void> hurt(Player target, ItemStack stack, EntityDamageEvent event) {
-            if (!isRequireHurtByEntity() || event instanceof EntityDamageByEntityEvent) {
-                return fire(target, stack);
+        public PowerResult<Void> hurt(Stuck power, Player target, ItemStack stack, EntityDamageEvent event) {
+            if (!power.isRequireHurtByEntity() || event instanceof EntityDamageByEntityEvent) {
+                return fire(power, target, stack);
             }
             return PowerResult.noop();
         }
 
         @Override
-        public PowerResult<Void> leftClick(Player player, ItemStack stack, PlayerInteractEvent event) {
-            return fire(player, stack);
+        public PowerResult<Void> leftClick(Stuck power, Player player, ItemStack stack, PlayerInteractEvent event) {
+            return fire(power, player, stack);
         }
 
         @Override
-        public PowerResult<Void> rightClick(Player player, ItemStack stack, PlayerInteractEvent event) {
-            return fire(player, stack);
+        public PowerResult<Void> rightClick(Stuck power, Player player, ItemStack stack, PlayerInteractEvent event) {
+            return fire(power, player, stack);
         }
 
         @Override
-        public PowerResult<Float> bowShoot(Player player, ItemStack stack, EntityShootBowEvent event) {
-            return fire(player, stack).with(event.getForce());
+        public PowerResult<Float> bowShoot(Stuck power, Player player, ItemStack stack, EntityShootBowEvent event) {
+            return fire(power, player, stack).with(event.getForce());
         }
 
         @Override
-        public PowerResult<Double> hit(Player player, ItemStack stack, LivingEntity entity, double damage, EntityDamageByEntityEvent event) {
-            if (random.nextInt(getChance()) == 0) {
+        public PowerResult<Double> hit(Stuck power, Player player, ItemStack stack, LivingEntity entity, double damage, EntityDamageByEntityEvent event) {
+            if (power.random.nextInt(power.getChance()) == 0) {
                 stucked.put(entity.getUniqueId(), System.currentTimeMillis());
-                entity.addPotionEffect(new PotionEffect(PotionEffectType.SLOW, getDuration(), 10), true);
+                entity.addPotionEffect(new PotionEffect(PotionEffectType.SLOW, power.getDuration(), 10), true);
                 // entity.addPotionEffect(new PotionEffect(PotionEffectType.JUMP, duration, 128), true);
                 // todo change implementation to lock entity mobilability
                 return PowerResult.ok(damage);

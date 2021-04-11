@@ -86,15 +86,15 @@ public class SkyHook extends BasePower {
         return I18n.formatDefault("power.skyhook");
     }
 
-    public class Impl implements PowerRightClick, PowerLeftClick, PowerSneak, PowerSprint, PowerPlain, PowerBowShoot {
+    public static class Impl implements PowerRightClick<SkyHook>, PowerLeftClick<SkyHook>, PowerSneak<SkyHook>, PowerSprint<SkyHook>, PowerPlain<SkyHook>, PowerBowShoot<SkyHook> {
 
         @Override
-        public PowerResult<Void> leftClick(Player player, ItemStack stack, PlayerInteractEvent event) {
-            return fire(player, stack);
+        public PowerResult<Void> leftClick(SkyHook power, Player player, ItemStack stack, PlayerInteractEvent event) {
+            return fire(power, player, stack);
         }
 
         @Override
-        public PowerResult<Void> fire(final Player player, ItemStack stack) {
+        public PowerResult<Void> fire(SkyHook power, final Player player, ItemStack stack) {
             Boolean isHooking = hooking.get(player.getUniqueId());
             if (isHooking == null) {
                 isHooking = false;
@@ -104,8 +104,8 @@ public class SkyHook extends BasePower {
                 hooking.put(player.getUniqueId(), false);
                 return PowerResult.noop();
             }
-            Block block = player.getTargetBlock(null, getHookDistance());
-            if (block.getType() != getRailMaterial()) {
+            Block block = player.getTargetBlock(null, power.getHookDistance());
+            if (block.getType() != power.getRailMaterial()) {
                 player.sendMessage(I18n.formatDefault("message.skyhook.fail"));
                 return PowerResult.fail();
             }
@@ -120,7 +120,7 @@ public class SkyHook extends BasePower {
 
                 @Override
                 public void run() {
-                    if (!(player.getAllowFlight() && getItem().consumeDurability(stack, getHookingTickCost()))) {
+                    if (!(player.getAllowFlight() && power.getItem().consumeDurability(stack, power.getHookingTickCost()))) {
                         cancel();
                         hooking.put(player.getUniqueId(), false);
                         return;
@@ -138,14 +138,14 @@ public class SkyHook extends BasePower {
                     location.add(0, 2.4, 0);
                     if (delay < 20) {
                         delay++;
-                        if (location.getBlock().getType() == getRailMaterial()) {
+                        if (location.getBlock().getType() == power.getRailMaterial()) {
                             delay = 20;
                         }
                         return;
                     }
                     Vector dir = location.getDirection().setY(0).normalize();
                     location.add(dir);
-                    if (location.getBlock().getType() != getRailMaterial()) {
+                    if (location.getBlock().getType() != power.getRailMaterial()) {
                         player.setFlying(false);
                         if (player.getGameMode() != GameMode.CREATIVE)
                             player.setAllowFlight(false);
@@ -161,28 +161,28 @@ public class SkyHook extends BasePower {
         }
 
         @Override
-        public Power getPowerClass() {
-            return SkyHook.this;
+        public Class<? extends SkyHook> getPowerClass() {
+            return SkyHook.class;
         }
 
         @Override
-        public PowerResult<Void> rightClick(Player player, ItemStack stack, PlayerInteractEvent event) {
-            return fire(player, stack);
+        public PowerResult<Void> rightClick(SkyHook power, Player player, ItemStack stack, PlayerInteractEvent event) {
+            return fire(power, player, stack);
         }
 
         @Override
-        public PowerResult<Void> sneak(Player player, ItemStack stack, PlayerToggleSneakEvent event) {
-            return fire(player, stack);
+        public PowerResult<Void> sneak(SkyHook power, Player player, ItemStack stack, PlayerToggleSneakEvent event) {
+            return fire(power, player, stack);
         }
 
         @Override
-        public PowerResult<Void> sprint(Player player, ItemStack stack, PlayerToggleSprintEvent event) {
-            return fire(player, stack);
+        public PowerResult<Void> sprint(SkyHook power, Player player, ItemStack stack, PlayerToggleSprintEvent event) {
+            return fire(power, player, stack);
         }
 
         @Override
-        public PowerResult<Float> bowShoot(Player player, ItemStack itemStack, EntityShootBowEvent e) {
-            return fire(player, itemStack).with(e.getForce());
+        public PowerResult<Float> bowShoot(SkyHook power, Player player, ItemStack itemStack, EntityShootBowEvent e) {
+            return fire(power, player, itemStack).with(e.getForce());
         }
     }
 }

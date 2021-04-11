@@ -30,9 +30,9 @@ public class TNTCannon extends BasePower {
         return I18n.formatDefault("power.tntcannon", (0) / 20d);
     }
 
-    public class Impl implements PowerRightClick, PowerLivingEntity {
+    public static class Impl implements PowerRightClick<TNTCannon>, PowerLivingEntity<TNTCannon> {
         @Override
-        public PowerResult<Void> rightClick(Player player, ItemStack stack, PlayerInteractEvent event) {
+        public PowerResult<Void> rightClick(TNTCannon power, Player player, ItemStack stack, PlayerInteractEvent event) {
             player.playSound(player.getLocation(), Sound.ENTITY_ARROW_SHOOT, 1.0f, 1.0f);
             TNTPrimed tnt = player.getWorld().spawn(player.getLocation().add(0, 1.8, 0), TNTPrimed.class);
             tnt.setVelocity(player.getLocation().getDirection().multiply(2d));
@@ -40,12 +40,12 @@ public class TNTCannon extends BasePower {
         }
 
         @Override
-        public Power getPowerClass() {
-            return TNTCannon.this;
+        public Class<? extends TNTCannon> getPowerClass() {
+            return TNTCannon.class;
         }
 
         @Override
-        public PowerResult<Void> fire(Player player, ItemStack stack, LivingEntity entity, @Nullable Double value) {
+        public PowerResult<Void> fire(TNTCannon power, Player player, ItemStack stack, LivingEntity entity, @Nullable Double value) {
             player.getWorld().playSound(entity.getLocation(), Sound.ENTITY_ARROW_SHOOT, 1.0f, 1.0f);
             TNTPrimed tnt = player.getWorld().spawn(entity.getLocation().add(0, 1.8, 0), TNTPrimed.class);
             tnt.setVelocity(entity.getLocation().getDirection().multiply(2d));

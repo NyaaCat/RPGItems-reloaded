@@ -25,8 +25,8 @@ import static think.rpgitems.power.Utils.*;
  * Target nearest entity
  * </p>
  */
-@Meta(defaultTrigger = "RIGHT_CLICK", withSelectors = true, generalInterface = PowerPlain.class, implClass = ShulkerBulletPower.Impl.class)
-public class ShulkerBulletPower extends BasePower {
+@Meta(defaultTrigger = "RIGHT_CLICK", withSelectors = true, generalInterface = PowerPlain.class, implClass = ShulkerBullets.Impl.class)
+public class ShulkerBullets extends BasePower {
 
     @Property(order = 1)
     public double range = 10;
@@ -53,19 +53,19 @@ public class ShulkerBulletPower extends BasePower {
         return range;
     }
 
-    public class Impl implements PowerRightClick, PowerLeftClick, PowerSneak, PowerSprint, PowerPlain, PowerBowShoot {
+    public static class Impl implements PowerRightClick<ShulkerBullets>, PowerLeftClick<ShulkerBullets>, PowerSneak<ShulkerBullets>, PowerSprint<ShulkerBullets>, PowerPlain<ShulkerBullets>, PowerBowShoot<ShulkerBullets> {
         @Override
-        public PowerResult<Void> leftClick(Player player, ItemStack stack, PlayerInteractEvent event) {
-            return fire(player, stack);
+        public PowerResult<Void> leftClick(ShulkerBullets power, Player player, ItemStack stack, PlayerInteractEvent event) {
+            return fire(power, player, stack);
         }
 
         @Override
         @SuppressWarnings("deprecation")
-        public PowerResult<Void> fire(Player player, ItemStack stack) {
-            Events.registerRPGProjectile(getItem(), stack, player);
+        public PowerResult<Void> fire(ShulkerBullets power, Player player, ItemStack stack) {
+            Events.registerRPGProjectile(power.getItem(), stack, player);
             org.bukkit.entity.ShulkerBullet bullet = player.launchProjectile(org.bukkit.entity.ShulkerBullet.class, player.getEyeLocation().getDirection());
             bullet.setPersistent(false);
-            List<LivingEntity> entities = getLivingEntitiesInCone(getNearestLivingEntities(getPower(), player.getEyeLocation(), player, getRange(), 0), player.getLocation().toVector(), 30, player.getLocation().getDirection());
+            List<LivingEntity> entities = getLivingEntitiesInCone(getNearestLivingEntities(power, player.getEyeLocation(), player, power.getRange(), 0), player.getLocation().toVector(), 30, player.getLocation().getDirection());
             if (!entities.isEmpty()) {
                 Context.instance().putExpiringSeconds(player.getUniqueId(), "shulkerbullet.target", entities.get(0), 3);
                 bullet.setTarget(entities.get(0));
@@ -74,28 +74,28 @@ public class ShulkerBulletPower extends BasePower {
         }
 
         @Override
-        public Power getPowerClass() {
-            return ShulkerBulletPower.this;
+        public Class<? extends ShulkerBullets> getPowerClass() {
+            return ShulkerBullets.class;
         }
 
         @Override
-        public PowerResult<Void> rightClick(Player player, ItemStack stack, PlayerInteractEvent event) {
-            return fire(player, stack);
+        public PowerResult<Void> rightClick(ShulkerBullets power, Player player, ItemStack stack, PlayerInteractEvent event) {
+            return fire(power, player, stack);
         }
 
         @Override
-        public PowerResult<Void> sneak(Player player, ItemStack stack, PlayerToggleSneakEvent event) {
-            return fire(player, stack);
+        public PowerResult<Void> sneak(ShulkerBullets power, Player player, ItemStack stack, PlayerToggleSneakEvent event) {
+            return fire(power, player, stack);
         }
 
         @Override
-        public PowerResult<Void> sprint(Player player, ItemStack stack, PlayerToggleSprintEvent event) {
-            return fire(player, stack);
+        public PowerResult<Void> sprint(ShulkerBullets power, Player player, ItemStack stack, PlayerToggleSprintEvent event) {
+            return fire(power, player, stack);
         }
 
         @Override
-        public PowerResult<Float> bowShoot(Player player, ItemStack itemStack, EntityShootBowEvent e) {
-            return fire(player, itemStack).with(e.getForce());
+        public PowerResult<Float> bowShoot(ShulkerBullets power, Player player, ItemStack itemStack, EntityShootBowEvent e) {
+            return fire(power, player, itemStack).with(e.getForce());
         }
     }
 }

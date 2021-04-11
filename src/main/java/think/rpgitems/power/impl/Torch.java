@@ -55,16 +55,16 @@ public class Torch extends BasePower {
         return I18n.formatDefault("power.torch", (0) / 20d);
     }
 
-    public class Impl implements PowerPlain, PowerLeftClick, PowerRightClick, PowerBowShoot {
+    public static class Impl implements PowerPlain<Torch>, PowerLeftClick<Torch>, PowerRightClick<Torch>, PowerBowShoot<Torch> {
 
 
         @Override
-        public PowerResult<Void> leftClick(Player player, ItemStack stack, PlayerInteractEvent event) {
-            return fire(player, stack);
+        public PowerResult<Void> leftClick(Torch power, Player player, ItemStack stack, PlayerInteractEvent event) {
+            return fire(power, player, stack);
         }
 
         @Override
-        public PowerResult<Void> fire(final Player player, ItemStack stack) {
+        public PowerResult<Void> fire(Torch power, final Player player, ItemStack stack) {
             player.playSound(player.getLocation(), Sound.ITEM_FLINTANDSTEEL_USE, 1.0f, 0.8f);
             final FallingBlock block = player.getWorld().spawnFallingBlock(player.getLocation().add(0, 1.8, 0), Material.TORCH.createBlockData());
             block.setVelocity(player.getLocation().getDirection().multiply(2d));
@@ -87,7 +87,7 @@ public class Torch extends BasePower {
                                     Location loc = block.getLocation().add(x, y, z);
                                     Block b = world.getBlockAt(loc);
                                     if (b.getType().equals(Material.AIR) && random.nextInt(100) < 20) {
-                                        List<BlockFace> faces = getPossibleFaces(loc);
+                                        List<BlockFace> faces = power.getPossibleFaces(loc);
                                         if (faces.size() > 0) {
                                             changedBlocks.put(b.getLocation(), b.getType());
                                             changedBlockData.put(b.getLocation(), b.getBlockData());
@@ -139,18 +139,18 @@ public class Torch extends BasePower {
         }
 
         @Override
-        public Power getPowerClass() {
-            return Torch.this;
+        public Class<? extends Torch> getPowerClass() {
+            return Torch.class;
         }
 
         @Override
-        public PowerResult<Void> rightClick(Player player, ItemStack stack, PlayerInteractEvent event) {
-            return fire(player, stack);
+        public PowerResult<Void> rightClick(Torch power, Player player, ItemStack stack, PlayerInteractEvent event) {
+            return fire(power, player, stack);
         }
 
         @Override
-        public PowerResult<Float> bowShoot(Player player, ItemStack stack, EntityShootBowEvent event) {
-            return fire(player, stack).with(event.getForce());
+        public PowerResult<Float> bowShoot(Torch power, Player player, ItemStack stack, EntityShootBowEvent event) {
+            return fire(power, player, stack).with(event.getForce());
         }
     }
 }

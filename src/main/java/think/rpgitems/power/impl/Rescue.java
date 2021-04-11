@@ -75,24 +75,24 @@ public class Rescue extends BasePower {
         return useBed;
     }
 
-    public class Impl implements PowerHurt, PowerHitTaken {
+    public static class Impl implements PowerHurt<Rescue>, PowerHitTaken<Rescue> {
 
         // shouldn't be called if takeHit works. leave it as-is now
         @Override
-        public PowerResult<Void> hurt(Player target, ItemStack stack, EntityDamageEvent event) {
+        public PowerResult<Void> hurt(Rescue power, Player target, ItemStack stack, EntityDamageEvent event) {
             double health = target.getHealth() - event.getFinalDamage();
-            if (health > getHealthTrigger()) return PowerResult.noop();
-            rescue(target, stack, event, false);
+            if (health > power.getHealthTrigger()) return PowerResult.noop();
+            rescue(power, target, stack, event, false);
             return PowerResult.ok();
         }
 
-        private PowerResult<Double> rescue(Player target, ItemStack stack, EntityDamageEvent event, boolean canceled) {
+        private PowerResult<Double> rescue(Rescue power, Player target, ItemStack stack, EntityDamageEvent event, boolean canceled) {
             rescueTime.put(target.getUniqueId(), System.currentTimeMillis());
             target.sendTitle("", I18n.formatDefault("power.rescue.info"), 0, 40, 40);
             DamageCause cause = event.getCause();
             if (!canceled) {
                 target.addPotionEffect(new PotionEffect(PotionEffectType.HEALTH_BOOST, 2, 255));
-                target.setHealth(getHealthTrigger() + event.getDamage());
+                target.setHealth(power.getHealthTrigger() + event.getDamage());
             } else {
                 event.setCancelled(true);
             }
@@ -101,12 +101,12 @@ public class Rescue extends BasePower {
             target.addPotionEffect(new PotionEffect(PotionEffectType.SATURATION, 400, 2), true);
             target.getWorld().playSound(target.getLocation(), Sound.BLOCK_ENCHANTMENT_TABLE_USE, 10, 1);
 
-            if (isInPlace() && cause != DamageCause.DRAGON_BREATH
+            if (power.isInPlace() && cause != DamageCause.DRAGON_BREATH
                         && cause != DamageCause.DROWNING
                         && cause != DamageCause.SUFFOCATION
                         && cause != DamageCause.VOID) {
                 target.addPotionEffect(new PotionEffect(PotionEffectType.GLOWING, 160, 10));
-            } else if (isUseBed() && target.getBedSpawnLocation() != null)
+            } else if (power.isUseBed() && target.getBedSpawnLocation() != null)
                 target.teleport(target.getBedSpawnLocation());
             else
                 target.teleport(target.getWorld().getSpawnLocation());
@@ -115,20 +115,20 @@ public class Rescue extends BasePower {
         }
 
         @Override
-        public Power getPowerClass() {
-            return Rescue.this;
+        public Class<? extends Rescue> getPowerClass() {
+            return Rescue.class;
         }
 
         @Override
-        public PowerResult<Double> takeHit(Player target, ItemStack stack, double damage, EntityDamageEvent event) {
+        public PowerResult<Double> takeHit(Rescue power, Player target, ItemStack stack, double damage, EntityDamageEvent event) {
             double health = target.getHealth() - event.getFinalDamage();
-            if (health > getHealthTrigger() && event.getFinalDamage() < getDamageTrigger()) return PowerResult.noop();
+            if (health > power.getHealthTrigger() && event.getFinalDamage() < power.getDamageTrigger()) return PowerResult.noop();
             Long last = rescueTime.getIfPresent(target.getUniqueId());
             if (last != null && System.currentTimeMillis() - last < 3000) {
                 event.setCancelled(true);
                 return PowerResult.ok(0.0);
             }
-            return rescue(target, stack, event, true);
+            return rescue(power, target, stack, event, true);
         }
     }
 }

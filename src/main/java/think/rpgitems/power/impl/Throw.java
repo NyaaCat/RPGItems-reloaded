@@ -87,38 +87,38 @@ public class Throw extends BasePower {
         return requireHurtByEntity;
     }
 
-    public class Impl implements PowerRightClick, PowerLeftClick, PowerPlain, PowerBowShoot, PowerHurt, PowerHitTaken {
+    public static class Impl implements PowerRightClick<Throw>, PowerLeftClick<Throw>, PowerPlain<Throw>, PowerBowShoot<Throw>, PowerHurt<Throw>, PowerHitTaken<Throw> {
 
         @Override
-        public PowerResult<Double> takeHit(Player target, ItemStack stack, double damage, EntityDamageEvent event) {
-            if (!isRequireHurtByEntity() || event instanceof EntityDamageByEntityEvent) {
-                return fire(target, stack).with(damage);
+        public PowerResult<Double> takeHit(Throw power, Player target, ItemStack stack, double damage, EntityDamageEvent event) {
+            if (!power.isRequireHurtByEntity() || event instanceof EntityDamageByEntityEvent) {
+                return fire(power, target, stack).with(damage);
             }
             return PowerResult.noop();
         }
 
         @Override
-        public PowerResult<Void> fire(Player player, ItemStack stack) {
-            summonEntity(player);
+        public PowerResult<Void> fire(Throw power, Player player, ItemStack stack) {
+            summonEntity(power, player);
             return PowerResult.ok();
         }
 
         @Override
-        public Power getPowerClass() {
-            return Throw.this;
+        public Class<? extends Throw> getPowerClass() {
+            return Throw.class;
         }
 
         @SuppressWarnings("deprecation")
-        private void summonEntity(Player player) {
+        private void summonEntity(Throw power, Player player) {
             try {
                 Location loc = player.getEyeLocation().clone();
                 Class<?> mojangsonParser = ReflectionUtils.getNMSClass("MojangsonParser");
                 Method getTagFromJson = mojangsonParser.getMethod("parse", String.class);
                 Class<?> nbtTagCompound = ReflectionUtils.getNMSClass("NBTTagCompound");
                 Method setString = nbtTagCompound.getMethod("setString", String.class, String.class);
-                Entity entity = player.getWorld().spawnEntity(loc, EntityType.valueOf(getEntityName()));
+                Entity entity = player.getWorld().spawnEntity(loc, EntityType.valueOf(power.getEntityName()));
                 Object nbt;
-                String s = getEntityData().replaceAll("\\{player}", player.getName()).replaceAll("\\{playerUUID}", player.getUniqueId().toString());
+                String s = power.getEntityData().replaceAll("\\{player}", player.getName()).replaceAll("\\{playerUUID}", player.getUniqueId().toString());
                 try {
                     nbt = getTagFromJson.invoke(null, s);
                 } catch (Exception e) {
@@ -136,36 +136,36 @@ public class Throw extends BasePower {
                         if (e instanceof Projectile) {
                             ((Projectile) e).setShooter(player);
                         }
-                        e.setVelocity(loc.getDirection().multiply(getSpeed()));
-                        e.setPersistent(isPersistent());
+                        e.setVelocity(loc.getDirection().multiply(power.getSpeed()));
+                        e.setPersistent(power.isPersistent());
                     }
                 }
             } catch (NoSuchMethodException e) {
-                RPGItems.plugin.getLogger().log(Level.WARNING, "Execption spawning entity in " + getItem().getName(), e);
+                RPGItems.plugin.getLogger().log(Level.WARNING, "Execption spawning entity in " + power.getItem().getName(), e);
             }
         }
 
         @Override
-        public PowerResult<Void> hurt(Player target, ItemStack stack, EntityDamageEvent event) {
-            if (!isRequireHurtByEntity() || event instanceof EntityDamageByEntityEvent) {
-                return fire(target, stack);
+        public PowerResult<Void> hurt(Throw power, Player target, ItemStack stack, EntityDamageEvent event) {
+            if (!power.isRequireHurtByEntity() || event instanceof EntityDamageByEntityEvent) {
+                return fire(power, target, stack);
             }
             return PowerResult.noop();
         }
 
         @Override
-        public PowerResult<Void> rightClick(Player player, ItemStack stack, PlayerInteractEvent event) {
-            return fire(player, stack);
+        public PowerResult<Void> rightClick(Throw power, Player player, ItemStack stack, PlayerInteractEvent event) {
+            return fire(power, player, stack);
         }
 
         @Override
-        public PowerResult<Void> leftClick(Player player, ItemStack stack, PlayerInteractEvent event) {
-            return fire(player, stack);
+        public PowerResult<Void> leftClick(Throw power, Player player, ItemStack stack, PlayerInteractEvent event) {
+            return fire(power, player, stack);
         }
 
         @Override
-        public PowerResult<Float> bowShoot(Player player, ItemStack itemStack, EntityShootBowEvent e) {
-            return fire(player, itemStack).with(e.getForce());
+        public PowerResult<Float> bowShoot(Throw power, Player player, ItemStack itemStack, EntityShootBowEvent e) {
+            return fire(power, player, itemStack).with(e.getForce());
         }
     }
 }
