@@ -1,18 +1,11 @@
 package think.rpgitems.power.chain;
 
-import org.bukkit.FluidCollisionMode;
-import org.bukkit.Location;
-import org.bukkit.entity.Entity;
-import org.bukkit.entity.LivingEntity;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
-import org.bukkit.util.Vector;
 import think.rpgitems.item.RPGItem;
 import think.rpgitems.power.*;
-import think.rpgitems.power.chain.utils.LocationVector;
 import think.rpgitems.power.trigger.Trigger;
 import think.rpgitems.utils.cast.CastParameter;
-import think.rpgitems.utils.cast.CastUtils;
 
 import java.util.*;
 
@@ -56,7 +49,7 @@ public class PowerChain {
         final Class<? extends Power> pClass = power.getClass();
         final Meta annotation = pClass.getAnnotation(Meta.class);
         if (annotation != null){
-            final Class powerClass = trigger1.getPowerClass();
+            final Class powerClass = trigger1.getPimplClass();
             return annotation.implClass().isAssignableFrom(powerClass);
         }
         return false;

@@ -9,20 +9,19 @@ import think.rpgitems.power.*;
 
 import javax.annotation.Nullable;
 import java.lang.reflect.InvocationTargetException;
-import java.lang.reflect.Method;
 import java.util.*;
 import java.util.function.Predicate;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
-public abstract class Trigger<TEvent extends Event, TPower extends Pimpl, TResult, TReturn> extends BasePropertyHolder {
+public abstract class Trigger<TEvent extends Event, TPower extends Power, TPimpl extends Pimpl<TPower>, TResult, TReturn> extends BasePropertyHolder {
 
     private static boolean acceptingNew = true;
 
     private static final Map<String, Trigger> registry = new HashMap<>();
 
     public static Stream<Trigger> fromInterface(Class<? extends Pimpl> power) {
-        return registry.values().stream().filter(t -> t.powerClass.equals(power));
+        return registry.values().stream().filter(t -> t.pimplClass.equals(power));
     }
 
     @Nullable
@@ -93,7 +92,7 @@ public abstract class Trigger<TEvent extends Event, TPower extends Pimpl, TResul
 
     private final Class<TEvent> eventClass;
     private final Class<TResult> resultClass;
-    private final Class<TPower> powerClass;
+    private final Class<TPimpl> pimplClass;
     private final Class<TReturn> returnClass;
     private final String name;
     private final String base;
@@ -102,14 +101,14 @@ public abstract class Trigger<TEvent extends Event, TPower extends Pimpl, TResul
     public int priority;
 
     @SuppressWarnings("unchecked")
-    Trigger(Class<TEvent> eventClass, Class<TPower> powerClass, Class<TResult> resultClass, Class returnClass, String name) {
-        this(name, eventClass, powerClass, resultClass, returnClass);
+    Trigger(Class<TEvent> eventClass, Class<TPimpl> pimplClass, Class<TResult> resultClass, Class returnClass, String name) {
+        this(name, eventClass, pimplClass, resultClass, returnClass);
         register(this);
     }
 
-    public Trigger(String name, Class<TEvent> eventClass, Class<TPower> powerClass, Class<TResult> resultClass, Class<TReturn> returnClass) {
+    public Trigger(String name, Class<TEvent> eventClass, Class<TPimpl> pimplClass, Class<TResult> resultClass, Class<TReturn> returnClass) {
         this.eventClass = eventClass;
-        this.powerClass = powerClass;
+        this.pimplClass = pimplClass;
         this.resultClass = resultClass;
         this.returnClass = returnClass;
         this.name = name;
@@ -117,9 +116,9 @@ public abstract class Trigger<TEvent extends Event, TPower extends Pimpl, TResul
     }
 
     @SuppressWarnings("unchecked")
-    Trigger(String name, String base, Class<TEvent> eventClass, Class<TPower> powerClass, Class<TResult> resultClass, Class returnClass) {
+    Trigger(String name, String base, Class<TEvent> eventClass, Class<TPimpl> pimplClass, Class<TResult> resultClass, Class returnClass) {
         this.eventClass = eventClass;
-        this.powerClass = powerClass;
+        this.pimplClass = pimplClass;
         this.resultClass = resultClass;
         this.returnClass = returnClass;
         this.name = name;
@@ -159,12 +158,12 @@ public abstract class Trigger<TEvent extends Event, TPower extends Pimpl, TResul
         return run(power, player, i, event);
     }
 
-    public PowerResult<TResult> warpResult(PowerResult<Void> overrideResult, TPower power, Player player, ItemStack i, TEvent event) {
+    public PowerResult<TResult> warpResult(PowerResult<Void> overrideResult, Power power, Player player, ItemStack i, TEvent event) {
         return overrideResult.with(null);
     }
 
-    public Class<? extends TPower> getPowerClass() {
-        return powerClass;
+    public Class<? extends TPimpl> getPimplClass() {
+        return pimplClass;
     }
 
     public Class<TResult> getResultClass() {
@@ -193,7 +192,7 @@ public abstract class Trigger<TEvent extends Event, TPower extends Pimpl, TResul
     }
 
     @SuppressWarnings("unchecked")
-    public Trigger<TEvent, TPower, TResult, TReturn> copy(String name) {
+    public Trigger<TEvent, TPower, TPimpl, TResult, TReturn> copy(String name) {
         if (Trigger.get(name) != null) throw new IllegalArgumentException("name is used");
         try {
             return getClass()

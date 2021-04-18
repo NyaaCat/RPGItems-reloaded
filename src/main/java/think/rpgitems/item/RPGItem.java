@@ -22,7 +22,6 @@ import org.bukkit.block.Block;
 import org.bukkit.command.CommandSender;
 import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.configuration.MemoryConfiguration;
-import org.bukkit.configuration.file.YamlConfiguration;
 import org.bukkit.enchantments.Enchantment;
 import org.bukkit.entity.Entity;
 import org.bukkit.entity.LivingEntity;
@@ -49,10 +48,8 @@ import think.rpgitems.power.propertymodifier.Modifier;
 import think.rpgitems.power.propertymodifier.RgiParameter;
 import think.rpgitems.power.trigger.BaseTriggers;
 import think.rpgitems.power.trigger.Trigger;
-import think.rpgitems.utils.MaterialUtils;
 
 import java.io.File;
-import java.lang.reflect.Field;
 import java.lang.reflect.Method;
 import java.util.*;
 import java.util.Map.Entry;
@@ -60,12 +57,10 @@ import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ThreadLocalRandom;
 import java.util.concurrent.TimeUnit;
 import java.util.logging.Level;
-import java.util.logging.Logger;
 import java.util.regex.Matcher;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
-import static org.bukkit.ChatColor.COLOR_CHAR;
 import static think.rpgitems.utils.ItemTagUtils.*;
 
 public class RPGItem {
@@ -883,18 +878,18 @@ public class RPGItem {
         }
     }
 
-    private <TEvent extends Event, TPower extends Pimpl, TResult, TReturn> boolean triggerPreCheck(Player player, ItemStack i, TEvent event, Trigger<TEvent, TPower, TResult, TReturn> trigger, List<TPower> powers) {
+    private <TEvent extends Event, TPower extends Power, TPimpl extends Pimpl<TPower>, TResult, TReturn> boolean triggerPreCheck(Player player, ItemStack i, TEvent event, Trigger<TEvent, TPower, TPimpl, TResult, TReturn> trigger, List<TPower> powers) {
         if (i.getType().equals(Material.AIR)) return false;
         if (powers.isEmpty()) return false;
         if (checkPermission(player, true) == Event.Result.DENY) return false;
 
-        RPGItemsPowersPreFireEvent<TEvent, TPower, TResult, TReturn> preFire = new RPGItemsPowersPreFireEvent<>(player, i, event, this, trigger, powers);
+        RPGItemsPowersPreFireEvent<TEvent, TPower, TPimpl, TResult, TReturn> preFire = new RPGItemsPowersPreFireEvent<>(player, i, event, this, trigger, powers);
         Bukkit.getServer().getPluginManager().callEvent(preFire);
         return !preFire.isCancelled();
     }
 
-    private <T> PowerResult<T> checkConditions(Player player, ItemStack i, Pimpl pimpl, List<Condition<?>> conds, Map<PropertyHolder, PowerResult<?>> context) {
-        Set<String> ids = pimpl.getPower().getConditions();
+    private <T> PowerResult<T> checkConditions(Player player, ItemStack i, Power power, List<Condition<?>> conds, Map<PropertyHolder, PowerResult<?>> context) {
+        Set<String> ids = power.getConditions();
         List<Condition<?>> conditions = conds.stream().filter(p -> ids.contains(p.id())).collect(Collectors.toList());
         List<Condition<?>> failed = conditions.stream().filter(p -> p.isStatic() ? !context.get(p).isOK() : !p.check(player, i, context).isOK()).collect(Collectors.toList());
         if (failed.isEmpty()) return null;
@@ -912,7 +907,7 @@ public class RPGItem {
         return result;
     }
 
-    public <TEvent extends Event, TPower extends Pimpl, TResult, TReturn> TReturn power(Player player, ItemStack i, TEvent event, Trigger<TEvent, TPower, TResult, TReturn> trigger, Object context) {
+    public <TEvent extends Event, TPower extends Power, TPimpl extends Pimpl<TPower>, TResult, TReturn> TReturn power(Player player, ItemStack i, TEvent event, Trigger<TEvent, TPower, TPimpl, TResult, TReturn> trigger, Object context) {
         powerCustomTrigger(player, i, event, trigger, context);
 
         List<TPower> powers = this.getPower(trigger, player, i);
@@ -925,14 +920,14 @@ public class RPGItem {
             for (TPower power : powers) {
                 PowerResult<TResult> result = checkConditions(player, i, power, conds, resultMap);
                 if (result != null) {
-                    resultMap.put(power.getPower(), result);
+                    resultMap.put(power, result);
                 } else {
-                    if (power.getPower().requiredContext() != null) {
+                    if (power.requiredContext() != null) {
                         result = handleContext(player, i, event, trigger, power);
                     } else {
                         result = trigger.run(power, player, i, event, context);
                     }
-                    resultMap.put(power.getPower(), result);
+                    resultMap.put(power, result);
                 }
                 ret = trigger.next(ret, result);
                 if (result.isAbort()) break;
@@ -945,7 +940,7 @@ public class RPGItem {
     }
 
     @SuppressWarnings("unchecked")
-    public <TEvent extends Event, TPower extends Pimpl, TResult, TReturn> void powerCustomTrigger(Player player, ItemStack i, TEvent event, Trigger<TEvent, TPower, TResult, TReturn> trigger, Object context) {
+    public <TEvent extends Event, TPower extends Power, TPimpl extends Pimpl<TPower>,  TResult, TReturn> void powerCustomTrigger(Player player, ItemStack i, TEvent event, Trigger<TEvent, TPower, TPimpl, TResult, TReturn> trigger, Object context) {
         this.triggers.entrySet()
                      .parallelStream()
                      .filter(e -> trigger.getClass().isInstance(e.getValue()))
@@ -953,13 +948,13 @@ public class RPGItem {
                      .filter(e -> e.getValue().check(player, i, event)).forEach(e -> this.power(player, i, event, e.getValue(), context));
     }
 
-    public <TEvent extends Event, TPower extends Pimpl, TResult, TReturn> TReturn power(Player player, ItemStack i, TEvent event, Trigger<TEvent, TPower, TResult, TReturn> trigger) {
+    public <TEvent extends Event, TPower extends Power, TPimpl extends Pimpl<TPower>, TResult, TReturn> TReturn power(Player player, ItemStack i, TEvent event, Trigger<TEvent, TPower, TPimpl, TResult, TReturn> trigger) {
         return power(player, i, event, trigger, null);
     }
 
-    public <TEvent extends Event, TPower extends Pimpl, TResult, TReturn> PowerResult<TResult> handleContext(Player player, ItemStack i, TEvent event, Trigger<TEvent, TPower, TResult, TReturn> trigger, TPower power) {
+    public <TEvent extends Event, TPower extends Power, TPimpl extends Pimpl<TPower>, TResult, TReturn> PowerResult<TResult> handleContext(Player player, ItemStack i, TEvent event, Trigger<TEvent, TPower, TPimpl, TResult, TReturn> trigger, TPower power) {
         PowerResult<TResult> result;
-        String contextKey = power.getPower().requiredContext();
+        String contextKey = power.requiredContext();
         Object context = Context.instance().get(player.getUniqueId(), contextKey);
         if (context == null) {
             return PowerResult.context();
@@ -985,8 +980,8 @@ public class RPGItem {
         return result;
     }
 
-    private <TEvent extends Event, TPower extends Pimpl, TResult, TReturn> void triggerPostFire(Player player, ItemStack itemStack, TEvent event, Trigger<TEvent, TPower, TResult, TReturn> trigger, Map<PropertyHolder, PowerResult<?>> resultMap, TReturn ret) {
-        RPGItemsPowersPostFireEvent<TEvent, TPower, TResult, TReturn> postFire = new RPGItemsPowersPostFireEvent<>(player, itemStack, event, this, trigger, resultMap, ret);
+    private <TEvent extends Event, TPower extends Power, TPimpl extends Pimpl<TPower>, TResult, TReturn> void triggerPostFire(Player player, ItemStack itemStack, TEvent event, Trigger<TEvent, TPower, TPimpl, TResult, TReturn> trigger, Map<PropertyHolder, PowerResult<?>> resultMap, TReturn ret) {
+        RPGItemsPowersPostFireEvent<TEvent, TPower, TPimpl, TResult, TReturn> postFire = new RPGItemsPowersPostFireEvent<>(player, itemStack, event, this, trigger, resultMap, ret);
         Bukkit.getServer().getPluginManager().callEvent(postFire);
 
         if (getItemStackDurability(itemStack).map(d -> d <= 0).orElse(false)) {
@@ -1411,15 +1406,13 @@ public class RPGItem {
         return msg;
     }
 
-    private <TEvent extends Event, T extends Pimpl, TResult, TReturn> List<T> getPower(Trigger<TEvent, T, TResult, TReturn> trigger, Player player, ItemStack stack) {
+    @SuppressWarnings("unchecked")
+    private <TEvent extends Event, TPower extends Power, TPimpl extends Pimpl<TPower>, TResult, TReturn> List<TPower> getPower(Trigger<TEvent, TPower, TPimpl, TResult, TReturn> trigger, Player player, ItemStack stack) {
+        RPGItems.logger.info(player.toString());
+        RPGItems.logger.info(stack.toString());
         return getPowers().stream()
                      .filter(p -> p.getTriggers().contains(trigger))
-                     .map(p -> {
-                         Class<? extends Power> cls = p.getClass();
-                         Power proxy = DynamicMethodInterceptor.create(p, player, cls, stack, trigger);
-                         return PowerManager.createImpl(cls, proxy);
-                     })
-                     .map(p -> p.cast(trigger.getPowerClass()))
+                     .map(p -> ((TPower) p)) // TODO
                      .collect(Collectors.toList());
     }
 
@@ -1430,7 +1423,7 @@ public class RPGItem {
         private static Power makeProxy(Power orig, Player player, Class<? extends Power> cls, ItemStack stack, Trigger trigger) {
             Enhancer enhancer = new Enhancer();
             enhancer.setSuperclass(cls);
-            enhancer.setInterfaces(new Class[]{trigger.getPowerClass()});
+            enhancer.setInterfaces(new Class[]{trigger.getPimplClass()});
             enhancer.setCallback(new DynamicMethodInterceptor(orig, player, stack));
             return (Power) enhancer.create();
         }

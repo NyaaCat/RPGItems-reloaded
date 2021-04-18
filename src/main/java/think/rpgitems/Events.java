@@ -487,7 +487,7 @@ public class Events implements Listener {
               .forEach(i -> trigger(p, e, i, trigger));
     }
 
-    <TEvent extends Event, TPower extends Pimpl, TResult, TReturn> TReturn trigger(Player player, TEvent event, ItemStack itemStack, Trigger<TEvent, TPower, TResult, TReturn> trigger) {
+    <TEvent extends Event, TPower extends Power, TPimpl extends Pimpl<TPower>, TResult, TReturn> TReturn trigger(Player player, TEvent event, ItemStack itemStack, Trigger<TEvent, TPower, TPimpl, TResult, TReturn> trigger) {
         Optional<RPGItem> rpgItem = ItemManager.toRPGItem(itemStack);
         return rpgItem.map(r -> r.power(player, itemStack, event, trigger)).orElse(null);
     }
