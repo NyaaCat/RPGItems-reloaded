@@ -376,47 +376,4 @@ public class PowerManager {
     public static <G extends Pimpl, S extends Pimpl> void registerAdapter(Class<G> general, Class<S> specified, Function<G, S> adapter) {
         adapters.put(general, specified, adapter);
     }
-
-    public static <T extends Pimpl> T adaptPower(Pimpl pimpl, Class<T> specified) {
-        List<Class<? extends Pimpl>> generals = Arrays.asList(getMeta(pimpl.getPower().getNamespacedKey()).generalInterface());
-        Set<Class<? extends Pimpl>> statics = Power.getStaticInterfaces(pimpl.getClass());
-        List<Class<? extends Pimpl>> preferences = generals.stream().filter(statics::contains).collect(Collectors.toList());
-
-        for (Class<? extends Pimpl> general : preferences) {
-            if (adapters.contains(general, specified)) {
-                return (T) adapters.get(general, specified).apply(pimpl);
-            }
-        }
-        throw new ClassCastException();
-    }
-
-    public static void registerOverride(NamespacedKey origin, NamespacedKey override) {
-        if (overrides.containsKey(origin)) {
-            throw new IllegalArgumentException("Cannot override a already overridden power: " + origin + " " + override);
-        }
-        Class<? extends Power> originPower = getPower(origin);
-        Class<? extends Power> overridePower = getPower(override);
-        if (originPower == null) {
-            throw new IllegalArgumentException("Overriding not registered power: " + origin);
-        }
-        if (overridePower == null) {
-            throw new IllegalArgumentException("Override not found: " + override);
-        }
-        if (!originPower.isAssignableFrom(overridePower)) {
-            throw new IllegalArgumentException("Not overrideable: " + origin + "@" + originPower.toGenericString() + " " + override + "@" + overridePower.toGenericString());
-        }
-        overrides.put(origin, override);
-    }
-
-    public static Pimpl createImpl(Class<? extends Power> cls, Power p) {
-        if (!cls.isInstance(p)) throw new IllegalArgumentException();
-        Class<? extends Pimpl> pimpl = getMeta(cls).implClass();
-        if (pimpl.equals(Pimpl.class)) throw new IllegalStateException();
-        try {
-            return pimpl.getConstructor(cls).newInstance(p);
-        } catch (InstantiationException | IllegalAccessException | InvocationTargetException | NoSuchMethodException e) {
-            RPGItems.logger.log(Level.SEVERE, "Invalid impl: " + pimpl + " for " + cls, e);
-            throw new RuntimeException(e);
-        }
-    }
 }

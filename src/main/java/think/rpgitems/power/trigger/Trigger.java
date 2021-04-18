@@ -4,6 +4,7 @@ import cat.nyaa.nyaacore.Pair;
 import com.google.common.base.Strings;
 import org.bukkit.entity.Player;
 import org.bukkit.event.Event;
+import org.bukkit.event.entity.EntityDamageByEntityEvent;
 import org.bukkit.inventory.ItemStack;
 import think.rpgitems.power.*;
 
@@ -100,25 +101,26 @@ public abstract class Trigger<TEvent extends Event, TPower extends Power, TPimpl
     @Property
     public int priority;
 
-    @SuppressWarnings("unchecked")
-    Trigger(Class<TEvent> eventClass, Class<TPimpl> pimplClass, Class<TResult> resultClass, Class returnClass, String name) {
+    @SuppressWarnings({"unchecked", "rawtypes"})
+    Trigger(Class<TEvent> eventClass, Class<? extends Pimpl> pimplClass, Class<TResult> resultClass, Class returnClass, String name) {
         this(name, eventClass, pimplClass, resultClass, returnClass);
         register(this);
     }
 
-    public Trigger(String name, Class<TEvent> eventClass, Class<TPimpl> pimplClass, Class<TResult> resultClass, Class<TReturn> returnClass) {
+    @SuppressWarnings({"unchecked", "rawtypes"})
+    public Trigger(String name, Class<TEvent> eventClass, Class<? extends Pimpl> pimplClass, Class<TResult> resultClass, Class<TReturn> returnClass) {
         this.eventClass = eventClass;
-        this.pimplClass = pimplClass;
+        this.pimplClass = (Class<TPimpl>) pimplClass;
         this.resultClass = resultClass;
         this.returnClass = returnClass;
         this.name = name;
         this.base = null;
     }
 
-    @SuppressWarnings("unchecked")
-    Trigger(String name, String base, Class<TEvent> eventClass, Class<TPimpl> pimplClass, Class<TResult> resultClass, Class returnClass) {
+    @SuppressWarnings({"unchecked", "rawtypes"})
+    Trigger(String name, String base, Class<TEvent> eventClass, Class<? extends Pimpl> pimplClass, Class<TResult> resultClass, Class returnClass) {
         this.eventClass = eventClass;
-        this.pimplClass = pimplClass;
+        this.pimplClass = (Class<TPimpl>) pimplClass;
         this.resultClass = resultClass;
         this.returnClass = returnClass;
         this.name = name;
@@ -152,13 +154,13 @@ public abstract class Trigger<TEvent extends Event, TPower extends Power, TPimpl
         return true;
     }
 
-    public abstract PowerResult<TResult> run(TPower power, Player player, ItemStack i, TEvent event);
+    public abstract PowerResult<TResult> run(TPower power, TPimpl pimpl, Player player, ItemStack i, TEvent event);
 
-    public PowerResult<TResult> run(TPower power, Player player, ItemStack i, TEvent event, Object data) {
-        return run(power, player, i, event);
+    public PowerResult<TResult> run(TPower power, TPimpl pimpl, Player player, ItemStack i, TEvent event, Object data) {
+        return run(power, pimpl, player, i, event);
     }
 
-    public PowerResult<TResult> warpResult(PowerResult<Void> overrideResult, Power power, Player player, ItemStack i, TEvent event) {
+    public PowerResult<TResult> warpResult(PowerResult<Void> overrideResult, TPower power, TPimpl pimpl, Player player, ItemStack i, TEvent event) {
         return overrideResult.with(null);
     }
 
