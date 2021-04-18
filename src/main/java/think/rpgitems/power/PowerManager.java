@@ -1,7 +1,6 @@
 package think.rpgitems.power;
 
 import cat.nyaa.nyaacore.Pair;
-import cat.nyaa.nyaacore.utils.ClassPathUtils;
 import com.google.common.collect.BiMap;
 import com.google.common.collect.HashBasedTable;
 import com.google.common.collect.HashBiMap;

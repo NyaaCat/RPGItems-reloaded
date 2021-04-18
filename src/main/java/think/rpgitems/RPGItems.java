@@ -14,6 +14,8 @@ import org.bukkit.plugin.Plugin;
 import org.bukkit.plugin.PluginDescriptionFile;
 import org.bukkit.plugin.java.JavaPlugin;
 import org.bukkit.plugin.java.JavaPluginLoader;
+import org.spongepowered.asm.launch.MixinBootstrap;
+import org.spongepowered.asm.mixin.MixinEnvironment;
 import think.rpgitems.data.Font;
 import think.rpgitems.item.ItemManager;
 import think.rpgitems.power.*;
@@ -26,10 +28,15 @@ import java.lang.reflect.InvocationHandler;
 import java.lang.reflect.Proxy;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
+import java.util.Objects;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+import org.spongepowered.asm.mixin.transformer.FabricMixinTransformerProxy;
+import org.spongepowered.asm.mixin.transformer.IMixinTransformer;
 
 public class RPGItems extends JavaPlugin {
 
@@ -40,8 +47,10 @@ public class RPGItems extends JavaPlugin {
 
     public static Logger logger;
     public static RPGItems plugin;
+    public static IMixinTransformer transformer;
     List<Plugin> managedPlugins = new ArrayList<>();
     public Configuration cfg;
+    private final Map<Object, Object> properties = new ConcurrentHashMap<>();
 
     //constructors are used in tests.
     public RPGItems() {
@@ -97,6 +106,12 @@ public class RPGItems extends JavaPlugin {
                                                  }
                                                  return null;
                                              }));
+
+        MixinBootstrap.init();
+        MixinEnvironment.init(MixinEnvironment.Phase.DEFAULT);
+        transformer = new FabricMixinTransformerProxy().getTransformer();
+        logger.warning(Objects.toString(transformer));
+
         loadPowers();
         saveDefaultConfig();
         Font.load();
@@ -178,6 +193,10 @@ public class RPGItems extends JavaPlugin {
         getCommand("rpgitems").setTabCompleter(userCommandHandler);
         getServer().getPluginManager().registerEvents(new ServerLoadListener(), this);
         managedPlugins.forEach(Bukkit.getPluginManager()::enablePlugin);
+    }
+
+    public Map<Object, Object> getProperties() {
+        return properties;
     }
 
     public static int getVersion() {

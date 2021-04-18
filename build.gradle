@@ -50,13 +50,14 @@ repositories {
     // mavenLocal()
     jcenter()
     mavenCentral()
+    maven { name 'Fabric'; url 'https://maven.fabricmc.net/'  }
     maven { name 'Spigot'; url 'https://hub.spigotmc.org/nexus/content/repositories/snapshots/' }
     maven { name 'Sonatype'; url 'https://oss.sonatype.org/content/groups/public' }
     maven { name 'sk89q'; url 'http://maven.sk89q.com/artifactory/repo/' }
     maven { name 'vault-repo'; url 'https://jitpack.io' }
     maven { name 'NyaaCat'; url 'https://ci.nyaacat.com/maven/' }
     maven { name 'EssentialsX'; url 'https://ci.ender.zone/plugin/repository/everything' }
-    maven { name 'aikar';     url 'https://repo.aikar.co/content/groups/aikar/' }
+    maven { name 'aikar'; url 'https://repo.aikar.co/content/groups/aikar/' }
 }
 
 shadowJar {
@@ -88,6 +89,16 @@ dependencies {
     implementation('net.milkbowl.vault:VaultAPI:1.7') {
         transitive = false
     }
+    implementation('net.fabricmc:sponge-mixin:0.9.2+mixin.0.8.2') {
+        exclude module: 'launchwrapper'
+        exclude module: 'guava'
+    }
+    shadow 'net.fabricmc:sponge-mixin:0.9.2+mixin.0.8.2'
+    shadow 'org.ow2.asm:asm:7.2'
+    shadow 'org.ow2.asm:asm-analysis:7.2'
+    shadow 'org.ow2.asm:asm-commons:7.2'
+    shadow 'org.ow2.asm:asm-tree:7.2'
+    shadow 'org.ow2.asm:asm-util:7.2'
 }
 
 tasks.withType(ProcessResources) {
