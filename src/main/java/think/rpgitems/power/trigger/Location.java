@@ -3,10 +3,12 @@ package think.rpgitems.power.trigger;
 import org.bukkit.entity.Player;
 import org.bukkit.event.Event;
 import org.bukkit.inventory.ItemStack;
+import think.rpgitems.power.Power;
 import think.rpgitems.power.PowerLocation;
 import think.rpgitems.power.PowerResult;
 
-class Location extends Trigger<Event, PowerLocation, Void, Void> {
+class Location<TPower extends Power>
+    extends Trigger<Event, TPower, PowerLocation<TPower>, Void, Void> {
   Location() {
     super(Event.class, PowerLocation.class, Void.class, Void.class, "LOCATION");
   }
@@ -16,13 +18,19 @@ class Location extends Trigger<Event, PowerLocation, Void, Void> {
   }
 
   @Override
-  public PowerResult<Void> run(PowerLocation power, Player player, ItemStack i, Event event) {
+  public PowerResult<Void> run(
+      TPower power, PowerLocation<TPower> pimpl, Player player, ItemStack i, Event event) {
     throw new IllegalStateException();
   }
 
   @Override
   public PowerResult<Void> run(
-      PowerLocation power, Player player, ItemStack i, Event event, Object data) {
-    return power.fire(player, i, (org.bukkit.Location) data);
+      TPower power,
+      PowerLocation<TPower> pimpl,
+      Player player,
+      ItemStack i,
+      Event event,
+      Object data) {
+    return pimpl.fire(power, player, i, (org.bukkit.Location) data);
   }
 }

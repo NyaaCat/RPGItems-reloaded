@@ -6,11 +6,13 @@ import java.util.Optional;
 import org.bukkit.entity.Player;
 import org.bukkit.event.entity.EntityDamageEvent;
 import org.bukkit.inventory.ItemStack;
+import think.rpgitems.power.Power;
 import think.rpgitems.power.PowerHitTaken;
 import think.rpgitems.power.PowerResult;
 import think.rpgitems.power.Property;
 
-class HitTaken extends Trigger<EntityDamageEvent, PowerHitTaken, Double, Optional<Double>> {
+class HitTaken<TPower extends Power>
+    extends Trigger<EntityDamageEvent, TPower, PowerHitTaken<TPower>, Double, Optional<Double>> {
 
   @Property public double minDamage = Double.NEGATIVE_INFINITY;
 
@@ -43,7 +45,8 @@ class HitTaken extends Trigger<EntityDamageEvent, PowerHitTaken, Double, Optiona
   @Override
   public PowerResult<Double> warpResult(
       PowerResult<Void> overrideResult,
-      PowerHitTaken power,
+      TPower power,
+      PowerHitTaken<TPower> pimpl,
       Player player,
       ItemStack i,
       EntityDamageEvent event) {
@@ -52,8 +55,12 @@ class HitTaken extends Trigger<EntityDamageEvent, PowerHitTaken, Double, Optiona
 
   @Override
   public PowerResult<Double> run(
-      PowerHitTaken power, Player player, ItemStack i, EntityDamageEvent event) {
-    return power.takeHit(player, i, event.getDamage(), event);
+      TPower power,
+      PowerHitTaken<TPower> pimpl,
+      Player player,
+      ItemStack i,
+      EntityDamageEvent event) {
+    return pimpl.takeHit(power, player, i, event.getDamage(), event);
   }
 
   @Override

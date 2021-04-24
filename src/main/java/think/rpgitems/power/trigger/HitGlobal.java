@@ -7,12 +7,13 @@ import org.bukkit.entity.LivingEntity;
 import org.bukkit.entity.Player;
 import org.bukkit.event.entity.EntityDamageByEntityEvent;
 import org.bukkit.inventory.ItemStack;
+import think.rpgitems.power.Power;
 import think.rpgitems.power.PowerHit;
 import think.rpgitems.power.PowerResult;
 import think.rpgitems.power.Property;
 
-public class HitGlobal
-    extends Trigger<EntityDamageByEntityEvent, PowerHit, Double, Optional<Double>> {
+public class HitGlobal<TPower extends Power>
+    extends Trigger<EntityDamageByEntityEvent, TPower, PowerHit<TPower>, Double, Optional<Double>> {
 
   @Property public double minDamage = Double.NEGATIVE_INFINITY;
 
@@ -40,7 +41,8 @@ public class HitGlobal
   @Override
   public PowerResult<Double> warpResult(
       PowerResult<Void> overrideResult,
-      PowerHit power,
+      TPower power,
+      PowerHit<TPower> pimpl,
       Player player,
       ItemStack i,
       EntityDamageByEntityEvent event) {
@@ -49,8 +51,12 @@ public class HitGlobal
 
   @Override
   public PowerResult<Double> run(
-      PowerHit power, Player player, ItemStack i, EntityDamageByEntityEvent event) {
-    return power.hit(player, i, (LivingEntity) event.getEntity(), event.getDamage(), event);
+      TPower power,
+      PowerHit<TPower> pimpl,
+      Player player,
+      ItemStack i,
+      EntityDamageByEntityEvent event) {
+    return pimpl.hit(power, player, i, (LivingEntity) event.getEntity(), event.getDamage(), event);
   }
 
   @Override

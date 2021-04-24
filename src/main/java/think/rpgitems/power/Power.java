@@ -95,13 +95,13 @@ public interface Power extends PropertyHolder, TagHolder {
    * @param cls Class of Power
    * @return All static and dynamic implemented interfaces
    */
-  static Set<Class<? extends Pimpl>> getDynamicInterfaces(Class<? extends Power> cls) {
+  static Set<Class<? extends Pimpl>> getDynamicInterfaces(Class<? extends Pimpl> cls) {
     return getStaticInterfaces(cls).stream()
         .flatMap(i -> Stream.concat(Stream.of(i), PowerManager.adapters.row(i).keySet().stream()))
         .collect(Collectors.toSet());
   }
 
-  static Set<Trigger> getDefaultTriggers(Class<? extends Power> cls) {
+  static Set<Trigger> getDefaultTriggers(Class<? extends Pimpl> cls) {
     cls = getUserClass(cls);
     Meta annotation = Objects.requireNonNull(cls.getAnnotation(Meta.class));
     if (annotation.defaultTrigger().length > 0) {

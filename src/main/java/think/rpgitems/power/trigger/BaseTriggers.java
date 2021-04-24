@@ -14,50 +14,66 @@ import think.rpgitems.event.BeamHitEntityEvent;
 import think.rpgitems.power.*;
 
 public final class BaseTriggers {
-  public static final Trigger<EntityShootBowEvent, PowerBowShoot, Float, Optional<Float>>
-      BOW_SHOOT = new BowShoot();
-  public static final Trigger<EntityDamageByEntityEvent, PowerHit, Double, Optional<Double>> HIT =
-      new Hit();
-  public static final Trigger<EntityDamageByEntityEvent, PowerHit, Double, Optional<Double>>
+  public static final Trigger<
+          EntityShootBowEvent, Power, PowerBowShoot<Power>, Float, Optional<Float>>
+      BOW_SHOOT = new BowShoot<>();
+  public static final Trigger<
+          EntityDamageByEntityEvent, Power, PowerHit<Power>, Double, Optional<Double>>
+      HIT = new Hit<>();
+  public static final Trigger<
+          EntityDamageByEntityEvent, Power, PowerHit<Power>, Double, Optional<Double>>
       HIT_GLOBAL = new HitGlobal();
-  public static final Trigger<ProjectileHitEvent, PowerProjectileHit, Void, Void> PROJECTILE_HIT =
-      new ProjectileHit();
-  public static final Trigger<EntityDamageEvent, PowerHitTaken, Double, Optional<Double>>
+  public static final Trigger<ProjectileHitEvent, Power, PowerProjectileHit<Power>, Void, Void>
+      PROJECTILE_HIT = new ProjectileHit();
+  public static final Trigger<
+          EntityDamageEvent, Power, PowerHitTaken<Power>, Double, Optional<Double>>
       HIT_TAKEN = new HitTaken();
-  public static final Trigger<EntityDamageEvent, PowerHitTaken, Void, Optional<Void>> DYING =
-      new Dying();
-  public static final Trigger<EntityDamageEvent, PowerHurt, Void, Void> HURT = new Hurt();
-  public static final Trigger<PlayerInteractEvent, PowerLeftClick, Void, Void> LEFT_CLICK =
-      new LeftClick();
-  public static final Trigger<PlayerInteractEvent, PowerRightClick, Void, Void> RIGHT_CLICK =
-      new RightClick();
-  public static final Trigger<PlayerInteractEvent, PowerOffhandClick, Void, Void> OFFHAND_CLICK =
-      new OffhandClick();
-  public static final Trigger<PlayerToggleSneakEvent, PowerSneak, Void, Void> SNEAK = new Sneak();
-  public static final Trigger<PlayerToggleSprintEvent, PowerSprint, Void, Void> SPRINT =
-      new Sprint();
-  public static final Trigger<PlayerSwapHandItemsEvent, PowerMainhandItem, Boolean, Boolean>
+  public static final Trigger<EntityDamageEvent, Power, PowerHitTaken<Power>, Void, Optional<Void>>
+      DYING = new Dying();
+  public static final Trigger<EntityDamageEvent, Power, PowerHurt<Power>, Void, Void> HURT =
+      new Hurt();
+  public static final Trigger<PlayerInteractEvent, Power, PowerLeftClick<Power>, Void, Void>
+      LEFT_CLICK = new LeftClick();
+  public static final Trigger<PlayerInteractEvent, Power, PowerRightClick<Power>, Void, Void>
+      RIGHT_CLICK = new RightClick();
+  public static final Trigger<PlayerInteractEvent, Power, PowerOffhandClick<Power>, Void, Void>
+      OFFHAND_CLICK = new OffhandClick();
+  public static final Trigger<PlayerToggleSneakEvent, Power, PowerSneak<Power>, Void, Void> SNEAK =
+      new Sneak();
+  public static final Trigger<PlayerToggleSprintEvent, Power, PowerSprint<Power>, Void, Void>
+      SPRINT = new Sprint();
+  public static final Trigger<
+          PlayerSwapHandItemsEvent, Power, PowerMainhandItem<Power>, Boolean, Boolean>
       SWAP_TO_OFFHAND = new SwapToOffhand();
-  public static final Trigger<PlayerSwapHandItemsEvent, PowerOffhandItem, Boolean, Boolean>
+  public static final Trigger<
+          PlayerSwapHandItemsEvent, Power, PowerOffhandItem<Power>, Boolean, Boolean>
       SWAP_TO_MAINHAND = new SwapToMainhand();
-  public static final Trigger<InventoryClickEvent, PowerMainhandItem, Boolean, Boolean>
+  public static final Trigger<
+          InventoryClickEvent, Power, PowerMainhandItem<Power>, Boolean, Boolean>
       PLACE_OFF_HAND = new PlaceOffhand();
-  public static final Trigger<InventoryClickEvent, PowerOffhandItem, Boolean, Boolean>
+  public static final Trigger<InventoryClickEvent, Power, PowerOffhandItem<Power>, Boolean, Boolean>
       PICKUP_OFF_HAND = new PickupOffhand();
-  public static final Trigger<Event, PowerSneaking, Void, Void> SNEAKING = new Sneaking();
-  public static final Trigger<ProjectileLaunchEvent, PowerProjectileLaunch, Void, Void>
+  public static final Trigger<Event, Power, PowerSneaking<Power>, Void, Void> SNEAKING =
+      new Sneaking();
+  public static final Trigger<
+          ProjectileLaunchEvent, Power, PowerProjectileLaunch<Power>, Void, Void>
       LAUNCH_PROJECTILE = new ProjectileLaunch();
-  public static final Trigger<Event, PowerTick, Void, Void> TICK = new Tick();
-  public static final Trigger<Event, PowerAttachment, Void, Void> ATTACHMENT = new Attachment();
-  public static final Trigger<Event, PowerLocation, Void, Void> LOCATION = new Location();
-  public static final Trigger<Event, PowerLivingEntity, Void, Void> LIVINGENTITY =
+  public static final Trigger<Event, Power, PowerTick<Power>, Void, Void> TICK = new Tick();
+  public static final Trigger<Event, Power, PowerAttachment<Power>, Void, Void> ATTACHMENT =
+      new Attachment();
+  public static final Trigger<Event, Power, PowerLocation<Power>, Void, Void> LOCATION =
+      new Location<>();
+  public static final Trigger<Event, Power, PowerLivingEntity<Power>, Void, Void> LIVINGENTITY =
       new LivingEntity();
-  public static final Trigger<Event, PowerTick, Void, Void> TICK_OFFHAND = new TickOffhand();
-  public static final Trigger<BeamHitBlockEvent, PowerBeamHit, Void, Void> BEAM_HIT_BLOCK =
-      new BeamHit<>(BeamHitBlockEvent.class, Void.class, Void.class, "BEAM_HIT_BLOCK");
-  public static final Trigger<BeamHitEntityEvent, PowerBeamHit, Double, Optional<Double>>
+  public static final Trigger<Event, Power, PowerTick<Power>, Void, Void> TICK_OFFHAND =
+      new TickOffhand();
+  public static final Trigger<BeamHitBlockEvent, Power, PowerBeamHit<Power>, Void, Void>
+      BEAM_HIT_BLOCK =
+          new BeamHit<>(BeamHitBlockEvent.class, Void.class, Void.class, "BEAM_HIT_BLOCK");
+  public static final Trigger<
+          BeamHitEntityEvent, Power, PowerBeamHit<Power>, Double, Optional<Double>>
       BEAM_HIT_ENTITY =
           new BeamHit<>(BeamHitEntityEvent.class, Double.class, Optional.class, "BEAM_HIT_ENTITY");
-  public static final Trigger<BeamEndEvent, PowerBeamHit, Double, Optional<Double>> BEAM_END =
-      new BeamHit<>(BeamEndEvent.class, Double.class, Optional.class, "BEAM_END");
+  public static final Trigger<BeamEndEvent, Power, PowerBeamHit<Power>, Double, Optional<Double>>
+      BEAM_END = new BeamHit<>(BeamEndEvent.class, Double.class, Optional.class, "BEAM_END");
 }

@@ -9,6 +9,6 @@ public interface Pimpl<P extends Power> {
     if (powerClass.isInstance(this)) {
       return powerClass.cast(this);
     }
-    return PowerManager.adaptPower(this, powerClass);
+    return null; // FIXME
   }
 }

@@ -1032,7 +1032,7 @@ public class RPGItem {
           if (power.requiredContext() != null) {
             result = handleContext(player, i, event, trigger, power);
           } else {
-            result = trigger.run(power, player, i, event, context);
+            result = trigger.run(power, null, player, i, event, context);
           }
           resultMap.put(power, result);
         }
@@ -1059,9 +1059,7 @@ public class RPGItem {
           TEvent event,
           Trigger<TEvent, TPower, TPimpl, TResult, TReturn> trigger,
           Object context) {
-    this.triggers
-        .entrySet()
-        .parallelStream()
+    this.triggers.entrySet().parallelStream()
         .filter(e -> trigger.getClass().isInstance(e.getValue()))
         .sorted(Comparator.comparing(en -> en.getValue().getPriority()))
         .filter(e -> e.getValue().check(player, i, event))
@@ -1103,8 +1101,8 @@ public class RPGItem {
     if (context instanceof Location) {
       if (power instanceof PowerLocation) {
         PowerResult<Void> overrideResult =
-            BaseTriggers.LOCATION.run((PowerLocation) power, player, i, event, context);
-        result = trigger.warpResult(overrideResult, power, player, i, event);
+            BaseTriggers.LOCATION.run(power, null, player, i, event, context);
+        result = trigger.warpResult(overrideResult, power, null, player, i, event);
       } else {
         throw new IllegalStateException();
       }
@@ -1112,8 +1110,8 @@ public class RPGItem {
       Object key = ((Pair) context).getKey();
       if (key instanceof LivingEntity) {
         PowerResult<Void> overrideResult =
-            BaseTriggers.LIVINGENTITY.run((PowerLivingEntity) power, player, i, event, context);
-        result = trigger.warpResult(overrideResult, power, player, i, event);
+            BaseTriggers.LIVINGENTITY.run(power, null, player, i, event, context);
+        result = trigger.warpResult(overrideResult, power, null, player, i, event);
       } else {
         throw new IllegalStateException();
       }

@@ -3,10 +3,12 @@ package think.rpgitems.power.trigger;
 import org.bukkit.entity.Player;
 import org.bukkit.event.inventory.InventoryClickEvent;
 import org.bukkit.inventory.ItemStack;
+import think.rpgitems.power.Power;
 import think.rpgitems.power.PowerOffhandItem;
 import think.rpgitems.power.PowerResult;
 
-class PickupOffhand extends Trigger<InventoryClickEvent, PowerOffhandItem, Boolean, Boolean> {
+class PickupOffhand<TPower extends Power>
+    extends Trigger<InventoryClickEvent, TPower, PowerOffhandItem<TPower>, Boolean, Boolean> {
   PickupOffhand() {
     super(
         InventoryClickEvent.class,
@@ -39,7 +41,8 @@ class PickupOffhand extends Trigger<InventoryClickEvent, PowerOffhandItem, Boole
   @Override
   public PowerResult<Boolean> warpResult(
       PowerResult<Void> overrideResult,
-      PowerOffhandItem power,
+      TPower power,
+      PowerOffhandItem<TPower> pimpl,
       Player player,
       ItemStack i,
       InventoryClickEvent event) {
@@ -48,7 +51,11 @@ class PickupOffhand extends Trigger<InventoryClickEvent, PowerOffhandItem, Boole
 
   @Override
   public PowerResult<Boolean> run(
-      PowerOffhandItem power, Player player, ItemStack i, InventoryClickEvent event) {
-    return power.pickupOffhand(player, i, event);
+      TPower power,
+      PowerOffhandItem<TPower> pimpl,
+      Player player,
+      ItemStack i,
+      InventoryClickEvent event) {
+    return pimpl.pickupOffhand(power, player, i, event);
   }
 }

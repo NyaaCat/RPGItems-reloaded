@@ -3,10 +3,12 @@ package think.rpgitems.power.trigger;
 import org.bukkit.entity.Player;
 import org.bukkit.event.player.PlayerSwapHandItemsEvent;
 import org.bukkit.inventory.ItemStack;
+import think.rpgitems.power.Power;
 import think.rpgitems.power.PowerOffhandItem;
 import think.rpgitems.power.PowerResult;
 
-class SwapToMainhand extends Trigger<PlayerSwapHandItemsEvent, PowerOffhandItem, Boolean, Boolean> {
+class SwapToMainhand<TPower extends Power>
+    extends Trigger<PlayerSwapHandItemsEvent, TPower, PowerOffhandItem<TPower>, Boolean, Boolean> {
   SwapToMainhand() {
     super(
         PlayerSwapHandItemsEvent.class,
@@ -39,7 +41,8 @@ class SwapToMainhand extends Trigger<PlayerSwapHandItemsEvent, PowerOffhandItem,
   @Override
   public PowerResult<Boolean> warpResult(
       PowerResult<Void> overrideResult,
-      PowerOffhandItem power,
+      TPower power,
+      PowerOffhandItem<TPower> pimpl,
       Player player,
       ItemStack i,
       PlayerSwapHandItemsEvent event) {
@@ -48,7 +51,11 @@ class SwapToMainhand extends Trigger<PlayerSwapHandItemsEvent, PowerOffhandItem,
 
   @Override
   public PowerResult<Boolean> run(
-      PowerOffhandItem power, Player player, ItemStack i, PlayerSwapHandItemsEvent event) {
-    return power.swapToMainhand(player, i, event);
+      TPower power,
+      PowerOffhandItem<TPower> pimpl,
+      Player player,
+      ItemStack i,
+      PlayerSwapHandItemsEvent event) {
+    return pimpl.swapToMainhand(power, player, i, event);
   }
 }

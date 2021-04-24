@@ -4,11 +4,13 @@ import java.util.Optional;
 import org.bukkit.entity.Player;
 import org.bukkit.event.entity.EntityDamageEvent;
 import org.bukkit.inventory.ItemStack;
+import think.rpgitems.power.Power;
 import think.rpgitems.power.PowerHitTaken;
 import think.rpgitems.power.PowerResult;
 import think.rpgitems.power.Property;
 
-public class Dying extends Trigger<EntityDamageEvent, PowerHitTaken, Void, Optional<Void>> {
+public class Dying<TPower extends Power>
+    extends Trigger<EntityDamageEvent, TPower, PowerHitTaken<TPower>, Void, Optional<Void>> {
 
   @Property public double minDamage = Double.NEGATIVE_INFINITY;
 
@@ -35,7 +37,8 @@ public class Dying extends Trigger<EntityDamageEvent, PowerHitTaken, Void, Optio
   @Override
   public PowerResult<Void> warpResult(
       PowerResult<Void> overrideResult,
-      PowerHitTaken power,
+      TPower power,
+      PowerHitTaken<TPower> pimpl,
       Player player,
       ItemStack i,
       EntityDamageEvent event) {
@@ -44,8 +47,12 @@ public class Dying extends Trigger<EntityDamageEvent, PowerHitTaken, Void, Optio
 
   @Override
   public PowerResult<Void> run(
-      PowerHitTaken power, Player player, ItemStack i, EntityDamageEvent event) {
-    return power.takeHit(player, i, event.getDamage(), event).with(null);
+      TPower power,
+      PowerHitTaken<TPower> pimpl,
+      Player player,
+      ItemStack i,
+      EntityDamageEvent event) {
+    return pimpl.takeHit(power, player, i, event.getDamage(), event).with(null);
   }
 
   @Override

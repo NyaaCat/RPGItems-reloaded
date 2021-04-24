@@ -3,10 +3,12 @@ package think.rpgitems.power.trigger;
 import org.bukkit.entity.Player;
 import org.bukkit.event.entity.ProjectileHitEvent;
 import org.bukkit.inventory.ItemStack;
+import think.rpgitems.power.Power;
 import think.rpgitems.power.PowerProjectileHit;
 import think.rpgitems.power.PowerResult;
 
-class ProjectileHit extends Trigger<ProjectileHitEvent, PowerProjectileHit, Void, Void> {
+class ProjectileHit<TPower extends Power>
+    extends Trigger<ProjectileHitEvent, TPower, PowerProjectileHit<TPower>, Void, Void> {
   ProjectileHit() {
     super(
         ProjectileHitEvent.class,
@@ -28,7 +30,11 @@ class ProjectileHit extends Trigger<ProjectileHitEvent, PowerProjectileHit, Void
 
   @Override
   public PowerResult<Void> run(
-      PowerProjectileHit power, Player player, ItemStack i, ProjectileHitEvent event) {
-    return power.projectileHit(player, i, event);
+      TPower power,
+      PowerProjectileHit<TPower> pimpl,
+      Player player,
+      ItemStack i,
+      ProjectileHitEvent event) {
+    return pimpl.projectileHit(power, player, i, event);
   }
 }

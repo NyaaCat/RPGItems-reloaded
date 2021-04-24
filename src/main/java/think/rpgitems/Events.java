@@ -39,10 +39,7 @@ import think.rpgitems.event.BeamHitBlockEvent;
 import think.rpgitems.event.BeamHitEntityEvent;
 import think.rpgitems.item.ItemManager;
 import think.rpgitems.item.RPGItem;
-import think.rpgitems.power.Pimpl;
-import think.rpgitems.power.PowerSneak;
-import think.rpgitems.power.PowerSprint;
-import think.rpgitems.power.Utils;
+import think.rpgitems.power.*;
 import think.rpgitems.power.marker.Ranged;
 import think.rpgitems.power.trigger.BaseTriggers;
 import think.rpgitems.power.trigger.Trigger;
@@ -504,7 +501,8 @@ public class Events implements Listener {
       return;
     }
     Player p = e.getPlayer();
-    Trigger<PlayerToggleSneakEvent, PowerSneak, Void, Void> trigger = BaseTriggers.SNEAK;
+    Trigger<PlayerToggleSneakEvent, Power, PowerSneak<Power>, Void, Void> trigger =
+        BaseTriggers.SNEAK;
 
     trigger(p, e, p.getInventory().getItemInMainHand(), trigger);
 
@@ -528,7 +526,8 @@ public class Events implements Listener {
       return;
     }
     Player p = e.getPlayer();
-    Trigger<PlayerToggleSprintEvent, PowerSprint, Void, Void> sprint = BaseTriggers.SPRINT;
+    Trigger<PlayerToggleSprintEvent, Power, PowerSprint<Power>, Void, Void> sprint =
+        BaseTriggers.SPRINT;
 
     trigger(p, e, p.getInventory().getItemInMainHand(), sprint);
     ItemStack[] armorContents = p.getInventory().getArmorContents();

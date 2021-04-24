@@ -12,7 +12,8 @@ public abstract class BasePower extends BasePropertyHolder implements Serializab
 
   @Property
   @AcceptedValue(preset = Preset.TRIGGERS)
-  public Set<Trigger> triggers = Power.getDefaultTriggers(this.getClass());
+  public Set<Trigger> triggers =
+      Power.getDefaultTriggers(PowerManager.getMeta(this.getNamespacedKey()).implClass());
 
   @Property public Set<String> selectors = new HashSet<>();
   @Property public Set<String> conditions = new HashSet<>();

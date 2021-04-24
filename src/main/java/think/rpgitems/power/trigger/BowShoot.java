@@ -6,11 +6,13 @@ import java.util.Optional;
 import org.bukkit.entity.Player;
 import org.bukkit.event.entity.EntityShootBowEvent;
 import org.bukkit.inventory.ItemStack;
+import think.rpgitems.power.Power;
 import think.rpgitems.power.PowerBowShoot;
 import think.rpgitems.power.PowerResult;
 import think.rpgitems.power.Property;
 
-class BowShoot extends Trigger<EntityShootBowEvent, PowerBowShoot, Float, Optional<Float>> {
+class BowShoot<TPower extends Power>
+    extends Trigger<EntityShootBowEvent, TPower, PowerBowShoot<TPower>, Float, Optional<Float>> {
 
   @Property public float minForce = Float.NEGATIVE_INFINITY;
 
@@ -43,7 +45,8 @@ class BowShoot extends Trigger<EntityShootBowEvent, PowerBowShoot, Float, Option
   @Override
   public PowerResult<Float> warpResult(
       PowerResult<Void> overrideResult,
-      PowerBowShoot power,
+      TPower power,
+      PowerBowShoot<TPower> pimpl,
       Player player,
       ItemStack i,
       EntityShootBowEvent event) {
@@ -52,8 +55,12 @@ class BowShoot extends Trigger<EntityShootBowEvent, PowerBowShoot, Float, Option
 
   @Override
   public PowerResult<Float> run(
-      PowerBowShoot power, Player player, ItemStack i, EntityShootBowEvent event) {
-    return power.bowShoot(player, i, event);
+      TPower power,
+      PowerBowShoot<TPower> pimpl,
+      Player player,
+      ItemStack i,
+      EntityShootBowEvent event) {
+    return pimpl.bowShoot(power, player, i, event);
   }
 
   @Override
