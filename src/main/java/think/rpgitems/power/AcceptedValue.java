@@ -8,7 +8,7 @@ import java.lang.annotation.Target;
 @Retention(RetentionPolicy.RUNTIME)
 @Target(ElementType.FIELD)
 public @interface AcceptedValue {
-    String[] value() default {};
+  String[] value() default {};
 
-    Preset preset() default Preset.NONE;
+  Preset preset() default Preset.NONE;
 }

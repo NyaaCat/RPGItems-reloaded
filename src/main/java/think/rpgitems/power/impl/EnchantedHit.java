@@ -10,77 +10,79 @@ import think.rpgitems.power.*;
 @Meta(defaultTrigger = "HIT", implClass = EnchantedHit.Impl.class)
 public class EnchantedHit extends BasePower {
 
-    @Property
-    public Mode mode = Mode.ADDITION;
+  @Property public Mode mode = Mode.ADDITION;
 
-    @Property
-    public double amountPerLevel = 1;
+  @Property public double amountPerLevel = 1;
 
-    @Property
-    public String display;
+  @Property public String display;
 
-    @Property
-    @AcceptedValue(preset = Preset.ENCHANTMENT)
-    public Enchantment enchantmentType = Enchantment.ARROW_DAMAGE;
+  @Property
+  @AcceptedValue(preset = Preset.ENCHANTMENT)
+  public Enchantment enchantmentType = Enchantment.ARROW_DAMAGE;
 
-    @Property
-    public boolean setBaseDamage = false;
+  @Property public boolean setBaseDamage = false;
 
-    public double getAmountPerLevel() {
-        return amountPerLevel;
-    }
+  public double getAmountPerLevel() {
+    return amountPerLevel;
+  }
 
-    public Enchantment getEnchantmentType() {
-        return enchantmentType;
-    }
+  public Enchantment getEnchantmentType() {
+    return enchantmentType;
+  }
 
-    public Mode getMode() {
-        return mode;
+  public Mode getMode() {
+    return mode;
+  }
+
+  @Override
+  public String getName() {
+    return "enchantedhit";
+  }
+
+  @Override
+  public String displayText() {
+    return getDisplay();
+  }
+
+  public String getDisplay() {
+    return display;
+  }
+
+  public boolean isSetBaseDamage() {
+    return setBaseDamage;
+  }
+
+  private enum Mode {
+    ADDITION,
+    MULTIPLICATION,
+  }
+
+  public static class Impl implements PowerHit<EnchantedHit> {
+    @Override
+    public PowerResult<Double> hit(
+        EnchantedHit power,
+        Player player,
+        ItemStack stack,
+        LivingEntity entity,
+        double damage,
+        EntityDamageByEntityEvent event) {
+      int enchLevel = stack.getEnchantmentLevel(power.getEnchantmentType());
+      if (power.getMode() == Mode.ADDITION) {
+        damage += (enchLevel * power.getAmountPerLevel());
+      }
+      if (power.getMode() == Mode.MULTIPLICATION) {
+        damage *= Math.pow(power.getAmountPerLevel(), enchLevel);
+      }
+      if (damage < 0) damage = 0;
+      if (power.isSetBaseDamage()) {
+        event.setDamage(damage);
+      }
+      return PowerResult.ok(damage);
     }
 
     @Override
-    public String getName() {
-        return "enchantedhit";
+    public Class<? extends EnchantedHit> getPowerClass() {
+      return EnchantedHit.class;
     }
-
-    @Override
-    public String displayText() {
-        return getDisplay();
-    }
-
-    public String getDisplay() {
-        return display;
-    }
-
-    public boolean isSetBaseDamage() {
-        return setBaseDamage;
-    }
-
-    private enum Mode {
-        ADDITION,
-        MULTIPLICATION,
-    }
-
-    public static class Impl implements PowerHit<EnchantedHit> {
-        @Override
-        public PowerResult<Double> hit(EnchantedHit power, Player player, ItemStack stack, LivingEntity entity, double damage, EntityDamageByEntityEvent event) {
-            int enchLevel = stack.getEnchantmentLevel(power.getEnchantmentType());
-            if (power.getMode() == Mode.ADDITION) {
-                damage += (enchLevel * power.getAmountPerLevel());
-            }
-            if (power.getMode() == Mode.MULTIPLICATION) {
-                damage *= Math.pow(power.getAmountPerLevel(), enchLevel);
-            }
-            if (damage < 0) damage = 0;
-            if (power.isSetBaseDamage()) {
-                event.setDamage(damage);
-            }
-            return PowerResult.ok(damage);
-        }
-
-        @Override
-        public Class<? extends EnchantedHit> getPowerClass() {
-            return EnchantedHit.class;
-        }
-    }
+  }
 }

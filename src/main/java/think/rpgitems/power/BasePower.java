@@ -1,95 +1,87 @@
 package think.rpgitems.power;
 
-import think.rpgitems.power.*;
-import think.rpgitems.power.trigger.Trigger;
-
 import java.io.Serializable;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.Set;
+import think.rpgitems.power.trigger.Trigger;
 
-/**
- * Base class containing common methods and fields.
- */
+/** Base class containing common methods and fields. */
 public abstract class BasePower extends BasePropertyHolder implements Serializable, Power {
-    @Property
-    public String displayName;
-    @Property
-    @AcceptedValue(preset = Preset.TRIGGERS)
-    public Set<Trigger> triggers = Power.getDefaultTriggers(this.getClass());
-    @Property
-    public Set<String> selectors = new HashSet<>();
-    @Property
-    public Set<String> conditions = new HashSet<>();
-    @Property
-    public String requiredContext;
-    @Property
-    public String powerId = "";
-    @Property
-    public Set<String> powerTags = new HashSet<>();
+  @Property public String displayName;
 
-    @Override
-    public String displayName() {
-        return displayName;
-    }
+  @Property
+  @AcceptedValue(preset = Preset.TRIGGERS)
+  public Set<Trigger> triggers = Power.getDefaultTriggers(this.getClass());
 
-    @Override
-    public Set<Trigger> getTriggers() {
-        return Collections.unmodifiableSet(triggers);
-    }
+  @Property public Set<String> selectors = new HashSet<>();
+  @Property public Set<String> conditions = new HashSet<>();
+  @Property public String requiredContext;
+  @Property public String powerId = "";
+  @Property public Set<String> powerTags = new HashSet<>();
 
-    @Override
-    public Set<String> getSelectors() {
-        return Collections.unmodifiableSet(selectors);
-    }
+  @Override
+  public String displayName() {
+    return displayName;
+  }
 
-    @Override
-    public Set<String> getConditions() {
-        return Collections.unmodifiableSet(conditions);
-    }
+  @Override
+  public Set<Trigger> getTriggers() {
+    return Collections.unmodifiableSet(triggers);
+  }
 
-    public String getPowerId() {
-        return powerId;
-    }
+  @Override
+  public Set<String> getSelectors() {
+    return Collections.unmodifiableSet(selectors);
+  }
 
-    public void setPowerId(String powerId) {
-        this.powerId = powerId;
-    }
+  @Override
+  public Set<String> getConditions() {
+    return Collections.unmodifiableSet(conditions);
+  }
 
-    public Set<String> getPowerTags() {
-        return powerTags;
-    }
+  public String getPowerId() {
+    return powerId;
+  }
 
-    public void addPowerTag(String tag){
-        powerTags.add(tag);
-    }
+  public void setPowerId(String powerId) {
+    this.powerId = powerId;
+  }
 
-    public void removePowerTag(String tag){
-        powerTags.remove(tag);
-    }
+  public Set<String> getPowerTags() {
+    return powerTags;
+  }
 
-    @Override
-    public Set<String> getTags() {
-        return getPowerTags();
-    }
+  public void addPowerTag(String tag) {
+    powerTags.add(tag);
+  }
 
-    @Override
-    public void addTag(String tag) {
-        addPowerTag(tag);
-    }
+  public void removePowerTag(String tag) {
+    powerTags.remove(tag);
+  }
 
-    @Override
-    public void removeTag(String tag) {
-        removePowerTag(tag);
-    }
+  @Override
+  public Set<String> getTags() {
+    return getPowerTags();
+  }
 
-    @Override
-    public String requiredContext() {
-        return requiredContext;
-    }
+  @Override
+  public void addTag(String tag) {
+    addPowerTag(tag);
+  }
 
-    @Override
-    public final String getPropertyHolderType() {
-        return "power";
-    }
+  @Override
+  public void removeTag(String tag) {
+    removePowerTag(tag);
+  }
+
+  @Override
+  public String requiredContext() {
+    return requiredContext;
+  }
+
+  @Override
+  public final String getPropertyHolderType() {
+    return "power";
+  }
 }

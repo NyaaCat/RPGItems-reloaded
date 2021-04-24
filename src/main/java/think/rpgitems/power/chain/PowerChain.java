@@ -1,5 +1,6 @@
 package think.rpgitems.power.chain;
 
+import java.util.*;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
 import think.rpgitems.item.RPGItem;
@@ -7,146 +8,146 @@ import think.rpgitems.power.*;
 import think.rpgitems.power.trigger.Trigger;
 import think.rpgitems.utils.cast.CastParameter;
 
-import java.util.*;
-
 /**
- * represents a set of Powers that triggers in the same time.
- * It's very useful to create organized, maintainable power list.
- * also can be used to create effects.
+ * represents a set of Powers that triggers in the same time. It's very useful to create organized,
+ * maintainable power list. also can be used to create effects.
+ *
  * @author ReinWD
  * @since v4.0
  */
 public class PowerChain {
-    private RPGItem ITEM;
+  private RPGItem ITEM;
 
-    private String chainId;
-    private String displayName;
-    private List<String> chainTags = new ArrayList<>();
-    private List<Power> powers = new ArrayList<>();
-    @SuppressWarnings("rawtypes")
-    private Map<String, Trigger> triggers = new HashMap<>();
-    private Set<Condition<?>>conditions = new HashSet<>();
+  private String chainId;
+  private String displayName;
+  private List<String> chainTags = new ArrayList<>();
+  private List<Power> powers = new ArrayList<>();
 
-    private int cooldown = 0;
-    private boolean showCDWarning = false;
+  @SuppressWarnings("rawtypes")
+  private Map<String, Trigger> triggers = new HashMap<>();
 
-    private int cost = 0;
-    private boolean castoff = false;
-    private CastParameter castParameter = new CastParameter();
+  private Set<Condition<?>> conditions = new HashSet<>();
 
-    /**
-     * check whether a trigger can trigger a power.
-     * @param power
-     * @param trigger
-     * @return whether a trigger can trigger a power.
-     */
-    @SuppressWarnings("rawtypes")
-    public static boolean isCompatibleTrigger(Power power, String trigger){
-        final Trigger trigger1 = Trigger.get(trigger);
-        if (trigger1 == null) {
-            return false;
-        }
-        final Class<? extends Power> pClass = power.getClass();
-        final Meta annotation = pClass.getAnnotation(Meta.class);
-        if (annotation != null){
-            final Class powerClass = trigger1.getPimplClass();
-            return annotation.implClass().isAssignableFrom(powerClass);
-        }
-        return false;
+  private int cooldown = 0;
+  private boolean showCDWarning = false;
+
+  private int cost = 0;
+  private boolean castoff = false;
+  private CastParameter castParameter = new CastParameter();
+
+  /**
+   * check whether a trigger can trigger a power.
+   *
+   * @param power
+   * @param trigger
+   * @return whether a trigger can trigger a power.
+   */
+  @SuppressWarnings("rawtypes")
+  public static boolean isCompatibleTrigger(Power power, String trigger) {
+    final Trigger trigger1 = Trigger.get(trigger);
+    if (trigger1 == null) {
+      return false;
     }
-
-    //todo update old version cost & cooldown
-    public PowerResult<?> doCost(RPGItem item, ItemStack itemStack){
-        //todo adapt this in lower level framework
-        if (!item.consumeDurability(itemStack, getCost())){
-            return PowerResult.cost();
-        }
-        return PowerResult.noop();
+    final Class<? extends Power> pClass = power.getClass();
+    final Meta annotation = pClass.getAnnotation(Meta.class);
+    if (annotation != null) {
+      final Class powerClass = trigger1.getPimplClass();
+      return annotation.implClass().isAssignableFrom(powerClass);
     }
+    return false;
+  }
 
-    public PowerResult<?> checkCooldown(Player player){
-        //todo adapt this in lower level framework
-        if (!Utils.checkCooldown(this, player, getCooldown(), true, true))
-            return PowerResult.cd();
-        return PowerResult.noop();
+  // todo update old version cost & cooldown
+  public PowerResult<?> doCost(RPGItem item, ItemStack itemStack) {
+    // todo adapt this in lower level framework
+    if (!item.consumeDurability(itemStack, getCost())) {
+      return PowerResult.cost();
     }
+    return PowerResult.noop();
+  }
 
-    //<editor-fold desc="getters&setters">
-    public List<String> getChainTags() {
-        return chainTags;
-    }
+  public PowerResult<?> checkCooldown(Player player) {
+    // todo adapt this in lower level framework
+    if (!Utils.checkCooldown(this, player, getCooldown(), true, true)) return PowerResult.cd();
+    return PowerResult.noop();
+  }
 
-    public List<Power> getPowers() {
-        return powers;
-    }
+  // <editor-fold desc="getters&setters">
+  public List<String> getChainTags() {
+    return chainTags;
+  }
 
-    public Map<String, Trigger> getTriggers() {
-        return triggers;
-    }
+  public List<Power> getPowers() {
+    return powers;
+  }
 
-    public Set<Condition<?>> getConditions() {
-        return conditions;
-    }
+  public Map<String, Trigger> getTriggers() {
+    return triggers;
+  }
 
-    public String getChainId() {
-        return chainId;
-    }
+  public Set<Condition<?>> getConditions() {
+    return conditions;
+  }
 
-    public void setChainId(String chainId) {
-        this.chainId = chainId;
-    }
+  public String getChainId() {
+    return chainId;
+  }
 
-    public int getCooldown() {
-        return cooldown;
-    }
+  public void setChainId(String chainId) {
+    this.chainId = chainId;
+  }
 
-    public void setCooldown(int cooldown) {
-        this.cooldown = cooldown;
-    }
+  public int getCooldown() {
+    return cooldown;
+  }
 
-    public boolean isCastoff() {
-        return castoff;
-    }
+  public void setCooldown(int cooldown) {
+    this.cooldown = cooldown;
+  }
 
-    public void setCastoff(boolean castoff) {
-        this.castoff = castoff;
-    }
+  public boolean isCastoff() {
+    return castoff;
+  }
 
-    public CastParameter getCastParameter() {
-        return castParameter;
-    }
+  public void setCastoff(boolean castoff) {
+    this.castoff = castoff;
+  }
 
-    public int getCost() {
-        return cost;
-    }
+  public CastParameter getCastParameter() {
+    return castParameter;
+  }
 
-    public void setCost(int cost) {
-        this.cost = cost;
-    }
+  public int getCost() {
+    return cost;
+  }
 
-    public boolean isShowCDWarning() {
-        return showCDWarning;
-    }
+  public void setCost(int cost) {
+    this.cost = cost;
+  }
 
-    public void setShowCDWarning(boolean showCDWarning) {
-        this.showCDWarning = showCDWarning;
-    }
+  public boolean isShowCDWarning() {
+    return showCDWarning;
+  }
 
-    public RPGItem getItem() {
-        return ITEM;
-    }
+  public void setShowCDWarning(boolean showCDWarning) {
+    this.showCDWarning = showCDWarning;
+  }
 
-    public void setItem(RPGItem item) {
-        this.ITEM = item;
-    }
+  public RPGItem getItem() {
+    return ITEM;
+  }
 
-    public String getDisplayName() {
-        return displayName;
-    }
+  public void setItem(RPGItem item) {
+    this.ITEM = item;
+  }
 
-    public void setDisplayName(String displayName) {
-        this.displayName = displayName;
-    }
+  public String getDisplayName() {
+    return displayName;
+  }
 
-    //</editor-fold>
+  public void setDisplayName(String displayName) {
+    this.displayName = displayName;
+  }
+
+  // </editor-fold>
 }

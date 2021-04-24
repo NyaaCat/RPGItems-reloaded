@@ -16,6 +16,7 @@
  */
 package think.rpgitems.power.impl;
 
+import java.util.Collections;
 import org.bukkit.Material;
 import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.entity.Player;
@@ -31,99 +32,117 @@ import think.rpgitems.item.RPGItem;
 import think.rpgitems.power.*;
 import think.rpgitems.power.trigger.BaseTriggers;
 
-import java.util.Collections;
-
 /**
  * Power consume.
- * <p>
- * The consume power will remove one item on click.
- * With {@link #cooldown cooldown} time (ticks).
- * </p>
+ *
+ * <p>The consume power will remove one item on click. With {@link #cooldown cooldown} time (ticks).
  */
-@Meta(defaultTrigger = "RIGHT_CLICK", generalInterface = PowerPlain.class, implClass = Consume.Impl.class)
+@Meta(
+    defaultTrigger = "RIGHT_CLICK",
+    generalInterface = PowerPlain.class,
+    implClass = Consume.Impl.class)
 public class Consume extends BasePower {
 
-    @Property
-    public boolean requireHurtByEntity = true;
+  @Property public boolean requireHurtByEntity = true;
+
+  @Override
+  public void init(ConfigurationSection section) {
+    boolean isRight = section.getBoolean("isRight", true);
+    triggers = Collections.singleton(isRight ? BaseTriggers.RIGHT_CLICK : BaseTriggers.LEFT_CLICK);
+    super.init(section);
+  }
+
+  @Override
+  public String getName() {
+    return "consume";
+  }
+
+  @Override
+  public String displayText() {
+    return I18n.formatDefault("power.consume");
+  }
+
+  public boolean isRequireHurtByEntity() {
+    return requireHurtByEntity;
+  }
+
+  public static class Impl
+      implements PowerPlain<Consume>,
+          PowerRightClick<Consume>,
+          PowerLeftClick<Consume>,
+          PowerSneak<Consume>,
+          PowerHitTaken<Consume>,
+          PowerHurt<Consume>,
+          PowerSprint<Consume>,
+          PowerAttachment<Consume> {
+    @Override
+    public PowerResult<Void> rightClick(
+        Consume power, final Player player, ItemStack stack, PlayerInteractEvent event) {
+      return fire(power, player, stack);
+    }
+
+    public PowerResult<Void> fire(Consume power, final Player player, ItemStack s) {
+      int count = s.getAmount() - 1;
+      if (count == 0) {
+        s.setAmount(0);
+        s.setType(Material.AIR);
+      } else {
+        s.setAmount(count);
+      }
+
+      return PowerResult.ok();
+    }
 
     @Override
-    public void init(ConfigurationSection section) {
-        boolean isRight = section.getBoolean("isRight", true);
-        triggers = Collections.singleton(isRight ? BaseTriggers.RIGHT_CLICK : BaseTriggers.LEFT_CLICK);
-        super.init(section);
+    public Class<? extends Consume> getPowerClass() {
+      return Consume.class;
     }
 
     @Override
-    public String getName() {
-        return "consume";
+    public PowerResult<Void> leftClick(
+        Consume power, final Player player, ItemStack stack, PlayerInteractEvent event) {
+      return fire(power, player, stack);
     }
 
     @Override
-    public String displayText() {
-        return I18n.formatDefault("power.consume");
+    public PowerResult<Void> sneak(
+        Consume power, Player player, ItemStack stack, PlayerToggleSneakEvent event) {
+      return fire(power, player, stack);
     }
 
-    public boolean isRequireHurtByEntity() {
-        return requireHurtByEntity;
+    @Override
+    public PowerResult<Void> sprint(
+        Consume power, Player player, ItemStack stack, PlayerToggleSprintEvent event) {
+      return fire(power, player, stack);
     }
 
-    public static class Impl implements PowerPlain<Consume>, PowerRightClick<Consume>, PowerLeftClick<Consume>, PowerSneak<Consume>, PowerHitTaken<Consume>, PowerHurt<Consume>, PowerSprint<Consume>, PowerAttachment<Consume> {
-        @Override
-        public PowerResult<Void> rightClick(Consume power, final Player player, ItemStack stack, PlayerInteractEvent event) {
-            return fire(power, player, stack);
-        }
-
-        public PowerResult<Void> fire(Consume power, final Player player, ItemStack s) {
-            int count = s.getAmount() - 1;
-            if (count == 0) {
-                s.setAmount(0);
-                s.setType(Material.AIR);
-            } else {
-                s.setAmount(count);
-            }
-
-            return PowerResult.ok();
-        }
-
-        @Override
-        public Class<? extends Consume> getPowerClass() {
-            return Consume.class;
-        }
-
-        @Override
-        public PowerResult<Void> leftClick(Consume power, final Player player, ItemStack stack, PlayerInteractEvent event) {
-            return fire(power, player, stack);
-        }
-
-        @Override
-        public PowerResult<Void> sneak(Consume power, Player player, ItemStack stack, PlayerToggleSneakEvent event) {
-            return fire(power, player, stack);
-        }
-
-        @Override
-        public PowerResult<Void> sprint(Consume power, Player player, ItemStack stack, PlayerToggleSprintEvent event) {
-            return fire(power, player, stack);
-        }
-
-        @Override
-        public PowerResult<Double> takeHit(Consume power, Player target, ItemStack stack, double damage, EntityDamageEvent event) {
-            if (!power.isRequireHurtByEntity() || event instanceof EntityDamageByEntityEvent) {
-                return fire(power, target, stack).with(damage);
-            }
-            return PowerResult.noop();
-        }
-
-        @Override
-        public PowerResult<Void> hurt(Consume power, Player target, ItemStack stack, EntityDamageEvent event) {
-            if (!power.isRequireHurtByEntity() || event instanceof EntityDamageByEntityEvent) {
-                return fire(power, target, stack);
-            }
-            return PowerResult.noop();
-        }
-
-        @Override
-        public PowerResult<Void> attachment(Consume power, Player player, ItemStack stack, RPGItem originItem, Event originEvent, ItemStack originStack) {
-            return fire(power, player, stack);
-        }
+    @Override
+    public PowerResult<Double> takeHit(
+        Consume power, Player target, ItemStack stack, double damage, EntityDamageEvent event) {
+      if (!power.isRequireHurtByEntity() || event instanceof EntityDamageByEntityEvent) {
+        return fire(power, target, stack).with(damage);
+      }
+      return PowerResult.noop();
     }
+
+    @Override
+    public PowerResult<Void> hurt(
+        Consume power, Player target, ItemStack stack, EntityDamageEvent event) {
+      if (!power.isRequireHurtByEntity() || event instanceof EntityDamageByEntityEvent) {
+        return fire(power, target, stack);
+      }
+      return PowerResult.noop();
+    }
+
+    @Override
+    public PowerResult<Void> attachment(
+        Consume power,
+        Player player,
+        ItemStack stack,
+        RPGItem originItem,
+        Event originEvent,
+        ItemStack originStack) {
+      return fire(power, player, stack);
+    }
+  }
 }

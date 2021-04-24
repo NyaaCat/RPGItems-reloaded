@@ -1,14 +1,14 @@
 package think.rpgitems.power;
 
 public interface Pimpl<P extends Power> {
-    default Class<? extends P> getPowerClass() {
-        return null;
-    }
+  default Class<? extends P> getPowerClass() {
+    return null;
+  }
 
-    default <T extends Pimpl> T cast(Class<T> powerClass) {
-        if (powerClass.isInstance(this)) {
-            return powerClass.cast(this);
-        }
-        return PowerManager.adaptPower(this, powerClass);
+  default <T extends Pimpl> T cast(Class<T> powerClass) {
+    if (powerClass.isInstance(this)) {
+      return powerClass.cast(this);
     }
+    return PowerManager.adaptPower(this, powerClass);
+  }
 }

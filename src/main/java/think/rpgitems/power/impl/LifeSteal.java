@@ -16,6 +16,7 @@
  */
 package think.rpgitems.power.impl;
 
+import java.util.Random;
 import org.bukkit.attribute.Attribute;
 import org.bukkit.entity.LivingEntity;
 import org.bukkit.entity.Player;
@@ -24,72 +25,79 @@ import org.bukkit.inventory.ItemStack;
 import think.rpgitems.I18n;
 import think.rpgitems.power.*;
 
-import java.util.Random;
-
 /**
  * Power lifesteal.
- * <p>
- * The lifesteal power will steal enemy life
- * in a chance of 1/{@link #chance}
- * </p>
+ *
+ * <p>The lifesteal power will steal enemy life in a chance of 1/{@link #chance}
  */
-@Meta(defaultTrigger = "HIT", generalInterface = PowerLivingEntity.class, implClass = LifeSteal.Impl.class)
+@Meta(
+    defaultTrigger = "HIT",
+    generalInterface = PowerLivingEntity.class,
+    implClass = LifeSteal.Impl.class)
 public class LifeSteal extends BasePower {
 
-    @Property(order = 0)
-    public int chance = 20;
-    @Property
-    public double factor = 1;
+  @Property(order = 0)
+  public int chance = 20;
 
-    private Random random = new Random();
+  @Property public double factor = 1;
 
-    /**
-     * Factor of life steal
-     */
-    public double getFactor() {
-        return factor;
+  private Random random = new Random();
+
+  /** Factor of life steal */
+  public double getFactor() {
+    return factor;
+  }
+
+  @Override
+  public String getName() {
+    return "lifesteal";
+  }
+
+  @Override
+  public String displayText() {
+    return I18n.formatDefault("power.lifesteal", getChance());
+  }
+
+  /** Chance of triggering this power */
+  public int getChance() {
+    return chance;
+  }
+
+  public Random getRandom() {
+    return random;
+  }
+
+  public static class Impl implements PowerHit<LifeSteal>, PowerLivingEntity<LifeSteal> {
+
+    @Override
+    public PowerResult<Double> hit(
+        LifeSteal power,
+        Player player,
+        ItemStack stack,
+        LivingEntity entity,
+        double damage,
+        EntityDamageByEntityEvent event) {
+      return fire(power, player, stack, entity, damage).with(damage);
     }
 
     @Override
-    public String getName() {
-        return "lifesteal";
+    public PowerResult<Void> fire(
+        LifeSteal power, Player player, ItemStack stack, LivingEntity entity, Double damage) {
+      if (power.getRandom().nextInt(power.getChance()) == 0 && damage != null) {
+        player.setHealth(
+            Math.max(
+                Math.min(
+                    player.getHealth() + damage * power.getFactor(),
+                    player.getAttribute(Attribute.GENERIC_MAX_HEALTH).getValue()),
+                0.01));
+        return PowerResult.ok();
+      }
+      return PowerResult.noop();
     }
 
     @Override
-    public String displayText() {
-        return I18n.formatDefault("power.lifesteal", getChance());
+    public Class<? extends LifeSteal> getPowerClass() {
+      return LifeSteal.class;
     }
-
-    /**
-     * Chance of triggering this power
-     */
-    public int getChance() {
-        return chance;
-    }
-
-    public Random getRandom() {
-        return random;
-    }
-
-    public static class Impl implements PowerHit<LifeSteal>, PowerLivingEntity<LifeSteal> {
-
-        @Override
-        public PowerResult<Double> hit(LifeSteal power, Player player, ItemStack stack, LivingEntity entity, double damage, EntityDamageByEntityEvent event) {
-            return fire(power, player, stack, entity, damage).with(damage);
-        }
-
-        @Override
-        public PowerResult<Void> fire(LifeSteal power, Player player, ItemStack stack, LivingEntity entity, Double damage) {
-            if (power.getRandom().nextInt(power.getChance()) == 0 && damage != null) {
-                player.setHealth(Math.max(Math.min(player.getHealth() + damage * power.getFactor(), player.getAttribute(Attribute.GENERIC_MAX_HEALTH).getValue()), 0.01));
-                return PowerResult.ok();
-            }
-            return PowerResult.noop();
-        }
-
-        @Override
-        public Class<? extends LifeSteal> getPowerClass() {
-            return LifeSteal.class;
-        }
-    }
+  }
 }

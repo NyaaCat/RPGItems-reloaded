@@ -9,79 +9,87 @@ import org.bukkit.event.HandlerList;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.util.BoundingBox;
 import org.bukkit.util.Vector;
-import think.rpgitems.power.impl.Beam;
 
 public class BeamHitEntityEvent extends Event {
-    public static final HandlerList handlerList = new HandlerList();
+  public static final HandlerList handlerList = new HandlerList();
 
-    @Override
-    public HandlerList getHandlers() {
-        return handlerList;
-    }
+  @Override
+  public HandlerList getHandlers() {
+    return handlerList;
+  }
 
-    public static HandlerList getHandlerList(){
-        return handlerList;
-    }
+  public static HandlerList getHandlerList() {
+    return handlerList;
+  }
 
-    private final Player player;
-    private final Entity from;
-    private final LivingEntity entity;
-    private ItemStack itemStack;
-    private double damage;
-    private final Location loc;
-    private final BoundingBox boundingBox;
-    private final Vector velocity;
-    private int depth;
+  private final Player player;
+  private final Entity from;
+  private final LivingEntity entity;
+  private ItemStack itemStack;
+  private double damage;
+  private final Location loc;
+  private final BoundingBox boundingBox;
+  private final Vector velocity;
+  private int depth;
 
-    public BeamHitEntityEvent(Player player, Entity from, LivingEntity entity, ItemStack itemStack, double damage, Location loc, BoundingBox boundingBox, Vector vector, int depth){
-        this.player = player;
-        this.from = from;
-        this.entity = entity;
-        this.itemStack = itemStack;
-        this.damage = damage;
-        this.loc = loc;
-        this.boundingBox = boundingBox;
-        this.velocity = vector;
-        this.depth = depth;
-    }
+  public BeamHitEntityEvent(
+      Player player,
+      Entity from,
+      LivingEntity entity,
+      ItemStack itemStack,
+      double damage,
+      Location loc,
+      BoundingBox boundingBox,
+      Vector vector,
+      int depth) {
+    this.player = player;
+    this.from = from;
+    this.entity = entity;
+    this.itemStack = itemStack;
+    this.damage = damage;
+    this.loc = loc;
+    this.boundingBox = boundingBox;
+    this.velocity = vector;
+    this.depth = depth;
+  }
 
-    public BoundingBox getBoundingBox() {
-        return boundingBox;
-    }
+  public BoundingBox getBoundingBox() {
+    return boundingBox;
+  }
 
-    public Vector getVelocity() {
-        return velocity;
-    }
+  public Vector getVelocity() {
+    return velocity;
+  }
 
-    public ItemStack getItemStack() {
-        return itemStack;
-    }
+  public ItemStack getItemStack() {
+    return itemStack;
+  }
 
-    public void setDamage(double damage) {
-        this.damage = damage;
-    }
+  public void setDamage(double damage) {
+    this.damage = damage;
+  }
 
-    public Entity getFrom() {
-        return from;
-    }
+  public Entity getFrom() {
+    return from;
+  }
 
-    public LivingEntity getEntity() {
-        return entity;
-    }
+  public LivingEntity getEntity() {
+    return entity;
+  }
 
-    public double getDamage() {
-        return damage;
-    }
+  public double getDamage() {
+    return damage;
+  }
 
-    public Location getLoc() {
-        return loc;
-    }
+  public Location getLoc() {
+    return loc;
+  }
 
-    public Player getPlayer() {
-        return player;
-    }
+  public Player getPlayer() {
+    return player;
+  }
 
-    public int getDepth() {
-        return depth;
-    }
+  public int getDepth() {
+    return depth;
+  }
 }

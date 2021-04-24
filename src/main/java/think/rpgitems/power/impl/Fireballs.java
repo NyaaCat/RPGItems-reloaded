@@ -29,59 +29,69 @@ import think.rpgitems.power.*;
 
 /**
  * Power fireball.
- * <p>
- * The fireball power will fire an fireball on right click.
- * </p>
+ *
+ * <p>The fireball power will fire an fireball on right click.
  */
-@Meta(defaultTrigger = "RIGHT_CLICK", generalInterface = PowerPlain.class, implClass = Fireballs.Impl.class)
+@Meta(
+    defaultTrigger = "RIGHT_CLICK",
+    generalInterface = PowerPlain.class,
+    implClass = Fireballs.Impl.class)
 public class Fireballs extends BasePower {
 
-    @Override
-    public String getName() {
-        return "fireball";
-    }
+  @Override
+  public String getName() {
+    return "fireball";
+  }
+
+  @Override
+  public String displayText() {
+    return I18n.formatDefault("power.fireball", 0);
+  }
+
+  public static class Impl
+      implements PowerRightClick<Fireballs>,
+          PowerLeftClick<Fireballs>,
+          PowerSprint<Fireballs>,
+          PowerSneak<Fireballs>,
+          PowerPlain<Fireballs> {
 
     @Override
-    public String displayText() {
-        return I18n.formatDefault("power.fireball", 0);
+    public PowerResult<Void> rightClick(
+        Fireballs power, Player player, ItemStack stack, PlayerInteractEvent event) {
+      return fire(power, player, stack);
     }
 
-
-    public static class Impl implements PowerRightClick<Fireballs>, PowerLeftClick<Fireballs>, PowerSprint<Fireballs>, PowerSneak<Fireballs>, PowerPlain<Fireballs> {
-
-        @Override
-        public PowerResult<Void> rightClick(Fireballs power, Player player, ItemStack stack, PlayerInteractEvent event) {
-            return fire(power, player, stack);
-        }
-
-        @Override
-        @SuppressWarnings("deprecation")
-        public PowerResult<Void> fire(Fireballs power, Player player, ItemStack stack) {
-            player.playSound(player.getLocation(), Sound.ENTITY_GHAST_SHOOT, 1.0f, 1.0f);
-            Events.registerRPGProjectile(power.getItem(), stack, player);
-            SmallFireball entity = player.launchProjectile(SmallFireball.class);
-            entity.setPersistent(false);
-            return PowerResult.ok();
-        }
-
-        @Override
-        public Class<? extends Fireballs> getPowerClass() {
-            return Fireballs.class;
-        }
-
-        @Override
-        public PowerResult<Void> leftClick(Fireballs power, Player player, ItemStack stack, PlayerInteractEvent event) {
-            return fire(power, player, stack);
-        }
-
-        @Override
-        public PowerResult<Void> sneak(Fireballs power, Player player, ItemStack stack, PlayerToggleSneakEvent event) {
-            return fire(power, player, stack);
-        }
-
-        @Override
-        public PowerResult<Void> sprint(Fireballs power, Player player, ItemStack stack, PlayerToggleSprintEvent event) {
-            return fire(power, player, stack);
-        }
+    @Override
+    @SuppressWarnings("deprecation")
+    public PowerResult<Void> fire(Fireballs power, Player player, ItemStack stack) {
+      player.playSound(player.getLocation(), Sound.ENTITY_GHAST_SHOOT, 1.0f, 1.0f);
+      Events.registerRPGProjectile(power.getItem(), stack, player);
+      SmallFireball entity = player.launchProjectile(SmallFireball.class);
+      entity.setPersistent(false);
+      return PowerResult.ok();
     }
+
+    @Override
+    public Class<? extends Fireballs> getPowerClass() {
+      return Fireballs.class;
+    }
+
+    @Override
+    public PowerResult<Void> leftClick(
+        Fireballs power, Player player, ItemStack stack, PlayerInteractEvent event) {
+      return fire(power, player, stack);
+    }
+
+    @Override
+    public PowerResult<Void> sneak(
+        Fireballs power, Player player, ItemStack stack, PlayerToggleSneakEvent event) {
+      return fire(power, player, stack);
+    }
+
+    @Override
+    public PowerResult<Void> sprint(
+        Fireballs power, Player player, ItemStack stack, PlayerToggleSprintEvent event) {
+      return fire(power, player, stack);
+    }
+  }
 }

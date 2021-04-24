@@ -8,9 +8,9 @@ import java.lang.annotation.Target;
 @Retention(RetentionPolicy.RUNTIME)
 @Target(ElementType.FIELD)
 public @interface BooleanChoice {
-    String name() default "";
+  String name() default "";
 
-    String falseChoice() default "false";
+  String falseChoice() default "false";
 
-    String trueChoice() default "true";
+  String trueChoice() default "true";
 }

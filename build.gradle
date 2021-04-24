@@ -1,9 +1,10 @@
 plugins {
-    id 'java-library'
-    id 'maven-publish'
-    id 'com.github.johnrengelman.shadow' version '5.1.0'
-    id 'org.ajoberstar.grgit' version '3.0.0'
-    id 'org.jetbrains.kotlin.jvm' version '1.4.32'
+	id 'java-library'
+	id 'maven-publish'
+	id 'com.github.johnrengelman.shadow' version '5.1.0'
+	id 'org.ajoberstar.grgit' version '3.0.0'
+	id 'org.jetbrains.kotlin.jvm' version '1.4.32'
+	id "com.diffplug.spotless" version "5.12.4"
 }
 
 
@@ -35,179 +36,198 @@ version = "$majorVersion.$minorVersion-$buildNumber"
 String mavenVersion = releasing ? version : "$majorVersion.$minorVersion-SNAPSHOT"
 
 if (!mainBranch) {
-    String branchAddon = branch.replace(minecraftMajorVersion, "")
-    version = "$majorVersion.$minorVersion$branchAddon-$buildNumber"
-    mavenVersion = releasing ? version : "$majorVersion.$minorVersion$branchAddon-SNAPSHOT"
+	String branchAddon = branch.replace(minecraftMajorVersion, "")
+	version = "$majorVersion.$minorVersion$branchAddon-$buildNumber"
+	mavenVersion = releasing ? version : "$majorVersion.$minorVersion$branchAddon-SNAPSHOT"
 }
 
 sourceCompatibility = 1.8
 targetCompatibility = 1.8
 
 configurations.all {
-    resolutionStrategy.cacheChangingModulesFor 0, 'seconds'
+	resolutionStrategy.cacheChangingModulesFor 0, 'seconds'
 }
 
 repositories {
-    // mavenLocal()
-    jcenter()
-    mavenCentral()
-    maven { name 'Spigot-public'; url 'https://hub.spigotmc.org/nexus/content/repositories/public/' }
-    maven { name 'Spigot'; url 'https://hub.spigotmc.org/nexus/content/repositories/snapshots/' }
-    maven { name 'Sonatype'; url 'https://oss.sonatype.org/content/groups/public' }
-    maven { name 'sk89q'; url 'http://maven.sk89q.com/artifactory/repo/' }
-    maven { name 'vault-repo'; url 'https://jitpack.io' }
-    maven { name 'NyaaCat'; url 'https://ci.nyaacat.com/maven/' }
-    maven { name 'EssentialsX'; url 'https://ci.ender.zone/plugin/repository/everything' }
-    maven { name 'aikar';     url 'https://repo.aikar.co/content/groups/aikar/' }
+	// mavenLocal()
+	jcenter()
+	mavenCentral()
+	maven { name 'Spigot-public'; url 'https://hub.spigotmc.org/nexus/content/repositories/public/' }
+	maven { name 'Spigot'; url 'https://hub.spigotmc.org/nexus/content/repositories/snapshots/' }
+	maven { name 'Sonatype'; url 'https://oss.sonatype.org/content/groups/public' }
+	maven { name 'sk89q'; url 'http://maven.sk89q.com/artifactory/repo/' }
+	maven { name 'vault-repo'; url 'https://jitpack.io' }
+	maven { name 'NyaaCat'; url 'https://ci.nyaacat.com/maven/' }
+	maven { name 'EssentialsX'; url 'https://ci.ender.zone/plugin/repository/everything' }
+	maven { name 'aikar';     url 'https://repo.aikar.co/content/groups/aikar/' }
 }
 
 shadowJar {
-    configurations = [project.configurations.shadow]
+	configurations = [project.configurations.shadow]
 }
 
 dependencies {
-    testImplementation 'com.github.seeseemelk:MockBukkit-v1.16:0.32.0'
-    testImplementation group: 'junit', name: 'junit', version: '4.12'
+	testImplementation 'com.github.seeseemelk:MockBukkit-v1.16:0.32.0'
+	testImplementation group: 'junit', name: 'junit', version: '4.12'
 
-    api "org.spigotmc:spigot-api:$minecraftVersion-R0.1-SNAPSHOT"
-    if (gradle.hasProperty("useLocalDependencies") && gradle.useLocalDependencies) {
-        api project(":NyaaCore")
-        api project(":LanguageUtils")
-    } else {
-        api "cat.nyaa:nyaacore:8.0-SNAPSHOT"
-    }
+	api "org.spigotmc:spigot-api:$minecraftVersion-R0.1-SNAPSHOT"
+	if (gradle.hasProperty("useLocalDependencies") && gradle.useLocalDependencies) {
+		api project(":NyaaCore")
+		api project(":LanguageUtils")
+	} else {
+		api "cat.nyaa:nyaacore:8.0-SNAPSHOT"
+	}
 
-    compileOnly 'io.netty:netty-all:4.1.25.Final' // netty is shadowed inside spigot jar
-    compileOnly 'org.ow2.asm:asm:7.0'
-    compileOnly 'cglib:cglib-nodep:3.2.12'
-    shadow 'cglib:cglib-nodep:3.2.12'
+	compileOnly 'io.netty:netty-all:4.1.25.Final' // netty is shadowed inside spigot jar
+	compileOnly 'org.ow2.asm:asm:7.0'
+	compileOnly 'cglib:cglib-nodep:3.2.12'
+	shadow 'cglib:cglib-nodep:3.2.12'
 
-    implementation('com.sk89q.worldguard:worldguard-core:7.0.1-SNAPSHOT')
-    implementation('com.sk89q.worldguard:worldguard-bukkit:7.0.1-SNAPSHOT') {
-        exclude group: 'io.papermc', module: 'paperlib'
-        exclude group: 'org.bstats', module: 'bstats-bukkit'
-        exclude group: 'org.bukkit', module: 'bukkit'
-    }
+	implementation('com.sk89q.worldguard:worldguard-core:7.0.1-SNAPSHOT')
+	implementation('com.sk89q.worldguard:worldguard-bukkit:7.0.1-SNAPSHOT') {
+		exclude group: 'io.papermc', module: 'paperlib'
+		exclude group: 'org.bstats', module: 'bstats-bukkit'
+		exclude group: 'org.bukkit', module: 'bukkit'
+	}
 
-    implementation 'com.google.code.findbugs:jsr305:1.3.9'
-    implementation('net.milkbowl.vault:VaultAPI:1.7') {
-        transitive = false
-    }
-    implementation "org.jetbrains.kotlin:kotlin-stdlib-jdk8"
+	implementation 'com.google.code.findbugs:jsr305:1.3.9'
+	implementation('net.milkbowl.vault:VaultAPI:1.7') {
+		transitive = false
+	}
+	implementation "org.jetbrains.kotlin:kotlin-stdlib-jdk8"
 }
 
 tasks.withType(ProcessResources) {
-    with copySpec {
-        filteringCharset = 'UTF-8'
-        from 'src/main/resources/lang'
-        into 'lang'
-        filter(ReplaceTokens, tokens: ['GIT_BRANCH': branch, 'GIT_HASH': commitHash], beginToken: '{', endToken: '}')
-    }
-    filesMatching("**/plugin.yml") {
-        expand 'version': project.version
-    }
+	with copySpec {
+		filteringCharset = 'UTF-8'
+		from 'src/main/resources/lang'
+		into 'lang'
+		filter(ReplaceTokens, tokens: ['GIT_BRANCH': branch, 'GIT_HASH': commitHash], beginToken: '{', endToken: '}')
+	}
+	filesMatching("**/plugin.yml") {
+		expand 'version': project.version
+	}
 }
 
 
 publishing {
-    publications {
-        mavenRelease(MavenPublication) {
-            from components.java
-            afterEvaluate {
-                artifacts = [jar, apiJar, sourcesJar]
-            }
-            groupId "cat.nyaa"
-            artifactId "rpgitems"
-            version "$mavenVersion"
-        }
-    }
-    repositories {
-        maven {
-            url "$mavenDirectory"
-        }
-    }
+	publications {
+		mavenRelease(MavenPublication) {
+			from components.java
+			afterEvaluate {
+				artifacts = [jar, apiJar, sourcesJar]
+			}
+			groupId "cat.nyaa"
+			artifactId "rpgitems"
+			version "$mavenVersion"
+		}
+	}
+	repositories {
+		maven {
+			url "$mavenDirectory"
+		}
+	}
 }
 
 jar {
-    archiveClassifier.set('core')
-    dependsOn shadowJar
+	archiveClassifier.set('core')
+	dependsOn shadowJar
 }
 
 shadowJar {
-    archiveClassifier.set('release')
-    // relocate 'net.sf.cglib', 'cat.nyaa.cglib'
-    configurations = [project.configurations.shadow]
+	archiveClassifier.set('release')
+	// relocate 'net.sf.cglib', 'cat.nyaa.cglib'
+	configurations = [project.configurations.shadow]
 }
 
 task apiJar(type: Jar) {
-    includeEmptyDirs = false
-    from sourceSets.main.output.classesDirs
-    include('**/think/rpgitems/RPGItems.class')
-    include('**/think/rpgitems/Events.class')
-    include('**/think/rpgitems/api/')
-    include('**/think/rpgitems/item/')
-    include('**/think/rpgitems/power/')
-    include('**/think/rpgitems/event/')
-    include('**/think/rpgitems/utils/')
-    exclude('**/think/rpgitems/power/impl/')
+	includeEmptyDirs = false
+	from sourceSets.main.output.classesDirs
+	include('**/think/rpgitems/RPGItems.class')
+	include('**/think/rpgitems/Events.class')
+	include('**/think/rpgitems/api/')
+	include('**/think/rpgitems/item/')
+	include('**/think/rpgitems/power/')
+	include('**/think/rpgitems/event/')
+	include('**/think/rpgitems/utils/')
+	exclude('**/think/rpgitems/power/impl/')
 }
 
 task sourcesJar(type: Jar) {
-    archiveClassifier.set('sources')
-    from sourceSets.main.java.srcDirs
+	archiveClassifier.set('sources')
+	from sourceSets.main.java.srcDirs
 }
 
 task javadocJar(type: Jar, dependsOn: javadoc) {
-    archiveClassifier.set('javadoc')
-    from javadoc.destinationDir
+	archiveClassifier.set('javadoc')
+	from javadoc.destinationDir
 }
 
 task checkRelease() {
-    doLast {
-        if (!releasing) {
-            throw new GradleException("This is a canary version, use with caution!")
-        }
-    }
+	doLast {
+		if (!releasing) {
+			throw new GradleException("This is a canary version, use with caution!")
+		}
+	}
 }
 
 // write javadocs to an external folder which can be served via nginx
 if (jdDirectory != null) {
-    javadoc.destinationDir = file("${jdDirectory}/rpgitems-${mavenVersion}")
+	javadoc.destinationDir = file("${jdDirectory}/rpgitems-${mavenVersion}")
 }
 
 javadoc {
-    (options as StandardJavadocDocletOptions).with {
-        links 'https://docs.oracle.com/javase/8/docs/api/'
-        links 'https://hub.spigotmc.org/javadocs/spigot/'
-        links 'https://google.github.io/guava/releases/21.0/api/docs/'
-        links 'https://ci.nyaacat.com/javadocs/nyaacore-7.1.350/'
-        links 'https://ci.md-5.net/job/BungeeCord/ws/chat/target/apidocs/'
-        links 'https://netty.io/4.1/api/'
+	(options as StandardJavadocDocletOptions).with {
+		links 'https://docs.oracle.com/javase/8/docs/api/'
+		links 'https://hub.spigotmc.org/javadocs/spigot/'
+		links 'https://google.github.io/guava/releases/21.0/api/docs/'
+		links 'https://ci.nyaacat.com/javadocs/nyaacore-7.1.350/'
+		links 'https://ci.md-5.net/job/BungeeCord/ws/chat/target/apidocs/'
+		links 'https://netty.io/4.1/api/'
 
-        locale 'en_US'
-        encoding 'UTF-8'
-        docEncoding 'UTF-8'
-        addBooleanOption('keywords', true)
+		locale 'en_US'
+		encoding 'UTF-8'
+		docEncoding 'UTF-8'
+		addBooleanOption('keywords', true)
 
-        def currentJavaVersion = JavaVersion.current()
-        if (currentJavaVersion > JavaVersion.VERSION_1_9) {
-            options.addBooleanOption('html5', true)
-        }
+		def currentJavaVersion = JavaVersion.current()
+		if (currentJavaVersion > JavaVersion.VERSION_1_9) {
+			options.addBooleanOption('html5', true)
+		}
 
-        windowTitle = "RPGItems Javadoc"
-        docTitle = "<b>RPGItems</b> " + version
-        if (!mainBranch) {
-            docTitle += branch.replace(minecraftMajorVersion, "")
-        }
-    }
+		windowTitle = "RPGItems Javadoc"
+		docTitle = "<b>RPGItems</b> " + version
+		if (!mainBranch) {
+			docTitle += branch.replace(minecraftMajorVersion, "")
+		}
+	}
 }
 compileKotlin {
-    kotlinOptions {
-        jvmTarget = "1.8"
-    }
+	kotlinOptions {
+		jvmTarget = "1.8"
+	}
 }
 compileTestKotlin {
-    kotlinOptions {
-        jvmTarget = "1.8"
-    }
+	kotlinOptions {
+		jvmTarget = "1.8"
+	}
+}
+
+spotless {
+
+	format 'misc', {
+		// define the files to apply `misc` to
+		target '*.gradle', '*.md', '.gitignore'
+
+		// define the steps to apply to those files
+		trimTrailingWhitespace()
+		indentWithTabs() // or spaces. Takes an integer argument if you don't like 4
+		endWithNewline()
+	}
+	java {
+		// don't need to set target, it is inferred from java
+
+		// apply a specific flavor of google-java-format
+		googleJavaFormat()
+	}
 }

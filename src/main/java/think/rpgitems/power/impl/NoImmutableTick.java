@@ -11,42 +11,50 @@ import think.rpgitems.power.*;
 
 /**
  * Power noimmutabletick.
- * <p>
- * Cancel the damage delay (no-damage-tick)
- * </p>
+ *
+ * <p>Cancel the damage delay (no-damage-tick)
  */
 @Meta(defaultTrigger = "HIT", implClass = NoImmutableTick.Impl.class)
 public class NoImmutableTick extends BasePower {
 
-    @Property
-    public int immuneTime = 1;
+  @Property public int immuneTime = 1;
 
-    public int getImmuneTime() {
-        return immuneTime;
+  public int getImmuneTime() {
+    return immuneTime;
+  }
+
+  @Override
+  public String getName() {
+    return "noimmutabletick";
+  }
+
+  @Override
+  public String displayText() {
+    return I18n.formatDefault("power.noimmutabletick");
+  }
+
+  public static class Impl implements PowerHit<NoImmutableTick> {
+
+    @Override
+    public PowerResult<Double> hit(
+        NoImmutableTick power,
+        Player player,
+        ItemStack stack,
+        LivingEntity entity,
+        double damage,
+        EntityDamageByEntityEvent event) {
+      Bukkit.getScheduler()
+          .runTaskLater(
+              RPGItems.plugin, () -> entity.setNoDamageTicks(power.getImmuneTime() + 10), 0);
+      Bukkit.getScheduler()
+          .runTaskLater(
+              RPGItems.plugin, () -> entity.setNoDamageTicks(power.getImmuneTime() + 10), 1);
+      return PowerResult.ok(damage);
     }
 
     @Override
-    public String getName() {
-        return "noimmutabletick";
+    public Class<? extends NoImmutableTick> getPowerClass() {
+      return NoImmutableTick.class;
     }
-
-    @Override
-    public String displayText() {
-        return I18n.formatDefault("power.noimmutabletick");
-    }
-
-    public static class Impl implements PowerHit<NoImmutableTick> {
-
-        @Override
-        public PowerResult<Double> hit(NoImmutableTick power, Player player, ItemStack stack, LivingEntity entity, double damage, EntityDamageByEntityEvent event) {
-            Bukkit.getScheduler().runTaskLater(RPGItems.plugin, () -> entity.setNoDamageTicks(power.getImmuneTime() + 10), 0);
-            Bukkit.getScheduler().runTaskLater(RPGItems.plugin, () -> entity.setNoDamageTicks(power.getImmuneTime() + 10), 1);
-            return PowerResult.ok(damage);
-        }
-
-        @Override
-        public Class<? extends NoImmutableTick> getPowerClass() {
-            return NoImmutableTick.class;
-        }
-    }
+  }
 }

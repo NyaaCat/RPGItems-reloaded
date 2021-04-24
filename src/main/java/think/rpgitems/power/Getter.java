@@ -4,27 +4,30 @@ import java.lang.reflect.InvocationTargetException;
 
 @FunctionalInterface
 public interface Getter<T> {
-    /**
-     * @param object Object to serialize to String
-     * @return String representation of the object
-     */
-    String get(T object);
+  /**
+   * @param object Object to serialize to String
+   * @return String representation of the object
+   */
+  String get(T object);
 
-    static Getter from(PropertyHolder p, Class<? extends Getter> cls) {
-        return getAccessor(p, cls);
-    }
+  static Getter from(PropertyHolder p, Class<? extends Getter> cls) {
+    return getAccessor(p, cls);
+  }
 
-    static <T> T getAccessor(PropertyHolder p, Class<? extends T> cls) {
-        try {
-            return cls.getDeclaredConstructor().newInstance();
-        } catch (InstantiationException | IllegalAccessException | InvocationTargetException e) {
-            throw new RuntimeException(e);
-        } catch (NoSuchMethodException e) {
-            try {
-                return cls.getDeclaredConstructor(cls.getEnclosingClass()).newInstance(p);
-            } catch (InstantiationException | IllegalAccessException | InvocationTargetException | NoSuchMethodException ex) {
-                throw new RuntimeException(ex);
-            }
-        }
+  static <T> T getAccessor(PropertyHolder p, Class<? extends T> cls) {
+    try {
+      return cls.getDeclaredConstructor().newInstance();
+    } catch (InstantiationException | IllegalAccessException | InvocationTargetException e) {
+      throw new RuntimeException(e);
+    } catch (NoSuchMethodException e) {
+      try {
+        return cls.getDeclaredConstructor(cls.getEnclosingClass()).newInstance(p);
+      } catch (InstantiationException
+          | IllegalAccessException
+          | InvocationTargetException
+          | NoSuchMethodException ex) {
+        throw new RuntimeException(ex);
+      }
     }
+  }
 }

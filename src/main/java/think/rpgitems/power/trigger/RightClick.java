@@ -7,16 +7,23 @@ import think.rpgitems.power.PowerResult;
 import think.rpgitems.power.PowerRightClick;
 
 class RightClick extends Trigger<PlayerInteractEvent, PowerRightClick, Void, Void> {
-    RightClick() {
-        super(PlayerInteractEvent.class, PowerRightClick.class, Void.class, Void.class, "RIGHT_CLICK");
-    }
+  RightClick() {
+    super(PlayerInteractEvent.class, PowerRightClick.class, Void.class, Void.class, "RIGHT_CLICK");
+  }
 
-    public RightClick(String name) {
-        super(name, "RIGHT_CLICK", PlayerInteractEvent.class, PowerRightClick.class, Void.class, Void.class);
-    }
+  public RightClick(String name) {
+    super(
+        name,
+        "RIGHT_CLICK",
+        PlayerInteractEvent.class,
+        PowerRightClick.class,
+        Void.class,
+        Void.class);
+  }
 
-    @Override
-    public PowerResult<Void> run(PowerRightClick power, Player player, ItemStack i, PlayerInteractEvent event) {
-        return power.rightClick(player, i, event);
-    }
+  @Override
+  public PowerResult<Void> run(
+      PowerRightClick power, Player player, ItemStack i, PlayerInteractEvent event) {
+    return power.rightClick(player, i, event);
+  }
 }

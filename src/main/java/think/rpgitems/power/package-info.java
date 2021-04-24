@@ -1,4 +1,2 @@
-/**
- * Things about powers and properties
- */
+/** Things about powers and properties */
 package think.rpgitems.power;

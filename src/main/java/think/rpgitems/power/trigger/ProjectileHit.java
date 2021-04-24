@@ -7,16 +7,28 @@ import think.rpgitems.power.PowerProjectileHit;
 import think.rpgitems.power.PowerResult;
 
 class ProjectileHit extends Trigger<ProjectileHitEvent, PowerProjectileHit, Void, Void> {
-    ProjectileHit() {
-        super(ProjectileHitEvent.class, PowerProjectileHit.class, Void.class, Void.class, "PROJECTILE_HIT");
-    }
+  ProjectileHit() {
+    super(
+        ProjectileHitEvent.class,
+        PowerProjectileHit.class,
+        Void.class,
+        Void.class,
+        "PROJECTILE_HIT");
+  }
 
-    public ProjectileHit(String name) {
-        super(name, "PROJECTILE_HIT", ProjectileHitEvent.class, PowerProjectileHit.class, Void.class, Void.class);
-    }
+  public ProjectileHit(String name) {
+    super(
+        name,
+        "PROJECTILE_HIT",
+        ProjectileHitEvent.class,
+        PowerProjectileHit.class,
+        Void.class,
+        Void.class);
+  }
 
-    @Override
-    public PowerResult<Void> run(PowerProjectileHit power, Player player, ItemStack i, ProjectileHitEvent event) {
-        return power.projectileHit(player, i, event);
-    }
+  @Override
+  public PowerResult<Void> run(
+      PowerProjectileHit power, Player player, ItemStack i, ProjectileHitEvent event) {
+    return power.projectileHit(player, i, event);
+  }
 }

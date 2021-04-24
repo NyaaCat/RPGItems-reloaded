@@ -8,7 +8,7 @@ import java.lang.annotation.Target;
 @Retention(RetentionPolicy.RUNTIME)
 @Target(ElementType.FIELD)
 public @interface Deserializer {
-    Class<? extends Setter> value();
+  Class<? extends Setter> value();
 
-    String message() default "";
+  String message() default "";
 }

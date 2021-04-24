@@ -27,53 +27,55 @@ import think.rpgitems.power.*;
 
 /**
  * Power food.
- * <p>
- * Restore {@link #foodpoints food points} when eaten.
- * </p>
+ *
+ * <p>Restore {@link #foodpoints food points} when eaten.
  */
 @SuppressWarnings("WeakerAccess")
 @Meta(immutableTrigger = true, implClass = Food.Impl.class)
 public class Food extends BasePower {
-    @Property(order = 0, required = true)
-    public int foodpoints;
+  @Property(order = 0, required = true)
+  public int foodpoints;
+
+  @Override
+  public String getName() {
+    return "food";
+  }
+
+  @Override
+  public String displayText() {
+    return I18n.formatDefault("power.food", getFoodpoints());
+  }
+
+  /** Food Points */
+  public int getFoodpoints() {
+    return foodpoints;
+  }
+
+  public static class Impl implements PowerRightClick<Food> {
+    @Override
+    public PowerResult<Void> rightClick(
+        Food power, final Player player, ItemStack stack, PlayerInteractEvent event) {
+      ItemStack item = player.getInventory().getItemInMainHand();
+      int count = item.getAmount() - 1;
+      if (count == 0) {
+        int newFoodPoint = player.getFoodLevel() + power.getFoodpoints();
+        if (newFoodPoint > 20) newFoodPoint = 20;
+        player.setFoodLevel(newFoodPoint);
+        Bukkit.getScheduler()
+            .scheduleSyncDelayedTask(
+                RPGItems.plugin,
+                () -> player.getInventory().setItemInMainHand(new ItemStack(Material.AIR)),
+                1L);
+      } else {
+        player.setFoodLevel(player.getFoodLevel() + power.getFoodpoints());
+        item.setAmount(count);
+      }
+      return PowerResult.ok();
+    }
 
     @Override
-    public String getName() {
-        return "food";
+    public Class<? extends Food> getPowerClass() {
+      return Food.class;
     }
-
-    @Override
-    public String displayText() {
-        return I18n.formatDefault("power.food", getFoodpoints());
-    }
-
-    /**
-     * Food Points
-     */
-    public int getFoodpoints() {
-        return foodpoints;
-    }
-
-    public static class Impl implements PowerRightClick<Food> {
-        @Override
-        public PowerResult<Void> rightClick(Food power, final Player player, ItemStack stack, PlayerInteractEvent event) {
-            ItemStack item = player.getInventory().getItemInMainHand();
-            int count = item.getAmount() - 1;
-            if (count == 0) {
-                int newFoodPoint = player.getFoodLevel() + power.getFoodpoints();
-                if (newFoodPoint > 20) newFoodPoint = 20;
-                player.setFoodLevel(newFoodPoint);
-                Bukkit.getScheduler().scheduleSyncDelayedTask(RPGItems.plugin, () -> player.getInventory().setItemInMainHand(new ItemStack(Material.AIR)), 1L);
-            } else {
-                player.setFoodLevel(player.getFoodLevel() + power.getFoodpoints());
-                item.setAmount(count);
-            }
-            return PowerResult.ok();
-        }
-
-        @Override
-        public Class<? extends Food> getPowerClass() {
-            return Food.class;
-        }
-    }
+  }
 }
