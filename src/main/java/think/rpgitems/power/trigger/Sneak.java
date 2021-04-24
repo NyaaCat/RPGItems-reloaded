@@ -8,22 +8,28 @@ import think.rpgitems.power.PowerResult;
 import think.rpgitems.power.PowerSneak;
 
 class Sneak<TPower extends Power>
-    extends Trigger<PlayerToggleSneakEvent, TPower, PowerSneak<TPower>, Void, Void> {
-  Sneak() {
-    super(PlayerToggleSneakEvent.class, PowerSneak.class, Void.class, Void.class, "SNEAK");
-  }
+        extends Trigger<PlayerToggleSneakEvent, TPower, PowerSneak<TPower>, Void, Void> {
+    Sneak() {
+        super(PlayerToggleSneakEvent.class, PowerSneak.class, Void.class, Void.class, "SNEAK");
+    }
 
-  public Sneak(String name) {
-    super(name, "SNEAK", PlayerToggleSneakEvent.class, PowerSneak.class, Void.class, Void.class);
-  }
+    public Sneak(String name) {
+        super(
+                name,
+                "SNEAK",
+                PlayerToggleSneakEvent.class,
+                PowerSneak.class,
+                Void.class,
+                Void.class);
+    }
 
-  @Override
-  public PowerResult<Void> run(
-      TPower power,
-      PowerSneak<TPower> pimpl,
-      Player player,
-      ItemStack i,
-      PlayerToggleSneakEvent event) {
-    return pimpl.sneak(power, player, i, event);
-  }
+    @Override
+    public PowerResult<Void> run(
+            TPower power,
+            PowerSneak<TPower> pimpl,
+            Player player,
+            ItemStack i,
+            PlayerToggleSneakEvent event) {
+        return pimpl.sneak(power, player, i, event);
+    }
 }

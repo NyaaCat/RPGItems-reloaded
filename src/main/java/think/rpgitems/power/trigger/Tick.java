@@ -8,17 +8,17 @@ import think.rpgitems.power.PowerResult;
 import think.rpgitems.power.PowerTick;
 
 class Tick<TPower extends Power> extends Trigger<Event, TPower, PowerTick<TPower>, Void, Void> {
-  Tick() {
-    super(Event.class, PowerTick.class, Void.class, Void.class, "TICK");
-  }
+    Tick() {
+        super(Event.class, PowerTick.class, Void.class, Void.class, "TICK");
+    }
 
-  public Tick(String name) {
-    super(name, "TICK", Event.class, PowerTick.class, Void.class, Void.class);
-  }
+    public Tick(String name) {
+        super(name, "TICK", Event.class, PowerTick.class, Void.class, Void.class);
+    }
 
-  @Override
-  public PowerResult<Void> run(
-      TPower power, PowerTick<TPower> pimpl, Player player, ItemStack i, Event event) {
-    return pimpl.tick(power, player, i);
-  }
+    @Override
+    public PowerResult<Void> run(
+            TPower power, PowerTick<TPower> pimpl, Player player, ItemStack i, Event event) {
+        return pimpl.tick(power, player, i);
+    }
 }

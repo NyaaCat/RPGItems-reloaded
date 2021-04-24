@@ -11,13 +11,13 @@ import think.rpgitems.power.Meta;
 @Meta(marker = true)
 public class Unbreakable extends BaseMarker {
 
-  @Override
-  public String getName() {
-    return "unbreakable";
-  }
+    @Override
+    public String getName() {
+        return "unbreakable";
+    }
 
-  @Override
-  public String displayText() {
-    return I18n.formatDefault("power.unbreakable");
-  }
+    @Override
+    public String displayText() {
+        return I18n.formatDefault("power.unbreakable");
+    }
 }

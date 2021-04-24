@@ -7,15 +7,15 @@ import think.rpgitems.power.PropertyHolder;
 import think.rpgitems.power.PropertyInstance;
 
 public interface Modifier<T> extends Function<RgiParameter<T>, T>, PropertyHolder {
-  void init(PersistentDataContainer section);
+    void init(PersistentDataContainer section);
 
-  void save(PersistentDataContainer section);
+    void save(PersistentDataContainer section);
 
-  boolean match(Power orig, PropertyInstance propertyInstance);
+    boolean match(Power orig, PropertyInstance propertyInstance);
 
-  String id();
+    String id();
 
-  int priority();
+    int priority();
 
-  Class<T> getModifierTargetType();
+    Class<T> getModifierTargetType();
 }

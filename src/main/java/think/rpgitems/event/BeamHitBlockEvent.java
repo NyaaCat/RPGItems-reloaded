@@ -9,60 +9,60 @@ import org.bukkit.event.HandlerList;
 import org.bukkit.inventory.ItemStack;
 
 public class BeamHitBlockEvent extends Event {
-  public static final HandlerList handlerList = new HandlerList();
+    public static final HandlerList handlerList = new HandlerList();
 
-  @Override
-  public HandlerList getHandlers() {
-    return handlerList;
-  }
+    @Override
+    public HandlerList getHandlers() {
+        return handlerList;
+    }
 
-  public static HandlerList getHandlerList() {
-    return handlerList;
-  }
+    public static HandlerList getHandlerList() {
+        return handlerList;
+    }
 
-  private final Player player;
-  private final Entity from;
-  private final Block hitBlock;
-  private Location location;
-  private final ItemStack itemStack;
-  private int depth;
+    private final Player player;
+    private final Entity from;
+    private final Block hitBlock;
+    private Location location;
+    private final ItemStack itemStack;
+    private int depth;
 
-  public BeamHitBlockEvent(
-      Player player,
-      Entity from,
-      Block hitBlock,
-      Location location,
-      ItemStack itemStack,
-      int depth) {
-    this.player = player;
-    this.from = from;
-    this.hitBlock = hitBlock;
-    this.location = location;
-    this.itemStack = itemStack;
-    this.depth = depth;
-  }
+    public BeamHitBlockEvent(
+            Player player,
+            Entity from,
+            Block hitBlock,
+            Location location,
+            ItemStack itemStack,
+            int depth) {
+        this.player = player;
+        this.from = from;
+        this.hitBlock = hitBlock;
+        this.location = location;
+        this.itemStack = itemStack;
+        this.depth = depth;
+    }
 
-  public Location getLocation() {
-    return location;
-  }
+    public Location getLocation() {
+        return location;
+    }
 
-  public Entity getFrom() {
-    return from;
-  }
+    public Entity getFrom() {
+        return from;
+    }
 
-  public Player getPlayer() {
-    return player;
-  }
+    public Player getPlayer() {
+        return player;
+    }
 
-  public Block getHitBlock() {
-    return hitBlock;
-  }
+    public Block getHitBlock() {
+        return hitBlock;
+    }
 
-  public ItemStack getItemStack() {
-    return itemStack;
-  }
+    public ItemStack getItemStack() {
+        return itemStack;
+    }
 
-  public int getDepth() {
-    return depth;
-  }
+    public int getDepth() {
+        return depth;
+    }
 }

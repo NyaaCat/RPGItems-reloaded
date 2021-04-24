@@ -16,38 +16,38 @@ import think.rpgitems.power.*;
 @Meta(defaultTrigger = "HIT", implClass = ConsumeHit.Impl.class)
 public class ConsumeHit extends BasePower {
 
-  @Override
-  public String getName() {
-    return "consumehit";
-  }
-
-  @Override
-  public String displayText() {
-    return I18n.formatDefault("power.consumehit");
-  }
-
-  public static class Impl implements PowerHit<ConsumeHit> {
     @Override
-    public PowerResult<Double> hit(
-        ConsumeHit power,
-        final Player player,
-        ItemStack stack,
-        LivingEntity entity,
-        double damage,
-        EntityDamageByEntityEvent event) {
-      int count = stack.getAmount() - 1;
-      if (count == 0) {
-        stack.setAmount(0);
-        stack.setType(Material.AIR);
-      } else {
-        stack.setAmount(count);
-      }
-      return PowerResult.ok(damage);
+    public String getName() {
+        return "consumehit";
     }
 
     @Override
-    public Class<? extends ConsumeHit> getPowerClass() {
-      return ConsumeHit.class;
+    public String displayText() {
+        return I18n.formatDefault("power.consumehit");
     }
-  }
+
+    public static class Impl implements PowerHit<ConsumeHit> {
+        @Override
+        public PowerResult<Double> hit(
+                ConsumeHit power,
+                final Player player,
+                ItemStack stack,
+                LivingEntity entity,
+                double damage,
+                EntityDamageByEntityEvent event) {
+            int count = stack.getAmount() - 1;
+            if (count == 0) {
+                stack.setAmount(0);
+                stack.setType(Material.AIR);
+            } else {
+                stack.setAmount(count);
+            }
+            return PowerResult.ok(damage);
+        }
+
+        @Override
+        public Class<? extends ConsumeHit> getPowerClass() {
+            return ConsumeHit.class;
+        }
+    }
 }

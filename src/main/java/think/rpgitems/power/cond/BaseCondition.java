@@ -10,39 +10,39 @@ import think.rpgitems.power.Property;
 
 /** Base class containing common methods and fields. */
 public abstract class BaseCondition<T> extends BasePropertyHolder
-    implements Serializable, Condition<T> {
-  @Property public String displayText;
-  @Property public Set<String> conditions = new HashSet<>();
+        implements Serializable, Condition<T> {
+    @Property public String displayText;
+    @Property public Set<String> conditions = new HashSet<>();
 
-  @Property public Set<String> tags = new HashSet<>();
+    @Property public Set<String> tags = new HashSet<>();
 
-  @Override
-  public Set<String> getTags() {
-    return tags;
-  }
+    @Override
+    public Set<String> getTags() {
+        return tags;
+    }
 
-  @Override
-  public void addTag(String tag) {
-    tags.add(tag);
-  }
+    @Override
+    public void addTag(String tag) {
+        tags.add(tag);
+    }
 
-  @Override
-  public void removeTag(String tag) {
-    tags.remove(tag);
-  }
+    @Override
+    public void removeTag(String tag) {
+        tags.remove(tag);
+    }
 
-  @Override
-  public Set<String> getConditions() {
-    return Collections.unmodifiableSet(conditions);
-  }
+    @Override
+    public Set<String> getConditions() {
+        return Collections.unmodifiableSet(conditions);
+    }
 
-  @Override
-  public String displayText() {
-    return displayText;
-  }
+    @Override
+    public String displayText() {
+        return displayText;
+    }
 
-  @Override
-  public final String getPropertyHolderType() {
-    return "condition";
-  }
+    @Override
+    public final String getPropertyHolderType() {
+        return "condition";
+    }
 }

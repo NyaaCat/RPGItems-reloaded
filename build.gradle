@@ -228,6 +228,6 @@ spotless {
 		// don't need to set target, it is inferred from java
 
 		// apply a specific flavor of google-java-format
-		googleJavaFormat()
+		googleJavaFormat().aosp()
 	}
 }

@@ -8,49 +8,49 @@ import org.bukkit.event.HandlerList;
 import org.bukkit.inventory.ItemStack;
 
 public class BeamEndEvent extends Event {
-  public static final HandlerList handlerList = new HandlerList();
+    public static final HandlerList handlerList = new HandlerList();
 
-  @Override
-  public HandlerList getHandlers() {
-    return handlerList;
-  }
+    @Override
+    public HandlerList getHandlers() {
+        return handlerList;
+    }
 
-  public static HandlerList getHandlerList() {
-    return handlerList;
-  }
+    public static HandlerList getHandlerList() {
+        return handlerList;
+    }
 
-  private final Player player;
-  private final Entity fromEntity;
-  private final Location location;
-  private final ItemStack itemStack;
-  private int depth;
+    private final Player player;
+    private final Entity fromEntity;
+    private final Location location;
+    private final ItemStack itemStack;
+    private int depth;
 
-  public BeamEndEvent(
-      Player player, Entity fromEntity, Location location, ItemStack itemStack, int depth) {
-    this.player = player;
-    this.fromEntity = fromEntity;
-    this.location = location;
-    this.itemStack = itemStack;
-    this.depth = depth;
-  }
+    public BeamEndEvent(
+            Player player, Entity fromEntity, Location location, ItemStack itemStack, int depth) {
+        this.player = player;
+        this.fromEntity = fromEntity;
+        this.location = location;
+        this.itemStack = itemStack;
+        this.depth = depth;
+    }
 
-  public Player getPlayer() {
-    return player;
-  }
+    public Player getPlayer() {
+        return player;
+    }
 
-  public Entity getFromEntity() {
-    return fromEntity;
-  }
+    public Entity getFromEntity() {
+        return fromEntity;
+    }
 
-  public Location getLocation() {
-    return location;
-  }
+    public Location getLocation() {
+        return location;
+    }
 
-  public ItemStack getItemStack() {
-    return itemStack;
-  }
+    public ItemStack getItemStack() {
+        return itemStack;
+    }
 
-  public int getDepth() {
-    return depth;
-  }
+    public int getDepth() {
+        return depth;
+    }
 }

@@ -7,9 +7,9 @@ import java.lang.annotation.*;
 @Documented
 public @interface Property {
 
-  int order() default Integer.MAX_VALUE;
+    int order() default Integer.MAX_VALUE;
 
-  boolean required() default false;
+    boolean required() default false;
 
-  String[] alias() default {};
+    String[] alias() default {};
 }

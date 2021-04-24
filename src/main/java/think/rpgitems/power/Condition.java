@@ -7,15 +7,16 @@ import org.bukkit.inventory.ItemStack;
 
 public interface Condition<T> extends PropertyHolder, TagHolder {
 
-  String id();
+    String id();
 
-  boolean isStatic();
+    boolean isStatic();
 
-  boolean isCritical();
+    boolean isCritical();
 
-  PowerResult<T> check(Player player, ItemStack stack, Map<PropertyHolder, PowerResult<?>> context);
+    PowerResult<T> check(
+            Player player, ItemStack stack, Map<PropertyHolder, PowerResult<?>> context);
 
-  Set<String> getConditions();
+    Set<String> getConditions();
 
-  String displayText();
+    String displayText();
 }

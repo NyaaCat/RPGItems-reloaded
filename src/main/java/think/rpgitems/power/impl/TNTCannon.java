@@ -18,42 +18,44 @@ import think.rpgitems.power.*;
 @Meta(immutableTrigger = true, implClass = TNTCannon.Impl.class)
 public class TNTCannon extends BasePower {
 
-  @Override
-  public String getName() {
-    return "tntcannon";
-  }
-
-  @Override
-  public String displayText() {
-    return I18n.formatDefault("power.tntcannon", (0) / 20d);
-  }
-
-  public static class Impl implements PowerRightClick<TNTCannon>, PowerLivingEntity<TNTCannon> {
     @Override
-    public PowerResult<Void> rightClick(
-        TNTCannon power, Player player, ItemStack stack, PlayerInteractEvent event) {
-      player.playSound(player.getLocation(), Sound.ENTITY_ARROW_SHOOT, 1.0f, 1.0f);
-      TNTPrimed tnt = player.getWorld().spawn(player.getLocation().add(0, 1.8, 0), TNTPrimed.class);
-      tnt.setVelocity(player.getLocation().getDirection().multiply(2d));
-      return PowerResult.ok();
+    public String getName() {
+        return "tntcannon";
     }
 
     @Override
-    public Class<? extends TNTCannon> getPowerClass() {
-      return TNTCannon.class;
+    public String displayText() {
+        return I18n.formatDefault("power.tntcannon", (0) / 20d);
     }
 
-    @Override
-    public PowerResult<Void> fire(
-        TNTCannon power,
-        Player player,
-        ItemStack stack,
-        LivingEntity entity,
-        @Nullable Double value) {
-      player.getWorld().playSound(entity.getLocation(), Sound.ENTITY_ARROW_SHOOT, 1.0f, 1.0f);
-      TNTPrimed tnt = player.getWorld().spawn(entity.getLocation().add(0, 1.8, 0), TNTPrimed.class);
-      tnt.setVelocity(entity.getLocation().getDirection().multiply(2d));
-      return PowerResult.ok();
+    public static class Impl implements PowerRightClick<TNTCannon>, PowerLivingEntity<TNTCannon> {
+        @Override
+        public PowerResult<Void> rightClick(
+                TNTCannon power, Player player, ItemStack stack, PlayerInteractEvent event) {
+            player.playSound(player.getLocation(), Sound.ENTITY_ARROW_SHOOT, 1.0f, 1.0f);
+            TNTPrimed tnt =
+                    player.getWorld().spawn(player.getLocation().add(0, 1.8, 0), TNTPrimed.class);
+            tnt.setVelocity(player.getLocation().getDirection().multiply(2d));
+            return PowerResult.ok();
+        }
+
+        @Override
+        public Class<? extends TNTCannon> getPowerClass() {
+            return TNTCannon.class;
+        }
+
+        @Override
+        public PowerResult<Void> fire(
+                TNTCannon power,
+                Player player,
+                ItemStack stack,
+                LivingEntity entity,
+                @Nullable Double value) {
+            player.getWorld().playSound(entity.getLocation(), Sound.ENTITY_ARROW_SHOOT, 1.0f, 1.0f);
+            TNTPrimed tnt =
+                    player.getWorld().spawn(entity.getLocation().add(0, 1.8, 0), TNTPrimed.class);
+            tnt.setVelocity(entity.getLocation().getDirection().multiply(2d));
+            return PowerResult.ok();
+        }
     }
-  }
 }

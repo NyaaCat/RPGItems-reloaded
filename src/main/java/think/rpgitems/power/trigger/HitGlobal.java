@@ -13,54 +13,56 @@ import think.rpgitems.power.PowerResult;
 import think.rpgitems.power.Property;
 
 public class HitGlobal<TPower extends Power>
-    extends Trigger<EntityDamageByEntityEvent, TPower, PowerHit<TPower>, Double, Optional<Double>> {
+        extends Trigger<
+                EntityDamageByEntityEvent, TPower, PowerHit<TPower>, Double, Optional<Double>> {
 
-  @Property public double minDamage = Double.NEGATIVE_INFINITY;
+    @Property public double minDamage = Double.NEGATIVE_INFINITY;
 
-  @Property public double maxDamage = Double.POSITIVE_INFINITY;
+    @Property public double maxDamage = Double.POSITIVE_INFINITY;
 
-  public HitGlobal() {
-    super(
-        EntityDamageByEntityEvent.class,
-        PowerHit.class,
-        Double.class,
-        Optional.class,
-        "HIT_GLOBAL");
-  }
+    public HitGlobal() {
+        super(
+                EntityDamageByEntityEvent.class,
+                PowerHit.class,
+                Double.class,
+                Optional.class,
+                "HIT_GLOBAL");
+    }
 
-  @Override
-  public Optional<Double> def(Player player, ItemStack i, EntityDamageByEntityEvent event) {
-    return Optional.empty();
-  }
+    @Override
+    public Optional<Double> def(Player player, ItemStack i, EntityDamageByEntityEvent event) {
+        return Optional.empty();
+    }
 
-  @Override
-  public Optional<Double> next(Optional<Double> a, PowerResult<Double> b) {
-    return b.isOK() ? Optional.ofNullable(maxWithCancel(a.orElse(null), b.data())) : a;
-  }
+    @Override
+    public Optional<Double> next(Optional<Double> a, PowerResult<Double> b) {
+        return b.isOK() ? Optional.ofNullable(maxWithCancel(a.orElse(null), b.data())) : a;
+    }
 
-  @Override
-  public PowerResult<Double> warpResult(
-      PowerResult<Void> overrideResult,
-      TPower power,
-      PowerHit<TPower> pimpl,
-      Player player,
-      ItemStack i,
-      EntityDamageByEntityEvent event) {
-    return overrideResult.with(event.getDamage());
-  }
+    @Override
+    public PowerResult<Double> warpResult(
+            PowerResult<Void> overrideResult,
+            TPower power,
+            PowerHit<TPower> pimpl,
+            Player player,
+            ItemStack i,
+            EntityDamageByEntityEvent event) {
+        return overrideResult.with(event.getDamage());
+    }
 
-  @Override
-  public PowerResult<Double> run(
-      TPower power,
-      PowerHit<TPower> pimpl,
-      Player player,
-      ItemStack i,
-      EntityDamageByEntityEvent event) {
-    return pimpl.hit(power, player, i, (LivingEntity) event.getEntity(), event.getDamage(), event);
-  }
+    @Override
+    public PowerResult<Double> run(
+            TPower power,
+            PowerHit<TPower> pimpl,
+            Player player,
+            ItemStack i,
+            EntityDamageByEntityEvent event) {
+        return pimpl.hit(
+                power, player, i, (LivingEntity) event.getEntity(), event.getDamage(), event);
+    }
 
-  @Override
-  public boolean check(Player player, ItemStack i, EntityDamageByEntityEvent event) {
-    return event.getDamage() > minDamage && event.getDamage() < maxDamage;
-  }
+    @Override
+    public boolean check(Player player, ItemStack i, EntityDamageByEntityEvent event) {
+        return event.getDamage() > minDamage && event.getDamage() < maxDamage;
+    }
 }

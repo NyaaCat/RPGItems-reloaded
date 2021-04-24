@@ -21,88 +21,87 @@ import think.rpgitems.power.*;
 @Meta(defaultTrigger = "HIT", implClass = DeathCommand.Impl.class)
 public class DeathCommand extends BasePower {
 
-  private static final Random rand = new Random();
+    private static final Random rand = new Random();
 
-  @Property(order = 1, required = true)
-  public String command = "";
+    @Property(order = 1, required = true)
+    public String command = "";
 
-  @Property(order = 0)
-  public int chance = 20;
+    @Property(order = 0)
+    public int chance = 20;
 
-  @Property(order = 3)
-  public String desc = "";
+    @Property(order = 3)
+    public String desc = "";
 
-  @Property(order = 2)
-  public int count = 1;
+    @Property(order = 2)
+    public int count = 1;
 
-  /** Command to be executed */
-  public String getCommand() {
-    return command;
-  }
+    /** Command to be executed */
+    public String getCommand() {
+        return command;
+    }
 
-  /** Times to run the {@link #command} */
-  public int getCount() {
-    return count;
-  }
-
-  @Override
-  public String getName() {
-    return "deathcommand";
-  }
-
-  @Override
-  public String displayText() {
-    return I18n.formatDefault(
-        "power.deathcommand",
-        getChance(),
-        getDesc().equals("") ? "execute some command" : getDesc());
-  }
-
-  /** Chance of triggering this power */
-  public int getChance() {
-    return chance;
-  }
-
-  /** Description in display text */
-  public String getDesc() {
-    return desc;
-  }
-
-  public static Random getRand() {
-    return rand;
-  }
-
-  public static class Impl implements PowerHit<DeathCommand> {
-    @Override
-    public PowerResult<Double> hit(
-        DeathCommand power,
-        Player player,
-        ItemStack stack,
-        LivingEntity entity,
-        double damage,
-        EntityDamageByEntityEvent event) {
-      if (getRand().nextInt(power.getChance()) == 0) {
-        Location loc = entity.getLocation();
-        int x = (int) loc.getX();
-        int y = (int) loc.getY();
-        int z = (int) loc.getZ();
-        entity.setHealth(0);
-        String cmd =
-            power
-                .getCommand()
-                .replace("${x}", String.valueOf(x))
-                .replace("${y}", String.valueOf(y))
-                .replace("${z}", String.valueOf(z));
-        for (int i = 0; i < power.getCount(); i++)
-          Bukkit.dispatchCommand(Bukkit.getConsoleSender(), cmd);
-        return PowerResult.ok(damage);
-      }
-      return PowerResult.noop();
+    /** Times to run the {@link #command} */
+    public int getCount() {
+        return count;
     }
 
     @Override
-    public Class<? extends DeathCommand> getPowerClass() {
-      return DeathCommand.class;
+    public String getName() {
+        return "deathcommand";
     }
-  }
+
+    @Override
+    public String displayText() {
+        return I18n.formatDefault(
+                "power.deathcommand",
+                getChance(),
+                getDesc().equals("") ? "execute some command" : getDesc());
+    }
+
+    /** Chance of triggering this power */
+    public int getChance() {
+        return chance;
+    }
+
+    /** Description in display text */
+    public String getDesc() {
+        return desc;
+    }
+
+    public static Random getRand() {
+        return rand;
+    }
+
+    public static class Impl implements PowerHit<DeathCommand> {
+        @Override
+        public PowerResult<Double> hit(
+                DeathCommand power,
+                Player player,
+                ItemStack stack,
+                LivingEntity entity,
+                double damage,
+                EntityDamageByEntityEvent event) {
+            if (getRand().nextInt(power.getChance()) == 0) {
+                Location loc = entity.getLocation();
+                int x = (int) loc.getX();
+                int y = (int) loc.getY();
+                int z = (int) loc.getZ();
+                entity.setHealth(0);
+                String cmd =
+                        power.getCommand()
+                                .replace("${x}", String.valueOf(x))
+                                .replace("${y}", String.valueOf(y))
+                                .replace("${z}", String.valueOf(z));
+                for (int i = 0; i < power.getCount(); i++)
+                    Bukkit.dispatchCommand(Bukkit.getConsoleSender(), cmd);
+                return PowerResult.ok(damage);
+            }
+            return PowerResult.noop();
+        }
+
+        @Override
+        public Class<? extends DeathCommand> getPowerClass() {
+            return DeathCommand.class;
+        }
+    }
 }

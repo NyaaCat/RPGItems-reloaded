@@ -8,33 +8,33 @@ import think.rpgitems.power.PowerOffhandClick;
 import think.rpgitems.power.PowerResult;
 
 class OffhandClick<TPower extends Power>
-    extends Trigger<PlayerInteractEvent, TPower, PowerOffhandClick<TPower>, Void, Void> {
-  OffhandClick() {
-    super(
-        PlayerInteractEvent.class,
-        PowerOffhandClick.class,
-        Void.class,
-        Void.class,
-        "OFFHAND_CLICK");
-  }
+        extends Trigger<PlayerInteractEvent, TPower, PowerOffhandClick<TPower>, Void, Void> {
+    OffhandClick() {
+        super(
+                PlayerInteractEvent.class,
+                PowerOffhandClick.class,
+                Void.class,
+                Void.class,
+                "OFFHAND_CLICK");
+    }
 
-  public OffhandClick(String name) {
-    super(
-        name,
-        "OFFHAND_CLICK",
-        PlayerInteractEvent.class,
-        PowerOffhandClick.class,
-        Void.class,
-        Void.class);
-  }
+    public OffhandClick(String name) {
+        super(
+                name,
+                "OFFHAND_CLICK",
+                PlayerInteractEvent.class,
+                PowerOffhandClick.class,
+                Void.class,
+                Void.class);
+    }
 
-  @Override
-  public PowerResult<Void> run(
-      TPower power,
-      PowerOffhandClick<TPower> pimpl,
-      Player player,
-      ItemStack i,
-      PlayerInteractEvent event) {
-    return pimpl.offhandClick(power, player, i, event);
-  }
+    @Override
+    public PowerResult<Void> run(
+            TPower power,
+            PowerOffhandClick<TPower> pimpl,
+            Player player,
+            ItemStack i,
+            PlayerInteractEvent event) {
+        return pimpl.offhandClick(power, player, i, event);
+    }
 }

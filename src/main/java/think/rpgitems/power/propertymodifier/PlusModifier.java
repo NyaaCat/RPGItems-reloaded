@@ -5,15 +5,15 @@ import think.rpgitems.power.Property;
 
 @Meta(marker = true)
 public class PlusModifier extends BaseModifier<Double> implements DoubleModifier {
-  @Property public double value;
+    @Property public double value;
 
-  @Override
-  public String getName() {
-    return "plusmodifier";
-  }
+    @Override
+    public String getName() {
+        return "plusmodifier";
+    }
 
-  @Override
-  public Double apply(RgiParameter<Double> t) {
-    return t.getValue() + value;
-  }
+    @Override
+    public Double apply(RgiParameter<Double> t) {
+        return t.getValue() + value;
+    }
 }

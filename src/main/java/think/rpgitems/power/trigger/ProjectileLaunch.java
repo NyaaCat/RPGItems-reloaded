@@ -8,33 +8,33 @@ import think.rpgitems.power.PowerProjectileLaunch;
 import think.rpgitems.power.PowerResult;
 
 class ProjectileLaunch<TPower extends Power>
-    extends Trigger<ProjectileLaunchEvent, TPower, PowerProjectileLaunch<TPower>, Void, Void> {
-  ProjectileLaunch() {
-    super(
-        ProjectileLaunchEvent.class,
-        PowerProjectileLaunch.class,
-        Void.class,
-        Void.class,
-        "PROJECTILE_LAUNCH");
-  }
+        extends Trigger<ProjectileLaunchEvent, TPower, PowerProjectileLaunch<TPower>, Void, Void> {
+    ProjectileLaunch() {
+        super(
+                ProjectileLaunchEvent.class,
+                PowerProjectileLaunch.class,
+                Void.class,
+                Void.class,
+                "PROJECTILE_LAUNCH");
+    }
 
-  public ProjectileLaunch(String name) {
-    super(
-        name,
-        "PROJECTILE_LAUNCH",
-        ProjectileLaunchEvent.class,
-        PowerProjectileLaunch.class,
-        Void.class,
-        Void.class);
-  }
+    public ProjectileLaunch(String name) {
+        super(
+                name,
+                "PROJECTILE_LAUNCH",
+                ProjectileLaunchEvent.class,
+                PowerProjectileLaunch.class,
+                Void.class,
+                Void.class);
+    }
 
-  @Override
-  public PowerResult<Void> run(
-      TPower power,
-      PowerProjectileLaunch<TPower> pimpl,
-      Player player,
-      ItemStack i,
-      ProjectileLaunchEvent event) {
-    return pimpl.projectileLaunch(power, player, i, event);
-  }
+    @Override
+    public PowerResult<Void> run(
+            TPower power,
+            PowerProjectileLaunch<TPower> pimpl,
+            Player player,
+            ItemStack i,
+            ProjectileLaunchEvent event) {
+        return pimpl.projectileLaunch(power, player, i, event);
+    }
 }

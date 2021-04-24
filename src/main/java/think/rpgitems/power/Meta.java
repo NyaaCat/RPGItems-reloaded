@@ -5,21 +5,21 @@ import java.lang.annotation.RetentionPolicy;
 
 @Retention(RetentionPolicy.RUNTIME)
 public @interface Meta {
-  Class<? extends Pimpl> implClass() default Pimpl.class;
+    Class<? extends Pimpl> implClass() default Pimpl.class;
 
-  boolean immutableTrigger() default false;
+    boolean immutableTrigger() default false;
 
-  String[] defaultTrigger() default {};
+    String[] defaultTrigger() default {};
 
-  boolean marker() default false;
+    boolean marker() default false;
 
-  boolean withSelectors() default false;
+    boolean withSelectors() default false;
 
-  boolean withConditions() default false;
+    boolean withConditions() default false;
 
-  boolean withContext() default false;
+    boolean withContext() default false;
 
-  Class<? extends Pimpl>[] generalInterface() default {};
+    Class<? extends Pimpl>[] generalInterface() default {};
 
-  String note() default "";
+    String note() default "";
 }

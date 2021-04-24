@@ -21,122 +21,132 @@ import think.rpgitems.power.*;
  */
 @SuppressWarnings("WeakerAccess")
 @Meta(
-    defaultTrigger = "HIT",
-    generalInterface = PowerLivingEntity.class,
-    implClass = CommandHit.Impl.class)
+        defaultTrigger = "HIT",
+        generalInterface = PowerLivingEntity.class,
+        implClass = CommandHit.Impl.class)
 public class CommandHit extends Command {
 
-  @Property public double minDamage = 0;
+    @Property public double minDamage = 0;
 
-  public static String handleEntityPlaceHolder(LivingEntity e, String cmd) {
-    cmd = cmd.replaceAll("\\{entity}", e.getName());
-    cmd = cmd.replaceAll("\\{entity\\.uuid}", e.getUniqueId().toString());
-    cmd = cmd.replaceAll("\\{entity\\.x}", Float.toString(e.getLocation().getBlockX()));
-    cmd = cmd.replaceAll("\\{entity\\.y}", Float.toString(e.getLocation().getBlockY()));
-    cmd = cmd.replaceAll("\\{entity\\.z}", Float.toString(e.getLocation().getBlockZ()));
-    cmd = cmd.replaceAll("\\{entity\\.yaw}", Float.toString(90 + e.getEyeLocation().getYaw()));
-    cmd = cmd.replaceAll("\\{entity\\.pitch}", Float.toString(-e.getEyeLocation().getPitch()));
-    return cmd;
-  }
+    public static String handleEntityPlaceHolder(LivingEntity e, String cmd) {
+        cmd = cmd.replaceAll("\\{entity}", e.getName());
+        cmd = cmd.replaceAll("\\{entity\\.uuid}", e.getUniqueId().toString());
+        cmd = cmd.replaceAll("\\{entity\\.x}", Float.toString(e.getLocation().getBlockX()));
+        cmd = cmd.replaceAll("\\{entity\\.y}", Float.toString(e.getLocation().getBlockY()));
+        cmd = cmd.replaceAll("\\{entity\\.z}", Float.toString(e.getLocation().getBlockZ()));
+        cmd = cmd.replaceAll("\\{entity\\.yaw}", Float.toString(90 + e.getEyeLocation().getYaw()));
+        cmd = cmd.replaceAll("\\{entity\\.pitch}", Float.toString(-e.getEyeLocation().getPitch()));
+        return cmd;
+    }
 
-  /** Minimum damage to trigger */
-  public double getMinDamage() {
-    return minDamage;
-  }
-
-  @Override
-  public String getName() {
-    return "commandhit";
-  }
-
-  @Override
-  public String displayText() {
-    return ChatColor.GREEN + getDisplay();
-  }
-
-  public static class Impl
-      implements PowerHit<CommandHit>, PowerLivingEntity<CommandHit>, PowerBeamHit<CommandHit> {
-    @Override
-    public PowerResult<Double> hit(
-        CommandHit power,
-        Player player,
-        ItemStack stack,
-        LivingEntity entity,
-        double damage,
-        EntityDamageByEntityEvent event) {
-      return fire(power, player, stack, entity, damage).with(damage);
+    /** Minimum damage to trigger */
+    public double getMinDamage() {
+        return minDamage;
     }
 
     @Override
-    public PowerResult<Void> fire(
-        CommandHit power, Player player, ItemStack stack, LivingEntity entity, Double damage) {
-      if (damage == null || damage < power.getMinDamage()) return PowerResult.noop();
-
-      return executeCommand(power, player, entity, damage);
+    public String getName() {
+        return "commandhit";
     }
 
     @Override
-    public Class<? extends CommandHit> getPowerClass() {
-      return CommandHit.class;
+    public String displayText() {
+        return ChatColor.GREEN + getDisplay();
     }
 
-    /**
-     * Execute command
-     *
-     * @param player player
-     * @param e entity
-     * @param damage damage
-     * @return PowerResult with proposed damage
-     */
-    protected PowerResult<Void> executeCommand(
-        CommandHit power, Player player, LivingEntity e, double damage) {
-      if (!player.isOnline()) return PowerResult.noop();
+    public static class Impl
+            implements PowerHit<CommandHit>,
+                    PowerLivingEntity<CommandHit>,
+                    PowerBeamHit<CommandHit> {
+        @Override
+        public PowerResult<Double> hit(
+                CommandHit power,
+                Player player,
+                ItemStack stack,
+                LivingEntity entity,
+                double damage,
+                EntityDamageByEntityEvent event) {
+            return fire(power, player, stack, entity, damage).with(damage);
+        }
 
-      attachPermission(player, power.getPermission());
-      boolean wasOp = player.isOp();
-      try {
-        if (power.getPermission().equals("*")) player.setOp(true);
+        @Override
+        public PowerResult<Void> fire(
+                CommandHit power,
+                Player player,
+                ItemStack stack,
+                LivingEntity entity,
+                Double damage) {
+            if (damage == null || damage < power.getMinDamage()) return PowerResult.noop();
 
-        String cmd = power.getCommand();
+            return executeCommand(power, player, entity, damage);
+        }
 
-        cmd = handleEntityPlaceHolder(e, cmd);
+        @Override
+        public Class<? extends CommandHit> getPowerClass() {
+            return CommandHit.class;
+        }
 
-        cmd = handlePlayerPlaceHolder(player, cmd);
+        /**
+         * Execute command
+         *
+         * @param player player
+         * @param e entity
+         * @param damage damage
+         * @return PowerResult with proposed damage
+         */
+        protected PowerResult<Void> executeCommand(
+                CommandHit power, Player player, LivingEntity e, double damage) {
+            if (!player.isOnline()) return PowerResult.noop();
 
-        cmd = cmd.replaceAll("\\{damage}", String.valueOf(damage));
+            attachPermission(player, power.getPermission());
+            boolean wasOp = player.isOp();
+            try {
+                if (power.getPermission().equals("*")) player.setOp(true);
 
-        boolean result = player.performCommand(cmd);
-        return result ? PowerResult.ok() : PowerResult.fail();
-      } finally {
-        if (power.getPermission().equals("*")) player.setOp(wasOp);
-      }
+                String cmd = power.getCommand();
+
+                cmd = handleEntityPlaceHolder(e, cmd);
+
+                cmd = handlePlayerPlaceHolder(player, cmd);
+
+                cmd = cmd.replaceAll("\\{damage}", String.valueOf(damage));
+
+                boolean result = player.performCommand(cmd);
+                return result ? PowerResult.ok() : PowerResult.fail();
+            } finally {
+                if (power.getPermission().equals("*")) player.setOp(wasOp);
+            }
+        }
+
+        @Override
+        public PowerResult<Double> hitEntity(
+                CommandHit power,
+                Player player,
+                ItemStack stack,
+                LivingEntity entity,
+                double damage,
+                BeamHitEntityEvent event) {
+            return fire(power, player, stack, entity, damage).with(damage);
+        }
+
+        @Override
+        public PowerResult<Void> hitBlock(
+                CommandHit power,
+                Player player,
+                ItemStack stack,
+                Location location,
+                BeamHitBlockEvent event) {
+            return PowerResult.noop();
+        }
+
+        @Override
+        public PowerResult<Void> beamEnd(
+                CommandHit power,
+                Player player,
+                ItemStack stack,
+                Location location,
+                BeamEndEvent event) {
+            return PowerResult.noop();
+        }
     }
-
-    @Override
-    public PowerResult<Double> hitEntity(
-        CommandHit power,
-        Player player,
-        ItemStack stack,
-        LivingEntity entity,
-        double damage,
-        BeamHitEntityEvent event) {
-      return fire(power, player, stack, entity, damage).with(damage);
-    }
-
-    @Override
-    public PowerResult<Void> hitBlock(
-        CommandHit power,
-        Player player,
-        ItemStack stack,
-        Location location,
-        BeamHitBlockEvent event) {
-      return PowerResult.noop();
-    }
-
-    @Override
-    public PowerResult<Void> beamEnd(
-        CommandHit power, Player player, ItemStack stack, Location location, BeamEndEvent event) {
-      return PowerResult.noop();
-    }
-  }
 }

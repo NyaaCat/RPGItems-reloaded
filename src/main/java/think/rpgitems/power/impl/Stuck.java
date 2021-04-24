@@ -36,215 +36,231 @@ import think.rpgitems.power.trigger.Trigger;
  * <p>The stuck power will make the hit target stuck with a chance of 1/{@link #chance}.
  */
 @Meta(
-    defaultTrigger = "HIT",
-    withSelectors = true,
-    generalInterface = PowerPlain.class,
-    implClass = Stuck.Impl.class)
+        defaultTrigger = "HIT",
+        withSelectors = true,
+        generalInterface = PowerPlain.class,
+        implClass = Stuck.Impl.class)
 public class Stuck extends BasePower {
-  private static AtomicInteger rc = new AtomicInteger(0);
-  private static Listener listener;
-  private static Cache<UUID, Long> stucked =
-      CacheBuilder.newBuilder().expireAfterAccess(10, TimeUnit.MINUTES).concurrencyLevel(2).build();
-  @Property public int chance = 3;
-  @Property public int costAoe = 0;
-  @Property public int costPerEntity = 0;
-  @Property public int range = 10;
-  @Property public double facing = 30;
+    private static AtomicInteger rc = new AtomicInteger(0);
+    private static Listener listener;
+    private static Cache<UUID, Long> stucked =
+            CacheBuilder.newBuilder()
+                    .expireAfterAccess(10, TimeUnit.MINUTES)
+                    .concurrencyLevel(2)
+                    .build();
+    @Property public int chance = 3;
+    @Property public int costAoe = 0;
+    @Property public int costPerEntity = 0;
+    @Property public int range = 10;
+    @Property public double facing = 30;
 
-  @Property(order = 1)
-  public int duration = 100;
+    @Property(order = 1)
+    public int duration = 100;
 
-  @Property public boolean requireHurtByEntity = true;
-  private Random random = new Random();
+    @Property public boolean requireHurtByEntity = true;
+    private Random random = new Random();
 
-  @Override
-  public void init(ConfigurationSection s) {
-    int orc = rc.getAndIncrement();
-    boolean allowHit = s.getBoolean("allowHit", true);
-    boolean allowAoe = s.getBoolean("allowAoe", false);
-    Set<Trigger> triggerTypes = new HashSet<>();
-    if (allowHit) {
-      triggerTypes.add(BaseTriggers.HIT);
+    @Override
+    public void init(ConfigurationSection s) {
+        int orc = rc.getAndIncrement();
+        boolean allowHit = s.getBoolean("allowHit", true);
+        boolean allowAoe = s.getBoolean("allowAoe", false);
+        Set<Trigger> triggerTypes = new HashSet<>();
+        if (allowHit) {
+            triggerTypes.add(BaseTriggers.HIT);
+        }
+        if (allowAoe) {
+            triggerTypes.add(BaseTriggers.RIGHT_CLICK);
+        }
+        triggers = triggerTypes;
+        super.init(s);
+        if (orc == 0) {
+            listener =
+                    new Listener() {
+                        @EventHandler
+                        void onEntityTeleport(EntityTeleportEvent e) {
+                            try {
+                                if (stucked.get(e.getEntity().getUniqueId(), () -> Long.MIN_VALUE)
+                                        >= (System.currentTimeMillis() - getDuration() * 50)) {
+                                    e.setCancelled(true);
+                                }
+                            } catch (ExecutionException ex) {
+                                ex.printStackTrace();
+                            }
+                        }
+
+                        @EventHandler
+                        void onPlayerTeleport(PlayerTeleportEvent e) {
+                            try {
+                                if (stucked.get(e.getPlayer().getUniqueId(), () -> Long.MIN_VALUE)
+                                        >= (System.currentTimeMillis() - getDuration() * 50)) {
+                                    if (e.getCause() != PlayerTeleportEvent.TeleportCause.COMMAND) {
+                                        e.getPlayer()
+                                                .sendMessage(I18n.formatDefault("message.stuck"));
+                                        e.setCancelled(true);
+                                    }
+                                }
+                            } catch (ExecutionException ex) {
+                                ex.printStackTrace();
+                            }
+                        }
+                    };
+            Bukkit.getPluginManager().registerEvents(listener, RPGItems.plugin);
+        }
     }
-    if (allowAoe) {
-      triggerTypes.add(BaseTriggers.RIGHT_CLICK);
+
+    /** Duration of this power in tick */
+    public int getDuration() {
+        return duration;
     }
-    triggers = triggerTypes;
-    super.init(s);
-    if (orc == 0) {
-      listener =
-          new Listener() {
-            @EventHandler
-            void onEntityTeleport(EntityTeleportEvent e) {
-              try {
-                if (stucked.get(e.getEntity().getUniqueId(), () -> Long.MIN_VALUE)
-                    >= (System.currentTimeMillis() - getDuration() * 50)) {
-                  e.setCancelled(true);
-                }
-              } catch (ExecutionException ex) {
-                ex.printStackTrace();
-              }
+
+    /** Cost of this power (right click) */
+    public int getCostAoe() {
+        return costAoe;
+    }
+
+    /** Cost of this power (right click per entity) */
+    public int getCostPerEntity() {
+        return costPerEntity;
+    }
+
+    /** Maximum view angle */
+    public double getFacing() {
+        return facing;
+    }
+
+    @Override
+    public String getName() {
+        return "stuck";
+    }
+
+    @Override
+    public String displayText() {
+        return I18n.formatDefault(
+                "power.stuck",
+                (int) ((1d / (double) getChance()) * 100d),
+                getDuration(),
+                (double) 0 / 20d);
+    }
+
+    /** Chance of triggering this power */
+    public int getChance() {
+        return chance;
+    }
+
+    @Override
+    public void deinit() {
+        int nrc = rc.decrementAndGet();
+        if (nrc == 0) {
+            HandlerList.unregisterAll(listener);
+        }
+    }
+
+    /** Range of this power */
+    public int getRange() {
+        return range;
+    }
+
+    public boolean isRequireHurtByEntity() {
+        return requireHurtByEntity;
+    }
+
+    public static class Impl
+            implements PowerLeftClick<Stuck>,
+                    PowerRightClick<Stuck>,
+                    PowerPlain<Stuck>,
+                    PowerHit<Stuck>,
+                    PowerBowShoot<Stuck>,
+                    PowerHitTaken<Stuck>,
+                    PowerHurt<Stuck> {
+
+        @Override
+        public PowerResult<Double> takeHit(
+                Stuck power,
+                Player target,
+                ItemStack stack,
+                double damage,
+                EntityDamageEvent event) {
+            if (!power.isRequireHurtByEntity() || event instanceof EntityDamageByEntityEvent) {
+                return fire(power, target, stack).with(damage);
             }
+            return PowerResult.noop();
+        }
 
-            @EventHandler
-            void onPlayerTeleport(PlayerTeleportEvent e) {
-              try {
-                if (stucked.get(e.getPlayer().getUniqueId(), () -> Long.MIN_VALUE)
-                    >= (System.currentTimeMillis() - getDuration() * 50)) {
-                  if (e.getCause() != PlayerTeleportEvent.TeleportCause.COMMAND) {
-                    e.getPlayer().sendMessage(I18n.formatDefault("message.stuck"));
-                    e.setCancelled(true);
-                  }
-                }
-              } catch (ExecutionException ex) {
-                ex.printStackTrace();
-              }
+        @Override
+        public PowerResult<Void> fire(Stuck power, Player player, ItemStack stack) {
+            List<LivingEntity> entities =
+                    getLivingEntitiesInCone(
+                            getNearestLivingEntities(
+                                    power, player.getEyeLocation(), player, power.getRange(), 0),
+                            player.getLocation().toVector(),
+                            power.getFacing(),
+                            player.getLocation().getDirection());
+            entities.forEach(
+                    entity -> {
+                        if (!power.getItem().consumeDurability(stack, power.getCostPerEntity()))
+                            return;
+                        stucked.put(entity.getUniqueId(), System.currentTimeMillis());
+                        entity.addPotionEffect(
+                                new PotionEffect(PotionEffectType.SLOW, power.getDuration(), 10),
+                                true);
+                        //                    entity.addPotionEffect(new
+                        // PotionEffect(PotionEffectType.JUMP,
+                        // duration, 128), true);
+                    });
+            return PowerResult.ok();
+        }
+
+        @Override
+        public Class<? extends Stuck> getPowerClass() {
+            return Stuck.class;
+        }
+
+        @Override
+        public PowerResult<Void> hurt(
+                Stuck power, Player target, ItemStack stack, EntityDamageEvent event) {
+            if (!power.isRequireHurtByEntity() || event instanceof EntityDamageByEntityEvent) {
+                return fire(power, target, stack);
             }
-          };
-      Bukkit.getPluginManager().registerEvents(listener, RPGItems.plugin);
+            return PowerResult.noop();
+        }
+
+        @Override
+        public PowerResult<Void> leftClick(
+                Stuck power, Player player, ItemStack stack, PlayerInteractEvent event) {
+            return fire(power, player, stack);
+        }
+
+        @Override
+        public PowerResult<Void> rightClick(
+                Stuck power, Player player, ItemStack stack, PlayerInteractEvent event) {
+            return fire(power, player, stack);
+        }
+
+        @Override
+        public PowerResult<Float> bowShoot(
+                Stuck power, Player player, ItemStack stack, EntityShootBowEvent event) {
+            return fire(power, player, stack).with(event.getForce());
+        }
+
+        @Override
+        public PowerResult<Double> hit(
+                Stuck power,
+                Player player,
+                ItemStack stack,
+                LivingEntity entity,
+                double damage,
+                EntityDamageByEntityEvent event) {
+            if (power.random.nextInt(power.getChance()) == 0) {
+                stucked.put(entity.getUniqueId(), System.currentTimeMillis());
+                entity.addPotionEffect(
+                        new PotionEffect(PotionEffectType.SLOW, power.getDuration(), 10), true);
+                // entity.addPotionEffect(new PotionEffect(PotionEffectType.JUMP, duration, 128),
+                // true);
+                // todo change implementation to lock entity mobilability
+                return PowerResult.ok(damage);
+            }
+            return PowerResult.noop();
+        }
     }
-  }
-
-  /** Duration of this power in tick */
-  public int getDuration() {
-    return duration;
-  }
-
-  /** Cost of this power (right click) */
-  public int getCostAoe() {
-    return costAoe;
-  }
-
-  /** Cost of this power (right click per entity) */
-  public int getCostPerEntity() {
-    return costPerEntity;
-  }
-
-  /** Maximum view angle */
-  public double getFacing() {
-    return facing;
-  }
-
-  @Override
-  public String getName() {
-    return "stuck";
-  }
-
-  @Override
-  public String displayText() {
-    return I18n.formatDefault(
-        "power.stuck", (int) ((1d / (double) getChance()) * 100d), getDuration(), (double) 0 / 20d);
-  }
-
-  /** Chance of triggering this power */
-  public int getChance() {
-    return chance;
-  }
-
-  @Override
-  public void deinit() {
-    int nrc = rc.decrementAndGet();
-    if (nrc == 0) {
-      HandlerList.unregisterAll(listener);
-    }
-  }
-
-  /** Range of this power */
-  public int getRange() {
-    return range;
-  }
-
-  public boolean isRequireHurtByEntity() {
-    return requireHurtByEntity;
-  }
-
-  public static class Impl
-      implements PowerLeftClick<Stuck>,
-          PowerRightClick<Stuck>,
-          PowerPlain<Stuck>,
-          PowerHit<Stuck>,
-          PowerBowShoot<Stuck>,
-          PowerHitTaken<Stuck>,
-          PowerHurt<Stuck> {
-
-    @Override
-    public PowerResult<Double> takeHit(
-        Stuck power, Player target, ItemStack stack, double damage, EntityDamageEvent event) {
-      if (!power.isRequireHurtByEntity() || event instanceof EntityDamageByEntityEvent) {
-        return fire(power, target, stack).with(damage);
-      }
-      return PowerResult.noop();
-    }
-
-    @Override
-    public PowerResult<Void> fire(Stuck power, Player player, ItemStack stack) {
-      List<LivingEntity> entities =
-          getLivingEntitiesInCone(
-              getNearestLivingEntities(power, player.getEyeLocation(), player, power.getRange(), 0),
-              player.getLocation().toVector(),
-              power.getFacing(),
-              player.getLocation().getDirection());
-      entities.forEach(
-          entity -> {
-            if (!power.getItem().consumeDurability(stack, power.getCostPerEntity())) return;
-            stucked.put(entity.getUniqueId(), System.currentTimeMillis());
-            entity.addPotionEffect(
-                new PotionEffect(PotionEffectType.SLOW, power.getDuration(), 10), true);
-            //                    entity.addPotionEffect(new PotionEffect(PotionEffectType.JUMP,
-            // duration, 128), true);
-          });
-      return PowerResult.ok();
-    }
-
-    @Override
-    public Class<? extends Stuck> getPowerClass() {
-      return Stuck.class;
-    }
-
-    @Override
-    public PowerResult<Void> hurt(
-        Stuck power, Player target, ItemStack stack, EntityDamageEvent event) {
-      if (!power.isRequireHurtByEntity() || event instanceof EntityDamageByEntityEvent) {
-        return fire(power, target, stack);
-      }
-      return PowerResult.noop();
-    }
-
-    @Override
-    public PowerResult<Void> leftClick(
-        Stuck power, Player player, ItemStack stack, PlayerInteractEvent event) {
-      return fire(power, player, stack);
-    }
-
-    @Override
-    public PowerResult<Void> rightClick(
-        Stuck power, Player player, ItemStack stack, PlayerInteractEvent event) {
-      return fire(power, player, stack);
-    }
-
-    @Override
-    public PowerResult<Float> bowShoot(
-        Stuck power, Player player, ItemStack stack, EntityShootBowEvent event) {
-      return fire(power, player, stack).with(event.getForce());
-    }
-
-    @Override
-    public PowerResult<Double> hit(
-        Stuck power,
-        Player player,
-        ItemStack stack,
-        LivingEntity entity,
-        double damage,
-        EntityDamageByEntityEvent event) {
-      if (power.random.nextInt(power.getChance()) == 0) {
-        stucked.put(entity.getUniqueId(), System.currentTimeMillis());
-        entity.addPotionEffect(
-            new PotionEffect(PotionEffectType.SLOW, power.getDuration(), 10), true);
-        // entity.addPotionEffect(new PotionEffect(PotionEffectType.JUMP, duration, 128), true);
-        // todo change implementation to lock entity mobilability
-        return PowerResult.ok(damage);
-      }
-      return PowerResult.noop();
-    }
-  }
 }

@@ -10,13 +10,13 @@ import think.rpgitems.power.Meta;
  */
 @Meta(marker = true)
 public class RangedOnly extends Ranged {
-  @Override
-  public String getName() {
-    return "rangedonly";
-  }
+    @Override
+    public String getName() {
+        return "rangedonly";
+    }
 
-  @Override
-  public String displayText() {
-    return I18n.formatDefault("power.rangedonly");
-  }
+    @Override
+    public String displayText() {
+        return I18n.formatDefault("power.rangedonly");
+    }
 }

@@ -7,6 +7,6 @@ import org.bukkit.inventory.ItemStack;
 
 public interface PowerBowShoot<P extends Power> extends Pimpl<P> {
 
-  @CheckReturnValue
-  PowerResult<Float> bowShoot(P power, Player player, ItemStack stack, EntityShootBowEvent event);
+    @CheckReturnValue
+    PowerResult<Float> bowShoot(P power, Player player, ItemStack stack, EntityShootBowEvent event);
 }

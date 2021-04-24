@@ -8,22 +8,28 @@ import think.rpgitems.power.PowerResult;
 import think.rpgitems.power.PowerSprint;
 
 class Sprint<TPower extends Power>
-    extends Trigger<PlayerToggleSprintEvent, TPower, PowerSprint<TPower>, Void, Void> {
-  Sprint() {
-    super(PlayerToggleSprintEvent.class, PowerSprint.class, Void.class, Void.class, "SPRINT");
-  }
+        extends Trigger<PlayerToggleSprintEvent, TPower, PowerSprint<TPower>, Void, Void> {
+    Sprint() {
+        super(PlayerToggleSprintEvent.class, PowerSprint.class, Void.class, Void.class, "SPRINT");
+    }
 
-  public Sprint(String name) {
-    super(name, "SPRINT", PlayerToggleSprintEvent.class, PowerSprint.class, Void.class, Void.class);
-  }
+    public Sprint(String name) {
+        super(
+                name,
+                "SPRINT",
+                PlayerToggleSprintEvent.class,
+                PowerSprint.class,
+                Void.class,
+                Void.class);
+    }
 
-  @Override
-  public PowerResult<Void> run(
-      TPower power,
-      PowerSprint<TPower> pimpl,
-      Player player,
-      ItemStack i,
-      PlayerToggleSprintEvent event) {
-    return pimpl.sprint(power, player, i, event);
-  }
+    @Override
+    public PowerResult<Void> run(
+            TPower power,
+            PowerSprint<TPower> pimpl,
+            Player player,
+            ItemStack i,
+            PlayerToggleSprintEvent event) {
+        return pimpl.sprint(power, player, i, event);
+    }
 }
