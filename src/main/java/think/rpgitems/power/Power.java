@@ -2,12 +2,8 @@ package think.rpgitems.power;
 
 import com.google.common.base.Strings;
 import com.google.common.reflect.TypeToken;
-import java.util.Collections;
-import java.util.Locale;
-import java.util.Objects;
-import java.util.Set;
+import java.util.*;
 import java.util.stream.Collectors;
-import java.util.stream.Stream;
 import javax.annotation.Nullable;
 import think.rpgitems.RPGItems;
 import think.rpgitems.power.trigger.Trigger;
@@ -96,13 +92,7 @@ public interface Power extends PropertyHolder, TagHolder {
      * @return All static and dynamic implemented interfaces
      */
     static Set<Class<? extends Pimpl>> getDynamicInterfaces(Class<? extends Pimpl> cls) {
-        return getStaticInterfaces(cls).stream()
-                .flatMap(
-                        i ->
-                                Stream.concat(
-                                        Stream.of(i),
-                                        PowerManager.adapters.row(i).keySet().stream()))
-                .collect(Collectors.toSet());
+        return new HashSet<>(getStaticInterfaces(cls));
     }
 
     static Set<Trigger> getDefaultTriggers(Class<? extends Pimpl> cls) {

@@ -5,6 +5,7 @@ import org.bukkit.entity.Player;
 import org.bukkit.event.Event;
 import org.bukkit.event.HandlerList;
 import org.bukkit.inventory.ItemStack;
+import org.jetbrains.annotations.NotNull;
 import think.rpgitems.item.RPGItem;
 import think.rpgitems.power.trigger.Trigger;
 
@@ -18,6 +19,7 @@ public class RPGItemsPowersPostFireEvent<
 
     private static final HandlerList handlers = new HandlerList();
 
+    @NotNull
     @Override
     public HandlerList getHandlers() {
         return handlers;

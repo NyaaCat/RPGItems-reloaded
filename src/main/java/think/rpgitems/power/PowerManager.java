@@ -39,6 +39,8 @@ public class PowerManager {
     /** Power by name, and name by power */
     static BiMap<NamespacedKey, Class<? extends Power>> powers = HashBiMap.create();
 
+    static Map<NamespacedKey, Pimpl<? extends Power>> pimpls = new HashMap<>();
+
     private static BiMap<NamespacedKey, Class<? extends Condition>> conditions = HashBiMap.create();
 
     private static BiMap<NamespacedKey, Class<? extends Marker>> markers = HashBiMap.create();
@@ -47,9 +49,6 @@ public class PowerManager {
 
     private static final HashBasedTable<Plugin, String, BiFunction<NamespacedKey, String, String>>
             descriptionResolvers = HashBasedTable.create();
-
-    static final HashBasedTable<Class<? extends Pimpl>, Class<? extends Pimpl>, Function> adapters =
-            HashBasedTable.create();
 
     private static final HashMap<NamespacedKey, NamespacedKey> overrides = new HashMap<>();
 
@@ -66,22 +65,22 @@ public class PowerManager {
         markers.clear();
         modifiers.clear();
         descriptionResolvers.clear();
-        adapters.clear();
         overrides.clear();
         keyCache.clear();
     }
 
-    private static void registerPower(Class<? extends Power> clazz) {
+    private static <P extends Power> void registerPower(Class<P> clazz) {
         NamespacedKey key = null;
         try {
             registerMetas(clazz);
-            Power p = PowerManager.instantiate(clazz);
+            P p = PowerManager.instantiate(clazz);
             key = p.getNamespacedKey();
             if (key != null) {
                 all.put(key, clazz);
                 powers.put(key, clazz);
-            } else {
-                return;
+                Pimpl<P> pimpl =
+                        PowerManager.instantiatePimpl(((Class<Pimpl<P>>) getMeta(key).implClass()));
+                pimpls.put(key, pimpl);
             }
         } catch (Throwable e) {
             RPGItems.plugin.getLogger().log(Level.WARNING, "Failed to add power {0}", clazz);
@@ -241,10 +240,8 @@ public class PowerManager {
                                                                                                 + name
                                                                                                 + " "
                                                                                                 + a
-                                                                                                        .toString()
                                                                                                 + " "
-                                                                                                + b
-                                                                                                        .toString());
+                                                                                                + b);
                                                                             })
                                                                     .orElseThrow(
                                                                             () ->
@@ -449,6 +446,18 @@ public class PowerManager {
         }
     }
 
+    public static <P extends Power, T extends Pimpl<P>> T instantiatePimpl(Class<T> clz) {
+        try {
+            return clz.getConstructor().newInstance();
+        } catch (InstantiationException
+                | IllegalAccessException
+                | InvocationTargetException
+                | NoSuchMethodException e) {
+            RPGItems.logger.severe("not instantiatable: " + clz);
+            throw new RuntimeException(e);
+        }
+    }
+
     public static boolean hasPower(NamespacedKey key) {
         return powers.containsKey(key);
     }
@@ -477,10 +486,5 @@ public class PowerManager {
 
     public static Meta getMeta(Class<? extends PropertyHolder> cls) {
         return metas.get(cls);
-    }
-
-    public static <G extends Pimpl, S extends Pimpl> void registerAdapter(
-            Class<G> general, Class<S> specified, Function<G, S> adapter) {
-        adapters.put(general, specified, adapter);
     }
 }

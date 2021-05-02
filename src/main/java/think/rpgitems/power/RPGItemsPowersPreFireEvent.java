@@ -6,6 +6,7 @@ import org.bukkit.event.Cancellable;
 import org.bukkit.event.Event;
 import org.bukkit.event.HandlerList;
 import org.bukkit.inventory.ItemStack;
+import org.jetbrains.annotations.NotNull;
 import think.rpgitems.item.RPGItem;
 import think.rpgitems.power.trigger.Trigger;
 
@@ -62,6 +63,7 @@ public class RPGItemsPowersPreFireEvent<
         return powers;
     }
 
+    @NotNull
     @Override
     public HandlerList getHandlers() {
         return handlers;

@@ -128,20 +128,6 @@ public class RPGItems extends JavaPlugin {
         PowerManager.clear();
         logger.log(Level.INFO, "Loading powers...");
         new BaseTriggers();
-        PowerManager.registerAdapter(
-                PowerPlain.class,
-                PowerOffhandClick.class,
-                p -> getWrapper(p, PowerOffhandClick.class, "offhandClick"));
-        PowerManager.registerAdapter(
-                PowerPlain.class,
-                PowerSprint.class,
-                p -> getWrapper(p, PowerSprint.class, "sprint"));
-        PowerManager.registerAdapter(
-                PowerPlain.class, PowerSneak.class, p -> getWrapper(p, PowerSneak.class, "sneak"));
-        PowerManager.registerAdapter(
-                PowerPlain.class,
-                PowerAttachment.class,
-                p -> getWrapper(p, PowerAttachment.class, "attachment"));
         PowerManager.registerConditions(
                 RPGItems.plugin, Power.class.getPackage().getName() + ".cond");
         PowerManager.registerPowers(RPGItems.plugin, Power.class.getPackage().getName() + ".impl");
