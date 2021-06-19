@@ -1,7 +1,7 @@
 plugins {
     id 'java-library'
     id 'maven-publish'
-    id 'com.github.johnrengelman.shadow' version '5.1.0'
+    id 'com.github.johnrengelman.shadow' version '7.0.0'
     id 'org.ajoberstar.grgit' version '3.0.0'
 }
 
@@ -12,9 +12,10 @@ import org.apache.tools.ant.filters.ReplaceTokens
 
 String majorVersion = 3
 String minorVersion = 8
-String minecraftMajorVersion = "1.16"
-String minecraftMinorVersion = "4"
-String minecraftVersion = "${minecraftMajorVersion}.${minecraftMinorVersion}"
+String minecraftMajorVersion = "1.17"
+String minecraftMinorVersion = ""
+//String minecraftVersion = "${minecraftMajorVersion}.${minecraftMinorVersion}"
+String minecraftVersion = "${minecraftMajorVersion}" + "$minecraftMinorVersion" == ""? "": "$minecraftMinorVersion"
 
 Grgit repo = Grgit.open(currentDir: project.projectDir)
 
@@ -48,11 +49,10 @@ configurations.all {
 
 repositories {
     // mavenLocal()
-    jcenter()
     mavenCentral()
     maven { name 'Spigot'; url 'https://hub.spigotmc.org/nexus/content/repositories/snapshots/' }
     maven { name 'Sonatype'; url 'https://oss.sonatype.org/content/groups/public' }
-    maven { name 'sk89q'; url 'http://maven.sk89q.com/artifactory/repo/' }
+    maven { name 'sk89q'; url 'https://maven.sk89q.com/artifactory/repo/' }
     maven { name 'vault-repo'; url 'https://jitpack.io' }
     maven { name 'NyaaCat'; url 'https://ci.nyaacat.com/maven/' }
     maven { name 'EssentialsX'; url 'https://ci.ender.zone/plugin/repository/everything' }
@@ -69,7 +69,7 @@ dependencies {
         api project(":NyaaCore")
         api project(":LanguageUtils")
     } else {
-        api "cat.nyaa:nyaacore:8.0-SNAPSHOT"
+        api "cat.nyaa:nyaacore:8.1-SNAPSHOT"
     }
 
     compileOnly 'io.netty:netty-all:4.1.25.Final' // netty is shadowed inside spigot jar
