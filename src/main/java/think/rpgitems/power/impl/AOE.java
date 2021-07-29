@@ -16,6 +16,7 @@ import org.bukkit.util.Vector;
 import think.rpgitems.I18n;
 import think.rpgitems.event.BeamEndEvent;
 import think.rpgitems.event.BeamHitBlockEvent;
+import think.rpgitems.event.BeamHitEntityEvent;
 import think.rpgitems.power.*;
 import think.rpgitems.utils.PotionEffectUtils;
 
@@ -262,6 +263,12 @@ public class AOE extends BasePower {
         public PowerResult<Void> projectileHit(Player player, ItemStack stack, ProjectileHitEvent event) {
             Location center = event.getEntity().getLocation();
             return fire(center, player, stack, getNearbyEntities(getPower(), center, player, getRange()));
+        }
+
+        @Override
+        public PowerResult<Double> hitEntity(Player player, ItemStack stack, LivingEntity entity, double damage, BeamHitEntityEvent event) {
+            Location center = event.getLoc();
+            return fire(center, player, stack, getNearbyEntities(getPower(), center, player, getRange())).with(damage);
         }
 
         @Override
