@@ -1,7 +1,6 @@
 package think.rpgitems.power.impl;
 
 import cat.nyaa.nyaacore.utils.NmsUtils;
-import cat.nyaa.nyaacore.utils.ReflectionUtils;
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
 import org.bukkit.Location;
@@ -15,14 +14,11 @@ import org.bukkit.event.entity.EntityDamageEvent;
 import org.bukkit.event.entity.EntityShootBowEvent;
 import org.bukkit.event.player.PlayerInteractEvent;
 import org.bukkit.inventory.ItemStack;
-import think.rpgitems.RPGItems;
 import think.rpgitems.power.*;
 import think.rpgitems.power.trigger.BaseTriggers;
 
-import java.lang.reflect.Method;
 import java.util.Collections;
 import java.util.UUID;
-import java.util.logging.Level;
 
 import static think.rpgitems.power.Utils.checkAndSetCooldown;
 
@@ -125,40 +121,22 @@ public class Throw extends BasePower {
             return Throw.this;
         }
 
-        @SuppressWarnings("deprecation")
         private void summonEntity(Player player) {
-            try {
-                Location loc = player.getEyeLocation().clone();
-                Class<?> mojangsonParser = ReflectionUtils.getNMSClass("MojangsonParser");
-                Method getTagFromJson = mojangsonParser.getMethod("parse", String.class);
-                Class<?> nbtTagCompound = ReflectionUtils.getNMSClass("NBTTagCompound");
-                Method setString = nbtTagCompound.getMethod("setString", String.class, String.class);
-                Entity entity = player.getWorld().spawnEntity(loc, EntityType.valueOf(getEntityName()));
-                Object nbt;
-                String s = getEntityData().replaceAll("\\{player}", player.getName()).replaceAll("\\{playerUUID}", player.getUniqueId().toString());
-                try {
-                    nbt = getTagFromJson.invoke(null, s);
-                } catch (Exception e) {
-                    player.sendMessage(e.getCause().getMessage());
-                    return;
-                }
-//                setString.invoke(nbt, "id", getEntityName());
-                if (entity != null) {
-                    NmsUtils.setEntityTag(entity, (String) s);
-                    entity.setRotation(loc.getYaw(), loc.getPitch());
-//                    setPositionRotation.invoke(entity, loc.getX(), loc.getY(), loc.getZ(), loc.getYaw(), loc.getPitch());
-                    UUID uuid = entity.getUniqueId();
-                    Entity e = Bukkit.getEntity(uuid);
-                    if (e != null) {
-                        if (e instanceof Projectile) {
-                            ((Projectile) e).setShooter(player);
-                        }
-                        e.setVelocity(loc.getDirection().multiply(getSpeed()));
-                        e.setPersistent(isPersistent());
+            Location loc = player.getEyeLocation().clone();
+            Entity entity = player.getWorld().spawnEntity(loc, EntityType.valueOf(getEntityName()));
+            String s = getEntityData().replaceAll("\\{player}", player.getName()).replaceAll("\\{playerUUID}", player.getUniqueId().toString());
+            if (entity.isValid()) {
+                NmsUtils.setEntityTag(entity, s);
+                entity.setRotation(loc.getYaw(), loc.getPitch());
+                UUID uuid = entity.getUniqueId();
+                Entity e = Bukkit.getEntity(uuid);
+                if (e != null) {
+                    if (e instanceof Projectile) {
+                        ((Projectile) e).setShooter(player);
                     }
+                    e.setVelocity(loc.getDirection().multiply(getSpeed()));
+                    e.setPersistent(isPersistent());
                 }
-            } catch (NoSuchMethodException e) {
-                RPGItems.plugin.getLogger().log(Level.WARNING, "Execption spawning entity in " + getItem().getName(), e);
             }
         }
 

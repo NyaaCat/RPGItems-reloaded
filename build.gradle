@@ -152,7 +152,7 @@ task javadocJar(type: Jar, dependsOn: javadoc) {
 
 // extra compile warnings
 compileJava {
-    options.compilerArgs += ["-Xlint:deprecation"]
+    // options.compilerArgs += ["-Xlint:deprecation"]
     options.encoding = 'UTF-8'
 }
 
