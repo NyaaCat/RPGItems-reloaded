@@ -98,9 +98,9 @@ javadoc {
     if (project.jdDirectory != null) destinationDir = file("${jdDirectory}/${PLUGIN_NAME.toLowerCase()}-${version}")
 
     (options as StandardJavadocDocletOptions).with {
-        links 'https://docs.oracle.com/javase/16/docs/api/'
+        links 'https://docs.oracle.com/en/java/javase/16/docs/api/'
         links 'https://hub.spigotmc.org/javadocs/spigot/'
-        links 'https://google.github.io/guava/releases/21.0/api/docs/'
+        links 'https://guava.dev/releases/21.0/api/docs/'
         links 'https://ci.nyaacat.com/javadocs/nyaacore-7.1.350/'
         links 'https://ci.md-5.net/job/BungeeCord/ws/chat/target/apidocs/'
         links 'https://netty.io/4.1/api/'
