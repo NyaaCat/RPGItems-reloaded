@@ -3,11 +3,14 @@ package think.rpgitems.power;
 import com.google.common.base.Strings;
 import com.google.common.reflect.TypeToken;
 import think.rpgitems.RPGItems;
-import think.rpgitems.power.proxy.NotUser;
 import think.rpgitems.power.trigger.Trigger;
 
 import javax.annotation.Nullable;
-import java.util.*;
+import java.lang.invoke.MethodHandles;
+import java.util.Collections;
+import java.util.Locale;
+import java.util.Objects;
+import java.util.Set;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -69,6 +72,10 @@ public interface Power extends PropertyHolder, PlaceholderHolder, TagHolder {
     String requiredContext();
 
     default void deinit() {
+    }
+
+    default MethodHandles.Lookup getLookup() {
+        return MethodHandles.lookup();
     }
 
     static Set<Trigger> getTriggers(Class<? extends Pimpl> cls) {

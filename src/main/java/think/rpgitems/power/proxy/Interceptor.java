@@ -5,6 +5,7 @@ import com.google.common.cache.Cache;
 import com.google.common.cache.CacheBuilder;
 import net.bytebuddy.ByteBuddy;
 import net.bytebuddy.description.modifier.Visibility;
+import net.bytebuddy.dynamic.loading.ClassLoadingStrategy;
 import net.bytebuddy.implementation.FieldAccessor;
 import net.bytebuddy.implementation.MethodCall;
 import net.bytebuddy.implementation.MethodDelegation;
@@ -22,6 +23,7 @@ import think.rpgitems.power.propertymodifier.Modifier;
 import think.rpgitems.power.propertymodifier.RgiParameter;
 import think.rpgitems.power.trigger.Trigger;
 
+import java.lang.invoke.MethodHandles;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.util.Comparator;
@@ -63,7 +65,9 @@ public class Interceptor {
 
     }
 
-    private static Class<? extends Power> makeProxyClass(Power orig, Player player, Class<? extends Power> cls, ItemStack stack, Trigger trigger) throws NoSuchMethodException {
+    private static Class<? extends Power> makeProxyClass(Power orig, Player player, Class<? extends Power> cls, ItemStack stack, Trigger trigger) throws NoSuchMethodException, IllegalAccessException {
+        MethodHandles.Lookup lookup = orig.getLookup();
+        if (lookup == null) lookup = MethodHandles.lookup();
         return new ByteBuddy()
                 .subclass(cls)
                 .implement(new Class[]{trigger.getPowerClass()})
@@ -81,7 +85,7 @@ public class Interceptor {
                 .method(ElementMatchers.any())
                 .intercept(MethodDelegation.to(new Interceptor(orig, player, stack)))
                 .make()
-                .load(cls.getClassLoader())
+                .load(cls.getClassLoader(), ClassLoadingStrategy.UsingLookup.of(MethodHandles.privateLookupIn(cls, lookup)))
                 .getLoaded();
     }
 
