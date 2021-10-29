@@ -6,6 +6,7 @@ import com.google.common.cache.CacheBuilder;
 import net.bytebuddy.ByteBuddy;
 import net.bytebuddy.description.modifier.Visibility;
 import net.bytebuddy.implementation.FieldAccessor;
+import net.bytebuddy.implementation.MethodCall;
 import net.bytebuddy.implementation.MethodDelegation;
 import net.bytebuddy.implementation.bind.annotation.AllArguments;
 import net.bytebuddy.implementation.bind.annotation.Origin;
@@ -62,7 +63,7 @@ public class Interceptor {
 
     }
 
-    private static Class<? extends Power> makeProxyClass(Power orig, Player player, Class<? extends Power> cls, ItemStack stack, Trigger trigger) {
+    private static Class<? extends Power> makeProxyClass(Power orig, Player player, Class<? extends Power> cls, ItemStack stack, Trigger trigger) throws NoSuchMethodException {
         return new ByteBuddy()
                 .subclass(cls)
                 .implement(new Class[]{trigger.getPowerClass()})
@@ -72,7 +73,10 @@ public class Interceptor {
 
                 .defineConstructor(Visibility.PUBLIC)
                 .withParameters(orig.getClass())
-                .intercept(FieldAccessor.ofField(HANDLER_FIELD_NAME).setsArgumentAt(0))
+                .intercept(MethodCall.invoke(
+                                cls.getConstructor())
+                        .andThen(FieldAccessor.ofField(HANDLER_FIELD_NAME).setsArgumentAt(0))
+                )
 
                 .method(ElementMatchers.any())
                 .intercept(MethodDelegation.to(new Interceptor(orig, player, stack)))
