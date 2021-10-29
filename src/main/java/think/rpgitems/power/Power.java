@@ -73,9 +73,9 @@ public interface Power extends PropertyHolder, PlaceholderHolder, TagHolder {
 
     static Set<Trigger> getTriggers(Class<? extends Pimpl> cls) {
         return getDynamicInterfaces(cls)
-                       .stream()
-                       .flatMap(Trigger::fromInterface)
-                       .collect(Collectors.toSet());
+                .stream()
+                .flatMap(Trigger::fromInterface)
+                .collect(Collectors.toSet());
     }
 
     /**
@@ -85,11 +85,11 @@ public interface Power extends PropertyHolder, PlaceholderHolder, TagHolder {
     @SuppressWarnings("unchecked")
     static Set<Class<? extends Pimpl>> getStaticInterfaces(Class<? extends Pimpl> cls) {
         return TypeToken.of(cls).getTypes().interfaces().stream()
-                        .map(TypeToken::getRawType)
-                        .filter(Pimpl.class::isAssignableFrom)
-                        .filter(i -> !Objects.equals(i, Pimpl.class))
-                        .map(i -> (Class<? extends Pimpl>) i)
-                        .collect(Collectors.toSet());
+                .map(TypeToken::getRawType)
+                .filter(Pimpl.class::isAssignableFrom)
+                .filter(i -> !Objects.equals(i, Pimpl.class))
+                .map(i -> (Class<? extends Pimpl>) i)
+                .collect(Collectors.toSet());
     }
 
     /**
@@ -98,12 +98,12 @@ public interface Power extends PropertyHolder, PlaceholderHolder, TagHolder {
      */
     static Set<Class<? extends Pimpl>> getDynamicInterfaces(Class<? extends Pimpl> cls) {
         return getStaticInterfaces(cls)
-                       .stream()
-                       .flatMap(i -> Stream.concat(
-                               Stream.of(i),
-                               PowerManager.adapters.row(i).keySet().stream()
-                       ))
-                       .collect(Collectors.toSet());
+                .stream()
+                .flatMap(i -> Stream.concat(
+                        Stream.of(i),
+                        PowerManager.adapters.row(i).keySet().stream()
+                ))
+                .collect(Collectors.toSet());
     }
 
     static Set<Trigger> getDefaultTriggers(Class<? extends Power> cls) {
@@ -120,11 +120,11 @@ public interface Power extends PropertyHolder, PlaceholderHolder, TagHolder {
     }
 
     String CGLIB_CLASS_SEPARATOR = "$$";
+    String BYTE_BUDDY_CLASS_SEPARATOR = "$ByteBuddy";
 
     @SuppressWarnings("unchecked")
     static <T> Class<T> getUserClass(Class<T> clazz) {
-        //todo
-        if (clazz.getName().contains(CGLIB_CLASS_SEPARATOR) || Arrays.asList(clazz.getInterfaces()).contains(NotUser.class)) {
+        if (clazz.getName().contains(BYTE_BUDDY_CLASS_SEPARATOR)) {
             Class<T> superclass = (Class<T>) clazz.getSuperclass();
             if (superclass != null && superclass != Object.class) {
                 return superclass;
