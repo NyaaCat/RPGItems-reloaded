@@ -3,13 +3,11 @@ package think.rpgitems.power;
 import com.google.common.base.Strings;
 import com.google.common.reflect.TypeToken;
 import think.rpgitems.RPGItems;
+import think.rpgitems.power.proxy.NotUser;
 import think.rpgitems.power.trigger.Trigger;
 
 import javax.annotation.Nullable;
-import java.util.Collections;
-import java.util.Locale;
-import java.util.Objects;
-import java.util.Set;
+import java.util.*;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -125,7 +123,8 @@ public interface Power extends PropertyHolder, PlaceholderHolder, TagHolder {
 
     @SuppressWarnings("unchecked")
     static <T> Class<T> getUserClass(Class<T> clazz) {
-        if (clazz.getName().contains(CGLIB_CLASS_SEPARATOR)) {
+        //todo
+        if (clazz.getName().contains(CGLIB_CLASS_SEPARATOR) || Arrays.asList(clazz.getInterfaces()).contains(NotUser.class)) {
             Class<T> superclass = (Class<T>) clazz.getSuperclass();
             if (superclass != null && superclass != Object.class) {
                 return superclass;

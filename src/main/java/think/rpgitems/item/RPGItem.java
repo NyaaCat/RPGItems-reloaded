@@ -13,9 +13,6 @@ import net.md_5.bungee.api.chat.BaseComponent;
 import net.md_5.bungee.api.chat.ClickEvent;
 import net.md_5.bungee.api.chat.HoverEvent;
 import net.md_5.bungee.api.chat.TextComponent;
-import net.sf.cglib.proxy.Enhancer;
-import net.sf.cglib.proxy.MethodInterceptor;
-import net.sf.cglib.proxy.MethodProxy;
 import org.bukkit.*;
 import org.bukkit.attribute.Attribute;
 import org.bukkit.block.Block;
@@ -45,14 +42,13 @@ import think.rpgitems.power.*;
 import think.rpgitems.power.cond.SlotCondition;
 import think.rpgitems.power.marker.*;
 import think.rpgitems.power.propertymodifier.Modifier;
-import think.rpgitems.power.propertymodifier.RgiParameter;
+import think.rpgitems.power.proxy.Interceptor;
 import think.rpgitems.power.trigger.BaseTriggers;
 import think.rpgitems.power.trigger.Trigger;
 import think.rpgitems.utils.MaterialUtils;
 
 import java.io.File;
 import java.lang.reflect.Field;
-import java.lang.reflect.Method;
 import java.util.*;
 import java.util.Map.Entry;
 import java.util.concurrent.ExecutionException;
@@ -99,7 +95,7 @@ public class RPGItem {
     private List<Power> powers = new ArrayList<>();
     private List<Condition<?>> conditions = new ArrayList<>();
     private List<Marker> markers = new ArrayList<>();
-    private Map<String, PlaceholderHolder> placeholders= new HashMap<>();
+    private Map<String, PlaceholderHolder> placeholders = new HashMap<>();
     @SuppressWarnings("rawtypes")
     private Map<String, Trigger> triggers = new HashMap<>();
     private HashMap<PropertyHolder, NamespacedKey> keys = new HashMap<>();
@@ -269,7 +265,7 @@ public class RPGItem {
         }
 
         Map<String, List<PlaceholderHolder>> duplicatePlaceholderIds = checkDuplicatePlaceholderIds();
-        if (!duplicatePlaceholderIds.isEmpty()){
+        if (!duplicatePlaceholderIds.isEmpty()) {
             Logger logger = RPGItems.plugin.getLogger();
             String duplicateMsg = getDuplicatePlaceholderMsg(duplicatePlaceholderIds);
             logger.log(Level.WARNING, duplicateMsg);
@@ -296,7 +292,7 @@ public class RPGItem {
 
         setShowPowerText(s.getBoolean("showPowerText", true));
         setShowArmourLore(s.getBoolean("showArmourLore", true));
-        setCustomModelData(s.getInt("customModelData",  -1));
+        setCustomModelData(s.getInt("customModelData", -1));
         setQuality(s.getString("quality", null));
         setType(s.getString("item", "item"));
 
@@ -373,11 +369,11 @@ public class RPGItem {
         StringBuilder stringBuilder = new StringBuilder();
         stringBuilder.append("duplicate placeholder key found in item: ")
                 .append(getName()).append("\n");
-        duplicatePlaceholderIds.forEach((k,v)->{
+        duplicatePlaceholderIds.forEach((k, v) -> {
             stringBuilder.append("key: ")
                     .append(k)
                     .append(", values: [");
-            v.forEach((ph) ->{
+            v.forEach((ph) -> {
                 stringBuilder.append(ph.toString());
                 stringBuilder.append(",");
             });
@@ -644,8 +640,8 @@ public class RPGItem {
 
         //quality prefix
         String qualityPrefix = plugin.cfg.qualityPrefixes.get(getQuality());
-        if (qualityPrefix != null){
-            if (meta.hasDisplayName() && !meta.getDisplayName().startsWith(qualityPrefix)){
+        if (qualityPrefix != null) {
+            if (meta.hasDisplayName() && !meta.getDisplayName().startsWith(qualityPrefix)) {
                 String displayName = meta.getDisplayName();
                 meta.setDisplayName(qualityPrefix + displayName);
             }
@@ -666,7 +662,7 @@ public class RPGItem {
 
         if (getCustomModelData() != -1) {
             meta.setCustomModelData(customModelData);
-        }else{
+        } else {
             meta.setCustomModelData(null);
         }
         for (ItemFlag flag : getItemFlags()) {
@@ -705,23 +701,24 @@ public class RPGItem {
     private final static NamespacedKey RGI_UNIQUE_MARK = new NamespacedKey(RPGItems.plugin, "RGI_UNIQUE_MARK");
 
     private final static NamespacedKey RGI_UNIQUE_ID = new NamespacedKey(RPGItems.plugin, "RGI_UNIQUE_ID");
+
     private void checkAndMakeUnique(SubItemTagContainer meta) {
         List<Unique> markers = getMarker(Unique.class);
         List<SlotCondition> conditions = getConditions(SlotCondition.class);
 
-        if (!markers.isEmpty() ) {
+        if (!markers.isEmpty()) {
             Unique unique = markers.get(0);
-            if(unique.enabled){
+            if (unique.enabled) {
                 if (!meta.has(RGI_UNIQUE_MARK, PersistentDataType.BYTE)) {
                     meta.set(RGI_UNIQUE_MARK, PersistentDataType.BYTE, (byte) 0);
                 }
                 meta.set(RGI_UNIQUE_ID, PersistentDataType.STRING, UUID.randomUUID().toString());
-            }else {
+            } else {
                 meta.remove(RGI_UNIQUE_MARK);
                 meta.remove(RGI_UNIQUE_ID);
             }
         }
-        if(!conditions.isEmpty()){
+        if (!conditions.isEmpty()) {
             if (!meta.has(RGI_UNIQUE_MARK, PersistentDataType.BYTE)) {
                 meta.set(RGI_UNIQUE_MARK, PersistentDataType.BYTE, (byte) 0);
             }
@@ -797,9 +794,9 @@ public class RPGItem {
     private List<String> filterLores(ItemStack i) {
         List<String> ret = new ArrayList<>();
         List<LoreFilter> patterns = getMarker(LoreFilter.class).stream()
-                                                               .filter(p -> !Strings.isNullOrEmpty(p.regex))
-                                                               .map(LoreFilter::compile)
-                                                               .collect(Collectors.toList());
+                .filter(p -> !Strings.isNullOrEmpty(p.regex))
+                .map(LoreFilter::compile)
+                .collect(Collectors.toList());
         if (patterns.isEmpty()) return Collections.emptyList();
         if (!i.hasItemMeta() || !Objects.requireNonNull(i.getItemMeta()).hasLore()) return Collections.emptyList();
         for (String str : Objects.requireNonNull(i.getItemMeta().getLore())) {
@@ -1001,9 +998,9 @@ public class RPGItem {
 
     public static List<Modifier> getModifiers(ItemStack stack) {
         Optional<String> opt = ItemTagUtils.getString(stack, NBT_ITEM_UUID);
-        if (!opt.isPresent()){
+        if (!opt.isPresent()) {
             Optional<RPGItem> rpgItemOpt = ItemManager.toRPGItemByMeta(stack);
-            if (!rpgItemOpt.isPresent()){
+            if (!rpgItemOpt.isPresent()) {
                 return Collections.emptyList();
             }
             RPGItem rpgItem = rpgItemOpt.get();
@@ -1017,9 +1014,9 @@ public class RPGItem {
 
         UUID key = UUID.fromString(opt.get());
         List<Modifier> modifiers = modifierCache.getIfPresent(key);
-        if (modifiers == null){
+        if (modifiers == null) {
             ItemMeta itemMeta = stack.getItemMeta();
-            if (itemMeta == null)return new ArrayList<>();
+            if (itemMeta == null) return new ArrayList<>();
             SubItemTagContainer tag = makeTag(Objects.requireNonNull(itemMeta).getPersistentDataContainer(), TAG_MODIFIER);
             modifiers = getModifiers(tag, key);
         }
@@ -1029,7 +1026,7 @@ public class RPGItem {
     public static List<Modifier> getModifiers(Player player) {
         UUID key = player.getUniqueId();
         List<Modifier> modifiers = modifierCache.getIfPresent(key);
-        if (modifiers == null){
+        if (modifiers == null) {
             SubItemTagContainer tag = makeTag(player.getPersistentDataContainer(), TAG_MODIFIER);
             modifiers = getModifiers(tag, key);
         }
@@ -1047,7 +1044,7 @@ public class RPGItem {
 
     public static List<Modifier> getModifiers(SubItemTagContainer tag, UUID key) {
         Optional<UUID> uuid = Optional.ofNullable(key);
-        if (!uuid.isPresent()){
+        if (!uuid.isPresent()) {
             uuid = Optional.of(UUID.randomUUID());
         }
 
@@ -1141,10 +1138,10 @@ public class RPGItem {
     @SuppressWarnings("unchecked")
     public <TEvent extends Event, TPower extends Pimpl, TResult, TReturn> void powerCustomTrigger(Player player, ItemStack i, TEvent event, Trigger<TEvent, TPower, TResult, TReturn> trigger, Object context) {
         this.triggers.entrySet()
-                     .parallelStream()
-                     .filter(e -> trigger.getClass().isInstance(e.getValue()))
-                     .sorted(Comparator.comparing(en -> en.getValue().getPriority()))
-                     .filter(e -> e.getValue().check(player, i, event)).forEach(e -> this.power(player, i, event, e.getValue(), context));
+                .parallelStream()
+                .filter(e -> trigger.getClass().isInstance(e.getValue()))
+                .sorted(Comparator.comparing(en -> en.getValue().getPriority()))
+                .filter(e -> e.getValue().check(player, i, event)).forEach(e -> this.power(player, i, event, e.getValue(), context));
     }
 
     public <TEvent extends Event, TPower extends Pimpl, TResult, TReturn> TReturn power(Player player, ItemStack i, TEvent event, Trigger<TEvent, TPower, TResult, TReturn> trigger) {
@@ -1382,7 +1379,7 @@ public class RPGItem {
         }
         ItemMeta itemMeta = item.getItemMeta();
         //Power Consume will make this null in triggerPostFire().
-        if(itemMeta == null){
+        if (itemMeta == null) {
             return Optional.empty();
         }
         SubItemTagContainer tagContainer = makeTag(itemMeta, TAG_META);
@@ -1412,8 +1409,8 @@ public class RPGItem {
                 return false;
             }
             if (durability <= val
-                        && hasMarker(Unbreakable.class)
-                        && !isCustomItemModel()) {
+                    && hasMarker(Unbreakable.class)
+                    && !isCustomItemModel()) {
                 tagContainer.commit();
                 item.setItemMeta(itemMeta);
                 return false;
@@ -1447,33 +1444,33 @@ public class RPGItem {
                     return;
                 }
             } else if (
-                           item.equals(Material.CHAINMAIL_CHESTPLATE) ||
-                                   item.equals(Material.DIAMOND_CHESTPLATE) ||
-                                   item.equals(Material.GOLDEN_CHESTPLATE) ||
-                                   item.equals(Material.IRON_CHESTPLATE) ||
-                                   item.equals(Material.LEATHER_CHESTPLATE)
+                    item.equals(Material.CHAINMAIL_CHESTPLATE) ||
+                            item.equals(Material.DIAMOND_CHESTPLATE) ||
+                            item.equals(Material.GOLDEN_CHESTPLATE) ||
+                            item.equals(Material.IRON_CHESTPLATE) ||
+                            item.equals(Material.LEATHER_CHESTPLATE)
             ) {
                 if (player.getInventory().getChestplate() == null) {
                     player.getInventory().setChestplate(itemStack);
                     return;
                 }
             } else if (
-                           item.equals(Material.CHAINMAIL_LEGGINGS) ||
-                                   item.equals(Material.DIAMOND_LEGGINGS) ||
-                                   item.equals(Material.GOLDEN_LEGGINGS) ||
-                                   item.equals(Material.IRON_LEGGINGS) ||
-                                   item.equals(Material.LEATHER_LEGGINGS)
+                    item.equals(Material.CHAINMAIL_LEGGINGS) ||
+                            item.equals(Material.DIAMOND_LEGGINGS) ||
+                            item.equals(Material.GOLDEN_LEGGINGS) ||
+                            item.equals(Material.IRON_LEGGINGS) ||
+                            item.equals(Material.LEATHER_LEGGINGS)
             ) {
                 if (player.getInventory().getLeggings() == null) {
                     player.getInventory().setLeggings(itemStack);
                     return;
                 }
             } else if (
-                           item.equals(Material.CHAINMAIL_BOOTS) ||
-                                   item.equals(Material.DIAMOND_BOOTS) ||
-                                   item.equals(Material.GOLDEN_BOOTS) ||
-                                   item.equals(Material.IRON_BOOTS) ||
-                                   item.equals(Material.LEATHER_BOOTS)
+                    item.equals(Material.CHAINMAIL_BOOTS) ||
+                            item.equals(Material.DIAMOND_BOOTS) ||
+                            item.equals(Material.GOLDEN_BOOTS) ||
+                            item.equals(Material.IRON_BOOTS) ||
+                            item.equals(Material.LEATHER_BOOTS)
             ) {
                 if (player.getInventory().getBoots() == null) {
                     player.getInventory().setBoots(itemStack);
@@ -1524,7 +1521,7 @@ public class RPGItem {
     }
 
     private void addPower(NamespacedKey key, Power power, boolean update) {
-        if ("".equals(power.getPlaceholderId())){
+        if ("".equals(power.getPlaceholderId())) {
             String placeholderId = power.getName() + "-" + getPowers().stream().filter(power1 -> power1.getName().equals(power.getName())).count();
             power.setPlaceholderId(placeholderId);
         }
@@ -1541,7 +1538,7 @@ public class RPGItem {
         powers.remove(power);
         keys.remove(power);
         String placeholderId = power.getPlaceholderId();
-        if (!"".equals(placeholderId)){
+        if (!"".equals(placeholderId)) {
             placeholders.remove(placeholderId, power);
         }
         power.deinit();
@@ -1553,7 +1550,7 @@ public class RPGItem {
     }
 
     private void addCondition(NamespacedKey key, Condition<?> condition, boolean update) {
-        if ("".equals(condition.getPlaceholderId())){
+        if ("".equals(condition.getPlaceholderId())) {
             String placeholderId = condition.getName() + "-" + getConditions().stream().filter(power1 -> power1.getName().equals(condition.getName())).count();
             condition.setPlaceholderId(placeholderId);
         }
@@ -1570,7 +1567,7 @@ public class RPGItem {
         conditions.remove(condition);
         keys.remove(condition);
         String placeholderId = condition.getPlaceholderId();
-        if (!"".equals(placeholderId)){
+        if (!"".equals(placeholderId)) {
             placeholders.remove(placeholderId, condition);
         }
         rebuild();
@@ -1581,7 +1578,7 @@ public class RPGItem {
     }
 
     private void addMarker(NamespacedKey key, Marker marker, boolean update) {
-        if ("".equals(marker.getPlaceholderId())){
+        if ("".equals(marker.getPlaceholderId())) {
             String placeholderId = marker.getName() + "-" + getMarkers().stream().filter(power1 -> power1.getName().equals(marker.getName())).count();
             marker.setPlaceholderId(placeholderId);
         }
@@ -1598,27 +1595,27 @@ public class RPGItem {
         markers.remove(marker);
         keys.remove(marker);
         String placeholderId = marker.getPlaceholderId();
-        if (!"".equals(placeholderId)){
+        if (!"".equals(placeholderId)) {
             placeholders.remove(placeholderId, marker);
         }
         rebuild();
     }
 
-    public Map<String, List<PlaceholderHolder>> checkDuplicatePlaceholderIds(){
+    public Map<String, List<PlaceholderHolder>> checkDuplicatePlaceholderIds() {
         Map<String, List<PlaceholderHolder>> ids = new HashMap<>();
         getPlaceholdersStream()
                 .map(ph -> ((PlaceholderHolder) ph))
                 .forEach(placeholder -> {
                     String placeholderId = placeholder.getPlaceholderId();
-                    if("".equals(placeholderId)){
+                    if ("".equals(placeholderId)) {
                         return;
                     }
                     List<PlaceholderHolder> placeholderHolders = ids.computeIfAbsent(placeholderId, (s) -> new ArrayList<>());
                     placeholderHolders.add(placeholder);
                 });
         Map<String, List<PlaceholderHolder>> result = new HashMap<>();
-        ids.forEach((key, value) ->{
-            if (value.size()>1){
+        ids.forEach((key, value) -> {
+            if (value.size() > 1) {
                 result.put(key, value);
             }
         });
@@ -1665,14 +1662,14 @@ public class RPGItem {
 
     private <TEvent extends Event, T extends Pimpl, TResult, TReturn> List<T> getPower(Trigger<TEvent, T, TResult, TReturn> trigger, Player player, ItemStack stack) {
         return powers.stream()
-                     .filter(p -> p.getTriggers().contains(trigger))
-                     .map(p -> {
-                         Class<? extends Power> cls = p.getClass();
-                         Power proxy = DynamicMethodInterceptor.create(p, player, cls, stack, trigger);
-                         return PowerManager.createImpl(cls, proxy);
-                     })
-                     .map(p -> p.cast(trigger.getPowerClass()))
-                     .collect(Collectors.toList());
+                .filter(p -> p.getTriggers().contains(trigger))
+                .map(p -> {
+                    Class<? extends Power> cls = p.getClass();
+                    Power proxy = Interceptor.create(p, player, cls, stack, trigger);
+                    return PowerManager.createImpl(cls, proxy);
+                })
+                .map(p -> p.cast(trigger.getPowerClass()))
+                .collect(Collectors.toList());
     }
 
     public PlaceholderHolder getPlaceholderHolder(String placeholderId) {
@@ -1683,13 +1680,13 @@ public class RPGItem {
         YamlConfiguration yamlConfiguration = new YamlConfiguration();
         PlaceholderHolder oldPh = placeholders.get(powerId);
         PlaceholderHolder newPh = null;
-        if (oldPh == null){
+        if (oldPh == null) {
             return null;
         }
         placeHolder.save(yamlConfiguration);
-        if (oldPh instanceof Power){
+        if (oldPh instanceof Power) {
             int i = powers.indexOf(oldPh);
-            if (i == -1){
+            if (i == -1) {
                 throw new IllegalStateException();
             }
             Class<? extends Power> pwClz = ((Power) oldPh).getClass();
@@ -1698,9 +1695,9 @@ public class RPGItem {
             pow.init(yamlConfiguration);
             powers.set(i, pow);
             newPh = pow;
-        }else if (oldPh instanceof Condition){
+        } else if (oldPh instanceof Condition) {
             int i = conditions.indexOf(oldPh);
-            if (i == -1){
+            if (i == -1) {
                 throw new IllegalStateException();
             }
             Class<? extends Condition> pwClz = ((Condition<?>) oldPh).getClass();
@@ -1709,9 +1706,9 @@ public class RPGItem {
             pow.init(yamlConfiguration);
             conditions.set(i, pow);
             newPh = pow;
-        }else if (oldPh instanceof Marker){
+        } else if (oldPh instanceof Marker) {
             int i = markers.indexOf(oldPh);
-            if (i == -1){
+            if (i == -1) {
                 throw new IllegalStateException();
             }
             Class<? extends Marker> pwClz = ((Marker) oldPh).getClass();
@@ -1721,7 +1718,7 @@ public class RPGItem {
             markers.set(i, pow);
             newPh = pow;
         }
-        if(newPh == null){
+        if (newPh == null) {
             return null;
         }
 
@@ -1730,7 +1727,6 @@ public class RPGItem {
         placeholders.put(powerId, newPh);
         return newPh;
     }
-
 
 
     public void updateFromTemplate(RPGItem target) throws UnknownPowerException {
@@ -1758,22 +1754,22 @@ public class RPGItem {
 
         //replace powers & fill placeholders
         target.getPlaceholdersStream().forEach(power -> {
-                String powerId = power.getPlaceholderId();
-                PlaceholderHolder replaced = replacePlaceholder(powerId, power);
-                List<String> strings = powerMap.get(powerId);
-                if (strings != null){
-                    strings.forEach(s ->{
-                        String[] split = s.split(":");
-                        String propName = split[1];
-                        Object origVal = valMap.get(s);
-                        try {
-                            setPropVal(replaced.getClass(), propName, replaced, origVal);
-                        } catch (IllegalAccessException e) {
-                            e.printStackTrace();
-                            throw new RuntimeException();
-                        }
-                    });
-                }
+            String powerId = power.getPlaceholderId();
+            PlaceholderHolder replaced = replacePlaceholder(powerId, power);
+            List<String> strings = powerMap.get(powerId);
+            if (strings != null) {
+                strings.forEach(s -> {
+                    String[] split = s.split(":");
+                    String propName = split[1];
+                    Object origVal = valMap.get(s);
+                    try {
+                        setPropVal(replaced.getClass(), propName, replaced, origVal);
+                    } catch (IllegalAccessException e) {
+                        e.printStackTrace();
+                        throw new RuntimeException();
+                    }
+                });
+            }
         });
 
         ItemManager.save(this);
@@ -1794,14 +1790,14 @@ public class RPGItem {
 
     private Field getField(Class<?> aClass, String methodName) {
         Field getMethod = null;
-        while (true){
-            try{
+        while (true) {
+            try {
                 getMethod = aClass.getDeclaredField(methodName);
                 break;
-            }catch (NoSuchFieldException e){
+            } catch (NoSuchFieldException e) {
                 aClass = aClass.getSuperclass();
             }
-            if (aClass == null){
+            if (aClass == null) {
                 throw new RuntimeException("invalid placeholder");
             }
         }
@@ -1810,10 +1806,10 @@ public class RPGItem {
 
     private void copyFromTemplate(RPGItem target) throws UnknownPowerException {
         List<Power> powers = new ArrayList<>(getPowers());
-        List<Marker> markers =  new ArrayList<>(getMarkers());
-        List<Condition<?>> conditions =  new ArrayList<>(getConditions());
+        List<Marker> markers = new ArrayList<>(getMarkers());
+        List<Condition<?>> conditions = new ArrayList<>(getConditions());
         boolean isTemplate = isTemplate();
-        Set<String> templates =  new HashSet<>(getTemplates());
+        Set<String> templates = new HashSet<>(getTemplates());
         placeholders.clear();
         this.powers.clear();
         this.markers.clear();
@@ -1841,71 +1837,6 @@ public class RPGItem {
 
     public List<String> getTemplatePlaceholders() {
         return new ArrayList<>(templatePlaceholders);
-    }
-
-    @SuppressWarnings("rawtypes")
-    public static class DynamicMethodInterceptor implements MethodInterceptor {
-        private static WeakHashMap<Player, WeakHashMap<ItemStackWrapper, WeakHashMap<Power, Power>>> cache = new WeakHashMap<>();
-
-        private static Power makeProxy(Power orig, Player player, Class<? extends Power> cls, ItemStack stack, Trigger trigger) {
-            Enhancer enhancer = new Enhancer();
-            enhancer.setSuperclass(cls);
-            enhancer.setInterfaces(new Class[]{trigger.getPowerClass()});
-            enhancer.setCallback(new DynamicMethodInterceptor(orig, player, stack));
-            return (Power) enhancer.create();
-        }
-
-        protected static Power create(Power orig, Player player, Class<? extends Power> cls, ItemStack stack, Trigger trigger) {
-            return cache.computeIfAbsent(player, (k) -> new WeakHashMap<>())
-                        .computeIfAbsent(ItemStackWrapper.of(stack), (p) -> new WeakHashMap<>())
-                        .computeIfAbsent(orig, (s) -> makeProxy(orig, player, cls, stack, trigger));
-        }
-
-        private final Power orig;
-        private final Player player;
-        private final Map<Method, PropertyInstance> getters;
-        private ItemStack stack;
-
-        protected DynamicMethodInterceptor(Power orig, Player player, ItemStack stack) {
-            this.orig = orig;
-            this.player = player;
-            this.getters = PowerManager.getProperties(orig.getClass())
-                                       .entrySet()
-                                       .stream()
-                                       .collect(Collectors.toMap(e -> e.getValue().getKey(), e -> e.getValue().getValue()));
-            this.stack = stack;
-        }
-
-        @Override
-        public Object intercept(Object proxy, Method method, Object[] args, MethodProxy methodProxy)
-                throws Throwable {
-            if (getters.containsKey(method)) {
-                PropertyInstance propertyInstance = getters.get(method);
-                Class<?> type = propertyInstance.field().getType();
-                List<Modifier> playerModifiers = getModifiers(player);
-                List<Modifier> stackModifiers = getModifiers(stack);
-                List<Modifier> modifiers = Stream.concat(playerModifiers.stream(), stackModifiers.stream()).sorted(Comparator.comparing(Modifier::priority)).collect(Collectors.toList());
-                // Numeric modifiers
-                if (type == int.class || type == Integer.class || type == float.class || type == Float.class || type == double.class || type == Double.class) {
-
-                    @SuppressWarnings("unchecked") List<Modifier<Double>> numberModifiers = modifiers.stream().filter(m -> (m.getModifierTargetType() == Double.class) && m.match(orig, propertyInstance)).map(m -> (Modifier<Double>) m).collect(Collectors.toList());
-                    Number value = (Number) methodProxy.invoke(orig, args);
-                    double origValue = value.doubleValue();
-                    for (Modifier<Double> numberModifier : numberModifiers) {
-                        RgiParameter param = new RgiParameter<>(orig.getItem(), orig, stack, origValue);
-                        origValue = numberModifier.apply(param);
-                    }
-                    if (int.class.equals(type) || Integer.class.equals(type)) {
-                        return (int) Math.round(origValue);
-                    } else if (float.class.equals(type) || Float.class.equals(type)) {
-                        return (float) (origValue);
-                    } else {
-                        return origValue;
-                    }
-                }
-            }
-            return methodProxy.invoke(orig, args);
-        }
     }
 
     public void addTrigger(String name, Trigger trigger) {
@@ -2291,15 +2222,15 @@ public class RPGItem {
         isTemplate = template;
     }
 
-    public boolean isTemplateOf(String templateName){
+    public boolean isTemplateOf(String templateName) {
         return templates.contains(templateName);
     }
 
-    public Set<String> getTemplates(){
+    public Set<String> getTemplates() {
         return templates;
     }
 
-    public void setTemplateOf(String templateName){
+    public void setTemplateOf(String templateName) {
         this.templates.add(templateName);
     }
 
@@ -2308,7 +2239,7 @@ public class RPGItem {
         this.templatePlaceholders.addAll(placeHolder);
     }
 
-    public void addTemplatePlaceHolder(String placeHolder){
+    public void addTemplatePlaceHolder(String placeHolder) {
         this.templatePlaceholders.add(placeHolder);
     }
 
@@ -2328,7 +2259,7 @@ public class RPGItem {
         this.type = type;
     }
 
-    public void removeTemplatePlaceHolder(String placeHolder){
+    public void removeTemplatePlaceHolder(String placeHolder) {
         this.templatePlaceholders.remove(placeHolder);
     }
 
