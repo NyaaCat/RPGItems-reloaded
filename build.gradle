@@ -27,6 +27,7 @@ repositories {
     maven { name 'NyaaCat'; url 'https://ci.nyaacat.com/maven/' }
     maven { name 'EssentialsX'; url 'https://ci.ender.zone/plugin/repository/everything' }
     maven { name 'aikar'; url 'https://repo.aikar.co/content/groups/aikar/' }
+    maven { name 'PlaceholderAPI'; url 'https://repo.extendedclip.com/content/repositories/placeholderapi/' }
 }
 
 shadowJar {
@@ -40,7 +41,6 @@ dependencies {
     // other nyaa plugins
     if (gradle.hasProperty("useLocalDependencies") && gradle.useLocalDependencies) {
         compileOnly project(":NyaaCore")
-        compileOnly project(":LanguageUtils")
     } else {
         compileOnly('cat.nyaa:nyaacore:8.1-SNAPSHOT') { transitive = false }
     }

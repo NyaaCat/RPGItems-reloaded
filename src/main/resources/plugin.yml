@@ -2,8 +2,8 @@ name: RPGItems
 main: think.rpgitems.RPGItems
 description: "RPGItems"
 version: ${version}
-depend: [NyaaCore,LangUtils]
-softdepend: [WorldGuard,NyaaUtils]
+depend: [NyaaCore]
+softdepend: [WorldGuard,NyaaUtils,PlaceholderAPI]
 authors: [Taiterio,cyilin,RecursiveG,Librazy]
 website: "https://github.com/NyaaCat/RPGItems-reloaded"
 database: false
