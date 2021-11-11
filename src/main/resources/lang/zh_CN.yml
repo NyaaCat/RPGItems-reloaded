@@ -1154,7 +1154,6 @@ manual:
     add:
       description: 给物品添加标志
       usage: /rpgitem marker add {item} <properties> [optionalProperties]
-      usage: /rpgitem marker add {item} <properties>
     remove:
       description: 从物品上移除标志
       usage: /rpgitem marker remove {item} <properties>
@@ -1187,9 +1186,6 @@ manual:
       usage: /rpgitem modifier [help]
     description: 设置物品的标志
     usage: /rpgitem marker [option] {item} <properties> [optionalProperties]
-  modifier:
-    description: 设置物品的修饰（未实现）
-    usage: /rpgitem modifier [option] {item} <properties> [optionalProperties]
   note:
     description: 设置物品的说明
     usage: /rpgitem note {item} <value>

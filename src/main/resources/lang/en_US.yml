@@ -1170,9 +1170,6 @@ manual:
       usage: /rpgitem power [help]
     description: Set marker for an item.
     usage: /rpgitem marker [option] {item} <properties> [optionalProperties]
-  modifier:
-    description: Set modifer for an item.(TBD)
-    usage: /rpgitem modifier [option] {item} <properties> [optionalProperties]
   note:
     description: Set an item's information.
     usage: /rpgitem note {item} <value>
@@ -1217,11 +1214,6 @@ manual:
     placeholder:
       description: Set powers placeholder of the template,the parameters specified by the placeholder will not change when template is applied.
       usage: /rpgitem template placeholder <option> {item} <powerId:property>
-    description: Set an item template.
-    usage: /rpgitem template [option]
-  trigger:
-    description: Set trigger for an item.
-    usage: /rpgitem trigger [option] {item} <properties>
   command:
     template:
       apply:
