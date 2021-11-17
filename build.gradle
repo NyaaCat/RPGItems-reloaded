@@ -49,11 +49,11 @@ dependencies {
     //compileOnly group: "com.comphenix.protocol", name: "ProtocolLib", version: "4.7.0"
     compileOnly 'org.jetbrains:annotations:22.0.0'
 
-    compileOnly 'io.netty:netty-all:4.1.69.Final' // netty is shadowed inside spigot jar
+    compileOnly 'io.netty:netty-all:4.1.70.Final' // netty is shadowed inside spigot jar
     compileOnly 'org.ow2.asm:asm:9.2'
 
-    compileOnly 'net.bytebuddy:byte-buddy:1.11.21'
-    shadow 'net.bytebuddy:byte-buddy:1.11.21'
+    compileOnly 'net.bytebuddy:byte-buddy:1.12.1'
+    shadow 'net.bytebuddy:byte-buddy:1.12.1'
 
 
     compileOnly 'com.udojava:EvalEx:2.6'
