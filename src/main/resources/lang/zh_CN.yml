@@ -32,7 +32,14 @@ manual:
     description: 将物品加入一个物品组
     usage: /rpgitem addtogroup {group} {item}
   apply:
+    delete:
+      description: Delete specific template.
+      usage: /rpgitem template delete {item}
     description: 对物品应用指定模板
+    placeholder:
+      description: Set powers placeholder of the template,the parameters specified
+        by the placeholder will not change when template is applied.
+      usage: /rpgitem template placeholder <option> {item} <powerId:property>
     usage: /rpgitem template apply {item}
   armorExpression:
     description: 设置物品的护甲表达式
@@ -55,6 +62,24 @@ manual:
   clone:
     description: 克隆为新物品
     usage: /rpgitem clone {item} <newItem>
+  command:
+    template:
+      apply:
+        success: The template %s has been applied to items.
+      create:
+        success: Successfully created template with item %s .
+      delete:
+        success: Delete the template %s
+      not_template: Item %s is not a valid template.
+      placeholder:
+        add:
+          success: Added placeholder to template %s
+        bad_placeholder: Invalid placeholder %s
+        info: 'Placeholder info: %s'
+        itemName: 'Item: %s'
+        not_template: Item %s is not a valid template.
+        remove:
+          success: Removed placeholder from template %s
   condition:
     add:
       description: 给物品添加条件
@@ -212,6 +237,8 @@ manual:
       description: 从物品上移除修饰
       usage: /rpgitem modifier remove {item} <properties>
     usage: /rpgitem marker [option] {item} <properties> [optionalProperties]
+  no_description: No description for this yet.
+  no_usage: No usage information for this yet.
   note:
     description: 设置物品的说明
     usage: /rpgitem note {item} <value>
@@ -263,6 +290,10 @@ manual:
   removeitemflag:
     description: 移除物品 flag
     usage: /rpgitem removeitemflag {item} <itemflag>
+  removepower:
+    description: Remove the power from item. If the item have multiple specified power,
+      the first match (pit fall) will be removed.
+    usage: /rpgitem removepower {item} <power>
   reorder:
     description: 调整物品技能的顺序位
     usage: /rpgitem power reorder {item} <power> <power>
@@ -336,6 +367,7 @@ message:
     usage: '指令用法: /%s (%s)'
   condition:
     change: 物品条件参数已更改
+    changed: Item's condition property has been changed
     description: '&3&l描述: ''&r%s'''
     key: '&3&l条件 ''&r%s&3&l'''
     not_found: 未找到满足 %s 的条件
@@ -808,6 +840,7 @@ properties:
     isCritical: 条件失败时是否中止当前触发。
     isStatic: 是否仅在触发开始时测试条件。
     priority: 触发的优先级。
+    requireHurtByEntity: Whether only run this power when hurt by entity.
     requiredContext: 使用的上下文。
     selectors: 应用到本技能的选择器。
     targetItem: 修改器的目标物品。
