@@ -24,7 +24,7 @@ public class Hit extends Trigger<EntityDamageByEntityEvent, PowerHit, Double, Op
         super(EntityDamageByEntityEvent.class, PowerHit.class, Double.class, Optional.class, "HIT");
     }
 
-    public Hit(String name, int ignored){
+    public Hit(String name, int ignored) {
         super(EntityDamageByEntityEvent.class, PowerHit.class, Double.class, Optional.class, name);
     }
 

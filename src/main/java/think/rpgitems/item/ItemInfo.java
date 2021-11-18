@@ -20,9 +20,9 @@ public class ItemInfo {
         if (o == null || getClass() != o.getClass()) return false;
         ItemInfo itemInfo = (ItemInfo) o;
         return Objects.equals(item, itemInfo.item) &&
-                       Objects.equals(durability, itemInfo.durability) &&
-                       Objects.equals(stackOwner, itemInfo.stackOwner) &&
-                       Objects.equals(stackId, itemInfo.stackId);
+                Objects.equals(durability, itemInfo.durability) &&
+                Objects.equals(stackOwner, itemInfo.stackOwner) &&
+                Objects.equals(stackId, itemInfo.stackId);
     }
 
     @Override

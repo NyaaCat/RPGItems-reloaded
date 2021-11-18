@@ -11,6 +11,7 @@ class LivingEntity extends Trigger<Event, PowerLivingEntity, Void, Void> {
     LivingEntity() {
         super(Event.class, PowerLivingEntity.class, Void.class, Void.class, "LIVINGENTITY");
     }
+
     public LivingEntity(String name) {
         super(name, "LIVINGENTITY", Event.class, PowerLivingEntity.class, Void.class, Void.class);
     }

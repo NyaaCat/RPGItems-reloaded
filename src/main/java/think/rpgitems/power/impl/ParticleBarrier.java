@@ -43,15 +43,15 @@ import static think.rpgitems.power.Utils.checkCooldown;
 public class ParticleBarrier extends BasePower {
 
     private static final Cache<UUID, Double> barriers = CacheBuilder.newBuilder()
-                                                                    .expireAfterAccess(1, TimeUnit.MINUTES)
-                                                                    .build();
+            .expireAfterAccess(1, TimeUnit.MINUTES)
+            .build();
     private static final Cache<UUID, UUID> barrierSources = CacheBuilder.newBuilder()
-                                                                        .expireAfterAccess(1, TimeUnit.MINUTES)
-                                                                        .build();
+            .expireAfterAccess(1, TimeUnit.MINUTES)
+            .build();
     private static final Cache<UUID, Pair<Long, Double>> energys = CacheBuilder.newBuilder()
-                                                                               .expireAfterAccess(10, TimeUnit.MINUTES)
-                                                                               .build();
-    private static AtomicInteger rc = new AtomicInteger(0);
+            .expireAfterAccess(10, TimeUnit.MINUTES)
+            .build();
+    private static final AtomicInteger rc = new AtomicInteger(0);
     private static Listener event;
     @Property
     public double energyPerBarrier = 40;
@@ -72,6 +72,26 @@ public class ParticleBarrier extends BasePower {
     @Property(order = 1, required = true)
     @AcceptedValue(preset = Preset.POTION_EFFECT_TYPE)
     public PotionEffectType effect = PotionEffectType.INCREASE_DAMAGE;
+
+    public static AtomicInteger getRc() {
+        return rc;
+    }
+
+    public static Cache<UUID, Double> getBarriers() {
+        return barriers;
+    }
+
+    public static Cache<UUID, UUID> getBarrierSources() {
+        return barrierSources;
+    }
+
+    public static Cache<UUID, Pair<Long, Double>> getEnergys() {
+        return energys;
+    }
+
+    public static Listener getEvent() {
+        return event;
+    }
 
     @Override
     public void init(ConfigurationSection s) {
@@ -107,14 +127,6 @@ public class ParticleBarrier extends BasePower {
         }
     }
 
-    public static AtomicInteger getRc() {
-        return rc;
-    }
-
-    public static Cache<UUID, Double> getBarriers() {
-        return barriers;
-    }
-
     public double getEnergyPerBarrier() {
         return energyPerBarrier;
     }
@@ -123,20 +135,8 @@ public class ParticleBarrier extends BasePower {
         return barrierHealth;
     }
 
-    public static Cache<UUID, UUID> getBarrierSources() {
-        return barrierSources;
-    }
-
-    public static Cache<UUID, Pair<Long, Double>> getEnergys() {
-        return energys;
-    }
-
     public double getEnergyDecay() {
         return energyDecay;
-    }
-
-    public static Listener getEvent() {
-        return event;
     }
 
     public int getCooldown() {

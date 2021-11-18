@@ -33,23 +33,51 @@ import java.util.regex.Pattern;
 
 public class RPGItems extends JavaPlugin {
 
+    public static Logger logger;
+    public static RPGItems plugin;
     private static int version;
     private static int serial;
     private static String pluginMCVersion;
     private static String serverMCVersion;
-
-    public static Logger logger;
-    public static RPGItems plugin;
-    List<Plugin> managedPlugins = new ArrayList<>();
     public Configuration cfg;
+    List<Plugin> managedPlugins = new ArrayList<>();
 
     //constructors are used in tests.
     public RPGItems() {
         super();
     }
+
     //constructors are used in tests.
     public RPGItems(JavaPluginLoader loader, PluginDescriptionFile description, File dataFolder, File file) {
         super(loader, description, dataFolder, file);
+    }
+
+    public static int getVersion() {
+        return version;
+    }
+
+    public static int getSerial() {
+        return serial;
+    }
+
+    public static String getPluginMCVersion() {
+        return pluginMCVersion;
+    }
+
+    public static String getServerMCVersion() {
+        return serverMCVersion;
+    }
+
+    @SuppressWarnings({"unchecked", "JavaReflectionInvocation"})
+    private static <T> T getWrapper(final PowerPlain obj, final Class<T> implInterface, final String delegateMethod) {
+        InvocationHandler invocationHandler = (proxy, method, args) -> {
+            if (!method.getName().equals(delegateMethod)) {
+                return obj.getClass().getMethod(method.getName(), method.getParameterTypes()).invoke(obj, args);
+            } else {
+                return obj.getClass().getDeclaredMethod("fire", Player.class, ItemStack.class).invoke(obj, args[0], args[1]);
+            }
+        };
+        return (T) Proxy.newProxyInstance(obj.getClass().getClassLoader(), new Class[]{implInterface}, invocationHandler);
     }
 
     @Override
@@ -81,22 +109,22 @@ public class RPGItems extends JavaPlugin {
         cfg.load();
         cfg.enabledLanguages.forEach(lang -> new I18n(this, lang));
         cfg.enabledLanguages.forEach(lang ->
-                                             PowerManager.addDescriptionResolver(RPGItems.plugin, lang, (power, property) -> {
-                                                 I18n i18n = I18n.getInstance(lang);
-                                                 if (property == null) {
-                                                     String powerKey = "properties." + power.getKey() + ".main_description";
-                                                     return i18n.format(powerKey);
-                                                 }
-                                                 String key = "properties." + power.getKey() + "." + property;
-                                                 if (i18n.hasKey(key)) {
-                                                     return i18n.format(key);
-                                                 }
-                                                 String baseKey = "properties.base." + property;
-                                                 if (i18n.hasKey(baseKey)) {
-                                                     return i18n.format(baseKey);
-                                                 }
-                                                 return null;
-                                             }));
+                PowerManager.addDescriptionResolver(RPGItems.plugin, lang, (power, property) -> {
+                    I18n i18n = I18n.getInstance(lang);
+                    if (property == null) {
+                        String powerKey = "properties." + power.getKey() + ".main_description";
+                        return i18n.getFormatted(powerKey);
+                    }
+                    String key = "properties." + power.getKey() + "." + property;
+                    if (i18n.hasKey(key)) {
+                        return i18n.getFormatted(key);
+                    }
+                    String baseKey = "properties.base." + property;
+                    if (i18n.hasKey(baseKey)) {
+                        return i18n.getFormatted(baseKey);
+                    }
+                    return null;
+                }));
         loadPowers();
         saveDefaultConfig();
         Font.load();
@@ -180,20 +208,15 @@ public class RPGItems extends JavaPlugin {
         managedPlugins.forEach(Bukkit.getPluginManager()::enablePlugin);
     }
 
-    public static int getVersion() {
-        return version;
-    }
-
-    public static int getSerial() {
-        return serial;
-    }
-
-    public static String getPluginMCVersion() {
-        return pluginMCVersion;
-    }
-
-    public static String getServerMCVersion() {
-        return serverMCVersion;
+    @Override
+    public void onDisable() {
+        WGSupport.unload();
+        HandlerList.unregisterAll(plugin);
+        getCommand("rpgitem").setExecutor(null);
+        getCommand("rpgitem").setTabCompleter(null);
+        this.getServer().getScheduler().cancelTasks(plugin);
+        ItemManager.unload();
+        managedPlugins.forEach(Bukkit.getPluginManager()::disablePlugin);
     }
 
     private class ServerLoadListener implements Listener {
@@ -207,28 +230,5 @@ public class RPGItems extends JavaPlugin {
             logger.info("Done");
             new Ticker().runTaskTimer(RPGItems.this, 0, 0);
         }
-    }
-
-    @Override
-    public void onDisable() {
-        WGSupport.unload();
-        HandlerList.unregisterAll(plugin);
-        getCommand("rpgitem").setExecutor(null);
-        getCommand("rpgitem").setTabCompleter(null);
-        this.getServer().getScheduler().cancelTasks(plugin);
-        ItemManager.unload();
-        managedPlugins.forEach(Bukkit.getPluginManager()::disablePlugin);
-    }
-
-    @SuppressWarnings({"unchecked", "JavaReflectionInvocation"})
-    private static <T> T getWrapper(final PowerPlain obj, final Class<T> implInterface, final String delegateMethod) {
-        InvocationHandler invocationHandler = (proxy, method, args) -> {
-            if (!method.getName().equals(delegateMethod)) {
-                return obj.getClass().getMethod(method.getName(), method.getParameterTypes()).invoke(obj, args);
-            } else {
-                return obj.getClass().getDeclaredMethod("fire", Player.class, ItemStack.class).invoke(obj, args[0], args[1]);
-            }
-        };
-        return (T) Proxy.newProxyInstance(obj.getClass().getClassLoader(), new Class[]{implInterface}, invocationHandler);
     }
 }

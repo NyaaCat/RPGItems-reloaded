@@ -11,8 +11,8 @@ import java.util.LinkedHashMap;
 import java.util.Map;
 
 public class ArmorStandUtil {
-    private static Map<Entity, ArmorStand> projectileSources = new LinkedHashMap<>();
     private static final String META_KEY = "RPGItems.ArmorStand";
+    private static final Map<Entity, ArmorStand> projectileSources = new LinkedHashMap<>();
 
     public static ArmorStand asProjectileSource(Entity player) {
         return projectileSources.computeIfAbsent(player, player1 -> {

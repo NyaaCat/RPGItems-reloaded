@@ -13,14 +13,13 @@ import java.util.List;
 public class RPGItemsPowersPreFireEvent<TEvent extends Event, TPower extends Pimpl, TResult, TReturn> extends Event implements Cancellable {
 
     private static final HandlerList handlers = new HandlerList();
-    private boolean cancel;
-
     private final ItemStack itemStack;
     private final TEvent event;
     private final RPGItem rpgItem;
     private final Player player;
     private final Trigger<TEvent, TPower, TResult, TReturn> trigger;
     private final List<TPower> powers;
+    private boolean cancel;
 
     public RPGItemsPowersPreFireEvent(Player player, ItemStack itemStack, TEvent event, RPGItem rpgItem, Trigger<TEvent, TPower, TResult, TReturn> trigger, List<TPower> powers) {
         this.itemStack = itemStack;
@@ -29,6 +28,10 @@ public class RPGItemsPowersPreFireEvent<TEvent extends Event, TPower extends Pim
         this.player = player;
         this.trigger = trigger;
         this.powers = powers;
+    }
+
+    public static HandlerList getHandlerList() {
+        return handlers;
     }
 
     public Player getPlayer() {
@@ -53,10 +56,6 @@ public class RPGItemsPowersPreFireEvent<TEvent extends Event, TPower extends Pim
 
     @Override
     public HandlerList getHandlers() {
-        return handlers;
-    }
-
-    public static HandlerList getHandlerList() {
         return handlers;
     }
 

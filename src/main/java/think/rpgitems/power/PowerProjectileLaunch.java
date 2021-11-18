@@ -1,7 +1,6 @@
 package think.rpgitems.power;
 
 import org.bukkit.entity.Player;
-import org.bukkit.event.entity.ProjectileHitEvent;
 import org.bukkit.event.entity.ProjectileLaunchEvent;
 import org.bukkit.inventory.ItemStack;
 

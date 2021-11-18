@@ -1,16 +1,12 @@
 package think.rpgitems.power.propertymodifier;
 
 import com.udojava.evalex.Expression;
-import think.rpgitems.item.ItemManager;
-import think.rpgitems.item.RPGItem;
 import think.rpgitems.power.Meta;
 import think.rpgitems.power.Property;
 import think.rpgitems.power.Utils;
 
 import java.math.BigDecimal;
-import java.util.Optional;
 import java.util.concurrent.ThreadLocalRandom;
-import java.util.function.Function;
 
 @Meta(marker = true)
 public class EvalModifier extends BaseModifier<Double> implements DoubleModifier {

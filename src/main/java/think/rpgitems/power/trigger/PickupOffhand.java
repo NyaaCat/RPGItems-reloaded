@@ -10,6 +10,7 @@ class PickupOffhand extends Trigger<InventoryClickEvent, PowerOffhandItem, Boole
     PickupOffhand() {
         super(InventoryClickEvent.class, PowerOffhandItem.class, Boolean.class, Boolean.class, "PICKUP_OFF_HAND");
     }
+
     public PickupOffhand(String name) {
         super(name, "PICKUP_OFF_HAND", InventoryClickEvent.class, PowerOffhandItem.class, Boolean.class, Boolean.class);
     }

@@ -30,94 +30,18 @@ public class PowerCommands extends RPGCommandReceiver {
         this.plugin = plugin;
     }
 
-    @Override
-    public String getHelpPrefix() {
-        return "power";
-    }
-
     private static Pair<NamespacedKey, Class<? extends Power>> getPowerClass(CommandSender sender, String powerStr) {
         try {
             NamespacedKey key = PowerManager.parseKey(powerStr);
             Class<? extends Power> cls = PowerManager.getPower(key);
             if (cls == null) {
-                msgs(sender, "message.power.unknown", powerStr);
+                I18n.sendMessage(sender, "message.power.unknown", powerStr);
             }
             return Pair.of(key, cls);
         } catch (UnknownExtensionException e) {
-            msgs(sender, "message.error.unknown.extension", e.getName());
+            I18n.sendMessage(sender, "message.error.unknown.extension", e.getName());
             return null;
         }
-    }
-
-    @Completion("")
-    public List<String> addCompleter(CommandSender sender, Arguments arguments) {
-        List<String> completeStr = new ArrayList<>();
-        switch (arguments.remains()) {
-            case 1:
-                completeStr.addAll(ItemManager.itemNames());
-                break;
-            case 2:
-                completeStr.addAll(PowerManager.getPowers().keySet().stream().map(s -> PowerManager.hasExtension() ? s : s.getKey()).map(Object::toString).collect(Collectors.toList()));
-                break;
-            default:
-                RPGItem item = getItem(arguments.nextString(), sender);
-                String last = arguments.getRawArgs()[arguments.getRawArgs().length - 1];
-                String powerKey = arguments.nextString();
-                Pair<NamespacedKey, Class<? extends Power>> powerClass = getPowerClass(sender, powerKey);
-                if (powerClass != null) {
-                    return resolveProperties(sender, item, powerClass.getValue(), powerClass.getKey(), last, arguments, true);
-                }
-        }
-        return filtered(arguments, completeStr);
-    }
-
-    @SubCommand(value = "add", tabCompleter = "addCompleter")
-    public void add(CommandSender sender, Arguments args) {
-        String itemStr = args.next();
-        String powerStr = args.next();
-        if (itemStr == null || itemStr.equals("help") || powerStr == null) {
-            msgs(sender, "manual.power.add.description");
-            msgs(sender, "manual.power.add.usage");
-            return;
-        }
-        RPGItem item = getItem(itemStr, sender);
-        Pair<NamespacedKey, Class<? extends Power>> keyClass = getPowerClass(sender, powerStr);
-        if (keyClass == null || keyClass.getValue() == null) return;
-        Power power;
-        Class<? extends Power> cls = keyClass.getValue();
-        NamespacedKey key = keyClass.getKey();
-        try {
-            power = initPropertyHolder(sender, args, item, cls);
-            item.addPower(key, power);
-            ItemManager.refreshItem();
-            ItemManager.save(item);
-            msg(sender, "message.power.ok", powerStr, item.getPowers().size() - 1);
-        } catch (Exception e) {
-            if (e instanceof BadCommandException) {
-                throw (BadCommandException) e;
-            }
-            plugin.getLogger().log(Level.WARNING, "Error adding power " + powerStr + " to item " + itemStr + " " + item, e);
-            msgs(sender, "internal.error.command_exception");
-        }
-    }
-
-    @Completion("")
-    public List<String> propCompleter(CommandSender sender, Arguments arguments) {
-        List<String> completeStr = new ArrayList<>();
-        switch (arguments.remains()) {
-            case 1:
-                completeStr.addAll(ItemManager.itemNames());
-                break;
-            case 2:
-                RPGItem item = getItem(arguments.nextString(), sender);
-                completeStr.addAll(IntStream.range(0, item.getPowers().size()).mapToObj(i -> i + "-" + item.getPowers().get(i).getNamespacedKey()).collect(Collectors.toList()));
-                break;
-            default:
-                item = getItem(arguments.nextString(), sender);
-                Power nextPower = nextPower(item, sender, arguments);
-                return resolveProperties(sender, item, nextPower.getClass(), nextPower.getNamespacedKey(), arguments.getRawArgs()[arguments.getRawArgs().length - 1], arguments, false);
-        }
-        return filtered(arguments, completeStr);
     }
 
     private static Power nextPower(RPGItem item, CommandSender sender, Arguments args) {
@@ -189,6 +113,90 @@ public class PowerCommands extends RPGCommandReceiver {
         return nth;
     }
 
+    public static void showPower(CommandSender sender, int nth, RPGItem item, Power power) {
+        I18n.sendMessage(sender, "message.power.show", nth, power.getLocalizedName(sender), power.getNamespacedKey().toString(), power.displayText() == null ? I18n.getInstance(sender).getFormatted("message.power.no_display") : power.displayText(), power.getTriggers().stream().map(Trigger::name).collect(Collectors.joining(",")));
+        NamespacedKey powerKey = item.getPropertyHolderKey(power);
+        PowerManager.getProperties(powerKey).forEach(
+                (name, prop) -> showProp(sender, powerKey, prop.getValue(), power)
+        );
+    }
+
+    @Override
+    public String getHelpPrefix() {
+        return "power";
+    }
+
+    @Completion("")
+    public List<String> addCompleter(CommandSender sender, Arguments arguments) {
+        List<String> completeStr = new ArrayList<>();
+        switch (arguments.remains()) {
+            case 1:
+                completeStr.addAll(ItemManager.itemNames());
+                break;
+            case 2:
+                completeStr.addAll(PowerManager.getPowers().keySet().stream().map(s -> PowerManager.hasExtension() ? s : s.getKey()).map(Object::toString).collect(Collectors.toList()));
+                break;
+            default:
+                RPGItem item = getItem(arguments.nextString(), sender);
+                String last = arguments.getRawArgs()[arguments.getRawArgs().length - 1];
+                String powerKey = arguments.nextString();
+                Pair<NamespacedKey, Class<? extends Power>> powerClass = getPowerClass(sender, powerKey);
+                if (powerClass != null) {
+                    return resolveProperties(sender, item, powerClass.getValue(), powerClass.getKey(), last, arguments, true);
+                }
+        }
+        return filtered(arguments, completeStr);
+    }
+
+    @SubCommand(value = "add", tabCompleter = "addCompleter")
+    public void add(CommandSender sender, Arguments args) {
+        String itemStr = args.next();
+        String powerStr = args.next();
+        if (itemStr == null || itemStr.equals("help") || powerStr == null) {
+            I18n.sendMessage(sender, "manual.power.add.description");
+            I18n.sendMessage(sender, "manual.power.add.usage");
+            return;
+        }
+        RPGItem item = getItem(itemStr, sender);
+        Pair<NamespacedKey, Class<? extends Power>> keyClass = getPowerClass(sender, powerStr);
+        if (keyClass == null || keyClass.getValue() == null) return;
+        Power power;
+        Class<? extends Power> cls = keyClass.getValue();
+        NamespacedKey key = keyClass.getKey();
+        try {
+            power = initPropertyHolder(sender, args, item, cls);
+            item.addPower(key, power);
+            ItemManager.refreshItem();
+            ItemManager.save(item);
+            msg(sender, "message.power.ok", powerStr, item.getPowers().size() - 1);
+        } catch (Exception e) {
+            if (e instanceof BadCommandException) {
+                throw (BadCommandException) e;
+            }
+            plugin.getLogger().log(Level.WARNING, "Error adding power " + powerStr + " to item " + itemStr + " " + item, e);
+            I18n.sendMessage(sender, "internal.error.command_exception");
+        }
+    }
+
+    @Completion("")
+    public List<String> propCompleter(CommandSender sender, Arguments arguments) {
+        List<String> completeStr = new ArrayList<>();
+        switch (arguments.remains()) {
+            case 1:
+                completeStr.addAll(ItemManager.itemNames());
+                break;
+            case 2:
+                RPGItem item = getItem(arguments.nextString(), sender);
+                completeStr.addAll(IntStream.range(0, item.getPowers().size()).mapToObj(i -> i + "-" + item.getPowers().get(i).getNamespacedKey()).collect(Collectors.toList()));
+                break;
+            default:
+                item = getItem(arguments.nextString(), sender);
+                Power nextPower = nextPower(item, sender, arguments);
+                return resolveProperties(sender, item, nextPower.getClass(), nextPower.getNamespacedKey(), arguments.getRawArgs()[arguments.getRawArgs().length - 1], arguments, false);
+        }
+        return filtered(arguments, completeStr);
+    }
+
     @SubCommand(value = "prop", tabCompleter = "propCompleter")
     public void prop(CommandSender sender, Arguments args) throws IllegalAccessException {
         RPGItem item = getItem(args.nextString(), sender);
@@ -209,18 +217,10 @@ public class PowerCommands extends RPGCommandReceiver {
             item.rebuild();
             ItemManager.refreshItem();
             ItemManager.save(item);
-            msgs(sender, "message.power.change");
+            I18n.sendMessage(sender, "message.power.change");
         } catch (UnknownExtensionException e) {
-            msgs(sender, "message.error.unknown.extension", e.getName());
+            I18n.sendMessage(sender, "message.error.unknown.extension", e.getName());
         }
-    }
-
-    public static void showPower(CommandSender sender, int nth, RPGItem item, Power power) {
-        msgs(sender, "message.power.show", nth, power.getLocalizedName(sender), power.getNamespacedKey().toString(), power.displayText() == null ? I18n.getInstance(sender).format("message.power.no_display") : power.displayText(), power.getTriggers().stream().map(Trigger::name).collect(Collectors.joining(",")));
-        NamespacedKey powerKey = item.getPropertyHolderKey(power);
-        PowerManager.getProperties(powerKey).forEach(
-                (name, prop) -> showProp(sender, powerKey, prop.getValue(), power)
-        );
     }
 
     @Completion("")
@@ -278,7 +278,7 @@ public class PowerCommands extends RPGCommandReceiver {
             }
             Power power1 = item.getPowers().get(nth);
             if (power == null) {
-                msgs(sender, "message.power.unknown", nth);
+                I18n.sendMessage(sender, "message.power.unknown", nth);
                 return;
             }
             power.deinit();
@@ -286,9 +286,9 @@ public class PowerCommands extends RPGCommandReceiver {
             NamespacedKey key = item.removePropertyHolderKey(power);
             item.rebuild();
             ItemManager.save(item);
-            msgs(sender, "message.power.removed", key.toString(), nth);
+            I18n.sendMessage(sender, "message.power.removed", key.toString(), nth);
         } catch (UnknownExtensionException e) {
-            msgs(sender, "message.error.unknown.extension", e.getName());
+            I18n.sendMessage(sender, "message.error.unknown.extension", e.getName());
         }
     }
 
@@ -307,7 +307,7 @@ public class PowerCommands extends RPGCommandReceiver {
                 origin = i;
                 continue;
             }
-            if (next == -1 && nextPower.equals(pi)){
+            if (next == -1 && nextPower.equals(pi)) {
                 next = i;
             }
         }
@@ -338,7 +338,7 @@ public class PowerCommands extends RPGCommandReceiver {
                 .sorted(Comparator.comparing(NamespacedKey::getKey))
                 .collect(Collectors.toList());
         if (powers.size() == 0) {
-            msgs(sender, "message.power.not_found", nameSearch);
+            I18n.sendMessage(sender, "message.power.not_found", nameSearch);
             return;
         }
         Stream<NamespacedKey> stream = powers.stream();
@@ -352,12 +352,12 @@ public class PowerCommands extends RPGCommandReceiver {
 
         stream.forEach(
                 power -> {
-                    msgs(sender, "message.power.key", power.toString());
-                    msgs(sender, "message.power.description", PowerManager.getDescription(power, null));
+                    I18n.sendMessage(sender, "message.power.key", power.toString());
+                    I18n.sendMessage(sender, "message.power.description", PowerManager.getDescription(power, null));
                     PowerManager.getProperties(power).forEach(
                             (name, mp) -> showProp(sender, power, mp.getValue(), null)
                     );
-                    msgs(sender, "message.line_separator");
+                    I18n.sendMessage(sender, "message.line_separator");
                 });
         sender.sendMessage(ChatColor.AQUA + "Powers: " + page + " / " + max);
     }

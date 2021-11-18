@@ -11,17 +11,16 @@ import org.bukkit.event.entity.ProjectileHitEvent;
 import org.bukkit.event.player.PlayerInteractEvent;
 import org.bukkit.inventory.ItemStack;
 import think.rpgitems.I18n;
-import think.rpgitems.utils.LightContext;
 import think.rpgitems.event.BeamEndEvent;
 import think.rpgitems.event.BeamHitBlockEvent;
 import think.rpgitems.event.BeamHitEntityEvent;
 import think.rpgitems.power.*;
+import think.rpgitems.utils.LightContext;
 
 import javax.annotation.Nullable;
 import java.util.concurrent.ThreadLocalRandom;
 
 import static think.rpgitems.Events.*;
-import static think.rpgitems.Events.DAMAGE_SOURCE_ITEM;
 
 @Meta(defaultTrigger = {"PROJECTILE_HIT"}, generalInterface = {
         PowerLeftClick.class,

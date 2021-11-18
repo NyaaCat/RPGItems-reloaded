@@ -10,6 +10,7 @@ class SwapToOffhand extends Trigger<PlayerSwapHandItemsEvent, PowerMainhandItem,
     SwapToOffhand() {
         super(PlayerSwapHandItemsEvent.class, PowerMainhandItem.class, Boolean.class, Boolean.class, "SWAP_TO_OFFHAND");
     }
+
     public SwapToOffhand(String name) {
         super(name, "SWAP_TO_OFFHAND", PlayerSwapHandItemsEvent.class, PowerMainhandItem.class, Boolean.class, Boolean.class);
     }

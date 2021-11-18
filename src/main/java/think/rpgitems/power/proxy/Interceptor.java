@@ -38,6 +38,20 @@ public class Interceptor {
     public static final String HANDLER_FIELD_NAME = "power_handler";
 
     private static final Cache<String, Power> cache = CacheBuilder.newBuilder().weakValues().build();
+    private final Power orig;
+    private final Player player;
+    private final Map<Method, PropertyInstance> getters;
+    private final ItemStack stack;
+
+    protected Interceptor(Power orig, Player player, ItemStack stack) {
+        this.orig = orig;
+        this.player = player;
+        this.getters = PowerManager.getProperties(orig.getClass())
+                .entrySet()
+                .stream()
+                .collect(Collectors.toMap(e -> e.getValue().getKey(), e -> e.getValue().getValue()));
+        this.stack = stack;
+    }
 
     public static Power create(Power orig, Player player, Class<? extends Power> cls, ItemStack stack, Trigger trigger) {
         Power result = cache.getIfPresent(getCacheKey(player, stack, orig));
@@ -87,21 +101,6 @@ public class Interceptor {
                 .make()
                 .load(cls.getClassLoader(), ClassLoadingStrategy.UsingLookup.of(MethodHandles.privateLookupIn(cls, lookup)))
                 .getLoaded();
-    }
-
-    private final Power orig;
-    private final Player player;
-    private final Map<Method, PropertyInstance> getters;
-    private ItemStack stack;
-
-    protected Interceptor(Power orig, Player player, ItemStack stack) {
-        this.orig = orig;
-        this.player = player;
-        this.getters = PowerManager.getProperties(orig.getClass())
-                .entrySet()
-                .stream()
-                .collect(Collectors.toMap(e -> e.getValue().getKey(), e -> e.getValue().getValue()));
-        this.stack = stack;
     }
 
     @RuntimeType

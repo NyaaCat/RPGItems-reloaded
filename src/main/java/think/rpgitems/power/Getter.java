@@ -4,12 +4,6 @@ import java.lang.reflect.InvocationTargetException;
 
 @FunctionalInterface
 public interface Getter<T> {
-    /**
-     * @param object Object to serialize to String
-     * @return String representation of the object
-     */
-    String get(T object);
-
     static Getter from(PropertyHolder p, Class<? extends Getter> cls) {
         return getAccessor(p, cls);
     }
@@ -27,4 +21,10 @@ public interface Getter<T> {
             }
         }
     }
+
+    /**
+     * @param object Object to serialize to String
+     * @return String representation of the object
+     */
+    String get(T object);
 }

@@ -49,11 +49,11 @@ public class EvalCondition extends BaseCondition<BigDecimal> {
     public PowerResult<BigDecimal> check(Player player, ItemStack stack, Map<PropertyHolder, PowerResult<?>> context) {
         Expression e = new Expression(expression);
         e.and("playerYaw", lazyNumber(() -> (double) player.getLocation().getYaw()))
-         .and("playerPitch", lazyNumber(() -> (double) player.getLocation().getPitch()))
-         .and("playerX", lazyNumber(() -> player.getLocation().getX()))
-         .and("playerY", lazyNumber(() -> player.getLocation().getY()))
-         .and("playerZ", lazyNumber(() -> player.getLocation().getZ()))
-         .and("playerLastDamage", lazyNumber(player::getLastDamage));
+                .and("playerPitch", lazyNumber(() -> (double) player.getLocation().getPitch()))
+                .and("playerX", lazyNumber(() -> player.getLocation().getX()))
+                .and("playerY", lazyNumber(() -> player.getLocation().getY()))
+                .and("playerZ", lazyNumber(() -> player.getLocation().getZ()))
+                .and("playerLastDamage", lazyNumber(player::getLastDamage));
 
         e.addLazyFunction(scoreBoard(player));
         e.addLazyFunction(context(player));

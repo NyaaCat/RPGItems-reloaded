@@ -74,6 +74,7 @@ public class TNTCannon extends BasePower {
             player.getWorld().playSound(entity.getLocation(), Sound.ENTITY_ARROW_SHOOT, 1.0f, 1.0f);
             TNTPrimed tnt = player.getWorld().spawn(entity.getLocation().add(0, 1.8, 0), TNTPrimed.class);
             tnt.setVelocity(entity.getLocation().getDirection().multiply(2d));
-            return PowerResult.ok();        }
+            return PowerResult.ok();
+        }
     }
 }

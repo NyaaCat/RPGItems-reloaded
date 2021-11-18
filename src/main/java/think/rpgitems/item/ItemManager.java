@@ -44,6 +44,8 @@ import static think.rpgitems.power.Utils.rethrow;
 import static think.rpgitems.utils.ItemTagUtils.*;
 
 public class ItemManager {
+    private static final long OFFSET_BASIS = 2166136261L;// 32位offset basis
+    private static final long PRIME = 16777619; // 32位prime
     private static HashMap<Integer, RPGItem> itemById = new HashMap<>();
     private static HashMap<String, RPGItem> itemByName = new HashMap<>();
     private static HashMap<Integer, ItemGroup> groupById = new HashMap<>();
@@ -54,6 +56,10 @@ public class ItemManager {
     private static File itemsDir;
     private static File backupsDir;
     private static boolean extendedLock = true;
+    private static final Cache<Long, ItemMeta> metaCache = CacheBuilder.newBuilder()
+            .expireAfterAccess(10, TimeUnit.MINUTES)
+            .initialCapacity(1024)
+            .build();
 
     public static boolean hasName(String name) {
         return itemByName.containsKey(name) || groupByName.containsKey(name);
@@ -490,11 +496,6 @@ public class ItemManager {
         return toRPGItem(item, true);
     }
 
-    private static Cache<Long, ItemMeta> metaCache = CacheBuilder.newBuilder()
-            .expireAfterAccess(10, TimeUnit.MINUTES)
-            .initialCapacity(1024)
-            .build();
-
     public static Optional<RPGItem> toRPGItem(ItemStack item, boolean ignoreModel) {
         if (item == null || item.getType() == Material.AIR)
             return Optional.empty();
@@ -531,7 +532,7 @@ public class ItemManager {
         if (tagContainer.has(TAG_META, PersistentDataType.TAG_CONTAINER)) {
             PersistentDataContainer metaTag = getTag(tagContainer, TAG_META);
             Integer uid = getInt(metaTag, TAG_ITEM_UID);
-            if (uid == null)return Optional.empty();
+            if (uid == null) return Optional.empty();
             Optional<Boolean> optIsModel = optBoolean(metaTag, TAG_IS_MODEL);
             if (ignoreModel && optIsModel.orElse(false)) {
                 return Optional.empty();
@@ -540,9 +541,6 @@ public class ItemManager {
         }
         return Optional.empty();
     }
-
-    private static final long OFFSET_BASIS = 2166136261L;// 32位offset basis
-    private static final long PRIME = 16777619; // 32位prime
 
     public static long hash(byte[] src) {
         long hash = OFFSET_BASIS;
@@ -715,7 +713,7 @@ public class ItemManager {
                         .replace("\\", "_b")
                         .replace("*", "_a")
                         .replace("\"", "_o")
-                        .replace("\'", "_i")
+                        .replace("'", "_i")
                         .replace("?", "_q")
                         .replace("<", "_l")
                         .replace(">", "_g")

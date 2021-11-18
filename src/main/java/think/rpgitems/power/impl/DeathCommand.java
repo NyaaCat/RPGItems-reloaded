@@ -35,6 +35,10 @@ public class DeathCommand extends BasePower {
     @Property
     public int cost = 0;
 
+    public static Random getRand() {
+        return rand;
+    }
+
     /**
      * Command to be executed
      */
@@ -78,10 +82,6 @@ public class DeathCommand extends BasePower {
      */
     public String getDesc() {
         return desc;
-    }
-
-    public static Random getRand() {
-        return rand;
     }
 
     public class Impl implements PowerHit {

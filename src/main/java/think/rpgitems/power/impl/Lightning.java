@@ -26,7 +26,7 @@ public class Lightning extends BasePower {
     @Property
     public int cost = 0;
 
-    private Random random = new Random();
+    private final Random random = new Random();
 
     /**
      * Cost of this power

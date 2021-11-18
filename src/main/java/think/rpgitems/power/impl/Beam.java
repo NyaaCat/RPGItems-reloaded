@@ -7,7 +7,9 @@ import org.bukkit.*;
 import org.bukkit.block.Block;
 import org.bukkit.block.BlockFace;
 import org.bukkit.configuration.ConfigurationSection;
-import org.bukkit.entity.*;
+import org.bukkit.entity.Entity;
+import org.bukkit.entity.LivingEntity;
+import org.bukkit.entity.Player;
 import org.bukkit.event.entity.EntityDamageByEntityEvent;
 import org.bukkit.event.entity.EntityDamageEvent;
 import org.bukkit.event.entity.EntityShootBowEvent;
@@ -21,11 +23,11 @@ import org.bukkit.util.BoundingBox;
 import org.bukkit.util.RayTraceResult;
 import org.bukkit.util.Vector;
 import think.rpgitems.RPGItems;
-import think.rpgitems.utils.LightContext;
 import think.rpgitems.event.BeamEndEvent;
 import think.rpgitems.event.BeamHitBlockEvent;
 import think.rpgitems.event.BeamHitEntityEvent;
 import think.rpgitems.power.*;
+import think.rpgitems.utils.LightContext;
 import think.rpgitems.utils.cast.CastUtils;
 import think.rpgitems.utils.cast.RangedDoubleValue;
 import think.rpgitems.utils.cast.RangedValueSerializer;
@@ -65,45 +67,54 @@ import static think.rpgitems.utils.cast.CastUtils.makeCone;
         PowerLocation.class
 }, implClass = Beam.Impl.class)
 public class Beam extends BasePower {
+    static final Color[] colors = {
+            Color.fromRGB(0xFF2040), //RED
+            Color.fromRGB(0xFF9020), //ORANGE
+            Color.fromRGB(0xFFFF40), //YELLOW
+            Color.fromRGB(0x40FF40), //LIME
+            Color.fromRGB(0x40FFFF), //AQUA
+            Color.fromRGB(0x4040FF), //BLUE
+            Color.fromRGB(0xFF40FF)  //FUCHSIA
+    };
+    //behavior params
+    //todo: config them in specific class
+    static int currentColor = 0;
+    private static final Set<Material> transp = Stream.of(Material.values())
+            .filter(material -> material.isBlock())
+            .filter(material -> !material.isSolid() || !material.isOccluding())
+            .collect(Collectors.toSet());
+    private static final Random random = new Random();
+    private final Vector yAxis = new Vector(0, 1, 0);
     @Property
     public int length = 10;
-
     @Property
     public int ttl = 100;
-
     @Property
     public Particle particle = Particle.LAVA;
-
     @Property
     public Mode mode = Mode.BEAM;
-
     @Property
     public int pierce = 0;
-
     @Property
     public boolean ignoreWall = false;
-
     @Property
     public double damage = 20;
-
     @Property
     public double speed = 20;
-
     @Property
     public double offsetX = 0;
-
     @Property
     public double offsetY = 0;
 
+//  used to judge legacy 1.0
+//    @Property
+//    public boolean cone = false;
     @Property
     public double offsetZ = 0;
-
     @Property
     public double particleSpeed = 0;
-
     @Property
     public double particleDensity = 2;
-
     /**
      * Cost of this power
      */
@@ -114,115 +125,151 @@ public class Beam extends BasePower {
      */
     @Property
     public long cooldown = 0;
-
-//  used to judge legacy 1.0
-//    @Property
-//    public boolean cone = false;
-
     @Property
     public double cone = 0;
-
     @Property
     public double homing = 0;
-
     @Property
     public double homingAngle = 30;
-
     @Property
     public double homingRange = 50;
-
     @Property
     public HomingMode homingMode = HomingMode.ONE_TARGET;
-
     @Property
     public Target homingTarget = Target.MOBS;
-
     @Property
     public int ticksBeforeHoming = 0;
-
     @Property
     public int burstCount = 1;
-
     @Property
     public int beamAmount = 1;
-
     @Property
     public int burstInterval = 10;
-
     @Property
     public int bounce = 0;
-
     @Property
     public boolean hitSelfWhenBounced = false;
-
     @Property
     public double gravity = 0;
-
     @Property
     @Serializer(ExtraDataSerializer.class)
     @Deserializer(ExtraDataSerializer.class)
     public Object extraData;
-
     @Property
     public boolean requireHurtByEntity = true;
-
-
     @Property
     public boolean suppressMelee = false;
-
     @Property
     public String speedBias = "";
-
     @Property
     public List<Behavior> behavior = new ArrayList<>();
-
     @Property
     public String behaviorParam = "{}";
-
     @Property
     public double initialRotation = 0;
-
     @Property
     public FiringLocation firingLocation = FiringLocation.SELF;
-
     @Property
     public boolean effectOnly = false;
-
     /*
-    *   following 3 property format like:
-    *   "<lower_value>,<upper_value>:<weight> <lower_value2>,<upper_value2> <fixed_value>:<weight> ......"
-    *   actual value will works like this:
-    *   weighted pick one <>,<>:<> from all defined values. Weight is 1 by default.
-    *   random generate a value from <lower_value> to <upper_value>, or <fixed_value>.
-    *
-    */
+     *   following 3 property format like:
+     *   "<lower_value>,<upper_value>:<weight> <lower_value2>,<upper_value2> <fixed_value>:<weight> ......"
+     *   actual value will works like this:
+     *   weighted pick one <>,<>:<> from all defined values. Weight is 1 by default.
+     *   random generate a value from <lower_value> to <upper_value>, or <fixed_value>.
+     *
+     */
     @Property
     @Serializer(RangedValueSerializer.class)
     @Deserializer(RangedValueSerializer.class)
     public RangedDoubleValue firingR = RangedDoubleValue.of("10,15");
-
     @Property
     @Serializer(RangedValueSerializer.class)
     @Deserializer(RangedValueSerializer.class)
     public RangedDoubleValue firingTheta = RangedDoubleValue.of("0,10");
-
     @Property
     @Serializer(RangedValueSerializer.class)
     @Deserializer(RangedValueSerializer.class)
     public RangedDoubleValue firingPhi = RangedDoubleValue.of("0,360");
-
     @Property
     public double firingRange = 64;
-
     @Property
     public boolean castOff = false;
 
-    private static Set<Material> transp = Stream.of(Material.values())
-            .filter(material -> material.isBlock())
-            .filter(material -> !material.isSolid() || !material.isOccluding())
-            .collect(Collectors.toSet());
+    private static List<Entity> getTargets(Vector direction, Location fromLocation, Entity from, double range, double homingAngle, Target homingTarget) {
+        double radius = Math.min(range, 300);
+        return Utils.getLivingEntitiesInConeSorted(from.getNearbyEntities(radius, range * 1.5, range * 1.5).stream()
+                                .filter(entity -> entity instanceof LivingEntity && !entity.equals(from) && !isUtilArmorStand(entity) &&
+                                        !entity.getScoreboardTags().contains(INVALID_TARGET)
+                                        && !entity.isDead() && from.getLocation().distance(entity.getLocation()) < range)
+                                .map(entity -> ((LivingEntity) entity))
+                                .collect(Collectors.toList())
+                        , fromLocation.toVector(), homingAngle, direction).stream()
+                .filter(livingEntity -> {
+                    switch (homingTarget) {
+                        case MOBS:
+                            return !(livingEntity instanceof Player);
+                        case PLAYERS:
+                            return livingEntity instanceof Player && !((Player) livingEntity).getGameMode().equals(GameMode.SPECTATOR);
+                        case ALL:
+                            return !(livingEntity instanceof Player) || !((Player) livingEntity).getGameMode().equals(GameMode.SPECTATOR);
+                    }
+                    return true;
+                }).collect(Collectors.toList());
+    }
 
-    private static Random random = new Random();
+    static Color getNextColor() {
+        int l = (int) ((System.currentTimeMillis() / 200) % colors.length);
+        Color r = colors[l];
+        return r;
+    }
+
+    private static Queue<RoundedConeInfo> internalCones(Beam beam, int amount, int burstCount) {
+        List<Behavior> behaviors = beam.getBehavior();
+        boolean uniformed = behaviors.contains(Behavior.UNIFORMED);
+        boolean flat = behaviors.contains(Behavior.FLAT);
+        Queue<RoundedConeInfo> infos = new LinkedList<>();
+        for (int i = 0; i < burstCount; i++) {
+            int steps = Math.max(amount, 1);
+            double phiStep = 360 / steps;
+            double thetaStep = beam.getCone() * 2 / steps;
+            for (int j = 0; j < amount; j++) {
+                RoundedConeInfo roundedConeInfo = internalCone(beam);
+                if (behaviors.contains(Behavior.CONED)) {
+                    roundedConeInfo.setTheta(beam.getCone());
+                }
+                if (uniformed) {
+                    roundedConeInfo.setPhi(j * phiStep);
+                    roundedConeInfo.setRPhi(beam.getFiringPhi().uniformed(j, steps));
+                }
+                if (flat) {
+                    if (uniformed) {
+                        roundedConeInfo.setTheta((thetaStep * j) - beam.getCone());
+                        roundedConeInfo.setPhi(90);
+                    } else {
+                        roundedConeInfo.setPhi(random.nextBoolean() ? 90 : 270);
+                    }
+                }
+
+                infos.offer(roundedConeInfo);
+            }
+        }
+        return infos;
+    }
+
+    private static RoundedConeInfo internalCone(Beam beam) {
+        double phi = random.nextDouble() * 360;
+        double theta = 0;
+        if (beam.getCone() != 0) {
+            theta = random.nextDouble() * beam.getCone();
+        }
+
+        double r = beam.getFiringR().random();
+        double rPhi = beam.getFiringPhi().random();
+        double rTheta = beam.getFiringTheta().random();
+
+        return new RoundedConeInfo(theta, phi, r, rPhi, rTheta, beam.getInitialRotation());
+    }
 
     public FiringLocation getFiringLocation() {
         return firingLocation;
@@ -411,7 +458,7 @@ public class Beam extends BasePower {
         if (section.contains("coneRange")) {
             updateFromV1(section);
         }
-        if (section.contains("spawnsPerBlock")){
+        if (section.contains("spawnsPerBlock")) {
             int spawnsPerBlock = section.getInt("spawnsPerBlock");
             section.set("particleDensity", spawnsPerBlock);
         }
@@ -462,9 +509,71 @@ public class Beam extends BasePower {
         section.set("homingRange", length);
     }
 
+    enum Mode {
+        BEAM,
+        PROJECTILE,
+    }
+
+    enum Target {
+        MOBS, PLAYERS, ALL
+    }
+
+    enum HomingMode {
+        ONE_TARGET, MULTI_TARGET, MOUSE_TRACK
+    }
+    enum FiringLocation {
+        SELF, TARGET
+    }
+
+    public enum Behavior {
+        PLAIN(PlainBias.class, Void.class),
+        DNA(DnaBias.class, DnaBias.DnaParams.class),
+        CIRCLE(CircleBias.class, CircleBias.CircleParams.class),
+        LEGACY_HOMING(PlainBias.class, Void.class),
+        RAINBOW_COLOR(RainbowColor.class, Void.class),
+        CONED(Coned.class, Void.class),
+        FLAT(Flat.class, Void.class),
+        UNIFORMED(Uniformed.class, Void.class),
+        CAST_LOCATION_ROTATED(CastLocationRotated.class, Void.class);
+
+
+        private final Class<? extends IBias> iBias;
+        private final Class<?> paramType;
+
+        Behavior(Class<? extends IBias> iBias, Class<?> paramType) {
+            this.iBias = iBias;
+            this.paramType = paramType;
+        }
+
+        public List<Vector> getBiases(Location location, Vector towards, MovingTask context, String params) {
+            return null;
+        }
+    }
+
+    interface IBias<T> {
+        List<Vector> getBiases(Location location, Vector towards, MovingTask context, T params);
+    }
+
     private static class MovingTask extends BukkitRunnable {
+        final Vector yAxis = new Vector(0, 1, 0);
+        final Vector xAxis = new Vector(1, 0, 0);
+        private final FiringLocation firingLocation;
         public Player player = null;
-        private double homingRange;
+        public double firingR = 0;
+        double lengthPerSpawn;
+        AtomicDouble lengthRemains = new AtomicDouble(0);
+        AtomicDouble spawnedLength = new AtomicDouble(0);
+        AtomicInteger currentTick = new AtomicInteger(0);
+        Vector gravityVector = new Vector(0, 0, 0);
+        Location lastLocation;
+        boolean bounced = false;
+        World world;
+        Set<UUID> hitMob = new HashSet<>();
+        int cycle = 0;
+        boolean reported = false;
+        double legacyBonus = 0;
+        double lastCorrected = 0;
+        private final double homingRange;
         private double length = 10;
         private int ttl = 200;
         private Particle particle = Particle.LAVA;
@@ -490,30 +599,17 @@ public class Beam extends BasePower {
         private List<Behavior> behavior = new ArrayList<>();
         private String behaviorParam = "{}";
         private Object extraData = null;
-        private Beam power;
+        private final Beam power;
         private String speedBias = "";
         private boolean effectOnly = false;
-        private final FiringLocation firingLocation;
-        public double firingR = 0;
         private int triggerDepth = 0;
-
         private Queue<Entity> targets = new LinkedList<>();
         private Entity fromEntity;
         private Location fromLocation;
         private Vector towards;
-        double lengthPerSpawn;
-
-        AtomicDouble lengthRemains = new AtomicDouble(0);
-        AtomicDouble spawnedLength = new AtomicDouble(0);
-        AtomicInteger currentTick = new AtomicInteger(0);
-        Vector gravityVector = new Vector(0, 0, 0);
-        Location lastLocation;
         private ItemStack itemStack;
-        boolean bounced = false;
-        World world;
-        Set<UUID> hitMob = new HashSet<>();
-        int cycle = 0;
-        private double initialBias = 0.2;
+        private final double initialBias = 0.2;
+        private double spawnInWorld = 0;
 
         MovingTask(Beam config) {
             this.length = config.getLength();
@@ -565,122 +661,16 @@ public class Beam extends BasePower {
             this.itemStack = stack;
         }
 
-        class RecursiveTask extends BukkitRunnable {
-            @Override
-            public void run() {
-                try {
-                    double lengthInThisTick = getNextLength(spawnedLength, length) + lengthRemains.get();
-
-                    double lengthToSpawn = lengthInThisTick;
-                    if (mode.equals(Mode.BEAM)) {
-                        lengthToSpawn = length;
-                    }
-                    int hitCount = 0;
-                    while ((lengthToSpawn -= lengthPerSpawn) > 0) {
-                        hitMob.addAll(tryHit(fromEntity, lastLocation, itemStack, bounced && hitSelfWhenBounced, hitMob));
-
-                        if (cycle++ > 2 / lengthPerSpawn) {
-                            hitMob.clear();
-                            hitCount = 0;
-                            cycle = 0;
-                            if (homingMode.equals(HomingMode.MOUSE_TRACK)) {
-                                Location location = fromEntity.getLocation();
-                                if (fromEntity instanceof LivingEntity) {
-                                    location = ((LivingEntity) fromEntity).getEyeLocation();
-                                }
-                                targets = new LinkedList<>(getTargets(location.getDirection(), location, fromEntity, homingRange, homingAngle, homingTarget));
-                            }
-                        }
-
-                        spawnParticle(fromEntity, world, lastLocation, 1);
-                        Vector step = towards.clone().normalize().multiply(lengthPerSpawn);
-                        if (gravity != 0 && (
-                                homing == 0 || currentTick.get() < ticksBeforeHoming
-                        )) {
-                            double partsPerTick = lengthInThisTick / lengthPerSpawn;
-                            step.setY(step.getY() + getGravity(partsPerTick));
-                        }
-                        Location nextLoc = lastLocation.clone().add(step);
-                        if (!ignoreWall && (
-                                nextLoc.getBlockX() != lastLocation.getBlockX() ||
-                                        nextLoc.getBlockY() != lastLocation.getBlockY() ||
-                                        nextLoc.getBlockZ() != lastLocation.getBlockZ()
-                        )) {
-                            if(!(firingLocation.equals(FiringLocation.TARGET) && spawnedLength.get() < (firingR - 1))){
-                                Block block = nextLoc.getBlock();
-                                if (!transp.contains(block.getType())) {
-                                    if (!MovingTask.this.effectOnly) {
-                                        BeamHitBlockEvent beamHitBlockEvent = new BeamHitBlockEvent(player, fromEntity, block, lastLocation, itemStack, triggerDepth);
-                                        Bukkit.getPluginManager().callEvent(beamHitBlockEvent);
-                                    }
-                                    if (bounce > 0) {
-                                        bounce--;
-                                        bounced = true;
-                                        makeBounce(nextLoc.getBlock(), towards, step, lastLocation);
-                                    } else {
-                                        return;
-                                    }
-                                }
-                            }
-                        }
-                        lastLocation = nextLoc;
-                        spawnedLength.addAndGet(lengthPerSpawn);
-                        int dHit = hitMob.size() - hitCount;
-                        if (dHit > 0) {
-                            hitCount = hitMob.size();
-                            pierce -= dHit;
-                            if (pierce > 0) {
-                                if (homingMode.equals(HomingMode.MULTI_TARGET)) {
-                                    if (targets != null) {
-                                        targets.removeIf(entity -> hitMob.contains(entity.getUniqueId()));
-                                    }
-                                }
-                            } else {
-                                return;
-                            }
-                        }
-                        if (targets != null && homing > 0 && currentTick.get() >= ticksBeforeHoming) {
-                            towards = homingCorrect(step, lastLocation, targets.peek(), () -> {
-                                targets.removeIf(Entity::isDead);
-                                return targets.peek();
-                            });
-                        }
-                    }
-
-                    lengthRemains.set(lengthToSpawn + lengthPerSpawn);
-                    if (spawnedLength.get() >= length || currentTick.addAndGet(1) > ttl || mode == Mode.BEAM) {
-                        if (!effectOnly) {
-                            callEnd();
-                        }
-                        return;
-                    }
-                    new RecursiveTask().runTaskLater(RPGItems.plugin, 1);
-                } catch (Exception e) {
-                    this.cancel();
-                    e.printStackTrace();
-                }
-            }
-
-            private BeamEndEvent callEnd(){
-                BeamEndEvent beamEndEvent = new BeamEndEvent(player, fromEntity, lastLocation, itemStack, triggerDepth);
-                Bukkit.getPluginManager().callEvent(beamEndEvent);
-                return beamEndEvent;
-            }
-
-        }
-
-        boolean reported = false;
-
         private double getNextLength(AtomicDouble spawnedLength, double length) {
             Expression eval = new Expression(speedBias).with("x", new Expression.LazyNumber() {
                 @Override
                 public BigDecimal eval() {
-                    return BigDecimal.valueOf(spawnedLength.get() / ((double) length));
+                    return BigDecimal.valueOf(spawnedLength.get() / length);
                 }
 
                 @Override
                 public String getString() {
-                    return String.valueOf(spawnedLength.get() / ((double) length));
+                    return String.valueOf(spawnedLength.get() / length);
                 }
             }).with("t", new Expression.LazyNumber() {
                 @Override
@@ -736,9 +726,6 @@ public class Beam extends BasePower {
             }
         }
 
-        double legacyBonus = 0;
-        double lastCorrected = 0;
-
         private Vector homingCorrect(Vector towards, Location lastLocation, Entity target, Supplier<Entity> runnable) {
             if (target == null) {
                 return towards;
@@ -782,11 +769,9 @@ public class Beam extends BasePower {
             return clone;
         }
 
-        private double spawnInWorld = 0;
-
         private void spawnParticle(Entity from, World world, Location lastLocation, int i) {
             Location eyeLocation;
-            if(this.mode.equals(Mode.PROJECTILE) && this.behavior.contains(Behavior.RAINBOW_COLOR) && extraData instanceof Particle.DustOptions){
+            if (this.mode.equals(Mode.PROJECTILE) && this.behavior.contains(Behavior.RAINBOW_COLOR) && extraData instanceof Particle.DustOptions) {
                 extraData = new Particle.DustOptions(getNextColor(), ((Particle.DustOptions) extraData).getSize());
             }
             if (from instanceof Player) {
@@ -796,7 +781,7 @@ public class Beam extends BasePower {
                 }
 
                 // color for note need count to be 0.
-                if (this.particle.equals(Particle.NOTE)){
+                if (this.particle.equals(Particle.NOTE)) {
                     i = 0;
                 }
                 if (spawnInWorld >= 3) {
@@ -819,14 +804,14 @@ public class Beam extends BasePower {
             double length = Double.isNaN(offsetLength) ? 0.1 : Math.max(offsetLength, 10);
             Collection<Entity> candidates = from.getWorld().getNearbyEntities(loc, length, length, length);
             List<Entity> collect = candidates.stream()
-                    .filter(entity -> (entity instanceof LivingEntity) && (!isUtilArmorStand((LivingEntity) entity)) && (canHitSelf || !entity.equals(from)) && !entity.isDead() && !hitMob.contains(entity.getUniqueId()))
+                    .filter(entity -> (entity instanceof LivingEntity) && (!isUtilArmorStand(entity)) && (canHitSelf || !entity.equals(from)) && !entity.isDead() && !hitMob.contains(entity.getUniqueId()))
                     .filter(entity -> canHit(loc, entity))
                     .limit(Math.max(pierce, 1))
                     .collect(Collectors.toList());
             if (!collect.isEmpty()) {
                 Entity entity = collect.get(0);
                 if (entity instanceof LivingEntity) {
-                    BeamHitEntityEvent beamHitEntityEvent = new BeamHitEntityEvent(player, from, ((LivingEntity) entity), stack, damage, loc, getBoundingBox(loc), towards.clone().normalize().multiply(getNextLength(spawnedLength, length*20)), triggerDepth);
+                    BeamHitEntityEvent beamHitEntityEvent = new BeamHitEntityEvent(player, from, ((LivingEntity) entity), stack, damage, loc, getBoundingBox(loc), towards.clone().normalize().multiply(getNextLength(spawnedLength, length * 20)), triggerDepth);
                     Bukkit.getPluginManager().callEvent(beamHitEntityEvent);
                     double damage = beamHitEntityEvent.getDamage();
                     if (damage > 0) {
@@ -892,9 +877,6 @@ public class Beam extends BasePower {
             this.towards = fromLocation.getDirection();
         }
 
-        final Vector yAxis = new Vector(0, 1, 0);
-        final Vector xAxis = new Vector(1, 0, 0);
-
         private Vector crossProduct(Vector towards) {
             Vector cross1 = null;
             Vector upDirection = null;
@@ -914,6 +896,110 @@ public class Beam extends BasePower {
 
         public void setTowards(Vector towards) {
             this.towards = towards;
+        }
+
+        class RecursiveTask extends BukkitRunnable {
+            @Override
+            public void run() {
+                try {
+                    double lengthInThisTick = getNextLength(spawnedLength, length) + lengthRemains.get();
+
+                    double lengthToSpawn = lengthInThisTick;
+                    if (mode.equals(Mode.BEAM)) {
+                        lengthToSpawn = length;
+                    }
+                    int hitCount = 0;
+                    while ((lengthToSpawn -= lengthPerSpawn) > 0) {
+                        hitMob.addAll(tryHit(fromEntity, lastLocation, itemStack, bounced && hitSelfWhenBounced, hitMob));
+
+                        if (cycle++ > 2 / lengthPerSpawn) {
+                            hitMob.clear();
+                            hitCount = 0;
+                            cycle = 0;
+                            if (homingMode.equals(HomingMode.MOUSE_TRACK)) {
+                                Location location = fromEntity.getLocation();
+                                if (fromEntity instanceof LivingEntity) {
+                                    location = ((LivingEntity) fromEntity).getEyeLocation();
+                                }
+                                targets = new LinkedList<>(getTargets(location.getDirection(), location, fromEntity, homingRange, homingAngle, homingTarget));
+                            }
+                        }
+
+                        spawnParticle(fromEntity, world, lastLocation, 1);
+                        Vector step = towards.clone().normalize().multiply(lengthPerSpawn);
+                        if (gravity != 0 && (
+                                homing == 0 || currentTick.get() < ticksBeforeHoming
+                        )) {
+                            double partsPerTick = lengthInThisTick / lengthPerSpawn;
+                            step.setY(step.getY() + getGravity(partsPerTick));
+                        }
+                        Location nextLoc = lastLocation.clone().add(step);
+                        if (!ignoreWall && (
+                                nextLoc.getBlockX() != lastLocation.getBlockX() ||
+                                        nextLoc.getBlockY() != lastLocation.getBlockY() ||
+                                        nextLoc.getBlockZ() != lastLocation.getBlockZ()
+                        )) {
+                            if (!(firingLocation.equals(FiringLocation.TARGET) && spawnedLength.get() < (firingR - 1))) {
+                                Block block = nextLoc.getBlock();
+                                if (!transp.contains(block.getType())) {
+                                    if (!MovingTask.this.effectOnly) {
+                                        BeamHitBlockEvent beamHitBlockEvent = new BeamHitBlockEvent(player, fromEntity, block, lastLocation, itemStack, triggerDepth);
+                                        Bukkit.getPluginManager().callEvent(beamHitBlockEvent);
+                                    }
+                                    if (bounce > 0) {
+                                        bounce--;
+                                        bounced = true;
+                                        makeBounce(nextLoc.getBlock(), towards, step, lastLocation);
+                                    } else {
+                                        return;
+                                    }
+                                }
+                            }
+                        }
+                        lastLocation = nextLoc;
+                        spawnedLength.addAndGet(lengthPerSpawn);
+                        int dHit = hitMob.size() - hitCount;
+                        if (dHit > 0) {
+                            hitCount = hitMob.size();
+                            pierce -= dHit;
+                            if (pierce > 0) {
+                                if (homingMode.equals(HomingMode.MULTI_TARGET)) {
+                                    if (targets != null) {
+                                        targets.removeIf(entity -> hitMob.contains(entity.getUniqueId()));
+                                    }
+                                }
+                            } else {
+                                return;
+                            }
+                        }
+                        if (targets != null && homing > 0 && currentTick.get() >= ticksBeforeHoming) {
+                            towards = homingCorrect(step, lastLocation, targets.peek(), () -> {
+                                targets.removeIf(Entity::isDead);
+                                return targets.peek();
+                            });
+                        }
+                    }
+
+                    lengthRemains.set(lengthToSpawn + lengthPerSpawn);
+                    if (spawnedLength.get() >= length || currentTick.addAndGet(1) > ttl || mode == Mode.BEAM) {
+                        if (!effectOnly) {
+                            callEnd();
+                        }
+                        return;
+                    }
+                    new RecursiveTask().runTaskLater(RPGItems.plugin, 1);
+                } catch (Exception e) {
+                    this.cancel();
+                    e.printStackTrace();
+                }
+            }
+
+            private BeamEndEvent callEnd() {
+                BeamEndEvent beamEndEvent = new BeamEndEvent(player, fromEntity, lastLocation, itemStack, triggerDepth);
+                Bukkit.getPluginManager().callEvent(beamEndEvent);
+                return beamEndEvent;
+            }
+
         }
     }
 
@@ -980,7 +1066,7 @@ public class Beam extends BasePower {
 
         public MovingTaskBuilder color(Color nextColor) {
             if (movingTask.extraData != null && movingTask.extraData instanceof Particle.DustOptions) {
-                    movingTask.extraData = new Particle.DustOptions(nextColor, ((Particle.DustOptions) movingTask.extraData).getSize());
+                movingTask.extraData = new Particle.DustOptions(nextColor, ((Particle.DustOptions) movingTask.extraData).getSize());
             }
             return this;
         }
@@ -1001,95 +1087,7 @@ public class Beam extends BasePower {
         }
     }
 
-    private static List<Entity> getTargets(Vector direction, Location fromLocation, Entity from, double range, double homingAngle, Target homingTarget) {
-        double radius = Math.min(range, 300);
-        return Utils.getLivingEntitiesInConeSorted(from.getNearbyEntities(radius, range * 1.5, range * 1.5).stream()
-                        .filter(entity -> entity instanceof LivingEntity && !entity.equals(from) && !isUtilArmorStand(entity) &&
-                                !entity.getScoreboardTags().contains(INVALID_TARGET)
-                                && !entity.isDead() && from.getLocation().distance(entity.getLocation()) < range)
-                        .map(entity -> ((LivingEntity) entity))
-                        .collect(Collectors.toList())
-                , fromLocation.toVector(), homingAngle, direction).stream()
-                .filter(livingEntity -> {
-                    switch (homingTarget) {
-                        case MOBS:
-                            return !(livingEntity instanceof Player);
-                        case PLAYERS:
-                            return livingEntity instanceof Player && !((Player) livingEntity).getGameMode().equals(GameMode.SPECTATOR);
-                        case ALL:
-                            return !(livingEntity instanceof Player) || !((Player) livingEntity).getGameMode().equals(GameMode.SPECTATOR);
-                    }
-                    return true;
-                }).collect(Collectors.toList());
-    }
-
-    enum Mode {
-        BEAM,
-        PROJECTILE,
-        ;
-    }
-
-    enum Target {
-        MOBS, PLAYERS, ALL
-    }
-
-    enum HomingMode {
-        ONE_TARGET, MULTI_TARGET, MOUSE_TRACK
-    }
-
-    enum FiringLocation{
-        SELF, TARGET;
-    }
-
-    public enum Behavior {
-        PLAIN(PlainBias.class, Void.class),
-        DNA(DnaBias.class, DnaBias.DnaParams.class),
-        CIRCLE(CircleBias.class, CircleBias.CircleParams.class),
-        LEGACY_HOMING(PlainBias.class, Void.class),
-        RAINBOW_COLOR(RainbowColor.class, Void.class),
-        CONED(Coned.class, Void.class),
-        FLAT(Flat.class, Void.class),
-        UNIFORMED(Uniformed.class, Void.class),
-        CAST_LOCATION_ROTATED(CastLocationRotated.class, Void.class);
-
-
-        private Class<? extends IBias> iBias;
-        private Class<?> paramType;
-
-        Behavior(Class<? extends IBias> iBias, Class<?> paramType) {
-            this.iBias = iBias;
-            this.paramType = paramType;
-        }
-
-        public List<Vector> getBiases(Location location, Vector towards, MovingTask context, String params) {
-            return null;
-        }
-    }
-
-    //behavior params
-    //todo: config them in specific class
-    static int currentColor = 0;
-    static final Color[] colors = {
-            Color.fromRGB(0xFF2040), //RED
-            Color.fromRGB(0xFF9020), //ORANGE
-            Color.fromRGB(0xFFFF40), //YELLOW
-            Color.fromRGB(0x40FF40), //LIME
-            Color.fromRGB(0x40FFFF), //AQUA
-            Color.fromRGB(0x4040FF), //BLUE
-            Color.fromRGB(0xFF40FF)  //FUCHSIA
-    };
-
-    static Color getNextColor() {
-        int l = (int) ((System.currentTimeMillis() / 200)% colors.length);
-        Color r = colors[l];
-        return r;
-    }
-
-    interface IBias<T> {
-        List<Vector> getBiases(Location location, Vector towards, MovingTask context, T params);
-    }
-
-    static class RainbowColor implements IBias<Void>{
+    static class RainbowColor implements IBias<Void> {
         @Override
         public List<Vector> getBiases(Location location, Vector towards, MovingTask context, Void params) {
             return null;
@@ -1158,54 +1156,6 @@ public class Beam extends BasePower {
             return null;
         }
     }
-    private final Vector yAxis = new Vector(0, 1, 0);
-
-    private static Queue<RoundedConeInfo> internalCones(Beam beam, int amount, int burstCount) {
-        List<Behavior> behaviors = beam.getBehavior();
-        boolean uniformed = behaviors.contains(Behavior.UNIFORMED);
-        boolean flat = behaviors.contains(Behavior.FLAT);
-        Queue<RoundedConeInfo> infos = new LinkedList<>();
-        for (int i = 0; i < burstCount; i++) {
-            int steps = Math.max(amount, 1);
-            double phiStep = 360 / steps;
-            double thetaStep = beam.getCone() * 2 / steps;
-            for (int j = 0; j < amount; j++) {
-                RoundedConeInfo roundedConeInfo = internalCone(beam);
-                if (behaviors.contains(Behavior.CONED)){
-                    roundedConeInfo.setTheta(beam.getCone());
-                }
-                if (uniformed){
-                    roundedConeInfo.setPhi(j * phiStep);
-                    roundedConeInfo.setRPhi(beam.getFiringPhi().uniformed(j, steps));
-                }
-                if (flat){
-                    if (uniformed){
-                        roundedConeInfo.setTheta((thetaStep * j) - beam.getCone());
-                        roundedConeInfo.setPhi(90);
-                    }else {
-                        roundedConeInfo.setPhi(random.nextBoolean()? 90 : 270);
-                    }
-                }
-
-                infos.offer(roundedConeInfo);
-            }
-        }
-        return infos;
-    }
-
-    private static RoundedConeInfo internalCone(Beam beam) {
-        double phi = random.nextDouble() * 360;
-        double theta = 0;
-        if (beam.getCone() != 0) {
-            theta = random.nextDouble() * beam.getCone();
-        }
-
-        double r = beam.getFiringR().random();
-        double rPhi = beam.getFiringPhi().random();
-        double rTheta = beam.getFiringTheta().random();
-
-        return new RoundedConeInfo(theta, phi, r, rPhi, rTheta, beam.getInitialRotation());
-    }
 
     public class Impl implements PowerPlain, PowerRightClick, PowerLeftClick, PowerSneak, PowerSneaking, PowerSprint, PowerBowShoot, PowerHitTaken, PowerHit, PowerHurt, PowerTick, PowerBeamHit, PowerLivingEntity {
         @Override
@@ -1241,7 +1191,7 @@ public class Beam extends BasePower {
             return beam(player, from, stack, result, 0);
         }
 
-        private PowerResult<Void> beam(Player player, LivingEntity from, ItemStack stack, CastUtils.CastLocation castLocation, int depth){
+        private PowerResult<Void> beam(Player player, LivingEntity from, ItemStack stack, CastUtils.CastLocation castLocation, int depth) {
             Location fromLocation = from.getEyeLocation().clone();
             Vector towards = from.getEyeLocation().getDirection().clone();
             Vector normal = yAxis.clone();
@@ -1252,10 +1202,10 @@ public class Beam extends BasePower {
             if (getHoming() > 0) {
                 targets = new LinkedList<>(getTargets(towards, fromLocation, from, getHomingRange(), getHomingAngle(), getHomingTarget()));
             }
-            if (castLocation != null){
+            if (castLocation != null) {
                 fromLocation = castLocation.getTargetLocation();
                 normal = castLocation.getNormalDirection();
-                if (castLocation.getHitEntity()!=null && targets != null){
+                if (castLocation.getHitEntity() != null && targets != null) {
                     targets.addFirst(castLocation.getHitEntity());
                 }
             }
@@ -1287,17 +1237,17 @@ public class Beam extends BasePower {
         }
 
 
-        private PowerResult<Void> internalFireBeam(Player player, LivingEntity from, ItemStack stack, Queue<RoundedConeInfo> coneInfo, Deque<Entity> targets, int depth){
+        private PowerResult<Void> internalFireBeam(Player player, LivingEntity from, ItemStack stack, Queue<RoundedConeInfo> coneInfo, Deque<Entity> targets, int depth) {
             return internalFireBeam(player, from, from.getEyeLocation(), from.getEyeLocation().getDirection(), yAxis.clone(), stack, coneInfo, targets, depth);
         }
 
         private PowerResult<Void> internalFireBeam(Player player, LivingEntity from, Location castLocation, Vector towards, Vector normalDir, ItemStack stack, Queue<RoundedConeInfo> coneInfo, Deque<Entity> targets, int depth) {
             Location fromLocation = castLocation;
 
-            if (!isCastOff()){
+            if (!isCastOff()) {
                 fromLocation = from.getEyeLocation();
                 towards = from.getEyeLocation().getDirection();
-                if (getHoming() > 0 && (!isCastOff() || getHomingMode().equals(HomingMode.MULTI_TARGET) || getHomingMode().equals(HomingMode.MOUSE_TRACK))){
+                if (getHoming() > 0 && (!isCastOff() || getHomingMode().equals(HomingMode.MULTI_TARGET) || getHomingMode().equals(HomingMode.MOUSE_TRACK))) {
                     targets = new LinkedList<>(getTargets(towards, fromLocation, from, getHomingRange(), getHomingAngle(), getHomingTarget()));
                 }
 
@@ -1309,12 +1259,12 @@ public class Beam extends BasePower {
             }
 
             RoundedConeInfo poll = coneInfo.poll();
-            if (poll == null){
+            if (poll == null) {
                 poll = internalCone(Beam.this);
             }
 
-            if (getFiringLocation().equals(FiringLocation.TARGET)){
-                if (!getBehavior().contains(Behavior.CAST_LOCATION_ROTATED)){
+            if (getFiringLocation().equals(FiringLocation.TARGET)) {
+                if (!getBehavior().contains(Behavior.CAST_LOCATION_ROTATED)) {
                     normalDir = yAxis.clone();
                 }
                 fromLocation = CastUtils.parseFiringLocation(castLocation, normalDir, fromLocation, poll);
@@ -1330,11 +1280,11 @@ public class Beam extends BasePower {
                     .targets(targets)
                     .itemStack(stack)
                     .triggerDepth(depth);
-            if (getBehavior().contains(Behavior.RAINBOW_COLOR)){
+            if (getBehavior().contains(Behavior.RAINBOW_COLOR)) {
                 Color nextColor = getNextColor();
                 movingTaskBuilder.color(nextColor);
             }
-            if (!getFiringLocation().equals(FiringLocation.SELF)){
+            if (!getFiringLocation().equals(FiringLocation.SELF)) {
                 movingTaskBuilder.fromLocation(fromLocation)
                         .firingR(poll.getR());
             }

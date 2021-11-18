@@ -1,6 +1,8 @@
 package think.rpgitems.power.marker;
 
-import think.rpgitems.power.*;
+import think.rpgitems.power.BasePropertyHolder;
+import think.rpgitems.power.Marker;
+import think.rpgitems.power.Property;
 
 import java.io.Serializable;
 import java.util.HashSet;
@@ -14,6 +16,8 @@ public abstract class BaseMarker extends BasePropertyHolder implements Serializa
     public String markerId = "";
     @Property
     public Set<String> tags = new HashSet<>();
+    @Property
+    public String displayName;
 
     @Override
     public String getPlaceholderId() {
@@ -39,9 +43,6 @@ public abstract class BaseMarker extends BasePropertyHolder implements Serializa
     public void removeTag(String tag) {
         tags.remove(tag);
     }
-
-    @Property
-    public String displayName;
 
     @Override
     public String displayName() {

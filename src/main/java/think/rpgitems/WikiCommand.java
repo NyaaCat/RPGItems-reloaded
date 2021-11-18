@@ -100,12 +100,12 @@ public class WikiCommand extends RPGCommandReceiver {
         }
 
         if (Stream.of(customHeaderLine, customDescriptionLine, customPropertiesLine, customExampleLine, customNoteLine)
-                  .anyMatch(i -> i == -1)) {
+                .anyMatch(i -> i == -1)) {
             throw new IllegalArgumentException();
         }
 
         if (Stream.of(propertyName, propertyType, propertyDefaultValue, propertyRequired, propertyDescription, propertyDefaultTrigger, propertyAvailableTrigger, propertyImmutableTrigger, propertyMarker)
-                  .anyMatch(Objects::isNull)) {
+                .anyMatch(Objects::isNull)) {
             throw new IllegalArgumentException();
         }
 
@@ -128,9 +128,9 @@ public class WikiCommand extends RPGCommandReceiver {
             StringBuilder propertiesDesc = new StringBuilder();
             Meta meta = PowerManager.getMeta(clazz);
             String powerDesc = PowerManager.getDescription(locale.toString(), namespacedKey, null);
-            Path file = wikiDir.toPath().resolve(instance.getName() + "-" + locale.toString() + ".md");
+            Path file = wikiDir.toPath().resolve(instance.getName() + "-" + locale + ".md");
 
-            String catalogEntry = "* [" + localizedName + " " + "(" + namespacedKey.toString() + ")](./" + file.getFileName().toString().replace(".md", "") + ")\n";
+            String catalogEntry = "* [" + localizedName + " " + "(" + namespacedKey + ")](./" + file.getFileName().toString().replace(".md", "") + ")\n";
             catalogEntry += "  " + powerDesc + "\n";
             RPGItems.logger.log(Level.INFO, "Generating wiki for " + instance.getPropertyHolderType() + " " + instance.getLocalizedName(locale));
 
@@ -218,7 +218,7 @@ public class WikiCommand extends RPGCommandReceiver {
                     }
                 }
                 String description = PowerManager.getDescription(locale.toString(), namespacedKey, name);
-                propertiesDesc.append(propertyDescription.replace("${}", description == null ? I18n.getInstance(sender).format("message.power.no_description") : description));
+                propertiesDesc.append(propertyDescription.replace("${}", description == null ? I18n.getInstance(sender).getFormatted("message.power.no_description") : description));
             }
             List<String> powerTemplate = new ArrayList<>(template);
             if (customNote.length() > 0) {
@@ -258,13 +258,13 @@ public class WikiCommand extends RPGCommandReceiver {
                 }
             }
 
-            fullTemplate = fullTemplate.replace("${description}", powerDesc == null ? I18n.getInstance(sender).format("message.power.no_description") : powerDesc);
+            fullTemplate = fullTemplate.replace("${description}", powerDesc == null ? I18n.getInstance(sender).getFormatted("message.power.no_description") : powerDesc);
             fullTemplate = fullTemplate.replace("${properties}", propertiesDesc.toString());
             java.nio.file.Files.write(file, fullTemplate.getBytes(StandardCharsets.UTF_8));
         }
         catalogs.entrySet().forEach(e -> {
             try {
-                Path catalogFile = wikiDir.toPath().resolve(e.getKey() + "-" + locale.toString() + ".md");
+                Path catalogFile = wikiDir.toPath().resolve(e.getKey() + "-" + locale + ".md");
                 Files.write(catalogFile, e.getValue().toString().getBytes(StandardCharsets.UTF_8));
             } catch (IOException ex) {
                 RPGItems.logger.log(Level.WARNING, "Error saving wiki catalog" + e.getKey(), ex);

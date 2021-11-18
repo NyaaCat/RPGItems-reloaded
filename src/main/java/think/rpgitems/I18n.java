@@ -1,8 +1,9 @@
 package think.rpgitems;
 
 import cat.nyaa.nyaacore.LanguageRepository;
+import cat.nyaa.nyaacore.Message;
 import cat.nyaa.nyaacore.utils.HexColorUtils;
-import org.bukkit.ChatColor;
+import net.md_5.bungee.api.chat.BaseComponent;
 import org.bukkit.command.CommandSender;
 import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.configuration.file.YamlConfiguration;
@@ -15,16 +16,16 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.nio.charset.Charset;
+import java.nio.charset.StandardCharsets;
 import java.util.HashMap;
 import java.util.IllegalFormatConversionException;
 import java.util.Map;
 
 public class I18n extends LanguageRepository {
-    private static Map<String, I18n> instances = new HashMap<>();
+    private static final Map<String, I18n> instances = new HashMap<>();
     private final RPGItems plugin;
-    private String lang;
-
     protected Map<String, String> map = new HashMap<>();
+    private final String lang;
 
     public I18n(RPGItems plugin, String lang) {
         instances.put(lang.toLowerCase(), this);
@@ -33,23 +34,6 @@ public class I18n extends LanguageRepository {
         loadResourceLanguage(lang);
         save(lang + ".template");
         loadLocalLanguage(lang + ".custom");
-    }
-
-    /**
-     * Save language file back to disk using given file name
-     */
-    public void save(String fileName) {
-        Plugin plugin = getPlugin();
-        File localLangFile = new File(plugin.getDataFolder(), fileName + ".yml");
-        try {
-            YamlConfiguration yaml = new YamlConfiguration();
-            for (String key : map.keySet()) {
-                yaml.set(key, map.get(key));
-            }
-            yaml.save(localLangFile);
-        } catch (IOException ex) {
-            plugin.getLogger().warning("Cannot save language file: " + fileName + ".yml");
-        }
     }
 
     /**
@@ -76,14 +60,13 @@ public class I18n extends LanguageRepository {
         }
     }
 
-
     // helper function to load language map
     private static void loadResourceMap(Plugin plugin, String codeName,
                                         Map<String, String> targetMap, boolean ignoreInternal, boolean ignoreNormal) {
         if (plugin == null || codeName == null || targetMap == null) throw new IllegalArgumentException();
         InputStream stream = plugin.getResource("lang/" + codeName + ".yml");
         if (stream != null) {
-            YamlConfiguration section = YamlConfiguration.loadConfiguration(new InputStreamReader(stream, Charset.forName("UTF8")));
+            YamlConfiguration section = YamlConfiguration.loadConfiguration(new InputStreamReader(stream, StandardCharsets.UTF_8));
             loadLanguageSection(targetMap, section, "", ignoreInternal, ignoreNormal);
         }
     }
@@ -97,6 +80,44 @@ public class I18n extends LanguageRepository {
         if (langFile.exists() && langFile.isFile()) {
             YamlConfiguration section = YamlConfiguration.loadConfiguration(langFile);
             loadLanguageSection(targetMap, section, "", ignoreInternal, ignoreNormal);
+        }
+    }
+
+    public static I18n getInstance(CommandSender sender) {
+        return getInstance((sender instanceof Player) ? ((Player) sender).getLocale() : RPGItems.plugin.cfg.language);
+    }
+
+    public static I18n getInstance(String lang) {
+        return instances.getOrDefault(lang.toLowerCase(), instances.get(RPGItems.plugin.cfg.language.toLowerCase()));
+    }
+
+    public static String formatDefault(String key, Object... args) {
+        return getInstance(RPGItems.plugin.cfg.language).getFormatted(key, args);
+    }
+
+    public static void sendMessage(CommandSender target, String template, Object... args) {
+        I18n i18n = I18n.getInstance(target);
+        target.sendMessage(i18n.getFormatted(template, args));
+    }
+
+    public static void sendMessage(CommandSender target, String template, Map<String, BaseComponent> map, Object... args) {
+        new Message("").append(I18n.getInstance(target).getFormatted(template, args), map).send(target);
+    }
+
+    /**
+     * Save language file back to disk using given file name
+     */
+    public void save(String fileName) {
+        Plugin plugin = getPlugin();
+        File localLangFile = new File(plugin.getDataFolder(), fileName + ".yml");
+        try {
+            YamlConfiguration yaml = new YamlConfiguration();
+            for (String key : map.keySet()) {
+                yaml.set(key, map.get(key));
+            }
+            yaml.save(localLangFile);
+        } catch (IOException ex) {
+            plugin.getLogger().warning("Cannot save language file: " + fileName + ".yml");
         }
     }
 
@@ -116,22 +137,6 @@ public class I18n extends LanguageRepository {
      */
     protected void loadLocalLanguage(String fileName) {
         loadLocalMap(getPlugin(), fileName, map, false, false);
-    }
-
-    public static I18n getInstance(CommandSender sender) {
-        return getInstance((sender instanceof Player) ? ((Player) sender).getLocale() : RPGItems.plugin.cfg.language);
-    }
-
-    public String format(String key, Object... args) {
-        return getFormatted(key, args);
-    }
-
-    public static String formatDefault(String key, Object... args) {
-        return getInstance(RPGItems.plugin.cfg.language).getFormatted(key, args);
-    }
-
-    public static I18n getInstance(String lang) {
-        return instances.getOrDefault(lang.toLowerCase(), instances.get(RPGItems.plugin.cfg.language.toLowerCase()));
     }
 
     /**

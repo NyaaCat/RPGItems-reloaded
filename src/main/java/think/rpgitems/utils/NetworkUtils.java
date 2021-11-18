@@ -26,10 +26,6 @@ import static java.nio.charset.StandardCharsets.UTF_8;
 
 public class NetworkUtils {
 
-    public enum Location {
-        URL, GIST
-    }
-
     @SuppressWarnings("unchecked")
     public static Map<String, String> downloadGist(String id, String token) throws InterruptedException, ExecutionException, TimeoutException {
         Map<String, String> headers = new HashMap<>();
@@ -146,5 +142,9 @@ public class NetworkUtils {
         } finally {
             ReferenceCountUtil.release(httpResponse);
         }
+    }
+
+    public enum Location {
+        URL, GIST
     }
 }

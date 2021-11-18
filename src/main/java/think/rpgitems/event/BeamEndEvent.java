@@ -6,31 +6,29 @@ import org.bukkit.entity.Player;
 import org.bukkit.event.Event;
 import org.bukkit.event.HandlerList;
 import org.bukkit.inventory.ItemStack;
-import think.rpgitems.power.impl.Beam;
 
 public class BeamEndEvent extends Event {
     public static final HandlerList handlerList = new HandlerList();
-
-    @Override
-    public HandlerList getHandlers() {
-        return handlerList;
-    }
-    public static HandlerList getHandlerList(){
-        return handlerList;
-    }
-
     private final Player player;
     private final Entity fromEntity;
     private final Location location;
     private final ItemStack itemStack;
-    private int depth;
-
+    private final int depth;
     public BeamEndEvent(Player player, Entity fromEntity, Location location, ItemStack itemStack, int depth) {
         this.player = player;
         this.fromEntity = fromEntity;
         this.location = location;
         this.itemStack = itemStack;
         this.depth = depth;
+    }
+
+    public static HandlerList getHandlerList() {
+        return handlerList;
+    }
+
+    @Override
+    public HandlerList getHandlers() {
+        return handlerList;
     }
 
     public Player getPlayer() {

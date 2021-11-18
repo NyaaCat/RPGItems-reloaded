@@ -16,7 +16,6 @@ import java.util.Map;
 import java.util.Set;
 import java.util.stream.Collectors;
 
-import static think.rpgitems.utils.ItemTagUtils.getString;
 import static think.rpgitems.utils.ItemTagUtils.set;
 
 public abstract class BaseModifier<T> extends BasePropertyHolder implements Modifier<T> {
@@ -125,9 +124,6 @@ public abstract class BaseModifier<T> extends BasePropertyHolder implements Modi
         if (!Strings.isNullOrEmpty(targetPower) && !orig.getNamespacedKey().equals(PowerManager.parseKey(targetPower))) {
             return false;
         }
-        if (!Strings.isNullOrEmpty(targetProperty) && !propertyInstance.name().equals(targetProperty)) {
-            return false;
-        }
-        return true;
+        return Strings.isNullOrEmpty(targetProperty) || propertyInstance.name().equals(targetProperty);
     }
 }

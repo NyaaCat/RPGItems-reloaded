@@ -1,6 +1,6 @@
 package think.rpgitems.utils.cast;
 
-public class RoundedConeInfo{
+public class RoundedConeInfo {
     private double phi;
     private double theta;
 
@@ -22,38 +22,48 @@ public class RoundedConeInfo{
     public double getPhi() {
         return phi;
     }
-    public double getTheta() {
-        return theta;
-    }
-    public double getR() {
-        return r;
-    }
-    public double getRPhi() {
-        return rPhi;
-    }
-    public double getRTheta() {
-        return rTheta;
-    }
-    public double getInitalRotation() {
-        return initalRotation;
-    }
 
     public void setPhi(double phi) {
         this.phi = phi;
     }
+
+    public double getTheta() {
+        return theta;
+    }
+
     public void setTheta(double theta) {
         this.theta = theta;
     }
+
+    public double getR() {
+        return r;
+    }
+
     public void setR(double r) {
         this.r = r;
     }
+
+    public double getRPhi() {
+        return rPhi;
+    }
+
     public void setRPhi(double rPhi) {
         this.rPhi = rPhi;
     }
-    public void setrTheta(double rTheta) {
-        this.rTheta = rTheta;
+
+    public double getRTheta() {
+        return rTheta;
     }
+
+    public double getInitalRotation() {
+        return initalRotation;
+    }
+
     public void setInitalRotation(double initalRotation) {
         this.initalRotation = initalRotation;
+    }
+
+    public void setrTheta(double rTheta) {
+        this.rTheta = rTheta;
     }
 }

@@ -33,7 +33,7 @@ import static think.rpgitems.power.Utils.*;
 @Meta(defaultTrigger = "RIGHT_CLICK", generalInterface = PowerPlain.class, implClass = Deflect.Impl.class)
 public class Deflect extends BasePower {
 
-    private static Map<UUID, Long> time = new HashMap<>();
+    private static final Map<UUID, Long> time = new HashMap<>();
     @Property(order = 2)
     public int cooldown = 0;
     @Property(order = 4)
@@ -48,6 +48,10 @@ public class Deflect extends BasePower {
     public int duration = 50;
     @Property(order = 0, required = true)
     public double facing = 30;
+
+    public static Map<UUID, Long> getTime() {
+        return time;
+    }
 
     @Override
     public void init(ConfigurationSection section) {
@@ -131,10 +135,6 @@ public class Deflect extends BasePower {
         return cooldown;
     }
 
-    public static Map<UUID, Long> getTime() {
-        return time;
-    }
-
     public class Impl implements PowerHitTaken, PowerRightClick, PowerLeftClick, PowerPlain, PowerBowShoot {
 
         @Override
@@ -153,7 +153,7 @@ public class Deflect extends BasePower {
 
             if (!activated) {
                 if (!triggers.contains(BaseTriggers.HIT_TAKEN)
-                            || ThreadLocalRandom.current().nextInt(0, 100) >= getChance())
+                        || ThreadLocalRandom.current().nextInt(0, 100) >= getChance())
                     return PowerResult.noop();
                 if (!checkCooldown(getPower(), target, getCooldownpassive(), false, true)) return PowerResult.cd();
             }
@@ -166,7 +166,7 @@ public class Deflect extends BasePower {
             Vector relativePosition = target.getEyeLocation().toVector();
             relativePosition.subtract(source.getEyeLocation().toVector());
             if (getAngleBetweenVectors(target.getEyeLocation().getDirection(), relativePosition.multiply(-1)) < getFacing()
-                        && (p instanceof SmallFireball || p instanceof LargeFireball || p instanceof Arrow)) {
+                    && (p instanceof SmallFireball || p instanceof LargeFireball || p instanceof Arrow)) {
                 event.setCancelled(true);
                 target.getLocation().getWorld().playSound(target.getLocation(), Sound.ITEM_SHIELD_BLOCK, 1.0f, 3.0f);
                 Projectile t = target.launchProjectile(p.getClass());

@@ -61,15 +61,15 @@ public class DelayedCommand extends Command {
             String cmd;
             if (!cmdInPlace) {
                 cmd = handlePlayerPlaceHolder(target, getCommand());
-            }else {
+            } else {
                 cmd = null;
             }
             (new BukkitRunnable() {
                 @Override
                 public void run() {
-                    if (cmd == null){
+                    if (cmd == null) {
                         executeCommand(target);
-                    }else {
+                    } else {
                         executeCommand(target, cmd);
                     }
                 }

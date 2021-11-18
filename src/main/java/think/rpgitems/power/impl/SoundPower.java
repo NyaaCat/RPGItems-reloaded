@@ -58,23 +58,20 @@ public class SoundPower extends BasePower {
     public int cooldown = 0;
     @Property
     public int delay = 0;
+    @Property
+    public PlayLocation playLocation = PlayLocation.HIT_LOCATION;
+    @Property
+    public double firingRange = 20;
+    @Property
+    public boolean requireHurtByEntity = true;
 
     public int getDelay() {
         return delay;
     }
 
-    @Property
-    public PlayLocation playLocation = PlayLocation.HIT_LOCATION;
-
-    @Property
-    public double firingRange = 20;
-
     public double getFiringRange() {
         return firingRange;
     }
-
-    @Property
-    public boolean requireHurtByEntity = true;
 
     /**
      * Cooldown time of this power
@@ -147,7 +144,7 @@ public class SoundPower extends BasePower {
         public PowerResult<Void> fire(Player player, ItemStack stack) {
             if (!checkCooldown(getPower(), player, getCooldown(), true, true)) return PowerResult.cd();
             Location location = player.getLocation();
-            if (getPlayLocation().equals(PlayLocation.TARGET)){
+            if (getPlayLocation().equals(PlayLocation.TARGET)) {
                 CastUtils.CastLocation castLocation = CastUtils.rayTrace(player, player.getEyeLocation(), player.getEyeLocation().getDirection(), getFiringRange());
                 location = castLocation.getTargetLocation();
             }
@@ -161,14 +158,14 @@ public class SoundPower extends BasePower {
 
         private PowerResult<Void> sound(Entity player, ItemStack stack, Location location) {
             if (!getItem().consumeDurability(stack, getCost())) return PowerResult.cost();
-            if (getDelay()>0){
+            if (getDelay() > 0) {
                 new BukkitRunnable() {
                     @Override
                     public void run() {
                         location.getWorld().playSound(location, getSound(), getVolume(), getPitch());
                     }
                 }.runTaskLater(RPGItems.plugin, getDelay());
-            }else {
+            } else {
                 location.getWorld().playSound(location, getSound(), getVolume(), getPitch());
             }
             return PowerResult.ok();
@@ -184,7 +181,7 @@ public class SoundPower extends BasePower {
             if (!checkCooldown(getPower(), player, getCooldown(), true, true)) return PowerResult.cd();
             Location location = entity.getLocation();
             if (getPlayLocation().equals(PlayLocation.HIT_LOCATION)) {
-            }else if (getPlayLocation().equals(PlayLocation.SELF)){
+            } else if (getPlayLocation().equals(PlayLocation.SELF)) {
                 location = player.getLocation();
             }
             return sound(entity, stack, location).with(damage);
@@ -216,7 +213,7 @@ public class SoundPower extends BasePower {
             if (!checkCooldown(getPower(), player, getCooldown(), true, true)) return PowerResult.cd();
             Location location = entity.getLocation();
             if (getPlayLocation().equals(PlayLocation.HIT_LOCATION)) {
-            }else if (getPlayLocation().equals(PlayLocation.SELF)){
+            } else if (getPlayLocation().equals(PlayLocation.SELF)) {
                 location = player.getLocation();
             }
             return sound(player, stack, location).with(damage);
@@ -226,7 +223,7 @@ public class SoundPower extends BasePower {
         public PowerResult<Void> hitBlock(Player player, ItemStack stack, Location location, BeamHitBlockEvent event) {
             if (!checkCooldown(getPower(), player, getCooldown(), true, true)) return PowerResult.cd();
             if (getPlayLocation().equals(PlayLocation.HIT_LOCATION)) {
-            }else if (getPlayLocation().equals(PlayLocation.SELF)){
+            } else if (getPlayLocation().equals(PlayLocation.SELF)) {
                 location = player.getLocation();
             }
             return sound(player, stack, location);
@@ -236,7 +233,7 @@ public class SoundPower extends BasePower {
         public PowerResult<Void> beamEnd(Player player, ItemStack stack, Location location, BeamEndEvent event) {
             if (!checkCooldown(getPower(), player, getCooldown(), true, true)) return PowerResult.cd();
             if (getPlayLocation().equals(PlayLocation.HIT_LOCATION)) {
-            }else if (getPlayLocation().equals(PlayLocation.SELF)){
+            } else if (getPlayLocation().equals(PlayLocation.SELF)) {
                 location = player.getLocation();
             }
             return sound(player, stack, location);
@@ -247,7 +244,7 @@ public class SoundPower extends BasePower {
             if (!checkCooldown(getPower(), player, getCooldown(), true, true)) return PowerResult.cd();
             Location location = event.getEntity().getLocation();
             if (getPlayLocation().equals(PlayLocation.HIT_LOCATION)) {
-            }else if (getPlayLocation().equals(PlayLocation.SELF)){
+            } else if (getPlayLocation().equals(PlayLocation.SELF)) {
                 location = player.getLocation();
             }
             return sound(player, stack, location);
@@ -270,7 +267,7 @@ public class SoundPower extends BasePower {
             if (!checkCooldown(getPower(), player, getCooldown(), true, true)) return PowerResult.cd();
             Location location = entity.getLocation();
             if (getPlayLocation().equals(PlayLocation.HIT_LOCATION)) {
-            }else if (getPlayLocation().equals(PlayLocation.SELF)){
+            } else if (getPlayLocation().equals(PlayLocation.SELF)) {
                 location = player.getLocation();
             }
             return sound(player, stack, location);
@@ -280,7 +277,7 @@ public class SoundPower extends BasePower {
         public PowerResult<Void> fire(Player player, ItemStack stack, Location location) {
             if (!checkCooldown(getPower(), player, getCooldown(), true, true)) return PowerResult.cd();
             if (getPlayLocation().equals(PlayLocation.HIT_LOCATION)) {
-            }else if (getPlayLocation().equals(PlayLocation.SELF)){
+            } else if (getPlayLocation().equals(PlayLocation.SELF)) {
                 location = player.getLocation();
             }
             return sound(player, stack, location);

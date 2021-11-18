@@ -89,10 +89,6 @@ public class AOE extends BasePower {
     @Property
     public Target target = Target.ALL;
 
-    enum Target {
-        MOBS, PLAYERS, ALL
-    }
-
     public int getCount() {
         return count;
     }
@@ -168,6 +164,10 @@ public class AOE extends BasePower {
         return cooldown;
     }
 
+    enum Target {
+        MOBS, PLAYERS, ALL
+    }
+
     public class Impl implements PowerRightClick, PowerLeftClick, PowerOffhandClick, PowerPlain, PowerHit, PowerBowShoot, PowerBeamHit, PowerProjectileHit, PowerLivingEntity, PowerLocation {
         @Override
         public PowerResult<Void> rightClick(final Player player, ItemStack stack, PlayerInteractEvent event) {
@@ -179,7 +179,7 @@ public class AOE extends BasePower {
             return fire(player.getEyeLocation(), player, stack, getNearbyEntities(getPower(), player.getLocation(), player, getRange()));
         }
 
-        private PowerResult<Void> fire(Location center, Player player, ItemStack itemStack, Collection<Entity> entityList){
+        private PowerResult<Void> fire(Location center, Player player, ItemStack itemStack, Collection<Entity> entityList) {
             if (!checkCooldown(getPower(), player, getCooldown(), true, true)) return PowerResult.cd();
             if (!getItem().consumeDurability(itemStack, getCost())) return PowerResult.cost();
 
@@ -191,11 +191,11 @@ public class AOE extends BasePower {
             List<LivingEntity> collect = entityList.stream().filter(entity -> entity instanceof LivingEntity)
                     .map(entity -> ((LivingEntity) entity))
                     .collect(Collectors.toList());
-            if (!Objects.equals(center.getWorld(), player.getEyeLocation().getWorld())){
+            if (!Objects.equals(center.getWorld(), player.getEyeLocation().getWorld())) {
                 return PowerResult.noop();
             }
             Vector subtract = center.clone().subtract(player.getEyeLocation()).toVector();
-            if (center.distance(player.getEyeLocation()) < 1){
+            if (center.distance(player.getEyeLocation()) < 1) {
                 subtract = player.getEyeLocation().getDirection();
             }
             AtomicInteger hitCount = new AtomicInteger(0);
@@ -214,7 +214,7 @@ public class AOE extends BasePower {
                     .limit(getCount() == -1 ? Integer.MAX_VALUE : getCount())
                     .forEach(ent -> {
                         if (player.equals(ent)) {
-                            if(isSelfapplication()){
+                            if (isSelfapplication()) {
                                 player.addPotionEffect(effect);
                                 hitCount.addAndGet(1);
                             }
@@ -225,7 +225,7 @@ public class AOE extends BasePower {
                             hitCount.addAndGet(1);
                         }
                     });
-            return hitCount.get() > 0 ? PowerResult.ok(): PowerResult.noop();
+            return hitCount.get() > 0 ? PowerResult.ok() : PowerResult.noop();
         }
 
         @Override

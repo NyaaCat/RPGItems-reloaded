@@ -20,7 +20,7 @@ public class HitGlobal extends Trigger<EntityDamageByEntityEvent, PowerHit, Doub
     @Property
     public double maxDamage = Double.POSITIVE_INFINITY;
 
-    public HitGlobal(){
+    public HitGlobal() {
         super(EntityDamageByEntityEvent.class, PowerHit.class, Double.class, Optional.class, "HIT_GLOBAL");
     }
 

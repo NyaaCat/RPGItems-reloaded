@@ -21,6 +21,11 @@ public class PropertyInstance {
         this.field = field;
     }
 
+    public static PropertyInstance from(Field field, Property annotation, boolean required) {
+        if (annotation == null) return null;
+        return new PropertyInstance(field.getName(), required, annotation.order(), annotation.alias(), field);
+    }
+
     public String name() {
         return name;
     }
@@ -39,10 +44,5 @@ public class PropertyInstance {
 
     public Field field() {
         return field;
-    }
-
-    public static PropertyInstance from(Field field, Property annotation, boolean required) {
-        if (annotation == null) return null;
-        return new PropertyInstance(field.getName(), required, annotation.order(), annotation.alias(), field);
     }
 }

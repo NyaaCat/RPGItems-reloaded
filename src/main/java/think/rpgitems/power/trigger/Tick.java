@@ -10,7 +10,7 @@ class Tick extends Trigger<Event, PowerTick, Void, Void> {
     Tick() {
         super(Event.class, PowerTick.class, Void.class, Void.class, "TICK");
     }
-    
+
     public Tick(String name) {
         super(name, "TICK", Event.class, PowerTick.class, Void.class, Void.class);
     }

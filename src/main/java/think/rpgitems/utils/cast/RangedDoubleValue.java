@@ -9,40 +9,8 @@ import java.util.concurrent.ThreadLocalRandom;
 import static think.rpgitems.power.Utils.weightedRandomPick;
 
 public class RangedDoubleValue {
-    private List<WeightedPair<Double, Double>> ranges = new ArrayList<>();
-
-    public int getSplitSize(){
-        return ranges.size();
-    }
-
     Double totalLength = null;
-
-    public double getTotalLength(){
-        if (totalLength == null){
-            synchronized (this) {
-                if(totalLength == null){
-                    totalLength = ranges.stream()
-                            .mapToDouble(pair -> length(pair))
-                            .sum();
-                }
-            }
-        }
-        return totalLength;
-    }
-
-    private double length(WeightedPair<Double, Double> pair) {
-        return Math.abs(pair.getValue() - pair.getKey());
-    }
-
-    public double random(){
-        WeightedPair<Double, Double> pair = weightedRandomPick(ranges);
-        if (pair.getKey().equals(pair.getValue())){
-            return pair.getKey();
-        }
-        double range = pair.getValue() - pair.getKey();
-        double selected = ThreadLocalRandom.current().nextDouble() * range + pair.getKey();
-        return selected;
-    }
+    private final List<WeightedPair<Double, Double>> ranges = new ArrayList<>();
 
     public static RangedDoubleValue of(String s) {
         RangedDoubleValue value = new RangedDoubleValue();
@@ -58,22 +26,53 @@ public class RangedDoubleValue {
         int weight;
         double lower, upper;
         if (s1.contains(":")) {
-            String [] split = s1.split(":");
+            String[] split = s1.split(":");
             weight = Integer.parseInt(split[1]);
             s = split[0];
-        }else {
+        } else {
             weight = 1;
         }
         if (s.contains(",")) {
             String[] split = s.split(",");
             double a1 = Double.parseDouble(split[0]);
-            double a2= Double.parseDouble(split[1]);
+            double a2 = Double.parseDouble(split[1]);
             lower = Math.min(a1, a2);
             upper = Math.max(a1, a2);
-        }else {
+        } else {
             lower = upper = Double.parseDouble(s);
         }
         return new WeightedPair<>(lower, upper, weight);
+    }
+
+    public int getSplitSize() {
+        return ranges.size();
+    }
+
+    public double getTotalLength() {
+        if (totalLength == null) {
+            synchronized (this) {
+                if (totalLength == null) {
+                    totalLength = ranges.stream()
+                            .mapToDouble(pair -> length(pair))
+                            .sum();
+                }
+            }
+        }
+        return totalLength;
+    }
+
+    private double length(WeightedPair<Double, Double> pair) {
+        return Math.abs(pair.getValue() - pair.getKey());
+    }
+
+    public double random() {
+        WeightedPair<Double, Double> pair = weightedRandomPick(ranges);
+        if (pair.getKey().equals(pair.getValue())) {
+            return pair.getKey();
+        }
+        double range = pair.getValue() - pair.getKey();
+        double selected = ThreadLocalRandom.current().nextDouble() * range + pair.getKey();
+        return selected;
     }
 
     @Override
@@ -93,7 +92,7 @@ public class RangedDoubleValue {
             if (weight != 1) {
                 sb.append(String.format(":%d", weight));
             }
-            if (i!= weightedPairs.size()) {
+            if (i != weightedPairs.size()) {
                 sb.append(" ");
             }
         }
@@ -101,7 +100,7 @@ public class RangedDoubleValue {
     }
 
     public double uniformed(double i, int amount) {
-        if (getSplitSize() == 0){
+        if (getSplitSize() == 0) {
             return 0;
         }
         double totalLength = getTotalLength();
@@ -111,7 +110,7 @@ public class RangedDoubleValue {
 
     private double select(double selected) {
         double totalLength = getTotalLength();
-        if (selected != totalLength){
+        if (selected != totalLength) {
             selected = selected % totalLength;
         }
 
@@ -120,7 +119,7 @@ public class RangedDoubleValue {
         for (int i = 0; i < getSplitSize(); i++) {
             WeightedPair<Double, Double> pair = ranges.get(i);
             double length = length(pair);
-            if (remain >= 0 && remain <= length){
+            if (remain >= 0 && remain <= length) {
                 result = pair.getKey() + remain;
                 break;
             }

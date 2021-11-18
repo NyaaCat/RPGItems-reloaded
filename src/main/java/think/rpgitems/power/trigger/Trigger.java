@@ -9,7 +9,6 @@ import think.rpgitems.power.*;
 
 import javax.annotation.Nullable;
 import java.lang.reflect.InvocationTargetException;
-import java.lang.reflect.Method;
 import java.util.*;
 import java.util.function.Predicate;
 import java.util.stream.Collectors;
@@ -17,9 +16,44 @@ import java.util.stream.Stream;
 
 public abstract class Trigger<TEvent extends Event, TPower extends Pimpl, TResult, TReturn> extends BasePropertyHolder {
 
-    private static boolean acceptingNew = true;
-
     private static final Map<String, Trigger> registry = new HashMap<>();
+    private static boolean acceptingNew = true;
+    private final Class<TEvent> eventClass;
+    private final Class<TResult> resultClass;
+    private final Class<TPower> powerClass;
+    private final Class<TReturn> returnClass;
+    private final String name;
+    private final String base;
+    @Property
+    public int priority;
+
+    @SuppressWarnings("unchecked")
+    Trigger(Class<TEvent> eventClass, Class<TPower> powerClass, Class<TResult> resultClass, Class returnClass, String name) {
+        this(name, eventClass, powerClass, resultClass, returnClass);
+        register(this);
+    }
+
+    public Trigger(String name, Class<TEvent> eventClass, Class<TPower> powerClass, Class<TResult> resultClass, Class<TReturn> returnClass) {
+        this.eventClass = eventClass;
+        this.powerClass = powerClass;
+        this.resultClass = resultClass;
+        this.returnClass = returnClass;
+        this.name = name;
+        this.base = null;
+    }
+
+    @SuppressWarnings("unchecked")
+    Trigger(String name, String base, Class<TEvent> eventClass, Class<TPower> powerClass, Class<TResult> resultClass, Class returnClass) {
+        this.eventClass = eventClass;
+        this.powerClass = powerClass;
+        this.resultClass = resultClass;
+        this.returnClass = returnClass;
+        this.name = name;
+        if (Trigger.get(base) == null) {
+            throw new IllegalArgumentException();
+        }
+        this.base = base;
+    }
 
     public static Stream<Trigger> fromInterface(Class<? extends Pimpl> power) {
         return registry.values().stream().filter(t -> t.powerClass.equals(power));
@@ -81,6 +115,14 @@ public abstract class Trigger<TEvent extends Event, TPower extends Pimpl, TResul
         acceptingNew = false;
     }
 
+    public static Set<String> keySet() {
+        return registry.keySet();
+    }
+
+    public static Collection<Trigger> values() {
+        return registry.values();
+    }
+
     @Override
     public final String getPropertyHolderType() {
         return "trigger";
@@ -91,54 +133,8 @@ public abstract class Trigger<TEvent extends Event, TPower extends Pimpl, TResul
         return name();
     }
 
-    private final Class<TEvent> eventClass;
-    private final Class<TResult> resultClass;
-    private final Class<TPower> powerClass;
-    private final Class<TReturn> returnClass;
-    private final String name;
-    private final String base;
-
-    @Property
-    public int priority;
-
-    @SuppressWarnings("unchecked")
-    Trigger(Class<TEvent> eventClass, Class<TPower> powerClass, Class<TResult> resultClass, Class returnClass, String name) {
-        this(name, eventClass, powerClass, resultClass, returnClass);
-        register(this);
-    }
-
-    public Trigger(String name, Class<TEvent> eventClass, Class<TPower> powerClass, Class<TResult> resultClass, Class<TReturn> returnClass) {
-        this.eventClass = eventClass;
-        this.powerClass = powerClass;
-        this.resultClass = resultClass;
-        this.returnClass = returnClass;
-        this.name = name;
-        this.base = null;
-    }
-
-    @SuppressWarnings("unchecked")
-    Trigger(String name, String base, Class<TEvent> eventClass, Class<TPower> powerClass, Class<TResult> resultClass, Class returnClass) {
-        this.eventClass = eventClass;
-        this.powerClass = powerClass;
-        this.resultClass = resultClass;
-        this.returnClass = returnClass;
-        this.name = name;
-        if (Trigger.get(base) == null) {
-            throw new IllegalArgumentException();
-        }
-        this.base = base;
-    }
-
     public int getPriority() {
         return priority;
-    }
-
-    public static Set<String> keySet() {
-        return registry.keySet();
-    }
-
-    public static Collection<Trigger> values() {
-        return registry.values();
     }
 
     public TReturn def(Player player, ItemStack i, TEvent event) {
@@ -197,8 +193,8 @@ public abstract class Trigger<TEvent extends Event, TPower extends Pimpl, TResul
         if (Trigger.get(name) != null) throw new IllegalArgumentException("name is used");
         try {
             return getClass()
-                           .getConstructor(String.class)
-                           .newInstance(name);
+                    .getConstructor(String.class)
+                    .newInstance(name);
         } catch (NoSuchMethodException | InstantiationException | IllegalAccessException | InvocationTargetException e) {
             throw new RuntimeException(e);
         }

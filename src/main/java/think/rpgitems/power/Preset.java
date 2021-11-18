@@ -59,10 +59,10 @@ public enum Preset {
             case VISUAL_EFFECT:
                 return
                         Stream.concat(
-                                Arrays.stream(Effect.values()).filter(effect -> effect.getType() == Effect.Type.VISUAL),
-                                Arrays.stream(DeprecatedEffect.values())
-                        )
-                              .map(Enum::name).collect(Collectors.toList());
+                                        Arrays.stream(Effect.values()).filter(effect -> effect.getType() == Effect.Type.VISUAL),
+                                        Arrays.stream(DeprecatedEffect.values())
+                                )
+                                .map(Enum::name).collect(Collectors.toList());
             case ENCHANTMENT:
                 return Arrays.stream(Enchantment.values()).map(e -> e.getKey().toString()).collect(Collectors.toList());
             case NONE:

@@ -1,7 +1,6 @@
 package think.rpgitems.power.trigger;
 
 import org.bukkit.entity.Player;
-import org.bukkit.event.entity.EntityDamageByEntityEvent;
 import org.bukkit.event.entity.EntityDamageEvent;
 import org.bukkit.inventory.ItemStack;
 import think.rpgitems.power.PowerHitTaken;

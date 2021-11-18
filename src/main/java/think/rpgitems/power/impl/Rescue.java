@@ -29,7 +29,7 @@ import static think.rpgitems.power.Utils.checkCooldown;
 @SuppressWarnings("WeakerAccess")
 @Meta(defaultTrigger = {"DYING"}, implClass = Rescue.Impl.class)
 public class Rescue extends BasePower {
-    private static Cache<UUID, Long> rescueTime = CacheBuilder.newBuilder().expireAfterWrite(5, TimeUnit.SECONDS).build();
+    private static final Cache<UUID, Long> rescueTime = CacheBuilder.newBuilder().expireAfterWrite(5, TimeUnit.SECONDS).build();
     @Property(order = 1)
     public int healthTrigger = 4;
     @Property(order = 2)
@@ -124,9 +124,9 @@ public class Rescue extends BasePower {
             target.getWorld().playSound(target.getLocation(), Sound.BLOCK_ENCHANTMENT_TABLE_USE, 10, 1);
 
             if (isInPlace() && cause != DamageCause.DRAGON_BREATH
-                        && cause != DamageCause.DROWNING
-                        && cause != DamageCause.SUFFOCATION
-                        && cause != DamageCause.VOID) {
+                    && cause != DamageCause.DROWNING
+                    && cause != DamageCause.SUFFOCATION
+                    && cause != DamageCause.VOID) {
                 target.addPotionEffect(new PotionEffect(PotionEffectType.GLOWING, 160, 10));
             } else if (isUseBed() && target.getBedSpawnLocation() != null)
                 target.teleport(target.getBedSpawnLocation());

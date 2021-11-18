@@ -86,11 +86,6 @@ public class Attract extends BasePower {
         return firingLocation;
     }
 
-    public enum FiringLocation{
-        SELF, TARGET;
-    }
-
-
     /**
      * Hooking Cost Pre-Entity-Tick
      */
@@ -161,7 +156,11 @@ public class Attract extends BasePower {
         return requireHurtByEntity;
     }
 
-    public class Impl implements PowerTick, PowerLeftClick, PowerRightClick, PowerPlain, PowerSneaking, PowerHurt, PowerHitTaken, PowerBowShoot, PowerBeamHit, PowerProjectileHit, PowerLivingEntity, PowerLocation{
+    public enum FiringLocation {
+        SELF, TARGET
+    }
+
+    public class Impl implements PowerTick, PowerLeftClick, PowerRightClick, PowerPlain, PowerSneaking, PowerHurt, PowerHitTaken, PowerBowShoot, PowerBeamHit, PowerProjectileHit, PowerLivingEntity, PowerLocation {
 
         @Override
         public PowerResult<Double> takeHit(Player target, ItemStack stack, double damage, EntityDamageEvent event) {
@@ -174,7 +173,7 @@ public class Attract extends BasePower {
         @Override
         public PowerResult<Void> fire(Player player, ItemStack stack) {
             Location location = player.getLocation();
-            if (getFiringLocation().equals(FiringLocation.TARGET)){
+            if (getFiringLocation().equals(FiringLocation.TARGET)) {
                 CastUtils.CastLocation result = CastUtils.rayTrace(player, player.getEyeLocation(), player.getEyeLocation().getDirection(), getFiringRange());
                 location = result.getTargetLocation();
             }
@@ -215,7 +214,7 @@ public class Attract extends BasePower {
             if (!getItem().consumeDurability(stack, getAttractingTickCost())) return PowerResult.ok();
             for (Entity e : entities) {
                 if (e instanceof LivingEntity
-                            && (isAttractPlayer() || !(e instanceof Player))) {
+                        && (isAttractPlayer() || !(e instanceof Player))) {
                     if (!getItem().consumeDurability(stack, getAttractingEntityTickCost())) break;
                     Location locTarget = e.getLocation();
                     Location locPlayer = location;
@@ -247,7 +246,7 @@ public class Attract extends BasePower {
 
         private PowerResult<Void> attract(Player player, ItemStack stack) {
             Location location = player.getLocation();
-            return attract(player, location,stack, () -> getNearbyEntities(getPower(), player.getLocation(), player, getRadius()));
+            return attract(player, location, stack, () -> getNearbyEntities(getPower(), player.getLocation(), player, getRadius()));
         }
 
         @Override
@@ -295,7 +294,7 @@ public class Attract extends BasePower {
         @Override
         public PowerResult<Void> fire(Player player, ItemStack stack, LivingEntity entity, @Nullable Double value) {
             Location location = entity.getLocation();
-            if (getFiringLocation().equals(FiringLocation.TARGET)){
+            if (getFiringLocation().equals(FiringLocation.TARGET)) {
                 CastUtils.CastLocation result = CastUtils.rayTrace(entity, entity.getEyeLocation(), entity.getEyeLocation().getDirection(), getFiringRange());
                 location = result.getTargetLocation();
             }

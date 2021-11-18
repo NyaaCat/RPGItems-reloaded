@@ -43,7 +43,7 @@ public class LifeSteal extends BasePower {
     @Property
     public double factor = 1;
 
-    private Random random = new Random();
+    private final Random random = new Random();
 
     /**
      * Cost of this power

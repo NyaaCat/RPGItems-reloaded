@@ -78,7 +78,7 @@ public class Headshot extends BasePower {
         return soundSelf;
     }
 
-    public class Impl implements PowerHit, PowerBeamHit{
+    public class Impl implements PowerHit, PowerBeamHit {
 
         @Override
         public PowerResult<Double> hit(Player player, ItemStack stack, LivingEntity entity, double damage, EntityDamageByEntityEvent event) {
@@ -89,7 +89,7 @@ public class Headshot extends BasePower {
             return check(player, entity, stack, damage, damager.getVelocity(), damager.getBoundingBox(), entity.getBoundingBox(), event);
         }
 
-        private PowerResult<Double> check(Player player, LivingEntity entity, ItemStack stack, double damage, Vector velocity, BoundingBox damagerOrigBb, BoundingBox entityBb, EntityDamageByEntityEvent event){
+        private PowerResult<Double> check(Player player, LivingEntity entity, ItemStack stack, double damage, Vector velocity, BoundingBox damagerOrigBb, BoundingBox entityBb, EntityDamageByEntityEvent event) {
             double maxAxis = Math.max(entityBb.getHeight(), Math.max(entityBb.getWidthX(), entityBb.getWidthZ()));
             double minAxis = Math.min(entityBb.getHeight(), Math.min(entityBb.getWidthX(), entityBb.getWidthZ()));
             double maximum = minAxis * minAxis;

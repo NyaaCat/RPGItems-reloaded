@@ -3,10 +3,9 @@ package think.rpgitems.power;
 import org.bukkit.NamespacedKey;
 import think.rpgitems.I18n;
 import think.rpgitems.RPGItems;
-import think.rpgitems.item.RPGItem;
 
 public class UnknownPowerException extends Exception {
-    private NamespacedKey key;
+    private final NamespacedKey key;
 
     public UnknownPowerException(NamespacedKey key) {
         super(key.toString());
@@ -19,6 +18,6 @@ public class UnknownPowerException extends Exception {
 
     @Override
     public String getLocalizedMessage() {
-        return I18n.getInstance(RPGItems.plugin.cfg.language).format("message.power.unknown", key.toString());
+        return I18n.getInstance(RPGItems.plugin.cfg.language).getFormatted("message.power.unknown", key.toString());
     }
 }

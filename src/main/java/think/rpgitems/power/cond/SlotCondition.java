@@ -19,10 +19,6 @@ import java.util.stream.Stream;
 @Meta(marker = true)
 public class SlotCondition extends BaseCondition<Void> {
 
-    public SlotCondition(){
-        slots.add(Slots.ARMOR);
-    }
-
     @Property(required = true, order = 0)
     public String id = "defaultSlot";
     @Property
@@ -36,6 +32,9 @@ public class SlotCondition extends BaseCondition<Void> {
             "HELMET", "CHESTPLATE", "LEGGINGS", "BOOTS",
             "MAIN_HAND", "OFF_HAND"})
     Set<Slots> slots = new HashSet<>();
+    public SlotCondition() {
+        slots.add(Slots.ARMOR);
+    }
 
     @Override
     public String id() {
@@ -56,7 +55,7 @@ public class SlotCondition extends BaseCondition<Void> {
     public PowerResult<Void> check(Player player, ItemStack stack, Map<PropertyHolder, PowerResult<?>> context) {
 
         Optional<RPGItem> rpgItem = ItemManager.toRPGItem(stack);
-        if (!rpgItem.isPresent()){
+        if (!rpgItem.isPresent()) {
             Bukkit.getLogger().log(Level.FINER, "item is not a RGI, this shouldn't happen");
             return PowerResult.fail();
         }
@@ -82,6 +81,13 @@ public class SlotCondition extends BaseCondition<Void> {
         BACKPACK, BELT, INVENTORY,
         HELMET, CHESTPLATE, LEGGINGS, BOOTS,
         MAIN_HAND, OFF_HAND;
+
+        Cache<UUID, ItemStack[]> backpackCache = CacheBuilder.newBuilder()
+                .expireAfterWrite(50, TimeUnit.MICROSECONDS)
+                .build();
+        Cache<UUID, ItemStack[]> beltCache = CacheBuilder.newBuilder()
+                .expireAfterWrite(50, TimeUnit.MICROSECONDS)
+                .build();
 
         public boolean eval(PlayerInventory inventory, ItemStack stack) {
             switch (this) {
@@ -118,22 +124,15 @@ public class SlotCondition extends BaseCondition<Void> {
             return cachedContainsOr(beltCache, uniqueId, stack, () -> Arrays.copyOfRange(contents, 0, 9));
         }
 
-        Cache<UUID, ItemStack[]> backpackCache = CacheBuilder.newBuilder()
-                .expireAfterWrite(50, TimeUnit.MICROSECONDS)
-                .build();
-        Cache<UUID, ItemStack[]> beltCache = CacheBuilder.newBuilder()
-                .expireAfterWrite(50, TimeUnit.MICROSECONDS)
-                .build();
-
         private boolean checkBackpack(PlayerInventory inventory, ItemStack stack) {
             UUID uniqueId = inventory.getHolder().getUniqueId();
             ItemStack[] contents = inventory.getContents();
             return cachedContainsOr(backpackCache, uniqueId, stack, () -> Arrays.copyOfRange(contents, 10, 36));
-         }
+        }
 
         private boolean cachedContainsOr(Cache<UUID, ItemStack[]> backpackCache, UUID uuid, ItemStack stack, Supplier<ItemStack[]> supplier) {
             ItemStack[] ifPresent = backpackCache.getIfPresent(uuid);
-            if (ifPresent == null){
+            if (ifPresent == null) {
                 ifPresent = supplier.get();
                 backpackCache.put(uuid, ifPresent);
             }
@@ -181,8 +180,7 @@ public class SlotCondition extends BaseCondition<Void> {
                 if (!stackItem.isPresent()) {
                     return false;
                 }
-                if (!itemUsed.get().equals(stackItem.get()))
-                    return false;
+                return itemUsed.get().equals(stackItem.get());
             }
             return true;
         }

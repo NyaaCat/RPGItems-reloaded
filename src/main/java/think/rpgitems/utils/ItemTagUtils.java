@@ -325,13 +325,12 @@ public final class ItemTagUtils {
     }
 
     public static class SubItemTagContainer implements PersistentDataContainer {
-        private PersistentDataContainer parent;
-        private PersistentDataContainer self;
-        private NamespacedKey key;
-        private PhantomReference<SubItemTagContainer> reference;
-
-        private static FinalizableReferenceQueue frq = new FinalizableReferenceQueue();
         private static final Set<Reference<?>> references = Sets.newConcurrentHashSet();
+        private static final FinalizableReferenceQueue frq = new FinalizableReferenceQueue();
+        private final PersistentDataContainer parent;
+        private PersistentDataContainer self;
+        private final NamespacedKey key;
+        private PhantomReference<SubItemTagContainer> reference;
 
         private SubItemTagContainer(PersistentDataContainer parent, NamespacedKey key, PersistentDataContainer self) {
             this.parent = parent;

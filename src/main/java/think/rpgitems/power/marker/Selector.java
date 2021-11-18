@@ -10,7 +10,6 @@ import org.bukkit.OfflinePlayer;
 import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.entity.Entity;
 import org.bukkit.entity.EntityType;
-import org.bukkit.entity.LivingEntity;
 import org.bukkit.entity.Player;
 import org.bukkit.scoreboard.Objective;
 import org.bukkit.scoreboard.Score;
@@ -36,27 +35,27 @@ import java.util.stream.Stream;
 @Meta(marker = true)
 public class Selector extends BaseMarker {
 
-    private static LoadingCache<String, Map<String, Pair<Integer, Integer>>> scoreCache = CacheBuilder
-                                                                                                  .newBuilder()
-                                                                                                  .concurrencyLevel(1)
-                                                                                                  .expireAfterAccess(1, TimeUnit.DAYS)
-                                                                                                  .build(CacheLoader.from(Selector::parseScore));
-    private static LoadingCache<String, Pair<Set<String>, Set<String>>> teamCache = CacheBuilder
-                                                                                            .newBuilder()
-                                                                                            .concurrencyLevel(1)
-                                                                                            .expireAfterAccess(1, TimeUnit.DAYS)
-                                                                                            .build(CacheLoader.from(Selector::parse));
-    private static LoadingCache<String, Pair<Set<String>, Set<String>>> tagCache = CacheBuilder
-                                                                                           .newBuilder()
-                                                                                           .concurrencyLevel(1)
-                                                                                           .expireAfterAccess(1, TimeUnit.DAYS)
-                                                                                           .build(CacheLoader.from(Selector::parse));
-    private static LoadingCache<String, Set<EntityType>> typeCache = CacheBuilder
-                                                                             .newBuilder()
-                                                                             .concurrencyLevel(1)
-                                                                             .expireAfterAccess(1, TimeUnit.DAYS)
-                                                                             .build(CacheLoader.from(Selector::parseType));
-    private static LoadingCache<String,Pair<Set<GameMode>, Set<GameMode>>> gameModeCache = CacheBuilder
+    private static final LoadingCache<String, Map<String, Pair<Integer, Integer>>> scoreCache = CacheBuilder
+            .newBuilder()
+            .concurrencyLevel(1)
+            .expireAfterAccess(1, TimeUnit.DAYS)
+            .build(CacheLoader.from(Selector::parseScore));
+    private static final LoadingCache<String, Pair<Set<String>, Set<String>>> teamCache = CacheBuilder
+            .newBuilder()
+            .concurrencyLevel(1)
+            .expireAfterAccess(1, TimeUnit.DAYS)
+            .build(CacheLoader.from(Selector::parse));
+    private static final LoadingCache<String, Pair<Set<String>, Set<String>>> tagCache = CacheBuilder
+            .newBuilder()
+            .concurrencyLevel(1)
+            .expireAfterAccess(1, TimeUnit.DAYS)
+            .build(CacheLoader.from(Selector::parse));
+    private static final LoadingCache<String, Set<EntityType>> typeCache = CacheBuilder
+            .newBuilder()
+            .concurrencyLevel(1)
+            .expireAfterAccess(1, TimeUnit.DAYS)
+            .build(CacheLoader.from(Selector::parseType));
+    private static final LoadingCache<String, Pair<Set<GameMode>, Set<GameMode>>> gameModeCache = CacheBuilder
             .newBuilder()
             .concurrencyLevel(1)
             .expireAfterAccess(1, TimeUnit.DAYS)
@@ -155,7 +154,7 @@ public class Selector extends BaseMarker {
 
     public static Map<String, Pair<Integer, Integer>> parseScore(String limit) {
         Map<String, Pair<Integer, Integer>> result = new HashMap<>();
-        if(limit.equals(""))return result;
+        if (limit.equals("")) return result;
         Arrays.stream(limit.split("\\s")).forEach(s -> {
             String name = s.split(":")[0];
             String range = s.split(":")[1];
@@ -177,20 +176,20 @@ public class Selector extends BaseMarker {
         final Pair<Set<GameMode>, Set<GameMode>> result = Pair.of(new HashSet<>(), new HashSet<>());
         final String[] split = str.split(",");
         for (String gameMode : split) {
-            try{
+            try {
                 boolean mustNot = gameMode.startsWith("!");
-                if (mustNot){
+                if (mustNot) {
                     gameMode = gameMode.substring(1);
                 }
                 final GameMode gameMode1 = GameMode.valueOf(gameMode);
-                if (mustNot){
+                if (mustNot) {
                     //value means mustNot
                     result.getValue().add(gameMode1);
-                }else {
+                } else {
                     //key means may
                     result.getKey().add(gameMode1);
                 }
-            }catch (Exception e){
+            } catch (Exception e) {
                 continue;
             }
         }
@@ -214,6 +213,62 @@ public class Selector extends BaseMarker {
             }
         });
         return new Pair<>(must, mustNot);
+    }
+
+    public static boolean matchTag(Entity e, Pair<Set<String>, Set<String>> tagLimit) {
+        Set<String> tags = e.getScoreboardTags();
+        if (tagLimit.getValue() == null) return tags.isEmpty();
+        if (tagLimit.getKey() == null) return !tags.isEmpty();
+
+        final Set<String> mustHave = tagLimit.getKey().stream().map(tag1 -> {
+            if (e instanceof Player) {
+                return tag1.replaceAll("\\{player}", e.getName());
+            }
+            return tag1;
+        }).collect(Collectors.toSet());
+        final Set<String> mustNotHave = tagLimit.getValue().stream().map(tag1 -> {
+            if (e instanceof Player) {
+                return tag1.replaceAll("\\{player}", e.getName());
+            }
+            return tag1;
+        }).collect(Collectors.toSet());
+
+        return tags.containsAll(mustHave)
+                && tags.stream().noneMatch(t -> mustNotHave.contains(t));
+    }
+
+    public static boolean matchTeam(Entity e, Scoreboard s, Pair<Set<String>, Set<String>> teamLimit) {
+        String name = e.getUniqueId().toString();
+        if (e instanceof OfflinePlayer) {
+            name = ((OfflinePlayer) e).getName();
+        }
+        Team t = s.getEntryTeam(name);
+        if (teamLimit.getValue() == null) return t == null;
+        if (teamLimit.getKey() == null) return t != null;
+        return teamLimit.getKey().stream().findFirst().map(l -> t != null && l.equals(t.getName())).orElse(true)
+                && (t == null || !teamLimit.getValue().contains(t.getName()));
+    }
+
+    public static boolean matchScore(Entity e, Scoreboard s, Map<String, Pair<Integer, Integer>> scoreLimit) {
+        String name = e.getUniqueId().toString();
+        if (e instanceof OfflinePlayer) {
+            name = ((OfflinePlayer) e).getName();
+        }
+        String finalName = name;
+        return scoreLimit.entrySet().stream().allMatch(sl ->
+        {
+            Objective objective = s.getObjective(sl.getKey());
+            if (objective == null) return false;
+            Score score = objective.getScore(finalName);
+            return Optional.of(score.getScore())
+                    .map(sco -> {
+                        boolean result = true;
+                        Pair<Integer, Integer> limit = sl.getValue();
+                        if (limit.getValue() != null) result = sco < limit.getValue();
+                        if (limit.getKey() != null) result &= sco >= limit.getKey();
+                        return result;
+                    }).orElse(false);
+        });
     }
 
     @Override
@@ -243,7 +298,7 @@ public class Selector extends BaseMarker {
             Pair<Set<String>, Set<String>> tag = Pair.of(
                     mustHave.stream().map(s -> s.replaceAll("\\{player}", p.getName())).collect(Collectors.toSet()),
                     mustNotHave.stream().map(s -> s.replaceAll("\\{player}", p.getName())).collect(Collectors.toSet())
-                    );
+            );
             ents = ents.stream().filter(entity -> matchTag(entity, tag)).collect(Collectors.toList());
         }
         if (team != null) {
@@ -294,62 +349,6 @@ public class Selector extends BaseMarker {
         if (dy != null && dy > 0) result &= loc.getY() - l.getY() < dy;
         if (dz != null && dz > 0) result &= loc.getZ() - l.getZ() < dz;
         return result;
-    }
-
-    public static boolean matchTag(Entity e, Pair<Set<String>, Set<String>> tagLimit) {
-        Set<String> tags = e.getScoreboardTags();
-        if (tagLimit.getValue() == null) return tags.isEmpty();
-        if (tagLimit.getKey() == null) return !tags.isEmpty();
-
-        final Set<String> mustHave = tagLimit.getKey().stream().map(tag1 -> {
-            if (e instanceof Player){
-                return tag1.replaceAll("\\{player}", e.getName());
-            }
-            return tag1;
-        }).collect(Collectors.toSet());
-        final Set<String> mustNotHave = tagLimit.getValue().stream().map(tag1 -> {
-            if (e instanceof Player){
-                return tag1.replaceAll("\\{player}", e.getName());
-            }
-            return tag1;
-        }).collect(Collectors.toSet());
-
-        return tags.containsAll(mustHave)
-                       && tags.stream().noneMatch(t -> mustNotHave.contains(t));
-    }
-
-    public static boolean matchTeam(Entity e, Scoreboard s, Pair<Set<String>, Set<String>> teamLimit) {
-        String name = e.getUniqueId().toString();
-        if (e instanceof OfflinePlayer) {
-            name = ((OfflinePlayer) e).getName();
-        }
-        Team t = s.getEntryTeam(name);
-        if (teamLimit.getValue() == null) return t == null;
-        if (teamLimit.getKey() == null) return t != null;
-        return teamLimit.getKey().stream().findFirst().map(l -> t != null && l.equals(t.getName())).orElse(true)
-                       && (t == null || !teamLimit.getValue().contains(t.getName()));
-    }
-
-    public static boolean matchScore(Entity e, Scoreboard s, Map<String, Pair<Integer, Integer>> scoreLimit) {
-        String name = e.getUniqueId().toString();
-        if (e instanceof OfflinePlayer) {
-            name = ((OfflinePlayer) e).getName();
-        }
-        String finalName = name;
-        return scoreLimit.entrySet().stream().allMatch(sl ->
-        {
-            Objective objective = s.getObjective(sl.getKey());
-            if (objective == null) return false;
-            Score score = objective.getScore(finalName);
-            return Optional.of(score.getScore())
-                           .map(sco -> {
-                               boolean result = true;
-                               Pair<Integer, Integer> limit = sl.getValue();
-                               if (limit.getValue() != null) result = sco < limit.getValue();
-                               if (limit.getKey() != null) result &= sco >= limit.getKey();
-                               return result;
-                           }).orElse(false);
-        });
     }
 
     private double getCoordinate(String s, double base) {

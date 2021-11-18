@@ -36,7 +36,7 @@ import static think.rpgitems.power.Utils.checkCooldown;
 @Meta(defaultTrigger = "RIGHT_CLICK", generalInterface = PowerPlain.class, implClass = SkyHook.Impl.class)
 public class SkyHook extends BasePower {
 
-    private static Map<UUID, Boolean> hooking = new HashMap<>();
+    private static final Map<UUID, Boolean> hooking = new HashMap<>();
     @Property(order = 0)
     public Material railMaterial = Material.GLASS;
     @Property

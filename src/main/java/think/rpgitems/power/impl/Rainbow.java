@@ -39,7 +39,7 @@ public class Rainbow extends BasePower {
     @Property
     public int cost = 0;
 
-    private Random random = new Random();
+    private final Random random = new Random();
 
     /**
      * Cost of this power
@@ -105,8 +105,8 @@ public class Rainbow extends BasePower {
             }
             (new BukkitRunnable() {
 
-                ArrayList<Location> fallLocs = new ArrayList<>();
-                Random random = new Random();
+                final ArrayList<Location> fallLocs = new ArrayList<>();
+                final Random random = new Random();
 
                 public void run() {
 

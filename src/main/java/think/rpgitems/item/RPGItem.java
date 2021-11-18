@@ -80,7 +80,8 @@ public class RPGItem {
     public static final String NBT_IS_MODEL = "rpgitem_is_model";
 
     private static final Cache<UUID, List<Modifier>> modifierCache = CacheBuilder.newBuilder().concurrencyLevel(1).expireAfterAccess(1, TimeUnit.MINUTES).build();
-
+    private final static NamespacedKey RGI_UNIQUE_MARK = new NamespacedKey(RPGItems.plugin, "RGI_UNIQUE_MARK");
+    private final static NamespacedKey RGI_UNIQUE_ID = new NamespacedKey(RPGItems.plugin, "RGI_UNIQUE_ID");
     static RPGItems plugin;
     private boolean ignoreWorldGuard = false;
     private List<String> description = new ArrayList<>();
@@ -90,23 +91,21 @@ public class RPGItem {
     private List<ItemFlag> itemFlags = new ArrayList<>();
     private boolean customItemModel = false;
     private EnchantMode enchantMode = EnchantMode.DISALLOW;
-
     // Powers
     private List<Power> powers = new ArrayList<>();
     private List<Condition<?>> conditions = new ArrayList<>();
     private List<Marker> markers = new ArrayList<>();
-    private Map<String, PlaceholderHolder> placeholders = new HashMap<>();
+    private final Map<String, PlaceholderHolder> placeholders = new HashMap<>();
     @SuppressWarnings("rawtypes")
-    private Map<String, Trigger> triggers = new HashMap<>();
-    private HashMap<PropertyHolder, NamespacedKey> keys = new HashMap<>();
+    private final Map<String, Trigger> triggers = new HashMap<>();
+    private final HashMap<PropertyHolder, NamespacedKey> keys = new HashMap<>();
     private File file;
-
     private NamespacedKey namespacedKey;
     private Material item;
     private int dataValue;
     private int id;
     private int uid;
-    private String name;
+    private final String name;
     private boolean hasPermission;
     private String permission;
     private String displayName;
@@ -120,11 +119,9 @@ public class RPGItem {
     private boolean canBeOwned = false;
     private boolean hasStackId = false;
     private boolean alwaysAllowMelee = false;
-
     private String author = plugin.cfg.defaultAuthor;
     private String note = plugin.cfg.defaultNote;
     private String license = plugin.cfg.defaultLicense;
-
     private int tooltipWidth = 150;
     // Durability
     private int maxDurability = -1;
@@ -133,7 +130,6 @@ public class RPGItem {
     private int durabilityLowerBound;
     private int durabilityUpperBound;
     private BarFormat barFormat = BarFormat.DEFAULT;
-
     private int blockBreakingCost = 0;
     private int hittingCost = 0;
     private int hitCost = 0;
@@ -145,7 +141,7 @@ public class RPGItem {
     private int customModelData;
     private boolean isTemplate;
     private Set<String> templates = new HashSet<>();
-    private Set<String> templatePlaceholders = new HashSet<>();
+    private final Set<String> templatePlaceholders = new HashSet<>();
     private String quality;
     private String type = "item";
 
@@ -185,6 +181,84 @@ public class RPGItem {
     public static void updateItemStack(ItemStack item) {
         Optional<RPGItem> rItem = ItemManager.toRPGItem(item);
         rItem.ifPresent(r -> r.updateItem(item, false));
+    }
+
+    public static List<Modifier> getModifiers(ItemStack stack) {
+        Optional<String> opt = ItemTagUtils.getString(stack, NBT_ITEM_UUID);
+        if (!opt.isPresent()) {
+            Optional<RPGItem> rpgItemOpt = ItemManager.toRPGItemByMeta(stack);
+            if (!rpgItemOpt.isPresent()) {
+                return Collections.emptyList();
+            }
+            RPGItem rpgItem = rpgItemOpt.get();
+            rpgItem.updateItem(stack);
+            Optional<String> opt1 = ItemTagUtils.getString(stack, NBT_ITEM_UUID);
+            if (!opt1.isPresent()) {
+                return Collections.emptyList();
+            }
+            opt = opt1;
+        }
+
+        UUID key = UUID.fromString(opt.get());
+        List<Modifier> modifiers = modifierCache.getIfPresent(key);
+        if (modifiers == null) {
+            ItemMeta itemMeta = stack.getItemMeta();
+            if (itemMeta == null) return new ArrayList<>();
+            SubItemTagContainer tag = makeTag(Objects.requireNonNull(itemMeta).getPersistentDataContainer(), TAG_MODIFIER);
+            modifiers = getModifiers(tag, key);
+        }
+        return modifiers;
+    }
+
+    public static List<Modifier> getModifiers(Player player) {
+        UUID key = player.getUniqueId();
+        List<Modifier> modifiers = modifierCache.getIfPresent(key);
+        if (modifiers == null) {
+            SubItemTagContainer tag = makeTag(player.getPersistentDataContainer(), TAG_MODIFIER);
+            modifiers = getModifiers(tag, key);
+        }
+        return modifiers;
+    }
+
+    public static List<Modifier> getModifiers(SubItemTagContainer tag) {
+        return getModifiers(tag, null);
+    }
+
+    public static void invalidateModifierCache() {
+        modifierCache.invalidateAll();
+    }
+
+    public static List<Modifier> getModifiers(SubItemTagContainer tag, UUID key) {
+        Optional<UUID> uuid = Optional.ofNullable(key);
+        if (!uuid.isPresent()) {
+            uuid = Optional.of(UUID.randomUUID());
+        }
+
+        try {
+            return modifierCache.get(uuid.get(), () -> getModifiersUncached(tag));
+        } catch (ExecutionException e) {
+            throw new RuntimeException(e);
+        } finally {
+            tag.tryDispose();
+        }
+    }
+
+    private static List<Modifier> getModifiersUncached(SubItemTagContainer tag) {
+        List<Modifier> ret = new ArrayList<>();
+        int i = 0;
+        try {
+            for (NamespacedKey key = PowerManager.parseKey(String.valueOf(i)); tag.has(key, PersistentDataType.TAG_CONTAINER); key = PowerManager.parseKey(String.valueOf(++i))) {
+                PersistentDataContainer container = getTag(tag, key);
+                String modifierName = getString(container, "modifier_name");
+                Class<? extends Modifier> modifierClass = PowerManager.getModifier(PowerManager.parseKey(modifierName));
+                Modifier modifier = PowerManager.instantiate(modifierClass);
+                modifier.init(container);
+                ret.add(modifier);
+            }
+            return ret;
+        } finally {
+            tag.commit();
+        }
     }
 
     private void restore(ConfigurationSection s) throws UnknownPowerException, UnknownExtensionException {
@@ -391,10 +465,6 @@ public class RPGItem {
         this.customModelData = customModelData;
     }
 
-    public void setArmourExpression(String armour) {
-        this.armourExpression = armour;
-    }
-
     private void loadPower(ConfigurationSection section, String powerName) throws UnknownPowerException {
         NamespacedKey key = PowerManager.parseKey(powerName);
         Class<? extends Power> power = PowerManager.getPower(key);
@@ -452,7 +522,6 @@ public class RPGItem {
         newTrigger.init(section);
         triggers.put(triggerName, newTrigger);
     }
-
 
     @SuppressWarnings("rawtypes")
     public void save(ConfigurationSection s) {
@@ -588,7 +657,6 @@ public class RPGItem {
         }
     }
 
-
     public String getDamageType() {
         return this.damageType;
     }
@@ -599,6 +667,10 @@ public class RPGItem {
 
     public String getArmourExpression() {
         return armourExpression;
+    }
+
+    public void setArmourExpression(String armour) {
+        this.armourExpression = armour;
     }
 
     public void updateItem(ItemStack item) {
@@ -653,11 +725,7 @@ public class RPGItem {
             return;
         }
 
-        if (isCustomItemModel() || hasMarker(Unbreakable.class)) {
-            meta.setUnbreakable(true);
-        } else {
-            meta.setUnbreakable(false);
-        }
+        meta.setUnbreakable(isCustomItemModel() || hasMarker(Unbreakable.class));
         meta.removeItemFlags(meta.getItemFlags().toArray(new ItemFlag[0]));
 
         if (getCustomModelData() != -1) {
@@ -697,10 +765,6 @@ public class RPGItem {
             e.printStackTrace();
         }
     }
-
-    private final static NamespacedKey RGI_UNIQUE_MARK = new NamespacedKey(RPGItems.plugin, "RGI_UNIQUE_MARK");
-
-    private final static NamespacedKey RGI_UNIQUE_ID = new NamespacedKey(RPGItems.plugin, "RGI_UNIQUE_ID");
 
     private void checkAndMakeUnique(SubItemTagContainer meta) {
         List<Unique> markers = getMarker(Unique.class);
@@ -742,7 +806,7 @@ public class RPGItem {
                     case NUMERIC_HEX_MINUS_ONE:
                     case NUMERIC:
                     case NUMERIC_MINUS_ONE: {
-                        out.append(ChatColor.GREEN.toString()).append(boxChar).append(" ");
+                        out.append(ChatColor.GREEN).append(boxChar).append(" ");
                         out.append(ratio < 0.1 ? ChatColor.RED : ratio < 0.3 ? ChatColor.YELLOW : ChatColor.GREEN);
                         out.append(formatBar(durability, maxDurability, barFormat));
                         out.append(ChatColor.RESET).append(" / ").append(ChatColor.AQUA);
@@ -996,85 +1060,6 @@ public class RPGItem {
         return consumeDurability(stack, getBlockBreakingCost());
     }
 
-    public static List<Modifier> getModifiers(ItemStack stack) {
-        Optional<String> opt = ItemTagUtils.getString(stack, NBT_ITEM_UUID);
-        if (!opt.isPresent()) {
-            Optional<RPGItem> rpgItemOpt = ItemManager.toRPGItemByMeta(stack);
-            if (!rpgItemOpt.isPresent()) {
-                return Collections.emptyList();
-            }
-            RPGItem rpgItem = rpgItemOpt.get();
-            rpgItem.updateItem(stack);
-            Optional<String> opt1 = ItemTagUtils.getString(stack, NBT_ITEM_UUID);
-            if (!opt1.isPresent()) {
-                return Collections.emptyList();
-            }
-            opt = opt1;
-        }
-
-        UUID key = UUID.fromString(opt.get());
-        List<Modifier> modifiers = modifierCache.getIfPresent(key);
-        if (modifiers == null) {
-            ItemMeta itemMeta = stack.getItemMeta();
-            if (itemMeta == null) return new ArrayList<>();
-            SubItemTagContainer tag = makeTag(Objects.requireNonNull(itemMeta).getPersistentDataContainer(), TAG_MODIFIER);
-            modifiers = getModifiers(tag, key);
-        }
-        return modifiers;
-    }
-
-    public static List<Modifier> getModifiers(Player player) {
-        UUID key = player.getUniqueId();
-        List<Modifier> modifiers = modifierCache.getIfPresent(key);
-        if (modifiers == null) {
-            SubItemTagContainer tag = makeTag(player.getPersistentDataContainer(), TAG_MODIFIER);
-            modifiers = getModifiers(tag, key);
-        }
-        return modifiers;
-    }
-
-
-    public static List<Modifier> getModifiers(SubItemTagContainer tag) {
-        return getModifiers(tag, null);
-    }
-
-    public static void invalidateModifierCache() {
-        modifierCache.invalidateAll();
-    }
-
-    public static List<Modifier> getModifiers(SubItemTagContainer tag, UUID key) {
-        Optional<UUID> uuid = Optional.ofNullable(key);
-        if (!uuid.isPresent()) {
-            uuid = Optional.of(UUID.randomUUID());
-        }
-
-        try {
-            return modifierCache.get(uuid.get(), () -> getModifiersUncached(tag));
-        } catch (ExecutionException e) {
-            throw new RuntimeException(e);
-        } finally {
-            tag.tryDispose();
-        }
-    }
-
-    private static List<Modifier> getModifiersUncached(SubItemTagContainer tag) {
-        List<Modifier> ret = new ArrayList<>();
-        int i = 0;
-        try {
-            for (NamespacedKey key = PowerManager.parseKey(String.valueOf(i)); tag.has(key, PersistentDataType.TAG_CONTAINER); key = PowerManager.parseKey(String.valueOf(++i))) {
-                PersistentDataContainer container = getTag(tag, key);
-                String modifierName = getString(container, "modifier_name");
-                Class<? extends Modifier> modifierClass = PowerManager.getModifier(PowerManager.parseKey(modifierName));
-                Modifier modifier = PowerManager.instantiate(modifierClass);
-                modifier.init(container);
-                ret.add(modifier);
-            }
-            return ret;
-        } finally {
-            tag.commit();
-        }
-    }
-
     private <TEvent extends Event, TPower extends Pimpl, TResult, TReturn> boolean triggerPreCheck(Player player, ItemStack i, TEvent event, Trigger<TEvent, TPower, TResult, TReturn> trigger, List<TPower> powers) {
         if (i.getType().equals(Material.AIR)) return false;
         if (powers.isEmpty()) return false;
@@ -1303,7 +1288,7 @@ public class RPGItem {
     public Event.Result checkPermission(Player p, boolean showWarn) {
         if (isHasPermission() && !p.hasPermission(getPermission())) {
             if (showWarn)
-                p.sendMessage(I18n.getInstance(p.getLocale()).format("message.error.permission", getDisplayName()));
+                p.sendMessage(I18n.getInstance(p.getLocale()).getFormatted("message.error.permission", getDisplayName()));
             return Event.Result.DENY;
         }
         return Event.Result.ALLOW;
@@ -1328,7 +1313,7 @@ public class RPGItem {
         if (sender instanceof Player) {
             locale = ((Player) sender).getLocale();
             new Message("")
-                    .append(I18n.getInstance(((Player) sender).getLocale()).format("message.item.print"), toItemStack())
+                    .append(I18n.getInstance(((Player) sender).getLocale()).getFormatted("message.item.print"), toItemStack())
                     .send(sender);
         } else {
             List<String> lines = getTooltipLines();
@@ -1604,7 +1589,7 @@ public class RPGItem {
     public Map<String, List<PlaceholderHolder>> checkDuplicatePlaceholderIds() {
         Map<String, List<PlaceholderHolder>> ids = new HashMap<>();
         getPlaceholdersStream()
-                .map(ph -> ((PlaceholderHolder) ph))
+                .map(ph -> ph)
                 .forEach(placeholder -> {
                     String placeholderId = placeholder.getPlaceholderId();
                     if ("".equals(placeholderId)) {
@@ -1855,24 +1840,32 @@ public class RPGItem {
         return armour;
     }
 
+    public void setArmour(int a) {
+        setArmour(a, true);
+    }
+
     public boolean isAlwaysAllowMelee() {
         return alwaysAllowMelee;
-    }
-
-    public boolean isCanBeOwned() {
-        return canBeOwned;
-    }
-
-    public boolean isHasStackId() {
-        return hasStackId;
     }
 
     public void setAlwaysAllowMelee(boolean alwaysAllowMelee) {
         this.alwaysAllowMelee = alwaysAllowMelee;
     }
 
-    public void setArmour(int a) {
-        setArmour(a, true);
+    public boolean isCanBeOwned() {
+        return canBeOwned;
+    }
+
+    public void setCanBeOwned(boolean canBeOwned) {
+        this.canBeOwned = canBeOwned;
+    }
+
+    public boolean isHasStackId() {
+        return hasStackId;
+    }
+
+    public void setHasStackId(boolean hasStackId) {
+        this.hasStackId = hasStackId;
     }
 
     public void setArmour(int a, boolean update) {
@@ -1900,10 +1893,6 @@ public class RPGItem {
 
     public int getDamageMax() {
         return damageMax;
-    }
-
-    public void setCanBeOwned(boolean canBeOwned) {
-        this.canBeOwned = canBeOwned;
     }
 
     private void setDamageMax(int damageMax) {
@@ -1997,6 +1986,10 @@ public class RPGItem {
         return file;
     }
 
+    void setFile(File itemFile) {
+        file = itemFile;
+    }
+
     public EnchantMode getEnchantMode() {
         return enchantMode;
     }
@@ -2005,16 +1998,8 @@ public class RPGItem {
         this.enchantMode = enchantMode;
     }
 
-    void setFile(File itemFile) {
-        file = itemFile;
-    }
-
     public int getHitCost() {
         return hitCost;
-    }
-
-    public void setHasStackId(boolean hasStackId) {
-        this.hasStackId = hasStackId;
     }
 
     public void setHitCost(int hitCost) {
@@ -2210,10 +2195,6 @@ public class RPGItem {
         this.showPowerText = showPowerText;
     }
 
-    public void setAttributeMode(AttributeMode attributeMode) {
-        this.attributeMode = attributeMode;
-    }
-
     public boolean isTemplate() {
         return isTemplate;
     }
@@ -2232,11 +2213,6 @@ public class RPGItem {
 
     public void setTemplateOf(String templateName) {
         this.templates.add(templateName);
-    }
-
-    public void setTemplatePlaceHolders(List<String> placeHolder) {
-        this.templatePlaceholders.clear();
-        this.templatePlaceholders.addAll(placeHolder);
     }
 
     public void addTemplatePlaceHolder(String placeHolder) {
@@ -2267,8 +2243,17 @@ public class RPGItem {
         return templatePlaceholders;
     }
 
+    public void setTemplatePlaceHolders(List<String> placeHolder) {
+        this.templatePlaceholders.clear();
+        this.templatePlaceholders.addAll(placeHolder);
+    }
+
     public AttributeMode getAttributeMode() {
         return attributeMode;
+    }
+
+    public void setAttributeMode(AttributeMode attributeMode) {
+        this.attributeMode = attributeMode;
     }
 
     public enum DamageMode {
@@ -2285,7 +2270,7 @@ public class RPGItem {
     }
 
     public enum AttributeMode {
-        FULL_UPDATE, PARTIAL_UPDATE;
+        FULL_UPDATE, PARTIAL_UPDATE
     }
 
     public enum BarFormat {

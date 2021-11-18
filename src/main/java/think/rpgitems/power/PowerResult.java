@@ -24,44 +24,6 @@ public class PowerResult<T> {
         return new PowerResult<T>().result(result).data(data).message(message);
     }
 
-    public TriggerResult result() {
-        return result;
-    }
-
-    public T data() {
-        return data;
-    }
-
-    public String message() {
-        return message;
-    }
-
-    protected PowerResult<T> result(TriggerResult result) {
-        this.result = result;
-        return this;
-    }
-
-    protected PowerResult<T> data(T data) {
-        this.data = data;
-        return this;
-    }
-
-    protected PowerResult<T> message(String message) {
-        this.message = message;
-        return this;
-    }
-
-    public PowerResult<T> sendMessage(CommandSender sender) {
-        if (message != null) {
-            sender.sendMessage(message);
-        }
-        return this;
-    }
-
-    public <TP> PowerResult<TP> with(TP data) {
-        return of(result, data, message);
-    }
-
     public static PowerResult<Void> ok() {
         return of(TriggerResult.OK);
     }
@@ -102,16 +64,54 @@ public class PowerResult<T> {
         return of(TriggerResult.CONTEXT, null);
     }
 
+    public TriggerResult result() {
+        return result;
+    }
+
+    public T data() {
+        return data;
+    }
+
+    public String message() {
+        return message;
+    }
+
+    protected PowerResult<T> result(TriggerResult result) {
+        this.result = result;
+        return this;
+    }
+
+    protected PowerResult<T> data(T data) {
+        this.data = data;
+        return this;
+    }
+
+    protected PowerResult<T> message(String message) {
+        this.message = message;
+        return this;
+    }
+
+    public PowerResult<T> sendMessage(CommandSender sender) {
+        if (message != null) {
+            sender.sendMessage(message);
+        }
+        return this;
+    }
+
+    public <TP> PowerResult<TP> with(TP data) {
+        return of(result, data, message);
+    }
+
     public boolean isOK() {
         return result == TriggerResult.OK;
     }
 
     public boolean isError() {
         return result == TriggerResult.CONDITION
-                       || result == TriggerResult.FAIL
-                       || result == TriggerResult.COST
-                       || result == TriggerResult.CONTEXT
-                       || result == TriggerResult.ABORT;
+                || result == TriggerResult.FAIL
+                || result == TriggerResult.COST
+                || result == TriggerResult.CONTEXT
+                || result == TriggerResult.ABORT;
     }
 
     public boolean notError() {

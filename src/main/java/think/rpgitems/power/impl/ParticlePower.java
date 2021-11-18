@@ -45,7 +45,7 @@ import static think.rpgitems.power.Utils.checkCooldown;
         PowerBowShoot.class,
         PowerBeamHit.class,
         PowerLocation.class
-        }, implClass = ParticlePower.Impl.class)
+}, implClass = ParticlePower.Impl.class)
 public class ParticlePower extends BasePower {
     @Property(order = 0, required = true)
     @Serializer(EffectSetter.class)
@@ -99,6 +99,9 @@ public class ParticlePower extends BasePower {
 
     @Property
     public double firingRange = 20;
+    @Property
+    public boolean requireHurtByEntity = true;
+    private Object data = null;
 
     public double getFiringRange() {
         return firingRange;
@@ -107,10 +110,6 @@ public class ParticlePower extends BasePower {
     public int getDelay() {
         return delay;
     }
-
-    @Property
-    public boolean requireHurtByEntity = true;
-    private Object data = null;
 
     void spawnParticle(Entity player) {
         if (getParticle() == null) {
@@ -294,7 +293,7 @@ public class ParticlePower extends BasePower {
             if (!getItem().consumeDurability(stack, getCost())) return PowerResult.cost();
             Location playLocation = player.getLocation();
             PlayLocation playLocation1 = getPlayLocation();
-            if (playLocation1.equals(PlayLocation.TARGET)){
+            if (playLocation1.equals(PlayLocation.TARGET)) {
                 CastUtils.CastLocation castLocation = CastUtils.rayTrace(player, player.getEyeLocation(), player.getEyeLocation().getDirection(), getFiringRange());
                 playLocation = castLocation.getTargetLocation();
             }
@@ -304,7 +303,7 @@ public class ParticlePower extends BasePower {
 
         private PowerResult<Void> fire(Location playLocation) {
             int delay = getDelay();
-            new BukkitRunnable(){
+            new BukkitRunnable() {
                 @Override
                 public void run() {
                     spawnParticle(playLocation.getWorld(), playLocation);
@@ -346,15 +345,15 @@ public class ParticlePower extends BasePower {
             if (!getItem().consumeDurability(stack, getCost())) return PowerResult.cost();
             if (getPlayLocation().equals(PlayLocation.HIT_LOCATION)) {
                 int delay = getDelay();
-                new BukkitRunnable(){
+                new BukkitRunnable() {
                     @Override
                     public void run() {
                         spawnParticle(entity);
                     }
                 }.runTaskLater(RPGItems.plugin, delay);
-            }else if (getPlayLocation().equals(PlayLocation.SELF)){
+            } else if (getPlayLocation().equals(PlayLocation.SELF)) {
                 int delay = getDelay();
-                new BukkitRunnable(){
+                new BukkitRunnable() {
                     @Override
                     public void run() {
                         spawnParticle(player);
@@ -370,12 +369,12 @@ public class ParticlePower extends BasePower {
             if (!getItem().consumeDurability(stack, getCost())) return PowerResult.cost();
 
             int delay = getDelay();
-            new BukkitRunnable(){
+            new BukkitRunnable() {
                 @Override
                 public void run() {
                     Location location = event.getLoc();
                     if (getPlayLocation().equals(PlayLocation.HIT_LOCATION)) {
-                    }else if (getPlayLocation().equals(PlayLocation.SELF)){
+                    } else if (getPlayLocation().equals(PlayLocation.SELF)) {
                         location = player.getLocation();
                     }
                     spawnParticle(entity.getWorld(), location);
@@ -390,12 +389,12 @@ public class ParticlePower extends BasePower {
             if (!getItem().consumeDurability(stack, getCost())) return PowerResult.cost();
 
             int delay = getDelay();
-            new BukkitRunnable(){
+            new BukkitRunnable() {
                 @Override
                 public void run() {
                     Location loc = location;
                     if (getPlayLocation().equals(PlayLocation.HIT_LOCATION)) {
-                    }else if (getPlayLocation().equals(PlayLocation.SELF)){
+                    } else if (getPlayLocation().equals(PlayLocation.SELF)) {
                         loc = player.getLocation();
                     }
                     spawnParticle(player.getWorld(), loc);
@@ -411,12 +410,12 @@ public class ParticlePower extends BasePower {
             if (!getItem().consumeDurability(stack, getCost())) return PowerResult.cost();
 
             int delay = getDelay();
-            new BukkitRunnable(){
+            new BukkitRunnable() {
                 @Override
                 public void run() {
                     Location loc = location;
                     if (getPlayLocation().equals(PlayLocation.HIT_LOCATION)) {
-                    }else if (getPlayLocation().equals(PlayLocation.SELF)){
+                    } else if (getPlayLocation().equals(PlayLocation.SELF)) {
                         loc = player.getLocation();
                     }
                     spawnParticle(player.getWorld(), loc);
@@ -432,12 +431,12 @@ public class ParticlePower extends BasePower {
             if (!getItem().consumeDurability(stack, getCost())) return PowerResult.cost();
 
             int delay = getDelay();
-            new BukkitRunnable(){
+            new BukkitRunnable() {
                 @Override
                 public void run() {
                     Location loc = event.getEntity().getLocation();
                     if (getPlayLocation().equals(PlayLocation.HIT_LOCATION)) {
-                    }else if (getPlayLocation().equals(PlayLocation.SELF)){
+                    } else if (getPlayLocation().equals(PlayLocation.SELF)) {
                         loc = player.getLocation();
                     }
                     spawnParticle(player.getWorld(), loc);
@@ -453,7 +452,7 @@ public class ParticlePower extends BasePower {
             if (!getItem().consumeDurability(stack, getCost())) return PowerResult.cost();
             Location location = player.getLocation();
             PlayLocation playLocation = getPlayLocation();
-            switch (playLocation){
+            switch (playLocation) {
                 case SELF:
                     break;
                 case HIT_LOCATION:
@@ -473,7 +472,7 @@ public class ParticlePower extends BasePower {
             if (!checkCooldown(getPower(), player, getCooldown(), true, true)) return PowerResult.cd();
             if (!getItem().consumeDurability(stack, getCost())) return PowerResult.cost();
             PlayLocation playLocation = getPlayLocation();
-            switch (playLocation){
+            switch (playLocation) {
                 case SELF:
                     location = player.getLocation();
                     break;

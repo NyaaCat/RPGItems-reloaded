@@ -2,7 +2,6 @@ package think.rpgitems.power.impl;
 
 import org.bukkit.Bukkit;
 import org.bukkit.Location;
-import org.bukkit.entity.Entity;
 import org.bukkit.entity.LivingEntity;
 import org.bukkit.entity.Player;
 import org.bukkit.event.entity.EntityDamageByEntityEvent;
@@ -16,8 +15,6 @@ import think.rpgitems.event.BeamHitEntityEvent;
 import think.rpgitems.power.*;
 
 import javax.annotation.Nullable;
-import java.util.ArrayList;
-import java.util.Collection;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -114,7 +111,7 @@ public class AOECommand extends Command {
         return selfapplication;
     }
 
-    public class Impl implements PowerPlain, PowerRightClick, PowerLeftClick, PowerHit, PowerBeamHit, PowerProjectileHit, PowerSneak, PowerLivingEntity{
+    public class Impl implements PowerPlain, PowerRightClick, PowerLeftClick, PowerHit, PowerBeamHit, PowerProjectileHit, PowerSneak, PowerLivingEntity {
         @Override
         public PowerResult<Void> rightClick(Player player, ItemStack stack, PlayerInteractEvent event) {
             return fire(player, stack);
@@ -127,7 +124,7 @@ public class AOECommand extends Command {
             return fire(player, stack, livingEntitiesInCone);
         }
 
-        private PowerResult<Void> fire(Player player, ItemStack stack, List<LivingEntity> entitiesInCone){
+        private PowerResult<Void> fire(Player player, ItemStack stack, List<LivingEntity> entitiesInCone) {
             if (!checkAndSetCooldown(getPower(), player, getCooldown(), true, false, getItem().getUid() + "." + getCommand()))
                 return PowerResult.cd();
             if (!getItem().consumeDurability(stack, getCost())) return PowerResult.cost();
@@ -191,7 +188,7 @@ public class AOECommand extends Command {
             int r = getR();
             List<LivingEntity> nearbyEntities = getNearbyEntities(getPower(), player.getLocation(), player, r).stream()
                     .filter(entity1 -> entity1 instanceof LivingEntity)
-                    .map(entity1 ->  ((LivingEntity) entity))
+                    .map(entity1 -> entity)
                     .collect(Collectors.toList());
 
             return fire(player, stack, nearbyEntities).with(damage);
@@ -202,7 +199,7 @@ public class AOECommand extends Command {
             int r = getR();
             List<LivingEntity> nearbyEntities = getNearbyEntities(getPower(), location, player, r).stream()
                     .filter(entity -> entity instanceof LivingEntity)
-                    .map(entity ->  ((LivingEntity) entity))
+                    .map(entity -> ((LivingEntity) entity))
                     .collect(Collectors.toList());
 
             return fire(player, stack, nearbyEntities);
@@ -213,7 +210,7 @@ public class AOECommand extends Command {
             int r = getR();
             List<LivingEntity> nearbyEntities = getNearbyEntities(getPower(), location, player, r).stream()
                     .filter(entity -> entity instanceof LivingEntity)
-                    .map(entity ->  ((LivingEntity) entity))
+                    .map(entity -> ((LivingEntity) entity))
                     .collect(Collectors.toList());
             return fire(player, stack, nearbyEntities);
         }
@@ -223,7 +220,7 @@ public class AOECommand extends Command {
             int r = getR();
             List<LivingEntity> nearbyEntities = getNearbyEntities(getPower(), event.getEntity().getLocation(), player, r).stream()
                     .filter(entity -> entity instanceof LivingEntity)
-                    .map(entity ->  ((LivingEntity) entity))
+                    .map(entity -> ((LivingEntity) entity))
                     .collect(Collectors.toList());
 
             return fire(player, stack, nearbyEntities);

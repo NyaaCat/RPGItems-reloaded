@@ -10,18 +10,11 @@ import org.bukkit.entity.LivingEntity;
 import org.bukkit.entity.Player;
 import org.bukkit.util.RayTraceResult;
 import org.bukkit.util.Vector;
-import think.rpgitems.power.Getter;
-import think.rpgitems.power.Setter;
-import think.rpgitems.utils.WeightedPair;
-
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Optional;
-import java.util.concurrent.ThreadLocalRandom;
-
-import static think.rpgitems.power.Utils.weightedRandomPick;
 
 public class CastUtils {
+    private static final Vector yAxis = new Vector(0, 1, 0);
+    private static final Vector crosser = new Vector(0, 1, 0);
+
     public static CastLocation rayTrace(LivingEntity from, Location fromLocation, Vector towards, double range) {
         Vector hitPosition;
         CastLocation castLocation = new CastLocation();
@@ -50,8 +43,6 @@ public class CastUtils {
         return castLocation;
     }
 
-    private static final Vector yAxis = new Vector(0, 1, 0);
-
     public static Location parseFiringLocation(Location targetingLocation, Vector normalDir, Location direction, RoundedConeInfo coneInfo) {
         double r = coneInfo.getR();
         double phi = coneInfo.getRPhi();
@@ -61,12 +52,12 @@ public class CastUtils {
 
         Vector cross1;
         Vector dv = direction.getDirection();
-        if (dv.getZ() == 0 && dv.getX()==0){
+        if (dv.getZ() == 0 && dv.getX() == 0) {
             Location clone = direction.clone();
             clone.setPitch(0);
             cross1 = clone.getDirection().getCrossProduct(yAxis).normalize();
-        }else {
-            cross1= dv.getCrossProduct(yAxis).normalize();
+        } else {
+            cross1 = dv.getCrossProduct(yAxis).normalize();
         }
 
         Vector clone = base.clone();
@@ -76,16 +67,14 @@ public class CastUtils {
         return targetingLocation.clone().add(clone);
     }
 
-    private static final Vector crosser = new Vector(0, 1, 0);
-
-    public static Vector makeCone(Location fromLocation, Vector towards, RoundedConeInfo coneInfo){
+    public static Vector makeCone(Location fromLocation, Vector towards, RoundedConeInfo coneInfo) {
         Vector clone = towards.clone();
         Vector vertical;
-        if (clone.getX() == 0 && clone.getZ() == 0){
+        if (clone.getX() == 0 && clone.getZ() == 0) {
             Location loclone = fromLocation.clone();
             loclone.setPitch(0);
             vertical = loclone.toVector();
-        }else {
+        } else {
             vertical = clone.getCrossProduct(crosser);
         }
         Vector rotated = clone.clone();

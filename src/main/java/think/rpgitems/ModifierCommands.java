@@ -15,10 +15,13 @@ import org.bukkit.inventory.meta.ItemMeta;
 import org.bukkit.persistence.PersistentDataContainer;
 import org.bukkit.persistence.PersistentDataType;
 import think.rpgitems.item.RPGItem;
-import think.rpgitems.power.*;
+import think.rpgitems.power.Completion;
+import think.rpgitems.power.PowerManager;
+import think.rpgitems.power.RPGCommandReceiver;
+import think.rpgitems.power.UnknownExtensionException;
 import think.rpgitems.power.propertymodifier.Modifier;
 import think.rpgitems.utils.ItemTagUtils;
-import think.rpgitems.utils.ItemTagUtils.SubItemTagContainer;
+import think.rpgitems.utils.ItemTagUtils.*;
 
 import java.util.*;
 import java.util.logging.Level;
@@ -39,23 +42,23 @@ public class ModifierCommands extends RPGCommandReceiver {
         this.plugin = plugin;
     }
 
-    @Override
-    public String getHelpPrefix() {
-        return "modifier";
-    }
-
     private static Pair<NamespacedKey, Class<? extends Modifier>> getModifierClass(CommandSender sender, String modifierStr) {
         try {
             NamespacedKey key = PowerManager.parseKey(modifierStr);
             Class<? extends Modifier> cls = PowerManager.getModifier(key);
             if (cls == null) {
-                msgs(sender, "message.modifier.unknown", modifierStr);
+                I18n.sendMessage(sender, "message.modifier.unknown", modifierStr);
             }
             return Pair.of(key, cls);
         } catch (UnknownExtensionException e) {
-            msgs(sender, "message.error.unknown.extension", e.getName());
+            I18n.sendMessage(sender, "message.error.unknown.extension", e.getName());
             return null;
         }
+    }
+
+    @Override
+    public String getHelpPrefix() {
+        return "modifier";
     }
 
     @Completion("")
@@ -82,8 +85,8 @@ public class ModifierCommands extends RPGCommandReceiver {
     public void add(CommandSender sender, Arguments args) {
         String baseStr = args.top();
         if (baseStr == null || baseStr.equals("help") || args.remains() < 2) {
-            msgs(sender, "manual.modifier.add.description");
-            msgs(sender, "manual.modifier.add.usage");
+            I18n.sendMessage(sender, "manual.modifier.add.description");
+            I18n.sendMessage(sender, "manual.modifier.add.usage");
             return;
         }
         Pair<Pair<ItemStack, ItemMeta>, PersistentDataContainer> rootContainer = getRootContainer(sender, args, baseStr);
@@ -101,7 +104,7 @@ public class ModifierCommands extends RPGCommandReceiver {
             SubItemTagContainer modifierTag = ItemTagUtils.makeTag(modifierContainer, seq);
             modifier.save(modifierTag);
             modifierTag.commit();
-            if (rootContainer.getKey() != null){
+            if (rootContainer.getKey() != null) {
                 saveItem(rootContainer.getKey());
             }
             RPGItem.invalidateModifierCache();
@@ -111,7 +114,7 @@ public class ModifierCommands extends RPGCommandReceiver {
                 throw (BadCommandException) e;
             }
             plugin.getLogger().log(Level.WARNING, "Error adding modifier " + modifierStr + " to " + baseStr + " ", e);
-            msgs(sender, "internal.error.command_exception");
+            I18n.sendMessage(sender, "internal.error.command_exception");
         }
     }
 
@@ -144,7 +147,7 @@ public class ModifierCommands extends RPGCommandReceiver {
             container = player.getPersistentDataContainer();
         }
 
-        if (item != null){
+        if (item != null) {
             metaPair = new Pair<>(item, meta);
         }
 
@@ -200,18 +203,18 @@ public class ModifierCommands extends RPGCommandReceiver {
             SubItemTagContainer m = ItemTagUtils.makeTag(modifierContainer, namespacedKey);
             modifier.save(m);
             m.commit();
-            if (rootContainer.getKey() != null){
+            if (rootContainer.getKey() != null) {
                 saveItem(rootContainer.getKey());
             }
             RPGItem.invalidateModifierCache();
-            msgs(sender, "message.marker.change");
+            I18n.sendMessage(sender, "message.marker.change");
         } catch (UnknownExtensionException e) {
-            msgs(sender, "message.error.unknown.extension", e.getName());
+            I18n.sendMessage(sender, "message.error.unknown.extension", e.getName());
         }
     }
 
     public void showModifier(CommandSender sender, Modifier modifier) {
-        msgs(sender, "message.modifier.show", modifier.getLocalizedName(sender), modifier.getNamespacedKey().toString(), modifier.id());
+        I18n.sendMessage(sender, "message.modifier.show", modifier.getLocalizedName(sender), modifier.getNamespacedKey().toString(), modifier.id());
         NamespacedKey modifierKey = modifier.getNamespacedKey();
         PowerManager.getProperties(modifierKey).forEach(
                 (name, prop) -> showProp(sender, modifierKey, prop.getValue(), modifier)
@@ -247,18 +250,18 @@ public class ModifierCommands extends RPGCommandReceiver {
             modifierContainer.remove(currentKey);
             NamespacedKey lastKey = PowerManager.parseKey(String.valueOf(i));
             PersistentDataContainer lastContainer = getTag(modifierContainer, lastKey);
-            if (lastContainer != null){
+            if (lastContainer != null) {
                 set(modifierContainer, currentKey, lastContainer);
             }
             modifierContainer.remove(lastKey);
             modifierContainer.commit();
-            if (rootContainer.getKey() != null){
+            if (rootContainer.getKey() != null) {
                 saveItem(rootContainer.getKey());
             }
             RPGItem.invalidateModifierCache();
-            msgs(sender, "message.modifier.remove");
+            I18n.sendMessage(sender, "message.modifier.remove");
         } catch (UnknownExtensionException e) {
-            msgs(sender, "message.error.unknown.extension", e.getName());
+            I18n.sendMessage(sender, "message.error.unknown.extension", e.getName());
         }
     }
 
@@ -267,13 +270,13 @@ public class ModifierCommands extends RPGCommandReceiver {
         int perPage = RPGItems.plugin.cfg.powerPerPage;
         String nameSearch = args.argString("n", args.argString("name", ""));
         List<NamespacedKey> modifiers = PowerManager.getModifiers()
-                                                    .keySet()
-                                                    .stream()
-                                                    .filter(i -> i.getKey().contains(nameSearch))
-                                                    .sorted(Comparator.comparing(NamespacedKey::getKey))
-                                                    .collect(Collectors.toList());
+                .keySet()
+                .stream()
+                .filter(i -> i.getKey().contains(nameSearch))
+                .sorted(Comparator.comparing(NamespacedKey::getKey))
+                .collect(Collectors.toList());
         if (modifiers.size() == 0) {
-            msgs(sender, "message.modifier.not_found", nameSearch);
+            I18n.sendMessage(sender, "message.modifier.not_found", nameSearch);
             return;
         }
         Stream<NamespacedKey> stream = modifiers.stream();
@@ -281,18 +284,18 @@ public class ModifierCommands extends RPGCommandReceiver {
         int page = maxPage.getValue();
         int max = maxPage.getKey();
         stream = stream
-                         .skip((page - 1) * perPage)
-                         .limit(perPage);
+                .skip((page - 1) * perPage)
+                .limit(perPage);
         sender.sendMessage(ChatColor.AQUA + "Modifiers: " + page + " / " + max);
 
         stream.forEach(
                 modifier -> {
-                    msgs(sender, "message.modifier.key", modifier.toString());
-                    msgs(sender, "message.modifier.description", PowerManager.getDescription(modifier, null));
+                    I18n.sendMessage(sender, "message.modifier.key", modifier.toString());
+                    I18n.sendMessage(sender, "message.modifier.description", PowerManager.getDescription(modifier, null));
                     PowerManager.getProperties(modifier).forEach(
                             (name, mp) -> showProp(sender, modifier, mp.getValue(), null)
                     );
-                    msgs(sender, "message.line_separator");
+                    I18n.sendMessage(sender, "message.line_separator");
                 });
         sender.sendMessage(ChatColor.AQUA + "Modifiers: " + page + " / " + max);
     }

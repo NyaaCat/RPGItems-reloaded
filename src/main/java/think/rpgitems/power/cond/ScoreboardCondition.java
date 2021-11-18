@@ -23,20 +23,20 @@ import static think.rpgitems.power.marker.Selector.*;
 public class ScoreboardCondition extends BaseCondition<Void> {
 
     private static final LoadingCache<String, Map<String, Pair<Integer, Integer>>> scoreCache = CacheBuilder
-                                                                                                  .newBuilder()
-                                                                                                  .concurrencyLevel(1)
-                                                                                                  .expireAfterAccess(1, TimeUnit.DAYS)
-                                                                                                  .build(CacheLoader.from(Selector::parseScore));
+            .newBuilder()
+            .concurrencyLevel(1)
+            .expireAfterAccess(1, TimeUnit.DAYS)
+            .build(CacheLoader.from(Selector::parseScore));
     private static final LoadingCache<String, Pair<Set<String>, Set<String>>> teamCache = CacheBuilder
-                                                                                            .newBuilder()
-                                                                                            .concurrencyLevel(1)
-                                                                                            .expireAfterAccess(1, TimeUnit.DAYS)
-                                                                                            .build(CacheLoader.from(Selector::parse));
+            .newBuilder()
+            .concurrencyLevel(1)
+            .expireAfterAccess(1, TimeUnit.DAYS)
+            .build(CacheLoader.from(Selector::parse));
     private static final LoadingCache<String, Pair<Set<String>, Set<String>>> tagCache = CacheBuilder
-                                                                                           .newBuilder()
-                                                                                           .concurrencyLevel(1)
-                                                                                           .expireAfterAccess(1, TimeUnit.DAYS)
-                                                                                           .build(CacheLoader.from(Selector::parse));
+            .newBuilder()
+            .concurrencyLevel(1)
+            .expireAfterAccess(1, TimeUnit.DAYS)
+            .build(CacheLoader.from(Selector::parse));
     @Property(order = 0, required = true)
     public String id;
     @Property

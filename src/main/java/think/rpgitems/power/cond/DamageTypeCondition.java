@@ -4,7 +4,10 @@ import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
 import think.rpgitems.data.Context;
 import think.rpgitems.item.RPGItem;
-import think.rpgitems.power.*;
+import think.rpgitems.power.Meta;
+import think.rpgitems.power.PowerResult;
+import think.rpgitems.power.Property;
+import think.rpgitems.power.PropertyHolder;
 
 import java.util.Map;
 
@@ -19,6 +22,9 @@ public class DamageTypeCondition extends BaseCondition<Void> {
 
     @Property
     public boolean isCritical = false;
+    @Property
+//    @AcceptedValue({"melee", "ranged", "magic", "summon"})
+    public String damageType = "";
 
     @Override
     public String id() {
@@ -35,10 +41,6 @@ public class DamageTypeCondition extends BaseCondition<Void> {
         return isCritical;
     }
 
-    @Property
-//    @AcceptedValue({"melee", "ranged", "magic", "summon"})
-    public String damageType = "";
-
     @Override
     public PowerResult<Void> check(Player player, ItemStack stack, Map<PropertyHolder, PowerResult<?>> context) {
         try {
@@ -47,7 +49,8 @@ public class DamageTypeCondition extends BaseCondition<Void> {
                 return PowerResult.fail();
             }
             return damageType.equals(this.damageType) ? PowerResult.ok() : PowerResult.fail();
-        }catch (Exception ignored){}
+        } catch (Exception ignored) {
+        }
         return PowerResult.fail();
     }
 

@@ -4,7 +4,6 @@ import cat.nyaa.nyaacore.Pair;
 import cat.nyaa.nyaacore.cmdreceiver.Arguments;
 import cat.nyaa.nyaacore.cmdreceiver.SubCommand;
 import org.bukkit.ChatColor;
-import org.bukkit.NamespacedKey;
 import org.bukkit.command.CommandSender;
 import think.rpgitems.item.ItemManager;
 import think.rpgitems.item.RPGItem;
@@ -15,7 +14,6 @@ import think.rpgitems.power.UnknownExtensionException;
 import think.rpgitems.power.trigger.Trigger;
 
 import java.util.ArrayList;
-import java.util.Comparator;
 import java.util.List;
 import java.util.Set;
 import java.util.logging.Level;
@@ -31,6 +29,13 @@ public class TriggerCommands extends RPGCommandReceiver {
     public TriggerCommands(RPGItems plugin, I18n i18n) {
         super(plugin, i18n);
         this.plugin = plugin;
+    }
+
+    public static void showTrigger(CommandSender sender, RPGItem item, Trigger trigger) {
+        I18n.sendMessage(sender, "message.trigger.show", trigger.name(), trigger.getBase(), trigger.getLocalizedName(sender), trigger.getNamespacedKey().toString());
+        PowerManager.getProperties(item.getPropertyHolderKey(trigger)).forEach(
+                (name, prop) -> showProp(sender, trigger.getNamespacedKey(), prop.getValue(), trigger)
+        );
     }
 
     @Override
@@ -65,15 +70,15 @@ public class TriggerCommands extends RPGCommandReceiver {
         String itemStr = args.next();
         String powerStr = args.next();
         if (itemStr == null || itemStr.equals("help")) {
-            msgs(sender, "manual.trigger.description");
-            msgs(sender, "manual.trigger.usage");
+            I18n.sendMessage(sender, "manual.trigger.description");
+            I18n.sendMessage(sender, "manual.trigger.usage");
             return;
         }
         String name = args.next();
         RPGItem item = getItem(itemStr, sender);
         Trigger base = Trigger.get(powerStr);
         if (base == null) {
-            msgs(sender, "message.trigger.unknown_base", powerStr, String.join(", ", Trigger.keySet()));
+            I18n.sendMessage(sender, "message.trigger.unknown_base", powerStr, String.join(", ", Trigger.keySet()));
             return;
         }
         Trigger trigger = base.copy(name);
@@ -83,13 +88,13 @@ public class TriggerCommands extends RPGCommandReceiver {
             item.addTrigger(name, trigger);
             ItemManager.refreshItem();
             ItemManager.save(item);
-            msgs(sender, "message.trigger.ok");
+            I18n.sendMessage(sender, "message.trigger.ok");
         } catch (Exception e) {
             if (e instanceof CommandException) {
                 throw (CommandException) e;
             }
             plugin.getLogger().log(Level.WARNING, "Error adding trigger " + powerStr + " to item " + itemStr + " " + item, e);
-            msgs(sender, "internal.error.command_exception");
+            I18n.sendMessage(sender, "internal.error.command_exception");
         }
     }
 
@@ -124,7 +129,7 @@ public class TriggerCommands extends RPGCommandReceiver {
         try {
             Trigger trigger = item.getTriggers().get(name);
             if (trigger == null) {
-                msgs(sender, "message.trigger.unknown", name);
+                I18n.sendMessage(sender, "message.trigger.unknown", name);
                 return;
             }
             if (args.top() == null) {
@@ -135,17 +140,10 @@ public class TriggerCommands extends RPGCommandReceiver {
             item.rebuild();
             ItemManager.refreshItem();
             ItemManager.save(item);
-            msgs(sender, "message.trigger.change");
+            I18n.sendMessage(sender, "message.trigger.change");
         } catch (UnknownExtensionException e) {
-            msgs(sender, "message.error.unknown.extension", e.getName());
+            I18n.sendMessage(sender, "message.error.unknown.extension", e.getName());
         }
-    }
-
-    public static void showTrigger(CommandSender sender, RPGItem item, Trigger trigger) {
-        msgs(sender, "message.trigger.show", trigger.name(), trigger.getBase(), trigger.getLocalizedName(sender), trigger.getNamespacedKey().toString());
-        PowerManager.getProperties(item.getPropertyHolderKey(trigger)).forEach(
-                (name, prop) -> showProp(sender, trigger.getNamespacedKey(), prop.getValue(), trigger)
-        );
     }
 
     @Completion("")
@@ -169,11 +167,11 @@ public class TriggerCommands extends RPGCommandReceiver {
         String name = args.nextString();
         Trigger trigger = item.getTriggers().get(name);
         if (trigger == null) {
-            msgs(sender, "message.trigger.unknown", name);
+            I18n.sendMessage(sender, "message.trigger.unknown", name);
             return;
         }
         item.getTriggers().remove(name);
-        msgs(sender, "message.trigger.removed");
+        I18n.sendMessage(sender, "message.trigger.removed");
     }
 
     @SubCommand("list")
@@ -182,7 +180,7 @@ public class TriggerCommands extends RPGCommandReceiver {
         String nameSearch = args.argString("n", args.argString("name", ""));
         Set<String> triggers = Trigger.keySet();
         if (triggers.size() == 0) {
-            msgs(sender, "message.marker.not_found", nameSearch);
+            I18n.sendMessage(sender, "message.marker.not_found", nameSearch);
             return;
         }
         Stream<String> stream = triggers.stream();
@@ -190,19 +188,19 @@ public class TriggerCommands extends RPGCommandReceiver {
         int page = maxPage.getValue();
         int max = maxPage.getKey();
         stream = stream
-                         .skip((page - 1) * perPage)
-                         .limit(perPage);
+                .skip((page - 1) * perPage)
+                .limit(perPage);
         sender.sendMessage(ChatColor.AQUA + "Markers: " + page + " / " + max);
 
         stream.forEach(
                 trigger -> {
                     Trigger base = Trigger.valueOf(trigger);
-                    msgs(sender, "message.trigger.key", trigger);
-                    msgs(sender, "message.trigger.description", PowerManager.getDescription(base.getNamespacedKey(), null));
+                    I18n.sendMessage(sender, "message.trigger.key", trigger);
+                    I18n.sendMessage(sender, "message.trigger.description", PowerManager.getDescription(base.getNamespacedKey(), null));
                     PowerManager.getProperties(base.getClass()).forEach(
                             (name, mp) -> showProp(sender, base.getNamespacedKey(), mp.getValue(), null)
                     );
-                    msgs(sender, "message.line_separator");
+                    I18n.sendMessage(sender, "message.line_separator");
                 });
         sender.sendMessage(ChatColor.AQUA + "Markers: " + page + " / " + max);
     }

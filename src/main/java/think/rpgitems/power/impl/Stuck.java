@@ -39,9 +39,9 @@ import static think.rpgitems.power.Utils.*;
  */
 @Meta(defaultTrigger = "HIT", withSelectors = true, generalInterface = PowerPlain.class, implClass = Stuck.Impl.class)
 public class Stuck extends BasePower {
-    private static AtomicInteger rc = new AtomicInteger(0);
+    private static final AtomicInteger rc = new AtomicInteger(0);
     private static Listener listener;
-    private static Cache<UUID, Long> stucked = CacheBuilder.newBuilder().expireAfterAccess(10, TimeUnit.MINUTES).concurrencyLevel(2).build();
+    private static final Cache<UUID, Long> stucked = CacheBuilder.newBuilder().expireAfterAccess(10, TimeUnit.MINUTES).concurrencyLevel(2).build();
     @Property
     public int chance = 3;
     @Property
@@ -60,7 +60,7 @@ public class Stuck extends BasePower {
     public int cooldown = 0;
     @Property
     public boolean requireHurtByEntity = true;
-    private Random random = new Random();
+    private final Random random = new Random();
 
     @Override
     public void init(ConfigurationSection s) {

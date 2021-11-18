@@ -1,6 +1,5 @@
 package think.rpgitems.power;
 
-import think.rpgitems.power.*;
 import think.rpgitems.power.trigger.Trigger;
 
 import java.io.Serializable;
@@ -60,11 +59,11 @@ public abstract class BasePower extends BasePropertyHolder implements Serializab
         return powerTags;
     }
 
-    public void addPowerTag(String tag){
+    public void addPowerTag(String tag) {
         powerTags.add(tag);
     }
 
-    public void removePowerTag(String tag){
+    public void removePowerTag(String tag) {
         powerTags.remove(tag);
     }
 

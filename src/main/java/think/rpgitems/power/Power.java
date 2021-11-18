@@ -19,6 +19,68 @@ import java.util.stream.Stream;
  */
 public interface Power extends PropertyHolder, PlaceholderHolder, TagHolder {
 
+    String CGLIB_CLASS_SEPARATOR = "$$";
+    String BYTE_BUDDY_CLASS_SEPARATOR = "$ByteBuddy";
+
+    static Set<Trigger> getTriggers(Class<? extends Pimpl> cls) {
+        return getDynamicInterfaces(cls)
+                .stream()
+                .flatMap(Trigger::fromInterface)
+                .collect(Collectors.toSet());
+    }
+
+    /**
+     * @param cls Class of Power
+     * @return All static implemented interfaces
+     */
+    @SuppressWarnings("unchecked")
+    static Set<Class<? extends Pimpl>> getStaticInterfaces(Class<? extends Pimpl> cls) {
+        return TypeToken.of(cls).getTypes().interfaces().stream()
+                .map(TypeToken::getRawType)
+                .filter(Pimpl.class::isAssignableFrom)
+                .filter(i -> !Objects.equals(i, Pimpl.class))
+                .map(i -> (Class<? extends Pimpl>) i)
+                .collect(Collectors.toSet());
+    }
+
+    /**
+     * @param cls Class of Power
+     * @return All static and dynamic implemented interfaces
+     */
+    static Set<Class<? extends Pimpl>> getDynamicInterfaces(Class<? extends Pimpl> cls) {
+        return getStaticInterfaces(cls)
+                .stream()
+                .flatMap(i -> Stream.concat(
+                        Stream.of(i),
+                        PowerManager.adapters.row(i).keySet().stream()
+                ))
+                .collect(Collectors.toSet());
+    }
+
+    static Set<Trigger> getDefaultTriggers(Class<? extends Power> cls) {
+        cls = getUserClass(cls);
+        Meta annotation = Objects.requireNonNull(cls.getAnnotation(Meta.class));
+        if (annotation.defaultTrigger().length > 0) {
+            return Trigger.valueOf(annotation.defaultTrigger());
+        }
+        if (annotation.marker()) {
+            return Collections.emptySet();
+        }
+
+        return getTriggers(annotation.implClass());
+    }
+
+    @SuppressWarnings("unchecked")
+    static <T> Class<T> getUserClass(Class<T> clazz) {
+        if (clazz.getName().contains(BYTE_BUDDY_CLASS_SEPARATOR)) {
+            Class<T> superclass = (Class<T>) clazz.getSuperclass();
+            if (superclass != null && superclass != Object.class) {
+                return superclass;
+            }
+        }
+        return clazz;
+    }
+
     /**
      * Display name of this power
      *
@@ -76,67 +138,5 @@ public interface Power extends PropertyHolder, PlaceholderHolder, TagHolder {
 
     default MethodHandles.Lookup getLookup() {
         return MethodHandles.lookup();
-    }
-
-    static Set<Trigger> getTriggers(Class<? extends Pimpl> cls) {
-        return getDynamicInterfaces(cls)
-                .stream()
-                .flatMap(Trigger::fromInterface)
-                .collect(Collectors.toSet());
-    }
-
-    /**
-     * @param cls Class of Power
-     * @return All static implemented interfaces
-     */
-    @SuppressWarnings("unchecked")
-    static Set<Class<? extends Pimpl>> getStaticInterfaces(Class<? extends Pimpl> cls) {
-        return TypeToken.of(cls).getTypes().interfaces().stream()
-                .map(TypeToken::getRawType)
-                .filter(Pimpl.class::isAssignableFrom)
-                .filter(i -> !Objects.equals(i, Pimpl.class))
-                .map(i -> (Class<? extends Pimpl>) i)
-                .collect(Collectors.toSet());
-    }
-
-    /**
-     * @param cls Class of Power
-     * @return All static and dynamic implemented interfaces
-     */
-    static Set<Class<? extends Pimpl>> getDynamicInterfaces(Class<? extends Pimpl> cls) {
-        return getStaticInterfaces(cls)
-                .stream()
-                .flatMap(i -> Stream.concat(
-                        Stream.of(i),
-                        PowerManager.adapters.row(i).keySet().stream()
-                ))
-                .collect(Collectors.toSet());
-    }
-
-    static Set<Trigger> getDefaultTriggers(Class<? extends Power> cls) {
-        cls = getUserClass(cls);
-        Meta annotation = Objects.requireNonNull(cls.getAnnotation(Meta.class));
-        if (annotation.defaultTrigger().length > 0) {
-            return Trigger.valueOf(annotation.defaultTrigger());
-        }
-        if (annotation.marker()) {
-            return Collections.emptySet();
-        }
-
-        return getTriggers(annotation.implClass());
-    }
-
-    String CGLIB_CLASS_SEPARATOR = "$$";
-    String BYTE_BUDDY_CLASS_SEPARATOR = "$ByteBuddy";
-
-    @SuppressWarnings("unchecked")
-    static <T> Class<T> getUserClass(Class<T> clazz) {
-        if (clazz.getName().contains(BYTE_BUDDY_CLASS_SEPARATOR)) {
-            Class<T> superclass = (Class<T>) clazz.getSuperclass();
-            if (superclass != null && superclass != Object.class) {
-                return superclass;
-            }
-        }
-        return clazz;
     }
 }

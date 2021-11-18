@@ -43,9 +43,9 @@ public class LastResultCondition extends BaseCondition<Map.Entry<PropertyHolder,
     public PowerResult<Map.Entry<PropertyHolder, PowerResult<?>>> check(Player player, ItemStack stack, Map<PropertyHolder, PowerResult<?>> context) {
         Optional<Map.Entry<PropertyHolder, PowerResult<?>>> last = context.entrySet().stream().skip(context.size() - 1).findFirst();
         return last
-                       .map(r -> okResults.contains(r.getValue().result()) ? PowerResult.ok() : PowerResult.fail())
-                       .orElse(failOnNoResult ? PowerResult.fail() : PowerResult.ok())
-                       .with(last.orElse(null));
+                .map(r -> okResults.contains(r.getValue().result()) ? PowerResult.ok() : PowerResult.fail())
+                .orElse(failOnNoResult ? PowerResult.fail() : PowerResult.ok())
+                .with(last.orElse(null));
     }
 
     @Override

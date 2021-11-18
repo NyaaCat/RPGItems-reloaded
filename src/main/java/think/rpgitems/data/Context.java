@@ -11,12 +11,18 @@ import java.util.function.Function;
 import java.util.stream.Collectors;
 
 public class Context {
-    private HashMap<UUID, ExpiringMap<String, Object>> storage = new HashMap<>();
-
-    private static Context instance = new Context();
+    private static final Context instance = new Context();
+    private final HashMap<UUID, ExpiringMap<String, Object>> storage = new HashMap<>();
 
     public static Context instance() {
         return instance;
+    }
+
+    /**
+     * @return monotonic current millis
+     */
+    public static long getCurrentMillis() {
+        return System.nanoTime() / 1000000L;
     }
 
     public LivingEntity getLivingEntity(UUID context, String key) {
@@ -73,7 +79,7 @@ public class Context {
         storage.computeIfAbsent(context, (ignored) -> new ExpiringMap<>()).putTemp(key, obj);
     }
 
-    public void removeTemp(UUID context, String key){
+    public void removeTemp(UUID context, String key) {
         storage.computeIfAbsent(context, uuid -> new ExpiringMap<>()).remove(key);
     }
 
@@ -98,12 +104,11 @@ public class Context {
     }
 
     public class ExpiringMap<K, V> implements Map<K, V> {
+        private static final long TEMP = Long.MAX_VALUE;
+        private static final long TICK = Long.MAX_VALUE - 1;
         private final int aliveAge;
         private final HashMap<K, Long> birth = new HashMap<>();
         private final HashMap<K, V> inner;
-
-        private static final long TEMP = Long.MAX_VALUE;
-        private static final long TICK = Long.MAX_VALUE - 1;
 
         public ExpiringMap() {
             this(0);
@@ -149,7 +154,7 @@ public class Context {
                 Long birth = entry.getValue();
 
                 if ((currentMillis - birth <= (long) this.aliveAge)
-                            && !Objects.equals(birth, removing)) {
+                        && !Objects.equals(birth, removing)) {
                     if (Objects.equals(findKey, key)) {
                         return Pair.of(key, value);
                     }
@@ -259,13 +264,6 @@ public class Context {
             this.cleanup();
             return inner.entrySet();
         }
-    }
-
-    /**
-     * @return monotonic current millis
-     */
-    public static long getCurrentMillis() {
-        return System.nanoTime() / 1000000L;
     }
 
 }

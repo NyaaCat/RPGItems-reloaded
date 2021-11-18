@@ -112,10 +112,6 @@ public class AOEDamage extends BasePower {
         return firingRange;
     }
 
-    public enum FiringLocation{
-        SELF, TARGET;
-    }
-
     /**
      * Select target after delay.
      */
@@ -207,7 +203,24 @@ public class AOEDamage extends BasePower {
         return suppressMelee;
     }
 
-    public class Impl implements PowerOffhandClick, PowerPlain, PowerLeftClick, PowerRightClick, PowerHit, PowerSprint, PowerSneak, PowerHurt, PowerHitTaken, PowerTick, PowerBowShoot, PowerSneaking, PowerBeamHit, PowerProjectileHit, PowerLivingEntity, PowerLocation{
+    /**
+     * Display text of this power. Will use default text in case of null
+     */
+    @Override
+    public String getName() {
+        return "AOEDamage";
+    }
+
+    @Override
+    public String displayText() {
+        return getName() != null ? getName() : "Deal damage to nearby mobs";
+    }
+
+    public enum FiringLocation {
+        SELF, TARGET
+    }
+
+    public class Impl implements PowerOffhandClick, PowerPlain, PowerLeftClick, PowerRightClick, PowerHit, PowerSprint, PowerSneak, PowerHurt, PowerHitTaken, PowerTick, PowerBowShoot, PowerSneaking, PowerBeamHit, PowerProjectileHit, PowerLivingEntity, PowerLocation {
 
         @Override
         public PowerResult<Void> rightClick(final Player player, ItemStack stack, PlayerInteractEvent event) {
@@ -217,12 +230,12 @@ public class AOEDamage extends BasePower {
         @Override
         public PowerResult<Void> fire(Player player, ItemStack stack) {
             Supplier<Location> traceResultSupplier = player::getEyeLocation;
-            if (getFiringLocation().equals(FiringLocation.TARGET)){
+            if (getFiringLocation().equals(FiringLocation.TARGET)) {
                 if (isCastOff()) {
                     CastUtils.CastLocation castLocation = CastUtils.rayTrace(player, player.getEyeLocation(), player.getEyeLocation().getDirection(), getFiringRange());
                     Location targetLocation = castLocation.getTargetLocation();
                     traceResultSupplier = () -> targetLocation;
-                }else {
+                } else {
                     traceResultSupplier = () -> {
                         CastUtils.CastLocation castLocation = CastUtils.rayTrace(player, player.getEyeLocation(), player.getEyeLocation().getDirection(), getFiringRange());
                         Location targetLocation = castLocation.getTargetLocation();
@@ -235,10 +248,10 @@ public class AOEDamage extends BasePower {
             return fire(player, stack, () -> {
                 List<LivingEntity> nearbyEntities;
                 List<LivingEntity> ent;
-                if(getFiringLocation().equals(FiringLocation.TARGET)){
+                if (getFiringLocation().equals(FiringLocation.TARGET)) {
                     Location targetLocation = finalTraceResultSupplier.get();
                     ent = getNearestLivingEntities(getPower(), targetLocation, player, getRange(), getMinrange());
-                }else {
+                } else {
                     nearbyEntities = getNearestLivingEntities(getPower(), player.getLocation(), player, getRange(), getMinrange());
                     ent = getLivingEntitiesInCone(nearbyEntities, player.getEyeLocation().toVector(), getAngle(), player.getEyeLocation().getDirection());
                 }
@@ -246,7 +259,7 @@ public class AOEDamage extends BasePower {
             });
         }
 
-        private PowerResult<Void> fire(Player player, ItemStack stack, Supplier<List<LivingEntity>> supplier){
+        private PowerResult<Void> fire(Player player, ItemStack stack, Supplier<List<LivingEntity>> supplier) {
             if (!checkCooldown(getPower(), player, getCooldown(), true, true)) return PowerResult.cd();
             if (!getItem().consumeDurability(stack, getCost())) return PowerResult.cost();
             Context.instance().putTemp(player.getUniqueId(), DAMAGE_SOURCE, getNamespacedKey().toString());
@@ -259,14 +272,14 @@ public class AOEDamage extends BasePower {
 
             if (getDelay() <= 0) {
                 for (int i = 0; i < c && i < entities.length; ++i) {
-                LivingEntity e = entities[i];
-                if ((isMustsee() && !player.hasLineOfSight(e))
-                        || (e == player)
-                        || (!isIncluePlayers() && e instanceof Player)
-                ) {
-                    c++;
-                    continue;
-                }
+                    LivingEntity e = entities[i];
+                    if ((isMustsee() && !player.hasLineOfSight(e))
+                            || (e == player)
+                            || (!isIncluePlayers() && e instanceof Player)
+                    ) {
+                        c++;
+                        continue;
+                    }
                     hitEntities++;
                     LightContext.putTemp(player.getUniqueId(), OVERRIDING_DAMAGE, getDamage());
                     LightContext.putTemp(player.getUniqueId(), SUPPRESS_MELEE, isSuppressMelee());
@@ -278,35 +291,35 @@ public class AOEDamage extends BasePower {
                 }
             } else {
                 hitEntities++;
-                    (new BukkitRunnable() {
-                        @Override
-                        public void run() {
-                            LivingEntity[] entities1 = entities;
-                            if (isSelectAfterDelay()){
-                                entities1 = supplier.get().toArray(new LivingEntity[0]);
-                            }
-                            int c = getCount();
-
-                            for (int i = 0; i < c && i < entities1.length; ++i) {
-                                LivingEntity e = entities1[i];
-                                if ((isMustsee() && !player.hasLineOfSight(e))
-                                        || (e == player)
-                                        || (!isIncluePlayers() && e instanceof Player)
-                                ) {
-                                    c++;
-                                    continue;
-                                }
-                                LightContext.putTemp(player.getUniqueId(), OVERRIDING_DAMAGE, getDamage());
-                                LightContext.putTemp(player.getUniqueId(), SUPPRESS_MELEE, isSuppressMelee());
-                                LightContext.putTemp(player.getUniqueId(), DAMAGE_SOURCE_ITEM, stack);
-                                e.damage(getDamage(), player);
-                                LightContext.removeTemp(player.getUniqueId(), SUPPRESS_MELEE);
-                                LightContext.removeTemp(player.getUniqueId(), OVERRIDING_DAMAGE);
-                                LightContext.removeTemp(player.getUniqueId(), DAMAGE_SOURCE_ITEM);
-                            }
+                (new BukkitRunnable() {
+                    @Override
+                    public void run() {
+                        LivingEntity[] entities1 = entities;
+                        if (isSelectAfterDelay()) {
+                            entities1 = supplier.get().toArray(new LivingEntity[0]);
                         }
-                    }).runTaskLater(RPGItems.plugin, getDelay());
-                }
+                        int c = getCount();
+
+                        for (int i = 0; i < c && i < entities1.length; ++i) {
+                            LivingEntity e = entities1[i];
+                            if ((isMustsee() && !player.hasLineOfSight(e))
+                                    || (e == player)
+                                    || (!isIncluePlayers() && e instanceof Player)
+                            ) {
+                                c++;
+                                continue;
+                            }
+                            LightContext.putTemp(player.getUniqueId(), OVERRIDING_DAMAGE, getDamage());
+                            LightContext.putTemp(player.getUniqueId(), SUPPRESS_MELEE, isSuppressMelee());
+                            LightContext.putTemp(player.getUniqueId(), DAMAGE_SOURCE_ITEM, stack);
+                            e.damage(getDamage(), player);
+                            LightContext.removeTemp(player.getUniqueId(), SUPPRESS_MELEE);
+                            LightContext.removeTemp(player.getUniqueId(), OVERRIDING_DAMAGE);
+                            LightContext.removeTemp(player.getUniqueId(), DAMAGE_SOURCE_ITEM);
+                        }
+                    }
+                }).runTaskLater(RPGItems.plugin, getDelay());
+            }
 
             return hitEntities > 0 ? PowerResult.ok() : PowerResult.noop();
         }
@@ -388,7 +401,7 @@ public class AOEDamage extends BasePower {
         private List<LivingEntity> getNearbyEntities(Player player, Location location, int range) {
             return Utils.getNearbyEntities(getPower(), location, player, range).stream()
                     .filter(entity -> entity instanceof LivingEntity)
-                    .map(entity ->  ((LivingEntity) entity))
+                    .map(entity -> ((LivingEntity) entity))
                     .collect(Collectors.toList());
         }
 
@@ -413,12 +426,12 @@ public class AOEDamage extends BasePower {
         @Override
         public PowerResult<Void> fire(Player player, ItemStack stack, LivingEntity entity, @Nullable Double value) {
             Supplier<Location> traceResultSupplier = entity::getEyeLocation;
-            if (getFiringLocation().equals(FiringLocation.TARGET)){
+            if (getFiringLocation().equals(FiringLocation.TARGET)) {
                 if (isCastOff()) {
                     CastUtils.CastLocation castLocation = CastUtils.rayTrace(entity, entity.getEyeLocation(), entity.getEyeLocation().getDirection(), getFiringRange());
                     Location targetLocation = castLocation.getTargetLocation();
                     traceResultSupplier = () -> targetLocation;
-                }else {
+                } else {
                     traceResultSupplier = () -> {
                         CastUtils.CastLocation castLocation = CastUtils.rayTrace(entity, entity.getEyeLocation(), entity.getEyeLocation().getDirection(), getFiringRange());
                         Location targetLocation = castLocation.getTargetLocation();
@@ -431,10 +444,10 @@ public class AOEDamage extends BasePower {
             return fire(player, stack, () -> {
                 List<LivingEntity> nearbyEntities;
                 List<LivingEntity> ent;
-                if(getFiringLocation().equals(FiringLocation.TARGET)){
+                if (getFiringLocation().equals(FiringLocation.TARGET)) {
                     Location targetLocation = finalTraceResultSupplier.get();
                     ent = getNearestLivingEntities(getPower(), targetLocation, player, getRange(), getMinrange());
-                }else {
+                } else {
                     nearbyEntities = getNearestLivingEntities(getPower(), player.getLocation(), player, getRange(), getMinrange());
                     ent = getLivingEntitiesInCone(nearbyEntities, player.getEyeLocation().toVector(), getAngle(), player.getEyeLocation().getDirection());
                 }
@@ -447,19 +460,6 @@ public class AOEDamage extends BasePower {
             int range = getRange();
             return fire(player, stack, () -> getNearbyEntities(player, location, range));
         }
-    }
-
-    /**
-     * Display text of this power. Will use default text in case of null
-     */
-    @Override
-    public String getName() {
-        return "AOEDamage";
-    }
-
-    @Override
-    public String displayText() {
-        return getName() != null ? getName() : "Deal damage to nearby mobs";
     }
 
 

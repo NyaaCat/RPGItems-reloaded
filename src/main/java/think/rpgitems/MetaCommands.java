@@ -30,17 +30,17 @@ public class MetaCommands extends RPGCommandReceiver {
     //temporary implementation, will replace with generic function
     //all prop in RPGItem will be able to modify here.
     @SubCommand(value = "quality", tabCompleter = "qualityCompleter")
-    public void onQuality(CommandSender sender, Arguments arguments){
+    public void onQuality(CommandSender sender, Arguments arguments) {
         RPGItem item = getItem(arguments.nextString(), sender);
         String quality = arguments.nextString();
         item.setQuality(quality);
-        if (!plugin.cfg.qualityPrefixes.containsKey(quality)){
+        if (!plugin.cfg.qualityPrefixes.containsKey(quality)) {
             new Message("").append(I18n.formatDefault("command.meta.quality.warn_quality_not_exists", quality));
         }
         ItemManager.save(item);
     }
 
-    private List<String> qualityCompleter(CommandSender sender, Arguments arguments){
+    private List<String> qualityCompleter(CommandSender sender, Arguments arguments) {
         List<String> completeStr = new ArrayList<>();
         switch (arguments.remains()) {
             case 1:
@@ -53,14 +53,14 @@ public class MetaCommands extends RPGCommandReceiver {
     }
 
     @SubCommand(value = "type", tabCompleter = "typeCompleter")
-    public void onType(CommandSender sender, Arguments arguments){
+    public void onType(CommandSender sender, Arguments arguments) {
         RPGItem item = getItem(arguments.nextString(), sender);
         String type = arguments.nextString();
         item.setType(type);
         ItemManager.save(item);
     }
 
-    private List<String> typeCompleter(CommandSender sender, Arguments arguments){
+    private List<String> typeCompleter(CommandSender sender, Arguments arguments) {
         List<String> completeStr = new ArrayList<>();
         switch (arguments.remains()) {
             case 1:

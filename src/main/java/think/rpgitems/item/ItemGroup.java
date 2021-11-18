@@ -17,9 +17,9 @@ import java.util.stream.Collectors;
 public class ItemGroup {
     static RPGItems plugin;
 
-    private String name;
-    private int uid;
-    private String regex;
+    private final String name;
+    private final int uid;
+    private final String regex;
     private Set<Integer> itemUids;
     private Set<RPGItem> items;
     private File file;
@@ -113,20 +113,41 @@ public class ItemGroup {
         return author;
     }
 
+    public void setAuthor(String author) {
+        this.author = author;
+    }
+
     public File getFile() {
         return file;
+    }
+
+    public void setFile(File file) {
+        this.file = file;
     }
 
     public Set<Integer> getItemUids() {
         return itemUids;
     }
 
+    public void setItemUids(Set<Integer> itemUids) {
+        this.itemUids = itemUids;
+        setItems(getItemUids().stream().map(ItemManager::getItemById).filter(Objects::nonNull).collect(Collectors.toSet()));
+    }
+
     public Set<RPGItem> getItems() {
         return items;
     }
 
+    private void setItems(Set<RPGItem> items) {
+        this.items = items;
+    }
+
     public String getLicense() {
         return license;
+    }
+
+    public void setLicense(String license) {
+        this.license = license;
     }
 
     public String getName() {
@@ -137,36 +158,15 @@ public class ItemGroup {
         return note;
     }
 
+    public void setNote(String note) {
+        this.note = note;
+    }
+
     public String getRegex() {
         return regex;
     }
 
     public int getUid() {
         return uid;
-    }
-
-    public void setAuthor(String author) {
-        this.author = author;
-    }
-
-    public void setFile(File file) {
-        this.file = file;
-    }
-
-    public void setItemUids(Set<Integer> itemUids) {
-        this.itemUids = itemUids;
-        setItems(getItemUids().stream().map(ItemManager::getItemById).filter(Objects::nonNull).collect(Collectors.toSet()));
-    }
-
-    private void setItems(Set<RPGItem> items) {
-        this.items = items;
-    }
-
-    public void setLicense(String license) {
-        this.license = license;
-    }
-
-    public void setNote(String note) {
-        this.note = note;
     }
 }

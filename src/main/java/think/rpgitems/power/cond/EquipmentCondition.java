@@ -107,7 +107,7 @@ public class EquipmentCondition extends BaseCondition<Void> {
     }
 
     public boolean match(ItemStack stack) {
-        if (requireEmpty){
+        if (requireEmpty) {
             return stack == null || stack.getType().isAir();
         }
         if (stack == null) return material == null && itemStack == null && rpgitem == null;

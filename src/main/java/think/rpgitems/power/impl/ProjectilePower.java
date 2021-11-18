@@ -141,6 +141,28 @@ public class ProjectilePower extends BasePower {
 
     @Property
     public boolean castOff = false;
+    private final Cache<UUID, Integer> burstTask = CacheBuilder.newBuilder().expireAfterAccess(1, TimeUnit.MINUTES).concurrencyLevel(2).build();
+
+    public static String getProjectileType(Class<? extends Projectile> projectileType) {
+        if (projectileType == WitherSkull.class)
+            return "skull";
+        else if (projectileType == Fireball.class)
+            return "fireball";
+        else if (projectileType == SmallFireball.class)
+            return "smallfireball";
+        else if (projectileType == Arrow.class)
+            return "arrow";
+        else if (projectileType == LlamaSpit.class)
+            return "llamaspit";
+        else if (projectileType == ShulkerBullet.class)
+            return "shulkerbullet";
+        else if (projectileType == DragonFireball.class)
+            return "dragonfireball";
+        else if (projectileType == Trident.class)
+            return "trident";
+        else
+            return "snowball";
+    }
 
     public double getInitialRotation() {
         return initialRotation;
@@ -170,23 +192,17 @@ public class ProjectilePower extends BasePower {
         return castOff;
     }
 
-    enum FiringLocation {
-        SELF, TARGET;
-    }
-
-    private Cache<UUID, Integer> burstTask = CacheBuilder.newBuilder().expireAfterAccess(1, TimeUnit.MINUTES).concurrencyLevel(2).build();
-
     @Override
     public void init(ConfigurationSection section) {
         cooldown = section.getInt("cooldownTime");
         super.init(section);
         if (getYield() != null && getYield() == -1) {
-            yield = null;
+            this.yield = null;
         }
     }
 
     public Double getYield() {
-        return yield;
+        return this.yield;
     }
 
     /**
@@ -236,27 +252,6 @@ public class ProjectilePower extends BasePower {
      */
     public boolean isCone() {
         return isCone;
-    }
-
-    public static String getProjectileType(Class<? extends Projectile> projectileType) {
-        if (projectileType == WitherSkull.class)
-            return "skull";
-        else if (projectileType == Fireball.class)
-            return "fireball";
-        else if (projectileType == SmallFireball.class)
-            return "smallfireball";
-        else if (projectileType == Arrow.class)
-            return "arrow";
-        else if (projectileType == LlamaSpit.class)
-            return "llamaspit";
-        else if (projectileType == ShulkerBullet.class)
-            return "shulkerbullet";
-        else if (projectileType == DragonFireball.class)
-            return "dragonfireball";
-        else if (projectileType == Trident.class)
-            return "trident";
-        else
-            return "snowball";
     }
 
     /**
@@ -311,6 +306,10 @@ public class ProjectilePower extends BasePower {
 
     public boolean isSuppressArrow() {
         return suppressArrow;
+    }
+
+    enum FiringLocation {
+        SELF, TARGET
     }
 
     public static class ProjectileType implements Getter, Setter {
@@ -394,7 +393,7 @@ public class ProjectilePower extends BasePower {
                     public void run() {
                         if (player.getInventory().getItemInMainHand().equals(stack)) {
                             CastUtils.CastLocation castLocation1 = finalCastLocation;
-                            if (!isCastOff()){
+                            if (!isCastOff()) {
                                 castLocation1 = CastUtils.rayTrace(player, player.getEyeLocation(), player.getEyeLocation().getDirection(), getFiringRange());
                             }
                             burstTask.put(uuid, this.getTaskId());
@@ -560,7 +559,7 @@ public class ProjectilePower extends BasePower {
                     public void run() {
                         if (player.getInventory().getItemInMainHand().equals(stack)) {
                             CastUtils.CastLocation castLocation1 = finalCastLocation;
-                            if (!isCastOff()){
+                            if (!isCastOff()) {
                                 castLocation1 = CastUtils.rayTrace(entity, entity.getEyeLocation(), entity.getEyeLocation().getDirection(), getFiringRange());
                             }
                             burstTask.put(uuid, this.getTaskId());

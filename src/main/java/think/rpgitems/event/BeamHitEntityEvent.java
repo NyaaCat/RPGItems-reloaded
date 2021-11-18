@@ -9,31 +9,19 @@ import org.bukkit.event.HandlerList;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.util.BoundingBox;
 import org.bukkit.util.Vector;
-import think.rpgitems.power.impl.Beam;
 
 public class BeamHitEntityEvent extends Event {
     public static final HandlerList handlerList = new HandlerList();
-
-    @Override
-    public HandlerList getHandlers() {
-        return handlerList;
-    }
-
-    public static HandlerList getHandlerList(){
-        return handlerList;
-    }
-
     private final Player player;
     private final Entity from;
     private final LivingEntity entity;
-    private ItemStack itemStack;
-    private double damage;
     private final Location loc;
     private final BoundingBox boundingBox;
     private final Vector velocity;
-    private int depth;
-
-    public BeamHitEntityEvent(Player player, Entity from, LivingEntity entity, ItemStack itemStack, double damage, Location loc, BoundingBox boundingBox, Vector vector, int depth){
+    private final ItemStack itemStack;
+    private double damage;
+    private final int depth;
+    public BeamHitEntityEvent(Player player, Entity from, LivingEntity entity, ItemStack itemStack, double damage, Location loc, BoundingBox boundingBox, Vector vector, int depth) {
         this.player = player;
         this.from = from;
         this.entity = entity;
@@ -43,6 +31,15 @@ public class BeamHitEntityEvent extends Event {
         this.boundingBox = boundingBox;
         this.velocity = vector;
         this.depth = depth;
+    }
+
+    public static HandlerList getHandlerList() {
+        return handlerList;
+    }
+
+    @Override
+    public HandlerList getHandlers() {
+        return handlerList;
     }
 
     public BoundingBox getBoundingBox() {
@@ -57,10 +54,6 @@ public class BeamHitEntityEvent extends Event {
         return itemStack;
     }
 
-    public void setDamage(double damage) {
-        this.damage = damage;
-    }
-
     public Entity getFrom() {
         return from;
     }
@@ -71,6 +64,10 @@ public class BeamHitEntityEvent extends Event {
 
     public double getDamage() {
         return damage;
+    }
+
+    public void setDamage(double damage) {
+        this.damage = damage;
     }
 
     public Location getLoc() {

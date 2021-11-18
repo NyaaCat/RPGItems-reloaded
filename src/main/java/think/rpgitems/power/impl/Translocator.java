@@ -28,27 +28,27 @@ import static think.rpgitems.power.Utils.checkCooldown;
 public class Translocator extends BasePower {
 
     public static Cache<UUID, UUID> translocatorPlayerMap = CacheBuilder.newBuilder()
-                                                                        .expireAfterAccess(10, TimeUnit.MINUTES)
-                                                                        .removalListener(n -> {
-                                                                            UUID armorStandUUID = (UUID) n.getKey();
-                                                                            Bukkit.getScheduler().runTask(plugin, () -> {
-                                                                                Entity translocator = Bukkit.getServer().getEntity(armorStandUUID);
-                                                                                if (translocator != null) {
-                                                                                    translocator.remove();
-                                                                                }
-                                                                            });
-                                                                        }).build();
-    private static Cache<UUID, UUID> playerTranslocatorMap = CacheBuilder.newBuilder()
-                                                                         .expireAfterAccess(10, TimeUnit.MINUTES)
-                                                                         .removalListener(n -> {
-                                                                             UUID armorStandUUID = (UUID) n.getValue();
-                                                                             Bukkit.getScheduler().runTask(plugin, () -> {
-                                                                                 Entity translocator = Bukkit.getServer().getEntity(armorStandUUID);
-                                                                                 if (translocator != null) {
-                                                                                     translocator.remove();
-                                                                                 }
-                                                                             });
-                                                                         }).build();
+            .expireAfterAccess(10, TimeUnit.MINUTES)
+            .removalListener(n -> {
+                UUID armorStandUUID = (UUID) n.getKey();
+                Bukkit.getScheduler().runTask(plugin, () -> {
+                    Entity translocator = Bukkit.getServer().getEntity(armorStandUUID);
+                    if (translocator != null) {
+                        translocator.remove();
+                    }
+                });
+            }).build();
+    private static final Cache<UUID, UUID> playerTranslocatorMap = CacheBuilder.newBuilder()
+            .expireAfterAccess(10, TimeUnit.MINUTES)
+            .removalListener(n -> {
+                UUID armorStandUUID = (UUID) n.getValue();
+                Bukkit.getScheduler().runTask(plugin, () -> {
+                    Entity translocator = Bukkit.getServer().getEntity(armorStandUUID);
+                    if (translocator != null) {
+                        translocator.remove();
+                    }
+                });
+            }).build();
     @Property
     public int cooldown = 80;
     @Property

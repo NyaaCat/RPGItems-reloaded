@@ -2,7 +2,6 @@ package think.rpgitems.power;
 
 import cat.nyaa.nyaacore.Message;
 import cat.nyaa.nyaacore.Pair;
-import com.google.common.base.Strings;
 import com.google.common.cache.CacheBuilder;
 import com.google.common.cache.CacheLoader;
 import com.google.common.cache.LoadingCache;
@@ -47,12 +46,12 @@ import java.util.stream.Stream;
 
 public class Utils {
     public static final String INVALID_TARGET = "RGI_INVALID_TARGET";
-
-    private static LoadingCache<String, List<String>> permissionCache = CacheBuilder
-                                                                                .newBuilder()
-                                                                                .concurrencyLevel(1)
-                                                                                .maximumSize(1000)
-                                                                                .build(CacheLoader.from(Utils::parsePermission));
+    private static final Pattern VALID_KEY = Pattern.compile("[a-z0-9/._-]+");
+    private static final LoadingCache<String, List<String>> permissionCache = CacheBuilder
+            .newBuilder()
+            .concurrencyLevel(1)
+            .maximumSize(1000)
+            .build(CacheLoader.from(Utils::parsePermission));
 
     private static List<String> parsePermission(String str) {
         return Arrays.asList(str.split(";"));
@@ -150,7 +149,7 @@ public class Utils {
         Set<AngledEntity> newEntities = new TreeSet<>();
         float relativeAngle = 0;
         for (LivingEntity e : entities) {
-            if (isUtilArmorStand(e))continue;
+            if (isUtilArmorStand(e)) continue;
             org.bukkit.util.Vector relativePosition = e.getEyeLocation().toVector();
             relativePosition.subtract(startPos);
             relativeAngle = getAngleBetweenVectors(direction, relativePosition);
@@ -160,30 +159,6 @@ public class Utils {
         }
         return newEntities.stream().map(AngledEntity::getEntity).collect(Collectors.toList());
     }
-
-    private static class AngledEntity implements Comparable<AngledEntity>{
-        double angle;
-        LivingEntity entity;
-
-        public AngledEntity(double angle, LivingEntity entity){
-            this.angle = angle;
-            this.entity = entity;
-        }
-
-        public LivingEntity getEntity() {
-            return entity;
-        }
-
-        public double getAngle() {
-            return angle;
-        }
-
-        @Override
-        public int compareTo(AngledEntity o) {
-            return Double.compare(angle, o.angle);
-        }
-    }
-
 
     /**
      * Gets angle between vectors.
@@ -227,9 +202,9 @@ public class Utils {
             if (showWarn) {
                 I18n i18n = I18n.getInstance(player.getLocale());
                 if (showPower) {
-                    player.sendMessage(i18n.format("message.cooldown.power", ((double) (cooldown - nowTime)) / 50d / 20d, power.getItem().getDisplayName(), power.getLocalizedName(player)));
+                    player.sendMessage(i18n.getFormatted("message.cooldown.power", ((double) (cooldown - nowTime)) / 50d / 20d, power.getItem().getDisplayName(), power.getLocalizedName(player)));
                 } else {
-                    player.sendMessage(i18n.format("message.cooldown.general", ((double) (cooldown - nowTime)) / 50d / 20d, power.getItem().getDisplayName()));
+                    player.sendMessage(i18n.getFormatted("message.cooldown.general", ((double) (cooldown - nowTime)) / 50d / 20d, power.getItem().getDisplayName()));
                 }
             }
             return false;
@@ -319,7 +294,7 @@ public class Utils {
         if (hitNormal.getZ() < 0) {
             return new Vector(bb.getCenterX(), bb.getCenterY(), bb.getMaxZ());
         }
-        throw new IllegalArgumentException("hitNormal: " + hitNormal.toString());
+        throw new IllegalArgumentException("hitNormal: " + hitNormal);
     }
 
     // Sweep a in the direction of v against b, returns non null & info if there was a hit
@@ -485,15 +460,13 @@ public class Utils {
                 char c = str.charAt(index + 1);
                 ChatColor style = ChatColor.getByChar(c);
                 if (style == null) continue;
-                if (style.isColor()) return style.toString() + (format == null ? "" : format);
+                if (style.isColor()) return style + (format == null ? "" : format);
                 if (style.isFormat() && format == null) format = style.toString();
             }
         }
 
         return (format == null ? "" : format);
     }
-
-    private static final Pattern VALID_KEY = Pattern.compile("[a-z0-9/._-]+");
 
     @SuppressWarnings({"unchecked", "deprecation"})
     public static void setPowerPropertyUnchecked(CommandSender sender, PropertyHolder power, Field field, String value) {
@@ -515,7 +488,7 @@ public class Utils {
                     if (!v.isPresent()) return;
                     field.set(power, v.get());
                 } catch (IllegalArgumentException e) {
-                    new Message(i18n.format(st.message(), value)).send(sender);
+                    new Message(i18n.getFormatted(st.message(), value)).send(sender);
                 }
             } else {
                 if (field.getType().equals(int.class) || field.getType().equals(Integer.class)) {
@@ -940,5 +913,28 @@ public class Utils {
             return arm.isMarker() && !arm.isVisible();
         }
         return false;
+    }
+
+    private static class AngledEntity implements Comparable<AngledEntity> {
+        double angle;
+        LivingEntity entity;
+
+        public AngledEntity(double angle, LivingEntity entity) {
+            this.angle = angle;
+            this.entity = entity;
+        }
+
+        public LivingEntity getEntity() {
+            return entity;
+        }
+
+        public double getAngle() {
+            return angle;
+        }
+
+        @Override
+        public int compareTo(AngledEntity o) {
+            return Double.compare(angle, o.angle);
+        }
     }
 }

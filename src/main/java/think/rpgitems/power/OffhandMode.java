@@ -4,5 +4,4 @@ public enum OffhandMode {
     OFFHAND,
     MAINHAND,
     BOTH,
-    ;
 }

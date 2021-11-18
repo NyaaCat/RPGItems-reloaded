@@ -29,32 +29,21 @@ import java.util.stream.Stream;
  */
 @SuppressWarnings("unchecked")
 public class PowerManager {
+    static final HashBasedTable<Class<? extends Pimpl>, Class<? extends Pimpl>, Function> adapters = HashBasedTable.create();
     private static final Map<Class<? extends PropertyHolder>, Map<String, Pair<Method, PropertyInstance>>> properties = new HashMap<>();
-
     private static final Map<Class<? extends PropertyHolder>, Meta> metas = new HashMap<>();
-
     private static final Map<String, Plugin> extensions = new HashMap<>();
-
-    private static BiMap<NamespacedKey, Class<? extends PropertyHolder>> all = HashBiMap.create();
-
+    private static final HashBasedTable<Plugin, String, BiFunction<NamespacedKey, String, String>> descriptionResolvers = HashBasedTable.create();
+    private static final HashMap<NamespacedKey, NamespacedKey> overrides = new HashMap<>();
+    private static final HashMap<String, NamespacedKey> keyCache = new HashMap<>();
     /**
      * Power by name, and name by power
      */
     static BiMap<NamespacedKey, Class<? extends Power>> powers = HashBiMap.create();
-
-    private static BiMap<NamespacedKey, Class<? extends Condition>> conditions = HashBiMap.create();
-
-    private static BiMap<NamespacedKey, Class<? extends Marker>> markers = HashBiMap.create();
-
-    private static BiMap<NamespacedKey, Class<? extends Modifier>> modifiers = HashBiMap.create();
-
-    private static final HashBasedTable<Plugin, String, BiFunction<NamespacedKey, String, String>> descriptionResolvers = HashBasedTable.create();
-
-    static final HashBasedTable<Class<? extends Pimpl>, Class<? extends Pimpl>, Function> adapters = HashBasedTable.create();
-
-    private static final HashMap<NamespacedKey, NamespacedKey> overrides = new HashMap<>();
-
-    private static final HashMap<String, NamespacedKey> keyCache = new HashMap<>();
+    private static final BiMap<NamespacedKey, Class<? extends PropertyHolder>> all = HashBiMap.create();
+    private static final BiMap<NamespacedKey, Class<? extends Condition>> conditions = HashBiMap.create();
+    private static final BiMap<NamespacedKey, Class<? extends Marker>> markers = HashBiMap.create();
+    private static final BiMap<NamespacedKey, Class<? extends Modifier>> modifiers = HashBiMap.create();
 
     public static void clear() {
         properties.clear();
@@ -153,49 +142,49 @@ public class PowerManager {
 
 
     private static Map<String, Pair<Method, PropertyInstance>> scanProperties(Class<? extends PropertyHolder> cls) {
-        RPGItems.logger.finest( "Scanning class " + cls.toGenericString());
+        RPGItems.logger.finest("Scanning class " + cls.toGenericString());
         List<Method> methods = Arrays.stream(cls.getMethods()).collect(Collectors.toList());
         List<Pair<Field, Property>> collect = getAllFields(cls)
-                                                      .stream()
-                                                      .map(field -> Pair.of(field, field.getAnnotation(Property.class)))
-                                                      .filter(pair -> pair.getValue() != null)
-                                                      .sorted(Comparator.comparingInt(p -> p.getValue().order()))
-                                                      .collect(Collectors.toList());
+                .stream()
+                .map(field -> Pair.of(field, field.getAnnotation(Property.class)))
+                .filter(pair -> pair.getValue() != null)
+                .sorted(Comparator.comparingInt(p -> p.getValue().order()))
+                .collect(Collectors.toList());
 
         int requiredOrder = collect.stream()
-                                   .map(Pair::getValue)
-                                   .filter(Property::required)
-                                   .reduce((first, second) -> second)
-                                   .map(Property::order)
-                                   .orElse(-1);
+                .map(Pair::getValue)
+                .filter(Property::required)
+                .reduce((first, second) -> second)
+                .map(Property::order)
+                .orElse(-1);
 
 
         return collect.stream()
-                      .collect(
-                              Collectors.toMap(
-                                      p -> p.getKey().getName(),
-                                      p -> {
-                                          String name = p.getKey().getName();
-                                          Pair<Method, PropertyInstance> pair = Pair.of(!Power.class.isAssignableFrom(cls) || metas.get(cls).marker() ? null :
-                                                                                              methods.stream()
-                                                                                                     .filter(
-                                                                                                             m -> m.getParameterCount() == 0 &&
-                                                                                                                          (m.getName().toLowerCase(Locale.ROOT).equals("get" + name.toLowerCase(Locale.ROOT))
-                                                                                                                                   || m.getName().toLowerCase(Locale.ROOT).equals("is" + name.toLowerCase(Locale.ROOT))
-                                                                                                                                   || m.getName().toLowerCase(Locale.ROOT).equals(name.toLowerCase(Locale.ROOT))
-                                                                                                                                   || m.getName().toLowerCase(Locale.ROOT).replaceAll("(is)|(get)", "").equals(name.toLowerCase(Locale.ROOT).replaceAll("(is)|(get)", ""))
-                                                                                                                          )
-                                                                                                     )
-                                                                                                     .reduce((a, b) -> {
-                                                                                                         throw new IllegalArgumentException("Duplicated property gettor found:" + p.getKey() + " " + name + " " + a.toString() + " " + b.toString());
-                                                                                                     })
-                                                                                                     .orElseThrow(() -> new IllegalArgumentException("No property getter found: " + p.getKey() + " " + name)),
-                                                  PropertyInstance.from(p.getKey(), p.getValue(), p.getValue().order() < requiredOrder));
-                                          // RPGItems.plugin.cfg.enabledLanguages.forEach(lang -> PowerManager.getDescription())
-                                          return pair;
-                                      }
-                              )
-                      );
+                .collect(
+                        Collectors.toMap(
+                                p -> p.getKey().getName(),
+                                p -> {
+                                    String name = p.getKey().getName();
+                                    Pair<Method, PropertyInstance> pair = Pair.of(!Power.class.isAssignableFrom(cls) || metas.get(cls).marker() ? null :
+                                                    methods.stream()
+                                                            .filter(
+                                                                    m -> m.getParameterCount() == 0 &&
+                                                                            (m.getName().toLowerCase(Locale.ROOT).equals("get" + name.toLowerCase(Locale.ROOT))
+                                                                                    || m.getName().toLowerCase(Locale.ROOT).equals("is" + name.toLowerCase(Locale.ROOT))
+                                                                                    || m.getName().toLowerCase(Locale.ROOT).equals(name.toLowerCase(Locale.ROOT))
+                                                                                    || m.getName().toLowerCase(Locale.ROOT).replaceAll("(is)|(get)", "").equals(name.toLowerCase(Locale.ROOT).replaceAll("(is)|(get)", ""))
+                                                                            )
+                                                            )
+                                                            .reduce((a, b) -> {
+                                                                throw new IllegalArgumentException("Duplicated property gettor found:" + p.getKey() + " " + name + " " + a + " " + b);
+                                                            })
+                                                            .orElseThrow(() -> new IllegalArgumentException("No property getter found: " + p.getKey() + " " + name)),
+                                            PropertyInstance.from(p.getKey(), p.getValue(), p.getValue().order() < requiredOrder));
+                                    // RPGItems.plugin.cfg.enabledLanguages.forEach(lang -> PowerManager.getDescription())
+                                    return pair;
+                                }
+                        )
+                );
     }
 
     public static <T extends PropertyHolder> void registerPackage(Plugin plugin, String basePackage, Class<T> tClass, Consumer<Class<? extends T>> register) {
@@ -225,7 +214,7 @@ public class PowerManager {
     @SuppressWarnings("rawtypes")
     public static void registerModifiers(Plugin plugin, String basePackage) {
         registerPackage(plugin, basePackage, Modifier.class, (Consumer<Class<? extends Modifier>>) PowerManager::registerModifier);
-}
+    }
 
     public static void addDescriptionResolver(Plugin plugin, BiFunction<NamespacedKey, String, String> descriptionResolver) {
         addDescriptionResolver(plugin, RPGItems.plugin.cfg.language, descriptionResolver);
@@ -236,7 +225,8 @@ public class PowerManager {
     }
 
     public static NamespacedKey parseKey(String powerStr) throws UnknownExtensionException {
-        if (!powerStr.contains(":")) return keyCache.computeIfAbsent(powerStr.toLowerCase(), s -> new NamespacedKey(RPGItems.plugin, s));
+        if (!powerStr.contains(":"))
+            return keyCache.computeIfAbsent(powerStr.toLowerCase(), s -> new NamespacedKey(RPGItems.plugin, s));
         String[] split = powerStr.split(":");
         if (split.length != 2) {
             throw new IllegalArgumentException();
@@ -263,8 +253,8 @@ public class PowerManager {
     public static List<String> getAcceptedValue(Class<? extends PropertyHolder> cls, AcceptedValue anno) {
         if (anno.preset() != Preset.NONE) {
             return Stream.concat(Arrays.stream(anno.value()), anno.preset().get(cls).stream())
-                         .sorted()
-                         .collect(Collectors.toList());
+                    .sorted()
+                    .collect(Collectors.toList());
         } else {
             return Arrays.asList(anno.value());
         }
@@ -302,7 +292,7 @@ public class PowerManager {
     public static Map<NamespacedKey, Class<? extends Marker>> getMarkers() {
         return Collections.unmodifiableMap(markers);
     }
-    
+
     public static Map<NamespacedKey, Class<? extends Modifier>> getModifiers() {
         return Collections.unmodifiableMap(modifiers);
     }

@@ -9,7 +9,7 @@ import think.rpgitems.power.Property;
 
 import java.util.Optional;
 
-public class Dying extends Trigger<EntityDamageEvent, PowerHitTaken, Void, Optional<Void>>{
+public class Dying extends Trigger<EntityDamageEvent, PowerHitTaken, Void, Optional<Void>> {
 
     @Property
     public double minDamage = Double.NEGATIVE_INFINITY;

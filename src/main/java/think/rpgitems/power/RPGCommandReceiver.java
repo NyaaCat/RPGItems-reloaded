@@ -23,8 +23,6 @@ import java.util.*;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
-import static think.rpgitems.AdminCommands.msgs;
-
 public abstract class RPGCommandReceiver extends CommandReceiver {
     public final LanguageRepository i18n;
 
@@ -124,11 +122,11 @@ public abstract class RPGCommandReceiver extends CommandReceiver {
         Set<Field> settled = new HashSet<>();
 
         List<Field> required = newPower ? argMap.values().stream()
-                                                .map(Pair::getValue)
-                                                .filter(PropertyInstance::required)
-                                                .sorted(Comparator.comparing(PropertyInstance::order))
-                                                .map(PropertyInstance::field)
-                                                .collect(Collectors.toList()) : new ArrayList<>();
+                .map(Pair::getValue)
+                .filter(PropertyInstance::required)
+                .sorted(Comparator.comparing(PropertyInstance::order))
+                .map(PropertyInstance::field)
+                .collect(Collectors.toList()) : new ArrayList<>();
 
         Meta meta = power.getAnnotation(Meta.class);
 
@@ -137,7 +135,7 @@ public abstract class RPGCommandReceiver extends CommandReceiver {
             String name = prop.getKey();
             String value = cmd.argString(name, null);
             if (value != null
-                        || isTrivialProperty(meta, name)
+                    || isTrivialProperty(meta, name)
             ) {
                 required.remove(field);
             }
@@ -153,11 +151,11 @@ public abstract class RPGCommandReceiver extends CommandReceiver {
 
     protected static boolean isTrivialProperty(Meta meta, String name) {
         return (meta.immutableTrigger() && name.equals("triggers"))
-                       || (meta.marker() && name.equals("triggers"))
-                       || (meta.marker() && name.equals("conditions") && !meta.withConditions())
-                       || (!meta.withSelectors() && name.equals("selectors"))
-                       || (!meta.withContext() && name.equals("requiredContext"))
-                       || name.equals("displayName");
+                || (meta.marker() && name.equals("triggers"))
+                || (meta.marker() && name.equals("conditions") && !meta.withConditions())
+                || (!meta.withSelectors() && name.equals("selectors"))
+                || (!meta.withContext() && name.equals("requiredContext"))
+                || name.equals("displayName");
     }
 
     public static List<String> resolvePropertiesSuggestions(CommandSender sender, RPGItem item, String last, NamespacedKey powerKey, Map<String, Pair<Method, PropertyInstance>> argMap, Set<Field> settled, List<Field> required) {
@@ -196,9 +194,9 @@ public abstract class RPGCommandReceiver extends CommandReceiver {
             return;
         }
         String desc = PowerManager.getDescription(locale, powerKey, name);
-        msgs(sender, "message.propertyHolder.property", name, Strings.isNullOrEmpty(desc) ? I18n.getInstance(locale).format("message.propertyHolder.no_description") : desc);
+        I18n.sendMessage(sender, "message.propertyHolder.property", name, Strings.isNullOrEmpty(desc) ? I18n.getInstance(locale).getFormatted("message.propertyHolder.no_description") : desc);
         if (powerObj != null) {
-            msgs(sender, "message.propertyHolder.property_value", Utils.getProperty(powerObj, name, prop.field()));
+            I18n.sendMessage(sender, "message.propertyHolder.property_value", Utils.getProperty(powerObj, name, prop.field()));
         }
     }
 

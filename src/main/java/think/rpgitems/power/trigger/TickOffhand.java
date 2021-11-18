@@ -10,7 +10,7 @@ class TickOffhand extends Trigger<Event, PowerTick, Void, Void> {
     TickOffhand() {
         super(Event.class, PowerTick.class, Void.class, Void.class, "TICK_OFFHAND");
     }
-    
+
     public TickOffhand(String name) {
         super(name, "TICK_OFFHAND", Event.class, PowerTick.class, Void.class, Void.class);
     }

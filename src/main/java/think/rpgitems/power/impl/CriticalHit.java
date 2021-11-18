@@ -37,10 +37,10 @@ public class CriticalHit extends BasePower {
     @Override
     public String displayText() {
         return (getBackstabChance() != 0 && getChance() != 0) ?
-                       I18n.formatDefault("power.criticalhit.both", getChance(), getFactor(), getBackstabChance(), getBackstabFactor())
-                       : (getChance() != 0) ?
-                                 I18n.formatDefault("power.criticalhit.critical", getChance(), getFactor()) :
-                                 I18n.formatDefault("power.criticalhit.backstab", getBackstabChance(), getBackstabFactor());
+                I18n.formatDefault("power.criticalhit.both", getChance(), getFactor(), getBackstabChance(), getBackstabFactor())
+                : (getChance() != 0) ?
+                I18n.formatDefault("power.criticalhit.critical", getChance(), getFactor()) :
+                I18n.formatDefault("power.criticalhit.backstab", getBackstabChance(), getBackstabFactor());
     }
 
     public double getBackstabChance() {

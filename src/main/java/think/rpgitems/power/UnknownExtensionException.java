@@ -5,7 +5,7 @@ import think.rpgitems.I18n;
 import think.rpgitems.RPGItems;
 
 public class UnknownExtensionException extends UnknownDependencyException {
-    private String name;
+    private final String name;
 
     UnknownExtensionException(String name) {
         super(name);
@@ -18,6 +18,6 @@ public class UnknownExtensionException extends UnknownDependencyException {
 
     @Override
     public String getLocalizedMessage() {
-        return I18n.getInstance(RPGItems.plugin.cfg.language).format("message.error.unknown.extension", name);
+        return I18n.getInstance(RPGItems.plugin.cfg.language).getFormatted("message.error.unknown.extension", name);
     }
 }

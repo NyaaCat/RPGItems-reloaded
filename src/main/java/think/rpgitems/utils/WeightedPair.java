@@ -5,7 +5,7 @@ import cat.nyaa.nyaacore.Pair;
 import java.util.Map;
 
 public class WeightedPair<K, V> extends Pair<K, V> implements Weightable {
-    private int weight;
+    private final int weight;
 
     public WeightedPair(K key, V value, int weight) {
         super(key, value);

@@ -112,7 +112,7 @@ public class Ice extends BasePower {
                                     Location loc = landingLoc.clone().add(x, y, z);
                                     Block b = world.getBlockAt(loc);
                                     if (!b.getType().isSolid() &&
-                                                !(b.getType() == Material.PLAYER_HEAD || b.getType() == Material.PLAYER_WALL_HEAD)) {
+                                            !(b.getType() == Material.PLAYER_HEAD || b.getType() == Material.PLAYER_WALL_HEAD)) {
                                         changedBlocks.put(b.getLocation(), b.getBlockData());
                                         b.setType(Material.PACKED_ICE);
                                     }
@@ -122,7 +122,7 @@ public class Ice extends BasePower {
 
                         // ice block remove timer
                         (new BukkitRunnable() {
-                            Random random = new Random();
+                            final Random random = new Random();
 
                             @Override
                             public void run() {

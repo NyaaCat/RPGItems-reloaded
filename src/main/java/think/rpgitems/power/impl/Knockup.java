@@ -28,7 +28,7 @@ public class Knockup extends BasePower {
     @Property
     public int cost = 0;
 
-    private Random rand = new Random();
+    private final Random rand = new Random();
 
     /**
      * Cost of this power

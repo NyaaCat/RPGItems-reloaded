@@ -29,23 +29,30 @@ public class ConditionCommands extends RPGCommandReceiver {
         this.plugin = plugin;
     }
 
-    @Override
-    public String getHelpPrefix() {
-        return "condition";
-    }
-
     private static Pair<NamespacedKey, Class<? extends Condition<?>>> getConditionClass(CommandSender sender, String conditionStr) {
         try {
             NamespacedKey key = PowerManager.parseKey(conditionStr);
             Class<? extends Condition<?>> cls = PowerManager.getCondition(key);
             if (cls == null) {
-                msgs(sender, "message.condition.unknown", conditionStr);
+                I18n.sendMessage(sender, "message.condition.unknown", conditionStr);
             }
             return Pair.of(key, cls);
         } catch (UnknownExtensionException e) {
-            msgs(sender, "message.error.unknown.extension", e.getName());
+            I18n.sendMessage(sender, "message.error.unknown.extension", e.getName());
             return null;
         }
+    }
+
+    public static void showCondition(CommandSender sender, RPGItem item, Condition condition) {
+        I18n.sendMessage(sender, "message.condition.show", condition.id(), condition.getLocalizedName(sender), condition.getNamespacedKey().toString(), condition.displayText() == null ? I18n.getInstance(sender).getFormatted("message.power.no_display") : condition.displayText());
+        PowerManager.getProperties(item.getPropertyHolderKey(condition)).forEach(
+                (name, prop) -> showProp(sender, condition.getNamespacedKey(), prop.getValue(), condition)
+        );
+    }
+
+    @Override
+    public String getHelpPrefix() {
+        return "condition";
     }
 
     @Completion("")
@@ -75,8 +82,8 @@ public class ConditionCommands extends RPGCommandReceiver {
         String itemStr = args.next();
         String conditionStr = args.next();
         if (itemStr == null || itemStr.equals("help") || conditionStr == null) {
-            msgs(sender, "manual.condition.add.description");
-            msgs(sender, "manual.condition.add.usage");
+            I18n.sendMessage(sender, "manual.condition.add.description");
+            I18n.sendMessage(sender, "manual.condition.add.usage");
             return;
         }
         RPGItem item = getItem(itemStr, sender);
@@ -96,10 +103,10 @@ public class ConditionCommands extends RPGCommandReceiver {
                 throw (BadCommandException) e;
             }
             plugin.getLogger().log(Level.WARNING, "Error adding condition " + conditionStr + " to item " + itemStr + " " + item, e);
-            msgs(sender, "internal.error.command_exception");
+            I18n.sendMessage(sender, "internal.error.command_exception");
         }
     }
-    
+
     @Completion("")
     public List<String> propCompleter(CommandSender sender, Arguments arguments) {
         List<String> completeStr = new ArrayList<>();
@@ -182,17 +189,10 @@ public class ConditionCommands extends RPGCommandReceiver {
             item.rebuild();
             ItemManager.refreshItem();
             ItemManager.save(item);
-            msgs(sender, "message.condition.change");
+            I18n.sendMessage(sender, "message.condition.change");
         } catch (UnknownExtensionException e) {
-            msgs(sender, "message.error.unknown.extension", e.getName());
+            I18n.sendMessage(sender, "message.error.unknown.extension", e.getName());
         }
-    }
-
-    public static void showCondition(CommandSender sender, RPGItem item, Condition condition) {
-        msgs(sender, "message.condition.show", condition.id(), condition.getLocalizedName(sender), condition.getNamespacedKey().toString(), condition.displayText() == null ? I18n.getInstance(sender).format("message.power.no_display") : condition.displayText());
-        PowerManager.getProperties(item.getPropertyHolderKey(condition)).forEach(
-                (name, prop) -> showProp(sender, condition.getNamespacedKey(), prop.getValue(), condition)
-        );
     }
 
     @Completion("")
@@ -219,20 +219,20 @@ public class ConditionCommands extends RPGCommandReceiver {
             List<Condition<?>> conditions = item.getConditions();
             for (int i = 0; i < conditions.size(); i++) {
                 Condition<?> condition1 = conditions.get(i);
-                if (condition1.equals(condition)){
+                if (condition1.equals(condition)) {
                     nth = i;
                 }
             }
-            if (nth < 0 || nth > conditions.size()){
-                msgs(sender, "message.num_out_of_range", nth, 0, conditions.size());
+            if (nth < 0 || nth > conditions.size()) {
+                I18n.sendMessage(sender, "message.num_out_of_range", nth, 0, conditions.size());
                 return;
             }
             item.getConditions().remove(nth);
-            msgs(sender, "message.condition.removed", String.valueOf(nth));
+            I18n.sendMessage(sender, "message.condition.removed", String.valueOf(nth));
             item.rebuild();
             ItemManager.save(item);
         } catch (UnknownExtensionException e) {
-            msgs(sender, "message.error.unknown.extension", e.getName());
+            I18n.sendMessage(sender, "message.error.unknown.extension", e.getName());
         }
     }
 
@@ -241,13 +241,13 @@ public class ConditionCommands extends RPGCommandReceiver {
         int perPage = RPGItems.plugin.cfg.powerPerPage;
         String nameSearch = args.argString("n", args.argString("name", ""));
         List<NamespacedKey> conditions = PowerManager.getConditions()
-                                                     .keySet()
-                                                     .stream()
-                                                     .filter(i -> i.getKey().contains(nameSearch))
-                                                     .sorted(Comparator.comparing(NamespacedKey::getKey))
-                                                     .collect(Collectors.toList());
+                .keySet()
+                .stream()
+                .filter(i -> i.getKey().contains(nameSearch))
+                .sorted(Comparator.comparing(NamespacedKey::getKey))
+                .collect(Collectors.toList());
         if (conditions.size() == 0) {
-            msgs(sender, "message.condition.not_found", nameSearch);
+            I18n.sendMessage(sender, "message.condition.not_found", nameSearch);
             return;
         }
         Stream<NamespacedKey> stream = conditions.stream();
@@ -255,18 +255,18 @@ public class ConditionCommands extends RPGCommandReceiver {
         int page = maxPage.getValue();
         int max = maxPage.getKey();
         stream = stream
-                         .skip((page - 1) * perPage)
-                         .limit(perPage);
+                .skip((page - 1) * perPage)
+                .limit(perPage);
         sender.sendMessage(ChatColor.AQUA + "Conditions: " + page + " / " + max);
 
         stream.forEach(
                 condition -> {
-                    msgs(sender, "message.condition.key", condition.toString());
-                    msgs(sender, "message.condition.description", PowerManager.getDescription(condition, null));
+                    I18n.sendMessage(sender, "message.condition.key", condition.toString());
+                    I18n.sendMessage(sender, "message.condition.description", PowerManager.getDescription(condition, null));
                     PowerManager.getProperties(condition).forEach(
                             (name, mp) -> showProp(sender, condition, mp.getValue(), null)
                     );
-                    msgs(sender, "message.line_separator");
+                    I18n.sendMessage(sender, "message.line_separator");
                 });
         sender.sendMessage(ChatColor.AQUA + "Conditions: " + page + " / " + max);
     }

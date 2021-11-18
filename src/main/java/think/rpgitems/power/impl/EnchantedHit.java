@@ -59,7 +59,6 @@ public class EnchantedHit extends BasePower {
     private enum Mode {
         ADDITION,
         MULTIPLICATION,
-        ;
     }
 
     public class Impl implements PowerHit {

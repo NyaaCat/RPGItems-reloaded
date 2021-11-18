@@ -68,8 +68,8 @@ public class PotionTick extends BasePower {
     @Override
     public String displayText() {
         return isClear() ?
-                       I18n.formatDefault("power.potiontick.clear", getEffect().getName().toLowerCase().replaceAll("_", " "))
-                       : I18n.formatDefault("power.potiontick.display", getEffect().getName().toLowerCase().replaceAll("_", " "), getAmplifier() + 1);
+                I18n.formatDefault("power.potiontick.clear", getEffect().getName().toLowerCase().replaceAll("_", " "))
+                : I18n.formatDefault("power.potiontick.display", getEffect().getName().toLowerCase().replaceAll("_", " "), getAmplifier() + 1);
     }
 
     /**
