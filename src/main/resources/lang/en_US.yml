@@ -805,9 +805,13 @@ properties:
     main_description: Do more damage when gliding
     main_name: Airborne
     percentage: Damage increase in percentage when gliding
+    powerId: <TODO>
+    powerTags: <TODO>
+    setBaseDamage: <TODO>
   andcondition:
     main_description: Condition that requires all its Conditions are met
     main_name: And Condition
+    tags: <TODO>
   aoe:
     amplifier: Amplifier of applied effect.
     duration: Duration of applied effect, in ticks.
@@ -817,6 +821,11 @@ properties:
     range: Effective range in blocks.
     selfapplication: Whether to apply effect on triggering player.
     type: Type of applied effect.
+    count: <TODO>
+    angle: <TODO>
+    powerId: <TODO>
+    powerTags: <TODO>
+    target: <TODO>
   aoecommand:
     c: Maximum count of entities.
     command: Command to be executed
@@ -830,9 +839,13 @@ properties:
     rm: Minimum range in blocks.
     selfapplication: Whether to apply command on triggering player.
     type: Type of entities
+    powerTags: <TODO>
+    powerId: <TODO>
   arrow:
     main_description: Fire an arrow.
     main_name: Arrow
+    powerTags: <TODO>
+    powerId: <TODO>
   attachments:
     allowedInvSlots: allowed inventory slot number. -1 to disable inventory
     allowedItems: RPGItems/Groups' id or name that are leagal attachment for this
@@ -842,6 +855,8 @@ properties:
     main_description: Can use other RPGItems as attachments. Firing this power will
       trigger ATTACHMENT trigger of attachments.
     main_name: Attachments
+    powerTags: <TODO>
+    powerId: <TODO>
   attract:
     attractPlayer: Whether allow attracting player.
     attractingEntityTickCost: Durability cost per entity one tick when attracting.
@@ -851,6 +866,10 @@ properties:
     main_name: Attract
     maxSpeed: Maximum speed when attracting.
     radius: Effective range in blocks.
+    powerId: <TODO>
+    firingLocation: <TODO>
+    powerTags: <TODO>
+    firingRange: <TODO>
   attributemodifier:
     amount: Amount
     attribute: Attribute
@@ -861,6 +880,8 @@ properties:
     slot: Slot
     uuidLeast: UUID least
     uuidMost: UUID most
+    markerId: <TODO>
+    tags: <TODO>
   base:
     conditions: Conditions of this power.
     cooldown: Cooldown of the power, in ticks.
@@ -912,19 +933,39 @@ properties:
     speedBias: Expression for calculating speed.
     ticksBeforeHoming: Ticks before homing starts.
     ttl: Times to live (beam ends when either length or ttl reached)
+    firingTheta: <TODO>
+    suppressMelee: <TODO>
+    homingTarget: <TODO>
+    castOff: <TODO>
+    particleDensity: <TODO>
+    firingR: <TODO>
+    firingLocation: <TODO>
+    powerId: <TODO>
+    powerTags: <TODO>
+    effectOnly: <TODO>
+    firingRange: <TODO>
+    initialRotation: <TODO>
+    firingPhi: <TODO>
   cancelbowarrow:
     main_description: 弓在发射时不会发射出箭矢
     main_name: 取消箭矢
+    powerId: <TODO>
+    cancelArrow: <TODO>
+    powerTags: <TODO>
   chancecondition:
     chancePercentage: chance, in percentage
     main_description: Condition that met by chance
     main_name: Chance Condition
+    tags: <TODO>
   charge:
     cap: Maximum damage done by this power
     main_description: Do more damage when sprinting
     main_name: Charge
     percentage: Damage increase in percentage when sprinting
     speedPercentage: Damage increase in percentage when faster than default
+    setBaseDamage: <TODO>
+    powerTags: <TODO>
+    powerId: <TODO>
   color:
     clay: N/A
     glass: N/A
@@ -936,19 +977,27 @@ properties:
     main_description: Run a command on click.
     main_name: Command
     permission: Permission that will be given to user executing command
+    powerTags: <TODO>
+    powerId: <TODO>
   commandhit:
     command: Command to be executed
     main_description: Run a command when hits someting.
     main_name: Command Hit
     minDamage: Minimum damage to trigger
     permission: Permission that will be given to user executing command
+    powerId: <TODO>
+    powerTags: <TODO>
   consume:
     isRight: Mouse button to trigger the power
     main_description: Remove one item on click.
     main_name: Consume
+    powerId: <TODO>
+    powerTags: <TODO>
   consumehit:
     main_description: Remove one item when hits something.
     main_name: Consume Hit
+    powerTags: <TODO>
+    powerId: <TODO>
   criticalhit:
     backstabChance: Chance of triggering backstab, in percentage
     backstabFactor: Factor of backstab damage. E.g. deals (damage * backstabFactor)
@@ -960,6 +1009,8 @@ properties:
     main_name: Critical Hit and Backstab
     setBaseDamage: Whether to set event base damage to final damage to allow stacking
       of damage power.
+    powerId: <TODO>
+    powerTags: <TODO>
   damageType:
     main_description: 要求造成的伤害类型与条件满足
     main_name: 伤害类型条件
@@ -971,6 +1022,8 @@ properties:
     main_description: With a 1/chance to kill the target then execute the command
       for count times
     main_name: Death Command
+    powerTags: <TODO>
+    powerId: <TODO>
   deflect:
     chance: Chance in percentage of triggering this power in passive mode
     cooldownpassive: Cooldown time of this power in passive mode
@@ -979,12 +1032,17 @@ properties:
     facing: Maximum effective view angle in degrees
     main_description: Deflect arrows or fireballs towards player
     main_name: Deflect
+    powerId: <TODO>
+    powerTags: <TODO>
   delayedcommand:
     command: Command to be executed
     delay: Delay before executing command
     main_description: Run command on click with a delay
     main_name: Delayed Command
     permission: Permission that will be given to user executing command
+    cmdInPlace: <TODO>
+    powerId: <TODO>
+    powerTags: <TODO>
   dummy:
     checkDurabilityBound: If to check durability bound of this item
     cooldownKey: Key for cooldowning
@@ -994,11 +1052,20 @@ properties:
     main_name: Dummy
     showCDWarning: Show cooldown warning
     successResult: Result returned when success
+    globalCooldown: <TODO>
+    enchCostPercentage: <TODO>
+    costByDamage: <TODO>
+    powerTags: <TODO>
+    costByEnchantment: <TODO>
+    enchantmentType: <TODO>
+    doEnchReduceCost: <TODO>
+    powerId: <TODO>
   durabilitycondition:
     durabilityMax: Durability should less than durabilityMax
     durabilityMin: Durability should great than durabilityMin
     main_description: Condition that requires item's durability in a range
     main_name: Durability Condition
+    tags: <TODO>
   economy:
     abortOnFailure: Abort on failure
     amountToPlayer: Amount of money will transfer to player (can be negative)
@@ -1008,6 +1075,12 @@ properties:
   enchantedhit:
     main_description: 用指定的附魔来影响物品的伤害
     main_name: 附魔攻击
+    powerTags: <TODO>
+    amountPerLevel: <TODO>
+    enchantmentType: <TODO>
+    mode: <TODO>
+    setBaseDamage: <TODO>
+    powerId: <TODO>
   equipmentcondition:
     itemStack: Item that player should wears
     main_description: Condition that requires player wear some item
@@ -1016,10 +1089,13 @@ properties:
     material: Material that player should wears
     rpgitem: RPGItem that player should wears
     slots: Equipment slots
+    tags: <TODO>
+    requireEmpty: <TODO>
   evalcondition:
     expression: Expression to compute condition
     main_description: Calculate condition dynamicly
     main_name: Eval Condition
+    tags: <TODO>
   evaldamage:
     display: Display name
     expression: Expression to compute damage
@@ -1027,28 +1103,41 @@ properties:
     main_name: Eval Damage
     setBaseDamage: Whether to set event base damage to final damage to allow stacking
       of damage power.
+    powerId: <TODO>
+    powerTags: <TODO>
   explosion:
     chance: Chance of triggering this power, in percentage
     distance: Maximum distance
     main_description: Make a explosion that caused by the player
     main_name: Explosion
     power: Power of explosion. 4 for TNT
+    powerTags: <TODO>
+    powerId: <TODO>
+    explosionPower: <TODO>
   fire:
     burnduration: Duration of the fire, in ticks
     distance: Maximum distance
     main_description: Fire an fireblock that burns entities hit
     main_name: Fire
+    powerTags: <TODO>
+    powerId: <TODO>
   fireball:
     main_description: Fire an fireball
     main_name: Fireball
+    powerTags: <TODO>
+    powerId: <TODO>
   flame:
     burntime: Duration of the fire, in ticks
     main_description: Set the target on fire on hit
     main_name: Flame
+    powerTags: <TODO>
+    powerId: <TODO>
   food:
     foodpoints: Food Points
     main_description: Restore food points when eaten
     main_name: Food
+    powerId: <TODO>
+    powerTags: <TODO>
   forcefield:
     base: Base of force field
     height: Height of force field
@@ -1056,12 +1145,16 @@ properties:
     main_name: Force Field
     radius: Radius of force field
     ttl: Time to live
+    powerTags: <TODO>
+    powerId: <TODO>
   glove:
     main_description: Catch an entity
     main_name: Glove
     maxDistance: Maximum distance to catch
     maxTicks: Maximum ticks catching
     throwSpeed: Speed throwing entity
+    powerId: <TODO>
+    powerTags: <TODO>
   gunfu:
     distance: Maximum distance to lock enemy
     initVelFactor: Factor of init velocity
@@ -1070,6 +1163,10 @@ properties:
     maxTicks: Maximum ticks tracking
     velFactor: Factor of velocity change per tick
     viewAngle: Maximum view angle to lock enemy
+    powerTags: <TODO>
+    forceFactor: <TODO>
+    delay: <TODO>
+    powerId: <TODO>
   headshot:
     factor: Factor of headshot damage. E.g. deals (damage * factor) damage
     main_description: Increase damage when headshot
@@ -1079,45 +1176,65 @@ properties:
       of damage power.
     soundEnemy: Whether to play sound at enemy location
     soundSelf: Whether to play sound at player location
+    powerTags: <TODO>
+    powerId: <TODO>
   ice:
     main_description: Fire an ice block, then create a box of ice on impact
     main_name: Ice
+    powerId: <TODO>
+    powerTags: <TODO>
   knockup:
     chance: Chance of triggering this power, 1/n
     main_description: Send the hit target flying
     main_name: Knockup
     power: Power of knock up
+    knockUpPower: <TODO>
+    powerId: <TODO>
+    powerTags: <TODO>
   lastresultcondition:
     failOnNoResult: Whether fails when no power
     main_description: Requires result of last power is in a set
     main_name: Last Result Condition
     okResults: Allowed result
+    tags: <TODO>
   lifesteal:
     chance: Chance of triggering this power, in percentage
     factor: Factor of life steal
     main_description: Restore health by damage dealt
     main_name: Lifesteal
+    powerTags: <TODO>
+    powerId: <TODO>
   lightning:
     chance: Chance of triggering this power, 1/n
     main_description: Strike the hit target with lightning
     main_name: Lightning
+    powerTags: <TODO>
+    powerId: <TODO>
   lorefilter:
     desc: Display text
     find: Only requires the regex finds in lore line (instead of matches).
     main_description: Preserve all lore lines match the regex
     main_name: Lore Filter
     regex: Regex to filter the lore
+    markerId: <TODO>
+    tags: <TODO>
   mount:
     main_description: Ride an entity
     main_name: Mount
     maxDistance: Maximum distance to ride
     maxTicks: Maximum ticks riding
+    powerId: <TODO>
+    powerTags: <TODO>
   noimmutabletick:
     main_description: Cancel the damage delay (no-damage-tick)
     main_name: No Immutable Tick
+    immuneTime: <TODO>
+    powerId: <TODO>
+    powerTags: <TODO>
   orcondition:
     main_description: Condition that requires at least one of its Conditions are met
     main_name: Or Condition
+    tags: <TODO>
   particle:
     dustColor: Color of dust particle
     dustSize: Size of dust particle
@@ -1132,6 +1249,11 @@ properties:
     offsetZ: Offset Z
     particle: Name of particle effect
     particleCount: Count of particle
+    playLocation: <TODO>
+    firingRange: <TODO>
+    delay: <TODO>
+    powerTags: <TODO>
+    powerId: <TODO>
   particlebarrier:
     barrierHealth: Health of a new barrier
     effect: Effect of particle barrier
@@ -1142,6 +1264,8 @@ properties:
       to strength
     main_name: Particle Barrier
     projected: Whether this barrier can be projected
+    powerId: <TODO>
+    powerTags: <TODO>
   particletick:
     dustColor: Color of dust particle
     dustSize: Size of dust particle
@@ -1157,6 +1281,11 @@ properties:
     offsetZ: Offset Z
     particle: Name of particle effect
     particleCount: Count of particle
+    firingRange: <TODO>
+    powerTags: <TODO>
+    delay: <TODO>
+    powerId: <TODO>
+    playLocation: <TODO>
   potionhit:
     amplifier: Amplifier of potion effect
     chance: Chance of triggering this power, 1/n
@@ -1164,12 +1293,17 @@ properties:
     main_description: Apply effect to enemy when hit
     main_name: Potion Hit
     type: Type of potion effect
+    powerTags: <TODO>
+    powerId: <TODO>
   potionself:
     amplifier: Amplifier of potion effect
     duration: Time of potion effect, in ticks
     main_description: Apply effect to player when used
     main_name: Potion Self
     type: Type of potion effect
+    clear: <TODO>
+    powerId: <TODO>
+    powerTags: <TODO>
   potiontick:
     amplifier: Amplifier of potion effect
     clear: Whether to remove the effect instead of adding it
@@ -1178,6 +1312,8 @@ properties:
     interval: Interval of this power
     main_description: Apply effect to player when equipped
     main_name: Potion Tick
+    powerId: <TODO>
+    powerTags: <TODO>
   projectile:
     amount: Amount of projectiles
     burstCount: Burst count
@@ -1192,31 +1328,52 @@ properties:
     setFireballDirection: Whether to set Fireball' direction so it won't curve
     speed: Speed of projectiles
     yield: Radius affected by this Explosive's explosion
+    firingPhi: <TODO>
+    firingR: <TODO>
+    powerTags: <TODO>
+    suppressArrow: <TODO>
+    firingLocation: <TODO>
+    firingTheta: <TODO>
+    powerId: <TODO>
+    applyForce: <TODO>
+    castOff: <TODO>
+    firingRange: <TODO>
+    initialRotation: <TODO>
   pumpkin:
     chance: Chance of triggering this power, in percentage
     drop: Drop chance of the pumpkin, 0.0~1.0
     main_description: When hit skeleton or zombie, make them wear pumpkin head
     main_name: Pumpkin
+    powerTags: <TODO>
+    powerId: <TODO>
   rainbow:
     count: Count of blocks
     isFire: Whether launch fire instead of wool
     main_description: Fire blocks of coloured wool
     main_name: Rainbow
+    powerTags: <TODO>
+    powerId: <TODO>
   ranged:
     main_description: Mark this item as ranged
     main_name: Ranged
     r: Maximum radius
     rm: Minimum radius
+    markerId: <TODO>
+    tags: <TODO>
   rangedonly:
     main_description: Mark this item as ranged only
     main_name: Ranged Only
     r: Maximum radius
     rm: Minimum radius
+    markerId: <TODO>
+    tags: <TODO>
   realdamage:
     main_description: Do real damage to entity hit but won't kill it
     main_name: Real Damage
     minDamage: Minimum damage to trigger
     realDamage: Damage of this power
+    powerId: <TODO>
+    powerTags: <TODO>
   repair:
     abortOnFailure: Abort subsequence execution of powers when fail
     abortOnSuccess: Abort subsequence execution of powers when success
@@ -1230,6 +1387,8 @@ properties:
     material: Material to be consumed
     mode: Whether allow repairing when durability would overflow
     showFailMsg: Whether to show message when not enought material
+    powerTags: <TODO>
+    powerId: <TODO>
   rescue:
     damageTrigger: Damage trigger of rescue
     healthTrigger: Health trigger of rescue
@@ -1237,24 +1396,37 @@ properties:
     main_description: Rescue player on low health or receiving high damage
     main_name: Rescue
     useBed: Whether use bed instead of home
+    powerId: <TODO>
+    powerTags: <TODO>
   rumble:
     distance: Maximum distance of rumble
     main_description: Sends a shockwave through the ground and sends any hit entities
       flying
     main_name: Rumble
     power: Power of rumble
+    powerTags: <TODO>
+    powerId: <TODO>
+    damage: <TODO>
   scoreboard:
     abortOnSuccess: Abort subsequence execution of powers when success
     main_description: Add/remove tag/team to/from player's scoreboard
     main_name: Scoreboard
     tag: Tag(s) to add and remove, `TO_ADD,!TO_REMOVE`
     team: Team(s) to join and leave, `JOIN,!LEAVE`
+    scoreOperation: <TODO>
+    value: <TODO>
+    reverseTagAfterDelay: <TODO>
+    delay: <TODO>
+    powerTags: <TODO>
+    powerId: <TODO>
+    objective: <TODO>
   scoreboardcondition:
     main_description: Condition that add requirements of player's scoreboard
     main_name: Scoreboard Condition
     score: Selecting targets by score(s), `score_name:min,max another_score_name:min,max`
     tag: Selecting targets by tag(s), `MUST_HAVE,!MUST_NOT_HAVE`
     team: Selecting targets by team(s), `MUST_ON,!MUST_NOT_ON`
+    tags: <TODO>
   selector:
     count: Count of target entities
     dx: Selects only targets less than dx blocks in X-axis from reference position
@@ -1275,26 +1447,41 @@ properties:
       current position if empty
     z: Z-coordinate of reference position, tilde notation is available. Use player's
       current position if empty
+    tags: <TODO>
+    markerId: <TODO>
+    gameMode: <TODO>
   shulkerbullet:
     main_description: Launches shulker bullet when right clicked, target nearest entity
       in front of player
     main_name: Shulker Bullect
     range: Range of target finding
+    powerTags: <TODO>
+    powerId: <TODO>
   skyhook:
     hookDistance: Maximum distance
     hookingTickCost: Cost per tick hooking
     main_description: Hook on to some material
     main_name: Sky Hook
     railMaterial: Material that can hooks on
+    powerId: <TODO>
+    powerTags: <TODO>
   slotcondition:
     main_description: 要求物品放置在正确的物品栏位置
     main_name: 物品栏条件
+    tags: <TODO>
+    slots: <TODO>
+    critical: <TODO>
   sound:
     main_description: Play a sound
     main_name: Sound
     pitch: Pitch of sound
     sound: Sound to be played
     volume: Volume of sound
+    firingRange: <TODO>
+    powerTags: <TODO>
+    powerId: <TODO>
+    delay: <TODO>
+    playLocation: <TODO>
   stuck:
     chance: Chance of triggering this power, 1/n
     cost: Cost of this power (hit)
@@ -1305,12 +1492,16 @@ properties:
     main_description: Make target stuck
     main_name: Stuck
     range: Range of AOE
+    powerTags: <TODO>
+    powerId: <TODO>
   teleport:
     distance: Maximum distance
     main_description: teleport you in the direction you're looking in or to the place
       where the projectile hit
     main_name: Teleport
     targetMode: Mode of finding teleport target
+    powerId: <TODO>
+    powerTags: <TODO>
   throw:
     entityData: NBT data of entity
     entityName: Name of entity thrown
@@ -1318,30 +1509,172 @@ properties:
     main_description: Spawn and throw a entity
     main_name: Throw
     speed: Speed of entity thrown
+    powerId: <TODO>
+    powerTags: <TODO>
   tippedarrow:
     amplifier: Amplifier of potion effect
     duration: Duration of potion effect, in ticks
     main_description: Fire an tipped arrow
     main_name: Tipped Arrow
     type: Type of potion effect
+    powerId: <TODO>
+    powerTags: <TODO>
   tntcannon:
     main_description: Fire active tnt
     main_name: TNT Cannon
+    powerId: <TODO>
+    powerTags: <TODO>
   torch:
     main_description: Shoots torches to light up an area
     main_name: Torch
+    powerId: <TODO>
+    powerTags: <TODO>
   translocator:
     main_description: Throw an translocator and teleport to it later
     main_name: Translocator
     setupCost: Cost to setup an translocator
     tpCost: Cost to teleport to the translocator
+    powerTags: <TODO>
+    powerId: <TODO>
+    speed: <TODO>
   unbreakable:
     main_description: Mark this item as unbreakable
     main_name: Unbreakable
+    tags: <TODO>
+    markerId: <TODO>
   unique:
     main_description: 给物品一个独一无二的标志
     main_name: 独特标志
+    enabled: <TODO>
+    tags: <TODO>
+    markerId: <TODO>
   xorcondition:
     init: Init value
     main_description: Condition that xor all its Conditions
     main_name: Xor Condition
+    tags: <TODO>
+  hit_taken:
+    main_name: <TODO>
+    minDamage: <TODO>
+    maxDamage: <TODO>
+    main_description: <TODO>
+  mulmodifier:
+    main_name: <TODO>
+    value: <TODO>
+    main_description: <TODO>
+  aoedamage:
+    selfapplication: <TODO>
+    main_name: <TODO>
+    mustsee: <TODO>
+    count: <TODO>
+    angle: <TODO>
+    main_description: <TODO>
+    powerTags: <TODO>
+    name: <TODO>
+    incluePlayers: <TODO>
+    suppressMelee: <TODO>
+    powerId: <TODO>
+    range: <TODO>
+    castOff: <TODO>
+    firingLocation: <TODO>
+    minrange: <TODO>
+    selectAfterDelay: <TODO>
+    firingRange: <TODO>
+    damage: <TODO>
+    delay: <TODO>
+  projectile_launch:
+    main_name: <TODO>
+    main_description: <TODO>
+  hit:
+    main_name: <TODO>
+    maxDamage: <TODO>
+    minDamage: <TODO>
+    main_description: <TODO>
+  bow_shoot:
+    main_description: <TODO>
+    minForce: <TODO>
+    main_name: <TODO>
+    maxForce: <TODO>
+  evalmodifier:
+    main_name: <TODO>
+    main_description: <TODO>
+    expression: <TODO>
+  plusmodifier:
+    value: <TODO>
+    main_description: <TODO>
+    main_name: <TODO>
+  dying:
+    maxDamage: <TODO>
+    main_name: <TODO>
+    main_description: <TODO>
+    minDamage: <TODO>
+  hit_global:
+    main_name: <TODO>
+    main_description: <TODO>
+    minDamage: <TODO>
+    maxDamage: <TODO>
+  tick:
+    main_name: <TODO>
+    main_description: <TODO>
+  place_off_hand:
+    main_description: <TODO>
+    main_name: <TODO>
+  hurt:
+    main_description: <TODO>
+    minDamage: <TODO>
+    main_name: <TODO>
+    maxDamage: <TODO>
+  location:
+    main_name: <TODO>
+    main_description: <TODO>
+  sneaking:
+    main_name: <TODO>
+    main_description: <TODO>
+  pickup_off_hand:
+    main_description: <TODO>
+    main_name: <TODO>
+  left_click:
+    main_description: <TODO>
+    main_name: <TODO>
+  tick_offhand:
+    main_description: <TODO>
+    main_name: <TODO>
+  right_click:
+    main_name: <TODO>
+    main_description: <TODO>
+  livingentity:
+    main_description: <TODO>
+    main_name: <TODO>
+  divmodifier:
+    main_description: <TODO>
+    value: <TODO>
+    main_name: <TODO>
+  offhand_click:
+    main_description: <TODO>
+    main_name: <TODO>
+  sprint:
+    main_name: <TODO>
+    main_description: <TODO>
+  sneak:
+    main_name: <TODO>
+    main_description: <TODO>
+  damagetype:
+    main_description: <TODO>
+    main_name: <TODO>
+    tags: <TODO>
+    damageType: <TODO>
+  attachment:
+    main_name: <TODO>
+    main_description: <TODO>
+  beam_end:
+    main_description: <TODO>
+    main_name: <TODO>
+  swap_to_mainhand:
+    main_description: <TODO>
+    main_name: <TODO>
+  swap_to_offhand:
+    main_name: <TODO>
+    main_description: <TODO>
+  projectile_hit:
+    main_description: <TODO>
+    main_name: <TODO>

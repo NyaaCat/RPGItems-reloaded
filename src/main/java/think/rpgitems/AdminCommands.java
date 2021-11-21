@@ -71,6 +71,8 @@ import static think.rpgitems.utils.NetworkUtils.Location.GIST;
 public class AdminCommands extends RPGCommandReceiver {
     private final RPGItems plugin;
     private final Map<String, String> subCommandCompletion = new HashMap<>();
+    @SubCommand("i18n")
+    public I18nCommands i18nCommands;
     @SubCommand("power")
     public PowerCommands power;
     @SubCommand("condition")
