@@ -1,7 +1,14 @@
 command:
+  list:
+    item_per_page: <TODO>
+    power_per_page: <TODO>
+  meta:
+    quality:
+      warn_quality_not_exists: <TODO>
   template:
     apply:
       success: 已为以 %s 为模板的物品应用属性
+    bad_placeholder: <TODO>
     create:
       success: 成功以物品 %s 创建模板
     delete:
@@ -343,19 +350,21 @@ manual:
     description: 切换 WorldGuard 支持。
     usage: /rpgitem worldguard
 message:
+  armor_expression:
+    set: <TODO>
   armour:
     get: 物品 '%s' 护甲为 '%d%%'
     set: 物品 '%s' 护甲已设置为 '%d%%'
   attributemode:
     set: 物品 {itemName} 的 attribute mode 设置为 %s
   barformat:
-    DEFAULT: 耐久条设置为默认（方块）
-    NUMERIC: 耐久条设置为数值显示
-    NUMERIC_BIN: 耐久条设置为二进制数值
-    NUMERIC_BIN_MINUS_ONE: 耐久条设置为二进制数值减一
-    NUMERIC_HEX: 耐久条设置为十六进制数值
-    NUMERIC_HEX_MINUS_ONE: 耐久条设置为十六进制数值减一
-    NUMERIC_MINUS_ONE: 耐久条设置为数值减一
+    default: 耐久条设置为默认（方块）
+    numeric: 耐久条设置为数值显示
+    numeric_bin: 耐久条设置为二进制数值
+    numeric_bin_minus_one: 耐久条设置为二进制数值减一
+    numeric_hex: 耐久条设置为十六进制数值
+    numeric_hex_minus_one: 耐久条设置为十六进制数值减一
+    numeric_minus_one: 耐久条设置为数值减一
   cloneitem:
     fail: 物品 %s 克隆失败： %s 已存在
     success: 物品 %s 成功克隆为 %s
@@ -398,10 +407,12 @@ message:
       range: 物品 '%s' 伤害设置为 %d-%d
       value: 物品 '%s' 伤害设置为 %d
   damagemode:
-    ADDITIONAL: 物品 '%s' 伤害模式设定为附加伤害（原版伤害加RPG伤害）
-    FIXED: 物品 '%s' 伤害模式设定为固定伤害（默认）
-    MULTIPLY: 物品 '%s' 伤害模式设定为乘法伤害（原版伤害乘以RPG伤害）
-    VANILLA: 物品 '%s' 伤害模式设定为原版伤害
+    additional: 物品 '%s' 伤害模式设定为附加伤害（原版伤害加RPG伤害）
+    fixed: 物品 '%s' 伤害模式设定为固定伤害（默认）
+    multiply: 物品 '%s' 伤害模式设定为乘法伤害（原版伤害乘以RPG伤害）
+    vanilla: 物品 '%s' 伤害模式设定为原版伤害
+  damagetype:
+    set: <TODO>
   description:
     change: 该行文本已变更
     ok: 该行文本已增加
@@ -424,9 +435,9 @@ message:
     removed: 附魔已移除
     success: 成功
   enchantmode:
-    ADDITIONAL: 物品 '%s' 附魔模式设定为允许附魔
-    DISALLOW: 物品 '%s' 附魔模式设定为禁止附魔（默认）
-    PERMISSION: 物品 '%s' 附魔模式设定为需要权限（rpgitem.enchant.[item name]）
+    allow: 物品 '%s' 附魔模式设定为允许附魔
+    disallow: 物品 '%s' 附魔模式设定为禁止附魔（默认）
+    permission: 物品 '%s' 附魔模式设定为需要权限（rpgitem.enchant.[item name]）
   error:
     command:
       format: 显示文本和指令必须用 | 这个符号分隔开
@@ -441,6 +452,8 @@ message:
       format: '''%s'' 不是一个整数'
       limit: 数值必须在 %d 到 %d 之间
     invalid_command_arg: 加载技能失败：%s，%s
+    invalid_enchant: <TODO>
+    invalid_expression: <TODO>
     invalid_option: '输入 %s 对于 %s 无效. 可选项: %s'
     invalid_regex: 无效的正则表达式
     item: 未知物品 '%s'
@@ -562,6 +575,7 @@ message:
     change: 物品标志参数已更改
     description: '&3&l描述: ''&r%s'''
     key: '&3&l标志 ''&r%s&3&l'''
+    no_display: <TODO>
     not_found: 未找到满足 %s 的标志
     ok: 标志 %s 已添加
     removed: 标志 %s 已移除
@@ -576,6 +590,7 @@ message:
     key: '&3&l修饰 ''&r%s&3&l'''
     not_found: 未找到满足 %s 的修饰
     ok: 修饰 %s 已添加
+    remove: <TODO>
     removed: 修饰 %s 已移除
     show: 修饰 %s - %s (%s)：%s
     unknown: 未知修饰 %s
@@ -589,6 +604,7 @@ message:
     description: '&3&l描述: ''&r%s'''
     ignored_trigger: 忽略物品%3$s技能%2$s的未知触发%1$s
     key: '&3&l技能 &r%s&3&l'
+    no_description: <TODO>
     no_display: 无说明
     not_found: 未找到满足 %s 的技能
     ok: 技能 %s 已添加至 %d 号位
@@ -651,6 +667,7 @@ message:
     far: 太远了...
   translocator: '%s 的传送信标'
   trigger:
+    change: <TODO>
     description: '&3&l描述: ''&r%s'''
     key: '&3&l触发 ''&r%s&3&l'''
     not_found: 未找到满足 %s 的触发

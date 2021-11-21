@@ -16,6 +16,13 @@ command:
       not_template: 物品 %s 不是一个有效模板
       remove:
         success: 已为模板 %s 移除技能占位符
+    bad_placeholder: <TODO>
+  list:
+    item_per_page: <TODO>
+    power_per_page: <TODO>
+  meta:
+    quality:
+      warn_quality_not_exists: <TODO>
 item:
   additionaldamage: Additional %s Damage
   armour: Armour
@@ -350,13 +357,13 @@ message:
   attributemode:
     set: item {itemName} 's attribute mode set to %s
   barformat:
-    DEFAULT: Durability bar set to default (box char)
-    NUMERIC: Durability bar set to numeric
-    NUMERIC_BIN: Durability bar set to binary numeric
-    NUMERIC_BIN_MINUS_ONE: Durability bar set to binary numeric minus one
-    NUMERIC_HEX: Durability bar set to hex numeric
-    NUMERIC_HEX_MINUS_ONE: Durability bar set to hex numeric minus one
-    NUMERIC_MINUS_ONE: Durability bar set to numeric minus one
+    default: Durability bar set to default (box char)
+    numeric: Durability bar set to numeric
+    numeric_bin: Durability bar set to binary numeric
+    numeric_bin_minus_one: Durability bar set to binary numeric minus one
+    numeric_hex: Durability bar set to hex numeric
+    numeric_minus_one: Durability bar set to hex numeric minus one
+    numeric_hex_minus_one: Durability bar set to numeric minus one
   cloneitem:
     fail: 'Failed to clone item %s : %s already exists'
     success: Successfully cloned item %s as %s
@@ -398,12 +405,12 @@ message:
       range: Item '%s' damage set to %d-%d
       value: Item '%s' damage set to %d
   damagemode:
-    ADDITIONAL: Item '%s' damage mode set to additional damage (vanilla minecraft
+    additional: Item '%s' damage mode set to additional damage (vanilla minecraft
       damage plus RPGItem damage)
-    FIXED: Item '%s' damage mode set to fixed damage (default)
-    MULTIPLY: Item '%s' damage mode set to multiply damage (vanilla minecraft damage
+    fixed: Item '%s' damage mode set to fixed damage (default)
+    multiply: Item '%s' damage mode set to multiply damage (vanilla minecraft damage
       multiply by RPGItem damage)
-    VANILLA: Item '%s' damage mode set to vanilla damage (use vanilla minecraft damage)
+    vanilla: Item '%s' damage mode set to vanilla damage (use vanilla minecraft damage)
   description:
     change: Changed line
     ok: Added line
@@ -426,9 +433,9 @@ message:
     removed: Attached enchantments removed
     success: Success
   enchantmode:
-    ADDITIONAL: Item '%s' enchant mode set to allow all enchant
-    DISALLOW: Item '%s' enchant mode set to disallowing custom enchant (default)
-    PERMISSION: Item '%s' enchant mode set to requiring permission (rpgitem.enchant.[item
+    allow: Item '%s' enchant mode set to allow all enchant
+    disallow: Item '%s' enchant mode set to disallowing custom enchant (default)
+    permission: Item '%s' enchant mode set to requiring permission (rpgitem.enchant.[item
       name])
   error:
     command:
@@ -472,6 +479,8 @@ message:
       &c&lWe suggest you stop the server and check item files and backups manually and file a issue with you console log to us, thanks.
       &e%s
     visualeffect: 'Not a valid visual effect: %s'
+    invalid_expression: <TODO>
+    invalid_enchant: <TODO>
   export:
     gist:
       code: 'Gist upload failed: %d'
@@ -576,6 +585,7 @@ message:
     removed: Marker %s removed
     show: Marker %s (%s)：%s
     unknown: Unknown marker %s
+    no_display: <TODO>
   model:
     is: This is a model item
     to: Modelled item
@@ -588,6 +598,7 @@ message:
     removed: Modifier %s removed
     show: 修饰 %s - %s (%s)：%s
     unknown: Unknown modifier %s
+    remove: <TODO>
   no_item: No item.
   num_out_of_range: '%d is out of range (%d, %d]'
   permission:
@@ -605,6 +616,7 @@ message:
     reorder: Reordered power %s to %d
     show: Power %d - %s (%s)：%s &r[%s]
     unknown: Unknown power %s
+    no_description: <TODO>
   power_property:
     all: |-
       %d th power '%s''s properties:
@@ -668,6 +680,7 @@ message:
     show: Trigger %s - base %s (%s)：%s
     unknown: Unknown trigger %s
     unknown_base: 'Unknown base trigger %s. Available: %s'
+    change: <TODO>
   type:
     get: Item '%s' type is '%s'
     set: Item '%s' type set to '%s'
@@ -695,6 +708,10 @@ message:
     override:
       active: Worldguard override active
       disabled: Worldguard override disabled
+  damagetype:
+    set: <TODO>
+  armor_expression:
+    set: <TODO>
 power:
   airborne: Damage increase by %d%% when gliding
   aoe:
