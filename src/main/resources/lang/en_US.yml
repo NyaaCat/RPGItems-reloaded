@@ -1364,9 +1364,9 @@ properties:
     pitch: Pitch of sound
     sound: Sound to be played
     volume: Volume of sound
-    delay: <TODO>
-    firingRange: <TODO>
-    playLocation: <TODO>
+    delay: Ticks to delay before play sound
+    firingRange: No use yet
+    playLocation: Play sound at Player or Target
   stuck:
     chance: Chance of triggering this power, 1/n
     cost: Cost of this power (hit)
@@ -1407,7 +1407,7 @@ properties:
     main_name: Translocator
     setupCost: Cost to setup an translocator
     tpCost: Cost to teleport to the translocator
-    speed: <TODO>
+    speed: Throw speed
   unbreakable:
     main_description: Mark this item as unbreakable
     main_name: Unbreakable
@@ -1415,130 +1415,130 @@ properties:
     main_description: Make this item unstackable (also untradable with vanilla NPC
       GUI)
     main_name: Unique flag
-    enabled: <TODO>
+    enabled: Enable this flag
   xorcondition:
     init: Init value
     main_description: Condition that xor all its Conditions
     main_name: Xor Condition
   aoedamage:
-    suppressMelee: <TODO>
-    selfapplication: <TODO>
-    main_name: <TODO>
-    mustsee: <TODO>
-    count: <TODO>
-    range: <TODO>
-    castOff: <TODO>
-    firingLocation: <TODO>
-    angle: <TODO>
-    minrange: <TODO>
-    selectAfterDelay: <TODO>
-    firingRange: <TODO>
-    main_description: <TODO>
-    name: <TODO>
-    damage: <TODO>
-    incluePlayers: <TODO>
-    delay: <TODO>
+    suppressMelee: Suppress hit trigger
+    selfapplication: Deal damage to user self
+    main_name: AOE Damage
+    mustsee: Deal damage only to visible entity (not hiding behind a block)
+    count: Number of entities to deal damage
+    range: Radius of area effect
+    castOff: Use player position when casting this power, not real time position
+    firingLocation: Use player or target as center
+    angle: Visible angle
+    minrange: Minimum range to deal damage, closer entities will not be selected
+    selectAfterDelay: If delay is set, check for entity to deal damage after the delay, otherwise check when casting the power
+    firingRange: No use yet
+    main_description: Deal damage to an area of entities
+    name: AOEDamage
+    damage: Actual damage to deal
+    incluePlayers: Deal damage to players
+    delay: Ticks delay before deal damage
   hit_taken:
-    main_name: <TODO>
-    minDamage: <TODO>
-    maxDamage: <TODO>
-    main_description: <TODO>
+    main_name: Hit taken
+    minDamage: Minimum damage to trigger this power
+    maxDamage: Maximum damage to trigger this power
+    main_description: Trigger when take damage before any further calculation (armor, etc)
   mulmodifier:
-    value: <TODO>
-    main_name: <TODO>
-    main_description: <TODO>
+    value: Value to multiply
+    main_name: Mulmodifier
+    main_description: TBD. Modify power properties on-the-fly
   projectile_launch:
-    main_description: <TODO>
-    main_name: <TODO>
+    main_description: Trigger when launching a projectile
+    main_name: Project Launch
   plusmodifier:
-    main_name: <TODO>
-    value: <TODO>
-    main_description: <TODO>
+    main_name: Plusmodifier
+    value: Value to add
+    main_description: TBD. Modify power properties on-the-fly
   tick_offhand:
-    main_name: <TODO>
-    main_description: <TODO>
+    main_name: Tick offhand
+    main_description: Trigger every tick when item is in offhand
   hit:
-    main_name: <TODO>
-    minDamage: <TODO>
-    main_description: <TODO>
-    maxDamage: <TODO>
+    main_name: Hit
+    minDamage: Minimum damage to trigger power
+    main_description: Trigger when hit an entity
+    maxDamage: Maximum damage to trigger power
   offhand_click:
-    main_name: <TODO>
-    main_description: <TODO>
+    main_name: Offhand click
+    main_description: Trigger when click with item in offhand
   bow_shoot:
-    main_description: <TODO>
-    minForce: <TODO>
-    main_name: <TODO>
-    maxForce: <TODO>
+    main_description: Trigger when shooting a bow
+    minForce: Minimum force of the bow to trigger power
+    main_name: Bow shoot
+    maxForce: Maximum force of the bow to trigger power
   attachment:
-    main_name: <TODO>
-    main_description: <TODO>
+    main_name: Attachment
+    main_description: Trigger items in inventory as attachment
   tick:
-    main_description: <TODO>
-    main_name: <TODO>
+    main_description: Trigger everytick when item in main hand
+    main_name: Tick
   evalmodifier:
-    main_description: <TODO>
-    main_name: <TODO>
-    expression: <TODO>
+    main_description: TBD. Modify power properties on-the-fly
+    main_name: Evalmodifier
+    expression: Expression to apply
   dying:
-    main_description: <TODO>
-    maxDamage: <TODO>
-    minDamage: <TODO>
-    main_name: <TODO>
+    main_description: Trigger when at low health
+    maxDamage: Maximum damage to trigger power
+    minDamage: Minimum damage to trigger power
+    main_name: Dying
   hit_global:
-    minDamage: <TODO>
-    main_name: <TODO>
-    main_description: <TODO>
-    maxDamage: <TODO>
+    minDamage: Minimum damage to trigger power
+    main_name: Hit global
+    main_description: Trigger everything but item in mainhand, whenever hit an entity
+    maxDamage: Maximum damage to trigger power
   divmodifier:
-    value: <TODO>
-    main_description: <TODO>
-    main_name: <TODO>
+    value: Value to divide, cannot be 0
+    main_description: TBD. Modify power properties on-the-fly
+    main_name: Divmodifier
   place_off_hand:
-    main_description: <TODO>
-    main_name: <TODO>
+    main_description: Trigger when placing block with offhand
+    main_name: Place offhand
   hurt:
-    main_description: <TODO>
-    minDamage: <TODO>
-    main_name: <TODO>
-    maxDamage: <TODO>
+    main_description: Trigger when hurt (damage applied to player after armor calculation, etc)
+    minDamage: Minimum damage to trigger power
+    main_name: Hurt
+    maxDamage: Maximum damage to trigger power
   location:
-    main_name: <TODO>
-    main_description: <TODO>
+    main_name: Location
+    main_description: Trigger with specific location
   beam_end:
-    main_description: <TODO>
-    main_name: <TODO>
+    main_description: Trigger when beam ends
+    main_name: Beam end
   sneaking:
-    main_name: <TODO>
-    main_description: <TODO>
+    main_name: Sneaking
+    main_description: Trigger when sneaking
   swap_to_mainhand:
-    main_description: <TODO>
-    main_name: <TODO>
+    main_description: Trigger when swap item to mainhand
+    main_name: Swap to mainhand
   pickup_off_hand:
-    main_description: <TODO>
-    main_name: <TODO>
+    main_description: Trigger when pickup item to offhand
+    main_name: Pickup offhand
   swap_to_offhand:
-    main_name: <TODO>
-    main_description: <TODO>
+    main_name: Swap to offhand
+    main_description: Trigger when swap item to offhand
   left_click:
-    main_description: <TODO>
-    main_name: <TODO>
+    main_description: Trigger when left click
+    main_name: Left click
   projectile_hit:
-    main_description: <TODO>
-    main_name: <TODO>
+    main_description: Trigger when projectile hit something
+    main_name: Projectile hit
   damagetype:
-    damageType: <TODO>
-    main_description: <TODO>
-    main_name: <TODO>
+    damageType: String to match, e.g., melee / ranged / magic
+    main_description: A string to match specific damage type, often used in class build system
+    main_name: Damage Type
   right_click:
-    main_description: <TODO>
-    main_name: <TODO>
+    main_description: Trigger when right click
+    main_name: Right click
   livingentity:
-    main_description: <TODO>
-    main_name: <TODO>
+    main_description: Trigger when target is living entity
+    main_name: Living Entity
   sprint:
-    main_description: <TODO>
-    main_name: <TODO>
+    main_description: Trigger when start sprint (trigger once)
+    main_name: Sprint
   sneak:
-    main_name: <TODO>
-    main_description: <TODO>
+    main_name: Sneak
+    main_description: Trigger when start sneak (trigger once)
