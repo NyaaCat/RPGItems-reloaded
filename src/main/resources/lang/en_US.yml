@@ -808,7 +808,7 @@ properties:
     main_description: Do more damage when gliding
     main_name: Airborne
     percentage: Damage increase in percentage when gliding
-    setBaseDamage: <TODO>
+    setBaseDamage: Set as base damage to further calculations
   andcondition:
     main_description: Condition that requires all its Conditions are met
     main_name: And Condition
@@ -821,9 +821,9 @@ properties:
     range: Effective range in blocks.
     selfapplication: Whether to apply effect on triggering player.
     type: Type of applied effect.
-    count: <TODO>
-    angle: <TODO>
-    target: <TODO>
+    count: Number of targets to apply effect
+    angle: View angle to select targets
+    target: Type of target, can be player or mob or entity
   aoecommand:
     c: Maximum count of entities.
     command: Command to be executed
@@ -858,8 +858,8 @@ properties:
     main_name: Attract
     maxSpeed: Maximum speed when attracting.
     radius: Effective range in blocks.
-    firingLocation: <TODO>
-    firingRange: <TODO>
+    firingLocation: Define location of AOE center, can be SELF or TARGET
+    firingRange: No use yet
   attributemodifier:
     amount: Amount
     attribute: Attribute
@@ -880,10 +880,10 @@ properties:
     id: ID of this condition/selector.
     isCritical: Whether abort current trigger if this condition fails.
     isStatic: Whether only check this condition once.
-    powerId: <TODO>
-    powerTags: <TODO>
-    markerId: <TODO>
-    tags: <TODO>
+    powerId: Specific Power ID
+    powerTags: Power tags
+    markerId: Specific marker ID
+    tags: Tags
     priority: Priority of this custom trigger.
     requireHurtByEntity: Whether only run this power when hurt by entity.
     requiredContext: Context key used by this power.
@@ -925,21 +925,21 @@ properties:
     speedBias: Expression for calculating speed.
     ticksBeforeHoming: Ticks before homing starts.
     ttl: Times to live (beam ends when either length or ttl reached)
-    firingTheta: <TODO>
-    firingLocation: <TODO>
-    suppressMelee: <TODO>
-    homingTarget: <TODO>
-    effectOnly: <TODO>
-    castOff: <TODO>
-    firingRange: <TODO>
-    initialRotation: <TODO>
-    firingPhi: <TODO>
-    particleDensity: <TODO>
-    firingR: <TODO>
+    firingTheta: Polar coordinates parameter
+    firingLocation: Can be SELF or TARGET
+    suppressMelee: Whether trigger HIT
+    homingTarget: Can be MOBS / ENTITY / PLAYER
+    effectOnly: Can be MOBS / ENTITY / PLAYER
+    castOff: Use player position when casting this power, not real time (after delay)
+    firingRange: No use yet
+    initialRotation: Initial rotation when calculating polar coordinates
+    firingPhi: Polar coordinates parameter
+    particleDensity: Density of particles per block, recommended 1-10, higher has better visual effect but consume more network resource and GPU
+    firingR: Polar coordinates parameter
   cancelbowarrow:
     main_description: Bow will not shoot arrow (will not consume arrow either)
     main_name: Cancel bow arrow
-    cancelArrow: <TODO>
+    cancelArrow: true or false
   chancecondition:
     chancePercentage: chance, in percentage
     main_description: Condition that met by chance
@@ -950,7 +950,7 @@ properties:
     main_name: Charge
     percentage: Damage increase in percentage when sprinting
     speedPercentage: Damage increase in percentage when faster than default
-    setBaseDamage: <TODO>
+    setBaseDamage: Set as base damage for futher calculations
   color:
     clay: Throw colorful clays
     glass: Throw colorful glasses
@@ -1012,7 +1012,7 @@ properties:
     main_description: Run command on click with a delay
     main_name: Delayed Command
     permission: Permission that will be given to user executing command
-    cmdInPlace: <TODO>
+    cmdInPlace: Execute command in-place
   dummy:
     checkDurabilityBound: If to check durability bound of this item
     cooldownKey: Key for cooldowning
@@ -1022,12 +1022,12 @@ properties:
     main_name: Dummy
     showCDWarning: Show cooldown warning
     successResult: Result returned when success
-    globalCooldown: <TODO>
-    enchCostPercentage: <TODO>
-    costByDamage: <TODO>
-    enchantmentType: <TODO>
-    doEnchReduceCost: <TODO>
-    costByEnchantment: <TODO>
+    globalCooldown: Override other cooldowns on this item
+    enchCostPercentage: Cost of durability with enchants, scale with level
+    costByDamage: Consume durability by damage value
+    enchantmentType: Specific enchantment to match
+    doEnchReduceCost: true if the enchantment is meant to increase durability
+    costByEnchantment: true if the enchantment is meant to do with durability
   durabilitycondition:
     durabilityMax: Durability should less than durabilityMax
     durabilityMin: Durability should great than durabilityMin
@@ -1042,10 +1042,10 @@ properties:
   enchantedhit:
     main_description: Amplify damage with specific enchantment
     main_name: Enchanted Hit
-    enchantmentType: <TODO>
-    mode: <TODO>
-    setBaseDamage: <TODO>
-    amountPerLevel: <TODO>
+    enchantmentType: Specific enchantment to match
+    mode: Can be MOBS / ENTITY / PLAYER
+    setBaseDamage: Set as base damage for further calculations
+    amountPerLevel: Value for level scaling
   equipmentcondition:
     itemStack: Item that player should wears
     main_description: Condition that requires player wear some item
@@ -1054,7 +1054,7 @@ properties:
     material: Material that player should wears
     rpgitem: RPGItem that player should wears
     slots: Equipment slots
-    requireEmpty: <TODO>
+    requireEmpty: true if you want this slot to be empty
   evalcondition:
     expression: Expression to compute condition
     main_description: Calculate condition dynamicly
@@ -1072,7 +1072,7 @@ properties:
     main_description: Make a explosion that caused by the player
     main_name: Explosion
     power: Power of explosion. 4 for TNT
-    explosionPower: <TODO>
+    explosionPower: Explosion power, creeper do 3 in vanilla hard difficulty
   fire:
     burnduration: Duration of the fire, in ticks
     distance: Maximum distance
@@ -1110,8 +1110,8 @@ properties:
     maxTicks: Maximum ticks tracking
     velFactor: Factor of velocity change per tick
     viewAngle: Maximum view angle to lock enemy
-    forceFactor: <TODO>
-    delay: <TODO>
+    forceFactor: Factor to calculate in velocity force
+    delay: Delay before projectile homing on target
   headshot:
     factor: Factor of headshot damage. E.g. deals (damage * factor) damage
     main_description: Increase damage when headshot
@@ -1129,7 +1129,7 @@ properties:
     main_description: Send the hit target flying
     main_name: Knockup
     power: Power of knock up
-    knockUpPower: <TODO>
+    knockUpPower: Power of knock up
   lastresultcondition:
     failOnNoResult: Whether fails when no power
     main_description: Requires result of last power is in a set
@@ -1158,7 +1158,7 @@ properties:
   noimmutabletick:
     main_description: Cancel the damage delay (no-damage-tick)
     main_name: No Immutable Tick
-    immuneTime: <TODO>
+    immuneTime: Tick of immunity
   orcondition:
     main_description: Condition that requires at least one of its Conditions are met
     main_name: Or Condition
@@ -1176,9 +1176,9 @@ properties:
     offsetZ: Offset Z
     particle: Name of particle effect
     particleCount: Count of particle
-    playLocation: <TODO>
-    firingRange: <TODO>
-    delay: <TODO>
+    playLocation: Play particle at SELF or TARGET
+    firingRange: No use yet
+    delay: Delay of execution
   particlebarrier:
     barrierHealth: Health of a new barrier
     effect: Effect of particle barrier
@@ -1204,9 +1204,9 @@ properties:
     offsetZ: Offset Z
     particle: Name of particle effect
     particleCount: Count of particle
-    firingRange: <TODO>
-    playLocation: <TODO>
-    delay: <TODO>
+    firingRange: No use yet
+    playLocation: Play particle at SELF or TARGET
+    delay: Delay of execution
   potionhit:
     amplifier: Amplifier of potion effect
     chance: Chance of triggering this power, 1/n
@@ -1220,7 +1220,7 @@ properties:
     main_description: Apply effect to player when used
     main_name: Potion Self
     type: Type of potion effect
-    clear: <TODO>
+    clear: Clear this effect instead of applying
   potiontick:
     amplifier: Amplifier of potion effect
     clear: Whether to remove the effect instead of adding it
@@ -1243,15 +1243,15 @@ properties:
     setFireballDirection: Whether to set Fireball' direction so it won't curve
     speed: Speed of projectiles
     yield: Radius affected by this Explosive's explosion
-    firingPhi: <TODO>
-    firingR: <TODO>
-    applyForce: <TODO>
-    suppressArrow: <TODO>
-    firingLocation: <TODO>
-    firingTheta: <TODO>
-    castOff: <TODO>
-    firingRange: <TODO>
-    initialRotation: <TODO>
+    firingPhi: Polar coordinates parameter
+    firingR: Polar coordinates parameter
+    applyForce: Apply bow force to projectile speed
+    suppressArrow: Bow will not shoot arrow (still consume it)
+    firingLocation: Can be SELF or TARGET
+    firingTheta: Polar coordinates parameter
+    castOff: Cast at player when triggering this power, instead of realtime (after delay, etc)
+    firingRange: No use yet
+    initialRotation: Initial rotation to calculate in polar coordinates
   pumpkin:
     chance: Chance of triggering this power, in percentage
     drop: Drop chance of the pumpkin, 0.0~1.0
@@ -1303,18 +1303,18 @@ properties:
       flying
     main_name: Rumble
     power: Power of rumble
-    damage: <TODO>
+    damage: Damage dealt of rumble
   scoreboard:
     abortOnSuccess: Abort subsequence execution of powers when success
     main_description: Add/remove tag/team to/from player's scoreboard
     main_name: Scoreboard
     tag: Tag(s) to add and remove, `TO_ADD,!TO_REMOVE`
     team: Team(s) to join and leave, `JOIN,!LEAVE`
-    scoreOperation: <TODO>
-    value: <TODO>
-    reverseTagAfterDelay: <TODO>
-    delay: <TODO>
-    objective: <TODO>
+    scoreOperation: NO_OP, ADD_SCORE, SET_SCORE, RESET_SCORE
+    value: Value to operate
+    reverseTagAfterDelay: Reserve target tag to original state after delay
+    delay: Ticks of delay
+    objective: Objective name
   scoreboardcondition:
     main_description: Condition that add requirements of player's scoreboard
     main_name: Scoreboard Condition
@@ -1341,7 +1341,7 @@ properties:
       current position if empty
     z: Z-coordinate of reference position, tilde notation is available. Use player's
       current position if empty
-    gameMode: <TODO>
+    gameMode: Player game mode
   shulkerbullet:
     main_description: Launches shulker bullet when right clicked, target nearest entity
       in front of player
@@ -1356,8 +1356,8 @@ properties:
   slotcondition:
     main_description: Require item to be placed in correct inventory slot
     main_name: Slot condition
-    critical: <TODO>
-    slots: <TODO>
+    critical: true to stop processing further conditions if not met, and return false
+    slots: Target slot to match
   sound:
     main_description: Play a sound
     main_name: Sound
