@@ -791,21 +791,21 @@ properties:
     main_description: 空中或飞行时造成更多伤害
     main_name: 空中处决技
     percentage: 空中或飞行时造成伤害增加的百分比
-    setBaseDamage: <TODO>
+    setBaseDamage: 设置为基础值以继续参与后续计算
   andcondition:
     main_description: 要求所有条件满足
     main_name: And 条件
   aoe:
     amplifier: 效果倍率。
-    angle: <TODO>
-    count: <TODO>
+    angle: 视野角度
+    count: 应用的实体数量
     duration: 持续时间，游戏刻。
     main_description: 对周围实体施放状态效果。可使用选择器。
     main_name: 范围效果
     name: 技能的提示文字。
     range: 有效范围，方块。
     selfapplication: 是否对自身使用。
-    target: <TODO>
+    target: 目标类型，ENTITY / PLAYER / MOBS
     type: 状态效果。
   aoecommand:
     c: 实体的最大数量。
@@ -821,29 +821,29 @@ properties:
     selfapplication: 是否应用于触发的玩家。
     type: 实体的类型
   aoedamage:
-    angle: <TODO>
-    castOff: <TODO>
-    count: <TODO>
-    damage: <TODO>
-    delay: <TODO>
-    firingLocation: <TODO>
-    firingRange: <TODO>
-    incluePlayers: <TODO>
-    main_description: <TODO>
-    main_name: <TODO>
-    minrange: <TODO>
-    mustsee: <TODO>
-    name: <TODO>
-    range: <TODO>
-    selectAfterDelay: <TODO>
-    selfapplication: <TODO>
-    suppressMelee: <TODO>
+    angle: 视野角度
+    castOff: 在玩家触发的原位置执行，而非玩家的实际位置
+    count: 应用的实体数量
+    damage: 伤害值
+    delay: 延迟 tick
+    firingLocation: 在 SELF 或 TARGET 为中心执行
+    firingRange: 未使用
+    incluePlayers: 是否包含玩家
+    main_description: 对一个范围的目标造成伤害
+    main_name: AOEDamage
+    minrange: 最小选择范围
+    mustsee: 目标必须不被方块阻挡
+    name: AOEDamage
+    range: 选择范围
+    selectAfterDelay: 延迟后再计算目标
+    selfapplication: 是否应用到自身
+    suppressMelee: 是否触发 HIT
   arrow:
     main_description: 发射一支箭。
     main_name: 射出一矢
   attachment:
-    main_description: <TODO>
-    main_name: <TODO>
+    main_description: 触发背包中的附件物品
+    main_name: ATTACHMENT
   attachments:
     allowedInvSlots: 可以使用的背包格，-1为禁用背包
     allowedItems: 可以使用的 RPGItem
@@ -856,8 +856,8 @@ properties:
     attractingEntityTickCost: 吸引时每个实体每刻的耐久消耗。
     attractingTickCost: 吸引时每刻的耐久消耗。
     duration: 主动触发的持续时间。
-    firingLocation: <TODO>
-    firingRange: <TODO>
+    firingLocation: 以 SELF 或 TARGET 为中心
+    firingRange: 尚未使用
     main_description: 吸引附近的怪物到玩家
     main_name: 吸引
     maxSpeed: 最大速度。
@@ -882,14 +882,14 @@ properties:
     id: 此条件/选择器的ID。
     isCritical: 条件失败时是否中止当前触发。
     isStatic: 是否仅在触发开始时测试条件。
-    markerId: <TODO>
-    powerId: <TODO>
-    powerTags: <TODO>
+    markerId: Marker ID
+    powerId: Power ID
+    powerTags: Power Tags
     priority: 触发的优先级。
     requireHurtByEntity: Whether only run this power when hurt by entity.
     requiredContext: 使用的上下文。
     selectors: 应用到本技能的选择器。
-    tags: <TODO>
+    tags: 标签
     targetItem: 修改器的目标物品。
     targetPower: 修改器的目标技能。
     targetProperty: 修改器的目标属性。
@@ -901,25 +901,25 @@ properties:
     bounce: 命中固体方块后可以反弹的总次数。
     burstCount: 每次触发发射的粒子束波数。
     burstInterval: 每波发射之间的间隔，游戏刻。
-    castOff: <TODO>
+    castOff: 在玩家触发的原位置执行，而非玩家的实际位置
     cone: 偏移角，度。
     damage: 粒子束击中伤害。
-    effectOnly: <TODO>
+    effectOnly: 仅展示效果，不触发任何事件
     extraData: 粒子的颜色参数（r,g,b,size），输入null可以置空。
-    firingLocation: <TODO>
-    firingPhi: <TODO>
-    firingR: <TODO>
-    firingRange: <TODO>
-    firingTheta: <TODO>
+    firingLocation: 在 SELF 或 TARGET 为中心执行
+    firingPhi: 极坐标系参数
+    firingR: 极坐标系参数
+    firingRange: 未使用
+    firingTheta: 极坐标系参数
     gravity: 粒子受到的重力加速度，方块/秒^2。（追踪开始后失效）
     hitSelfWhenBounced: 命中固体方块并反弹后是否可以命中自身。
     homing: 粒子束追踪目标的转弯半径，方块。（0代表不追踪）
     homingAngle: 粒子束锁定目标角度，度。
     homingMode: 粒子束锁定目标的模式。
     homingRange: 粒子束锁定目标的范围，方块。
-    homingTarget: <TODO>
+    homingTarget: 追踪目标
     ignoreWall: 粒子束是否无视固体方块。
-    initialRotation: <TODO>
+    initialRotation: 极坐标系的初始旋转
     length: 粒子前进的总长度，方块。(length或ttl之一到达时结束)
     main_description: 发射飞行的粒子束，粒子束有多种参数控制其行为。
     main_name: 粒子束
@@ -928,25 +928,25 @@ properties:
     offsetY: 粒子生成的Y轴范围，方块。（影响粒子束判定体积）
     offsetZ: 粒子生成的Z轴范围，方块。（影响粒子束判定体积）
     particle: 生成的粒子类型。
-    particleDensity: <TODO>
+    particleDensity: 粒子密度，推荐1-10，越高视觉效果越好，也占用更多资源
     particleSpeed: 粒子生成参数speed，参考/particle 。
     pierce: 每条粒子束可总计击中的生物数量。
     spawnsPerBlock: 每方块生成粒子的次数，值越高粒子束越密集。
     speed: 粒子束飞行速度，方块。
     speedBias: 额外速度函数表达式（请确保表达式符合规则）。
-    suppressMelee: <TODO>
+    suppressMelee: 不触发 HIT
     ticksBeforeHoming: 启动追踪的延迟，游戏刻。
     ttl: 粒子存在的时间，游戏刻。(length或ttl之一到达时结束)
   beam_end:
-    main_description: <TODO>
-    main_name: <TODO>
+    main_description: 粒子光束结束时触发
+    main_name: Beam end
   bow_shoot:
-    main_description: <TODO>
-    main_name: <TODO>
-    maxForce: <TODO>
-    minForce: <TODO>
+    main_description: 射箭时触发
+    main_name: Bow shoot
+    maxForce: 最大力道
+    minForce: 最小力道
   cancelbowarrow:
-    cancelArrow: <TODO>
+    cancelArrow: true 或 false
     main_description: 弓在发射时不会发射出箭矢
     main_name: 取消箭矢
   chancecondition:
@@ -958,7 +958,7 @@ properties:
     main_description: 冲刺时增加伤害
     main_name: 勇气绝杀
     percentage: 冲刺时伤害提升的比例
-    setBaseDamage: <TODO>
+    setBaseDamage: 设置为基础伤害值以参与后续计算
     speedPercentage: 速度高于默认速度时，每一倍速度的伤害提升
   color:
     clay: 暂时不可用
@@ -996,9 +996,9 @@ properties:
     main_description: 要求造成的伤害类型与条件满足
     main_name: 伤害类型条件
   damagetype:
-    damageType: <TODO>
-    main_description: <TODO>
-    main_name: <TODO>
+    damageType: 伤害类型字符串，例如 melee 或 ranged
+    main_description: 一个用于匹配的字符串，一般用在职业系统中
+    main_name: Damage Type
   deathcommand:
     chance: 触发几率， 1/n
     command: 执行的命令
@@ -1015,29 +1015,29 @@ properties:
     main_description: 弹反射来的箭矢或火球
     main_name: 弹反
   delayedcommand:
-    cmdInPlace: <TODO>
+    cmdInPlace: 在当前位置执行命令
     command: 执行的命令
     delay: 执行命令前的延迟
     main_description: 在一段时间后执行命令
     main_name: 延迟命令
     permission: 执行指令所需的临时权限
   divmodifier:
-    main_description: <TODO>
-    main_name: <TODO>
-    value: <TODO>
+    main_description: 除法修饰符
+    main_name: Divmodifier
+    value: 作为分母的值，不可为 0
   dummy:
     checkDurabilityBound: 是否检查物品的耐久边界
     cooldownKey: 冷却时间的标识
     cooldownResult: 冷却时的结果
-    costByDamage: <TODO>
-    costByEnchantment: <TODO>
+    costByDamage: 基于伤害值计算消耗
+    costByEnchantment: 基于附魔计算消耗
     costResult: 无法消耗耐久时的结果
-    doEnchReduceCost: <TODO>
-    enchCostPercentage: <TODO>
-    enchantmentType: <TODO>
-    globalCooldown: <TODO>
-    main_description: 什么都不做
-    main_name: 空
+    doEnchReduceCost: 附魔将影响消耗
+    enchCostPercentage: 附魔影响消耗耐久值的百分比
+    enchantmentType: 用于匹配的附魔类型
+    globalCooldown: 当前物品所有技能进入全局冷却
+    main_description: 什么都不做（大嘘
+    main_name: Dummy
     showCDWarning: 是否显示冷却消息
     successResult: 成功时的结果
   durabilitycondition:
@@ -1046,10 +1046,10 @@ properties:
     main_description: 要求耐久在一定范围内
     main_name: 耐久条件
   dying:
-    main_description: <TODO>
-    main_name: <TODO>
-    maxDamage: <TODO>
-    minDamage: <TODO>
+    main_description: 濒死触发
+    main_name: Dying
+    maxDamage: 最大伤害值
+    minDamage: 最小伤害值
   economy:
     abortOnFailure: 失败时中止
     amountToPlayer: 向玩家支付的数量（可为负）
@@ -1057,19 +1057,19 @@ properties:
     main_name: 经济
     showFailMessage: 失败时显示经济插件的消息
   enchantedhit:
-    amountPerLevel: <TODO>
-    enchantmentType: <TODO>
+    amountPerLevel: 每等级的计算数值
+    enchantmentType: 附魔类型
     main_description: 用指定的附魔来影响物品的伤害
     main_name: 附魔攻击
-    mode: <TODO>
-    setBaseDamage: <TODO>
+    mode: ADDITION 或 MULTIPLICATION
+    setBaseDamage: 设置为基础伤害值以参与后续计算
   equipmentcondition:
     itemStack: 玩家需要装备的物品
     main_description: 要求玩家穿特定装备
     main_name: 装备条件
     matchAllSlot: 是否要求所有装备栏匹配
     material: 玩家需要装备的材质
-    requireEmpty: <TODO>
+    requireEmpty: 匹配空槽
     rpgitem: 玩家需要装备的 RPGItem
     slots: 装备栏
   evalcondition:
@@ -1083,13 +1083,13 @@ properties:
     main_name: 动态伤害
     setBaseDamage: 是否设为基础伤害（伤害增益可叠加）
   evalmodifier:
-    expression: <TODO>
-    main_description: <TODO>
-    main_name: <TODO>
+    expression: 表达式
+    main_description: 表达式修饰符
+    main_name: Evalmodifier
   explosion:
     chance: 触发几率，百分比
     distance: 最远距离
-    explosionPower: <TODO>
+    explosionPower: 爆炸威力
     main_description: 制造一个玩家产生的爆炸
     main_name: 爆炸
     power: 爆炸威力。 4 为 TNT 的爆炸威力
@@ -1123,9 +1123,9 @@ properties:
     maxTicks: 捕获的最长时间
     throwSpeed: 捕获结束后实体投掷速度
   gunfu:
-    delay: <TODO>
+    delay: 延迟 ticks 后开始追踪目标
     distance: 最大索敌距离
-    forceFactor: <TODO>
+    forceFactor: 力道将影响速度
     initVelFactor: 初速度倍率
     main_description: 使弹射物自动追踪敌人
     main_name: 枪斗术
@@ -1141,31 +1141,31 @@ properties:
     soundEnemy: 是否显示被爆头粒子音效
     soundSelf: 是否显示爆头粒子音效
   hit:
-    main_description: <TODO>
-    main_name: <TODO>
-    maxDamage: <TODO>
-    minDamage: <TODO>
+    main_description: 命中目标时触发主手道具
+    main_name: Hit
+    maxDamage: 最大伤害值
+    minDamage: 最小伤害值
   hit_global:
-    main_description: <TODO>
-    main_name: <TODO>
-    maxDamage: <TODO>
-    minDamage: <TODO>
+    main_description: 命中目标时触发主手之外的道具（副手、背包等
+    main_name: Hit Global
+    maxDamage: 最大伤害值
+    minDamage: 最小伤害值
   hit_taken:
-    main_description: <TODO>
-    main_name: <TODO>
-    maxDamage: <TODO>
-    minDamage: <TODO>
+    main_description: 受伤（在开始计算护甲等之前）触发
+    main_name: Hit Taken
+    maxDamage: 最大伤害值
+    minDamage: 最小伤害值
   hurt:
-    main_description: <TODO>
-    main_name: <TODO>
-    maxDamage: <TODO>
-    minDamage: <TODO>
+    main_description: 受伤（计算完所有护甲等之后）触发
+    main_name: Hurt
+    maxDamage: 最大伤害值
+    minDamage: 最小伤害值
   ice:
     main_description: 发射一个冰方块，在击中处生成一个大冰块
     main_name: 冰冻
   knockup:
     chance: 触发几率， 1/n
-    knockUpPower: <TODO>
+    knockUpPower: 击飞力度
     main_description: 将目标击飞到空中
     main_name: 击飞
     power: 击飞的力度
@@ -1175,8 +1175,8 @@ properties:
     main_name: 结果条件
     okResults: 允许的结果
   left_click:
-    main_description: <TODO>
-    main_name: <TODO>
+    main_description: 左键点击触发
+    main_name: Left Click
   lifesteal:
     chance: 触发几率，百分比
     factor: 吸血量的系数
@@ -1187,11 +1187,11 @@ properties:
     main_description: 在击中处降下一道闪电
     main_name: 闪电
   livingentity:
-    main_description: <TODO>
-    main_name: <TODO>
+    main_description: 目标为 LivingEntity 时触发
+    main_name: LivingEntity
   location:
-    main_description: <TODO>
-    main_name: <TODO>
+    main_description: 在特定位置触发
+    main_name: Location
   lorefilter:
     desc: 技能的提示文字
     find: 是否只需要在lore中找到该正则表达式。
@@ -1204,26 +1204,26 @@ properties:
     maxDistance: 生物的最远距离
     maxTicks: 最长骑乘时间
   mulmodifier:
-    main_description: <TODO>
-    main_name: <TODO>
-    value: <TODO>
+    main_description: 乘算修饰符
+    main_name: Mulmodifier
+    value: 用于乘算的值
   noimmutabletick:
-    immuneTime: <TODO>
+    immuneTime: 无敌时间
     main_description: 取消被攻击怪物的无敌时间
     main_name: 取消无敌时间
   offhand_click:
-    main_description: <TODO>
-    main_name: <TODO>
+    main_description: 点击时触发副手道具
+    main_name: Offhand Click
   orcondition:
     main_description: 要求有至少一项满足
     main_name: Or 条件
   particle:
-    delay: <TODO>
+    delay: 延迟 ticks
     dustColor: 尘埃粒子效果的颜色
     dustSize: 尘埃粒子效果的大小
     effect: 视觉效果
     extra: 附加数据
-    firingRange: <TODO>
+    firingRange: 未使用
     force: 强制显示粒子
     main_description: 触发后生成粒子效果
     main_name: 粒子效果
@@ -1233,7 +1233,7 @@ properties:
     offsetZ: Z 偏移
     particle: 粒子效果
     particleCount: 粒子效果的数量
-    playLocation: <TODO>
+    playLocation: 可为 SELF 或 TARGET
   particlebarrier:
     barrierHealth: 满盾的生命值
     effect: 屏障的效果
@@ -1244,12 +1244,12 @@ properties:
     main_name: 粒子屏障
     projected: 是否为投射屏障
   particletick:
-    delay: <TODO>
+    delay: 延迟 ticks
     dustColor: 尘埃粒子效果的颜色
     dustSize: 尘埃粒子效果的大小
     effect: 视觉效果
     extra: 附加数据
-    firingRange: <TODO>
+    firingRange: 未使用
     force: 强制显示粒子
     interval: 间隔时间，游戏刻
     main_description: 佩戴后按照一定间隔生成粒子效果
@@ -1260,17 +1260,17 @@ properties:
     offsetZ: Z 偏移
     particle: 粒子效果
     particleCount: 粒子效果的数量
-    playLocation: <TODO>
+    playLocation: 可为 SELF 或 TARGET
   pickup_off_hand:
-    main_description: <TODO>
-    main_name: <TODO>
+    main_description: 副手捡拾触发
+    main_name: Pickup Offhand
   place_off_hand:
-    main_description: <TODO>
-    main_name: <TODO>
+    main_description: 副手放置触发
+    main_name: Place Offhand
   plusmodifier:
-    main_description: <TODO>
-    main_name: <TODO>
-    value: <TODO>
+    main_description: 加算修饰符
+    main_name: Plusmodifier
+    value: 用于加算的值
   potionhit:
     amplifier: 效果倍率
     chance: 触发几率，1/n
@@ -1280,7 +1280,7 @@ properties:
     type: 状态效果
   potionself:
     amplifier: 效果倍率
-    clear: <TODO>
+    clear: 免疫此效果而非应用
     duration: 持续时间，游戏刻
     main_description: 对自身施放状态效果
     main_name: 自身效果
@@ -1295,17 +1295,17 @@ properties:
     main_name: 佩戴状态效果
   projectile:
     amount: 弹射物的数量
-    applyForce: <TODO>
+    applyForce: 力道将影响速度
     burstCount: 发射次数
     burstInterval: 每次发射之间的间隔
-    castOff: <TODO>
-    firingLocation: <TODO>
-    firingPhi: <TODO>
-    firingR: <TODO>
-    firingRange: <TODO>
-    firingTheta: <TODO>
+    castOff: 在玩家触发的原位置执行，而非玩家的实际位置
+    firingLocation: 在 SELF 或 TARGET 为中心执行
+    firingPhi: 极坐标系参数
+    firingR: 极坐标系参数
+    firingRange: 未使用
+    firingTheta: 极坐标系参数
     gravity: 弹射物是否受到重力影响
-    initialRotation: <TODO>
+    initialRotation: 极坐标系的初始旋转
     isCone: 是否以锥形发射弹射物
     isIncendiary: 爆炸物是否会点火
     main_description: 发射弹射物
@@ -1314,14 +1314,14 @@ properties:
     range: 弹射物的散射角
     setFireballDirection: 是否设置火球的方向使其不偏离
     speed: 弹射物速度
-    suppressArrow: <TODO>
+    suppressArrow: 取消箭矢（仍然会消耗）
     yield: 爆炸物的爆炸半径
   projectile_hit:
-    main_description: <TODO>
-    main_name: <TODO>
+    main_description: 弹射物命中时触发
+    main_name: Projectile Hit
   projectile_launch:
-    main_description: <TODO>
-    main_name: <TODO>
+    main_description: 弹射物发射时触发
+    main_name: Projectile Launch
   pumpkin:
     chance: 触发几率，百分比
     drop: 南瓜头掉落几率
@@ -1368,25 +1368,25 @@ properties:
     main_name: 拯救
     useBed: 是否回床（而非出生点）
   right_click:
-    main_description: <TODO>
-    main_name: <TODO>
+    main_description: 右键点击触发
+    main_name: Right Click
   rumble:
-    damage: <TODO>
+    damage: 伤害值
     distance: 最大距离
     main_description: 沿着地面发射冲击波，击飞击中的实体
     main_name: 裂地猛击
     power: 击飞力度
   scoreboard:
     abortOnSuccess: 成功后中止后续技能
-    delay: <TODO>
+    delay: 延迟 ticks
     main_description: 添加或移除玩家的计分板标签或队伍
     main_name: 计分板
-    objective: <TODO>
-    reverseTagAfterDelay: <TODO>
-    scoreOperation: <TODO>
+    objective: Objective 名称
+    reverseTagAfterdelay: 延迟 ticks
+    scoreOperation: NO_OP / ADD_SCORE / SET_SCORE / RESET_SCORE
     tag: 需要添加或移除的标签，`TO_ADD,!TO_REMOVE`
     team: 需要加入或离开的队伍，`JOIN,!LEAVE`
-    value: <TODO>
+    value: 计算用值
   scoreboardcondition:
     main_description: 玩家的计分板需满足的条件
     main_name: 计分板条件
@@ -1398,7 +1398,7 @@ properties:
     dx: 距基准位置最大x轴偏移量
     dy: 距基准位置最大y轴偏移量
     dz: 距基准位置最大z轴偏移量
-    gameMode: <TODO>
+    gameMode: 玩家游戏模式
     id: 选择器的 ID，应在物品上唯一
     main_description: 对AOE技能的选择器
     main_name: 选择器
@@ -1422,28 +1422,28 @@ properties:
     main_name: 钩爪
     railMaterial: 可以钩的材质
   slotcondition:
-    critical: <TODO>
+    critical: 必要条件，如不满足则不在继续检查后续条件直接返回 false
     main_description: 要求物品放置在正确的物品栏位置
     main_name: 物品栏条件
-    slots: <TODO>
+    slots: 目标栏位
   sneak:
-    main_description: <TODO>
-    main_name: <TODO>
+    main_description: 潜行时触发（一次
+    main_name: Sneak
   sneaking:
-    main_description: <TODO>
-    main_name: <TODO>
+    main_description: 潜行时触发（每 tick
+    main_name: Sneaking
   sound:
-    delay: <TODO>
-    firingRange: <TODO>
+    delay: 延迟 ticks
+    firingRange: 未使用
     main_description: 播放声音
     main_name: 声音
     pitch: 音高
-    playLocation: <TODO>
+    playLocation: 可为 SELF 或 TARGET
     sound: 播放的声音
     volume: 音量
   sprint:
-    main_description: <TODO>
-    main_name: <TODO>
+    main_description: 冲刺时触发（一次
+    main_name: Sprint
   stuck:
     chance: 触发几率，1/n
     cost: 击中实体定身的消耗
@@ -1455,11 +1455,11 @@ properties:
     main_name: 定身
     range: 范围定身的范围
   swap_to_mainhand:
-    main_description: <TODO>
-    main_name: <TODO>
+    main_description: 切换物品到主手时触发
+    main_name: Swap to Mainhand
   swap_to_offhand:
-    main_description: <TODO>
-    main_name: <TODO>
+    main_description: 切换物品到副手时触发
+    main_name: Swap to offhand
   teleport:
     distance: 最大距离
     main_description: 传送到视线方向或者弹射物击中位置
@@ -1473,11 +1473,11 @@ properties:
     main_name: 投掷实体
     speed: 投掷速度
   tick:
-    main_description: <TODO>
-    main_name: <TODO>
+    main_description: 每 tick 触发主手物品
+    main_name: Tick
   tick_offhand:
-    main_description: <TODO>
-    main_name: <TODO>
+    main_description: 每 tick 触发副手物品
+    main_name: Tick Offhand
   tippedarrow:
     amplifier: 效果倍率
     duration: 持续时间，游戏刻
@@ -1494,13 +1494,13 @@ properties:
     main_description: 投掷信标，之后传送到信标位置
     main_name: 传送信标
     setupCost: 建立信标所需消耗
-    speed: <TODO>
+    speed: 投掷速度
     tpCost: 传送所需消耗
   unbreakable:
     main_description: 标记该物品为不可破坏
     main_name: 无法破坏
   unique:
-    enabled: <TODO>
+    enabled: 是否启用
     main_description: 给物品一个独一无二的标志
     main_name: 独特标志
   xorcondition:
