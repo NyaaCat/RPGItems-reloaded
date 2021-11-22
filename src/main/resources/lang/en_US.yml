@@ -1,28 +1,28 @@
 command:
   template:
     apply:
-      success: 已为以 %s 为模板的物品应用属性
+      success: Applied properties to items based on template %s
     create:
-      success: 成功以物品 %s 创建模板
+      success: Created template from item %s
     delete:
-      success: 成功删除模板 %s
-    not_template: 物品 %s 不是一个有效模板
+      success: Deleted template %s
+    not_template: "%s is not a valid template"
     placeholder:
       add:
-        success: 已为模板 %s 创建技能占位符 %s
-      bad_placeholder: 无效占位符 %s
-      info: 已添加的技能占位符：%s
-      itemName: 物品名：%s
-      not_template: 物品 %s 不是一个有效模板
+        success: "%s: added power placeholder %s"
+      bad_placeholder: Invalid placehold %s
+      info: "Power placeholder: %s"
+      itemName: "Item name: %s"
+      not_template: "%s is not a valid template"
       remove:
-        success: 已为模板 %s 移除技能占位符
-    bad_placeholder: <TODO>
+        success: "Removed power placeholder for template %s"
+    bad_placeholder: "Bad placeholder %s"
   list:
-    item_per_page: <TODO>
-    power_per_page: <TODO>
+    item_per_page: Items per page
+    power_per_page: Powers per page
   meta:
     quality:
-      warn_quality_not_exists: <TODO>
+      warn_quality_not_exists: "Quality not exist: %s"
 item:
   additionaldamage: Additional %s Damage
   armour: Armour
@@ -143,7 +143,7 @@ manual:
     description: Debug the item in your mainhand.
     usage: /rpgitem debug
   delete:
-    description: 删除指定模板
+    description: Delete specific template
     usage: /rpgitem template delete {item}
   description:
     description: Add/remove or replace text to item description/lore. Formatting codes
@@ -254,7 +254,7 @@ manual:
     description: Set item permission
     usage: /rpgitem permission {item} <permission> <true|false>
   placeholder:
-    description: 设定模板的技能占位符，被设定的技能指定参数在应用模板时不会发生变化
+    description: Set power placeholder for template. Set power properties will not change when applying template
     usage: /rpgitem template placeholder <option> {item} <powerId:property>
   power:
     add:
@@ -316,14 +316,14 @@ manual:
       description: Create a template with item
       usage: /rpgitem template create {item}
     delete:
-      description: 删除指定模板
+      description: Delete specific template
       usage: /rpgitem template delete {item}
     description: Set an item template.
     help:
-      description: 查看template命令的帮助
+      description: Show help message for template
       usage: /rpgitem template [help]
     placeholder:
-      description: 设定模板的技能占位符，被设定的技能指定参数在应用模板时不会发生变化
+      description: Set power placeholder for template. Set power properties will not change when applying template
       usage: /rpgitem template placeholder <option> {item} <powerId:property>
     usage: /rpgitem template [option]
   togglearmorlore:
@@ -373,14 +373,14 @@ message:
     info: More detailed help on http://rpgitems2.webs.com/ or /rpgitem help [terms]
     usage: 'Command usage for: /%s (%s)'
   condition:
-    change: 物品条件参数已更改
+    change: Item's condition property has been changed
     changed: Item's condition property has been changed
     description: '&3&lDescription: ''&r%s'''
     key: '&3&lCondition ''&r%s&3&l'''
     not_found: No condition found for %s
     ok: Condition %s added
     removed: Condition %s removed
-    show: Condition %s - %s (%s)：%s
+    show: "Condition %s - %s (%s): %s"
     unknown: Unknown condition %s
   cooldown:
     general: You must wait %.1f seconds before using %s
@@ -479,8 +479,8 @@ message:
       &c&lWe suggest you stop the server and check item files and backups manually and file a issue with you console log to us, thanks.
       &e%s
     visualeffect: 'Not a valid visual effect: %s'
-    invalid_expression: <TODO>
-    invalid_enchant: <TODO>
+    invalid_expression: Invalid Expression %s
+    invalid_enchant: Invalid Enchant %s
   export:
     gist:
       code: 'Gist upload failed: %d'
@@ -513,7 +513,7 @@ message:
       if you already have it.'
     gist:
       code: 'Gist download failed: %d'
-      ed: Gist 导入成功
+      ed: Gist imported successfully
       failed: Gist download failed
       ing: Importing item(s) from Gist
       notfound: Gist https://gist.github.com/%s not found
@@ -523,7 +523,7 @@ message:
     success: 'Item %s (UID: %d) imported successfully'
     url:
       code: 'Url download failed: %d'
-      ed: Url 导入成功
+      ed: Url imported successfully
       failed: Url download failed
       ing: Importing item from url
       notfound: Url %s not found
@@ -563,7 +563,7 @@ message:
       set: |-
         Not of item %s set to:
         %s
-    power: 技能 %d %s (%s)：%s &r[%s]
+    power: "Power %d %s (%s): %s &r[%s]"
     print: '{itemName}'
     recovering: Failed when reloading, recovering. Your edits saved to %s
     set: 'Item ''%s'' item set to {itemName} (%s): %d '
@@ -583,9 +583,9 @@ message:
     not_found: No marker found for %s
     ok: Marker %s added
     removed: Marker %s removed
-    show: Marker %s (%s)：%s
+    show: "Marker %s (%s): %s"
     unknown: Unknown marker %s
-    no_display: <TODO>
+    no_display: Marker has no display text
   model:
     is: This is a model item
     to: Modelled item
@@ -596,9 +596,9 @@ message:
     not_found: No modifier found for %s
     ok: Modifier %s added
     removed: Modifier %s removed
-    show: 修饰 %s - %s (%s)：%s
+    show: "Modifier %s - %s (%s): %s"
     unknown: Unknown modifier %s
-    remove: <TODO>
+    remove: Modifier removed
   no_item: No item.
   num_out_of_range: '%d is out of range (%d, %d]'
   permission:
@@ -614,9 +614,9 @@ message:
     ok: Power %s added at %d
     removed: Power %s removed at  %d
     reorder: Reordered power %s to %d
-    show: Power %d - %s (%s)：%s &r[%s]
+    show: "Power %d - %s (%s): %s &r[%s]"
     unknown: Unknown power %s
-    no_description: <TODO>
+    no_description: No Description available
   power_property:
     all: |-
       %d th power '%s''s properties:
@@ -677,10 +677,10 @@ message:
     not_found: No trigger found for %s
     ok: Trigger %s added
     removed: Trigger %s removed
-    show: Trigger %s - base %s (%s)：%s
+    show: "Trigger %s - base %s (%s): %s"
     unknown: Unknown trigger %s
     unknown_base: 'Unknown base trigger %s. Available: %s'
-    change: <TODO>
+    change: Trigger changed
   type:
     get: Item '%s' type is '%s'
     set: Item '%s' type set to '%s'
@@ -690,7 +690,7 @@ message:
   version: |-
     RPGItem v%s ({GIT_BRANCH} branch, {GIT_HASH})
 
-    Copyright © 2019 NyaaCat Developers
+    Copyright © 2021 NyaaCat Developers
     Copyright © 2013 TheCreeperOfRedstone
     License MIT
 
@@ -709,9 +709,9 @@ message:
       active: Worldguard override active
       disabled: Worldguard override disabled
   damagetype:
-    set: <TODO>
+    set: Damage Type set to %s
   armor_expression:
-    set: <TODO>
+    set: Armor Expression set to %s
 power:
   airborne: Damage increase by %d%% when gliding
   aoe:
@@ -786,20 +786,20 @@ power:
   unbreaking: Unbreaking %d
 properties:
   AOEDamage:
-    main_description: 造成一个范围内的伤害
-    main_name: 范围伤害
+    main_description: Deal damage to an area
+    main_name: AOE Damage
   ATTACHMENT:
-    main_name: 配件触发
+    main_name: Trigger as attachment
   BEAM_END:
-    main_name: 在粒子束消失的时候触发
+    main_name: Trigger when beam ends
   BOW_SHOOT:
-    main_name: 在弓发射时触发
+    main_name: Trigger when bow shoot
   DYING:
-    main_name: 在即将死亡时触发
+    main_name: Trigger when almost die
   HIT:
-    main_name: 在击中实体时触发且仅触发主手中的道具
+    main_name: Trigger when hit entity, only mainhand will be triggered
   HIT_GLOBAL:
-    main_name: 在击中实体时触发，会触发除主手外所有在背包中的道具
+    main_name: Trigger when hit entity, trigger everything (including inventory) except mainhand
   airborne:
     cap: Maximum damage done by this power
     main_description: Do more damage when gliding
@@ -913,8 +913,8 @@ properties:
     ticksBeforeHoming: Ticks before homing starts.
     ttl: Times to live (beam ends when either length or ttl reached)
   cancelbowarrow:
-    main_description: 弓在发射时不会发射出箭矢
-    main_name: 取消箭矢
+    main_description: Bow will not shoot arrow (will not consume arrow either)
+    main_name: Cancel bow arrow
   chancecondition:
     chancePercentage: chance, in percentage
     main_description: Condition that met by chance
@@ -926,11 +926,11 @@ properties:
     percentage: Damage increase in percentage when sprinting
     speedPercentage: Damage increase in percentage when faster than default
   color:
-    clay: N/A
-    glass: N/A
-    main_description: NOT AVAILABLE YET
+    clay: Throw colorful clays
+    glass: Throw colorful glasses
+    main_description: Throw colorful blocks
     main_name: Color
-    wool: N/A
+    wool: Throw colorful wools
   command:
     command: Command to be executed
     main_description: Run a command on click.
@@ -961,8 +961,8 @@ properties:
     setBaseDamage: Whether to set event base damage to final damage to allow stacking
       of damage power.
   damageType:
-    main_description: 要求造成的伤害类型与条件满足
-    main_name: 伤害类型条件
+    main_description: A string condition to match when dealing damage, e.g., melee / ranged / magic
+    main_name: DamageType
   deathcommand:
     chance: Chance of triggering this power, 1/n
     command: Command to be executed
@@ -1006,8 +1006,8 @@ properties:
     main_name: Economy
     showFailMessage: Show fail message from economy provider
   enchantedhit:
-    main_description: 用指定的附魔来影响物品的伤害
-    main_name: 附魔攻击
+    main_description: Amplify damage with specific enchantment
+    main_name: Enchanted Hit
   equipmentcondition:
     itemStack: Item that player should wears
     main_description: Condition that requires player wear some item
@@ -1287,8 +1287,8 @@ properties:
     main_name: Sky Hook
     railMaterial: Material that can hooks on
   slotcondition:
-    main_description: 要求物品放置在正确的物品栏位置
-    main_name: 物品栏条件
+    main_description: Require item to be placed in correct inventory slot
+    main_name: Slot condition
   sound:
     main_description: Play a sound
     main_name: Sound
@@ -1339,8 +1339,8 @@ properties:
     main_description: Mark this item as unbreakable
     main_name: Unbreakable
   unique:
-    main_description: 给物品一个独一无二的标志
-    main_name: 独特标志
+    main_description: Make this item unstackable (also untradable with vanilla NPC GUI)
+    main_name: Unique flag
   xorcondition:
     init: Init value
     main_description: Condition that xor all its Conditions
