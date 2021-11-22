@@ -1,14 +1,14 @@
 command:
   list:
-    item_per_page: <TODO>
-    power_per_page: <TODO>
+    item_per_page: 每页列出的物品
+    power_per_page: 每页列出的技能
   meta:
     quality:
-      warn_quality_not_exists: <TODO>
+      warn_quality_not_exists: 品质不存在：%s
   template:
     apply:
       success: 已为以 %s 为模板的物品应用属性
-    bad_placeholder: <TODO>
+    bad_placeholder: 无效的占位符：%s
     create:
       success: 成功以物品 %s 创建模板
     delete:
@@ -44,8 +44,7 @@ manual:
       usage: /rpgitem template delete {item}
     description: 对物品应用指定模板
     placeholder:
-      description: Set powers placeholder of the template,the parameters specified
-        by the placeholder will not change when template is applied.
+      description: 为模板设置技能属性，已设置的属性在应用模板时不会变化。
       usage: /rpgitem template placeholder <option> {item} <powerId:property>
     usage: /rpgitem template apply {item}
   armorExpression:
@@ -72,21 +71,21 @@ manual:
   command:
     template:
       apply:
-        success: The template %s has been applied to items.
+        success: 模板 %s 已应用至物品
       create:
-        success: Successfully created template with item %s .
+        success: 成功从物品 %s 创建模板
       delete:
-        success: Delete the template %s
-      not_template: Item %s is not a valid template.
+        success: 已删除模板 %s
+      not_template: 物品 %s 不是有效的模板
       placeholder:
         add:
-          success: Added placeholder to template %s
-        bad_placeholder: Invalid placeholder %s
-        info: 'Placeholder info: %s'
-        itemName: 'Item: %s'
-        not_template: Item %s is not a valid template.
+          success: 为模板 %s 添加了占位符
+        bad_placeholder: 无效占位符 %s
+        info: '占位符信息： %s'
+        itemName: '物品： %s'
+        not_template: 物品 %s 不是有效的模板
         remove:
-          success: Removed placeholder from template %s
+          success: 从模板 %s 移除了占位符
   condition:
     add:
       description: 给物品添加条件
@@ -351,7 +350,7 @@ manual:
     usage: /rpgitem worldguard
 message:
   armor_expression:
-    set: <TODO>
+    set: 已设置护甲计算表达式 %s
   armour:
     get: 物品 '%s' 护甲为 '%d%%'
     set: 物品 '%s' 护甲已设置为 '%d%%'
@@ -412,7 +411,7 @@ message:
     multiply: 物品 '%s' 伤害模式设定为乘法伤害（原版伤害乘以RPG伤害）
     vanilla: 物品 '%s' 伤害模式设定为原版伤害
   damagetype:
-    set: <TODO>
+    set: 已设置伤害类型 %s
   description:
     change: 该行文本已变更
     ok: 该行文本已增加
@@ -452,8 +451,8 @@ message:
       format: '''%s'' 不是一个整数'
       limit: 数值必须在 %d 到 %d 之间
     invalid_command_arg: 加载技能失败：%s，%s
-    invalid_enchant: <TODO>
-    invalid_expression: <TODO>
+    invalid_enchant: 无效附魔 %s
+    invalid_expression: 无效表达式 %s
     invalid_option: '输入 %s 对于 %s 无效. 可选项: %s'
     invalid_regex: 无效的正则表达式
     item: 未知物品 '%s'
@@ -575,7 +574,7 @@ message:
     change: 物品标志参数已更改
     description: '&3&l描述: ''&r%s'''
     key: '&3&l标志 ''&r%s&3&l'''
-    no_display: <TODO>
+    no_display: 无展示文本
     not_found: 未找到满足 %s 的标志
     ok: 标志 %s 已添加
     removed: 标志 %s 已移除
@@ -590,7 +589,7 @@ message:
     key: '&3&l修饰 ''&r%s&3&l'''
     not_found: 未找到满足 %s 的修饰
     ok: 修饰 %s 已添加
-    remove: <TODO>
+    remove: 移除修饰符
     removed: 修饰 %s 已移除
     show: 修饰 %s - %s (%s)：%s
     unknown: 未知修饰 %s
@@ -604,7 +603,7 @@ message:
     description: '&3&l描述: ''&r%s'''
     ignored_trigger: 忽略物品%3$s技能%2$s的未知触发%1$s
     key: '&3&l技能 &r%s&3&l'
-    no_description: <TODO>
+    no_description: 无说明
     no_display: 无说明
     not_found: 未找到满足 %s 的技能
     ok: 技能 %s 已添加至 %d 号位
@@ -667,7 +666,7 @@ message:
     far: 太远了...
   translocator: '%s 的传送信标'
   trigger:
-    change: <TODO>
+    change: 已改变触发
     description: '&3&l描述: ''&r%s'''
     key: '&3&l触发 ''&r%s&3&l'''
     not_found: 未找到满足 %s 的触发
@@ -685,7 +684,7 @@ message:
   version: |-
     RPGItem v%s （{GIT_BRANCH} 分支，{GIT_HASH}）
 
-    版权所有 © 2019 NyaaCat 开发组
+    版权所有 © 2021 NyaaCat 开发组
     版权所有 © 2013 TheCreeperOfRedstone
     以 MIT 授权
     Bug反馈: https://github.com/NyaaCat/RPGItems-reloaded/issues
