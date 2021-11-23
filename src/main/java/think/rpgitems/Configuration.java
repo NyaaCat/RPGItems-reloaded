@@ -74,6 +74,8 @@ public class Configuration extends PluginConfigure {
         qualityPrefixes.put("epic", "&3");
         qualityPrefixes.put("legendary", "&e");
     }
+    @Serializable(name = "general.item.show_cooldown_warning_to_actionbar")
+    public boolean showCooldownActionbar = false;
 
     public Configuration(RPGItems plugin) {
         this.plugin = plugin;

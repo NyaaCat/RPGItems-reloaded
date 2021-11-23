@@ -7,6 +7,8 @@ import com.google.common.cache.CacheLoader;
 import com.google.common.cache.LoadingCache;
 import com.udojava.evalex.Expression;
 import com.udojava.evalex.LazyFunction;
+import net.md_5.bungee.api.ChatMessageType;
+import net.md_5.bungee.api.chat.TextComponent;
 import org.bukkit.*;
 import org.bukkit.command.CommandSender;
 import org.bukkit.configuration.ConfigurationSection;
@@ -202,9 +204,13 @@ public class Utils {
             if (showWarn) {
                 I18n i18n = I18n.getInstance(player.getLocale());
                 if (showPower) {
-                    player.sendMessage(i18n.getFormatted("message.cooldown.power", ((double) (cooldown - nowTime)) / 50d / 20d, power.getItem().getDisplayName(), power.getLocalizedName(player)));
+                    String message = i18n.getFormatted("message.cooldown.power", ((double) (cooldown - nowTime)) / 50d / 20d, power.getItem().getDisplayName(), power.getLocalizedName(player));
+                    if (RPGItems.plugin.cfg.showCooldownActionbar) player.spigot().sendMessage(ChatMessageType.ACTION_BAR, TextComponent.fromLegacyText(message));
+                    else player.sendMessage(message);
                 } else {
-                    player.sendMessage(i18n.getFormatted("message.cooldown.general", ((double) (cooldown - nowTime)) / 50d / 20d, power.getItem().getDisplayName()));
+                    String message = i18n.getFormatted("message.cooldown.general", ((double) (cooldown - nowTime)) / 50d / 20d, power.getItem().getDisplayName());
+                    if (RPGItems.plugin.cfg.showCooldownActionbar) player.spigot().sendMessage(ChatMessageType.ACTION_BAR, TextComponent.fromLegacyText(message));
+                    else player.sendMessage(message);
                 }
             }
             return false;
