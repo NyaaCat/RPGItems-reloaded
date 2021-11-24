@@ -1650,7 +1650,7 @@ public class RPGItem {
                 .filter(p -> p.getTriggers().contains(trigger))
                 .map(p -> {
                     Class<? extends Power> cls = p.getClass();
-                    Power proxy = Interceptor.create(p, player, cls, stack, trigger);
+                    Power proxy = Interceptor.create(p, player, stack, trigger);
                     return PowerManager.createImpl(cls, proxy);
                 })
                 .map(p -> p.cast(trigger.getPowerClass()))
