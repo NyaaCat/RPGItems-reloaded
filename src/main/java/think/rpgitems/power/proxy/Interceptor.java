@@ -1,5 +1,6 @@
 package think.rpgitems.power.proxy;
 
+import cat.nyaa.nyaacore.Pair;
 import cat.nyaa.nyaacore.utils.ItemTagUtils;
 import com.google.common.cache.Cache;
 import com.google.common.cache.CacheBuilder;
@@ -28,13 +29,14 @@ import java.lang.reflect.Method;
 import java.util.Comparator;
 import java.util.List;
 import java.util.Map;
+import java.util.UUID;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 import static think.rpgitems.item.RPGItem.getModifiers;
 
 public class Interceptor {
-    private static final Cache<String, Power> POWER_CACHE = CacheBuilder.newBuilder().weakValues().build();
+    private static final Cache<String, Pair<origPowerHolder, Power>> POWER_CACHE = CacheBuilder.newBuilder().weakValues().build();
     private final Power orig;
     private final Player player;
     private final Map<Method, PropertyInstance> getters;
@@ -53,11 +55,14 @@ public class Interceptor {
     }
 
     public static Power create(Power orig, Player player, ItemStack stack, Trigger trigger) {
-        Power result = POWER_CACHE.getIfPresent(getCacheKey(player, stack, orig));
-        if (result != null) return result;
-        result = makeProxy(orig, player, stack, trigger);
-        POWER_CACHE.put(getCacheKey(player, stack, orig), result);
-        return result;
+        Pair<origPowerHolder, Power> result = POWER_CACHE.getIfPresent(getCacheKey(player, stack, orig));
+        if (result != null) {
+            if (result.getKey().itemStack().equals(stack) && result.getKey().playerId().equals(player.getUniqueId()) && result.getKey().orig().equals(orig))
+                return result.getValue();
+        }
+        Power proxyPower = makeProxy(orig, player, stack, trigger);
+        POWER_CACHE.put(getCacheKey(player, stack, orig), Pair.of(new origPowerHolder(player.getUniqueId(), stack, orig), proxyPower));
+        return proxyPower;
 
     }
 
@@ -97,7 +102,7 @@ public class Interceptor {
     private static String getCacheKey(Player player, ItemStack itemStack, Power orig) {
         String playerHash = player.getUniqueId().toString();
         String itemHash = ItemTagUtils.getString(itemStack, RPGItem.NBT_ITEM_UUID).orElseGet(() -> String.valueOf(itemStack.hashCode()));
-        String origHash = orig.getClass().getName();
+        String origHash = orig.getName() + ":" + orig.getPlaceholderId() + ":" + orig.getClass().getName();
         return playerHash + "-#-" + itemHash + "-#-" + origHash;
 
     }
@@ -126,11 +131,11 @@ public class Interceptor {
                 Class<?> type = propertyInstance.field().getType();
                 List<Modifier> playerModifiers = getModifiers(player);
                 List<Modifier> stackModifiers = getModifiers(stack);
-                List<Modifier> modifiers = Stream.concat(playerModifiers.stream(), stackModifiers.stream()).sorted(Comparator.comparing(Modifier::priority)).collect(Collectors.toList());
+                List<Modifier> modifiers = Stream.concat(playerModifiers.stream(), stackModifiers.stream()).sorted(Comparator.comparing(Modifier::priority)).toList();
                 // Numeric modifiers
                 if (type == int.class || type == Integer.class || type == float.class || type == Float.class || type == double.class || type == Double.class) {
 
-                    List<Modifier<Double>> numberModifiers = modifiers.stream().filter(m -> (m.getModifierTargetType() == Double.class) && m.match(orig, propertyInstance)).map(m -> (Modifier<Double>) m).collect(Collectors.toList());
+                    List<Modifier<Double>> numberModifiers = modifiers.stream().filter(m -> (m.getModifierTargetType() == Double.class) && m.match(orig, propertyInstance)).map(m -> (Modifier<Double>) m).toList();
                     Number value = (Number) invokeMethod(method, orig, args);
                     double origValue = value.doubleValue();
                     for (Modifier<Double> numberModifier : numberModifiers) {
@@ -164,3 +169,7 @@ public class Interceptor {
         return MH.invokeWithArguments(args);
     }
 }
+
+record origPowerHolder(UUID playerId, ItemStack itemStack, Power orig) {
+}
+
