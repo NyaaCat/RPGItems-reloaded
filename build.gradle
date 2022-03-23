@@ -15,8 +15,8 @@ group = "cat.nyaa"
 archivesBaseName = "${PLUGIN_NAME}-mc${MINECRAFT_VERSION}"
 version = "${MAJOR_VERSION}.${MINOR_VERSION}.$ext.buildNumber" as String
 
-sourceCompatibility = 17
-targetCompatibility = 17
+sourceCompatibility = 16
+targetCompatibility = 16
 
 repositories {
     mavenCentral()
@@ -42,24 +42,24 @@ dependencies {
     if (gradle.hasProperty("useLocalDependencies") && gradle.useLocalDependencies) {
         compileOnly project(":NyaaCore")
     } else {
-        compileOnly('cat.nyaa:nyaacore:9.0-SNAPSHOT') { transitive = false }
+        compileOnly('cat.nyaa:nyaacore:8.1-SNAPSHOT') { transitive = false }
     }
     //3rd
 
     //compileOnly group: "com.comphenix.protocol", name: "ProtocolLib", version: "4.7.0"
-    compileOnly 'org.jetbrains:annotations:23.0.0'
+    compileOnly 'org.jetbrains:annotations:22.0.0'
 
-    compileOnly 'io.netty:netty-all:4.1.74.Final' // netty is shadowed inside spigot jar
+    compileOnly 'io.netty:netty-all:4.1.70.Final' // netty is shadowed inside spigot jar
     compileOnly 'org.ow2.asm:asm:9.2'
 
-    compileOnly 'net.bytebuddy:byte-buddy:1.12.8'
-    shadow 'net.bytebuddy:byte-buddy:1.12.8'
+    compileOnly 'net.bytebuddy:byte-buddy:1.12.1'
+    shadow 'net.bytebuddy:byte-buddy:1.12.1'
 
 
-    compileOnly 'com.udojava:EvalEx:2.7'
+    compileOnly 'com.udojava:EvalEx:2.6'
 
-    implementation('com.sk89q.worldguard:worldguard-core:7.0.7-SNAPSHOT')
-    implementation('com.sk89q.worldguard:worldguard-bukkit:7.0.7-SNAPSHOT') {
+    implementation('com.sk89q.worldguard:worldguard-core:7.0.1-SNAPSHOT')
+    implementation('com.sk89q.worldguard:worldguard-bukkit:7.0.1-SNAPSHOT') {
         exclude group: 'io.papermc', module: 'paperlib'
         exclude group: 'org.bstats', module: 'bstats-bukkit'
         exclude group: 'org.bukkit', module: 'bukkit'
@@ -72,7 +72,7 @@ dependencies {
 
     //test
     testImplementation(platform('org.junit:junit-bom:5.7.2'))
-    testImplementation('org.junit.jupiter:junit-jupiter:5.8.2')
+    testImplementation('org.junit.jupiter:junit-jupiter:5.8.1')
 
 }
 
