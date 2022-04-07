@@ -45,6 +45,7 @@ import java.io.IOException;
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
 import java.math.BigDecimal;
+import java.net.URISyntaxException;
 import java.nio.channels.FileChannel;
 import java.nio.channels.FileLock;
 import java.nio.file.FileVisitResult;
@@ -1422,7 +1423,7 @@ public class AdminCommands extends RPGCommandReceiver {
             try {
                 String id = NetworkUtils.publishGist(result, token, description, isPublish);
                 Bukkit.getScheduler().runTask(plugin, () -> I18n.sendMessage(sender, "message.export.gist.ed", id));
-            } catch (InterruptedException | ExecutionException e) {
+            } catch (InterruptedException | ExecutionException | URISyntaxException | IOException e) {
                 plugin.getLogger().log(Level.WARNING, "Error exporting gist", e);
                 Bukkit.getScheduler().runTask(plugin, () -> I18n.sendMessage(sender, "message.export.gist.failed"));
             } catch (TimeoutException e) {
@@ -1442,7 +1443,7 @@ public class AdminCommands extends RPGCommandReceiver {
             try {
                 gist = NetworkUtils.downloadGist(id, token);
                 Bukkit.getScheduler().runTask(plugin, () -> loadItems(sender, gist, args));
-            } catch (InterruptedException | ExecutionException e) {
+            } catch (InterruptedException | ExecutionException | URISyntaxException | IOException e) {
                 plugin.getLogger().log(Level.WARNING, "Error importing gist", e);
                 Bukkit.getScheduler().runTask(plugin, () -> new Message(I18n.getInstance(sender).getFormatted("message.import.gist.failed")).send(sender));
             } catch (TimeoutException e) {
@@ -1460,7 +1461,7 @@ public class AdminCommands extends RPGCommandReceiver {
             try {
                 Map<String, String> itemConf = NetworkUtils.downloadUrl(url);
                 Bukkit.getScheduler().runTask(plugin, () -> loadItems(sender, itemConf, args));
-            } catch (InterruptedException | ExecutionException e) {
+            } catch (InterruptedException | ExecutionException | URISyntaxException | IOException e) {
                 plugin.getLogger().log(Level.WARNING, "Error importing url", e);
                 Bukkit.getScheduler().runTask(plugin, () -> new Message(I18n.getInstance(sender).getFormatted("message.import.url.failed")).send(sender));
             } catch (TimeoutException e) {

@@ -42,7 +42,7 @@ dependencies {
     if (gradle.hasProperty("useLocalDependencies") && gradle.useLocalDependencies) {
         compileOnly project(":NyaaCore")
     } else {
-        compileOnly('cat.nyaa:nyaacore:8.1-SNAPSHOT') { transitive = false }
+        compileOnly('cat.nyaa:nyaacore:9.0-SNAPSHOT') { transitive = false }
     }
     //3rd
 
