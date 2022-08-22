@@ -22,7 +22,7 @@ repositories {
     mavenCentral()
     maven { name 'Spigot'; url 'https://hub.spigotmc.org/nexus/content/repositories/snapshots/' }
     maven { name 'Sonatype'; url 'https://oss.sonatype.org/content/groups/public' }
-    maven { name 'sk89q'; url 'https://maven.sk89q.com/artifactory/repo/' }
+    maven { name 'enginehub'; url 'https://maven.enginehub.org/repo/' }
     maven { name 'vault-repo'; url 'https://jitpack.io' }
     maven { name 'NyaaCat'; url 'https://ci.nyaacat.com/maven/' }
     maven { name 'EssentialsX'; url 'https://ci.ender.zone/plugin/repository/everything' }
@@ -49,11 +49,11 @@ dependencies {
     //compileOnly group: "com.comphenix.protocol", name: "ProtocolLib", version: "4.7.0"
     compileOnly 'org.jetbrains:annotations:23.0.0'
 
-    compileOnly 'io.netty:netty-all:4.1.74.Final' // netty is shadowed inside spigot jar
-    compileOnly 'org.ow2.asm:asm:9.2'
+    compileOnly 'io.netty:netty-all:4.1.79.Final' // netty is shadowed inside spigot jar
+    compileOnly 'org.ow2.asm:asm:9.3'
 
-    compileOnly 'net.bytebuddy:byte-buddy:1.12.8'
-    shadow 'net.bytebuddy:byte-buddy:1.12.8'
+    compileOnly 'net.bytebuddy:byte-buddy:1.12.12'
+    shadow 'net.bytebuddy:byte-buddy:1.12.12'
 
 
     compileOnly 'com.udojava:EvalEx:2.7'
@@ -99,7 +99,7 @@ javadoc {
     if (project.jdDirectory != null) destinationDir = file("${jdDirectory}/${PLUGIN_NAME.toLowerCase()}-${version}")
 
     (options as StandardJavadocDocletOptions).with {
-        links 'https://docs.oracle.com/en/java/javase/16/docs/api/'
+        links 'https://docs.oracle.com/en/java/javase/17/docs/api/'
         links 'https://hub.spigotmc.org/javadocs/spigot/'
         links 'https://guava.dev/releases/21.0/api/docs/'
         links 'https://ci.nyaacat.com/javadocs/nyaacore-7.1.350/'
