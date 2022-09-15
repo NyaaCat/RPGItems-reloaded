@@ -14,7 +14,6 @@ import net.md_5.bungee.api.chat.BaseComponent;
 import net.md_5.bungee.api.chat.ComponentBuilder;
 import net.md_5.bungee.api.chat.HoverEvent;
 import net.md_5.bungee.api.chat.TextComponent;
-import org.apache.commons.lang.NotImplementedException;
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
 import org.bukkit.Material;
@@ -1132,7 +1131,7 @@ public class AdminCommands extends RPGCommandReceiver {
 
         switch (location) {
             case GIST -> publishGist(sender, args, items);
-            case URL -> throw new NotImplementedException();
+            case URL -> throw new UnsupportedOperationException();
             default -> I18n.sendMessage(sender, "message.export.not_supported", location.name());
         }
     }
@@ -1470,7 +1469,7 @@ public class AdminCommands extends RPGCommandReceiver {
             } catch (BadCommandException e) {
                 sender.sendMessage(e.getLocalizedMessage());
             }
-            throw new NotImplementedException(url);
+            throw new UnsupportedOperationException(url);
         });
     }
 
