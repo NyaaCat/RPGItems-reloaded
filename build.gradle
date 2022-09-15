@@ -62,9 +62,7 @@ dependencies {
     }
 
     implementation 'com.google.code.findbugs:jsr305:3.0.2'
-    implementation('net.milkbowl.vault:VaultAPI:1.7') {
-        transitive = false
-    }
+    implementation ('com.github.MilkBowl:VaultAPI:1.7.1')
 
     //test
     testImplementation(platform('org.junit:junit-bom:5.9.0'))
