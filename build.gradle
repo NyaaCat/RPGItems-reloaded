@@ -21,13 +21,9 @@ targetCompatibility = 17
 repositories {
     mavenCentral()
     maven { name 'Spigot'; url 'https://hub.spigotmc.org/nexus/content/repositories/snapshots/' }
-    maven { name 'Sonatype'; url 'https://oss.sonatype.org/content/groups/public' }
     maven { name 'enginehub'; url 'https://maven.enginehub.org/repo/' }
     maven { name 'vault-repo'; url 'https://jitpack.io' }
     maven { name 'NyaaCat'; url 'https://ci.nyaacat.com/maven/' }
-    maven { name 'EssentialsX'; url 'https://ci.ender.zone/plugin/repository/everything' }
-    maven { name 'aikar'; url 'https://repo.aikar.co/content/groups/aikar/' }
-    maven { name 'PlaceholderAPI'; url 'https://repo.extendedclip.com/content/repositories/placeholderapi/' }
 }
 
 shadowJar {
@@ -42,7 +38,7 @@ dependencies {
     if (gradle.hasProperty("useLocalDependencies") && gradle.useLocalDependencies) {
         compileOnly project(":NyaaCore")
     } else {
-        compileOnly('cat.nyaa:nyaacore:9.0-SNAPSHOT') { transitive = false }
+        compileOnly('cat.nyaa:nyaacore:9.1-SNAPSHOT') { transitive = false }
     }
     //3rd
 
@@ -58,8 +54,8 @@ dependencies {
 
     compileOnly 'com.udojava:EvalEx:2.7'
 
-    implementation('com.sk89q.worldguard:worldguard-core:7.0.7-SNAPSHOT')
-    implementation('com.sk89q.worldguard:worldguard-bukkit:7.0.7-SNAPSHOT') {
+    implementation('com.sk89q.worldguard:worldguard-core:7.0.8-SNAPSHOT')
+    implementation('com.sk89q.worldguard:worldguard-bukkit:7.0.8-SNAPSHOT') {
         exclude group: 'io.papermc', module: 'paperlib'
         exclude group: 'org.bstats', module: 'bstats-bukkit'
         exclude group: 'org.bukkit', module: 'bukkit'
@@ -102,7 +98,7 @@ javadoc {
         links 'https://docs.oracle.com/en/java/javase/17/docs/api/'
         links 'https://hub.spigotmc.org/javadocs/spigot/'
         links 'https://guava.dev/releases/21.0/api/docs/'
-        links 'https://ci.nyaacat.com/javadocs/nyaacore-7.1.350/'
+        //links 'https://ci.nyaacat.com/javadocs/nyaacore-7.1.350/' //need update
         links 'https://ci.md-5.net/job/BungeeCord/ws/chat/target/apidocs/'
         links 'https://netty.io/4.1/api/'
 
