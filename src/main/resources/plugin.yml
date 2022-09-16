@@ -10,6 +10,7 @@ database: false
 api-version: 1.19
 libraries:
   - 'com.udojava:EvalEx:2.7'
+  - 'net.bytebuddy:byte-buddy:LATEST'
 
 commands:
   rpgitem:
