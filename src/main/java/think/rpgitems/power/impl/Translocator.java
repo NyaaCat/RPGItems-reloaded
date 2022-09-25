@@ -155,7 +155,7 @@ public class Translocator extends BasePower {
             SpectralArrow arrow = player.launchProjectile(SpectralArrow.class, player.getLocation().getDirection().multiply(getSpeed()));
             arrow.setPickupStatus(Arrow.PickupStatus.DISALLOWED);
             arrow.setPersistent(false);
-            arrow.setBounce(true);
+            //arrow.setBounce(true);
             arrow.setSilent(true);
             arrow.setInvulnerable(true);
             translocatorPlayerMap.put(arrow.getUniqueId(), player.getUniqueId());

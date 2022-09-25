@@ -191,7 +191,7 @@ public class Deflect extends BasePower {
                     TridentUtils.setTridentItemStack(tridentP, TridentUtils.getTridentItemStack(tridentT));
                 }
                 t.setGravity(p.hasGravity());
-                t.setBounce(p.doesBounce());
+//                t.setBounce(p.doesBounce());
                 t.setShooter(target);
                 Events.autoRemoveProjectile(t.getEntityId());
                 p.eject();

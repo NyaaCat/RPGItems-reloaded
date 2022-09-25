@@ -20,7 +20,8 @@ targetCompatibility = 17
 
 repositories {
     mavenCentral()
-    maven { name 'Spigot'; url 'https://hub.spigotmc.org/nexus/content/repositories/snapshots/' }
+    //maven { name 'Spigot'; url 'https://hub.spigotmc.org/nexus/content/repositories/snapshots/' }
+    maven { name 'paper'; url 'https://repo.papermc.io/repository/maven-public/' }
     maven { name 'enginehub'; url 'https://maven.enginehub.org/repo/' }
     maven { name 'vault-repo'; url 'https://jitpack.io' }
     maven { name 'NyaaCat'; url 'https://ci.nyaacat.com/maven/' }
@@ -32,13 +33,12 @@ shadowJar {
 
 dependencies {
     //compileOnly files(spigotNmsPath)
-    compileOnly "org.spigotmc:spigot-api:$MINECRAFT_VERSION-R0.1-SNAPSHOT"
-
+    compileOnly "io.papermc.paper:paper-api:$MINECRAFT_VERSION-R0.1-SNAPSHOT"
     // other nyaa plugins
     if (gradle.hasProperty("useLocalDependencies") && gradle.useLocalDependencies) {
         compileOnly project(":NyaaCore")
     } else {
-        compileOnly('cat.nyaa:nyaacore:9.1-SNAPSHOT') { transitive = false }
+        compileOnly('cat.nyaa:nyaacore:9.2.11-SNAPSHOT') { transitive = false }
     }
     //3rd
 
@@ -62,7 +62,7 @@ dependencies {
     }
 
     implementation 'com.google.code.findbugs:jsr305:3.0.2'
-    implementation ('com.github.MilkBowl:VaultAPI:1.7.1')
+    implementation('com.github.MilkBowl:VaultAPI:1.7.1')
 
     //test
     testImplementation(platform('org.junit:junit-bom:5.9.0'))
@@ -71,10 +71,8 @@ dependencies {
 }
 
 processResources {
-    def props = [
-            version   : version,
-            pluginName: PLUGIN_NAME
-    ]
+    def props = [version   : version,
+                 pluginName: PLUGIN_NAME]
     inputs.properties props
     filteringCharset 'UTF-8'
     filesMatching('plugin.yml') {
