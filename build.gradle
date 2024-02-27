@@ -15,19 +15,16 @@ group = "cat.nyaa"
 archivesBaseName = "${PLUGIN_NAME}-mc${MINECRAFT_VERSION}"
 version = "${MAJOR_VERSION}.${MINOR_VERSION}.$ext.buildNumber" as String
 
-sourceCompatibility = 16
-targetCompatibility = 16
+sourceCompatibility = 17
+targetCompatibility = 17
 
 repositories {
     mavenCentral()
-    maven { name 'Spigot'; url 'https://hub.spigotmc.org/nexus/content/repositories/snapshots/' }
-    maven { name 'Sonatype'; url 'https://oss.sonatype.org/content/groups/public' }
-    maven { name 'sk89q'; url 'https://maven.sk89q.com/artifactory/repo/' }
+    //maven { name 'Spigot'; url 'https://hub.spigotmc.org/nexus/content/repositories/snapshots/' }
+    maven { name 'paper'; url 'https://repo.papermc.io/repository/maven-public/' }
+    maven { name 'enginehub'; url 'https://maven.enginehub.org/repo/' }
     maven { name 'vault-repo'; url 'https://jitpack.io' }
     maven { name 'NyaaCat'; url 'https://ci.nyaacat.com/maven/' }
-    maven { name 'EssentialsX'; url 'https://ci.ender.zone/plugin/repository/everything' }
-    maven { name 'aikar'; url 'https://repo.aikar.co/content/groups/aikar/' }
-    maven { name 'PlaceholderAPI'; url 'https://repo.extendedclip.com/content/repositories/placeholderapi/' }
 }
 
 shadowJar {
@@ -36,51 +33,46 @@ shadowJar {
 
 dependencies {
     //compileOnly files(spigotNmsPath)
-    compileOnly "org.spigotmc:spigot-api:$MINECRAFT_VERSION-R0.1-SNAPSHOT"
-
+    compileOnly "io.papermc.paper:paper-api:$MINECRAFT_VERSION-R0.1-SNAPSHOT"
     // other nyaa plugins
     if (gradle.hasProperty("useLocalDependencies") && gradle.useLocalDependencies) {
         compileOnly project(":NyaaCore")
     } else {
-        compileOnly('cat.nyaa:nyaacore:8.1-SNAPSHOT') { transitive = false }
+        compileOnly('cat.nyaa:nyaacore:9.2.11-SNAPSHOT') { transitive = false }
     }
     //3rd
 
     //compileOnly group: "com.comphenix.protocol", name: "ProtocolLib", version: "4.7.0"
-    compileOnly 'org.jetbrains:annotations:22.0.0'
+    compileOnly 'org.jetbrains:annotations:23.0.0'
 
-    compileOnly 'io.netty:netty-all:4.1.70.Final' // netty is shadowed inside spigot jar
-    compileOnly 'org.ow2.asm:asm:9.2'
+    compileOnly 'io.netty:netty-all:4.1.81.Final' // netty is shadowed inside spigot jar
+    compileOnly 'org.ow2.asm:asm:9.3'
 
-    compileOnly 'net.bytebuddy:byte-buddy:1.12.1'
-    shadow 'net.bytebuddy:byte-buddy:1.12.1'
+    compileOnly 'net.bytebuddy:byte-buddy:1.12.16'
+    //shadow 'net.bytebuddy:byte-buddy:1.12.16'
 
 
-    compileOnly 'com.udojava:EvalEx:2.6'
+    compileOnly 'com.udojava:EvalEx:2.7'
 
-    implementation('com.sk89q.worldguard:worldguard-core:7.0.1-SNAPSHOT')
-    implementation('com.sk89q.worldguard:worldguard-bukkit:7.0.1-SNAPSHOT') {
+    implementation('com.sk89q.worldguard:worldguard-core:7.0.8-SNAPSHOT')
+    implementation('com.sk89q.worldguard:worldguard-bukkit:7.0.8-SNAPSHOT') {
         exclude group: 'io.papermc', module: 'paperlib'
         exclude group: 'org.bstats', module: 'bstats-bukkit'
         exclude group: 'org.bukkit', module: 'bukkit'
     }
 
     implementation 'com.google.code.findbugs:jsr305:3.0.2'
-    implementation('net.milkbowl.vault:VaultAPI:1.7') {
-        transitive = false
-    }
+    implementation('com.github.MilkBowl:VaultAPI:1.7.1')
 
     //test
-    testImplementation(platform('org.junit:junit-bom:5.7.2'))
-    testImplementation('org.junit.jupiter:junit-jupiter:5.8.1')
+    testImplementation(platform('org.junit:junit-bom:5.9.0'))
+    testImplementation('org.junit.jupiter:junit-jupiter:5.9.0')
 
 }
 
 processResources {
-    def props = [
-            version   : version,
-            pluginName: PLUGIN_NAME
-    ]
+    def props = [version   : version,
+                 pluginName: PLUGIN_NAME]
     inputs.properties props
     filteringCharset 'UTF-8'
     filesMatching('plugin.yml') {
@@ -99,10 +91,10 @@ javadoc {
     if (project.jdDirectory != null) destinationDir = file("${jdDirectory}/${PLUGIN_NAME.toLowerCase()}-${version}")
 
     (options as StandardJavadocDocletOptions).with {
-        links 'https://docs.oracle.com/en/java/javase/16/docs/api/'
-        links 'https://hub.spigotmc.org/javadocs/spigot/'
+        links 'https://docs.oracle.com/en/java/javase/17/docs/api/'
+        //links 'https://hub.spigotmc.org/javadocs/spigot/'
         links 'https://guava.dev/releases/21.0/api/docs/'
-        links 'https://ci.nyaacat.com/javadocs/nyaacore-7.1.350/'
+        //links 'https://ci.nyaacat.com/javadocs/nyaacore-7.1.350/' //need update
         links 'https://ci.md-5.net/job/BungeeCord/ws/chat/target/apidocs/'
         links 'https://netty.io/4.1/api/'
 

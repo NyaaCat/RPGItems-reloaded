@@ -12,6 +12,7 @@ import org.bukkit.inventory.meta.ItemMeta;
 import org.bukkit.persistence.PersistentDataAdapterContext;
 import org.bukkit.persistence.PersistentDataContainer;
 import org.bukkit.persistence.PersistentDataType;
+import org.jetbrains.annotations.NotNull;
 import think.rpgitems.RPGItems;
 import think.rpgitems.power.PowerManager;
 import think.rpgitems.power.Utils;
@@ -377,6 +378,11 @@ public final class ItemTagUtils {
         @Override
         public PersistentDataAdapterContext getAdapterContext() {
             return self.getAdapterContext();
+        }
+
+        @Override
+        public boolean has(@NotNull NamespacedKey key) {
+            return self.has(key);
         }
 
         public void commit() {

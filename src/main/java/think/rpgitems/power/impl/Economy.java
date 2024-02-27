@@ -1,8 +1,8 @@
 package think.rpgitems.power.impl;
 
 import cat.nyaa.nyaacore.Message;
-import cat.nyaa.nyaacore.utils.VaultUtils;
 import net.milkbowl.vault.economy.EconomyResponse;
+import org.bukkit.Bukkit;
 import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.entity.LivingEntity;
 import org.bukkit.entity.Player;
@@ -11,6 +11,7 @@ import org.bukkit.event.entity.EntityDamageEvent;
 import org.bukkit.event.entity.EntityShootBowEvent;
 import org.bukkit.event.player.PlayerInteractEvent;
 import org.bukkit.inventory.ItemStack;
+import org.bukkit.plugin.RegisteredServiceProvider;
 import think.rpgitems.AdminCommands;
 import think.rpgitems.I18n;
 import think.rpgitems.RPGItems;
@@ -39,7 +40,7 @@ public class Economy extends BasePower {
     private static net.milkbowl.vault.economy.Economy eco;
 
     @Property
-    public int cooldown = 0;
+    public int coolDown = 0;
 
     @Property
     public double amountToPlayer;
@@ -56,13 +57,12 @@ public class Economy extends BasePower {
     @Override
     public void init(ConfigurationSection section) {
         super.init(section);
-        if (eco == null) {
-            try {
-                eco = VaultUtils.getVaultEconomy();
-            } catch (RuntimeException e) {
-                RPGItems.plugin.getLogger().log(Level.SEVERE, "Vault Economy not found", e);
-                throw new AdminCommands.CommandException("message.error.economy");
-            }
+        RegisteredServiceProvider<net.milkbowl.vault.economy.Economy> provider = Bukkit.getServer().getServicesManager().getRegistration(net.milkbowl.vault.economy.Economy.class);
+        if (provider != null) {
+            eco = provider.getProvider();
+        } else {
+            RPGItems.plugin.getLogger().log(Level.SEVERE, "Vault Economy not found");
+            throw new AdminCommands.CommandException("message.error.economy");
         }
     }
 
@@ -73,7 +73,7 @@ public class Economy extends BasePower {
 
     @Override
     public String displayText() {
-        return I18n.formatDefault(getAmountToPlayer() > 0 ? "power.economy.deposit" : "power.economy.withdraw", eco.format(Math.abs(getAmountToPlayer())), (double) getCooldown() / 20d);
+        return I18n.formatDefault(getAmountToPlayer() > 0 ? "power.economy.deposit" : "power.economy.withdraw", eco.format(Math.abs(getAmountToPlayer())), (double) getCoolDown() / 20d);
     }
 
     public double getAmountToPlayer() {
@@ -83,8 +83,8 @@ public class Economy extends BasePower {
     /**
      * Cooldown time of this power
      */
-    public int getCooldown() {
-        return cooldown;
+    public int getCoolDown() {
+        return coolDown;
     }
 
     public boolean isAbortOnFailure() {
@@ -112,7 +112,7 @@ public class Economy extends BasePower {
 
         @Override
         public PowerResult<Void> fire(Player player, ItemStack stack) {
-            if (!checkCooldown(getPower(), player, getCooldown(), true, true))
+            if (!checkCooldown(getPower(), player, getCoolDown(), true, true))
                 return isAbortOnFailure() ? PowerResult.abort() : PowerResult.cd();
             EconomyResponse economyResponse;
             if (getAmountToPlayer() > 0) {

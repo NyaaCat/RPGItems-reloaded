@@ -209,14 +209,11 @@ public class ItemManager {
             }
 
             Message message = new Message(I18n.formatDefault("message.error.loading", file.getPath(), e.getLocalizedMessage()));
-            if (sender != null) {
-                message.send(sender);
-            } else {
+            if (sender == null) {
+                Bukkit.getOperators().forEach(t -> message.send((CommandSender) t));
                 message.send(Bukkit.getConsoleSender());
-            }
-
-            if (sender == null || sender instanceof ConsoleCommandSender) {
-                Bukkit.getOperators().forEach(message::send);
+            } else {
+                message.send(sender);
             }
         }
         return false;
