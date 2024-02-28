@@ -1,6 +1,5 @@
 package think.rpgitems.utils;
 
-import cat.nyaa.nyaacore.utils.ItemStackUtils;
 import com.google.common.base.FinalizablePhantomReference;
 import com.google.common.base.FinalizableReferenceQueue;
 import com.google.common.collect.Sets;
@@ -17,6 +16,7 @@ import think.rpgitems.RPGItems;
 import think.rpgitems.power.PowerManager;
 import think.rpgitems.power.Utils;
 
+import java.io.IOException;
 import java.lang.ref.PhantomReference;
 import java.lang.ref.Reference;
 import java.lang.ref.WeakReference;
@@ -88,7 +88,8 @@ public final class ItemTagUtils {
     }
 
     public static OptionalInt optInt(PersistentDataContainer container, NamespacedKey key) {
-        if (!container.has(key, PersistentDataType.INTEGER)) return OptionalInt.empty();
+        if (!container.has(key, PersistentDataType.INTEGER))
+            return OptionalInt.empty();
         return OptionalInt.of(container.get(key, PersistentDataType.INTEGER));
     }
 
@@ -316,12 +317,12 @@ public final class ItemTagUtils {
 
         @Override
         public String toPrimitive(ItemStack complex, PersistentDataAdapterContext context) {
-            return ItemStackUtils.itemToBase64(complex);
+            return Base64.getEncoder().encodeToString(complex.serializeAsBytes());
         }
 
         @Override
         public ItemStack fromPrimitive(String primitive, PersistentDataAdapterContext context) {
-            return ItemStackUtils.itemFromBase64(primitive);
+            return ItemStack.deserializeBytes(Base64.getDecoder().decode(primitive));
         }
     }
 
@@ -376,8 +377,29 @@ public final class ItemTagUtils {
         }
 
         @Override
+        public void copyTo(@NotNull PersistentDataContainer persistentDataContainer, boolean b) {
+            self.copyTo(persistentDataContainer, b);
+        }
+
+
+        @Override
         public PersistentDataAdapterContext getAdapterContext() {
             return self.getAdapterContext();
+        }
+
+        @Override
+        public byte @NotNull [] serializeToBytes() throws IOException {
+            return self.serializeToBytes();
+        }
+
+        @Override
+        public void readFromBytes(byte @NotNull [] bytes, boolean b) throws IOException {
+            self.readFromBytes(bytes, b);
+        }
+
+        @Override
+        public void readFromBytes(byte @NotNull [] bytes) throws IOException {
+            self.readFromBytes(bytes);
         }
 
         @Override

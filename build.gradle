@@ -35,13 +35,8 @@ dependencies {
     //compileOnly files(spigotNmsPath)
     compileOnly "io.papermc.paper:paper-api:$MINECRAFT_VERSION-R0.1-SNAPSHOT"
     // other nyaa plugins
-    if (gradle.hasProperty("useLocalDependencies") && gradle.useLocalDependencies) {
-        compileOnly project(":NyaaCore")
-    } else {
-        compileOnly('cat.nyaa:nyaacore:9.2.11-SNAPSHOT') { transitive = false }
-    }
+    compileOnly('cat.nyaa:nyaacore:9.2.11-SNAPSHOT') { transitive = false }
     //3rd
-
     //compileOnly group: "com.comphenix.protocol", name: "ProtocolLib", version: "4.7.0"
     compileOnly 'org.jetbrains:annotations:23.0.0'
 
