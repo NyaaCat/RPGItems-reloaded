@@ -151,6 +151,7 @@ public class AOECommand extends Command {
                                 || (!isSelfapplication() && e == player)
                                 || (forPlayers && !(e instanceof Player))
                                 || (forMobs && e instanceof Player)
+                                || e.hasMetadata("NPC")
                         ) {
                             ++count;
                             continue;
