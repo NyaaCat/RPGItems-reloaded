@@ -142,7 +142,7 @@ public class Rumble extends BasePower {
                         near = getNearbyEntities(Rumble.this, location, player, power * 2 + 1);
                         for (Entity e : near) {
                             if (e != player) {
-                                if (e instanceof ItemFrame || e instanceof Painting) {
+                                if (e instanceof ItemFrame || e instanceof Painting || e.hasMetadata("NPC")) {
                                     e.setMetadata("RPGItems.Rumble", new FixedMetadataValue(RPGItems.plugin, null)); // Add metadata to protect hanging entities from the explosion
                                     continue;
                                 }

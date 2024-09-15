@@ -14,7 +14,7 @@ import think.rpgitems.power.*;
  * Do more damage when gliding
  * </p>
  */
-@Meta(defaultTrigger = "HIT", implClass = Airborne.Impl.class)
+@Meta(defaultTrigger = "HIT", generalInterface = PowerHit.class, implClass = Airborne.Impl.class)
 public class Airborne extends BasePower {
     @Property
     public int percentage = 50;
@@ -47,7 +47,7 @@ public class Airborne extends BasePower {
         return setBaseDamage;
     }
 
-    class Impl implements PowerHit {
+    public class Impl implements PowerHit {
 
         @Override
         public PowerResult<Double> hit(Player player, ItemStack stack, LivingEntity entity, double damage, EntityDamageByEntityEvent event) {

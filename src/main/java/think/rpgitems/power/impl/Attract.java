@@ -214,7 +214,7 @@ public class Attract extends BasePower {
             if (!getItem().consumeDurability(stack, getAttractingTickCost())) return PowerResult.ok();
             for (Entity e : entities) {
                 if (e instanceof LivingEntity
-                        && (isAttractPlayer() || !(e instanceof Player))) {
+                        && !e.hasMetadata("NPC") && (isAttractPlayer() || !(e instanceof Player))) {
                     if (!getItem().consumeDurability(stack, getAttractingEntityTickCost())) break;
                     Location locTarget = e.getLocation();
                     Location locPlayer = location;

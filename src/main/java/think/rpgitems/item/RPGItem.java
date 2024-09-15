@@ -25,6 +25,8 @@ import org.bukkit.entity.Entity;
 import org.bukkit.entity.LivingEntity;
 import org.bukkit.entity.Player;
 import org.bukkit.event.Event;
+import org.bukkit.inventory.EquipmentSlot;
+import org.bukkit.inventory.EquipmentSlotGroup;
 import org.bukkit.inventory.ItemFlag;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.Damageable;
@@ -185,15 +187,15 @@ public class RPGItem {
 
     public static List<Modifier> getModifiers(ItemStack stack) {
         Optional<String> opt = ItemTagUtils.getString(stack, NBT_ITEM_UUID);
-        if (!opt.isPresent()) {
+        if (opt.isEmpty()) {
             Optional<RPGItem> rpgItemOpt = ItemManager.toRPGItemByMeta(stack);
-            if (!rpgItemOpt.isPresent()) {
+            if (rpgItemOpt.isEmpty()) {
                 return Collections.emptyList();
             }
             RPGItem rpgItem = rpgItemOpt.get();
             rpgItem.updateItem(stack);
             Optional<String> opt1 = ItemTagUtils.getString(stack, NBT_ITEM_UUID);
-            if (!opt1.isPresent()) {
+            if (opt1.isEmpty()) {
                 return Collections.emptyList();
             }
             opt = opt1;
@@ -273,9 +275,7 @@ public class RPGItem {
 
         setDisplayName(display);
         List<String> desc = s.getStringList("description");
-        for (int i = 0; i < desc.size(); i++) {
-            desc.set(i, HexColorUtils.hexColored(desc.get(i)));
-        }
+        desc.replaceAll(HexColorUtils::hexColored);
         setDescription(desc);
         setDamageMin(s.getInt("damageMin"));
         setDamageMax(s.getInt("damageMax"));
@@ -453,8 +453,7 @@ public class RPGItem {
             });
             stringBuilder.append("]");
         });
-        String msg = stringBuilder.toString();
-        return msg;
+        return stringBuilder.toString();
     }
 
     public int getCustomModelData() {
@@ -548,9 +547,7 @@ public class RPGItem {
         s.set("DamageType", getDamageType());
         s.set("attributemode", attributeMode.name());
         ArrayList<String> descriptionConv = new ArrayList<>(getDescription());
-        for (int i = 0; i < descriptionConv.size(); i++) {
-            descriptionConv.set(i, descriptionConv.get(i).replaceAll("" + COLOR_CHAR, "&"));
-        }
+        descriptionConv.replaceAll(string -> string.replaceAll("" + COLOR_CHAR, "&"));
         s.set("description", descriptionConv);
         s.set("item", getItem().toString());
         s.set("ignoreWorldGuard", isIgnoreWorldGuard());
@@ -759,9 +756,7 @@ public class RPGItem {
                     ItemTagUtils.setString(item, NBT_ITEM_UUID, uuid.toString());
                 }
             }
-        } catch (NoSuchFieldException e) {
-            e.printStackTrace();
-        } catch (IllegalAccessException e) {
+        } catch (NoSuchFieldException | IllegalAccessException e) {
             e.printStackTrace();
         }
     }
@@ -886,16 +881,26 @@ public class RPGItem {
         if (!attributeModifiers.isEmpty()) {
             for (AttributeModifier attributeModifier : attributeModifiers) {
                 Attribute attribute = attributeModifier.attribute;
-                UUID uuid = new UUID(attributeModifier.uuidMost, attributeModifier.uuidLeast);
-                org.bukkit.attribute.AttributeModifier modifier = new org.bukkit.attribute.AttributeModifier(
-                        uuid,
-                        attributeModifier.name,
-                        attributeModifier.amount,
-                        attributeModifier.operation,
-                        attributeModifier.slot
-                );
+                NamespacedKey uuid = NamespacedKey.fromString(attributeModifier.namespacedKey);
+                EquipmentSlotGroup slot = attributeModifier.slot;
+                org.bukkit.attribute.AttributeModifier modifier;
+                if(slot!=null){
+                    modifier = new org.bukkit.attribute.AttributeModifier(
+                            uuid,
+                            attributeModifier.amount,
+                            attributeModifier.operation,
+                            attributeModifier.slot
+                    );
+                }
+                else{
+                    modifier = new org.bukkit.attribute.AttributeModifier(
+                            uuid,
+                            attributeModifier.amount,
+                            attributeModifier.operation
+                    );
+                }
                 if (old != null) {
-                    old.entries().stream().filter(m -> m.getValue().getUniqueId().equals(uuid)).findAny().ifPresent(
+                    old.entries().stream().filter(m -> m.getValue().getKey().equals(uuid)).findAny().ifPresent(
                             e -> itemMeta.removeAttributeModifier(e.getKey(), e.getValue())
                     );
                 }
@@ -930,7 +935,7 @@ public class RPGItem {
      * @param originDamage Origin damage value
      * @param stack        ItemStack of this item
      * @param entity       Victim of this damage event
-     * @return Final damage or -1 if should cancel this event
+     * @return Final damage or -1 if it should cancel this event
      */
     public double meleeDamage(Player p, double originDamage, ItemStack stack, Entity entity) {
         double damage = originDamage;
@@ -955,7 +960,7 @@ public class RPGItem {
                 Collection<PotionEffect> potionEffects = p.getActivePotionEffects();
                 double strength = 0, weak = 0;
                 for (PotionEffect pe : potionEffects) {
-                    if (pe.getType().equals(PotionEffectType.INCREASE_DAMAGE)) {
+                    if (pe.getType().equals(PotionEffectType.STRENGTH)) {
                         strength = 3 * (pe.getAmplifier() + 1);//MC 1.9+
                     }
                     if (pe.getType().equals(PotionEffectType.WEAKNESS)) {
@@ -1125,7 +1130,6 @@ public class RPGItem {
         this.triggers.entrySet()
                 .parallelStream()
                 .filter(e -> trigger.getClass().isInstance(e.getValue()))
-                .sorted(Comparator.comparing(en -> en.getValue().getPriority()))
                 .filter(e -> e.getValue().check(player, i, event)).forEach(e -> this.power(player, i, event, e.getValue(), context));
     }
 
@@ -1186,7 +1190,7 @@ public class RPGItem {
         if (isShowPowerText()) {
             for (Power p : getPowers()) {
                 String txt = p.displayText();
-                if (txt != null && txt.length() > 0) {
+                if (txt != null && !txt.isEmpty()) {
                     output.add(txt);
                 }
             }
@@ -1259,9 +1263,7 @@ public class RPGItem {
         set(meta, TAG_IS_MODEL, true);
         try {
             ItemTagUtils.setBoolean(itemStack, NBT_IS_MODEL, true);
-        } catch (NoSuchFieldException e) {
-            e.printStackTrace();
-        } catch (IllegalAccessException e) {
+        } catch (NoSuchFieldException | IllegalAccessException e) {
             e.printStackTrace();
         }
         meta.commit();

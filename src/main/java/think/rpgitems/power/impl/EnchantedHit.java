@@ -21,7 +21,7 @@ public class EnchantedHit extends BasePower {
 
     @Property
     @AcceptedValue(preset = Preset.ENCHANTMENT)
-    public Enchantment enchantmentType = Enchantment.ARROW_DAMAGE;
+    public Enchantment enchantmentType = Enchantment.POWER;
 
     @Property
     public boolean setBaseDamage = false;

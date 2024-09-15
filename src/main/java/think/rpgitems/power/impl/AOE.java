@@ -220,7 +220,7 @@ public class AOE extends BasePower {
                             }
                             return;
                         }
-                        if (ent != null && Objects.equals(ent.getLocation().getWorld(), center.getWorld()) && ent.getLocation().distance(center) <= range) {
+                        if (ent != null && !ent.hasMetadata("NPC") && Objects.equals(ent.getLocation().getWorld(), center.getWorld()) && ent.getLocation().distance(center) <= range) {
                             ent.addPotionEffect(effect);
                             hitCount.addAndGet(1);
                         }

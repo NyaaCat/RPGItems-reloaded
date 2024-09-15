@@ -2,6 +2,7 @@ package think.rpgitems.power.impl;
 
 import com.google.common.cache.Cache;
 import com.google.common.cache.CacheBuilder;
+import io.papermc.paper.event.entity.EntityMoveEvent;
 import org.bukkit.Bukkit;
 import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.entity.LivingEntity;
@@ -14,6 +15,7 @@ import org.bukkit.event.entity.EntityDamageEvent;
 import org.bukkit.event.entity.EntityShootBowEvent;
 import org.bukkit.event.entity.EntityTeleportEvent;
 import org.bukkit.event.player.PlayerInteractEvent;
+import org.bukkit.event.player.PlayerMoveEvent;
 import org.bukkit.event.player.PlayerTeleportEvent;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.potion.PotionEffect;
@@ -78,6 +80,28 @@ public class Stuck extends BasePower {
         super.init(s);
         if (orc == 0) {
             listener = new Listener() {
+                @EventHandler
+                void onPlayerMove(PlayerMoveEvent e) {
+                    try {
+                        if (stucked.get(e.getPlayer().getUniqueId(), () -> Long.MIN_VALUE) >= (System.currentTimeMillis() - getDuration() * 50)) {
+                            e.setCancelled(true);
+                        }
+                    } catch (ExecutionException ex) {
+                        ex.printStackTrace();
+                    }
+                }
+
+                @EventHandler
+                void onEntityMove(EntityMoveEvent e) {
+                    try {
+                        if (stucked.get(e.getEntity().getUniqueId(), () -> Long.MIN_VALUE) >= (System.currentTimeMillis() - getDuration() * 50)) {
+                            e.setCancelled(true);
+                        }
+                    } catch (ExecutionException ex) {
+                        ex.printStackTrace();
+                    }
+                }
+
                 @EventHandler
                 void onEntityTeleport(EntityTeleportEvent e) {
                     try {
@@ -203,8 +227,6 @@ public class Stuck extends BasePower {
             entities.forEach(entity -> {
                         if (!getItem().consumeDurability(stack, getCostPerEntity())) return;
                         stucked.put(entity.getUniqueId(), System.currentTimeMillis());
-                        entity.addPotionEffect(new PotionEffect(PotionEffectType.SLOW, getDuration(), 10), true);
-//                    entity.addPotionEffect(new PotionEffect(PotionEffectType.JUMP, duration, 128), true);
                     }
             );
             return PowerResult.ok();
@@ -244,9 +266,6 @@ public class Stuck extends BasePower {
             if (random.nextInt(getChance()) == 0) {
                 if (!getItem().consumeDurability(stack, getCost())) return PowerResult.cost();
                 stucked.put(entity.getUniqueId(), System.currentTimeMillis());
-                entity.addPotionEffect(new PotionEffect(PotionEffectType.SLOW, getDuration(), 10), true);
-                // entity.addPotionEffect(new PotionEffect(PotionEffectType.JUMP, duration, 128), true);
-                // todo change implementation to lock entity mobilability
                 return PowerResult.ok(damage);
             }
             return PowerResult.noop();

@@ -9,6 +9,7 @@ import org.bukkit.entity.Entity;
 import org.bukkit.entity.EntityType;
 import org.bukkit.entity.Player;
 import org.bukkit.entity.Projectile;
+import org.bukkit.event.entity.CreatureSpawnEvent;
 import org.bukkit.event.entity.EntityDamageByEntityEvent;
 import org.bukkit.event.entity.EntityDamageEvent;
 import org.bukkit.event.entity.EntityShootBowEvent;
@@ -19,6 +20,7 @@ import think.rpgitems.power.trigger.BaseTriggers;
 
 import java.util.Collections;
 import java.util.UUID;
+import java.util.function.Consumer;
 
 import static think.rpgitems.power.Utils.checkAndSetCooldown;
 
@@ -123,21 +125,17 @@ public class Throw extends BasePower {
 
         private void summonEntity(Player player) {
             Location loc = player.getEyeLocation().clone();
-            Entity entity = player.getWorld().spawnEntity(loc, EntityType.valueOf(getEntityName()));
-            String s = getEntityData().replaceAll("\\{player}", player.getName()).replaceAll("\\{playerUUID}", player.getUniqueId().toString());
-            if (entity.isValid()) {
-                NmsUtils.setEntityTag(entity, s);
+//            String s = getEntityData().replaceAll("\\{player}", player.getName()).replaceAll("\\{playerUUID}", player.getUniqueId().toString());
+            Consumer<Entity> entityConsumer = (Entity entity) ->{
+//                NmsUtils.setEntityTag(entity, s);
                 entity.setRotation(loc.getYaw(), loc.getPitch());
-                UUID uuid = entity.getUniqueId();
-                Entity e = Bukkit.getEntity(uuid);
-                if (e != null) {
-                    if (e instanceof Projectile) {
-                        ((Projectile) e).setShooter(player);
-                    }
-                    e.setVelocity(loc.getDirection().multiply(getSpeed()));
-                    e.setPersistent(isPersistent());
+                if (entity instanceof Projectile) {
+                    ((Projectile) entity).setShooter(player);
                 }
-            }
+                entity.setVelocity(loc.getDirection().multiply(getSpeed()));
+                entity.setPersistent(isPersistent());
+            };
+            player.getWorld().spawnEntity(loc, EntityType.valueOf(getEntityName()), CreatureSpawnEvent.SpawnReason.CUSTOM,entityConsumer);
         }
 
         @Override

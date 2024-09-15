@@ -2,8 +2,11 @@ package think.rpgitems.power.marker;
 
 import org.bukkit.attribute.Attribute;
 import org.bukkit.inventory.EquipmentSlot;
+import org.bukkit.inventory.EquipmentSlotGroup;
+import think.rpgitems.RPGItems;
 import think.rpgitems.power.Meta;
 import think.rpgitems.power.Property;
+import org.bukkit.NamespacedKey;
 
 import java.util.UUID;
 
@@ -29,13 +32,10 @@ public class AttributeModifier extends BaseMarker {
     public org.bukkit.attribute.AttributeModifier.Operation operation = org.bukkit.attribute.AttributeModifier.Operation.ADD_NUMBER;
 
     @Property
-    public EquipmentSlot slot = null;
+    public EquipmentSlotGroup slot = null;
 
     @Property
-    public int uuidLeast = (int) UUID.randomUUID().getLeastSignificantBits();
-
-    @Property
-    public int uuidMost = (int) UUID.randomUUID().getMostSignificantBits();
+    public String namespacedKey = new NamespacedKey(RPGItems.plugin,UUID.randomUUID().toString()).toString();
 
     @Override
     public String getName() {

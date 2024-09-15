@@ -46,7 +46,7 @@ public class PowerCommands extends RPGCommandReceiver {
 
     private static Power nextPower(RPGItem item, CommandSender sender, Arguments args) {
         String next = args.top();
-        if (next.contains("-")) {
+        if (next!=null&&next.contains("-")) {
             next = args.nextString();
             String p1 = next.split("-", 2)[0];
             String p2 = next.split("-", 2)[1];

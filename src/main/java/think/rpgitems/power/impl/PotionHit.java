@@ -28,7 +28,7 @@ public class PotionHit extends BasePower {
     @Serializer(PotionEffectUtils.class)
     @Property(order = 3, required = true)
     @AcceptedValue(preset = Preset.POTION_EFFECT_TYPE)
-    public PotionEffectType type = PotionEffectType.HARM;
+    public PotionEffectType type = PotionEffectType.INSTANT_DAMAGE;
     @Property(order = 1)
     public int duration = 20;
     @Property(order = 2)

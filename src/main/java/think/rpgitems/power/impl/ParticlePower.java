@@ -229,50 +229,50 @@ public class ParticlePower extends BasePower {
 
     @SuppressWarnings("unused")
     public enum DeprecatedEffect {
-        CLOUD(org.bukkit.Particle.CLOUD),
-        COLOURED_DUST(org.bukkit.Particle.FALLING_DUST),
-        CRIT(org.bukkit.Particle.CRIT),
-        EXPLOSION(org.bukkit.Particle.EXPLOSION_NORMAL),
-        EXPLOSION_HUGE(org.bukkit.Particle.EXPLOSION_HUGE),
-        EXPLOSION_LARGE(org.bukkit.Particle.EXPLOSION_LARGE),
-        FIREWORKS_SPARK(org.bukkit.Particle.FIREWORKS_SPARK),
-        FLAME(org.bukkit.Particle.FLAME),
-        FLYING_GLYPH(org.bukkit.Particle.ENCHANTMENT_TABLE),
-        FOOTSTEP(org.bukkit.Particle.NAUTILUS), // TODO: FOOTSTEP is gone
-        HAPPY_VILLAGER(org.bukkit.Particle.VILLAGER_HAPPY),
-        HEART(org.bukkit.Particle.HEART),
-        INSTANT_SPELL(org.bukkit.Particle.SPELL_INSTANT),
-        ITEM_BREAK(org.bukkit.Particle.ITEM_CRACK),
-        LARGE_SMOKE(org.bukkit.Particle.SMOKE_LARGE),
-        LAVA_POP(org.bukkit.Particle.LAVA),
-        LAVADRIP(org.bukkit.Particle.DRIP_LAVA),
-        MAGIC_CRIT(org.bukkit.Particle.CRIT_MAGIC),
-        NOTE(org.bukkit.Particle.NOTE),
-        PARTICLE_SMOKE(org.bukkit.Particle.SMOKE_NORMAL),
-        PORTAL(org.bukkit.Particle.PORTAL),
-        POTION_SWIRL(org.bukkit.Particle.SPELL_MOB),
-        POTION_SWIRL_TRANSPARENT(org.bukkit.Particle.SPELL_MOB_AMBIENT),
-        SLIME(org.bukkit.Particle.SLIME),
-        SMALL_SMOKE(org.bukkit.Particle.TOWN_AURA),
-        SNOW_SHOVEL(org.bukkit.Particle.SNOW_SHOVEL),
-        SNOWBALL_BREAK(org.bukkit.Particle.SNOWBALL),
-        SPELL(org.bukkit.Particle.SPELL),
-        SPLASH(org.bukkit.Particle.WATER_SPLASH),
-        TILE_BREAK(org.bukkit.Particle.BLOCK_CRACK),
-        TILE_DUST(org.bukkit.Particle.BLOCK_DUST),
-        VILLAGER_THUNDERCLOUD(org.bukkit.Particle.VILLAGER_ANGRY),
-        VOID_FOG(org.bukkit.Particle.SUSPENDED_DEPTH),
-        WATERDRIP(org.bukkit.Particle.DRIP_WATER),
-        WITCH_MAGIC(org.bukkit.Particle.SPELL_WITCH),
+        CLOUD(Particle.CLOUD),
+        COLOURED_DUST(Particle.FALLING_DUST),
+        CRIT(Particle.CRIT),
+        EXPLOSION(Particle.EXPLOSION),
+        EXPLOSION_HUGE(Particle.EXPLOSION_EMITTER),
+        EXPLOSION_LARGE(Particle.EXPLOSION),
+        FIREWORKS_SPARK(Particle.FIREWORK),
+        FLAME(Particle.FLAME),
+        FLYING_GLYPH(Particle.ENCHANT),
+        FOOTSTEP(Particle.NAUTILUS), // TODO: FOOTSTEP is gone
+        HAPPY_VILLAGER(Particle.HAPPY_VILLAGER),
+        HEART(Particle.HEART),
+        INSTANT_SPELL(Particle.INSTANT_EFFECT),
+        ITEM_BREAK(Particle.ITEM),
+        LARGE_SMOKE(Particle.LARGE_SMOKE),
+        LAVA_POP(Particle.LAVA),
+        LAVADRIP(Particle.DRIPPING_LAVA),
+        MAGIC_CRIT(Particle.ENCHANTED_HIT),
+        NOTE(Particle.NOTE),
+        PARTICLE_SMOKE(Particle.SMOKE),
+        PORTAL(Particle.PORTAL),
+        POTION_SWIRL(Particle.ENTITY_EFFECT),
+        POTION_SWIRL_TRANSPARENT(Particle.ENTITY_EFFECT),
+        SLIME(Particle.ITEM_SLIME),
+        SMALL_SMOKE(Particle.MYCELIUM),
+        SNOW_SHOVEL(Particle.SNOWFLAKE),
+        SNOWBALL_BREAK(Particle.ITEM_SNOWBALL),
+        SPELL(Particle.EFFECT),
+        SPLASH(Particle.SPLASH),
+        TILE_BREAK(Particle.BLOCK),
+        TILE_DUST(Particle.FALLING_DUST),
+        VILLAGER_THUNDERCLOUD(Particle.ANGRY_VILLAGER),
+        VOID_FOG(Particle.UNDERWATER),
+        WATERDRIP(Particle.DRIPPING_WATER),
+        WITCH_MAGIC(Particle.WITCH),
         ;
 
-        private final org.bukkit.Particle particle;
+        private final Particle particle;
 
-        DeprecatedEffect(org.bukkit.Particle particle) {
+        DeprecatedEffect(Particle particle) {
             this.particle = particle;
         }
 
-        public org.bukkit.Particle getParticle() {
+        public Particle getParticle() {
             return particle;
         }
     }

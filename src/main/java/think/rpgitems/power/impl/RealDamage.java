@@ -80,8 +80,8 @@ public class RealDamage extends BasePower {
             if (damage < getMinDamage()) return PowerResult.noop();
             if (!checkCooldown(getPower(), player, getCooldown(), true, true)) return PowerResult.cd();
             if (!getItem().consumeDurability(stack, getCost())) return PowerResult.cost();
-            if (entity.hasPotionEffect(PotionEffectType.DAMAGE_RESISTANCE)) {
-                PotionEffect e = entity.getPotionEffect(PotionEffectType.DAMAGE_RESISTANCE);
+            if (entity.hasPotionEffect(PotionEffectType.RESISTANCE)) {
+                PotionEffect e = entity.getPotionEffect(PotionEffectType.RESISTANCE);
                 if (e.getAmplifier() >= 4) return PowerResult.noop();
             }
             Context.instance().putExpiringSeconds(player.getUniqueId(), "realdamage.target", entity, 3);

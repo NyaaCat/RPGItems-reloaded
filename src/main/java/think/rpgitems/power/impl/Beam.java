@@ -199,7 +199,7 @@ public class Beam extends BasePower {
     private static List<Entity> getTargets(Vector direction, Location fromLocation, Entity from, double range, double homingAngle, Target homingTarget) {
         double radius = Math.min(range, 300);
         return Utils.getLivingEntitiesInConeSorted(from.getNearbyEntities(radius, range * 1.5, range * 1.5).stream()
-                                .filter(entity -> entity instanceof LivingEntity && !entity.equals(from) && !isUtilArmorStand(entity) &&
+                                .filter(entity -> entity instanceof LivingEntity && !entity.hasMetadata("NPC") && !entity.equals(from) && !isUtilArmorStand(entity) &&
                                         !entity.getScoreboardTags().contains(INVALID_TARGET)
                                         && !entity.isDead() && from.getLocation().distance(entity.getLocation()) < range)
                                 .map(entity -> ((LivingEntity) entity))
