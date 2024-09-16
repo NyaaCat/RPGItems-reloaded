@@ -5,6 +5,8 @@ import org.bukkit.Color;
 import org.bukkit.Location;
 import org.bukkit.Particle;
 import org.bukkit.Sound;
+import org.bukkit.damage.DamageSource;
+import org.bukkit.damage.DamageType;
 import org.bukkit.entity.LivingEntity;
 import org.bukkit.entity.Player;
 import org.bukkit.entity.Projectile;
@@ -125,7 +127,7 @@ public class Headshot extends BasePower {
                     entity.getWorld().playSound(entity.getLocation(), Sound.ENTITY_GHAST_HURT, 1, 3);
                 }
                 if (isParticleEnemy()) {
-                    entity.getWorld().spawnParticle(Particle.REDSTONE, entity.getLocation(), 2, new Particle.DustOptions(Color.RED, 10));
+                    entity.getWorld().spawnParticle(Particle.DUST, entity.getLocation(), 2, new Particle.DustOptions(Color.RED, 10));
                 }
                 if (isSetBaseDamage()) {
                     event.setDamage(damage * getFactor());
@@ -142,7 +144,8 @@ public class Headshot extends BasePower {
 
         @Override
         public PowerResult<Double> hitEntity(Player player, ItemStack stack, LivingEntity entity, double damage, BeamHitEntityEvent event) {
-            EntityDamageByEntityEvent fake = new EntityDamageByEntityEvent(player, player, EntityDamageEvent.DamageCause.CUSTOM, damage);
+            DamageSource source = DamageSource.builder(DamageType.PLAYER_ATTACK).build();
+            EntityDamageByEntityEvent fake = new EntityDamageByEntityEvent(player,player,EntityDamageEvent.DamageCause.CUSTOM,source,damage);
             PowerResult<Double> check = check(player, entity, stack, damage, event.getVelocity(), event.getBoundingBox().expand(0.5), entity.getBoundingBox(), fake);
             event.setDamage(fake.getDamage());
             return check;

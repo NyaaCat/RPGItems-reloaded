@@ -71,7 +71,7 @@ public class ParticleBarrier extends BasePower {
     @Serializer(PotionEffectUtils.class)
     @Property(order = 1, required = true)
     @AcceptedValue(preset = Preset.POTION_EFFECT_TYPE)
-    public PotionEffectType effect = PotionEffectType.INCREASE_DAMAGE;
+    public PotionEffectType effect = PotionEffectType.STRENGTH;
 
     public static AtomicInteger getRc() {
         return rc;

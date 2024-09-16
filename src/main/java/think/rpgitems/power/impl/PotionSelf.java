@@ -41,7 +41,7 @@ public class PotionSelf extends BasePower {
     @Serializer(PotionEffectUtils.class)
     @Property(order = 3, required = true)
     @AcceptedValue(preset = Preset.POTION_EFFECT_TYPE)
-    public PotionEffectType type = PotionEffectType.HEAL;
+    public PotionEffectType type = PotionEffectType.INSTANT_HEALTH;
     @Property
     public boolean clear = false;
 

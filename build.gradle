@@ -2,7 +2,7 @@ plugins {
     id 'java-library'
     id 'maven-publish'
     id 'com.github.johnrengelman.shadow' version '7.0.0'
-    id 'org.ajoberstar.grgit' version '3.0.0'
+    id 'org.ajoberstar.grgit' version '5.2.2'
 }
 ext {
     // Supplied by Jenkins
@@ -15,8 +15,8 @@ group = "cat.nyaa"
 archivesBaseName = "${PLUGIN_NAME}-mc${MINECRAFT_VERSION}"
 version = "${MAJOR_VERSION}.${MINOR_VERSION}.$ext.buildNumber" as String
 
-sourceCompatibility = 17
-targetCompatibility = 17
+sourceCompatibility = 21
+targetCompatibility = 21
 
 repositories {
     mavenCentral()
@@ -86,7 +86,7 @@ javadoc {
     if (project.jdDirectory != null) destinationDir = file("${jdDirectory}/${PLUGIN_NAME.toLowerCase()}-${version}")
 
     (options as StandardJavadocDocletOptions).with {
-        links 'https://docs.oracle.com/en/java/javase/17/docs/api/'
+        links 'https://docs.oracle.com/en/java/javase/21/docs/api/'
         //links 'https://hub.spigotmc.org/javadocs/spigot/'
         links 'https://guava.dev/releases/21.0/api/docs/'
         //links 'https://ci.nyaacat.com/javadocs/nyaacore-7.1.350/' //need update
