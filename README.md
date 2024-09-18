@@ -22,7 +22,9 @@ Please choose builds with prefixes matching your server version. Some version us
 ## Status
 
 The develop branch is `1.21.1` version 3.10 and is *in alpha*. **Ensure you have the latest Spigot/Paper and NyaaCore**. Some commands and item file format are updated. 
+
 RPGItems 3.10 is coming with breaking feature, and it should fully compatible with 3.8 item file **except** attribute modifiers . 
+
 **Note: item file format update are one-way! Backup your 3.8 item files in case you need them later**
 
 No stable versions now due to the lack of time to maintain this project.
