@@ -25,6 +25,9 @@ repositories {
     maven { name 'enginehub'; url 'https://maven.enginehub.org/repo/' }
     maven { name 'vault-repo'; url 'https://jitpack.io' }
     maven { name 'NyaaCat'; url 'https://ci.nyaacat.com/maven/' }
+    maven {
+        url = 'https://repo.extendedclip.com/content/repositories/placeholderapi/'
+    }
 }
 
 shadowJar {
@@ -33,6 +36,7 @@ shadowJar {
 
 dependencies {
     //compileOnly files(spigotNmsPath)
+    compileOnly 'me.clip:placeholderapi:2.11.6'
     compileOnly "io.papermc.paper:paper-api:$MINECRAFT_VERSION-R0.1-SNAPSHOT"
     // other nyaa plugins
     compileOnly('cat.nyaa:nyaacore:9.3.4-1.20.4') { transitive = false }

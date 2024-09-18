@@ -845,6 +845,7 @@ public class Utils {
         Expression ex = new Expression(rpgItems.getArmourExpression());
         ex
                 .and("damage", BigDecimal.valueOf(damage))
+                .and("armour",BigDecimal.valueOf(rpgItems.getArmour()))
                 .and("finalDamage", Utils.lazyNumber(event::getFinalDamage))
                 .and("isDamageByEntity", damager == null ? BigDecimal.ONE : BigDecimal.ZERO)
                 .and("playerYaw", Utils.lazyNumber(() -> (double) player.getLocation().getYaw()))

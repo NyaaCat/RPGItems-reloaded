@@ -82,7 +82,7 @@ public enum Preset {
         FIREWORKS_SPARK(Particle.FIREWORK),
         FLAME(Particle.FLAME),
         FLYING_GLYPH(Particle.ENCHANT),
-        FOOTSTEP(Particle.NAUTILUS), // TODO: FOOTSTEP is gone
+        FOOTSTEP(Particle.NAUTILUS),
         HAPPY_VILLAGER(Particle.HAPPY_VILLAGER),
         HEART(Particle.HEART),
         INSTANT_SPELL(Particle.INSTANT_EFFECT),
