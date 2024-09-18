@@ -3,7 +3,8 @@
 The RPGItems2 plugin continued from [TheCreeperOfRedstone/RPG-Items-2](https://github.com/TheCreeperOfRedstone/RPG-Items-2)
 
 **RPGItems starting from 3.6 depends on [NyaaCore](https://github.com/NyaaCat/NyaaCore) to work! See [Installation](https://nyaacat.github.io/RPGItems-wiki/#/en-us/installation) for detail.**
-**From 3.10, RPGItems also depends on [PlaceholderAPI](https://www.spigotmc.org/resources/placeholderapi.6245/)**
+
+**From 3.10, RPGItems can be only run on Java 21+ and also depends on [PlaceholderAPI](https://www.spigotmc.org/resources/placeholderapi.6245/)**
 
 ## Project Discussion
 
@@ -20,7 +21,9 @@ Please choose builds with prefixes matching your server version. Some version us
 
 ## Status
 
-The develop branch is `1.21.1` version 3.10 and is *in alpha*. **Ensure you have the latest Spigot/Paper and NyaaCore**. Some commands and item file format are updated. RPGItems 3.10 is coming with breaking feature, and it should fully compatible with 3.8 item file **except** attribute modifiers . **Note: item file format update are one-way! Backup your 3.8 item files in case you need them later**
+The develop branch is `1.21.1` version 3.10 and is *in alpha*. **Ensure you have the latest Spigot/Paper and NyaaCore**. Some commands and item file format are updated. 
+RPGItems 3.10 is coming with breaking feature, and it should fully compatible with 3.8 item file **except** attribute modifiers . 
+**Note: item file format update are one-way! Backup your 3.8 item files in case you need them later**
 
 No stable versions now due to the lack of time to maintain this project.
 Old branches (all the versions except the newest) are no longer maintained.  
