@@ -19,6 +19,7 @@ import think.rpgitems.item.ItemManager;
 import think.rpgitems.power.*;
 import think.rpgitems.power.trigger.BaseTriggers;
 import think.rpgitems.power.trigger.Trigger;
+import think.rpgitems.support.PlaceholderAPISupport;
 import think.rpgitems.support.WGSupport;
 
 import java.io.File;
@@ -128,6 +129,7 @@ public class RPGItems extends JavaPlugin {
         loadPowers();
         saveDefaultConfig();
         Font.load();
+        PlaceholderAPISupport.init(this);
         WGSupport.load();
         loadExtensions();
     }
