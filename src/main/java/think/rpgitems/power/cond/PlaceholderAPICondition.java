@@ -7,9 +7,11 @@ import think.rpgitems.power.PowerResult;
 import think.rpgitems.power.Property;
 import think.rpgitems.power.PropertyHolder;
 import me.clip.placeholderapi.PlaceholderAPI;
+import think.rpgitems.support.PlaceholderAPISupport;
 
 import java.util.Collections;
 import java.util.Map;
+import java.util.MissingResourceException;
 import java.util.Set;
 
 @Meta(marker = true)
@@ -49,6 +51,9 @@ public class PlaceholderAPICondition extends BaseCondition<Void>{
 
     @Override
     public PowerResult<Void> check(Player player, ItemStack stack, Map<PropertyHolder, PowerResult<?>> context) {
+        if(!PlaceholderAPISupport.hasSupport()){
+            throw new IllegalStateException("PlaceholderAPI is not loaded");
+        }
         String finalplaceholder = PlaceholderAPI.setPlaceholders(player, placeholder);
         String finalvalue = PlaceholderAPI.setPlaceholders(player, value);
         double placeholdervalue;

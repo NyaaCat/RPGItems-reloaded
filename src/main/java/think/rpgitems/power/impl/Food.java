@@ -19,6 +19,7 @@ package think.rpgitems.power.impl;
 import org.bukkit.Bukkit;
 import org.bukkit.Material;
 import org.bukkit.entity.Player;
+import org.bukkit.event.entity.FoodLevelChangeEvent;
 import org.bukkit.event.player.PlayerInteractEvent;
 import org.bukkit.inventory.ItemStack;
 import think.rpgitems.I18n;
@@ -59,16 +60,21 @@ public class Food extends BasePower {
         public PowerResult<Void> rightClick(final Player player, ItemStack stack, PlayerInteractEvent event) {
             ItemStack item = player.getInventory().getItemInMainHand();
             int count = item.getAmount() - 1;
+            int newFoodPoint = player.getFoodLevel() + getFoodpoints();
+            if (newFoodPoint > 20) newFoodPoint = 20;
+            FoodLevelChangeEvent foodEvent = new FoodLevelChangeEvent(player,newFoodPoint-player.getFoodLevel());
             if (count == 0) {
-                int newFoodPoint = player.getFoodLevel() + getFoodpoints();
-                if (newFoodPoint > 20) newFoodPoint = 20;
-                player.setFoodLevel(newFoodPoint);
                 Bukkit.getScheduler().scheduleSyncDelayedTask(RPGItems.plugin, () -> player.getInventory().setItemInMainHand(new ItemStack(Material.AIR)), 1L);
             } else {
-                player.setFoodLevel(player.getFoodLevel() + getFoodpoints());
                 item.setAmount(count);
             }
-            return PowerResult.ok();
+            if(foodEvent.callEvent()){
+                player.setFoodLevel(newFoodPoint);
+                return PowerResult.ok();
+            }
+            else{
+                return PowerResult.fail();
+            }
         }
 
         @Override

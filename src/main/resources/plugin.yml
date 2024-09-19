@@ -2,12 +2,12 @@ name: RPGItems
 main: think.rpgitems.RPGItems
 description: "RPGItems"
 version: ${version}
-depend: [NyaaCore,Vault,PlaceholderAPI]
-softdepend: [WorldGuard,NyaaUtils]
-authors: [Taiterio,cyilin,RecursiveG,Librazy]
+depend: [NyaaCore,Vault]
+softdepend: [WorldGuard,NyaaUtils,PlaceholderAPI]
+authors: [Taiterio,cyilin,RecursiveG,Librazy,Clexus]
 website: "https://github.com/NyaaCat/RPGItems-reloaded"
 database: false
-api-version: 1.19
+api-version: 1.21.1
 libraries:
   - 'com.udojava:EvalEx:2.7'
   - 'net.bytebuddy:byte-buddy:1.12.16'

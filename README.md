@@ -4,7 +4,7 @@ The RPGItems2 plugin continued from [TheCreeperOfRedstone/RPG-Items-2](https://g
 
 **RPGItems starting from 3.6 depends on [NyaaCore](https://github.com/NyaaCat/NyaaCore) to work! See [Installation](https://nyaacat.github.io/RPGItems-wiki/#/en-us/installation) for detail.**
 
-**From 3.10, RPGItems can be only run on Java 21+ and also depends on [PlaceholderAPI](https://www.spigotmc.org/resources/placeholderapi.6245/)**
+**From 3.10, RPGItems can be only run on Java 21+ and also soft depends on [PlaceholderAPI](https://www.spigotmc.org/resources/placeholderapi.6245/)**
 
 ## Project Discussion
 

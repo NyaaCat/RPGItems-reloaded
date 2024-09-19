@@ -2,6 +2,7 @@ package think.rpgitems;
 
 import cat.nyaa.nyaacore.utils.RayTraceUtils;
 import cat.nyaa.nyaacore.utils.TridentUtils;
+import com.destroystokyo.paper.event.player.PlayerJumpEvent;
 import org.bukkit.Bukkit;
 import org.bukkit.Location;
 import org.bukkit.Material;
@@ -30,10 +31,7 @@ import think.rpgitems.event.BeamHitBlockEvent;
 import think.rpgitems.event.BeamHitEntityEvent;
 import think.rpgitems.item.ItemManager;
 import think.rpgitems.item.RPGItem;
-import think.rpgitems.power.Pimpl;
-import think.rpgitems.power.PowerSneak;
-import think.rpgitems.power.PowerSprint;
-import think.rpgitems.power.Utils;
+import think.rpgitems.power.*;
 import think.rpgitems.power.marker.Ranged;
 import think.rpgitems.power.trigger.BaseTriggers;
 import think.rpgitems.power.trigger.Trigger;
@@ -493,6 +491,31 @@ public class Events implements Listener {
     }
 
     @EventHandler
+    public void onPlayerSwim(EntityToggleSwimEvent e) {
+        if(!(e.getEntity() instanceof Player)||!e.isSwimming()){
+            return;
+        }
+        Player p = (Player) e.getEntity();
+        Trigger<EntityToggleSwimEvent, PowerSwim, Void, Void> swim = BaseTriggers.SWIM;
+
+        trigger(p, e, p.getInventory().getItemInMainHand(), swim);
+        ItemStack[] armorContents = p.getInventory().getArmorContents();
+        Stream.of(armorContents)
+                .forEach(i -> trigger(p, e, i, swim));
+    }
+
+    @EventHandler
+    public void onPlayerJump(PlayerJumpEvent e) {
+        Player p = e.getPlayer();
+        Trigger<PlayerJumpEvent, PowerJump, Void, Void> jump = BaseTriggers.JUMP;
+
+        trigger(p, e, p.getInventory().getItemInMainHand(), jump);
+        ItemStack[] armorContents = p.getInventory().getArmorContents();
+        Stream.of(armorContents)
+                .forEach(i -> trigger(p, e, i, jump));
+    }
+
+    @EventHandler
     public void onPlayerSprint(PlayerToggleSprintEvent e) {
         if (!e.isSprinting()) {
             return;
@@ -716,7 +739,7 @@ public class Events implements Listener {
         }
     }
 
-    //this function cann't catch event when player open their backpack.
+    //this function can't catch event when player open their backpack.
     //fuck there's no event when player open their backpack.
     @EventHandler(ignoreCancelled = true, priority = EventPriority.HIGHEST)
     public void onInventoryOpen(final InventoryOpenEvent e) {

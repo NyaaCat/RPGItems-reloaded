@@ -1,5 +1,6 @@
 package think.rpgitems.power.trigger;
 
+import com.destroystokyo.paper.event.player.PlayerJumpEvent;
 import org.bukkit.event.Event;
 import org.bukkit.event.entity.*;
 import org.bukkit.event.inventory.InventoryClickEvent;
@@ -27,6 +28,8 @@ public final class BaseTriggers {
     public static final Trigger<PlayerInteractEvent, PowerOffhandClick, Void, Void> OFFHAND_CLICK = new OffhandClick();
     public static final Trigger<PlayerToggleSneakEvent, PowerSneak, Void, Void> SNEAK = new Sneak();
     public static final Trigger<PlayerToggleSprintEvent, PowerSprint, Void, Void> SPRINT = new Sprint();
+    public static final Trigger<PlayerJumpEvent, PowerJump, Void, Void> JUMP = new Jump();
+    public static final Trigger<EntityToggleSwimEvent, PowerSwim, Void, Void> SWIM = new Swim();
     public static final Trigger<PlayerSwapHandItemsEvent, PowerMainhandItem, Boolean, Boolean> SWAP_TO_OFFHAND = new SwapToOffhand();
     public static final Trigger<PlayerSwapHandItemsEvent, PowerOffhandItem, Boolean, Boolean> SWAP_TO_MAINHAND = new SwapToMainhand();
     public static final Trigger<InventoryClickEvent, PowerMainhandItem, Boolean, Boolean> PLACE_OFF_HAND = new PlaceOffhand();

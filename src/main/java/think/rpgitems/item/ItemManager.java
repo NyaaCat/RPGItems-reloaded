@@ -632,11 +632,11 @@ public class ItemManager {
         return Optional.ofNullable(itemByName.get(name));
     }
 
-    static RPGItem getItemById(int id) {
+    public static RPGItem getItemById(int id) {
         return itemById.get(id);
     }
 
-    static RPGItem getItemByName(String name) {
+    public static RPGItem getItemByName(String name) {
         return itemByName.get(name);
     }
 

@@ -154,7 +154,7 @@ publishing {
         mavenJava(MavenPublication) {
             group project.group
             artifactId PLUGIN_NAME.toLowerCase()
-            version "$MAJOR_VERSION.$MINOR_VERSION-SNAPSHOT"
+            version "$MAJOR_VERSION.$MINOR_VERSION.$SMALL_VERSION-SNAPSHOT"
 
             from components.java
 

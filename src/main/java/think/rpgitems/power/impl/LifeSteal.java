@@ -20,6 +20,7 @@ import org.bukkit.attribute.Attribute;
 import org.bukkit.entity.LivingEntity;
 import org.bukkit.entity.Player;
 import org.bukkit.event.entity.EntityDamageByEntityEvent;
+import org.bukkit.event.entity.EntityRegainHealthEvent;
 import org.bukkit.inventory.ItemStack;
 import think.rpgitems.I18n;
 import think.rpgitems.power.*;
@@ -91,8 +92,15 @@ public class LifeSteal extends BasePower {
         public PowerResult<Void> fire(Player player, ItemStack stack, LivingEntity entity, Double damage) {
             if (getRandom().nextInt(getChance()) == 0 && damage != null) {
                 if (!getItem().consumeDurability(stack, getCost())) return PowerResult.cost();
-                player.setHealth(Math.max(Math.min(player.getHealth() + damage * getFactor(), player.getAttribute(Attribute.GENERIC_MAX_HEALTH).getValue()), 0.01));
-                return PowerResult.ok();
+                double finalHealth = Math.max(Math.min(player.getHealth() + damage * getFactor(), player.getAttribute(Attribute.GENERIC_MAX_HEALTH).getValue()), 0.01);
+                EntityRegainHealthEvent regainEvent = new EntityRegainHealthEvent(player,finalHealth-player.getHealth(), EntityRegainHealthEvent.RegainReason.CUSTOM);
+                if(regainEvent.callEvent()){
+                    player.setHealth(finalHealth);
+                    return PowerResult.ok();
+                }
+                else{
+                    return PowerResult.fail();
+                }
             }
             return PowerResult.noop();
         }
