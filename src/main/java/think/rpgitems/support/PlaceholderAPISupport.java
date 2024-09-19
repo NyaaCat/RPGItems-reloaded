@@ -28,10 +28,16 @@ public class PlaceholderAPISupport {
             RPGItems.logger.info("PlaceholderAPI version: " + papiVersion + " found");
             Pattern pattern = Pattern.compile("(\\d+)\\.(\\d+)\\.(\\d+)");
             Matcher matcher = pattern.matcher(papiVersion);
-            int middleNumber = Integer.parseInt(matcher.group(2));
-            int lastNumber = Integer.parseInt(matcher.group(3));
-            if (middleNumber<10||(middleNumber==10&&lastNumber<2)) {
-                RPGItems.logger.warning("Requires WorldGuard 2.10.2 or later, disabling integration");
+            if (matcher.find()) { // Check if there is a match
+                int middleNumber = Integer.parseInt(matcher.group(2));
+                int lastNumber = Integer.parseInt(matcher.group(3));
+                if (middleNumber < 10 || (middleNumber == 10 && lastNumber < 2)) {
+                    RPGItems.logger.warning("Requires PlaceholderAPI 2.10.2 or later, disabling integration");
+                    hasSupport = false;
+                    return;
+                }
+            } else {
+                RPGItems.logger.warning("Failed to parse PlaceholderAPI version, disabling integration");
                 hasSupport = false;
                 return;
             }
