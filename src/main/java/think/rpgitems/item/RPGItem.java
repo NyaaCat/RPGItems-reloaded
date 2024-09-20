@@ -735,6 +735,9 @@ public class RPGItem {
         String qualityPrefix = plugin.cfg.qualityPrefixes.get(getQuality());
         boolean qualitied = false;
         String finalDisplay = getDisplayName();
+        if(PlaceholderAPISupport.hasSupport()){
+            finalDisplay = PlaceholderAPI.setPlaceholders(player,finalDisplay);
+        }
         if (qualityPrefix != null) {
             if (meta.hasDisplayName() && !finalDisplay.startsWith(qualityPrefix)) {
                 finalDisplay = qualityPrefix + finalDisplay;
