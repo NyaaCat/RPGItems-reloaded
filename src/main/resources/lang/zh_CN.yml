@@ -1,3 +1,14 @@
+internal:
+  error:
+    no_more_string: 还需要类型为字符串的参数
+    no_more_int: 还需要类型为整数的参数
+    no_more_enum: 还需要类型为枚举的参数
+    bad_int: 错误的整数 %s
+    bad_double: 错误的小数 %s
+    bad_enum: '枚举项错误，只支持类型为 %s 中的以下项: %s'
+    command_exception: 命令出错 %s
+  info:
+    usage_prompt: '使用方法：%s'
 command:
   list:
     item_per_page: 每页列出的物品
@@ -1313,6 +1324,7 @@ properties:
     projectileType: 弹射物类型
     range: 弹射物的散射角
     setFireballDirection: 是否设置火球的方向使其不偏离
+    fireballItem: 火球所显示为的物品材质
     speed: 弹射物速度
     suppressArrow: 取消箭矢（仍然会消耗）
     yield: 爆炸物的爆炸半径

@@ -1,3 +1,14 @@
+internal:
+  error:
+    no_more_string: String argument needed
+    no_more_int: Integer argument needed
+    no_more_enum: Enum argument needed
+    bad_int: Invalid integer %s
+    bad_double: Invalid decimal %s
+    bad_enum: 'Invalid enum，only enum with type %s and value %s is acceptable'
+    command_exception: Command went wrong %s
+  info:
+    usage_prompt: 'Usage：%s'
 command:
   template:
     apply:
@@ -1241,6 +1252,7 @@ properties:
     projectileType: Type of projectiles
     range: Range will projectiles spread, in degree
     setFireballDirection: Whether to set Fireball' direction so it won't curve
+    fireballItem: The material fireball show as
     speed: Speed of projectiles
     yield: Radius affected by this Explosive's explosion
     firingPhi: Polar coordinates parameter
