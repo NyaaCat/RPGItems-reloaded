@@ -6,9 +6,11 @@ import cat.nyaa.nyaacore.cmdreceiver.SubCommand;
 import org.bukkit.command.CommandSender;
 import think.rpgitems.item.ItemManager;
 import think.rpgitems.item.RPGItem;
+import think.rpgitems.power.Completion;
 import think.rpgitems.power.RPGCommandReceiver;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 
 import static think.rpgitems.AdminCommands.filtered;
@@ -35,11 +37,12 @@ public class MetaCommands extends RPGCommandReceiver {
         String quality = arguments.nextString();
         item.setQuality(quality);
         if (!plugin.cfg.qualityPrefixes.containsKey(quality)) {
-            new Message("").append(I18n.formatDefault("command.meta.quality.warn_quality_not_exists", quality));
+            new Message("").append(I18n.formatDefault("command.meta.quality.warn_quality_not_exists", quality)).send(sender);
         }
         ItemManager.save(item);
+        ItemManager.refreshItem();
     }
-
+    @Completion("")
     private List<String> qualityCompleter(CommandSender sender, Arguments arguments) {
         List<String> completeStr = new ArrayList<>();
         switch (arguments.remains()) {
@@ -60,6 +63,7 @@ public class MetaCommands extends RPGCommandReceiver {
         ItemManager.save(item);
     }
 
+    @Completion("")
     private List<String> typeCompleter(CommandSender sender, Arguments arguments) {
         List<String> completeStr = new ArrayList<>();
         switch (arguments.remains()) {
