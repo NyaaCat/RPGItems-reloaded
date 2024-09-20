@@ -7,6 +7,7 @@ import com.google.common.cache.CacheLoader;
 import com.google.common.cache.LoadingCache;
 import com.udojava.evalex.Expression;
 import com.udojava.evalex.LazyFunction;
+import me.clip.placeholderapi.PlaceholderAPI;
 import net.md_5.bungee.api.ChatMessageType;
 import net.md_5.bungee.api.chat.TextComponent;
 import org.bukkit.*;
@@ -15,6 +16,7 @@ import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.configuration.file.YamlConfiguration;
 import org.bukkit.enchantments.Enchantment;
 import org.bukkit.entity.*;
+import org.bukkit.event.entity.EntityDamageByEntityEvent;
 import org.bukkit.event.entity.EntityDamageEvent;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.permissions.PermissionAttachment;
@@ -30,6 +32,7 @@ import think.rpgitems.data.Font;
 import think.rpgitems.item.RPGItem;
 import think.rpgitems.power.marker.Selector;
 import think.rpgitems.power.trigger.Trigger;
+import think.rpgitems.support.PlaceholderAPISupport;
 import think.rpgitems.utils.MaterialUtils;
 import think.rpgitems.utils.Weightable;
 
@@ -842,7 +845,30 @@ public class Utils {
     }
 
     public static double eval(Player player, double damage, EntityDamageEvent event, Entity damager, RPGItem rpgItems) {
-        Expression ex = new Expression(rpgItems.getArmourExpression());
+        String expr = rpgItems.getArmourExpression();
+        boolean byEntity = event instanceof EntityDamageByEntityEvent;
+        boolean byPlayer = false;
+        if (byEntity) {
+            Entity ent = damager;
+            if (ent instanceof Projectile) {
+                ProjectileSource shooter = ((Projectile) ent).getShooter();
+                if (shooter instanceof Entity) {
+                    ent = (Entity) shooter;
+                    if(ent instanceof Player){
+                        byPlayer = true;
+                        expr = rpgItems.getPlayerArmourExpression();
+                    }
+                }
+            }
+        }
+        if(PlaceholderAPISupport.hasSupport()){
+            expr = PlaceholderAPI.setPlaceholders(player,expr);
+            if(byPlayer&&!rpgItems.getPlayerArmourExpression().isEmpty()){
+                expr = expr.replaceAll("damager:","");
+                expr = PlaceholderAPI.setPlaceholders((Player) ((EntityDamageByEntityEvent) event).getDamager(),expr);
+            }
+        }
+        Expression ex = new Expression(expr);
         ex
                 .and("damage", BigDecimal.valueOf(damage))
                 .and("armour",BigDecimal.valueOf(rpgItems.getArmour()))

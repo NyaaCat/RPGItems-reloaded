@@ -1,6 +1,7 @@
 package think.rpgitems.power.impl;
 
 import com.udojava.evalex.Expression;
+import me.clip.placeholderapi.PlaceholderAPI;
 import org.bukkit.entity.Entity;
 import org.bukkit.entity.LivingEntity;
 import org.bukkit.entity.Player;
@@ -10,9 +11,12 @@ import org.bukkit.event.entity.EntityDamageEvent;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.projectiles.ProjectileSource;
 import think.rpgitems.RPGItems;
+import think.rpgitems.event.PowerActivateEvent;
 import think.rpgitems.power.*;
+import think.rpgitems.support.PlaceholderAPISupport;
 
 import java.math.BigDecimal;
+import java.util.HashMap;
 import java.util.logging.Level;
 
 /**
@@ -28,7 +32,14 @@ public class EvalDamage extends BasePower {
     public String expression = "";
 
     @Property
+    public String playerExpression = "";
+
+    @Property
     public boolean setBaseDamage = false;
+
+    public String getPlayerExpression() {
+        return playerExpression;
+    }
 
     public String getExpression() {
         return expression;
@@ -56,18 +67,29 @@ public class EvalDamage extends BasePower {
         // Feel free to add variable below
         @Override
         public PowerResult<Double> hit(Player player, ItemStack stack, LivingEntity entity, double damage, EntityDamageByEntityEvent event) {
-            try {
-                Expression ex = new Expression(getExpression());
-                boolean byProjectile = false;
-                Entity damager = event.getDamager();
-                if (damager instanceof Projectile) {
-                    byProjectile = true;
+            String expr = getExpression();
+            boolean toPlayer = false;
+            Entity damager = event.getDamager();
+            if(entity instanceof Player){
+                toPlayer = true;
+                expr = getPlayerExpression();
+            }
+            if(PlaceholderAPISupport.hasSupport()){
+                expr = PlaceholderAPI.setPlaceholders(player,expr);
+                if(toPlayer&&!getPlayerExpression().isEmpty()){
+                    expr = expr.replaceAll("target:","");
+                    expr = PlaceholderAPI.setPlaceholders((Player) entity,expr);
                 }
+            }
+            try {
+                Expression ex = new Expression(expr);
+                boolean byProjectile = damager instanceof Projectile;
+                Entity finalDamager = damager;
                 ex
+                        .and("attackCooldown",BigDecimal.valueOf(player.getAttackCooldown()))
                         .and("damage", BigDecimal.valueOf(damage))
-                        .and("damagerType", damager.getType().name())
                         .and("isDamageByProjectile", byProjectile ? BigDecimal.ONE : BigDecimal.ZERO)
-                        .and("damagerTicksLived", Utils.lazyNumber(() -> (double) damager.getTicksLived()))
+                        .and("damagerTicksLived", Utils.lazyNumber(() -> (double) finalDamager.getTicksLived()))
                         .and("finalDamage", Utils.lazyNumber(event::getFinalDamage))
                         .and("distance", Utils.lazyNumber(() -> player.getLocation().distance(entity.getLocation())))
                         .and("playerYaw", Utils.lazyNumber(() -> (double) player.getLocation().getYaw()))
@@ -88,6 +110,14 @@ public class EvalDamage extends BasePower {
 
                 BigDecimal result = ex.eval();
                 double ret = result.doubleValue();
+                HashMap<String,Object> argsMap = new HashMap<>();
+                argsMap.put("damage",damage);
+                argsMap.put("finalDamage",ret);
+                argsMap.put("target",entity);
+                PowerActivateEvent powerEvent = new PowerActivateEvent(player,stack,getPower(),argsMap);
+                if(!powerEvent.callEvent()) {
+                    return PowerResult.fail();
+                }
                 if (isSetBaseDamage()) {
                     event.setDamage(ret);
                 }
@@ -105,9 +135,31 @@ public class EvalDamage extends BasePower {
         @Override
         public PowerResult<Double> takeHit(Player player, ItemStack stack, double damage, EntityDamageEvent event) {
             boolean byEntity = event instanceof EntityDamageByEntityEvent;
+            String expr = getExpression();
+            boolean byPlayer = false;
+            if (byEntity) {
+                Entity damager = ((EntityDamageByEntityEvent) event).getDamager();
+                Entity ent = damager;
+                if (ent instanceof Projectile) {
+                    ProjectileSource shooter = ((Projectile) ent).getShooter();
+                    if (shooter instanceof Entity) {
+                        ent = (Entity) shooter;
+                        if(ent instanceof Player){
+                            byPlayer = true;
+                            expr = getPlayerExpression();
+                        }
+                    }
+                }
+            }
+            if(PlaceholderAPISupport.hasSupport()){
+                expr = PlaceholderAPI.setPlaceholders(player,expr);
+                if(byPlayer&&!getPlayerExpression().isEmpty()){
+                    expr = expr.replaceAll("damager:","");
+                    expr = PlaceholderAPI.setPlaceholders((Player) ((EntityDamageByEntityEvent) event).getDamager(),expr);
+                }
+            }
             try {
-
-                Expression ex = new Expression(getExpression());
+                Expression ex = new Expression(expr);
                 ex
                         .and("damage", BigDecimal.valueOf(damage))
                         .and("finalDamage", Utils.lazyNumber(event::getFinalDamage))
@@ -150,6 +202,28 @@ public class EvalDamage extends BasePower {
 
                 BigDecimal result = ex.eval();
                 double ret = result.doubleValue();
+                HashMap<String,Object> argsMap = new HashMap<>();
+                argsMap.put("damage",damage);
+                argsMap.put("finalDamage",ret);
+                if (byEntity) {
+                    boolean byProjectile = false;
+                    Entity damager = ((EntityDamageByEntityEvent) event).getDamager();
+                    Entity ent = damager;
+                    if (ent instanceof Projectile) {
+                        ProjectileSource shooter = ((Projectile) ent).getShooter();
+                        if (shooter instanceof Entity) {
+                            ent = (Entity) shooter;
+                            byProjectile = true;
+                        }
+                    }
+                    Entity entity = ent;
+                    argsMap.put("damager",ent);
+                }
+                else argsMap.put("damager",null);
+                PowerActivateEvent powerEvent = new PowerActivateEvent(player,stack,getPower(),argsMap);
+                if(!powerEvent.callEvent()) {
+                    return PowerResult.fail();
+                }
                 if (isSetBaseDamage()) {
                     event.setDamage(ret);
                 }
