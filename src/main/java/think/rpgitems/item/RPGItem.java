@@ -9,6 +9,8 @@ import com.google.common.base.Strings;
 import com.google.common.cache.Cache;
 import com.google.common.cache.CacheBuilder;
 import com.google.common.collect.Multimap;
+import me.clip.placeholderapi.PlaceholderAPI;
+import net.kyori.adventure.text.format.NamedTextColor;
 import net.md_5.bungee.api.chat.BaseComponent;
 import net.md_5.bungee.api.chat.ClickEvent;
 import net.md_5.bungee.api.chat.HoverEvent;
@@ -47,8 +49,10 @@ import think.rpgitems.power.propertymodifier.Modifier;
 import think.rpgitems.power.proxy.Interceptor;
 import think.rpgitems.power.trigger.BaseTriggers;
 import think.rpgitems.power.trigger.Trigger;
+import think.rpgitems.support.PlaceholderAPISupport;
 import think.rpgitems.utils.MaterialUtils;
 
+import javax.annotation.Nullable;
 import java.io.File;
 import java.lang.reflect.Field;
 import java.util.*;
@@ -117,6 +121,7 @@ public class RPGItem {
     private AttributeMode attributeMode = AttributeMode.PARTIAL_UPDATE;
     private int armour = 0;
     private String armourExpression = "";
+    private String playerArmourExpression = "";
     private String damageType = "";
     private boolean canBeOwned = false;
     private boolean hasStackId = false;
@@ -180,9 +185,9 @@ public class RPGItem {
         restore(s);
     }
 
-    public static void updateItemStack(ItemStack item) {
+    public static void updateItemStack(ItemStack item,@Nullable Player player) {
         Optional<RPGItem> rItem = ItemManager.toRPGItem(item);
-        rItem.ifPresent(r -> r.updateItem(item, false));
+        rItem.ifPresent(r -> r.updateItem(item, false,player));
     }
 
     public static List<Modifier> getModifiers(ItemStack stack) {
@@ -193,7 +198,7 @@ public class RPGItem {
                 return Collections.emptyList();
             }
             RPGItem rpgItem = rpgItemOpt.get();
-            rpgItem.updateItem(stack);
+            rpgItem.updateItem(stack,false,null);
             Optional<String> opt1 = ItemTagUtils.getString(stack, NBT_ITEM_UUID);
             if (opt1.isEmpty()) {
                 return Collections.emptyList();
@@ -662,19 +667,27 @@ public class RPGItem {
         this.damageType = damageType;
     }
 
+    public String getPlayerArmourExpression() {
+        return playerArmourExpression;
+    }
+
     public String getArmourExpression() {
         return armourExpression;
+    }
+
+    public void setPlayerArmourExpression(String armour) {
+        this.playerArmourExpression = armour;
     }
 
     public void setArmourExpression(String armour) {
         this.armourExpression = armour;
     }
 
-    public void updateItem(ItemStack item) {
-        updateItem(item, false);
+    public void updateItem(ItemStack item, @Nullable Player player) {
+        updateItem(item, false,player);
     }
 
-    public void updateItem(ItemStack item, boolean loreOnly) {
+    public void updateItem(ItemStack item, boolean loreOnly, @Nullable Player player) {
         List<String> reservedLores = this.filterLores(item);
         item.setType(getItem());
         ItemMeta meta = item.getItemMeta();
@@ -705,21 +718,33 @@ public class RPGItem {
         if (item.hasItemMeta() && Objects.requireNonNull(item.getItemMeta()).hasLore() && Objects.requireNonNull(item.getItemMeta().getLore()).contains("mcMMO Ability Tool"))
             lore.add("mcMMO Ability Tool");
         lore.addAll(reservedLores);
+        if(player!=null){
+            if(PlaceholderAPISupport.hasSupport()){
+                lore = PlaceholderAPI.setPlaceholders(player,lore);
+            }
+        }
         meta.setLore(lore);
 
         //quality prefix
-        String qualityPrefix = plugin.cfg.qualityPrefixes.get(getQuality());
-        if (qualityPrefix != null) {
-            if (meta.hasDisplayName() && !meta.getDisplayName().startsWith(qualityPrefix)) {
-                String displayName = meta.getDisplayName();
-                meta.setDisplayName(qualityPrefix + displayName);
-            }
-        }
 
         if (loreOnly) {
             rpgitemsTagContainer.commit();
             item.setItemMeta(meta);
             return;
+        }
+        String qualityPrefix = plugin.cfg.qualityPrefixes.get(getQuality());
+        boolean qualitied = false;
+        String finalDisplay = getDisplayName();
+        if (qualityPrefix != null) {
+            if (meta.hasDisplayName() && !finalDisplay.startsWith(qualityPrefix)) {
+                finalDisplay = qualityPrefix + finalDisplay;
+                qualitied = true;
+            }
+        }
+        if(qualitied){
+            meta.setDisplayName(finalDisplay);
+        }else if(!meta.getDisplayName().equals(getDisplayName())){
+            meta.setDisplayName(getDisplayName());
         }
 
         meta.setUnbreakable(isCustomItemModel() || hasMarker(Unbreakable.class));
@@ -1250,12 +1275,12 @@ public class RPGItem {
         meta.setDisplayName(getDisplayName());
         rStack.setItemMeta(meta);
 
-        updateItem(rStack, false);
+        updateItem(rStack, false,null);
         return rStack;
     }
 
     public void toModel(ItemStack itemStack) {
-        updateItem(itemStack);
+        updateItem(itemStack,null);
         ItemMeta itemMeta = itemStack.getItemMeta();
         SubItemTagContainer meta = makeTag(Objects.requireNonNull(itemMeta).getPersistentDataContainer(), TAG_META);
         meta.remove(TAG_OWNER);
@@ -1272,7 +1297,7 @@ public class RPGItem {
     }
 
     public void unModel(ItemStack itemStack, Player owner) {
-        updateItem(itemStack);
+        updateItem(itemStack,owner);
         ItemMeta itemMeta = itemStack.getItemMeta();
         SubItemTagContainer meta = makeTag(Objects.requireNonNull(itemMeta).getPersistentDataContainer(), TAG_META);
         if (isCanBeOwned()) {
@@ -1357,7 +1382,7 @@ public class RPGItem {
         }
         tagContainer.commit();
         item.setItemMeta(itemMeta);
-        this.updateItem(item, true);
+        this.updateItem(item, true,null);
     }
 
     public Optional<Integer> getItemStackDurability(ItemStack item) {
@@ -1409,7 +1434,7 @@ public class RPGItem {
             set(tagContainer, TAG_DURABILITY, durability);
             tagContainer.commit();
             item.setItemMeta(itemMeta);
-            this.updateItem(item, true);
+            this.updateItem(item, true,null);
         }
         return true;
     }
