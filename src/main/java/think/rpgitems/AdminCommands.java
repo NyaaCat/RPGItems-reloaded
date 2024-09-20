@@ -10,6 +10,7 @@ import cat.nyaa.nyaacore.utils.ItemStackUtils;
 import cat.nyaa.nyaacore.utils.OfflinePlayerUtils;
 import com.google.common.base.Strings;
 import com.udojava.evalex.Expression;
+import me.clip.placeholderapi.PlaceholderAPI;
 import net.md_5.bungee.api.chat.BaseComponent;
 import net.md_5.bungee.api.chat.ComponentBuilder;
 import net.md_5.bungee.api.chat.HoverEvent;
@@ -34,6 +35,7 @@ import think.rpgitems.item.ItemGroup;
 import think.rpgitems.item.ItemManager;
 import think.rpgitems.item.RPGItem;
 import think.rpgitems.power.*;
+import think.rpgitems.support.PlaceholderAPISupport;
 import think.rpgitems.support.WGSupport;
 import think.rpgitems.utils.MaterialUtils;
 import think.rpgitems.utils.NetworkUtils;
@@ -157,10 +159,22 @@ public class AdminCommands extends RPGCommandReceiver {
         return authorComponent;
     }
 
-    public static boolean testExpr(String expr) {
+    public static boolean testExpr(String expr,CommandSender sender) {
+        Player player;
+        if(!(sender instanceof Player)){
+            player = null;
+        }
+        else{
+            player = (Player) sender;
+        }
+        expr=expr.replaceAll("damager:","");
+        if(PlaceholderAPISupport.hasSupport()){
+            expr = PlaceholderAPI.setPlaceholders(player,expr);
+        }
         try {
             Expression ex = new Expression(expr);
             ex
+                    .and("armour",BigDecimal.valueOf(0))
                     .and("damage", BigDecimal.valueOf(100))
                     .and("finalDamage", Utils.lazyNumber(() -> 100d))
                     .and("isDamageByEntity", BigDecimal.ONE)
@@ -593,7 +607,7 @@ public class AdminCommands extends RPGCommandReceiver {
             public void run() {
                 for (ItemStack item : player.getInventory()) {
                     Optional<RPGItem> rpgItem = ItemManager.toRPGItemByMeta(item);
-                    rpgItem.ifPresent(r -> r.updateItem(item));
+                    rpgItem.ifPresent(r -> r.updateItem(item,player));
                 }
             }
         }.runTaskLater(RPGItems.plugin, 1);
@@ -1363,8 +1377,32 @@ public class AdminCommands extends RPGCommandReceiver {
         if (expr == null) {
             I18n.sendMessage(sender, "message.armor_expression.set", rpgItem.getDamageType());
         }
-        if (testExpr(expr)) {
+        if (testExpr(expr,sender)) {
             rpgItem.setArmourExpression(expr);
+            ItemManager.save(rpgItem);
+            rpgItem.rebuild();
+            I18n.sendMessage(sender, "message.armor_expression.set", expr);
+        } else {
+            I18n.sendMessage(sender, "message.error.invalid_expression", expr);
+        }
+    }
+
+    @SubCommand(value = "playerArmorExpression", tabCompleter = "damageExpressionCompleter")
+    public void playerArmorExpression(CommandSender sender, Arguments args) {
+        String item = args.nextString();
+
+        RPGItem rpgItem = ItemManager.getItem(item).orElse(null);
+        if (rpgItem == null) {
+            I18n.sendMessage(sender, "message.error.item", item);
+            return;
+        }
+
+        String expr = args.top();
+        if (expr == null) {
+            I18n.sendMessage(sender, "message.armor_expression.set", rpgItem.getDamageType());
+        }
+        if (testExpr(expr,sender)) {
+            rpgItem.setPlayerArmourExpression(expr);
             ItemManager.save(rpgItem);
             rpgItem.rebuild();
             I18n.sendMessage(sender, "message.armor_expression.set", expr);
