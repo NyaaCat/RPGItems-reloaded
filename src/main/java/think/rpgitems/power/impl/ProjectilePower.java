@@ -1,15 +1,19 @@
 package think.rpgitems.power.impl;
 
+import com.destroystokyo.paper.event.player.PlayerJumpEvent;
 import com.google.common.cache.Cache;
 import com.google.common.cache.CacheBuilder;
+import net.bytebuddy.implementation.bytecode.ByteCodeAppender;
 import org.bukkit.Bukkit;
 import org.bukkit.Location;
+import org.bukkit.Material;
 import org.bukkit.World;
 import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.entity.*;
 import org.bukkit.event.entity.EntityDamageByEntityEvent;
 import org.bukkit.event.entity.EntityDamageEvent;
 import org.bukkit.event.entity.EntityShootBowEvent;
+import org.bukkit.event.entity.EntityToggleSwimEvent;
 import org.bukkit.event.player.PlayerInteractEvent;
 import org.bukkit.event.player.PlayerToggleSneakEvent;
 import org.bukkit.event.player.PlayerToggleSprintEvent;
@@ -20,12 +24,14 @@ import org.bukkit.util.Vector;
 import think.rpgitems.Events;
 import think.rpgitems.I18n;
 import think.rpgitems.RPGItems;
+import think.rpgitems.event.PowerActivateEvent;
 import think.rpgitems.power.*;
 import think.rpgitems.utils.cast.CastUtils;
 import think.rpgitems.utils.cast.RangedDoubleValue;
 import think.rpgitems.utils.cast.RangedValueSerializer;
 import think.rpgitems.utils.cast.RoundedConeInfo;
 
+import java.util.HashMap;
 import java.util.Optional;
 import java.util.UUID;
 import java.util.concurrent.ThreadLocalRandom;
@@ -45,6 +51,8 @@ import static think.rpgitems.power.Utils.checkCooldown;
 @Meta(defaultTrigger = "RIGHT_CLICK", generalInterface = {
         PowerLeftClick.class,
         PowerRightClick.class,
+        PowerSwim.class,
+        PowerJump.class,
         PowerPlain.class,
         PowerSneak.class,
         PowerLivingEntity.class,
@@ -90,6 +98,8 @@ public class ProjectilePower extends BasePower {
     @Property
     public boolean setFireballDirection = false;
     @Property
+    public String fireballItem = "FIRE_CHARGE";
+    @Property
     public Double yield = 0d;
     @Property
     public Boolean isIncendiary = false;
@@ -103,6 +113,9 @@ public class ProjectilePower extends BasePower {
             "shulkerbullet",
             "dragonfireball",
             "trident",
+            "breezewindcharge",
+            "windcharge",
+
     })
     @Deserializer(ProjectileType.class)
     @Serializer(ProjectileType.class)
@@ -148,6 +161,10 @@ public class ProjectilePower extends BasePower {
             return "skull";
         else if (projectileType == Fireball.class)
             return "fireball";
+        else if (projectileType == WindCharge.class)
+            return "windcharge";
+        else if (projectileType == BreezeWindCharge.class)
+            return "breezewindcharge";
         else if (projectileType == SmallFireball.class)
             return "smallfireball";
         else if (projectileType == Arrow.class)
@@ -199,6 +216,12 @@ public class ProjectilePower extends BasePower {
         if (getYield() != null && getYield() == -1) {
             this.yield = null;
         }
+    }
+    /**
+     * The material fireball will show as
+     */
+    public String getFireballItem(){
+        return this.fireballItem;
     }
 
     public Double getYield() {
@@ -339,6 +362,10 @@ public class ProjectilePower extends BasePower {
                     return Optional.of(Fireball.class);
                 case "smallfireball":
                     return Optional.of(SmallFireball.class);
+                case "windcharge":
+                    return Optional.of(WindCharge.class);
+                case "breezewindcharge":
+                    return Optional.of(BreezeWindCharge.class);
                 case "arrow":
                     return Optional.of(Arrow.class);
                 case "llamaspit":
@@ -355,7 +382,7 @@ public class ProjectilePower extends BasePower {
         }
     }
 
-    public class Impl implements PowerRightClick, PowerLeftClick, PowerSneak, PowerSprint, PowerHitTaken, PowerHit, PowerLivingEntity, PowerPlain, PowerBowShoot, PowerHurt {
+    public class Impl implements PowerJump, PowerSwim, PowerRightClick, PowerLeftClick, PowerSneak, PowerSprint, PowerHitTaken, PowerHit, PowerLivingEntity, PowerPlain, PowerBowShoot, PowerHurt {
 
 
         @Override
@@ -372,6 +399,10 @@ public class ProjectilePower extends BasePower {
         }
 
         public PowerResult<Void> fire(Player player, ItemStack stack, float speedFactor) {
+            PowerActivateEvent powerEvent = new PowerActivateEvent(player,stack,getPower());
+            if(!powerEvent.callEvent()) {
+                return PowerResult.fail();
+            }
             if (!checkCooldown(getPower(), player, getCooldown(), true, true)) return PowerResult.cd();
             if (!getItem().consumeDurability(stack, getCost())) return PowerResult.cost();
             CastUtils.CastLocation castLocation = null;
@@ -474,7 +505,6 @@ public class ProjectilePower extends BasePower {
             handleProjectile(v, projectile);
         }
 
-        @SuppressWarnings("deprecation")
         private void handleProjectile(Vector v, org.bukkit.entity.Projectile projectile) {
             projectile.setPersistent(false);
             projectile.setGravity(isGravity());
@@ -485,6 +515,9 @@ public class ProjectilePower extends BasePower {
                 if (getIncendiary() != null) {
                     ((Explosive) projectile).setIsIncendiary(getIncendiary());
                 }
+            }
+            if(projectile instanceof SizedFireball){
+                ((SizedFireball) projectile).setDisplayItem(new ItemStack(Material.valueOf(getFireballItem().toUpperCase())));
             }
             if (projectile instanceof Fireball && isSetFireballDirection()) {
                 ((Fireball) projectile).setDirection(v.clone().normalize().multiply(getSpeed()));
@@ -537,7 +570,21 @@ public class ProjectilePower extends BasePower {
         }
 
         @Override
+        public PowerResult<Void> jump(Player player, ItemStack stack, PlayerJumpEvent event) {
+            return fire(player, stack);
+        }
+
+        @Override
+        public PowerResult<Void> swim(Player player, ItemStack stack, EntityToggleSwimEvent event) {
+            return fire(player, stack);
+        }
+
+        @Override
         public PowerResult<Void> fire(Player player, ItemStack stack, LivingEntity entity, Double value) {
+            PowerActivateEvent powerEvent = new PowerActivateEvent(player,stack,getPower());
+            if(!powerEvent.callEvent()) {
+                return PowerResult.fail();
+            }
             if (!checkCooldown(getPower(), player, getCooldown(), true, true)) return PowerResult.cd();
             if (!getItem().consumeDurability(stack, getCost())) return PowerResult.cost();
             CastUtils.CastLocation castLocation = null;
