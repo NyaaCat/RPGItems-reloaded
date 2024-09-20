@@ -15,7 +15,7 @@ public class Configuration extends PluginConfigure {
     @Serializable
     public String language = "en_US";
     @Serializable
-    public String version = "1.0";
+    public String version = "1.1";
     @Serializable(name = "general.enabled_languages")
     public List<String> enabledLanguages = Stream.of("en_US", "zh_CN").collect(Collectors.toList());
     @Serializable(name = "general.spu_endpoint")
@@ -70,11 +70,11 @@ public class Configuration extends PluginConfigure {
     public Map<String, String> qualityPrefixes = new HashMap<>();
 
     {
-        qualityPrefixes.put("trash", "&7");
-        qualityPrefixes.put("normal", "&f");
-        qualityPrefixes.put("rare", "&b");
-        qualityPrefixes.put("epic", "&3");
-        qualityPrefixes.put("legendary", "&e");
+        qualityPrefixes.put("trash", "§7");
+        qualityPrefixes.put("normal", "§f");
+        qualityPrefixes.put("rare", "§b");
+        qualityPrefixes.put("epic", "§3");
+        qualityPrefixes.put("legendary", "§e");
     }
     @Serializable(name = "general.item.show_cooldown_warning_to_actionbar")
     public boolean showCooldownActionbar = false;
