@@ -16,8 +16,10 @@ import org.bukkit.event.player.PlayerToggleSprintEvent;
 import org.bukkit.inventory.ItemStack;
 import think.rpgitems.I18n;
 import think.rpgitems.RPGItems;
+import think.rpgitems.event.PowerActivateEvent;
 import think.rpgitems.power.*;
 
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Set;
 
@@ -261,6 +263,10 @@ public class ForceField extends BasePower {
 
         @Override
         public PowerResult<Void> fire(Player player, ItemStack stack) {
+            PowerActivateEvent powerEvent = new PowerActivateEvent(player,stack,getPower());
+            if(!powerEvent.callEvent()) {
+                return PowerResult.fail();
+            }
             if (!checkCooldown(getPower(), player, getCooldown(), true, true)) return PowerResult.cd();
             if (!getItem().consumeDurability(stack, getCost())) return PowerResult.cost();
             World w = player.getWorld();

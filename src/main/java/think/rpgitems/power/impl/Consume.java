@@ -27,6 +27,7 @@ import org.bukkit.event.player.PlayerToggleSneakEvent;
 import org.bukkit.event.player.PlayerToggleSprintEvent;
 import org.bukkit.inventory.ItemStack;
 import think.rpgitems.I18n;
+import think.rpgitems.event.PowerActivateEvent;
 import think.rpgitems.item.RPGItem;
 import think.rpgitems.power.*;
 import think.rpgitems.power.trigger.BaseTriggers;
@@ -95,6 +96,9 @@ public class Consume extends BasePower {
         }
 
         public PowerResult<Void> fire(final Player player, ItemStack s) {
+            PowerActivateEvent powerEvent = new PowerActivateEvent(player,s,getPower());
+            if(!powerEvent.callEvent())
+                return PowerResult.fail();
             if (!checkCooldown(getPower(), player, getCooldown(), false, true)) return PowerResult.cd();
             if (!getItem().consumeDurability(s, getCost())) return PowerResult.cost();
             int count = s.getAmount() - 1;

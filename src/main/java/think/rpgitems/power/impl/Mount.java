@@ -14,8 +14,10 @@ import org.bukkit.inventory.ItemStack;
 import org.bukkit.scheduler.BukkitRunnable;
 import think.rpgitems.I18n;
 import think.rpgitems.RPGItems;
+import think.rpgitems.event.PowerActivateEvent;
 import think.rpgitems.power.*;
 
+import java.util.HashMap;
 import java.util.List;
 
 import static think.rpgitems.power.Utils.*;
@@ -55,42 +57,51 @@ public class Mount extends BasePower {
 
         @Override
         public PowerResult<Void> rightClick(Player player, ItemStack stack, PlayerInteractEvent event) {
-            if (!checkCooldown(getPower(), player, getCooldown(), true, true)) return PowerResult.cd();
+
             if (player.isInsideVehicle()) {
                 return PowerResult.fail();
             }
             List<LivingEntity> entities = getLivingEntitiesInCone(getNearestLivingEntities(getPower(), player.getEyeLocation(), player, getMaxDistance(), 0), player.getLocation().toVector(), 30, player.getLocation().getDirection());
             for (LivingEntity entity : entities) {
                 if (entity.isValid() && !entity.hasMetadata("NPC") && entity.getType() != EntityType.ARMOR_STAND && !entity.isInsideVehicle() &&
-                        entity.getPassengers().isEmpty() && player.hasLineOfSight(entity) && entity.addPassenger(player)) {
-                    player.getWorld().playSound(player.getLocation(), Sound.ENTITY_HORSE_ARMOR, 1.0F, 1.0F);
-                    Listener listener = new Listener() {
-                        @EventHandler
-                        public void onPlayerQuit(PlayerQuitEvent e) {
-                            if (e.getPlayer().getUniqueId().equals(player.getUniqueId())) {
-                                entity.removePassenger(player);
-                                player.leaveVehicle();
-                            }
-                        }
-                    };
-                    Bukkit.getPluginManager().registerEvents(listener, RPGItems.plugin);
-                    new BukkitRunnable() {
-                        private long ticks = 0L;
-
-                        @Override
-                        public void run() {
-                            if (ticks >= getMaxTicks() || entity.isDead() || entity.getPassengers().isEmpty() || player.isDead()) {
-                                cancel();
-                                HandlerList.unregisterAll(listener);
-                                if (!entity.isDead() && !entity.getPassengers().isEmpty()) {
+                        entity.getPassengers().isEmpty() && player.hasLineOfSight(entity)) {
+                    HashMap<String,Object> argsMap = new HashMap<>();
+                    argsMap.put("target",entity);
+                    PowerActivateEvent powerEvent = new PowerActivateEvent(player,stack,getPower(),argsMap);
+                    if(!powerEvent.callEvent()) {
+                        return PowerResult.fail();
+                    }
+                    if (!checkCooldown(getPower(), player, getCooldown(), true, true)) return PowerResult.cd();
+                    if(entity.addPassenger(player)){
+                        player.getWorld().playSound(player.getLocation(), Sound.ENTITY_HORSE_ARMOR, 1.0F, 1.0F);
+                        Listener listener = new Listener() {
+                            @EventHandler
+                            public void onPlayerQuit(PlayerQuitEvent e) {
+                                if (e.getPlayer().getUniqueId().equals(player.getUniqueId())) {
                                     entity.removePassenger(player);
                                     player.leaveVehicle();
                                 }
                             }
-                            ticks++;
-                        }
-                    }.runTaskTimer(RPGItems.plugin, 1, 1);
-                    return PowerResult.ok();
+                        };
+                        Bukkit.getPluginManager().registerEvents(listener, RPGItems.plugin);
+                        new BukkitRunnable() {
+                            private long ticks = 0L;
+
+                            @Override
+                            public void run() {
+                                if (ticks >= getMaxTicks() || entity.isDead() || entity.getPassengers().isEmpty() || player.isDead()) {
+                                    cancel();
+                                    HandlerList.unregisterAll(listener);
+                                    if (!entity.isDead() && !entity.getPassengers().isEmpty()) {
+                                        entity.removePassenger(player);
+                                        player.leaveVehicle();
+                                    }
+                                }
+                                ticks++;
+                            }
+                        }.runTaskTimer(RPGItems.plugin, 1, 1);
+                        return PowerResult.ok();
+                    }
                 }
             }
 

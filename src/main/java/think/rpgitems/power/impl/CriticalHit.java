@@ -5,8 +5,10 @@ import org.bukkit.entity.Player;
 import org.bukkit.event.entity.EntityDamageByEntityEvent;
 import org.bukkit.inventory.ItemStack;
 import think.rpgitems.I18n;
+import think.rpgitems.event.PowerActivateEvent;
 import think.rpgitems.power.*;
 
+import java.util.HashMap;
 import java.util.concurrent.ThreadLocalRandom;
 
 import static think.rpgitems.power.Utils.getAngleBetweenVectors;
@@ -72,6 +74,11 @@ public class CriticalHit extends BasePower {
             if (getAngleBetweenVectors(((LivingEntity) event.getEntity()).getEyeLocation().getDirection(), player.getEyeLocation().getDirection()) < 90 && ThreadLocalRandom.current().nextDouble(100) < getBackstabChance()) {
                 damage *= getBackstabFactor();
             }
+            HashMap<String,Object> argsMap = new HashMap<>();
+            argsMap.put("damage",damage);
+            PowerActivateEvent powerEvent = new PowerActivateEvent(player,stack,getPower(),argsMap);
+            if(!powerEvent.callEvent())
+                return PowerResult.fail();
             if (isSetBaseDamage()) {
                 event.setDamage(damage);
             }

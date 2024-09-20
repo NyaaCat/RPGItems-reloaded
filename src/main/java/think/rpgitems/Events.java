@@ -594,10 +594,10 @@ public class Events implements Listener {
         PlayerInventory in = player.getInventory();
         for (int i = 0; i < in.getSize(); i++) {
             ItemStack item = in.getItem(i);
-            ItemManager.toRPGItemByMeta(item).ifPresent(rpgItem -> rpgItem.updateItem(item));
+            ItemManager.toRPGItemByMeta(item).ifPresent(rpgItem -> rpgItem.updateItem(item,player));
         }
         for (ItemStack item : player.getInventory().getArmorContents()) {
-            ItemManager.toRPGItemByMeta(item).ifPresent(rpgItem -> rpgItem.updateItem(item));
+            ItemManager.toRPGItemByMeta(item).ifPresent(rpgItem -> rpgItem.updateItem(item,player));
         }
         if (WGSupport.hasSupport() && WGSupport.useWorldGuard) {
             WGHandler.onPlayerJoin(e);
@@ -625,7 +625,7 @@ public class Events implements Listener {
                     e.setCancelled(true);
                     Bukkit.getScheduler().runTaskLater(RPGItems.plugin, () -> e.getArrow().remove(), 100L);
                 } else {
-                    RPGItem.updateItemStack(realItem);
+                    RPGItem.updateItemStack(realItem,e.getPlayer());
                     e.getItem().setItemStack(realItem);
                 }
             }
@@ -647,10 +647,10 @@ public class Events implements Listener {
                 PlayerInventory in = p.getInventory();
                 for (int i = 0; i < in.getSize(); i++) {
                     ItemStack item = in.getItem(i);
-                    ItemManager.toRPGItem(item).ifPresent(rpgItem -> rpgItem.updateItem(item));
+                    ItemManager.toRPGItem(item).ifPresent(rpgItem -> rpgItem.updateItem(item,p));
                 }
                 for (ItemStack item : in.getArmorContents()) {
-                    ItemManager.toRPGItem(item).ifPresent(rpgItem -> rpgItem.updateItem(item));
+                    ItemManager.toRPGItem(item).ifPresent(rpgItem -> rpgItem.updateItem(item,p));
                 }
             }
         }.runTaskLater(plugin, 1L);
@@ -665,15 +665,15 @@ public class Events implements Listener {
     public void onPlayerChangeItem(PlayerItemHeldEvent ev) {
         Player player = ev.getPlayer();
         ItemStack item = player.getInventory().getItem(ev.getNewSlot());
-        ItemManager.toRPGItem(item).ifPresent(rpgItem -> rpgItem.updateItem(item));
+        ItemManager.toRPGItem(item).ifPresent(rpgItem -> rpgItem.updateItem(item,player));
         if (switchCooldown.contains(player.getUniqueId())) return;
         ItemStack[] armorContents = player.getInventory().getArmorContents();
         for (int i = 0; i < armorContents.length; i++) {
             ItemStack stack = armorContents[i];
-            ItemManager.toRPGItem(stack).ifPresent(rpgItem -> rpgItem.updateItem(stack));
+            ItemManager.toRPGItem(stack).ifPresent(rpgItem -> rpgItem.updateItem(stack,player));
         }
         ItemStack offhandItem = player.getInventory().getItemInOffHand();
-        ItemManager.toRPGItem(offhandItem).ifPresent(rpgItem -> rpgItem.updateItem(offhandItem));
+        ItemManager.toRPGItem(offhandItem).ifPresent(rpgItem -> rpgItem.updateItem(offhandItem,player));
         switchCooldown.add(player.getUniqueId());
         new BukkitRunnable() {
             @Override
@@ -690,13 +690,13 @@ public class Events implements Listener {
         try {
             while (it.hasNext()) {
                 ItemStack item = it.next();
-                ItemManager.toRPGItemByMeta(item).ifPresent(rpgItem -> rpgItem.updateItem(item));
+                ItemManager.toRPGItemByMeta(item).ifPresent(rpgItem -> rpgItem.updateItem(item,p));
             }
             PlayerInventory inventory1 = p.getInventory();
             it = inventory1.iterator();
             while (it.hasNext()) {
                 ItemStack item = it.next();
-                ItemManager.toRPGItemByMeta(item).ifPresent(rpgItem -> rpgItem.updateItem(item));
+                ItemManager.toRPGItemByMeta(item).ifPresent(rpgItem -> rpgItem.updateItem(item,p));
             }
         } catch (ArrayIndexOutOfBoundsException ex) {
             logger.log(Level.WARNING, "Exception when InventoryOpenEvent. May be harmless.", ex);

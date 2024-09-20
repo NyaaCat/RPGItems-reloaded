@@ -9,7 +9,10 @@ import org.bukkit.inventory.ItemStack;
 import think.rpgitems.event.BeamEndEvent;
 import think.rpgitems.event.BeamHitBlockEvent;
 import think.rpgitems.event.BeamHitEntityEvent;
+import think.rpgitems.event.PowerActivateEvent;
 import think.rpgitems.power.*;
+
+import java.util.HashMap;
 
 import static think.rpgitems.power.Utils.attachPermission;
 import static think.rpgitems.power.Utils.checkAndSetCooldown;
@@ -65,6 +68,12 @@ public class CommandHit extends Command {
 
         @Override
         public PowerResult<Void> fire(Player player, ItemStack stack, LivingEntity entity, Double damage) {
+            HashMap<String,Object> argsMap = new HashMap<>();
+            argsMap.put("damage",damage);
+            argsMap.put("target",entity);
+            PowerActivateEvent powerEvent = new PowerActivateEvent(player,stack,getPower(),argsMap);
+            if(!powerEvent.callEvent())
+                return PowerResult.fail();
             if (damage == null || damage < getMinDamage()) return PowerResult.noop();
             if (!checkAndSetCooldown(getPower(), player, getCooldown(), true, false, getItem().getUid() + "." + getCommand()))
                 return PowerResult.cd();

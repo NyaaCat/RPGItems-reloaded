@@ -10,8 +10,10 @@ import org.bukkit.inventory.ItemStack;
 import org.bukkit.scheduler.BukkitRunnable;
 import org.bukkit.util.Vector;
 import think.rpgitems.I18n;
+import think.rpgitems.event.PowerActivateEvent;
 import think.rpgitems.power.*;
 
+import java.util.HashMap;
 import java.util.UUID;
 import java.util.concurrent.TimeUnit;
 
@@ -98,6 +100,12 @@ public class Translocator extends BasePower {
     public class Impl implements PowerMainhandItem, PowerOffhandItem {
         @Override
         public PowerResult<Boolean> swapToMainhand(Player player, ItemStack stack, PlayerSwapHandItemsEvent event) {
+            HashMap<String,Object> argsMap = new HashMap<>();
+            argsMap.put("status","TO_MAIN_HAND");
+            PowerActivateEvent powerEvent = new PowerActivateEvent(player,stack,getPower(),argsMap);
+            if(!powerEvent.callEvent()) {
+                return PowerResult.fail();
+            }
             checkCooldown(getPower(), player, getCooldown(), false, true);
             UUID translocatorUUID = playerTranslocatorMap.getIfPresent(player.getUniqueId());
             if (translocatorUUID == null) {
@@ -127,6 +135,12 @@ public class Translocator extends BasePower {
 
         @Override
         public PowerResult<Boolean> pickupOffhand(Player player, ItemStack stack, InventoryClickEvent event) {
+            HashMap<String,Object> argsMap = new HashMap<>();
+            argsMap.put("status","PICK_OFF_HAND");
+            PowerActivateEvent powerEvent = new PowerActivateEvent(player,stack,getPower(),argsMap);
+            if(!powerEvent.callEvent()) {
+                return PowerResult.fail();
+            }
             checkCooldown(getPower(), player, getCooldown(), false, true);
             UUID armorStandUUID = playerTranslocatorMap.getIfPresent(player.getUniqueId());
             if (armorStandUUID == null) {
@@ -150,6 +164,12 @@ public class Translocator extends BasePower {
         @SuppressWarnings("deprecation")
         @Override
         public PowerResult<Boolean> swapToOffhand(Player player, ItemStack stack, PlayerSwapHandItemsEvent event) {
+            HashMap<String,Object> argsMap = new HashMap<>();
+            argsMap.put("status","TO_OFF_HAND");
+            PowerActivateEvent powerEvent = new PowerActivateEvent(player,stack,getPower(),argsMap);
+            if(!powerEvent.callEvent()) {
+                return PowerResult.fail();
+            }
             if (!checkCooldown(getPower(), player, 0, true, true)) return PowerResult.ok(false);
             if (!getItem().consumeDurability(stack, getSetupCost())) return PowerResult.cost();
             SpectralArrow arrow = player.launchProjectile(SpectralArrow.class, player.getLocation().getDirection().multiply(getSpeed()));

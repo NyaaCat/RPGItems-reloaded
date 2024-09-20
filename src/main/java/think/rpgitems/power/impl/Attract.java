@@ -17,10 +17,12 @@ import think.rpgitems.RPGItems;
 import think.rpgitems.event.BeamEndEvent;
 import think.rpgitems.event.BeamHitBlockEvent;
 import think.rpgitems.event.BeamHitEntityEvent;
+import think.rpgitems.event.PowerActivateEvent;
 import think.rpgitems.power.*;
 import think.rpgitems.utils.cast.CastUtils;
 
 import javax.annotation.Nullable;
+import java.util.HashMap;
 import java.util.List;
 import java.util.function.Supplier;
 
@@ -182,6 +184,11 @@ public class Attract extends BasePower {
         }
 
         private PowerResult<Void> fire(Player player, Location location, ItemStack stack, Supplier<List<Entity>> supplier) {
+            HashMap<String,Object> argsMap = new HashMap<>();
+            argsMap.put("targets",supplier);
+            PowerActivateEvent powerEvent = new PowerActivateEvent(player,stack,getPower(),argsMap);
+            if(!powerEvent.callEvent())
+                return PowerResult.fail();
             if (!checkCooldown(getPower(), player, getCooldown(), true, true)) return PowerResult.cd();
             if (!getItem().consumeDurability(stack, getCost())) return PowerResult.cost();
             new BukkitRunnable() {
@@ -217,14 +224,13 @@ public class Attract extends BasePower {
                         && !e.hasMetadata("NPC") && (isAttractPlayer() || !(e instanceof Player))) {
                     if (!getItem().consumeDurability(stack, getAttractingEntityTickCost())) break;
                     Location locTarget = e.getLocation();
-                    Location locPlayer = location;
-                    double d = locTarget.distance(locPlayer);
+                    double d = locTarget.distance(location);
                     if (d < 1 || d > getRadius()) continue;
                     double newVelocity = Math.sqrt(d - 1) / factor;
                     if (Double.isInfinite(newVelocity)) {
                         newVelocity = 0;
                     }
-                    Vector direction = locPlayer.clone().subtract(locTarget).toVector().normalize();
+                    Vector direction = location.clone().subtract(locTarget).toVector().normalize();
                     e.setVelocity(direction.multiply(newVelocity));
                 }
             }

@@ -12,6 +12,7 @@ import org.bukkit.inventory.ItemStack;
 import org.bukkit.util.Vector;
 import think.rpgitems.Events;
 import think.rpgitems.I18n;
+import think.rpgitems.event.PowerActivateEvent;
 import think.rpgitems.power.*;
 import think.rpgitems.power.trigger.BaseTriggers;
 import think.rpgitems.power.trigger.Trigger;
@@ -150,7 +151,11 @@ public class Deflect extends BasePower {
                 return PowerResult.noop();
             }
             boolean activated = System.currentTimeMillis() / 50 < getTime().getOrDefault(target.getUniqueId(), 0L);
-
+            HashMap<String,Object> argsMap = new HashMap<>();
+            argsMap.put("damage",damage);
+            PowerActivateEvent powerEvent = new PowerActivateEvent(target,stack,getPower(),argsMap);
+            if(!powerEvent.callEvent())
+                return PowerResult.fail();
             if (!activated) {
                 if (!triggers.contains(BaseTriggers.HIT_TAKEN)
                         || ThreadLocalRandom.current().nextInt(0, 100) >= getChance())

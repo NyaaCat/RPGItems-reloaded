@@ -11,6 +11,7 @@ import org.bukkit.event.player.PlayerInteractEvent;
 import org.bukkit.inventory.EquipmentSlot;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.PlayerInventory;
+import think.rpgitems.event.PowerActivateEvent;
 import think.rpgitems.item.ItemManager;
 import think.rpgitems.item.RPGItem;
 import think.rpgitems.power.*;
@@ -85,6 +86,9 @@ public class Attachments extends BasePower {
         }
 
         public PowerResult<Void> fire(Player player, ItemStack stack, Event event) {
+            PowerActivateEvent powerEvent = new PowerActivateEvent(player,stack,getPower());
+            if(!powerEvent.callEvent())
+                return PowerResult.fail();
             Set<RPGItem> allow = (getAllowedItems() == null || getAllowedItems().isEmpty()) ? null : getAllowedItems().stream().flatMap(s -> {
                 try {
                     int uid = Integer.parseInt(s);

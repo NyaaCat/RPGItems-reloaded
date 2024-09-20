@@ -10,8 +10,10 @@ import org.bukkit.inventory.ItemStack;
 import org.bukkit.potion.PotionEffect;
 import org.bukkit.potion.PotionEffectType;
 import think.rpgitems.I18n;
+import think.rpgitems.event.PowerActivateEvent;
 import think.rpgitems.power.*;
 
+import java.util.HashMap;
 import java.util.UUID;
 import java.util.concurrent.TimeUnit;
 
@@ -107,6 +109,10 @@ public class Rescue extends BasePower {
         }
 
         private PowerResult<Double> rescue(Player target, ItemStack stack, EntityDamageEvent event, boolean canceled) {
+            PowerActivateEvent powerEvent = new PowerActivateEvent(target,stack,getPower());
+            if(!powerEvent.callEvent()) {
+                return PowerResult.fail();
+            }
             if (!checkCooldown(getPower(), target, getCooldown(), true, true)) return PowerResult.cd();
             if (!getItem().consumeDurability(stack, getCost())) return PowerResult.cost();
             rescueTime.put(target.getUniqueId(), System.currentTimeMillis());

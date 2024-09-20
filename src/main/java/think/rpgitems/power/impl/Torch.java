@@ -14,6 +14,7 @@ import org.bukkit.metadata.FixedMetadataValue;
 import org.bukkit.scheduler.BukkitRunnable;
 import think.rpgitems.I18n;
 import think.rpgitems.RPGItems;
+import think.rpgitems.event.PowerActivateEvent;
 import think.rpgitems.power.*;
 
 import java.util.ArrayList;
@@ -85,6 +86,10 @@ public class Torch extends BasePower {
 
         @Override
         public PowerResult<Void> fire(final Player player, ItemStack stack) {
+            PowerActivateEvent powerEvent = new PowerActivateEvent(player,stack,getPower());
+            if(!powerEvent.callEvent()) {
+                return PowerResult.fail();
+            }
             if (!checkCooldown(getPower(), player, getCooldown(), true, true)) return PowerResult.cd();
             if (!getItem().consumeDurability(stack, getCost())) return PowerResult.cost();
             player.playSound(player.getLocation(), Sound.ITEM_FLINTANDSTEEL_USE, 1.0f, 0.8f);

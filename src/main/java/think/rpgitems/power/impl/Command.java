@@ -11,6 +11,7 @@ import org.bukkit.event.player.PlayerInteractEvent;
 import org.bukkit.event.player.PlayerToggleSneakEvent;
 import org.bukkit.event.player.PlayerToggleSprintEvent;
 import org.bukkit.inventory.ItemStack;
+import think.rpgitems.event.PowerActivateEvent;
 import think.rpgitems.power.*;
 import think.rpgitems.power.trigger.BaseTriggers;
 
@@ -124,6 +125,9 @@ public class Command extends BasePower {
 
         @Override
         public PowerResult<Void> fire(Player target, ItemStack stack) {
+            PowerActivateEvent powerEvent = new PowerActivateEvent(target,stack,getPower());
+            if(!powerEvent.callEvent())
+                return PowerResult.fail();
             if (!checkAndSetCooldown(getPower(), target, getCooldown(), true, false, getItem().getUid() + "." + getCommand()))
                 return PowerResult.cd();
             if (!getItem().consumeDurability(stack, getCost())) return PowerResult.cost();

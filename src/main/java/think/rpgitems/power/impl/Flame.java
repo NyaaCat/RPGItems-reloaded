@@ -5,7 +5,11 @@ import org.bukkit.entity.Player;
 import org.bukkit.event.entity.EntityDamageByEntityEvent;
 import org.bukkit.inventory.ItemStack;
 import think.rpgitems.I18n;
+import think.rpgitems.event.PowerActivateEvent;
 import think.rpgitems.power.*;
+
+import java.util.HashMap;
+import java.util.MissingResourceException;
 
 /**
  * Power flame.
@@ -55,6 +59,10 @@ public class Flame extends BasePower {
 
         @Override
         public PowerResult<Void> fire(Player player, ItemStack stack, LivingEntity entity, Double value) {
+            PowerActivateEvent powerEvent = new PowerActivateEvent(player,stack,getPower());
+            if(!powerEvent.callEvent()) {
+                return PowerResult.fail();
+            }
             if (!getItem().consumeDurability(stack, getCost())) return PowerResult.cost();
             entity.setFireTicks(getBurntime());
             return PowerResult.ok();

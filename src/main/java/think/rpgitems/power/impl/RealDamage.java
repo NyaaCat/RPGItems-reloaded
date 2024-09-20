@@ -9,7 +9,10 @@ import org.bukkit.potion.PotionEffect;
 import org.bukkit.potion.PotionEffectType;
 import think.rpgitems.I18n;
 import think.rpgitems.data.Context;
+import think.rpgitems.event.PowerActivateEvent;
 import think.rpgitems.power.*;
+
+import java.util.HashMap;
 
 import static java.lang.Double.max;
 import static java.lang.Double.min;
@@ -77,6 +80,13 @@ public class RealDamage extends BasePower {
 
         @Override
         public PowerResult<Double> hit(Player player, ItemStack stack, LivingEntity entity, double damage, EntityDamageByEntityEvent event) {
+            HashMap<String,Object> argsMap = new HashMap<>();
+            argsMap.put("target",entity);
+            argsMap.put("damage",damage);
+            PowerActivateEvent powerEvent = new PowerActivateEvent(player,stack,getPower(),argsMap);
+            if(!powerEvent.callEvent()) {
+                return PowerResult.fail();
+            }
             if (damage < getMinDamage()) return PowerResult.noop();
             if (!checkCooldown(getPower(), player, getCooldown(), true, true)) return PowerResult.cd();
             if (!getItem().consumeDurability(stack, getCost())) return PowerResult.cost();

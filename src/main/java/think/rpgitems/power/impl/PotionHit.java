@@ -7,9 +7,11 @@ import org.bukkit.inventory.ItemStack;
 import org.bukkit.potion.PotionEffect;
 import org.bukkit.potion.PotionEffectType;
 import think.rpgitems.I18n;
+import think.rpgitems.event.PowerActivateEvent;
 import think.rpgitems.power.*;
 import think.rpgitems.utils.PotionEffectUtils;
 
+import java.util.HashMap;
 import java.util.Random;
 
 /**
@@ -98,6 +100,12 @@ public class PotionHit extends BasePower {
         public PowerResult<Void> fire(Player player, ItemStack stack, LivingEntity entity, Double value) {
             if (getRand().nextInt(getChance()) != 0) {
                 return PowerResult.noop();
+            }
+            HashMap<String,Object> argsMap = new HashMap<>();
+            argsMap.put("target",entity);
+            PowerActivateEvent powerEvent = new PowerActivateEvent(player,stack,getPower(),argsMap);
+            if(!powerEvent.callEvent()) {
+                return PowerResult.fail();
             }
             if (!getItem().consumeDurability(stack, getCost())) return PowerResult.cost();
             entity.addPotionEffect(new PotionEffect(getType(), getDuration(), getAmplifier()), true);

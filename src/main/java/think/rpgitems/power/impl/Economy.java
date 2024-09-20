@@ -15,8 +15,10 @@ import org.bukkit.plugin.RegisteredServiceProvider;
 import think.rpgitems.AdminCommands;
 import think.rpgitems.I18n;
 import think.rpgitems.RPGItems;
+import think.rpgitems.event.PowerActivateEvent;
 import think.rpgitems.power.*;
 
+import java.util.HashMap;
 import java.util.logging.Level;
 
 import static think.rpgitems.power.Utils.checkCooldown;
@@ -112,6 +114,10 @@ public class Economy extends BasePower {
 
         @Override
         public PowerResult<Void> fire(Player player, ItemStack stack) {
+            PowerActivateEvent powerEvent = new PowerActivateEvent(player,stack,getPower());
+            if(!powerEvent.callEvent()) {
+                return PowerResult.fail();
+            }
             if (!checkCooldown(getPower(), player, getCoolDown(), true, true))
                 return isAbortOnFailure() ? PowerResult.abort() : PowerResult.cd();
             EconomyResponse economyResponse;

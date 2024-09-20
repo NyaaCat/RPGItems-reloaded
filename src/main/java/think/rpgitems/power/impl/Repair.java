@@ -17,10 +17,12 @@ import org.bukkit.event.player.PlayerInteractEvent;
 import org.bukkit.inventory.Inventory;
 import org.bukkit.inventory.ItemStack;
 import think.rpgitems.I18n;
+import think.rpgitems.event.PowerActivateEvent;
 import think.rpgitems.power.*;
 import think.rpgitems.power.trigger.BaseTriggers;
 
 import java.util.Collections;
+import java.util.HashMap;
 
 import static think.rpgitems.power.Utils.checkCooldown;
 
@@ -163,6 +165,10 @@ public class Repair extends BasePower {
 
         @Override
         public PowerResult<Void> fire(Player player, ItemStack stack) {
+            PowerActivateEvent powerEvent = new PowerActivateEvent(player,stack,getPower());
+            if(!powerEvent.callEvent()) {
+                return PowerResult.fail();
+            }
             if (!checkCooldown(getPower(), player, getCooldown(), true, true)) return PowerResult.cd();
             int max = getItem().getMaxDurability();
             int repairCount = 0;

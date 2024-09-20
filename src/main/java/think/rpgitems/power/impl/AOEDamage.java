@@ -20,11 +20,13 @@ import think.rpgitems.data.Context;
 import think.rpgitems.event.BeamEndEvent;
 import think.rpgitems.event.BeamHitBlockEvent;
 import think.rpgitems.event.BeamHitEntityEvent;
+import think.rpgitems.event.PowerActivateEvent;
 import think.rpgitems.power.*;
 import think.rpgitems.utils.LightContext;
 import think.rpgitems.utils.cast.CastUtils;
 
 import javax.annotation.Nullable;
+import java.util.HashMap;
 import java.util.List;
 import java.util.function.Supplier;
 import java.util.stream.Collectors;
@@ -260,6 +262,12 @@ public class AOEDamage extends BasePower {
         }
 
         private PowerResult<Void> fire(Player player, ItemStack stack, Supplier<List<LivingEntity>> supplier) {
+            HashMap<String,Object> argsMap = new HashMap<>();
+            argsMap.put("targets",supplier);
+            argsMap.put("damage",damage);
+            PowerActivateEvent powerEvent = new PowerActivateEvent(player,stack,getPower(),argsMap);
+            if(!powerEvent.callEvent())
+                return PowerResult.fail();
             if (!checkCooldown(getPower(), player, getCooldown(), true, true)) return PowerResult.cd();
             if (!getItem().consumeDurability(stack, getCost())) return PowerResult.cost();
             Context.instance().putTemp(player.getUniqueId(), DAMAGE_SOURCE, getNamespacedKey().toString());

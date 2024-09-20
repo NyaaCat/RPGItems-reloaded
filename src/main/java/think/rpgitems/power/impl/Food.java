@@ -24,7 +24,10 @@ import org.bukkit.event.player.PlayerInteractEvent;
 import org.bukkit.inventory.ItemStack;
 import think.rpgitems.I18n;
 import think.rpgitems.RPGItems;
+import think.rpgitems.event.PowerActivateEvent;
 import think.rpgitems.power.*;
+
+import java.util.HashMap;
 
 /**
  * Power food.
@@ -58,6 +61,10 @@ public class Food extends BasePower {
     public class Impl implements PowerRightClick {
         @Override
         public PowerResult<Void> rightClick(final Player player, ItemStack stack, PlayerInteractEvent event) {
+            PowerActivateEvent powerEvent = new PowerActivateEvent(player,stack,getPower());
+            if(!powerEvent.callEvent()) {
+                return PowerResult.fail();
+            }
             ItemStack item = player.getInventory().getItemInMainHand();
             int count = item.getAmount() - 1;
             int newFoodPoint = player.getFoodLevel() + getFoodpoints();

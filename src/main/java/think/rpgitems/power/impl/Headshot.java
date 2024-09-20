@@ -20,7 +20,10 @@ import think.rpgitems.data.Context;
 import think.rpgitems.event.BeamEndEvent;
 import think.rpgitems.event.BeamHitBlockEvent;
 import think.rpgitems.event.BeamHitEntityEvent;
+import think.rpgitems.event.PowerActivateEvent;
 import think.rpgitems.power.*;
+
+import java.util.HashMap;
 
 @Meta(defaultTrigger = "HIT", implClass = Headshot.Impl.class)
 public class Headshot extends BasePower {
@@ -92,6 +95,13 @@ public class Headshot extends BasePower {
         }
 
         private PowerResult<Double> check(Player player, LivingEntity entity, ItemStack stack, double damage, Vector velocity, BoundingBox damagerOrigBb, BoundingBox entityBb, EntityDamageByEntityEvent event) {
+            HashMap<String,Object> argsMap = new HashMap<>();
+            argsMap.put("target",entity);
+            argsMap.put("damage",damage);
+            PowerActivateEvent powerEvent = new PowerActivateEvent(player,stack,getPower(),argsMap);
+            if(!powerEvent.callEvent()) {
+                return PowerResult.fail();
+            }
             double maxAxis = Math.max(entityBb.getHeight(), Math.max(entityBb.getWidthX(), entityBb.getWidthZ()));
             double minAxis = Math.min(entityBb.getHeight(), Math.min(entityBb.getWidthX(), entityBb.getWidthZ()));
             double maximum = minAxis * minAxis;

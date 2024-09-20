@@ -12,9 +12,11 @@ import org.bukkit.inventory.ItemStack;
 import think.rpgitems.event.BeamEndEvent;
 import think.rpgitems.event.BeamHitBlockEvent;
 import think.rpgitems.event.BeamHitEntityEvent;
+import think.rpgitems.event.PowerActivateEvent;
 import think.rpgitems.power.*;
 
 import javax.annotation.Nullable;
+import java.util.HashMap;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -125,6 +127,11 @@ public class AOECommand extends Command {
         }
 
         private PowerResult<Void> fire(Player player, ItemStack stack, List<LivingEntity> entitiesInCone) {
+            HashMap<String,Object> argsMap = new HashMap<>();
+            argsMap.put("targets",entitiesInCone);
+            PowerActivateEvent powerEvent = new PowerActivateEvent(player,stack,getPower(),argsMap);
+            if(!powerEvent.callEvent())
+                return PowerResult.fail();
             if (!checkAndSetCooldown(getPower(), player, getCooldown(), true, false, getItem().getUid() + "." + getCommand()))
                 return PowerResult.cd();
             if (!getItem().consumeDurability(stack, getCost())) return PowerResult.cost();

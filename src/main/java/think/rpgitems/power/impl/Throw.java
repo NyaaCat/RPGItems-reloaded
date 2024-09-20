@@ -15,10 +15,12 @@ import org.bukkit.event.entity.EntityDamageEvent;
 import org.bukkit.event.entity.EntityShootBowEvent;
 import org.bukkit.event.player.PlayerInteractEvent;
 import org.bukkit.inventory.ItemStack;
+import think.rpgitems.event.PowerActivateEvent;
 import think.rpgitems.power.*;
 import think.rpgitems.power.trigger.BaseTriggers;
 
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.UUID;
 import java.util.function.Consumer;
 
@@ -111,6 +113,12 @@ public class Throw extends BasePower {
 
         @Override
         public PowerResult<Void> fire(Player player, ItemStack stack) {
+            HashMap<String,Object> argsMap = new HashMap<>();
+            argsMap.put("entity",getEntityName());
+            PowerActivateEvent powerEvent = new PowerActivateEvent(player,stack,getPower(),argsMap);
+            if(!powerEvent.callEvent()) {
+                return PowerResult.fail();
+            }
             if (checkAndSetCooldown(getPower(), player, getCooldown(), true, true, getItem().getUid() + "." + getEntityName() + getEntityData()) && getItem().consumeDurability(stack, getCost())) {
                 summonEntity(player);
                 return PowerResult.ok();

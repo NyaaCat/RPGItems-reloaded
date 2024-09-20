@@ -17,11 +17,13 @@ import think.rpgitems.I18n;
 import think.rpgitems.event.BeamEndEvent;
 import think.rpgitems.event.BeamHitBlockEvent;
 import think.rpgitems.event.BeamHitEntityEvent;
+import think.rpgitems.event.PowerActivateEvent;
 import think.rpgitems.power.*;
 import think.rpgitems.utils.PotionEffectUtils;
 
 import javax.annotation.Nullable;
 import java.util.Collection;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Objects;
 import java.util.concurrent.atomic.AtomicInteger;
@@ -180,6 +182,12 @@ public class AOE extends BasePower {
         }
 
         private PowerResult<Void> fire(Location center, Player player, ItemStack itemStack, Collection<Entity> entityList) {
+            HashMap<String,Object> argsMap = new HashMap<>();
+            argsMap.put("targets",entityList);
+            argsMap.put("center",center);
+            PowerActivateEvent powerEvent = new PowerActivateEvent(player,itemStack,getPower(),argsMap);
+            if(!powerEvent.callEvent())
+                return PowerResult.fail();
             if (!checkCooldown(getPower(), player, getCooldown(), true, true)) return PowerResult.cd();
             if (!getItem().consumeDurability(itemStack, getCost())) return PowerResult.cost();
 

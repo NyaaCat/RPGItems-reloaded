@@ -3,11 +3,13 @@ package think.rpgitems.power.impl;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
 import think.rpgitems.I18n;
+import think.rpgitems.event.PowerActivateEvent;
 import think.rpgitems.power.*;
 import think.rpgitems.power.trigger.BaseTriggers;
 import think.rpgitems.power.trigger.Trigger;
 
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.Set;
 
 import static think.rpgitems.power.Utils.checkCooldown;
@@ -56,6 +58,10 @@ public class ParticleTick extends ParticlePower {
 
         @Override
         public PowerResult<Void> fire(Player player, ItemStack stack) {
+            PowerActivateEvent powerEvent = new PowerActivateEvent(player,stack,getPower());
+            if(!powerEvent.callEvent()) {
+                return PowerResult.fail();
+            }
             if (!checkCooldown(getPower(), player, getInterval(), false, true)) return PowerResult.cd();
             if (!getItem().consumeDurability(stack, getCost())) return PowerResult.cost();
             spawnParticle(player);

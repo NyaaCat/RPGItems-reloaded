@@ -21,8 +21,10 @@ import think.rpgitems.RPGItems;
 import think.rpgitems.event.BeamEndEvent;
 import think.rpgitems.event.BeamHitBlockEvent;
 import think.rpgitems.event.BeamHitEntityEvent;
+import think.rpgitems.event.PowerActivateEvent;
 import think.rpgitems.power.*;
 
+import java.util.HashMap;
 import java.util.function.Supplier;
 
 import static think.rpgitems.power.Utils.checkCooldown;
@@ -101,6 +103,12 @@ public class Teleport extends BasePower {
         }
 
         public PowerResult<Void> fire(Player player, ItemStack stack, Supplier<Location> supplier) {
+            HashMap<String,Object> argsMap = new HashMap<>();
+            argsMap.put("location",supplier);
+            PowerActivateEvent powerEvent = new PowerActivateEvent(player,stack,getPower(),argsMap);
+            if(!powerEvent.callEvent()) {
+                return PowerResult.fail();
+            }
             if (!checkCooldown(getPower(), player, getCooldown(), true, true)) return PowerResult.cd();
             if (!getItem().consumeDurability(stack, getCost())) return PowerResult.cost();
             Location newLoc = supplier.get();

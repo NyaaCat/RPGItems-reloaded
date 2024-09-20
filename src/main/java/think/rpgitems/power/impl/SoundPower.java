@@ -16,10 +16,13 @@ import think.rpgitems.RPGItems;
 import think.rpgitems.event.BeamEndEvent;
 import think.rpgitems.event.BeamHitBlockEvent;
 import think.rpgitems.event.BeamHitEntityEvent;
+import think.rpgitems.event.PowerActivateEvent;
 import think.rpgitems.power.*;
 import think.rpgitems.utils.cast.CastUtils;
 
 import javax.annotation.Nullable;
+
+import java.util.HashMap;
 
 import static think.rpgitems.power.Utils.checkCooldown;
 
@@ -142,6 +145,10 @@ public class SoundPower extends BasePower {
 
         @Override
         public PowerResult<Void> fire(Player player, ItemStack stack) {
+            PowerActivateEvent powerEvent = new PowerActivateEvent(player,stack,getPower());
+            if(!powerEvent.callEvent()) {
+                return PowerResult.fail();
+            }
             if (!checkCooldown(getPower(), player, getCooldown(), true, true)) return PowerResult.cd();
             Location location = player.getLocation();
             if (getPlayLocation().equals(PlayLocation.TARGET)) {

@@ -15,9 +15,11 @@ import org.bukkit.util.Vector;
 import think.rpgitems.I18n;
 import think.rpgitems.RPGItems;
 import think.rpgitems.data.Context;
+import think.rpgitems.event.PowerActivateEvent;
 import think.rpgitems.power.*;
 
 import javax.annotation.Nullable;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Random;
 
@@ -100,6 +102,10 @@ public class Rumble extends BasePower {
 
         @Override
         public PowerResult<Void> fire(final Player player, ItemStack stack) {
+            PowerActivateEvent powerEvent = new PowerActivateEvent(player,stack,getPower());
+            if(!powerEvent.callEvent()) {
+                return PowerResult.fail();
+            }
             if (!checkCooldown(getPower(), player, getCooldown(), true, true)) return PowerResult.cd();
             if (!getItem().consumeDurability(stack, getCost())) return PowerResult.cost();
             final Location location = player.getLocation().add(0, -0.2, 0);

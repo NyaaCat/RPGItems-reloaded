@@ -14,10 +14,12 @@ import think.rpgitems.I18n;
 import think.rpgitems.event.BeamEndEvent;
 import think.rpgitems.event.BeamHitBlockEvent;
 import think.rpgitems.event.BeamHitEntityEvent;
+import think.rpgitems.event.PowerActivateEvent;
 import think.rpgitems.power.*;
 import think.rpgitems.utils.LightContext;
 
 import javax.annotation.Nullable;
+import java.util.HashMap;
 import java.util.concurrent.ThreadLocalRandom;
 
 import static think.rpgitems.Events.*;
@@ -100,6 +102,12 @@ public class Explosion extends BasePower {
         @Override
         public PowerResult<Void> fire(Player player, ItemStack stack, Location location) {
             if (ThreadLocalRandom.current().nextDouble(100) < getChance()) {
+                HashMap<String,Object> argsMap = new HashMap<>();
+                argsMap.put("location",location);
+                PowerActivateEvent powerEvent = new PowerActivateEvent(player,stack,getPower(),argsMap);
+                if(!powerEvent.callEvent()) {
+                    return PowerResult.fail();
+                }
                 if (!getItem().consumeDurability(stack, getCost())) return PowerResult.cost();
                 LightContext.putTemp(player.getUniqueId(), DAMAGE_SOURCE, getPower().getNamespacedKey().toString());
                 LightContext.putTemp(player.getUniqueId(), SUPPRESS_MELEE, false);

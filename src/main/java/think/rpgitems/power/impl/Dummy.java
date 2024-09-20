@@ -18,7 +18,10 @@ import org.bukkit.inventory.ItemStack;
 import think.rpgitems.event.BeamEndEvent;
 import think.rpgitems.event.BeamHitBlockEvent;
 import think.rpgitems.event.BeamHitEntityEvent;
+import think.rpgitems.event.PowerActivateEvent;
 import think.rpgitems.power.*;
+
+import java.util.HashMap;
 
 import static think.rpgitems.power.Utils.checkAndSetCooldown;
 
@@ -216,6 +219,13 @@ public class Dummy extends BasePower {
 
         @Override
         public PowerResult<Void> fire(Player player, ItemStack stack, LivingEntity entity, Double damage) {
+            HashMap<String,Object> argsMap = new HashMap<>();
+            argsMap.put("target",entity);
+            argsMap.put("damage",damage);
+            PowerActivateEvent powerEvent = new PowerActivateEvent(player,stack,getPower(),argsMap);
+            if(!powerEvent.callEvent()) {
+                return PowerResult.fail();
+            }
             if (!checkAndSetCooldown(getPower(), player, getCooldown(), isShowCDWarning(), false, (isGlobalCooldown() ? "" : (getItem().getUid() + ".")) + getCooldownKey()))
                 return PowerResult.of(getCooldownResult());
             int damageCost = getCost();

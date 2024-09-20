@@ -7,8 +7,10 @@ import org.bukkit.entity.Player;
 import org.bukkit.event.entity.EntityDamageByEntityEvent;
 import org.bukkit.inventory.ItemStack;
 import think.rpgitems.I18n;
+import think.rpgitems.event.PowerActivateEvent;
 import think.rpgitems.power.*;
 
+import java.util.HashMap;
 import java.util.Random;
 
 /**
@@ -88,6 +90,12 @@ public class DeathCommand extends BasePower {
         @Override
         public PowerResult<Double> hit(Player player, ItemStack stack, LivingEntity entity, double damage, EntityDamageByEntityEvent event) {
             if (getRand().nextInt(getChance()) == 0) {
+                HashMap<String,Object> argsMap = new HashMap<>();
+                argsMap.put("damage",damage);
+                argsMap.put("target",entity);
+                PowerActivateEvent powerEvent = new PowerActivateEvent(player,stack,getPower(),argsMap);
+                if(!powerEvent.callEvent())
+                    return PowerResult.fail();
                 if (!getItem().consumeDurability(stack, getCost())) return PowerResult.cost();
                 Location loc = entity.getLocation();
                 int x = (int) loc.getX();

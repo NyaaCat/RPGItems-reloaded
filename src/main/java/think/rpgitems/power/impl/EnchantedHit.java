@@ -5,7 +5,10 @@ import org.bukkit.entity.LivingEntity;
 import org.bukkit.entity.Player;
 import org.bukkit.event.entity.EntityDamageByEntityEvent;
 import org.bukkit.inventory.ItemStack;
+import think.rpgitems.event.PowerActivateEvent;
 import think.rpgitems.power.*;
+
+import java.util.HashMap;
 
 @Meta(defaultTrigger = "HIT", implClass = EnchantedHit.Impl.class)
 public class EnchantedHit extends BasePower {
@@ -64,6 +67,12 @@ public class EnchantedHit extends BasePower {
     public class Impl implements PowerHit {
         @Override
         public PowerResult<Double> hit(Player player, ItemStack stack, LivingEntity entity, double damage, EntityDamageByEntityEvent event) {
+            HashMap<String,Object> argsMap = new HashMap<>();
+            argsMap.put("damage",damage);
+            PowerActivateEvent powerEvent = new PowerActivateEvent(player,stack,getPower(),argsMap);
+            if(!powerEvent.callEvent()) {
+                return PowerResult.fail();
+            }
             int enchLevel = stack.getEnchantmentLevel(getEnchantmentType());
             if (getMode() == Mode.ADDITION) {
                 damage += (enchLevel * getAmountPerLevel());
