@@ -4,21 +4,7 @@ pipeline {
         stage('Versioning') {
             steps {
                 script {
-                    def version = env.VERSION.split('\\.')
-                    def majorVersion = version[0].toInteger()
-                    def minorVersion = version[1].toInteger()
-                    def patchVersion = version[2].toInteger()
-
-                    def updateMinorVersion = true
-
-                    if (updateMinorVersion) {
-                        minorVersion += 0
-                        patchVersion = 1
-                    }
-
-                    def newVersion = "${majorVersion}.${minorVersion}.${patchVersion}"
-                    echo "新版本号: ${newVersion}"
-                    env.VERSION = newVersion
+                    env.VERSION = 3.11.1
                 }
             }
         }
