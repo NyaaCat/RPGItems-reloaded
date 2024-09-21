@@ -1,42 +1,24 @@
 pipeline {
     agent any
-    environment {
-        PROPERTIES_FILE = 'gradle.properties'
-    }
     stages {
-        stage('Read Properties and Update Version') {
+        stage('Versioning') {
             steps {
                 script {
-                    def propertiesContent = readFile(PROPERTIES_FILE)
-                    def properties = [:]
-                    propertiesContent.eachLine { line ->
-                        def (key, value) = line.split('=')
-                        properties[key.trim()] = value.trim()
+                    def version = env.VERSION.split('\\.')
+                    def majorVersion = version[0].toInteger()
+                    def minorVersion = version[1].toInteger()
+                    def patchVersion = version[2].toInteger()
+
+                    def updateMinorVersion = true
+
+                    if (updateMinorVersion) {
+                        minorVersion += 0
+                        patchVersion = 1
                     }
 
-                    def majorVersion = properties['MAJOR_VERSION'].toInteger()
-                    def currentMinorVersion = properties['MINOR_VERSION'].toInteger()
-                    def currentPatchVersion = properties['PATCH_VERSION'] ? properties['PATCH_VERSION'].toInteger() : 0
-                    def lastMinorVersion = currentMinorVersion
-
-                    if (env.LAST_MINOR_VERSION) {
-                        lastMinorVersion = env.LAST_MINOR_VERSION.toInteger()
-                    }
-
-                    if (currentMinorVersion == lastMinorVersion) {
-                        currentPatchVersion += 1
-                    } else {
-                        currentPatchVersion = 0
-                    }
-
-                    def newVersion = "${majorVersion}.${currentMinorVersion}.${currentPatchVersion}"
-                    echo "New version: ${newVersion}"
-
-                    properties['PATCH_VERSION'] = currentPatchVersion.toString()
-                    def updatedProperties = properties.collect { key, value -> "${key}=${value}" }.join('\n')
-                    writeFile file: PROPERTIES_FILE, text: updatedProperties
-
-                    env.LAST_MINOR_VERSION = currentMinorVersion.toString()
+                    def newVersion = "${majorVersion}.${minorVersion}.${patchVersion}"
+                    echo "新版本号: ${newVersion}"
+                    env.VERSION = newVersion
                 }
             }
         }
