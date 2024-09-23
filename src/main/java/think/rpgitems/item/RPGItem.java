@@ -286,6 +286,7 @@ public class RPGItem {
         setDamageMax(s.getInt("damageMax"));
         setArmour(s.getInt("armour", 0), false);
         setArmourExpression(s.getString("armourExpression", ""));
+        setPlayerArmourExpression(s.getString("playerArmourExpression", ""));
         setDamageType(s.getString("DamageType", ""));
         setAttributeMode(AttributeMode.valueOf(s.getString("attributemode", "PARTIAL_UPDATE")));
         String materialName = s.getString("item");
@@ -549,6 +550,7 @@ public class RPGItem {
         s.set("damageMax", getDamageMax());
         s.set("armour", getArmour());
         s.set("armourExpression", getArmourExpression());
+        s.set("playerArmourExpression", getPlayerArmourExpression());
         s.set("DamageType", getDamageType());
         s.set("attributemode", attributeMode.name());
         ArrayList<String> descriptionConv = new ArrayList<>(getDescription());
