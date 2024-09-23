@@ -35,7 +35,9 @@ shadowJar {
 }
 
 dependencies {
-    //compileOnly files(spigotNmsPath)
+    //Residence integration, download the jar(also CMI) manually as the fucking Residence author is lazy
+    implementation fileTree(dir: 'libs', includes: ['*.jar'])
+
     compileOnly 'me.clip:placeholderapi:2.11.6'
     compileOnly "io.papermc.paper:paper-api:$MINECRAFT_VERSION-R0.1-SNAPSHOT"
     // other nyaa plugins
