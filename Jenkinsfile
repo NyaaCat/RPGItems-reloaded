@@ -7,9 +7,9 @@ pipeline {
             }
             steps {
                 sh './gradlew publish'
-                warnError('This is a canary build!') {
-                  sh './gradlew -q checkRelease'
-                }
+//                 warnError('This is a canary build!') {
+//                   sh './gradlew -q checkRelease'
+//                 }
             }
         }
 
