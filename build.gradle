@@ -13,7 +13,7 @@ ext {
 
 group = "cat.nyaa"
 archivesBaseName = "${PLUGIN_NAME}-mc${MINECRAFT_VERSION}"
-version = "${MAJOR_VERSION}.${MINOR_VERSION}.${PATCH_VERSION}b$ext.buildNumber" as String
+version = "${MAJOR_VERSION}.${MINOR_VERSION}.${PATCH_VERSION}-$ext.buildNumber" as String
 
 sourceCompatibility = 21
 targetCompatibility = 21
