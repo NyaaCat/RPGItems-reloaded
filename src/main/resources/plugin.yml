@@ -3,7 +3,7 @@ main: think.rpgitems.RPGItems
 description: "RPGItems"
 version: ${version}
 depend: [NyaaCore,Vault]
-softdepend: [WorldGuard,NyaaUtils,PlaceholderAPI]
+softdepend: [WorldGuard,NyaaUtils,PlaceholderAPI,Residence]
 authors: [Taiterio,cyilin,RecursiveG,Librazy,Clexus]
 website: "https://github.com/NyaaCat/RPGItems-reloaded"
 database: false
