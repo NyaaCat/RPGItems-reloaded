@@ -13,7 +13,6 @@ import org.bukkit.plugin.InvalidPluginException;
 import org.bukkit.plugin.Plugin;
 import org.bukkit.plugin.PluginDescriptionFile;
 import org.bukkit.plugin.java.JavaPlugin;
-import org.bukkit.plugin.java.JavaPluginLoader;
 import think.rpgitems.data.Font;
 import think.rpgitems.item.ItemManager;
 import think.rpgitems.power.*;
@@ -50,9 +49,9 @@ public class RPGItems extends JavaPlugin {
     }
 
     //constructors are used in tests.
-    public RPGItems(JavaPluginLoader loader, PluginDescriptionFile description, File dataFolder, File file) {
-        super(loader, description, dataFolder, file);
-    }
+//    public RPGItems(JavaPluginLoader loader, PluginDescriptionFile description, File dataFolder, File file) {
+//        super(loader, description, dataFolder, file);
+//    }
 
     public static int getVersion() {
         return version;
