@@ -20,6 +20,7 @@ import think.rpgitems.power.*;
 import think.rpgitems.power.trigger.BaseTriggers;
 import think.rpgitems.power.trigger.Trigger;
 import think.rpgitems.support.PlaceholderAPISupport;
+import think.rpgitems.support.ResidenceSupport;
 import think.rpgitems.support.WGSupport;
 
 import java.io.File;
@@ -175,6 +176,7 @@ public class RPGItems extends JavaPlugin {
     public void onEnable() {
         Trigger.stopAcceptingRegistrations();
         plugin = this;
+        ResidenceSupport.init(this);
         if (plugin.cfg.version.startsWith("0.") && Double.parseDouble(plugin.cfg.version) < 0.5) {
             Bukkit.getConsoleSender().sendMessage(ChatColor.RED + "======================================");
             Bukkit.getConsoleSender().sendMessage(ChatColor.RED + "You current version of RPGItems config is not supported.");
