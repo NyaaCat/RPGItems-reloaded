@@ -1,4 +1,6 @@
-# RPGItems [![Build Status](https://ci.nyaacat.com/job/RPGItems-reloaded/job/1.17/badge/icon)](https://ci.nyaacat.com/job/RPGItems-reloaded/job/1.17/)
+# If you want to download the plugin, ensure the plugin is ended with "-release" !
+
+# RPGItems [![Build Status](https://ci.nyaacat.com/job/RPGItems-reloaded/job/main/badge/icon)](https://ci.nyaacat.com/job/RPGItems-reloaded/job/main/)
 
 The RPGItems2 plugin continued from [TheCreeperOfRedstone/RPG-Items-2](https://github.com/TheCreeperOfRedstone/RPG-Items-2)
 
