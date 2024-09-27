@@ -24,6 +24,8 @@ public class Configuration extends PluginConfigure {
     public int itemPerPage = 9;
     @Serializable(name = "command.list.power_per_page")
     public int powerPerPage = 5;
+    @Serializable(name = "support.MythicMobs.enable", alias = "support.mythicmobs")
+    public boolean useMythicMobs = true;
     @Serializable(name = "support.Residence.enable", alias = "support.residence")
     public boolean useResidence = true;
     @Serializable(name = "support.PlaceholderAPI.enable", alias = "support.placeholderapi")

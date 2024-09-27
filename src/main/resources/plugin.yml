@@ -3,11 +3,11 @@ main: think.rpgitems.RPGItems
 description: "RPGItems"
 version: ${version}
 depend: [NyaaCore,Vault]
-softdepend: [WorldGuard,NyaaUtils,PlaceholderAPI,Residence]
+softdepend: [WorldGuard,NyaaUtils,PlaceholderAPI,Residence,MythicMobs]
 authors: [Taiterio,cyilin,RecursiveG,Librazy,Clexus]
 website: "https://github.com/NyaaCat/RPGItems-reloaded"
 database: false
-api-version: 1.21.1
+api-version: 1.21
 libraries:
   - 'com.udojava:EvalEx:2.7'
   - 'net.bytebuddy:byte-buddy:1.12.16'
