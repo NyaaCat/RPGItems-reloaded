@@ -1413,6 +1413,14 @@ public class RPGItem {
     public boolean consumeDurability(ItemStack item, int val, boolean checkbound) {
         if (val == 0) return true;
         int durability;
+        if(item.getAmount()>1){
+            float durcost = val;
+            durcost = durcost/item.getAmount();
+            float point = durcost - (int) durcost;
+            if(Math.random()<=point){
+                val = (int)durcost+1;
+            }
+        }
         ItemMeta itemMeta = item.getItemMeta();
         if (getMaxDurability() != -1) {
             SubItemTagContainer tagContainer = makeTag(Objects.requireNonNull(itemMeta), TAG_META);
