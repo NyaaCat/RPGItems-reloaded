@@ -764,6 +764,7 @@ power:
   lifesteal: 1/%d chance to steal the ennemy life
   lightning: '%d%% chance to shock on hit'
   mount: Ride an entity (%.1fs cooldown)
+  mythicskillcast: Cast skill %s in MythicMobs (%.1fs cooldown)
   noimmutabletick: Attack won't cause immutable tick on enemy
   particle: Spawn some particles when used
   particletick: Spawn some particles when held
@@ -797,6 +798,7 @@ power:
     to mainhand, destory it when pickup from offhand
   unbreakable: Never breaks
   unbreaking: Unbreaking %d
+  undead: Turn you into undead
 properties:
   AOEDamage:
     main_description: Deal damage to an area
@@ -1225,6 +1227,7 @@ properties:
     main_description: Apply effect to enemy when hit
     main_name: Potion Hit
     type: Type of potion effect
+    summingUp: Whether to stack amplifier of the same type of potion effects
   potionself:
     amplifier: Amplifier of potion effect
     duration: Time of potion effect, in ticks
@@ -1232,6 +1235,7 @@ properties:
     main_name: Potion Self
     type: Type of potion effect
     clear: Clear this effect instead of applying
+    summingUp: Whether to stack amplifier of the same type of potion effects
   potiontick:
     amplifier: Amplifier of potion effect
     clear: Whether to remove the effect instead of adding it
@@ -1240,6 +1244,7 @@ properties:
     interval: Interval of this power
     main_description: Apply effect to player when equipped
     main_name: Potion Tick
+    summingUp: Whether to stack amplifier of the same type of potion effects
   projectile:
     amount: Amount of projectiles
     burstCount: Burst count
@@ -1428,6 +1433,9 @@ properties:
       GUI)
     main_name: Unique flag
     enabled: Enable this flag
+  undead:
+    main_description: Turning player into undead
+    main_name: Undead
   xorcondition:
     init: Init value
     main_description: Condition that xor all its Conditions

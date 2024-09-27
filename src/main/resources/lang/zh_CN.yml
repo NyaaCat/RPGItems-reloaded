@@ -749,6 +749,7 @@ power:
   lifesteal: 1/%d 的几率偷取敌人生命值
   lightning: '%d%% 的几率发生雷击'
   mount: 骑乘一个实体 (%.1fs 冷却)
+  mythicskillcast: 施放MythicMobs的 %s 技能 (%.1f 秒冷却时间)
   noimmutabletick: 取消攻击后敌方的无敌时间
   particle: 右键时产生一些粒子
   particletick: 持有时产生一些粒子
@@ -781,6 +782,7 @@ power:
   translocator: 切副手发射传送信标，切主手传送至信标，从副手拿出拆除信标 (%.1f 秒冷却时间)
   unbreakable: 不毁
   unbreaking: 耐久 %d
+  undead: 将你转化为亡灵生物
 properties:
   AOEDamage:
     main_description: 造成一个范围内的伤害
@@ -1218,6 +1220,9 @@ properties:
     main_description: 乘算修饰符
     main_name: Mulmodifier
     value: 用于乘算的值
+  mythicskillcast:
+    main_description: 施放MythicMobs技能
+    skill: 技能名
   noimmutabletick:
     immuneTime: 无敌时间
     main_description: 取消被攻击怪物的无敌时间
@@ -1289,6 +1294,7 @@ properties:
     main_description: 击中后对目标施放状态效果
     main_name: 击中效果
     type: 状态效果
+    summingUp: 是否堆叠相同类型的药水效果的等级
   potionself:
     amplifier: 效果倍率
     clear: 免疫此效果而非应用
@@ -1296,6 +1302,7 @@ properties:
     main_description: 对自身施放状态效果
     main_name: 自身效果
     type: 状态效果
+    summingUp: 是否堆叠相同类型的药水效果的等级
   potiontick:
     amplifier: 效果倍率
     clear: 清除状态效果而非施放
@@ -1304,6 +1311,7 @@ properties:
     interval: 间隔时间，游戏刻
     main_description: 佩戴后按照一定间隔施放状态效果
     main_name: 佩戴状态效果
+    summingUp: 是否堆叠相同类型的药水效果的等级
   projectile:
     amount: 弹射物的数量
     applyForce: 力道将影响速度
@@ -1511,6 +1519,9 @@ properties:
   unbreakable:
     main_description: 标记该物品为不可破坏
     main_name: 无法破坏
+  undead:
+    main_description: 将玩家变为亡灵生物
+    main_name: 亡灵化
   unique:
     enabled: 是否启用
     main_description: 给物品一个独一无二的标志
