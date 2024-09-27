@@ -388,17 +388,17 @@ public final class ItemTagUtils {
         }
 
         @Override
-        public byte @NotNull [] serializeToBytes() throws IOException {
+        public byte [] serializeToBytes() throws IOException {
             return self.serializeToBytes();
         }
 
         @Override
-        public void readFromBytes(byte @NotNull [] bytes, boolean b) throws IOException {
+        public void readFromBytes(byte [] bytes, boolean b) throws IOException {
             self.readFromBytes(bytes, b);
         }
 
         @Override
-        public void readFromBytes(byte @NotNull [] bytes) throws IOException {
+        public void readFromBytes(byte [] bytes) throws IOException {
             self.readFromBytes(bytes);
         }
 
