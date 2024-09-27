@@ -10,7 +10,7 @@ import javax.annotation.Nullable;
 public interface PowerLivingEntity extends Pimpl {
 
     /**
-     * A trigger that fire a power with an entity and an double value (usually the damage)
+     * A trigger that fire a power with an entity and a double value (usually the damage)
      *
      * @param player Player
      * @param stack  Item that triggered this power
