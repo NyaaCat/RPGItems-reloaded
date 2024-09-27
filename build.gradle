@@ -1,4 +1,5 @@
 plugins {
+    id "io.papermc.paperweight.userdev" version "1.7.2"
     id 'java-library'
     id 'maven-publish'
     id 'com.github.johnrengelman.shadow' version '7.0.0'
@@ -28,6 +29,8 @@ repositories {
     maven {
         url = 'https://repo.extendedclip.com/content/repositories/placeholderapi/'
     }
+    maven { url 'https://mvn.lumine.io/repository/maven-public/' }
+
 }
 
 shadowJar {
@@ -37,9 +40,9 @@ shadowJar {
 dependencies {
     //Residence integration, download the jar(also CMI) manually as the fucking Residence author is lazy
     implementation fileTree(dir: 'libs', includes: ['*.jar'])
-
+    paperweight.paperDevBundle("$MINECRAFT_VERSION-R0.1-SNAPSHOT")
+    compileOnly 'io.lumine:Mythic-Dist:5.7.1'
     compileOnly 'me.clip:placeholderapi:2.11.6'
-    compileOnly "io.papermc.paper:paper-api:$MINECRAFT_VERSION-R0.1-SNAPSHOT"
     // other nyaa plugins
     compileOnly('cat.nyaa:nyaacore:9.3.4-1.20.4') { transitive = false }
     //3rd
