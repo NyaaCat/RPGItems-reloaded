@@ -1,16 +1,21 @@
 package think.rpgitems.power.impl;
 
 import org.bukkit.attribute.Attribute;
+import org.bukkit.entity.Item;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.potion.PotionEffect;
 import org.bukkit.potion.PotionEffectType;
 import think.rpgitems.I18n;
 import think.rpgitems.event.PowerActivateEvent;
+import think.rpgitems.item.ItemManager;
 import think.rpgitems.power.*;
 import think.rpgitems.utils.PotionEffectUtils;
 
+import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashMap;
+import java.util.List;
 
 import static java.lang.Double.min;
 import static think.rpgitems.power.Utils.checkAndSetCooldown;
@@ -41,6 +46,8 @@ public class PotionTick extends BasePower {
     public int duration = 60;
     @Property
     public boolean clear = false;
+    @Property
+    public boolean summingUp = false;
 
     /**
      * Cost of this power
@@ -61,6 +68,10 @@ public class PotionTick extends BasePower {
      */
     public int getInterval() {
         return interval;
+    }
+
+    public boolean isSummingUp() {
+        return summingUp;
     }
 
     @Override
@@ -103,6 +114,21 @@ public class PotionTick extends BasePower {
         }
 
         private PowerResult<Void> fire(Player player, ItemStack stack) {
+            final int[] summing = {0};
+            List<ItemStack> items = new ArrayList<>(Arrays.asList(player.getInventory().getArmorContents()));
+            items.add(player.getInventory().getItemInMainHand());
+            for(ItemStack i : items){
+                ItemManager.toRPGItemByMeta(i).ifPresent(rpgItem -> {
+                    for (Power power : rpgItem.getPowers()){
+                        if(power.getName().equals("potiontick")) {
+                            PotionTick potionTick = (PotionTick) power;
+                            if(potionTick.getEffect()==getEffect()&&potionTick.isSummingUp()){
+                                summing[0] += potionTick.getAmplifier();
+                            }
+                        }
+                    }
+                });
+            }
             PowerActivateEvent powerEvent = new PowerActivateEvent(player,stack,getPower());
             if(!powerEvent.callEvent()) {
                 return PowerResult.fail();
@@ -117,13 +143,13 @@ public class PotionTick extends BasePower {
                     hasEffect = true;
                     if (isClear()) {
                         player.removePotionEffect(getEffect());
-                    } else if (potionEffect.getDuration() <= 5 || potionEffect.getAmplifier() < getAmplifier())
-                        player.addPotionEffect(new PotionEffect(getEffect(), getDuration(), getAmplifier(), true), true);
+                    } else
+                        player.addPotionEffect(new PotionEffect(getEffect(), getDuration(), getAmplifier()+summing[0], true));
                     break;
                 }
             }
             if (!hasEffect && !isClear()) {
-                player.addPotionEffect(new PotionEffect(getEffect(), getDuration(), getAmplifier(), true), true);
+                player.addPotionEffect(new PotionEffect(getEffect(), getDuration(), getAmplifier()+summing[0], true));
             }
             if (getEffect().equals(PotionEffectType.HEALTH_BOOST) && health > 0) {
                 health = min(health, player.getAttribute(Attribute.GENERIC_MAX_HEALTH).getValue());

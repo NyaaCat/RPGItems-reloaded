@@ -8,11 +8,11 @@ import org.bukkit.potion.PotionEffect;
 import org.bukkit.potion.PotionEffectType;
 import think.rpgitems.I18n;
 import think.rpgitems.event.PowerActivateEvent;
+import think.rpgitems.item.ItemManager;
 import think.rpgitems.power.*;
 import think.rpgitems.utils.PotionEffectUtils;
 
-import java.util.HashMap;
-import java.util.Random;
+import java.util.*;
 
 /**
  * Power potionhit.
@@ -37,6 +37,8 @@ public class PotionHit extends BasePower {
     public int amplifier = 1;
     @Property
     public int cost = 0;
+    @Property
+    public boolean summingUp = false;
 
     private final Random rand = new Random();
 
@@ -59,6 +61,10 @@ public class PotionHit extends BasePower {
      */
     public int getDuration() {
         return duration;
+    }
+
+    public boolean isSummingUp() {
+        return summingUp;
     }
 
     @Override
@@ -101,6 +107,21 @@ public class PotionHit extends BasePower {
             if (getRand().nextInt(getChance()) != 0) {
                 return PowerResult.noop();
             }
+            final int[] summing = {0};
+            List<ItemStack> items = new ArrayList<>(Arrays.asList(player.getInventory().getArmorContents()));
+            items.add(player.getInventory().getItemInMainHand());
+            for(ItemStack i : items){
+                ItemManager.toRPGItemByMeta(i).ifPresent(rpgItem -> {
+                    for (Power power : rpgItem.getPowers()){
+                        if(power.getName().equals("potionhit")) {
+                            PotionHit potionHit = (PotionHit) power;
+                            if(potionHit.getType()==getType()&&potionHit.isSummingUp()){
+                                summing[0] += potionHit.getAmplifier();
+                            }
+                        }
+                    }
+                });
+            }
             HashMap<String,Object> argsMap = new HashMap<>();
             argsMap.put("target",entity);
             PowerActivateEvent powerEvent = new PowerActivateEvent(player,stack,getPower(),argsMap);
@@ -108,7 +129,7 @@ public class PotionHit extends BasePower {
                 return PowerResult.fail();
             }
             if (!getItem().consumeDurability(stack, getCost())) return PowerResult.cost();
-            entity.addPotionEffect(new PotionEffect(getType(), getDuration(), getAmplifier()), true);
+            entity.addPotionEffect(new PotionEffect(getType(), getDuration(), getAmplifier()+summing[0]));
             return PowerResult.ok();
         }
 

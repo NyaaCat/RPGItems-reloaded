@@ -14,10 +14,14 @@ import org.bukkit.potion.PotionEffect;
 import org.bukkit.potion.PotionEffectType;
 import think.rpgitems.I18n;
 import think.rpgitems.event.PowerActivateEvent;
+import think.rpgitems.item.ItemManager;
 import think.rpgitems.power.*;
 import think.rpgitems.utils.PotionEffectUtils;
 
+import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashMap;
+import java.util.List;
 
 import static think.rpgitems.power.Utils.checkCooldown;
 
@@ -47,7 +51,8 @@ public class PotionSelf extends BasePower {
     public PotionEffectType type = PotionEffectType.INSTANT_HEALTH;
     @Property
     public boolean clear = false;
-
+    @Property
+    public boolean summingUp = false;
     @Property
     public boolean requireHurtByEntity = true;
 
@@ -75,6 +80,10 @@ public class PotionSelf extends BasePower {
      */
     public int getCost() {
         return cost;
+    }
+
+    public boolean isSummingUp() {
+        return summingUp;
     }
 
     @Override
@@ -130,6 +139,21 @@ public class PotionSelf extends BasePower {
 
         @Override
         public PowerResult<Void> fire(Player player, ItemStack stack) {
+            final int[] summing = {0};
+            List<ItemStack> items = new ArrayList<>(Arrays.asList(player.getInventory().getArmorContents()));
+            items.add(player.getInventory().getItemInMainHand());
+            for(ItemStack i : items){
+                ItemManager.toRPGItemByMeta(i).ifPresent(rpgItem -> {
+                    for (Power power : rpgItem.getPowers()){
+                        if(power.getName().equals("potionself")) {
+                            PotionSelf potionSelf = (PotionSelf) power;
+                            if(potionSelf.getType()==getType()&&potionSelf.isSummingUp()){
+                                summing[0] += potionSelf.getAmplifier();
+                            }
+                        }
+                    }
+                });
+            }
             PowerActivateEvent powerEvent = new PowerActivateEvent(player,stack,getPower());
             if(!powerEvent.callEvent()) {
                 return PowerResult.fail();
@@ -139,7 +163,7 @@ public class PotionSelf extends BasePower {
             if (isClear()) {
                 player.removePotionEffect(getType());
             } else {
-                player.addPotionEffect(new PotionEffect(getType(), getDuration(), getAmplifier()), true);
+                player.addPotionEffect(new PotionEffect(getType(), getDuration(), getAmplifier()+summing[0]));
             }
             return PowerResult.ok();
         }
