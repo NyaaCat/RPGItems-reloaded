@@ -18,6 +18,7 @@ import think.rpgitems.item.ItemManager;
 import think.rpgitems.power.*;
 import think.rpgitems.power.trigger.BaseTriggers;
 import think.rpgitems.power.trigger.Trigger;
+import think.rpgitems.support.MythicMobsSupport;
 import think.rpgitems.support.PlaceholderAPISupport;
 import think.rpgitems.support.ResidenceSupport;
 import think.rpgitems.support.WGSupport;
@@ -130,6 +131,7 @@ public class RPGItems extends JavaPlugin {
         saveDefaultConfig();
         Font.load();
         PlaceholderAPISupport.init(this);
+        MythicMobsSupport.init(this);
         WGSupport.load();
         loadExtensions();
     }
@@ -188,15 +190,15 @@ public class RPGItems extends JavaPlugin {
         //may null in test environment
         if (implementationVersion != null && implementationVersion.startsWith("git-Bukkit-")) {
             Bukkit.getConsoleSender().sendMessage(ChatColor.RED + "======================================");
-            Bukkit.getConsoleSender().sendMessage(ChatColor.RED + "RPGItems plugin requires Spigot API, Please make sure you are using Spigot.");
+            Bukkit.getConsoleSender().sendMessage(ChatColor.RED + "RPGItems plugin requires Paper API, Please make sure you are using Paper.");
             Bukkit.getConsoleSender().sendMessage(ChatColor.RED + "======================================");
         }
         try {
-            Bukkit.spigot();
+            Class.forName("io.papermc.paper.ServerBuildInfo");
         } catch (Throwable e) {
             getCommand("rpgitem").setExecutor((sender, command, label, args) -> {
                 sender.sendMessage(ChatColor.RED + "======================================");
-                sender.sendMessage(ChatColor.RED + "RPGItems plugin requires Spigot API, Please make sure you are using Spigot.");
+                sender.sendMessage(ChatColor.RED + "RPGItems plugin requires Paper API, Please make sure you are using Paper.");
                 sender.sendMessage(ChatColor.RED + "======================================");
                 return true;
             });
