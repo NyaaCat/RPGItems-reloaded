@@ -28,7 +28,6 @@ import think.rpgitems.utils.cast.RangedDoubleValue;
 import think.rpgitems.utils.cast.RangedValueSerializer;
 import think.rpgitems.utils.cast.RoundedConeInfo;
 
-import java.util.HashMap;
 import java.util.Optional;
 import java.util.UUID;
 import java.util.concurrent.ThreadLocalRandom;

@@ -4,9 +4,6 @@ import io.papermc.paper.registry.RegistryAccess;
 import io.papermc.paper.registry.RegistryKey;
 import org.bukkit.Effect;
 import org.bukkit.Particle;
-import org.bukkit.Registry;
-import org.bukkit.enchantments.Enchantment;
-import org.bukkit.potion.PotionEffectType;
 import think.rpgitems.power.trigger.Trigger;
 
 import java.util.Arrays;
