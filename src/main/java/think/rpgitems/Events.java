@@ -1,12 +1,10 @@
 package think.rpgitems;
 
 import cat.nyaa.nyaacore.utils.RayTraceUtils;
+import com.destroystokyo.paper.event.entity.ThrownEggHatchEvent;
 import com.destroystokyo.paper.event.player.PlayerJumpEvent;
 import io.papermc.paper.tag.EntityTags;
-import org.bukkit.Bukkit;
-import org.bukkit.Location;
-import org.bukkit.Material;
-import org.bukkit.OfflinePlayer;
+import org.bukkit.*;
 import org.bukkit.block.Block;
 import org.bukkit.enchantments.Enchantment;
 import org.bukkit.entity.*;
@@ -25,6 +23,7 @@ import org.bukkit.inventory.*;
 import org.bukkit.inventory.meta.ItemMeta;
 import org.bukkit.inventory.meta.PotionMeta;
 import org.bukkit.metadata.FixedMetadataValue;
+import org.bukkit.persistence.PersistentDataType;
 import org.bukkit.potion.PotionEffect;
 import org.bukkit.potion.PotionEffectType;
 import org.bukkit.potion.PotionType;
@@ -126,6 +125,45 @@ public class Events implements Listener {
         removeProjectiles.add(entityId);
     }
 
+    @EventHandler(ignoreCancelled = true, priority = EventPriority.HIGH)
+    public void onPlayerExpChange(PlayerExpChangeEvent e) {
+        Player p = e.getPlayer();
+        Trigger<PlayerExpChangeEvent, PowerExpChange, Void, Void> trigger = BaseTriggers.EXP_CHANGE;
+
+        if (ItemManager.toRPGItem(p.getInventory().getItemInMainHand()).orElse(null) != null) {
+            trigger(p, e, p.getInventory().getItemInMainHand(), trigger);
+        }
+        if (ItemManager.toRPGItem(p.getInventory().getItemInOffHand()).orElse(null) != null) {
+            trigger(p, e, p.getInventory().getItemInOffHand(), trigger);
+        }
+
+        ItemStack[] armorContents = p.getInventory().getArmorContents();
+        Stream.of(armorContents)
+                .forEach(i -> {
+                    if (ItemManager.toRPGItem(i).orElse(null) != null) {
+                        trigger(p, e, i, trigger);
+                    }
+                });
+    }
+    @EventHandler(ignoreCancelled = true, priority = EventPriority.HIGH)
+    public void onItemMend(PlayerItemMendEvent e) {
+        Player p = e.getPlayer();
+        Trigger<PlayerItemMendEvent, PowerMending, Void, Void> trigger = BaseTriggers.MENDING;
+        if (ItemManager.toRPGItem(p.getInventory().getItemInMainHand()).orElse(null) != null) {
+            trigger(p, e, p.getInventory().getItemInMainHand(), trigger);
+        }
+        if (ItemManager.toRPGItem(p.getInventory().getItemInOffHand()).orElse(null) != null) {
+            trigger(p, e, p.getInventory().getItemInOffHand(), trigger);
+        }
+
+        ItemStack[] armorContents = p.getInventory().getArmorContents();
+        Stream.of(armorContents)
+                .forEach(i -> {
+                    if (ItemManager.toRPGItem(i).orElse(null) != null) {
+                        trigger(p, e, i, trigger);
+                    }
+                });
+    }
     @EventHandler
     public void onItemEnchant(EnchantItemEvent e) {
         Optional<RPGItem> opt = ItemManager.toRPGItem(e.getItem());
@@ -410,9 +448,9 @@ public class Events implements Listener {
     private boolean isTools(Material im) {
         return switch (im) {
             //<editor-fold>
-            case BOW, CROSSBOW, DIAMOND_AXE, GOLDEN_AXE, IRON_AXE, STONE_AXE, WOODEN_AXE, DIAMOND_PICKAXE,
-                 GOLDEN_PICKAXE, IRON_PICKAXE, STONE_PICKAXE, WOODEN_PICKAXE, DIAMOND_HOE, GOLDEN_HOE, IRON_HOE,
-                 STONE_HOE, WOODEN_HOE, DIAMOND_SHOVEL, GOLDEN_SHOVEL, IRON_SHOVEL, STONE_SHOVEL, WOODEN_SHOVEL,
+            case BOW, CROSSBOW, NETHERITE_AXE, DIAMOND_AXE, GOLDEN_AXE, IRON_AXE, STONE_AXE, WOODEN_AXE, NETHERITE_PICKAXE, DIAMOND_PICKAXE,
+                 GOLDEN_PICKAXE, IRON_PICKAXE, STONE_PICKAXE, WOODEN_PICKAXE, NETHERITE_HOE, DIAMOND_HOE, GOLDEN_HOE, IRON_HOE,
+                 STONE_HOE, WOODEN_HOE, NETHERITE_SHOVEL, DIAMOND_SHOVEL, GOLDEN_SHOVEL, IRON_SHOVEL, STONE_SHOVEL, WOODEN_SHOVEL,
                  FISHING_ROD, SHEARS, LEAD, FLINT_AND_STEEL ->
                 //</editor-fold>
                     true;
@@ -986,7 +1024,6 @@ public class Events implements Listener {
 //            rpgItem.power(player, content, event, BaseTriggers.BEAM_HIT_ENTITY, null);
 //        }
     }
-
     @EventHandler(ignoreCancelled = true, priority = EventPriority.HIGH)
     public void onBeamEnd(BeamEndEvent event) {
         Player player = event.getPlayer();
@@ -997,7 +1034,34 @@ public class Events implements Listener {
 
         rItem.power(player, event.getItemStack(), event, BaseTriggers.BEAM_END, null);
     }
-
+    @EventHandler(ignoreCancelled = true, priority = EventPriority.HIGHEST)
+    public void onEggHatch(ThrownEggHatchEvent event) {
+        Egg egg = event.getEgg();
+        NamespacedKey hatchOrNot = new NamespacedKey(RPGItems.plugin,"RPGItemHatchOrNot");
+        NamespacedKey hacthNumber = new NamespacedKey(RPGItems.plugin,"RPGItemHatchNumber");
+        NamespacedKey hatchEntity = new NamespacedKey(RPGItems.plugin,"RPGItemHatchEntity");
+        if(egg.getPersistentDataContainer().has(hatchOrNot)){
+            Boolean shouldHatch = egg.getPersistentDataContainer().get(hatchOrNot, PersistentDataType.BOOLEAN);
+            if(Boolean.FALSE.equals(shouldHatch)){
+                event.setHatching(false);
+                return;
+            }
+        }
+        if(egg.getPersistentDataContainer().has(hacthNumber)){
+            Integer hatchNumber = egg.getPersistentDataContainer().get(hacthNumber, PersistentDataType.INTEGER);
+            if(hatchNumber != null){
+                if(hatchNumber != -1){
+                    event.setNumHatches(hatchNumber.byteValue());
+                }
+            }
+        }
+        if(egg.getPersistentDataContainer().has(hatchEntity)){
+            String entityType = egg.getPersistentDataContainer().get(hatchEntity, PersistentDataType.STRING);
+            if(entityType != null){
+                event.setHatchingType(EntityType.valueOf(entityType));
+            }
+        }
+    }
     //For power Undead only
     @EventHandler(ignoreCancelled = true,priority = EventPriority.HIGH)
     public void onWitherAndUndeadTarget(EntityTargetEvent event){
