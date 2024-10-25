@@ -3,8 +3,6 @@ package think.rpgitems.power.impl;
 import com.destroystokyo.paper.event.player.PlayerJumpEvent;
 import io.lumine.mythic.bukkit.BukkitAPIHelper;
 import io.lumine.mythic.bukkit.MythicBukkit;
-import io.lumine.mythic.bukkit.utils.lib.jooq.impl.QOM;
-import org.bukkit.Bukkit;
 import org.bukkit.entity.*;
 import org.bukkit.event.entity.EntityDamageByEntityEvent;
 import org.bukkit.event.entity.EntityDamageEvent;
