@@ -80,7 +80,7 @@ public class Translocator extends BasePower {
     }
 
     /**
-     * Cost to setup an translocator
+     * Cost to set up a translocator
      */
     public int getSetupCost() {
         return setupCost;
@@ -175,7 +175,6 @@ public class Translocator extends BasePower {
             SpectralArrow arrow = player.launchProjectile(SpectralArrow.class, player.getLocation().getDirection().multiply(getSpeed()));
             arrow.setPickupStatus(Arrow.PickupStatus.DISALLOWED);
             arrow.setPersistent(false);
-            //arrow.setBounce(true);
             arrow.setSilent(true);
             arrow.setInvulnerable(true);
             translocatorPlayerMap.put(arrow.getUniqueId(), player.getUniqueId());
