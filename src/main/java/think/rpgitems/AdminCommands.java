@@ -10,15 +10,15 @@ import cat.nyaa.nyaacore.utils.ItemStackUtils;
 import cat.nyaa.nyaacore.utils.OfflinePlayerUtils;
 import com.google.common.base.Strings;
 import com.udojava.evalex.Expression;
+import io.papermc.paper.registry.RegistryAccess;
+import io.papermc.paper.registry.RegistryKey;
 import me.clip.placeholderapi.PlaceholderAPI;
+import net.kyori.adventure.key.Key;
 import net.md_5.bungee.api.chat.BaseComponent;
 import net.md_5.bungee.api.chat.ComponentBuilder;
 import net.md_5.bungee.api.chat.HoverEvent;
 import net.md_5.bungee.api.chat.TextComponent;
-import org.bukkit.Bukkit;
-import org.bukkit.ChatColor;
-import org.bukkit.Material;
-import org.bukkit.OfflinePlayer;
+import org.bukkit.*;
 import org.bukkit.command.CommandSender;
 import org.bukkit.configuration.InvalidConfigurationException;
 import org.bukkit.configuration.file.YamlConfiguration;
@@ -265,6 +265,18 @@ public class AdminCommands extends RPGCommandReceiver {
                     completeStr.addAll(Arrays.asList(comp.split(":", 2)[1].split(",")));
                 }
                 break;
+            default:
+                String base = arguments.at(0);
+                String operation = arguments.at(2);
+                if(arguments.remains()==3&&base.equals("enchantment")&&operation.equals("add")){
+                    completeStr.addAll(RegistryAccess.registryAccess().getRegistry(RegistryKey.ENCHANTMENT).stream().map(Enchantment->Enchantment.getKey().value()).toList());
+                }
+                if(arguments.remains()==4&&base.equals("enchantment")&&operation.equals("add")){
+                    completeStr.addAll(RegistryAccess.registryAccess().getRegistry(RegistryKey.ENCHANTMENT).stream().map(Enchantment->String.valueOf(Enchantment.getMaxLevel())).toList());
+                }
+                if(arguments.remains()==3&&base.equals("enchantment")&&operation.equals("remove")){
+                    completeStr.addAll(getItem(arguments.at(1), sender).getEnchantMap().keySet().stream().map(Enchantment->Enchantment.getKey().value()).toList());
+                }
         }
         return filtered(arguments, completeStr);
     }
@@ -734,13 +746,13 @@ public class AdminCommands extends RPGCommandReceiver {
     }
 
     @SubCommand(value = "enchantment", tabCompleter = "itemCompleter")
-    @Completion("item:clone,clear")
+    @Completion("item:clone,clear,add,remove")
     public void itemEnchant(CommandSender sender, Arguments args) {
         RPGItem item = getItem(args.nextString(), sender);
         if (args.length() == 2) {
             if (item.getEnchantMap() != null) {
                 I18n.sendMessage(sender, "message.enchantment.listing", item.getName());
-                if (item.getEnchantMap().size() == 0) {
+                if (item.getEnchantMap().isEmpty()) {
                     I18n.sendMessage(sender, "message.enchantment.empty_ench");
                 } else {
                     for (Enchantment ench : item.getEnchantMap().keySet()) {
@@ -751,6 +763,7 @@ public class AdminCommands extends RPGCommandReceiver {
             } else {
                 I18n.sendMessage(sender, "message.enchantment.no_ench");
             }
+            return;
         }
         String command = args.nextString();
         switch (command) {
@@ -786,8 +799,47 @@ public class AdminCommands extends RPGCommandReceiver {
                 I18n.sendMessage(sender, "message.enchantment.removed");
             }
             break;
+            case "add":{
+                if(args.length()<4){
+                    I18n.sendMessage(sender, "internal.error.no_more_enum");
+                    return;
+                }
+                String ench = args.nextString();
+                int level = 1;
+                Enchantment enchantment = RegistryAccess.registryAccess().getRegistry(RegistryKey.ENCHANTMENT).get(Key.key(ench));
+                if(enchantment==null){
+                    I18n.sendMessage(sender, "message.enchantment.bad_ench",ench);
+                    return;
+                }
+                if(args.length()>=5){
+                    level = args.nextInt();
+                }
+                item.getEnchantMap().put(enchantment, level);
+                item.rebuild();
+                ItemManager.refreshItem();
+                ItemManager.save(item);
+                I18n.sendMessage(sender, "message.enchantment.success");
+                break;
+            }
+            case "remove":{
+                if(args.length()<4){
+                    I18n.sendMessage(sender, "internal.error.no_more_enum");
+                    return;
+                }
+                String ench = args.nextString();
+                if(!item.getEnchantMap().containsKey(RegistryAccess.registryAccess().getRegistry(RegistryKey.ENCHANTMENT).get(Key.key(ench)))){
+                    I18n.sendMessage(sender, "message.enchantment.no_such_ench");
+                    return;
+                }
+                item.getEnchantMap().remove(RegistryAccess.registryAccess().getRegistry(RegistryKey.ENCHANTMENT).get(Key.key(ench)));
+                item.rebuild();
+                ItemManager.refreshItem();
+                ItemManager.save(item);
+                I18n.sendMessage(sender, "message.enchantment.removed");
+                break;
+            }
             default:
-                throw new BadCommandException("message.error.invalid_option", command, "enchantment", "clone,clear");
+                throw new BadCommandException("message.error.invalid_option", command, "enchantment", "clone,clear,add");
         }
     }
 
@@ -997,6 +1049,7 @@ public class AdminCommands extends RPGCommandReceiver {
     }
 
     @SubCommand(value = "additemflag", tabCompleter = "itemCompleter")
+    @Completion("item:HIDE_ADDITIONAL_TOOLTIP,HIDE_ARMOR_TRIM,HIDE_ATTRIBUTES,HIDE_DESTROYS,HIDE_DYE,HIDE_ENCHANTS,HIDE_PLACED_ON,HIDE_STORED_ENCHANTS,HIDE_UNBREAKABLE")
     public void addItemFlag(CommandSender sender, Arguments args) {
         RPGItem item = getItem(args.nextString(), sender);
         ItemFlag flag = args.nextEnum(ItemFlag.class);
@@ -1363,7 +1416,7 @@ public class AdminCommands extends RPGCommandReceiver {
         return filtered(arguments, completeStr);
     }
 
-    @SubCommand(value = "armorExpression", tabCompleter = "damageExpressionCompleter")
+    @SubCommand(value = "armorExpression", tabCompleter = "itemCompleter")
     public void armorExpression(CommandSender sender, Arguments args) {
         String item = args.nextString();
 
@@ -1387,7 +1440,7 @@ public class AdminCommands extends RPGCommandReceiver {
         }
     }
 
-    @SubCommand(value = "playerArmorExpression", tabCompleter = "damageExpressionCompleter")
+    @SubCommand(value = "playerArmorExpression", tabCompleter = "itemCompleter")
     public void playerArmorExpression(CommandSender sender, Arguments args) {
         String item = args.nextString();
 
