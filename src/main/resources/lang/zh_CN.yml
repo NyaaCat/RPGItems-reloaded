@@ -176,7 +176,7 @@ manual:
     usage: /rpgitem durability {item} <option>
   enchantment:
     description: 以手中物品的附魔数据为模板，展示/复制或清除物品的附魔。
-    usage: /rpgitem enchantment {item} [clone|clear]
+    usage: /rpgitem enchantment {item} [clone|clear|add|remove]
   enchantmode:
     description: 设置物品的附魔模式
     usage: /rpgitem enchantmode {item} <value>
@@ -441,9 +441,11 @@ message:
     fail: 失败，手中没有物品
     item: 附魔:%s 等级:%d
     listing: 物品 %s 带有的附魔
+    bad_ench: '不存在该附魔: %s'
     no_ench: 此物品未带有附魔
     removed: 附魔已移除
-    success: 成功
+    success: 已成功添加附魔
+    no_such_ench: 该物品不具有此附魔
   enchantmode:
     allow: 物品 '%s' 附魔模式设定为允许附魔
     disallow: 物品 '%s' 附魔模式设定为禁止附魔（默认）
@@ -748,12 +750,13 @@ power:
   knockup: '%d%% 的几率击飞目标'
   lifesteal: 1/%d 的几率偷取敌人生命值
   lightning: '%d%% 的几率发生雷击'
+  mending: 拾取经验时修复物品耐久，每点经验可修复 %.1f 耐久
   mount: 骑乘一个实体 (%.1fs 冷却)
   mythicskillcast: 施放MythicMobs的 %s 技能 (%.1f 秒冷却时间)
   noimmutabletick: 取消攻击后敌方的无敌时间
   particle: 右键时产生一些粒子
   particletick: 持有时产生一些粒子
-  potionhit: '%d%% 的几率触发效果 %s'
+  potionhit: '%d%% 的几率触发 %s 效果 %d 级 %.1f 秒'
   potionself: 获得 %s %d 持续 %.1f 秒
   potiontick:
     clear: 持有/穿戴时清除效果 %s
@@ -784,6 +787,11 @@ power:
   unbreaking: 耐久 %d
   undead: 将你转化为亡灵生物
 properties:
+  mending:
+    main_description: 拾取经验时修复物品
+    main_name: 经验修补
+    repairFactor: 每点经验能修复多少耐久
+    requireEnchantment: 是否需要物品有经验修补附魔才能修复装备
   AOEDamage:
     main_description: 造成一个范围内的伤害
     main_name: 范围伤害
@@ -1332,7 +1340,10 @@ properties:
     projectileType: 弹射物类型
     range: 弹射物的散射角
     setFireballDirection: 是否设置火球的方向使其不偏离
-    fireballItem: 火球所显示为的物品材质
+    fireballItem: 若弹射物为火球，火球所显示为的物品材质
+    eggHatchEntity: 若弹射物为鸡蛋，鸡蛋会孵化出的生物
+    eggShouldHatch: 若弹射物为鸡蛋，鸡蛋是否会孵化
+    eggHatchNumber: 若弹射物为鸡蛋，鸡蛋会孵化出几只生物，-1代表遵循原数量，范围应为0~127
     speed: 弹射物速度
     suppressArrow: 取消箭矢（仍然会消耗）
     yield: 爆炸物的爆炸半径

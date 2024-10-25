@@ -177,8 +177,8 @@ manual:
         bound - Set item durability lower and upper bounds - /rpgitem test_item durability bound 10 100
     usage: /rpgitem durability {item} <option>
   enchantment:
-    description: List/clone or clear enchantments in hand to item.
-    usage: /rpgitem enchantment {item} [clone|clear]
+    description: List/clone/clear/add or remove enchantments in hand to item.
+    usage: /rpgitem enchantment {item} [clone|clear|add|remove]
   enchantmode:
     description: Set item's enchantmode.
     usage: /rpgitem enchantmode {item} <value>
@@ -442,9 +442,11 @@ message:
     fail: FAIL
     item: Enchantment:%s Level:%d
     listing: Listing attached enchantments for item %s
+    bad_ench: 'Invalid enchantment: %s'
     no_ench: No attached enchantments
     removed: Attached enchantments removed
-    success: Success
+    success: Successfully added enchantment(s)
+    no_such_ench: This item doesn't contain such enchantment
   enchantmode:
     allow: Item '%s' enchant mode set to allow all enchant
     disallow: Item '%s' enchant mode set to disallowing custom enchant (default)
@@ -763,12 +765,13 @@ power:
   knockup: '%d%% chance to send target flying'
   lifesteal: 1/%d chance to steal the ennemy life
   lightning: '%d%% chance to shock on hit'
+  mending: Fix item when picking up exp, every exp gain %.1f durability
   mount: Ride an entity (%.1fs cooldown)
   mythicskillcast: Cast skill %s in MythicMobs (%.1fs cooldown)
   noimmutabletick: Attack won't cause immutable tick on enemy
   particle: Spawn some particles when used
   particletick: Spawn some particles when held
-  potionhit: '%d%% chance to apply %s'
+  potionhit: '%d%% chance to apply %s %d for %.1f seconds'
   potionself: Grants %s %d for %.1fs
   potiontick:
     clear: Clear %s while in use
@@ -800,6 +803,11 @@ power:
   unbreaking: Unbreaking %d
   undead: Turn you into undead
 properties:
+  mending:
+    main_description: Fix item when picking up exp
+    main_name: Mending
+    repairFactor: How much durability can get per exp
+    requireEnchantment: Require mending enchantment to fix item or not
   AOEDamage:
     main_description: Deal damage to an area
     main_name: AOE Damage
@@ -1258,6 +1266,9 @@ properties:
     range: Range will projectiles spread, in degree
     setFireballDirection: Whether to set Fireball' direction so it won't curve
     fireballItem: The material fireball show as
+    eggHatchEntity: If the projectile is an egg，what will the egg hatch
+    eggShouldHatch: If the projectile is an egg，whether the egg will hatch
+    eggHatchNumber: If the projectile is an egg，how many entities should egg hatch，-1 means not to modify the number，the number should be 0~127
     speed: Speed of projectiles
     yield: Radius affected by this Explosive's explosion
     firingPhi: Polar coordinates parameter
