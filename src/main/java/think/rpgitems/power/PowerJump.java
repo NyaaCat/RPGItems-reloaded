@@ -2,7 +2,6 @@ package think.rpgitems.power;
 
 import com.destroystokyo.paper.event.player.PlayerJumpEvent;
 import org.bukkit.entity.Player;
-import org.bukkit.event.player.PlayerToggleSprintEvent;
 import org.bukkit.inventory.ItemStack;
 
 import javax.annotation.CheckReturnValue;
@@ -12,7 +11,7 @@ import javax.annotation.CheckReturnValue;
  */
 public interface PowerJump extends Pimpl {
     /**
-     * Calls when {@code player} using {@code stack} sprints
+     * Calls when {@code player} using {@code stack} jumps
      *
      * @param player Player
      * @param stack  Item that triggered this power
