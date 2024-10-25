@@ -11,7 +11,6 @@ import org.bukkit.inventory.ItemStack;
 import org.bukkit.plugin.InvalidDescriptionException;
 import org.bukkit.plugin.InvalidPluginException;
 import org.bukkit.plugin.Plugin;
-import org.bukkit.plugin.PluginDescriptionFile;
 import org.bukkit.plugin.java.JavaPlugin;
 import think.rpgitems.data.Font;
 import think.rpgitems.item.ItemManager;
@@ -109,9 +108,9 @@ public class RPGItems extends JavaPlugin {
 
         cfg = new Configuration(this);
         cfg.load();
+        loadPowers();
         cfg.enabledLanguages.forEach(lang -> new I18n(this, lang));
-        cfg.enabledLanguages.forEach(lang ->
-                PowerManager.addDescriptionResolver(RPGItems.plugin, lang, (power, property) -> {
+        cfg.enabledLanguages.forEach(lang -> PowerManager.addDescriptionResolver(RPGItems.plugin, lang, (power, property) -> {
                     I18n i18n = I18n.getInstance(lang);
                     if (property == null) {
                         String powerKey = "properties." + power.getKey() + ".main_description";
@@ -126,8 +125,7 @@ public class RPGItems extends JavaPlugin {
                         return i18n.getFormatted(baseKey);
                     }
                     return null;
-                }));
-        loadPowers();
+        }));
         saveDefaultConfig();
         Font.load();
         PlaceholderAPISupport.init(this);
@@ -159,7 +157,10 @@ public class RPGItems extends JavaPlugin {
             for (File file : files) {
                 try {
                     Plugin plugin = Bukkit.getPluginManager().loadPlugin(file);
-                    String message = String.format("Loading %s", plugin.getDescription().getFullName());
+                    String message = null;
+                    if (plugin != null) {
+                        message = String.format("Loading %s", plugin.getDescription().getFullName());
+                    }
                     plugin.getLogger().info(message);
                     plugin.onLoad();
                     managedPlugins.add(plugin);
