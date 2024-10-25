@@ -57,7 +57,6 @@ public class Arrows extends BasePower {
             return fire(player, stack);
         }
 
-        @SuppressWarnings("deprecation")
         @Override
         public PowerResult<Void> fire(Player player, ItemStack stack) {
             PowerActivateEvent powerEvent = new PowerActivateEvent(player,stack,getPower());
