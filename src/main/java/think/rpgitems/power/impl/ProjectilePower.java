@@ -3,11 +3,7 @@ package think.rpgitems.power.impl;
 import com.destroystokyo.paper.event.player.PlayerJumpEvent;
 import com.google.common.cache.Cache;
 import com.google.common.cache.CacheBuilder;
-import net.bytebuddy.implementation.bytecode.ByteCodeAppender;
-import org.bukkit.Bukkit;
-import org.bukkit.Location;
-import org.bukkit.Material;
-import org.bukkit.World;
+import org.bukkit.*;
 import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.entity.*;
 import org.bukkit.event.entity.EntityDamageByEntityEvent;
@@ -18,6 +14,7 @@ import org.bukkit.event.player.PlayerInteractEvent;
 import org.bukkit.event.player.PlayerToggleSneakEvent;
 import org.bukkit.event.player.PlayerToggleSprintEvent;
 import org.bukkit.inventory.ItemStack;
+import org.bukkit.persistence.PersistentDataType;
 import org.bukkit.scheduler.BukkitRunnable;
 import org.bukkit.scheduler.BukkitTask;
 import org.bukkit.util.Vector;
@@ -100,6 +97,12 @@ public class ProjectilePower extends BasePower {
     @Property
     public String fireballItem = "FIRE_CHARGE";
     @Property
+    public String eggHatchEntity = "CHICKEN";
+    @Property
+    public boolean eggShouldHatch = true;
+    @Property
+    public int eggHatchNumber = -1;
+    @Property
     public Double yield = 0d;
     @Property
     public Boolean isIncendiary = false;
@@ -115,7 +118,7 @@ public class ProjectilePower extends BasePower {
             "trident",
             "breezewindcharge",
             "windcharge",
-
+            "egg"
     })
     @Deserializer(ProjectileType.class)
     @Serializer(ProjectileType.class)
@@ -177,6 +180,8 @@ public class ProjectilePower extends BasePower {
             return "dragonfireball";
         else if (projectileType == Trident.class)
             return "trident";
+        else if (projectileType == Egg.class)
+            return "egg";
         else
             return "snowball";
     }
@@ -222,6 +227,24 @@ public class ProjectilePower extends BasePower {
      */
     public String getFireballItem(){
         return this.fireballItem;
+    }
+    /**
+     * The entity that the egg will hatch
+     */
+    public String getEggHatchEntity(){
+        return this.eggHatchEntity;
+    }
+    /**
+     * Whether the egg should hatch
+     */
+    public boolean getEggShouldHatch(){
+        return this.eggShouldHatch;
+    }
+    /**
+     * How many entities egg should hatch
+     */
+    public int getEggHatchNumber(){
+        return this.eggHatchNumber;
     }
 
     public Double getYield() {
@@ -376,6 +399,8 @@ public class ProjectilePower extends BasePower {
                     return Optional.of(DragonFireball.class);
                 case "trident":
                     return Optional.of(Trident.class);
+                case "egg":
+                    return Optional.of(Egg.class);
                 default:
                     return Optional.of(Snowball.class);
             }
@@ -515,6 +540,11 @@ public class ProjectilePower extends BasePower {
                 if (getIncendiary() != null) {
                     ((Explosive) projectile).setIsIncendiary(getIncendiary());
                 }
+            }
+            if(projectile instanceof Egg){
+                projectile.getPersistentDataContainer().set(new NamespacedKey(RPGItems.plugin,"RPGItemHatchOrNot"), PersistentDataType.BOOLEAN, getEggShouldHatch());
+                projectile.getPersistentDataContainer().set(new NamespacedKey(RPGItems.plugin,"RPGItemHatchEntity"), PersistentDataType.STRING, getEggHatchEntity());
+                projectile.getPersistentDataContainer().set(new NamespacedKey(RPGItems.plugin,"RPGItemHatchNumber"), PersistentDataType.INTEGER, getEggHatchNumber());
             }
             if(projectile instanceof SizedFireball){
                 ((SizedFireball) projectile).setDisplayItem(new ItemStack(Material.valueOf(getFireballItem().toUpperCase())));
