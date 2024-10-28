@@ -272,7 +272,7 @@ public class AdminCommands extends RPGCommandReceiver {
                     completeStr.addAll(RegistryAccess.registryAccess().getRegistry(RegistryKey.ENCHANTMENT).stream().map(Enchantment->Enchantment.getKey().value()).toList());
                 }
                 if(arguments.remains()==4&&base.equals("enchantment")&&operation.equals("add")){
-                    completeStr.addAll(RegistryAccess.registryAccess().getRegistry(RegistryKey.ENCHANTMENT).stream().map(Enchantment->String.valueOf(Enchantment.getMaxLevel())).toList());
+                    completeStr.add(String.valueOf(RegistryAccess.registryAccess().getRegistry(RegistryKey.ENCHANTMENT).get(NamespacedKey.minecraft(arguments.at(3))).getMaxLevel()));
                 }
                 if(arguments.remains()==3&&base.equals("enchantment")&&operation.equals("remove")){
                     completeStr.addAll(getItem(arguments.at(1), sender).getEnchantMap().keySet().stream().map(Enchantment->Enchantment.getKey().value()).toList());
