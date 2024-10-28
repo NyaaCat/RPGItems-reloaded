@@ -137,7 +137,7 @@ public class Headshot extends BasePower {
                     entity.getWorld().playSound(entity.getLocation(), Sound.ENTITY_GHAST_HURT, 1, 3);
                 }
                 if (isParticleEnemy()) {
-                    entity.getWorld().spawnParticle(Particle.DUST, entity.getLocation(), 2, new Particle.DustOptions(Color.RED, 10));
+                    entity.getWorld().spawnParticle(Particle.REDSTONE, entity.getLocation(), 2, new Particle.DustOptions(Color.RED, 10));
                 }
                 if (isSetBaseDamage()) {
                     event.setDamage(damage * getFactor());

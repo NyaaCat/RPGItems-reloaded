@@ -1,6 +1,7 @@
 package think.rpgitems;
 
 import cat.nyaa.nyaacore.utils.RayTraceUtils;
+import cat.nyaa.nyaacore.utils.TridentUtils;
 import com.destroystokyo.paper.event.entity.ThrownEggHatchEvent;
 import com.destroystokyo.paper.event.player.PlayerJumpEvent;
 import io.papermc.paper.tag.EntityTags;
@@ -367,7 +368,7 @@ public class Events implements Listener {
             ItemMeta fakeItemItemMeta = fakeItem.getItemMeta();
             fakeItemItemMeta.setLore(fakeLore);
             fakeItem.setItemMeta(fakeItemItemMeta);
-            ((Trident) entity).setItemStack(fakeItem);
+            TridentUtils.setTridentItemStack((Trident) entity, fakeItem);
         } else {
             if (rItem == null) {
                 item = itemInOffHand;
@@ -1095,7 +1096,7 @@ public class Events implements Listener {
     //For power Undead only
     @EventHandler(ignoreCancelled = true,priority = EventPriority.HIGHEST)
     public void onInstantPotion(EntityPotionEffectEvent event){
-        if(event.getEntity() instanceof Player p && event.getCause() != EntityPotionEffectEvent.Cause.PLUGIN && event.getAction()== EntityPotionEffectEvent.Action.ADDED && (event.getModifiedType()==PotionEffectType.INSTANT_HEALTH||event.getModifiedType()==PotionEffectType.INSTANT_DAMAGE)){
+        if(event.getEntity() instanceof Player p && event.getCause() != EntityPotionEffectEvent.Cause.PLUGIN && event.getAction()== EntityPotionEffectEvent.Action.ADDED && (event.getModifiedType()==PotionEffectType.HEAL||event.getModifiedType()==PotionEffectType.HARM)){
             PlayerInventory inventory = p.getInventory();
             int amplifier = event.getNewEffect().getAmplifier();
             int duration = event.getNewEffect().getDuration();
@@ -1108,12 +1109,12 @@ public class Events implements Listener {
                         Undead undead = (Undead) power;
                         if(undead.getAllowOffHand()){
                             event.setCancelled(true);
-                            if(event.getNewEffect().getType()== PotionEffectType.INSTANT_HEALTH){
-                                PotionEffect potion = new PotionEffect(PotionEffectType.INSTANT_DAMAGE,duration,amplifier,ambient,particle,icon);
+                            if(event.getNewEffect().getType()== PotionEffectType.HEAL){
+                                PotionEffect potion = new PotionEffect(PotionEffectType.HARM,duration,amplifier,ambient,particle,icon);
                                 p.addPotionEffect(potion);
                             }
                             else{
-                                PotionEffect potion = new PotionEffect(PotionEffectType.INSTANT_HEALTH,duration,amplifier,ambient,particle,icon);
+                                PotionEffect potion = new PotionEffect(PotionEffectType.HEAL,duration,amplifier,ambient,particle,icon);
                                 p.addPotionEffect(potion);
                             }
                         }
@@ -1124,12 +1125,12 @@ public class Events implements Listener {
                 for (Power power : rpgItem.getPowers()){
                     if(power.getName().equals("undead")){
                         event.setCancelled(true);
-                        if(event.getNewEffect().getType()== PotionEffectType.INSTANT_HEALTH){
-                            PotionEffect potion = new PotionEffect(PotionEffectType.INSTANT_DAMAGE,duration,amplifier,ambient,particle,icon);
+                        if(event.getNewEffect().getType()== PotionEffectType.HEAL){
+                            PotionEffect potion = new PotionEffect(PotionEffectType.HARM,duration,amplifier,ambient,particle,icon);
                             p.addPotionEffect(potion);
                         }
                         else{
-                            PotionEffect potion = new PotionEffect(PotionEffectType.INSTANT_HEALTH,duration,amplifier,ambient,particle,icon);
+                            PotionEffect potion = new PotionEffect(PotionEffectType.HEAL,duration,amplifier,ambient,particle,icon);
                             p.addPotionEffect(potion);
                         }
                     }
@@ -1140,12 +1141,12 @@ public class Events implements Listener {
                     for (Power power : rpgItem.getPowers()){
                         if(power.getName().equals("undead")){
                             event.setCancelled(true);
-                            if(event.getNewEffect().getType()== PotionEffectType.INSTANT_HEALTH){
-                                PotionEffect potion = new PotionEffect(PotionEffectType.INSTANT_DAMAGE,duration,amplifier,ambient,particle,icon);
+                            if(event.getNewEffect().getType()== PotionEffectType.HEAL){
+                                PotionEffect potion = new PotionEffect(PotionEffectType.HARM,duration,amplifier,ambient,particle,icon);
                                 p.addPotionEffect(potion);
                             }
                             else{
-                                PotionEffect potion = new PotionEffect(PotionEffectType.INSTANT_HEALTH,duration,amplifier,ambient,particle,icon);
+                                PotionEffect potion = new PotionEffect(PotionEffectType.HEAL,duration,amplifier,ambient,particle,icon);
                                 p.addPotionEffect(potion);
                             }
                         }
@@ -1168,7 +1169,7 @@ public class Events implements Listener {
                 int instantAmplifier = 0;
                 int instantDuration = 1;
                 for (PotionEffect potionEffect : potionEffects) {
-                    if (potionEffect.getType() == PotionEffectType.INSTANT_HEALTH || potionEffect.getType() == PotionEffectType.INSTANT_DAMAGE) {
+                    if (potionEffect.getType() == PotionEffectType.HEAL || potionEffect.getType() == PotionEffectType.HARM) {
                         instantDetected = true;
                         instantAmplifier = potionEffect.getAmplifier();
                         break;
@@ -1182,10 +1183,10 @@ public class Events implements Listener {
                             if(power.getName().equals("undead")&&((Undead)power).getAllowOffHand()){
                                 event.setIntensity(player,0);
                                 for (PotionEffect potionEffect : potionEffects) {
-                                    if (potionEffect.getType() == PotionEffectType.INSTANT_HEALTH) {
-                                        player.addPotionEffect(new PotionEffect(PotionEffectType.INSTANT_DAMAGE, instantDuration, finalInstantAmplifier, false, false, true));
-                                    } else if (potionEffect.getType() == PotionEffectType.INSTANT_DAMAGE) {
-                                        player.addPotionEffect(new PotionEffect(PotionEffectType.INSTANT_HEALTH, instantDuration, finalInstantAmplifier, false, false, true));
+                                    if (potionEffect.getType() == PotionEffectType.HEAL) {
+                                        player.addPotionEffect(new PotionEffect(PotionEffectType.HARM, instantDuration, finalInstantAmplifier, false, false, true));
+                                    } else if (potionEffect.getType() == PotionEffectType.HARM) {
+                                        player.addPotionEffect(new PotionEffect(PotionEffectType.HEAL, instantDuration, finalInstantAmplifier, false, false, true));
                                     } else {
                                         player.addPotionEffect(potionEffect);
                                     }
@@ -1199,10 +1200,10 @@ public class Events implements Listener {
                             if(power.getName().equals("undead")){
                                 event.setIntensity(player,0);
                                 for (PotionEffect potionEffect : potionEffects) {
-                                    if (potionEffect.getType() == PotionEffectType.INSTANT_HEALTH) {
-                                        player.addPotionEffect(new PotionEffect(PotionEffectType.INSTANT_DAMAGE, instantDuration, finalInstantAmplifier, false, false, true));
-                                    } else if (potionEffect.getType() == PotionEffectType.INSTANT_DAMAGE) {
-                                        player.addPotionEffect(new PotionEffect(PotionEffectType.INSTANT_HEALTH, instantDuration, finalInstantAmplifier, false, false, true));
+                                    if (potionEffect.getType() == PotionEffectType.HEAL) {
+                                        player.addPotionEffect(new PotionEffect(PotionEffectType.HARM, instantDuration, finalInstantAmplifier, false, false, true));
+                                    } else if (potionEffect.getType() == PotionEffectType.HARM) {
+                                        player.addPotionEffect(new PotionEffect(PotionEffectType.HEAL, instantDuration, finalInstantAmplifier, false, false, true));
                                     } else {
                                         player.addPotionEffect(potionEffect);
                                     }
@@ -1218,10 +1219,10 @@ public class Events implements Listener {
                                 if(power.getName().equals("undead")){
                                     event.setIntensity(player,0);
                                     for (PotionEffect potionEffect : potionEffects) {
-                                        if (potionEffect.getType() == PotionEffectType.INSTANT_HEALTH) {
-                                            player.addPotionEffect(new PotionEffect(PotionEffectType.INSTANT_DAMAGE, instantDuration, finalInstantAmplifier1, false, false, true));
-                                        } else if (potionEffect.getType() == PotionEffectType.INSTANT_DAMAGE) {
-                                            player.addPotionEffect(new PotionEffect(PotionEffectType.INSTANT_HEALTH, instantDuration, finalInstantAmplifier1, false, false, true));
+                                        if (potionEffect.getType() == PotionEffectType.HEAL) {
+                                            player.addPotionEffect(new PotionEffect(PotionEffectType.HARM, instantDuration, finalInstantAmplifier1, false, false, true));
+                                        } else if (potionEffect.getType() == PotionEffectType.HARM) {
+                                            player.addPotionEffect(new PotionEffect(PotionEffectType.HEAL, instantDuration, finalInstantAmplifier1, false, false, true));
                                         } else {
                                             player.addPotionEffect(potionEffect);
                                         }
@@ -1258,7 +1259,7 @@ public class Events implements Listener {
                 int instantDuration = 1;
 
                 for (PotionEffect potionEffect : potionEffects) {
-                    if (potionEffect.getType() == PotionEffectType.INSTANT_HEALTH || potionEffect.getType() == PotionEffectType.INSTANT_DAMAGE) {
+                    if (potionEffect.getType() == PotionEffectType.HEAL || potionEffect.getType() == PotionEffectType.HARM) {
                         instantDetected = true;
                         instantAmplifier = potionEffect.getAmplifier();
                         break;
@@ -1277,10 +1278,10 @@ public class Events implements Listener {
                                 event.getEntity().setRadius(event.getEntity().getRadius()-event.getEntity().getRadiusOnUse());
                                 event.getEntity().setDuration(event.getEntity().getDuration()-event.getEntity().getDurationOnUse());
                                 for (PotionEffect potionEffect : potionEffects) {
-                                    if (potionEffect.getType() == PotionEffectType.INSTANT_HEALTH) {
-                                        player.addPotionEffect(new PotionEffect(PotionEffectType.INSTANT_DAMAGE, instantDuration, finalInstantAmplifier));
-                                    } else if (potionEffect.getType() == PotionEffectType.INSTANT_DAMAGE) {
-                                        player.addPotionEffect(new PotionEffect(PotionEffectType.INSTANT_HEALTH, instantDuration, finalInstantAmplifier));
+                                    if (potionEffect.getType() == PotionEffectType.HEAL) {
+                                        player.addPotionEffect(new PotionEffect(PotionEffectType.HARM, instantDuration, finalInstantAmplifier));
+                                    } else if (potionEffect.getType() == PotionEffectType.HARM) {
+                                        player.addPotionEffect(new PotionEffect(PotionEffectType.HEAL, instantDuration, finalInstantAmplifier));
                                     } else {
                                         player.addPotionEffect(potionEffect);
                                     }
@@ -1297,10 +1298,10 @@ public class Events implements Listener {
                                 event.getEntity().setRadius(event.getEntity().getRadius()-event.getEntity().getRadiusOnUse());
                                 event.getEntity().setDuration(event.getEntity().getDuration()-event.getEntity().getDurationOnUse());
                                 for (PotionEffect potionEffect : potionEffects) {
-                                    if (potionEffect.getType() == PotionEffectType.INSTANT_HEALTH) {
-                                        player.addPotionEffect(new PotionEffect(PotionEffectType.INSTANT_DAMAGE, instantDuration, finalInstantAmplifier));
-                                    } else if (potionEffect.getType() == PotionEffectType.INSTANT_DAMAGE) {
-                                        player.addPotionEffect(new PotionEffect(PotionEffectType.INSTANT_HEALTH, instantDuration, finalInstantAmplifier));
+                                    if (potionEffect.getType() == PotionEffectType.HEAL) {
+                                        player.addPotionEffect(new PotionEffect(PotionEffectType.HARM, instantDuration, finalInstantAmplifier));
+                                    } else if (potionEffect.getType() == PotionEffectType.HARM) {
+                                        player.addPotionEffect(new PotionEffect(PotionEffectType.HEAL, instantDuration, finalInstantAmplifier));
                                     } else {
                                         player.addPotionEffect(potionEffect); // 保留其他效果
                                     }
@@ -1319,10 +1320,10 @@ public class Events implements Listener {
                                     event.getEntity().setRadius(event.getEntity().getRadius()-event.getEntity().getRadiusOnUse());
                                     event.getEntity().setDuration(event.getEntity().getDuration()-event.getEntity().getDurationOnUse());
                                     for (PotionEffect potionEffect : potionEffects) {
-                                        if (potionEffect.getType() == PotionEffectType.INSTANT_HEALTH) {
-                                            player.addPotionEffect(new PotionEffect(PotionEffectType.INSTANT_DAMAGE, instantDuration, finalInstantAmplifier));
-                                        } else if (potionEffect.getType() == PotionEffectType.INSTANT_DAMAGE) {
-                                            player.addPotionEffect(new PotionEffect(PotionEffectType.INSTANT_HEALTH, instantDuration, finalInstantAmplifier));
+                                        if (potionEffect.getType() == PotionEffectType.HEAL) {
+                                            player.addPotionEffect(new PotionEffect(PotionEffectType.HARM, instantDuration, finalInstantAmplifier));
+                                        } else if (potionEffect.getType() == PotionEffectType.HARM) {
+                                            player.addPotionEffect(new PotionEffect(PotionEffectType.HEAL, instantDuration, finalInstantAmplifier));
                                         } else {
                                             player.addPotionEffect(potionEffect); // 保留其他效果
                                         }
@@ -1370,13 +1371,11 @@ public class Events implements Listener {
                 boolean instantDetected = false;
                 int instantAmplifier = 0;
                 int instantDuration = 1;
-                if(potionMeta.hasBasePotionType()){
-                    if(potionMeta.getBasePotionType()==PotionType.HARMING||potionMeta.getBasePotionType()==PotionType.STRONG_HARMING||potionMeta.getBasePotionType()==PotionType.HEALING||potionMeta.getBasePotionType()==PotionType.STRONG_HEALING){
-                        instantDetected = true;
-                    }
+                if(potionMeta.getBasePotionType()==PotionType.INSTANT_DAMAGE||potionMeta.getBasePotionType()==PotionType.STRONG_HARMING||potionMeta.getBasePotionType()==PotionType.INSTANT_HEAL||potionMeta.getBasePotionType()==PotionType.STRONG_HEALING){
+                    instantDetected = true;
                 }
                 for (PotionEffect potionEffect : potionEffects) {
-                    if (potionEffect.getType() == PotionEffectType.INSTANT_HEALTH || potionEffect.getType() == PotionEffectType.INSTANT_DAMAGE) {
+                    if (potionEffect.getType() == PotionEffectType.HEAL || potionEffect.getType() == PotionEffectType.HARM) {
                         instantDetected = true;
                         instantAmplifier = potionEffect.getAmplifier();
                         break;
@@ -1384,26 +1383,24 @@ public class Events implements Listener {
                 }
 
                 if (instantDetected) {
-                    if(potionMeta.hasBasePotionType()){
-                        if(potionMeta.getBasePotionType()==PotionType.HARMING){
-                            potionMeta.setBasePotionType(PotionType.HEALING);
-                        }
-                        else if(potionMeta.getBasePotionType()==PotionType.STRONG_HARMING){
-                            potionMeta.setBasePotionType(PotionType.STRONG_HEALING);
-                        }
-                        else if(potionMeta.getBasePotionType()==PotionType.HEALING){
-                            potionMeta.setBasePotionType(PotionType.HARMING);
-                        }
-                        else if(potionMeta.getBasePotionType()==PotionType.STRONG_HEALING){
-                            potionMeta.setBasePotionType(PotionType.STRONG_HARMING);
-                        }
+                    if(potionMeta.getBasePotionType()==PotionType.INSTANT_DAMAGE){
+                        potionMeta.setBasePotionType(PotionType.INSTANT_HEAL);
+                    }
+                    else if(potionMeta.getBasePotionType()==PotionType.STRONG_HARMING){
+                        potionMeta.setBasePotionType(PotionType.STRONG_HEALING);
+                    }
+                    else if(potionMeta.getBasePotionType()==PotionType.INSTANT_HEAL){
+                        potionMeta.setBasePotionType(PotionType.INSTANT_DAMAGE);
+                    }
+                    else if(potionMeta.getBasePotionType()==PotionType.STRONG_HEALING){
+                        potionMeta.setBasePotionType(PotionType.STRONG_HARMING);
                     }
                     potionMeta.clearCustomEffects();
                     for (PotionEffect potionEffect : potionEffects) {
-                        if (potionEffect.getType() == PotionEffectType.INSTANT_HEALTH) {
-                            potionMeta.addCustomEffect(new PotionEffect(PotionEffectType.INSTANT_DAMAGE, instantDuration, instantAmplifier), true);
-                        } else if (potionEffect.getType() == PotionEffectType.INSTANT_DAMAGE) {
-                            potionMeta.addCustomEffect(new PotionEffect(PotionEffectType.INSTANT_HEALTH, instantDuration, instantAmplifier), true);
+                        if (potionEffect.getType() == PotionEffectType.HEAL) {
+                            potionMeta.addCustomEffect(new PotionEffect(PotionEffectType.HARM, instantDuration, instantAmplifier), true);
+                        } else if (potionEffect.getType() == PotionEffectType.HARM) {
+                            potionMeta.addCustomEffect(new PotionEffect(PotionEffectType.HEAL, instantDuration, instantAmplifier), true);
                         } else {
                             potionMeta.addCustomEffect(potionEffect, true);
                         }
@@ -1456,7 +1453,7 @@ public class Events implements Listener {
             PlayerInventory inventory = p.getInventory();
             ItemStack item = e.getEquipment()!=null ? e.getEquipment().getItemInMainHand() : null ;
             if(item==null) return;
-            int level = item.getEnchantmentLevel(Enchantment.SMITE);
+            int level = item.getEnchantmentLevel(Enchantment.DAMAGE_UNDEAD);
             if(level==0) return;
             ItemManager.toRPGItemByMeta(inventory.getItemInOffHand()).ifPresent(rpgItem -> {
                 for (Power power : rpgItem.getPowers()){

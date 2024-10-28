@@ -7,7 +7,7 @@ softdepend: [WorldGuard,NyaaUtils,PlaceholderAPI,Residence,MythicMobs]
 authors: [Taiterio,cyilin,RecursiveG,Librazy,Clexus]
 website: "https://github.com/NyaaCat/RPGItems-reloaded"
 database: false
-api-version: 1.21
+api-version: 1.20
 libraries:
   - 'com.udojava:EvalEx:2.7'
   - 'net.bytebuddy:byte-buddy:1.12.16'

@@ -115,8 +115,6 @@ public class ProjectilePower extends BasePower {
             "shulkerbullet",
             "dragonfireball",
             "trident",
-            "breezewindcharge",
-            "windcharge",
             "egg"
     })
     @Deserializer(ProjectileType.class)
@@ -165,8 +163,6 @@ public class ProjectilePower extends BasePower {
             return "fireball";
         else if (projectileType == WindCharge.class)
             return "windcharge";
-        else if (projectileType == BreezeWindCharge.class)
-            return "breezewindcharge";
         else if (projectileType == SmallFireball.class)
             return "smallfireball";
         else if (projectileType == Arrow.class)
@@ -386,8 +382,6 @@ public class ProjectilePower extends BasePower {
                     return Optional.of(SmallFireball.class);
                 case "windcharge":
                     return Optional.of(WindCharge.class);
-                case "breezewindcharge":
-                    return Optional.of(BreezeWindCharge.class);
                 case "arrow":
                     return Optional.of(Arrow.class);
                 case "llamaspit":

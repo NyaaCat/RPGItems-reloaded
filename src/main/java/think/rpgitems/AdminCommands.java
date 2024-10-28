@@ -10,10 +10,7 @@ import cat.nyaa.nyaacore.utils.ItemStackUtils;
 import cat.nyaa.nyaacore.utils.OfflinePlayerUtils;
 import com.google.common.base.Strings;
 import com.udojava.evalex.Expression;
-import io.papermc.paper.registry.RegistryAccess;
-import io.papermc.paper.registry.RegistryKey;
 import me.clip.placeholderapi.PlaceholderAPI;
-import net.kyori.adventure.key.Key;
 import net.md_5.bungee.api.chat.BaseComponent;
 import net.md_5.bungee.api.chat.ComponentBuilder;
 import net.md_5.bungee.api.chat.HoverEvent;
@@ -269,10 +266,10 @@ public class AdminCommands extends RPGCommandReceiver {
                 String base = arguments.at(0);
                 String operation = arguments.at(2);
                 if(arguments.remains()==3&&base.equals("enchantment")&&operation.equals("add")){
-                    completeStr.addAll(RegistryAccess.registryAccess().getRegistry(RegistryKey.ENCHANTMENT).stream().map(Enchantment->Enchantment.getKey().value()).toList());
+                    completeStr.addAll(Arrays.stream(Enchantment.values()).map(Enchantment->Enchantment.getKey().value()).toList());
                 }
                 if(arguments.remains()==4&&base.equals("enchantment")&&operation.equals("add")){
-                    completeStr.addAll(RegistryAccess.registryAccess().getRegistry(RegistryKey.ENCHANTMENT).stream().map(Enchantment->String.valueOf(Enchantment.getMaxLevel())).toList());
+                    completeStr.addAll(Collections.singleton(String.valueOf(Enchantment.getByName(arguments.at(3)).getMaxLevel())));
                 }
                 if(arguments.remains()==3&&base.equals("enchantment")&&operation.equals("remove")){
                     completeStr.addAll(getItem(arguments.at(1), sender).getEnchantMap().keySet().stream().map(Enchantment->Enchantment.getKey().value()).toList());
@@ -806,7 +803,7 @@ public class AdminCommands extends RPGCommandReceiver {
                 }
                 String ench = args.nextString();
                 int level = 1;
-                Enchantment enchantment = RegistryAccess.registryAccess().getRegistry(RegistryKey.ENCHANTMENT).get(Key.key(ench));
+                Enchantment enchantment = Enchantment.getByName(ench);
                 if(enchantment==null){
                     I18n.sendMessage(sender, "message.enchantment.bad_ench",ench);
                     return;
@@ -827,11 +824,11 @@ public class AdminCommands extends RPGCommandReceiver {
                     return;
                 }
                 String ench = args.nextString();
-                if(!item.getEnchantMap().containsKey(RegistryAccess.registryAccess().getRegistry(RegistryKey.ENCHANTMENT).get(Key.key(ench)))){
+                if(!item.getEnchantMap().containsKey(Enchantment.getByName(ench))){
                     I18n.sendMessage(sender, "message.enchantment.no_such_ench");
                     return;
                 }
-                item.getEnchantMap().remove(RegistryAccess.registryAccess().getRegistry(RegistryKey.ENCHANTMENT).get(Key.key(ench)));
+                item.getEnchantMap().remove(Enchantment.getByName(ench));
                 item.rebuild();
                 ItemManager.refreshItem();
                 ItemManager.save(item);

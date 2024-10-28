@@ -27,8 +27,6 @@ import org.bukkit.entity.Entity;
 import org.bukkit.entity.LivingEntity;
 import org.bukkit.entity.Player;
 import org.bukkit.event.Event;
-import org.bukkit.inventory.EquipmentSlot;
-import org.bukkit.inventory.EquipmentSlotGroup;
 import org.bukkit.inventory.ItemFlag;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.Damageable;
@@ -911,26 +909,16 @@ public class RPGItem {
         if (!attributeModifiers.isEmpty()) {
             for (AttributeModifier attributeModifier : attributeModifiers) {
                 Attribute attribute = attributeModifier.attribute;
-                NamespacedKey uuid = NamespacedKey.fromString(attributeModifier.namespacedKey);
-                EquipmentSlotGroup slot = attributeModifier.slot;
-                org.bukkit.attribute.AttributeModifier modifier;
-                if(slot!=null){
-                    modifier = new org.bukkit.attribute.AttributeModifier(
-                            uuid,
-                            attributeModifier.amount,
-                            attributeModifier.operation,
-                            attributeModifier.slot
-                    );
-                }
-                else{
-                    modifier = new org.bukkit.attribute.AttributeModifier(
-                            uuid,
-                            attributeModifier.amount,
-                            attributeModifier.operation
-                    );
-                }
+                UUID uuid = new UUID(attributeModifier.uuidMost, attributeModifier.uuidLeast);
+                org.bukkit.attribute.AttributeModifier modifier = new org.bukkit.attribute.AttributeModifier(
+                        uuid,
+                        attributeModifier.name,
+                        attributeModifier.amount,
+                        attributeModifier.operation,
+                        attributeModifier.slot
+                );
                 if (old != null) {
-                    old.entries().stream().filter(m -> m.getValue().getKey().equals(uuid)).findAny().ifPresent(
+                    old.entries().stream().filter(m -> m.getValue().getUniqueId().equals(uuid)).findAny().ifPresent(
                             e -> itemMeta.removeAttributeModifier(e.getKey(), e.getValue())
                     );
                 }
@@ -990,7 +978,7 @@ public class RPGItem {
                 Collection<PotionEffect> potionEffects = p.getActivePotionEffects();
                 double strength = 0, weak = 0;
                 for (PotionEffect pe : potionEffects) {
-                    if (pe.getType().equals(PotionEffectType.STRENGTH)) {
+                    if (pe.getType().equals(PotionEffectType.INCREASE_DAMAGE)) {
                         strength = 3 * (pe.getAmplifier() + 1);//MC 1.9+
                     }
                     if (pe.getType().equals(PotionEffectType.WEAKNESS)) {
