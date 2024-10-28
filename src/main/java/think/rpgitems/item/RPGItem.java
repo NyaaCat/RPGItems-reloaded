@@ -1291,11 +1291,7 @@ public class RPGItem {
         meta.remove(TAG_OWNER);
         meta.remove(TAG_STACK_ID);
         set(meta, TAG_IS_MODEL, true);
-        try {
-            ItemTagUtils.setBoolean(itemStack, NBT_IS_MODEL, true);
-        } catch (NoSuchFieldException | IllegalAccessException e) {
-            e.printStackTrace();
-        }
+        ItemTagUtils.setBoolean(itemStack, NBT_IS_MODEL, true);
         meta.commit();
         itemMeta.setDisplayName(getDisplayName());
         itemStack.setItemMeta(itemMeta);
