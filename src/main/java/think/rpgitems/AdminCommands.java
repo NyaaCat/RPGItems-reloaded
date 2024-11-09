@@ -313,7 +313,7 @@ public class AdminCommands extends RPGCommandReceiver {
             player.sendMessage("empty meta");
             return;
         }
-        player.sendMessage(ItemStackUtils.itemToJson(item).replace('¡ì', '&'));
+        player.sendMessage(ItemStackUtils.itemToJson(item).replace(ChatColor.COLOR_CHAR, '&'));
         ItemMeta meta = item.getItemMeta();
         PersistentDataContainer tagContainer = Objects.requireNonNull(meta).getPersistentDataContainer();
         if (tagContainer.has(TAG_META, PersistentDataType.TAG_CONTAINER)) {
