@@ -15,7 +15,6 @@ import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
 import java.util.logging.Level;
-import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 import java.util.stream.Stream;
 
@@ -51,10 +50,10 @@ public class MarkerCommands extends RPGCommandReceiver {
             String p2 = next.split("-", 2)[1];
             try {
                 int nth = Integer.parseInt(p1);
-                Marker marker = item.getMarkers().get(nth);
-                if (marker == null) {
-                    throw new BadCommandException("message.marker.unknown", nth);
+                if (nth < 0 || nth >= item.getMarkers().size()) {
+                    throw new BadCommandException("message.num_out_of_range", nth, 0, item.getMarkers().size()-1);
                 }
+                Marker marker = item.getMarkers().get(nth);
                 Pair<NamespacedKey, Class<? extends Marker>> keyClass = getMarkerClass(sender, p2);
                 if (keyClass == null || !marker.getNamespacedKey().equals(keyClass.getKey())) {
                     throw new BadCommandException("message.marker.unknown", p2);
@@ -67,24 +66,24 @@ public class MarkerCommands extends RPGCommandReceiver {
                 }
                 try {
                     int nth = Integer.parseInt(p2);
-                    Marker marker = item.getMarker(keyClass.getKey(), keyClass.getValue()).get(nth);
-                    if (marker == null) {
-                        throw new BadCommandException("message.marker.unknown", nth);
+                    List<Marker> markers = item.getMarkers();
+                    if (nth < 0 || nth >= markers.size()) {
+                        throw new BadCommandException("message.num_out_of_range", nth, 0, markers.size()-1);
                     }
-                    return marker;
+                    return item.getMarker(keyClass.getKey(), keyClass.getValue()).get(nth);
                 } catch (NumberFormatException ignored) {
                     throw new BadCommandException("message.marker.unknown", p2);
                 }
             }
         } else {
             int nth = args.nextInt();
-            Marker marker = item.getMarkers().get(nth);
-            if (marker == null) {
-                throw new BadCommandException("message.marker.unknown", nth);
+            if (nth < 0 || nth >= item.getMarkers().size()) {
+                throw new BadCommandException("message.num_out_of_range", nth, 0, item.getMarkers().size()-1);
             }
-            return marker;
+            return item.getMarkers().get(nth);
         }
     }
+
 
     @Override
     public String getHelpPrefix() {
@@ -99,7 +98,7 @@ public class MarkerCommands extends RPGCommandReceiver {
                 completeStr.addAll(ItemManager.itemNames());
                 break;
             case 2:
-                completeStr.addAll(PowerManager.getMarkers().keySet().stream().map(s -> PowerManager.hasExtension() ? s : s.getKey()).map(Object::toString).collect(Collectors.toList()));
+                completeStr.addAll(PowerManager.getMarkers().keySet().stream().map(s -> PowerManager.hasExtension() ? s : s.getKey()).map(Object::toString).toList());
                 break;
             default:
                 RPGItem item = getItem(arguments.nextString(), sender);
@@ -152,7 +151,7 @@ public class MarkerCommands extends RPGCommandReceiver {
                 break;
             case 2:
                 RPGItem item = getItem(arguments.nextString(), sender);
-                completeStr.addAll(IntStream.range(0, item.getMarkers().size()).mapToObj(i -> i + "-" + item.getMarkers().get(i).getNamespacedKey()).collect(Collectors.toList()));
+                completeStr.addAll(IntStream.range(0, item.getMarkers().size()).mapToObj(i -> i + "-" + item.getMarkers().get(i).getNamespacedKey()).toList());
                 break;
             default:
                 item = getItem(arguments.nextString(), sender);
@@ -205,7 +204,7 @@ public class MarkerCommands extends RPGCommandReceiver {
                 break;
             case 2:
                 RPGItem item = getItem(arguments.nextString(), sender);
-                completeStr.addAll(IntStream.range(0, item.getMarkers().size()).mapToObj(i -> i + "-" + item.getMarkers().get(i).getNamespacedKey()).collect(Collectors.toList()));
+                completeStr.addAll(IntStream.range(0, item.getMarkers().size()).mapToObj(i -> i + "-" + item.getMarkers().get(i).getNamespacedKey()).toList());
                 break;
         }
         return filtered(arguments, completeStr);
@@ -225,7 +224,7 @@ public class MarkerCommands extends RPGCommandReceiver {
                     break;
                 }
             }
-            if (nth < 0 || nth >= markers.size()) {
+            if (nth < 0) {
                 I18n.sendMessage(sender, "message.num_out_of_range", nth, 0, markers.size());
                 return;
             }
@@ -247,8 +246,8 @@ public class MarkerCommands extends RPGCommandReceiver {
                 .stream()
                 .filter(i -> i.getKey().contains(nameSearch))
                 .sorted(Comparator.comparing(NamespacedKey::getKey))
-                .collect(Collectors.toList());
-        if (markers.size() == 0) {
+                .toList();
+        if (markers.isEmpty()) {
             I18n.sendMessage(sender, "message.marker.not_found", nameSearch);
             return;
         }
@@ -257,7 +256,7 @@ public class MarkerCommands extends RPGCommandReceiver {
         int page = maxPage.getValue();
         int max = maxPage.getKey();
         stream = stream
-                .skip((page - 1) * perPage)
+                .skip((long) (page - 1) * perPage)
                 .limit(perPage);
         sender.sendMessage(ChatColor.AQUA + "Markers: " + page + " / " + max);
 

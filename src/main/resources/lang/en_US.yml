@@ -803,6 +803,11 @@ power:
   unbreaking: Unbreaking %d
   undead: Turn you into undead
 properties:
+  placeholdercondition:
+    main_description: Compare PlaceholderAPI placeholder to strings(can also be a placeholder)
+    placeholder: the placeholder
+    operator: ==,!=,===(ignore case ==),!==(ignore case !=),>,>=,<,<=,contain(s),!contain(s),startwith,endwith,match(es),!match(es)
+    value: the value to match
   mending:
     main_description: Fix item when picking up exp
     main_name: Mending

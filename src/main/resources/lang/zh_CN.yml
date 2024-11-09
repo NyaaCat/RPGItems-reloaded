@@ -3,6 +3,7 @@ internal:
     no_more_string: 还需要类型为字符串的参数
     no_more_int: 还需要类型为整数的参数
     no_more_enum: 还需要类型为枚举的参数
+    no_more_bool: 还需要类型为布尔值的参数
     bad_int: 错误的整数 %s
     bad_double: 错误的小数 %s
     bad_enum: '枚举项错误，只支持类型为 %s 中的以下项: %s'
@@ -787,6 +788,11 @@ power:
   unbreaking: 耐久 %d
   undead: 将你转化为亡灵生物
 properties:
+  placeholdercondition:
+    main_description: PlaceholderAPI变量条件
+    placeholder: 用于比较的内容
+    operator: 操作符,可为==,!=,===(忽略大小写),!==(忽略大小写),>,>=,<,<=,contain(s),!contain(s),startwith,endwith,match(es),!match(es)
+    value: 比较的目标
   mending:
     main_description: 拾取经验时修复物品
     main_name: 经验修补

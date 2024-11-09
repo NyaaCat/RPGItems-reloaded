@@ -305,7 +305,6 @@ public class AdminCommands extends RPGCommandReceiver {
     public void debug(CommandSender sender, Arguments args) {
         Player player = asPlayer(sender);
         ItemStack item = player.getInventory().getItemInMainHand();
-        player.sendMessage(ItemStackUtils.itemToJson(item).replace(ChatColor.COLOR_CHAR, '&'));
         if (item.getType() == Material.AIR) {
             player.sendMessage("empty");
             return;
@@ -314,11 +313,12 @@ public class AdminCommands extends RPGCommandReceiver {
             player.sendMessage("empty meta");
             return;
         }
+        player.sendMessage(ItemStackUtils.itemToJson(item).replace('¡ì', '&'));
         ItemMeta meta = item.getItemMeta();
         PersistentDataContainer tagContainer = Objects.requireNonNull(meta).getPersistentDataContainer();
         if (tagContainer.has(TAG_META, PersistentDataType.TAG_CONTAINER)) {
             int uid = getInt(getTag(tagContainer, TAG_META), TAG_ITEM_UID);
-            player.sendMessage("new item: " + uid);
+            player.sendMessage("rpgitem uid: " + uid);
             Optional<RPGItem> rpgItem = ItemManager.getItem(uid);
             player.sendMessage("rpgItem: " + rpgItem.map(RPGItem::getName).orElse(null));
         }
@@ -789,16 +789,16 @@ public class AdminCommands extends RPGCommandReceiver {
                 } else {
                     I18n.sendMessage(sender, "message.enchantment.fail");
                 }
+                break;
             }
-            break;
             case "clear": {
                 item.setEnchantMap(null);
                 item.rebuild();
                 ItemManager.refreshItem();
                 ItemManager.save(item);
                 I18n.sendMessage(sender, "message.enchantment.removed");
+                break;
             }
-            break;
             case "add":{
                 if(args.length()<4){
                     I18n.sendMessage(sender, "internal.error.no_more_enum");
@@ -814,6 +814,9 @@ public class AdminCommands extends RPGCommandReceiver {
                 if(args.length()>=5){
                     level = args.nextInt();
                 }
+                if(item.getEnchantMap()==null){
+                    item.setEnchantMap(new HashMap<>());
+                }
                 item.getEnchantMap().put(enchantment, level);
                 item.rebuild();
                 ItemManager.refreshItem();
@@ -827,6 +830,9 @@ public class AdminCommands extends RPGCommandReceiver {
                     return;
                 }
                 String ench = args.nextString();
+                if(item.getEnchantMap()==null){
+                    item.setEnchantMap(new HashMap<>());
+                }
                 if(!item.getEnchantMap().containsKey(RegistryAccess.registryAccess().getRegistry(RegistryKey.ENCHANTMENT).get(Key.key(ench)))){
                     I18n.sendMessage(sender, "message.enchantment.no_such_ench");
                     return;
@@ -839,7 +845,7 @@ public class AdminCommands extends RPGCommandReceiver {
                 break;
             }
             default:
-                throw new BadCommandException("message.error.invalid_option", command, "enchantment", "clone,clear,add");
+                throw new BadCommandException("message.error.invalid_option", command, "enchantment", "clone,clear,add,remove");
         }
     }
 

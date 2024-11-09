@@ -1,7 +1,6 @@
 package think.rpgitems.power.marker;
 
 import org.bukkit.attribute.Attribute;
-import org.bukkit.inventory.EquipmentSlot;
 import org.bukkit.inventory.EquipmentSlotGroup;
 import think.rpgitems.RPGItems;
 import think.rpgitems.power.Meta;
@@ -23,10 +22,10 @@ public class AttributeModifier extends BaseMarker {
     public double amount = 2;
 
     @Property(order = 1)
-    public Attribute attribute = Attribute.GENERIC_MAX_HEALTH;
+    public Attribute attribute = Attribute.MAX_HEALTH;
 
     @Property(order = 2)
-    public String name = "generic.maxHealth";
+    public String name = "maxHealth";
 
     @Property(order = 3, required = true)
     public org.bukkit.attribute.AttributeModifier.Operation operation = org.bukkit.attribute.AttributeModifier.Operation.ADD_NUMBER;

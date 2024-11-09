@@ -152,7 +152,7 @@ public class PotionTick extends BasePower {
                 player.addPotionEffect(new PotionEffect(getEffect(), getDuration(), getAmplifier()+summing[0], true));
             }
             if (getEffect().equals(PotionEffectType.HEALTH_BOOST) && health > 0) {
-                health = min(health, player.getAttribute(Attribute.GENERIC_MAX_HEALTH).getValue());
+                health = min(health, player.getAttribute(Attribute.MAX_HEALTH).getValue());
                 player.setHealth(health);
             }
             return PowerResult.ok();

@@ -71,7 +71,7 @@ public class Charge extends BasePower {
                 return PowerResult.noop();
             double originDamage = damage;
             damage = damage * (1 + getPercentage() / 100.0);
-            damage = damage + damage * (player.getAttribute(Attribute.GENERIC_MOVEMENT_SPEED).getValue() / 0.13 - 1) * (getSpeedPercentage() / 100.0);
+            damage = damage + damage * (player.getAttribute(Attribute.MOVEMENT_SPEED).getValue() / 0.13 - 1) * (getSpeedPercentage() / 100.0);
             damage = Math.max(Math.min(damage, getCap()), originDamage);
             event.setDamage(damage);
             if (damage > originDamage) {

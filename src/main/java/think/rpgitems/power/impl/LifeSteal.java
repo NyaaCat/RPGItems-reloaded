@@ -101,7 +101,7 @@ public class LifeSteal extends BasePower {
                     return PowerResult.fail();
                 }
                 if (!getItem().consumeDurability(stack, getCost())) return PowerResult.cost();
-                double finalHealth = Math.max(Math.min(player.getHealth() + damage * getFactor(), player.getAttribute(Attribute.GENERIC_MAX_HEALTH).getValue()), 0.01);
+                double finalHealth = Math.max(Math.min(player.getHealth() + damage * getFactor(), player.getAttribute(Attribute.MAX_HEALTH).getValue()), 0.01);
                 EntityRegainHealthEvent regainEvent = new EntityRegainHealthEvent(player,finalHealth-player.getHealth(), EntityRegainHealthEvent.RegainReason.CUSTOM);
                 if(regainEvent.callEvent()){
                     player.setHealth(finalHealth);

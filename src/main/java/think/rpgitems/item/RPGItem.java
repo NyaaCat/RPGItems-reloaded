@@ -746,10 +746,16 @@ public class RPGItem {
                 qualitied = true;
             }
         }
+        String metaDisplay = meta.getDisplayName();
+        String getDisplay = getDisplayName();
+        if(PlaceholderAPISupport.hasSupport()){
+            metaDisplay = PlaceholderAPI.setPlaceholders(player,meta.getDisplayName());
+            getDisplay = PlaceholderAPI.setPlaceholders(player,getDisplayName());
+        }
         if(qualitied){
             meta.setDisplayName(finalDisplay);
-        }else if(!meta.getDisplayName().equals(getDisplayName())){
-            meta.setDisplayName(getDisplayName());
+        }else if(!metaDisplay.equals(getDisplay)){
+            meta.setDisplayName(getDisplay);
         }
 
         meta.setUnbreakable(isCustomItemModel() || hasMarker(Unbreakable.class));

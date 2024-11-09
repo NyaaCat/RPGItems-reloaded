@@ -2,15 +2,20 @@ package think.rpgitems.power;
 
 import cat.nyaa.nyaacore.Message;
 import cat.nyaa.nyaacore.Pair;
+import cat.nyaa.nyaacore.cmdreceiver.BadCommandException;
 import com.google.common.cache.CacheBuilder;
 import com.google.common.cache.CacheLoader;
 import com.google.common.cache.LoadingCache;
 import com.udojava.evalex.Expression;
 import com.udojava.evalex.LazyFunction;
+import io.papermc.paper.registry.RegistryAccess;
+import io.papermc.paper.registry.RegistryKey;
 import me.clip.placeholderapi.PlaceholderAPI;
+import net.kyori.adventure.key.Key;
 import net.md_5.bungee.api.ChatMessageType;
 import net.md_5.bungee.api.chat.TextComponent;
 import org.bukkit.*;
+import org.bukkit.attribute.Attribute;
 import org.bukkit.command.CommandSender;
 import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.configuration.file.YamlConfiguration;
@@ -18,6 +23,7 @@ import org.bukkit.enchantments.Enchantment;
 import org.bukkit.entity.*;
 import org.bukkit.event.entity.EntityDamageByEntityEvent;
 import org.bukkit.event.entity.EntityDamageEvent;
+import org.bukkit.inventory.EquipmentSlotGroup;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.permissions.PermissionAttachment;
 import org.bukkit.projectiles.ProjectileSource;
@@ -116,7 +122,7 @@ public class Utils {
             }
         }
         List<LivingEntity> entity = new ArrayList<>();
-        entities.sort(Comparator.comparing(Map.Entry::getValue));
+        entities.sort(Map.Entry.comparingByValue());
         entities.forEach((k) -> entity.add(k.getKey()));
         return entity;
     }
@@ -132,7 +138,7 @@ public class Utils {
      */
     public static List<LivingEntity> getLivingEntitiesInCone(List<LivingEntity> entities, org.bukkit.util.Vector startPos, double degrees, org.bukkit.util.Vector direction) {
         List<LivingEntity> newEntities = new LinkedList<>();
-        float relativeAngle = 0;
+        float relativeAngle;
         float minAngle = 180;
         for (LivingEntity e : entities) {
             if (Utils.isUtilArmorStand(e)) continue;
@@ -142,7 +148,7 @@ public class Utils {
             if (relativeAngle > degrees) continue;
             if (relativeAngle < minAngle) {
                 minAngle = relativeAngle;
-                newEntities.add(0, e);
+                newEntities.addFirst(e);
             } else {
                 newEntities.add(e);
             }
@@ -152,7 +158,7 @@ public class Utils {
 
     public static List<LivingEntity> getLivingEntitiesInConeSorted(List<LivingEntity> entities, org.bukkit.util.Vector startPos, double degrees, org.bukkit.util.Vector direction) {
         Set<AngledEntity> newEntities = new TreeSet<>();
-        float relativeAngle = 0;
+        float relativeAngle;
         for (LivingEntity e : entities) {
             if (isUtilArmorStand(e)) continue;
             org.bukkit.util.Vector relativePosition = e.getEyeLocation().toVector();
@@ -194,11 +200,7 @@ public class Utils {
         long cooldown;
         Long value = (Long) Context.instance().get(player.getUniqueId(), key);
         long nowTime = Context.getCurrentMillis();
-        if (value == null) {
-            cooldown = nowTime;
-        } else {
-            cooldown = value;
-        }
+        cooldown = Objects.requireNonNullElse(value, nowTime);
         if (cooldown <= nowTime) {
             long cd = nowTime + cooldownTick * 50;
             Context.instance().put(player.getUniqueId(), key, cd, cd);
@@ -206,22 +208,21 @@ public class Utils {
         } else {
             if (showWarn) {
                 I18n i18n = I18n.getInstance(player.getLocale());
+                String message;
                 if (showPower) {
-                    String message = i18n.getFormatted("message.cooldown.power", ((double) (cooldown - nowTime)) / 50d / 20d, power.getItem().getDisplayName(), power.getLocalizedName(player));
-                    if (RPGItems.plugin.cfg.showCooldownActionbar) player.spigot().sendMessage(ChatMessageType.ACTION_BAR, TextComponent.fromLegacyText(message));
-                    else player.sendMessage(message);
+                    message = i18n.getFormatted("message.cooldown.power", ((double) (cooldown - nowTime)) / 50d / 20d, power.getItem().getDisplayName(), power.getLocalizedName(player));
                 } else {
-                    String message = i18n.getFormatted("message.cooldown.general", ((double) (cooldown - nowTime)) / 50d / 20d, power.getItem().getDisplayName());
-                    if (RPGItems.plugin.cfg.showCooldownActionbar) player.spigot().sendMessage(ChatMessageType.ACTION_BAR, TextComponent.fromLegacyText(message));
-                    else player.sendMessage(message);
+                    message = i18n.getFormatted("message.cooldown.general", ((double) (cooldown - nowTime)) / 50d / 20d, power.getItem().getDisplayName());
                 }
+                if (RPGItems.plugin.cfg.showCooldownActionbar) player.spigot().sendMessage(ChatMessageType.ACTION_BAR, TextComponent.fromLegacyText(message));
+                else player.sendMessage(message);
             }
             return false;
         }
     }
 
     public static void attachPermission(Player player, String permissions) {
-        if (permissions.length() != 0 && !permissions.equals("*")) {
+        if (!permissions.isEmpty() && !permissions.equals("*")) {
             List<String> permissionList = permissionCache.getUnchecked(permissions);
             for (String permission : permissionList) {
                 if (player.hasPermission(permission)) {
@@ -232,7 +233,9 @@ public class Utils {
                 StringBuilder p = new StringBuilder();
                 for (String perm : perms) {
                     p.append(perm);
-                    attachment.setPermission(p.toString(), true);
+                    if (attachment != null) {
+                        attachment.setPermission(p.toString(), true);
+                    }
                     p.append('.');
                 }
             }
@@ -257,7 +260,13 @@ public class Utils {
                 } else {
                     section.set(property, c.stream().map(Object::toString).collect(Collectors.joining(",")));
                 }
-            } else if (field.getType() == Enchantment.class) {
+            } else if(field.getType().equals(EquipmentSlotGroup.class)) {
+                section.set(property, val.toString());
+            }
+            else if(field.getType().equals(Attribute.class)) {
+                section.set(property, ((Attribute) val).key().value());
+            }
+            else if (field.getType() == Enchantment.class) {
                 section.set(property, ((Enchantment) val).getKey().toString());
             } else {
                 val = field.getType().isEnum() ? ((Enum<?>) val).name() : val;
@@ -306,7 +315,7 @@ public class Utils {
         throw new IllegalArgumentException("hitNormal: " + hitNormal);
     }
 
-    // Sweep a in the direction of v against b, returns non null & info if there was a hit
+    // Sweep an in the direction of v against b, returns non null & info if there was a hit
     // ===================================================================
     public static Pair<Vector, Vector> sweep(BoundingBox a, BoundingBox b, Vector vel) {
         double outTime = 1.0;
@@ -417,10 +426,10 @@ public class Utils {
     public static List<String> wrapLines(String txt, int maxwidth) {
         List<String> words = new ArrayList<>();
         for (String word : txt.split(" ")) {
-            if (word.length() > 0)
+            if (!word.isEmpty())
                 words.add(word);
         }
-        if (words.size() <= 0) return Collections.emptyList();
+        if (words.isEmpty()) return Collections.emptyList();
 
         for (String str : words) {
             int len = getStringWidth(ChatColor.stripColor(str));
@@ -428,10 +437,10 @@ public class Utils {
         }
 
         List<String> ans = new ArrayList<>();
-        int idx = 0, currlen = getStringWidth(ChatColor.stripColor(words.get(0)));
-        ans.add(words.remove(0));
-        while (words.size() > 0) {
-            String tmp = words.remove(0);
+        int idx = 0, currlen = getStringWidth(ChatColor.stripColor(words.getFirst()));
+        ans.add(words.removeFirst());
+        while (!words.isEmpty()) {
+            String tmp = words.removeFirst();
             int word_len = getStringWidth(ChatColor.stripColor(tmp));
             if (currlen + 4 + word_len <= maxwidth) {
                 currlen += 4 + word_len;
@@ -494,35 +503,53 @@ public class Utils {
             if (st != null) {
                 try {
                     Optional<Object> v = Setter.from(power, st.value()).set(value);
-                    if (!v.isPresent()) return;
+                    if (v.isEmpty()) return;
                     field.set(power, v.get());
                 } catch (IllegalArgumentException e) {
                     new Message(i18n.getFormatted(st.message(), value)).send(sender);
                 }
             } else {
+                if(field.getType().equals(EquipmentSlotGroup.class)){
+                    EquipmentSlotGroup group = EquipmentSlotGroup.getByName(value.toUpperCase());
+                    if(group != null) {
+                        field.set(power, group);
+                    } else{
+                        throw new BadCommandException("internal.error.bad_enum", field.getName(), "ANY,ARMOR,BODY,CHEST,FEET,HAND,HEAD,LEGS,MAINHAND,OFFHAND");
+                    }
+                }
+                else
+                if(field.getType().equals(Attribute.class)){
+                    Attribute attribute = RegistryAccess.registryAccess().getRegistry(RegistryKey.ATTRIBUTE).get(Key.key(value.toLowerCase(Locale.ROOT)));
+                    if(attribute != null) {
+                        field.set(power, attribute);
+                    } else{
+                        throw new BadCommandException("internal.error.bad_enum", field.getName(), RegistryAccess.registryAccess().getRegistry(RegistryKey.ATTRIBUTE).stream().map(Attribute -> Attribute.key().value()).collect(Collectors.joining(",")));
+                    }
+                }
+                else
                 if (field.getType().equals(int.class) || field.getType().equals(Integer.class)) {
                     try {
                         field.set(power, Integer.parseInt(value));
                     } catch (NumberFormatException e) {
-                        throw new AdminCommands.CommandException("internal.error.bad_int", value);
+                        throw new BadCommandException("internal.error.bad_int", value);
                     }
                 } else if (field.getType().equals(long.class) || field.getType().equals(Long.class)) {
                     try {
                         field.set(power, Long.parseLong(value));
                     } catch (NumberFormatException e) {
-                        throw new AdminCommands.CommandException("internal.error.bad_int", value);
+                        throw new BadCommandException("internal.error.bad_int", value);
                     }
                 } else if (field.getType().equals(float.class) || field.getType().equals(Float.class)) {
                     try {
                         field.set(power, Float.parseFloat(value));
                     } catch (NumberFormatException e) {
-                        throw new AdminCommands.CommandException("internal.error.bad_double", value);
+                        throw new BadCommandException("internal.error.bad_double", value);
                     }
                 } else if (field.getType().equals(double.class) || field.getType().equals(Double.class)) {
                     try {
                         field.set(power, Double.parseDouble(value));
                     } catch (NumberFormatException e) {
-                        throw new AdminCommands.CommandException("internal.error.bad_double", value);
+                        throw new BadCommandException("internal.error.bad_double", value);
                     }
                 } else if (field.getType().equals(String.class)) {
                     field.set(power, value);
@@ -530,15 +557,16 @@ public class Utils {
                     if (value.equalsIgnoreCase("true") || value.equalsIgnoreCase("false")) {
                         field.set(power, Boolean.valueOf(value));
                     } else {
-                        throw new AdminCommands.CommandException("message.error.invalid_option", value, field.getName(), "true, false");
+                        throw new BadCommandException("message.error.invalid_option", value, field.getName(), "true, false");
                     }
                 } else if (field.getType().isEnum()) {
                     try {
                         field.set(power, Enum.valueOf((Class<Enum>) field.getType(), value));
                     } catch (IllegalArgumentException e) {
-                        throw new AdminCommands.CommandException("internal.error.bad_enum", field.getName(), Stream.of(field.getType().getEnumConstants()).map(Object::toString).collect(Collectors.joining(", ")));
+                        throw new BadCommandException("internal.error.bad_enum", field.getName(), Stream.of(field.getType().getEnumConstants()).map(Object::toString).collect(Collectors.joining(", ")));
                     }
-                } else if (Collection.class.isAssignableFrom(field.getType())) {
+                }
+                else if (Collection.class.isAssignableFrom(field.getType())) {
                     ParameterizedType listType = (ParameterizedType) field.getGenericType();
                     Class<?> listArg = (Class<?>) listType.getActualTypeArguments()[0];
                     String[] valueStrs = value.split(",");
@@ -559,7 +587,7 @@ public class Utils {
                             List<Double> list = values.map(Double::parseDouble).collect(Collectors.toList());
                             field.set(power, list);
                         } else {
-                            throw new AdminCommands.CommandException("internal.error.command_exception");
+                            throw new BadCommandException("internal.error.command_exception");
                         }
                     } else {
                         if (listArg.isEnum()) {
@@ -584,7 +612,7 @@ public class Utils {
                             Set<Double> list = values.map(Double::parseDouble).collect(Collectors.toSet());
                             field.set(power, list);
                         } else {
-                            throw new AdminCommands.CommandException("internal.error.command_exception");
+                            throw new BadCommandException("internal.error.command_exception");
                         }
                     }
                 } else if (field.getType() == ItemStack.class) {
@@ -592,13 +620,13 @@ public class Utils {
                     ItemStack item;
                     if (sender instanceof Player && value.equalsIgnoreCase("HAND")) {
                         ItemStack hand = ((Player) sender).getInventory().getItemInMainHand();
-                        if (hand == null || hand.getType() == Material.AIR) {
-                            throw new AdminCommands.CommandException("message.error.iteminhand");
+                        if (hand.getType() == Material.AIR) {
+                            throw new BadCommandException("message.error.iteminhand");
                         }
                         item = hand.clone();
                         item.setAmount(1);
                     } else if (m == null || m == Material.AIR || !m.isItem()) {
-                        throw new AdminCommands.CommandException("message.error.material", value);
+                        throw new BadCommandException("message.error.material", value);
                     } else {
                         item = new ItemStack(m);
                     }
@@ -621,17 +649,17 @@ public class Utils {
                             try {
                                 return (Enchantment) f.get(null);
                             } catch (IllegalAccessException e) {
-                                throw new AdminCommands.CommandException("message.error.invalid_enchant", e);
+                                throw new BadCommandException("message.error.invalid_enchant", e);
                             }
                         }).orElse(null);
                     }
                     field.set(power, enchantment);
                 } else {
-                    throw new AdminCommands.CommandException("message.error.invalid_command_arg", power.getName(), field.getName());
+                    throw new BadCommandException("message.error.invalid_command_arg", power.getName(), field.getName());
                 }
             }
         } catch (IllegalAccessException e) {
-            throw new AdminCommands.CommandException("internal.error.command_exception", e);
+            throw new BadCommandException("internal.error.command_exception", e);
         }
     }
 
@@ -645,7 +673,7 @@ public class Utils {
             if (value.equalsIgnoreCase(trueChoice) || value.equalsIgnoreCase(falseChoice)) {
                 field.set(power, value.equalsIgnoreCase(trueChoice));
             } else {
-                throw new AdminCommands.CommandException("message.error.invalid_option", value, field.getName(), falseChoice + ", " + trueChoice);//TODO
+                throw new BadCommandException("message.error.invalid_option", value, field.getName(), falseChoice + ", " + trueChoice);//TODO
             }
             return;
         }
@@ -654,12 +682,12 @@ public class Utils {
             List<String> acc = PowerManager.getAcceptedValue(cls, as);
             if (!Collection.class.isAssignableFrom(field.getType())) {
                 if (!acc.contains(value))
-                    throw new AdminCommands.CommandException("message.error.invalid_option", value, field.getName(), String.join(", ", acc));
+                    throw new BadCommandException("message.error.invalid_option", value, field.getName(), String.join(", ", acc));
             } else {
                 String[] valueStrs = value.split(",");
-                List<String> values = Arrays.stream(valueStrs).filter(s -> !s.isEmpty()).map(String::trim).collect(Collectors.toList());
+                List<String> values = Arrays.stream(valueStrs).filter(s -> !s.isEmpty()).map(String::trim).toList();
                 if (values.stream().filter(s -> !s.isEmpty()).anyMatch(v -> !acc.contains(v))) {
-                    throw new AdminCommands.CommandException("message.error.invalid_option", value, field.getName(), String.join(", ", acc));
+                    throw new BadCommandException("message.error.invalid_option", value, field.getName(), String.join(", ", acc));
                 }
             }
         }
@@ -927,7 +955,7 @@ public class Utils {
             Pair<T, Integer> next = iterator.next();
             Integer i = next.getValue();
             int nextCount = count + i;
-            if (count <= selected && nextCount > selected) {
+            if (nextCount > selected) {
                 return next.getKey();
             }
             count = nextCount;
@@ -941,8 +969,7 @@ public class Utils {
     }
 
     public static boolean isUtilArmorStand(Entity livingEntity) {
-        if (livingEntity instanceof ArmorStand) {
-            ArmorStand arm = (ArmorStand) livingEntity;
+        if (livingEntity instanceof ArmorStand arm) {
             return arm.isMarker() && !arm.isVisible();
         }
         return false;

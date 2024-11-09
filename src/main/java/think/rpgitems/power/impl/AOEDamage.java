@@ -340,12 +340,12 @@ public class AOEDamage extends BasePower {
         private void dealDamage(LivingEntity entity, double damage) {
             if (entity.hasPotionEffect(PotionEffectType.RESISTANCE)) {
                 PotionEffect e = entity.getPotionEffect(PotionEffectType.RESISTANCE);
-                if (e.getAmplifier() >= 4) return;
+                if (e!=null && e.getAmplifier() >= 4) return;
             }
             double health = entity.getHealth();
             double newHealth = health - damage;
             newHealth = max(newHealth, 0.1);
-            newHealth = min(newHealth, entity.getAttribute(Attribute.GENERIC_MAX_HEALTH).getValue());
+            newHealth = min(newHealth, entity.getAttribute(Attribute.MAX_HEALTH).getValue());
             entity.setHealth(newHealth);
         }
 

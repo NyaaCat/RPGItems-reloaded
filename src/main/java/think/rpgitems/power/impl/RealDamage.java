@@ -99,7 +99,7 @@ public class RealDamage extends BasePower {
             double health = entity.getHealth();
             double newHealth = health - getRealDamage();
             newHealth = max(newHealth, 0.1);//Bug workaround
-            newHealth = min(newHealth, entity.getAttribute(Attribute.GENERIC_MAX_HEALTH).getValue());
+            newHealth = min(newHealth, entity.getAttribute(Attribute.MAX_HEALTH).getValue());
             entity.setHealth(newHealth);
             return PowerResult.ok(damage);
         }
