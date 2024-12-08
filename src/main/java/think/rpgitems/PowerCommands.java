@@ -79,7 +79,10 @@ public class PowerCommands extends RPGCommandReceiver {
             }
         } else {
             int nth = args.nextInt();
-            Power power = item.getPowers().get(nth);
+            Power power = null;
+            if(item.getPowers().size()>=nth+1){
+                power = item.getPowers().get(nth);
+            }
             if (power == null) {
                 throw new BadCommandException("message.power.unknown", nth);
             }
