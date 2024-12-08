@@ -1,5 +1,6 @@
 package think.rpgitems.power.impl;
 
+import me.clip.placeholderapi.PlaceholderAPI;
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
 import org.bukkit.configuration.ConfigurationSection;
@@ -14,6 +15,7 @@ import org.bukkit.inventory.ItemStack;
 import think.rpgitems.event.PowerActivateEvent;
 import think.rpgitems.power.*;
 import think.rpgitems.power.trigger.BaseTriggers;
+import think.rpgitems.support.PlaceholderAPISupport;
 
 import java.util.Collections;
 
@@ -53,6 +55,9 @@ public class Command extends BasePower {
         cmd = cmd.replaceAll("\\{player\\.pitch}", Float.toString(-player.getEyeLocation().getPitch()));
         cmd = cmd.replaceAll("\\{yaw}", Float.toString(player.getLocation().getYaw() + 90));
         cmd = cmd.replaceAll("\\{pitch}", Float.toString(-player.getLocation().getPitch()));
+        if(PlaceholderAPISupport.hasSupport()){
+            cmd = PlaceholderAPI.setPlaceholders(player, cmd);
+        }
         return cmd;
     }
 
