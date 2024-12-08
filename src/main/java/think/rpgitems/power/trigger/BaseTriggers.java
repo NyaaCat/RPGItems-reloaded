@@ -13,6 +13,7 @@ import think.rpgitems.power.*;
 import java.util.Optional;
 
 public final class BaseTriggers {
+    public static final Trigger<EntityPotionEffectEvent, PowerPotionEffect, Void, Void> POTION_EFFECT = new PotionEffect();
     public static final Trigger<EntityShootBowEvent, PowerBowShoot, Float, Optional<Float>> BOW_SHOOT = new BowShoot();
     public static final Trigger<EntityDamageByEntityEvent, PowerHit, Double, Optional<Double>> HIT = new Hit();
     public static final Trigger<EntityDamageByEntityEvent, PowerHit, Double, Optional<Double>> HIT_GLOBAL = new HitGlobal();

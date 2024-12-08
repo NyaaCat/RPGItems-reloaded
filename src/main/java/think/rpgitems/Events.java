@@ -1062,6 +1062,23 @@ public class Events implements Listener {
             }
         }
     }
+
+    @EventHandler(priority = EventPriority.HIGHEST, ignoreCancelled = true)
+    public void onPlayerPotionEffect(EntityPotionEffectEvent ev) {
+        if (ev.getEntity() instanceof Player e) {
+            ItemStack i = e.getInventory().getItemInMainHand();
+            RPGItem rpi = ItemManager.toRPGItem(i).orElse(null);
+            if(rpi != null){
+                rpi.power(e, i, ev, BaseTriggers.POTION_EFFECT);
+            }
+            for (ItemStack item : e.getInventory().getArmorContents()) {
+                RPGItem ri = ItemManager.toRPGItem(item).orElse(null);
+                if (ri == null) continue;
+                ri.power(e, item, ev, BaseTriggers.POTION_EFFECT);
+            }
+        }
+    }
+
     //For power Undead only
     @EventHandler(ignoreCancelled = true,priority = EventPriority.HIGH)
     public void onWitherAndUndeadTarget(EntityTargetEvent event){
