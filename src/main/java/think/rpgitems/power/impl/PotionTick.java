@@ -1,8 +1,10 @@
 package think.rpgitems.power.impl;
 
+import org.bukkit.Bukkit;
 import org.bukkit.attribute.Attribute;
 import org.bukkit.entity.Item;
 import org.bukkit.entity.Player;
+import org.bukkit.event.entity.EntityPotionEffectEvent;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.potion.PotionEffect;
 import org.bukkit.potion.PotionEffectType;
@@ -10,6 +12,7 @@ import think.rpgitems.I18n;
 import think.rpgitems.event.PowerActivateEvent;
 import think.rpgitems.item.ItemManager;
 import think.rpgitems.power.*;
+import think.rpgitems.power.trigger.Trigger;
 import think.rpgitems.utils.PotionEffectUtils;
 
 import java.util.ArrayList;
@@ -28,7 +31,7 @@ import static think.rpgitems.power.Utils.checkAndSetCooldown;
  * </p>
  */
 @SuppressWarnings("WeakerAccess")
-@Meta(defaultTrigger = "TICK", implClass = PotionTick.Impl.class)
+@Meta(defaultTrigger = {"TICK","POTION_EFFECT"}, implClass = PotionTick.Impl.class, generalInterface = PowerPotionEffect.class)
 public class PotionTick extends BasePower {
 
     @Deserializer(PotionEffectUtils.class)
@@ -82,8 +85,8 @@ public class PotionTick extends BasePower {
     @Override
     public String displayText() {
         return isClear() ?
-                I18n.formatDefault("power.potiontick.clear", getEffect().getName().toLowerCase().replaceAll("_", " "))
-                : I18n.formatDefault("power.potiontick.display", getEffect().getName().toLowerCase().replaceAll("_", " "), getAmplifier() + 1);
+                I18n.formatDefault("power.potiontick.clear", getEffect().key().value())
+                : I18n.formatDefault("power.potiontick.display", getEffect().key().value(), getAmplifier() + 1);
     }
 
     /**
@@ -107,7 +110,7 @@ public class PotionTick extends BasePower {
         return amplifier;
     }
 
-    public class Impl implements PowerTick, PowerSneaking {
+    public class Impl implements PowerTick, PowerSneaking, PowerPotionEffect {
         @Override
         public PowerResult<Void> tick(Player player, ItemStack stack) {
             return fire(player, stack);
@@ -141,10 +144,10 @@ public class PotionTick extends BasePower {
             for (PotionEffect potionEffect : player.getActivePotionEffects()) {
                 if (potionEffect.getType().equals(getEffect())) {
                     hasEffect = true;
-                    if (isClear()) {
+                    if (isClear()&&player.hasPotionEffect(getEffect())) {
                         player.removePotionEffect(getEffect());
-                    } else
-                        player.addPotionEffect(new PotionEffect(getEffect(), getDuration(), getAmplifier()+summing[0], true));
+                    }
+                    else player.addPotionEffect(new PotionEffect(getEffect(), getDuration(), getAmplifier()+summing[0], true));
                     break;
                 }
             }
@@ -166,6 +169,17 @@ public class PotionTick extends BasePower {
         @Override
         public PowerResult<Void> sneaking(Player player, ItemStack stack) {
             return fire(player, stack);
+        }
+
+        @Override
+        public PowerResult<Void> potionEffect(Player player, ItemStack stack, EntityPotionEffectEvent event){
+            if(isClear()){
+                if(event.getModifiedType()==getEffect()&&event.getAction()== EntityPotionEffectEvent.Action.ADDED){
+                    event.setCancelled(true);
+                    return PowerResult.ok();
+                }
+            }
+            return PowerResult.noop();
         }
     }
 }
