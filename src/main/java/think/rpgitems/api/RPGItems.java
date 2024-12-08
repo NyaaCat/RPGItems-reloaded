@@ -23,4 +23,10 @@ public class RPGItems {
     public boolean isEqual(ItemStack a, ItemStack b) {
         return Objects.equals(parseItemInfo(a), parseItemInfo(b));
     }
+
+    public ItemStack getItemStack(String id) {
+        RPGItem item = ItemManager.getItemByName(id);
+        if (item == null) return null;
+        else return item.toItemStack();
+    }
 }
