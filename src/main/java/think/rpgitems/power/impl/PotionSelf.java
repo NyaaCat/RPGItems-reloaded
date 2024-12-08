@@ -93,7 +93,7 @@ public class PotionSelf extends BasePower {
 
     @Override
     public String displayText() {
-        return I18n.formatDefault("power.potionself", getType().getName().toLowerCase().replaceAll("_", " "), getAmplifier() + 1, ((double) getDuration()) / 20d);
+        return I18n.formatDefault("power.potionself", getType().key().value(), getAmplifier() + 1, ((double) getDuration()) / 20d);
     }
 
     /**
