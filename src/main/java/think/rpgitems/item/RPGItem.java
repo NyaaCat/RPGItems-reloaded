@@ -70,8 +70,6 @@ import static org.bukkit.ChatColor.COLOR_CHAR;
 import static think.rpgitems.utils.ItemTagUtils.*;
 
 public class RPGItem {
-    @Deprecated
-    public static final int MC_ENCODED_ID_LENGTH = 16;
     public static final NamespacedKey TAG_META = new NamespacedKey(RPGItems.plugin, "meta");
     public static final NamespacedKey TAG_ITEM_UID = new NamespacedKey(RPGItems.plugin, "item_uid");
     public static final NamespacedKey TAG_IS_MODEL = new NamespacedKey(RPGItems.plugin, "is_model");
@@ -97,6 +95,8 @@ public class RPGItem {
     private List<ItemFlag> itemFlags = new ArrayList<>();
     private boolean customItemModel = false;
     private EnchantMode enchantMode = EnchantMode.DISALLOW;
+    //Data Components
+    private List<String> components = new ArrayList<>();
     // Powers
     private List<Power> powers = new ArrayList<>();
     private List<Condition<?>> conditions = new ArrayList<>();
@@ -141,6 +141,7 @@ public class RPGItem {
     private int hittingCost = 0;
     private int hitCost = 0;
     private boolean hitCostByDamage = false;
+    //general
     private String mcVersion;
     private int pluginVersion;
     private int pluginSerial;
@@ -568,8 +569,16 @@ public class RPGItem {
         } else if (itemMeta instanceof Damageable) {
             s.set("item_data", getDataValue());
         }
-        ConfigurationSection powerConfigs = s.createSection("powers");
+        ConfigurationSection componentsConfigs = s.createSection("components");
         int i = 0;
+        for (String p : components) {
+            MemoryConfiguration pConfig = new MemoryConfiguration();
+            pConfig.set("componentName", p);
+            componentsConfigs.set(Integer.toString(i), pConfig);
+            i++;
+        }
+        ConfigurationSection powerConfigs = s.createSection("powers");
+        i = 0;
         for (Power p : powers) {
             MemoryConfiguration pConfig = new MemoryConfiguration();
             pConfig.set("powerName", getPropertyHolderKey(p).toString());
@@ -1459,45 +1468,28 @@ public class RPGItem {
         itemStack.setAmount(count);
         if (wear) {
             if (
-                    item.equals(Material.CHAINMAIL_HELMET) ||
-                            item.equals(Material.DIAMOND_HELMET) ||
-                            item.equals(Material.GOLDEN_HELMET) ||
-                            item.equals(Material.IRON_HELMET) ||
-                            item.equals(Material.LEATHER_HELMET) ||
-                            item.equals(Material.TURTLE_HELMET)
+                    item.toString().contains("HELMET")
             ) {
                 if (player.getInventory().getHelmet() == null) {
                     player.getInventory().setHelmet(itemStack);
                     return;
                 }
             } else if (
-                    item.equals(Material.CHAINMAIL_CHESTPLATE) ||
-                            item.equals(Material.DIAMOND_CHESTPLATE) ||
-                            item.equals(Material.GOLDEN_CHESTPLATE) ||
-                            item.equals(Material.IRON_CHESTPLATE) ||
-                            item.equals(Material.LEATHER_CHESTPLATE)
+                    item.toString().contains("CHESTPLATE")
             ) {
                 if (player.getInventory().getChestplate() == null) {
                     player.getInventory().setChestplate(itemStack);
                     return;
                 }
             } else if (
-                    item.equals(Material.CHAINMAIL_LEGGINGS) ||
-                            item.equals(Material.DIAMOND_LEGGINGS) ||
-                            item.equals(Material.GOLDEN_LEGGINGS) ||
-                            item.equals(Material.IRON_LEGGINGS) ||
-                            item.equals(Material.LEATHER_LEGGINGS)
+                    item.toString().contains("LEGGINGS")
             ) {
                 if (player.getInventory().getLeggings() == null) {
                     player.getInventory().setLeggings(itemStack);
                     return;
                 }
             } else if (
-                    item.equals(Material.CHAINMAIL_BOOTS) ||
-                            item.equals(Material.DIAMOND_BOOTS) ||
-                            item.equals(Material.GOLDEN_BOOTS) ||
-                            item.equals(Material.IRON_BOOTS) ||
-                            item.equals(Material.LEATHER_BOOTS)
+                    item.toString().contains("BOOTS")
             ) {
                 if (player.getInventory().getBoots() == null) {
                     player.getInventory().setBoots(itemStack);
@@ -2151,6 +2143,10 @@ public class RPGItem {
 
     public List<Power> getPowers() {
         return powers;
+    }
+
+    public List<String> getComponents() {
+        return components;
     }
 
     public List<Marker> getMarkers() {
