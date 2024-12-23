@@ -3,6 +3,7 @@ package think.rpgitems.power.impl;
 import cat.nyaa.nyaacore.Pair;
 import org.bukkit.*;
 import org.bukkit.block.Block;
+import org.bukkit.block.data.type.Bed;
 import org.bukkit.entity.LivingEntity;
 import org.bukkit.entity.Player;
 import org.bukkit.entity.Projectile;
@@ -25,6 +26,7 @@ import think.rpgitems.event.PowerActivateEvent;
 import think.rpgitems.power.*;
 
 import java.util.HashMap;
+import java.util.Locale;
 import java.util.function.Supplier;
 
 import static think.rpgitems.power.Utils.checkCooldown;
@@ -48,6 +50,10 @@ public class Teleport extends BasePower {
     public int cooldown = 0;
     @Property
     public int cost = 0;
+    @Property
+    public String particle = "PORTAL";
+    @Property
+    public String sound = "ENTITY_ENDERMAN_TELEPORT";
 
     @Property
     public TargetMode targetMode = TargetMode.DEFAULT;
@@ -82,6 +88,10 @@ public class Teleport extends BasePower {
     public int getCooldown() {
         return cooldown;
     }
+
+    public String getParticle() { return particle; }
+
+    public String getSound() {return sound;}
 
     public TargetMode getTargetMode() {
         return targetMode;
@@ -119,8 +129,12 @@ public class Teleport extends BasePower {
             if (gliding) {
                 player.setVelocity(velocity);
             }
-            world.playEffect(newLoc, Effect.ENDER_SIGNAL, 0);
-            world.playSound(newLoc, Sound.ENTITY_ENDERMAN_TELEPORT, 1.0f, 0.3f);
+            if(!getParticle().toString().isEmpty()){
+                world.spawnParticle(Particle.valueOf(getParticle().toUpperCase(Locale.ROOT)),newLoc,100);
+            }
+            if(!getSound().isEmpty()){
+                world.playSound(newLoc, Sound.valueOf(getSound().toUpperCase(Locale.ROOT)), 1.0f, 0.3f);
+            }
             return PowerResult.ok();
         }
 
@@ -170,8 +184,8 @@ public class Teleport extends BasePower {
                             }
                         }
                     } catch (IllegalStateException ex) {
-                        ex.printStackTrace();
-                        RPGItems.logger.info("This exception may be harmless");
+//                        ex.printStackTrace();
+//                        RPGItems.logger.info("This exception may be harmless");
                     }
                     newLoc = lastSafe.getLocation();
                     break;
