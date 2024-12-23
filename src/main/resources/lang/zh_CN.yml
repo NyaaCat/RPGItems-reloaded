@@ -345,6 +345,9 @@ manual:
   trigger:
     description: 设置物品的触发
     usage: /rpgitem trigger [option] {item} <properties>
+  updatemode:
+    description: 设置物品的物品更新模式
+    usage: /rpgitem updatemode {item} <value>
   version:
     description: 展示 RPGItem 的版本信息。
     usage: /rpgitem version
@@ -367,7 +370,7 @@ message:
     get: 物品 '%s' 护甲为 '%d%%'
     set: 物品 '%s' 护甲已设置为 '%d%%'
   attributemode:
-    set: 物品 {itemName} 的 attribute mode 设置为 %s
+    set: 已将物品 {itemName} 的属性更新模式设置为 %s
   barformat:
     default: 耐久条设置为默认（方块）
     numeric: 耐久条设置为数值显示
@@ -695,6 +698,8 @@ message:
   update:
     fail: 物品 '%s' 升级失败：%s，请查看后台输出
     success: 成功升级物品 {item}
+  updatemode:
+    set: 已将物品 {itemName} 的物品更新模式设置为 %s
   version: |-
     RPGItem v%s （{GIT_BRANCH} 分支，{GIT_HASH}）
 

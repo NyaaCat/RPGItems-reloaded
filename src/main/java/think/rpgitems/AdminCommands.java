@@ -848,6 +848,21 @@ public class AdminCommands extends RPGCommandReceiver {
                 throw new BadCommandException("message.error.invalid_option", command, "enchantment", "clone,clear,add,remove");
         }
     }
+    @SubCommand(value = "updatemode", tabCompleter = "itemCompleter")
+    @Completion("item:FULL_UPDATE,DISPLAY_ONLY,LORE_ONLY,ENCHANT_ONLY,NO_DISPLAY,NO_LORE,NO_ENCHANT,NO_UPDATE")
+    public void setUpdateMode(CommandSender sender, Arguments arguments) {
+        RPGItem item = getItem(arguments.nextString(), sender);
+        String mode = arguments.top();
+        try{
+            UpdateMode updateMode = UpdateMode.valueOf(mode.toUpperCase());
+            item.setUpdateMode(updateMode);
+            new Message("").append(I18n.getInstance(sender).getFormatted("message.updatemode.set", "FULL_UPDATE"), item.toItemStack())
+                    .send(sender);
+        }catch(IllegalArgumentException e){
+            throw new BadCommandException("internal.error.bad_enum","Update Mode","FULL_UPDATE,DISPLAY_ONLY,LORE_ONLY,ENCHANT_ONLY,NO_DISPLAY,NO_LORE,NO_ENCHANT,NO_UPDATE");
+        }
+        ItemManager.save(item);
+    }
 
     @SubCommand(value = "attributemode", tabCompleter = "itemCompleter")
     @Completion("item:FULL_UPDATE,PARTIAL_UPDATE")
@@ -865,7 +880,7 @@ public class AdminCommands extends RPGCommandReceiver {
                         .send(sender);
                 break;
             default:
-                throw new BadCommandException("accepted value: FULL_UPDATE,PARTIAL_UPDATE");
+                throw new BadCommandException("internal.error.bad_enum","Attribute Mode","FULL_UPDATE,PARTIAL_UPDATE");
         }
         ItemManager.save(item);
     }

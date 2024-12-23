@@ -348,6 +348,9 @@ manual:
   trigger:
     description: Set trigger for an item.
     usage: /rpgitem trigger [option] {item} <properties>
+  updatemode:
+    description: Set an item's updatemode.
+    usage: /rpgitem updatemode {item} <value>
   version:
     description: Display version infomation of RPGItem.
     usage: /rpgitem version
@@ -702,6 +705,8 @@ message:
   update:
     fail: 'Failed updating Item %s: %s, check console for more detail'
     success: Successfully updated Item {item}
+  updatemode:
+    set: Set update mode of {itemName} to %s
   version: |-
     RPGItem v%s ({GIT_BRANCH} branch, {GIT_HASH})
 

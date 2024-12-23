@@ -118,6 +118,7 @@ public class RPGItem {
     private int damageMin = 0;
     private int damageMax = 3;
     private DamageMode damageMode = DamageMode.FIXED;
+    private UpdateMode updateMode = UpdateMode.FULL_UPDATE;
     private AttributeMode attributeMode = AttributeMode.PARTIAL_UPDATE;
     private int armour = 0;
     private String armourExpression = "";
@@ -289,6 +290,7 @@ public class RPGItem {
         setArmourExpression(s.getString("armourExpression", ""));
         setPlayerArmourExpression(s.getString("playerArmourExpression", ""));
         setDamageType(s.getString("DamageType", ""));
+        setUpdateMode(UpdateMode.valueOf(s.getString("updatemode", "FULL_UPDATE")));
         setAttributeMode(AttributeMode.valueOf(s.getString("attributemode", "PARTIAL_UPDATE")));
         String materialName = s.getString("item");
         setItem(MaterialUtils.getMaterial(materialName, Bukkit.getConsoleSender()));
@@ -553,6 +555,7 @@ public class RPGItem {
         s.set("armourExpression", getArmourExpression());
         s.set("playerArmourExpression", getPlayerArmourExpression());
         s.set("DamageType", getDamageType());
+        s.set("updatemode",updateMode.name());
         s.set("attributemode", attributeMode.name());
         ArrayList<String> descriptionConv = new ArrayList<>(getDescription());
         descriptionConv.replaceAll(string -> string.replaceAll("" + COLOR_CHAR, "&"));
@@ -699,6 +702,9 @@ public class RPGItem {
     }
 
     public void updateItem(ItemStack item, boolean loreOnly, @Nullable Player player) {
+        if(getUpdateMode()==UpdateMode.LORE_ONLY){
+            loreOnly = true;
+        }
         List<String> reservedLores = this.filterLores(item);
         item.setType(getItem());
         ItemMeta meta = item.getItemMeta();
@@ -734,7 +740,9 @@ public class RPGItem {
                 lore = PlaceholderAPI.setPlaceholders(player,lore);
             }
         }
-        meta.setLore(lore);
+        if(getUpdateMode()!=UpdateMode.NO_UPDATE&&getUpdateMode()!=UpdateMode.NO_LORE&&getUpdateMode()!=UpdateMode.DISPLAY_ONLY&&getUpdateMode()!=UpdateMode.ENCHANT_ONLY){
+            meta.setLore(lore);
+        }
 
         //quality prefix
 
@@ -755,16 +763,18 @@ public class RPGItem {
                 qualitied = true;
             }
         }
-        String metaDisplay = meta.getDisplayName();
-        String getDisplay = getDisplayName();
-        if(PlaceholderAPISupport.hasSupport()){
-            metaDisplay = PlaceholderAPI.setPlaceholders(player,meta.getDisplayName());
-            getDisplay = PlaceholderAPI.setPlaceholders(player,getDisplayName());
-        }
-        if(qualitied){
-            meta.setDisplayName(finalDisplay);
-        }else if(!metaDisplay.equals(getDisplay)){
-            meta.setDisplayName(getDisplay);
+        if(!(getUpdateMode()==UpdateMode.NO_UPDATE||getUpdateMode()==UpdateMode.NO_DISPLAY||getUpdateMode()==UpdateMode.LORE_ONLY||getUpdateMode()==UpdateMode.ENCHANT_ONLY)){
+            String metaDisplay = meta.getDisplayName();
+            String getDisplay = getDisplayName();
+            if(PlaceholderAPISupport.hasSupport()){
+                metaDisplay = PlaceholderAPI.setPlaceholders(player,meta.getDisplayName());
+                getDisplay = PlaceholderAPI.setPlaceholders(player,getDisplayName());
+            }
+            if(qualitied){
+                meta.setDisplayName(finalDisplay);
+            }else if(!metaDisplay.equals(getDisplay)){
+                meta.setDisplayName(getDisplay);
+            }
         }
 
         meta.setUnbreakable(isCustomItemModel() || hasMarker(Unbreakable.class));
@@ -785,9 +795,11 @@ public class RPGItem {
             }
         }
         Map<Enchantment, Integer> enchantMap = getEnchantMap();
-        if (enchantMap != null) {
-            for (Entry<Enchantment, Integer> e : enchantMap.entrySet()) {
-                meta.addEnchant(e.getKey(), Math.max(meta.getEnchantLevel(e.getKey()), e.getValue()), true);
+        if(getUpdateMode()!=UpdateMode.NO_UPDATE&&getUpdateMode()!=UpdateMode.DISPLAY_ONLY&&getUpdateMode()!=UpdateMode.LORE_ONLY&&getUpdateMode()!=UpdateMode.NO_ENCHANT){
+            if (enchantMap != null) {
+                for (Entry<Enchantment, Integer> e : enchantMap.entrySet()) {
+                    meta.addEnchant(e.getKey(), Math.max(meta.getEnchantLevel(e.getKey()), e.getValue()), true);
+                }
             }
         }
         checkAndMakeUnique(rpgitemsTagContainer);
@@ -2294,19 +2306,30 @@ public class RPGItem {
         this.attributeMode = attributeMode;
     }
 
+
     public enum DamageMode {
         FIXED,
         VANILLA,
         ADDITIONAL,
-        MULTIPLY,
+        MULTIPLY;
     }
+
 
     public enum EnchantMode {
         DISALLOW,
         PERMISSION,
-        ALLOW
+        ALLOW;
+    }
+    public void setUpdateMode(UpdateMode updateMode) {
+        this.updateMode = updateMode;
     }
 
+    public enum UpdateMode{
+        FULL_UPDATE, DISPLAY_ONLY, LORE_ONLY, ENCHANT_ONLY, NO_DISPLAY, NO_LORE, NO_ENCHANT, NO_UPDATE
+    }
+    public UpdateMode getUpdateMode() {
+        return updateMode;
+    }
     public enum AttributeMode {
         FULL_UPDATE, PARTIAL_UPDATE
     }
