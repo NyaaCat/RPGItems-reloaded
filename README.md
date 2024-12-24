@@ -1,4 +1,4 @@
-# If you want to download the plugin, ensure the plugin is ended with "-dev-all" !
+# If you want to download the plugin, ensure the plugin is ended with "-core" !
 
 # RPGItems [![Build Status](https://ci.nyaacat.com/job/RPGItems-reloaded/job/main/badge/icon)](https://ci.nyaacat.com/job/RPGItems-reloaded/job/main/)
 
