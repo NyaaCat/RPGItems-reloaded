@@ -37,6 +37,7 @@ public final class BaseTriggers {
     public static final Trigger<Event, PowerSneaking, Void, Void> SNEAKING = new Sneaking();
     public static final Trigger<ProjectileLaunchEvent, PowerProjectileLaunch, Void, Void> LAUNCH_PROJECTILE = new ProjectileLaunch();
     public static final Trigger<Event, PowerTick, Void, Void> TICK = new Tick();
+    public static final Trigger<Event, PowerTick, Void, Void> TICK_INVENTORY = new TickInventory();
     public static final Trigger<Event, PowerAttachment, Void, Void> ATTACHMENT = new Attachment();
     public static final Trigger<Event, PowerLocation, Void, Void> LOCATION = new Location();
     public static final Trigger<Event, PowerLivingEntity, Void, Void> LIVINGENTITY = new LivingEntity();

@@ -22,10 +22,20 @@ public class Ticker extends BukkitRunnable {
         Context.instance().cleanTick();
         for (final Player player : Bukkit.getOnlinePlayers()) {
             if (ItemManager.canUse(player, null, false) == Event.Result.DENY) continue;
+            ItemStack[] inventory = player.getInventory().getContents();
+            for (ItemStack i : inventory) {
+                Optional<RPGItem> item = ItemManager.toRPGItem(i);
+                if (item.isEmpty()) continue;
+                RPGItem rpgItem = item.get();
+                rpgItem.power(player,i,null,BaseTriggers.TICK_INVENTORY);
+                if(player.isSneaking()){
+                    rpgItem.power(player,i,null,BaseTriggers.SNEAK);
+                }
+            }
             ItemStack[] armour = player.getInventory().getArmorContents();
             for (ItemStack part : armour) {
                 Optional<RPGItem> item = ItemManager.toRPGItem(part);
-                if (!item.isPresent())
+                if (item.isEmpty())
                     continue;
                 RPGItem rgi = item.get();
                 rgi.power(player, part, null, BaseTriggers.TICK);
