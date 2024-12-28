@@ -793,8 +793,12 @@ public class Events implements Listener {
         RPGItem rItem = ItemManager.toRPGItem(item).orElse(null);
 
         if (rItem != null && e.getCause().equals(EntityDamageEvent.DamageCause.BLOCK_EXPLOSION) || e.getCause().equals(EntityDamageEvent.DamageCause.ENTITY_EXPLOSION)) {
-            int damageMin = rItem.getDamageMin();
-            int damageMax = rItem.getDamageMax();
+            int damageMin = 0;
+            int damageMax = 0;
+            if (rItem != null) {
+                damageMin = rItem.getDamageMin();
+                damageMax = rItem.getDamageMax();
+            }
             double dmg = damageMin < damageMax ? ThreadLocalRandom.current().nextDouble(damageMin, damageMax) : damageMax;
             overridingDamage = Optional.of(dmg);
         }
