@@ -1,8 +1,16 @@
 # If you want to download the plugin, ensure the plugin is ended with "-core" !
 
-# RPGItems [![Build Status](https://ci.nyaacat.com/job/RPGItems-reloaded/job/main/badge/icon)](https://ci.nyaacat.com/job/RPGItems-reloaded/job/main/)
+# RPGItems [![Build Status](https://github.com/dicfcs/RPGItems-reloaded/actions/workflows/gradle.yml/badge.svg)](https://github.com/dicfcs/RPGItems-reloaded/actions/workflows/gradle.yml/)
 
-The RPGItems2 plugin continued from [TheCreeperOfRedstone/RPG-Items-2](https://github.com/TheCreeperOfRedstone/RPG-Items-2)
+Fork of [NyaaCat/RPGItems-reloaded](https://github.com/NyaaCat/RPGItems-reloaded) with the following changes:
+
+- Added debug messages for some errors
+- Freeze beam effect when `/tick freeze` is used
+- Reverted to using GitHub Actions for CI, see [here](https://github.com/dicfcs/RPGItems-reloaded/actions/workflows/gradle.yml/) for the latest build
+
+## Planned Changes
+
+- Implement `/tick freeze` support for all/most powers such that this can be merged with upstream
 
 **RPGitem starting from 3.6 depends on [NyaaCore](https://github.com/NyaaCat/NyaaCore) to work! See [Installation](https://nyaacat.github.io/RPGItems-wiki/#/en-us/installation) for detail.**
 
@@ -12,10 +20,7 @@ Discord Server: [![Discord](https://img.shields.io/discord/486394125206421524.sv
 
 ## Downloads
 
-Development builds can be found at [our Jenkins](https://ci.nyaacat.com/job/RPGItems-reloaded/)
-
-1.7 ~ 1.13.2 builds can be found in the [Releases Page](https://github.com/NyaaCat/RPGItems-reloaded/releases).
-Please choose builds with prefixes matching your server version. Some version use code from [NBT API](https://www.spigotmc.org/resources/item-entity-tile-nbt-api.7939/) internally.
+CI builds is available at [GitHub Actions](https://github.com/dicfcs/RPGItems-reloaded/actions/workflows/gradle.yml/). For official releases, please refer back to the [original repository](https://github.com/NyaaCat/RPGItems-reloaded).
 
 ## Information
 
