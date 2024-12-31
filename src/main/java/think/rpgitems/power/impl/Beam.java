@@ -44,6 +44,7 @@ import java.util.stream.Stream;
 
 import static think.rpgitems.Events.*;
 import static think.rpgitems.power.Utils.*;
+import static think.rpgitems.power.Utils.getTickFrozen;
 import static think.rpgitems.utils.cast.CastUtils.makeCone;
 
 /**
@@ -903,6 +904,11 @@ public class Beam extends BasePower {
             @Override
             public void run() {
                 try {
+                    if (getTickFrozen()) {
+                        new RecursiveTask().runTaskLater(RPGItems.plugin, 1);
+                        return;
+                    }
+
                     double lengthInThisTick = getNextLength(spawnedLength, length) + lengthRemains.get();
 
                     double lengthToSpawn = lengthInThisTick;

@@ -28,6 +28,7 @@ import org.bukkit.inventory.ItemStack;
 import org.bukkit.permissions.PermissionAttachment;
 import org.bukkit.projectiles.ProjectileSource;
 import org.bukkit.scoreboard.Objective;
+import org.bukkit.ServerTickManager;
 import org.bukkit.util.BoundingBox;
 import org.bukkit.util.Vector;
 import think.rpgitems.AdminCommands;
@@ -484,6 +485,10 @@ public class Utils {
         }
 
         return (format == null ? "" : format);
+    }
+
+    public static boolean getTickFrozen() {
+        return Bukkit.getServer().getServerTickManager().isFrozen();
     }
 
     @SuppressWarnings({"unchecked", "deprecation"})
