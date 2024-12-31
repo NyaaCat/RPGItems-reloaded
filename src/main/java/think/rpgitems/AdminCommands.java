@@ -465,7 +465,13 @@ public class AdminCommands extends RPGCommandReceiver {
         String displaySearch = args.argString("d", args.argString("display", ""));
         List<RPGItem> items = ItemManager.items()
                 .stream()
-                .filter(i -> i.getName().contains(nameSearch))
+                .filter(i -> {
+                    try {
+                        return i.getName().contains(nameSearch);
+                    } catch (Exception e) {
+                        throw new RuntimeException("Error filtering item: " + i.getName() + " (" + i.getDisplayName() + ")", e);
+                    }
+                })
                 .filter(i -> i.getDisplayName().contains(displaySearch))
                 .sorted(Comparator.comparing(RPGItem::getName))
                 .collect(Collectors.toList());

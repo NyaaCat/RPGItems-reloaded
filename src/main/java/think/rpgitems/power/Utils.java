@@ -519,6 +519,7 @@ public class Utils {
                     if(group != null) {
                         field.set(power, group);
                     } else{
+                        System.err.println("Invalid enum value: " + value.toString() + " for " + field.getName() + " in " + power.getName() + " (" + power.getItem().getName() + ")");
                         throw new BadCommandException("internal.error.bad_enum", field.getName(), "ANY,ARMOR,BODY,CHEST,FEET,HAND,HEAD,LEGS,MAINHAND,OFFHAND");
                     }
                 }
@@ -528,6 +529,7 @@ public class Utils {
                     if(attribute != null) {
                         field.set(power, attribute);
                     } else{
+                        System.err.println("Invalid enum value: " + value.toString() + " for " + field.getName() + " in " + power.getName() + " (" + power.getItem().getName() + ")");
                         throw new BadCommandException("internal.error.bad_enum", field.getName(), RegistryAccess.registryAccess().getRegistry(RegistryKey.ATTRIBUTE).stream().map(Attribute -> Attribute.key().value()).collect(Collectors.joining(",")));
                     }
                 }
@@ -568,6 +570,7 @@ public class Utils {
                     try {
                         field.set(power, Enum.valueOf((Class<Enum>) field.getType(), value));
                     } catch (IllegalArgumentException e) {
+                        System.err.println("Invalid enum value: " + value.toString() + " for " + field.getName() + " in " + power.getName() + " (" + power.getItem().getName() + ")");
                         throw new BadCommandException("internal.error.bad_enum", field.getName(), Stream.of(field.getType().getEnumConstants()).map(Object::toString).collect(Collectors.joining(", ")));
                     }
                 }
