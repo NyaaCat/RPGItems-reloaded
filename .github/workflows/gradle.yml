@@ -36,12 +36,6 @@ jobs:
     - name: Build with Gradle Wrapper
       run: ./gradlew jar
 
-    - name: Rename jar file
-      run: |
-        for file in build/libs/*-core.jar; do
-          mv -v "$file" "${file/-x/-${{ github.run_number }}}";
-        done
-
     - name: Upload build artifact
       uses: actions/upload-artifact@v4.5.0
       with:

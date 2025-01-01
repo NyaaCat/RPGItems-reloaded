@@ -1,5 +1,3 @@
-# If you want to download the plugin, ensure the plugin is ended with "-core" !
-
 # RPGItems [![Build Status](https://github.com/dicfcs/RPGItems-reloaded/actions/workflows/gradle.yml/badge.svg)](https://github.com/dicfcs/RPGItems-reloaded/actions/workflows/gradle.yml/)
 
 Fork of [NyaaCat/RPGItems-reloaded](https://github.com/NyaaCat/RPGItems-reloaded) with the following changes:
@@ -14,10 +12,6 @@ Fork of [NyaaCat/RPGItems-reloaded](https://github.com/NyaaCat/RPGItems-reloaded
 
 **RPGitem starting from 3.6 depends on [NyaaCore](https://github.com/NyaaCat/NyaaCore) to work! See [Installation](https://nyaacat.github.io/RPGItems-wiki/#/en-us/installation) for detail.**
 
-## Project Discussion
-
-Discord Server: [![Discord](https://img.shields.io/discord/486394125206421524.svg?logo=discord&link=https%3A%2F%2Fdiscord.gg%QeVy8Yd)](https://discord.gg/QeVy8Yd)
-
 ## Downloads
 
 CI builds is available at [GitHub Actions](https://github.com/dicfcs/RPGItems-reloaded/actions/workflows/gradle.yml/). For official releases, please refer back to the [original repository](https://github.com/NyaaCat/RPGItems-reloaded).
@@ -29,3 +23,7 @@ CI builds is available at [GitHub Actions](https://github.com/dicfcs/RPGItems-re
 ## Resources
 
 [Wiki](https://nyaacat.github.io/RPGItems-wiki/#/) | [Spigot page](https://www.spigotmc.org/resources/rpgitems.17549/) | [Javadoc](https://ci.nyaacat.com/javadocs/)
+
+## Warranty
+
+This software is provided as is. It might not work as expected, and might break your server. Use it at your own risk. Please backup your item files frequently.

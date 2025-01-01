@@ -376,6 +376,7 @@ public class PowerManager {
             if (adapters.contains(general, specified)) {
                 return (T) adapters.get(general, specified).apply(pimpl);
             }
+            throw new IllegalArgumentException("No adapter found for " + general.toString() + " -> " + specified.toString());
         }
         throw new ClassCastException();
     }
