@@ -27,14 +27,13 @@ public class PowerActivateEvent extends Event implements Cancellable {
         this.power = power;
         this.args = args;
     }
-    public static HandlerList getHandlerList() {
-        return handlerList;
-    }
 
     @Override
     public HandlerList getHandlers() {
         return handlerList;
     }
+
+    public static HandlerList getHandlerList() { return handlerList; }
 
     public Player getPlayer() {
         return player;
