@@ -9,10 +9,7 @@ import org.bukkit.inventory.ItemStack;
 import org.bukkit.scheduler.BukkitRunnable;
 import think.rpgitems.RPGItems;
 import think.rpgitems.event.PowerActivateEvent;
-import think.rpgitems.power.Meta;
-import think.rpgitems.power.Power;
-import think.rpgitems.power.PowerResult;
-import think.rpgitems.power.Property;
+import think.rpgitems.power.*;
 
 import java.util.HashMap;
 
@@ -26,7 +23,7 @@ import static think.rpgitems.power.Utils.checkAndSetCooldown;
  * </p>
  */
 @SuppressWarnings("WeakerAccess")
-@Meta(defaultTrigger = "RIGHT_CLICK", implClass = DelayedCommand.Impl.class)
+@Meta(defaultTrigger = "RIGHT_CLICK", generalInterface = PowerPlain.class, implClass = DelayedCommand.Impl.class)
 public class DelayedCommand extends Command {
     @Property(order = 0)
     public int delay = 20;
@@ -50,7 +47,7 @@ public class DelayedCommand extends Command {
         return "delayedcommand";
     }
 
-    public class Impl extends Command.Impl {
+    public class Impl extends Command.Impl implements PowerRightClick, PowerLeftClick, PowerSprint, PowerSneak, PowerHurt, PowerHitTaken, PowerPlain, PowerBowShoot {
         @Override
         public PowerResult<Void> leftClick(final Player player, ItemStack stack, PlayerInteractEvent event) {
             return fire(player, stack);

@@ -370,7 +370,7 @@ public class PowerManager {
     public static <T extends Pimpl> T adaptPower(Pimpl pimpl, Class<T> specified) {
         List<Class<? extends Pimpl>> generals = Arrays.asList(getMeta(pimpl.getPower().getNamespacedKey()).generalInterface());
         Set<Class<? extends Pimpl>> statics = Power.getStaticInterfaces(pimpl.getClass());
-        List<Class<? extends Pimpl>> preferences = generals.stream().filter(statics::contains).collect(Collectors.toList());
+        List<Class<? extends Pimpl>> preferences = generals.stream().filter(statics::contains).toList();
 
         for (Class<? extends Pimpl> general : preferences) {
             if (adapters.contains(general, specified)) {
