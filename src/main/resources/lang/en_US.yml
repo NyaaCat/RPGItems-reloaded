@@ -411,7 +411,12 @@ message:
     fail: An item with that name already exists
     ok: Item '%s' created
   custom_model_data:
-    set: Item's custom model data has been set to %s
+    invalid_float: "Wrong number format. Expected format: 123.5;345;567..."
+    invalid_boolean: "Wrong boolean format. Expected format: true;false;false..."
+    invalid_string: "Wrong string format. Expected format: string;string;string... , you can use \\; to express ;"
+    invalid_color: "Wrong color format. Expected format(RGB): 1,1,1;3,3,3... "
+    unknown_type: "Unknown type. Only colors, floats, flags or strings available"
+    set: Item's custom model data has been set
   customitemmodel:
     disable: Custom item model disabled
     enable: Custom item model enabled
@@ -1126,6 +1131,8 @@ properties:
     main_description: Creates a force field around the player
     main_name: Force Field
     radius: Radius of force field
+    wallMaterial: Wall material
+    barrierMaterial: Barrier material
     ttl: Time to live
   glove:
     main_description: Catch an entity

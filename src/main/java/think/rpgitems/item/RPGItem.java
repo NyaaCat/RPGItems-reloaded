@@ -9,7 +9,12 @@ import com.google.common.base.Strings;
 import com.google.common.cache.Cache;
 import com.google.common.cache.CacheBuilder;
 import com.google.common.collect.Multimap;
+import io.papermc.paper.datacomponent.DataComponentTypes;
+import io.papermc.paper.datacomponent.item.CustomModelData;
+import io.papermc.paper.registry.RegistryAccess;
+import io.papermc.paper.registry.RegistryKey;
 import me.clip.placeholderapi.PlaceholderAPI;
+import net.kyori.adventure.key.Key;
 import net.kyori.adventure.text.format.NamedTextColor;
 import net.md_5.bungee.api.chat.BaseComponent;
 import net.md_5.bungee.api.chat.ClickEvent;
@@ -39,6 +44,7 @@ import org.bukkit.persistence.PersistentDataType;
 import org.bukkit.potion.PotionEffect;
 import org.bukkit.potion.PotionEffectType;
 import think.rpgitems.AdminCommands;
+import think.rpgitems.Configuration;
 import think.rpgitems.I18n;
 import think.rpgitems.RPGItems;
 import think.rpgitems.data.Context;
@@ -147,7 +153,7 @@ public class RPGItem {
     private int pluginVersion;
     private int pluginSerial;
     private List<String> lore;
-    private int customModelData;
+    private CustomModelData.Builder customModelData;
     private boolean isTemplate;
     private Set<String> templates = new HashSet<>();
     private final Set<String> templatePlaceholders = new HashSet<>();
@@ -375,7 +381,58 @@ public class RPGItem {
 
         setShowPowerText(s.getBoolean("showPowerText", true));
         setShowArmourLore(s.getBoolean("showArmourLore", true));
-        setCustomModelData(s.getInt("customModelData", -1));
+        if(s.isConfigurationSection("customModelData")){
+            ConfigurationSection modelSection = s.getConfigurationSection("customModelData");
+            CustomModelData.Builder customData = CustomModelData.customModelData();
+            if(s.isInt("modelSection")){
+                customData.addFloat(s.getInt("modelSection"));
+                setCustomModelData(customData);
+            }else{
+                for (String sectionKey : modelSection.getKeys(false)) {
+                    switch (sectionKey) {
+                        case "floats":
+                            if (modelSection.isList("floats")) {
+                                for (double value : modelSection.getDoubleList("floats")) {
+                                    customData.addFloat((float) value);
+                                }
+                            }
+                            break;
+                        case "strings":
+                            if (modelSection.isList("strings")) {
+                                for (String value : modelSection.getStringList("strings")) {
+                                    customData.addString(value);
+                                }
+                            }
+                            break;
+                        case "colors":
+                            if (modelSection.isList("colors")) {
+                                for (String value : modelSection.getStringList("colors")) {
+                                    String[] parts = value.split(",");
+                                    if (parts.length == 3) {
+                                        int r = Integer.parseInt(parts[0]);
+                                        int g = Integer.parseInt(parts[1]);
+                                        int b = Integer.parseInt(parts[2]);
+                                        customData.addColor(Color.fromRGB(r,g,b));
+                                    } else {
+                                        throw new IllegalArgumentException("Invalid color format (expected R,G,B color format): " + value);
+                                    }
+                                }
+                            }
+                            break;
+                        case "flags":
+                            if (modelSection.isList("flags")) {
+                                for (boolean value : modelSection.getBooleanList("flags")) {
+                                    customData.addFlag(value);
+                                }
+                            }
+                            break;
+                        default:
+                            throw new IllegalArgumentException("Unknown section key: " + sectionKey);
+                    }
+                }
+                setCustomModelData(customData);
+            }
+        }
         setQuality(s.getString("quality", null));
         setType(s.getString("item", "item"));
 
@@ -385,7 +442,7 @@ public class RPGItem {
             for (String enchName : Objects.requireNonNull(enchConf).getKeys(false)) {
                 Enchantment ench;
                 try {
-                    ench = Enchantment.getByKey(NamespacedKey.minecraft(enchName));
+                    ench = RegistryAccess.registryAccess().getRegistry(RegistryKey.ENCHANTMENT).get(Key.key(enchName));
                 } catch (IllegalArgumentException e) {
                     @SuppressWarnings("deprecation")
                     Enchantment old = Enchantment.getByName(enchName);
@@ -465,11 +522,11 @@ public class RPGItem {
         return stringBuilder.toString();
     }
 
-    public int getCustomModelData() {
+    public CustomModelData.Builder getCustomModelData() {
         return customModelData;
     }
 
-    public void setCustomModelData(int customModelData) {
+    public void setCustomModelData(CustomModelData.Builder customModelData) {
         this.customModelData = customModelData;
     }
 
@@ -628,7 +685,29 @@ public class RPGItem {
         s.set("showPowerText", isShowPowerText());
         s.set("showArmourLore", isShowArmourLore());
         s.set("damageMode", getDamageMode().name());
-        s.set("customModelData", getCustomModelData());
+
+        CustomModelData.Builder builder = getCustomModelData();
+        CustomModelData data = builder.build();
+        if (!data.floats().isEmpty()) {
+            s.set("customModelData.floats", data.floats());
+        }
+
+        if (!data.strings().isEmpty()) {
+            s.set("customModelData.strings", data.strings());
+        }
+
+        if (!data.flags().isEmpty()) {
+            s.set("customModelData.flags", data.flags());
+        }
+
+        if (!data.colors().isEmpty()) {
+            List<String> colors = data.colors().stream()
+                    .map(color -> String.format("%d,%d,%d",
+                            color.getRed(),
+                            color.getGreen(), color.getBlue()))
+                    .collect(Collectors.toList());
+            s.set("customModelData.colors", colors);
+        }
 
         Map<Enchantment, Integer> enchantMap = getEnchantMap();
         if (enchantMap != null) {
@@ -780,11 +859,6 @@ public class RPGItem {
         meta.setUnbreakable(isCustomItemModel() || hasMarker(Unbreakable.class));
         meta.removeItemFlags(meta.getItemFlags().toArray(new ItemFlag[0]));
 
-        if (getCustomModelData() != -1) {
-            meta.setCustomModelData(customModelData);
-        } else {
-            meta.setCustomModelData(null);
-        }
         for (ItemFlag flag : getItemFlags()) {
             meta.addItemFlags(flag);
         }
@@ -815,6 +889,9 @@ public class RPGItem {
             }
         } catch (NoSuchFieldException | IllegalAccessException e) {
             e.printStackTrace();
+        }
+        if (getCustomModelData() != null) {
+            item.setData(DataComponentTypes.CUSTOM_MODEL_DATA, getCustomModelData());
         }
     }
 

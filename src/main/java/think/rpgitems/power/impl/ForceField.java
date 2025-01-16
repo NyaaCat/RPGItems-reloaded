@@ -28,7 +28,7 @@ import static think.rpgitems.power.Utils.checkCooldown;
 /**
  * Power forcefield.
  * <p>
- * When right clicked, creates a force field around the player,
+ * When right-clicked, creates a force field around the player,
  * with {@link #radius} {@link #height} based {@link #base} blocks above,
  * lasts for {@link #ttl} ticks.
  * </p>
@@ -48,9 +48,12 @@ public class ForceField extends BasePower {
     public int ttl = 100;
     @Property
     public int cost = 0;
-
     @Property
     public boolean requireHurtByEntity = true;
+    @Property
+    public Material wallMaterial = Material.WHITE_WOOL;
+    @Property
+    public Material barrierMaterial = Material.BARRIER;
 
     /* copied from wikipedia */
     private Set<Location> circlePoints(World w, int x0, int y0, int radius, int l) {
@@ -130,81 +133,57 @@ public class ForceField extends BasePower {
         return cooldown;
     }
 
+    public Material getBarrierMaterial() {
+        return barrierMaterial;
+    }
+
+    public Material getWallMaterial() {
+        return wallMaterial;
+    }
+
     public boolean isRequireHurtByEntity() {
         return requireHurtByEntity;
     }
 
     private static class buildWallTask implements Runnable {
-        /**
-         * The W.
-         */
         final World w;
-        /**
-         * The Circle points.
-         */
         final Set<Location> circlePoints;
-        /**
-         * The Was wool.
-         */
-        final Set<Location> wasWool, /**
-         * The Was barrier.
-         */
-        wasBarrier;
-        /**
-         * The L.
-         */
-        final int l, /**
-         * The H.
-         */
-        h;
-        /**
-         * The Ttl.
-         */
+        final Set<Location> wasWall, wasBarrier;
+        final int l, h;
         final int ttl;
-        /**
-         * The Current.
-         */
         int current;
-        /**
-         * The Id.
-         */
         int id;
+        final Material wallMaterial;
+        final Material barrierMaterial;
 
-        /**
-         * Instantiates a new Build wall task.
-         *
-         * @param w            the w
-         * @param circlePoints the circle points
-         * @param l            the l
-         * @param h            the h
-         * @param ttl          the ttl
-         */
-        buildWallTask(World w, Set<Location> circlePoints, int l, int h, int ttl) {
+        buildWallTask(World w, Set<Location> circlePoints, int l, int h, int ttl, Material wallMaterial, Material barrierMaterial) {
             this.w = w;
             this.circlePoints = circlePoints;
             this.l = l;
             this.h = h;
-            current = -1;
-            wasWool = new HashSet<>();
-            wasBarrier = new HashSet<>();
             this.ttl = ttl;
+            this.wallMaterial = wallMaterial;
+            this.barrierMaterial = barrierMaterial;
+            current = -1;
+            wasWall = new HashSet<>();
+            wasBarrier = new HashSet<>();
         }
 
         @Override
         public void run() {
             if (current != -1) {
                 for (Location l : circlePoints) {
-                    if (wasWool.contains(l)) {
+                    if (wasWall.contains(l)) {
                         l.add(0, 1, 0);
                         continue;
                     }
-                    if (w.getBlockAt(l).getType() == Material.BARRIER) {
+                    if (w.getBlockAt(l).getType() == barrierMaterial) {
                         wasBarrier.add(l.clone());
                         l.add(0, 1, 0);
                         continue;
                     }
-                    if (w.getBlockAt(l).getType() == Material.WHITE_WOOL)
-                        w.getBlockAt(l).setType(Material.BARRIER);
+                    if (w.getBlockAt(l).getType() == wallMaterial)
+                        w.getBlockAt(l).setType(barrierMaterial);
                     l.add(0, 1, 0);
                 }
             }
@@ -216,8 +195,8 @@ public class ForceField extends BasePower {
             if (current <= h) {
                 loop:
                 for (Location l : circlePoints) {
-                    if (w.getBlockAt(l).getType() == Material.WHITE_WOOL) {
-                        wasWool.add(l.clone());
+                    if (w.getBlockAt(l).getType() == wallMaterial) {
+                        wasWall.add(l.clone());
                         continue;
                     }
                     if (w.getBlockAt(l).getType() == Material.AIR) {
@@ -226,7 +205,7 @@ public class ForceField extends BasePower {
                                 if (e.getLocation().distance(l) < 1.5) continue loop;
                             }
                         }
-                        w.getBlockAt(l).setType(Material.WHITE_WOOL);
+                        w.getBlockAt(l).setType(wallMaterial);
                     }
                 }
             } else {
@@ -235,7 +214,7 @@ public class ForceField extends BasePower {
                     for (int i = h; i >= l; i--) {
                         for (Location l : circlePoints) {
                             l.subtract(0, 1, 0);
-                            if (!wasBarrier.contains(l) && w.getBlockAt(l).getType() == Material.BARRIER) {
+                            if (!wasBarrier.contains(l) && w.getBlockAt(l).getType() == barrierMaterial) {
                                 w.getBlockAt(l).setType(Material.AIR);
                             }
                         }
@@ -244,11 +223,6 @@ public class ForceField extends BasePower {
             }
         }
 
-        /**
-         * Sets id.
-         *
-         * @param id the id
-         */
         public void setId(int id) {
             this.id = id;
         }
@@ -263,9 +237,12 @@ public class ForceField extends BasePower {
 
         @Override
         public PowerResult<Void> fire(Player player, ItemStack stack) {
-            PowerActivateEvent powerEvent = new PowerActivateEvent(player,stack,getPower());
-            if(!powerEvent.callEvent()) {
+            PowerActivateEvent powerEvent = new PowerActivateEvent(player, stack, getPower());
+            if (!powerEvent.callEvent()) {
                 return PowerResult.fail();
+            }
+            if (!getWallMaterial().isBlock()||!getBarrierMaterial().isBlock()) {
+                throw new IllegalArgumentException("The wall material or barrier material isn't a block: " + getWallMaterial() + ", " + getBarrierMaterial());
             }
             if (!checkCooldown(getPower(), player, getCooldown(), true, true)) return PowerResult.cd();
             if (!getItem().consumeDurability(stack, getCost())) return PowerResult.cost();
@@ -280,7 +257,7 @@ public class ForceField extends BasePower {
             if (h > 255) h = 255;
             if (h < 1) return PowerResult.noop();
 
-            buildWallTask tsk = new buildWallTask(w, circlePoints(w, x, z, getRadius(), l), l, h, getTtl());
+            buildWallTask tsk = new buildWallTask(w, circlePoints(w, x, z, getRadius(), l), l, h, getTtl(), getWallMaterial(), getBarrierMaterial());
             tsk.setId(Bukkit.getScheduler().scheduleSyncRepeatingTask(RPGItems.plugin, tsk, 1, 1));
             return PowerResult.ok();
         }
@@ -321,5 +298,4 @@ public class ForceField extends BasePower {
             return fire(player, stack);
         }
     }
-
 }

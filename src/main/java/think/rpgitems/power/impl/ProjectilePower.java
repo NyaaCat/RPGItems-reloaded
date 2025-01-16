@@ -94,6 +94,8 @@ public class ProjectilePower extends BasePower {
     @Property
     public boolean setFireballDirection = false;
     @Property
+    public int pierceLevel = 0;
+    @Property
     public String fireballItem = "FIRE_CHARGE";
     @Property
     public String eggHatchEntity = "CHICKEN";
@@ -117,7 +119,9 @@ public class ProjectilePower extends BasePower {
             "trident",
             "breezewindcharge",
             "windcharge",
-            "egg"
+            "egg",
+            "enderpearl",
+            "firework"
     })
     @Deserializer(ProjectileType.class)
     @Serializer(ProjectileType.class)
@@ -181,8 +185,16 @@ public class ProjectilePower extends BasePower {
             return "trident";
         else if (projectileType == Egg.class)
             return "egg";
+        else if (projectileType == Firework.class)
+            return "firework";
+        else if (projectileType == EnderPearl.class)
+            return "enderpearl";
         else
             return "snowball";
+    }
+
+    public int getPierceLevel() {
+        return pierceLevel;
     }
 
     public double getInitialRotation() {
@@ -377,32 +389,22 @@ public class ProjectilePower extends BasePower {
          */
         @Override
         public Optional<Class<? extends Projectile>> set(String type) {
-            switch (type) {
-                case "skull":
-                    return Optional.of(WitherSkull.class);
-                case "fireball":
-                    return Optional.of(Fireball.class);
-                case "smallfireball":
-                    return Optional.of(SmallFireball.class);
-                case "windcharge":
-                    return Optional.of(WindCharge.class);
-                case "breezewindcharge":
-                    return Optional.of(BreezeWindCharge.class);
-                case "arrow":
-                    return Optional.of(Arrow.class);
-                case "llamaspit":
-                    return Optional.of(LlamaSpit.class);
-                case "shulkerbullet":
-                    return Optional.of(ShulkerBullet.class);
-                case "dragonfireball":
-                    return Optional.of(DragonFireball.class);
-                case "trident":
-                    return Optional.of(Trident.class);
-                case "egg":
-                    return Optional.of(Egg.class);
-                default:
-                    return Optional.of(Snowball.class);
-            }
+            return switch (type) {
+                case "skull" -> Optional.of(WitherSkull.class);
+                case "fireball" -> Optional.of(Fireball.class);
+                case "smallfireball" -> Optional.of(SmallFireball.class);
+                case "windcharge" -> Optional.of(WindCharge.class);
+                case "breezewindcharge" -> Optional.of(BreezeWindCharge.class);
+                case "arrow" -> Optional.of(Arrow.class);
+                case "llamaspit" -> Optional.of(LlamaSpit.class);
+                case "shulkerbullet" -> Optional.of(ShulkerBullet.class);
+                case "dragonfireball" -> Optional.of(DragonFireball.class);
+                case "trident" -> Optional.of(Trident.class);
+                case "egg" -> Optional.of(Egg.class);
+                case "enderpearl" -> Optional.of(EnderPearl.class);
+                case "firework" -> Optional.of(Firework.class);
+                default -> Optional.of(Snowball.class);
+            };
         }
     }
 
@@ -539,6 +541,9 @@ public class ProjectilePower extends BasePower {
                 if (getIncendiary() != null) {
                     ((Explosive) projectile).setIsIncendiary(getIncendiary());
                 }
+            }
+            if(projectile instanceof AbstractArrow) {
+                ((AbstractArrow) projectile).setPierceLevel(getPierceLevel());
             }
             if(projectile instanceof Egg){
                 projectile.getPersistentDataContainer().set(new NamespacedKey(RPGItems.plugin,"RPGItemHatchOrNot"), PersistentDataType.BOOLEAN, getEggShouldHatch());

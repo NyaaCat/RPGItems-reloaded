@@ -10,6 +10,7 @@ import cat.nyaa.nyaacore.utils.ItemStackUtils;
 import cat.nyaa.nyaacore.utils.OfflinePlayerUtils;
 import com.google.common.base.Strings;
 import com.udojava.evalex.Expression;
+import io.papermc.paper.datacomponent.item.CustomModelData;
 import io.papermc.paper.registry.RegistryAccess;
 import io.papermc.paper.registry.RegistryKey;
 import me.clip.placeholderapi.PlaceholderAPI;
@@ -655,11 +656,68 @@ public class AdminCommands extends RPGCommandReceiver {
     @SubCommand(value = "customModel", tabCompleter = "itemCompleter")
     public void itemCustomModel(CommandSender sender, Arguments args) {
         RPGItem item = getItem(args.nextString(), sender);
-        int customModelData = args.nextInt();
-        item.setCustomModelData(customModelData);
+        CustomModelData.Builder customData = CustomModelData.customModelData();
+
+        while (args.remains()>0) {
+            String type = args.nextString();
+            switch (type.toLowerCase()) {
+                case "floats":
+                    if (args.remains()>0) {
+                        String[] floatValues = args.nextString().split(";");
+                        for (String value : floatValues) {
+                            try {
+                                customData.addFloat(Float.parseFloat(value));
+                            } catch (NumberFormatException e) {
+                                I18n.sendMessage(sender, "message.custom_model_data.invalid_float", value);
+                            }
+                        }
+                    }
+                    break;
+                case "strings":
+                    if (args.remains()>0) {
+                        String[] stringValues = args.nextString().split("(?<!\\\\);"); // 支持转义分号
+                        for (String value : stringValues) {
+                            customData.addString(value.replace("\\;", ";").replace("\"", "")); // 还原转义分号并去掉双引号
+                        }
+                    }
+                    break;
+                case "flags":
+                    if (args.remains()>0) {
+                        String[] booleanValues = args.nextString().split(";");
+                        for (String value : booleanValues) {
+                            customData.addFlag(Boolean.parseBoolean(value));
+                        }
+                    }
+                    break;
+                case "colors":
+                    if (args.remains()>0) {
+                        String[] colorValues = args.nextString().split(";");
+                        for (String value : colorValues) {
+                            String[] components = value.split(",");
+                            if (components.length == 3) {
+                                try {
+                                    int r = Integer.parseInt(components[0]);
+                                    int g = Integer.parseInt(components[1]);
+                                    int b = Integer.parseInt(components[2]);
+                                    customData.addColor(Color.fromRGB(r,g,b));
+                                } catch (NumberFormatException e) {
+                                    I18n.sendMessage(sender, "message.custom_model_data.invalid_color", value);
+                                }
+                            } else {
+                                I18n.sendMessage(sender, "message.custom_model_data.invalid_color", value);
+                            }
+                        }
+                    }
+                    break;
+                default:
+                    I18n.sendMessage(sender, "message.custom_model_data.unknown_type", type);
+                    break;
+            }
+        }
+        item.setCustomModelData(customData);
         ItemManager.refreshItem();
         ItemManager.save(item);
-        I18n.sendMessage(sender, "message.custom_model_data.set", customModelData);
+        I18n.sendMessage(sender, "message.custom_model_data.set");
     }
 
     @SubCommand(value = "damage", tabCompleter = "itemCompleter")
