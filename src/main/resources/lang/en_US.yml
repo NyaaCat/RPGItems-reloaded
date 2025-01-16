@@ -609,6 +609,10 @@ message:
     show: 'Marker %s (%s): %s'
     unknown: Unknown marker %s
     no_display: Marker has no display text
+  menu:
+    title: '&6RPGItem items &7- &3Page &b%s'
+    prev: '&3Previous page'
+    next: '&3Next page'
   model:
     is: This is a model item
     to: Modelled item

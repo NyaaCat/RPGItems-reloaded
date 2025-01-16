@@ -602,6 +602,10 @@ message:
     removed: 标志 %s 已移除
     show: 标志 %s - (%s)：%s
     unknown: 未知标志 %s
+  menu:
+    title: '&6RPGItem 物品 &7- &3第 &b%s &3页'
+    prev: '&3上一页'
+    next: '&3下一页'
   model:
     is: 这是一个物品模型
     to: 物品已转换为模型

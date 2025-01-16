@@ -687,26 +687,30 @@ public class RPGItem {
         s.set("damageMode", getDamageMode().name());
 
         CustomModelData.Builder builder = getCustomModelData();
-        CustomModelData data = builder.build();
-        if (!data.floats().isEmpty()) {
-            s.set("customModelData.floats", data.floats());
-        }
+        if(builder != null) {
+            CustomModelData data = builder.build();
+            if (!data.floats().isEmpty()) {
+                s.set("customModelData.floats", data.floats());
+            }
 
-        if (!data.strings().isEmpty()) {
-            s.set("customModelData.strings", data.strings());
-        }
+            if (!data.strings().isEmpty()) {
+                s.set("customModelData.strings", data.strings());
+            }
 
-        if (!data.flags().isEmpty()) {
-            s.set("customModelData.flags", data.flags());
-        }
+            if (!data.flags().isEmpty()) {
+                s.set("customModelData.flags", data.flags());
+            }
 
-        if (!data.colors().isEmpty()) {
-            List<String> colors = data.colors().stream()
-                    .map(color -> String.format("%d,%d,%d",
-                            color.getRed(),
-                            color.getGreen(), color.getBlue()))
-                    .collect(Collectors.toList());
-            s.set("customModelData.colors", colors);
+            if (!data.colors().isEmpty()) {
+                List<String> colors = data.colors().stream()
+                        .map(color -> String.format("%d,%d,%d",
+                                color.getRed(),
+                                color.getGreen(), color.getBlue()))
+                        .collect(Collectors.toList());
+                s.set("customModelData.colors", colors);
+            }
+        }else{
+            s.set("customModelData", "");
         }
 
         Map<Enchantment, Integer> enchantMap = getEnchantMap();
