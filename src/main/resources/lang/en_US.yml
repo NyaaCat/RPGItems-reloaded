@@ -1131,6 +1131,8 @@ properties:
     main_description: Creates a force field around the player
     main_name: Force Field
     radius: Radius of force field
+    wallMaterial: Wall material
+    barrierMaterial: Barrier material
     ttl: Time to live
   glove:
     main_description: Catch an entity

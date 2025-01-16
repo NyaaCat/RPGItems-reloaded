@@ -1152,6 +1152,8 @@ properties:
     main_description: 在玩家周围用屏障生成一个力场护盾
     main_name: 力场护盾
     radius: 护盾的半径
+    wallMaterial: 墙对应方块材质
+    barrierMaterial: 屏障对应方块材质
     ttl: 护盾的持续时间
   glove:
     main_description: 捕获一个实体
