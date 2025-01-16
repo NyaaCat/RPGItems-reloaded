@@ -8,6 +8,7 @@ import com.google.common.cache.CacheLoader;
 import com.google.common.cache.LoadingCache;
 import com.udojava.evalex.Expression;
 import com.udojava.evalex.LazyFunction;
+import io.papermc.paper.datacomponent.item.CustomModelData;
 import io.papermc.paper.registry.RegistryAccess;
 import io.papermc.paper.registry.RegistryKey;
 import me.clip.placeholderapi.PlaceholderAPI;
@@ -263,6 +264,51 @@ public class Utils {
             } else if(field.getType().equals(EquipmentSlotGroup.class)) {
                 section.set(property, val.toString());
             }
+            else if (field.getType().equals(CustomModelData.Builder.class)) {
+                CustomModelData.Builder builder = (CustomModelData.Builder) val;
+                CustomModelData data = builder.build();
+                StringBuilder serialized = new StringBuilder();
+
+                if (!data.floats().isEmpty()) {
+                    serialized.append("floats:")
+                            .append(data.floats().stream()
+                                    .map(String::valueOf)
+                                    .collect(Collectors.joining(",")))
+                            .append(";");
+                }
+
+                if (!data.strings().isEmpty()) {
+                    serialized.append("strings:\"")
+                            .append(data.strings().stream()
+                                    .map(s -> s.replace("\"", "\\\"")) // 转义双引号
+                                    .collect(Collectors.joining(",")))
+                            .append("\";");
+                }
+
+                if (!data.flags().isEmpty()) {
+                    serialized.append("flags:")
+                            .append(data.flags().stream()
+                                    .map(String::valueOf)
+                                    .collect(Collectors.joining(",")))
+                            .append(";");
+                }
+
+                if (!data.colors().isEmpty()) {
+                    serialized.append("colors:")
+                            .append(data.colors().stream()
+                                    .map(color -> String.format("%d,%d,%d",
+                                            color.getRed(),
+                                            color.getGreen(), color.getBlue()))
+                                    .collect(Collectors.joining(";")))
+                            .append(";");
+                }
+
+                if (!serialized.isEmpty() && serialized.charAt(serialized.length() - 1) == ';') {
+                    serialized.setLength(serialized.length() - 1); // 移除末尾的分号
+                }
+
+                section.set(property, serialized.toString());
+            }
             else if(field.getType().equals(Attribute.class)) {
                 section.set(property, ((Attribute) val).key().value());
             }
@@ -516,9 +562,58 @@ public class Utils {
                     } else{
                         throw new BadCommandException("internal.error.bad_enum", field.getName(), "ANY,ARMOR,BODY,CHEST,FEET,HAND,HEAD,LEGS,MAINHAND,OFFHAND");
                     }
-                }
-                else
-                if(field.getType().equals(Attribute.class)){
+                } else if (field.getType().equals(CustomModelData.Builder.class)) {
+                    CustomModelData.Builder builder = CustomModelData.customModelData();
+                    String[] sections = value.split(";");
+                    for (String section : sections) {
+                        String[] keyValue = section.split(":", 2);
+                        if (keyValue.length == 2) {
+                            String key = keyValue[0].trim().toLowerCase();
+                            String[] values = keyValue[1].split("(?<!\\\\),");
+                            switch (key) {
+                                case "floats":
+                                    for (String v : values) {
+                                        try {
+                                            builder.addFloat(Float.parseFloat(v.replace("\\,", ",")));
+                                        } catch (NumberFormatException e) {
+                                            throw new BadCommandException("message.custom_model_data.invalid_float", v);
+                                        }
+                                    }
+                                    break;
+                                case "strings":
+                                    for (String v : values) {
+                                        builder.addString(v.replace("\\,", ",").replace("\"", ""));
+                                    }
+                                    break;
+                                case "flags":
+                                    for (String v : values) {
+                                        builder.addFlag(Boolean.parseBoolean(v.replace("\\,", ",")));
+                                    }
+                                    break;
+                                case "colors":
+                                    for (String v : values) {
+                                        String[] components = v.replace("\\,", ",").split(",");
+                                        if (components.length == 3) {
+                                            try {
+                                                int r = Integer.parseInt(components[0]);
+                                                int g = Integer.parseInt(components[1]);
+                                                int b = Integer.parseInt(components[2]);
+                                                builder.addColor(Color.fromRGB(r,g,b));
+                                            } catch (NumberFormatException e) {
+                                                throw new BadCommandException("message.custom_model_data.invalid_color", v);
+                                            }
+                                        } else {
+                                            throw new BadCommandException("message.custom_model_data.invalid_color_format", v);
+                                        }
+                                    }
+                                    break;
+                                default:
+                                    throw new BadCommandException("message.custom_model_data.unknown_type", key);
+                            }
+                        }
+                    }
+                    field.set(power, builder);
+                } else if(field.getType().equals(Attribute.class)){
                     Attribute attribute = RegistryAccess.registryAccess().getRegistry(RegistryKey.ATTRIBUTE).get(Key.key(value.toLowerCase(Locale.ROOT)));
                     if(attribute != null) {
                         field.set(power, attribute);
