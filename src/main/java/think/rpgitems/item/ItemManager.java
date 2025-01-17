@@ -7,6 +7,7 @@ import com.google.common.cache.CacheBuilder;
 import com.sun.nio.file.ExtendedOpenOption;
 import org.bukkit.Bukkit;
 import org.bukkit.Material;
+import org.bukkit.NamespacedKey;
 import org.bukkit.command.CommandSender;
 import org.bukkit.command.ConsoleCommandSender;
 import org.bukkit.configuration.ConfigurationSection;
@@ -504,11 +505,14 @@ public class ItemManager {
         if (!item.hasItemMeta())
             return Optional.empty();
 
-        Optional<Integer> uid = cat.nyaa.nyaacore.utils.ItemTagUtils.getInt(item, NBT_UID);
+        Optional<Integer> uid = Optional.empty();
+        if(item.getPersistentDataContainer().has(new NamespacedKey(plugin, "meta"), PersistentDataType.TAG_CONTAINER)){
+            uid = Optional.ofNullable(item.getPersistentDataContainer().get(new NamespacedKey(plugin, "meta"), PersistentDataType.TAG_CONTAINER).get(new NamespacedKey(plugin, "item_uid"),PersistentDataType.INTEGER));
+        }
         Optional<Integer> itemUuid = cat.nyaa.nyaacore.utils.ItemTagUtils.getInt(item, NBT_ITEM_UUID);
         Optional<Boolean> isModel = cat.nyaa.nyaacore.utils.ItemTagUtils.getBoolean(item, NBT_IS_MODEL);
 
-        if (!uid.isPresent()) {
+        if (uid.isEmpty()) {
             return Optional.empty();
         }
         if (ignoreModel && isModel.orElse(false)) {

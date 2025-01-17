@@ -621,7 +621,7 @@ public class AdminCommands extends RPGCommandReceiver {
             }
         } else {
             Optional<ItemGroup> optGroup = ItemManager.getGroup(str);
-            if (!optGroup.isPresent()) {
+            if (optGroup.isEmpty()) {
                 throw new BadCommandException("message.error.item", str);
             }
             ItemGroup group = optGroup.get();
@@ -1174,18 +1174,24 @@ public class AdminCommands extends RPGCommandReceiver {
         }
     }
 
-    @SubCommand(value = "customitemmodel", tabCompleter = "itemCompleter")
-    public void toggleCustomItemModel(CommandSender sender, Arguments args) {
+    @SubCommand(value = "itemmodel", tabCompleter = "itemCompleter")
+    public void setItemModel(CommandSender sender, Arguments args) {
         RPGItem item = getItem(args.nextString(), sender);
-        item.setCustomItemModel(!item.isCustomItemModel());
+        if(args.remains()==0){
+            item.setItemModel(null);
+            I18n.sendMessage(sender, "message.itemmodel.unset");
+        }else{
+            NamespacedKey namespacedKey = NamespacedKey.fromString(args.nextString());
+            if(namespacedKey==null){
+                I18n.sendMessage(sender, "message.itemmodel.invalid");
+            }else{
+                item.setItemModel(namespacedKey);
+                I18n.sendMessage(sender, "message.itemmodel.set", namespacedKey.asString());
+            }
+        }
         item.rebuild();
         ItemManager.refreshItem();
         ItemManager.save(item);
-        if (item.isCustomItemModel()) {
-            I18n.sendMessage(sender, "message.customitemmodel.enable");
-        } else {
-            I18n.sendMessage(sender, "message.customitemmodel.disable");
-        }
     }
 
     //    @SubCommand(value = "togglebar", tabCompleter = "itemCompleter")
