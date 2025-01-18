@@ -135,9 +135,9 @@ manual:
   customModel:
     description: 设置物品的自定义模型ID
     usage: /rpgitem customModel {item} <value>
-  customitemmodel:
-    description: 切换物品自定义模型支持。
-    usage: /rpgitem customitemmodel {item}
+  itemmodel:
+    description: 设置物品的模型映射。
+    usage: /rpgitem itemmodel {item} <命名空间>
   damage:
     description: |-
       展示/设置物品的伤害值。可用的参数：
@@ -417,9 +417,10 @@ message:
     invalid_color: "错误的颜色格式，需为 1,1,1;3,3,3... 格式，代表红色，绿色和蓝色"
     unknown_type: "未知的自定义模型数据类型，只能为colors, floats, flags或strings"
     set: 物品的自定义模型数据已设置
-  customitemmodel:
-    disable: 自定义物品模型关闭
-    enable: 自定义物品模型开启
+  itemmodel:
+    set: 物品模型映射已设置为 %s
+    unset: 物品模型映射已删除
+    invalid: 命名空间格式无效，应为 空间:键 格式或提供单独键(minecraft作为空间)
   damage:
     get: 物品 '%s' 伤害为 %d-%d
     set:
@@ -602,6 +603,10 @@ message:
     removed: 标志 %s 已移除
     show: 标志 %s - (%s)：%s
     unknown: 未知标志 %s
+  menu:
+    title: '&6RPGItem 物品 &7- &3第 &b%s &3页'
+    prev: '&3上一页'
+    next: '&3下一页'
   model:
     is: 这是一个物品模型
     to: 物品已转换为模型
@@ -646,7 +651,6 @@ message:
     property_unsupporttype: '''%s'' 不属于类型 int/double/String/boolean'
   print:
     author: 作者：{author}
-    customitemmodel: '自定义模型: %s'
     durability: '最大耐久度: %d'
     itemflags: 'ItemFlags: '
     license: 授权：%s

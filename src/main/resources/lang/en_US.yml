@@ -135,9 +135,9 @@ manual:
   customModel:
     description: Set item's custom model ID.
     usage: /rpgitem customModel {item} <value>
-  customitemmodel:
-    description: Toggle custom item model support for item.
-    usage: /rpgitem customitemmodel {item}
+  itemmodel:
+    description: Set the item model of item
+    usage: /rpgitem itemmodel {item} <NamespacedKey>
   damage:
     description: |-
       Show/set item damage value. Available options:
@@ -417,9 +417,10 @@ message:
     invalid_color: "Wrong color format. Expected format(RGB): 1,1,1;3,3,3... "
     unknown_type: "Unknown type. Only colors, floats, flags or strings available"
     set: Item's custom model data has been set
-  customitemmodel:
-    disable: Custom item model disabled
-    enable: Custom item model enabled
+  itemmodel:
+    set: Item model is set to %s
+    unset: Item model reset
+    invalid: Invalid namespaced key format，expected namespace:key or key(minecraft as namespace)
   damage:
     get: Item '%s' damage is %d-%d
     set:
@@ -609,6 +610,10 @@ message:
     show: 'Marker %s (%s): %s'
     unknown: Unknown marker %s
     no_display: Marker has no display text
+  menu:
+    title: '&6RPGItem items &7- &3Page &b%s'
+    prev: '&3Previous page'
+    next: '&3Next page'
   model:
     is: This is a model item
     to: Modelled item
@@ -653,7 +658,6 @@ message:
     property_unsupporttype: '''%s'' if of type other than int/double/String/boolean'
   print:
     author: 'Author: {author}'
-    customitemmodel: 'Custom item model: %s'
     durability: 'Max durability: %d'
     itemflags: 'ItemFlags: '
     license: 'License: %s'

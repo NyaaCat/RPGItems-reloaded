@@ -42,6 +42,7 @@ import think.rpgitems.power.trigger.BaseTriggers;
 import think.rpgitems.power.trigger.Trigger;
 import think.rpgitems.support.WGHandler;
 import think.rpgitems.support.WGSupport;
+import think.rpgitems.utils.InventoryUtils;
 import think.rpgitems.utils.LightContext;
 
 import java.util.*;
@@ -547,7 +548,14 @@ public class Events implements Listener {
             if (!cont) e.setCancelled(true);
         }
     }
-
+    @EventHandler
+    public void onMenuClick(InventoryClickEvent e) {
+        InventoryUtils.handelClickEvent(e);
+    }
+    @EventHandler
+    public void onMenuClose(InventoryCloseEvent e) {
+        InventoryUtils.handleCloseEvent(e);
+    }
     @EventHandler
     public void onOffhandInventoryClick(InventoryClickEvent e) {
         if (e.getInventory().getType() != InventoryType.CRAFTING || e.getSlotType() != InventoryType.SlotType.QUICKBAR || e.getSlot() != 40)

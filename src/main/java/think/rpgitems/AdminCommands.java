@@ -10,6 +10,7 @@ import cat.nyaa.nyaacore.utils.ItemStackUtils;
 import cat.nyaa.nyaacore.utils.OfflinePlayerUtils;
 import com.google.common.base.Strings;
 import com.udojava.evalex.Expression;
+import io.papermc.paper.datacomponent.DataComponentTypes;
 import io.papermc.paper.datacomponent.item.CustomModelData;
 import io.papermc.paper.registry.RegistryAccess;
 import io.papermc.paper.registry.RegistryKey;
@@ -25,6 +26,8 @@ import org.bukkit.configuration.InvalidConfigurationException;
 import org.bukkit.configuration.file.YamlConfiguration;
 import org.bukkit.enchantments.Enchantment;
 import org.bukkit.entity.Player;
+import org.bukkit.inventory.Inventory;
+import org.bukkit.inventory.InventoryView;
 import org.bukkit.inventory.ItemFlag;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.EnchantmentStorageMeta;
@@ -38,9 +41,11 @@ import think.rpgitems.item.RPGItem;
 import think.rpgitems.power.*;
 import think.rpgitems.support.PlaceholderAPISupport;
 import think.rpgitems.support.WGSupport;
+import think.rpgitems.utils.InventoryUtils;
 import think.rpgitems.utils.MaterialUtils;
 import think.rpgitems.utils.NetworkUtils;
 
+import javax.xml.crypto.Data;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
@@ -555,7 +560,29 @@ public class AdminCommands extends RPGCommandReceiver {
             I18n.sendMessage(sender, "message.create.fail");
         }
     }
+    @SubCommand(value = "gui", tabCompleter = "attrCompleter")
+    @Completion(value = "command:page:,displayFilter:,loreFilter:,nameFilter:")
+    public void itemsGUI(CommandSender sender, Arguments args) {
+        if (!(sender instanceof Player player)) {
+            return;
+        }
 
+        int page = 1;
+        String displayFilter = null;
+        String loreFilter = null;
+        String nameFilter = null;
+
+        int pageArg = args.argInt("p", args.argInt("page",-1));
+        if (pageArg != -1) {
+            page = pageArg;
+        }
+
+        displayFilter = args.argString("d", args.argString("displayFilter",null));
+        loreFilter = args.argString("l", args.argString("loreFilter",null));
+        nameFilter = args.argString("n", args.argString("nameFilter",null));
+
+        InventoryUtils.openMenu(player, page, displayFilter, loreFilter, nameFilter);
+    }
     @SubCommand("giveperms")
     public void givePerms(CommandSender sender, Arguments args) {
         RPGItems.plugin.cfg.givePerms = !RPGItems.plugin.cfg.givePerms;
@@ -600,7 +627,7 @@ public class AdminCommands extends RPGCommandReceiver {
             }
         } else {
             Optional<ItemGroup> optGroup = ItemManager.getGroup(str);
-            if (!optGroup.isPresent()) {
+            if (optGroup.isEmpty()) {
                 throw new BadCommandException("message.error.item", str);
             }
             ItemGroup group = optGroup.get();
@@ -655,65 +682,57 @@ public class AdminCommands extends RPGCommandReceiver {
 
     @SubCommand(value = "customModel", tabCompleter = "itemCompleter")
     public void itemCustomModel(CommandSender sender, Arguments args) {
-        RPGItem item = getItem(args.nextString(), sender);
+        RPGItem item = getItem(args.nextString(),sender);
         CustomModelData.Builder customData = CustomModelData.customModelData();
 
-        while (args.remains()>0) {
-            String type = args.nextString();
-            switch (type.toLowerCase()) {
-                case "floats":
-                    if (args.remains()>0) {
-                        String[] floatValues = args.nextString().split(";");
-                        for (String value : floatValues) {
-                            try {
-                                customData.addFloat(Float.parseFloat(value));
-                            } catch (NumberFormatException e) {
-                                I18n.sendMessage(sender, "message.custom_model_data.invalid_float", value);
-                            }
-                        }
-                    }
-                    break;
-                case "strings":
-                    if (args.remains()>0) {
-                        String[] stringValues = args.nextString().split("(?<!\\\\);"); // 支持转义分号
-                        for (String value : stringValues) {
-                            customData.addString(value.replace("\\;", ";").replace("\"", "")); // 还原转义分号并去掉双引号
-                        }
-                    }
-                    break;
-                case "flags":
-                    if (args.remains()>0) {
-                        String[] booleanValues = args.nextString().split(";");
-                        for (String value : booleanValues) {
-                            customData.addFlag(Boolean.parseBoolean(value));
-                        }
-                    }
-                    break;
-                case "colors":
-                    if (args.remains()>0) {
-                        String[] colorValues = args.nextString().split(";");
-                        for (String value : colorValues) {
-                            String[] components = value.split(",");
-                            if (components.length == 3) {
-                                try {
-                                    int r = Integer.parseInt(components[0]);
-                                    int g = Integer.parseInt(components[1]);
-                                    int b = Integer.parseInt(components[2]);
-                                    customData.addColor(Color.fromRGB(r,g,b));
-                                } catch (NumberFormatException e) {
-                                    I18n.sendMessage(sender, "message.custom_model_data.invalid_color", value);
-                                }
-                            } else {
-                                I18n.sendMessage(sender, "message.custom_model_data.invalid_color", value);
-                            }
-                        }
-                    }
-                    break;
-                default:
-                    I18n.sendMessage(sender, "message.custom_model_data.unknown_type", type);
-                    break;
+        String floatsArg = args.argString("floats", null);
+        if (floatsArg != null) {
+            String[] floatValues = floatsArg.split(";");
+            for (String value : floatValues) {
+                try {
+                    customData.addFloat(Float.parseFloat(value));
+                } catch (NumberFormatException e) {
+                    I18n.sendMessage(sender, "message.custom_model_data.invalid_float", value);
+                }
             }
         }
+
+        String stringsArg = args.argString("strings", null);
+        if (stringsArg != null) {
+            String[] stringValues = stringsArg.split("(?<!\\\\);"); // 支持转义分号
+            for (String value : stringValues) {
+                customData.addString(value.replace("\\;", ";").replace("\"", "")); // 还原转义分号并去掉双引号
+            }
+        }
+
+        String flagsArg = args.argString("flags", null);
+        if (flagsArg != null) {
+            String[] booleanValues = flagsArg.split(";");
+            for (String value : booleanValues) {
+                customData.addFlag(Boolean.parseBoolean(value));
+            }
+        }
+
+        String colorsArg = args.argString("colors", null);
+        if (colorsArg != null) {
+            String[] colorValues = colorsArg.split(";");
+            for (String value : colorValues) {
+                String[] components = value.split(",");
+                if (components.length == 3) {
+                    try {
+                        int r = Integer.parseInt(components[0]);
+                        int g = Integer.parseInt(components[1]);
+                        int b = Integer.parseInt(components[2]);
+                        customData.addColor(Color.fromRGB(r, g, b));
+                    } catch (NumberFormatException e) {
+                        I18n.sendMessage(sender, "message.custom_model_data.invalid_color", value);
+                    }
+                } else {
+                    I18n.sendMessage(sender, "message.custom_model_data.invalid_color", value);
+                }
+            }
+        }
+
         item.setCustomModelData(customData);
         ItemManager.refreshItem();
         ItemManager.save(item);
@@ -1161,18 +1180,24 @@ public class AdminCommands extends RPGCommandReceiver {
         }
     }
 
-    @SubCommand(value = "customitemmodel", tabCompleter = "itemCompleter")
-    public void toggleCustomItemModel(CommandSender sender, Arguments args) {
+    @SubCommand(value = "itemmodel", tabCompleter = "itemCompleter")
+    public void setItemModel(CommandSender sender, Arguments args) {
         RPGItem item = getItem(args.nextString(), sender);
-        item.setCustomItemModel(!item.isCustomItemModel());
+        if(args.remains()==0){
+            item.setItemModel(null);
+            I18n.sendMessage(sender, "message.itemmodel.unset");
+        }else{
+            NamespacedKey namespacedKey = NamespacedKey.fromString(args.nextString());
+            if(namespacedKey==null){
+                I18n.sendMessage(sender, "message.itemmodel.invalid");
+            }else{
+                item.setItemModel(namespacedKey);
+                I18n.sendMessage(sender, "message.itemmodel.set", namespacedKey.asString());
+            }
+        }
         item.rebuild();
         ItemManager.refreshItem();
         ItemManager.save(item);
-        if (item.isCustomItemModel()) {
-            I18n.sendMessage(sender, "message.customitemmodel.enable");
-        } else {
-            I18n.sendMessage(sender, "message.customitemmodel.disable");
-        }
     }
 
     //    @SubCommand(value = "togglebar", tabCompleter = "itemCompleter")

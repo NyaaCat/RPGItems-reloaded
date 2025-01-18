@@ -52,7 +52,6 @@ public class RPGItems extends JavaPlugin {
 //    public RPGItems(JavaPluginLoader loader, PluginDescriptionFile description, File dataFolder, File file) {
 //        super(loader, description, dataFolder, file);
 //    }
-
     public static int getVersion() {
         return version;
     }

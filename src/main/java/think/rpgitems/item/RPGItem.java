@@ -159,6 +159,7 @@ public class RPGItem {
     private final Set<String> templatePlaceholders = new HashSet<>();
     private String quality;
     private String type = "item";
+    private NamespacedKey itemModel;
 
     public RPGItem(String name, int uid, CommandSender author) {
         this.name = name;
@@ -361,8 +362,7 @@ public class RPGItem {
         }
         setHasPermission(s.getBoolean("haspermission", false));
         setPermission(s.getString("permission", "rpgitem.item." + name));
-        setCustomItemModel(s.getBoolean("customItemModel", false));
-
+        setItemModel(NamespacedKey.fromString(s.getString("itemModel","")));
         setHitCost(s.getInt("hitCost", 1));
         setHittingCost(s.getInt("hittingCost", 1));
         setBlockBreakingCost(s.getInt("blockBreakingCost", 1));
@@ -375,7 +375,7 @@ public class RPGItem {
         setDurabilityLowerBound(s.getInt("durabilityLowerBound", 0));
         setDurabilityUpperBound(s.getInt("durabilityUpperBound", getItem().getMaxDurability()));
         if (s.isBoolean("forceBar")) {
-            setHasDurabilityBar(getItem().getMaxDurability() == 0 || s.getBoolean("forceBar") || isCustomItemModel());
+            setHasDurabilityBar(getItem().getMaxDurability() == 0 || s.getBoolean("forceBar"));
         }
         setHasDurabilityBar(s.getBoolean("hasDurabilityBar", isHasDurabilityBar()));
 
@@ -687,26 +687,30 @@ public class RPGItem {
         s.set("damageMode", getDamageMode().name());
 
         CustomModelData.Builder builder = getCustomModelData();
-        CustomModelData data = builder.build();
-        if (!data.floats().isEmpty()) {
-            s.set("customModelData.floats", data.floats());
-        }
+        if(builder != null) {
+            CustomModelData data = builder.build();
+            if (!data.floats().isEmpty()) {
+                s.set("customModelData.floats", data.floats());
+            }
 
-        if (!data.strings().isEmpty()) {
-            s.set("customModelData.strings", data.strings());
-        }
+            if (!data.strings().isEmpty()) {
+                s.set("customModelData.strings", data.strings());
+            }
 
-        if (!data.flags().isEmpty()) {
-            s.set("customModelData.flags", data.flags());
-        }
+            if (!data.flags().isEmpty()) {
+                s.set("customModelData.flags", data.flags());
+            }
 
-        if (!data.colors().isEmpty()) {
-            List<String> colors = data.colors().stream()
-                    .map(color -> String.format("%d,%d,%d",
-                            color.getRed(),
-                            color.getGreen(), color.getBlue()))
-                    .collect(Collectors.toList());
-            s.set("customModelData.colors", colors);
+            if (!data.colors().isEmpty()) {
+                List<String> colors = data.colors().stream()
+                        .map(color -> String.format("%d,%d,%d",
+                                color.getRed(),
+                                color.getGreen(), color.getBlue()))
+                        .collect(Collectors.toList());
+                s.set("customModelData.colors", colors);
+            }
+        }else{
+            s.set("customModelData", "");
         }
 
         Map<Enchantment, Integer> enchantMap = getEnchantMap();
@@ -729,13 +733,13 @@ public class RPGItem {
         } else {
             s.set("itemFlags", null);
         }
-        s.set("customItemModel", isCustomItemModel());
         s.set("barFormat", getBarFormat().name());
         s.set("alwaysAllowMelee", isAlwaysAllowMelee());
 
         s.set("isTemplate", isTemplate());
         s.set("quality", getQuality());
         s.set("type", getType());
+        s.set("item_model", getItemModel() == null ? "" : getItemModel().asString());
         ConfigurationSection templatesConfigs = s.createSection("templates");
         Set<String> templates = getTemplates();
         Iterator<String> it = templates.iterator();
@@ -798,17 +802,9 @@ public class RPGItem {
         Damageable damageable = (Damageable) meta;
         if (getMaxDurability() > 0) {
             int durability = computeIfAbsent(rpgitemsTagContainer, TAG_DURABILITY, PersistentDataType.INTEGER, this::getDefaultDurability);
-            if (isCustomItemModel()) {
-                damageable.setDamage(getDataValue());
-            } else {
-                damageable.setDamage((getItem().getMaxDurability() - ((short) ((double) getItem().getMaxDurability() * ((double) durability / (double) getMaxDurability())))));
-            }
+            damageable.setDamage((getItem().getMaxDurability() - ((short) ((double) getItem().getMaxDurability() * ((double) durability / (double) getMaxDurability())))));
         } else {
-            if (isCustomItemModel()) {
-                damageable.setDamage(getDataValue());
-            } else {
-                damageable.setDamage(getItem().getMaxDurability() != 0 ? 0 : getDataValue());
-            }
+            damageable.setDamage(getItem().getMaxDurability() != 0 ? 0 : getDataValue());
         }
         // Patch for mcMMO buff. See SkillUtils.java#removeAbilityBuff in mcMMO
         if (item.hasItemMeta() && Objects.requireNonNull(item.getItemMeta()).hasLore() && Objects.requireNonNull(item.getItemMeta().getLore()).contains("mcMMO Ability Tool"))
@@ -823,7 +819,7 @@ public class RPGItem {
             meta.setLore(lore);
         }
 
-        //quality prefix
+        meta.setItemModel(getItemModel());
 
         if (loreOnly) {
             rpgitemsTagContainer.commit();
@@ -831,32 +827,32 @@ public class RPGItem {
             return;
         }
         String qualityPrefix = plugin.cfg.qualityPrefixes.get(getQuality());
-        boolean qualitied = false;
         String finalDisplay = getDisplayName();
-        if(PlaceholderAPISupport.hasSupport()){
-            finalDisplay = PlaceholderAPI.setPlaceholders(player,finalDisplay);
+        boolean needsQualityPrefix = qualityPrefix != null;
+
+        if (PlaceholderAPISupport.hasSupport()) {
+            finalDisplay = PlaceholderAPI.setPlaceholders(player, finalDisplay);
         }
-        if (qualityPrefix != null) {
-            if (meta.hasDisplayName() && !finalDisplay.startsWith(qualityPrefix)) {
-                finalDisplay = qualityPrefix + finalDisplay;
-                qualitied = true;
-            }
+
+        if (needsQualityPrefix && !finalDisplay.startsWith(qualityPrefix)) {
+            finalDisplay = qualityPrefix + finalDisplay;
         }
-        if(!(getUpdateMode()==UpdateMode.NO_UPDATE||getUpdateMode()==UpdateMode.NO_DISPLAY||getUpdateMode()==UpdateMode.LORE_ONLY||getUpdateMode()==UpdateMode.ENCHANT_ONLY)){
-            String metaDisplay = meta.getDisplayName();
-            String getDisplay = getDisplayName();
-            if(PlaceholderAPISupport.hasSupport()){
-                metaDisplay = PlaceholderAPI.setPlaceholders(player,meta.getDisplayName());
-                getDisplay = PlaceholderAPI.setPlaceholders(player,getDisplayName());
-            }
-            if(qualitied){
+
+        UpdateMode updateMode = getUpdateMode();
+        boolean shouldUpdateDisplayName = updateMode != UpdateMode.NO_UPDATE &&
+                updateMode != UpdateMode.NO_DISPLAY &&
+                updateMode != UpdateMode.LORE_ONLY &&
+                updateMode != UpdateMode.ENCHANT_ONLY;
+
+        if (shouldUpdateDisplayName) {
+            String metaDisplay = meta.hasDisplayName() ? meta.getDisplayName() : "";
+
+            if (!metaDisplay.equals(finalDisplay)) {
                 meta.setDisplayName(finalDisplay);
-            }else if(!metaDisplay.equals(getDisplay)){
-                meta.setDisplayName(getDisplay);
             }
         }
 
-        meta.setUnbreakable(isCustomItemModel() || hasMarker(Unbreakable.class));
+        meta.setUnbreakable(hasMarker(Unbreakable.class));
         meta.removeItemFlags(meta.getItemFlags().toArray(new ItemFlag[0]));
 
         for (ItemFlag flag : getItemFlags()) {
@@ -880,9 +876,8 @@ public class RPGItem {
         rpgitemsTagContainer.commit();
         item.setItemMeta(refreshAttributeModifiers(meta));
         try {
-            ItemTagUtils.setInt(item, NBT_UID, uid);
             if (RPGItems.plugin.cfg.itemStackUuid) {
-                if (!ItemTagUtils.getString(item, NBT_ITEM_UUID).isPresent()) {
+                if (ItemTagUtils.getString(item, NBT_ITEM_UUID).isEmpty()) {
                     UUID uuid = UUID.randomUUID();
                     ItemTagUtils.setString(item, NBT_ITEM_UUID, uuid.toString());
                 }
@@ -1464,9 +1459,6 @@ public class RPGItem {
         new Message(I18n.formatDefault("message.print.note", getNote())).send(sender);
 
         sender.sendMessage(I18n.formatDefault("message.durability.info", getMaxDurability(), getDefaultDurability(), getDurabilityLowerBound(), getDurabilityUpperBound()));
-        if (isCustomItemModel()) {
-            sender.sendMessage(I18n.formatDefault("message.print.customitemmodel", getItem().name() + ":" + getDataValue()));
-        }
         if (!getItemFlags().isEmpty()) {
             StringBuilder str = new StringBuilder();
             for (ItemFlag flag : getItemFlags()) {
@@ -1512,45 +1504,65 @@ public class RPGItem {
 
     public boolean consumeDurability(ItemStack item, int val, boolean checkbound) {
         if (val == 0) return true;
+
         int durability;
-        if(item.getAmount()>1){
-            float durcost = val;
-            durcost = durcost/item.getAmount();
+
+        if (item.getAmount() > 1) {
+            float durcost = (float) val / item.getAmount();
             float point = durcost - (int) durcost;
-            if(Math.random()<=point){
-                val = (int)durcost+1;
+            if (Math.random() <= point) {
+                val = (int) durcost + 1;
             }
         }
+
         ItemMeta itemMeta = item.getItemMeta();
+
         if (getMaxDurability() != -1) {
             SubItemTagContainer tagContainer = makeTag(Objects.requireNonNull(itemMeta), TAG_META);
             durability = computeIfAbsent(tagContainer, TAG_DURABILITY, PersistentDataType.INTEGER, this::getDefaultDurability);
-            if (checkbound && (
-                    (val > 0 && durability < getDurabilityLowerBound()) ||
-                            (val < 0 && durability > getDurabilityUpperBound())
-            )) {
-                tagContainer.commit();
-                item.setItemMeta(itemMeta);
-                return false;
+
+            int newDurability = durability - val;
+
+            if (checkbound) {
+                if (getMaxDurability() == 0) {
+                    if (newDurability < getDurabilityLowerBound()) {
+                        newDurability = getDurabilityLowerBound();
+                    }
+                } else {
+                    if (newDurability < getDurabilityLowerBound()) {
+                        newDurability = getDurabilityLowerBound();
+                    }
+                    if (durability <= getDurabilityUpperBound() && newDurability > getDurabilityUpperBound()) {
+                        newDurability = getDurabilityUpperBound();
+                    }
+                }
+
+                if (newDurability == durability) {
+                    set(tagContainer, TAG_DURABILITY, durability);
+                    tagContainer.commit();
+                    item.setItemMeta(itemMeta);
+                    return false;
+                }
             }
-            if (durability <= val
-                    && hasMarker(Unbreakable.class)
-                    && !isCustomItemModel()) {
-                tagContainer.commit();
-                item.setItemMeta(itemMeta);
-                return false;
-            }
-            durability -= val;
-            if (durability > getMaxDurability()) {
+
+            durability = newDurability;
+
+            if (durability <= 0) {
+                item.setAmount(0);
+            } else if (durability > getMaxDurability() && getMaxDurability() > 0) {
                 durability = getMaxDurability();
             }
+
             set(tagContainer, TAG_DURABILITY, durability);
             tagContainer.commit();
             item.setItemMeta(itemMeta);
-            this.updateItem(item, true,null);
+            this.updateItem(item, true, null);
         }
+
         return true;
     }
+
+
 
     public void give(Player player, int count, boolean wear) {
         ItemStack itemStack = toItemStack();
@@ -2258,13 +2270,6 @@ public class RPGItem {
         return uid;
     }
 
-    public boolean isCustomItemModel() {
-        return customItemModel;
-    }
-
-    public void setCustomItemModel(boolean customItemModel) {
-        this.customItemModel = customItemModel;
-    }
 
     public boolean isHasDurabilityBar() {
         return hasDurabilityBar;
@@ -2381,6 +2386,14 @@ public class RPGItem {
 
     public void setAttributeMode(AttributeMode attributeMode) {
         this.attributeMode = attributeMode;
+    }
+
+    public NamespacedKey getItemModel() {
+        return itemModel;
+    }
+
+    public void setItemModel(NamespacedKey itemModel) {
+        this.itemModel = itemModel;
     }
 
 
