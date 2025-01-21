@@ -15,7 +15,7 @@ public class Configuration extends PluginConfigure {
     @Serializable
     public String language = "en_US";
     @Serializable
-    public String version = "1.1";
+    public String version = "1.2";
     @Serializable(name = "general.enabled_languages")
     public List<String> enabledLanguages = Stream.of("en_US", "zh_CN").collect(Collectors.toList());
     @Serializable(name = "general.spu_endpoint")
@@ -59,7 +59,7 @@ public class Configuration extends PluginConfigure {
     @Serializable(name = "item.defaults.author")
     public String defaultAuthor;
     @Serializable(name = "general.item.fs_lock")
-    public boolean itemFsLock = true;
+    public boolean itemFsLock = false;
     @Serializable(name = "general.item.show_loaded")
     public boolean itemShowLoaded = false;
     // enable for better performance
