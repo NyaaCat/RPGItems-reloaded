@@ -349,7 +349,6 @@ public class AdminCommands extends RPGCommandReceiver {
         ItemManager.reload(plugin);
         sender.sendMessage(ChatColor.GREEN + "[RPGItems] Reloaded RPGItems.");
     }
-
     @SubCommand("loadfile")
     public void loadFile(CommandSender sender, Arguments args) {
         String path = args.nextString();
@@ -1173,7 +1172,28 @@ public class AdminCommands extends RPGCommandReceiver {
             I18n.sendMessage(sender, "message.itemflag.notfound", flag.name());
         }
     }
-
+    @SubCommand(value = "canUse", tabCompleter = "itemCompleter")
+    @Completion("command:true,false")
+    public void canUse(CommandSender sender, Arguments args) {
+        RPGItem item = getItem(args.nextString(), sender);
+        if(args.remains()>0) {
+            item.setCanUse(args.nextBoolean());
+        }
+        item.rebuild();
+        ItemManager.refreshItem();
+        ItemManager.save(item);
+    }
+    @SubCommand(value = "canPlace", tabCompleter = "itemCompleter")
+    @Completion("command:true,false")
+    public void canPlace(CommandSender sender, Arguments args) {
+        RPGItem item = getItem(args.nextString(), sender);
+        if(args.remains()>0) {
+            item.setCanPlace(args.nextBoolean());
+        }
+        item.rebuild();
+        ItemManager.refreshItem();
+        ItemManager.save(item);
+    }
     @SubCommand(value = "itemmodel", tabCompleter = "itemCompleter")
     public void setItemModel(CommandSender sender, Arguments args) {
         RPGItem item = getItem(args.nextString(), sender);

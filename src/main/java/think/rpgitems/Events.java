@@ -3,6 +3,7 @@ package think.rpgitems;
 import cat.nyaa.nyaacore.utils.RayTraceUtils;
 import com.destroystokyo.paper.event.entity.ThrownEggHatchEvent;
 import com.destroystokyo.paper.event.player.PlayerJumpEvent;
+import com.destroystokyo.paper.event.player.PlayerLaunchProjectileEvent;
 import io.papermc.paper.datacomponent.DataComponentTypes;
 import io.papermc.paper.tag.EntityTags;
 import org.bukkit.*;
@@ -422,6 +423,15 @@ public class Events implements Listener {
         }
         rpgItem.power(player, itemStack, event, BaseTriggers.CONSUME);
     }
+    @EventHandler(ignoreCancelled = true, priority = EventPriority.HIGHEST)
+    public void onProjectileLaunch(PlayerLaunchProjectileEvent event) {
+        ItemStack itemStack = event.getItemStack();
+        RPGItem rpgItem = ItemManager.toRPGItem(itemStack).orElse(null);
+        if(rpgItem == null) return;
+        if(!rpgItem.isCanUse()){
+            event.setCancelled(true);
+        }
+    }
     @EventHandler
     public void onPlayerAction(PlayerInteractEvent e) {
         Player player = e.getPlayer();
@@ -433,7 +443,7 @@ public class Events implements Listener {
         RPGItem rItem = ItemManager.toRPGItem(e.getItem()).orElse(null);
         if (rItem == null) return;
         Entity playerTarget = RayTraceUtils.getTargetEntity(player);
-        if (!(playerTarget instanceof ItemFrame) && !rItem.isCanUse() && (im.hasDefaultData(DataComponentTypes.FOOD) || im.hasDefaultData(DataComponentTypes.POTION_CONTENTS) || im.hasDefaultData(DataComponentTypes.FIREWORKS) || im.hasDefaultData(DataComponentTypes.CONSUMABLE) || im.isRecord() || isPlacable(im) || isItemConsumer(e.getClickedBlock()))) {
+        if (!(playerTarget instanceof ItemFrame) && !rItem.isCanUse() && (im.hasDefaultData(DataComponentTypes.FOOD) || im.hasDefaultData(DataComponentTypes.POTION_CONTENTS) || im.hasDefaultData(DataComponentTypes.FIREWORKS) || im.hasDefaultData(DataComponentTypes.CONSUMABLE) || im == Material.ENDER_EYE || im.isRecord() || isPlacable(im) || isItemConsumer(e.getClickedBlock()))) {
             e.setCancelled(true);
         }
         if (e.getHand() == EquipmentSlot.OFF_HAND) {
