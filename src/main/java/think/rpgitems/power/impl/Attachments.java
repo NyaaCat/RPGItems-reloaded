@@ -1,6 +1,7 @@
 package think.rpgitems.power.impl;
 
 import cat.nyaa.nyaacore.Pair;
+import net.minecraft.world.item.consume_effects.ConsumeEffect;
 import org.bukkit.entity.LivingEntity;
 import org.bukkit.entity.Player;
 import org.bukkit.event.Event;
@@ -8,6 +9,7 @@ import org.bukkit.event.entity.EntityDamageByEntityEvent;
 import org.bukkit.event.entity.EntityDamageEvent;
 import org.bukkit.event.entity.EntityShootBowEvent;
 import org.bukkit.event.player.PlayerInteractEvent;
+import org.bukkit.event.player.PlayerItemConsumeEvent;
 import org.bukkit.inventory.EquipmentSlot;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.PlayerInventory;
@@ -73,7 +75,7 @@ public class Attachments extends BasePower {
         return requireHurtByEntity;
     }
 
-    public class Impl implements PowerTick, PowerRightClick, PowerLeftClick, PowerOffhandClick, PowerPlain, PowerHit, PowerSneaking, PowerHurt, PowerHitTaken, PowerBowShoot {
+    public class Impl implements PowerTick, PowerRightClick, PowerLeftClick, PowerOffhandClick, PowerPlain, PowerHit, PowerSneaking, PowerHurt, PowerHitTaken, PowerBowShoot, PowerConsume {
 
         @Override
         public PowerResult<Void> tick(Player player, ItemStack stack) {
@@ -215,6 +217,11 @@ public class Attachments extends BasePower {
         @Override
         public Power getPower() {
             return Attachments.this;
+        }
+
+        @Override
+        public PowerResult<Void> consume(Player player, ItemStack stack, PlayerItemConsumeEvent event){
+            return fire(player, stack, event);
         }
     }
 }

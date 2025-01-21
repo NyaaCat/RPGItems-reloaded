@@ -1,8 +1,11 @@
 package think.rpgitems.power.impl;
 
+import com.destroystokyo.paper.event.player.PlayerJumpEvent;
 import org.bukkit.entity.Player;
 import org.bukkit.event.entity.EntityDamageEvent;
+import org.bukkit.event.entity.EntityToggleSwimEvent;
 import org.bukkit.event.player.PlayerInteractEvent;
+import org.bukkit.event.player.PlayerItemConsumeEvent;
 import org.bukkit.event.player.PlayerToggleSneakEvent;
 import org.bukkit.event.player.PlayerToggleSprintEvent;
 import org.bukkit.inventory.ItemStack;
@@ -47,7 +50,7 @@ public class DelayedCommand extends Command {
         return "delayedcommand";
     }
 
-    public class Impl extends Command.Impl implements PowerRightClick, PowerLeftClick, PowerSprint, PowerSneak, PowerHurt, PowerHitTaken, PowerPlain, PowerBowShoot {
+    public class Impl extends Command.Impl implements PowerRightClick, PowerLeftClick, PowerSprint, PowerSneak, PowerHurt, PowerHitTaken, PowerPlain, PowerBowShoot, PowerJump, PowerSwim, PowerConsume {
         @Override
         public PowerResult<Void> leftClick(final Player player, ItemStack stack, PlayerInteractEvent event) {
             return fire(player, stack);
@@ -107,6 +110,20 @@ public class DelayedCommand extends Command {
         @Override
         public PowerResult<Void> rightClick(final Player player, ItemStack stack, PlayerInteractEvent event) {
             return fire(player, stack);
+        }
+        @Override
+        public PowerResult<Void> consume(Player player, ItemStack stack, PlayerItemConsumeEvent event) {
+            return fire(player,stack);
+        }
+
+        @Override
+        public PowerResult<Void> jump(Player player, ItemStack stack, PlayerJumpEvent event) {
+            return fire(player,stack);
+        }
+
+        @Override
+        public PowerResult<Void> swim(Player player, ItemStack stack, EntityToggleSwimEvent event) {
+            return fire(player,stack);
         }
     }
 }

@@ -1,10 +1,13 @@
 package think.rpgitems.power.impl;
 
+import com.destroystokyo.paper.event.player.PlayerJumpEvent;
 import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.entity.LivingEntity;
 import org.bukkit.entity.Player;
 import org.bukkit.event.entity.EntityShootBowEvent;
+import org.bukkit.event.entity.EntityToggleSwimEvent;
 import org.bukkit.event.player.PlayerInteractEvent;
+import org.bukkit.event.player.PlayerItemConsumeEvent;
 import org.bukkit.event.player.PlayerToggleSneakEvent;
 import org.bukkit.event.player.PlayerToggleSprintEvent;
 import org.bukkit.inventory.ItemStack;
@@ -74,7 +77,7 @@ public class ShulkerBulletPower extends BasePower {
         return range;
     }
 
-    public class Impl implements PowerRightClick, PowerLeftClick, PowerSneak, PowerSprint, PowerPlain, PowerBowShoot {
+    public class Impl implements PowerRightClick, PowerLeftClick, PowerSneak, PowerSprint, PowerPlain, PowerBowShoot, PowerConsume, PowerJump, PowerSwim {
         @Override
         public PowerResult<Void> leftClick(Player player, ItemStack stack, PlayerInteractEvent event) {
             return fire(player, stack);
@@ -123,6 +126,21 @@ public class ShulkerBulletPower extends BasePower {
         @Override
         public PowerResult<Float> bowShoot(Player player, ItemStack itemStack, EntityShootBowEvent e) {
             return fire(player, itemStack).with(e.getForce());
+        }
+
+        @Override
+        public PowerResult<Void> consume(Player player, ItemStack stack, PlayerItemConsumeEvent event) {
+            return fire(player, stack);
+        }
+
+        @Override
+        public PowerResult<Void> jump(Player player, ItemStack stack, PlayerJumpEvent event) {
+            return fire(player, stack);
+        }
+
+        @Override
+        public PowerResult<Void> swim(Player player, ItemStack stack, EntityToggleSwimEvent event) {
+            return fire(player, stack);
         }
     }
 }

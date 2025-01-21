@@ -1,12 +1,15 @@
 package think.rpgitems.power.impl;
 
+import com.destroystokyo.paper.event.player.PlayerJumpEvent;
 import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.entity.LivingEntity;
 import org.bukkit.entity.Player;
 import org.bukkit.event.entity.EntityDamageByEntityEvent;
 import org.bukkit.event.entity.EntityDamageEvent;
 import org.bukkit.event.entity.EntityShootBowEvent;
+import org.bukkit.event.entity.EntityToggleSwimEvent;
 import org.bukkit.event.player.PlayerInteractEvent;
+import org.bukkit.event.player.PlayerItemConsumeEvent;
 import org.bukkit.event.player.PlayerToggleSneakEvent;
 import org.bukkit.event.player.PlayerToggleSprintEvent;
 import org.bukkit.inventory.ItemStack;
@@ -128,7 +131,7 @@ public class PotionSelf extends BasePower {
         return requireHurtByEntity;
     }
 
-    public class Impl implements PowerRightClick, PowerLeftClick, PowerSneak, PowerSprint, PowerHit, PowerHitTaken, PowerPlain, PowerHurt, PowerBowShoot {
+    public class Impl implements PowerRightClick, PowerLeftClick, PowerSneak, PowerSprint, PowerHit, PowerHitTaken, PowerPlain, PowerHurt, PowerBowShoot, PowerConsume, PowerJump, PowerSwim {
         @Override
         public PowerResult<Double> takeHit(Player target, ItemStack stack, double damage, EntityDamageEvent event) {
             if (!isRequireHurtByEntity() || event instanceof EntityDamageByEntityEvent) {
@@ -209,6 +212,21 @@ public class PotionSelf extends BasePower {
         @Override
         public PowerResult<Double> hit(Player player, ItemStack stack, LivingEntity entity, double damage, EntityDamageByEntityEvent event) {
             return fire(player, stack).with(damage);
+        }
+
+        @Override
+        public PowerResult<Void> consume(Player player, ItemStack stack, PlayerItemConsumeEvent event) {
+            return fire(player, stack);
+        }
+
+        @Override
+        public PowerResult<Void> jump(Player player, ItemStack stack, PlayerJumpEvent event) {
+            return fire(player, stack);
+        }
+
+        @Override
+        public PowerResult<Void> swim(Player player, ItemStack stack, EntityToggleSwimEvent event) {
+            return fire(player, stack);
         }
     }
 }

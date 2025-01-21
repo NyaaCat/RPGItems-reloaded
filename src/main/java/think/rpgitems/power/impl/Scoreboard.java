@@ -1,6 +1,7 @@
 package think.rpgitems.power.impl;
 
 import cat.nyaa.nyaacore.Pair;
+import com.destroystokyo.paper.event.player.PlayerJumpEvent;
 import com.google.common.cache.CacheBuilder;
 import com.google.common.cache.CacheLoader;
 import com.google.common.cache.LoadingCache;
@@ -10,10 +11,7 @@ import org.bukkit.entity.LivingEntity;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
-import org.bukkit.event.entity.EntityDamageByEntityEvent;
-import org.bukkit.event.entity.EntityDamageEvent;
-import org.bukkit.event.entity.EntityShootBowEvent;
-import org.bukkit.event.entity.ProjectileHitEvent;
+import org.bukkit.event.entity.*;
 import org.bukkit.event.player.*;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.scheduler.BukkitRunnable;
@@ -216,7 +214,7 @@ public class Scoreboard extends BasePower {
     }
 
 
-    public class Impl implements PowerHit, PowerHitTaken, PowerHurt, PowerLeftClick, PowerRightClick, PowerOffhandClick, PowerProjectileHit, PowerSneak, PowerSprint, PowerOffhandItem, PowerMainhandItem, PowerTick, PowerSneaking, PowerPlain, PowerBowShoot, PowerBeamHit, PowerLivingEntity, PowerLocation {
+    public class Impl implements PowerHit, PowerHitTaken, PowerHurt, PowerLeftClick, PowerRightClick, PowerOffhandClick, PowerProjectileHit, PowerSneak, PowerSprint, PowerOffhandItem, PowerMainhandItem, PowerTick, PowerSneaking, PowerPlain, PowerBowShoot, PowerBeamHit, PowerLivingEntity, PowerLocation, PowerConsume, PowerJump, PowerSwim {
 
         @Override
         public PowerResult<Void> leftClick(Player player, ItemStack stack, PlayerInteractEvent event) {
@@ -386,6 +384,21 @@ public class Scoreboard extends BasePower {
 
         @Override
         public PowerResult<Void> fire(Player player, ItemStack stack, Location location) {
+            return fire(player, stack);
+        }
+
+        @Override
+        public PowerResult<Void> consume(Player player, ItemStack stack, PlayerItemConsumeEvent event) {
+            return fire(player,stack);
+        }
+
+        @Override
+        public PowerResult<Void> jump(Player player, ItemStack stack, PlayerJumpEvent event) {
+            return fire(player, stack);
+        }
+
+        @Override
+        public PowerResult<Void> swim(Player player, ItemStack stack, EntityToggleSwimEvent event) {
             return fire(player, stack);
         }
     }

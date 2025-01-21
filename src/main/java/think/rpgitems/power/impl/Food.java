@@ -21,6 +21,7 @@ import org.bukkit.Material;
 import org.bukkit.entity.Player;
 import org.bukkit.event.entity.FoodLevelChangeEvent;
 import org.bukkit.event.player.PlayerInteractEvent;
+import org.bukkit.event.player.PlayerItemConsumeEvent;
 import org.bukkit.inventory.ItemStack;
 import think.rpgitems.I18n;
 import think.rpgitems.RPGItems;
@@ -58,23 +59,18 @@ public class Food extends BasePower {
         return foodpoints;
     }
 
-    public class Impl implements PowerRightClick {
-        @Override
-        public PowerResult<Void> rightClick(final Player player, ItemStack stack, PlayerInteractEvent event) {
+    public class Impl implements PowerRightClick, PowerConsume {
+        public PowerResult<Void> fire(final Player player, ItemStack stack, int amount) {
             PowerActivateEvent powerEvent = new PowerActivateEvent(player,stack,getPower());
             if(!powerEvent.callEvent()) {
                 return PowerResult.fail();
             }
             ItemStack item = player.getInventory().getItemInMainHand();
-            int count = item.getAmount() - 1;
+            int count = item.getAmount() - amount;
             int newFoodPoint = player.getFoodLevel() + getFoodpoints();
             if (newFoodPoint > 20) newFoodPoint = 20;
             FoodLevelChangeEvent foodEvent = new FoodLevelChangeEvent(player,newFoodPoint-player.getFoodLevel());
-            if (count == 0) {
-                Bukkit.getScheduler().scheduleSyncDelayedTask(RPGItems.plugin, () -> player.getInventory().setItemInMainHand(new ItemStack(Material.AIR)), 1L);
-            } else {
-                item.setAmount(count);
-            }
+            item.setAmount(count);
             if(foodEvent.callEvent()){
                 player.setFoodLevel(newFoodPoint);
                 return PowerResult.ok();
@@ -87,6 +83,16 @@ public class Food extends BasePower {
         @Override
         public Power getPower() {
             return Food.this;
+        }
+
+        @Override
+        public PowerResult<Void> consume(Player player, ItemStack stack, PlayerItemConsumeEvent event) {
+            return fire(player,stack,1);
+        }
+
+        @Override
+        public PowerResult<Void> rightClick(Player player, ItemStack stack, PlayerInteractEvent event) {
+            return fire(player, stack, 1);
         }
     }
 }

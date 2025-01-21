@@ -9,6 +9,7 @@ import org.bukkit.event.entity.EntityDamageEvent;
 import org.bukkit.event.entity.EntityShootBowEvent;
 import org.bukkit.event.entity.ProjectileHitEvent;
 import org.bukkit.event.player.PlayerInteractEvent;
+import org.bukkit.event.player.PlayerItemConsumeEvent;
 import org.bukkit.event.player.PlayerToggleSneakEvent;
 import org.bukkit.event.player.PlayerToggleSprintEvent;
 import org.bukkit.inventory.ItemStack;
@@ -57,7 +58,8 @@ import static think.rpgitems.power.Utils.*;
         PowerHitTaken.class,
         PowerBowShoot.class,
         PowerBeamHit.class,
-        PowerLocation.class
+        PowerLocation.class,
+        PowerConsume.class
 }, implClass = AOEDamage.Impl.class)
 public class AOEDamage extends BasePower {
 
@@ -222,7 +224,7 @@ public class AOEDamage extends BasePower {
         SELF, TARGET
     }
 
-    public class Impl implements PowerOffhandClick, PowerPlain, PowerLeftClick, PowerRightClick, PowerHit, PowerSprint, PowerSneak, PowerHurt, PowerHitTaken, PowerTick, PowerBowShoot, PowerSneaking, PowerBeamHit, PowerProjectileHit, PowerLivingEntity, PowerLocation {
+    public class Impl implements PowerOffhandClick, PowerPlain, PowerLeftClick, PowerRightClick, PowerHit, PowerSprint, PowerSneak, PowerHurt, PowerHitTaken, PowerTick, PowerBowShoot, PowerSneaking, PowerBeamHit, PowerProjectileHit, PowerLivingEntity, PowerLocation, PowerConsume {
 
         @Override
         public PowerResult<Void> rightClick(final Player player, ItemStack stack, PlayerInteractEvent event) {
@@ -467,6 +469,11 @@ public class AOEDamage extends BasePower {
         public PowerResult<Void> fire(Player player, ItemStack stack, Location location) {
             int range = getRange();
             return fire(player, stack, () -> getNearbyEntities(player, location, range));
+        }
+
+        @Override
+        public PowerResult<Void> consume(Player player, ItemStack stack, PlayerItemConsumeEvent event) {
+            return fire(player, stack);
         }
     }
 

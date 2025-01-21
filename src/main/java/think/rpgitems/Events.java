@@ -3,6 +3,7 @@ package think.rpgitems;
 import cat.nyaa.nyaacore.utils.RayTraceUtils;
 import com.destroystokyo.paper.event.entity.ThrownEggHatchEvent;
 import com.destroystokyo.paper.event.player.PlayerJumpEvent;
+import io.papermc.paper.datacomponent.DataComponentTypes;
 import io.papermc.paper.tag.EntityTags;
 import org.bukkit.*;
 import org.bukkit.block.Block;
@@ -410,7 +411,17 @@ public class Events implements Listener {
                 || itemStack.getType() == Material.ENDER_PEARL
                 || itemStack.getType() == Material.ENDER_EYE;
     }
-
+    @EventHandler(ignoreCancelled = true, priority = EventPriority.HIGHEST)
+    public void onItemConsume(PlayerItemConsumeEvent event) {
+        ItemStack itemStack = event.getItem();
+        Player player = event.getPlayer();
+        RPGItem rpgItem = ItemManager.toRPGItem(itemStack).orElse(null);
+        if(rpgItem == null) return;
+        if(!rpgItem.isCanUse()){
+            event.setCancelled(true);
+        }
+        rpgItem.power(player, itemStack, event, BaseTriggers.CONSUME);
+    }
     @EventHandler
     public void onPlayerAction(PlayerInteractEvent e) {
         Player player = e.getPlayer();
@@ -422,7 +433,7 @@ public class Events implements Listener {
         RPGItem rItem = ItemManager.toRPGItem(e.getItem()).orElse(null);
         if (rItem == null) return;
         Entity playerTarget = RayTraceUtils.getTargetEntity(player);
-        if (!(playerTarget instanceof ItemFrame) && (im.isEdible() || im.isRecord() || isPlacable(im) || isItemConsumer(e.getClickedBlock()))) {
+        if (!(playerTarget instanceof ItemFrame) && !rItem.isCanUse() && (im.hasDefaultData(DataComponentTypes.FOOD) || im.hasDefaultData(DataComponentTypes.POTION_CONTENTS) || im.hasDefaultData(DataComponentTypes.FIREWORKS) || im.hasDefaultData(DataComponentTypes.CONSUMABLE) || im.isRecord() || isPlacable(im) || isItemConsumer(e.getClickedBlock()))) {
             e.setCancelled(true);
         }
         if (e.getHand() == EquipmentSlot.OFF_HAND) {
@@ -589,8 +600,11 @@ public class Events implements Listener {
             return;
 
         RPGItem rItem = ItemManager.toRPGItem(item).orElse(null);
-        if (rItem == null)
+        if (rItem == null){
             return;
+        } else if (rItem.isCanPlace()) {
+            return;
+        }
         e.setCancelled(true);
     }
 

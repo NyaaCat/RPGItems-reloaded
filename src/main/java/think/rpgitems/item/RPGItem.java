@@ -9,10 +9,13 @@ import com.google.common.base.Strings;
 import com.google.common.cache.Cache;
 import com.google.common.cache.CacheBuilder;
 import com.google.common.collect.Multimap;
+import io.papermc.paper.datacomponent.DataComponentBuilder;
+import io.papermc.paper.datacomponent.DataComponentType;
 import io.papermc.paper.datacomponent.DataComponentTypes;
-import io.papermc.paper.datacomponent.item.CustomModelData;
+import io.papermc.paper.datacomponent.item.*;
 import io.papermc.paper.registry.RegistryAccess;
 import io.papermc.paper.registry.RegistryKey;
+import io.papermc.paper.registry.tag.TagKey;
 import me.clip.placeholderapi.PlaceholderAPI;
 import net.kyori.adventure.key.Key;
 import net.kyori.adventure.text.format.NamedTextColor;
@@ -32,13 +35,11 @@ import org.bukkit.entity.Entity;
 import org.bukkit.entity.LivingEntity;
 import org.bukkit.entity.Player;
 import org.bukkit.event.Event;
-import org.bukkit.inventory.EquipmentSlot;
-import org.bukkit.inventory.EquipmentSlotGroup;
-import org.bukkit.inventory.ItemFlag;
-import org.bukkit.inventory.ItemStack;
+import org.bukkit.inventory.*;
 import org.bukkit.inventory.meta.Damageable;
 import org.bukkit.inventory.meta.ItemMeta;
 import org.bukkit.inventory.meta.LeatherArmorMeta;
+import org.bukkit.inventory.meta.trim.TrimPattern;
 import org.bukkit.persistence.PersistentDataContainer;
 import org.bukkit.persistence.PersistentDataType;
 import org.bukkit.potion.PotionEffect;
@@ -51,11 +52,13 @@ import think.rpgitems.data.Context;
 import think.rpgitems.power.*;
 import think.rpgitems.power.cond.SlotCondition;
 import think.rpgitems.power.marker.*;
+import think.rpgitems.power.marker.Unbreakable;
 import think.rpgitems.power.propertymodifier.Modifier;
 import think.rpgitems.power.proxy.Interceptor;
 import think.rpgitems.power.trigger.BaseTriggers;
 import think.rpgitems.power.trigger.Trigger;
 import think.rpgitems.support.PlaceholderAPISupport;
+import think.rpgitems.utils.ComponentUtil;
 import think.rpgitems.utils.MaterialUtils;
 
 import javax.annotation.Nullable;
@@ -102,7 +105,7 @@ public class RPGItem {
     private boolean customItemModel = false;
     private EnchantMode enchantMode = EnchantMode.DISALLOW;
     //Data Components
-    private List<String> components = new ArrayList<>();
+    private List<Map<DataComponentType, Object>> components = new ArrayList<>();
     // Powers
     private List<Power> powers = new ArrayList<>();
     private List<Condition<?>> conditions = new ArrayList<>();
@@ -131,6 +134,8 @@ public class RPGItem {
     private String playerArmourExpression = "";
     private String damageType = "";
     private boolean canBeOwned = false;
+    private boolean canUse = false;
+    private boolean canPlace = false;
     private boolean hasStackId = false;
     private boolean alwaysAllowMelee = false;
     private String author = plugin.cfg.defaultAuthor;
@@ -244,6 +249,21 @@ public class RPGItem {
         modifierCache.invalidateAll();
     }
 
+    public boolean isCanPlace() {
+        return this.canPlace;
+    }
+
+    public boolean isCanUse() {
+        return this.canUse;
+    }
+
+    public void setCanUse(boolean canUse) {
+        this.canUse = canUse;
+    }
+    public void setCanPlace(boolean canPlace) {
+        this.canPlace = canPlace;
+    }
+
     public static List<Modifier> getModifiers(SubItemTagContainer tag, UUID key) {
         Optional<UUID> uuid = Optional.ofNullable(key);
         if (!uuid.isPresent()) {
@@ -309,6 +329,8 @@ public class RPGItem {
         }
         setIgnoreWorldGuard(s.getBoolean("ignoreWorldGuard", false));
         setCanBeOwned(s.getBoolean("canBeOwned", false));
+        setCanPlace(s.getBoolean("canPlace", false));
+        setCanUse(s.getBoolean("canUse", false));
         setHasStackId(s.getBoolean("hasStackId", false));
         placeholders.clear();
         // Powers
@@ -362,7 +384,6 @@ public class RPGItem {
         }
         setHasPermission(s.getBoolean("haspermission", false));
         setPermission(s.getString("permission", "rpgitem.item." + name));
-        setItemModel(NamespacedKey.fromString(s.getString("itemModel","")));
         setHitCost(s.getInt("hitCost", 1));
         setHittingCost(s.getInt("hittingCost", 1));
         setBlockBreakingCost(s.getInt("blockBreakingCost", 1));
@@ -384,8 +405,8 @@ public class RPGItem {
         if(s.isConfigurationSection("customModelData")){
             ConfigurationSection modelSection = s.getConfigurationSection("customModelData");
             CustomModelData.Builder customData = CustomModelData.customModelData();
-            if(s.isInt("modelSection")){
-                customData.addFloat(s.getInt("modelSection"));
+            if(s.isInt("customModelData")){
+                customData.addFloat(s.getInt("customModelData"));
                 setCustomModelData(customData);
             }else{
                 for (String sectionKey : modelSection.getKeys(false)) {
@@ -435,6 +456,7 @@ public class RPGItem {
         }
         setQuality(s.getString("quality", null));
         setType(s.getString("item", "item"));
+        setItemModel(NamespacedKey.fromString(s.getString("item_model","")));
 
         if (s.isConfigurationSection("enchantments")) {
             ConfigurationSection enchConf = s.getConfigurationSection("enchantments");
@@ -495,6 +517,10 @@ public class RPGItem {
                 templates.add(tmp);
             }
         }
+        ConfigurationSection componentsList = s.getConfigurationSection("components");
+        if (componentsList != null) {
+            setComponents(ComponentUtil.getComponents(componentsList,this));
+        }
         ConfigurationSection templatePlaceholdersList = s.getConfigurationSection("templatePlaceholders");
         if (templatePlaceholdersList != null) {
             for (String sectionKey : templatePlaceholdersList.getKeys(false)) {
@@ -523,7 +549,7 @@ public class RPGItem {
     }
 
     public CustomModelData.Builder getCustomModelData() {
-        return customModelData;
+        return this.customModelData;
     }
 
     public void setCustomModelData(CustomModelData.Builder customModelData) {
@@ -620,6 +646,8 @@ public class RPGItem {
         s.set("item", getItem().toString());
         s.set("ignoreWorldGuard", isIgnoreWorldGuard());
         s.set("canBeOwned", isCanBeOwned());
+        s.set("canUse", isCanUse());
+        s.set("canPlace", isCanPlace());
         s.set("hasStackId", isHasStackId());
 
         ItemMeta itemMeta = Bukkit.getItemFactory().getItemMeta(getItem());
@@ -629,16 +657,10 @@ public class RPGItem {
         } else if (itemMeta instanceof Damageable) {
             s.set("item_data", getDataValue());
         }
-        ConfigurationSection componentsConfigs = s.createSection("components");
+        ConfigurationSection components = s.createSection("components");
+        ComponentUtil.toConfigSection(getComponents(),components);
         int i = 0;
-        for (String p : components) {
-            MemoryConfiguration pConfig = new MemoryConfiguration();
-            pConfig.set("componentName", p);
-            componentsConfigs.set(Integer.toString(i), pConfig);
-            i++;
-        }
         ConfigurationSection powerConfigs = s.createSection("powers");
-        i = 0;
         for (Power p : powers) {
             MemoryConfiguration pConfig = new MemoryConfiguration();
             pConfig.set("powerName", getPropertyHolderKey(p).toString());
@@ -887,6 +909,81 @@ public class RPGItem {
         }
         if (getCustomModelData() != null) {
             item.setData(DataComponentTypes.CUSTOM_MODEL_DATA, getCustomModelData());
+        }
+        item.resetData(DataComponentTypes.BANNER_PATTERNS);
+        item.resetData(DataComponentTypes.CAN_BREAK);
+        item.resetData(DataComponentTypes.CAN_PLACE_ON);
+        item.resetData(DataComponentTypes.CONSUMABLE);
+        item.resetData(DataComponentTypes.DAMAGE_RESISTANT);
+        item.resetData(DataComponentTypes.DEATH_PROTECTION);
+        item.resetData(DataComponentTypes.DYED_COLOR);
+        item.resetData(DataComponentTypes.ENCHANTABLE);
+        item.resetData(DataComponentTypes.ENCHANTMENT_GLINT_OVERRIDE);
+        item.resetData(DataComponentTypes.EQUIPPABLE);
+        item.resetData(DataComponentTypes.FOOD);
+        item.resetData(DataComponentTypes.GLIDER);
+        item.resetData(DataComponentTypes.HIDE_ADDITIONAL_TOOLTIP);
+        item.resetData(DataComponentTypes.HIDE_TOOLTIP);
+        item.resetData(DataComponentTypes.MAX_DAMAGE);
+        item.resetData(DataComponentTypes.MAX_STACK_SIZE);
+        item.resetData(DataComponentTypes.RARITY);
+        item.resetData(DataComponentTypes.TOOL);
+        item.resetData(DataComponentTypes.TOOLTIP_STYLE);
+        item.resetData(DataComponentTypes.TRIM);
+        item.resetData(DataComponentTypes.USE_COOLDOWN);
+        item.resetData(DataComponentTypes.USE_REMAINDER);
+        if (getComponents() != null) {
+            for (Map<DataComponentType, Object> component : getComponents()) {
+                for (Map.Entry<DataComponentType, Object> entry : component.entrySet()) {
+                    DataComponentType key = entry.getKey();
+                    Object value = entry.getValue();
+                    if (value == ComponentUtil.ComponentStatus.UNSET) {
+                        item.unsetData(key);
+                    }else if(value == ComponentUtil.ComponentStatus.NON_VALUED){
+                        item.setData((DataComponentType.NonValued)key);
+                    }else {
+                        if (key == DataComponentTypes.BANNER_PATTERNS) {
+                            item.setData(DataComponentTypes.BANNER_PATTERNS, (BannerPatternLayers.Builder) value);
+                        } else if (key == DataComponentTypes.CAN_BREAK) {
+                            item.setData(DataComponentTypes.CAN_BREAK, (ItemAdventurePredicate.Builder) value);
+                        } else if (key == DataComponentTypes.CAN_PLACE_ON) {
+                            item.setData(DataComponentTypes.CAN_PLACE_ON, (ItemAdventurePredicate.Builder) value);
+                        } else if (key == DataComponentTypes.CONSUMABLE) {
+                            item.setData(DataComponentTypes.CONSUMABLE, (Consumable.Builder) value);
+                        } else if (key == DataComponentTypes.DAMAGE_RESISTANT) {
+                            item.setData(DataComponentTypes.DAMAGE_RESISTANT, (DamageResistant) value);
+                        } else if (key == DataComponentTypes.DEATH_PROTECTION) {
+                            item.setData(DataComponentTypes.DEATH_PROTECTION, (DeathProtection.Builder) value);
+                        } else if (key == DataComponentTypes.DYED_COLOR) {
+                            item.setData(DataComponentTypes.DYED_COLOR, (DyedItemColor.Builder) value);
+                        } else if (key == DataComponentTypes.ENCHANTABLE) {
+                            item.setData(DataComponentTypes.ENCHANTABLE, (Enchantable) value);
+                        } else if (key == DataComponentTypes.ENCHANTMENT_GLINT_OVERRIDE) {
+                            item.setData(DataComponentTypes.ENCHANTMENT_GLINT_OVERRIDE, (boolean) value);
+                        } else if (key == DataComponentTypes.EQUIPPABLE) {
+                            item.setData(DataComponentTypes.EQUIPPABLE, (Equippable.Builder) value);
+                        } else if (key == DataComponentTypes.FOOD) {
+                            item.setData(DataComponentTypes.FOOD, (FoodProperties.Builder) value);
+                        } else if (key == DataComponentTypes.MAX_DAMAGE) {
+                            item.setData(DataComponentTypes.MAX_DAMAGE, (int) value);
+                        } else if (key == DataComponentTypes.MAX_STACK_SIZE) {
+                            item.setData(DataComponentTypes.MAX_STACK_SIZE, (int) value);
+                        } else if (key == DataComponentTypes.RARITY) {
+                            item.setData(DataComponentTypes.RARITY, (ItemRarity) value);
+                        } else if (key == DataComponentTypes.TOOL) {
+                            item.setData(DataComponentTypes.TOOL, (Tool.Builder) value);
+                        } else if (key == DataComponentTypes.TOOLTIP_STYLE) {
+                            item.setData(DataComponentTypes.TOOLTIP_STYLE, (Key) value);
+                        } else if (key == DataComponentTypes.TRIM) {
+                            item.setData(DataComponentTypes.TRIM, (ItemArmorTrim.Builder) value);
+                        } else if (key == DataComponentTypes.USE_COOLDOWN) {
+                            item.setData(DataComponentTypes.USE_COOLDOWN, (UseCooldown.Builder) value);
+                        } else if (key == DataComponentTypes.USE_REMAINDER) {
+                            item.setData(DataComponentTypes.USE_REMAINDER, (UseRemainder) value);
+                        }
+                    }
+                }
+            }
         }
     }
 
@@ -1306,7 +1403,7 @@ public class RPGItem {
 
     public void rebuild() {
         List<String> lines = getTooltipLines();
-        lines.remove(0);
+        lines.removeFirst();
         setLore(lines);
     }
 
@@ -2246,8 +2343,11 @@ public class RPGItem {
         return powers;
     }
 
-    public List<String> getComponents() {
+    public List<Map<DataComponentType, Object>> getComponents() {
         return components;
+    }
+    public void setComponents(List<Map<DataComponentType, Object>> components) {
+        this.components = components;
     }
 
     public List<Marker> getMarkers() {
@@ -2389,7 +2489,7 @@ public class RPGItem {
     }
 
     public NamespacedKey getItemModel() {
-        return itemModel;
+        return this.itemModel;
     }
 
     public void setItemModel(NamespacedKey itemModel) {
