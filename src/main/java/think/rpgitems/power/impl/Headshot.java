@@ -87,10 +87,9 @@ public class Headshot extends BasePower {
 
         @Override
         public PowerResult<Double> hit(Player player, ItemStack stack, LivingEntity entity, double damage, EntityDamageByEntityEvent event) {
-            if (!(event.getDamager() instanceof Projectile)) {
+            if (!(event.getDamager() instanceof Projectile damager)) {
                 return PowerResult.noop();
             }
-            Projectile damager = (Projectile) event.getDamager();
             return check(player, entity, stack, damage, damager.getVelocity(), damager.getBoundingBox(), entity.getBoundingBox(), event);
         }
 

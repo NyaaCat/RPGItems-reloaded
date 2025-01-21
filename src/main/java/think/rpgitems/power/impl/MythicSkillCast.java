@@ -9,6 +9,7 @@ import org.bukkit.event.entity.EntityDamageEvent;
 import org.bukkit.event.entity.EntityShootBowEvent;
 import org.bukkit.event.entity.EntityToggleSwimEvent;
 import org.bukkit.event.player.PlayerInteractEvent;
+import org.bukkit.event.player.PlayerItemConsumeEvent;
 import org.bukkit.event.player.PlayerToggleSneakEvent;
 import org.bukkit.event.player.PlayerToggleSprintEvent;
 import org.bukkit.inventory.ItemStack;
@@ -82,7 +83,7 @@ public class MythicSkillCast extends BasePower {
     }
 
 
-    public class Impl implements PowerJump, PowerSwim, PowerRightClick, PowerLeftClick, PowerSneak, PowerSprint, PowerHitTaken, PowerHit, PowerPlain, PowerBowShoot, PowerHurt {
+    public class Impl implements PowerJump, PowerSwim, PowerRightClick, PowerLeftClick, PowerSneak, PowerSprint, PowerHitTaken, PowerHit, PowerPlain, PowerBowShoot, PowerHurt, PowerConsume {
 
 
         @Override
@@ -165,6 +166,11 @@ public class MythicSkillCast extends BasePower {
                 e.setCancelled(true);
             }
             return fire(player, itemStack).with(isSuppressArrow() ? -1 : e.getForce());
+        }
+
+        @Override
+        public PowerResult<Void> consume(Player player, ItemStack stack, PlayerItemConsumeEvent event) {
+            return fire(player, stack);
         }
     }
 }

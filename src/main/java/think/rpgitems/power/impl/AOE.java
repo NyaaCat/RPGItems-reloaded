@@ -9,6 +9,7 @@ import org.bukkit.event.entity.EntityDamageByEntityEvent;
 import org.bukkit.event.entity.EntityShootBowEvent;
 import org.bukkit.event.entity.ProjectileHitEvent;
 import org.bukkit.event.player.PlayerInteractEvent;
+import org.bukkit.event.player.PlayerItemConsumeEvent;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.potion.PotionEffect;
 import org.bukkit.potion.PotionEffectType;
@@ -53,7 +54,8 @@ import static think.rpgitems.power.Utils.*;
         PowerHitTaken.class,
         PowerBowShoot.class,
         PowerBeamHit.class,
-        PowerLocation.class
+        PowerLocation.class,
+        PowerConsume.class
 }, implClass = AOE.Impl.class)
 public class AOE extends BasePower {
 
@@ -170,7 +172,7 @@ public class AOE extends BasePower {
         MOBS, PLAYERS, ALL
     }
 
-    public class Impl implements PowerRightClick, PowerLeftClick, PowerOffhandClick, PowerPlain, PowerHit, PowerBowShoot, PowerBeamHit, PowerProjectileHit, PowerLivingEntity, PowerLocation {
+    public class Impl implements PowerRightClick, PowerLeftClick, PowerOffhandClick, PowerPlain, PowerHit, PowerBowShoot, PowerBeamHit, PowerProjectileHit, PowerLivingEntity, PowerLocation, PowerConsume {
         @Override
         public PowerResult<Void> rightClick(final Player player, ItemStack stack, PlayerInteractEvent event) {
             return fire(player, stack);
@@ -278,7 +280,6 @@ public class AOE extends BasePower {
             Location center = event.getLoc();
             return fire(center, player, stack, getNearbyEntities(getPower(), center, player, getRange())).with(damage);
         }
-
         @Override
         public PowerResult<Void> beamEnd(Player player, ItemStack stack, Location location, BeamEndEvent event) {
             Location center = location;
@@ -293,6 +294,11 @@ public class AOE extends BasePower {
         @Override
         public PowerResult<Void> fire(Player player, ItemStack stack, Location location) {
             return fire(location, player, stack, getNearbyEntities(getPower(), location, player, getRange()));
+        }
+
+        @Override
+        public PowerResult<Void> consume(Player player, ItemStack stack, PlayerItemConsumeEvent event) {
+            return fire(player,stack);
         }
     }
 }

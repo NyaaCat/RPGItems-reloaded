@@ -143,10 +143,9 @@ public class Deflect extends BasePower {
             if (!(target.getInventory().getItemInMainHand().equals(stack) || target.getInventory().getItemInOffHand().equals(stack))) {
                 return PowerResult.noop();
             }
-            if (!(event instanceof EntityDamageByEntityEvent)) {
+            if (!(event instanceof EntityDamageByEntityEvent byEntityEvent)) {
                 return PowerResult.noop();
             }
-            EntityDamageByEntityEvent byEntityEvent = (EntityDamageByEntityEvent) event;
             if (!(byEntityEvent.getDamager() instanceof Projectile)) {
                 return PowerResult.noop();
             }
