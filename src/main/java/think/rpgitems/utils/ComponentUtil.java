@@ -80,7 +80,7 @@ public class ComponentUtil {
                     }
                     componentMap.put(DataComponentTypes.BANNER_PATTERNS, builder);
                 }
-                if(key.equalsIgnoreCase("consumable")){
+                else if(key.equalsIgnoreCase("consumable")){
                     Consumable.Builder builder = Consumable.consumable();
                     ConfigurationSection consumableSection = s.getConfigurationSection(key);
                     if (consumableSection != null) {
@@ -174,7 +174,7 @@ public class ComponentUtil {
                     }
                     componentMap.put(DataComponentTypes.CONSUMABLE, builder);
                 }
-                if (key.equalsIgnoreCase("can_place_on") || key.equalsIgnoreCase("can_break")) {
+                else if(key.equalsIgnoreCase("can_place_on") || key.equalsIgnoreCase("can_break")) {
                     ItemAdventurePredicate.Builder builder = ItemAdventurePredicate.itemAdventurePredicate();
                     ConfigurationSection section = s.getConfigurationSection(key);
                     if (section != null) {
@@ -217,7 +217,7 @@ public class ComponentUtil {
                         }
                     }
                 }
-                if (key.equalsIgnoreCase("damage_resistance")) {
+                else if(key.equalsIgnoreCase("damage_resistance")) {
                     ConfigurationSection section = s.getConfigurationSection(key);
                     if(section != null){
                         if(section.getBoolean("unset")){
@@ -229,7 +229,7 @@ public class ComponentUtil {
                         }
                     }
                 }
-                if(key.equalsIgnoreCase("death_protection")){
+                else if(key.equalsIgnoreCase("death_protection")){
                     DeathProtection.Builder builder = DeathProtection.deathProtection();
                     ConfigurationSection deathSection = s.getConfigurationSection(key);
                     if (deathSection != null) {
@@ -314,45 +314,45 @@ public class ComponentUtil {
                     }
                     componentMap.put(DataComponentTypes.DEATH_PROTECTION, builder);
                 }
-                if (key.equalsIgnoreCase("dyed_color")) {
+                else if(key.equalsIgnoreCase("dyed_color")) {
                     DyedItemColor.Builder builder = DyedItemColor.dyedItemColor();
                     ConfigurationSection dyedSection = s.getConfigurationSection(key);
                     if (dyedSection != null) {
                         if(dyedSection.getBoolean("unset")){
                             componentMap.put(DataComponentTypes.DYED_COLOR, ComponentStatus.UNSET);
-                        }else{
-                            String colorValue = dyedSection.getString("color");
-                            if (colorValue != null) {
-                                Color color;
-                                if (colorValue.contains(",")) {
-                                    String[] rgbParts = colorValue.split(",");
-                                    if (rgbParts.length == 3) {
-                                        try {
-                                            int red = Integer.parseInt(rgbParts[0].trim());
-                                            int green = Integer.parseInt(rgbParts[1].trim());
-                                            int blue = Integer.parseInt(rgbParts[2].trim());
-                                            color = Color.fromRGB(red, green, blue);
-                                        } catch (NumberFormatException e) {
-                                            throw new IllegalArgumentException("Invalid RGB format: " + colorValue);
-                                        }
-                                    } else {
-                                        throw new IllegalArgumentException("Invalid RGB format, expected 3 values: " + colorValue);
+                        }
+                    }else{
+                        String colorValue = s.getString(key);
+                        if (colorValue != null) {
+                            Color color;
+                            if (colorValue.contains(",")) {
+                                String[] rgbParts = colorValue.split(",");
+                                if (rgbParts.length == 3) {
+                                    try {
+                                        int red = Integer.parseInt(rgbParts[0].trim());
+                                        int green = Integer.parseInt(rgbParts[1].trim());
+                                        int blue = Integer.parseInt(rgbParts[2].trim());
+                                        color = Color.fromRGB(red, green, blue);
+                                    } catch (NumberFormatException e) {
+                                        throw new IllegalArgumentException("Invalid RGB format: " + colorValue);
                                     }
                                 } else {
-                                    try {
-                                        int rgb = Integer.parseInt(colorValue.trim());
-                                        color = Color.fromRGB(rgb);
-                                    } catch (NumberFormatException e) {
-                                        throw new IllegalArgumentException("Invalid color value: " + colorValue);
-                                    }
+                                    throw new IllegalArgumentException("Invalid RGB format, expected 3 values: " + colorValue);
                                 }
-                                builder.color(color);
+                            } else {
+                                try {
+                                    int rgb = Integer.parseInt(colorValue.trim());
+                                    color = Color.fromRGB(rgb);
+                                } catch (NumberFormatException e) {
+                                    throw new IllegalArgumentException("Invalid color value: " + colorValue);
+                                }
                             }
+                            builder.color(color);
                         }
                     }
                     componentMap.put(DataComponentTypes.DYED_COLOR, builder);
                 }
-                if(key.equalsIgnoreCase("enchantable")) {
+                else if(key.equalsIgnoreCase("enchantable")) {
                     if(s.isConfigurationSection(key)){
                         if(s.getConfigurationSection(key).getBoolean("unset")){
                             componentMap.put(DataComponentTypes.ENCHANTABLE, ComponentStatus.UNSET);
@@ -361,7 +361,7 @@ public class ComponentUtil {
                         }
                     }
                 }
-                if(key.equalsIgnoreCase("enchantment_glint_override")) {
+                else if(key.equalsIgnoreCase("enchantment_glint_override")) {
                     if(s.isConfigurationSection(key)){
                         if(s.getConfigurationSection(key).getBoolean("unset")){
                             componentMap.put(DataComponentTypes.ENCHANTMENT_GLINT_OVERRIDE, ComponentStatus.UNSET);
@@ -370,7 +370,7 @@ public class ComponentUtil {
                         componentMap.put(DataComponentTypes.ENCHANTMENT_GLINT_OVERRIDE,s.getBoolean(key));
                     }
                 }
-                if (key.equalsIgnoreCase("equippable")) {
+                else if(key.equalsIgnoreCase("equippable")) {
                     Equippable.Builder builder = Equippable.equippable(EquipmentSlot.CHEST);
                     ConfigurationSection equippableSection = s.getConfigurationSection(key);
                     if (equippableSection != null) {
@@ -425,7 +425,7 @@ public class ComponentUtil {
                     }
                     componentMap.put(DataComponentTypes.EQUIPPABLE, builder);
                 }
-                if (key.equalsIgnoreCase("food")) {
+                else if(key.equalsIgnoreCase("food")) {
                     FoodProperties.Builder builder = FoodProperties.food();
                     ConfigurationSection foodSection = s.getConfigurationSection(key);
                     if (foodSection != null) {
@@ -444,7 +444,7 @@ public class ComponentUtil {
                     }
                     componentMap.put(DataComponentTypes.FOOD, builder);
                 }
-                if(key.equalsIgnoreCase("glider")) {
+                else if(key.equalsIgnoreCase("glider")) {
                     ConfigurationSection gliderSection = s.getConfigurationSection(key);
                     if (gliderSection != null) {
                         if(gliderSection.getBoolean("unset")){
@@ -454,7 +454,7 @@ public class ComponentUtil {
                         componentMap.put(DataComponentTypes.GLIDER, ComponentStatus.NON_VALUED);
                     }
                 }
-                if(key.equalsIgnoreCase("hide_additional_tooltip")) {
+                else if(key.equalsIgnoreCase("hide_additional_tooltip")) {
                     ConfigurationSection section = s.getConfigurationSection(key);
                     if (section != null) {
                         if(section.getBoolean("unset")){
@@ -464,7 +464,7 @@ public class ComponentUtil {
                         componentMap.put(DataComponentTypes.HIDE_ADDITIONAL_TOOLTIP, ComponentStatus.NON_VALUED);
                     }
                 }
-                if(key.equalsIgnoreCase("hide_tooltip")) {
+                else if(key.equalsIgnoreCase("hide_tooltip")) {
                     ConfigurationSection section = s.getConfigurationSection(key);
                     if (section != null) {
                         if(section.getBoolean("unset")){
@@ -474,7 +474,7 @@ public class ComponentUtil {
                         componentMap.put(DataComponentTypes.HIDE_TOOLTIP, ComponentStatus.NON_VALUED);
                     }
                 }
-                if(key.equalsIgnoreCase("intangible_projectile")) {
+                else if(key.equalsIgnoreCase("intangible_projectile")) {
                     ConfigurationSection section = s.getConfigurationSection(key);
                     if (section != null) {
                         if(section.getBoolean("unset")){
@@ -484,7 +484,7 @@ public class ComponentUtil {
                         componentMap.put(DataComponentTypes.INTANGIBLE_PROJECTILE, ComponentStatus.NON_VALUED);
                     }
                 }
-                if(key.equalsIgnoreCase("max_damage")) {
+                else if(key.equalsIgnoreCase("max_damage")) {
                     if(s.getInt("max_stack_size") > 1){
                         throw new IllegalArgumentException("Item cannot be both damageable and stackable"+(item == null ? "" : ":"+item.getName()));
                     }
@@ -497,7 +497,7 @@ public class ComponentUtil {
                         componentMap.put(DataComponentTypes.MAX_DAMAGE, s.getInt(key));
                     }
                 }
-                if(key.equalsIgnoreCase("max_stack_size")) {
+                else if(key.equalsIgnoreCase("max_stack_size")) {
                     if(s.isConfigurationSection("max_damage")){
                         throw new IllegalArgumentException("Item cannot be both damageable and stackable"+itemName);
                     }
@@ -512,7 +512,7 @@ public class ComponentUtil {
                         throw new IllegalArgumentException("Max stack size should be between 1 and 99"+itemName);
                     }
                 }
-                if(key.equalsIgnoreCase("rarity")) {
+                else if(key.equalsIgnoreCase("rarity")) {
                     ConfigurationSection section = s.getConfigurationSection(key);
                     if (section != null) {
                         if(section.getBoolean("unset")){
@@ -522,7 +522,7 @@ public class ComponentUtil {
                         componentMap.put(DataComponentTypes.RARITY, ItemRarity.valueOf(s.getString(key).toUpperCase()));
                     }
                 }
-                if (key.equalsIgnoreCase("tool")) {
+                else if(key.equalsIgnoreCase("tool")) {
                     Tool.Builder builder = Tool.tool();
 
                     ConfigurationSection toolSection = s.getConfigurationSection(key);
@@ -582,7 +582,7 @@ public class ComponentUtil {
                     }
                     componentMap.put(DataComponentTypes.TOOL, builder);
                 }
-                if(key.equalsIgnoreCase("tooltip_style")){
+                else if(key.equalsIgnoreCase("tooltip_style")){
                     ConfigurationSection section = s.getConfigurationSection(key);
                     if (section != null) {
                         if(section.getBoolean("unset")){
@@ -592,7 +592,7 @@ public class ComponentUtil {
                         }
                     }
                 }
-                if (key.equalsIgnoreCase("item_armor_trim")) {
+                else if(key.equalsIgnoreCase("trim")) {
                     ItemArmorTrim.Builder builder = ItemArmorTrim.itemArmorTrim(new ArmorTrim(TrimMaterial.AMETHYST,TrimPattern.BOLT));
                     ConfigurationSection trimSection = s.getConfigurationSection(key);
                     if (trimSection != null) {
@@ -620,13 +620,13 @@ public class ComponentUtil {
                     }
                     componentMap.put(DataComponentTypes.TRIM, builder);
                 }
-                if (key.equalsIgnoreCase("use_cooldown")) {
+                else if(key.equalsIgnoreCase("use_cooldown")) {
                     ConfigurationSection cooldownSection = s.getConfigurationSection(key);
                     if (cooldownSection != null) {
                         if(cooldownSection.getBoolean("unset")){
                             componentMap.put(DataComponentTypes.USE_COOLDOWN, ComponentStatus.UNSET);
                         }else{
-                            float seconds = (float) cooldownSection.getDouble("seconds", 0.0);
+                            float seconds = (float) cooldownSection.getDouble("seconds") <= 0 ? 1.0E-20f : (float) cooldownSection.getDouble("seconds");
                             UseCooldown.Builder builder = UseCooldown.useCooldown(seconds);
 
                             String cooldownGroupKey = cooldownSection.getString("cooldown_group");
@@ -637,7 +637,7 @@ public class ComponentUtil {
                         }
                     }
                 }
-                if(key.equalsIgnoreCase("use_remainder")){
+                else if(key.equalsIgnoreCase("use_remainder")){
                     ConfigurationSection remainderSection = s.getConfigurationSection(key);
                     if (remainderSection != null) {
                         if(remainderSection.getBoolean("unset")){
@@ -932,7 +932,7 @@ public class ComponentUtil {
 
                 if (type==DataComponentTypes.TRIM) {
                     if (value instanceof ItemArmorTrim builder) {
-                        ConfigurationSection trimSection = config.createSection("item_armor_trim");
+                        ConfigurationSection trimSection = config.createSection("trim");
                         ArmorTrim armorTrim = builder.armorTrim();
                         if(RegistryAccess.registryAccess().getRegistry(RegistryKey.TRIM_MATERIAL).getKey(armorTrim.getMaterial())!=null){
                             trimSection.set("material", RegistryAccess.registryAccess().getRegistry(RegistryKey.TRIM_MATERIAL).getKey(armorTrim.getMaterial()).asString());
@@ -941,7 +941,7 @@ public class ComponentUtil {
                             trimSection.set("pattern", RegistryAccess.registryAccess().getRegistry(RegistryKey.TRIM_PATTERN).getKey(armorTrim.getPattern()).asString());
                         }
                     } else if (value instanceof ComponentStatus status && status == ComponentStatus.UNSET) {
-                        config.createSection("item_armor_trim").set("unset", true);
+                        config.createSection("trim").set("unset", true);
                     }
                 }
 
