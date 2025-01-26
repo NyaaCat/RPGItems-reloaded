@@ -821,12 +821,9 @@ public class RPGItem {
         if (meta instanceof LeatherArmorMeta) {
             ((LeatherArmorMeta) meta).setColor(Color.fromRGB(getDataValue()));
         }
-        Damageable damageable = (Damageable) meta;
+        int durability = 0;
         if (getMaxDurability() > 0) {
-            int durability = computeIfAbsent(rpgitemsTagContainer, TAG_DURABILITY, PersistentDataType.INTEGER, this::getDefaultDurability);
-            damageable.setDamage((getItem().getMaxDurability() - ((short) ((double) getItem().getMaxDurability() * ((double) durability / (double) getMaxDurability())))));
-        } else {
-            damageable.setDamage(getItem().getMaxDurability() != 0 ? 0 : getDataValue());
+            durability = computeIfAbsent(rpgitemsTagContainer, TAG_DURABILITY, PersistentDataType.INTEGER, this::getDefaultDurability);
         }
         // Patch for mcMMO buff. See SkillUtils.java#removeAbilityBuff in mcMMO
         if (item.hasItemMeta() && Objects.requireNonNull(item.getItemMeta()).hasLore() && Objects.requireNonNull(item.getItemMeta().getLore()).contains("mcMMO Ability Tool"))
@@ -983,6 +980,14 @@ public class RPGItem {
                         }
                     }
                 }
+            }
+        }
+        if(item.hasData(DataComponentTypes.MAX_DAMAGE) || item.getType().hasDefaultData(DataComponentTypes.MAX_DAMAGE)){
+            if(getMaxDurability() > 0){
+                int damage = item.getData(DataComponentTypes.MAX_DAMAGE) - ((short) ((double) item.getData(DataComponentTypes.MAX_DAMAGE) * ((double) durability / (double) getMaxDurability())));
+                item.setData(DataComponentTypes.DAMAGE,Math.max(damage,0));
+            }else{
+                item.setData(DataComponentTypes.DAMAGE,item.getData(DataComponentTypes.MAX_DAMAGE) != 0 ? 0 : getDataValue());
             }
         }
     }
@@ -1644,8 +1649,9 @@ public class RPGItem {
 
             durability = newDurability;
 
+            boolean clear = false;
             if (durability <= 0) {
-                item.setAmount(0);
+                clear = true;
             } else if (durability > getMaxDurability() && getMaxDurability() > 0) {
                 durability = getMaxDurability();
             }
@@ -1653,7 +1659,10 @@ public class RPGItem {
             set(tagContainer, TAG_DURABILITY, durability);
             tagContainer.commit();
             item.setItemMeta(itemMeta);
-            this.updateItem(item, true, null);
+            this.updateItem(item, false, null);
+            if(clear){
+                item.setAmount(0);
+            }
         }
 
         return true;
