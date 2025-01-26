@@ -730,7 +730,6 @@ public class ComponentUtil {
                         }
                     }
                 } else if (type == DataComponentTypes.CAN_PLACE_ON || type == DataComponentTypes.CAN_BREAK) {
-                    Bukkit.broadcastMessage("b");
                     String key = type == DataComponentTypes.CAN_PLACE_ON ? "can_place_on" : "can_break";
                     if (value == ComponentStatus.UNSET) {
                         config.set(key + ".unset", true);
