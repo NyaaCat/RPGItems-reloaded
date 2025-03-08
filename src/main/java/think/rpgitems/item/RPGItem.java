@@ -818,9 +818,6 @@ public class RPGItem {
         SubItemTagContainer rpgitemsTagContainer = makeTag(itemTagContainer, TAG_META);
         set(rpgitemsTagContainer, TAG_ITEM_UID, getUid());
         addDurabilityBar(rpgitemsTagContainer, lore);
-        if (meta instanceof LeatherArmorMeta) {
-            ((LeatherArmorMeta) meta).setColor(Color.fromRGB(getDataValue()));
-        }
         int durability = 0;
         if (getMaxDurability() > 0) {
             durability = computeIfAbsent(rpgitemsTagContainer, TAG_DURABILITY, PersistentDataType.INTEGER, this::getDefaultDurability);
@@ -914,6 +911,9 @@ public class RPGItem {
         item.resetData(DataComponentTypes.DAMAGE_RESISTANT);
         item.resetData(DataComponentTypes.DEATH_PROTECTION);
         item.resetData(DataComponentTypes.DYED_COLOR);
+        if (meta instanceof LeatherArmorMeta) {
+            ((LeatherArmorMeta) meta).setColor(Color.fromRGB(getDataValue()));
+        }
         item.resetData(DataComponentTypes.ENCHANTABLE);
         item.resetData(DataComponentTypes.ENCHANTMENT_GLINT_OVERRIDE);
         item.resetData(DataComponentTypes.EQUIPPABLE);

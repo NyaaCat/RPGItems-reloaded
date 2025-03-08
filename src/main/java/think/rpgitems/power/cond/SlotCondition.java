@@ -30,7 +30,7 @@ public class SlotCondition extends BaseCondition<Void> {
             //Inventory is the combination of backpack and belt (main/off hand is not included)
             "BACKPACK", "BELT", "INVENTORY",
             "HELMET", "CHESTPLATE", "LEGGINGS", "BOOTS",
-            "MAIN_HAND", "OFF_HAND"})
+            "MAIN_HAND", "OFF_HAND", "ANY_ARMOR", "BOTH_HAND", "ANY_HAND", "HOTBAR", "ALL_ARMOR"})
     Set<Slots> slots = new HashSet<>();
     public SlotCondition() {
         slots.add(Slots.ARMOR);
@@ -75,12 +75,17 @@ public class SlotCondition extends BaseCondition<Void> {
     enum Slots {
         //ARMOR slot
         ARMOR,
+        ANY_ARMOR,
+        ALL_ARMOR,
         //both hands
         HAND,
+        BOTH_HAND,
+        //ANY_HAND
+        ANY_HAND,
         //Inventory is the combination of backpack and belt (main/off hand is not included)
         BACKPACK, BELT, INVENTORY,
         HELMET, CHESTPLATE, LEGGINGS, BOOTS,
-        MAIN_HAND, OFF_HAND;
+        MAIN_HAND, OFF_HAND, HOTBAR;
 
         Cache<UUID, ItemStack[]> backpackCache = CacheBuilder.newBuilder()
                 .expireAfterWrite(50, TimeUnit.MICROSECONDS)
@@ -100,13 +105,19 @@ public class SlotCondition extends BaseCondition<Void> {
                 case BOOTS:
                     return checkBoots(inventory, stack);
                 case ARMOR:
+                case ANY_ARMOR:
                     return checkHelmet(inventory, stack) || checkChestPlate(inventory, stack) ||
                             checkLeggings(inventory, stack) || checkBoots(inventory, stack);
+                case ALL_ARMOR:
+                    return checkHelmet(inventory, stack) && checkChestPlate(inventory, stack) &&
+                            checkLeggings(inventory, stack) && checkBoots(inventory, stack);
                 case HAND:
+                case BOTH_HAND:
                     return checkMainHand(inventory, stack) && checkOffHand(inventory, stack);
                 case BACKPACK:
                     return checkBackpack(inventory, stack);
                 case BELT:
+                case HOTBAR:
                     return checkBelts(inventory, stack);
                 case INVENTORY:
                     return checkBelts(inventory, stack) || checkBackpack(inventory, stack);
