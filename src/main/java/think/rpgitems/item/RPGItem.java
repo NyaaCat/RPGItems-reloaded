@@ -1168,7 +1168,7 @@ public class RPGItem {
      * @param entity       Victim of this damage event
      * @return Final damage or -1 if it should cancel this event
      */
-    public double meleeDamage(Player p, double originDamage, ItemStack stack, Entity entity) {
+    public double meleeDamage(Player p, double originDamage, ItemStack stack, Entity entity, double multiplier) {
         double damage = originDamage;
         if (!canDoMeleeTo(stack, entity) || ItemManager.canUse(p, this) == Event.Result.DENY) {
             return -1;
@@ -1177,37 +1177,35 @@ public class RPGItem {
         if (!can) {
             return -1;
         }
-        switch (getDamageMode()) {
-            case MULTIPLY:
-            case FIXED:
-            case ADDITIONAL:
-                damage = getDamageMin() != getDamageMax() ? (getDamageMin() + ThreadLocalRandom.current().nextInt(getDamageMax() - getDamageMin() + 1)) : getDamageMin();
+        if (getDamageMode() != DamageMode.VANILLA) {
+            damage = getDamageMin() != getDamageMax() ? (getDamageMin() + ThreadLocalRandom.current().nextInt(getDamageMax() - getDamageMin() + 1)) : getDamageMin();
 
-                if (getDamageMode() == DamageMode.MULTIPLY) {
-                    damage *= originDamage;
-                    break;
-                }
 
+            if (getDamageMode().toString().contains("MULTIPLY")) {
+                damage *= originDamage;
+            }
+
+            if(getDamageMode() == DamageMode.FIXED){
                 Collection<PotionEffect> potionEffects = p.getActivePotionEffects();
                 double strength = 0, weak = 0;
                 for (PotionEffect pe : potionEffects) {
                     if (pe.getType().equals(PotionEffectType.STRENGTH)) {
-                        strength = 3 * (pe.getAmplifier() + 1);//MC 1.9+
+                        strength = 3 * (pe.getAmplifier() + 1);
                     }
                     if (pe.getType().equals(PotionEffectType.WEAKNESS)) {
-                        weak = 4 * (pe.getAmplifier() + 1);//MC 1.9+
+                        weak = 4 * (pe.getAmplifier() + 1);
                     }
                 }
                 damage = damage + strength - weak;
+            }
 
-                if (getDamageMode() == DamageMode.ADDITIONAL) {
-                    damage += originDamage;
-                }
-                if (damage < 0) damage = 0;
-                break;
-            case VANILLA:
-                //no-op
-                break;
+            if (getDamageMode() == DamageMode.ADDITIONAL) {
+                damage += originDamage;
+            }
+            if(getDamageMode().toString().contains("RESPECT_VANILLA")){
+                damage *= multiplier;
+            }
+            if (damage < 0) damage = 0;
         }
         return damage;
     }
@@ -1233,28 +1231,20 @@ public class RPGItem {
             return -1;
         }
 
-        switch (getDamageMode()) {
-            case FIXED:
-            case ADDITIONAL:
-            case MULTIPLY:
+        if (getDamageMode() != DamageMode.VANILLA) {
                 damage = getDamageMin() != getDamageMax() ? (getDamageMin() + ThreadLocalRandom.current().nextInt(getDamageMax() - getDamageMin() + 1)) : getDamageMin();
 
-                if (getDamageMode() == DamageMode.MULTIPLY) {
+                if (getDamageMode().toString().contains("MULTIPLY")) {
                     damage *= originDamage;
-                    break;
                 }
 
                 //Apply force adjustments
                 if (damager.hasMetadata("RPGItems.Force")) {
                     damage *= damager.getMetadata("RPGItems.Force").get(0).asFloat();
                 }
-                if (getDamageMode() == DamageMode.ADDITIONAL) {
+                if (getDamageMode().toString().contains("ADDITIONAL")) {
                     damage += originDamage;
                 }
-                break;
-            case VANILLA:
-                //no-op
-                break;
         }
         return damage;
     }
@@ -1445,9 +1435,9 @@ public class RPGItem {
             }
             if ((getDamageMin() != 0 || getDamageMax() != 0) && getDamageMode() != DamageMode.VANILLA) {
                 damageStr = damageStr == null ? "" : damageStr + " & ";
-                if (getDamageMode() == DamageMode.ADDITIONAL) {
+                if (getDamageMode().toString().contains("ADDITIONAL")) {
                     damageStr += I18n.formatDefault("item.additionaldamage", getDamageMin() == getDamageMax() ? String.valueOf(getDamageMin()) : getDamageMin() + "-" + getDamageMax());
-                } else if (getDamageMode() == DamageMode.MULTIPLY) {
+                } else if (getDamageMode().toString().contains("MULTIPLY")) {
                     damageStr += I18n.formatDefault("item.multiplydamage", getDamageMin() == getDamageMax() ? String.valueOf(getDamageMin()) : getDamageMin() + "-" + getDamageMax());
                 } else {
                     damageStr += I18n.formatDefault("item.damage", getDamageMin() == getDamageMax() ? String.valueOf(getDamageMin()) : getDamageMin() + "-" + getDamageMax());
@@ -2508,9 +2498,13 @@ public class RPGItem {
 
     public enum DamageMode {
         FIXED,
+        FIXED_WITHOUT_EFFECT,
+        FIXED_RESPECT_VANILLA,
+        FIXED_WITHOUT_EFFECT_RESPECT_VANILLA,
         VANILLA,
         ADDITIONAL,
-        MULTIPLY;
+        ADDITIONAL_RESPECT_VANILLA,
+        MULTIPLY
     }
 
 

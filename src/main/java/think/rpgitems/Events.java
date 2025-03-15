@@ -838,7 +838,11 @@ public class Events implements Listener {
         double originDamage = e.getDamage();
         double damage = originDamage;
         if (rItem != null && overridingDamage.isEmpty()) {
-            damage = rItem.meleeDamage(player, originDamage, item, entity);
+            if(e.isCritical()){
+                damage = rItem.meleeDamage(player, originDamage, item, entity, 1.5);
+            }else{
+                damage = rItem.meleeDamage(player, originDamage, item, entity, player.getAttackCooldown());
+            }
         } else if (overridingDamage.isPresent()) {
             damage = overridingDamage.get();
         }
@@ -870,7 +874,7 @@ public class Events implements Listener {
         RPGItem rItem = ItemManager.getItem(projectileID).orElse(null);
         if (rItem == null || !(projectile.getShooter() instanceof Player player))
             return;
-        if (!((Player) projectile.getShooter()).isOnline()) {
+        if (!player.isOnline()) {
             return;
         }
         ItemStack item = player.getInventory().getItemInMainHand();

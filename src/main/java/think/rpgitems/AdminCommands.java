@@ -1265,7 +1265,7 @@ public class AdminCommands extends RPGCommandReceiver {
     }
 
     @SubCommand(value = "damagemode", tabCompleter = "itemCompleter")
-    @Completion("item:FIXED,VANILLA,ADDITIONAL,MULTIPLY")
+    @Completion("item:FIXED,FIXED_WITHOUT_EFFECT,FIXED_RESPECT_VANILLA,FIXED_WITHOUT_EFFECT_RESPECT_VANILLA,VANILLA,ADDITIONAL,ADDITIONAL_RESPECT_VANILLA,MULTIPLY")
     public void toggleItemDamageMode(CommandSender sender, Arguments args) {
         RPGItem item = getItem(args.nextString(), sender);
         if (args.top() != null) {
@@ -1276,9 +1276,13 @@ public class AdminCommands extends RPGCommandReceiver {
         }
         switch (item.getDamageMode()) {
             case FIXED -> I18n.sendMessage(sender, "message.damagemode.fixed", item.getName());
+            case FIXED_WITHOUT_EFFECT -> I18n.sendMessage(sender, "message.damagemode.fixed_without_effect", item.getName());
+            case FIXED_RESPECT_VANILLA -> I18n.sendMessage(sender, "message.damagemode.fixed_respect_vanilla", item.getName());
+            case FIXED_WITHOUT_EFFECT_RESPECT_VANILLA -> I18n.sendMessage(sender, "message.damagemode.fixed_without_effect_respect_vanilla", item.getName());
             case VANILLA -> I18n.sendMessage(sender, "message.damagemode.vanilla", item.getName());
             case MULTIPLY -> I18n.sendMessage(sender, "message.damagemode.multiply", item.getName());
             case ADDITIONAL -> I18n.sendMessage(sender, "message.damagemode.additional", item.getName());
+            case ADDITIONAL_RESPECT_VANILLA -> I18n.sendMessage(sender, "message.damagemode.additional_respect_vanilla", item.getName());
             default -> plugin.getLogger().warning("missing damagemode " + item.getDamageMode().name());
         }//todo I18N
     }
