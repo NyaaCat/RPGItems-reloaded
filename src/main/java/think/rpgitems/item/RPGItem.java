@@ -917,6 +917,7 @@ public class RPGItem {
         item.resetData(DataComponentTypes.ENCHANTABLE);
         item.resetData(DataComponentTypes.ENCHANTMENT_GLINT_OVERRIDE);
         item.resetData(DataComponentTypes.EQUIPPABLE);
+        item.resetData(DataComponentTypes.PROFILE);
         item.resetData(DataComponentTypes.FOOD);
         item.resetData(DataComponentTypes.GLIDER);
         item.resetData(DataComponentTypes.HIDE_ADDITIONAL_TOOLTIP);
@@ -965,6 +966,8 @@ public class RPGItem {
                             item.setData(DataComponentTypes.MAX_DAMAGE, (int) value);
                         } else if (key == DataComponentTypes.MAX_STACK_SIZE) {
                             item.setData(DataComponentTypes.MAX_STACK_SIZE, (int) value);
+                        } else if (key == DataComponentTypes.PROFILE) {
+                            item.setData(DataComponentTypes.PROFILE, (ResolvableProfile.Builder) value );
                         } else if (key == DataComponentTypes.RARITY) {
                             item.setData(DataComponentTypes.RARITY, (ItemRarity) value);
                         } else if (key == DataComponentTypes.TOOL) {
