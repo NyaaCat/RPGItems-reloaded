@@ -1,5 +1,6 @@
 package think.rpgitems.power.impl;
 
+import net.kyori.adventure.text.Component;
 import org.bukkit.Bukkit;
 import org.bukkit.attribute.Attribute;
 import org.bukkit.entity.Item;
@@ -85,8 +86,8 @@ public class PotionTick extends BasePower {
     @Override
     public String displayText() {
         return isClear() ?
-                I18n.formatDefault("power.potiontick.clear", getEffect().key().value())
-                : I18n.formatDefault("power.potiontick.display", getEffect().key().value(), getAmplifier() + 1);
+                I18n.formatDefault("power.potiontick.clear", "<lang:effect.minecraft."+getEffect().key().value()+">")
+                : I18n.formatDefault("power.potiontick.display", "<lang:effect.minecraft."+getEffect().key().value()+">", getAmplifier() + 1);
     }
 
     /**

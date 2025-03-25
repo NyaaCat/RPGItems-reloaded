@@ -587,7 +587,7 @@ message:
     power: 技能 %d %s (%s)：%s &r[%s]
     print: '{itemName}'
     recovering: 重载物品失败，恢复中。您的修改已保存至 %s
-    set: '物品 ''%s'' 材质已设置为 {itemName} (%s): %d '
+    set: '物品 ''%s'' 材质已设置为 {itemName} (%s)'
     unlocked: 物品 %s 已解锁，备份至 %s。
   itemflag:
     add: 成功添加ItemFlag %s
@@ -775,17 +775,17 @@ power:
   noimmutabletick: 取消攻击后敌方的无敌时间
   particle: 右键时产生一些粒子
   particletick: 持有时产生一些粒子
-  potionhit: '%d%% 的几率触发 %s 效果 %d 级 %.1f 秒'
-  potionself: 获得 %s %d 持续 %.1f 秒
+  potionhit: '%d%% 的几率触发%s效果 %d 级 %.1f 秒'
+  potionself: 获得%s %d，持续 %.1f 秒
   potiontick:
-    clear: 持有/穿戴时清除效果 %s
-    display: 持有/穿戴时给予效果 %s %d
+    clear: 持有/穿戴时清除%s效果
+    display: 持有/穿戴时给予效果%s%d
   projectile:
-    cone: 右键发射一堆 `%s` (%.1f秒冷却)
-    display: 右键发射 `%s` (%.1f秒冷却)
+    cone: 右键发射一堆%s (%.1f秒冷却)
+    display: 右键发射%s (%.1f秒冷却)
     noFireball: 火焰弹无法应用于圆锥机制。
   pumpkin: 1/%d 几率使敌人戴上南瓜头
-  rainbow: 发射 %d 彩色羊毛 (%.1f 秒冷却)
+  rainbow: 发射 %d 个彩色羊毛 (%.1f 秒冷却)
   ranged: 可远程使用
   rangedonly: 仅远程使用
   realdamage: 攻击后对敌人造成 %.1f 真实伤害.

@@ -593,7 +593,7 @@ message:
     power: 'Power %d %s (%s): %s &r[%s]'
     print: '{itemName}'
     recovering: Failed when reloading, recovering. Your edits saved to %s
-    set: 'Item ''%s'' item set to {itemName} (%s): %d '
+    set: 'Item ''%s'' item set to {itemName} (%s) '
     unlocked: Item %s unlocked. Backed up to %s.
   itemflag:
     add: Added ItemFlag %s

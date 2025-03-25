@@ -108,7 +108,7 @@ public class AdminCommands extends RPGCommandReceiver {
 
     public static List<String> filtered(Arguments arguments, List<String> completeStr) {
         String[] rawArgs = arguments.getRawArgs();
-        return completeStr.stream().filter(s -> s.startsWith(rawArgs[rawArgs.length - 1])).collect(Collectors.toList());
+        return completeStr.stream().filter(s -> s.toLowerCase().startsWith(rawArgs[rawArgs.length - 1].toLowerCase())).collect(Collectors.toList());
     }
 
     public static Pair<Integer, Integer> getPaging(int size, int perPage, Arguments args) {
@@ -256,7 +256,16 @@ public class AdminCommands extends RPGCommandReceiver {
         if (str == null) throw new CommandException("internal.error.no_more_string");
         return str;
     }
-
+    @Completion("")
+    public List<String> itemStackCompleter(CommandSender sender, Arguments arguments) {
+        List<String> completeStr = new ArrayList<>();
+        if (arguments.remains() == 2) {
+            completeStr.addAll(Arrays.stream(Material.values()).map(Material::name).toList());
+        } else if (arguments.remains() == 1) {
+            completeStr.addAll(ItemManager.itemNames());
+        }
+        return filtered(arguments, completeStr);
+    }
     @Completion("")
     public List<String> itemCompleter(CommandSender sender, Arguments arguments) {
         List<String> completeStr = new ArrayList<>();
@@ -774,12 +783,12 @@ public class AdminCommands extends RPGCommandReceiver {
         }
     }
 
-    @SubCommand(value = "item", tabCompleter = "itemCompleter")
+    @SubCommand(value = "item", tabCompleter = "itemStackCompleter")
     public void itemItem(CommandSender sender, Arguments args) {
         RPGItem item = getItem(args.nextString(), sender);
         if (args.length() == 2) {
             new Message("")
-                    .append(I18n.getInstance(sender).getFormatted("message.item.get", item.getName(), item.getItem().name(), item.getDataValue()), new ItemStack(item.getItem()))
+                    .append(I18n.getInstance(sender).getFormatted("message.item.get", item.getName(), item.getItem().name()), new ItemStack(item.getItem()))
                     .send(sender);
         } else if (args.length() >= 3) {
             String materialName = args.nextString();

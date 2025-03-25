@@ -18,7 +18,9 @@ import io.papermc.paper.registry.RegistryKey;
 import io.papermc.paper.registry.tag.TagKey;
 import me.clip.placeholderapi.PlaceholderAPI;
 import net.kyori.adventure.key.Key;
+import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.format.NamedTextColor;
+import net.kyori.adventure.text.minimessage.MiniMessage;
 import net.md_5.bungee.api.chat.BaseComponent;
 import net.md_5.bungee.api.chat.ClickEvent;
 import net.md_5.bungee.api.chat.HoverEvent;
@@ -72,6 +74,7 @@ import java.util.concurrent.TimeUnit;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -832,7 +835,11 @@ public class RPGItem {
             }
         }
         if(getUpdateMode()!=UpdateMode.NO_UPDATE&&getUpdateMode()!=UpdateMode.NO_LORE&&getUpdateMode()!=UpdateMode.DISPLAY_ONLY&&getUpdateMode()!=UpdateMode.ENCHANT_ONLY){
-            meta.setLore(lore);
+            List<Component> loreComponents = new ArrayList<>();
+            for(String lore1 : lore){
+                loreComponents.add(MiniMessage.miniMessage().deserialize(replaceLegacyColorCodes(lore1)));
+            }
+            meta.lore(loreComponents);
         }
 
         meta.setItemModel(getItemModel());
@@ -864,7 +871,7 @@ public class RPGItem {
             String metaDisplay = meta.hasDisplayName() ? meta.getDisplayName() : "";
 
             if (!metaDisplay.equals(finalDisplay)) {
-                meta.setDisplayName(finalDisplay);
+                meta.displayName(MiniMessage.miniMessage().deserialize(replaceLegacyColorCodes(finalDisplay)));
             }
         }
 
@@ -1471,7 +1478,7 @@ public class RPGItem {
             set(rpgitemsTagContainer, TAG_STACK_ID, UUID.randomUUID());
         }
         rpgitemsTagContainer.commit();
-        meta.setDisplayName(getDisplayName());
+        meta.displayName(MiniMessage.miniMessage().deserialize(replaceLegacyColorCodes(getDisplayName())));
         rStack.setItemMeta(meta);
 
         updateItem(rStack, false,null);
@@ -2022,7 +2029,33 @@ public class RPGItem {
         }
         return getMethod;
     }
+    private String replaceLegacyColorCodes(String text) {
+        String[][] formatMap = {
+                {"0", "black"}, {"1", "dark_blue"}, {"2", "dark_green"}, {"3", "dark_aqua"},
+                {"4", "dark_red"}, {"5", "dark_purple"}, {"6", "gold"}, {"7", "gray"},
+                {"8", "dark_gray"}, {"9", "blue"}, {"a", "green"}, {"b", "aqua"},
+                {"c", "red"}, {"d", "light_purple"}, {"e", "yellow"}, {"f", "white"},
+                {"k", "obf"}, {"l", "b"}, {"m", "st"},
+                {"n", "u"}, {"o", "i"}, {"r", "reset"}
+        };
 
+        Pattern pattern = Pattern.compile("[§&]x([§&][0-9a-fA-F]){6}");
+        Matcher matcher = pattern.matcher(text);
+        StringBuilder result = new StringBuilder();
+
+        while (matcher.find()) {
+            String hex = matcher.group().replaceAll("[§&]x|[§&]", "");
+            matcher.appendReplacement(result, "<#" + hex + ">");
+        }
+        matcher.appendTail(result);
+        text = result.toString();
+
+        for (String[] entry : formatMap) {
+            text = text.replaceAll("[§&]" + entry[0], "<" + entry[1] + ">");
+        }
+
+        return text;
+    }
     private void copyFromTemplate(RPGItem target) throws UnknownPowerException {
         List<Power> powers = new ArrayList<>(getPowers());
         List<Marker> markers = new ArrayList<>(getMarkers());

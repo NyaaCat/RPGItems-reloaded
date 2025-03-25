@@ -151,6 +151,7 @@ public class Headshot extends BasePower {
             return Headshot.this;
         }
 
+        @SuppressWarnings("removal")
         @Override
         public PowerResult<Double> hitEntity(Player player, ItemStack stack, LivingEntity entity, double damage, BeamHitEntityEvent event) {
             DamageSource source = DamageSource.builder(DamageType.PLAYER_ATTACK).build();
