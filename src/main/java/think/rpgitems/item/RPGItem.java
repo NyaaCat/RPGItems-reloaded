@@ -25,6 +25,7 @@ import net.md_5.bungee.api.chat.BaseComponent;
 import net.md_5.bungee.api.chat.ClickEvent;
 import net.md_5.bungee.api.chat.HoverEvent;
 import net.md_5.bungee.api.chat.TextComponent;
+import net.minecraft.network.protocol.game.ClientboundUpdateAttributesPacket;
 import org.bukkit.*;
 import org.bukkit.attribute.Attribute;
 import org.bukkit.block.Block;
@@ -837,7 +838,7 @@ public class RPGItem {
         if(getUpdateMode()!=UpdateMode.NO_UPDATE&&getUpdateMode()!=UpdateMode.NO_LORE&&getUpdateMode()!=UpdateMode.DISPLAY_ONLY&&getUpdateMode()!=UpdateMode.ENCHANT_ONLY){
             List<Component> loreComponents = new ArrayList<>();
             for(String lore1 : lore){
-                loreComponents.add(MiniMessage.miniMessage().deserialize(replaceLegacyColorCodes(lore1)));
+                loreComponents.add(MiniMessage.miniMessage().deserialize("<!i>"+replaceLegacyColorCodes(lore1)));
             }
             meta.lore(loreComponents);
         }
@@ -871,7 +872,7 @@ public class RPGItem {
             String metaDisplay = meta.hasDisplayName() ? meta.getDisplayName() : "";
 
             if (!metaDisplay.equals(finalDisplay)) {
-                meta.displayName(MiniMessage.miniMessage().deserialize(replaceLegacyColorCodes(finalDisplay)));
+                meta.displayName(MiniMessage.miniMessage().deserialize("<!i>"+replaceLegacyColorCodes(finalDisplay)));
             }
         }
 
@@ -1478,7 +1479,7 @@ public class RPGItem {
             set(rpgitemsTagContainer, TAG_STACK_ID, UUID.randomUUID());
         }
         rpgitemsTagContainer.commit();
-        meta.displayName(MiniMessage.miniMessage().deserialize(replaceLegacyColorCodes(getDisplayName())));
+        meta.displayName(MiniMessage.miniMessage().deserialize("<!i>"+replaceLegacyColorCodes(getDisplayName())));
         rStack.setItemMeta(meta);
 
         updateItem(rStack, false,null);
