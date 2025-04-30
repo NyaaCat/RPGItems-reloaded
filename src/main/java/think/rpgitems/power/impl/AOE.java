@@ -190,7 +190,7 @@ public class AOE extends BasePower {
             PowerActivateEvent powerEvent = new PowerActivateEvent(player,itemStack,getPower(),argsMap);
             if(!powerEvent.callEvent())
                 return PowerResult.fail();
-            if (!checkCooldown(getPower(), player, getCooldown(), true, true)) return PowerResult.cd();
+            if (!checkCooldown(getPower(), player, getCooldown(), showCooldownWarning(), true)) return PowerResult.cd();
             if (!getItem().consumeDurability(itemStack, getCost())) return PowerResult.cost();
 
             int range = getRange();

@@ -1,6 +1,6 @@
 plugins {
     id 'java-library'
-    id "io.papermc.paperweight.userdev" version "2.0.0-beta.12"
+    id "io.papermc.paperweight.userdev" version "2.0.0-beta.16"
     id 'maven-publish'
     id 'com.github.johnrengelman.shadow' version '7.0.0'
     id 'org.ajoberstar.grgit' version '5.2.2'
@@ -41,7 +41,7 @@ dependencies {
     //Residence integration, download the jar(also CMI) manually as the fucking Residence author is lazy
     implementation fileTree(dir: 'libs', includes: ['*.jar'])
     paperweight.paperDevBundle("$MINECRAFT_VERSION-R0.1-SNAPSHOT")
-    compileOnly 'io.lumine:Mythic-Dist:5.7.1'
+    compileOnly 'io.lumine:Mythic-Dist:5.8.2'
     compileOnly 'me.clip:placeholderapi:2.11.6'
     // other nyaa plugins
     compileOnly('cat.nyaa:nyaacore:9.4') { transitive = false }
@@ -49,7 +49,7 @@ dependencies {
     //compileOnly group: "com.comphenix.protocol", name: "ProtocolLib", version: "4.7.0"
     compileOnly 'org.jetbrains:annotations:23.0.0'
 
-    compileOnly 'io.netty:netty-all:4.1.81.Final' // netty is shadowed inside spigot jar
+    compileOnly 'io.netty:netty-all:4.1.94.Final' // netty is shadowed inside spigot jar
     compileOnly 'org.ow2.asm:asm:9.3'
 
     compileOnly 'net.bytebuddy:byte-buddy:1.12.16'

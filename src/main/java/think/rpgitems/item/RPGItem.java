@@ -18,11 +18,14 @@ import io.papermc.paper.registry.RegistryKey;
 import io.papermc.paper.registry.tag.TagKey;
 import me.clip.placeholderapi.PlaceholderAPI;
 import net.kyori.adventure.key.Key;
+import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.format.NamedTextColor;
+import net.kyori.adventure.text.minimessage.MiniMessage;
 import net.md_5.bungee.api.chat.BaseComponent;
 import net.md_5.bungee.api.chat.ClickEvent;
 import net.md_5.bungee.api.chat.HoverEvent;
 import net.md_5.bungee.api.chat.TextComponent;
+import net.minecraft.network.protocol.game.ClientboundUpdateAttributesPacket;
 import org.bukkit.*;
 import org.bukkit.attribute.Attribute;
 import org.bukkit.block.Block;
@@ -72,6 +75,7 @@ import java.util.concurrent.TimeUnit;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -818,9 +822,6 @@ public class RPGItem {
         SubItemTagContainer rpgitemsTagContainer = makeTag(itemTagContainer, TAG_META);
         set(rpgitemsTagContainer, TAG_ITEM_UID, getUid());
         addDurabilityBar(rpgitemsTagContainer, lore);
-        if (meta instanceof LeatherArmorMeta) {
-            ((LeatherArmorMeta) meta).setColor(Color.fromRGB(getDataValue()));
-        }
         int durability = 0;
         if (getMaxDurability() > 0) {
             durability = computeIfAbsent(rpgitemsTagContainer, TAG_DURABILITY, PersistentDataType.INTEGER, this::getDefaultDurability);
@@ -835,7 +836,11 @@ public class RPGItem {
             }
         }
         if(getUpdateMode()!=UpdateMode.NO_UPDATE&&getUpdateMode()!=UpdateMode.NO_LORE&&getUpdateMode()!=UpdateMode.DISPLAY_ONLY&&getUpdateMode()!=UpdateMode.ENCHANT_ONLY){
-            meta.setLore(lore);
+            List<Component> loreComponents = new ArrayList<>();
+            for(String lore1 : lore){
+                loreComponents.add(MiniMessage.miniMessage().deserialize("<!i>"+replaceLegacyColorCodes(lore1)));
+            }
+            meta.lore(loreComponents);
         }
 
         meta.setItemModel(getItemModel());
@@ -867,7 +872,7 @@ public class RPGItem {
             String metaDisplay = meta.hasDisplayName() ? meta.getDisplayName() : "";
 
             if (!metaDisplay.equals(finalDisplay)) {
-                meta.setDisplayName(finalDisplay);
+                meta.displayName(MiniMessage.miniMessage().deserialize("<!i>"+replaceLegacyColorCodes(finalDisplay)));
             }
         }
 
@@ -914,9 +919,13 @@ public class RPGItem {
         item.resetData(DataComponentTypes.DAMAGE_RESISTANT);
         item.resetData(DataComponentTypes.DEATH_PROTECTION);
         item.resetData(DataComponentTypes.DYED_COLOR);
+        if (meta instanceof LeatherArmorMeta) {
+            ((LeatherArmorMeta) meta).setColor(Color.fromRGB(getDataValue()));
+        }
         item.resetData(DataComponentTypes.ENCHANTABLE);
         item.resetData(DataComponentTypes.ENCHANTMENT_GLINT_OVERRIDE);
         item.resetData(DataComponentTypes.EQUIPPABLE);
+        item.resetData(DataComponentTypes.PROFILE);
         item.resetData(DataComponentTypes.FOOD);
         item.resetData(DataComponentTypes.GLIDER);
         item.resetData(DataComponentTypes.HIDE_ADDITIONAL_TOOLTIP);
@@ -965,6 +974,8 @@ public class RPGItem {
                             item.setData(DataComponentTypes.MAX_DAMAGE, (int) value);
                         } else if (key == DataComponentTypes.MAX_STACK_SIZE) {
                             item.setData(DataComponentTypes.MAX_STACK_SIZE, (int) value);
+                        } else if (key == DataComponentTypes.PROFILE) {
+                            item.setData(DataComponentTypes.PROFILE, (ResolvableProfile.Builder) value );
                         } else if (key == DataComponentTypes.RARITY) {
                             item.setData(DataComponentTypes.RARITY, (ItemRarity) value);
                         } else if (key == DataComponentTypes.TOOL) {
@@ -1168,7 +1179,7 @@ public class RPGItem {
      * @param entity       Victim of this damage event
      * @return Final damage or -1 if it should cancel this event
      */
-    public double meleeDamage(Player p, double originDamage, ItemStack stack, Entity entity) {
+    public double meleeDamage(Player p, double originDamage, ItemStack stack, Entity entity, double multiplier) {
         double damage = originDamage;
         if (!canDoMeleeTo(stack, entity) || ItemManager.canUse(p, this) == Event.Result.DENY) {
             return -1;
@@ -1177,37 +1188,35 @@ public class RPGItem {
         if (!can) {
             return -1;
         }
-        switch (getDamageMode()) {
-            case MULTIPLY:
-            case FIXED:
-            case ADDITIONAL:
-                damage = getDamageMin() != getDamageMax() ? (getDamageMin() + ThreadLocalRandom.current().nextInt(getDamageMax() - getDamageMin() + 1)) : getDamageMin();
+        if (getDamageMode() != DamageMode.VANILLA) {
+            damage = getDamageMin() != getDamageMax() ? (getDamageMin() + ThreadLocalRandom.current().nextInt(getDamageMax() - getDamageMin() + 1)) : getDamageMin();
 
-                if (getDamageMode() == DamageMode.MULTIPLY) {
-                    damage *= originDamage;
-                    break;
-                }
 
+            if (getDamageMode().toString().contains("MULTIPLY")) {
+                damage *= originDamage;
+            }
+
+            if(getDamageMode() == DamageMode.FIXED){
                 Collection<PotionEffect> potionEffects = p.getActivePotionEffects();
                 double strength = 0, weak = 0;
                 for (PotionEffect pe : potionEffects) {
                     if (pe.getType().equals(PotionEffectType.STRENGTH)) {
-                        strength = 3 * (pe.getAmplifier() + 1);//MC 1.9+
+                        strength = 3 * (pe.getAmplifier() + 1);
                     }
                     if (pe.getType().equals(PotionEffectType.WEAKNESS)) {
-                        weak = 4 * (pe.getAmplifier() + 1);//MC 1.9+
+                        weak = 4 * (pe.getAmplifier() + 1);
                     }
                 }
                 damage = damage + strength - weak;
+            }
 
-                if (getDamageMode() == DamageMode.ADDITIONAL) {
-                    damage += originDamage;
-                }
-                if (damage < 0) damage = 0;
-                break;
-            case VANILLA:
-                //no-op
-                break;
+            if (getDamageMode() == DamageMode.ADDITIONAL) {
+                damage += originDamage;
+            }
+            if(getDamageMode().toString().contains("RESPECT_VANILLA")){
+                damage *= multiplier;
+            }
+            if (damage < 0) damage = 0;
         }
         return damage;
     }
@@ -1233,28 +1242,20 @@ public class RPGItem {
             return -1;
         }
 
-        switch (getDamageMode()) {
-            case FIXED:
-            case ADDITIONAL:
-            case MULTIPLY:
+        if (getDamageMode() != DamageMode.VANILLA) {
                 damage = getDamageMin() != getDamageMax() ? (getDamageMin() + ThreadLocalRandom.current().nextInt(getDamageMax() - getDamageMin() + 1)) : getDamageMin();
 
-                if (getDamageMode() == DamageMode.MULTIPLY) {
+                if (getDamageMode().toString().contains("MULTIPLY")) {
                     damage *= originDamage;
-                    break;
                 }
 
                 //Apply force adjustments
                 if (damager.hasMetadata("RPGItems.Force")) {
                     damage *= damager.getMetadata("RPGItems.Force").get(0).asFloat();
                 }
-                if (getDamageMode() == DamageMode.ADDITIONAL) {
+                if (getDamageMode().toString().contains("ADDITIONAL")) {
                     damage += originDamage;
                 }
-                break;
-            case VANILLA:
-                //no-op
-                break;
         }
         return damage;
     }
@@ -1445,9 +1446,9 @@ public class RPGItem {
             }
             if ((getDamageMin() != 0 || getDamageMax() != 0) && getDamageMode() != DamageMode.VANILLA) {
                 damageStr = damageStr == null ? "" : damageStr + " & ";
-                if (getDamageMode() == DamageMode.ADDITIONAL) {
+                if (getDamageMode().toString().contains("ADDITIONAL")) {
                     damageStr += I18n.formatDefault("item.additionaldamage", getDamageMin() == getDamageMax() ? String.valueOf(getDamageMin()) : getDamageMin() + "-" + getDamageMax());
-                } else if (getDamageMode() == DamageMode.MULTIPLY) {
+                } else if (getDamageMode().toString().contains("MULTIPLY")) {
                     damageStr += I18n.formatDefault("item.multiplydamage", getDamageMin() == getDamageMax() ? String.valueOf(getDamageMin()) : getDamageMin() + "-" + getDamageMax());
                 } else {
                     damageStr += I18n.formatDefault("item.damage", getDamageMin() == getDamageMax() ? String.valueOf(getDamageMin()) : getDamageMin() + "-" + getDamageMax());
@@ -1478,7 +1479,7 @@ public class RPGItem {
             set(rpgitemsTagContainer, TAG_STACK_ID, UUID.randomUUID());
         }
         rpgitemsTagContainer.commit();
-        meta.setDisplayName(getDisplayName());
+        meta.displayName(MiniMessage.miniMessage().deserialize("<!i>"+replaceLegacyColorCodes(getDisplayName())));
         rStack.setItemMeta(meta);
 
         updateItem(rStack, false,null);
@@ -2029,7 +2030,33 @@ public class RPGItem {
         }
         return getMethod;
     }
+    private String replaceLegacyColorCodes(String text) {
+        String[][] formatMap = {
+                {"0", "black"}, {"1", "dark_blue"}, {"2", "dark_green"}, {"3", "dark_aqua"},
+                {"4", "dark_red"}, {"5", "dark_purple"}, {"6", "gold"}, {"7", "gray"},
+                {"8", "dark_gray"}, {"9", "blue"}, {"a", "green"}, {"b", "aqua"},
+                {"c", "red"}, {"d", "light_purple"}, {"e", "yellow"}, {"f", "white"},
+                {"k", "obf"}, {"l", "b"}, {"m", "st"},
+                {"n", "u"}, {"o", "i"}, {"r", "reset"}
+        };
 
+        Pattern pattern = Pattern.compile("[§&]x([§&][0-9a-fA-F]){6}");
+        Matcher matcher = pattern.matcher(text);
+        StringBuilder result = new StringBuilder();
+
+        while (matcher.find()) {
+            String hex = matcher.group().replaceAll("[§&]x|[§&]", "");
+            matcher.appendReplacement(result, "<#" + hex + ">");
+        }
+        matcher.appendTail(result);
+        text = result.toString();
+
+        for (String[] entry : formatMap) {
+            text = text.replaceAll("[§&]" + entry[0], "<" + entry[1] + ">");
+        }
+
+        return text;
+    }
     private void copyFromTemplate(RPGItem target) throws UnknownPowerException {
         List<Power> powers = new ArrayList<>(getPowers());
         List<Marker> markers = new ArrayList<>(getMarkers());
@@ -2508,9 +2535,13 @@ public class RPGItem {
 
     public enum DamageMode {
         FIXED,
+        FIXED_WITHOUT_EFFECT,
+        FIXED_RESPECT_VANILLA,
+        FIXED_WITHOUT_EFFECT_RESPECT_VANILLA,
         VANILLA,
         ADDITIONAL,
-        MULTIPLY;
+        ADDITIONAL_RESPECT_VANILLA,
+        MULTIPLY
     }
 
 

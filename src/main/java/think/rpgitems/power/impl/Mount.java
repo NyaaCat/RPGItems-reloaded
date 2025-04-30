@@ -71,7 +71,7 @@ public class Mount extends BasePower {
                     if(!powerEvent.callEvent()) {
                         return PowerResult.fail();
                     }
-                    if (!checkCooldown(getPower(), player, getCooldown(), true, true)) return PowerResult.cd();
+                    if (!checkCooldown(getPower(), player, getCooldown(), showCooldownWarning(), true)) return PowerResult.cd();
                     if(entity.addPassenger(player)){
                         player.getWorld().playSound(player.getLocation(), Sound.ENTITY_HORSE_ARMOR, 1.0F, 1.0F);
                         Listener listener = new Listener() {

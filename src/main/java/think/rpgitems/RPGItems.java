@@ -27,6 +27,7 @@ import java.lang.reflect.InvocationHandler;
 import java.lang.reflect.Proxy;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.UUID;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.regex.Matcher;
@@ -34,6 +35,7 @@ import java.util.regex.Pattern;
 
 public class RPGItems extends JavaPlugin {
 
+    public static UUID rpgitemsUUID = UUID.fromString("9cc2da29-d317-4e4a-9135-9b428159fc64");
     public static Logger logger;
     public static RPGItems plugin;
     private static int version;
@@ -52,6 +54,12 @@ public class RPGItems extends JavaPlugin {
 //    public RPGItems(JavaPluginLoader loader, PluginDescriptionFile description, File dataFolder, File file) {
 //        super(loader, description, dataFolder, file);
 //    }
+
+
+    public static UUID getUUID() {
+        return rpgitemsUUID;
+    }
+
     public static int getVersion() {
         return version;
     }

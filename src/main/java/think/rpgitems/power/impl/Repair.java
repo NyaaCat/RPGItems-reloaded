@@ -169,7 +169,7 @@ public class Repair extends BasePower {
             if(!powerEvent.callEvent()) {
                 return PowerResult.fail();
             }
-            if (!checkCooldown(getPower(), player, getCooldown(), true, true)) return PowerResult.cd();
+            if (!checkCooldown(getPower(), player, getCooldown(), showCooldownWarning(), true)) return PowerResult.cd();
             int max = getItem().getMaxDurability();
             int repairCount = 0;
             for (int i = 0; i < getAmount(); i++) {

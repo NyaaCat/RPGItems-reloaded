@@ -427,12 +427,15 @@ message:
       range: Item '%s' damage set to %d-%d
       value: Item '%s' damage set to %d
   damagemode:
-    additional: Item '%s' damage mode set to additional damage (vanilla minecraft
-      damage plus RPGItem damage)
-    fixed: Item '%s' damage mode set to fixed damage (default)
-    multiply: Item '%s' damage mode set to multiply damage (vanilla minecraft damage
-      multiply by RPGItem damage)
-    vanilla: Item '%s' damage mode set to vanilla damage (use vanilla minecraft damage)
+    additional: Item '%s' damage mode is set to Additional Damage (vanilla damage plus RPG damage)
+    additional_respect_vanilla: Item '%s' damage mode is set to Additional Damage (vanilla damage plus RPG damage) and follows attack cooldown and critical hit logic
+    fixed: Item '%s' damage mode is set to Fixed Damage affected by potions (default)
+    fixed_without_effect: Item '%s' damage mode is set to Fixed Damage not affected by potions
+    fixed_respect_vanilla: Item '%s' damage mode is set to Fixed Damage affected by potions and follows attack cooldown and critical hit logic
+    fixed_without_effect_respect_vanilla: Item '%s' damage mode is set to Fixed Damage not affected by potions and follows attack cooldown and critical hit logic
+    multiply: Item '%s' damage mode is set to Multiply Damage (vanilla damage multiplied by RPG damage)
+    vanilla: Item '%s' damage mode is set to Vanilla Damage
+
   description:
     change: Changed line
     ok: Added line
@@ -590,7 +593,7 @@ message:
     power: 'Power %d %s (%s): %s &r[%s]'
     print: '{itemName}'
     recovering: Failed when reloading, recovering. Your edits saved to %s
-    set: 'Item ''%s'' item set to {itemName} (%s): %d '
+    set: 'Item ''%s'' item set to {itemName} (%s) '
     unlocked: Item %s unlocked. Backed up to %s.
   itemflag:
     add: Added ItemFlag %s
@@ -760,6 +763,7 @@ power:
     backstab: '%.1f %% chance to deal %.1f backstab'
     both: '%.1f %% chance to deal %.1f crit hit, %.1f %% chance to deal %.1f backstab'
     critical: '%.1f %% chance to deal %.1f crit hit'
+  dash: dash towards %s (%.1fs cooldown)
   deathcommand: 1/%d chance to kill the enemy then %s
   deflect: Deflect arrows or fireballs
   economy:
@@ -1030,6 +1034,11 @@ properties:
     main_description: A string condition to match when dealing damage, e.g., melee
       / ranged / magic
     main_name: DamageType
+  dash:
+    speed: speed
+    direction: direction
+    main_description: Dash towards defined direction
+    main_name: Dash
   deathcommand:
     chance: Chance of triggering this power, 1/n
     command: Command to be executed

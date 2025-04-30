@@ -129,7 +129,7 @@ public class GunFu extends BasePower {
             if(!powerEvent.callEvent()) {
                 return PowerResult.fail();
             }
-            if (!checkCooldown(getPower(), player, getCooldown(), true, true)) return PowerResult.cd();
+            if (!checkCooldown(getPower(), player, getCooldown(), showCooldownWarning(), true)) return PowerResult.cd();
             if (!getItem().consumeDurability(stack, getCost())) return PowerResult.cost();
             if (event.getProjectile() instanceof Projectile) {
                 return run(player, (Projectile) event.getProjectile(), event.getForce());
@@ -176,7 +176,7 @@ public class GunFu extends BasePower {
         @Override
         @SuppressWarnings("deprecation")
         public PowerResult<Void> projectileLaunch(Player player, ItemStack stack, ProjectileLaunchEvent event) {
-            if (!checkCooldown(getPower(), player, getCooldown(), true, true)) return PowerResult.cd();
+            if (!checkCooldown(getPower(), player, getCooldown(), showCooldownWarning(), true)) return PowerResult.cd();
             if (!getItem().consumeDurability(stack, getCost())) return PowerResult.cost();
             Projectile projectile = event.getEntity();
             return run(player, projectile, 1).with(null);

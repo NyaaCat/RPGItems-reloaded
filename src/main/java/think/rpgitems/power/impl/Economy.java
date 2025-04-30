@@ -121,7 +121,7 @@ public class Economy extends BasePower {
             if(!powerEvent.callEvent()) {
                 return PowerResult.fail();
             }
-            if (!checkCooldown(getPower(), player, getCoolDown(), true, true))
+            if (!checkCooldown(getPower(), player, getCoolDown(), showCooldownWarning(), true))
                 return isAbortOnFailure() ? PowerResult.abort() : PowerResult.cd();
             EconomyResponse economyResponse;
             if (getAmountToPlayer() > 0) {

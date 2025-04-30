@@ -119,7 +119,7 @@ public class Throw extends BasePower {
             if(!powerEvent.callEvent()) {
                 return PowerResult.fail();
             }
-            if (checkAndSetCooldown(getPower(), player, getCooldown(), true, true, getItem().getUid() + "." + getEntityName() + getEntityData()) && getItem().consumeDurability(stack, getCost())) {
+            if (checkAndSetCooldown(getPower(), player, getCooldown(), showCooldownWarning(), true, getItem().getUid() + "." + getEntityName() + getEntityData()) && getItem().consumeDurability(stack, getCost())) {
                 summonEntity(player);
                 return PowerResult.ok();
             }

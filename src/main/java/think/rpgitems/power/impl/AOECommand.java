@@ -133,7 +133,7 @@ public class AOECommand extends Command {
             PowerActivateEvent powerEvent = new PowerActivateEvent(player,stack,getPower(),argsMap);
             if(!powerEvent.callEvent())
                 return PowerResult.fail();
-            if (!checkAndSetCooldown(getPower(), player, getCooldown(), true, false, getItem().getUid() + "." + getCommand()))
+            if (!checkAndSetCooldown(getPower(), player, getCooldown(), showCooldownWarning(), false, getItem().getUid() + "." + getCommand()))
                 return PowerResult.cd();
             if (!getItem().consumeDurability(stack, getCost())) return PowerResult.cost();
             if (!player.isOnline()) return PowerResult.noop();

@@ -178,7 +178,7 @@ public class Deflect extends BasePower {
                 if (p instanceof TippedArrow) {
                     TippedArrow tippedArrowP = (TippedArrow) p;
                     TippedArrow tippedArrowT = (TippedArrow) t;
-                    tippedArrowT.setBasePotionData(tippedArrowP.getBasePotionData());
+                    tippedArrowT.setBasePotionType(tippedArrowP.getBasePotionType());
                     tippedArrowP.getCustomEffects().forEach(potionEffect -> tippedArrowT.addCustomEffect(potionEffect, true));
                 }
                 if (p instanceof Arrow) {
@@ -186,7 +186,7 @@ public class Deflect extends BasePower {
                     Arrow arrowT = (Arrow) t;
                     arrowT.setDamage(arrowP.getDamage());
                     arrowT.setCritical(arrowP.isCritical());
-                    arrowT.setKnockbackStrength(arrowP.getKnockbackStrength());
+//                    arrowT.setKnockbackStrength(arrowP.getKnockbackStrength());
                     arrowT.setPickupStatus(arrowP.getPickupStatus());
                 }
                 if (p instanceof Trident) {
@@ -217,7 +217,7 @@ public class Deflect extends BasePower {
 
         @Override
         public PowerResult<Void> fire(Player player, ItemStack stack) {
-            if (!checkAndSetCooldown(getPower(), player, getCooldown(), true, true, getItem().getUid() + "." + "deflect.initiative"))
+            if (!checkAndSetCooldown(getPower(), player, getCooldown(), showCooldownWarning(), true, getItem().getUid() + "." + "deflect.initiative"))
                 return PowerResult.noop();
             if (!getItem().consumeDurability(stack, getCost()))
                 return PowerResult.cost();

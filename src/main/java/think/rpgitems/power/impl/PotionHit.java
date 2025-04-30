@@ -74,7 +74,7 @@ public class PotionHit extends BasePower {
 
     @Override
     public String displayText() {
-        return I18n.formatDefault("power.potionhit", (int) ((1d / (double) getChance()) * 100d), getType().key().value(), (getAmplifier()+1), (float)(getDuration()/20));
+        return I18n.formatDefault("power.potionhit", (int) ((1d / (double) getChance()) * 100d), "<lang:effect.minecraft."+getType().key().value()+">", (getAmplifier()+1), (float)(getDuration()/20));
     }
 
     /**

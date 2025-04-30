@@ -1,5 +1,7 @@
 package think.rpgitems.utils;
 
+import com.destroystokyo.paper.profile.PlayerProfile;
+import com.destroystokyo.paper.profile.ProfileProperty;
 import io.papermc.paper.block.BlockPredicate;
 import io.papermc.paper.datacomponent.DataComponentBuilder;
 import io.papermc.paper.datacomponent.DataComponentType;
@@ -33,6 +35,7 @@ import org.bukkit.potion.PotionEffect;
 import org.bukkit.potion.PotionEffectType;
 import org.intellij.lang.annotations.Subst;
 import org.jetbrains.annotations.NotNull;
+import think.rpgitems.RPGItems;
 import think.rpgitems.item.ItemManager;
 import think.rpgitems.item.RPGItem;
 
@@ -55,48 +58,195 @@ public class ComponentUtil {
         if(!s.getKeys(false).isEmpty()) {
             for (String key : s.getKeys(false)) {
                 Map<DataComponentType, Object> componentMap = new HashMap<>();
-                if(key.equalsIgnoreCase("banner_patterns")) {
-                    BannerPatternLayers.Builder builder = BannerPatternLayers.bannerPatternLayers();
-                    ConfigurationSection bannerSection = s.getConfigurationSection(key);
-                    if (bannerSection != null) {
-                        if(bannerSection.getBoolean("unset")){
-                            componentMap.put(DataComponentTypes.BANNER_PATTERNS, ComponentStatus.UNSET);
-                        }
-                        else{
-                            for (String layerKey : bannerSection.getKeys(false)) {
-                                ConfigurationSection layerSection = bannerSection.getConfigurationSection(layerKey);
-                                if (layerSection != null) {
-                                    String color = layerSection.getString("color");
-                                    @Subst("base") String pattern = layerSection.getString("pattern");
-                                    if (color != null && pattern != null) {
-                                        PatternType type = RegistryAccess.registryAccess().getRegistry(RegistryKey.BANNER_PATTERN).get(Key.key(pattern));
-                                        if(type!=null){
-                                            builder.add(new Pattern(DyeColor.valueOf(color.toUpperCase()), type));
+                switch (key.toLowerCase()){
+                    case "banner_patterns": {
+                        BannerPatternLayers.Builder builder = BannerPatternLayers.bannerPatternLayers();
+                        ConfigurationSection bannerSection = s.getConfigurationSection(key);
+                        if (bannerSection != null) {
+                            if(bannerSection.getBoolean("unset")){
+                                componentMap.put(DataComponentTypes.BANNER_PATTERNS, ComponentStatus.UNSET);
+                            }
+                            else{
+                                for (String layerKey : bannerSection.getKeys(false)) {
+                                    ConfigurationSection layerSection = bannerSection.getConfigurationSection(layerKey);
+                                    if (layerSection != null) {
+                                        String color = layerSection.getString("color");
+                                        @Subst("base") String pattern = layerSection.getString("pattern");
+                                        if (color != null && pattern != null) {
+                                            PatternType type = RegistryAccess.registryAccess().getRegistry(RegistryKey.BANNER_PATTERN).get(Key.key(pattern));
+                                            if(type!=null){
+                                                builder.add(new Pattern(DyeColor.valueOf(color.toUpperCase()), type));
+                                            }
                                         }
                                     }
                                 }
                             }
                         }
+                        componentMap.put(DataComponentTypes.BANNER_PATTERNS, builder);
                     }
-                    componentMap.put(DataComponentTypes.BANNER_PATTERNS, builder);
-                }
-                else if(key.equalsIgnoreCase("consumable")){
-                    Consumable.Builder builder = Consumable.consumable();
-                    ConfigurationSection consumableSection = s.getConfigurationSection(key);
-                    if (consumableSection != null) {
-                        if(consumableSection.getBoolean("unset")){
-                            componentMap.put(DataComponentTypes.CONSUMABLE, ComponentStatus.UNSET);
+                    break;
+                    case "consumable": {
+                        Consumable.Builder builder = Consumable.consumable();
+                        ConfigurationSection consumableSection = s.getConfigurationSection(key);
+                        if (consumableSection != null) {
+                            if(consumableSection.getBoolean("unset")){
+                                componentMap.put(DataComponentTypes.CONSUMABLE, ComponentStatus.UNSET);
+                            }else{
+                                String animation = consumableSection.getString("animation", "eat");
+                                builder.animation(ItemUseAnimation.valueOf(animation.toUpperCase()));
+                                double consumeSeconds = consumableSection.getDouble("consume_seconds", 1.6);
+                                builder.consumeSeconds((float) consumeSeconds);
+                                boolean hasConsumeParticles = consumableSection.getBoolean("has_consume_particles", true);
+                                builder.hasConsumeParticles(hasConsumeParticles);
+                                @Subst("entity.generic.eat") String sound = consumableSection.getString("sound", "minecraft:entity.generic.eat");
+                                builder.sound(Key.key(sound));
+                                if (consumableSection.contains("on_consume_effects")) {
+                                    ConfigurationSection effectsSection = consumableSection.getConfigurationSection("on_consume_effects");
+                                    if (effectsSection != null) {
+                                        for (String effectKey : effectsSection.getKeys(false)) {
+                                            ConfigurationSection effectSection = effectsSection.getConfigurationSection(effectKey);
+                                            if (effectSection != null) {
+                                                String type = effectSection.getString("type");
+                                                if (type == null) continue;
+
+                                                switch (type) {
+                                                    case "apply_effects":
+                                                        List<ConsumeEffect> effects = new ArrayList<>();
+                                                        if (effectSection.contains("effects")) {
+                                                            for (String effKey : effectSection.getConfigurationSection("effects").getKeys(false)) {
+                                                                ConfigurationSection effSection = effectSection.getConfigurationSection("effects." + effKey);
+                                                                if (effSection != null) {
+                                                                    @Subst("speed") String id = effSection.getString("id");
+                                                                    int amplifier = effSection.getInt("amplifier", 0);
+                                                                    int duration = effSection.getInt("duration", 200);
+                                                                    double probability = effSection.getDouble("probability", 1.0);
+                                                                    if (id != null) {
+                                                                        PotionEffectType potionEffectType = RegistryAccess.registryAccess().getRegistry(RegistryKey.MOB_EFFECT).get(Key.key(id));
+                                                                        if (potionEffectType != null) {
+                                                                            effects.add(ConsumeEffect.applyStatusEffects(List.of(new PotionEffect(potionEffectType,duration,amplifier)),(float) probability));
+                                                                        }
+                                                                    }
+                                                                }
+                                                            }
+                                                        }
+                                                        builder.addEffects(effects);
+                                                        break;
+
+                                                    case "clear_all_effects":
+                                                        builder.addEffect(ConsumeEffect.clearAllStatusEffects());
+                                                        break;
+
+                                                    case "play_sound":
+                                                        @Subst("entity.player.burp") String playSound = effectSection.getString("sound");
+                                                        if (playSound != null) {
+                                                            builder.addEffect(ConsumeEffect.playSoundConsumeEffect(Key.key(playSound)));
+                                                        }
+                                                        break;
+
+                                                    case "remove_effects":
+                                                        List<String> removeEffects = effectSection.getStringList("effects");
+                                                        if (!removeEffects.isEmpty()) {
+                                                            List<PotionEffectType> effectsList = new ArrayList<>();
+                                                            for (@Subst("speed") String effect : removeEffects) {
+                                                                PotionEffectType effectType = RegistryAccess.registryAccess()
+                                                                        .getRegistry(RegistryKey.MOB_EFFECT)
+                                                                        .get(Key.key(effect));
+                                                                if (effectType != null) {
+                                                                    effectsList.add(effectType);
+                                                                }
+                                                            }
+                                                            if (!effectsList.isEmpty()) {
+                                                                RegistryKeySet<PotionEffectType> keySet = RegistrySet.keySetFromValues(
+                                                                        RegistryKey.MOB_EFFECT, effectsList
+                                                                );
+                                                                builder.addEffect(ConsumeEffect.removeEffects(keySet));
+                                                            }
+                                                        }
+                                                        break;
+
+                                                    case "teleport_randomly":
+                                                        double diameter = effectSection.getDouble("diameter", 16.0);
+                                                        builder.addEffect(ConsumeEffect.teleportRandomlyEffect((float) diameter));
+                                                        break;
+                                                    default:
+                                                        break;
+                                                }
+                                            }
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                        componentMap.put(DataComponentTypes.CONSUMABLE, builder);
+                    }
+                    break;
+                    case "can_place_on":
+                    case "can_break": {
+                        ItemAdventurePredicate.Builder builder = ItemAdventurePredicate.itemAdventurePredicate();
+                        ConfigurationSection section = s.getConfigurationSection(key);
+                        if (section != null) {
+                            if(section.getBoolean("unset")){
+                                if(key.equalsIgnoreCase("can_place_on")){
+                                    componentMap.put(DataComponentTypes.CAN_PLACE_ON, ComponentStatus.UNSET);
+                                }else{
+                                    componentMap.put(DataComponentTypes.CAN_BREAK, ComponentStatus.UNSET);
+                                }
+                            }
                         }else{
-                            String animation = consumableSection.getString("animation", "eat");
-                            builder.animation(ItemUseAnimation.valueOf(animation.toUpperCase()));
-                            double consumeSeconds = consumableSection.getDouble("consume_seconds", 1.6);
-                            builder.consumeSeconds((float) consumeSeconds);
-                            boolean hasConsumeParticles = consumableSection.getBoolean("has_consume_particles", true);
-                            builder.hasConsumeParticles(hasConsumeParticles);
-                            @Subst("entity.generic.eat") String sound = consumableSection.getString("sound", "minecraft:entity.generic.eat");
-                            builder.sound(Key.key(sound));
-                            if (consumableSection.contains("on_consume_effects")) {
-                                ConfigurationSection effectsSection = consumableSection.getConfigurationSection("on_consume_effects");
+                            List<String> blockTypes = s.getStringList(key);
+                            if (!blockTypes.isEmpty()) {
+                                List<BlockType> blocks = new ArrayList<>();
+                                for (@Subst("stone") String block : blockTypes) {
+                                    BlockType blockType = RegistryAccess.registryAccess()
+                                            .getRegistry(RegistryKey.BLOCK)
+                                            .get(Key.key(block));
+                                    if (blockType != null) {
+                                        blocks.add(blockType);
+                                    }
+                                }
+
+                                if (!blocks.isEmpty()) {
+                                    RegistryKeySet<BlockType> blockKeySet = RegistrySet.keySetFromValues(
+                                            RegistryKey.BLOCK, blocks
+                                    );
+                                    BlockPredicate blockPredicate = BlockPredicate.predicate()
+                                            .blocks(blockKeySet)
+                                            .build();
+                                    builder.addPredicate(blockPredicate);
+                                }
+                            }
+
+
+                            if (key.equalsIgnoreCase("can_place_on")) {
+                                componentMap.put(DataComponentTypes.CAN_PLACE_ON, builder);
+                            } else {
+                                componentMap.put(DataComponentTypes.CAN_BREAK, builder);
+                            }
+                        }
+                    }
+                    break;
+                    case "damage_resistance": {
+                        ConfigurationSection section = s.getConfigurationSection(key);
+                        if(section != null){
+                            if(section.getBoolean("unset")){
+                                componentMap.put(DataComponentTypes.DAMAGE_RESISTANT, ComponentStatus.UNSET);
+                            }else{
+                                if(s.getString(key)!=null){
+                                    componentMap.put(DataComponentTypes.DAMAGE_RESISTANT,DamageResistant.damageResistant(TagKey.create(RegistryKey.DAMAGE_TYPE,Key.key(s.getString(key)))));
+                                }
+                            }
+                        }
+                    }
+                    break;
+                    case "death_protection":{
+                        DeathProtection.Builder builder = DeathProtection.deathProtection();
+                        ConfigurationSection deathSection = s.getConfigurationSection(key);
+                        if (deathSection != null) {
+                            if(deathSection.getBoolean("unset")){
+                                componentMap.put(DataComponentTypes.DEATH_PROTECTION, ComponentStatus.UNSET);
+                            }
+                            else if (deathSection.contains("death_effects")) {
+                                ConfigurationSection effectsSection = deathSection.getConfigurationSection("death_effects");
                                 if (effectsSection != null) {
                                     for (String effectKey : effectsSection.getKeys(false)) {
                                         ConfigurationSection effectSection = effectsSection.getConfigurationSection(effectKey);
@@ -171,484 +321,380 @@ public class ComponentUtil {
                                 }
                             }
                         }
+                        componentMap.put(DataComponentTypes.DEATH_PROTECTION, builder);
                     }
-                    componentMap.put(DataComponentTypes.CONSUMABLE, builder);
-                }
-                else if(key.equalsIgnoreCase("can_place_on") || key.equalsIgnoreCase("can_break")) {
-                    ItemAdventurePredicate.Builder builder = ItemAdventurePredicate.itemAdventurePredicate();
-                    ConfigurationSection section = s.getConfigurationSection(key);
-                    if (section != null) {
-                        if(section.getBoolean("unset")){
-                            if(key.equalsIgnoreCase("can_place_on")){
-                                componentMap.put(DataComponentTypes.CAN_PLACE_ON, ComponentStatus.UNSET);
-                            }else{
-                                componentMap.put(DataComponentTypes.CAN_BREAK, ComponentStatus.UNSET);
+                    break;
+                    case "dyed_color": {
+                        DyedItemColor.Builder builder = DyedItemColor.dyedItemColor();
+                        ConfigurationSection dyedSection = s.getConfigurationSection(key);
+                        if (dyedSection != null) {
+                            if(dyedSection.getBoolean("unset")){
+                                componentMap.put(DataComponentTypes.DYED_COLOR, ComponentStatus.UNSET);
                             }
-                        }
-                    }else{
-                        List<String> blockTypes = s.getStringList(key);
-                        if (!blockTypes.isEmpty()) {
-                            List<BlockType> blocks = new ArrayList<>();
-                            for (@Subst("stone") String block : blockTypes) {
-                                BlockType blockType = RegistryAccess.registryAccess()
-                                        .getRegistry(RegistryKey.BLOCK)
-                                        .get(Key.key(block));
-                                if (blockType != null) {
-                                    blocks.add(blockType);
-                                }
-                            }
-
-                            if (!blocks.isEmpty()) {
-                                RegistryKeySet<BlockType> blockKeySet = RegistrySet.keySetFromValues(
-                                        RegistryKey.BLOCK, blocks
-                                );
-                                BlockPredicate blockPredicate = BlockPredicate.predicate()
-                                        .blocks(blockKeySet)
-                                        .build();
-                                builder.addPredicate(blockPredicate);
-                            }
-                        }
-
-
-                        if (key.equalsIgnoreCase("can_place_on")) {
-                            componentMap.put(DataComponentTypes.CAN_PLACE_ON, builder);
-                        } else {
-                            componentMap.put(DataComponentTypes.CAN_BREAK, builder);
-                        }
-                    }
-                }
-                else if(key.equalsIgnoreCase("damage_resistance")) {
-                    ConfigurationSection section = s.getConfigurationSection(key);
-                    if(section != null){
-                        if(section.getBoolean("unset")){
-                            componentMap.put(DataComponentTypes.DAMAGE_RESISTANT, ComponentStatus.UNSET);
                         }else{
-                            if(s.getString(key)!=null){
-                                componentMap.put(DataComponentTypes.DAMAGE_RESISTANT,DamageResistant.damageResistant(TagKey.create(RegistryKey.DAMAGE_TYPE,Key.key(s.getString(key)))));
-                            }
-                        }
-                    }
-                }
-                else if(key.equalsIgnoreCase("death_protection")){
-                    DeathProtection.Builder builder = DeathProtection.deathProtection();
-                    ConfigurationSection deathSection = s.getConfigurationSection(key);
-                    if (deathSection != null) {
-                        if(deathSection.getBoolean("unset")){
-                            componentMap.put(DataComponentTypes.DEATH_PROTECTION, ComponentStatus.UNSET);
-                        }
-                        else if (deathSection.contains("death_effects")) {
-                            ConfigurationSection effectsSection = deathSection.getConfigurationSection("death_effects");
-                            if (effectsSection != null) {
-                                for (String effectKey : effectsSection.getKeys(false)) {
-                                    ConfigurationSection effectSection = effectsSection.getConfigurationSection(effectKey);
-                                    if (effectSection != null) {
-                                        String type = effectSection.getString("type");
-                                        if (type == null) continue;
-
-                                        switch (type) {
-                                            case "apply_effects":
-                                                List<ConsumeEffect> effects = new ArrayList<>();
-                                                if (effectSection.contains("effects")) {
-                                                    for (String effKey : effectSection.getConfigurationSection("effects").getKeys(false)) {
-                                                        ConfigurationSection effSection = effectSection.getConfigurationSection("effects." + effKey);
-                                                        if (effSection != null) {
-                                                            @Subst("speed") String id = effSection.getString("id");
-                                                            int amplifier = effSection.getInt("amplifier", 0);
-                                                            int duration = effSection.getInt("duration", 200);
-                                                            double probability = effSection.getDouble("probability", 1.0);
-                                                            if (id != null) {
-                                                                PotionEffectType potionEffectType = RegistryAccess.registryAccess().getRegistry(RegistryKey.MOB_EFFECT).get(Key.key(id));
-                                                                if (potionEffectType != null) {
-                                                                    effects.add(ConsumeEffect.applyStatusEffects(List.of(new PotionEffect(potionEffectType,duration,amplifier)),(float) probability));
-                                                                }
-                                                            }
-                                                        }
-                                                    }
-                                                }
-                                                builder.addEffects(effects);
-                                                break;
-
-                                            case "clear_all_effects":
-                                                builder.addEffect(ConsumeEffect.clearAllStatusEffects());
-                                                break;
-
-                                            case "play_sound":
-                                                @Subst("entity.player.burp") String playSound = effectSection.getString("sound");
-                                                if (playSound != null) {
-                                                    builder.addEffect(ConsumeEffect.playSoundConsumeEffect(Key.key(playSound)));
-                                                }
-                                                break;
-
-                                            case "remove_effects":
-                                                List<String> removeEffects = effectSection.getStringList("effects");
-                                                if (!removeEffects.isEmpty()) {
-                                                    List<PotionEffectType> effectsList = new ArrayList<>();
-                                                    for (@Subst("speed") String effect : removeEffects) {
-                                                        PotionEffectType effectType = RegistryAccess.registryAccess()
-                                                                .getRegistry(RegistryKey.MOB_EFFECT)
-                                                                .get(Key.key(effect));
-                                                        if (effectType != null) {
-                                                            effectsList.add(effectType);
-                                                        }
-                                                    }
-                                                    if (!effectsList.isEmpty()) {
-                                                        RegistryKeySet<PotionEffectType> keySet = RegistrySet.keySetFromValues(
-                                                                RegistryKey.MOB_EFFECT, effectsList
-                                                        );
-                                                        builder.addEffect(ConsumeEffect.removeEffects(keySet));
-                                                    }
-                                                }
-                                                break;
-
-                                            case "teleport_randomly":
-                                                double diameter = effectSection.getDouble("diameter", 16.0);
-                                                builder.addEffect(ConsumeEffect.teleportRandomlyEffect((float) diameter));
-                                                break;
-                                            default:
-                                                break;
+                            String colorValue = s.getString(key);
+                            if (colorValue != null) {
+                                Color color;
+                                if (colorValue.contains(",")) {
+                                    String[] rgbParts = colorValue.split(",");
+                                    if (rgbParts.length == 3) {
+                                        try {
+                                            int red = Integer.parseInt(rgbParts[0].trim());
+                                            int green = Integer.parseInt(rgbParts[1].trim());
+                                            int blue = Integer.parseInt(rgbParts[2].trim());
+                                            color = Color.fromRGB(red, green, blue);
+                                        } catch (NumberFormatException e) {
+                                            throw new IllegalArgumentException("Invalid RGB format: " + colorValue);
                                         }
-                                    }
-                                }
-                            }
-                        }
-                    }
-                    componentMap.put(DataComponentTypes.DEATH_PROTECTION, builder);
-                }
-                else if(key.equalsIgnoreCase("dyed_color")) {
-                    DyedItemColor.Builder builder = DyedItemColor.dyedItemColor();
-                    ConfigurationSection dyedSection = s.getConfigurationSection(key);
-                    if (dyedSection != null) {
-                        if(dyedSection.getBoolean("unset")){
-                            componentMap.put(DataComponentTypes.DYED_COLOR, ComponentStatus.UNSET);
-                        }
-                    }else{
-                        String colorValue = s.getString(key);
-                        if (colorValue != null) {
-                            Color color;
-                            if (colorValue.contains(",")) {
-                                String[] rgbParts = colorValue.split(",");
-                                if (rgbParts.length == 3) {
-                                    try {
-                                        int red = Integer.parseInt(rgbParts[0].trim());
-                                        int green = Integer.parseInt(rgbParts[1].trim());
-                                        int blue = Integer.parseInt(rgbParts[2].trim());
-                                        color = Color.fromRGB(red, green, blue);
-                                    } catch (NumberFormatException e) {
-                                        throw new IllegalArgumentException("Invalid RGB format: " + colorValue);
+                                    } else {
+                                        throw new IllegalArgumentException("Invalid RGB format, expected 3 values: " + colorValue);
                                     }
                                 } else {
-                                    throw new IllegalArgumentException("Invalid RGB format, expected 3 values: " + colorValue);
+                                    try {
+                                        int rgb = Integer.parseInt(colorValue.trim());
+                                        color = Color.fromRGB(rgb);
+                                    } catch (NumberFormatException e) {
+                                        throw new IllegalArgumentException("Invalid color value: " + colorValue);
+                                    }
                                 }
+                                builder.color(color);
+                            }
+                        }
+                        componentMap.put(DataComponentTypes.DYED_COLOR, builder);
+                    }
+                    break;
+                    case "enchantable": {
+                        if(s.isConfigurationSection(key)){
+                            if(s.getConfigurationSection(key).getBoolean("unset")){
+                                componentMap.put(DataComponentTypes.ENCHANTABLE, ComponentStatus.UNSET);
+                            }else if(s.getInt(key)>=1) {
+                                componentMap.put(DataComponentTypes.ENCHANTABLE,Enchantable.enchantable(s.getInt(key)));
+                            }
+                        }
+                    }
+                    break;
+                    case "enchantment_glint_override": {
+                        if(s.isConfigurationSection(key)){
+                            if(s.getConfigurationSection(key).getBoolean("unset")){
+                                componentMap.put(DataComponentTypes.ENCHANTMENT_GLINT_OVERRIDE, ComponentStatus.UNSET);
+                            }
+                        }else if(s.isBoolean(key)) {
+                            componentMap.put(DataComponentTypes.ENCHANTMENT_GLINT_OVERRIDE,s.getBoolean(key));
+                        }
+                    }
+                    break;
+                    case "equippable": {
+                        Equippable.Builder builder = Equippable.equippable(EquipmentSlot.CHEST);
+                        ConfigurationSection equippableSection = s.getConfigurationSection(key);
+                        if (equippableSection != null) {
+                            if(equippableSection.getBoolean("unset")){
+                                componentMap.put(DataComponentTypes.EQUIPPABLE, ComponentStatus.UNSET);
+                            }else{
+                                String slot = equippableSection.getString("slot");
+                                if (slot == null) {
+                                    throw new IllegalArgumentException("Missing required 'slot' field in equippable configuration.");
+                                }
+                                builder = Equippable.equippable(EquipmentSlot.valueOf(slot.toUpperCase()));
+                                if (equippableSection.contains("allowed_entities")) {
+                                    List<String> entities = equippableSection.getStringList("allowed_entities");
+                                    if (!entities.isEmpty()) {
+                                        RegistryKeySet<EntityType> allowedEntities = RegistrySet.keySetFromValues(
+                                                RegistryKey.ENTITY_TYPE,
+                                                entities.stream()
+                                                        .map(entity -> RegistryAccess.registryAccess()
+                                                                .getRegistry(RegistryKey.ENTITY_TYPE)
+                                                                .get(Key.key(entity)))
+                                                        .filter(Objects::nonNull)
+                                                        .toList()
+                                        );
+                                        builder.allowedEntities(allowedEntities);
+                                    }
+                                }
+
+                                String assetId = equippableSection.getString("asset_id");
+                                if (assetId != null) {
+                                    builder.assetId(Key.key(assetId));
+                                }
+
+                                String cameraOverlay = equippableSection.getString("camera_overlay");
+                                if (cameraOverlay != null) {
+                                    builder.cameraOverlay(Key.key(cameraOverlay));
+                                }
+
+                                boolean damageOnHurt = equippableSection.getBoolean("damage_on_hurt", false);
+                                builder.damageOnHurt(damageOnHurt);
+
+                                boolean dispensable = equippableSection.getBoolean("dispensable", false);
+                                builder.dispensable(dispensable);
+
+                                String equipSound = equippableSection.getString("equip_sound");
+                                if (equipSound != null) {
+                                    builder.equipSound(Key.key(equipSound));
+                                }
+
+                                boolean swappable = equippableSection.getBoolean("swappable", true);
+                                builder.swappable(swappable);
+                            }
+                        }
+                        componentMap.put(DataComponentTypes.EQUIPPABLE, builder);
+                    }
+                    break;
+                    case "food": {
+                        FoodProperties.Builder builder = FoodProperties.food();
+                        ConfigurationSection foodSection = s.getConfigurationSection(key);
+                        if (foodSection != null) {
+                            if(foodSection.getBoolean("unset")){
+                                componentMap.put(DataComponentTypes.FOOD, ComponentStatus.UNSET);
+                            }else{
+                                boolean canAlwaysEat = foodSection.getBoolean("can_always_eat", false);
+                                builder.canAlwaysEat(canAlwaysEat);
+
+                                int nutrition = Math.max(foodSection.getInt("nutrition"), 0);
+                                builder.nutrition(nutrition);
+
+                                float saturation = (float) foodSection.getDouble("saturation", 0.0);
+                                builder.saturation(saturation);
+                            }
+                        }
+                        componentMap.put(DataComponentTypes.FOOD, builder);
+                    }
+                    break;
+                    case "glider": {
+                        ConfigurationSection gliderSection = s.getConfigurationSection(key);
+                        if (gliderSection != null) {
+                            if(gliderSection.getBoolean("unset")){
+                                componentMap.put(DataComponentTypes.GLIDER, ComponentStatus.UNSET);
+                            }
+                        }else if(s.getBoolean(key)){
+                            componentMap.put(DataComponentTypes.GLIDER, ComponentStatus.NON_VALUED);
+                        }
+                    }
+                    break;
+                    case "hide_additional_tooltip": {
+                        ConfigurationSection section = s.getConfigurationSection(key);
+                        if (section != null) {
+                            if(section.getBoolean("unset")){
+                                componentMap.put(DataComponentTypes.HIDE_ADDITIONAL_TOOLTIP, ComponentStatus.UNSET);
+                            }
+                        }else if(s.getBoolean(key)){
+                            componentMap.put(DataComponentTypes.HIDE_ADDITIONAL_TOOLTIP, ComponentStatus.NON_VALUED);
+                        }
+                    }
+                    break;
+                    case "hide_tooltip": {
+                        ConfigurationSection section = s.getConfigurationSection(key);
+                        if (section != null) {
+                            if(section.getBoolean("unset")){
+                                componentMap.put(DataComponentTypes.HIDE_TOOLTIP, ComponentStatus.UNSET);
+                            }
+                        }else if(s.getBoolean(key)){
+                            componentMap.put(DataComponentTypes.HIDE_TOOLTIP, ComponentStatus.NON_VALUED);
+                        }
+                    }
+                    break;
+                    case "intangible_projectile": {
+                        ConfigurationSection section = s.getConfigurationSection(key);
+                        if (section != null) {
+                            if(section.getBoolean("unset")){
+                                componentMap.put(DataComponentTypes.INTANGIBLE_PROJECTILE, ComponentStatus.UNSET);
+                            }
+                        }else if(s.getBoolean(key)){
+                            componentMap.put(DataComponentTypes.INTANGIBLE_PROJECTILE, ComponentStatus.NON_VALUED);
+                        }
+                    }
+                    break;
+                    case "max_damage": {
+                        if(s.getInt("max_stack_size") > 1){
+                            throw new IllegalArgumentException("Item cannot be both damageable and stackable"+(item == null ? "" : ":"+item.getName()));
+                        }
+                        ConfigurationSection section = s.getConfigurationSection(key);
+                        if (section != null) {
+                            if(section.getBoolean("unset")){
+                                componentMap.put(DataComponentTypes.MAX_DAMAGE, ComponentStatus.UNSET);
+                            }
+                        }else if(s.isInt(key)&&s.getInt(key)>0){
+                            componentMap.put(DataComponentTypes.MAX_DAMAGE, s.getInt(key));
+                        }
+                    }
+                    break;
+                    case "max_stack_size": {
+                        if(s.isConfigurationSection("max_damage")){
+                            throw new IllegalArgumentException("Item cannot be both damageable and stackable"+itemName);
+                        }
+                        ConfigurationSection section = s.getConfigurationSection(key);
+                        if (section != null) {
+                            if(section.getBoolean("unset")){
+                                componentMap.put(DataComponentTypes.MAX_STACK_SIZE, ComponentStatus.UNSET);
+                            }
+                        }else if(s.getInt(key)>=1&&s.getInt(key)<=99){
+                            componentMap.put(DataComponentTypes.MAX_STACK_SIZE, s.getInt(key));
+                        }else{
+                            throw new IllegalArgumentException("Max stack size should be between 1 and 99"+itemName);
+                        }
+                    }
+                    break;
+                    case "profile":{
+                        ConfigurationSection section = s.getConfigurationSection(key);
+                        if (section != null) {
+                            if(section.getBoolean("unset")){
+                                componentMap.put(DataComponentTypes.PROFILE, ComponentStatus.UNSET);
+                            }
+                        }else if(s.getString(key)!=null){
+                            String value = s.getString(key);
+                            ResolvableProfile.Builder profile;
+                            if(isBase64(value)){
+                                profile = ResolvableProfile.resolvableProfile().addProperty(new ProfileProperty("textures", value)).uuid(RPGItems.getUUID());
                             } else {
-                                try {
-                                    int rgb = Integer.parseInt(colorValue.trim());
-                                    color = Color.fromRGB(rgb);
-                                } catch (NumberFormatException e) {
-                                    throw new IllegalArgumentException("Invalid color value: " + colorValue);
-                                }
+                                profile = ResolvableProfile.resolvableProfile().name(value).uuid(RPGItems.getUUID());
                             }
-                            builder.color(color);
+                            componentMap.put(DataComponentTypes.PROFILE, profile);
                         }
                     }
-                    componentMap.put(DataComponentTypes.DYED_COLOR, builder);
-                }
-                else if(key.equalsIgnoreCase("enchantable")) {
-                    if(s.isConfigurationSection(key)){
-                        if(s.getConfigurationSection(key).getBoolean("unset")){
-                            componentMap.put(DataComponentTypes.ENCHANTABLE, ComponentStatus.UNSET);
-                        }else if(s.getInt(key)>=1) {
-                            componentMap.put(DataComponentTypes.ENCHANTABLE,Enchantable.enchantable(s.getInt(key)));
-                        }
-                    }
-                }
-                else if(key.equalsIgnoreCase("enchantment_glint_override")) {
-                    if(s.isConfigurationSection(key)){
-                        if(s.getConfigurationSection(key).getBoolean("unset")){
-                            componentMap.put(DataComponentTypes.ENCHANTMENT_GLINT_OVERRIDE, ComponentStatus.UNSET);
-                        }
-                    }else if(s.isBoolean(key)) {
-                        componentMap.put(DataComponentTypes.ENCHANTMENT_GLINT_OVERRIDE,s.getBoolean(key));
-                    }
-                }
-                else if(key.equalsIgnoreCase("equippable")) {
-                    Equippable.Builder builder = Equippable.equippable(EquipmentSlot.CHEST);
-                    ConfigurationSection equippableSection = s.getConfigurationSection(key);
-                    if (equippableSection != null) {
-                        if(equippableSection.getBoolean("unset")){
-                            componentMap.put(DataComponentTypes.EQUIPPABLE, ComponentStatus.UNSET);
-                        }else{
-                            String slot = equippableSection.getString("slot");
-                            if (slot == null) {
-                                throw new IllegalArgumentException("Missing required 'slot' field in equippable configuration.");
+                    break;
+                    case "rarity": {
+                        ConfigurationSection section = s.getConfigurationSection(key);
+                        if (section != null) {
+                            if(section.getBoolean("unset")){
+                                componentMap.put(DataComponentTypes.RARITY, ComponentStatus.UNSET);
                             }
-                            builder = Equippable.equippable(EquipmentSlot.valueOf(slot.toUpperCase()));
-                            if (equippableSection.contains("allowed_entities")) {
-                                List<String> entities = equippableSection.getStringList("allowed_entities");
-                                if (!entities.isEmpty()) {
-                                    RegistryKeySet<EntityType> allowedEntities = RegistrySet.keySetFromValues(
-                                            RegistryKey.ENTITY_TYPE,
-                                            entities.stream()
-                                                    .map(entity -> RegistryAccess.registryAccess()
-                                                            .getRegistry(RegistryKey.ENTITY_TYPE)
-                                                            .get(Key.key(entity)))
-                                                    .filter(Objects::nonNull)
-                                                    .toList()
-                                    );
-                                    builder.allowedEntities(allowedEntities);
-                                }
-                            }
-
-                            String assetId = equippableSection.getString("asset_id");
-                            if (assetId != null) {
-                                builder.assetId(Key.key(assetId));
-                            }
-
-                            String cameraOverlay = equippableSection.getString("camera_overlay");
-                            if (cameraOverlay != null) {
-                                builder.cameraOverlay(Key.key(cameraOverlay));
-                            }
-
-                            boolean damageOnHurt = equippableSection.getBoolean("damage_on_hurt", false);
-                            builder.damageOnHurt(damageOnHurt);
-
-                            boolean dispensable = equippableSection.getBoolean("dispensable", false);
-                            builder.dispensable(dispensable);
-
-                            String equipSound = equippableSection.getString("equip_sound");
-                            if (equipSound != null) {
-                                builder.equipSound(Key.key(equipSound));
-                            }
-
-                            boolean swappable = equippableSection.getBoolean("swappable", true);
-                            builder.swappable(swappable);
+                        }else if(s.getString(key)!=null){
+                            componentMap.put(DataComponentTypes.RARITY, ItemRarity.valueOf(s.getString(key).toUpperCase()));
                         }
                     }
-                    componentMap.put(DataComponentTypes.EQUIPPABLE, builder);
-                }
-                else if(key.equalsIgnoreCase("food")) {
-                    FoodProperties.Builder builder = FoodProperties.food();
-                    ConfigurationSection foodSection = s.getConfigurationSection(key);
-                    if (foodSection != null) {
-                        if(foodSection.getBoolean("unset")){
-                            componentMap.put(DataComponentTypes.FOOD, ComponentStatus.UNSET);
-                        }else{
-                            boolean canAlwaysEat = foodSection.getBoolean("can_always_eat", false);
-                            builder.canAlwaysEat(canAlwaysEat);
+                    break;
+                    case "tool": {
+                        Tool.Builder builder = Tool.tool();
 
-                            int nutrition = Math.max(foodSection.getInt("nutrition"), 0);
-                            builder.nutrition(nutrition);
+                        ConfigurationSection toolSection = s.getConfigurationSection(key);
+                        if (toolSection != null) {
+                            if(toolSection.getBoolean("unset")){
+                                componentMap.put(DataComponentTypes.TOOL, ComponentStatus.UNSET);
+                            }else{
+                                int damagePerBlock = toolSection.getInt("damage_per_block", 1);
+                                builder.damagePerBlock(Math.max(0, damagePerBlock));
 
-                            float saturation = (float) foodSection.getDouble("saturation", 0.0);
-                            builder.saturation(saturation);
-                        }
-                    }
-                    componentMap.put(DataComponentTypes.FOOD, builder);
-                }
-                else if(key.equalsIgnoreCase("glider")) {
-                    ConfigurationSection gliderSection = s.getConfigurationSection(key);
-                    if (gliderSection != null) {
-                        if(gliderSection.getBoolean("unset")){
-                            componentMap.put(DataComponentTypes.GLIDER, ComponentStatus.UNSET);
-                        }
-                    }else if(s.getBoolean(key)){
-                        componentMap.put(DataComponentTypes.GLIDER, ComponentStatus.NON_VALUED);
-                    }
-                }
-                else if(key.equalsIgnoreCase("hide_additional_tooltip")) {
-                    ConfigurationSection section = s.getConfigurationSection(key);
-                    if (section != null) {
-                        if(section.getBoolean("unset")){
-                            componentMap.put(DataComponentTypes.HIDE_ADDITIONAL_TOOLTIP, ComponentStatus.UNSET);
-                        }
-                    }else if(s.getBoolean(key)){
-                        componentMap.put(DataComponentTypes.HIDE_ADDITIONAL_TOOLTIP, ComponentStatus.NON_VALUED);
-                    }
-                }
-                else if(key.equalsIgnoreCase("hide_tooltip")) {
-                    ConfigurationSection section = s.getConfigurationSection(key);
-                    if (section != null) {
-                        if(section.getBoolean("unset")){
-                            componentMap.put(DataComponentTypes.HIDE_TOOLTIP, ComponentStatus.UNSET);
-                        }
-                    }else if(s.getBoolean(key)){
-                        componentMap.put(DataComponentTypes.HIDE_TOOLTIP, ComponentStatus.NON_VALUED);
-                    }
-                }
-                else if(key.equalsIgnoreCase("intangible_projectile")) {
-                    ConfigurationSection section = s.getConfigurationSection(key);
-                    if (section != null) {
-                        if(section.getBoolean("unset")){
-                            componentMap.put(DataComponentTypes.INTANGIBLE_PROJECTILE, ComponentStatus.UNSET);
-                        }
-                    }else if(s.getBoolean(key)){
-                        componentMap.put(DataComponentTypes.INTANGIBLE_PROJECTILE, ComponentStatus.NON_VALUED);
-                    }
-                }
-                else if(key.equalsIgnoreCase("max_damage")) {
-                    if(s.getInt("max_stack_size") > 1){
-                        throw new IllegalArgumentException("Item cannot be both damageable and stackable"+(item == null ? "" : ":"+item.getName()));
-                    }
-                    ConfigurationSection section = s.getConfigurationSection(key);
-                    if (section != null) {
-                        if(section.getBoolean("unset")){
-                            componentMap.put(DataComponentTypes.MAX_DAMAGE, ComponentStatus.UNSET);
-                        }
-                    }else if(s.isInt(key)&&s.getInt(key)>0){
-                        componentMap.put(DataComponentTypes.MAX_DAMAGE, s.getInt(key));
-                    }
-                }
-                else if(key.equalsIgnoreCase("max_stack_size")) {
-                    if(s.isConfigurationSection("max_damage")){
-                        throw new IllegalArgumentException("Item cannot be both damageable and stackable"+itemName);
-                    }
-                    ConfigurationSection section = s.getConfigurationSection(key);
-                    if (section != null) {
-                        if(section.getBoolean("unset")){
-                            componentMap.put(DataComponentTypes.MAX_STACK_SIZE, ComponentStatus.UNSET);
-                        }
-                    }else if(s.getInt(key)>=1&&s.getInt(key)<=99){
-                        componentMap.put(DataComponentTypes.MAX_STACK_SIZE, s.getInt(key));
-                    }else{
-                        throw new IllegalArgumentException("Max stack size should be between 1 and 99"+itemName);
-                    }
-                }
-                else if(key.equalsIgnoreCase("rarity")) {
-                    ConfigurationSection section = s.getConfigurationSection(key);
-                    if (section != null) {
-                        if(section.getBoolean("unset")){
-                            componentMap.put(DataComponentTypes.RARITY, ComponentStatus.UNSET);
-                        }
-                    }else if(s.getString(key)!=null){
-                        componentMap.put(DataComponentTypes.RARITY, ItemRarity.valueOf(s.getString(key).toUpperCase()));
-                    }
-                }
-                else if(key.equalsIgnoreCase("tool")) {
-                    Tool.Builder builder = Tool.tool();
+                                float defaultMiningSpeed = (float) toolSection.getDouble("default_mining_speed", 1.0);
+                                builder.defaultMiningSpeed(Math.max(0.0f, defaultMiningSpeed));
 
-                    ConfigurationSection toolSection = s.getConfigurationSection(key);
-                    if (toolSection != null) {
-                        if(toolSection.getBoolean("unset")){
-                            componentMap.put(DataComponentTypes.TOOL, ComponentStatus.UNSET);
-                        }else{
-                            int damagePerBlock = toolSection.getInt("damage_per_block", 1);
-                            builder.damagePerBlock(Math.max(0, damagePerBlock));
+                                if (toolSection.contains("rules")) {
+                                    @NotNull List<Map<?, ?>> rulesList = toolSection.getMapList("rules");
+                                    List<Tool.Rule> rules = new ArrayList<>();
 
-                            float defaultMiningSpeed = (float) toolSection.getDouble("default_mining_speed", 1.0);
-                            builder.defaultMiningSpeed(Math.max(0.0f, defaultMiningSpeed));
-
-                            if (toolSection.contains("rules")) {
-                                @NotNull List<Map<?, ?>> rulesList = toolSection.getMapList("rules");
-                                List<Tool.Rule> rules = new ArrayList<>();
-
-                                for (Map<?, ?> ruleData : rulesList) {
-                                    Object blocks = ruleData.get("blocks");
-                                    RegistryKeySet<BlockType> blockKeySet = null;
-                                    if (blocks instanceof String blockString) {
-                                        BlockType type = RegistryAccess.registryAccess().getRegistry(RegistryKey.BLOCK).get(Key.key(blockString));
-                                        if(type!=null){
-                                            blockKeySet = RegistrySet.keySetFromValues(RegistryKey.BLOCK, List.of(type));
+                                    for (Map<?, ?> ruleData : rulesList) {
+                                        Object blocks = ruleData.get("blocks");
+                                        RegistryKeySet<BlockType> blockKeySet = null;
+                                        if (blocks instanceof String blockString) {
+                                            BlockType type = RegistryAccess.registryAccess().getRegistry(RegistryKey.BLOCK).get(Key.key(blockString));
+                                            if(type!=null){
+                                                blockKeySet = RegistrySet.keySetFromValues(RegistryKey.BLOCK, List.of(type));
+                                            }
+                                        } else if (blocks instanceof List) {
+                                            List<String> blockStrings = (List<String>) blocks;
+                                            if (!blockStrings.isEmpty()) {
+                                                blockKeySet = RegistrySet.keySetFromValues(
+                                                        RegistryKey.BLOCK,
+                                                        blockStrings.stream()
+                                                                .map(block -> RegistryAccess.registryAccess()
+                                                                        .getRegistry(RegistryKey.BLOCK)
+                                                                        .get(Key.key(block)))
+                                                                .filter(Objects::nonNull)
+                                                                .toList()
+                                                );
+                                            }
                                         }
-                                    } else if (blocks instanceof List) {
-                                        List<String> blockStrings = (List<String>) blocks;
-                                        if (!blockStrings.isEmpty()) {
-                                            blockKeySet = RegistrySet.keySetFromValues(
-                                                    RegistryKey.BLOCK,
-                                                    blockStrings.stream()
-                                                            .map(block -> RegistryAccess.registryAccess()
-                                                                    .getRegistry(RegistryKey.BLOCK)
-                                                                    .get(Key.key(block)))
-                                                            .filter(Objects::nonNull)
-                                                            .toList()
-                                            );
+
+                                        if (blockKeySet != null) {
+                                            Float speed = ruleData.containsKey("speed") ? ((Number) ruleData.get("speed")).floatValue() : null;
+
+                                            TriState correctForDrops = TriState.NOT_SET;
+                                            if (ruleData.containsKey("correct_for_drops")) {
+                                                boolean correctForDropsValue = (boolean) ruleData.get("correct_for_drops");
+                                                correctForDrops = correctForDropsValue ? TriState.TRUE : TriState.FALSE;
+                                            }
+
+                                            Tool.Rule rule = Tool.rule(blockKeySet, speed, correctForDrops);
+                                            rules.add(rule);
                                         }
                                     }
+                                    builder.addRules(rules);
+                                }
+                            }
+                        }
+                        componentMap.put(DataComponentTypes.TOOL, builder);
+                    }
+                    break;
+                    case "tooltip_style": {
+                        ConfigurationSection section = s.getConfigurationSection(key);
+                        if (section != null) {
+                            if(section.getBoolean("unset")){
+                                componentMap.put(DataComponentTypes.TOOLTIP_STYLE, ComponentStatus.UNSET);
+                            } else if (s.getString(key)!=null) {
+                                componentMap.put(DataComponentTypes.TOOLTIP_STYLE, Key.key(s.getString(key)));
+                            }
+                        }
+                    }
+                    break;
+                    case "trim": {
+                        ItemArmorTrim.Builder builder = ItemArmorTrim.itemArmorTrim(new ArmorTrim(TrimMaterial.AMETHYST,TrimPattern.BOLT));
+                        ConfigurationSection trimSection = s.getConfigurationSection(key);
+                        if (trimSection != null) {
+                            if(trimSection.getBoolean("unset")){
+                                componentMap.put(DataComponentTypes.TRIM, ComponentStatus.UNSET);
+                            }else{
+                                String materialKey = trimSection.getString("material");
+                                String patternKey = trimSection.getString("pattern");
 
-                                    if (blockKeySet != null) {
-                                        Float speed = ruleData.containsKey("speed") ? ((Number) ruleData.get("speed")).floatValue() : null;
+                                if (materialKey != null && patternKey != null) {
+                                    TrimMaterial material = RegistryAccess.registryAccess()
+                                            .getRegistry(RegistryKey.TRIM_MATERIAL)
+                                            .get(Key.key(materialKey));
 
-                                        TriState correctForDrops = TriState.NOT_SET;
-                                        if (ruleData.containsKey("correct_for_drops")) {
-                                            boolean correctForDropsValue = (boolean) ruleData.get("correct_for_drops");
-                                            correctForDrops = correctForDropsValue ? TriState.TRUE : TriState.FALSE;
-                                        }
+                                    TrimPattern pattern = RegistryAccess.registryAccess()
+                                            .getRegistry(RegistryKey.TRIM_PATTERN)
+                                            .get(Key.key(patternKey));
 
-                                        Tool.Rule rule = Tool.rule(blockKeySet, speed, correctForDrops);
-                                        rules.add(rule);
+                                    if (material != null && pattern != null) {
+                                        ArmorTrim armorTrim = new ArmorTrim(material, pattern);
+                                        builder.armorTrim(armorTrim);
                                     }
                                 }
-                                builder.addRules(rules);
                             }
                         }
+                        componentMap.put(DataComponentTypes.TRIM, builder);
                     }
-                    componentMap.put(DataComponentTypes.TOOL, builder);
-                }
-                else if(key.equalsIgnoreCase("tooltip_style")){
-                    ConfigurationSection section = s.getConfigurationSection(key);
-                    if (section != null) {
-                        if(section.getBoolean("unset")){
-                            componentMap.put(DataComponentTypes.TOOLTIP_STYLE, ComponentStatus.UNSET);
-                        } else if (s.getString(key)!=null) {
-                            componentMap.put(DataComponentTypes.TOOLTIP_STYLE, Key.key(s.getString(key)));
-                        }
-                    }
-                }
-                else if(key.equalsIgnoreCase("trim")) {
-                    ItemArmorTrim.Builder builder = ItemArmorTrim.itemArmorTrim(new ArmorTrim(TrimMaterial.AMETHYST,TrimPattern.BOLT));
-                    ConfigurationSection trimSection = s.getConfigurationSection(key);
-                    if (trimSection != null) {
-                        if(trimSection.getBoolean("unset")){
-                            componentMap.put(DataComponentTypes.TRIM, ComponentStatus.UNSET);
-                        }else{
-                            String materialKey = trimSection.getString("material");
-                            String patternKey = trimSection.getString("pattern");
+                    break;
+                    case "use_cooldown": {
+                        ConfigurationSection cooldownSection = s.getConfigurationSection(key);
+                        if (cooldownSection != null) {
+                            if(cooldownSection.getBoolean("unset")){
+                                componentMap.put(DataComponentTypes.USE_COOLDOWN, ComponentStatus.UNSET);
+                            }else{
+                                float seconds = (float) cooldownSection.getDouble("seconds") <= 0 ? 1.0E-20f : (float) cooldownSection.getDouble("seconds");
+                                UseCooldown.Builder builder = UseCooldown.useCooldown(seconds);
 
-                            if (materialKey != null && patternKey != null) {
-                                TrimMaterial material = RegistryAccess.registryAccess()
-                                        .getRegistry(RegistryKey.TRIM_MATERIAL)
-                                        .get(Key.key(materialKey));
-
-                                TrimPattern pattern = RegistryAccess.registryAccess()
-                                        .getRegistry(RegistryKey.TRIM_PATTERN)
-                                        .get(Key.key(patternKey));
-
-                                if (material != null && pattern != null) {
-                                    ArmorTrim armorTrim = new ArmorTrim(material, pattern);
-                                    builder.armorTrim(armorTrim);
+                                String cooldownGroupKey = cooldownSection.getString("cooldown_group");
+                                if (cooldownGroupKey != null) {
+                                    builder.cooldownGroup(Key.key(cooldownGroupKey));
                                 }
+                                componentMap.put(DataComponentTypes.USE_COOLDOWN, builder);
                             }
                         }
                     }
-                    componentMap.put(DataComponentTypes.TRIM, builder);
-                }
-                else if(key.equalsIgnoreCase("use_cooldown")) {
-                    ConfigurationSection cooldownSection = s.getConfigurationSection(key);
-                    if (cooldownSection != null) {
-                        if(cooldownSection.getBoolean("unset")){
-                            componentMap.put(DataComponentTypes.USE_COOLDOWN, ComponentStatus.UNSET);
-                        }else{
-                            float seconds = (float) cooldownSection.getDouble("seconds") <= 0 ? 1.0E-20f : (float) cooldownSection.getDouble("seconds");
-                            UseCooldown.Builder builder = UseCooldown.useCooldown(seconds);
-
-                            String cooldownGroupKey = cooldownSection.getString("cooldown_group");
-                            if (cooldownGroupKey != null) {
-                                builder.cooldownGroup(Key.key(cooldownGroupKey));
+                    break;
+                    case "use_remainder": {
+                        ConfigurationSection remainderSection = s.getConfigurationSection(key);
+                        if (remainderSection != null) {
+                            if(remainderSection.getBoolean("unset")){
+                                componentMap.put(DataComponentTypes.USE_REMAINDER, ComponentStatus.UNSET);
                             }
-                            componentMap.put(DataComponentTypes.USE_COOLDOWN, builder);
+                        }else if(s.isString(key)){
+                            if(ItemManager.getItemByName(s.getString(key))!=null){
+                                UseRemainder useRemainder = UseRemainder.useRemainder(ItemManager.getItemByName(s.getString(key)).toItemStack());
+                                componentMap.put(DataComponentTypes.USE_REMAINDER, useRemainder);
+                            }
                         }
                     }
-                }
-                else if(key.equalsIgnoreCase("use_remainder")){
-                    ConfigurationSection remainderSection = s.getConfigurationSection(key);
-                    if (remainderSection != null) {
-                        if(remainderSection.getBoolean("unset")){
-                            componentMap.put(DataComponentTypes.USE_REMAINDER, ComponentStatus.UNSET);
-                        }
-                    }else if(s.isString(key)){
-                        if(ItemManager.getItemByName(s.getString(key))!=null){
-                            UseRemainder useRemainder = UseRemainder.useRemainder(ItemManager.getItemByName(s.getString(key)).toItemStack());
-                            componentMap.put(DataComponentTypes.USE_REMAINDER, useRemainder);
-                        }
-                    }
+                    break;
                 }
                 components.add(componentMap);
             }
@@ -971,6 +1017,17 @@ public class ComponentUtil {
                         config.createSection("use_remainder").set("unset", true);
                     }
                 }
+                if(type==DataComponentTypes.PROFILE){
+                    if (value instanceof ComponentStatus status && status == ComponentStatus.UNSET) {
+                        config.createSection("profile").set("unset", true);
+                    } else if (value instanceof ResolvableProfile profile) {
+                        if(profile.properties().stream().findFirst().isPresent()){
+                            config.set("profile", profile.properties().stream().findFirst().get().getValue());
+                        }else{
+                            config.set("profile", profile.name());
+                        }
+                    }
+                }
             }
         }
     }
@@ -982,6 +1039,17 @@ public class ComponentUtil {
             } else if (component == ComponentStatus.NON_VALUED) {
                 s.set(sectionName, true);
             }
+        }
+    }
+    private static boolean isBase64(String input) {
+        if (input == null || input.length() % 4 != 0) {
+            return false;
+        }
+        try {
+            Base64.getDecoder().decode(input);
+            return true;
+        } catch (IllegalArgumentException e) {
+            return false;
         }
     }
 }

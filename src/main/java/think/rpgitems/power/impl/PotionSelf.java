@@ -1,6 +1,7 @@
 package think.rpgitems.power.impl;
 
 import com.destroystokyo.paper.event.player.PlayerJumpEvent;
+import net.kyori.adventure.text.Component;
 import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.entity.LivingEntity;
 import org.bukkit.entity.Player;
@@ -96,7 +97,7 @@ public class PotionSelf extends BasePower {
 
     @Override
     public String displayText() {
-        return I18n.formatDefault("power.potionself", getType().key().value(), getAmplifier() + 1, ((double) getDuration()) / 20d);
+        return I18n.formatDefault("power.potionself", "<lang:effect.minecraft."+getType().key().value()+">", getAmplifier() + 1, ((double) getDuration()) / 20d);
     }
 
     /**
@@ -161,7 +162,7 @@ public class PotionSelf extends BasePower {
             if(!powerEvent.callEvent()) {
                 return PowerResult.fail();
             }
-            if (!checkCooldown(getPower(), player, getCooldown(), true, true)) return PowerResult.cd();
+            if (!checkCooldown(getPower(), player, getCooldown(), showCooldownWarning(), true)) return PowerResult.cd();
             if (!getItem().consumeDurability(stack, getCost())) return PowerResult.cost();
             if (isClear()) {
                 player.removePotionEffect(getType());

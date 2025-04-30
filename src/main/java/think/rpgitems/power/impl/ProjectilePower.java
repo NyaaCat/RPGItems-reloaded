@@ -169,19 +169,19 @@ public class ProjectilePower extends BasePower {
         else if (projectileType == Fireball.class)
             return "fireball";
         else if (projectileType == WindCharge.class)
-            return "windcharge";
+            return "wind_charge";
         else if (projectileType == BreezeWindCharge.class)
-            return "breezewindcharge";
+            return "breeze_wind_charge";
         else if (projectileType == SmallFireball.class)
-            return "smallfireball";
+            return "small_fireball";
         else if (projectileType == Arrow.class)
             return "arrow";
         else if (projectileType == LlamaSpit.class)
-            return "llamaspit";
+            return "llama_spit";
         else if (projectileType == ShulkerBullet.class)
-            return "shulkerbullet";
+            return "shulker_bullet";
         else if (projectileType == DragonFireball.class)
-            return "dragonfireball";
+            return "dragon_fireball";
         else if (projectileType == Trident.class)
             return "trident";
         else if (projectileType == Egg.class)
@@ -189,7 +189,7 @@ public class ProjectilePower extends BasePower {
         else if (projectileType == Firework.class)
             return "firework";
         else if (projectileType == EnderPearl.class)
-            return "enderpearl";
+            return "ender_pearl";
         else
             return "snowball";
     }
@@ -302,7 +302,7 @@ public class ProjectilePower extends BasePower {
 
     @Override
     public String displayText() {
-        return I18n.formatDefault(isCone() ? "power.projectile.cone" : "power.projectile.display", getProjectileType(getProjectileType()), (double) getCooldown() / 20d);
+        return I18n.formatDefault(isCone() ? "power.projectile.cone" : "power.projectile.display", "<lang:entity.minecraft."+getProjectileType(getProjectileType())+">", (double) getCooldown() / 20d);
     }
 
     /**
@@ -430,7 +430,7 @@ public class ProjectilePower extends BasePower {
             if(!powerEvent.callEvent()) {
                 return PowerResult.fail();
             }
-            if (!checkCooldown(getPower(), player, getCooldown(), true, true)) return PowerResult.cd();
+            if (!checkCooldown(getPower(), player, getCooldown(), showCooldownWarning(), true)) return PowerResult.cd();
             if (!getItem().consumeDurability(stack, getCost())) return PowerResult.cost();
             CastUtils.CastLocation castLocation = null;
             if (getFiringLocation().equals(FiringLocation.TARGET)) {
@@ -620,7 +620,7 @@ public class ProjectilePower extends BasePower {
             if(!powerEvent.callEvent()) {
                 return PowerResult.fail();
             }
-            if (!checkCooldown(getPower(), player, getCooldown(), true, true)) return PowerResult.cd();
+            if (!checkCooldown(getPower(), player, getCooldown(), showCooldownWarning(), true)) return PowerResult.cd();
             if (!getItem().consumeDurability(stack, getCost())) return PowerResult.cost();
             CastUtils.CastLocation castLocation = null;
             if (getFiringLocation().equals(FiringLocation.TARGET)) {

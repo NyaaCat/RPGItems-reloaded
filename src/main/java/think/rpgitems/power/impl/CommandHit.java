@@ -75,7 +75,7 @@ public class CommandHit extends Command {
             if(!powerEvent.callEvent())
                 return PowerResult.fail();
             if (damage == null || damage < getMinDamage()) return PowerResult.noop();
-            if (!checkAndSetCooldown(getPower(), player, getCooldown(), true, false, getItem().getUid() + "." + getCommand()))
+            if (!checkAndSetCooldown(getPower(), player, getCooldown(), showCooldownWarning(), false, getItem().getUid() + "." + getCommand()))
                 return PowerResult.cd();
             if (!getItem().consumeDurability(stack, getCost())) return PowerResult.cost();
 
