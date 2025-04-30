@@ -760,6 +760,7 @@ power:
   fire: 发射火焰 (%.1f 秒冷却时间)
   fireball: 发射火球 (%.1f 秒冷却时间)
   flame: 点燃目标 %.1f 秒
+  dash: 向 %s 冲刺 (%.1f 秒冷却时间)
   food: 回复 %d 点饥饿值
   forcefield: 在你周围设置一个半径 %d，高度 %d，深度 %d 并持续 %.1f秒的力场
   glove: 捕获一个实体 (%.1fs 冷却)
@@ -1044,6 +1045,11 @@ properties:
     damageType: 伤害类型字符串，例如 melee 或 ranged
     main_description: 一个用于匹配的字符串，一般用在职业系统中
     main_name: Damage Type
+  dash:
+    speed: 速度
+    direction: 方向
+    main_description: 向特定方向冲刺
+    main_name: 冲刺
   deathcommand:
     chance: 触发几率， 1/n
     command: 执行的命令

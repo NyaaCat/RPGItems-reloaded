@@ -763,6 +763,7 @@ power:
     backstab: '%.1f %% chance to deal %.1f backstab'
     both: '%.1f %% chance to deal %.1f crit hit, %.1f %% chance to deal %.1f backstab'
     critical: '%.1f %% chance to deal %.1f crit hit'
+  dash: dash towards %s (%.1fs cooldown)
   deathcommand: 1/%d chance to kill the enemy then %s
   deflect: Deflect arrows or fireballs
   economy:
@@ -1033,6 +1034,11 @@ properties:
     main_description: A string condition to match when dealing damage, e.g., melee
       / ranged / magic
     main_name: DamageType
+  dash:
+    speed: speed
+    direction: direction
+    main_description: Dash towards defined direction
+    main_name: Dash
   deathcommand:
     chance: Chance of triggering this power, 1/n
     command: Command to be executed

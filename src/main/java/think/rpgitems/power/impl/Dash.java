@@ -68,9 +68,10 @@ public class Dash extends BasePower {
         return speed;
     }
 
+
     @Override
     public String displayText() {
-        return I18n.formatDefault("power.dash");
+        return I18n.formatDefault("power.dash",getDirection(), (double) getCooldown() / 20d);
     }
 
     public class Impl implements PowerRightClick, PowerPlain, PowerLeftClick, PowerSneak, PowerHurt, PowerHit, PowerHitTaken, PowerSwim, PowerJump, PowerBowShoot, PowerOffhandClick, PowerTick {
