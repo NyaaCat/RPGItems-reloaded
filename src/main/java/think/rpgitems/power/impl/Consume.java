@@ -56,6 +56,8 @@ public class Consume extends BasePower {
     @Property
     public boolean requireHurtByEntity = true;
 
+    public boolean showCooldownWarning = false;
+
     @Override
     public void init(ConfigurationSection section) {
         boolean isRight = section.getBoolean("isRight", true);
@@ -101,7 +103,7 @@ public class Consume extends BasePower {
             PowerActivateEvent powerEvent = new PowerActivateEvent(player,s,getPower());
             if(!powerEvent.callEvent())
                 return PowerResult.fail();
-            if (!checkCooldown(getPower(), player, getCooldown(), false, true)) return PowerResult.cd();
+            if (!checkCooldown(getPower(), player, getCooldown(), showCooldownWarning(), true)) return PowerResult.cd();
             if (!getItem().consumeDurability(s, getCost())) return PowerResult.cost();
             int count = s.getAmount() - 1;
             s.setAmount(count);

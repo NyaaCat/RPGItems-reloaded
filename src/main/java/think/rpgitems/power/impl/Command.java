@@ -136,7 +136,7 @@ public class Command extends BasePower {
             PowerActivateEvent powerEvent = new PowerActivateEvent(target,stack,getPower());
             if(!powerEvent.callEvent())
                 return PowerResult.fail();
-            if (!checkAndSetCooldown(getPower(), target, getCooldown(), true, false, getItem().getUid() + "." + getCommand()))
+            if (!checkAndSetCooldown(getPower(), target, getCooldown(), showCooldownWarning(), false, getItem().getUid() + "." + getCommand()))
                 return PowerResult.cd();
             if (!getItem().consumeDurability(stack, getCost())) return PowerResult.cost();
             return executeCommand(target);

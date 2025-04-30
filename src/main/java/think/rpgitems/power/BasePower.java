@@ -26,6 +26,8 @@ public abstract class BasePower extends BasePropertyHolder implements Serializab
     public String powerId = "";
     @Property
     public Set<String> powerTags = new HashSet<>();
+    @Property
+    public boolean showCooldownWarning = true;
 
     @Override
     public String displayName() {
@@ -65,6 +67,14 @@ public abstract class BasePower extends BasePropertyHolder implements Serializab
 
     public void removePowerTag(String tag) {
         powerTags.remove(tag);
+    }
+
+    public void showCooldownWarning(boolean show) {
+        this.showCooldownWarning = show;
+    }
+
+    public boolean showCooldownWarning() {
+        return showCooldownWarning;
     }
 
     @Override

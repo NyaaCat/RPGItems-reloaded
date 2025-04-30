@@ -84,7 +84,7 @@ public class Glove extends BasePower {
             for (LivingEntity entity : entities) {
                 if (entity.isValid() && entity.getType() != EntityType.ARMOR_STAND && !entity.isInsideVehicle() &&
                         entity.getPassengers().isEmpty() && player.hasLineOfSight(entity) && !entity.hasMetadata("NPC")) {
-                    if (!checkCooldown(getPower(), player, getCooldown(), true, true)) return PowerResult.cd();
+                    if (!checkCooldown(getPower(), player, getCooldown(), showCooldownWarning(), true)) return PowerResult.cd();
                     argsMap.put("status","MOUNT");
                     argsMap.put("passenger",entity);
                     PowerActivateEvent powerEvent = new PowerActivateEvent(player,stack,getPower(),argsMap);

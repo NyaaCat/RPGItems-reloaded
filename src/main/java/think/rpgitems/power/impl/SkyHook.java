@@ -122,7 +122,7 @@ public class SkyHook extends BasePower {
             if(!powerEvent.callEvent()) {
                 return PowerResult.fail();
             }
-            if (!checkCooldown(getPower(), player, getCooldown(), true, true)) return PowerResult.cd();
+            if (!checkCooldown(getPower(), player, getCooldown(), showCooldownWarning(), true)) return PowerResult.cd();
             if (!getItem().consumeDurability(stack, getCost())) return PowerResult.cost();
             Boolean isHooking = hooking.get(player.getUniqueId());
             if (isHooking == null) {

@@ -217,7 +217,7 @@ public class Deflect extends BasePower {
 
         @Override
         public PowerResult<Void> fire(Player player, ItemStack stack) {
-            if (!checkAndSetCooldown(getPower(), player, getCooldown(), true, true, getItem().getUid() + "." + "deflect.initiative"))
+            if (!checkAndSetCooldown(getPower(), player, getCooldown(), showCooldownWarning(), true, getItem().getUid() + "." + "deflect.initiative"))
                 return PowerResult.noop();
             if (!getItem().consumeDurability(stack, getCost()))
                 return PowerResult.cost();

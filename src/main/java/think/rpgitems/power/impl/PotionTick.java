@@ -53,6 +53,8 @@ public class PotionTick extends BasePower {
     @Property
     public boolean summingUp = false;
 
+    public boolean showCooldownWarning = false;
+
     /**
      * Cost of this power
      */
@@ -137,7 +139,7 @@ public class PotionTick extends BasePower {
             if(!powerEvent.callEvent()) {
                 return PowerResult.fail();
             }
-            if (!checkAndSetCooldown(getPower(), player, getInterval(), false, true, getItem().getUid() + "." + "potiontick." + getEffect().getName()))
+            if (!checkAndSetCooldown(getPower(), player, getInterval(), showCooldownWarning(), true, getItem().getUid() + "." + "potiontick." + getEffect().getName()))
                 return PowerResult.cd();
             if (!getItem().consumeDurability(stack, getCost())) return PowerResult.cost();
             double health = player.getHealth();

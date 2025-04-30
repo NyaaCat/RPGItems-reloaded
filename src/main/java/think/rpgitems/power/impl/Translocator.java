@@ -62,6 +62,8 @@ public class Translocator extends BasePower {
     @Property
     public double speed = 1;
 
+    public boolean showCooldownWarning = false;
+
     @Override
     public String getName() {
         return "translocator";
@@ -106,7 +108,7 @@ public class Translocator extends BasePower {
             if(!powerEvent.callEvent()) {
                 return PowerResult.fail();
             }
-            checkCooldown(getPower(), player, getCooldown(), false, true);
+            checkCooldown(getPower(), player, getCooldown(), showCooldownWarning(), true);
             UUID translocatorUUID = playerTranslocatorMap.getIfPresent(player.getUniqueId());
             if (translocatorUUID == null) {
                 return PowerResult.fail();
@@ -141,7 +143,7 @@ public class Translocator extends BasePower {
             if(!powerEvent.callEvent()) {
                 return PowerResult.fail();
             }
-            checkCooldown(getPower(), player, getCooldown(), false, true);
+            checkCooldown(getPower(), player, getCooldown(), showCooldownWarning(), true);
             UUID armorStandUUID = playerTranslocatorMap.getIfPresent(player.getUniqueId());
             if (armorStandUUID == null) {
                 return PowerResult.fail();

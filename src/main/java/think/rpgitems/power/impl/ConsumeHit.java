@@ -24,6 +24,8 @@ public class ConsumeHit extends BasePower {
     @Property(order = 0)
     public int cooldown = 0;
 
+    public boolean showCooldownWarning = false;
+
     /**
      * Cooldown time of this power
      */
@@ -50,7 +52,7 @@ public class ConsumeHit extends BasePower {
             PowerActivateEvent powerEvent = new PowerActivateEvent(player,stack,getPower(),argsMap);
             if(!powerEvent.callEvent())
                 return PowerResult.fail();
-            if (!checkCooldown(getPower(), player, getCooldown(), false, true)) return PowerResult.cd();
+            if (!checkCooldown(getPower(), player, getCooldown(), showCooldownWarning(), true)) return PowerResult.cd();
             int count = stack.getAmount() - 1;
             if (count == 0) {
                 stack.setAmount(0);

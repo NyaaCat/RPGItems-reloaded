@@ -256,7 +256,7 @@ public class Events implements Listener {
                             }
                         }.runTaskLater(plugin, 1);
                         rItem = ItemManager.toRPGItem(item).orElse(null);
-                        if (rItem == null) throw new IllegalStateException();
+                        if (rItem == null) return;
                     } else {
                         if (rItem != hItem) {
 //                            item = player.getInventory().getItemInOffHand();

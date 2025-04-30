@@ -226,7 +226,7 @@ public class Stuck extends BasePower {
             if(!powerEvent.callEvent()) {
                 return PowerResult.fail();
             }
-            if (!checkCooldown(getPower(), player, getCooldown(), true, true)) return PowerResult.cd();
+            if (!checkCooldown(getPower(), player, getCooldown(), showCooldownWarning(), true)) return PowerResult.cd();
             if (!getItem().consumeDurability(stack, getCostAoe())) return PowerResult.cost();
             List<LivingEntity> entities = getLivingEntitiesInCone(getNearestLivingEntities(getPower(), player.getEyeLocation(), player, getRange(), 0), player.getLocation().toVector(), getFacing(), player.getLocation().getDirection());
             entities.forEach(entity -> {
@@ -274,7 +274,7 @@ public class Stuck extends BasePower {
             if(!powerEvent.callEvent()) {
                 return PowerResult.fail();
             }
-            if (!checkCooldown(getPower(), player, getCooldown(), true, true)) return PowerResult.cd();
+            if (!checkCooldown(getPower(), player, getCooldown(), showCooldownWarning(), true)) return PowerResult.cd();
             if (random.nextInt(getChance()) == 0) {
                 if (!getItem().consumeDurability(stack, getCost())) return PowerResult.cost();
                 stucked.put(entity.getUniqueId(), System.currentTimeMillis());

@@ -247,7 +247,7 @@ public class ForceField extends BasePower {
             if (!getWallMaterial().isBlock()||!getBarrierMaterial().isBlock()) {
                 throw new IllegalArgumentException("The wall material or barrier material isn't a block: " + getWallMaterial() + ", " + getBarrierMaterial());
             }
-            if (!checkCooldown(getPower(), player, getCooldown(), true, true)) return PowerResult.cd();
+            if (!checkCooldown(getPower(), player, getCooldown(), showCooldownWarning(), true)) return PowerResult.cd();
             if (!getItem().consumeDurability(stack, getCost())) return PowerResult.cost();
             World w = player.getWorld();
             int x = player.getLocation().getBlockX();

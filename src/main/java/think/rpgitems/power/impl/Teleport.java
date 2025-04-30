@@ -122,7 +122,7 @@ public class Teleport extends BasePower {
             if(!powerEvent.callEvent()) {
                 return PowerResult.fail();
             }
-            if (!checkCooldown(getPower(), player, getCooldown(), true, true)) return PowerResult.cd();
+            if (!checkCooldown(getPower(), player, getCooldown(), showCooldownWarning(), true)) return PowerResult.cd();
             if (!getItem().consumeDurability(stack, getCost())) return PowerResult.cost();
             Location newLoc = supplier.get();
             World world = player.getWorld();
@@ -227,7 +227,7 @@ public class Teleport extends BasePower {
 
         @Override
         public PowerResult<Void> projectileHit(Player player, ItemStack stack, ProjectileHitEvent event) {
-            if (!checkCooldown(getPower(), player, getCooldown(), true, true)) return PowerResult.cd();
+            if (!checkCooldown(getPower(), player, getCooldown(), showCooldownWarning(), true)) return PowerResult.cd();
             if (!getItem().consumeDurability(stack, getCost())) return PowerResult.cost();
             World world = player.getWorld();
             Location start = player.getLocation();
