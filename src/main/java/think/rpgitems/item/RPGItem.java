@@ -203,36 +203,37 @@ public class RPGItem {
         restore(s);
     }
 
-    public static void updateItemStack(ItemStack item,@Nullable Player player) {
+    public static void updateItemStack(ItemStack item, @Nullable Player player) {
         Optional<RPGItem> rItem = ItemManager.toRPGItem(item);
-        rItem.ifPresent(r -> r.updateItem(item, false,player));
+        rItem.ifPresent(r -> r.updateItem(item, false, player));
     }
 
     public static List<Modifier> getModifiers(ItemStack stack) {
-        Optional<String> opt = ItemTagUtils.getString(stack, NBT_ITEM_UUID);
-        if (opt.isEmpty()) {
-            Optional<RPGItem> rpgItemOpt = ItemManager.toRPGItemByMeta(stack);
-            if (rpgItemOpt.isEmpty()) {
-                return Collections.emptyList();
-            }
-            RPGItem rpgItem = rpgItemOpt.get();
-            rpgItem.updateItem(stack,false,null);
-            Optional<String> opt1 = ItemTagUtils.getString(stack, NBT_ITEM_UUID);
-            if (opt1.isEmpty()) {
-                return Collections.emptyList();
-            }
-            opt = opt1;
-        }
-
-        UUID key = UUID.fromString(opt.get());
-        List<Modifier> modifiers = modifierCache.getIfPresent(key);
-        if (modifiers == null) {
-            ItemMeta itemMeta = stack.getItemMeta();
-            if (itemMeta == null) return new ArrayList<>();
-            SubItemTagContainer tag = makeTag(Objects.requireNonNull(itemMeta).getPersistentDataContainer(), TAG_MODIFIER);
-            modifiers = getModifiers(tag, key);
-        }
-        return modifiers;
+        return Optional.ofNullable(stack)
+                .flatMap(s -> ItemTagUtils.getString(s, NBT_ITEM_UUID))
+                .map(UUID::fromString)
+                .map(uuid -> {
+                    try {
+                        return modifierCache.get(uuid, () -> {
+                            ItemMeta itemMeta = stack.getItemMeta();
+                            if (itemMeta == null) return new ArrayList<>();
+                            SubItemTagContainer tag = makeTag(itemMeta.getPersistentDataContainer(), TAG_MODIFIER);
+                            return getModifiers(tag, uuid);
+                        });
+                    } catch (ExecutionException e) {
+                        throw new RuntimeException(e);
+                    }
+                })
+                .orElseGet(() -> {
+                    // 尝试更新物品后再获取
+                    Optional<RPGItem> rpgItemOpt = ItemManager.toRPGItemByMeta(stack);
+                    if (rpgItemOpt.isPresent()) {
+                        RPGItem rpgItem = rpgItemOpt.get();
+                        rpgItem.updateItem(stack, false, null);
+                        return getModifiers(stack);  // 递归调用一次
+                    }
+                    return Collections.emptyList();
+                });
     }
 
     public static List<Modifier> getModifiers(Player player) {
@@ -264,6 +265,7 @@ public class RPGItem {
     public void setCanUse(boolean canUse) {
         this.canUse = canUse;
     }
+
     public void setCanPlace(boolean canPlace) {
         this.canPlace = canPlace;
     }
@@ -406,13 +408,13 @@ public class RPGItem {
 
         setShowPowerText(s.getBoolean("showPowerText", true));
         setShowArmourLore(s.getBoolean("showArmourLore", true));
-        if(s.isConfigurationSection("customModelData")){
+        if (s.isConfigurationSection("customModelData")) {
             ConfigurationSection modelSection = s.getConfigurationSection("customModelData");
             CustomModelData.Builder customData = CustomModelData.customModelData();
-            if(s.isInt("customModelData")){
+            if (s.isInt("customModelData")) {
                 customData.addFloat(s.getInt("customModelData"));
                 setCustomModelData(customData);
-            }else{
+            } else {
                 for (String sectionKey : modelSection.getKeys(false)) {
                     switch (sectionKey) {
                         case "floats":
@@ -437,7 +439,7 @@ public class RPGItem {
                                         int r = Integer.parseInt(parts[0]);
                                         int g = Integer.parseInt(parts[1]);
                                         int b = Integer.parseInt(parts[2]);
-                                        customData.addColor(Color.fromRGB(r,g,b));
+                                        customData.addColor(Color.fromRGB(r, g, b));
                                     } else {
                                         throw new IllegalArgumentException("Invalid color format (expected R,G,B color format): " + value);
                                     }
@@ -460,7 +462,7 @@ public class RPGItem {
         }
         setQuality(s.getString("quality", null));
         setType(s.getString("item", "item"));
-        setItemModel(NamespacedKey.fromString(s.getString("item_model","")));
+        setItemModel(NamespacedKey.fromString(s.getString("item_model", "")));
 
         if (s.isConfigurationSection("enchantments")) {
             ConfigurationSection enchConf = s.getConfigurationSection("enchantments");
@@ -523,7 +525,7 @@ public class RPGItem {
         }
         ConfigurationSection componentsList = s.getConfigurationSection("components");
         if (componentsList != null) {
-            setComponents(ComponentUtil.getComponents(componentsList,this));
+            setComponents(ComponentUtil.getComponents(componentsList, this));
         }
         ConfigurationSection templatePlaceholdersList = s.getConfigurationSection("templatePlaceholders");
         if (templatePlaceholdersList != null) {
@@ -642,7 +644,7 @@ public class RPGItem {
         s.set("armourExpression", getArmourExpression());
         s.set("playerArmourExpression", getPlayerArmourExpression());
         s.set("DamageType", getDamageType());
-        s.set("updatemode",updateMode.name());
+        s.set("updatemode", updateMode.name());
         s.set("attributemode", attributeMode.name());
         ArrayList<String> descriptionConv = new ArrayList<>(getDescription());
         descriptionConv.replaceAll(string -> string.replaceAll("" + COLOR_CHAR, "&"));
@@ -662,7 +664,7 @@ public class RPGItem {
             s.set("item_data", getDataValue());
         }
         ConfigurationSection components = s.createSection("components");
-        ComponentUtil.toConfigSection(getComponents(),components);
+        ComponentUtil.toConfigSection(getComponents(), components);
         int i = 0;
         ConfigurationSection powerConfigs = s.createSection("powers");
         for (Power p : powers) {
@@ -713,7 +715,7 @@ public class RPGItem {
         s.set("damageMode", getDamageMode().name());
 
         CustomModelData.Builder builder = getCustomModelData();
-        if(builder != null) {
+        if (builder != null) {
             CustomModelData data = builder.build();
             if (!data.floats().isEmpty()) {
                 s.set("customModelData.floats", data.floats());
@@ -735,7 +737,7 @@ public class RPGItem {
                         .collect(Collectors.toList());
                 s.set("customModelData.colors", colors);
             }
-        }else{
+        } else {
             s.set("customModelData", "");
         }
 
@@ -807,11 +809,11 @@ public class RPGItem {
     }
 
     public void updateItem(ItemStack item, @Nullable Player player) {
-        updateItem(item, false,player);
+        updateItem(item, false, player);
     }
 
     public void updateItem(ItemStack item, boolean loreOnly, @Nullable Player player) {
-        if(getUpdateMode()==UpdateMode.LORE_ONLY){
+        if (getUpdateMode() == UpdateMode.LORE_ONLY) {
             loreOnly = true;
         }
         List<String> reservedLores = this.filterLores(item);
@@ -830,15 +832,15 @@ public class RPGItem {
         if (item.hasItemMeta() && Objects.requireNonNull(item.getItemMeta()).hasLore() && Objects.requireNonNull(item.getItemMeta().getLore()).contains("mcMMO Ability Tool"))
             lore.add("mcMMO Ability Tool");
         lore.addAll(reservedLores);
-        if(player!=null){
-            if(PlaceholderAPISupport.hasSupport()){
-                lore = PlaceholderAPI.setPlaceholders(player,lore);
+        if (player != null) {
+            if (PlaceholderAPISupport.hasSupport()) {
+                lore = PlaceholderAPI.setPlaceholders(player, lore);
             }
         }
-        if(getUpdateMode()!=UpdateMode.NO_UPDATE&&getUpdateMode()!=UpdateMode.NO_LORE&&getUpdateMode()!=UpdateMode.DISPLAY_ONLY&&getUpdateMode()!=UpdateMode.ENCHANT_ONLY){
+        if (getUpdateMode() != UpdateMode.NO_UPDATE && getUpdateMode() != UpdateMode.NO_LORE && getUpdateMode() != UpdateMode.DISPLAY_ONLY && getUpdateMode() != UpdateMode.ENCHANT_ONLY) {
             List<Component> loreComponents = new ArrayList<>();
-            for(String lore1 : lore){
-                loreComponents.add(MiniMessage.miniMessage().deserialize("<!i>"+replaceLegacyColorCodes(lore1)));
+            for (String lore1 : lore) {
+                loreComponents.add(MiniMessage.miniMessage().deserialize("<!i>" + replaceLegacyColorCodes(lore1)));
             }
             meta.lore(loreComponents);
         }
@@ -872,7 +874,7 @@ public class RPGItem {
             String metaDisplay = meta.hasDisplayName() ? meta.getDisplayName() : "";
 
             if (!metaDisplay.equals(finalDisplay)) {
-                meta.displayName(MiniMessage.miniMessage().deserialize("<!i>"+replaceLegacyColorCodes(finalDisplay)));
+                meta.displayName(MiniMessage.miniMessage().deserialize("<!i>" + replaceLegacyColorCodes(finalDisplay)));
             }
         }
 
@@ -889,7 +891,7 @@ public class RPGItem {
             }
         }
         Map<Enchantment, Integer> enchantMap = getEnchantMap();
-        if(getUpdateMode()!=UpdateMode.NO_UPDATE&&getUpdateMode()!=UpdateMode.DISPLAY_ONLY&&getUpdateMode()!=UpdateMode.LORE_ONLY&&getUpdateMode()!=UpdateMode.NO_ENCHANT){
+        if (getUpdateMode() != UpdateMode.NO_UPDATE && getUpdateMode() != UpdateMode.DISPLAY_ONLY && getUpdateMode() != UpdateMode.LORE_ONLY && getUpdateMode() != UpdateMode.NO_ENCHANT) {
             if (enchantMap != null) {
                 for (Entry<Enchantment, Integer> e : enchantMap.entrySet()) {
                     meta.addEnchant(e.getKey(), Math.max(meta.getEnchantLevel(e.getKey()), e.getValue()), true);
@@ -945,9 +947,9 @@ public class RPGItem {
                     Object value = entry.getValue();
                     if (value == ComponentUtil.ComponentStatus.UNSET) {
                         item.unsetData(key);
-                    }else if(value == ComponentUtil.ComponentStatus.NON_VALUED){
-                        item.setData((DataComponentType.NonValued)key);
-                    }else {
+                    } else if (value == ComponentUtil.ComponentStatus.NON_VALUED) {
+                        item.setData((DataComponentType.NonValued) key);
+                    } else {
                         if (key == DataComponentTypes.BANNER_PATTERNS) {
                             item.setData(DataComponentTypes.BANNER_PATTERNS, (BannerPatternLayers.Builder) value);
                         } else if (key == DataComponentTypes.CAN_BREAK) {
@@ -975,7 +977,7 @@ public class RPGItem {
                         } else if (key == DataComponentTypes.MAX_STACK_SIZE) {
                             item.setData(DataComponentTypes.MAX_STACK_SIZE, (int) value);
                         } else if (key == DataComponentTypes.PROFILE) {
-                            item.setData(DataComponentTypes.PROFILE, (ResolvableProfile.Builder) value );
+                            item.setData(DataComponentTypes.PROFILE, (ResolvableProfile.Builder) value);
                         } else if (key == DataComponentTypes.RARITY) {
                             item.setData(DataComponentTypes.RARITY, (ItemRarity) value);
                         } else if (key == DataComponentTypes.TOOL) {
@@ -993,12 +995,12 @@ public class RPGItem {
                 }
             }
         }
-        if(item.hasData(DataComponentTypes.MAX_DAMAGE) || item.getType().hasDefaultData(DataComponentTypes.MAX_DAMAGE)){
-            if(getMaxDurability() > 0){
+        if (item.hasData(DataComponentTypes.MAX_DAMAGE) || item.getType().hasDefaultData(DataComponentTypes.MAX_DAMAGE)) {
+            if (getMaxDurability() > 0) {
                 int damage = item.getData(DataComponentTypes.MAX_DAMAGE) - ((short) ((double) item.getData(DataComponentTypes.MAX_DAMAGE) * ((double) durability / (double) getMaxDurability())));
-                item.setData(DataComponentTypes.DAMAGE,Math.max(damage,0));
-            }else{
-                item.setData(DataComponentTypes.DAMAGE,item.getData(DataComponentTypes.MAX_DAMAGE) != 0 ? 0 : getDataValue());
+                item.setData(DataComponentTypes.DAMAGE, Math.max(damage, 0));
+            } else {
+                item.setData(DataComponentTypes.DAMAGE, item.getData(DataComponentTypes.MAX_DAMAGE) != 0 ? 0 : getDataValue());
             }
         }
     }
@@ -1092,24 +1094,22 @@ public class RPGItem {
         throw new UnsupportedOperationException();
     }
 
-    private List<String> filterLores(ItemStack i) {
-        List<String> ret = new ArrayList<>();
+    private List<String> filterLores(ItemStack item) {
         List<LoreFilter> patterns = getMarker(LoreFilter.class).stream()
                 .filter(p -> !Strings.isNullOrEmpty(p.regex))
                 .map(LoreFilter::compile)
                 .collect(Collectors.toList());
-        if (patterns.isEmpty()) return Collections.emptyList();
-        if (!i.hasItemMeta() || !Objects.requireNonNull(i.getItemMeta()).hasLore()) return Collections.emptyList();
-        for (String str : Objects.requireNonNull(i.getItemMeta().getLore())) {
-            for (LoreFilter p : patterns) {
-                Matcher matcher = p.pattern().matcher(ChatColor.stripColor(str));
-                if (p.find ? matcher.find() : matcher.matches()) {
-                    ret.add(str);
-                    break;
-                }
-            }
+        if (patterns.isEmpty() || !item.hasItemMeta() ||
+                !Objects.requireNonNull(item.getItemMeta()).hasLore()) {
+            return Collections.emptyList();
         }
-        return ret;
+
+        return Objects.requireNonNull(item.getItemMeta().getLore()).stream()
+                .filter(str -> patterns.stream().anyMatch(p -> {
+                    Matcher matcher = p.pattern().matcher(ChatColor.stripColor(str));
+                    return p.find ? matcher.find() : matcher.matches();
+                }))
+                .collect(Collectors.toList());
     }
 
     private ItemMeta refreshAttributeModifiers(ItemMeta itemMeta) {
@@ -1126,15 +1126,14 @@ public class RPGItem {
                 NamespacedKey uuid = NamespacedKey.fromString(attributeModifier.namespacedKey);
                 EquipmentSlotGroup slot = attributeModifier.slot;
                 org.bukkit.attribute.AttributeModifier modifier;
-                if(slot!=null){
+                if (slot != null) {
                     modifier = new org.bukkit.attribute.AttributeModifier(
                             uuid,
                             attributeModifier.amount,
                             attributeModifier.operation,
                             attributeModifier.slot
                     );
-                }
-                else{
+                } else {
                     modifier = new org.bukkit.attribute.AttributeModifier(
                             uuid,
                             attributeModifier.amount,
@@ -1196,7 +1195,7 @@ public class RPGItem {
                 damage *= originDamage;
             }
 
-            if(getDamageMode() == DamageMode.FIXED){
+            if (getDamageMode() == DamageMode.FIXED) {
                 Collection<PotionEffect> potionEffects = p.getActivePotionEffects();
                 double strength = 0, weak = 0;
                 for (PotionEffect pe : potionEffects) {
@@ -1213,7 +1212,7 @@ public class RPGItem {
             if (getDamageMode() == DamageMode.ADDITIONAL) {
                 damage += originDamage;
             }
-            if(getDamageMode().toString().contains("RESPECT_VANILLA")){
+            if (getDamageMode().toString().contains("RESPECT_VANILLA")) {
                 damage *= multiplier;
             }
             if (damage < 0) damage = 0;
@@ -1236,26 +1235,28 @@ public class RPGItem {
         if (ItemManager.canUse(p, this) == Event.Result.DENY) {
             return -1;
         }
-
+        if (!entity.isValid() || p.getWorld() != entity.getWorld()) {
+            return -1;
+        }
         double distance = p.getLocation().distance(entity.getLocation());
         if (!canDoProjectileTo(stack, distance, entity)) {
             return -1;
         }
 
         if (getDamageMode() != DamageMode.VANILLA) {
-                damage = getDamageMin() != getDamageMax() ? (getDamageMin() + ThreadLocalRandom.current().nextInt(getDamageMax() - getDamageMin() + 1)) : getDamageMin();
+            damage = getDamageMin() != getDamageMax() ? (getDamageMin() + ThreadLocalRandom.current().nextInt(getDamageMax() - getDamageMin() + 1)) : getDamageMin();
 
-                if (getDamageMode().toString().contains("MULTIPLY")) {
-                    damage *= originDamage;
-                }
+            if (getDamageMode().toString().contains("MULTIPLY")) {
+                damage *= originDamage;
+            }
 
-                //Apply force adjustments
-                if (damager.hasMetadata("RPGItems.Force")) {
-                    damage *= damager.getMetadata("RPGItems.Force").get(0).asFloat();
-                }
-                if (getDamageMode().toString().contains("ADDITIONAL")) {
-                    damage += originDamage;
-                }
+            //Apply force adjustments
+            if (damager.hasMetadata("RPGItems.Force")) {
+                damage *= damager.getMetadata("RPGItems.Force").get(0).asFloat();
+            }
+            if (getDamageMode().toString().contains("ADDITIONAL")) {
+                damage += originDamage;
+            }
         }
         return damage;
     }
@@ -1479,15 +1480,15 @@ public class RPGItem {
             set(rpgitemsTagContainer, TAG_STACK_ID, UUID.randomUUID());
         }
         rpgitemsTagContainer.commit();
-        meta.displayName(MiniMessage.miniMessage().deserialize("<!i>"+replaceLegacyColorCodes(getDisplayName())));
+        meta.displayName(MiniMessage.miniMessage().deserialize("<!i>" + replaceLegacyColorCodes(getDisplayName())));
         rStack.setItemMeta(meta);
 
-        updateItem(rStack, false,null);
+        updateItem(rStack, false, null);
         return rStack;
     }
 
     public void toModel(ItemStack itemStack) {
-        updateItem(itemStack,null);
+        updateItem(itemStack, null);
         ItemMeta itemMeta = itemStack.getItemMeta();
         SubItemTagContainer meta = makeTag(Objects.requireNonNull(itemMeta).getPersistentDataContainer(), TAG_META);
         meta.remove(TAG_OWNER);
@@ -1500,7 +1501,7 @@ public class RPGItem {
     }
 
     public void unModel(ItemStack itemStack, Player owner) {
-        updateItem(itemStack,owner);
+        updateItem(itemStack, owner);
         ItemMeta itemMeta = itemStack.getItemMeta();
         SubItemTagContainer meta = makeTag(Objects.requireNonNull(itemMeta).getPersistentDataContainer(), TAG_META);
         if (isCanBeOwned()) {
@@ -1582,7 +1583,7 @@ public class RPGItem {
         }
         tagContainer.commit();
         item.setItemMeta(itemMeta);
-        this.updateItem(item, true,null);
+        this.updateItem(item, true, null);
     }
 
     public Optional<Integer> getItemStackDurability(ItemStack item) {
@@ -1661,14 +1662,13 @@ public class RPGItem {
             tagContainer.commit();
             item.setItemMeta(itemMeta);
             this.updateItem(item, false, null);
-            if(clear){
+            if (clear) {
                 item.setAmount(0);
             }
         }
 
         return true;
     }
-
 
 
     public void give(Player player, int count, boolean wear) {
@@ -2030,6 +2030,7 @@ public class RPGItem {
         }
         return getMethod;
     }
+
     private String replaceLegacyColorCodes(String text) {
         String[][] formatMap = {
                 {"0", "black"}, {"1", "dark_blue"}, {"2", "dark_green"}, {"3", "dark_aqua"},
@@ -2057,6 +2058,7 @@ public class RPGItem {
 
         return text;
     }
+
     private void copyFromTemplate(RPGItem target) throws UnknownPowerException {
         List<Power> powers = new ArrayList<>(getPowers());
         List<Marker> markers = new ArrayList<>(getMarkers());
@@ -2382,6 +2384,7 @@ public class RPGItem {
     public List<Map<DataComponentType, Object>> getComponents() {
         return components;
     }
+
     public void setComponents(List<Map<DataComponentType, Object>> components) {
         this.components = components;
     }
@@ -2550,16 +2553,19 @@ public class RPGItem {
         PERMISSION,
         ALLOW;
     }
+
     public void setUpdateMode(UpdateMode updateMode) {
         this.updateMode = updateMode;
     }
 
-    public enum UpdateMode{
+    public enum UpdateMode {
         FULL_UPDATE, DISPLAY_ONLY, LORE_ONLY, ENCHANT_ONLY, NO_DISPLAY, NO_LORE, NO_ENCHANT, NO_UPDATE
     }
+
     public UpdateMode getUpdateMode() {
         return updateMode;
     }
+
     public enum AttributeMode {
         FULL_UPDATE, PARTIAL_UPDATE
     }

@@ -32,7 +32,7 @@ import static think.rpgitems.power.Utils.checkAndSetCooldown;
  * </p>
  */
 @SuppressWarnings("WeakerAccess")
-@Meta(defaultTrigger = {"TICK","POTION_EFFECT"}, implClass = PotionTick.Impl.class, generalInterface = PowerPotionEffect.class)
+@Meta(defaultTrigger = {"TICK", "POTION_EFFECT"}, implClass = PotionTick.Impl.class, generalInterface = PowerPotionEffect.class)
 public class PotionTick extends BasePower {
 
     @Deserializer(PotionEffectUtils.class)
@@ -45,7 +45,7 @@ public class PotionTick extends BasePower {
     @Property
     public int cost = 0;
     @Property(order = 2)
-    public int interval = 0;
+    public int interval = 20;
     @Property(order = 3)
     public int duration = 60;
     @Property
@@ -88,8 +88,8 @@ public class PotionTick extends BasePower {
     @Override
     public String displayText() {
         return isClear() ?
-                I18n.formatDefault("power.potiontick.clear", "<lang:effect.minecraft."+getEffect().key().value()+">")
-                : I18n.formatDefault("power.potiontick.display", "<lang:effect.minecraft."+getEffect().key().value()+">", getAmplifier() + 1);
+                I18n.formatDefault("power.potiontick.clear", "<lang:effect.minecraft." + getEffect().key().value() + ">")
+                : I18n.formatDefault("power.potiontick.display", "<lang:effect.minecraft." + getEffect().key().value() + ">", getAmplifier() + 1);
     }
 
     /**
@@ -120,47 +120,52 @@ public class PotionTick extends BasePower {
         }
 
         private PowerResult<Void> fire(Player player, ItemStack stack) {
-            final int[] summing = {0};
-            List<ItemStack> items = new ArrayList<>(Arrays.asList(player.getInventory().getArmorContents()));
-            items.add(player.getInventory().getItemInMainHand());
-            for(ItemStack i : items){
-                ItemManager.toRPGItemByMeta(i).ifPresent(rpgItem -> {
-                    for (Power power : rpgItem.getPowers()){
-                        if(power.getName().equals("potiontick")) {
-                            PotionTick potionTick = (PotionTick) power;
-                            if(potionTick.getEffect()==getEffect()&&potionTick.isSummingUp()){
-                                summing[0] += potionTick.getAmplifier();
-                            }
-                        }
-                    }
-                });
-            }
-            PowerActivateEvent powerEvent = new PowerActivateEvent(player,stack,getPower());
-            if(!powerEvent.callEvent()) {
+            PowerActivateEvent powerEvent = new PowerActivateEvent(player, stack, getPower());
+            if (!powerEvent.callEvent()) {
                 return PowerResult.fail();
             }
-            if (!checkAndSetCooldown(getPower(), player, getInterval(), showCooldownWarning(), true, getItem().getUid() + "." + "potiontick." + getEffect().getName()))
+
+            String cooldownKey = getItem().getUid() + ".potiontick." + getEffect().key().value();
+            if (!checkAndSetCooldown(getPower(), player, getInterval(), showCooldownWarning(), true, cooldownKey)) {
                 return PowerResult.cd();
-            if (!getItem().consumeDurability(stack, getCost())) return PowerResult.cost();
+            }
+            if (!getItem().consumeDurability(stack, getCost())) {
+                return PowerResult.cost();
+            }
+
+            int totalAmplifier = getAmplifier();
+            if (isSummingUp()) {
+                List<ItemStack> playerItems = new ArrayList<>(Arrays.asList(player.getInventory().getArmorContents()));
+                playerItems.add(player.getInventory().getItemInMainHand());
+
+                int additionalLevels = playerItems.stream()
+                        .flatMap(item -> ItemManager.toRPGItemByMeta(item).stream())
+                        .flatMap(rpgItem -> rpgItem.getPowers().stream())
+                        .filter(power -> power.getName().equals("potiontick"))
+                        .map(power -> (PotionTick) power)
+                        .filter(potionTick -> potionTick.getEffect() == getEffect() && potionTick.isSummingUp())
+                        .mapToInt(PotionTick::getAmplifier)
+                        .sum();
+
+                totalAmplifier += additionalLevels - (isSummingUp() ? getAmplifier() : 0);
+            }
+
             double health = player.getHealth();
-            boolean hasEffect = false;
-            for (PotionEffect potionEffect : player.getActivePotionEffects()) {
-                if (potionEffect.getType().equals(getEffect())) {
-                    hasEffect = true;
-                    if (isClear()&&player.hasPotionEffect(getEffect())) {
-                        player.removePotionEffect(getEffect());
-                    }
-                    else player.addPotionEffect(new PotionEffect(getEffect(), getDuration(), getAmplifier()+summing[0], true));
-                    break;
-                }
+            boolean hasMatchingEffect = player.getActivePotionEffects().stream()
+                    .anyMatch(effect -> effect.getType().equals(getEffect()));
+
+            if (isClear() && hasMatchingEffect) {
+                player.removePotionEffect(getEffect());
+            } else if (!isClear()) {
+                PotionEffect newEffect = new PotionEffect(getEffect(), getDuration(), totalAmplifier, true);
+                player.addPotionEffect(newEffect);
             }
-            if (!hasEffect && !isClear()) {
-                player.addPotionEffect(new PotionEffect(getEffect(), getDuration(), getAmplifier()+summing[0], true));
-            }
+
             if (getEffect().equals(PotionEffectType.HEALTH_BOOST) && health > 0) {
-                health = min(health, player.getAttribute(Attribute.MAX_HEALTH).getValue());
-                player.setHealth(health);
+                double maxHealth = player.getAttribute(Attribute.MAX_HEALTH).getValue();
+                player.setHealth(Math.min(health, maxHealth));
             }
+
             return PowerResult.ok();
         }
 
@@ -175,9 +180,9 @@ public class PotionTick extends BasePower {
         }
 
         @Override
-        public PowerResult<Void> potionEffect(Player player, ItemStack stack, EntityPotionEffectEvent event){
-            if(isClear()){
-                if(event.getModifiedType()==getEffect()&&event.getAction()== EntityPotionEffectEvent.Action.ADDED){
+        public PowerResult<Void> potionEffect(Player player, ItemStack stack, EntityPotionEffectEvent event) {
+            if (isClear()) {
+                if (event.getModifiedType() == getEffect() && event.getAction() == EntityPotionEffectEvent.Action.ADDED) {
                     event.setCancelled(true);
                     return PowerResult.ok();
                 }
