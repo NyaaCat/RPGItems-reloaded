@@ -17,10 +17,7 @@ import think.rpgitems.item.ItemManager;
 import think.rpgitems.power.*;
 import think.rpgitems.power.trigger.BaseTriggers;
 import think.rpgitems.power.trigger.Trigger;
-import think.rpgitems.support.MythicMobsSupport;
-import think.rpgitems.support.PlaceholderAPISupport;
-import think.rpgitems.support.ResidenceSupport;
-import think.rpgitems.support.WGSupport;
+import think.rpgitems.support.*;
 
 import java.io.File;
 import java.lang.reflect.InvocationHandler;
@@ -237,6 +234,9 @@ public class RPGItems extends JavaPlugin {
         public void onServerLoad(ServerLoadEvent event) {
             HandlerList.unregisterAll(this);
             getServer().getPluginManager().registerEvents(new Events(), RPGItems.this);
+            if(MythicMobsSupport.hasSupport()){
+                getServer().getPluginManager().registerEvents(new MythicMobsEvents(), RPGItems.this);
+            }
             WGSupport.init(RPGItems.this);
             logger.info("Loading RPGItems...");
             ItemManager.load(RPGItems.this);
