@@ -25,9 +25,16 @@ import java.util.concurrent.ThreadLocalRandom;
 public class MythicMobsEvents implements Listener {
     @EventHandler
     public void onDropLoad(MythicDropLoadEvent event) {
+        String dropName = event.getDropName();
+        if (dropName == null || !dropName.toLowerCase(Locale.ROOT).startsWith("rpg.")) {
+            return;
+        }
+
+        String itemNameFromDrop = dropName.substring(4);
         for (String name : ItemManager.itemNames()) {
-            if (event.getDropName().equalsIgnoreCase("rpg." + name)) {
+            if (name.equalsIgnoreCase(itemNameFromDrop)) {
                 event.register(new RPGItemDrop(event.getContainer().getConfigLine(), event.getConfig()));
+                return;
             }
         }
     }
