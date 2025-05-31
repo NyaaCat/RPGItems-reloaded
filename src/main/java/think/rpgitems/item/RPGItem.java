@@ -934,6 +934,8 @@ public class RPGItem {
         item.resetData(DataComponentTypes.TOOLTIP_DISPLAY);
         item.resetData(DataComponentTypes.MAX_DAMAGE);
         item.resetData(DataComponentTypes.MAX_STACK_SIZE);
+        item.resetData(DataComponentTypes.PROVIDES_BANNER_PATTERNS);
+        item.resetData(DataComponentTypes.PROVIDES_TRIM_MATERIAL);
         item.resetData(DataComponentTypes.POTION_DURATION_SCALE);
         item.resetData(DataComponentTypes.RARITY);
         item.resetData(DataComponentTypes.TOOL);
