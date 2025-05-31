@@ -729,6 +729,8 @@ public class ComponentUtil {
                         if (section != null) {
                             if (section.getBoolean("unset")) {
                                 componentMap.put(DataComponentTypes.TOOLTIP_DISPLAY, ComponentStatus.UNSET);
+                            } else if (section.getBoolean("hide_tooltip")) {
+                                componentMap.put(DataComponentTypes.TOOLTIP_DISPLAY, TooltipDisplay.tooltipDisplay().hideTooltip(true));
                             } else {
                                 List<String> hiddenComponents = section.getStringList("hidden_components");
                                 if (!hiddenComponents.isEmpty()) {
