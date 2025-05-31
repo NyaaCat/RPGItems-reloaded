@@ -1,6 +1,7 @@
 package think.rpgitems.utils;
 
 import io.papermc.paper.datacomponent.DataComponentTypes;
+import io.papermc.paper.datacomponent.item.TooltipDisplay;
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
 import org.bukkit.Material;
@@ -73,7 +74,7 @@ public class InventoryUtils {
         }
 
         ItemStack filler = new ItemStack(Material.WHITE_STAINED_GLASS_PANE);
-        filler.setData(DataComponentTypes.HIDE_TOOLTIP);
+        filler.setData(DataComponentTypes.TOOLTIP_DISPLAY, TooltipDisplay.tooltipDisplay().hideTooltip(true).build());
         ItemMeta fillerMeta = filler.getItemMeta();
         if(fillerMeta != null) {
             fillerMeta.getPersistentDataContainer().set(fillerKey, PersistentDataType.BOOLEAN, true);

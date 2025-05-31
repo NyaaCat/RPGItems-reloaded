@@ -69,7 +69,7 @@ public class Food extends BasePower {
             int count = item.getAmount() - amount;
             int newFoodPoint = player.getFoodLevel() + getFoodpoints();
             if (newFoodPoint > 20) newFoodPoint = 20;
-            FoodLevelChangeEvent foodEvent = new FoodLevelChangeEvent(player,newFoodPoint-player.getFoodLevel());
+            FoodLevelChangeEvent foodEvent = new FoodLevelChangeEvent(player,newFoodPoint-player.getFoodLevel(), item);
             item.setAmount(count);
             if(foodEvent.callEvent()){
                 player.setFoodLevel(newFoodPoint);
