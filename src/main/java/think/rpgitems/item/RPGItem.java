@@ -209,31 +209,30 @@ public class RPGItem {
     }
 
     public static List<Modifier> getModifiers(ItemStack stack) {
-        return Optional.ofNullable(stack)
-                .flatMap(s -> ItemTagUtils.getString(s, NBT_ITEM_UUID))
-                .map(UUID::fromString)
-                .map(uuid -> {
-                    try {
-                        return modifierCache.get(uuid, () -> {
-                            ItemMeta itemMeta = stack.getItemMeta();
-                            if (itemMeta == null) return new ArrayList<>();
-                            SubItemTagContainer tag = makeTag(itemMeta.getPersistentDataContainer(), TAG_MODIFIER);
-                            return getModifiers(tag, uuid);
-                        });
-                    } catch (ExecutionException e) {
-                        throw new RuntimeException(e);
-                    }
-                })
-                .orElseGet(() -> {
-                    // 尝试更新物品后再获取
-                    Optional<RPGItem> rpgItemOpt = ItemManager.toRPGItemByMeta(stack);
-                    if (rpgItemOpt.isPresent()) {
-                        RPGItem rpgItem = rpgItemOpt.get();
-                        rpgItem.updateItem(stack, false, null);
-                        return getModifiers(stack);  // 递归调用一次
-                    }
-                    return Collections.emptyList();
-                });
+        Optional<String> opt = ItemTagUtils.getString(stack, NBT_ITEM_UUID);
+        if (opt.isEmpty()) {
+            Optional<RPGItem> rpgItemOpt = ItemManager.toRPGItemByMeta(stack);
+            if (rpgItemOpt.isEmpty()) {
+                return Collections.emptyList();
+            }
+            RPGItem rpgItem = rpgItemOpt.get();
+            rpgItem.updateItem(stack,false,null);
+            Optional<String> opt1 = ItemTagUtils.getString(stack, NBT_ITEM_UUID);
+            if (opt1.isEmpty()) {
+                return Collections.emptyList();
+            }
+            opt = opt1;
+        }
+
+        UUID key = UUID.fromString(opt.get());
+        List<Modifier> modifiers = modifierCache.getIfPresent(key);
+        if (modifiers == null) {
+            ItemMeta itemMeta = stack.getItemMeta();
+            if (itemMeta == null) return new ArrayList<>();
+            SubItemTagContainer tag = makeTag(Objects.requireNonNull(itemMeta).getPersistentDataContainer(), TAG_MODIFIER);
+            modifiers = getModifiers(tag, key);
+        }
+        return modifiers;
     }
 
     public static List<Modifier> getModifiers(Player player) {
@@ -1310,15 +1309,15 @@ public class RPGItem {
 
     private <T> PowerResult<T> checkConditions(Player player, ItemStack i, Pimpl pimpl, List<Condition<?>> conds, Map<PropertyHolder, PowerResult<?>> context) {
         Set<String> ids = pimpl.getPower().getConditions();
-        List<Condition<?>> conditions = conds.stream().filter(p -> ids.contains(p.id())).collect(Collectors.toList());
-        List<Condition<?>> failed = conditions.stream().filter(p -> p.isStatic() ? !context.get(p).isOK() : !p.check(player, i, context).isOK()).collect(Collectors.toList());
+        List<Condition<?>> conditions = conds.stream().filter(p -> ids.contains(p.id())).toList();
+        List<Condition<?>> failed = conditions.stream().filter(p -> p.isStatic() ? !context.get(p).isOK() : !p.check(player, i, context).isOK()).toList();
         if (failed.isEmpty()) return null;
         return failed.stream().anyMatch(Condition::isCritical) ? PowerResult.abort() : PowerResult.condition();
     }
 
     private Map<Condition<?>, PowerResult<?>> checkStaticCondition(Player player, ItemStack i, List<Condition<?>> conds) {
         Set<String> ids = powers.stream().flatMap(p -> p.getConditions().stream()).collect(Collectors.toSet());
-        List<Condition<?>> statics = conds.stream().filter(Condition::isStatic).filter(p -> ids.contains(p.id())).collect(Collectors.toList());
+        List<Condition<?>> statics = conds.stream().filter(Condition::isStatic).filter(p -> ids.contains(p.id())).toList();
         Map<Condition<?>, PowerResult<?>> result = new LinkedHashMap<>();
         for (Condition<?> c : statics) {
             result.put(c, c.check(player, i, Collections.unmodifiableMap(result)));
