@@ -2,6 +2,7 @@ package think.rpgitems.power.impl;
 
 import cat.nyaa.nyaacore.Pair;
 import com.destroystokyo.paper.event.player.PlayerJumpEvent;
+import net.kyori.adventure.key.Key;
 import org.bukkit.*;
 import org.bukkit.block.Block;
 import org.bukkit.block.data.type.Bed;
@@ -56,7 +57,7 @@ public class Teleport extends BasePower {
     @Property
     public String particle = "PORTAL";
     @Property
-    public String sound = "ENTITY_ENDERMAN_TELEPORT";
+    public String sound = "entity.enderman.teleport";
 
     @Property
     public TargetMode targetMode = TargetMode.DEFAULT;
@@ -136,7 +137,7 @@ public class Teleport extends BasePower {
                 world.spawnParticle(Particle.valueOf(getParticle().toUpperCase(Locale.ROOT)),newLoc,100);
             }
             if(!getSound().isEmpty()){
-                world.playSound(newLoc, Sound.valueOf(getSound().toUpperCase(Locale.ROOT)), 1.0f, 0.3f);
+                world.playSound(newLoc, Registry.SOUNDS.get(Key.key(getSound().toLowerCase(Locale.ROOT))), 1.0f, 0.3f);
             }
             return PowerResult.ok();
         }
