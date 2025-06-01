@@ -7,7 +7,7 @@ plugins {
 }
 ext {
     // Supplied by Jenkins
-    buildNumber = System.env.GITHUB_RUN_NUMBER == null ? "x" : "$System.env.GITHUB_RUN_NUMBER"
+    buildNumber = System.env.GITHUB_RUN_NUMBER == null ? "dev-" + new Date().format("yyyy-MM-dd_HH-mm-ss") : "$System.env.GITHUB_RUN_NUMBER"
     mavenDirectory = System.env.MAVEN_DIR == null ? "$projectDir/repo" : "$System.env.MAVEN_DIR"
     jdDirectory = System.env.JAVADOCS_DIR == null ? null : "$System.env.JAVADOCS_DIR"
 }
