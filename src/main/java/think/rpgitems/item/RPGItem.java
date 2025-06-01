@@ -29,6 +29,7 @@ import net.minecraft.network.protocol.game.ClientboundUpdateAttributesPacket;
 import org.bukkit.*;
 import org.bukkit.attribute.Attribute;
 import org.bukkit.block.Block;
+import org.bukkit.block.banner.PatternType;
 import org.bukkit.command.CommandSender;
 import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.configuration.MemoryConfiguration;
@@ -42,6 +43,7 @@ import org.bukkit.inventory.*;
 import org.bukkit.inventory.meta.Damageable;
 import org.bukkit.inventory.meta.ItemMeta;
 import org.bukkit.inventory.meta.LeatherArmorMeta;
+import org.bukkit.inventory.meta.trim.TrimMaterial;
 import org.bukkit.inventory.meta.trim.TrimPattern;
 import org.bukkit.persistence.PersistentDataContainer;
 import org.bukkit.persistence.PersistentDataType;
@@ -929,16 +931,19 @@ public class RPGItem {
         item.resetData(DataComponentTypes.PROFILE);
         item.resetData(DataComponentTypes.FOOD);
         item.resetData(DataComponentTypes.GLIDER);
-        item.resetData(DataComponentTypes.HIDE_ADDITIONAL_TOOLTIP);
-        item.resetData(DataComponentTypes.HIDE_TOOLTIP);
+        item.resetData(DataComponentTypes.TOOLTIP_DISPLAY);
         item.resetData(DataComponentTypes.MAX_DAMAGE);
         item.resetData(DataComponentTypes.MAX_STACK_SIZE);
+        item.resetData(DataComponentTypes.PROVIDES_BANNER_PATTERNS);
+        item.resetData(DataComponentTypes.PROVIDES_TRIM_MATERIAL);
+        item.resetData(DataComponentTypes.POTION_DURATION_SCALE);
         item.resetData(DataComponentTypes.RARITY);
         item.resetData(DataComponentTypes.TOOL);
         item.resetData(DataComponentTypes.TOOLTIP_STYLE);
         item.resetData(DataComponentTypes.TRIM);
         item.resetData(DataComponentTypes.USE_COOLDOWN);
         item.resetData(DataComponentTypes.USE_REMAINDER);
+        item.resetData(DataComponentTypes.WEAPON);
         if (getComponents() != null) {
             for (Map<DataComponentType, Object> component : getComponents()) {
                 for (Map.Entry<DataComponentType, Object> entry : component.entrySet()) {
@@ -951,6 +956,10 @@ public class RPGItem {
                     } else {
                         if (key == DataComponentTypes.BANNER_PATTERNS) {
                             item.setData(DataComponentTypes.BANNER_PATTERNS, (BannerPatternLayers.Builder) value);
+                        } else if (key == DataComponentTypes.BLOCKS_ATTACKS) {
+                            item.setData(DataComponentTypes.BLOCKS_ATTACKS, (BlocksAttacks.Builder) value);
+                        } else if (key == DataComponentTypes.BREAK_SOUND) {
+                            item.setData(DataComponentTypes.BREAK_SOUND, (Key) value);
                         } else if (key == DataComponentTypes.CAN_BREAK) {
                             item.setData(DataComponentTypes.CAN_BREAK, (ItemAdventurePredicate.Builder) value);
                         } else if (key == DataComponentTypes.CAN_PLACE_ON) {
@@ -977,10 +986,18 @@ public class RPGItem {
                             item.setData(DataComponentTypes.MAX_STACK_SIZE, (int) value);
                         } else if (key == DataComponentTypes.PROFILE) {
                             item.setData(DataComponentTypes.PROFILE, (ResolvableProfile.Builder) value);
+                        } else if (key == DataComponentTypes.PROVIDES_BANNER_PATTERNS) {
+                            item.setData(DataComponentTypes.PROVIDES_BANNER_PATTERNS, (TagKey<PatternType>) value);
+                        } else if (key == DataComponentTypes.PROVIDES_TRIM_MATERIAL) {
+                            item.setData(DataComponentTypes.PROVIDES_TRIM_MATERIAL, (TrimMaterial) value);
+                        } else if (key == DataComponentTypes.POTION_DURATION_SCALE) {
+                            item.setData(DataComponentTypes.POTION_DURATION_SCALE, (float) value);
                         } else if (key == DataComponentTypes.RARITY) {
                             item.setData(DataComponentTypes.RARITY, (ItemRarity) value);
                         } else if (key == DataComponentTypes.TOOL) {
                             item.setData(DataComponentTypes.TOOL, (Tool.Builder) value);
+                        } else if (key == DataComponentTypes.TOOLTIP_DISPLAY) {
+                            item.setData(DataComponentTypes.TOOLTIP_DISPLAY, (TooltipDisplay.Builder) value);
                         } else if (key == DataComponentTypes.TOOLTIP_STYLE) {
                             item.setData(DataComponentTypes.TOOLTIP_STYLE, (Key) value);
                         } else if (key == DataComponentTypes.TRIM) {
@@ -989,6 +1006,8 @@ public class RPGItem {
                             item.setData(DataComponentTypes.USE_COOLDOWN, (UseCooldown.Builder) value);
                         } else if (key == DataComponentTypes.USE_REMAINDER) {
                             item.setData(DataComponentTypes.USE_REMAINDER, (UseRemainder) value);
+                        } else if (key == DataComponentTypes.WEAPON) {
+                            item.setData(DataComponentTypes.WEAPON, (Weapon.Builder) value);
                         }
                     }
                 }
