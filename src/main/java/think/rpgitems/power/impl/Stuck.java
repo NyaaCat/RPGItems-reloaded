@@ -45,6 +45,7 @@ public class Stuck extends BasePower {
     private static final AtomicInteger rc = new AtomicInteger(0);
     private static Listener listener;
     private static final Cache<UUID, Long> stucked = CacheBuilder.newBuilder().expireAfterAccess(10, TimeUnit.MINUTES).concurrencyLevel(2).build();
+    private static final Cache<UUID, Long> unstucked = CacheBuilder.newBuilder().expireAfterAccess(10, TimeUnit.MINUTES).concurrencyLevel(2).build();
     @Property
     public int chance = 3;
     @Property
@@ -63,6 +64,8 @@ public class Stuck extends BasePower {
     public int cooldown = 0;
     @Property
     public boolean requireHurtByEntity = true;
+    @Property
+    public boolean clear = false;
     private final Random random = new Random();
 
     @Override
@@ -206,6 +209,13 @@ public class Stuck extends BasePower {
         return range;
     }
 
+    /**
+     * Whether to remove the effect instead of adding it.
+     */
+    public boolean isClear() {
+        return clear;
+    }
+
     public boolean isRequireHurtByEntity() {
         return requireHurtByEntity;
     }
@@ -228,9 +238,24 @@ public class Stuck extends BasePower {
             }
             if (!checkCooldown(getPower(), player, getCooldown(), showCooldownWarning(), true)) return PowerResult.cd();
             if (!getItem().consumeDurability(stack, getCostAoe())) return PowerResult.cost();
+            if (isClear()) {
+                if (stucked.getIfPresent(player.getUniqueId()) != null) {
+                    stucked.invalidate(player.getUniqueId());
+                    unstucked.put(player.getUniqueId(), getDuration() * 50 + System.currentTimeMillis());
+                    return PowerResult.ok();
+                } else {
+                    player.sendMessage(I18n.formatDefault("message.not_stucked"));
+                    return PowerResult.noop();
+                }
+            }
             List<LivingEntity> entities = getLivingEntitiesInCone(getNearestLivingEntities(getPower(), player.getEyeLocation(), player, getRange(), 0), player.getLocation().toVector(), getFacing(), player.getLocation().getDirection());
             entities.forEach(entity -> {
                         if (!getItem().consumeDurability(stack, getCostPerEntity())) return;
+                        try {
+                            if (unstucked.get(entity.getUniqueId(), () -> Long.MIN_VALUE) >= (System.currentTimeMillis())) return;
+                        } catch (ExecutionException e) {
+                            // Do nothing
+                        }
                         stucked.put(entity.getUniqueId(), System.currentTimeMillis());
                     }
             );
@@ -277,6 +302,11 @@ public class Stuck extends BasePower {
             if (!checkCooldown(getPower(), player, getCooldown(), showCooldownWarning(), true)) return PowerResult.cd();
             if (random.nextInt(getChance()) == 0) {
                 if (!getItem().consumeDurability(stack, getCost())) return PowerResult.cost();
+                try {
+                    if (unstucked.get(entity.getUniqueId(), () -> Long.MIN_VALUE) >= (System.currentTimeMillis())) return PowerResult.noop();
+                } catch (ExecutionException e) {
+                    // Do nothing
+                }
                 stucked.put(entity.getUniqueId(), System.currentTimeMillis());
                 return PowerResult.ok(damage);
             }

@@ -631,6 +631,7 @@ message:
     unknown: Unknown modifier %s
     remove: Modifier removed
   no_item: No item.
+  not_stucked: You are not stuck!
   num_out_of_range: '%d is out of range (%d, %d]'
   permission:
     booleanerror: Enabled must be boolean ! (true or false)
@@ -780,6 +781,7 @@ power:
   gunfu: Projectiles will track a enemy (%.1fs cooldown)
   headshot: Deal %.1f damage when headshot
   ice: Shoots Ice (%.1fs cooldown)
+  immunity: WIP DO NOT USE
   knockup: '%d%% chance to send target flying'
   lifesteal: 1/%d chance to steal the ennemy life
   lightning: '%d%% chance to shock on hit'
