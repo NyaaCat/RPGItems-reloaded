@@ -44,7 +44,7 @@ dependencies {
     compileOnly 'io.lumine:Mythic-Dist:5.8.2'
     compileOnly 'me.clip:placeholderapi:2.11.6'
     // other nyaa plugins
-    compileOnly('cat.nyaa:nyaacore:9.4') { transitive = false }
+    compileOnly('cat.nyaa:nyaacore:9.8') { transitive = false }
     //3rd
     //compileOnly group: "com.comphenix.protocol", name: "ProtocolLib", version: "4.7.0"
     compileOnly 'org.jetbrains:annotations:23.0.0'

@@ -3,13 +3,11 @@ package think.rpgitems.item;
 import cat.nyaa.nyaacore.Message;
 import cat.nyaa.nyaacore.Pair;
 import cat.nyaa.nyaacore.utils.HexColorUtils;
-import cat.nyaa.nyaacore.utils.ItemStackUtils;
 import cat.nyaa.nyaacore.utils.ItemTagUtils;
 import com.google.common.base.Strings;
 import com.google.common.cache.Cache;
 import com.google.common.cache.CacheBuilder;
 import com.google.common.collect.Multimap;
-import io.papermc.paper.datacomponent.DataComponentBuilder;
 import io.papermc.paper.datacomponent.DataComponentType;
 import io.papermc.paper.datacomponent.DataComponentTypes;
 import io.papermc.paper.datacomponent.item.*;
@@ -19,13 +17,8 @@ import io.papermc.paper.registry.tag.TagKey;
 import me.clip.placeholderapi.PlaceholderAPI;
 import net.kyori.adventure.key.Key;
 import net.kyori.adventure.text.Component;
-import net.kyori.adventure.text.format.NamedTextColor;
+import net.kyori.adventure.text.event.ClickEvent;
 import net.kyori.adventure.text.minimessage.MiniMessage;
-import net.md_5.bungee.api.chat.BaseComponent;
-import net.md_5.bungee.api.chat.ClickEvent;
-import net.md_5.bungee.api.chat.HoverEvent;
-import net.md_5.bungee.api.chat.TextComponent;
-import net.minecraft.network.protocol.game.ClientboundUpdateAttributesPacket;
 import org.bukkit.*;
 import org.bukkit.attribute.Attribute;
 import org.bukkit.block.Block;
@@ -44,13 +37,11 @@ import org.bukkit.inventory.meta.Damageable;
 import org.bukkit.inventory.meta.ItemMeta;
 import org.bukkit.inventory.meta.LeatherArmorMeta;
 import org.bukkit.inventory.meta.trim.TrimMaterial;
-import org.bukkit.inventory.meta.trim.TrimPattern;
 import org.bukkit.persistence.PersistentDataContainer;
 import org.bukkit.persistence.PersistentDataType;
 import org.bukkit.potion.PotionEffect;
 import org.bukkit.potion.PotionEffectType;
 import think.rpgitems.AdminCommands;
-import think.rpgitems.Configuration;
 import think.rpgitems.I18n;
 import think.rpgitems.RPGItems;
 import think.rpgitems.data.Context;
@@ -77,7 +68,6 @@ import java.util.concurrent.TimeUnit;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.regex.Matcher;
-import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -841,7 +831,7 @@ public class RPGItem {
         if (getUpdateMode() != UpdateMode.NO_UPDATE && getUpdateMode() != UpdateMode.NO_LORE && getUpdateMode() != UpdateMode.DISPLAY_ONLY && getUpdateMode() != UpdateMode.ENCHANT_ONLY) {
             List<Component> loreComponents = new ArrayList<>();
             for (String lore1 : lore) {
-                loreComponents.add(MiniMessage.miniMessage().deserialize("<!i>" + replaceLegacyColorCodes(lore1)));
+                loreComponents.add(MiniMessage.miniMessage().deserialize("<!i>" + I18n.replaceLegacyColorCodes(lore1)));
             }
             meta.lore(loreComponents);
         }
@@ -875,7 +865,7 @@ public class RPGItem {
             String metaDisplay = meta.hasDisplayName() ? meta.getDisplayName() : "";
 
             if (!metaDisplay.equals(finalDisplay)) {
-                meta.displayName(MiniMessage.miniMessage().deserialize("<!i>" + replaceLegacyColorCodes(finalDisplay)));
+                meta.displayName(MiniMessage.miniMessage().deserialize("<!i>" + I18n.replaceLegacyColorCodes(finalDisplay)));
             }
         }
 
@@ -1498,7 +1488,7 @@ public class RPGItem {
             set(rpgitemsTagContainer, TAG_STACK_ID, UUID.randomUUID());
         }
         rpgitemsTagContainer.commit();
-        meta.displayName(MiniMessage.miniMessage().deserialize("<!i>" + replaceLegacyColorCodes(getDisplayName())));
+        meta.displayName(MiniMessage.miniMessage().deserialize("<!i>" + I18n.replaceLegacyColorCodes(getDisplayName())));
         rStack.setItemMeta(meta);
 
         updateItem(rStack, false, null);
@@ -1549,7 +1539,7 @@ public class RPGItem {
 
     public void print(CommandSender sender, boolean advance) {
         String author = this.getAuthor();
-        BaseComponent authorComponent = new TextComponent(author);
+        Component authorComponent = Component.text(author);
         try {
             UUID uuid = UUID.fromString(this.getAuthor());
             OfflinePlayer authorPlayer = Bukkit.getOfflinePlayer(uuid);
@@ -1888,7 +1878,7 @@ public class RPGItem {
         rebuild();
     }
 
-    public BaseComponent getComponent(CommandSender sender) {
+    public Component getComponent(CommandSender sender) {
         String locale = RPGItems.plugin.cfg.language;
         if (sender instanceof Player) {
             locale = ((Player) sender).getLocale();
@@ -1896,12 +1886,9 @@ public class RPGItem {
         return getComponent(locale);
     }
 
-    public BaseComponent getComponent(String locale) {
-        BaseComponent msg = new TextComponent(getDisplayName());
-        msg.setClickEvent(new ClickEvent(ClickEvent.Action.SUGGEST_COMMAND, "/rpgitem " + getName()));
-        HoverEvent hover = new HoverEvent(HoverEvent.Action.SHOW_ITEM,
-                new BaseComponent[]{new TextComponent(ItemStackUtils.itemToJson(toItemStack()))});
-        msg.setHoverEvent(hover);
+    public Component getComponent(String locale) {
+        Component msg = Component.text(getDisplayName());
+        msg = msg.clickEvent(ClickEvent.clickEvent(ClickEvent.Action.SUGGEST_COMMAND, "/rpgitem" + getName())).hoverEvent(toItemStack());
         return msg;
     }
 
@@ -2047,34 +2034,6 @@ public class RPGItem {
             }
         }
         return getMethod;
-    }
-
-    private String replaceLegacyColorCodes(String text) {
-        String[][] formatMap = {
-                {"0", "black"}, {"1", "dark_blue"}, {"2", "dark_green"}, {"3", "dark_aqua"},
-                {"4", "dark_red"}, {"5", "dark_purple"}, {"6", "gold"}, {"7", "gray"},
-                {"8", "dark_gray"}, {"9", "blue"}, {"a", "green"}, {"b", "aqua"},
-                {"c", "red"}, {"d", "light_purple"}, {"e", "yellow"}, {"f", "white"},
-                {"k", "obf"}, {"l", "b"}, {"m", "st"},
-                {"n", "u"}, {"o", "i"}, {"r", "reset"}
-        };
-
-        Pattern pattern = Pattern.compile("[§&]x([§&][0-9a-fA-F]){6}");
-        Matcher matcher = pattern.matcher(text);
-        StringBuilder result = new StringBuilder();
-
-        while (matcher.find()) {
-            String hex = matcher.group().replaceAll("[§&]x|[§&]", "");
-            matcher.appendReplacement(result, "<#" + hex + ">");
-        }
-        matcher.appendTail(result);
-        text = result.toString();
-
-        for (String[] entry : formatMap) {
-            text = text.replaceAll("[§&]" + entry[0], "<" + entry[1] + ">");
-        }
-
-        return text;
     }
 
     private void copyFromTemplate(RPGItem target) throws UnknownPowerException {

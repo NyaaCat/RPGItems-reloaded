@@ -3,6 +3,9 @@ package think.rpgitems;
 import cat.nyaa.nyaacore.LanguageRepository;
 import cat.nyaa.nyaacore.Message;
 import cat.nyaa.nyaacore.utils.HexColorUtils;
+import net.kyori.adventure.text.Component;
+import net.kyori.adventure.text.format.TextDecoration;
+import net.kyori.adventure.text.minimessage.MiniMessage;
 import net.md_5.bungee.api.chat.BaseComponent;
 import org.bukkit.command.CommandSender;
 import org.bukkit.configuration.ConfigurationSection;
@@ -17,15 +20,19 @@ import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;
+import java.util.Comparator;
 import java.util.HashMap;
 import java.util.IllegalFormatConversionException;
 import java.util.Map;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 public class I18n extends LanguageRepository {
     private static final Map<String, I18n> instances = new HashMap<>();
     private final RPGItems plugin;
     protected Map<String, String> map = new HashMap<>();
     private final String lang;
+    private static final MiniMessage mm = MiniMessage.miniMessage();
 
     public I18n(RPGItems plugin, String lang) {
         instances.put(lang.toLowerCase(), this);
@@ -58,6 +65,10 @@ public class I18n extends LanguageRepository {
                 loadLanguageSection(map, section.getConfigurationSection(key), path + ".", ignoreInternal, ignoreNormal);
             }
         }
+    }
+
+    private static Component parse(String string){
+        return mm.deserialize(replaceLegacyColorCodes(string)).decorationIfAbsent(TextDecoration.ITALIC, TextDecoration.State.FALSE);
     }
 
     // helper function to load language map
@@ -97,11 +108,39 @@ public class I18n extends LanguageRepository {
 
     public static void sendMessage(CommandSender target, String template, Object... args) {
         I18n i18n = I18n.getInstance(target);
-        target.sendMessage(i18n.getFormatted(template, args));
+        target.sendMessage(parse(i18n.getFormatted(template, args)));
     }
 
-    public static void sendMessage(CommandSender target, String template, Map<String, BaseComponent> map, Object... args) {
+    public static void sendMessage(CommandSender target, String template, Map<String, Component> map, Object... args) {
         new Message("").append(I18n.getInstance(target).getFormatted(template, args), map).send(target);
+    }
+
+    public static String replaceLegacyColorCodes(String text) {
+        String[][] formatMap = {
+                {"0", "black"}, {"1", "dark_blue"}, {"2", "dark_green"}, {"3", "dark_aqua"},
+                {"4", "dark_red"}, {"5", "dark_purple"}, {"6", "gold"}, {"7", "gray"},
+                {"8", "dark_gray"}, {"9", "blue"}, {"a", "green"}, {"b", "aqua"},
+                {"c", "red"}, {"d", "light_purple"}, {"e", "yellow"}, {"f", "white"},
+                {"k", "obf"}, {"l", "b"}, {"m", "st"},
+                {"n", "u"}, {"o", "i"}, {"r", "reset"}
+        };
+
+        Pattern pattern = Pattern.compile("[§&]x([§&][0-9a-fA-F]){6}");
+        Matcher matcher = pattern.matcher(text);
+        StringBuilder result = new StringBuilder();
+
+        while (matcher.find()) {
+            String hex = matcher.group().replaceAll("[§&]x|[§&]", "");
+            matcher.appendReplacement(result, "<#" + hex + ">");
+        }
+        matcher.appendTail(result);
+        text = result.toString();
+
+        for (String[] entry : formatMap) {
+            text = text.replaceAll("[§&]" + entry[0], "<" + entry[1] + ">");
+        }
+
+        return text;
     }
 
     /**

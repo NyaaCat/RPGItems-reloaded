@@ -3,6 +3,7 @@ package think.rpgitems.power.impl;
 import cat.nyaa.nyaacore.Message;
 import cat.nyaa.nyaacore.utils.ItemStackUtils;
 import com.google.common.base.Strings;
+import net.kyori.adventure.text.Component;
 import net.md_5.bungee.api.chat.BaseComponent;
 import net.md_5.bungee.api.chat.HoverEvent;
 import net.md_5.bungee.api.chat.TextComponent;
@@ -191,11 +192,10 @@ public class Repair extends BasePower {
                     repairCount++;
                 } else {
                     if (isShowFailMsg()) {
-                        BaseComponent msg = Strings.isNullOrEmpty(getCustomMessage()) ?
-                                new TextComponent(I18n.formatDefault("message.error.need_material", (getMaterial().hasItemMeta() && getMaterial().getItemMeta().hasDisplayName()) ? getMaterial().getItemMeta().getDisplayName() : getMaterial().getType().getKey().toString())) :
-                                new TextComponent(getCustomMessage());
-                        HoverEvent hover = new HoverEvent(HoverEvent.Action.SHOW_ITEM, new BaseComponent[]{new TextComponent(ItemStackUtils.itemToJson(getMaterial()))});
-                        msg.setHoverEvent(hover);
+                        Component msg = Strings.isNullOrEmpty(getCustomMessage()) ?
+                                Component.text(I18n.formatDefault("message.error.need_material", (getMaterial().hasItemMeta() && getMaterial().getItemMeta().hasDisplayName()) ? getMaterial().getItemMeta().getDisplayName() : getMaterial().getType().getKey().toString())) :
+                                Component.text(getCustomMessage());
+                        msg = msg.hoverEvent(getMaterial());
                         new Message("").append(msg).send(player);
                     }
                     return isAbortOnFailure() ? PowerResult.abort() : PowerResult.fail();

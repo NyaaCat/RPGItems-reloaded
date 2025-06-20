@@ -112,15 +112,15 @@ public class ParticlePower extends BasePower {
         return delay;
     }
 
-    void spawnParticle(Entity player) {
+    void spawnParticle(Entity entity) {
         if (getParticle() == null) {
             if (getEffect() == Effect.SMOKE) {
-                player.getWorld().playEffect(player.getLocation().add(0, 2, 0), getEffect(), 4);
+                entity.getWorld().playEffect(entity.getLocation().add(0, 2, 0), getEffect(), 4);
             } else {
-                player.getWorld().playEffect(player.getLocation(), getEffect(), 0);
+                entity.getWorld().playEffect(entity.getLocation(), getEffect(), 0);
             }
         } else {
-            player.getWorld().spawnParticle(getParticle(), player.getLocation(), getParticleCount(), getOffsetX(), getOffsetY(), getOffsetZ(), getExtra(), getData(), isForce());
+            entity.getWorld().spawnParticle(getParticle(), entity.getLocation(), getParticleCount(), getOffsetX(), getOffsetY(), getOffsetZ(), getExtra(), getData(), isForce());
         }
     }
 
