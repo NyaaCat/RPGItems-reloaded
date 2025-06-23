@@ -9,6 +9,7 @@ import org.bukkit.entity.*;
 import org.bukkit.event.entity.EntityDamageByEntityEvent;
 import org.bukkit.event.entity.EntityDamageEvent;
 import org.bukkit.event.entity.EntityShootBowEvent;
+import org.bukkit.event.entity.ProjectileLaunchEvent;
 import org.bukkit.event.entity.EntityToggleSwimEvent;
 import org.bukkit.event.player.PlayerInteractEvent;
 import org.bukkit.event.player.PlayerItemConsumeEvent;
@@ -58,6 +59,7 @@ import static think.rpgitems.power.Utils.checkCooldown;
         PowerHit.class,
         PowerHitTaken.class,
         PowerBowShoot.class,
+        PowerProjectileLaunch.class,
         PowerBeamHit.class,
         PowerLocation.class
 }, implClass = ProjectilePower.Impl.class)
@@ -409,7 +411,7 @@ public class ProjectilePower extends BasePower {
         }
     }
 
-    public class Impl implements PowerJump, PowerSwim, PowerRightClick, PowerLeftClick, PowerSneak, PowerSprint, PowerHitTaken, PowerHit, PowerLivingEntity, PowerPlain, PowerBowShoot, PowerHurt, PowerConsume {
+    public class Impl implements PowerJump, PowerSwim, PowerRightClick, PowerLeftClick, PowerSneak, PowerSprint, PowerHitTaken, PowerHit, PowerLivingEntity, PowerPlain, PowerBowShoot, PowerHurt, PowerConsume, PowerProjectileLaunch {
 
 
         @Override
@@ -611,6 +613,11 @@ public class ProjectilePower extends BasePower {
 
         @Override
         public PowerResult<Void> swim(Player player, ItemStack stack, EntityToggleSwimEvent event) {
+            return fire(player, stack);
+        }
+        
+        @Override
+        public PowerResult<Void> projectileLaunch(Player player, ItemStack stack, ProjectileLaunchEvent event) {
             return fire(player, stack);
         }
 
