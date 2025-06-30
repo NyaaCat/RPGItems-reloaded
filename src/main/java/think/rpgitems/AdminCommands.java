@@ -326,7 +326,7 @@ public class AdminCommands extends RPGCommandReceiver {
             player.sendMessage("empty meta");
             return;
         }
-        player.sendMessage(ItemStackUtils.itemToJson(item).replace(ChatColor.COLOR_CHAR, '&'));
+        Bukkit.dispatchCommand(sender,"paper dumpitem");
         ItemMeta meta = item.getItemMeta();
         PersistentDataContainer tagContainer = Objects.requireNonNull(meta).getPersistentDataContainer();
         if (tagContainer.has(TAG_META, PersistentDataType.TAG_CONTAINER)) {
