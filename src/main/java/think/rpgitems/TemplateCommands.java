@@ -9,6 +9,8 @@ import cat.nyaa.nyaacore.cmdreceiver.CommandReceiver;
 import cat.nyaa.nyaacore.cmdreceiver.SubCommand;
 import org.bukkit.command.CommandSender;
 import org.bukkit.plugin.Plugin;
+import think.rpgitems.I18n;
+import think.rpgitems.RPGItems;
 import think.rpgitems.item.ItemManager;
 import think.rpgitems.item.RPGItem;
 import think.rpgitems.power.PlaceholderHolder;
@@ -32,7 +34,7 @@ public class TemplateCommands extends RPGCommandReceiver {
 
     private static void sendBadMsg(CommandSender sender, String s) {
         I18n i18n = I18n.getInstance(sender);
-        new Message("").append(i18n.getFormatted("command.template.bad_placeholder", s));
+        new Message("").append(i18n.getFormatted("command.template.bad_placeholder", s)).send(sender);
     }
 
     /**
@@ -182,6 +184,8 @@ public class TemplateCommands extends RPGCommandReceiver {
                 rpgItem.addTemplatePlaceHolder(s);
                 new Message("").append(I18n.getInstance(sender).getFormatted("command.template.placeholder.add.success", name, s)).send(sender);
             });
+            ItemManager.save(rpgItem);
+            ItemManager.refreshItem();
 
         }
 
