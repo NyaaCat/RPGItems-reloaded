@@ -9,6 +9,7 @@ import org.bukkit.event.entity.EntityShootBowEvent;
 import org.bukkit.event.entity.EntityToggleSwimEvent;
 import org.bukkit.event.player.PlayerInteractEvent;
 import org.bukkit.event.player.PlayerToggleSneakEvent;
+import org.bukkit.event.player.PlayerToggleSprintEvent;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.util.Vector;
 import think.rpgitems.I18n;
@@ -74,7 +75,7 @@ public class Dash extends BasePower {
         return I18n.formatDefault("power.dash",getDirection(), (double) getCooldown() / 20d);
     }
 
-    public class Impl implements PowerRightClick, PowerPlain, PowerLeftClick, PowerSneak, PowerHurt, PowerHit, PowerHitTaken, PowerSwim, PowerJump, PowerBowShoot, PowerOffhandClick, PowerTick {
+    public class Impl implements PowerRightClick, PowerPlain, PowerLeftClick, PowerSneak, PowerHurt, PowerHit, PowerHitTaken, PowerSwim, PowerJump, PowerBowShoot, PowerOffhandClick, PowerTick, PowerSprint {
 
         @Override
         public PowerResult<Void> rightClick(Player player, ItemStack stack, PlayerInteractEvent event) {
@@ -178,6 +179,11 @@ public class Dash extends BasePower {
 
         @Override
         public PowerResult<Void> sneak(Player player, ItemStack stack, PlayerToggleSneakEvent event) {
+            return fire(player, stack);
+        }
+
+        @Override
+        public PowerResult<Void> sprint(Player player, ItemStack stack, PlayerToggleSprintEvent event) {
             return fire(player, stack);
         }
 
