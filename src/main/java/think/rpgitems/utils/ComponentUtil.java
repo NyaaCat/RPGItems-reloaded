@@ -750,9 +750,9 @@ public class ComponentUtil {
                         if (section != null) {
                             if (section.getBoolean("unset")) {
                                 componentMap.put(DataComponentTypes.TOOLTIP_STYLE, ComponentStatus.UNSET);
-                            } else if (s.getString(key) != null) {
-                                componentMap.put(DataComponentTypes.TOOLTIP_STYLE, Key.key(s.getString(key)));
                             }
+                        } else if (s.getString(key) != null) {
+                            componentMap.put(DataComponentTypes.TOOLTIP_STYLE, Key.key(s.getString(key)));
                         }
                     }
                     break;
