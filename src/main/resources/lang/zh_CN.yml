@@ -887,6 +887,7 @@ properties:
   arrow:
     main_description: 发射一支箭。
     main_name: 射出一矢
+    setShooter: 是否将玩家设为箭的发射者
   attachment:
     main_description: 触发背包中的附件物品
     main_name: ATTACHMENT
@@ -1152,6 +1153,7 @@ properties:
   fireball:
     main_description: 发射一个火球
     main_name: 火球
+    setShooter: 是否将玩家设为火球的发射者
   flame:
     burntime: 火焰持续时间
     main_description: 点燃被击中的目标
@@ -1478,6 +1480,7 @@ properties:
     main_description: 发射一枚潜影子弹，
     main_name: 潜影子弹
     range: 索敌范围
+    setShooter: 是否将玩家设为潜影弹的发射者
   skyhook:
     hookDistance: 可以钩的距离
     hookingTickCost: 钩子每 tick 的消耗
@@ -1546,6 +1549,7 @@ properties:
     duration: 持续时间，游戏刻
     main_description: 发射药箭
     main_name: 药箭
+    setShooter: 是否将玩家设为箭的发射者
     type: 药箭的状态效果
   tntcannon:
     main_description: 发射 TNT

@@ -1,6 +1,7 @@
 package think.rpgitems.power.impl;
 
 import org.bukkit.Sound;
+import org.bukkit.entity.Arrow;
 import org.bukkit.entity.Player;
 import org.bukkit.event.player.PlayerInteractEvent;
 import org.bukkit.inventory.ItemStack;
@@ -40,12 +41,18 @@ public class TippedArrows extends BasePower {
     public PotionEffectType type = PotionEffectType.POISON;
     @Property
     public int cost = 0;
+    @Property
+    public boolean setShooter = false;
 
     /**
      * Cost of this power
      */
     public int getCost() {
         return cost;
+    }
+
+    public boolean isSetShooter() {
+        return setShooter;
     }
 
     @Override
@@ -97,7 +104,10 @@ public class TippedArrows extends BasePower {
             if (!getItem().consumeDurability(stack, getCost())) return PowerResult.cost();
             player.playSound(player.getLocation(), Sound.ENTITY_ARROW_SHOOT, 1.0f, 1.0f);
             Events.registerRPGProjectile(getPower().getItem(), stack, player);
-            org.bukkit.entity.TippedArrow arrow = player.launchProjectile(org.bukkit.entity.TippedArrow.class);
+            Arrow arrow = player.launchProjectile(Arrow.class);
+            if(isSetShooter()) {
+                arrow.setShooter(player);
+            }
             arrow.addCustomEffect(new PotionEffect(getType(), getDuration(), getAmplifier()), true);
             Events.autoRemoveProjectile(arrow.getEntityId());
             return PowerResult.ok();

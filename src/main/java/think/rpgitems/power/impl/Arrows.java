@@ -25,12 +25,18 @@ public class Arrows extends BasePower {
     public int cooldown = 0;
     @Property
     public int cost = 0;
+    @Property
+    public boolean setShooter = false;
 
     /**
      * Cost of this power
      */
     public int getCost() {
         return cost;
+    }
+
+    public boolean isSetShooter() {
+        return setShooter;
     }
 
     @Override
@@ -67,6 +73,9 @@ public class Arrows extends BasePower {
             player.playSound(player.getLocation(), Sound.ENTITY_ARROW_SHOOT, 1.0f, 1.0f);
             Events.registerRPGProjectile(getPower().getItem(), stack, player);
             Arrow arrow = player.launchProjectile(org.bukkit.entity.Arrow.class);
+            if (isSetShooter()) {
+                arrow.setShooter(player);
+            }
             arrow.setPickupStatus(org.bukkit.entity.Arrow.PickupStatus.DISALLOWED);
             Events.autoRemoveProjectile(arrow.getEntityId());
             arrow.setPersistent(false);

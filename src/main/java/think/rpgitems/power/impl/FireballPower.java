@@ -28,8 +28,6 @@ import think.rpgitems.I18n;
 import think.rpgitems.event.PowerActivateEvent;
 import think.rpgitems.power.*;
 
-import java.util.HashMap;
-
 import static think.rpgitems.power.Utils.checkCooldown;
 
 /**
@@ -45,12 +43,18 @@ public class FireballPower extends BasePower {
     public int cooldown = 0;
     @Property
     public int cost = 0;
+    @Property
+    public boolean setShooter = false;
 
     /**
      * Cost of this power
      */
     public int getCost() {
         return cost;
+    }
+
+    public boolean isSetShooter() {
+        return setShooter;
     }
 
     @Override
@@ -78,7 +82,6 @@ public class FireballPower extends BasePower {
         }
 
         @Override
-        @SuppressWarnings("deprecation")
         public PowerResult<Void> fire(Player player, ItemStack stack) {
             PowerActivateEvent powerEvent = new PowerActivateEvent(player,stack,getPower());
             if(!powerEvent.callEvent()) {
@@ -89,6 +92,9 @@ public class FireballPower extends BasePower {
             player.playSound(player.getLocation(), Sound.ENTITY_GHAST_SHOOT, 1.0f, 1.0f);
             Events.registerRPGProjectile(getPower().getItem(), stack, player);
             SmallFireball entity = player.launchProjectile(SmallFireball.class);
+            if (isSetShooter()) {
+                entity.setShooter(player);
+            }
             entity.setPersistent(false);
             return PowerResult.ok();
         }

@@ -17,7 +17,6 @@ import think.rpgitems.data.Context;
 import think.rpgitems.event.PowerActivateEvent;
 import think.rpgitems.power.*;
 
-import java.util.HashMap;
 import java.util.List;
 
 import static think.rpgitems.power.PowerResult.ok;
@@ -39,6 +38,8 @@ public class ShulkerBulletPower extends BasePower {
     public int cost = 0;
     @Property(order = 1)
     public double range = 10;
+    @Property
+    public boolean setShooter = false;
 
     @Override
     public void init(ConfigurationSection s) {
@@ -51,6 +52,10 @@ public class ShulkerBulletPower extends BasePower {
      */
     public int getCost() {
         return cost;
+    }
+
+    public boolean isSetShooter() {
+        return setShooter;
     }
 
     @Override
@@ -84,7 +89,6 @@ public class ShulkerBulletPower extends BasePower {
         }
 
         @Override
-        @SuppressWarnings("deprecation")
         public PowerResult<Void> fire(Player player, ItemStack stack) {
             PowerActivateEvent powerEvent = new PowerActivateEvent(player,stack,getPower());
             if(!powerEvent.callEvent()) {
@@ -94,11 +98,16 @@ public class ShulkerBulletPower extends BasePower {
             if (!getItem().consumeDurability(stack, getCost())) return PowerResult.cost();
             Events.registerRPGProjectile(getItem(), stack, player);
             org.bukkit.entity.ShulkerBullet bullet = player.launchProjectile(org.bukkit.entity.ShulkerBullet.class, player.getEyeLocation().getDirection());
+            if(isSetShooter()) {
+                bullet.setShooter(player);
+            }
             bullet.setPersistent(false);
             List<LivingEntity> entities = getLivingEntitiesInCone(getNearestLivingEntities(getPower(), player.getEyeLocation(), player, getRange(), 0), player.getLocation().toVector(), 30, player.getLocation().getDirection());
             if (!entities.isEmpty()) {
-                Context.instance().putExpiringSeconds(player.getUniqueId(), "shulkerbullet.target", entities.get(0), 3);
-                bullet.setTarget(entities.get(0));
+                Context.instance().putExpiringSeconds(player.getUniqueId(), "shulkerbullet.target", entities.getFirst(), 3);
+                bullet.setTarget(entities.getFirst());
+            }else{
+                bullet.setTarget(null);
             }
             return ok();
         }

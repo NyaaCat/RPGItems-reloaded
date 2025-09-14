@@ -165,7 +165,8 @@ public class PowerManager {
                                 p -> p.getKey().getName(),
                                 p -> {
                                     String name = p.getKey().getName();
-                                    Pair<Method, PropertyInstance> pair = Pair.of(!Power.class.isAssignableFrom(cls) || metas.get(cls).marker() ? null :
+                                    // RPGItems.plugin.cfg.enabledLanguages.forEach(lang -> PowerManager.getDescription())
+                                    return Pair.of(!Power.class.isAssignableFrom(cls) || metas.get(cls).marker() ? null :
                                                     methods.stream()
                                                             .filter(
                                                                     m -> m.getParameterCount() == 0 &&
@@ -180,8 +181,6 @@ public class PowerManager {
                                                             })
                                                             .orElseThrow(() -> new IllegalArgumentException("No property getter found: " + p.getKey() + " " + name)),
                                             PropertyInstance.from(p.getKey(), p.getValue(), p.getValue().order() < requiredOrder));
-                                    // RPGItems.plugin.cfg.enabledLanguages.forEach(lang -> PowerManager.getDescription())
-                                    return pair;
                                 }
                         )
                 );
