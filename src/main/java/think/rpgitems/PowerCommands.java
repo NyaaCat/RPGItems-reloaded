@@ -171,7 +171,7 @@ public class PowerCommands extends RPGCommandReceiver {
             item.addPower(key, power);
             ItemManager.refreshItem();
             ItemManager.save(item);
-            msg(sender, "message.power.ok", powerStr, item.getPowers().size() - 1);
+            I18n.sendMessage(sender, "message.power.ok", powerStr, item.getPowers().size() - 1);
         } catch (Exception e) {
             if (e instanceof BadCommandException) {
                 throw (BadCommandException) e;

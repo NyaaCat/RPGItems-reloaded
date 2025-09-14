@@ -169,19 +169,19 @@ public class ProjectilePower extends BasePower {
         else if (projectileType == Fireball.class)
             return "fireball";
         else if (projectileType == WindCharge.class)
-            return "wind_charge";
+            return "windcharge";
         else if (projectileType == BreezeWindCharge.class)
-            return "breeze_wind_charge";
+            return "breezewindcharge";
         else if (projectileType == SmallFireball.class)
-            return "small_fireball";
+            return "smallfireball";
         else if (projectileType == Arrow.class)
             return "arrow";
         else if (projectileType == LlamaSpit.class)
-            return "llama_spit";
+            return "llamaspit";
         else if (projectileType == ShulkerBullet.class)
-            return "shulker_bullet";
+            return "shulkerbullet";
         else if (projectileType == DragonFireball.class)
-            return "dragon_fireball";
+            return "dragonfireball";
         else if (projectileType == Trident.class)
             return "trident";
         else if (projectileType == Egg.class)
@@ -234,28 +234,32 @@ public class ProjectilePower extends BasePower {
             this.yield = null;
         }
     }
+
     /**
      * The material fireball will show as
      */
-    public String getFireballItem(){
+    public String getFireballItem() {
         return this.fireballItem;
     }
+
     /**
      * The entity that the egg will hatch
      */
-    public String getEggHatchEntity(){
+    public String getEggHatchEntity() {
         return this.eggHatchEntity;
     }
+
     /**
      * Whether the egg should hatch
      */
-    public boolean getEggShouldHatch(){
+    public boolean getEggShouldHatch() {
         return this.eggShouldHatch;
     }
+
     /**
      * How many entities egg should hatch
      */
-    public int getEggHatchNumber(){
+    public int getEggHatchNumber() {
         return this.eggHatchNumber;
     }
 
@@ -302,7 +306,7 @@ public class ProjectilePower extends BasePower {
 
     @Override
     public String displayText() {
-        return I18n.formatDefault(isCone() ? "power.projectile.cone" : "power.projectile.display", "<lang:entity.minecraft."+getProjectileType(getProjectileType())+">", (double) getCooldown() / 20d);
+        return I18n.formatDefault(isCone() ? "power.projectile.cone" : "power.projectile.display", "<lang:entity.minecraft." + getProjectileType(getProjectileType()) + ">", (double) getCooldown() / 20d);
     }
 
     /**
@@ -426,8 +430,8 @@ public class ProjectilePower extends BasePower {
         }
 
         public PowerResult<Void> fire(Player player, ItemStack stack, float speedFactor) {
-            PowerActivateEvent powerEvent = new PowerActivateEvent(player,stack,getPower());
-            if(!powerEvent.callEvent()) {
+            PowerActivateEvent powerEvent = new PowerActivateEvent(player, stack, getPower());
+            if (!powerEvent.callEvent()) {
                 return PowerResult.fail();
             }
             if (!checkCooldown(getPower(), player, getCooldown(), showCooldownWarning(), true)) return PowerResult.cd();
@@ -543,23 +547,26 @@ public class ProjectilePower extends BasePower {
                     ((Explosive) projectile).setIsIncendiary(getIncendiary());
                 }
             }
-            if(projectile instanceof AbstractArrow) {
+            if (projectile instanceof AbstractArrow) {
                 ((AbstractArrow) projectile).setPierceLevel(getPierceLevel());
             }
-            if(projectile instanceof Egg){
-                projectile.getPersistentDataContainer().set(new NamespacedKey(RPGItems.plugin,"RPGItemHatchOrNot"), PersistentDataType.BOOLEAN, getEggShouldHatch());
-                projectile.getPersistentDataContainer().set(new NamespacedKey(RPGItems.plugin,"RPGItemHatchEntity"), PersistentDataType.STRING, getEggHatchEntity());
-                projectile.getPersistentDataContainer().set(new NamespacedKey(RPGItems.plugin,"RPGItemHatchNumber"), PersistentDataType.INTEGER, getEggHatchNumber());
+            if (projectile instanceof Egg) {
+                projectile.getPersistentDataContainer().set(new NamespacedKey(RPGItems.plugin, "RPGItemHatchOrNot"), PersistentDataType.BOOLEAN, getEggShouldHatch());
+                projectile.getPersistentDataContainer().set(new NamespacedKey(RPGItems.plugin, "RPGItemHatchEntity"), PersistentDataType.STRING, getEggHatchEntity());
+                projectile.getPersistentDataContainer().set(new NamespacedKey(RPGItems.plugin, "RPGItemHatchNumber"), PersistentDataType.INTEGER, getEggHatchNumber());
             }
-            if(projectile instanceof SizedFireball){
+            if (projectile instanceof SizedFireball) {
                 ((SizedFireball) projectile).setDisplayItem(new ItemStack(Material.valueOf(getFireballItem().toUpperCase())));
             }
             if (projectile instanceof Fireball && isSetFireballDirection()) {
                 ((Fireball) projectile).setDirection(v.clone().normalize().multiply(getSpeed()));
             }
-            if (Arrow.class.isAssignableFrom(getProjectileType())) {
+            if (projectile instanceof Arrow arrow) {
                 Events.autoRemoveProjectile(projectile.getEntityId());
-                ((Arrow) projectile).setPickupStatus(Arrow.PickupStatus.DISALLOWED);
+                arrow.setPickupStatus(Arrow.PickupStatus.DISALLOWED);
+            }
+            if (projectile instanceof ShulkerBullet) {
+                ((ShulkerBullet) projectile).setTarget(null);
             }
             if (!isGravity()) {
                 (new BukkitRunnable() {
@@ -616,8 +623,8 @@ public class ProjectilePower extends BasePower {
 
         @Override
         public PowerResult<Void> fire(Player player, ItemStack stack, LivingEntity entity, Double value) {
-            PowerActivateEvent powerEvent = new PowerActivateEvent(player,stack,getPower());
-            if(!powerEvent.callEvent()) {
+            PowerActivateEvent powerEvent = new PowerActivateEvent(player, stack, getPower());
+            if (!powerEvent.callEvent()) {
                 return PowerResult.fail();
             }
             if (!checkCooldown(getPower(), player, getCooldown(), showCooldownWarning(), true)) return PowerResult.cd();
