@@ -112,16 +112,16 @@ public class ProjectilePower extends BasePower {
             "skull",
             "fireball",
             "snowball",
-            "smallfireball",
-            "llamaspit",
+            "small_fireball",
+            "llama_spit",
             "arrow",
-            "shulkerbullet",
-            "dragonfireball",
+            "shulker_bullet",
+            "dragon_fireball",
             "trident",
-            "breezewindcharge",
-            "windcharge",
+            "breeze_wind_charge",
+            "wind_charge",
             "egg",
-            "enderpearl",
+            "ender_pearl",
             "firework"
     })
     @Deserializer(ProjectileType.class)
@@ -169,19 +169,19 @@ public class ProjectilePower extends BasePower {
         else if (projectileType == Fireball.class)
             return "fireball";
         else if (projectileType == WindCharge.class)
-            return "windcharge";
+            return "wind_charge";
         else if (projectileType == BreezeWindCharge.class)
-            return "breezewindcharge";
+            return "breeze_wind_charge";
         else if (projectileType == SmallFireball.class)
-            return "smallfireball";
+            return "small_fireball";
         else if (projectileType == Arrow.class)
             return "arrow";
         else if (projectileType == LlamaSpit.class)
-            return "llamaspit";
+            return "llama_spit";
         else if (projectileType == ShulkerBullet.class)
-            return "shulkerbullet";
+            return "shulker_bullet";
         else if (projectileType == DragonFireball.class)
-            return "dragonfireball";
+            return "dragon_fireball";
         else if (projectileType == Trident.class)
             return "trident";
         else if (projectileType == Egg.class)
@@ -397,16 +397,16 @@ public class ProjectilePower extends BasePower {
             return switch (type) {
                 case "skull" -> Optional.of(WitherSkull.class);
                 case "fireball" -> Optional.of(Fireball.class);
-                case "smallfireball" -> Optional.of(SmallFireball.class);
-                case "windcharge" -> Optional.of(WindCharge.class);
-                case "breezewindcharge" -> Optional.of(BreezeWindCharge.class);
+                case "small_fireball" -> Optional.of(SmallFireball.class);
+                case "wind_charge" -> Optional.of(WindCharge.class);
+                case "breeze_wind_charge" -> Optional.of(BreezeWindCharge.class);
                 case "arrow" -> Optional.of(Arrow.class);
-                case "llamaspit" -> Optional.of(LlamaSpit.class);
-                case "shulkerbullet" -> Optional.of(ShulkerBullet.class);
-                case "dragonfireball" -> Optional.of(DragonFireball.class);
+                case "llama_spit" -> Optional.of(LlamaSpit.class);
+                case "shulker_bullet" -> Optional.of(ShulkerBullet.class);
+                case "dragon_fireball" -> Optional.of(DragonFireball.class);
                 case "trident" -> Optional.of(Trident.class);
                 case "egg" -> Optional.of(Egg.class);
-                case "enderpearl" -> Optional.of(EnderPearl.class);
+                case "ender_pearl" -> Optional.of(EnderPearl.class);
                 case "firework" -> Optional.of(Firework.class);
                 default -> Optional.of(Snowball.class);
             };
