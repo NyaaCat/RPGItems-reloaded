@@ -124,9 +124,9 @@ public class Rescue extends BasePower {
             } else {
                 event.setCancelled(true);
             }
-            target.addPotionEffect(new PotionEffect(PotionEffectType.RESISTANCE, 200, 10), true);
-            target.addPotionEffect(new PotionEffect(PotionEffectType.REGENERATION, 400, 2), true);
-            target.addPotionEffect(new PotionEffect(PotionEffectType.SATURATION, 400, 2), true);
+            target.addPotionEffect(new PotionEffect(PotionEffectType.RESISTANCE, 200, 10));
+            target.addPotionEffect(new PotionEffect(PotionEffectType.REGENERATION, 400, 2));
+            target.addPotionEffect(new PotionEffect(PotionEffectType.SATURATION, 400, 2));
             target.getWorld().playSound(target.getLocation(), Sound.BLOCK_ENCHANTMENT_TABLE_USE, 10, 1);
 
             if (isInPlace() && cause != DamageCause.DRAGON_BREATH
@@ -134,8 +134,8 @@ public class Rescue extends BasePower {
                     && cause != DamageCause.SUFFOCATION
                     && cause != DamageCause.VOID) {
                 target.addPotionEffect(new PotionEffect(PotionEffectType.GLOWING, 160, 10));
-            } else if (isUseBed() && target.getBedSpawnLocation() != null)
-                target.teleport(target.getBedSpawnLocation());
+            } else if (isUseBed() && target.getRespawnLocation() != null)
+                target.teleport(target.getRespawnLocation());
             else
                 target.teleport(target.getWorld().getSpawnLocation());
 

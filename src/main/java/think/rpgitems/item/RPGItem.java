@@ -71,7 +71,6 @@ import java.util.regex.Matcher;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
-import static org.bukkit.ChatColor.COLOR_CHAR;
 import static think.rpgitems.utils.ItemTagUtils.*;
 
 public class RPGItem {
@@ -628,7 +627,7 @@ public class RPGItem {
 
         s.set("haspermission", isHasPermission());
         s.set("permission", getPermission());
-        s.set("display", getDisplayName().replaceAll("" + COLOR_CHAR, "&"));
+        s.set("display", getDisplayName().replaceAll("§", "&"));
         s.set("damageMin", getDamageMin());
         s.set("damageMax", getDamageMax());
         s.set("armour", getArmour());
@@ -638,7 +637,7 @@ public class RPGItem {
         s.set("updatemode", updateMode.name());
         s.set("attributemode", attributeMode.name());
         ArrayList<String> descriptionConv = new ArrayList<>(getDescription());
-        descriptionConv.replaceAll(string -> string.replaceAll("" + COLOR_CHAR, "&"));
+        descriptionConv.replaceAll(string -> string.replaceAll("§", "&"));
         s.set("description", descriptionConv);
         s.set("item", getItem().toString());
         s.set("ignoreWorldGuard", isIgnoreWorldGuard());
@@ -819,9 +818,6 @@ public class RPGItem {
         if (getMaxDurability() > 0) {
             durability = computeIfAbsent(rpgitemsTagContainer, TAG_DURABILITY, PersistentDataType.INTEGER, this::getDefaultDurability);
         }
-        // Patch for mcMMO buff. See SkillUtils.java#removeAbilityBuff in mcMMO
-        if (item.hasItemMeta() && Objects.requireNonNull(item.getItemMeta()).hasLore() && Objects.requireNonNull(item.getItemMeta().getLore()).contains("mcMMO Ability Tool"))
-            lore.add("mcMMO Ability Tool");
         lore.addAll(reservedLores);
         if (player != null) {
             if (PlaceholderAPISupport.hasSupport()) {
@@ -1037,69 +1033,31 @@ public class RPGItem {
         }
     }
 
-    private void addDurabilityBar(PersistentDataContainer meta, List<String> lore) {
-        int maxDurability = getMaxDurability();
-        if (maxDurability > 0) {
-            int durability = computeIfAbsent(meta, TAG_DURABILITY, PersistentDataType.INTEGER, this::getDefaultDurability);
-            if (isHasDurabilityBar()) {
-                StringBuilder out = new StringBuilder();
-                char boxChar = '\u25A0';
-                double ratio = (double) durability / (double) maxDurability;
-                BarFormat barFormat = getBarFormat();
-                switch (barFormat) {
-                    case NUMERIC_BIN:
-                    case NUMERIC_BIN_MINUS_ONE:
-                    case NUMERIC_HEX:
-                    case NUMERIC_HEX_MINUS_ONE:
-                    case NUMERIC:
-                    case NUMERIC_MINUS_ONE: {
-                        out.append(ChatColor.GREEN).append(boxChar).append(" ");
-                        out.append(ratio < 0.1 ? ChatColor.RED : ratio < 0.3 ? ChatColor.YELLOW : ChatColor.GREEN);
-                        out.append(formatBar(durability, maxDurability, barFormat));
-                        out.append(ChatColor.RESET).append(" / ").append(ChatColor.AQUA);
-                        out.append(formatBar(maxDurability, maxDurability, barFormat));
-                        out.append(ChatColor.GREEN).append(boxChar);
-                        break;
-                    }
-                    case DEFAULT: {
-                        int boxCount = tooltipWidth / 7;
-                        int mid = (int) ((double) boxCount * (ratio));
-                        for (int i = 0; i < boxCount; i++) {
-                            out.append(i < mid ? ChatColor.GREEN : i == mid ? ChatColor.YELLOW : ChatColor.RED);
-                            out.append(boxChar);
-                        }
-                        break;
-                    }
-                }
-                if (lore.isEmpty() || !lore.get(lore.size() - 1).contains(boxChar + ""))
-                    lore.add(out.toString());
-                else
-                    lore.set(lore.size() - 1, out.toString());
-            }
-        }
-    }
+    private void addDurabilityBar(PersistentDataContainer meta, List<String> lore) { int maxDurability = getMaxDurability(); if (maxDurability > 0) { int durability = computeIfAbsent(meta, TAG_DURABILITY, PersistentDataType.INTEGER, this::getDefaultDurability); if (isHasDurabilityBar()) { StringBuilder out = new StringBuilder(); char boxChar = '\u25A0'; double ratio = (double) durability / (double) maxDurability; BarFormat barFormat = getBarFormat(); switch (barFormat) { case NUMERIC_BIN: case NUMERIC_BIN_MINUS_ONE: case NUMERIC_HEX: case NUMERIC_HEX_MINUS_ONE: case NUMERIC: case NUMERIC_MINUS_ONE: { out.append(ChatColor.GREEN).append(boxChar).append(" "); out.append(ratio < 0.1 ? ChatColor.RED : ratio < 0.3 ? ChatColor.YELLOW : ChatColor.GREEN); out.append(formatBar(durability, maxDurability, barFormat)); out.append(ChatColor.RESET).append(" / ").append(ChatColor.AQUA); out.append(formatBar(maxDurability, maxDurability, barFormat)); out.append(ChatColor.GREEN).append(boxChar); break; } case DEFAULT: { int boxCount = tooltipWidth / 7; int mid = (int) ((double) boxCount * (ratio)); for (int i = 0; i < boxCount; i++) { out.append(i < mid ? ChatColor.GREEN : i == mid ? ChatColor.YELLOW : ChatColor.RED); out.append(boxChar); } break; } } if (lore.isEmpty() || !lore.get(lore.size() - 1).contains(boxChar + "")) lore.add(out.toString()); else lore.set(lore.size() - 1, out.toString()); } } }
+
 
     private String formatBar(int durability, int maxDurability, BarFormat barFormat) {
-        switch (barFormat) {
-            case NUMERIC:
-                return String.valueOf(durability);
-            case NUMERIC_MINUS_ONE:
-                return String.valueOf(durability - 1);
-            case NUMERIC_HEX:
+        return switch (barFormat) {
+            case NUMERIC -> String.valueOf(durability);
+            case NUMERIC_MINUS_ONE -> String.valueOf(durability - 1);
+            case NUMERIC_HEX -> {
                 int hexLen = String.format("%X", maxDurability).length();
-                return String.format(String.format("0x%%0%dX", hexLen), durability);
-            case NUMERIC_HEX_MINUS_ONE:
+                yield String.format(String.format("0x%%0%dX", hexLen), durability);
+            }
+            case NUMERIC_HEX_MINUS_ONE -> {
                 int hexLenM1 = String.format("%X", maxDurability - 1).length();
-                return String.format(String.format("0x%%0%dX", hexLenM1), durability - 1);
-            case NUMERIC_BIN:
+                yield String.format(String.format("0x%%0%dX", hexLenM1), durability - 1);
+            }
+            case NUMERIC_BIN -> {
                 int binLen = Integer.toBinaryString(maxDurability).length();
-                return String.format(String.format("0b%%%ds", binLen), Integer.toBinaryString(durability)).replace(' ', '0');
-            case NUMERIC_BIN_MINUS_ONE:
+                yield String.format(String.format("0b%%%ds", binLen), Integer.toBinaryString(durability)).replace(' ', '0');
+            }
+            case NUMERIC_BIN_MINUS_ONE -> {
                 int binLenM1 = Integer.toBinaryString(maxDurability - 1).length();
-                return String.format(String.format("0b%%%ds", binLenM1), Integer.toBinaryString(durability - 1)).replace(' ', '0');
-
-        }
-        throw new UnsupportedOperationException();
+                yield String.format(String.format("0b%%%ds", binLenM1), Integer.toBinaryString(durability - 1)).replace(' ', '0');
+            }
+            default -> throw new UnsupportedOperationException();
+        };
     }
 
     private List<String> filterLores(ItemStack item) {
