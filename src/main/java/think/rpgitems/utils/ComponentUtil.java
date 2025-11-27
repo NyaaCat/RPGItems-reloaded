@@ -13,30 +13,39 @@ import io.papermc.paper.datacomponent.item.consumable.ItemUseAnimation;
 import io.papermc.paper.registry.RegistryAccess;
 import io.papermc.paper.registry.RegistryKey;
 import io.papermc.paper.registry.TypedKey;
+import io.papermc.paper.registry.data.InstrumentRegistryEntry;
+import io.papermc.paper.registry.data.SoundEventRegistryEntry;
 import io.papermc.paper.registry.set.RegistryKeySet;
 import io.papermc.paper.registry.set.RegistrySet;
 import io.papermc.paper.registry.tag.TagKey;
 import net.kyori.adventure.key.Key;
+import net.kyori.adventure.sound.Sound;
+import net.kyori.adventure.text.Component;
+import net.kyori.adventure.text.format.TextDecoration;
+import net.kyori.adventure.text.minimessage.MiniMessage;
 import net.kyori.adventure.util.TriState;
-import org.bukkit.Color;
-import org.bukkit.DyeColor;
-import org.bukkit.Registry;
+import org.bukkit.*;
 import org.bukkit.block.BlockType;
+import org.bukkit.block.Jukebox;
 import org.bukkit.block.banner.Pattern;
 import org.bukkit.block.banner.PatternType;
 import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.damage.DamageType;
+import org.bukkit.enchantments.Enchantment;
 import org.bukkit.entity.EntityType;
 import org.bukkit.inventory.EquipmentSlot;
 import org.bukkit.inventory.ItemRarity;
 import org.bukkit.inventory.ItemStack;
+import org.bukkit.inventory.ItemType;
 import org.bukkit.inventory.meta.trim.ArmorTrim;
 import org.bukkit.inventory.meta.trim.TrimMaterial;
 import org.bukkit.inventory.meta.trim.TrimPattern;
 import org.bukkit.potion.PotionEffect;
 import org.bukkit.potion.PotionEffectType;
+import org.bukkit.potion.PotionType;
 import org.intellij.lang.annotations.Subst;
 import org.jetbrains.annotations.NotNull;
+import think.rpgitems.I18n;
 import think.rpgitems.RPGItems;
 import think.rpgitems.item.ItemManager;
 import think.rpgitems.item.RPGItem;
@@ -56,13 +65,45 @@ public class ComponentUtil {
         return getComponents(s, null);
     }
 
-    public static List<Map<DataComponentType, Object>> getComponents(ConfigurationSection s, RPGItem item) {
-        String itemName = item == null ? "" : ":" + item.getName();
+    public static List<Map<DataComponentType, Object>> getComponents(ConfigurationSection s, RPGItem rpgItem) {
+        String itemName = rpgItem == null ? "" : ":" + rpgItem.getName();
         List<Map<DataComponentType, Object>> components = new ArrayList<>();
         if (!s.getKeys(false).isEmpty()) {
             for (String key : s.getKeys(false)) {
                 Map<DataComponentType, Object> componentMap = new HashMap<>();
                 switch (key.toLowerCase()) {
+                    case "attack_range": {
+                        ConfigurationSection section = s.getConfigurationSection(key);
+                        if (section != null) {
+                            if (section.getBoolean("unset")) {
+                                componentMap.put(DataComponentTypes.ATTACK_RANGE, ComponentStatus.UNSET);
+                            } else {
+                                AttackRange.Builder builder = AttackRange.attackRange();
+                                float maxReach = (float) section.getDouble("max_reach", 3);
+                                builder.maxReach(maxReach);
+                                float minReach = (float) section.getDouble("min_reach");
+                                builder.minReach(minReach);
+                                float hitboxMargin = (float) section.getDouble("hitbox_margin", 0.3);
+                                builder.hitboxMargin(hitboxMargin);
+                                float mobFactor = (float) section.getDouble("mob_factor", 1.0);
+                                builder.mobFactor(mobFactor);
+                                componentMap.put(DataComponentTypes.ATTACK_RANGE, builder);
+                            }
+                        }
+                    }
+                    break;
+                    case "base_color": {
+                        ConfigurationSection section = s.getConfigurationSection(key);
+                        if (section != null) {
+                            if (section.getBoolean("unset")) {
+                                componentMap.put(DataComponentTypes.BASE_COLOR, ComponentStatus.UNSET);
+                            }
+                        } else {
+                            DyeColor baseColor = DyeColor.valueOf(s.getString("base_color", "white").toUpperCase());
+                            componentMap.put(DataComponentTypes.BASE_COLOR, baseColor);
+                        }
+                    }
+                    break;
                     case "banner_patterns": {
                         BannerPatternLayers.Builder builder = BannerPatternLayers.bannerPatternLayers();
                         ConfigurationSection bannerSection = s.getConfigurationSection(key);
@@ -101,9 +142,6 @@ public class ComponentUtil {
                                 builder.blockSound(Key.key(sound));
                                 @Subst("item.shield.break") String disableSound = blocksSection.getString("disable_sound", "minecraft:item.shield.break");
                                 builder.disableSound(Key.key(disableSound));
-                                if (blocksSection.isString(key)) {
-                                    builder.bypassedBy(TagKey.create(RegistryKey.DAMAGE_TYPE, Key.key(blocksSection.getString(key))));
-                                }
                                 float disableCooldownScale = (float) blocksSection.getDouble("disable_cooldown_scale", 1.0);
                                 builder.disableCooldownScale(disableCooldownScale);
                                 ConfigurationSection itemDamageSection = blocksSection.getConfigurationSection("item_damage");
@@ -115,6 +153,10 @@ public class ComponentUtil {
                                     itemDamage.base(base);
                                     itemDamage.threshold(threshold);
                                     builder.itemDamage(itemDamage.build());
+                                }
+                                String bypassedBy = blocksSection.getString("bypassed_by");
+                                if (bypassedBy != null) {
+                                    builder.bypassedBy(TagKey.create(RegistryKey.DAMAGE_TYPE, Key.key(bypassedBy)));
                                 }
                                 ConfigurationSection reductionsSection = blocksSection.getConfigurationSection("damage_reductions");
                                 if (reductionsSection != null) {
@@ -142,6 +184,8 @@ public class ComponentUtil {
                                                     }
                                                 }
                                             }
+                                            reduction.factor((float) reductionSection.getDouble("factor", 1));
+                                            reduction.horizontalBlockingAngle((float) reductionSection.getDouble("horizontal_blocking_angle", 90));
 
                                             reductions.add(reduction.build());
                                         }
@@ -517,6 +561,15 @@ public class ComponentUtil {
 
                                 boolean equipOnInteract = equippableSection.getBoolean("equip_on_interaction", false);
                                 builder.swappable(equipOnInteract);
+
+                                boolean canBeSheared = equippableSection.getBoolean("can_be_sheared", false);
+                                builder.canBeSheared(canBeSheared);
+
+                                String shearingSoundStr = equippableSection.getString("shearing_sound");
+                                if (shearingSoundStr != null) {
+                                    Key shearingSound = Key.key(shearingSoundStr);
+                                    builder.shearSound(shearingSound);
+                                }
                             }
                         }
                         componentMap.put(DataComponentTypes.EQUIPPABLE, builder);
@@ -553,6 +606,37 @@ public class ComponentUtil {
                         }
                     }
                     break;
+                    case "instrument": {
+                        ConfigurationSection section = s.getConfigurationSection(key);
+                        if (section != null) {
+                            if (section.getBoolean("unset")) {
+                                componentMap.put(DataComponentTypes.INSTRUMENT, ComponentStatus.UNSET);
+                            } else {
+                                String descriptionStr = section.getString("description", "");
+                                Component description = MiniMessage.miniMessage().deserialize(descriptionStr);
+                                ConfigurationSection soundEvent = section.getConfigurationSection("sound_event");
+                                float sound_range;
+                                String soundKey;
+                                if (soundEvent != null) {
+                                    sound_range = (float) soundEvent.getDouble("range", 1.0);
+                                    soundKey = soundEvent.getString("sound_id", "item.goat_horn.sound.0");
+                                } else {
+                                    sound_range = 1;
+                                    soundKey = "item.goat_horn.sound.0";
+                                }
+                                float range = (float) section.getDouble("range", 1.0);
+                                float use_duration = (float) section.getDouble("use_duration", 1.0);
+                                MusicInstrument instrument = MusicInstrument.create(factory -> factory.empty().description(description).duration(use_duration).range(range).soundEvent(factory1 -> factory1.empty().fixedRange(sound_range).location(Key.key(soundKey))));
+                                componentMap.put(DataComponentTypes.INSTRUMENT, instrument);
+                            }
+                        } else if (s.isString(key)) {
+                            MusicInstrument instrument = RegistryAccess.registryAccess()
+                                    .getRegistry(RegistryKey.INSTRUMENT)
+                                    .get(Key.key(s.getString(key)));
+                            componentMap.put(DataComponentTypes.INSTRUMENT, instrument);
+                        }
+                    }
+                    break;
                     case "intangible_projectile": {
                         ConfigurationSection section = s.getConfigurationSection(key);
                         if (section != null) {
@@ -564,9 +648,93 @@ public class ComponentUtil {
                         }
                     }
                     break;
+                    case "jukebox_playable": {
+                        ConfigurationSection section = s.getConfigurationSection(key);
+                        if (section != null) {
+                            if (section.getBoolean("unset")) {
+                                componentMap.put(DataComponentTypes.JUKEBOX_PLAYABLE, ComponentStatus.UNSET);
+                            }
+                        } else if (s.isString(key)) {
+                            JukeboxSong song = RegistryAccess.registryAccess().getRegistry(RegistryKey.JUKEBOX_SONG).get(Key.key(s.getString(key, "cat")));
+                            if (song == null) {
+                                song = JukeboxSong.CAT;
+                            }
+                            JukeboxPlayable.Builder builder = JukeboxPlayable.jukeboxPlayable(song);
+                            componentMap.put(DataComponentTypes.JUKEBOX_PLAYABLE, builder);
+                        }
+                    }
+                    break;
+                    case "kinetic_weapon": {
+                        ConfigurationSection section = s.getConfigurationSection(key);
+                        if (section != null) {
+                            if (section.getBoolean("unset")) {
+                                componentMap.put(DataComponentTypes.KINETIC_WEAPON, ComponentStatus.UNSET);
+                            } else {
+                                KineticWeapon.Builder builder = KineticWeapon.kineticWeapon();
+                                int delayTicks = section.getInt("delay_ticks", 0);
+                                builder.delayTicks(delayTicks);
+                                float forwardMovement = (float) section.getDouble("forward_movement", 0.0);
+                                builder.forwardMovement(forwardMovement);
+                                float damageMultiplier = (float) section.getDouble("damage_multiplier", 1.0);
+                                builder.damageMultiplier(damageMultiplier);
+                                String soundStr = section.getString("sound", "item.spear.use");
+                                builder.sound(Key.key(soundStr));
+                                String hitSoundStr = section.getString("hit_sound", "item.spear.hit");
+                                builder.hitSound(Key.key(hitSoundStr));
+                                ConfigurationSection[] sections = new ConfigurationSection[]{
+                                        section.getConfigurationSection("dismount_conditions"),
+                                        section.getConfigurationSection("knockback_conditions"),
+                                        section.getConfigurationSection("damage_conditions")
+                                };
+                                for (ConfigurationSection sec : sections) {
+                                    if (sec != null) {
+                                        int maxDurationTicks = sec.getInt("max_duration_ticks", 80);
+                                        float minSpeed = (float) sec.getDouble("min_speed", 0);
+                                        float minRelativeSpeed = (float) sec.getDouble("min_relative_speed", 0);
+                                        switch (sec.getName()) {
+                                            case "dismount_conditions" ->
+                                                    builder.dismountConditions(KineticWeapon.condition(maxDurationTicks, minSpeed, minRelativeSpeed));
+                                            case "knockback_conditions" ->
+                                                    builder.knockbackConditions(KineticWeapon.condition(maxDurationTicks, minSpeed, minRelativeSpeed));
+                                            case "damage_conditions" ->
+                                                    builder.damageConditions(KineticWeapon.condition(maxDurationTicks, minSpeed, minRelativeSpeed));
+                                        }
+                                    }
+                                }
+                                int contactCooldownTicks = section.getInt("contact_cooldown_ticks", 10);
+                                builder.contactCooldownTicks(contactCooldownTicks);
+                                componentMap.put(DataComponentTypes.KINETIC_WEAPON, builder);
+                            }
+                        }
+                    }
+                    break;
+                    case "lodestone_tracker": {
+                        ConfigurationSection section = s.getConfigurationSection(key);
+                        if (section != null) {
+                            if (section.getBoolean("unset")) {
+                                componentMap.put(DataComponentTypes.LODESTONE_TRACKER, ComponentStatus.UNSET);
+                            } else {
+                                LodestoneTracker.Builder builder = LodestoneTracker.lodestoneTracker();
+                                ConfigurationSection target = section.getConfigurationSection("target");
+                                if (target != null) {
+                                    String dimensionStr = target.getString("dimension", Bukkit.getWorlds().getFirst().getName());
+                                    List<Integer> xyz = target.getIntegerList("pos");
+                                    if (xyz.isEmpty()) {
+                                        xyz = List.of(0, 0, 0);
+                                    }
+                                    Location location = new Location(Bukkit.getWorld(dimensionStr), xyz.get(0), xyz.get(1), xyz.get(2));
+                                    builder.location(location);
+                                }
+                                boolean tracked = section.getBoolean("tracked", true);
+                                builder.tracked(tracked);
+                                componentMap.put(DataComponentTypes.LODESTONE_TRACKER, builder);
+                            }
+                        }
+                    }
+                    break;
                     case "max_damage": {
                         if (s.getInt("max_stack_size") > 1) {
-                            throw new IllegalArgumentException("Item cannot be both damageable and stackable" + (item == null ? "" : ":" + item.getName()));
+                            throw new IllegalArgumentException("Item cannot be both damageable and stackable" + (rpgItem == null ? "" : ":" + rpgItem.getName()));
                         }
                         ConfigurationSection section = s.getConfigurationSection(key);
                         if (section != null) {
@@ -594,13 +762,126 @@ public class ComponentUtil {
                         }
                     }
                     break;
+                    case "minimum_attack_charge": {
+                        ConfigurationSection section = s.getConfigurationSection(key);
+                        if (section != null) {
+                            if (section.getBoolean("unset")) {
+                                componentMap.put(DataComponentTypes.MINIMUM_ATTACK_CHARGE, ComponentStatus.UNSET);
+                            }
+                        } else if (s.isDouble(key) || s.isInt(key)) {
+                            float charge = (float) s.getDouble(key);
+                            if (charge < 0 || charge > 1) {
+                                throw new IllegalArgumentException("Minimum attack charge must be between 0 and 1: " + itemName);
+                            }
+                            componentMap.put(DataComponentTypes.MINIMUM_ATTACK_CHARGE, charge);
+                        }
+                    }
+                    break;
+                    case "ominous_bottle_amplifier": {
+                        ConfigurationSection section = s.getConfigurationSection(key);
+                        if (section != null) {
+                            if (section.getBoolean("unset")) {
+                                componentMap.put(DataComponentTypes.OMINOUS_BOTTLE_AMPLIFIER, ComponentStatus.UNSET);
+                            }
+                        } else if (s.isInt(key)) {
+                            int amplifier = s.getInt(key);
+                            if (amplifier < 0 || amplifier > 4) {
+                                throw new IllegalArgumentException("Ominous bottle amplifier must be greater than or equal to 0: " + itemName);
+                            }
+                            componentMap.put(DataComponentTypes.OMINOUS_BOTTLE_AMPLIFIER, OminousBottleAmplifier.amplifier(amplifier));
+                        }
+                    }
+                    break;
+                    case "piercing_weapon": {
+                        ConfigurationSection section = s.getConfigurationSection(key);
+                        if (section != null) {
+                            if (section.getBoolean("unset")) {
+                                componentMap.put(DataComponentTypes.PIERCING_WEAPON, ComponentStatus.UNSET);
+                            } else {
+                                PiercingWeapon.Builder builder = PiercingWeapon.piercingWeapon();
+                                String soundStr = section.getString("sound", "item.spear.use");
+                                builder.sound(Key.key(soundStr));
+                                String hitSoundStr = section.getString("hit_sound", "item.spear.hit");
+                                builder.hitSound(Key.key(hitSoundStr));
+                                boolean dealsKnockback = section.getBoolean("deals_knockback", true);
+                                builder.dealsKnockback(dealsKnockback);
+                                boolean dismounts = section.getBoolean("dismounts", false);
+                                builder.dismounts(dismounts);
+                                componentMap.put(DataComponentTypes.PIERCING_WEAPON, builder);
+                            }
+                        }
+                    }
+                    break;
+                    case "potion_contents": {
+                        ConfigurationSection section = s.getConfigurationSection(key);
+                        if (section != null) {
+                            if (section.getBoolean("unset")) {
+                                componentMap.put(DataComponentTypes.POTION_CONTENTS, ComponentStatus.UNSET);
+                            } else {
+                                PotionContents.Builder builder = PotionContents.potionContents();
+                                String colorValue = section.getString("custom_color");
+                                if (colorValue != null) {
+                                    Color color;
+                                    if (colorValue.contains(",")) {
+                                        String[] rgbParts = colorValue.split(",");
+                                        if (rgbParts.length == 3) {
+                                            try {
+                                                int red = Integer.parseInt(rgbParts[0].trim());
+                                                int green = Integer.parseInt(rgbParts[1].trim());
+                                                int blue = Integer.parseInt(rgbParts[2].trim());
+                                                color = Color.fromRGB(red, green, blue);
+                                            } catch (NumberFormatException e) {
+                                                throw new IllegalArgumentException("Invalid RGB format: " + colorValue);
+                                            }
+                                        } else {
+                                            throw new IllegalArgumentException("Invalid RGB format, expected 3 values: " + colorValue);
+                                        }
+                                    } else {
+                                        try {
+                                            int rgb = Integer.parseInt(colorValue.trim());
+                                            color = Color.fromRGB(rgb);
+                                        } catch (NumberFormatException e) {
+                                            throw new IllegalArgumentException("Invalid color value: " + colorValue);
+                                        }
+                                    }
+                                    builder.customColor(color);
+                                }
+                                if (section.getString("custom_name") != null) {
+                                    String customName = section.getString("custom_name", "");
+                                    builder.customName(customName);
+                                }
+                                if (section.getString("potion") != null) {
+                                    PotionType type = PotionType.valueOf(section.getString("potion", "awkward").toUpperCase());
+                                    builder.potion(type);
+                                }
+                                List<Map<?, ?>> effectsList = section.getMapList("custom_effects");
+                                for (Map<?, ?> effectData : effectsList) {
+                                    @Subst("speed") String id = (String) effectData.get("id");
+                                    int amplifier = effectData.containsKey("amplifier") ? ((Number) effectData.get("amplifier")).intValue() : 0;
+                                    int duration = effectData.containsKey("duration") ? ((Number) effectData.get("duration")).intValue() : 200;
+                                    boolean ambient = effectData.containsKey("ambient") && (boolean) effectData.get("ambient");
+                                    boolean showParticles = !effectData.containsKey("show_particles") || (boolean) effectData.get("show_particles");
+                                    boolean showIcon = !effectData.containsKey("show_icon") || (boolean) effectData.get("show_icon");
+                                    if (id != null) {
+                                        PotionEffectType potionEffectType = RegistryAccess.registryAccess().getRegistry(RegistryKey.MOB_EFFECT).get(Key.key(id));
+                                        if (potionEffectType != null) {
+                                            PotionEffect effect = new PotionEffect(potionEffectType, duration, amplifier, ambient, showParticles, showIcon);
+                                            builder.addCustomEffect(effect);
+                                        }
+                                    }
+                                }
+                                componentMap.put(DataComponentTypes.POTION_CONTENTS, builder);
+                            }
+                        }
+                    }
+                    break;
                     case "potion_duration_scale": {
                         ConfigurationSection section = s.getConfigurationSection(key);
                         if (section != null) {
                             if (section.getBoolean("unset")) {
                                 componentMap.put(DataComponentTypes.POTION_DURATION_SCALE, ComponentStatus.UNSET);
                             }
-                        } else if (s.isDouble(key)) {
+                        } else if (s.isDouble(key) || s.isInt(key)) {
                             double scale = s.getDouble(key);
                             if (scale < 0) {
                                 throw new IllegalArgumentException("Potion duration scale must be greater than 0: " + itemName);
@@ -656,6 +937,87 @@ public class ComponentUtil {
                             }
                         } else if (s.getString(key) != null) {
                             componentMap.put(DataComponentTypes.RARITY, ItemRarity.valueOf(s.getString(key).toUpperCase()));
+                        }
+                    }
+                    break;
+                    case "repairable": {
+                        ConfigurationSection section = s.getConfigurationSection(key);
+                        if (section != null) {
+                            if (section.getBoolean("unset")) {
+                                componentMap.put(DataComponentTypes.REPAIRABLE, ComponentStatus.UNSET);
+                            } else {
+                                RegistryKeySet<ItemType> keySet = null;
+                                if (section.isString("items")) {
+                                    ItemType type = RegistryAccess.registryAccess().getRegistry(RegistryKey.ITEM).get(Key.key(section.getString("items", "air")));
+                                    if (type != null) {
+                                        keySet = RegistrySet.keySetFromValues(RegistryKey.ITEM, List.of(type));
+                                    }
+                                } else if (section.isList("items")) {
+                                    List<String> itemStrings = section.getStringList("items");
+                                    if (!itemStrings.isEmpty()) {
+                                        keySet = RegistrySet.keySetFromValues(
+                                                RegistryKey.ITEM,
+                                                itemStrings.stream()
+                                                        .map(item -> RegistryAccess.registryAccess()
+                                                                .getRegistry(RegistryKey.ITEM)
+                                                                .get(Key.key(item)))
+                                                        .filter(Objects::nonNull)
+                                                        .toList()
+                                        );
+                                    }
+                                }
+                                componentMap.put(DataComponentTypes.REPAIRABLE, Repairable.repairable(keySet));
+                            }
+                        }
+                    }
+                    break;
+                    case "repair_cost": {
+                        ConfigurationSection section = s.getConfigurationSection(key);
+                        if (section != null) {
+                            if (section.getBoolean("unset")) {
+                                componentMap.put(DataComponentTypes.REPAIR_COST, ComponentStatus.UNSET);
+                            }
+                        } else if (s.isInt(key)) {
+                            int cost = s.getInt(key);
+                            if (cost < 0) {
+                                throw new IllegalArgumentException("Repair cost must be greater than or equal to 0: " + itemName);
+                            }
+                            componentMap.put(DataComponentTypes.REPAIR_COST, cost);
+                        }
+                    }
+                    break;
+                    case "stored_enchantments": {
+                        ConfigurationSection section = s.getConfigurationSection(key);
+                        if (section != null) {
+                            if (section.getBoolean("unset")) {
+                                componentMap.put(DataComponentTypes.STORED_ENCHANTMENTS, ComponentStatus.UNSET);
+                            } else {
+                                var builder = ItemEnchantments.itemEnchantments();
+                                for (var enc : section.getKeys(false)) {
+                                    Enchantment enchantment = RegistryAccess.registryAccess().getRegistry(RegistryKey.ENCHANTMENT).get(Key.key(enc));
+                                    if (enchantment != null) {
+                                        int level = section.getInt(enc, 1);
+                                        builder.add(enchantment, level);
+                                    }
+                                }
+                                componentMap.put(DataComponentTypes.STORED_ENCHANTMENTS, builder);
+                            }
+                        }
+                    }
+                    break;
+                    case "swing_animation": {
+                        ConfigurationSection section = s.getConfigurationSection(key);
+                        if (section != null) {
+                            if (section.getBoolean("unset")) {
+                                componentMap.put(DataComponentTypes.SWING_ANIMATION, ComponentStatus.UNSET);
+                            } else {
+                                SwingAnimation.Builder builder = SwingAnimation.swingAnimation();
+                                String animationType = section.getString("type", "whack").toUpperCase();
+                                builder.type(SwingAnimation.Animation.valueOf(animationType));
+                                int duration = section.getInt("duration", 6);
+                                builder.duration(duration);
+                                componentMap.put(DataComponentTypes.SWING_ANIMATION, builder);
+                            }
                         }
                     }
                     break;
@@ -803,6 +1165,27 @@ public class ComponentUtil {
                         }
                     }
                     break;
+                    case "use_effects": {
+                        ConfigurationSection section = s.getConfigurationSection(key);
+                        if (section != null) {
+                            if (section.getBoolean("unset")) {
+                                componentMap.put(DataComponentTypes.USE_EFFECTS, ComponentStatus.UNSET);
+                            } else {
+                                UseEffects.Builder builder = UseEffects.useEffects();
+                                boolean canSprint = section.getBoolean("can_sprint", false);
+                                boolean interactVibrations = section.getBoolean("interact_vibrations", true);
+                                float speedMultiplier = (float) section.getDouble("speed_multiplier", 0.2);
+                                builder.canSprint(canSprint);
+                                builder.interactVibrations(interactVibrations);
+                                if (speedMultiplier < 0 || speedMultiplier > 1) {
+                                    throw new IllegalArgumentException("Use effects speed multiplier must be between 0 and 1: " + itemName);
+                                }
+                                builder.speedMultiplier(speedMultiplier);
+                                componentMap.put(DataComponentTypes.USE_EFFECTS, builder);
+                            }
+                        }
+                    }
+                    break;
                     case "use_remainder": {
                         ConfigurationSection remainderSection = s.getConfigurationSection(key);
                         if (remainderSection != null) {
@@ -857,8 +1240,23 @@ public class ComponentUtil {
                 if (!(value instanceof Enum<?>) && value instanceof DataComponentBuilder<?>) {
                     value = ((DataComponentBuilder<?>) value).build();
                 }
-
-                if (type == DataComponentTypes.BANNER_PATTERNS) {
+                if (type == DataComponentTypes.ATTACK_RANGE) {
+                    if (value == ComponentStatus.UNSET) {
+                        config.set("attack_range.unset", true);
+                    } else if (value instanceof AttackRange attackRange) {
+                        var section = config.createSection("attack_range");
+                        section.set("max_reach", attackRange.maxReach());
+                        section.set("min_reach", attackRange.minReach());
+                        section.set("hitbox_margin", attackRange.hitboxMargin());
+                        section.set("mob_factor", attackRange.mobFactor());
+                    }
+                } else if (type == DataComponentTypes.BASE_COLOR) {
+                    if (value == ComponentStatus.UNSET) {
+                        config.set("base_color.unset", true);
+                    } else if (value instanceof DyeColor dyeColor) {
+                        config.set("base_color", dyeColor.toString());
+                    }
+                } else if (type == DataComponentTypes.BANNER_PATTERNS) {
                     if (value == ComponentStatus.UNSET) {
                         config.set("banner_patterns.unset", true);
                     } else if (value instanceof BannerPatternLayers patterns) {
@@ -907,6 +1305,7 @@ public class ComponentUtil {
                                 if (reduction instanceof DamageReduction reductionBuilder) {
                                     reductionSection.set("base", reductionBuilder.base());
                                     reductionSection.set("factor", reductionBuilder.factor());
+                                    itemDamageSection.set("horizontal_blocking_angle", reductionBuilder.horizontalBlockingAngle());
                                 }
                                 if (reduction.type() != null) {
                                     RegistryKeySet<DamageType> typeSet = reduction.type();
@@ -1081,6 +1480,8 @@ public class ComponentUtil {
 
                         equippableSection.set("swappable", equippable.swappable());
                         equippableSection.set("equip_on_interaction", equippable.equipOnInteract());
+                        equippableSection.set("can_be_sheared", equippable.canBeSheared());
+                        equippableSection.set("shearing_sound", equippable.shearSound().asString());
                     }
                 } else if (type == DataComponentTypes.TOOL) {
                     if (value instanceof Tool builder) {
@@ -1262,9 +1663,156 @@ public class ComponentUtil {
                         weaponSection.set("item_damage_per_attack", builder.itemDamagePerAttack());
                         weaponSection.set("disable_blocking_for_seconds", builder.disableBlockingForSeconds());
                     }
+                } else if (type == DataComponentTypes.INSTRUMENT) {
+                    if (value instanceof ComponentStatus status && status == ComponentStatus.UNSET) {
+                        config.createSection("instrument").set("unset", true);
+                    } else if (value instanceof MusicInstrument instrument) {
+                        var section = config.createSection("instrument");
+                        section.set("description", MiniMessage.miniMessage().serialize(instrument.description()));
+                        section.set("sound_event.range", instrument.getRange());
+                        section.set("sound_event.sound_id", Registry.SOUNDS.getKey(instrument.getSound()).asString());
+                        section.set("range", instrument.getRange());
+                        section.set("use_duration", instrument.getDuration());
+                    }
+                } else if (type == DataComponentTypes.JUKEBOX_PLAYABLE) {
+                    if (value instanceof ComponentStatus status && status == ComponentStatus.UNSET) {
+                        config.createSection("jukebox_playable").set("unset", true);
+                    } else if (value instanceof JukeboxPlayable playable) {
+                        config.set("jukebox_playable", playable.jukeboxSong().getKey().asString());
+                    }
+                } else if (type == DataComponentTypes.KINETIC_WEAPON) {
+                    if (value instanceof ComponentStatus status && status == ComponentStatus.UNSET) {
+                        config.createSection("kinetic_weapon").set("unset", true);
+                    } else if (value instanceof KineticWeapon kineticWeapon) {
+                        var section = config.createSection("kinetic_weapon");
+                        section.set("delay_ticks", kineticWeapon.delayTicks());
+                        section.set("forward_movement", kineticWeapon.forwardMovement());
+                        section.set("damage_multiplier", kineticWeapon.damageMultiplier());
+                        section.set("sound", kineticWeapon.sound().asString());
+                        section.set("hit_sound", kineticWeapon.hitSound().asString());
+                        serializeCondition(section, "dismount_conditions", kineticWeapon.dismountConditions());
+                        serializeCondition(section, "knockback_conditions", kineticWeapon.knockbackConditions());
+                        serializeCondition(section, "damage_conditions", kineticWeapon.damageConditions());
+                        section.set("contact_cooldown_ticks", kineticWeapon.contactCooldownTicks());
+                    }
+                } else if (type == DataComponentTypes.LODESTONE_TRACKER) {
+                    if (value instanceof ComponentStatus status && status == ComponentStatus.UNSET) {
+                        config.createSection("lodestone_tracker").set("unset", true);
+                    } else if (value instanceof LodestoneTracker tracker) {
+                        var section = config.createSection("lodestone_tracker");
+                        section.set("tracked", tracker.tracked());
+                        section.set("target.dimension", tracker.location().getWorld().getName());
+                        section.set("target.pos", List.of(tracker.location().x(), tracker.location().y(), tracker.location().z()));
+                    }
+                } else if (type == DataComponentTypes.MINIMUM_ATTACK_CHARGE) {
+                    if (value instanceof ComponentStatus status && status == ComponentStatus.UNSET) {
+                        config.createSection("minimum_attack_charge").set("unset", true);
+                    } else if (value instanceof Float charge) {
+                        config.set("minimum_attack_charge", charge);
+                    }
+                } else if (type == DataComponentTypes.OMINOUS_BOTTLE_AMPLIFIER) {
+                    if (value instanceof ComponentStatus status && status == ComponentStatus.UNSET) {
+                        config.createSection("ominous_bottle_amplifier").set("unset", true);
+                    } else if (value instanceof Integer amplifier) {
+                        config.set("ominous_bottle_amplifier", amplifier);
+                    }
+                } else if (type == DataComponentTypes.PIERCING_WEAPON) {
+                    if (value instanceof ComponentStatus status && status == ComponentStatus.UNSET) {
+                        config.createSection("piercing_weapon").set("unset", true);
+                    } else if (value instanceof PiercingWeapon piercingWeapon) {
+                        var section = config.createSection("piercing_weapon");
+                        section.set("sound", piercingWeapon.sound().asString());
+                        section.set("hit_sound", piercingWeapon.hitSound().asString());
+                        section.set("deals_knockback", piercingWeapon.dealsKnockback());
+                        section.set("dismounts", piercingWeapon.dismounts());
+                    }
+                } else if (type == DataComponentTypes.POTION_CONTENTS) {
+                    if (value instanceof ComponentStatus status && status == ComponentStatus.UNSET) {
+                        config.createSection("potion_contents").set("unset", true);
+                    } else if (value instanceof PotionContents contents) {
+                        var section = config.createSection("potion_contents");
+                        Color color = contents.customColor();
+                        if (color != null) {
+                            String rgb = color.getRed() + "," + color.getGreen() + "," + color.getBlue();
+                            section.set("custom_color", rgb);
+                        }
+                        if (contents.customName() != null) {
+                            section.set("custom_name", contents.customName());
+                        }
+                        if (contents.potion() != null) {
+                            section.set("potion", contents.potion().getKey().getKey().toUpperCase());
+                        }
+                        List<Map<String, Object>> effectList = new ArrayList<>();
+                        for (PotionEffect effect : contents.customEffects()) {
+
+                            Map<String, Object> map = new LinkedHashMap<>();
+                            map.put("id", effect.getType().key().asString());
+
+                            map.put("amplifier", effect.getAmplifier());
+                            map.put("duration", effect.getDuration());
+                            map.put("ambient", effect.isAmbient());
+                            map.put("show_particles", effect.hasParticles());
+                            map.put("show_icon", effect.hasIcon());
+
+                            effectList.add(map);
+                        }
+
+                        section.set("custom_effects", effectList);
+                    }
+                } else if (type == DataComponentTypes.REPAIRABLE) {
+                    if (value instanceof ComponentStatus status && status == ComponentStatus.UNSET) {
+                        config.createSection("repairable").set("unset", true);
+                    } else if (value instanceof Repairable repairable) {
+                        var section = config.createSection("repairable");
+                        section.set("items", repairable.types().values().stream().map(itemType -> itemType.key().asString()).toList());
+                    }
+                } else if (type == DataComponentTypes.REPAIR_COST) {
+                    if (value instanceof ComponentStatus status && status == ComponentStatus.UNSET) {
+                        config.createSection("repair_cost").set("unset", true);
+                    } else if (value instanceof Integer cost) {
+                        config.set("repair_cost", cost);
+                    }
+                } else if (type == DataComponentTypes.STORED_ENCHANTMENTS) {
+                    if (value instanceof ComponentStatus status && status == ComponentStatus.UNSET) {
+                        config.createSection("stored_enchantments").set("unset", true);
+                    } else if (value instanceof ItemEnchantments enchantments) {
+                        var section = config.createSection("stored_enchantments");
+                        for (var ench : enchantments.enchantments().entrySet()) {
+                            section.set(ench.getKey().getKey().asString(), ench.getValue());
+                        }
+                    }
+                } else if (type == DataComponentTypes.SWING_ANIMATION) {
+                    if (value instanceof ComponentStatus status && status == ComponentStatus.UNSET) {
+                        config.createSection("swing_animation").set("unset", true);
+                    } else if (value instanceof SwingAnimation animation) {
+                        var section = config.createSection("swing_animation");
+                        section.set("type", animation.type().toString().toUpperCase());
+                        section.set("duration", animation.duration());
+                    }
+                } else if (type == DataComponentTypes.USE_EFFECTS) {
+                    if (value instanceof ComponentStatus status && status == ComponentStatus.UNSET) {
+                        config.createSection("use_effects").set("unset", true);
+                    } else if (value instanceof UseEffects useEffects) {
+                        var section = config.createSection("use_effects");
+                        section.set("can_sprint", useEffects.canSprint());
+                        section.set("interact_vibrations", useEffects.interactVibrations());
+                        section.set("speed_multiplier", useEffects.speedMultiplier());
+                    }
                 }
             }
         }
+    }
+
+    private static void serializeCondition(ConfigurationSection parent, String path, KineticWeapon.Condition cond) {
+        if (cond == null) {
+            parent.set(path, null);
+            return;
+        }
+
+        ConfigurationSection sec = parent.createSection(path);
+        sec.set("max_duration_ticks", cond.maxDurationTicks());
+        sec.set("min_speed", cond.minSpeed());
+        sec.set("min_relative_speed", cond.minRelativeSpeed());
     }
 
     private static void handleBooleanComponent(Map<DataComponentType, Object> componentMap, ConfigurationSection s, DataComponentType type, String sectionName) {

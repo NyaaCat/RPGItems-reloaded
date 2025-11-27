@@ -115,17 +115,17 @@ public class I18n extends LanguageRepository {
         new Message("").append(I18n.getInstance(target).getFormatted(template, args), map).send(target);
     }
 
+    private final static Pattern pattern = Pattern.compile("[§&]x([§&][0-9a-fA-F]){6}");
+    private final static String[][] formatMap = {
+            {"0", "black"}, {"1", "dark_blue"}, {"2", "dark_green"}, {"3", "dark_aqua"},
+            {"4", "dark_red"}, {"5", "dark_purple"}, {"6", "gold"}, {"7", "gray"},
+            {"8", "dark_gray"}, {"9", "blue"}, {"a", "green"}, {"b", "aqua"},
+            {"c", "red"}, {"d", "light_purple"}, {"e", "yellow"}, {"f", "white"},
+            {"k", "obf"}, {"l", "b"}, {"m", "st"},
+            {"n", "u"}, {"o", "i"}, {"r", "reset"}
+    };
     public static String replaceLegacyColorCodes(String text) {
-        String[][] formatMap = {
-                {"0", "black"}, {"1", "dark_blue"}, {"2", "dark_green"}, {"3", "dark_aqua"},
-                {"4", "dark_red"}, {"5", "dark_purple"}, {"6", "gold"}, {"7", "gray"},
-                {"8", "dark_gray"}, {"9", "blue"}, {"a", "green"}, {"b", "aqua"},
-                {"c", "red"}, {"d", "light_purple"}, {"e", "yellow"}, {"f", "white"},
-                {"k", "obf"}, {"l", "b"}, {"m", "st"},
-                {"n", "u"}, {"o", "i"}, {"r", "reset"}
-        };
 
-        Pattern pattern = Pattern.compile("[§&]x([§&][0-9a-fA-F]){6}");
         Matcher matcher = pattern.matcher(text);
         StringBuilder result = new StringBuilder();
 

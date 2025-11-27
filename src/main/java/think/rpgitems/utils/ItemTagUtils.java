@@ -393,6 +393,11 @@ public final class ItemTagUtils {
         }
 
         @Override
+        public int getSize() {
+            return self.getSize();
+        }
+
+        @Override
         public void readFromBytes(byte [] bytes, boolean b) throws IOException {
             self.readFromBytes(bytes, b);
         }

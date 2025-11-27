@@ -43,8 +43,8 @@ dependencies {
     //Residence integration, download the jar(also CMI) manually as the fucking Residence author is lazy
     implementation fileTree(dir: 'libs', includes: ['*.jar'])
     paperweight.paperDevBundle("$MINECRAFT_VERSION-R0.1-SNAPSHOT")
-    compileOnly 'io.lumine:Mythic-Dist:5.8.2'
-    compileOnly 'me.clip:placeholderapi:2.11.6'
+    compileOnly 'io.lumine:Mythic-Dist:5.10.1'
+    compileOnly 'me.clip:placeholderapi:2.11.7'
     // other nyaa plugins
     compileOnly('cat.nyaa:nyaacore:9.10') { transitive = false }
     //3rd
