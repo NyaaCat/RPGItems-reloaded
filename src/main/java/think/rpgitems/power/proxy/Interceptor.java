@@ -30,6 +30,7 @@ import java.util.Comparator;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -42,6 +43,10 @@ public class Interceptor {
     private final Map<Method, PropertyInstance> getters;
     private final ItemStack stack;
     private final MethodHandles.Lookup lookup;
+    // Performance optimization: cache modifiers at construction time instead of fetching on every intercept
+    private final List<Modifier> allModifiers;
+    // Performance optimization: cache MethodHandles to avoid repeated unreflect() calls
+    private final Map<Method, MethodHandle> methodHandleCache = new ConcurrentHashMap<>();
 
     protected Interceptor(Power orig, Player player, ItemStack stack, MethodHandles.Lookup lookup) {
         this.lookup = lookup;
@@ -52,6 +57,12 @@ public class Interceptor {
                 .stream()
                 .collect(Collectors.toMap(e -> e.getValue().getKey(), e -> e.getValue().getValue()));
         this.stack = stack;
+        // Cache modifiers at construction time - eliminates 2x getModifiers() calls per intercept
+        List<Modifier> playerModifiers = getModifiers(player);
+        List<Modifier> stackModifiers = getModifiers(stack);
+        this.allModifiers = Stream.concat(playerModifiers.stream(), stackModifiers.stream())
+                .sorted(Comparator.comparing(Modifier::priority))
+                .toList();
     }
 
     public static Power create(Power orig, Player player, ItemStack stack, Trigger trigger) {
@@ -150,34 +161,49 @@ public class Interceptor {
     @SuppressWarnings({"rawtypes", "unchecked"})
     public Object intercept(@AllArguments Object[] args, @Origin Method method) {
         try {
-            if (getters.containsKey(method)) {
-                PropertyInstance propertyInstance = getters.get(method);
-                Class<?> type = propertyInstance.field().getType();
-                List<Modifier> playerModifiers = getModifiers(player);
-                List<Modifier> stackModifiers = getModifiers(stack);
-                List<Modifier> modifiers = Stream.concat(playerModifiers.stream(), stackModifiers.stream()).sorted(Comparator.comparing(Modifier::priority)).toList();
-                // Numeric modifiers
-                if (type == int.class || type == Integer.class || type == float.class || type == Float.class || type == double.class || type == Double.class) {
+            PropertyInstance propertyInstance = getters.get(method);
 
-                    List<Modifier<Double>> numberModifiers = modifiers.stream().filter(m -> (m.getModifierTargetType() == Double.class) && m.match(orig, propertyInstance)).map(m -> (Modifier<Double>) m).toList();
-                    Number value = (Number) invokeMethod(method, orig, args);
-                    double origValue = value.doubleValue();
-                    for (Modifier<Double> numberModifier : numberModifiers) {
-                        RgiParameter param = new RgiParameter<>(orig.getItem(), orig, stack, origValue);
-
-                        origValue = numberModifier.apply(param);
-                    }
-                    if (int.class.equals(type) || Integer.class.equals(type)) {
-                        return (int) Math.round(origValue);
-                    } else if (float.class.equals(type) || Float.class.equals(type)) {
-                        return (float) (origValue);
-                    } else {
-                        return origValue;
-                    }
-                }
+            // FAST PATH: Not a property getter - invoke directly
+            if (propertyInstance == null) {
+                return invokeMethodCached(method, orig, args);
             }
 
-            return invokeMethod(method, orig, args);
+            Class<?> type = propertyInstance.field().getType();
+
+            // FAST PATH: Non-numeric type - no modifiers can apply
+            if (!(type == int.class || type == Integer.class ||
+                  type == float.class || type == Float.class ||
+                  type == double.class || type == Double.class)) {
+                return invokeMethodCached(method, orig, args);
+            }
+
+            // Filter modifiers for this property (use cached allModifiers)
+            List<Modifier<Double>> numberModifiers = allModifiers.stream()
+                    .filter(m -> m.getModifierTargetType() == Double.class && m.match(orig, propertyInstance))
+                    .map(m -> (Modifier<Double>) m)
+                    .toList();
+
+            // FAST PATH: No modifiers match this property
+            if (numberModifiers.isEmpty()) {
+                return invokeMethodCached(method, orig, args);
+            }
+
+            // Apply modifiers (only for numeric properties with matching modifiers)
+            Number value = (Number) invokeMethodCached(method, orig, args);
+            double origValue = value.doubleValue();
+            for (Modifier<Double> numberModifier : numberModifiers) {
+                RgiParameter param = new RgiParameter<>(orig.getItem(), orig, stack, origValue);
+                origValue = numberModifier.apply(param);
+            }
+
+            // Return appropriately typed result
+            if (int.class.equals(type) || Integer.class.equals(type)) {
+                return (int) Math.round(origValue);
+            } else if (float.class.equals(type) || Float.class.equals(type)) {
+                return (float) origValue;
+            } else {
+                return origValue;
+            }
         } catch (Throwable e) {
             RPGItems.logger.severe("invoke method error:" + method);
             e.printStackTrace();
@@ -185,12 +211,18 @@ public class Interceptor {
         return null;
     }
 
-    private Object invokeMethod(Method method, Object obj, Object... args) throws Throwable {
-        //method.trySetAccessible();
-        MethodHandle MH;
-        MH = lookup.unreflect(method);
-        MH = MH.bindTo(obj);
-        return MH.invokeWithArguments(args);
+    /**
+     * Cached MethodHandle invocation - avoids repeated unreflect() calls.
+     */
+    private Object invokeMethodCached(Method method, Object obj, Object... args) throws Throwable {
+        MethodHandle mh = methodHandleCache.computeIfAbsent(method, m -> {
+            try {
+                return lookup.unreflect(m);
+            } catch (IllegalAccessException e) {
+                throw new RuntimeException(e);
+            }
+        });
+        return mh.bindTo(obj).invokeWithArguments(args);
     }
 }
 
