@@ -528,6 +528,82 @@ public class Beam extends BasePower {
         SELF, TARGET
     }
 
+    /**
+     * Immutable snapshot of all Beam configuration values.
+     * This avoids repeated ByteBuddy proxy getter calls by capturing all values once.
+     */
+    public record BeamConfig(
+            int length,
+            int ttl,
+            Particle particle,
+            Mode mode,
+            int pierce,
+            boolean ignoreWall,
+            double damage,
+            double speed,
+            double offsetX,
+            double offsetY,
+            double offsetZ,
+            double particleSpeed,
+            double particleDensity,
+            double homing,
+            double homingAngle,
+            double homingRange,
+            HomingMode homingMode,
+            Target homingTarget,
+            int ticksBeforeHoming,
+            int bounce,
+            boolean hitSelfWhenBounced,
+            double gravity,
+            boolean suppressMelee,
+            List<Behavior> behavior,
+            String behaviorParam,
+            Object extraData,
+            String speedBias,
+            boolean effectOnly,
+            FiringLocation firingLocation,
+            String namespacedKey
+    ) {
+        /**
+         * Creates an immutable snapshot from a Beam power instance.
+         * All property getters are called exactly once here.
+         */
+        public static BeamConfig from(Beam beam) {
+            return new BeamConfig(
+                    beam.getLength(),
+                    beam.getTtl(),
+                    beam.getParticle(),
+                    beam.getMode(),
+                    beam.getPierce(),
+                    beam.isIgnoreWall(),
+                    beam.getDamage(),
+                    beam.getSpeed(),
+                    beam.getOffsetX(),
+                    beam.getOffsetY(),
+                    beam.getOffsetZ(),
+                    beam.getParticleSpeed(),
+                    beam.getParticleDensity(),
+                    beam.getHoming(),
+                    beam.getHomingAngle(),
+                    beam.getHomingRange(),
+                    beam.getHomingMode(),
+                    beam.getHomingTarget(),
+                    beam.getTicksBeforeHoming(),
+                    beam.getBounce(),
+                    beam.isHitSelfWhenBounced(),
+                    beam.getGravity(),
+                    beam.isSuppressMelee(),
+                    beam.getBehavior(),
+                    beam.getBehaviorParam(),
+                    beam.getExtraData(),
+                    beam.getSpeedBias(),
+                    beam.isEffectOnly(),
+                    beam.getFiringLocation(),
+                    beam.getNamespacedKey().toString()
+            );
+        }
+    }
+
     public enum Behavior {
         PLAIN(PlainBias.class, Void.class),
         DNA(DnaBias.class, DnaBias.DnaParams.class),
@@ -557,7 +633,7 @@ public class Beam extends BasePower {
         List<Vector> getBiases(Location location, Vector towards, MovingTask context, T params);
     }
 
-    private static class MovingTask extends BukkitRunnable {
+    private static class MovingTask extends BukkitRunnable implements ActiveBeam {
         final Vector yAxis = new Vector(0, 1, 0);
         final Vector xAxis = new Vector(1, 0, 0);
         private final FiringLocation firingLocation;
@@ -602,7 +678,7 @@ public class Beam extends BasePower {
         private List<Behavior> behavior = new ArrayList<>();
         private String behaviorParam = "{}";
         private Object extraData = null;
-        private final Beam power;
+        private final String namespacedKey;
         private String speedBias = "";
         private boolean effectOnly = false;
         private int triggerDepth = 0;
@@ -613,38 +689,44 @@ public class Beam extends BasePower {
         private ItemStack itemStack;
         private final double initialBias = 0.2;
         private double spawnInWorld = 0;
+        // Reusable vectors to avoid allocations in hot loop
+        private final Vector tempStep = new Vector();
+        private final Vector tempNextLoc = new Vector();
+        // Cached nearby entities for batched hit detection
+        private Collection<Entity> cachedNearbyEntities = null;
+        private Location cachedNearbyEntitiesCenter = null;
 
-        MovingTask(Beam config) {
-            this.length = config.getLength();
-            this.ttl = config.getTtl();
-            this.particle = config.getParticle();
-            this.mode = config.getMode();
-            this.pierce = config.getPierce();
-            this.ignoreWall = config.isIgnoreWall();
-            this.damage = config.getDamage();
-            this.speed = config.getSpeed();
-            this.offsetX = config.getOffsetX();
-            this.offsetY = config.getOffsetY();
-            this.offsetZ = config.getOffsetZ();
-            this.particleDensity = config.getParticleDensity();
-            this.homing = config.getHoming();
-            this.homingMode = config.getHomingMode();
-            this.ticksBeforeHoming = config.getTicksBeforeHoming();
-            this.bounce = config.getBounce();
-            this.hitSelfWhenBounced = config.isHitSelfWhenBounced();
-            this.gravity = config.getGravity();
-            this.particleSpeed = config.getParticleSpeed();
-            this.suppressMelee = config.isSuppressMelee();
-            this.behavior = config.getBehavior();
-            this.behaviorParam = config.getBehaviorParam();
-            this.extraData = config.getExtraData();
-            this.speedBias = config.getSpeedBias();
-            this.homingAngle = config.getHomingAngle();
-            this.homingTarget = config.getHomingTarget();
-            this.homingRange = config.getHomingRange();
-            this.effectOnly = config.isEffectOnly();
-            this.firingLocation = config.getFiringLocation();
-            power = config;
+        MovingTask(BeamConfig config) {
+            this.length = config.length();
+            this.ttl = config.ttl();
+            this.particle = config.particle();
+            this.mode = config.mode();
+            this.pierce = config.pierce();
+            this.ignoreWall = config.ignoreWall();
+            this.damage = config.damage();
+            this.speed = config.speed();
+            this.offsetX = config.offsetX();
+            this.offsetY = config.offsetY();
+            this.offsetZ = config.offsetZ();
+            this.particleDensity = config.particleDensity();
+            this.homing = config.homing();
+            this.homingMode = config.homingMode();
+            this.ticksBeforeHoming = config.ticksBeforeHoming();
+            this.bounce = config.bounce();
+            this.hitSelfWhenBounced = config.hitSelfWhenBounced();
+            this.gravity = config.gravity();
+            this.particleSpeed = config.particleSpeed();
+            this.suppressMelee = config.suppressMelee();
+            this.behavior = config.behavior();
+            this.behaviorParam = config.behaviorParam();
+            this.extraData = config.extraData();
+            this.speedBias = config.speedBias();
+            this.homingAngle = config.homingAngle();
+            this.homingTarget = config.homingTarget();
+            this.homingRange = config.homingRange();
+            this.effectOnly = config.effectOnly();
+            this.firingLocation = config.firingLocation();
+            this.namespacedKey = config.namespacedKey();
             lengthPerSpawn = 1 / particleDensity;
         }
 
@@ -657,7 +739,114 @@ public class Beam extends BasePower {
             }
             lastLocation = fromLocation;
             towards.normalize();
-            new RecursiveTask().runTask(RPGItems.plugin);
+            // Register with BeamManager instead of creating RecursiveTask
+            BeamManager.getInstance().register(this);
+        }
+
+        /**
+         * Performs one tick of beam logic. Called by BeamManager.
+         * @return true if beam should continue, false if beam is finished
+         */
+        @Override
+        public boolean tick() {
+            try {
+                double lengthInThisTick = getNextLength(spawnedLength, length) + lengthRemains.get();
+
+                double lengthToSpawn = lengthInThisTick;
+                if (mode.equals(Mode.BEAM)) {
+                    lengthToSpawn = length;
+                }
+                int hitCount = 0;
+                while ((lengthToSpawn -= lengthPerSpawn) > 0) {
+                    hitMob.addAll(tryHit(fromEntity, lastLocation, itemStack, bounced && hitSelfWhenBounced, hitMob));
+
+                    if (cycle++ > 2 / lengthPerSpawn) {
+                        hitMob.clear();
+                        hitCount = 0;
+                        cycle = 0;
+                        if (homingMode.equals(HomingMode.MOUSE_TRACK)) {
+                            Location location = fromEntity.getLocation();
+                            if (fromEntity instanceof LivingEntity) {
+                                location = ((LivingEntity) fromEntity).getEyeLocation();
+                            }
+                            targets = new LinkedList<>(getTargets(location.getDirection(), location, fromEntity, homingRange, homingAngle, homingTarget));
+                        }
+                    }
+
+                    spawnParticle(fromEntity, world, lastLocation, 1);
+                    // Reuse tempStep vector to avoid allocation
+                    tempStep.copy(towards).normalize().multiply(lengthPerSpawn);
+                    if (gravity != 0 && (
+                            homing == 0 || currentTick.get() < ticksBeforeHoming
+                    )) {
+                        double partsPerTick = lengthInThisTick / lengthPerSpawn;
+                        tempStep.setY(tempStep.getY() + getGravity(partsPerTick));
+                    }
+                    Location nextLoc = lastLocation.clone().add(tempStep);
+                    if (!ignoreWall && (
+                            nextLoc.getBlockX() != lastLocation.getBlockX() ||
+                                    nextLoc.getBlockY() != lastLocation.getBlockY() ||
+                                    nextLoc.getBlockZ() != lastLocation.getBlockZ()
+                    )) {
+                        if (!(firingLocation.equals(FiringLocation.TARGET) && spawnedLength.get() < (firingR - 1))) {
+                            Block block = nextLoc.getBlock();
+                            if (!transp.contains(block.getType())) {
+                                if (!this.effectOnly) {
+                                    BeamHitBlockEvent beamHitBlockEvent = new BeamHitBlockEvent(player, fromEntity, block, lastLocation, itemStack, triggerDepth);
+                                    Bukkit.getPluginManager().callEvent(beamHitBlockEvent);
+                                }
+                                if (bounce > 0) {
+                                    bounce--;
+                                    bounced = true;
+                                    makeBounce(nextLoc.getBlock(), towards, tempStep, lastLocation);
+                                } else {
+                                    return false; // Beam finished - hit wall
+                                }
+                            }
+                        }
+                    }
+                    lastLocation = nextLoc;
+                    spawnedLength.addAndGet(lengthPerSpawn);
+                    int dHit = hitMob.size() - hitCount;
+                    if (dHit > 0) {
+                        hitCount = hitMob.size();
+                        pierce -= dHit;
+                        if (pierce > 0) {
+                            if (homingMode.equals(HomingMode.MULTI_TARGET)) {
+                                if (targets != null) {
+                                    targets.removeIf(entity -> hitMob.contains(entity.getUniqueId()));
+                                }
+                            }
+                        } else {
+                            return false; // Beam finished - pierce exhausted
+                        }
+                    }
+                    if (targets != null && homing > 0 && currentTick.get() >= ticksBeforeHoming) {
+                        towards = homingCorrect(tempStep, lastLocation, targets.peek(), () -> {
+                            targets.removeIf(Entity::isDead);
+                            return targets.peek();
+                        });
+                    }
+                }
+
+                lengthRemains.set(lengthToSpawn + lengthPerSpawn);
+                if (spawnedLength.get() >= length || currentTick.addAndGet(1) > ttl || mode == Mode.BEAM) {
+                    if (!effectOnly) {
+                        callEnd();
+                    }
+                    return false; // Beam finished - reached end
+                }
+                return true; // Beam continues
+            } catch (Exception e) {
+                e.printStackTrace();
+                return false; // Beam finished - error
+            }
+        }
+
+        private BeamEndEvent callEnd() {
+            BeamEndEvent beamEndEvent = new BeamEndEvent(player, fromEntity, lastLocation, itemStack, triggerDepth);
+            Bukkit.getPluginManager().callEvent(beamEndEvent);
+            return beamEndEvent;
         }
 
         public void setItemStack(ItemStack stack) {
@@ -818,7 +1007,7 @@ public class Beam extends BasePower {
                     Bukkit.getPluginManager().callEvent(beamHitEntityEvent);
                     double damage = beamHitEntityEvent.getDamage();
                     if (damage > 0) {
-                        LightContext.putTemp(from.getUniqueId(), DAMAGE_SOURCE, power.getNamespacedKey().toString());
+                        LightContext.putTemp(from.getUniqueId(), DAMAGE_SOURCE, namespacedKey);
                         LightContext.putTemp(from.getUniqueId(), OVERRIDING_DAMAGE, damage);
                         LightContext.putTemp(from.getUniqueId(), SUPPRESS_MELEE, suppressMelee);
                         LightContext.putTemp(from.getUniqueId(), DAMAGE_SOURCE_ITEM, stack);
@@ -900,110 +1089,6 @@ public class Beam extends BasePower {
         public void setTowards(Vector towards) {
             this.towards = towards;
         }
-
-        class RecursiveTask extends BukkitRunnable {
-            @Override
-            public void run() {
-                try {
-                    double lengthInThisTick = getNextLength(spawnedLength, length) + lengthRemains.get();
-
-                    double lengthToSpawn = lengthInThisTick;
-                    if (mode.equals(Mode.BEAM)) {
-                        lengthToSpawn = length;
-                    }
-                    int hitCount = 0;
-                    while ((lengthToSpawn -= lengthPerSpawn) > 0) {
-                        hitMob.addAll(tryHit(fromEntity, lastLocation, itemStack, bounced && hitSelfWhenBounced, hitMob));
-
-                        if (cycle++ > 2 / lengthPerSpawn) {
-                            hitMob.clear();
-                            hitCount = 0;
-                            cycle = 0;
-                            if (homingMode.equals(HomingMode.MOUSE_TRACK)) {
-                                Location location = fromEntity.getLocation();
-                                if (fromEntity instanceof LivingEntity) {
-                                    location = ((LivingEntity) fromEntity).getEyeLocation();
-                                }
-                                targets = new LinkedList<>(getTargets(location.getDirection(), location, fromEntity, homingRange, homingAngle, homingTarget));
-                            }
-                        }
-
-                        spawnParticle(fromEntity, world, lastLocation, 1);
-                        Vector step = towards.clone().normalize().multiply(lengthPerSpawn);
-                        if (gravity != 0 && (
-                                homing == 0 || currentTick.get() < ticksBeforeHoming
-                        )) {
-                            double partsPerTick = lengthInThisTick / lengthPerSpawn;
-                            step.setY(step.getY() + getGravity(partsPerTick));
-                        }
-                        Location nextLoc = lastLocation.clone().add(step);
-                        if (!ignoreWall && (
-                                nextLoc.getBlockX() != lastLocation.getBlockX() ||
-                                        nextLoc.getBlockY() != lastLocation.getBlockY() ||
-                                        nextLoc.getBlockZ() != lastLocation.getBlockZ()
-                        )) {
-                            if (!(firingLocation.equals(FiringLocation.TARGET) && spawnedLength.get() < (firingR - 1))) {
-                                Block block = nextLoc.getBlock();
-                                if (!transp.contains(block.getType())) {
-                                    if (!MovingTask.this.effectOnly) {
-                                        BeamHitBlockEvent beamHitBlockEvent = new BeamHitBlockEvent(player, fromEntity, block, lastLocation, itemStack, triggerDepth);
-                                        Bukkit.getPluginManager().callEvent(beamHitBlockEvent);
-                                    }
-                                    if (bounce > 0) {
-                                        bounce--;
-                                        bounced = true;
-                                        makeBounce(nextLoc.getBlock(), towards, step, lastLocation);
-                                    } else {
-                                        return;
-                                    }
-                                }
-                            }
-                        }
-                        lastLocation = nextLoc;
-                        spawnedLength.addAndGet(lengthPerSpawn);
-                        int dHit = hitMob.size() - hitCount;
-                        if (dHit > 0) {
-                            hitCount = hitMob.size();
-                            pierce -= dHit;
-                            if (pierce > 0) {
-                                if (homingMode.equals(HomingMode.MULTI_TARGET)) {
-                                    if (targets != null) {
-                                        targets.removeIf(entity -> hitMob.contains(entity.getUniqueId()));
-                                    }
-                                }
-                            } else {
-                                return;
-                            }
-                        }
-                        if (targets != null && homing > 0 && currentTick.get() >= ticksBeforeHoming) {
-                            towards = homingCorrect(step, lastLocation, targets.peek(), () -> {
-                                targets.removeIf(Entity::isDead);
-                                return targets.peek();
-                            });
-                        }
-                    }
-
-                    lengthRemains.set(lengthToSpawn + lengthPerSpawn);
-                    if (spawnedLength.get() >= length || currentTick.addAndGet(1) > ttl || mode == Mode.BEAM) {
-                        if (!effectOnly) {
-                            callEnd();
-                        }
-                        return;
-                    }
-                    new RecursiveTask().runTaskLater(RPGItems.plugin, 1);
-                } catch (Exception e) {
-                    this.cancel();
-                    e.printStackTrace();
-                }
-            }
-
-            private BeamEndEvent callEnd() {
-                BeamEndEvent beamEndEvent = new BeamEndEvent(player, fromEntity, lastLocation, itemStack, triggerDepth);
-                Bukkit.getPluginManager().callEvent(beamEndEvent);
-                return beamEndEvent;
-            }
-
-        }
     }
 
     public static class ExtraDataSerializer implements Getter<Object>, Setter<Object> {
@@ -1034,8 +1119,8 @@ public class Beam extends BasePower {
     public static class MovingTaskBuilder {
         MovingTask movingTask;
 
-        public MovingTaskBuilder(Beam power) {
-            this.movingTask = new MovingTask(power);
+        public MovingTaskBuilder(BeamConfig config) {
+            this.movingTask = new MovingTask(config);
         }
 
         public MovingTaskBuilder towards(Vector towards) {
@@ -1281,7 +1366,9 @@ public class Beam extends BasePower {
 
             towards = makeCone(fromLocation, towards, poll);
 
-            MovingTaskBuilder movingTaskBuilder = new MovingTaskBuilder(Beam.this)
+            // Create config snapshot once to avoid ByteBuddy proxy getter overhead
+            BeamConfig config = BeamConfig.from(Beam.this);
+            MovingTaskBuilder movingTaskBuilder = new MovingTaskBuilder(config)
                     .player(player)
                     .fromEntity(from)
                     .towards(towards)
