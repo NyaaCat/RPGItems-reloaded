@@ -29,6 +29,7 @@ import think.rpgitems.event.BeamHitBlockEvent;
 import think.rpgitems.event.BeamHitEntityEvent;
 import think.rpgitems.event.PowerActivateEvent;
 import think.rpgitems.power.*;
+import think.rpgitems.power.proxy.Interceptor;
 import think.rpgitems.utils.LightContext;
 import think.rpgitems.utils.cast.CastUtils;
 import think.rpgitems.utils.cast.RangedDoubleValue;
@@ -566,40 +567,43 @@ public class Beam extends BasePower {
     ) {
         /**
          * Creates an immutable snapshot from a Beam power instance.
-         * Uses direct field access to bypass ByteBuddy proxy overhead.
+         * Gets the original (non-proxied) Beam to allow direct field access,
+         * bypassing ByteBuddy proxy overhead entirely.
          */
         public static BeamConfig from(Beam beam) {
+            // Get the original object to bypass proxy field access issues
+            Beam original = Interceptor.getOriginal(beam);
             return new BeamConfig(
-                    beam.length,
-                    beam.ttl,
-                    beam.particle,
-                    beam.mode,
-                    beam.pierce,
-                    beam.ignoreWall,
-                    beam.damage,
-                    beam.speed,
-                    beam.offsetX,
-                    beam.offsetY,
-                    beam.offsetZ,
-                    beam.particleSpeed,
-                    beam.particleDensity,
-                    beam.homing,
-                    beam.homingAngle,
-                    beam.homingRange,
-                    beam.homingMode,
-                    beam.homingTarget,
-                    beam.ticksBeforeHoming,
-                    beam.bounce,
-                    beam.hitSelfWhenBounced,
-                    beam.gravity,
-                    beam.suppressMelee,
-                    beam.behavior,
-                    beam.behaviorParam,
-                    beam.extraData,
-                    beam.speedBias,
-                    beam.effectOnly,
-                    beam.firingLocation,
-                    beam.getNamespacedKey().toString()
+                    original.length,
+                    original.ttl,
+                    original.particle,
+                    original.mode,
+                    original.pierce,
+                    original.ignoreWall,
+                    original.damage,
+                    original.speed,
+                    original.offsetX,
+                    original.offsetY,
+                    original.offsetZ,
+                    original.particleSpeed,
+                    original.particleDensity,
+                    original.homing,
+                    original.homingAngle,
+                    original.homingRange,
+                    original.homingMode,
+                    original.homingTarget,
+                    original.ticksBeforeHoming,
+                    original.bounce,
+                    original.hitSelfWhenBounced,
+                    original.gravity,
+                    original.suppressMelee,
+                    original.behavior,
+                    original.behaviorParam,
+                    original.extraData,
+                    original.speedBias,
+                    original.effectOnly,
+                    original.firingLocation,
+                    original.getNamespacedKey().toString()
             );
         }
     }

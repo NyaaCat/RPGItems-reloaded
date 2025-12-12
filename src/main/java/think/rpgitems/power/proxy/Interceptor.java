@@ -66,6 +66,30 @@ public class Interceptor {
 
     }
 
+    /**
+     * Gets the original (non-proxied) Power from a proxy Power.
+     * Returns the input if it's not a proxy or not found in cache.
+     * This allows bypassing proxy overhead when direct field access is needed.
+     *
+     * @param proxy The potentially proxied Power
+     * @return The original Power if found, otherwise the input
+     */
+    @SuppressWarnings("unchecked")
+    public static <T extends Power> T getOriginal(T proxy) {
+        if (proxy == null) return null;
+        // Check if it's a ByteBuddy proxy by class name
+        if (!proxy.getClass().getName().contains("ByteBuddy")) {
+            return proxy; // Not a proxy, return as-is
+        }
+        // Search cache for the original
+        for (Pair<origPowerHolder, Power> entry : POWER_CACHE.asMap().values()) {
+            if (entry.getValue() == proxy) {
+                return (T) entry.getKey().orig();
+            }
+        }
+        return proxy; // Not found in cache, return as-is
+    }
+
     private static Power makeProxy(Power orig, Player player, ItemStack stack, Trigger trigger) {
         MethodHandles.Lookup lookup = orig.getLookup();
         if (lookup == null) lookup = MethodHandles.lookup();
