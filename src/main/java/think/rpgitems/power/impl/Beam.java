@@ -228,27 +228,27 @@ public class Beam extends BasePower {
         return r;
     }
 
-    private static Queue<RoundedConeInfo> internalCones(Beam beam, int amount, int burstCount) {
-        List<Behavior> behaviors = beam.getBehavior();
+    private static Queue<RoundedConeInfo> internalCones(BeamConfig config, int amount, int burstCount) {
+        List<Behavior> behaviors = config.behavior();
         boolean uniformed = behaviors.contains(Behavior.UNIFORMED);
         boolean flat = behaviors.contains(Behavior.FLAT);
         Queue<RoundedConeInfo> infos = new LinkedList<>();
         for (int i = 0; i < burstCount; i++) {
             int steps = Math.max(amount, 1);
             double phiStep = 360 / steps;
-            double thetaStep = beam.getCone() * 2 / steps;
+            double thetaStep = config.cone() * 2 / steps;
             for (int j = 0; j < amount; j++) {
-                RoundedConeInfo roundedConeInfo = internalCone(beam);
+                RoundedConeInfo roundedConeInfo = internalCone(config);
                 if (behaviors.contains(Behavior.CONED)) {
-                    roundedConeInfo.setTheta(beam.getCone());
+                    roundedConeInfo.setTheta(config.cone());
                 }
                 if (uniformed) {
                     roundedConeInfo.setPhi(j * phiStep);
-                    roundedConeInfo.setRPhi(beam.getFiringPhi().uniformed(j, steps));
+                    roundedConeInfo.setRPhi(config.firingPhi().uniformed(j, steps));
                 }
                 if (flat) {
                     if (uniformed) {
-                        roundedConeInfo.setTheta((thetaStep * j) - beam.getCone());
+                        roundedConeInfo.setTheta((thetaStep * j) - config.cone());
                         roundedConeInfo.setPhi(90);
                     } else {
                         roundedConeInfo.setPhi(random.nextBoolean() ? 90 : 270);
@@ -261,18 +261,18 @@ public class Beam extends BasePower {
         return infos;
     }
 
-    private static RoundedConeInfo internalCone(Beam beam) {
+    private static RoundedConeInfo internalCone(BeamConfig config) {
         double phi = random.nextDouble() * 360;
         double theta = 0;
-        if (beam.getCone() != 0) {
-            theta = random.nextDouble() * beam.getCone();
+        if (config.cone() != 0) {
+            theta = random.nextDouble() * config.cone();
         }
 
-        double r = beam.getFiringR().random();
-        double rPhi = beam.getFiringPhi().random();
-        double rTheta = beam.getFiringTheta().random();
+        double r = config.firingR().random();
+        double rPhi = config.firingPhi().random();
+        double rTheta = config.firingTheta().random();
 
-        return new RoundedConeInfo(theta, phi, r, rPhi, rTheta, beam.getInitialRotation());
+        return new RoundedConeInfo(theta, phi, r, rPhi, rTheta, config.initialRotation());
     }
 
     public FiringLocation getFiringLocation() {
@@ -563,7 +563,18 @@ public class Beam extends BasePower {
             String speedBias,
             boolean effectOnly,
             FiringLocation firingLocation,
-            String namespacedKey
+            String namespacedKey,
+            // Phase 3 additions - fields used in beam()/internalFireBeam()/internalCones()
+            boolean castOff,
+            double firingRange,
+            int beamAmount,
+            int burstCount,
+            int burstInterval,
+            double cone,
+            RangedDoubleValue firingR,
+            RangedDoubleValue firingTheta,
+            RangedDoubleValue firingPhi,
+            double initialRotation
     ) {
         /**
          * Creates an immutable snapshot from a Beam power instance.
@@ -603,7 +614,18 @@ public class Beam extends BasePower {
                     original.speedBias,
                     original.effectOnly,
                     original.firingLocation,
-                    original.getNamespacedKey().toString()
+                    original.getNamespacedKey().toString(),
+                    // Phase 3 additions
+                    original.castOff,
+                    original.firingRange,
+                    original.beamAmount,
+                    original.burstCount,
+                    original.burstInterval,
+                    original.cone,
+                    original.firingR,
+                    original.firingTheta,
+                    original.firingPhi,
+                    original.initialRotation
             );
         }
     }
@@ -1281,23 +1303,31 @@ public class Beam extends BasePower {
         }
 
         private PowerResult<Void> beam(Player player, LivingEntity from, ItemStack stack) {
+            // Create config snapshot once at the start - eliminates all ByteBuddy proxy overhead
+            BeamConfig config = BeamConfig.from(Beam.this);
             Location fromLocation = from.getEyeLocation().clone();
             Vector towards = from.getEyeLocation().getDirection().clone();
 
-            CastUtils.CastLocation result = CastUtils.rayTrace(from, fromLocation, towards, getFiringRange());
-            return beam(player, from, stack, result, 0);
+            CastUtils.CastLocation result = CastUtils.rayTrace(from, fromLocation, towards, config.firingRange());
+            return beam(player, from, stack, result, 0, config);
         }
 
         private PowerResult<Void> beam(Player player, LivingEntity from, ItemStack stack, CastUtils.CastLocation castLocation, int depth) {
+            // Create config snapshot once at the start - eliminates all ByteBuddy proxy overhead
+            BeamConfig config = BeamConfig.from(Beam.this);
+            return beam(player, from, stack, castLocation, depth, config);
+        }
+
+        private PowerResult<Void> beam(Player player, LivingEntity from, ItemStack stack, CastUtils.CastLocation castLocation, int depth, BeamConfig config) {
             Location fromLocation = from.getEyeLocation().clone();
             Vector towards = from.getEyeLocation().getDirection().clone();
             Vector normal = yAxis.clone();
 
-            Queue<RoundedConeInfo> roundedConeInfo = internalCones(Beam.this, getBeamAmount(), Math.max(getBurstCount(), 1));
+            Queue<RoundedConeInfo> roundedConeInfo = internalCones(config, config.beamAmount(), Math.max(config.burstCount(), 1));
             Deque<Entity> targets = null;
 
-            if (getHoming() > 0) {
-                targets = new LinkedList<>(getTargets(towards, fromLocation, from, getHomingRange(), getHomingAngle(), getHomingTarget()));
+            if (config.homing() > 0) {
+                targets = new LinkedList<>(getTargets(towards, fromLocation, from, config.homingRange(), config.homingAngle(), config.homingTarget()));
             }
             if (castLocation != null) {
                 fromLocation = castLocation.getTargetLocation();
@@ -1307,9 +1337,10 @@ public class Beam extends BasePower {
                 }
             }
 
-            if (getBurstCount() > 0) {
-                final int currentBurstCount = getBurstCount();
-                final int currentBurstInterval = getBurstInterval();
+            if (config.burstCount() > 0) {
+                final int currentBurstCount = config.burstCount();
+                final int currentBurstInterval = config.burstInterval();
+                final int currentBeamAmount = config.beamAmount();
                 AtomicInteger bursted = new AtomicInteger(0);
 
                 Location finalFromLocation = fromLocation;
@@ -1318,8 +1349,8 @@ public class Beam extends BasePower {
                 class FireTask extends BukkitRunnable {
                     @Override
                     public void run() {
-                        for (int j = 0; j < getBeamAmount(); j++) {
-                            internalFireBeam(player, from, finalFromLocation, towards, finalNormal, stack, roundedConeInfo, finalTargets, depth);
+                        for (int j = 0; j < currentBeamAmount; j++) {
+                            internalFireBeam(player, from, finalFromLocation, towards, finalNormal, stack, roundedConeInfo, finalTargets, depth, config);
                         }
                         if (bursted.addAndGet(1) < currentBurstCount) {
                             new FireTask().runTaskLater(RPGItems.plugin, currentBurstInterval);
@@ -1329,27 +1360,27 @@ public class Beam extends BasePower {
                 new FireTask().runTask(RPGItems.plugin);
                 return PowerResult.ok();
             } else {
-                return internalFireBeam(player, from, stack, roundedConeInfo, targets, depth);
+                return internalFireBeam(player, from, stack, roundedConeInfo, targets, depth, config);
             }
         }
 
 
-        private PowerResult<Void> internalFireBeam(Player player, LivingEntity from, ItemStack stack, Queue<RoundedConeInfo> coneInfo, Deque<Entity> targets, int depth) {
-            return internalFireBeam(player, from, from.getEyeLocation(), from.getEyeLocation().getDirection(), yAxis.clone(), stack, coneInfo, targets, depth);
+        private PowerResult<Void> internalFireBeam(Player player, LivingEntity from, ItemStack stack, Queue<RoundedConeInfo> coneInfo, Deque<Entity> targets, int depth, BeamConfig config) {
+            return internalFireBeam(player, from, from.getEyeLocation(), from.getEyeLocation().getDirection(), yAxis.clone(), stack, coneInfo, targets, depth, config);
         }
 
-        private PowerResult<Void> internalFireBeam(Player player, LivingEntity from, Location castLocation, Vector towards, Vector normalDir, ItemStack stack, Queue<RoundedConeInfo> coneInfo, Deque<Entity> targets, int depth) {
+        private PowerResult<Void> internalFireBeam(Player player, LivingEntity from, Location castLocation, Vector towards, Vector normalDir, ItemStack stack, Queue<RoundedConeInfo> coneInfo, Deque<Entity> targets, int depth, BeamConfig config) {
             Location fromLocation = castLocation;
 
-            if (!isCastOff()) {
+            if (!config.castOff()) {
                 fromLocation = from.getEyeLocation();
                 towards = from.getEyeLocation().getDirection();
-                if (getHoming() > 0 && (!isCastOff() || getHomingMode().equals(HomingMode.MULTI_TARGET) || getHomingMode().equals(HomingMode.MOUSE_TRACK))) {
-                    targets = new LinkedList<>(getTargets(towards, fromLocation, from, getHomingRange(), getHomingAngle(), getHomingTarget()));
+                if (config.homing() > 0 && (!config.castOff() || config.homingMode().equals(HomingMode.MULTI_TARGET) || config.homingMode().equals(HomingMode.MOUSE_TRACK))) {
+                    targets = new LinkedList<>(getTargets(towards, fromLocation, from, config.homingRange(), config.homingAngle(), config.homingTarget()));
                 }
 
-                if (getFiringLocation().equals(FiringLocation.TARGET)) {
-                    CastUtils.CastLocation result = CastUtils.rayTrace(from, fromLocation, towards, getFiringRange());
+                if (config.firingLocation().equals(FiringLocation.TARGET)) {
+                    CastUtils.CastLocation result = CastUtils.rayTrace(from, fromLocation, towards, config.firingRange());
                     castLocation = result.getTargetLocation();
                     normalDir = result.getNormalDirection();
                 }
@@ -1357,11 +1388,11 @@ public class Beam extends BasePower {
 
             RoundedConeInfo poll = coneInfo.poll();
             if (poll == null) {
-                poll = internalCone(Beam.this);
+                poll = internalCone(config);
             }
 
-            if (getFiringLocation().equals(FiringLocation.TARGET)) {
-                if (!getBehavior().contains(Behavior.CAST_LOCATION_ROTATED)) {
+            if (config.firingLocation().equals(FiringLocation.TARGET)) {
+                if (!config.behavior().contains(Behavior.CAST_LOCATION_ROTATED)) {
                     normalDir = yAxis.clone();
                 }
                 fromLocation = CastUtils.parseFiringLocation(castLocation, normalDir, fromLocation, poll);
@@ -1370,8 +1401,7 @@ public class Beam extends BasePower {
 
             towards = makeCone(fromLocation, towards, poll);
 
-            // Create config snapshot once to avoid ByteBuddy proxy getter overhead
-            BeamConfig config = BeamConfig.from(Beam.this);
+            // Config is already passed in - no need to create snapshot here
             MovingTaskBuilder movingTaskBuilder = new MovingTaskBuilder(config)
                     .player(player)
                     .fromEntity(from)
@@ -1379,11 +1409,11 @@ public class Beam extends BasePower {
                     .targets(targets)
                     .itemStack(stack)
                     .triggerDepth(depth);
-            if (getBehavior().contains(Behavior.RAINBOW_COLOR)) {
+            if (config.behavior().contains(Behavior.RAINBOW_COLOR)) {
                 Color nextColor = getNextColor();
                 movingTaskBuilder.color(nextColor);
             }
-            if (!getFiringLocation().equals(FiringLocation.SELF)) {
+            if (!config.firingLocation().equals(FiringLocation.SELF)) {
                 movingTaskBuilder.fromLocation(fromLocation)
                         .firingR(poll.getR());
             }
