@@ -11,10 +11,8 @@ import org.bukkit.event.entity.ProjectileHitEvent;
 import org.bukkit.event.player.PlayerInteractEvent;
 import org.bukkit.event.player.PlayerItemConsumeEvent;
 import org.bukkit.inventory.ItemStack;
-import org.bukkit.scheduler.BukkitRunnable;
 import org.bukkit.util.Vector;
 import think.rpgitems.I18n;
-import think.rpgitems.RPGItems;
 import think.rpgitems.event.BeamEndEvent;
 import think.rpgitems.event.BeamHitBlockEvent;
 import think.rpgitems.event.BeamHitEntityEvent;
@@ -193,18 +191,9 @@ public class Attract extends BasePower {
                 return PowerResult.fail();
             if (!checkCooldown(getPower(), player, getCooldown(), showCooldownWarning(), true)) return PowerResult.cd();
             if (!getItem().consumeDurability(stack, getCost())) return PowerResult.cost();
-            new BukkitRunnable() {
-                int dur = getDuration();
-
-                @Override
-                public void run() {
-                    if (--dur <= 0) {
-                        this.cancel();
-                        return;
-                    }
-                    attract(player, location, stack, supplier);
-                }
-            }.runTaskTimer(RPGItems.plugin, 0, 1);
+            AttractManager.getInstance().register(
+                    new ActiveAttract(player, location, stack, supplier, Attract.this, getDuration())
+            );
             return PowerResult.ok();
         }
 

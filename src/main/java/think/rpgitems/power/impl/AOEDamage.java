@@ -283,7 +283,7 @@ public class AOEDamage extends BasePower {
             if (getDelay() <= 0) {
                 for (int i = 0; i < c && i < entities.length; ++i) {
                     LivingEntity e = entities[i];
-                    if ((isMustsee() && !player.hasLineOfSight(e))
+                    if ((isMustsee() && !hasLineOfSightCached(player, e))
                             || (e == player)
                             || (!isIncluePlayers() && e instanceof Player)
                     ) {
@@ -312,7 +312,7 @@ public class AOEDamage extends BasePower {
 
                         for (int i = 0; i < c && i < entities1.length; ++i) {
                             LivingEntity e = entities1[i];
-                            if ((isMustsee() && !player.hasLineOfSight(e))
+                            if ((isMustsee() && !hasLineOfSightCached(player, e))
                                     || (e == player)
                                     || (!isIncluePlayers() && e instanceof Player)
                             ) {

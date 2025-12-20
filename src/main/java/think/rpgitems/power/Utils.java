@@ -71,7 +71,9 @@ public class Utils {
 
     public static List<Entity> getNearbyEntities(Power power, Location l, Player player, double radius, double dx, double dy, double dz) {
         List<Entity> entities = new ArrayList<>();
-        Collection<Entity> nearbyEntities = l.getWorld().getNearbyEntities(l, dx, dy, dz);
+        // Use cached entity search
+        Collection<Entity> nearbyEntities = EntitySearchCache.getInstance()
+                .getNearbyEntities(l.getWorld(), l, dx, dy, dz);
         if (!nearbyEntities.isEmpty()) {
             for (Entity e : nearbyEntities) {
                 if (!Utils.isUtilArmorStand(e) && l.distance(e.getLocation()) <= radius) {
@@ -1068,6 +1070,18 @@ public class Utils {
             return arm.isMarker() && !arm.isVisible();
         }
         return false;
+    }
+
+    /**
+     * Check line of sight with caching.
+     * Uses EntitySearchCache to avoid redundant ray traces within the same tick.
+     *
+     * @param player the player checking LOS
+     * @param target the target entity
+     * @return true if player has line of sight to target
+     */
+    public static boolean hasLineOfSightCached(Player player, LivingEntity target) {
+        return EntitySearchCache.getInstance().hasLineOfSight(player, target);
     }
 
     private static class AngledEntity implements Comparable<AngledEntity> {

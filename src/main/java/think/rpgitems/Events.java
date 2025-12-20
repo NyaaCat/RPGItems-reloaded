@@ -40,6 +40,7 @@ import think.rpgitems.item.RPGItem;
 import think.rpgitems.power.*;
 import think.rpgitems.power.impl.Undead;
 import think.rpgitems.power.marker.Ranged;
+import think.rpgitems.power.PlayerRPGInventoryCache;
 import think.rpgitems.power.trigger.BaseTriggers;
 import think.rpgitems.power.trigger.Trigger;
 import think.rpgitems.support.WGHandler;
@@ -951,6 +952,7 @@ public class Events implements Listener {
             if (e instanceof EntityDamageByEntityEvent) {
                 damager = ((EntityDamageByEntityEvent) e).getDamager();
             }
+            // Single pass through armor: apply takeDamage and eval together
             for (ItemStack pArmour : armour) {
                 RPGItem pRItem = ItemManager.toRPGItem(pArmour).orElse(null);
                 if (pRItem == null) {
@@ -958,13 +960,7 @@ public class Events implements Listener {
                 }
                 hasRPGItem = true;
                 damage = pRItem.takeDamage(player, damage, pArmour, damager);
-            }
-            for (ItemStack pArmour : armour) {
                 try {
-                    RPGItem pRItem = ItemManager.toRPGItem(pArmour).orElse(null);
-                    if (pRItem == null) {
-                        continue;
-                    }
                     damage = Utils.eval(player, damage, e, damager, pRItem);
                 } catch (Exception ignored) {
                 }
@@ -988,8 +984,8 @@ public class Events implements Listener {
     }
 
     private void triggerRescue(Player entity, EntityDamageEvent ev) {
-        double ret = ev.getDamage();
         for (ItemStack item : entity.getInventory().getContents()) {
+            if (item == null || item.getType().isAir()) continue;
             RPGItem ri = ItemManager.toRPGItem(item).orElse(null);
             if (ri == null) continue;
             ri.power(entity, item, ev, BaseTriggers.DYING);
@@ -999,6 +995,7 @@ public class Events implements Listener {
     private double playerHitTaken(Player e, EntityDamageEvent ev) {
         double ret = ev.getDamage();
         for (ItemStack item : e.getInventory().getContents()) {
+            if (item == null || item.getType().isAir()) continue;
             RPGItem ri = ItemManager.toRPGItem(item).orElse(null);
             if (ri == null) continue;
             ret = ri.power(e, item, ev, BaseTriggers.HIT_TAKEN).orElse(ret);
@@ -1010,6 +1007,7 @@ public class Events implements Listener {
     private void onPlayerHurt(EntityDamageByEntityEvent ev) {
         if (ev.getEntity() instanceof Player e) {
             for (ItemStack item : e.getInventory().getContents()) {
+                if (item == null || item.getType().isAir()) continue;
                 RPGItem ri = ItemManager.toRPGItem(item).orElse(null);
                 if (ri == null) continue;
                 ri.power(e, item, ev, BaseTriggers.HURT);
@@ -1542,5 +1540,44 @@ public class Events implements Listener {
                 });
             }
         }
+    }
+
+    // ==================== Cache Invalidation Handlers ====================
+    // These handlers invalidate the PlayerRPGInventoryCache when inventory changes
+
+    @EventHandler(priority = EventPriority.MONITOR)
+    public void onInventoryClickCacheInvalidate(InventoryClickEvent e) {
+        if (e.getWhoClicked() instanceof Player player) {
+            PlayerRPGInventoryCache.getInstance().invalidate(player.getUniqueId());
+        }
+    }
+
+    @EventHandler(priority = EventPriority.MONITOR)
+    public void onPlayerPickupCacheInvalidate(EntityPickupItemEvent e) {
+        if (e.getEntity() instanceof Player player) {
+            PlayerRPGInventoryCache.getInstance().invalidate(player.getUniqueId());
+        }
+    }
+
+    @EventHandler(priority = EventPriority.MONITOR)
+    public void onPlayerDropCacheInvalidate(PlayerDropItemEvent e) {
+        PlayerRPGInventoryCache.getInstance().invalidate(e.getPlayer().getUniqueId());
+    }
+
+    @EventHandler(priority = EventPriority.MONITOR)
+    public void onPlayerJoinCacheInvalidate(PlayerJoinEvent e) {
+        // Invalidate to ensure fresh cache on join
+        PlayerRPGInventoryCache.getInstance().invalidate(e.getPlayer().getUniqueId());
+    }
+
+    @EventHandler(priority = EventPriority.MONITOR)
+    public void onPlayerQuitCacheRemove(PlayerQuitEvent e) {
+        // Clean up cache entry when player quits
+        PlayerRPGInventoryCache.getInstance().remove(e.getPlayer().getUniqueId());
+    }
+
+    @EventHandler(priority = EventPriority.MONITOR)
+    public void onPlayerSwapHandsCacheInvalidate(PlayerSwapHandItemsEvent e) {
+        PlayerRPGInventoryCache.getInstance().invalidate(e.getPlayer().getUniqueId());
     }
 }
