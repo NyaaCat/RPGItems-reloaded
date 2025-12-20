@@ -1,32 +1,21 @@
 package think.rpgitems.power.impl;
 
-import org.bukkit.Effect;
 import org.bukkit.Location;
-import org.bukkit.block.Block;
-import org.bukkit.entity.*;
+import org.bukkit.entity.LivingEntity;
+import org.bukkit.entity.Player;
 import org.bukkit.event.entity.EntityShootBowEvent;
 import org.bukkit.event.player.PlayerInteractEvent;
 import org.bukkit.event.player.PlayerToggleSneakEvent;
 import org.bukkit.event.player.PlayerToggleSprintEvent;
 import org.bukkit.inventory.ItemStack;
-import org.bukkit.metadata.FixedMetadataValue;
-import org.bukkit.scheduler.BukkitRunnable;
 import org.bukkit.util.Vector;
 import think.rpgitems.I18n;
-import think.rpgitems.RPGItems;
-import think.rpgitems.data.Context;
 import think.rpgitems.event.PowerActivateEvent;
 import think.rpgitems.power.*;
 
 import javax.annotation.Nullable;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Random;
 
-import static think.rpgitems.Events.DAMAGE_SOURCE;
-import static think.rpgitems.Events.OVERRIDING_DAMAGE;
 import static think.rpgitems.power.Utils.checkCooldown;
-import static think.rpgitems.power.Utils.getNearbyEntities;
 
 /**
  * Power rumble.
@@ -114,76 +103,9 @@ public class Rumble extends BasePower {
         }
 
         private PowerResult<Void> fire(Player player, Location location, Vector direction) {
-            direction.setY(0);
-            direction.normalize();
-            BukkitRunnable task = new BukkitRunnable() {
-                private int count = 0;
-
-                public void run() {
-                    Location above = location.clone().add(0, 1, 0);
-                    if (above.getBlock().getType().isSolid() || !location.getBlock().getType().isSolid()) {
-                        cancel();
-                        return;
-                    }
-
-                    Location temp = location.clone();
-                    for (int x = -2; x <= 2; x++) {
-                        for (int z = -2; z <= 2; z++) {
-                            temp.setX(x + location.getBlockX());
-                            temp.setZ(z + location.getBlockZ());
-                            Block block = temp.getBlock();
-                            temp.getWorld().playEffect(temp, Effect.STEP_SOUND, block.getType());
-                        }
-                    }
-                    List<Entity> near = getNearbyEntities(Rumble.this, location, player, 1.5);
-                    boolean hit = false;
-                    Random random = new Random();
-                    for (Entity e : near) {
-                        if (e != player) {
-                            hit = true;
-                            break;
-                        }
-                    }
-                    if (hit) {
-                        near = getNearbyEntities(Rumble.this, location, player, power * 2 + 1);
-                        for (Entity e : near) {
-                            if (e != player) {
-                                if (e instanceof ItemFrame || e instanceof Painting || e.hasMetadata("NPC")) {
-                                    e.setMetadata("RPGItems.Rumble", new FixedMetadataValue(RPGItems.plugin, null)); // Add metadata to protect hanging entities from the explosion
-                                    continue;
-                                }
-                                if (e.getLocation().distance(location) <= 2.5)
-                                    e.setVelocity(new Vector(random.nextGaussian() / 4d, 1d + random.nextDouble() * (double) power, random.nextGaussian() / 4d));
-
-                                if (!(e instanceof LivingEntity)) {
-                                    continue;
-                                }
-                                if (getDamage() > 0) {
-                                    Context.instance().putTemp(player.getUniqueId(), DAMAGE_SOURCE, getNamespacedKey().toString());
-                                    Context.instance().putTemp(player.getUniqueId(), OVERRIDING_DAMAGE, getDamage());
-                                    ((LivingEntity) e).damage(getDamage(), player);
-                                    Context.instance().putTemp(player.getUniqueId(), OVERRIDING_DAMAGE, null);
-                                    Context.instance().putTemp(player.getUniqueId(), DAMAGE_SOURCE, null);
-
-                                }
-                            }
-                        }
-                        location.getWorld().createExplosion(location.getX(), location.getY(), location.getZ(), power, false, false); // Trigger the explosion after all hanging entities have been protected
-                        cancel();
-                        return;
-                    }
-                    location.add(direction);
-                    if (getCount() >= getDistance()) {
-                        cancel();
-                    }
-                    count = getCount() + 1;
-                }
-
-                public int getCount() {
-                    return count;
-                }
-            };
-            task.runTaskTimer(RPGItems.plugin, 0, 3);
+            RumbleManager.getInstance().register(
+                    new ActiveRumble(player, location, direction, Rumble.this)
+            );
             return PowerResult.ok();
         }
 

@@ -155,7 +155,7 @@ public class AOECommand extends Command {
                     for (int i = 0; i < count && i < entities.length; ++i) {
                         String cmd = usercmd;
                         LivingEntity e = entities[i];
-                        if ((isMustsee() && !player.hasLineOfSight(e))
+                        if ((isMustsee() && !hasLineOfSightCached(player, e))
                                 || (!isSelfapplication() && e == player)
                                 || (forPlayers && !(e instanceof Player))
                                 || (forMobs && e instanceof Player)

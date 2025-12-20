@@ -1,13 +1,9 @@
 package think.rpgitems.power.impl;
 
 import com.destroystokyo.paper.event.player.PlayerJumpEvent;
-import org.bukkit.Bukkit;
 import org.bukkit.Location;
 import org.bukkit.Material;
 import org.bukkit.World;
-import org.bukkit.entity.Entity;
-import org.bukkit.entity.ItemFrame;
-import org.bukkit.entity.Painting;
 import org.bukkit.entity.Player;
 import org.bukkit.event.entity.EntityDamageByEntityEvent;
 import org.bukkit.event.entity.EntityDamageEvent;
@@ -18,11 +14,9 @@ import org.bukkit.event.player.PlayerToggleSneakEvent;
 import org.bukkit.event.player.PlayerToggleSprintEvent;
 import org.bukkit.inventory.ItemStack;
 import think.rpgitems.I18n;
-import think.rpgitems.RPGItems;
 import think.rpgitems.event.PowerActivateEvent;
 import think.rpgitems.power.*;
 
-import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Set;
 
@@ -148,89 +142,6 @@ public class ForceField extends BasePower {
         return requireHurtByEntity;
     }
 
-    private static class buildWallTask implements Runnable {
-        final World w;
-        final Set<Location> circlePoints;
-        final Set<Location> wasWall, wasBarrier;
-        final int l, h;
-        final int ttl;
-        int current;
-        int id;
-        final Material wallMaterial;
-        final Material barrierMaterial;
-
-        buildWallTask(World w, Set<Location> circlePoints, int l, int h, int ttl, Material wallMaterial, Material barrierMaterial) {
-            this.w = w;
-            this.circlePoints = circlePoints;
-            this.l = l;
-            this.h = h;
-            this.ttl = ttl;
-            this.wallMaterial = wallMaterial;
-            this.barrierMaterial = barrierMaterial;
-            current = -1;
-            wasWall = new HashSet<>();
-            wasBarrier = new HashSet<>();
-        }
-
-        @Override
-        public void run() {
-            if (current != -1) {
-                for (Location l : circlePoints) {
-                    if (wasWall.contains(l)) {
-                        l.add(0, 1, 0);
-                        continue;
-                    }
-                    if (w.getBlockAt(l).getType() == barrierMaterial) {
-                        wasBarrier.add(l.clone());
-                        l.add(0, 1, 0);
-                        continue;
-                    }
-                    if (w.getBlockAt(l).getType() == wallMaterial)
-                        w.getBlockAt(l).setType(barrierMaterial);
-                    l.add(0, 1, 0);
-                }
-            }
-            if (current == -1) {
-                current = l;
-            } else {
-                current++;
-            }
-            if (current <= h) {
-                loop:
-                for (Location l : circlePoints) {
-                    if (w.getBlockAt(l).getType() == wallMaterial) {
-                        wasWall.add(l.clone());
-                        continue;
-                    }
-                    if (w.getBlockAt(l).getType() == Material.AIR) {
-                        for (Entity e : w.getNearbyEntities(l, 2, 2, 2)) {
-                            if (e instanceof ItemFrame || e instanceof Painting) {
-                                if (e.getLocation().distance(l) < 1.5) continue loop;
-                            }
-                        }
-                        w.getBlockAt(l).setType(wallMaterial);
-                    }
-                }
-            } else {
-                Bukkit.getScheduler().cancelTask(id);
-                Bukkit.getScheduler().scheduleSyncDelayedTask(RPGItems.plugin, () -> {
-                    for (int i = h; i >= l; i--) {
-                        for (Location l : circlePoints) {
-                            l.subtract(0, 1, 0);
-                            if (!wasBarrier.contains(l) && w.getBlockAt(l).getType() == barrierMaterial) {
-                                w.getBlockAt(l).setType(Material.AIR);
-                            }
-                        }
-                    }
-                }, ttl);
-            }
-        }
-
-        public void setId(int id) {
-            this.id = id;
-        }
-    }
-
     public class Impl implements PowerHitTaken, PowerLeftClick, PowerRightClick, PowerSneak, PowerSprint, PowerPlain, PowerHurt, PowerConsume, PowerJump, PowerSwim {
 
         @Override
@@ -253,15 +164,17 @@ public class ForceField extends BasePower {
             int x = player.getLocation().getBlockX();
             int y = player.getLocation().getBlockY();
             int z = player.getLocation().getBlockZ();
-            int l = y + getBase();
-            if (l < 1) l = 1;
-            if (l > 255) return PowerResult.noop();
-            int h = y + getBase() + getHeight();
-            if (h > 255) h = 255;
-            if (h < 1) return PowerResult.noop();
+            int baseLevel = y + getBase();
+            if (baseLevel < 1) baseLevel = 1;
+            if (baseLevel > 255) return PowerResult.noop();
+            int maxHeight = y + getBase() + getHeight();
+            if (maxHeight > 255) maxHeight = 255;
+            if (maxHeight < 1) return PowerResult.noop();
 
-            buildWallTask tsk = new buildWallTask(w, circlePoints(w, x, z, getRadius(), l), l, h, getTtl(), getWallMaterial(), getBarrierMaterial());
-            tsk.setId(Bukkit.getScheduler().scheduleSyncRepeatingTask(RPGItems.plugin, tsk, 1, 1));
+            ForceFieldManager.getInstance().register(
+                    new ActiveForceField(w, circlePoints(w, x, z, getRadius(), baseLevel),
+                            baseLevel, maxHeight, getTtl(), getWallMaterial(), getBarrierMaterial())
+            );
             return PowerResult.ok();
         }
 
