@@ -24,6 +24,7 @@ import think.rpgitems.event.BeamHitEntityEvent;
 import think.rpgitems.event.PowerActivateEvent;
 import think.rpgitems.power.*;
 import think.rpgitems.power.marker.Selector;
+import think.rpgitems.power.proxy.Interceptor;
 
 import javax.annotation.Nullable;
 import java.util.*;
@@ -223,27 +224,30 @@ public class Scoreboard extends BasePower {
 
         @Override
         public PowerResult<Void> fire(Player player, ItemStack stack) {
+            // Bypass ByteBuddy proxy to get actual configured values
+            Scoreboard original = Interceptor.getOriginal(Scoreboard.this);
+
             HashMap<String,Object> argsMap = new HashMap<>();
-            argsMap.put("objective",player.getScoreboard().getObjective(getObjective()));
+            argsMap.put("objective",player.getScoreboard().getObjective(original.getObjective()));
             PowerActivateEvent powerEvent = new PowerActivateEvent(player,stack,getPower(),argsMap);
             if(!powerEvent.callEvent()) {
                 return PowerResult.fail();
             }
-            if (!checkCooldown(getPower(), player, getCooldown(), showCooldownWarning(), true)) return PowerResult.cd();
-            if (!getItem().consumeDurability(stack, getCost())) return PowerResult.cost();
+            if (!checkCooldown(getPower(), player, original.getCooldown(), original.showCooldownWarning(), true)) return PowerResult.cd();
+            if (!getItem().consumeDurability(stack, original.getCost())) return PowerResult.cost();
 
             org.bukkit.scoreboard.Scoreboard scoreboard = player.getScoreboard();
 
-            Objective objective = scoreboard.getObjective(getObjective());
+            Objective objective = scoreboard.getObjective(original.getObjective());
             if (objective != null) {
                 Score sc = objective.getScore(player.getName());
                 int ori = sc.getScore();
-                switch (getScoreOperation()) {
+                switch (original.getScoreOperation()) {
                     case ADD_SCORE:
-                        sc.setScore(ori + getValue());
+                        sc.setScore(ori + original.getValue());
                         break;
                     case SET_SCORE:
-                        sc.setScore(getValue());
+                        sc.setScore(original.getValue());
                         break;
                     case RESET_SCORE:
                         sc.setScore(0);
@@ -251,14 +255,14 @@ public class Scoreboard extends BasePower {
                     default:
                 }
             }
-            if (getTeam() != null) {
-                Pair<Set<String>, Set<String>> team = teamCache.getUnchecked(getTeam());
+            if (original.getTeam() != null) {
+                Pair<Set<String>, Set<String>> team = teamCache.getUnchecked(original.getTeam());
                 team.getKey().stream().map(scoreboard::getTeam).forEach(t -> t.addEntry(player.getName()));
                 team.getValue().stream().map(scoreboard::getTeam).forEach(t -> t.removeEntry(player.getName()));
             }
 
-            if (getTag() != null) {
-                Pair<Set<String>, Set<String>> tag = tagCache.getUnchecked(getTag());
+            if (original.getTag() != null) {
+                Pair<Set<String>, Set<String>> tag = tagCache.getUnchecked(original.getTag());
                 List<String> addedTags = new ArrayList<>();
                 List<String> removedTags = new ArrayList<>();
                 if (removeTask != null) {
@@ -279,11 +283,11 @@ public class Scoreboard extends BasePower {
                         removedTags.add(tag1);
                     }
                 });
-                if (isReverseTagAfterDelay()) {
-                    tagReverser.submitReverse(addedTags, removedTags, player, (int) getDelay());
+                if (original.isReverseTagAfterDelay()) {
+                    tagReverser.submitReverse(addedTags, removedTags, player, (int) original.getDelay());
                 }
             }
-            return isAbortOnSuccess() ? PowerResult.abort() : PowerResult.ok();
+            return original.isAbortOnSuccess() ? PowerResult.abort() : PowerResult.ok();
         }
 
         @Override
