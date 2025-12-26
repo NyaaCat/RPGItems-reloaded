@@ -72,7 +72,9 @@ public class EvalDamage extends BasePower {
             Entity damager = event.getDamager();
             if(entity instanceof Player){
                 toPlayer = true;
-                expr = getPlayerExpression();
+                if (!getPlayerExpression().isEmpty()) {
+                    expr = getPlayerExpression();
+                }
             }
             if(PlaceholderAPISupport.hasSupport()){
                 expr = PlaceholderAPI.setPlaceholders(player,expr);
@@ -146,7 +148,9 @@ public class EvalDamage extends BasePower {
                         ent = (Entity) shooter;
                         if(ent instanceof Player){
                             byPlayer = true;
-                            expr = getPlayerExpression();
+                            if (!getPlayerExpression().isEmpty()) {
+                                expr = getPlayerExpression();
+                            }
                         }
                     }
                 }
