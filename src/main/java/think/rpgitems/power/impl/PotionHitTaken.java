@@ -60,6 +60,10 @@ public class PotionHitTaken extends BasePower implements PowerPotion {
         return cost;
     }
 
+    public boolean isEffectDamager() {
+        return effectDamager;
+    }
+
     /**
      * Duration of potion effect
      */
