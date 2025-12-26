@@ -17,6 +17,7 @@ import org.bukkit.event.EventHandler;
 import org.bukkit.event.EventPriority;
 import org.bukkit.event.HandlerList;
 import org.bukkit.event.Listener;
+import org.bukkit.event.entity.EntityDamageByEntityEvent;
 import org.bukkit.event.entity.EntityDamageEvent;
 import org.bukkit.event.entity.EntityShootBowEvent;
 import org.bukkit.event.player.PlayerInteractEvent;
@@ -37,7 +38,7 @@ import java.util.concurrent.atomic.AtomicInteger;
 
 import static think.rpgitems.power.Utils.checkCooldown;
 
-@Meta(defaultTrigger = {"RIGHT_CLICK", "TICK"}, generalInterface = PowerPlain.class, implClass = ParticleBarrier.Impl.class)
+@Meta(defaultTrigger = {"RIGHT_CLICK", "TICK", "HIT_GLOBAL"}, generalInterface = PowerPlain.class, implClass = ParticleBarrier.Impl.class)
 public class ParticleBarrier extends BasePower {
 
     private static final Cache<UUID, Double> barriers = CacheBuilder.newBuilder()
@@ -181,7 +182,7 @@ public class ParticleBarrier extends BasePower {
         return projected;
     }
 
-    public class Impl implements PowerPlain, PowerRightClick, PowerLeftClick, PowerTick, PowerBowShoot {
+    public class Impl implements PowerPlain, PowerRightClick, PowerLeftClick, PowerTick, PowerBowShoot, PowerHit {
 
         @Override
         public PowerResult<Void> leftClick(Player player, ItemStack stack, PlayerInteractEvent event) {
@@ -292,6 +293,11 @@ public class ParticleBarrier extends BasePower {
         @Override
         public PowerResult<Float> bowShoot(Player player, ItemStack stack, EntityShootBowEvent event) {
             return fire(player, stack).with(event.getForce());
+        }
+
+        @Override
+        public PowerResult<Double> hit(Player player, ItemStack stack, LivingEntity entity, double damage, EntityDamageByEntityEvent event) {
+            return fire(player, stack).with(damage);
         }
 
         @Override
