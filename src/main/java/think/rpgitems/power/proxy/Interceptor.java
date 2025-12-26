@@ -75,6 +75,13 @@ public class Interceptor {
                 .toList();
     }
 
+    /**
+     * Gets the original (non-proxied) Power that this Interceptor wraps.
+     */
+    public Power getOrig() {
+        return orig;
+    }
+
     public static Power create(Power orig, Player player, ItemStack stack, Trigger trigger) {
         // Phase 5 optimization: The expensive ByteBuddy class generation is now cached in getOrCreateProxyClass().
         // The POWER_CACHE provides secondary caching of proxy instances to avoid Interceptor constructor overhead.
@@ -100,7 +107,7 @@ public class Interceptor {
 
     /**
      * Gets the original (non-proxied) Power from a proxy Power.
-     * Returns the input if it's not a proxy or not found in cache.
+     * Returns the input if it's not a proxy or not found.
      * This allows bypassing proxy overhead when direct field access is needed.
      *
      * @param proxy The potentially proxied Power
@@ -109,17 +116,36 @@ public class Interceptor {
     @SuppressWarnings("unchecked")
     public static <T extends Power> T getOriginal(T proxy) {
         if (proxy == null) return null;
+
         // Check if it's a ByteBuddy proxy by class name
         if (!proxy.getClass().getName().contains("ByteBuddy")) {
             return proxy; // Not a proxy, return as-is
         }
-        // Search cache for the original
+
+        // Phase 5 fix: Access the _interceptor field directly from the proxy
+        // This is reliable because every proxy has this field injected at creation
+        try {
+            Field interceptorField = INTERCEPTOR_FIELD_CACHE.get(proxy.getClass());
+            if (interceptorField == null) {
+                interceptorField = proxy.getClass().getField("_interceptor");
+                INTERCEPTOR_FIELD_CACHE.put(proxy.getClass(), interceptorField);
+            }
+            Interceptor interceptor = (Interceptor) interceptorField.get(proxy);
+            if (interceptor != null) {
+                return (T) interceptor.getOrig();
+            }
+        } catch (Exception e) {
+            RPGItems.logger.warning("Failed to get original power from proxy: " + e.getMessage());
+        }
+
+        // Fallback: Search cache (shouldn't normally be reached)
         for (Pair<origPowerHolder, Power> entry : POWER_CACHE.asMap().values()) {
             if (entry.getValue() == proxy) {
                 return (T) entry.getKey().orig();
             }
         }
-        return proxy; // Not found in cache, return as-is
+
+        return proxy; // Not found, return as-is (will use default values - this is a bug state)
     }
 
     private static Power makeProxy(Power orig, Player player, ItemStack stack, Trigger trigger) {
