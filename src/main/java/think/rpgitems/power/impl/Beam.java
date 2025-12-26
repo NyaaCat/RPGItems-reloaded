@@ -1022,7 +1022,8 @@ public class Beam extends BasePower {
             double length = Double.isNaN(offsetLength) ? 0.1 : Math.max(offsetLength, 10);
             Collection<Entity> candidates = from.getWorld().getNearbyEntities(loc, length, length, length);
             List<Entity> collect = candidates.stream()
-                    .filter(entity -> (entity instanceof LivingEntity) && (!isUtilArmorStand(entity)) && (canHitSelf || !entity.equals(from)) && !entity.isDead() && !hitMob.contains(entity.getUniqueId()))
+                    .filter(entity -> (entity instanceof LivingEntity) && (!isUtilArmorStand(entity)) && (canHitSelf || !entity.equals(from)) && !entity.isDead() && !hitMob.contains(entity.getUniqueId())
+                            && !(entity instanceof Player && ((Player) entity).getGameMode() == GameMode.SPECTATOR))
                     .filter(entity -> canHit(loc, entity))
                     .limit(Math.max(pierce, 1))
                     .collect(Collectors.toList());
