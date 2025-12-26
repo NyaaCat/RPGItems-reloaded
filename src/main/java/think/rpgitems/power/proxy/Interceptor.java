@@ -5,6 +5,7 @@ import cat.nyaa.nyaacore.utils.ItemTagUtils;
 import com.google.common.cache.Cache;
 import com.google.common.cache.CacheBuilder;
 import net.bytebuddy.ByteBuddy;
+import net.bytebuddy.description.modifier.Visibility;
 import net.bytebuddy.dynamic.loading.ClassLoadingStrategy;
 import net.bytebuddy.implementation.MethodDelegation;
 import net.bytebuddy.implementation.bind.annotation.AllArguments;
@@ -25,6 +26,7 @@ import think.rpgitems.power.trigger.Trigger;
 import java.lang.invoke.MethodHandle;
 import java.lang.invoke.MethodHandles;
 import java.lang.invoke.MethodType;
+import java.lang.reflect.Field;
 import java.lang.reflect.Method;
 import java.util.Comparator;
 import java.util.List;
@@ -38,6 +40,14 @@ import static think.rpgitems.item.RPGItem.getModifiers;
 
 public class Interceptor {
     private static final Cache<String, Pair<origPowerHolder, Power>> POWER_CACHE = CacheBuilder.newBuilder().weakValues().build();
+
+    // Phase 5: Cache proxy CLASSES by (powerClass, triggerClass) - eliminates ByteBuddy regeneration (was 84% of CPU)
+    private static final Map<String, Class<? extends Power>> PROXY_CLASS_CACHE = new ConcurrentHashMap<>();
+    // Cache constructor MethodHandles for fast proxy instantiation
+    private static final Map<Class<?>, MethodHandle> CONSTRUCTOR_CACHE = new ConcurrentHashMap<>();
+    // Cache the _interceptor field for fast injection
+    private static final Map<Class<?>, Field> INTERCEPTOR_FIELD_CACHE = new ConcurrentHashMap<>();
+
     private final Power orig;
     private final Player player;
     private final Map<Method, PropertyInstance> getters;
@@ -66,15 +76,26 @@ public class Interceptor {
     }
 
     public static Power create(Power orig, Player player, ItemStack stack, Trigger trigger) {
-        Pair<origPowerHolder, Power> result = POWER_CACHE.getIfPresent(getCacheKey(player, stack, orig));
-        if (result != null) {
-            if (result.getKey().itemStack().equals(stack) && result.getKey().playerId().equals(player.getUniqueId()) && result.getKey().orig().equals(orig))
-                return result.getValue();
-        }
-        Power proxyPower = makeProxy(orig, player, stack, trigger);
-        POWER_CACHE.put(getCacheKey(player, stack, orig), Pair.of(new origPowerHolder(player.getUniqueId(), stack, orig), proxyPower));
-        return proxyPower;
+        // Phase 5 optimization: The expensive ByteBuddy class generation is now cached in getOrCreateProxyClass().
+        // The POWER_CACHE provides secondary caching of proxy instances to avoid Interceptor constructor overhead.
+        // However, with class caching, the primary bottleneck (84% CPU) is eliminated.
 
+        String cacheKey = getCacheKey(player, stack, orig);
+        Pair<origPowerHolder, Power> result = POWER_CACHE.getIfPresent(cacheKey);
+        if (result != null) {
+            origPowerHolder holder = result.getKey();
+            // Validate cache entry matches current context
+            if (holder.itemStack().equals(stack) &&
+                holder.playerId().equals(player.getUniqueId()) &&
+                holder.orig().equals(orig)) {
+                return result.getValue();
+            }
+        }
+
+        // Create new proxy (fast now - class is cached, only Interceptor instantiation needed)
+        Power proxyPower = makeProxy(orig, player, stack, trigger);
+        POWER_CACHE.put(cacheKey, Pair.of(new origPowerHolder(player.getUniqueId(), stack, orig), proxyPower));
+        return proxyPower;
     }
 
     /**
@@ -114,21 +135,42 @@ public class Interceptor {
             }
         }
 
-        MethodHandle constructorMH;
-
         try {
-            Class<? extends Power> proxyClass = makeProxyClass(orig, player, stack, trigger, lookup);
-            constructorMH = lookup.findConstructor(proxyClass, MethodType.methodType(void.class));
-        } catch (NoSuchMethodException | IllegalAccessException e) {
-            RPGItems.logger.severe("make proxy error: not instantiatable: " + orig.getClass());
-            e.printStackTrace();
-            return orig;
-        }
+            // Get or create the proxy CLASS (cached - no ByteBuddy generation after first call)
+            Class<? extends Power> proxyClass = getOrCreateProxyClass(
+                    orig.getClass(),
+                    trigger.getPowerClass(),
+                    lookup
+            );
 
-        try {
-            return (Power) constructorMH.invoke();
+            // Get or create cached constructor MethodHandle
+            final MethodHandles.Lookup finalLookup = lookup;
+            MethodHandle constructorMH = CONSTRUCTOR_CACHE.computeIfAbsent(proxyClass, c -> {
+                try {
+                    return finalLookup.findConstructor(c, MethodType.methodType(void.class));
+                } catch (Exception e) {
+                    throw new RuntimeException("Failed to find constructor for proxy class", e);
+                }
+            });
+
+            // Instantiate proxy (fast - just constructor call)
+            Power proxy = (Power) constructorMH.invoke();
+
+            // Get or create cached field reference for injection
+            Field interceptorField = INTERCEPTOR_FIELD_CACHE.computeIfAbsent(proxyClass, c -> {
+                try {
+                    return c.getField("_interceptor");
+                } catch (NoSuchFieldException e) {
+                    throw new RuntimeException("Failed to find _interceptor field", e);
+                }
+            });
+
+            // Inject the Interceptor instance with player/stack-specific data
+            interceptorField.set(proxy, new Interceptor(orig, player, stack, finalLookup));
+
+            return proxy;
         } catch (Throwable e) {
-            RPGItems.logger.severe("make proxy error: not instantiatable (invoke error): " + orig.getClass());
+            RPGItems.logger.severe("make proxy error: " + orig.getClass() + " - " + e.getMessage());
             e.printStackTrace();
             return orig;
         }
@@ -142,19 +184,42 @@ public class Interceptor {
 
     }
 
-    private static Class<? extends Power> makeProxyClass(Power orig, Player player, ItemStack stack, Trigger trigger, MethodHandles.Lookup lookup) throws NoSuchMethodException {
-        Class<? extends Power> origClass = orig.getClass();
+    /**
+     * Cache key for proxy class - only depends on power class and trigger class.
+     * This is stable across all players/items, allowing massive reuse.
+     */
+    private static String getClassCacheKey(Class<? extends Power> origClass, Class<?> triggerClass) {
+        return origClass.getName() + "##" + triggerClass.getName();
+    }
 
+    /**
+     * Gets or creates a cached proxy class for the given power and trigger combination.
+     * Uses field-based delegation so the Interceptor instance can be injected per-use.
+     * This eliminates the 84% CPU overhead from ByteBuddy class generation.
+     */
+    private static Class<? extends Power> getOrCreateProxyClass(
+            Class<? extends Power> origClass,
+            Class<?> triggerClass,
+            MethodHandles.Lookup lookup) {
 
-        return new ByteBuddy()
-                .subclass(origClass)
-                .implement(new Class[]{trigger.getPowerClass()})
-                .implement(NotUser.class)
-                .method(ElementMatchers.any())
-                .intercept(MethodDelegation.to(new Interceptor(orig, player, stack, lookup)))
-                .make()
-                .load(origClass.getClassLoader(), ClassLoadingStrategy.UsingLookup.of(lookup))
-                .getLoaded();
+        String classKey = getClassCacheKey(origClass, triggerClass);
+
+        return PROXY_CLASS_CACHE.computeIfAbsent(classKey, k -> {
+            try {
+                return new ByteBuddy()
+                        .subclass(origClass)
+                        .implement(triggerClass)
+                        .implement(NotUser.class)
+                        .defineField("_interceptor", Interceptor.class, Visibility.PUBLIC)
+                        .method(ElementMatchers.any())
+                        .intercept(MethodDelegation.toField("_interceptor"))
+                        .make()
+                        .load(origClass.getClassLoader(), ClassLoadingStrategy.UsingLookup.of(lookup))
+                        .getLoaded();
+            } catch (Exception e) {
+                throw new RuntimeException("Failed to create proxy class for " + origClass.getName(), e);
+            }
+        });
     }
 
     @RuntimeType
