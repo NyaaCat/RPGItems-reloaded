@@ -10,6 +10,10 @@ import think.rpgitems.I18n;
 import think.rpgitems.event.PowerActivateEvent;
 import think.rpgitems.item.ItemManager;
 import think.rpgitems.power.*;
+import think.rpgitems.event.BeamEndEvent;
+import think.rpgitems.event.BeamHitBlockEvent;
+import think.rpgitems.event.BeamHitEntityEvent;
+import org.bukkit.Location;
 import think.rpgitems.utils.PotionEffectUtils;
 
 import java.util.*;
@@ -95,7 +99,7 @@ public class PotionHit extends BasePower implements PowerPotion {
         return rand;
     }
 
-    public class Impl implements PowerHit, PowerLivingEntity {
+    public class Impl implements PowerHit, PowerLivingEntity, PowerBeamHit {
         @Override
         public PowerResult<Double> hit(Player player, ItemStack stack, LivingEntity entity, double damage, EntityDamageByEntityEvent event) {
             return fire(player, stack, entity, damage).with(damage);
@@ -136,6 +140,21 @@ public class PotionHit extends BasePower implements PowerPotion {
         @Override
         public Power getPower() {
             return PotionHit.this;
+        }
+
+        @Override
+        public PowerResult<Double> hitEntity(Player player, ItemStack stack, LivingEntity entity, double damage, BeamHitEntityEvent event) {
+            return fire(player, stack, entity, damage).with(damage);
+        }
+
+        @Override
+        public PowerResult<Void> hitBlock(Player player, ItemStack stack, Location location, BeamHitBlockEvent event) {
+            return PowerResult.noop();
+        }
+
+        @Override
+        public PowerResult<Void> beamEnd(Player player, ItemStack stack, Location location, BeamEndEvent event) {
+            return PowerResult.noop();
         }
     }
 }
