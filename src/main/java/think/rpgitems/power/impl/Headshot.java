@@ -87,10 +87,19 @@ public class Headshot extends BasePower {
 
         @Override
         public PowerResult<Double> hit(Player player, ItemStack stack, LivingEntity entity, double damage, EntityDamageByEntityEvent event) {
-            if (!(event.getDamager() instanceof Projectile damager)) {
-                return PowerResult.noop();
+            if (event.getDamager() instanceof Projectile damager) {
+                return check(player, entity, stack, damage, damager.getVelocity(), damager.getBoundingBox(), entity.getBoundingBox(), event);
             }
-            return check(player, entity, stack, damage, damager.getVelocity(), damager.getBoundingBox(), entity.getBoundingBox(), event);
+            // For non-projectile damage (e.g., beam damage via HIT_GLOBAL), check if entity was confirmed as headshot
+            Object target = Context.instance().get(player.getUniqueId(), "headshot.target");
+            if (target instanceof LivingEntity && target.equals(entity)) {
+                if (!getItem().consumeDurability(stack, getCost())) return PowerResult.cost();
+                if (isSetBaseDamage()) {
+                    event.setDamage(damage * getFactor());
+                }
+                return PowerResult.ok(damage * getFactor());
+            }
+            return PowerResult.noop();
         }
 
         private PowerResult<Double> check(Player player, LivingEntity entity, ItemStack stack, double damage, Vector velocity, BoundingBox damagerOrigBb, BoundingBox entityBb, EntityDamageByEntityEvent event) {
