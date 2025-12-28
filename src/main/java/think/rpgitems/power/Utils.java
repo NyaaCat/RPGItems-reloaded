@@ -76,8 +76,12 @@ public class Utils {
                 .getNearbyEntities(l.getWorld(), l, dx, dy, dz);
         if (!nearbyEntities.isEmpty()) {
             for (Entity e : nearbyEntities) {
-                if (!Utils.isUtilArmorStand(e) && l.distance(e.getLocation()) <= radius) {
-                    entities.add(e);
+                try {
+                    if (!Utils.isUtilArmorStand(e) && l.distance(e.getLocation()) <= radius) {
+                        entities.add(e);
+                    }
+                } catch (IllegalArgumentException ignored) {
+                    // Silently ignore cross-world distance calculations
                 }
             }
         }
@@ -118,9 +122,13 @@ public class Utils {
         final List<Map.Entry<LivingEntity, Double>> entities = new ArrayList<>();
         for (Entity e : getNearbyEntities(power, l, player, radius)) {
             if (e instanceof LivingEntity && !player.equals(e) && !Utils.isUtilArmorStand(e)) {
-                double d = l.distance(e.getLocation());
-                if (d <= radius && d >= min) {
-                    entities.add(new AbstractMap.SimpleImmutableEntry<>((LivingEntity) e, d));
+                try {
+                    double d = l.distance(e.getLocation());
+                    if (d <= radius && d >= min) {
+                        entities.add(new AbstractMap.SimpleImmutableEntry<>((LivingEntity) e, d));
+                    }
+                } catch (IllegalArgumentException ignored) {
+                    // Silently ignore cross-world distance calculations
                 }
             }
         }
