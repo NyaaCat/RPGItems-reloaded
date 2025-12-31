@@ -203,17 +203,9 @@ public class RPGItem {
     public static List<Modifier> getModifiers(ItemStack stack) {
         Optional<String> opt = ItemTagUtils.getString(stack, NBT_ITEM_UUID);
         if (opt.isEmpty()) {
-            Optional<RPGItem> rpgItemOpt = ItemManager.toRPGItemByMeta(stack);
-            if (rpgItemOpt.isEmpty()) {
-                return Collections.emptyList();
-            }
-            RPGItem rpgItem = rpgItemOpt.get();
-            rpgItem.updateItem(stack,false,null);
-            Optional<String> opt1 = ItemTagUtils.getString(stack, NBT_ITEM_UUID);
-            if (opt1.isEmpty()) {
-                return Collections.emptyList();
-            }
-            opt = opt1;
+            // Items without UUID have no modifiers - UUID should be set by PlayerRPGInventoryCache
+            // Avoid calling updateItem() here as it's too expensive for the tick path
+            return Collections.emptyList();
         }
 
         UUID key = UUID.fromString(opt.get());
