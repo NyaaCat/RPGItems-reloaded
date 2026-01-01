@@ -790,6 +790,9 @@ power:
   particle: Spawn some particles when used
   particletick: Spawn some particles when held
   potionhit: '%d%% chance to apply %s %d for %.1f seconds'
+  potionhittaken:
+    damager: '%d%% chance to apply %s %d for %.1f seconds to damager when taken hit'
+    victim: '%d%% chance to apply %s %d for %.1f seconds to yourself when taken hit'
   potionself: Grants %s %d for %.1fs
   potiontick:
     clear: Clear %s while in use
@@ -1268,6 +1271,21 @@ properties:
     main_name: Potion Hit
     type: Type of potion effect
     summingUp: Whether to stack amplifier of the same type of potion effects
+    isAmbient: Whether the effect is ambient effect
+    showParticles: Whether to show particles of the potion effect
+    showIcon: Whether to show icon of the potion effect
+  potionhittaken:
+    amplifier: Amplifier of potion effect
+    chance: Chance of triggering this power, 1/n
+    duration: Duration of potion effect, in ticks
+    main_description: Apply effect to enemy when hit
+    main_name: Potion Hit
+    type: Type of potion effect
+    summingUp: Whether to stack amplifier of the same type of potion effects
+    effectDamager: Whether to apply effect to damager instead of victim
+    isAmbient: Whether the effect is ambient effect
+    showParticles: Whether to show particles of the potion effect
+    showIcon: Whether to show icon of the potion effect
   potionself:
     amplifier: Amplifier of potion effect
     duration: Time of potion effect, in ticks
@@ -1276,6 +1294,9 @@ properties:
     type: Type of potion effect
     clear: Clear this effect instead of applying
     summingUp: Whether to stack amplifier of the same type of potion effects
+    isAmbient: Whether the effect is ambient effect
+    showParticles: Whether to show particles of the potion effect
+    showIcon: Whether to show icon of the potion effect
   potiontick:
     amplifier: Amplifier of potion effect
     clear: Whether to remove the effect instead of adding it
@@ -1285,6 +1306,9 @@ properties:
     main_description: Apply effect to player when equipped
     main_name: Potion Tick
     summingUp: Whether to stack amplifier of the same type of potion effects
+    isAmbient: Whether the effect is ambient effect
+    showParticles: Whether to show particles of the potion effect
+    showIcon: Whether to show icon of the potion effect
   projectile:
     amount: Amount of projectiles
     burstCount: Burst count

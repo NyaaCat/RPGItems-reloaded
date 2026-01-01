@@ -1,8 +1,9 @@
 plugins {
+    id 'java'
     id 'java-library'
-    id "io.papermc.paperweight.userdev" version "2.0.0-beta.18"
+    id "io.papermc.paperweight.userdev" version "2.0.0-beta.19"
     id 'maven-publish'
-    id 'com.github.johnrengelman.shadow' version '7.0.0'
+    id 'com.gradleup.shadow' version '9.2.2'
     id 'org.ajoberstar.grgit' version '5.2.2'
 }
 ext {
@@ -13,16 +14,17 @@ ext {
 }
 
 group = "cat.nyaa"
-archivesBaseName = "${PLUGIN_NAME}-mc${MINECRAFT_VERSION}"
 version = "${MAJOR_VERSION}.${MINOR_VERSION}.${PATCH_VERSION}-$ext.buildNumber" as String
 
-sourceCompatibility = 21
-targetCompatibility = 21
+java{
+    toolchain {
+        languageVersion = JavaLanguageVersion.of(21)
+    }
+}
 
 repositories {
     mavenCentral()
-    //maven { name 'Spigot'; url 'https://hub.spigotmc.org/nexus/content/repositories/snapshots/' }
-    maven { name 'paper'; url 'https://repo.papermc.io/repository/maven-public/' }
+    maven { name 'paper'; url 'https://repo.papermc.io/repository/maven-public' }
     maven { name 'enginehub'; url 'https://maven.enginehub.org/repo/' }
     maven { name 'vault-repo'; url 'https://jitpack.io' }
     maven { name 'NyaaCat'; url 'https://ci.nyaacat.com/maven/' }
@@ -41,10 +43,10 @@ dependencies {
     //Residence integration, download the jar(also CMI) manually as the fucking Residence author is lazy
     implementation fileTree(dir: 'libs', includes: ['*.jar'])
     paperweight.paperDevBundle("$MINECRAFT_VERSION-R0.1-SNAPSHOT")
-    compileOnly 'io.lumine:Mythic-Dist:5.8.2'
-    compileOnly 'me.clip:placeholderapi:2.11.6'
+    compileOnly 'io.lumine:Mythic-Dist:5.10.1'
+    compileOnly 'me.clip:placeholderapi:2.11.7'
     // other nyaa plugins
-    compileOnly('cat.nyaa:nyaacore:9.9') { transitive = false }
+    compileOnly('cat.nyaa:nyaacore:9.10') { transitive = false }
     //3rd
     //compileOnly group: "com.comphenix.protocol", name: "ProtocolLib", version: "4.7.0"
     compileOnly 'org.jetbrains:annotations:23.0.0'

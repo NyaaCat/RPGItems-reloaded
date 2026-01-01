@@ -27,6 +27,7 @@ import org.bukkit.command.CommandSender;
 import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.configuration.MemoryConfiguration;
 import org.bukkit.configuration.file.YamlConfiguration;
+import org.bukkit.damage.DamageType;
 import org.bukkit.enchantments.Enchantment;
 import org.bukkit.entity.Entity;
 import org.bukkit.entity.LivingEntity;
@@ -71,7 +72,6 @@ import java.util.regex.Matcher;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
-import static org.bukkit.ChatColor.COLOR_CHAR;
 import static think.rpgitems.utils.ItemTagUtils.*;
 
 public class RPGItem {
@@ -620,7 +620,7 @@ public class RPGItem {
 
         s.set("haspermission", isHasPermission());
         s.set("permission", getPermission());
-        s.set("display", getDisplayName().replaceAll("" + COLOR_CHAR, "&"));
+        s.set("display", getDisplayName().replaceAll("§", "&"));
         s.set("damageMin", getDamageMin());
         s.set("damageMax", getDamageMax());
         s.set("armour", getArmour());
@@ -630,7 +630,7 @@ public class RPGItem {
         s.set("updatemode", updateMode.name());
         s.set("attributemode", attributeMode.name());
         ArrayList<String> descriptionConv = new ArrayList<>(getDescription());
-        descriptionConv.replaceAll(string -> string.replaceAll("" + COLOR_CHAR, "&"));
+        descriptionConv.replaceAll(string -> string.replaceAll("§", "&"));
         s.set("description", descriptionConv);
         s.set("item", getItem().toString());
         s.set("ignoreWorldGuard", isIgnoreWorldGuard());
@@ -811,9 +811,6 @@ public class RPGItem {
         if (getMaxDurability() > 0) {
             durability = computeIfAbsent(rpgitemsTagContainer, TAG_DURABILITY, PersistentDataType.INTEGER, this::getDefaultDurability);
         }
-        // Patch for mcMMO buff. See SkillUtils.java#removeAbilityBuff in mcMMO
-        if (item.hasItemMeta() && Objects.requireNonNull(item.getItemMeta()).hasLore() && Objects.requireNonNull(item.getItemMeta().getLore()).contains("mcMMO Ability Tool"))
-            lore.add("mcMMO Ability Tool");
         lore.addAll(reservedLores);
         if (player != null) {
             if (PlaceholderAPISupport.hasSupport()) {
@@ -897,10 +894,13 @@ public class RPGItem {
         if (getCustomModelData() != null) {
             item.setData(DataComponentTypes.CUSTOM_MODEL_DATA, getCustomModelData());
         }
+        item.resetData(DataComponentTypes.ATTACK_RANGE);
+        item.resetData(DataComponentTypes.BASE_COLOR);
         item.resetData(DataComponentTypes.BANNER_PATTERNS);
         item.resetData(DataComponentTypes.CAN_BREAK);
         item.resetData(DataComponentTypes.CAN_PLACE_ON);
         item.resetData(DataComponentTypes.CONSUMABLE);
+        item.resetData(DataComponentTypes.DAMAGE_TYPE);
         item.resetData(DataComponentTypes.DAMAGE_RESISTANT);
         item.resetData(DataComponentTypes.DEATH_PROTECTION);
         item.resetData(DataComponentTypes.DYED_COLOR);
@@ -913,17 +913,30 @@ public class RPGItem {
         item.resetData(DataComponentTypes.PROFILE);
         item.resetData(DataComponentTypes.FOOD);
         item.resetData(DataComponentTypes.GLIDER);
+        item.resetData(DataComponentTypes.INSTRUMENT);
+        item.resetData(DataComponentTypes.JUKEBOX_PLAYABLE);
+        item.resetData(DataComponentTypes.KINETIC_WEAPON);
+        item.resetData(DataComponentTypes.LODESTONE_TRACKER);
         item.resetData(DataComponentTypes.TOOLTIP_DISPLAY);
         item.resetData(DataComponentTypes.MAX_DAMAGE);
         item.resetData(DataComponentTypes.MAX_STACK_SIZE);
+        item.resetData(DataComponentTypes.MINIMUM_ATTACK_CHARGE);
+        item.resetData(DataComponentTypes.OMINOUS_BOTTLE_AMPLIFIER);
+        item.resetData(DataComponentTypes.PIERCING_WEAPON);
         item.resetData(DataComponentTypes.PROVIDES_BANNER_PATTERNS);
         item.resetData(DataComponentTypes.PROVIDES_TRIM_MATERIAL);
+        item.resetData(DataComponentTypes.POTION_CONTENTS);
         item.resetData(DataComponentTypes.POTION_DURATION_SCALE);
         item.resetData(DataComponentTypes.RARITY);
+        item.resetData(DataComponentTypes.REPAIRABLE);
+        item.resetData(DataComponentTypes.REPAIR_COST);
+        item.resetData(DataComponentTypes.STORED_ENCHANTMENTS);
+        item.resetData(DataComponentTypes.SWING_ANIMATION);
         item.resetData(DataComponentTypes.TOOL);
         item.resetData(DataComponentTypes.TOOLTIP_STYLE);
         item.resetData(DataComponentTypes.TRIM);
         item.resetData(DataComponentTypes.USE_COOLDOWN);
+        item.resetData(DataComponentTypes.USE_EFFECTS);
         item.resetData(DataComponentTypes.USE_REMAINDER);
         item.resetData(DataComponentTypes.WEAPON);
         if (getComponents() != null) {
@@ -936,7 +949,11 @@ public class RPGItem {
                     } else if (value == ComponentUtil.ComponentStatus.NON_VALUED) {
                         item.setData((DataComponentType.NonValued) key);
                     } else {
-                        if (key == DataComponentTypes.BANNER_PATTERNS) {
+                        if(key == DataComponentTypes.ATTACK_RANGE){
+                            item.setData(DataComponentTypes.ATTACK_RANGE, (AttackRange.Builder) value);
+                        } else if (key == DataComponentTypes.BASE_COLOR) {
+                            item.setData(DataComponentTypes.BASE_COLOR, (DyeColor) value);
+                        } else if (key == DataComponentTypes.BANNER_PATTERNS) {
                             item.setData(DataComponentTypes.BANNER_PATTERNS, (BannerPatternLayers.Builder) value);
                         } else if (key == DataComponentTypes.BLOCKS_ATTACKS) {
                             item.setData(DataComponentTypes.BLOCKS_ATTACKS, (BlocksAttacks.Builder) value);
@@ -950,6 +967,8 @@ public class RPGItem {
                             item.setData(DataComponentTypes.CONSUMABLE, (Consumable.Builder) value);
                         } else if (key == DataComponentTypes.DAMAGE_RESISTANT) {
                             item.setData(DataComponentTypes.DAMAGE_RESISTANT, (DamageResistant) value);
+                        } else if (key == DataComponentTypes.DAMAGE_TYPE) {
+                            item.setData(DataComponentTypes.DAMAGE_TYPE, (DamageType) value);
                         } else if (key == DataComponentTypes.DEATH_PROTECTION) {
                             item.setData(DataComponentTypes.DEATH_PROTECTION, (DeathProtection.Builder) value);
                         } else if (key == DataComponentTypes.DYED_COLOR) {
@@ -962,20 +981,44 @@ public class RPGItem {
                             item.setData(DataComponentTypes.EQUIPPABLE, (Equippable.Builder) value);
                         } else if (key == DataComponentTypes.FOOD) {
                             item.setData(DataComponentTypes.FOOD, (FoodProperties.Builder) value);
+                        } else if (key == DataComponentTypes.INSTRUMENT) {
+                            item.setData(DataComponentTypes.INSTRUMENT, (MusicInstrument) value);
+                        } else if (key == DataComponentTypes.JUKEBOX_PLAYABLE) {
+                            item.setData(DataComponentTypes.JUKEBOX_PLAYABLE, (JukeboxPlayable.Builder) value);
+                        } else if (key == DataComponentTypes.KINETIC_WEAPON) {
+                            item.setData(DataComponentTypes.KINETIC_WEAPON, (KineticWeapon.Builder) value);
+                        } else if (key == DataComponentTypes.LODESTONE_TRACKER) {
+                            item.setData(DataComponentTypes.LODESTONE_TRACKER, (LodestoneTracker.Builder) value);
                         } else if (key == DataComponentTypes.MAX_DAMAGE) {
                             item.setData(DataComponentTypes.MAX_DAMAGE, (int) value);
                         } else if (key == DataComponentTypes.MAX_STACK_SIZE) {
                             item.setData(DataComponentTypes.MAX_STACK_SIZE, (int) value);
+                        } else if (key == DataComponentTypes.MINIMUM_ATTACK_CHARGE) {
+                            item.setData(DataComponentTypes.MINIMUM_ATTACK_CHARGE, (float) value);
+                        } else if (key == DataComponentTypes.OMINOUS_BOTTLE_AMPLIFIER) {
+                            item.setData(DataComponentTypes.OMINOUS_BOTTLE_AMPLIFIER, (OminousBottleAmplifier) value);
+                        } else if (key == DataComponentTypes.PIERCING_WEAPON) {
+                            item.setData(DataComponentTypes.PIERCING_WEAPON, (PiercingWeapon.Builder) value);
+                        } else if (key == DataComponentTypes.POTION_CONTENTS) {
+                            item.setData(DataComponentTypes.POTION_CONTENTS, (PotionContents.Builder) value);
+                        } else if (key == DataComponentTypes.POTION_DURATION_SCALE) {
+                            item.setData(DataComponentTypes.POTION_DURATION_SCALE, (float) value);
                         } else if (key == DataComponentTypes.PROFILE) {
                             item.setData(DataComponentTypes.PROFILE, (ResolvableProfile.Builder) value);
                         } else if (key == DataComponentTypes.PROVIDES_BANNER_PATTERNS) {
                             item.setData(DataComponentTypes.PROVIDES_BANNER_PATTERNS, (TagKey<PatternType>) value);
                         } else if (key == DataComponentTypes.PROVIDES_TRIM_MATERIAL) {
                             item.setData(DataComponentTypes.PROVIDES_TRIM_MATERIAL, (TrimMaterial) value);
-                        } else if (key == DataComponentTypes.POTION_DURATION_SCALE) {
-                            item.setData(DataComponentTypes.POTION_DURATION_SCALE, (float) value);
                         } else if (key == DataComponentTypes.RARITY) {
                             item.setData(DataComponentTypes.RARITY, (ItemRarity) value);
+                        } else if (key == DataComponentTypes.REPAIRABLE) {
+                            item.setData(DataComponentTypes.REPAIRABLE, (Repairable) value);
+                        } else if (key == DataComponentTypes.REPAIR_COST) {
+                            item.setData(DataComponentTypes.REPAIR_COST, (int) value);
+                        } else if (key == DataComponentTypes.STORED_ENCHANTMENTS) {
+                            item.setData(DataComponentTypes.STORED_ENCHANTMENTS, (ItemEnchantments.Builder) value);
+                        } else if (key == DataComponentTypes.SWING_ANIMATION) {
+                            item.setData(DataComponentTypes.SWING_ANIMATION, (SwingAnimation.Builder) value);
                         } else if (key == DataComponentTypes.TOOL) {
                             item.setData(DataComponentTypes.TOOL, (Tool.Builder) value);
                         } else if (key == DataComponentTypes.TOOLTIP_DISPLAY) {
@@ -986,6 +1029,8 @@ public class RPGItem {
                             item.setData(DataComponentTypes.TRIM, (ItemArmorTrim.Builder) value);
                         } else if (key == DataComponentTypes.USE_COOLDOWN) {
                             item.setData(DataComponentTypes.USE_COOLDOWN, (UseCooldown.Builder) value);
+                        } else if (key == DataComponentTypes.USE_EFFECTS) {
+                            item.setData(DataComponentTypes.USE_EFFECTS, (UseEffects.Builder) value);
                         } else if (key == DataComponentTypes.USE_REMAINDER) {
                             item.setData(DataComponentTypes.USE_REMAINDER, (UseRemainder) value);
                         } else if (key == DataComponentTypes.WEAPON) {
@@ -1029,69 +1074,31 @@ public class RPGItem {
         }
     }
 
-    private void addDurabilityBar(PersistentDataContainer meta, List<String> lore) {
-        int maxDurability = getMaxDurability();
-        if (maxDurability > 0) {
-            int durability = computeIfAbsent(meta, TAG_DURABILITY, PersistentDataType.INTEGER, this::getDefaultDurability);
-            if (isHasDurabilityBar()) {
-                StringBuilder out = new StringBuilder();
-                char boxChar = '\u25A0';
-                double ratio = (double) durability / (double) maxDurability;
-                BarFormat barFormat = getBarFormat();
-                switch (barFormat) {
-                    case NUMERIC_BIN:
-                    case NUMERIC_BIN_MINUS_ONE:
-                    case NUMERIC_HEX:
-                    case NUMERIC_HEX_MINUS_ONE:
-                    case NUMERIC:
-                    case NUMERIC_MINUS_ONE: {
-                        out.append(ChatColor.GREEN).append(boxChar).append(" ");
-                        out.append(ratio < 0.1 ? ChatColor.RED : ratio < 0.3 ? ChatColor.YELLOW : ChatColor.GREEN);
-                        out.append(formatBar(durability, maxDurability, barFormat));
-                        out.append(ChatColor.RESET).append(" / ").append(ChatColor.AQUA);
-                        out.append(formatBar(maxDurability, maxDurability, barFormat));
-                        out.append(ChatColor.GREEN).append(boxChar);
-                        break;
-                    }
-                    case DEFAULT: {
-                        int boxCount = tooltipWidth / 7;
-                        int mid = (int) ((double) boxCount * (ratio));
-                        for (int i = 0; i < boxCount; i++) {
-                            out.append(i < mid ? ChatColor.GREEN : i == mid ? ChatColor.YELLOW : ChatColor.RED);
-                            out.append(boxChar);
-                        }
-                        break;
-                    }
-                }
-                if (lore.isEmpty() || !lore.get(lore.size() - 1).contains(boxChar + ""))
-                    lore.add(out.toString());
-                else
-                    lore.set(lore.size() - 1, out.toString());
-            }
-        }
-    }
+    private void addDurabilityBar(PersistentDataContainer meta, List<String> lore) { int maxDurability = getMaxDurability(); if (maxDurability > 0) { int durability = computeIfAbsent(meta, TAG_DURABILITY, PersistentDataType.INTEGER, this::getDefaultDurability); if (isHasDurabilityBar()) { StringBuilder out = new StringBuilder(); char boxChar = '\u25A0'; double ratio = (double) durability / (double) maxDurability; BarFormat barFormat = getBarFormat(); switch (barFormat) { case NUMERIC_BIN: case NUMERIC_BIN_MINUS_ONE: case NUMERIC_HEX: case NUMERIC_HEX_MINUS_ONE: case NUMERIC: case NUMERIC_MINUS_ONE: { out.append(ChatColor.GREEN).append(boxChar).append(" "); out.append(ratio < 0.1 ? ChatColor.RED : ratio < 0.3 ? ChatColor.YELLOW : ChatColor.GREEN); out.append(formatBar(durability, maxDurability, barFormat)); out.append(ChatColor.RESET).append(" / ").append(ChatColor.AQUA); out.append(formatBar(maxDurability, maxDurability, barFormat)); out.append(ChatColor.GREEN).append(boxChar); break; } case DEFAULT: { int boxCount = tooltipWidth / 7; int mid = (int) ((double) boxCount * (ratio)); for (int i = 0; i < boxCount; i++) { out.append(i < mid ? ChatColor.GREEN : i == mid ? ChatColor.YELLOW : ChatColor.RED); out.append(boxChar); } break; } } if (lore.isEmpty() || !lore.get(lore.size() - 1).contains(boxChar + "")) lore.add(out.toString()); else lore.set(lore.size() - 1, out.toString()); } } }
+
 
     private String formatBar(int durability, int maxDurability, BarFormat barFormat) {
-        switch (barFormat) {
-            case NUMERIC:
-                return String.valueOf(durability);
-            case NUMERIC_MINUS_ONE:
-                return String.valueOf(durability - 1);
-            case NUMERIC_HEX:
+        return switch (barFormat) {
+            case NUMERIC -> String.valueOf(durability);
+            case NUMERIC_MINUS_ONE -> String.valueOf(durability - 1);
+            case NUMERIC_HEX -> {
                 int hexLen = String.format("%X", maxDurability).length();
-                return String.format(String.format("0x%%0%dX", hexLen), durability);
-            case NUMERIC_HEX_MINUS_ONE:
+                yield String.format(String.format("0x%%0%dX", hexLen), durability);
+            }
+            case NUMERIC_HEX_MINUS_ONE -> {
                 int hexLenM1 = String.format("%X", maxDurability - 1).length();
-                return String.format(String.format("0x%%0%dX", hexLenM1), durability - 1);
-            case NUMERIC_BIN:
+                yield String.format(String.format("0x%%0%dX", hexLenM1), durability - 1);
+            }
+            case NUMERIC_BIN -> {
                 int binLen = Integer.toBinaryString(maxDurability).length();
-                return String.format(String.format("0b%%%ds", binLen), Integer.toBinaryString(durability)).replace(' ', '0');
-            case NUMERIC_BIN_MINUS_ONE:
+                yield String.format(String.format("0b%%%ds", binLen), Integer.toBinaryString(durability)).replace(' ', '0');
+            }
+            case NUMERIC_BIN_MINUS_ONE -> {
                 int binLenM1 = Integer.toBinaryString(maxDurability - 1).length();
-                return String.format(String.format("0b%%%ds", binLenM1), Integer.toBinaryString(durability - 1)).replace(' ', '0');
-
-        }
-        throw new UnsupportedOperationException();
+                yield String.format(String.format("0b%%%ds", binLenM1), Integer.toBinaryString(durability - 1)).replace(' ', '0');
+            }
+            default -> throw new UnsupportedOperationException();
+        };
     }
 
     private List<String> filterLores(ItemStack item) {

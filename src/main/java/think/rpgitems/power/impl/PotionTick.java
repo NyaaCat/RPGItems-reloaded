@@ -33,7 +33,7 @@ import static think.rpgitems.power.Utils.checkAndSetCooldown;
  */
 @SuppressWarnings("WeakerAccess")
 @Meta(defaultTrigger = {"TICK", "POTION_EFFECT"}, implClass = PotionTick.Impl.class, generalInterface = PowerPotionEffect.class)
-public class PotionTick extends BasePower {
+public class PotionTick extends BasePower implements PowerPotion {
 
     @Deserializer(PotionEffectUtils.class)
     @Serializer(PotionEffectUtils.class)
@@ -157,7 +157,7 @@ public class PotionTick extends BasePower {
             if (isClear() && hasMatchingEffect) {
                 player.removePotionEffect(getEffect());
             } else if (!isClear()) {
-                PotionEffect newEffect = new PotionEffect(getEffect(), getDuration(), totalAmplifier, true);
+                PotionEffect newEffect = new PotionEffect(getEffect(), getDuration(), totalAmplifier, isAmbient(), isShowParticles(), isShowIcon());
                 player.addPotionEffect(newEffect);
             }
 

@@ -8,6 +8,7 @@ import cat.nyaa.nyaacore.cmdreceiver.BadCommandException;
 import cat.nyaa.nyaacore.cmdreceiver.CommandReceiver;
 import cat.nyaa.nyaacore.cmdreceiver.SubCommand;
 import org.bukkit.command.CommandSender;
+import org.bukkit.entity.Mannequin;
 import org.bukkit.plugin.Plugin;
 import think.rpgitems.I18n;
 import think.rpgitems.RPGItems;

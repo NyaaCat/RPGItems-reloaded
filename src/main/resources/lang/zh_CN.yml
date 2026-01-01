@@ -776,7 +776,10 @@ power:
   noimmutabletick: 取消攻击后敌方的无敌时间
   particle: 右键时产生一些粒子
   particletick: 持有时产生一些粒子
-  potionhit: '%d%% 的几率触发%s效果 %d 级 %.1f 秒'
+  potionhit: '%1$d%% 的几率在攻击时对目标触发 %4$.1f 秒 %2$s %3$d'
+  potionhittaken:
+    damager: '%1$d%% 的几率在受伤时对攻击者触发 %4$.1f 秒 %2$s %3$d'
+    victim: '%1$d%% 的几率在受伤时对受伤者触发 %4$.1f 秒 %2$s %3$d'
   potionself: 获得%s %d，持续 %.1f 秒
   potiontick:
     clear: 持有/穿戴时清除%s效果
@@ -1337,6 +1340,21 @@ properties:
     main_name: 击中效果
     type: 状态效果
     summingUp: 是否堆叠相同类型的药水效果的等级
+    isAmbient: 药水效果是否为环境效果
+    showParticles: 药水效果是否显示粒子效果
+    showIcon: 药水效果是否在HUD上显示图标
+  potionhittaken:
+    amplifier: 效果倍率
+    chance: 触发几率，1/n
+    duration: 持续时间，游戏刻
+    main_description: 击中后对目标施放状态效果
+    main_name: 击中效果
+    type: 状态效果
+    summingUp: 是否堆叠相同类型的药水效果的等级
+    effectDamager: 是否对伤害来源施放效果而非受伤玩家
+    isAmbient: 药水效果是否为环境效果
+    showParticles: 药水效果是否显示粒子效果
+    showIcon: 药水效果是否在HUD上显示图标
   potionself:
     amplifier: 效果倍率
     clear: 免疫此效果而非应用
@@ -1345,6 +1363,9 @@ properties:
     main_name: 自身效果
     type: 状态效果
     summingUp: 是否堆叠相同类型的药水效果的等级
+    isAmbient: 药水效果是否为环境效果
+    showParticles: 药水效果是否显示粒子效果
+    showIcon: 药水效果是否在HUD上显示图标
   potiontick:
     amplifier: 效果倍率
     clear: 清除状态效果而非施放
@@ -1354,6 +1375,9 @@ properties:
     main_description: 佩戴后按照一定间隔施放状态效果
     main_name: 佩戴状态效果
     summingUp: 是否堆叠相同类型的药水效果的等级
+    isAmbient: 药水效果是否为环境效果
+    showParticles: 药水效果是否显示粒子效果
+    showIcon: 药水效果是否在HUD上显示图标
   projectile:
     amount: 弹射物的数量
     applyForce: 力道将影响速度

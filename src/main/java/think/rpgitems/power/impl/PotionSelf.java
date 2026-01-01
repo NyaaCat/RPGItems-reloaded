@@ -42,7 +42,7 @@ import static think.rpgitems.power.Utils.checkCooldown;
  */
 @SuppressWarnings("WeakerAccess")
 @Meta(defaultTrigger = "RIGHT_CLICK", generalInterface = PowerPlain.class, implClass = PotionSelf.Impl.class)
-public class PotionSelf extends BasePower {
+public class PotionSelf extends BasePower implements PowerPotion{
 
     @Property(order = 0)
     public int cooldown = 0;
@@ -171,7 +171,7 @@ public class PotionSelf extends BasePower {
             if (isClear()) {
                 player.removePotionEffect(getType());
             } else {
-                player.addPotionEffect(new PotionEffect(getType(), getDuration(), getAmplifier()+summing[0]));
+                player.addPotionEffect(new PotionEffect(getType(), getDuration(), getAmplifier()+summing[0], isAmbient(), isShowParticles(), isShowIcon()));
             }
             return PowerResult.ok();
         }

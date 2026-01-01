@@ -1,8 +1,10 @@
 package think.rpgitems.power.impl;
 
+import org.bukkit.entity.Entity;
 import org.bukkit.entity.LivingEntity;
 import org.bukkit.entity.Player;
 import org.bukkit.event.entity.EntityDamageByEntityEvent;
+import org.bukkit.event.entity.EntityDamageEvent;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.potion.PotionEffect;
 import org.bukkit.potion.PotionEffectType;
@@ -10,23 +12,19 @@ import think.rpgitems.I18n;
 import think.rpgitems.event.PowerActivateEvent;
 import think.rpgitems.item.ItemManager;
 import think.rpgitems.power.*;
-import think.rpgitems.event.BeamEndEvent;
-import think.rpgitems.event.BeamHitBlockEvent;
-import think.rpgitems.event.BeamHitEntityEvent;
-import org.bukkit.Location;
 import think.rpgitems.utils.PotionEffectUtils;
 
 import java.util.*;
 
 /**
- * Power potionhit.
+ * Power potionhittaken.
  * <p>
- * On hit it will apply {@link #type effect} for {@link #duration} ticks at power {@link #amplifier} with a chance of hitting of 1/{@link #chance}.
+ * On hit taken it will apply {@link #type effect} for {@link #duration} ticks at power {@link #amplifier} with a chance of hitting of 1/{@link #chance}.
  * </p>
  */
 @SuppressWarnings("WeakerAccess")
-@Meta(defaultTrigger = "HIT", generalInterface = PowerLivingEntity.class, implClass = PotionHit.Impl.class)
-public class PotionHit extends BasePower implements PowerPotion {
+@Meta(defaultTrigger = "HIT_TAKEN", generalInterface = PowerLivingEntity.class, implClass = PotionHitTaken.Impl.class)
+public class PotionHitTaken extends BasePower implements PowerPotion {
 
     @Property
     public int chance = 20;
@@ -43,6 +41,8 @@ public class PotionHit extends BasePower implements PowerPotion {
     public int cost = 0;
     @Property
     public boolean summingUp = false;
+    @Property
+    public boolean effectDamager = false;
 
     private final Random rand = new Random();
 
@@ -60,6 +60,10 @@ public class PotionHit extends BasePower implements PowerPotion {
         return cost;
     }
 
+    public boolean isEffectDamager() {
+        return effectDamager;
+    }
+
     /**
      * Duration of potion effect
      */
@@ -73,12 +77,12 @@ public class PotionHit extends BasePower implements PowerPotion {
 
     @Override
     public String getName() {
-        return "potionhit";
+        return "potionhittaken";
     }
 
     @Override
     public String displayText() {
-        return I18n.formatDefault("power.potionhit", (int) ((1d / (double) getChance()) * 100d), "<lang:effect.minecraft."+getType().key().value()+">", (getAmplifier()+1), (float)(getDuration()/20));
+        return I18n.formatDefault(effectDamager ? "power.potionhittaken.damager" : "power.potionhittaken.victim", (int) ((1d / (double) getChance()) * 100d), "<lang:effect.minecraft."+getType().key().value()+">", (getAmplifier()+1), (float)(getDuration()/20));
     }
 
     /**
@@ -99,62 +103,48 @@ public class PotionHit extends BasePower implements PowerPotion {
         return rand;
     }
 
-    public class Impl implements PowerHit, PowerLivingEntity, PowerBeamHit {
+    public class Impl implements PowerHitTaken {
+
         @Override
-        public PowerResult<Double> hit(Player player, ItemStack stack, LivingEntity entity, double damage, EntityDamageByEntityEvent event) {
-            return fire(player, stack, entity, damage).with(damage);
+        public Power getPower() {
+            return PotionHitTaken.this;
         }
 
-
         @Override
-        public PowerResult<Void> fire(Player player, ItemStack stack, LivingEntity entity, Double value) {
+        public PowerResult<Double> takeHit(Player player, ItemStack stack, double damage, EntityDamageEvent event) {
             if (getRand().nextInt(getChance()) != 0) {
                 return PowerResult.noop();
             }
+            Entity damager = event.getDamageSource().getCausingEntity();
             final int[] summing = {0};
             List<ItemStack> items = new ArrayList<>(Arrays.asList(player.getInventory().getArmorContents()));
             items.add(player.getInventory().getItemInMainHand());
             for(ItemStack i : items){
                 ItemManager.toRPGItemByMeta(i).ifPresent(rpgItem -> {
                     for (Power power : rpgItem.getPowers()){
-                        if(power.getName().equals("potionhit")) {
-                            PotionHit potionHit = (PotionHit) power;
-                            if(potionHit.getType()==getType()&&potionHit.isSummingUp()){
-                                summing[0] += potionHit.getAmplifier();
+                        if(power instanceof PotionHitTaken potionHitTaken) {
+                            if(potionHitTaken.getType()==getType()&&potionHitTaken.isSummingUp()){
+                                summing[0] += potionHitTaken.getAmplifier();
                             }
                         }
                     }
                 });
             }
             HashMap<String,Object> argsMap = new HashMap<>();
-            argsMap.put("target",entity);
+            argsMap.put("damager", damager);
             PowerActivateEvent powerEvent = new PowerActivateEvent(player,stack,getPower(),argsMap);
             if(!powerEvent.callEvent()) {
                 return PowerResult.fail();
             }
             if (!getItem().consumeDurability(stack, getCost())) return PowerResult.cost();
-            entity.addPotionEffect(new PotionEffect(getType(), getDuration(), getAmplifier()+summing[0], isAmbient(), isShowParticles(), isShowIcon()));
-            return PowerResult.ok();
-        }
-
-        @Override
-        public Power getPower() {
-            return PotionHit.this;
-        }
-
-        @Override
-        public PowerResult<Double> hitEntity(Player player, ItemStack stack, LivingEntity entity, double damage, BeamHitEntityEvent event) {
-            return fire(player, stack, entity, damage).with(damage);
-        }
-
-        @Override
-        public PowerResult<Void> hitBlock(Player player, ItemStack stack, Location location, BeamHitBlockEvent event) {
-            return PowerResult.noop();
-        }
-
-        @Override
-        public PowerResult<Void> beamEnd(Player player, ItemStack stack, Location location, BeamEndEvent event) {
-            return PowerResult.noop();
+            if(effectDamager) {
+                if(damager instanceof LivingEntity livingEntity){
+                    livingEntity.addPotionEffect(new PotionEffect(getType(), getDuration(), getAmplifier()+summing[0], isAmbient(), isShowParticles(), isShowIcon()));
+                }
+            }else{
+                player.addPotionEffect(new PotionEffect(getType(), getDuration(), getAmplifier()+summing[0], isAmbient(), isShowParticles(), isShowIcon()));
+            }
+            return PowerResult.ok(damage);
         }
     }
 }
