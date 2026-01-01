@@ -1,5 +1,6 @@
 package think.rpgitems.power;
 
+import cat.nyaa.nyaacore.utils.ItemTagUtils;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
 import think.rpgitems.item.ItemManager;
@@ -71,6 +72,10 @@ public class PlayerRPGInventoryCache {
             if (rpgItem.isPresent()) {
                 RPGItem item = rpgItem.get();
                 if (hasAnyTrigger(item, BaseTriggers.TICK_INVENTORY, BaseTriggers.SNEAK)) {
+                    // Ensure UUID is set before caching (prevents updateItem() in tick path)
+                    if (ItemTagUtils.getString(stack, RPGItem.NBT_ITEM_UUID).isEmpty()) {
+                        item.updateItem(stack, false, player);
+                    }
                     cached.inventoryItems.put(i, new CachedItem(item, stack));
                     cached.hasAnyRPGItem = true;
                 }
@@ -85,6 +90,10 @@ public class PlayerRPGInventoryCache {
             if (rpgItem.isPresent()) {
                 RPGItem item = rpgItem.get();
                 if (hasAnyTrigger(item, BaseTriggers.TICK, BaseTriggers.SNEAKING)) {
+                    // Ensure UUID is set before caching (prevents updateItem() in tick path)
+                    if (ItemTagUtils.getString(stack, RPGItem.NBT_ITEM_UUID).isEmpty()) {
+                        item.updateItem(stack, false, player);
+                    }
                     cached.armorItems[i] = new CachedItem(item, stack);
                     cached.hasAnyRPGItem = true;
                 }
@@ -97,6 +106,10 @@ public class PlayerRPGInventoryCache {
         if (mainHandRPG.isPresent()) {
             RPGItem item = mainHandRPG.get();
             if (hasAnyTrigger(item, BaseTriggers.TICK, BaseTriggers.SNEAKING)) {
+                // Ensure UUID is set before caching (prevents updateItem() in tick path)
+                if (ItemTagUtils.getString(mainHand, RPGItem.NBT_ITEM_UUID).isEmpty()) {
+                    item.updateItem(mainHand, false, player);
+                }
                 cached.mainHand = new CachedItem(item, mainHand);
                 cached.hasAnyRPGItem = true;
             }
@@ -108,6 +121,10 @@ public class PlayerRPGInventoryCache {
         if (offHandRPG.isPresent()) {
             RPGItem item = offHandRPG.get();
             if (hasAnyTrigger(item, BaseTriggers.TICK_OFFHAND, BaseTriggers.SNEAKING)) {
+                // Ensure UUID is set before caching (prevents updateItem() in tick path)
+                if (ItemTagUtils.getString(offHand, RPGItem.NBT_ITEM_UUID).isEmpty()) {
+                    item.updateItem(offHand, false, player);
+                }
                 cached.offHand = new CachedItem(item, offHand);
                 cached.hasAnyRPGItem = true;
             }
