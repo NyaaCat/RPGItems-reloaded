@@ -127,17 +127,6 @@ public class I18n extends LanguageRepository {
         new Message("").append(I18n.getInstance(target).getFormatted(template, args), map).send(target);
     }
 
-    private static final Pattern HEX_COLOR_PATTERN = Pattern.compile("[§&]x([§&][0-9a-fA-F]){6}");
-    private static final Pattern HEX_STRIP_PATTERN = Pattern.compile("[§&]x|[§&]");
-    private static final Pattern LEGACY_COLOR_PATTERN = Pattern.compile("[§&]([0-9a-fA-Fk-orK-OR])");
-    private static final Map<String, String> FORMAT_MAP = Map.ofEntries(
-            Map.entry("0", "black"), Map.entry("1", "dark_blue"), Map.entry("2", "dark_green"), Map.entry("3", "dark_aqua"),
-            Map.entry("4", "dark_red"), Map.entry("5", "dark_purple"), Map.entry("6", "gold"), Map.entry("7", "gray"),
-            Map.entry("8", "dark_gray"), Map.entry("9", "blue"), Map.entry("a", "green"), Map.entry("b", "aqua"),
-            Map.entry("c", "red"), Map.entry("d", "light_purple"), Map.entry("e", "yellow"), Map.entry("f", "white"),
-            Map.entry("k", "obf"), Map.entry("l", "b"), Map.entry("m", "st"),
-            Map.entry("n", "u"), Map.entry("o", "i"), Map.entry("r", "reset")
-    );
     public static String replaceLegacyColorCodes(String text) {
         // Single-pass hex color replacement using pre-compiled pattern
         Matcher hexMatcher = HEX_COLOR_PATTERN.matcher(text);
