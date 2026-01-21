@@ -989,9 +989,7 @@ public class Beam extends BasePower {
 
         private void spawnParticle(Entity from, World world, Location lastLocation, int i) {
             Location eyeLocation;
-            if (this.mode.equals(Mode.PROJECTILE) && this.behavior.contains(Behavior.RAINBOW_COLOR) && extraData instanceof Particle.DustOptions) {
-                extraData = new Particle.DustOptions(getNextColor(), ((Particle.DustOptions) extraData).getSize());
-            }
+            Object particleData = resolveParticleData();
             if (from instanceof Player) {
                 eyeLocation = ((Player) from).getEyeLocation();
                 if ((lastLocation.distance(eyeLocation) < 1)) {
@@ -1003,16 +1001,93 @@ public class Beam extends BasePower {
                     i = 0;
                 }
                 if (spawnInWorld >= 3) {
-                    ((Player) from).spawnParticle(this.particle, lastLocation, i, offsetX, offsetY, offsetZ, particleSpeed, extraData);
+                    ((Player) from).spawnParticle(this.particle, lastLocation, i, offsetX, offsetY, offsetZ, particleSpeed, particleData);
                     spawnInWorld = 0;
                 } else {
-                    world.spawnParticle(this.particle, lastLocation, i, offsetX, offsetY, offsetZ, particleSpeed, extraData, false);
+                    world.spawnParticle(this.particle, lastLocation, i, offsetX, offsetY, offsetZ, particleSpeed, particleData, false);
                 }
                 spawnInWorld++;
             } else {
-                world.spawnParticle(this.particle, lastLocation, i, offsetX, offsetY, offsetZ, particleSpeed, extraData, false);
+                world.spawnParticle(this.particle, lastLocation, i, offsetX, offsetY, offsetZ, particleSpeed, particleData, false);
             }
 
+        }
+
+        private Object resolveParticleData() {
+            Object data = normalizeParticleData(extraData);
+            if (this.mode.equals(Mode.PROJECTILE) && this.behavior.contains(Behavior.RAINBOW_COLOR)) {
+                data = applyRainbowColor(data);
+            }
+            return data;
+        }
+
+        private Object applyRainbowColor(Object data) {
+            if (data instanceof Particle.DustOptions) {
+                Particle.DustOptions options = (Particle.DustOptions) data;
+                return new Particle.DustOptions(getNextColor(), options.getSize());
+            }
+            if (data instanceof Particle.DustTransition) {
+                Particle.DustTransition transition = (Particle.DustTransition) data;
+                Color next = getNextColor();
+                return new Particle.DustTransition(next, next, transition.getSize());
+            }
+            return data;
+        }
+
+        private Object normalizeParticleData(Object data) {
+            if (this.particle == null) {
+                return null;
+            }
+            Class<?> dataType = this.particle.getDataType();
+            if (dataType.equals(Void.class)) {
+                return null;
+            }
+            if (dataType.isInstance(data)) {
+                return data;
+            }
+            if (dataType.equals(Particle.DustOptions.class)) {
+                if (data instanceof Particle.DustTransition) {
+                    Particle.DustTransition transition = (Particle.DustTransition) data;
+                    return new Particle.DustOptions(transition.getColor(), transition.getSize());
+                }
+                if (data instanceof Color) {
+                    return new Particle.DustOptions((Color) data, 1.0f);
+                }
+                return new Particle.DustOptions(Color.WHITE, 1.0f);
+            }
+            if (dataType.equals(Particle.DustTransition.class)) {
+                if (data instanceof Particle.DustOptions) {
+                    Particle.DustOptions options = (Particle.DustOptions) data;
+                    return new Particle.DustTransition(options.getColor(), options.getColor(), options.getSize());
+                }
+                if (data instanceof Color) {
+                    Color color = (Color) data;
+                    return new Particle.DustTransition(color, color, 1.0f);
+                }
+                return new Particle.DustTransition(Color.WHITE, Color.WHITE, 1.0f);
+            }
+            if (dataType.equals(Color.class)) {
+                if (data instanceof Particle.DustOptions) {
+                    return ((Particle.DustOptions) data).getColor();
+                }
+                if (data instanceof Particle.DustTransition) {
+                    return ((Particle.DustTransition) data).getColor();
+                }
+                return Color.WHITE;
+            }
+            if (dataType.equals(Float.class)) {
+                if (data instanceof Number) {
+                    return ((Number) data).floatValue();
+                }
+                return 1.0f;
+            }
+            if (dataType.equals(Integer.class)) {
+                if (data instanceof Number) {
+                    return ((Number) data).intValue();
+                }
+                return 0;
+            }
+            return null;
         }
 
         private Collection<? extends UUID> tryHit(Entity from, Location loc, ItemStack stack, boolean canHitSelf, Set<UUID> hitMob) {
@@ -1125,20 +1200,41 @@ public class Beam extends BasePower {
                 Color color = ((Particle.DustOptions) object).getColor();
                 return color.getRed() + "," + color.getGreen() + "," + color.getBlue() + "," + ((Particle.DustOptions) object).getSize();
             }
+            if (object instanceof Particle.DustTransition) {
+                Particle.DustTransition transition = (Particle.DustTransition) object;
+                Color from = transition.getColor();
+                Color to = transition.getToColor();
+                return from.getRed() + "," + from.getGreen() + "," + from.getBlue() + ","
+                        + to.getRed() + "," + to.getGreen() + "," + to.getBlue() + ","
+                        + transition.getSize();
+            }
             return "";
         }
 
         @Override
         public Optional set(String value) throws IllegalArgumentException {
-            if ("null".equals(value)) {
+            if ("null".equals(value) || value == null || value.trim().isEmpty()) {
                 return Optional.empty();
             }
-            String[] split = value.split(",", 4);
-            int r = Integer.parseInt(split[0]);
-            int g = Integer.parseInt(split[1]);
-            int b = Integer.parseInt(split[2]);
-            float size = Float.parseFloat(split[3]);
-            return Optional.of(new Particle.DustOptions(Color.fromRGB(r, g, b), size));
+            String[] split = value.split(",");
+            if (split.length == 4) {
+                int r = Integer.parseInt(split[0].trim());
+                int g = Integer.parseInt(split[1].trim());
+                int b = Integer.parseInt(split[2].trim());
+                float size = Float.parseFloat(split[3].trim());
+                return Optional.of(new Particle.DustOptions(Color.fromRGB(r, g, b), size));
+            }
+            if (split.length == 7) {
+                int r1 = Integer.parseInt(split[0].trim());
+                int g1 = Integer.parseInt(split[1].trim());
+                int b1 = Integer.parseInt(split[2].trim());
+                int r2 = Integer.parseInt(split[3].trim());
+                int g2 = Integer.parseInt(split[4].trim());
+                int b2 = Integer.parseInt(split[5].trim());
+                float size = Float.parseFloat(split[6].trim());
+                return Optional.of(new Particle.DustTransition(Color.fromRGB(r1, g1, b1), Color.fromRGB(r2, g2, b2), size));
+            }
+            throw new IllegalArgumentException("invalid extraData format");
         }
     }
 
@@ -1182,6 +1278,8 @@ public class Beam extends BasePower {
         public MovingTaskBuilder color(Color nextColor) {
             if (movingTask.extraData != null && movingTask.extraData instanceof Particle.DustOptions) {
                 movingTask.extraData = new Particle.DustOptions(nextColor, ((Particle.DustOptions) movingTask.extraData).getSize());
+            } else if (movingTask.extraData != null && movingTask.extraData instanceof Particle.DustTransition) {
+                movingTask.extraData = new Particle.DustTransition(nextColor, nextColor, ((Particle.DustTransition) movingTask.extraData).getSize());
             }
             return this;
         }
@@ -1507,6 +1605,4 @@ public class Beam extends BasePower {
         }
     }
 }
-
-
 
