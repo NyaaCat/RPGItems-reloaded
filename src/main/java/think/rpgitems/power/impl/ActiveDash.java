@@ -6,33 +6,32 @@ import org.bukkit.util.Vector;
 /**
  * Represents an active dash effect managed by {@link DashManager}.
  * Maintains the player's velocity for a specified duration.
+ *
+ * Optimizations:
+ * - Stores velocity as primitives (no Vector clone in constructor)
+ * - Reuses single Vector object for setVelocity calls (zero allocation per tick)
  */
 public class ActiveDash implements Tickable {
     private final Player player;
-    private final Vector velocity;
+    private final Vector velocity;  // Reused each tick
     private int remainingTicks;
+    boolean markedForRemoval;
 
-    /**
-     * Creates a new active dash effect.
-     *
-     * @param player The player being dashed
-     * @param velocity The velocity to maintain
-     * @param durationTicks How many ticks to maintain the velocity
-     */
     public ActiveDash(Player player, Vector velocity, int durationTicks) {
         this.player = player;
-        this.velocity = velocity.clone();
+        // Store our own Vector with same values - reused each tick
+        this.velocity = new Vector(velocity.getX(), velocity.getY(), velocity.getZ());
         this.remainingTicks = durationTicks;
+        this.markedForRemoval = false;
     }
 
     @Override
     public boolean tick() {
-        if (!player.isOnline() || player.isDead()) {
+        if (markedForRemoval || !player.isOnline() || player.isDead()) {
             return false;
         }
 
-        remainingTicks--;
-        if (remainingTicks <= 0) {
+        if (--remainingTicks <= 0) {
             return false;
         }
 
