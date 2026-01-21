@@ -215,7 +215,8 @@ public class Repair extends BasePower {
         private boolean removeItem(Inventory inventory, ItemStack item, int amount) {
             for (int slot = 0; slot < inventory.getSize(); slot++) {
                 ItemStack tmp = inventory.getItem(slot);
-                if (tmp != null && tmp.getType() != Material.AIR && tmp.getAmount() >= amount && tmp.isSimilar(item)) {
+                if (tmp != null && tmp.getType() != Material.AIR && tmp.getAmount() >= amount
+                        && ItemStackUtils.isSimilarPlainText(item, tmp)) {
                     if (tmp.getAmount() > amount) {
                         tmp.setAmount(tmp.getAmount() - amount);
                         inventory.setItem(slot, tmp);

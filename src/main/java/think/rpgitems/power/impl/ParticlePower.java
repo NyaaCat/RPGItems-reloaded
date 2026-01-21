@@ -170,14 +170,29 @@ public class ParticlePower extends BasePower {
     private Object getData() {
         if (data != null || getParticle().getDataType().equals(Void.class)) {
             return data;
-        } else if (getParticle().getDataType().equals(ItemStack.class) && getMaterial() != null && getMaterial().isItem()) {
+        }
+        Class<?> dataType = getParticle().getDataType();
+        if (dataType.equals(ItemStack.class) && getMaterial() != null && getMaterial().isItem()) {
             data = new ItemStack(getMaterial());
-        } else if (getParticle().getDataType().equals(BlockData.class) && getMaterial() != null && getMaterial().isBlock()) {
+        } else if (dataType.equals(BlockData.class) && getMaterial() != null && getMaterial().isBlock()) {
             data = getMaterial().createBlockData();
-        } else if (getParticle().getDataType().equals(org.bukkit.Particle.DustOptions.class)) {
-            data = new org.bukkit.Particle.DustOptions(Color.fromRGB(getDustColor()), (float) getDustSize());
+        } else if (dataType.equals(org.bukkit.Particle.DustOptions.class)) {
+            data = new org.bukkit.Particle.DustOptions(resolveDustColor(), resolveDustSize());
+        } else if (dataType.equals(Color.class)) {
+            data = resolveDustColor();
+        } else if (dataType.equals(org.bukkit.Particle.DustTransition.class)) {
+            Color color = resolveDustColor();
+            data = new org.bukkit.Particle.DustTransition(color, color, resolveDustSize());
         }
         return data;
+    }
+
+    private float resolveDustSize() {
+        return (float) (getDustSize() > 0 ? getDustSize() : 1.0);
+    }
+
+    private Color resolveDustColor() {
+        return Color.fromRGB(getDustColor());
     }
 
     public boolean isForce() {
