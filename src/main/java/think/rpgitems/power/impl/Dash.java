@@ -48,6 +48,9 @@ public class Dash extends BasePower {
     @Property
     public double speed = 1;
 
+    @Property
+    public int duration = 0;
+
     @Override
     public String getName() {
         return "dash";
@@ -69,6 +72,9 @@ public class Dash extends BasePower {
         return speed;
     }
 
+    public int getDuration() {
+        return duration;
+    }
 
     @Override
     public String displayText() {
@@ -130,48 +136,54 @@ public class Dash extends BasePower {
             if (!checkCooldown(getPower(), player, getCooldown(), showCooldownWarning(), true)) return PowerResult.cd();
             if (!getItem().consumeDurability(s, getCost())) return PowerResult.cost();
             double speed = getSpeed();
+            Vector velocity;
             switch (getDirection()) {
                 case FORWARD:
-                    player.setVelocity(player.getLocation().getDirection().multiply(speed));
+                    velocity = player.getLocation().getDirection().multiply(speed);
                     break;
                 case BACKWARD:
-                    player.setVelocity(player.getLocation().getDirection().multiply(-speed));
+                    velocity = player.getLocation().getDirection().multiply(-speed);
                     break;
                 case LEFT:
-                    player.setVelocity(player.getLocation().getDirection().crossProduct(player.getLocation().getDirection()).multiply(-speed));
+                    velocity = player.getLocation().getDirection().crossProduct(player.getLocation().getDirection()).multiply(-speed);
                     break;
                 case RIGHT:
-                    player.setVelocity(player.getLocation().getDirection().crossProduct(player.getLocation().getDirection()).multiply(speed));
+                    velocity = player.getLocation().getDirection().crossProduct(player.getLocation().getDirection()).multiply(speed);
                     break;
                 case UP:
-                    player.setVelocity(player.getLocation().getDirection().crossProduct(player.getLocation().getDirection()).multiply(speed).setY(speed));
+                    velocity = player.getLocation().getDirection().crossProduct(player.getLocation().getDirection()).multiply(speed).setY(speed);
                     break;
                 case DOWN:
-                    player.setVelocity(player.getLocation().getDirection().crossProduct(player.getLocation().getDirection()).multiply(speed).setY(-speed));
+                    velocity = player.getLocation().getDirection().crossProduct(player.getLocation().getDirection()).multiply(speed).setY(-speed);
                     break;
                 case RANDOM:
-                    player.setVelocity(player.getLocation().getDirection().add(new Vector(Math.random(), Math.random(), Math.random())).normalize().multiply(speed));
+                    velocity = player.getLocation().getDirection().add(new Vector(Math.random(), Math.random(), Math.random())).normalize().multiply(speed);
                     break;
                 case RANDOM_HORIZONTAL:
-                    player.setVelocity(player.getLocation().getDirection().add(new Vector(Math.random(), 0, Math.random())).normalize().multiply(speed));
+                    velocity = player.getLocation().getDirection().add(new Vector(Math.random(), 0, Math.random())).normalize().multiply(speed);
                     break;
                 case RANDOM_VERTICAL:
-                    player.setVelocity(player.getLocation().getDirection().add(new Vector(0, Math.random(), 0)).normalize().multiply(speed));
+                    velocity = player.getLocation().getDirection().add(new Vector(0, Math.random(), 0)).normalize().multiply(speed);
                     break;
                 case EAST:
-                    player.setVelocity(player.getLocation().getDirection().crossProduct(player.getLocation().getDirection()).multiply(speed).setX(speed));
+                    velocity = player.getLocation().getDirection().crossProduct(player.getLocation().getDirection()).multiply(speed).setX(speed);
                     break;
                 case WEST:
-                    player.setVelocity(player.getLocation().getDirection().crossProduct(player.getLocation().getDirection()).multiply(speed).setX(-speed));
+                    velocity = player.getLocation().getDirection().crossProduct(player.getLocation().getDirection()).multiply(speed).setX(-speed);
                     break;
                 case NORTH:
-                    player.setVelocity(player.getLocation().getDirection().crossProduct(player.getLocation().getDirection()).multiply(speed).setZ(-speed));
+                    velocity = player.getLocation().getDirection().crossProduct(player.getLocation().getDirection()).multiply(speed).setZ(-speed);
                     break;
                 case SOUTH:
-                    player.setVelocity(player.getLocation().getDirection().crossProduct(player.getLocation().getDirection()).multiply(speed).setZ(speed));
+                    velocity = player.getLocation().getDirection().crossProduct(player.getLocation().getDirection()).multiply(speed).setZ(speed);
                     break;
                 default:
                     return PowerResult.fail();
+            }
+
+            player.setVelocity(velocity);
+            if (getDuration() > 0) {
+                DashManager.getInstance().register(new ActiveDash(player, velocity, getDuration()));
             }
 
             return PowerResult.ok();
