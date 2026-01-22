@@ -1130,27 +1130,30 @@ public class RPGItem {
         if (!attributeModifiers.isEmpty()) {
             for (AttributeModifier attributeModifier : attributeModifiers) {
                 Attribute attribute = attributeModifier.attribute;
-                NamespacedKey uuid = NamespacedKey.fromString(attributeModifier.namespacedKey);
+                NamespacedKey key = NamespacedKey.fromString(attributeModifier.namespacedKey);
                 EquipmentSlotGroup slot = attributeModifier.slot;
                 org.bukkit.attribute.AttributeModifier modifier;
                 if (slot != null) {
                     modifier = new org.bukkit.attribute.AttributeModifier(
-                            uuid,
+                            key,
                             attributeModifier.amount,
                             attributeModifier.operation,
                             attributeModifier.slot
                     );
                 } else {
                     modifier = new org.bukkit.attribute.AttributeModifier(
-                            uuid,
+                            key,
                             attributeModifier.amount,
                             attributeModifier.operation
                     );
                 }
                 if (old != null) {
-                    old.entries().stream().filter(m -> m.getValue().getKey().equals(uuid)).findAny().ifPresent(
-                            e -> itemMeta.removeAttributeModifier(e.getKey(), e.getValue())
-                    );
+                    // Remove ALL modifiers with matching key (not just the first one)
+                    // This fixes duplicate accumulation from previous buggy behavior
+                    old.entries().stream()
+                            .filter(m -> m.getValue().getKey().equals(key))
+                            .toList() // Collect to avoid ConcurrentModificationException
+                            .forEach(e -> itemMeta.removeAttributeModifier(e.getKey(), e.getValue()));
                 }
                 itemMeta.addAttributeModifier(attribute, modifier);
             }
