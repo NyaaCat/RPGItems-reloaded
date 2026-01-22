@@ -10,6 +10,7 @@ import org.bukkit.inventory.ItemStack;
 import org.bukkit.potion.PotionEffect;
 import org.bukkit.potion.PotionEffectType;
 import think.rpgitems.I18n;
+import think.rpgitems.data.Context;
 import think.rpgitems.event.PowerActivateEvent;
 import think.rpgitems.item.ItemManager;
 import think.rpgitems.power.*;
@@ -18,10 +19,8 @@ import think.rpgitems.utils.PotionEffectUtils;
 
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.HashMap;
 import java.util.List;
 
-import static java.lang.Double.min;
 import static think.rpgitems.power.Utils.checkAndSetCooldown;
 
 /**
@@ -126,9 +125,26 @@ public class PotionTick extends BasePower implements PowerPotion {
             }
 
             String cooldownKey = getItem().getUid() + ".potiontick." + getEffect().key().value();
-            if (!checkAndSetCooldown(getPower(), player, getInterval(), showCooldownWarning(), true, cooldownKey)) {
-                return PowerResult.cd();
+
+            // Smart cooldown: check if effect actually needs refresh
+            PotionEffect existingEffect = player.getPotionEffect(getEffect());
+            boolean needsRefresh;
+            if (isClear()) {
+                // Clear mode: need to act if effect is present
+                needsRefresh = existingEffect != null;
+            } else {
+                // Apply mode: need refresh if effect is missing or about to expire (<=1 second remaining)
+                needsRefresh = existingEffect == null || existingEffect.getDuration() <= 20;
             }
+
+            if (!needsRefresh) {
+                // Effect is in correct state - use normal cooldown
+                if (!checkAndSetCooldown(getPower(), player, getInterval(), showCooldownWarning(), true, cooldownKey)) {
+                    return PowerResult.cd();
+                }
+            }
+            // If needsRefresh is true, we bypass cooldown check to apply immediately
+
             if (!getItem().consumeDurability(stack, getCost())) {
                 return PowerResult.cost();
             }
@@ -151,14 +167,20 @@ public class PotionTick extends BasePower implements PowerPotion {
             }
 
             double health = player.getHealth();
-            boolean hasMatchingEffect = player.getActivePotionEffects().stream()
-                    .anyMatch(effect -> effect.getType().equals(getEffect()));
 
-            if (isClear() && hasMatchingEffect) {
-                player.removePotionEffect(getEffect());
-            } else if (!isClear()) {
+            if (isClear()) {
+                if (existingEffect != null) {
+                    player.removePotionEffect(getEffect());
+                }
+            } else {
                 PotionEffect newEffect = new PotionEffect(getEffect(), getDuration(), totalAmplifier, isAmbient(), isShowParticles(), isShowIcon());
                 player.addPotionEffect(newEffect);
+            }
+
+            // Set cooldown after applying (handles both bypass and normal cases)
+            if (needsRefresh) {
+                long nextCooldown = Context.getCurrentMillis() + getInterval() * 50L;
+                Context.instance().put(player.getUniqueId(), cooldownKey, nextCooldown, nextCooldown);
             }
 
             if (getEffect().equals(PotionEffectType.HEALTH_BOOST) && health > 0) {

@@ -2,6 +2,7 @@ package think.rpgitems;
 
 import cat.nyaa.nyaacore.utils.RayTraceUtils;
 import com.destroystokyo.paper.event.entity.ThrownEggHatchEvent;
+import com.destroystokyo.paper.event.player.PlayerArmorChangeEvent;
 import com.destroystokyo.paper.event.player.PlayerJumpEvent;
 import com.destroystokyo.paper.event.player.PlayerLaunchProjectileEvent;
 import io.papermc.paper.datacomponent.DataComponentTypes;
@@ -1578,6 +1579,38 @@ public class Events implements Listener {
 
     @EventHandler(priority = EventPriority.MONITOR)
     public void onPlayerSwapHandsCacheInvalidate(PlayerSwapHandItemsEvent e) {
+        PlayerRPGInventoryCache.getInstance().invalidate(e.getPlayer().getUniqueId());
+    }
+
+    @EventHandler(priority = EventPriority.MONITOR)
+    public void onPlayerDeathCacheInvalidate(PlayerDeathEvent e) {
+        PlayerRPGInventoryCache.getInstance().invalidate(e.getEntity().getUniqueId());
+    }
+
+    @EventHandler(priority = EventPriority.MONITOR)
+    public void onPlayerRespawnCacheInvalidate(PlayerRespawnEvent e) {
+        PlayerRPGInventoryCache.getInstance().invalidate(e.getPlayer().getUniqueId());
+    }
+
+    @EventHandler(priority = EventPriority.MONITOR)
+    public void onPlayerItemBreakCacheInvalidate(PlayerItemBreakEvent e) {
+        PlayerRPGInventoryCache.getInstance().invalidate(e.getPlayer().getUniqueId());
+    }
+
+    @EventHandler(priority = EventPriority.MONITOR)
+    public void onPlayerItemHeldCacheInvalidate(PlayerItemHeldEvent e) {
+        PlayerRPGInventoryCache.getInstance().invalidate(e.getPlayer().getUniqueId());
+    }
+
+    @EventHandler(priority = EventPriority.MONITOR)
+    public void onInventoryDragCacheInvalidate(InventoryDragEvent e) {
+        if (e.getWhoClicked() instanceof Player player) {
+            PlayerRPGInventoryCache.getInstance().invalidate(player.getUniqueId());
+        }
+    }
+
+    @EventHandler(priority = EventPriority.MONITOR)
+    public void onPlayerArmorChangeCacheInvalidate(PlayerArmorChangeEvent e) {
         PlayerRPGInventoryCache.getInstance().invalidate(e.getPlayer().getUniqueId());
     }
 }
