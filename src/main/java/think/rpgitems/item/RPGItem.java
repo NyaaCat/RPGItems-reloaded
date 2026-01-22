@@ -1148,10 +1148,11 @@ public class RPGItem {
                     );
                 }
                 if (old != null) {
-                    // Remove ALL modifiers with matching key (not just the first one)
-                    // This fixes duplicate accumulation from previous buggy behavior
+                    // Remove ALL modifiers for this attribute that were added by RPGItems
+                    // This handles key mismatch from namespacedKey regeneration on config reload
                     old.entries().stream()
-                            .filter(m -> m.getValue().getKey().equals(key))
+                            .filter(m -> m.getKey().equals(attribute))
+                            .filter(m -> m.getValue().getKey().getNamespace().equals("rpgitems"))
                             .toList() // Collect to avoid ConcurrentModificationException
                             .forEach(e -> itemMeta.removeAttributeModifier(e.getKey(), e.getValue()));
                 }
