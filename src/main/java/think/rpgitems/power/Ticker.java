@@ -31,7 +31,7 @@ public class Ticker extends BukkitRunnable {
             for (PlayerRPGInventoryCache.CachedItem item : cached.inventoryItems.values()) {
                 item.rpgItem.power(player, item.stack, null, BaseTriggers.TICK_INVENTORY);
                 if (isSneaking) {
-                    item.rpgItem.power(player, item.stack, null, BaseTriggers.SNEAK);
+                    item.rpgItem.power(player, item.stack, null, BaseTriggers.SNEAKING);
                 }
             }
 
