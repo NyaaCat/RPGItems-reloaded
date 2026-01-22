@@ -125,25 +125,36 @@ public class PotionTick extends BasePower implements PowerPotion {
             }
 
             String cooldownKey = getItem().getUid() + ".potiontick." + getEffect().key().value();
+            long now = Context.getCurrentMillis();
 
-            // Smart cooldown: check if effect actually needs refresh
+            // Check cooldown state without setting it
+            Long cooldownExpiry = (Long) Context.instance().get(player.getUniqueId(), cooldownKey);
+            boolean cooldownReady = cooldownExpiry == null || cooldownExpiry <= now;
+
             PotionEffect existingEffect = player.getPotionEffect(getEffect());
-            boolean needsRefresh;
-            if (isClear()) {
-                // Clear mode: need to act if effect is present
-                needsRefresh = existingEffect != null;
-            } else {
-                // Apply mode: need refresh if effect is missing or about to expire (<=1 second remaining)
-                needsRefresh = existingEffect == null || existingEffect.getDuration() <= 20;
+            boolean effectMissing = existingEffect == null || existingEffect.getDuration() <= 20;
+
+            // Determine if we should bypass cooldown due to external effect removal
+            boolean bypassCooldown = false;
+            if (!isClear() && effectMissing && !cooldownReady && cooldownExpiry != null) {
+                // Effect is missing but cooldown not ready - check if it was removed externally
+                // Calculate when the effect should have naturally expired
+                long lastApplyTime = cooldownExpiry - getInterval() * 50L;
+                long expectedEffectExpiry = lastApplyTime + getDuration() * 50L;
+
+                if (now < expectedEffectExpiry) {
+                    // Effect disappeared before natural expiry → external removal (milk, death, etc.)
+                    bypassCooldown = true;
+                }
+                // else: effect naturally expired, respect the intentional interval gap
             }
 
-            if (!needsRefresh) {
-                // Effect is in correct state - use normal cooldown
+            if (!bypassCooldown) {
+                // Normal cooldown check
                 if (!checkAndSetCooldown(getPower(), player, getInterval(), showCooldownWarning(), true, cooldownKey)) {
                     return PowerResult.cd();
                 }
             }
-            // If needsRefresh is true, we bypass cooldown check to apply immediately
 
             if (!getItem().consumeDurability(stack, getCost())) {
                 return PowerResult.cost();
@@ -177,9 +188,9 @@ public class PotionTick extends BasePower implements PowerPotion {
                 player.addPotionEffect(newEffect);
             }
 
-            // Set cooldown after applying (handles both bypass and normal cases)
-            if (needsRefresh) {
-                long nextCooldown = Context.getCurrentMillis() + getInterval() * 50L;
+            // Reset cooldown if we bypassed it
+            if (bypassCooldown) {
+                long nextCooldown = now + getInterval() * 50L;
                 Context.instance().put(player.getUniqueId(), cooldownKey, nextCooldown, nextCooldown);
             }
 
