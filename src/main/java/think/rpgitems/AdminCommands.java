@@ -35,6 +35,7 @@ import org.bukkit.inventory.meta.ItemMeta;
 import org.bukkit.persistence.PersistentDataContainer;
 import org.bukkit.persistence.PersistentDataType;
 import org.bukkit.scheduler.BukkitRunnable;
+import think.rpgitems.event.RPGItemsReloadEvent;
 import think.rpgitems.item.ItemGroup;
 import think.rpgitems.item.ItemManager;
 import think.rpgitems.item.RPGItem;
@@ -353,6 +354,10 @@ public class AdminCommands extends RPGCommandReceiver {
         plugin.managedPlugins.clear();
         plugin.loadExtensions();
         plugin.managedPlugins.forEach(Bukkit.getPluginManager()::enablePlugin);
+
+        // Fire event for standalone extensions to re-register their powers
+        Bukkit.getPluginManager().callEvent(new RPGItemsReloadEvent());
+
         ItemManager.reload(plugin);
         sender.sendMessage(ChatColor.GREEN + "[RPGItems] Reloaded RPGItems.");
     }
