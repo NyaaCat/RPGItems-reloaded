@@ -1093,6 +1093,10 @@ public class Beam extends BasePower {
         private Collection<? extends UUID> tryHit(Entity from, Location loc, ItemStack stack, boolean canHitSelf, Set<UUID> hitMob) {
             HashSet<UUID> hitMobs = new HashSet<>();
             if (from == null || this.effectOnly) return hitMobs;
+            // Check for non-finite location coordinates to prevent BoundingBox errors
+            if (!Double.isFinite(loc.getX()) || !Double.isFinite(loc.getY()) || !Double.isFinite(loc.getZ())) {
+                return hitMobs;
+            }
             double offsetLength = new Vector(offsetX, offsetY, offsetZ).length();
             double length = Double.isNaN(offsetLength) ? 0.1 : Math.max(offsetLength, 10);
             Collection<Entity> candidates = from.getWorld().getNearbyEntities(loc, length, length, length);
