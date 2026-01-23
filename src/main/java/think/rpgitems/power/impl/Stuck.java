@@ -230,6 +230,7 @@ public class Stuck extends BasePower {
             if (!getItem().consumeDurability(stack, getCostAoe())) return PowerResult.cost();
             List<LivingEntity> entities = getLivingEntitiesInCone(getNearestLivingEntities(getPower(), player.getEyeLocation(), player, getRange(), 0), player.getLocation().toVector(), getFacing(), player.getLocation().getDirection());
             entities.forEach(entity -> {
+                        if (entity.getScoreboardTags().contains("rpgitem-immune-stuck")) return;
                         if (!getItem().consumeDurability(stack, getCostPerEntity())) return;
                         stucked.put(entity.getUniqueId(), System.currentTimeMillis());
                     }
@@ -267,6 +268,9 @@ public class Stuck extends BasePower {
 
         @Override
         public PowerResult<Double> hit(Player player, ItemStack stack, LivingEntity entity, double damage, EntityDamageByEntityEvent event) {
+            if (entity.getScoreboardTags().contains("rpgitem-immune-stuck")) {
+                return PowerResult.noop();
+            }
             HashMap<String,Object> argsMap = new HashMap<>();
             argsMap.put("target",entity);
             argsMap.put("damage",damage);
