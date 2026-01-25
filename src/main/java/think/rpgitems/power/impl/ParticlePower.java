@@ -183,6 +183,12 @@ public class ParticlePower extends BasePower {
         } else if (dataType.equals(org.bukkit.Particle.DustTransition.class)) {
             Color color = resolveDustColor();
             data = new org.bukkit.Particle.DustTransition(color, color, resolveDustSize());
+        } else if (dataType.equals(Float.class)) {
+            data = (float) getExtra();
+        } else if (dataType.equals(Integer.class)) {
+            data = (int) getExtra();
+        } else if (dataType.equals(org.bukkit.Particle.Spell.class)) {
+            data = new org.bukkit.Particle.Spell(resolveDustColor(), (float) getExtra());
         }
         return data;
     }
