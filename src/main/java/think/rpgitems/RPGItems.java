@@ -17,6 +17,7 @@ import think.rpgitems.item.ItemManager;
 import think.rpgitems.power.*;
 import think.rpgitems.power.trigger.BaseTriggers;
 import think.rpgitems.power.trigger.Trigger;
+import think.rpgitems.power.impl.Scoreboard;
 import think.rpgitems.support.*;
 
 import java.io.File;
@@ -234,6 +235,7 @@ public class RPGItems extends JavaPlugin {
         public void onServerLoad(ServerLoadEvent event) {
             HandlerList.unregisterAll(this);
             getServer().getPluginManager().registerEvents(new Events(), RPGItems.this);
+            Scoreboard.initTagReverser();
             if(MythicMobsSupport.hasSupport()){
                 getServer().getPluginManager().registerEvents(new MythicMobsEvents(), RPGItems.this);
             }

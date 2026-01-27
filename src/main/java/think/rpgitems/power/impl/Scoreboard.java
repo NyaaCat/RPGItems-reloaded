@@ -7,6 +7,7 @@ import com.google.common.cache.CacheLoader;
 import com.google.common.cache.LoadingCache;
 import org.bukkit.Bukkit;
 import org.bukkit.Location;
+import org.bukkit.NamespacedKey;
 import org.bukkit.entity.LivingEntity;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
@@ -14,7 +15,10 @@ import org.bukkit.event.Listener;
 import org.bukkit.event.entity.*;
 import org.bukkit.event.player.*;
 import org.bukkit.inventory.ItemStack;
+import org.bukkit.persistence.PersistentDataContainer;
+import org.bukkit.persistence.PersistentDataType;
 import org.bukkit.scheduler.BukkitRunnable;
+import org.bukkit.scheduler.BukkitTask;
 import org.bukkit.scoreboard.Objective;
 import org.bukkit.scoreboard.Score;
 import think.rpgitems.RPGItems;
@@ -83,6 +87,14 @@ public class Scoreboard extends BasePower {
     @Property
     public boolean requireHurtByEntity = true;
     private BukkitRunnable removeTask;
+
+    public static void initTagReverser() {
+        if (!tagReverserInited) {
+            tagReverser.init();
+        } else {
+            tagReverser.loadPendingForOnlinePlayers();
+        }
+    }
 
     /**
      * Cooldown time of this power
@@ -156,19 +168,37 @@ public class Scoreboard extends BasePower {
     }
 
     public static class TagReverser implements Listener {
-        private final Map<UUID, List<TagReverseTask>> reverseTaskMap = new HashMap<>();
+        private static final NamespacedKey TAG_REVERSE_ROOT = new NamespacedKey(RPGItems.plugin, "scoreboard_tag_reverse");
+        private static final NamespacedKey TAG_REVERSE_DUE = new NamespacedKey(RPGItems.plugin, "scoreboard_tag_reverse_due");
+        private static final NamespacedKey TAG_REVERSE_ADDED = new NamespacedKey(RPGItems.plugin, "scoreboard_tag_reverse_added");
+        private static final NamespacedKey TAG_REVERSE_REMOVED = new NamespacedKey(RPGItems.plugin, "scoreboard_tag_reverse_removed");
+
+        private final Map<UUID, Map<String, TagReverseTask>> reverseTaskMap = new HashMap<>();
 
         private void init() {
             Bukkit.getPluginManager().registerEvents(this, RPGItems.plugin);
             tagReverserInited = true;
+            Bukkit.getOnlinePlayers().forEach(this::loadPendingTasks);
+        }
+
+        private void loadPendingForOnlinePlayers() {
+            Bukkit.getOnlinePlayers().forEach(this::loadPendingTasks);
+        }
+
+        @EventHandler
+        public void onLogin(PlayerJoinEvent event) {
+            loadPendingTasks(event.getPlayer());
         }
 
         @EventHandler
         public void onLogout(PlayerQuitEvent event) {
             Player player = event.getPlayer();
             UUID uniqueId = player.getUniqueId();
-            List<TagReverseTask> tagReverseTasks = reverseTaskMap.computeIfAbsent(uniqueId, uuid -> new ArrayList<>());
-            tagReverseTasks.forEach(TagReverseTask::revert);
+            Map<String, TagReverseTask> tagReverseTasks = reverseTaskMap.remove(uniqueId);
+            if (tagReverseTasks == null) {
+                return;
+            }
+            new ArrayList<>(tagReverseTasks.values()).forEach(TagReverseTask::revert);
             tagReverseTasks.clear();
         }
 
@@ -176,38 +206,182 @@ public class Scoreboard extends BasePower {
             if (!tagReverserInited) {
                 init();
             }
-            List<TagReverseTask> tagReverseTasks = reverseTaskMap.computeIfAbsent(player.getUniqueId(), uuid -> new ArrayList<>());
-            tagReverseTasks.add(new TagReverseTask(added, removed, player).runLater(delay, tagReverseTasks));
+            if (added.isEmpty() && removed.isEmpty()) {
+                return;
+            }
+            long delayTicks = Math.max(0, delay);
+            long dueMillis = System.currentTimeMillis() + delayTicks * 50L;
+            String taskId = persistTask(player, added, removed, dueMillis);
+            TagReverseTask task = new TagReverseTask(taskId, added, removed, player, this);
+            Map<String, TagReverseTask> tagReverseTasks = reverseTaskMap.computeIfAbsent(player.getUniqueId(), uuid -> new HashMap<>());
+            tagReverseTasks.put(taskId, task);
+
+            long remainingTicks = millisToTicks(dueMillis - System.currentTimeMillis());
+            if (remainingTicks <= 0) {
+                task.revert();
+                return;
+            }
+            task.runLater(remainingTicks);
+        }
+
+        private void loadPendingTasks(Player player) {
+            PersistentDataContainer root = getRootContainer(player.getPersistentDataContainer(), false);
+            if (root == null) {
+                return;
+            }
+            Map<String, TagReverseTask> tagReverseTasks = reverseTaskMap.computeIfAbsent(player.getUniqueId(), uuid -> new HashMap<>());
+            long now = System.currentTimeMillis();
+            for (NamespacedKey taskKey : new HashSet<>(root.getKeys())) {
+                String taskId = taskKey.getKey();
+                if (tagReverseTasks.containsKey(taskId)) {
+                    continue;
+                }
+                PersistentDataContainer taskContainer = root.get(taskKey, PersistentDataType.TAG_CONTAINER);
+                if (taskContainer == null) {
+                    removePersistedTask(player, taskId);
+                    continue;
+                }
+                Long dueMillisVal = taskContainer.get(TAG_REVERSE_DUE, PersistentDataType.LONG);
+                long dueMillis = dueMillisVal == null ? 0L : dueMillisVal;
+                List<String> added = readList(taskContainer, TAG_REVERSE_ADDED);
+                List<String> removed = readList(taskContainer, TAG_REVERSE_REMOVED);
+                if (added.isEmpty() && removed.isEmpty()) {
+                    removePersistedTask(player, taskId);
+                    continue;
+                }
+                TagReverseTask task = new TagReverseTask(taskId, added, removed, player, this);
+                tagReverseTasks.put(taskId, task);
+                long remainingTicks = millisToTicks(dueMillis - now);
+                if (remainingTicks <= 0) {
+                    task.revert();
+                } else {
+                    task.runLater(remainingTicks);
+                }
+            }
+        }
+
+        private String persistTask(Player player, List<String> added, List<String> removed, long dueMillis) {
+            PersistentDataContainer pdc = player.getPersistentDataContainer();
+            PersistentDataContainer root = getRootContainer(pdc, true);
+            String taskId = UUID.randomUUID().toString();
+            NamespacedKey taskKey = new NamespacedKey(RPGItems.plugin, taskId);
+            PersistentDataContainer taskContainer = pdc.getAdapterContext().newPersistentDataContainer();
+            taskContainer.set(TAG_REVERSE_DUE, PersistentDataType.LONG, dueMillis);
+            taskContainer.set(TAG_REVERSE_ADDED, PersistentDataType.TAG_CONTAINER, writeList(pdc, added));
+            taskContainer.set(TAG_REVERSE_REMOVED, PersistentDataType.TAG_CONTAINER, writeList(pdc, removed));
+            root.set(taskKey, PersistentDataType.TAG_CONTAINER, taskContainer);
+            pdc.set(TAG_REVERSE_ROOT, PersistentDataType.TAG_CONTAINER, root);
+            return taskId;
+        }
+
+        private void removePersistedTask(Player player, String taskId) {
+            PersistentDataContainer pdc = player.getPersistentDataContainer();
+            PersistentDataContainer root = getRootContainer(pdc, false);
+            if (root == null) {
+                return;
+            }
+            NamespacedKey taskKey = new NamespacedKey(RPGItems.plugin, taskId);
+            root.remove(taskKey);
+            if (root.getKeys().isEmpty()) {
+                pdc.remove(TAG_REVERSE_ROOT);
+            } else {
+                pdc.set(TAG_REVERSE_ROOT, PersistentDataType.TAG_CONTAINER, root);
+            }
+        }
+
+        private void removeTaskFromMap(Player player, String taskId) {
+            Map<String, TagReverseTask> taskMap = reverseTaskMap.get(player.getUniqueId());
+            if (taskMap == null) {
+                return;
+            }
+            taskMap.remove(taskId);
+            if (taskMap.isEmpty()) {
+                reverseTaskMap.remove(player.getUniqueId());
+            }
+        }
+
+        private PersistentDataContainer writeList(PersistentDataContainer parent, List<String> values) {
+            PersistentDataContainer listContainer = parent.getAdapterContext().newPersistentDataContainer();
+            for (int i = 0; i < values.size(); i++) {
+                listContainer.set(new NamespacedKey(RPGItems.plugin, String.valueOf(i)), PersistentDataType.STRING, values.get(i));
+            }
+            return listContainer;
+        }
+
+        private List<String> readList(PersistentDataContainer container, NamespacedKey key) {
+            if (!container.has(key, PersistentDataType.TAG_CONTAINER)) {
+                return Collections.emptyList();
+            }
+            PersistentDataContainer listContainer = container.get(key, PersistentDataType.TAG_CONTAINER);
+            if (listContainer == null) {
+                return Collections.emptyList();
+            }
+            List<String> out = new ArrayList<>();
+            for (NamespacedKey listKey : listContainer.getKeys()) {
+                String value = listContainer.get(listKey, PersistentDataType.STRING);
+                if (value != null) {
+                    out.add(value);
+                }
+            }
+            return out;
+        }
+
+        private PersistentDataContainer getRootContainer(PersistentDataContainer container, boolean create) {
+            if (container.has(TAG_REVERSE_ROOT, PersistentDataType.TAG_CONTAINER)) {
+                return container.get(TAG_REVERSE_ROOT, PersistentDataType.TAG_CONTAINER);
+            }
+            if (!create) {
+                return null;
+            }
+            PersistentDataContainer root = container.getAdapterContext().newPersistentDataContainer();
+            container.set(TAG_REVERSE_ROOT, PersistentDataType.TAG_CONTAINER, root);
+            return root;
+        }
+
+        private long millisToTicks(long millis) {
+            if (millis <= 0) {
+                return 0;
+            }
+            return (millis + 49L) / 50L;
         }
     }
 
     private static class TagReverseTask {
+        private final String taskId;
         private final List<String> added;
         private final List<String> removed;
         private final Player player;
+        private final TagReverser owner;
+        private BukkitTask task;
         boolean reverted = false;
 
-        public TagReverseTask(List<String> added, List<String> removed, Player player) {
+        public TagReverseTask(String taskId, List<String> added, List<String> removed, Player player, TagReverser owner) {
+            this.taskId = taskId;
             this.added = added;
             this.removed = removed;
             this.player = player;
+            this.owner = owner;
         }
 
         public void revert() {
             if (reverted) {
                 return;
             }
+            if (task != null) {
+                task.cancel();
+            }
             added.forEach(player::removeScoreboardTag);
             removed.forEach(player::addScoreboardTag);
             reverted = true;
+            owner.removePersistedTask(player, taskId);
+            owner.removeTaskFromMap(player, taskId);
         }
 
-        public TagReverseTask runLater(int delay, List<TagReverseTask> tagReverseTasks) {
-            new BukkitRunnable() {
+        public TagReverseTask runLater(long delay) {
+            task = new BukkitRunnable() {
                 @Override
                 public void run() {
                     revert();
-                    tagReverseTasks.remove(TagReverseTask.this);
                 }
             }.runTaskLater(RPGItems.plugin, delay);
             return this;
