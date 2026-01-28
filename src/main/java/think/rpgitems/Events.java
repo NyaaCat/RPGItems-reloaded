@@ -919,10 +919,29 @@ public class Events implements Listener {
         }
         e.setDamage(damage);
         if (!(e.getEntity() instanceof LivingEntity)) return;
+        // Check for noImmutableTick flag on the projectile
+        Boolean noImmutableTick = projectile.getPersistentDataContainer().get(new NamespacedKey(plugin, "RPGItemNoImmutableTick"), PersistentDataType.BOOLEAN);
+        if (noImmutableTick != null && noImmutableTick) {
+            LivingEntity target = (LivingEntity) e.getEntity();
+            new BukkitRunnable() {
+                @Override
+                public void run() {
+                    target.setNoDamageTicks(0);
+                }
+            }.runTaskLater(plugin, 1);
+        }
         ItemStack[] armorContents = player.getInventory().getContents();
         String damageType = rItem.getDamageType();
         Context.instance().putTemp(player.getUniqueId(), DAMAGE_TYPE, damageType);
+        // Set LightContext for NoImmutableTick tag checking
+        String damageSource = projectile.getPersistentDataContainer().get(new NamespacedKey(plugin, "RPGItemDamageSource"), PersistentDataType.STRING);
+        if (damageSource != null) {
+            LightContext.putTemp(player.getUniqueId(), DAMAGE_SOURCE, damageSource);
+        }
+        LightContext.putTemp(player.getUniqueId(), DAMAGE_SOURCE_ITEM, item);
         damage = rItem.power(player, item, e, BaseTriggers.HIT).orElse(damage);
+        LightContext.removeTemp(player.getUniqueId(), DAMAGE_SOURCE);
+        LightContext.removeTemp(player.getUniqueId(), DAMAGE_SOURCE_ITEM);
         runGlobalHitTrigger(e, player, damage, damageType, armorContents);
     }
 

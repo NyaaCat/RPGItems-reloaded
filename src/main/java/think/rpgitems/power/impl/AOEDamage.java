@@ -104,8 +104,15 @@ public class AOEDamage extends BasePower {
     @Property
     public boolean castOff = false;
 
+    @Property
+    public boolean noImmutableTick = true;
+
     public boolean isCastOff() {
         return castOff;
+    }
+
+    public boolean isNoImmutableTick() {
+        return noImmutableTick;
     }
 
     public FiringLocation getFiringLocation() {
@@ -291,13 +298,24 @@ public class AOEDamage extends BasePower {
                         continue;
                     }
                     hitEntities++;
+                    LightContext.putTemp(player.getUniqueId(), DAMAGE_SOURCE, getNamespacedKey().toString());
                     LightContext.putTemp(player.getUniqueId(), OVERRIDING_DAMAGE, getDamage());
                     LightContext.putTemp(player.getUniqueId(), SUPPRESS_MELEE, isSuppressMelee());
                     LightContext.putTemp(player.getUniqueId(), DAMAGE_SOURCE_ITEM, stack);
                     e.damage(getDamage(), player);
+                    LightContext.removeTemp(player.getUniqueId(), DAMAGE_SOURCE);
                     LightContext.removeTemp(player.getUniqueId(), SUPPRESS_MELEE);
                     LightContext.removeTemp(player.getUniqueId(), OVERRIDING_DAMAGE);
                     LightContext.removeTemp(player.getUniqueId(), DAMAGE_SOURCE_ITEM);
+                    if (isNoImmutableTick()) {
+                        LivingEntity target = e;
+                        new BukkitRunnable() {
+                            @Override
+                            public void run() {
+                                target.setNoDamageTicks(0);
+                            }
+                        }.runTaskLater(RPGItems.plugin, 1);
+                    }
                 }
             } else {
                 hitEntities++;
@@ -319,13 +337,24 @@ public class AOEDamage extends BasePower {
                                 c++;
                                 continue;
                             }
+                            LightContext.putTemp(player.getUniqueId(), DAMAGE_SOURCE, getNamespacedKey().toString());
                             LightContext.putTemp(player.getUniqueId(), OVERRIDING_DAMAGE, getDamage());
                             LightContext.putTemp(player.getUniqueId(), SUPPRESS_MELEE, isSuppressMelee());
                             LightContext.putTemp(player.getUniqueId(), DAMAGE_SOURCE_ITEM, stack);
                             e.damage(getDamage(), player);
+                            LightContext.removeTemp(player.getUniqueId(), DAMAGE_SOURCE);
                             LightContext.removeTemp(player.getUniqueId(), SUPPRESS_MELEE);
                             LightContext.removeTemp(player.getUniqueId(), OVERRIDING_DAMAGE);
                             LightContext.removeTemp(player.getUniqueId(), DAMAGE_SOURCE_ITEM);
+                            if (isNoImmutableTick()) {
+                                LivingEntity target = e;
+                                new BukkitRunnable() {
+                                    @Override
+                                    public void run() {
+                                        target.setNoDamageTicks(0);
+                                    }
+                                }.runTaskLater(RPGItems.plugin, 1);
+                            }
                         }
                     }
                 }).runTaskLater(RPGItems.plugin, getDelay());

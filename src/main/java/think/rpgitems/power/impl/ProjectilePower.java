@@ -136,6 +136,9 @@ public class ProjectilePower extends BasePower {
     public boolean requireHurtByEntity = true;
 
     @Property
+    public boolean noImmutableTick = true;
+
+    @Property
     public FiringLocation firingLocation = FiringLocation.SELF;
 
     @Property
@@ -359,6 +362,10 @@ public class ProjectilePower extends BasePower {
         return requireHurtByEntity;
     }
 
+    public boolean isNoImmutableTick() {
+        return noImmutableTick;
+    }
+
     /**
      * Whether to set Fireball' direction so it won't curve
      */
@@ -539,6 +546,11 @@ public class ProjectilePower extends BasePower {
         private void handleProjectile(Vector v, org.bukkit.entity.Projectile projectile) {
             projectile.setPersistent(false);
             projectile.setGravity(isGravity());
+            // Store power info for NoImmutableTick tag checking
+            projectile.getPersistentDataContainer().set(new NamespacedKey(RPGItems.plugin, "RPGItemDamageSource"), PersistentDataType.STRING, getNamespacedKey().toString());
+            if (isNoImmutableTick()) {
+                projectile.getPersistentDataContainer().set(new NamespacedKey(RPGItems.plugin, "RPGItemNoImmutableTick"), PersistentDataType.BOOLEAN, true);
+            }
             if (projectile instanceof Explosive) {
                 if (getYield() != null) {
                     ((Explosive) projectile).setYield(getYield().floatValue());
