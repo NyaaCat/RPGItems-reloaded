@@ -18,6 +18,7 @@ import org.bukkit.event.player.PlayerInteractEvent;
 import org.bukkit.inventory.Inventory;
 import org.bukkit.inventory.ItemStack;
 import think.rpgitems.I18n;
+import think.rpgitems.RPGItems;
 import think.rpgitems.event.PowerActivateEvent;
 import think.rpgitems.power.*;
 import think.rpgitems.power.trigger.BaseTriggers;
@@ -173,8 +174,13 @@ public class Repair extends BasePower {
             if (!checkCooldown(getPower(), player, getCooldown(), showCooldownWarning(), true)) return PowerResult.cd();
             int max = getItem().getMaxDurability();
             int repairCount = 0;
+            java.util.Optional<Integer> durabilityOpt = getItem().getItemStackDurability(stack);
+            if (!durabilityOpt.isPresent()) {
+                RPGItems.plugin.getLogger().warning("Repair skipped: item without durability. item=" + getItem().getName() + ", player=" + player.getName());
+                return PowerResult.noop();
+            }
+            int itemDurability = durabilityOpt.get();
             for (int i = 0; i < getAmount(); i++) {
-                int itemDurability = getItem().getItemStackDurability(stack).orElseThrow(() -> new IllegalStateException("Repair is not allowed on item without durability"));
                 int delta = max - itemDurability;
                 if (getMode() != RepairMode.ALWAYS) {
                     if (max == -1 || delta == 0) {
@@ -188,7 +194,8 @@ public class Repair extends BasePower {
                     break;
                 }
                 if (removeItem(player.getInventory(), getMaterial(), 1)) {
-                    getItem().setItemStackDurability(stack, Math.min(itemDurability + getDurability(), max));
+                    itemDurability = Math.min(itemDurability + getDurability(), max);
+                    getItem().setItemStackDurability(stack, itemDurability);
                     repairCount++;
                 } else {
                     if (isShowFailMsg()) {
