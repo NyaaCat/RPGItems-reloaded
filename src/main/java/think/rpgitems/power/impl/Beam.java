@@ -175,6 +175,8 @@ public class Beam extends BasePower {
     public FiringLocation firingLocation = FiringLocation.SELF;
     @Property
     public boolean effectOnly = false;
+    @Property
+    public boolean noImmutableTick = true;
     /*
      *   following 3 property format like:
      *   "<lower_value>,<upper_value>:<weight> <lower_value2>,<upper_value2> <fixed_value>:<weight> ......"
@@ -456,6 +458,10 @@ public class Beam extends BasePower {
         return effectOnly;
     }
 
+    public boolean isNoImmutableTick() {
+        return noImmutableTick;
+    }
+
     @Override
     public void init(ConfigurationSection section) {
         //check new version var name
@@ -574,7 +580,8 @@ public class Beam extends BasePower {
             RangedDoubleValue firingR,
             RangedDoubleValue firingTheta,
             RangedDoubleValue firingPhi,
-            double initialRotation
+            double initialRotation,
+            boolean noImmutableTick
     ) {
         /**
          * Creates an immutable snapshot from a Beam power instance.
@@ -625,7 +632,8 @@ public class Beam extends BasePower {
                     original.firingR,
                     original.firingTheta,
                     original.firingPhi,
-                    original.initialRotation
+                    original.initialRotation,
+                    original.noImmutableTick
             );
         }
     }
@@ -707,6 +715,7 @@ public class Beam extends BasePower {
         private final String namespacedKey;
         private String speedBias = "";
         private boolean effectOnly = false;
+        private boolean noImmutableTick = true;
         private int triggerDepth = 0;
         private Queue<Entity> targets = new LinkedList<>();
         private Entity fromEntity;
@@ -753,6 +762,7 @@ public class Beam extends BasePower {
             this.effectOnly = config.effectOnly();
             this.firingLocation = config.firingLocation();
             this.namespacedKey = config.namespacedKey();
+            this.noImmutableTick = config.noImmutableTick();
             lengthPerSpawn = 1 / particleDensity;
         }
 
@@ -1119,6 +1129,15 @@ public class Beam extends BasePower {
                         LightContext.putTemp(from.getUniqueId(), DAMAGE_SOURCE_ITEM, stack);
                         ((LivingEntity) entity).damage(damage, from);
                         LightContext.clear();
+                        if (noImmutableTick) {
+                            LivingEntity target = (LivingEntity) entity;
+                            new BukkitRunnable() {
+                                @Override
+                                public void run() {
+                                    target.setNoDamageTicks(0);
+                                }
+                            }.runTaskLater(RPGItems.plugin, 1);
+                        }
                     }
                     hitMobs.add(entity.getUniqueId());
                 }
