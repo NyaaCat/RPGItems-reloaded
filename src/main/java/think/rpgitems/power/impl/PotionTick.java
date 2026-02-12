@@ -166,7 +166,7 @@ public class PotionTick extends BasePower implements PowerPotion {
                 playerItems.add(player.getInventory().getItemInMainHand());
 
                 int additionalLevels = playerItems.stream()
-                        .flatMap(item -> ItemManager.toRPGItemByMeta(item).stream())
+                        .flatMap(item -> ItemManager.toActiveRPGItemByMeta(item).stream())
                         .flatMap(rpgItem -> rpgItem.getPowers().stream())
                         .filter(power -> power.getName().equals("potiontick"))
                         .map(power -> (PotionTick) power)

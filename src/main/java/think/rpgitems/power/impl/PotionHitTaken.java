@@ -120,7 +120,7 @@ public class PotionHitTaken extends BasePower implements PowerPotion {
             List<ItemStack> items = new ArrayList<>(Arrays.asList(player.getInventory().getArmorContents()));
             items.add(player.getInventory().getItemInMainHand());
             for(ItemStack i : items){
-                ItemManager.toRPGItemByMeta(i).ifPresent(rpgItem -> {
+                ItemManager.toActiveRPGItemByMeta(i).ifPresent(rpgItem -> {
                     for (Power power : rpgItem.getPowers()){
                         if(power instanceof PotionHitTaken potionHitTaken) {
                             if(potionHitTaken.getType()==getType()&&potionHitTaken.isSummingUp()){

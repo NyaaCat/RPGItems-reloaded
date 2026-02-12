@@ -552,6 +552,14 @@ public class ItemManager {
         return toBaseRPGItem(item, ignoreModel);
     }
 
+    public static Optional<RPGItem> toActiveRPGItem(ItemStack item) {
+        return toActiveRPGItem(item, true);
+    }
+
+    public static Optional<RPGItem> toActiveRPGItem(ItemStack item, boolean ignoreModel) {
+        return filterStandaloneSocket(toRPGItem(item, ignoreModel), item);
+    }
+
     public static Optional<RPGItem> toBaseRPGItem(ItemStack item) {
         return toBaseRPGItem(item, true);
     }
@@ -590,12 +598,28 @@ public class ItemManager {
         return Optional.of(resolveRuntimeRPGItem(item, base.get()));
     }
 
+    public static Optional<RPGItem> toActiveRuntimeRPGItem(ItemStack item) {
+        return toActiveRuntimeRPGItem(item, true);
+    }
+
+    public static Optional<RPGItem> toActiveRuntimeRPGItem(ItemStack item, boolean ignoreModel) {
+        return filterStandaloneSocket(toRuntimeRPGItem(item, ignoreModel), item);
+    }
+
     public static Optional<RPGItem> toRPGItemByMeta(ItemStack item) {
         return toRPGItemByMeta(item, true);
     }
 
     public static Optional<RPGItem> toRPGItemByMeta(ItemStack item, boolean ignoreModel) {
         return toBaseRPGItemByMeta(item, ignoreModel);
+    }
+
+    public static Optional<RPGItem> toActiveRPGItemByMeta(ItemStack item) {
+        return toActiveRPGItemByMeta(item, true);
+    }
+
+    public static Optional<RPGItem> toActiveRPGItemByMeta(ItemStack item, boolean ignoreModel) {
+        return filterStandaloneSocket(toRPGItemByMeta(item, ignoreModel), item);
     }
 
     public static Optional<RPGItem> toBaseRPGItemByMeta(ItemStack item) {
@@ -635,6 +659,32 @@ public class ItemManager {
             return Optional.empty();
         }
         return Optional.of(resolveRuntimeRPGItem(item, base.get()));
+    }
+
+    public static Optional<RPGItem> toActiveRuntimeRPGItemByMeta(ItemStack item) {
+        return toActiveRuntimeRPGItemByMeta(item, true);
+    }
+
+    public static Optional<RPGItem> toActiveRuntimeRPGItemByMeta(ItemStack item, boolean ignoreModel) {
+        return filterStandaloneSocket(toRuntimeRPGItemByMeta(item, ignoreModel), item);
+    }
+
+    private static Optional<RPGItem> filterStandaloneSocket(Optional<RPGItem> candidate, ItemStack stack) {
+        if (candidate.isEmpty()) {
+            return candidate;
+        }
+        return shouldSkipStandaloneSocketEffects(candidate.get(), stack) ? Optional.empty() : candidate;
+    }
+
+    public static boolean shouldSkipStandaloneSocketEffects(RPGItem item, ItemStack stack) {
+        if (item == null || stack == null || stack.getType() == Material.AIR) {
+            return false;
+        }
+        if (item.getSocketTags().isEmpty()) {
+            return false;
+        }
+        Optional<RPGItem> base = toBaseRPGItem(stack, false);
+        return base.isPresent() && base.get().getUid() == item.getUid();
     }
 
     public static void clearRuntimeCache() {
