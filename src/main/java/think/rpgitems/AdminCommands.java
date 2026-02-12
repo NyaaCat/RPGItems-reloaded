@@ -619,6 +619,9 @@ public class AdminCommands extends RPGCommandReceiver {
             case "socketitem": {
                 boolean enabled = args.nextBoolean();
                 if (enabled) {
+                    if (isContainerRoleEnabled(item)) {
+                        throw new BadCommandException("message.socket.config.role_conflict_enable_socket_item", item.getName());
+                    }
                     if (item.getSocketTags().isEmpty()) {
                         item.setSocketTags(Set.of("ANY"));
                     }
@@ -640,6 +643,9 @@ public class AdminCommands extends RPGCommandReceiver {
             case "container": {
                 boolean enabled = args.nextBoolean();
                 if (enabled) {
+                    if (isSocketRoleEnabled(item)) {
+                        throw new BadCommandException("message.socket.config.role_conflict_enable_container", item.getName());
+                    }
                     if (item.getSocketAcceptTags().isEmpty()) {
                         item.setSocketAcceptTags(Set.of("ANY"));
                     }
@@ -868,6 +874,14 @@ public class AdminCommands extends RPGCommandReceiver {
         return String.join(", ", tags);
     }
 
+    private boolean isContainerRoleEnabled(RPGItem item) {
+        return !item.getSocketAcceptTags().isEmpty();
+    }
+
+    private boolean isSocketRoleEnabled(RPGItem item) {
+        return !item.getSocketTags().isEmpty();
+    }
+
     private Set<String> parseSocketTags(Arguments args) {
         String raw = consumeString(args);
         return Arrays.stream(raw.split("[,\\s]+"))
@@ -909,9 +923,15 @@ public class AdminCommands extends RPGCommandReceiver {
                 );
         }
         if (acceptTags) {
+            if (!current.isEmpty() && isSocketRoleEnabled(item)) {
+                throw new BadCommandException("message.socket.config.role_conflict_accept_tags", item.getName());
+            }
             item.setSocketAcceptTags(current);
             I18n.sendMessage(sender, "message.socket.config.accept_tags_set", item.getName(), formatSocketTags(current));
         } else {
+            if (!current.isEmpty() && isContainerRoleEnabled(item)) {
+                throw new BadCommandException("message.socket.config.role_conflict_socket_tags", item.getName());
+            }
             item.setSocketTags(current);
             I18n.sendMessage(sender, "message.socket.config.socket_tags_set", item.getName(), formatSocketTags(current));
         }

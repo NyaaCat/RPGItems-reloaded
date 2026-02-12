@@ -472,6 +472,10 @@ message:
       lore_added: "Item '%s' socketingDescription updated"
       lore_changed: "Item '%s' socketingDescription line %d changed"
       lore_removed: "Item '%s' socketingDescription line %d removed"
+      role_conflict_enable_socket_item: "Item '%s' is currently a socket container. Disable container role first."
+      role_conflict_enable_container: "Item '%s' is currently a socket item. Disable socket item role first."
+      role_conflict_accept_tags: "Item '%s' cannot set acceptTags while socket item role is enabled."
+      role_conflict_socket_tags: "Item '%s' cannot set socketTags while container role is enabled."
   damage:
     get: Item '%s' damage is %d-%d
     set:
