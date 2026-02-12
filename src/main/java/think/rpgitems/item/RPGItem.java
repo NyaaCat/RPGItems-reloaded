@@ -165,9 +165,11 @@ public class RPGItem {
     private String type = "item";
     private NamespacedKey itemModel;
     private Set<String> socketAcceptTags = new LinkedHashSet<>();
+    private boolean socketContainer = false;
     private int socketMaxWeight = 0;
     private int socketInsertLine = 0;
     private Set<String> socketTags = new LinkedHashSet<>();
+    private boolean socketItem = false;
     private int socketWeight = 0;
     private int socketMinLevel = 1;
     private List<String> socketingDescription = new ArrayList<>();
@@ -351,6 +353,8 @@ public class RPGItem {
         List<String> socketDescription = s.getStringList("socketingDescription");
         socketDescription.replaceAll(HexColorUtils::hexColored);
         setSocketingDescription(socketDescription);
+        setSocketContainer(s.getBoolean("socketContainer", false));
+        setSocketItem(s.getBoolean("socketItem", false));
         levelDescriptionRules.clear();
         ConfigurationSection levelDescriptionSection = s.getConfigurationSection("leveldescription");
         if (levelDescriptionSection != null) {
@@ -698,9 +702,11 @@ public class RPGItem {
         descriptionConv.replaceAll(string -> string.replaceAll("§", "&"));
         s.set("description", descriptionConv);
         s.set("socketAcceptTags", new ArrayList<>(getSocketAcceptTags()));
+        s.set("socketContainer", isSocketContainer());
         s.set("socketMaxWeight", getSocketMaxWeight());
         s.set("socketInsertLine", getSocketInsertLine());
         s.set("socketTags", new ArrayList<>(getSocketTags()));
+        s.set("socketItem", isSocketItem());
         s.set("socketWeight", getSocketWeight());
         s.set("socketMinLevel", getSocketMinLevel());
         ArrayList<String> socketDescriptionConv = new ArrayList<>(getSocketingDescription());
@@ -2428,6 +2434,18 @@ public class RPGItem {
         return Collections.unmodifiableSet(socketAcceptTags);
     }
 
+    public boolean isSocketContainer() {
+        return socketContainer;
+    }
+
+    public void setSocketContainer(boolean socketContainer) {
+        this.socketContainer = socketContainer;
+    }
+
+    public boolean isSocketContainerRoleEnabled() {
+        return socketContainer && !socketItem;
+    }
+
     public void setSocketAcceptTags(Set<String> socketAcceptTags) {
         this.socketAcceptTags = new LinkedHashSet<>(socketAcceptTags);
     }
@@ -2450,6 +2468,18 @@ public class RPGItem {
 
     public Set<String> getSocketTags() {
         return Collections.unmodifiableSet(socketTags);
+    }
+
+    public boolean isSocketItem() {
+        return socketItem;
+    }
+
+    public void setSocketItem(boolean socketItem) {
+        this.socketItem = socketItem;
+    }
+
+    public boolean isSocketItemRoleEnabled() {
+        return socketItem && !socketContainer;
     }
 
     public void setSocketTags(Set<String> socketTags) {

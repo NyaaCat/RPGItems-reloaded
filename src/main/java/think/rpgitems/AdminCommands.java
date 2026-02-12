@@ -618,6 +618,7 @@ public class AdminCommands extends RPGCommandReceiver {
                     if (isContainerRoleEnabled(item)) {
                         throw new BadCommandException("message.socket.config.role_conflict_enable_socket_item", item.getName());
                     }
+                    item.setSocketItem(true);
                     if (item.getSocketTags().isEmpty()) {
                         item.setSocketTags(Set.of("ANY"));
                     }
@@ -627,6 +628,7 @@ public class AdminCommands extends RPGCommandReceiver {
                     item.setSocketMinLevel(Math.max(1, item.getSocketMinLevel()));
                     I18n.sendMessage(sender, "message.socket.config.socket_item_enabled", item.getName());
                 } else {
+                    item.setSocketItem(false);
                     item.setSocketTags(Collections.emptySet());
                     item.setSocketWeight(0);
                     item.setSocketMinLevel(1);
@@ -642,6 +644,7 @@ public class AdminCommands extends RPGCommandReceiver {
                     if (isSocketRoleEnabled(item)) {
                         throw new BadCommandException("message.socket.config.role_conflict_enable_container", item.getName());
                     }
+                    item.setSocketContainer(true);
                     if (item.getSocketAcceptTags().isEmpty()) {
                         item.setSocketAcceptTags(Set.of("ANY"));
                     }
@@ -650,6 +653,7 @@ public class AdminCommands extends RPGCommandReceiver {
                     }
                     I18n.sendMessage(sender, "message.socket.config.container_enabled", item.getName());
                 } else {
+                    item.setSocketContainer(false);
                     item.setSocketAcceptTags(Collections.emptySet());
                     item.setSocketMaxWeight(0);
                     I18n.sendMessage(sender, "message.socket.config.container_disabled", item.getName());
@@ -879,11 +883,11 @@ public class AdminCommands extends RPGCommandReceiver {
     }
 
     private boolean isContainerRoleEnabled(RPGItem item) {
-        return !item.getSocketAcceptTags().isEmpty();
+        return item.isSocketContainer();
     }
 
     private boolean isSocketRoleEnabled(RPGItem item) {
-        return !item.getSocketTags().isEmpty();
+        return item.isSocketItem();
     }
 
     private Set<String> parseSocketTags(Arguments args) {

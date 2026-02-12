@@ -711,7 +711,7 @@ public class ItemManager {
         if (item == null || stack == null || stack.getType() == Material.AIR) {
             return false;
         }
-        if (item.getSocketTags().isEmpty()) {
+        if (!item.isSocketItem()) {
             return false;
         }
         Optional<RPGItem> base = toBaseRPGItem(stack, false);
@@ -728,7 +728,7 @@ public class ItemManager {
         }
 
         int level = base.getItemLevel(itemStack);
-        List<Integer> socketIds = base.getSocketedItemUids(itemStack);
+        List<Integer> socketIds = base.isSocketContainerRoleEnabled() ? base.getSocketedItemUids(itemStack) : Collections.emptyList();
         boolean requiresComposite = level > 1 || !socketIds.isEmpty() || base.hasLevelDescriptionRules();
         if (!requiresComposite) {
             return base;
@@ -809,6 +809,9 @@ public class ItemManager {
     }
 
     public static boolean canUseSocket(RPGItem base, RPGItem socket, int itemLevel, int usedWeight) {
+        if (!base.isSocketContainerRoleEnabled() || !socket.isSocketItemRoleEnabled()) {
+            return false;
+        }
         Set<String> acceptTags = base.getSocketAcceptTags();
         Set<String> socketTags = socket.getSocketTags();
         if (acceptTags.isEmpty() || socketTags.isEmpty()) {

@@ -146,7 +146,7 @@ public final class SocketGuiService {
         }
 
         Optional<RPGItem> containerOpt = ItemManager.toBaseRPGItem(cursor, false);
-        if (containerOpt.isEmpty()) {
+        if (containerOpt.isEmpty() || !containerOpt.get().isSocketContainerRoleEnabled()) {
             session.statusLines = List.of(I18n.formatDefault("message.socket.error.container_required"));
             refresh(session, player, false);
             return;
@@ -201,7 +201,7 @@ public final class SocketGuiService {
         }
 
         Optional<RPGItem> socketItemOpt = ItemManager.toBaseRPGItem(cursor, false);
-        if (socketItemOpt.isEmpty()) {
+        if (socketItemOpt.isEmpty() || !socketItemOpt.get().isSocketItemRoleEnabled()) {
             session.statusLines = List.of(I18n.formatDefault("message.socket.error.socket_required"));
             refresh(session, player, false);
             return;
@@ -241,7 +241,7 @@ public final class SocketGuiService {
 
         if (session.container == null) {
             Optional<RPGItem> containerOpt = ItemManager.toBaseRPGItem(current, false);
-            if (containerOpt.isEmpty()) {
+            if (containerOpt.isEmpty() || !containerOpt.get().isSocketContainerRoleEnabled()) {
                 return;
             }
             session.baseItem = containerOpt.get();
@@ -257,7 +257,7 @@ public final class SocketGuiService {
         }
 
         Optional<RPGItem> socketOpt = ItemManager.toBaseRPGItem(current, false);
-        if (socketOpt.isEmpty()) {
+        if (socketOpt.isEmpty() || !socketOpt.get().isSocketItemRoleEnabled()) {
             return;
         }
 
@@ -357,6 +357,9 @@ public final class SocketGuiService {
     }
 
     private static String validateOneSocket(RPGItem container, RPGItem socket, int level, int usedWeight) {
+        if (!container.isSocketContainerRoleEnabled() || !socket.isSocketItemRoleEnabled()) {
+            return I18n.formatDefault("message.socket.error.tag_mismatch", socket.getName());
+        }
         Set<String> acceptTags = container.getSocketAcceptTags();
         Set<String> socketTags = socket.getSocketTags();
         if (acceptTags.isEmpty() || socketTags.isEmpty()) {
