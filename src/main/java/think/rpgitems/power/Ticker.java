@@ -19,6 +19,7 @@ public class Ticker extends BukkitRunnable {
     @Override
     public void run() {
         Context.instance().cleanTick();
+        ItemManager.processPlayerUpdateQueue();
         for (final Player player : Bukkit.getOnlinePlayers()) {
             if (ItemManager.canUse(player, null, false) == Event.Result.DENY) continue;
 

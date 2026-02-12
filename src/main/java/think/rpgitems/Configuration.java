@@ -67,6 +67,8 @@ public class Configuration extends PluginConfigure {
     // and can not be used in trades!
     @Serializable(name = "general.item.item_stack_uuid")
     public boolean itemStackUuid = true;
+    @Serializable(name = "general.item.instance_update_players_per_tick")
+    public int instanceUpdatePlayersPerTick = 8;
     @SuppressWarnings("unused")
     @Serializable(name = "unused.locale_inv", alias = {"general.locale_inv", "localeInv"})
     public boolean oldLocaleInv = false;

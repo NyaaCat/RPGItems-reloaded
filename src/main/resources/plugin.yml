@@ -31,6 +31,10 @@ permissions:
     default: op
   rpgitem.updateitem:
     default: op
+  rpgitem.socket:
+    default: op
+  rpgitem.level:
+    default: op
 
   rpgitems.tomodel:
     default: false

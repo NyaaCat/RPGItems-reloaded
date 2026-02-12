@@ -1,0 +1,33 @@
+# RPGItems-reloaded 镶嵌 + 等级实现任务清单
+
+- [ ] 读取/确认现有代码路径（RPGItem、ItemManager、Events、Power/Condition、PlayerRPGInventoryCache）
+- [ ] **数据与配置**
+  - [ ] 在 `RPGItem` 增加字段：`socketAcceptTags`、`socketMaxWeight`、`socketInsertLine`、`socketTags`、`socketWeight`、`socketMinLevel`、`socketingDescription`、`levelDescription`
+  - [ ] 更新 `restore/save` 读写配置（含 `ANY` tag 规则）
+  - [ ] 增加 PDC keys（统一 rgi/rpgitem 前缀）：`rgi_item_level`、`rgi_sockets`（存 RPGItem ID 列表）、`rgi_instance_cache_key`
+  - [ ] 默认关闭 power/armor lore（showPowerText/showArmourLore = false）
+- [ ] **等级功能**
+  - [ ] PDC 读写工具方法：`getItemLevel/setItemLevel`
+  - [ ] 新条件 `itemlevelcondition`（eq/gt/egt/lt/elt）
+  - [ ] LevelDescription 规则解析与 lore 替换
+  - [ ] 管理员命令 `/rpgitem level get/set <item> <level>` + 语言文件
+- [ ] **镶嵌功能**
+  - [ ] Socket 数据管理（PDC 序列化/反序列化 RPGItem ID 列表）
+  - [ ] 标签/等级/重量匹配逻辑
+  - [ ] 组合 powers/conditions/markers（顺序：容器→镶嵌…）
+  - [ ] ThreadLocal `getItem()` 覆盖以容器为上下文
+  - [ ] PlayerRPGInventoryCache 识别镶嵌品触发器
+  - [ ] Lore 插入 `socketingDescription`
+  - [ ] 实例缓存：按 `instance_cache_key` 构建/复用组合 RPGItem
+-- [ ] **GUI 与交互**
+  - [ ] 设计箱子 GUI 布局（3 行箱子；左侧 3x3 仅中心槽可放；右侧第 4 列起为镶嵌槽；最后一列为单一状态提示物品）
+  - [ ] GUI 会话管理、点击/拖拽校验、物品弹出逻辑
+  - [ ] 修改后即时更新预览，取回容器后关闭 GUI
+  - [ ] 管理员命令 `/rpgitems socket` + **独立权限节点** + 语言文件
+- [ ] **补充**
+  - [ ] plugin.yml 权限更新（level/socket 独立权限）
+  - [ ] en_US/zh_CN lang 更新
+  - [ ] README/Template（若需要）
+- [ ] **性能调度**
+  - [ ] 玩家级更新队列：每 tick 处理有限玩家，单玩家在同一 tick 内完整扫描
+  - [ ] 去重/轮转，避免同一玩家过频刷新

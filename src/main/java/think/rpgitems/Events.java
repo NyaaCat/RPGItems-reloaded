@@ -36,6 +36,7 @@ import think.rpgitems.data.Context;
 import think.rpgitems.event.BeamEndEvent;
 import think.rpgitems.event.BeamHitBlockEvent;
 import think.rpgitems.event.BeamHitEntityEvent;
+import think.rpgitems.gui.SocketGuiService;
 import think.rpgitems.item.ItemManager;
 import think.rpgitems.item.RPGItem;
 import think.rpgitems.power.*;
@@ -574,10 +575,16 @@ public class Events implements Listener {
     @EventHandler
     public void onMenuClick(InventoryClickEvent e) {
         InventoryUtils.handelClickEvent(e);
+        SocketGuiService.handleClick(e);
     }
     @EventHandler
     public void onMenuClose(InventoryCloseEvent e) {
         InventoryUtils.handleCloseEvent(e);
+        SocketGuiService.handleClose(e);
+    }
+    @EventHandler
+    public void onSocketMenuDrag(InventoryDragEvent e) {
+        SocketGuiService.handleDrag(e);
     }
     @EventHandler
     public void onOffhandInventoryClick(InventoryClickEvent e) {
@@ -623,14 +630,8 @@ public class Events implements Listener {
     @EventHandler
     public void onPlayerJoin(PlayerJoinEvent e) {
         Player player = e.getPlayer();
-        PlayerInventory in = player.getInventory();
-        for (int i = 0; i < in.getSize(); i++) {
-            ItemStack item = in.getItem(i);
-            ItemManager.toRPGItemByMeta(item).ifPresent(rpgItem -> rpgItem.updateItem(item,player));
-        }
-        for (ItemStack item : player.getInventory().getArmorContents()) {
-            ItemManager.toRPGItemByMeta(item).ifPresent(rpgItem -> rpgItem.updateItem(item,player));
-        }
+        ItemManager.enqueuePlayerUpdate(player);
+        PlayerRPGInventoryCache.getInstance().invalidate(player.getUniqueId());
         if (WGSupport.hasSupport() && WGSupport.useWorldGuard) {
             WGHandler.onPlayerJoin(e);
         }
@@ -675,14 +676,8 @@ public class Events implements Listener {
             @Override
             public void run() {
                 if (!p.isOnline()) return;
-                PlayerInventory in = p.getInventory();
-                for (int i = 0; i < in.getSize(); i++) {
-                    ItemStack item = in.getItem(i);
-                    ItemManager.toRPGItem(item).ifPresent(rpgItem -> rpgItem.updateItem(item,p));
-                }
-                for (ItemStack item : in.getArmorContents()) {
-                    ItemManager.toRPGItem(item).ifPresent(rpgItem -> rpgItem.updateItem(item,p));
-                }
+                ItemManager.enqueuePlayerUpdate(p);
+                PlayerRPGInventoryCache.getInstance().invalidate(p.getUniqueId());
             }
         }.runTaskLater(plugin, 1L);
     }
@@ -715,22 +710,8 @@ public class Events implements Listener {
 
 
     private void updatePlayerInventory(Inventory inventory, Player p, InventoryEvent e) {
-        Iterator<ItemStack> it = inventory.iterator();
-        try {
-            while (it.hasNext()) {
-                ItemStack item = it.next();
-                ItemManager.toRPGItemByMeta(item).ifPresent(rpgItem -> rpgItem.updateItem(item,p));
-            }
-            PlayerInventory inventory1 = p.getInventory();
-            it = inventory1.iterator();
-            while (it.hasNext()) {
-                ItemStack item = it.next();
-                ItemManager.toRPGItemByMeta(item).ifPresent(rpgItem -> rpgItem.updateItem(item,p));
-            }
-        } catch (ArrayIndexOutOfBoundsException ex) {
-            logger.log(Level.WARNING, "Exception when InventoryOpenEvent. May be harmless.", ex);
-            // Fix for the bug with anvils in craftbukkit
-        }
+        ItemManager.enqueuePlayerUpdate(p);
+        PlayerRPGInventoryCache.getInstance().invalidate(p.getUniqueId());
     }
 
     @EventHandler(ignoreCancelled = true, priority = EventPriority.HIGHEST)
@@ -775,7 +756,8 @@ public class Events implements Listener {
         if (e.getInventory().getHolder() == null || e.getInventory().getLocation() == null)
             return;
         if (e.getInventory().getType() != InventoryType.CHEST) {
-            updatePlayerInventory(e.getInventory(), (Player) e.getPlayer(), e);
+            ItemManager.enqueuePlayerUpdate((Player) e.getPlayer());
+            PlayerRPGInventoryCache.getInstance().invalidate(e.getPlayer().getUniqueId());
         }
     }
 

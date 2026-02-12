@@ -421,6 +421,31 @@ message:
     set: 物品模型映射已设置为 %s
     unset: 物品模型映射已删除
     invalid: 命名空间格式无效，应为 空间:键 格式或提供单独键(minecraft作为空间)
+  level:
+    get: 物品 '%s' 的等级为 %d
+    set: 物品 '%s' 的等级已设置为 %d
+    error:
+      invalid_level: 无效等级 %d，最小为 1
+      item_mismatch: "目标物品 '%s' 与手持物品 '%s' 不一致"
+  socket:
+    title: 镶嵌
+    hint:
+      put_container: 请先将 RPGItem 放入中间槽位
+    status:
+      title: 镶嵌状态
+      level: '等级: %d'
+      weight: '重量: %d/%d'
+      ok: 所有镶嵌均已生效
+    error:
+      single_item: 只能放入一个物品
+      container_required: 中间槽位只能放 RPGItem 作为容器
+      no_container: 请先放入容器物品
+      socket_required: 该槽位只能放 RPGItem 镶嵌品
+      invalid_uid: '槽位 #%d 无效（找不到该物品）'
+      invalid_uid_short: 无效槽位 #%d
+      tag_mismatch: "镶嵌品 '%s' 标签不匹配"
+      level_low: "镶嵌品 '%s' 需要物品等级 %d"
+      weight_overflow: "镶嵌品 '%s' 超出可用重量（%d）"
   damage:
     get: 物品 '%s' 伤害为 %d-%d
     set:
@@ -1100,6 +1125,11 @@ properties:
     durabilityMin: 耐久需大于该值
     main_description: 要求耐久在一定范围内
     main_name: 耐久条件
+  itemlevelcondition:
+    level: 目标等级
+    operation: 比较操作，可选 eq/gt/egt/lt/elt
+    main_description: 检查当前物品实例等级
+    main_name: 物品等级条件
   dying:
     main_description: 濒死触发
     main_name: Dying

@@ -421,6 +421,31 @@ message:
     set: Item model is set to %s
     unset: Item model reset
     invalid: Invalid namespaced key format，expected namespace:key or key(minecraft as namespace)
+  level:
+    get: Item '%s' level is %d
+    set: Item '%s' level set to %d
+    error:
+      invalid_level: Invalid level %d, minimum is 1
+      item_mismatch: "Target item '%s' does not match held item '%s'"
+  socket:
+    title: Socketing
+    hint:
+      put_container: Put an RPGItem in the center slot to start socketing
+    status:
+      title: Socket Status
+      level: 'Level: %d'
+      weight: 'Weight: %d/%d'
+      ok: All sockets are active
+    error:
+      single_item: Please place exactly one item
+      container_required: Center slot only accepts RPGItems as container
+      no_container: Put container item first
+      socket_required: This slot only accepts RPGItems as socket item
+      invalid_uid: 'Socket #%d is invalid (item not found)'
+      invalid_uid_short: Invalid socket #%d
+      tag_mismatch: "Socket '%s' tag mismatch"
+      level_low: "Socket '%s' requires item level %d"
+      weight_overflow: "Socket '%s' exceeds remaining weight (%d)"
   damage:
     get: Item '%s' damage is %d-%d
     set:
@@ -1086,6 +1111,11 @@ properties:
     durabilityMin: Durability should great than durabilityMin
     main_description: Condition that requires item's durability in a range
     main_name: Durability Condition
+  itemlevelcondition:
+    level: Target item level
+    operation: Compare operation, one of eq/gt/egt/lt/elt
+    main_description: Condition that checks the current item instance level
+    main_name: Item Level Condition
   economy:
     abortOnFailure: Abort on failure
     amountToPlayer: Amount of money will transfer to player (can be negative)

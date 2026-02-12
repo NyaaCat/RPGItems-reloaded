@@ -36,6 +36,7 @@ import org.bukkit.persistence.PersistentDataContainer;
 import org.bukkit.persistence.PersistentDataType;
 import org.bukkit.scheduler.BukkitRunnable;
 import think.rpgitems.event.RPGItemsReloadEvent;
+import think.rpgitems.gui.SocketGuiService;
 import think.rpgitems.item.ItemGroup;
 import think.rpgitems.item.ItemManager;
 import think.rpgitems.item.RPGItem;
@@ -588,6 +589,54 @@ public class AdminCommands extends RPGCommandReceiver {
 
         InventoryUtils.openMenu(player, page, displayFilter, loreFilter, nameFilter);
     }
+
+    @SubCommand(value = "socket", permission = "rpgitem.socket")
+    public void socketGui(CommandSender sender, Arguments args) {
+        if (!(sender instanceof Player player)) {
+            throw new CommandException("message.error.only.player");
+        }
+        SocketGuiService.open(player);
+    }
+
+    @SubCommand(value = "level", permission = "rpgitem.level")
+    @Completion("command:get,set")
+    public void itemLevel(CommandSender sender, Arguments args) {
+        if (!(sender instanceof Player player)) {
+            throw new CommandException("message.error.only.player");
+        }
+        String operation = args.nextString().toLowerCase(Locale.ROOT);
+        RPGItem expected = getItem(args.nextString(), sender, true);
+
+        ItemStack hand = player.getInventory().getItemInMainHand();
+        RPGItem handItem = ItemManager.toBaseRPGItem(hand, false)
+                .orElseThrow(() -> new BadCommandException("message.error.iteminhand"));
+        if (handItem.getUid() != expected.getUid()) {
+            throw new BadCommandException("message.level.error.item_mismatch", expected.getName(), handItem.getName());
+        }
+
+        if ("get".equals(operation)) {
+            int currentLevel = handItem.getItemLevel(hand);
+            I18n.sendMessage(sender, "message.level.get", handItem.getName(), currentLevel);
+            return;
+        }
+
+        if ("set".equals(operation)) {
+            int level = args.nextInt();
+            if (level < 1) {
+                throw new BadCommandException("message.level.error.invalid_level", level);
+            }
+            handItem.setItemLevel(hand, level);
+            handItem.updateItem(hand, false, player);
+            player.getInventory().setItemInMainHand(hand);
+            ItemManager.enqueuePlayerUpdate(player);
+            PlayerRPGInventoryCache.getInstance().invalidate(player.getUniqueId());
+            I18n.sendMessage(sender, "message.level.set", handItem.getName(), level);
+            return;
+        }
+
+        throw new BadCommandException("message.error.invalid_option", operation, "level", "get,set");
+    }
+
     @SubCommand("giveperms")
     public void givePerms(CommandSender sender, Arguments args) {
         RPGItems.plugin.cfg.givePerms = !RPGItems.plugin.cfg.givePerms;
