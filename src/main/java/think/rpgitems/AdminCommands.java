@@ -590,12 +590,137 @@ public class AdminCommands extends RPGCommandReceiver {
         InventoryUtils.openMenu(player, page, displayFilter, loreFilter, nameFilter);
     }
 
-    @SubCommand(value = "socket", permission = "rpgitem.socket")
+    @SubCommand(value = "socket", permission = "rpgitem.socket", tabCompleter = "itemCompleter")
+    @Completion("item:info,socketitem,container,accepttags,maxweight,insertline,tags,weight,minlevel,lore")
     public void socketGui(CommandSender sender, Arguments args) {
-        if (!(sender instanceof Player player)) {
-            throw new CommandException("message.error.only.player");
+        if (args.remains() == 0) {
+            if (!(sender instanceof Player player)) {
+                throw new CommandException("message.error.only.player");
+            }
+            SocketGuiService.open(player);
+            return;
         }
-        SocketGuiService.open(player);
+
+        RPGItem item = getItem(args.nextString(), sender);
+        if (args.remains() == 0) {
+            throw new BadCommandException(
+                    "message.error.invalid_option",
+                    "",
+                    "socket",
+                    "info,socketitem,container,accepttags,maxweight,insertline,tags,weight,minlevel,lore"
+            );
+        }
+
+        String action = args.nextString().toLowerCase(Locale.ROOT);
+        switch (action) {
+            case "info":
+                showSocketConfig(sender, item);
+                return;
+            case "socketitem": {
+                boolean enabled = args.nextBoolean();
+                if (enabled) {
+                    if (item.getSocketTags().isEmpty()) {
+                        item.setSocketTags(Set.of("ANY"));
+                    }
+                    if (item.getSocketWeight() <= 0) {
+                        item.setSocketWeight(1);
+                    }
+                    item.setSocketMinLevel(Math.max(1, item.getSocketMinLevel()));
+                    I18n.sendMessage(sender, "message.socket.config.socket_item_enabled", item.getName());
+                } else {
+                    item.setSocketTags(Collections.emptySet());
+                    item.setSocketWeight(0);
+                    item.setSocketMinLevel(1);
+                    item.setSocketingDescription(Collections.emptyList());
+                    I18n.sendMessage(sender, "message.socket.config.socket_item_disabled", item.getName());
+                }
+                persistSocketConfigChange(item);
+                return;
+            }
+            case "container": {
+                boolean enabled = args.nextBoolean();
+                if (enabled) {
+                    if (item.getSocketAcceptTags().isEmpty()) {
+                        item.setSocketAcceptTags(Set.of("ANY"));
+                    }
+                    if (item.getSocketMaxWeight() <= 0) {
+                        item.setSocketMaxWeight(1);
+                    }
+                    I18n.sendMessage(sender, "message.socket.config.container_enabled", item.getName());
+                } else {
+                    item.setSocketAcceptTags(Collections.emptySet());
+                    item.setSocketMaxWeight(0);
+                    I18n.sendMessage(sender, "message.socket.config.container_disabled", item.getName());
+                }
+                persistSocketConfigChange(item);
+                return;
+            }
+            case "accepttags": {
+                if (handleSocketTagsUpdate(sender, item, args, true)) {
+                    persistSocketConfigChange(item);
+                }
+                return;
+            }
+            case "tags": {
+                if (handleSocketTagsUpdate(sender, item, args, false)) {
+                    persistSocketConfigChange(item);
+                }
+                return;
+            }
+            case "maxweight": {
+                int value = args.nextInt();
+                if (value < 0) {
+                    throw new BadCommandException("message.num_out_of_range", value, 0, Integer.MAX_VALUE);
+                }
+                item.setSocketMaxWeight(value);
+                I18n.sendMessage(sender, "message.socket.config.max_weight_set", item.getName(), value);
+                persistSocketConfigChange(item);
+                return;
+            }
+            case "insertline": {
+                int value = args.nextInt();
+                if (value < 0) {
+                    throw new BadCommandException("message.num_out_of_range", value, 0, Integer.MAX_VALUE);
+                }
+                item.setSocketInsertLine(value);
+                I18n.sendMessage(sender, "message.socket.config.insert_line_set", item.getName(), value);
+                persistSocketConfigChange(item);
+                return;
+            }
+            case "weight": {
+                int value = args.nextInt();
+                if (value < 0) {
+                    throw new BadCommandException("message.num_out_of_range", value, 0, Integer.MAX_VALUE);
+                }
+                item.setSocketWeight(value);
+                I18n.sendMessage(sender, "message.socket.config.weight_set", item.getName(), value);
+                persistSocketConfigChange(item);
+                return;
+            }
+            case "minlevel": {
+                int value = args.nextInt();
+                if (value < 1) {
+                    throw new BadCommandException("message.num_out_of_range", value, 1, Integer.MAX_VALUE);
+                }
+                item.setSocketMinLevel(value);
+                I18n.sendMessage(sender, "message.socket.config.min_level_set", item.getName(), value);
+                persistSocketConfigChange(item);
+                return;
+            }
+            case "lore": {
+                if (handleSocketLoreUpdate(sender, item, args)) {
+                    persistSocketConfigChange(item);
+                }
+                return;
+            }
+            default:
+                throw new BadCommandException(
+                        "message.error.invalid_option",
+                        action,
+                        "socket",
+                        "info,socketitem,container,accepttags,maxweight,insertline,tags,weight,minlevel,lore"
+                );
+        }
     }
 
     @SubCommand(value = "level", permission = "rpgitem.level")
@@ -711,6 +836,145 @@ public class AdminCommands extends RPGCommandReceiver {
                 }
             }
         }.runTaskLater(RPGItems.plugin, 1);
+    }
+
+    private void persistSocketConfigChange(RPGItem item) {
+        item.rebuild();
+        ItemManager.clearRuntimeCache();
+        PlayerRPGInventoryCache.getInstance().clearAll();
+        ItemManager.refreshItem();
+        ItemManager.enqueueAllOnlinePlayers();
+        ItemManager.save(item);
+    }
+
+    private void showSocketConfig(CommandSender sender, RPGItem item) {
+        I18n.sendMessage(sender, "message.socket.config.info_title", item.getName());
+        I18n.sendMessage(sender, "message.socket.config.info_accept_tags", formatSocketTags(item.getSocketAcceptTags()));
+        I18n.sendMessage(sender, "message.socket.config.info_max_weight", item.getSocketMaxWeight());
+        I18n.sendMessage(sender, "message.socket.config.info_insert_line", item.getSocketInsertLine());
+        I18n.sendMessage(sender, "message.socket.config.info_socket_tags", formatSocketTags(item.getSocketTags()));
+        I18n.sendMessage(sender, "message.socket.config.info_weight", item.getSocketWeight());
+        I18n.sendMessage(sender, "message.socket.config.info_min_level", item.getSocketMinLevel());
+        I18n.sendMessage(sender, "message.socket.config.info_lore_size", item.getSocketingDescription().size());
+        for (int i = 0; i < item.getSocketingDescription().size(); i++) {
+            I18n.sendMessage(sender, "message.socket.config.info_lore_line", i, item.getSocketingDescription().get(i));
+        }
+    }
+
+    private String formatSocketTags(Collection<String> tags) {
+        if (tags == null || tags.isEmpty()) {
+            return "(empty)";
+        }
+        return String.join(", ", tags);
+    }
+
+    private Set<String> parseSocketTags(Arguments args) {
+        String raw = consumeString(args);
+        return Arrays.stream(raw.split("[,\\s]+"))
+                .map(tag -> tag.trim().toUpperCase(Locale.ROOT))
+                .filter(tag -> !tag.isEmpty())
+                .collect(Collectors.toCollection(LinkedHashSet::new));
+    }
+
+    private boolean handleSocketTagsUpdate(CommandSender sender, RPGItem item, Arguments args, boolean acceptTags) {
+        String operation = args.remains() > 0 ? args.nextString().toLowerCase(Locale.ROOT) : "list";
+        Set<String> current = new LinkedHashSet<>(acceptTags ? item.getSocketAcceptTags() : item.getSocketTags());
+        switch (operation) {
+            case "list":
+                I18n.sendMessage(
+                        sender,
+                        acceptTags ? "message.socket.config.accept_tags_list" : "message.socket.config.socket_tags_list",
+                        item.getName(),
+                        formatSocketTags(current)
+                );
+                return false;
+            case "clear":
+                current.clear();
+                break;
+            case "set":
+                current = parseSocketTags(args);
+                break;
+            case "add":
+                current.addAll(parseSocketTags(args));
+                break;
+            case "remove":
+                current.removeAll(parseSocketTags(args));
+                break;
+            default:
+                throw new BadCommandException(
+                        "message.error.invalid_option",
+                        operation,
+                        acceptTags ? "accepttags" : "tags",
+                        "list,set,add,remove,clear"
+                );
+        }
+        if (acceptTags) {
+            item.setSocketAcceptTags(current);
+            I18n.sendMessage(sender, "message.socket.config.accept_tags_set", item.getName(), formatSocketTags(current));
+        } else {
+            item.setSocketTags(current);
+            I18n.sendMessage(sender, "message.socket.config.socket_tags_set", item.getName(), formatSocketTags(current));
+        }
+        return true;
+    }
+
+    private boolean handleSocketLoreUpdate(CommandSender sender, RPGItem item, Arguments args) {
+        String operation = args.remains() > 0 ? args.nextString().toLowerCase(Locale.ROOT) : "list";
+        List<String> lore = new ArrayList<>(item.getSocketingDescription());
+        switch (operation) {
+            case "list":
+                I18n.sendMessage(sender, "message.socket.config.info_lore_size", lore.size());
+                for (int i = 0; i < lore.size(); i++) {
+                    I18n.sendMessage(sender, "message.socket.config.info_lore_line", i, lore.get(i));
+                }
+                return false;
+            case "clear":
+                lore.clear();
+                item.setSocketingDescription(lore);
+                I18n.sendMessage(sender, "message.socket.config.lore_cleared", item.getName());
+                return true;
+            case "add": {
+                String line = HexColorUtils.hexColored(ChatColor.WHITE + consumeString(args));
+                lore.add(line);
+                item.setSocketingDescription(lore);
+                I18n.sendMessage(sender, "message.socket.config.lore_added", item.getName());
+                return true;
+            }
+            case "insert": {
+                int lineNo = args.nextInt();
+                if (lineNo < 0 || lineNo > lore.size()) {
+                    throw new BadCommandException("message.num_out_of_range", lineNo, 0, lore.size());
+                }
+                String line = HexColorUtils.hexColored(ChatColor.WHITE + consumeString(args));
+                lore.add(lineNo, line);
+                item.setSocketingDescription(lore);
+                I18n.sendMessage(sender, "message.socket.config.lore_added", item.getName());
+                return true;
+            }
+            case "set": {
+                int lineNo = args.nextInt();
+                if (lineNo < 0 || lineNo >= lore.size()) {
+                    throw new BadCommandException("message.num_out_of_range", lineNo, 0, lore.size());
+                }
+                String line = HexColorUtils.hexColored(ChatColor.WHITE + consumeString(args));
+                lore.set(lineNo, line);
+                item.setSocketingDescription(lore);
+                I18n.sendMessage(sender, "message.socket.config.lore_changed", item.getName(), lineNo);
+                return true;
+            }
+            case "remove": {
+                int lineNo = args.nextInt();
+                if (lineNo < 0 || lineNo >= lore.size()) {
+                    throw new BadCommandException("message.num_out_of_range", lineNo, 0, lore.size());
+                }
+                lore.remove(lineNo);
+                item.setSocketingDescription(lore);
+                I18n.sendMessage(sender, "message.socket.config.lore_removed", item.getName(), lineNo);
+                return true;
+            }
+            default:
+                throw new BadCommandException("message.error.invalid_option", operation, "lore", "list,add,insert,set,remove,clear");
+        }
     }
 
     @SubCommand(value = "remove", tabCompleter = "itemCompleter")
