@@ -476,6 +476,7 @@ message:
       role_conflict_enable_container: "Item '%s' is currently a socket item. Disable socket item role first."
       role_conflict_accept_tags: "Item '%s' cannot set acceptTags while socket item role is enabled."
       role_conflict_socket_tags: "Item '%s' cannot set socketTags while container role is enabled."
+      use_socketing: "Use /rpgitems socketing (or /rpgitem socketing) to open socket GUI."
   damage:
     get: Item '%s' damage is %d-%d
     set:

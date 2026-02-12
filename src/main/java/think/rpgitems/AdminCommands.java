@@ -594,11 +594,7 @@ public class AdminCommands extends RPGCommandReceiver {
     @Completion("item:info,socketitem,container,accepttags,maxweight,insertline,tags,weight,minlevel,lore")
     public void socketGui(CommandSender sender, Arguments args) {
         if (args.remains() == 0) {
-            if (!(sender instanceof Player player)) {
-                throw new CommandException("message.error.only.player");
-            }
-            SocketGuiService.open(player);
-            return;
+            throw new BadCommandException("message.socket.config.use_socketing");
         }
 
         RPGItem item = getItem(args.nextString(), sender);
@@ -727,6 +723,14 @@ public class AdminCommands extends RPGCommandReceiver {
                         "info,socketitem,container,accepttags,maxweight,insertline,tags,weight,minlevel,lore"
                 );
         }
+    }
+
+    @SubCommand(value = "socketing", permission = "rpgitem.socketing")
+    public void socketingGui(CommandSender sender, Arguments args) {
+        if (!(sender instanceof Player player)) {
+            throw new CommandException("message.error.only.player");
+        }
+        SocketGuiService.open(player);
     }
 
     @SubCommand(value = "level", permission = "rpgitem.level")

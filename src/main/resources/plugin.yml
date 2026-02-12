@@ -33,10 +33,14 @@ permissions:
     default: op
   rpgitem.socket:
     default: op
+  rpgitem.socketing:
+    default: op
   rpgitem.level:
     default: op
 
   rpgitems.tomodel:
     default: false
   rpgitems.info:
+    default: false
+  rpgitems.socketing:
     default: false
