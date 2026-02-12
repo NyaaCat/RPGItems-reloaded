@@ -95,7 +95,7 @@ public class NoImmutableTick extends BasePower {
             String damageSourceKey = damageSourceOpt.get();
             ItemStack sourceItem = sourceItemOpt.get();
 
-            Optional<RPGItem> rpgItemOpt = ItemManager.toRPGItem(sourceItem);
+            Optional<RPGItem> rpgItemOpt = ItemManager.toActiveRPGItem(sourceItem);
             if (rpgItemOpt.isEmpty()) {
                 return false;
             }
