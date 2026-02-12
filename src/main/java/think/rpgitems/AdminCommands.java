@@ -761,7 +761,7 @@ public class AdminCommands extends RPGCommandReceiver {
                 throw new BadCommandException("message.level.error.invalid_level", level);
             }
             handItem.setItemLevel(hand, level);
-            handItem.updateItem(hand, false, player);
+            ItemManager.refreshStandaloneAware(handItem, hand, player);
             player.getInventory().setItemInMainHand(hand);
             ItemManager.enqueuePlayerUpdate(player);
             PlayerRPGInventoryCache.getInstance().invalidate(player.getUniqueId());
@@ -842,7 +842,7 @@ public class AdminCommands extends RPGCommandReceiver {
             public void run() {
                 for (ItemStack item : player.getInventory()) {
                     Optional<RPGItem> rpgItem = ItemManager.toRPGItemByMeta(item);
-                    rpgItem.ifPresent(r -> r.updateItem(item,player));
+                    rpgItem.ifPresent(r -> ItemManager.refreshStandaloneAware(r, item, player));
                 }
             }
         }.runTaskLater(RPGItems.plugin, 1);

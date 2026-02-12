@@ -239,7 +239,7 @@ public class RPGItem {
 
     public static void updateItemStack(ItemStack item, @Nullable Player player) {
         Optional<RPGItem> rItem = ItemManager.toRPGItem(item);
-        rItem.ifPresent(r -> r.updateItem(item, false, player));
+        rItem.ifPresent(r -> ItemManager.refreshStandaloneAware(r, item, player));
     }
 
     public static List<Modifier> getModifiers(ItemStack stack) {
@@ -888,7 +888,6 @@ public class RPGItem {
                 return;
             }
         }
-        boolean suppressStandaloneSocketEffects = ItemManager.shouldSkipStandaloneSocketEffects(this, item);
         if (getUpdateMode() == UpdateMode.LORE_ONLY) {
             loreOnly = true;
         }
@@ -951,7 +950,7 @@ public class RPGItem {
             }
         }
 
-        meta.setUnbreakable(!suppressStandaloneSocketEffects && hasMarker(Unbreakable.class));
+        meta.setUnbreakable(hasMarker(Unbreakable.class));
         meta.removeItemFlags(meta.getItemFlags().toArray(new ItemFlag[0]));
 
         for (ItemFlag flag : getItemFlags()) {
@@ -971,14 +970,9 @@ public class RPGItem {
                 }
             }
         }
-        if (!suppressStandaloneSocketEffects) {
-            checkAndMakeUnique(rpgitemsTagContainer);
-        } else {
-            rpgitemsTagContainer.remove(RGI_UNIQUE_MARK);
-            rpgitemsTagContainer.remove(RGI_UNIQUE_ID);
-        }
+        checkAndMakeUnique(rpgitemsTagContainer);
         rpgitemsTagContainer.commit();
-        item.setItemMeta(refreshAttributeModifiers(meta, !suppressStandaloneSocketEffects));
+        item.setItemMeta(refreshAttributeModifiers(meta));
         try {
             if (RPGItems.plugin.cfg.itemStackUuid) {
                 if (ItemTagUtils.getString(item, NBT_ITEM_UUID).isEmpty()) {
@@ -1217,18 +1211,13 @@ public class RPGItem {
                 .collect(Collectors.toList());
     }
 
-    private ItemMeta refreshAttributeModifiers(ItemMeta itemMeta, boolean applyRpgAttributeMarkers) {
-        List<AttributeModifier> attributeModifiers = applyRpgAttributeMarkers ? getMarker(AttributeModifier.class) : Collections.emptyList();
+    private ItemMeta refreshAttributeModifiers(ItemMeta itemMeta) {
+        List<AttributeModifier> attributeModifiers = getMarker(AttributeModifier.class);
         Multimap<Attribute, org.bukkit.attribute.AttributeModifier> old = itemMeta.getAttributeModifiers();
         if (attributeMode.equals(AttributeMode.FULL_UPDATE)) {
             if (old != null && !old.isEmpty()) {
                 old.forEach(itemMeta::removeAttributeModifier);
             }
-        } else if (!applyRpgAttributeMarkers && old != null && !old.isEmpty()) {
-            old.entries().stream()
-                    .filter(m -> m.getValue().getKey().getNamespace().equals("rpgitems"))
-                    .toList() // Collect to avoid ConcurrentModificationException
-                    .forEach(e -> itemMeta.removeAttributeModifier(e.getKey(), e.getValue()));
         }
         if (!attributeModifiers.isEmpty()) {
             for (AttributeModifier attributeModifier : attributeModifiers) {
@@ -1294,9 +1283,6 @@ public class RPGItem {
      */
     public double meleeDamage(Player p, double originDamage, ItemStack stack, Entity entity, double multiplier) {
         double damage = originDamage;
-        if (ItemManager.shouldSkipStandaloneSocketEffects(this, stack)) {
-            return originDamage;
-        }
         if (!canDoMeleeTo(stack, entity) || ItemManager.canUse(p, this) == Event.Result.DENY) {
             return -1;
         }
@@ -1349,9 +1335,6 @@ public class RPGItem {
      */
     public double projectileDamage(Player p, double originDamage, ItemStack stack, Entity damager, Entity entity) {
         double damage = originDamage;
-        if (ItemManager.shouldSkipStandaloneSocketEffects(this, stack)) {
-            return originDamage;
-        }
         if (ItemManager.canUse(p, this) == Event.Result.DENY) {
             return -1;
         }
@@ -1391,9 +1374,6 @@ public class RPGItem {
      * @return Final damage or -1 if should cancel this event
      */
     public double takeDamage(Player p, double originDamage, ItemStack stack, Entity damager) {
-        if (ItemManager.shouldSkipStandaloneSocketEffects(this, stack)) {
-            return originDamage;
-        }
         if (ItemManager.canUse(p, this) == Event.Result.DENY) {
             return originDamage;
         }
@@ -1418,9 +1398,6 @@ public class RPGItem {
      * @return If should process this event
      */
     public boolean breakBlock(Player p, ItemStack stack, Block block) {
-        if (ItemManager.shouldSkipStandaloneSocketEffects(this, stack)) {
-            return true;
-        }
         return consumeDurability(stack, getBlockBreakingCost());
     }
 
@@ -1453,9 +1430,6 @@ public class RPGItem {
     }
 
     public <TEvent extends Event, TPower extends Pimpl, TResult, TReturn> TReturn power(Player player, ItemStack i, TEvent event, Trigger<TEvent, TPower, TResult, TReturn> trigger, Object context) {
-        if (ItemManager.shouldSkipStandaloneSocketEffects(this, i)) {
-            return trigger.def(player, i, event);
-        }
         if (!isRuntimeComposite()) {
             Optional<RPGItem> runtime = ItemManager.toRuntimeRPGItem(i);
             if (runtime.isPresent() && runtime.get() != this) {
@@ -1749,7 +1723,7 @@ public class RPGItem {
         meta.displayName(MiniMessage.miniMessage().deserialize("<!i>" + I18n.replaceLegacyColorCodes(getDisplayName())));
         rStack.setItemMeta(meta);
 
-        updateItem(rStack, false, null);
+        ItemManager.refreshStandaloneAware(this, rStack, null);
         return rStack;
     }
 
@@ -1873,9 +1847,6 @@ public class RPGItem {
     }
 
     public boolean consumeDurability(ItemStack item, int val, boolean checkbound) {
-        if (ItemManager.shouldSkipStandaloneSocketEffects(this, item)) {
-            return true;
-        }
         if (val == 0) return true;
 
         int durability;

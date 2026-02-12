@@ -4,10 +4,12 @@ import cat.nyaa.nyaacore.Message;
 import cat.nyaa.nyaacore.Pair;
 import com.google.common.cache.Cache;
 import com.google.common.cache.CacheBuilder;
+import com.google.common.collect.Multimap;
 import com.sun.nio.file.ExtendedOpenOption;
 import org.bukkit.Bukkit;
 import org.bukkit.Material;
 import org.bukkit.NamespacedKey;
+import org.bukkit.attribute.Attribute;
 import org.bukkit.command.CommandSender;
 import org.bukkit.command.ConsoleCommandSender;
 import org.bukkit.configuration.ConfigurationSection;
@@ -182,12 +184,41 @@ public class ItemManager {
     public static void refreshPlayer(Player player) {
         for (ItemStack item : player.getInventory()) {
             Optional<RPGItem> rpgItem = ItemManager.toRPGItemByMeta(item);
-            rpgItem.ifPresent(r -> r.updateItem(item, player));
+            rpgItem.ifPresent(r -> refreshStandaloneAware(r, item, player));
         }
         for (ItemStack item : player.getInventory().getArmorContents()) {
             Optional<RPGItem> rpgItem = ItemManager.toRPGItemByMeta(item);
-            rpgItem.ifPresent(r -> r.updateItem(item, player));
+            rpgItem.ifPresent(r -> refreshStandaloneAware(r, item, player));
         }
+    }
+
+    public static void refreshStandaloneAware(RPGItem item, ItemStack stack, Player player) {
+        if (item == null || stack == null || stack.getType().isAir()) {
+            return;
+        }
+        if (shouldSkipStandaloneSocketEffects(item, stack)) {
+            item.updateItem(stack, true, player);
+            clearStandaloneSocketPassiveMeta(stack);
+            return;
+        }
+        item.updateItem(stack, false, player);
+    }
+
+    private static void clearStandaloneSocketPassiveMeta(ItemStack stack) {
+        ItemMeta itemMeta = stack.getItemMeta();
+        if (itemMeta == null) {
+            return;
+        }
+        itemMeta.setUnbreakable(false);
+        itemMeta.getEnchants().keySet().forEach(itemMeta::removeEnchant);
+        Multimap<Attribute, org.bukkit.attribute.AttributeModifier> modifiers = itemMeta.getAttributeModifiers();
+        if (modifiers != null && !modifiers.isEmpty()) {
+            modifiers.entries().stream()
+                    .filter(m -> m.getValue().getKey().getNamespace().equals("rpgitems"))
+                    .toList()
+                    .forEach(e -> itemMeta.removeAttributeModifier(e.getKey(), e.getValue()));
+        }
+        stack.setItemMeta(itemMeta);
     }
 
     public static void load(RPGItems pl) {

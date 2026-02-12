@@ -691,14 +691,14 @@ public class Events implements Listener {
     public void onPlayerChangeItem(PlayerItemHeldEvent ev) {
         Player player = ev.getPlayer();
         ItemStack item = player.getInventory().getItem(ev.getNewSlot());
-        ItemManager.toRPGItem(item).ifPresent(rpgItem -> rpgItem.updateItem(item,player));
+        ItemManager.toRPGItem(item).ifPresent(rpgItem -> ItemManager.refreshStandaloneAware(rpgItem, item, player));
         if (switchCooldown.contains(player.getUniqueId())) return;
         ItemStack[] armorContents = player.getInventory().getArmorContents();
         for (ItemStack stack : armorContents) {
-            ItemManager.toRPGItem(stack).ifPresent(rpgItem -> rpgItem.updateItem(stack, player));
+            ItemManager.toRPGItem(stack).ifPresent(rpgItem -> ItemManager.refreshStandaloneAware(rpgItem, stack, player));
         }
         ItemStack offhandItem = player.getInventory().getItemInOffHand();
-        ItemManager.toRPGItem(offhandItem).ifPresent(rpgItem -> rpgItem.updateItem(offhandItem,player));
+        ItemManager.toRPGItem(offhandItem).ifPresent(rpgItem -> ItemManager.refreshStandaloneAware(rpgItem, offhandItem, player));
         switchCooldown.add(player.getUniqueId());
         new BukkitRunnable() {
             @Override
