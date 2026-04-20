@@ -13,6 +13,7 @@ import think.rpgitems.event.PowerActivateEvent;
 import think.rpgitems.item.ItemManager;
 import think.rpgitems.power.*;
 import think.rpgitems.utils.PotionEffectUtils;
+import think.rpgitems.utils.StatusEffectApplier;
 
 import java.util.*;
 
@@ -139,10 +140,10 @@ public class PotionHitTaken extends BasePower implements PowerPotion {
             if (!getItem().consumeDurability(stack, getCost())) return PowerResult.cost();
             if(effectDamager) {
                 if(damager instanceof LivingEntity livingEntity){
-                    livingEntity.addPotionEffect(new PotionEffect(getType(), getDuration(), getAmplifier()+summing[0], isAmbient(), isShowParticles(), isShowIcon()));
+                    StatusEffectApplier.applyPotionEffect(livingEntity, new PotionEffect(getType(), getDuration(), getAmplifier()+summing[0], isAmbient(), isShowParticles(), isShowIcon()), player);
                 }
             }else{
-                player.addPotionEffect(new PotionEffect(getType(), getDuration(), getAmplifier()+summing[0], isAmbient(), isShowParticles(), isShowIcon()));
+                StatusEffectApplier.applyPotionEffect(player, new PotionEffect(getType(), getDuration(), getAmplifier()+summing[0], isAmbient(), isShowParticles(), isShowIcon()), player);
             }
             return PowerResult.ok(damage);
         }

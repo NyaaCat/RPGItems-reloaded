@@ -12,6 +12,7 @@ import org.bukkit.potion.PotionEffectType;
 import think.rpgitems.I18n;
 import think.rpgitems.event.PowerActivateEvent;
 import think.rpgitems.power.*;
+import think.rpgitems.utils.StatusEffectApplier;
 
 import java.util.HashMap;
 import java.util.UUID;
@@ -119,21 +120,21 @@ public class Rescue extends BasePower {
             target.sendTitle("", I18n.formatDefault("power.rescue.info"), 0, 40, 40);
             DamageCause cause = event.getCause();
             if (!canceled) {
-                target.addPotionEffect(new PotionEffect(PotionEffectType.HEALTH_BOOST, 2, 255));
+                StatusEffectApplier.applyPotionEffect(target, new PotionEffect(PotionEffectType.HEALTH_BOOST, 2, 255), target);
                 target.setHealth(getHealthTrigger() + event.getDamage());
             } else {
                 event.setCancelled(true);
             }
-            target.addPotionEffect(new PotionEffect(PotionEffectType.RESISTANCE, 200, 10));
-            target.addPotionEffect(new PotionEffect(PotionEffectType.REGENERATION, 400, 2));
-            target.addPotionEffect(new PotionEffect(PotionEffectType.SATURATION, 400, 2));
+            StatusEffectApplier.applyPotionEffect(target, new PotionEffect(PotionEffectType.RESISTANCE, 200, 10), target);
+            StatusEffectApplier.applyPotionEffect(target, new PotionEffect(PotionEffectType.REGENERATION, 400, 2), target);
+            StatusEffectApplier.applyPotionEffect(target, new PotionEffect(PotionEffectType.SATURATION, 400, 2), target);
             target.getWorld().playSound(target.getLocation(), Sound.BLOCK_ENCHANTMENT_TABLE_USE, 10, 1);
 
             if (isInPlace() && cause != DamageCause.DRAGON_BREATH
                     && cause != DamageCause.DROWNING
                     && cause != DamageCause.SUFFOCATION
                     && cause != DamageCause.VOID) {
-                target.addPotionEffect(new PotionEffect(PotionEffectType.GLOWING, 160, 10));
+                StatusEffectApplier.applyPotionEffect(target, new PotionEffect(PotionEffectType.GLOWING, 160, 10), target);
             } else if (isUseBed() && target.getRespawnLocation() != null)
                 target.teleport(target.getRespawnLocation());
             else

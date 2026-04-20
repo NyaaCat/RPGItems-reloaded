@@ -35,6 +35,7 @@ import think.rpgitems.I18n;
 import think.rpgitems.RPGItems;
 import think.rpgitems.event.PowerActivateEvent;
 import think.rpgitems.power.*;
+import think.rpgitems.utils.StatusEffectApplier;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -185,8 +186,8 @@ public class Fire extends BasePower {
                     } else {
                         List<Entity> ents = getNearbyEntities(getPower(), block.getLocation(), player, 1, 0, 1, 0);
                         for (Entity ent : ents)
-                            if (ent instanceof Damageable)
-                                ent.setFireTicks(getBurnduration());
+                            if (ent instanceof org.bukkit.entity.LivingEntity living)
+                                StatusEffectApplier.applyFireTicks(living, getBurnduration(), player);
                     }
 
                     if (finishedFire && blockDead)

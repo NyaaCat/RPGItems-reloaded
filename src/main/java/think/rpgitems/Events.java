@@ -49,6 +49,7 @@ import think.rpgitems.support.WGHandler;
 import think.rpgitems.support.WGSupport;
 import think.rpgitems.utils.InventoryUtils;
 import think.rpgitems.utils.LightContext;
+import think.rpgitems.utils.StatusEffectApplier;
 
 import java.util.*;
 import java.util.concurrent.ThreadLocalRandom;
@@ -1167,11 +1168,11 @@ public class Events implements Listener {
                             event.setCancelled(true);
                             if(event.getNewEffect().getType()== PotionEffectType.INSTANT_HEALTH){
                                 PotionEffect potion = new PotionEffect(PotionEffectType.INSTANT_DAMAGE,duration,amplifier,ambient,particle,icon);
-                                p.addPotionEffect(potion);
+                                StatusEffectApplier.applyPotionEffect(p, potion, p);
                             }
                             else{
                                 PotionEffect potion = new PotionEffect(PotionEffectType.INSTANT_HEALTH,duration,amplifier,ambient,particle,icon);
-                                p.addPotionEffect(potion);
+                                StatusEffectApplier.applyPotionEffect(p, potion, p);
                             }
                         }
                     }
@@ -1183,11 +1184,11 @@ public class Events implements Listener {
                         event.setCancelled(true);
                         if(event.getNewEffect().getType()== PotionEffectType.INSTANT_HEALTH){
                             PotionEffect potion = new PotionEffect(PotionEffectType.INSTANT_DAMAGE,duration,amplifier,ambient,particle,icon);
-                            p.addPotionEffect(potion);
+                            StatusEffectApplier.applyPotionEffect(p, potion, p);
                         }
                         else{
                             PotionEffect potion = new PotionEffect(PotionEffectType.INSTANT_HEALTH,duration,amplifier,ambient,particle,icon);
-                            p.addPotionEffect(potion);
+                            StatusEffectApplier.applyPotionEffect(p, potion, p);
                         }
                     }
                 }
@@ -1199,11 +1200,11 @@ public class Events implements Listener {
                             event.setCancelled(true);
                             if(event.getNewEffect().getType()== PotionEffectType.INSTANT_HEALTH){
                                 PotionEffect potion = new PotionEffect(PotionEffectType.INSTANT_DAMAGE,duration,amplifier,ambient,particle,icon);
-                                p.addPotionEffect(potion);
+                                StatusEffectApplier.applyPotionEffect(p, potion, p);
                             }
                             else{
                                 PotionEffect potion = new PotionEffect(PotionEffectType.INSTANT_HEALTH,duration,amplifier,ambient,particle,icon);
-                                p.addPotionEffect(potion);
+                                StatusEffectApplier.applyPotionEffect(p, potion, p);
                             }
                         }
                     }
@@ -1234,17 +1235,18 @@ public class Events implements Listener {
                 if (instantDetected) {
                     PlayerInventory inventory = player.getInventory();
                     int finalInstantAmplifier = instantAmplifier;
+                    Entity splashSource = event.getPotion().getShooter() instanceof Entity shooterEntity ? shooterEntity : player;
                     ItemManager.toActiveRPGItemByMeta(inventory.getItemInOffHand()).ifPresent(rpgItem -> {
                         for (Power power : rpgItem.getPowers()){
                             if(power.getName().equals("undead")&&((Undead)power).getAllowOffHand()){
                                 event.setIntensity(player,0);
                                 for (PotionEffect potionEffect : potionEffects) {
                                     if (potionEffect.getType() == PotionEffectType.INSTANT_HEALTH) {
-                                        player.addPotionEffect(new PotionEffect(PotionEffectType.INSTANT_DAMAGE, instantDuration, finalInstantAmplifier, false, false, true));
+                                        StatusEffectApplier.applyPotionEffect(player, new PotionEffect(PotionEffectType.INSTANT_DAMAGE, instantDuration, finalInstantAmplifier, false, false, true), splashSource);
                                     } else if (potionEffect.getType() == PotionEffectType.INSTANT_DAMAGE) {
-                                        player.addPotionEffect(new PotionEffect(PotionEffectType.INSTANT_HEALTH, instantDuration, finalInstantAmplifier, false, false, true));
+                                        StatusEffectApplier.applyPotionEffect(player, new PotionEffect(PotionEffectType.INSTANT_HEALTH, instantDuration, finalInstantAmplifier, false, false, true), splashSource);
                                     } else {
-                                        player.addPotionEffect(potionEffect);
+                                        StatusEffectApplier.applyPotionEffect(player, potionEffect, splashSource);
                                     }
                                 }
                                 return;
@@ -1257,11 +1259,11 @@ public class Events implements Listener {
                                 event.setIntensity(player,0);
                                 for (PotionEffect potionEffect : potionEffects) {
                                     if (potionEffect.getType() == PotionEffectType.INSTANT_HEALTH) {
-                                        player.addPotionEffect(new PotionEffect(PotionEffectType.INSTANT_DAMAGE, instantDuration, finalInstantAmplifier, false, false, true));
+                                        StatusEffectApplier.applyPotionEffect(player, new PotionEffect(PotionEffectType.INSTANT_DAMAGE, instantDuration, finalInstantAmplifier, false, false, true), splashSource);
                                     } else if (potionEffect.getType() == PotionEffectType.INSTANT_DAMAGE) {
-                                        player.addPotionEffect(new PotionEffect(PotionEffectType.INSTANT_HEALTH, instantDuration, finalInstantAmplifier, false, false, true));
+                                        StatusEffectApplier.applyPotionEffect(player, new PotionEffect(PotionEffectType.INSTANT_HEALTH, instantDuration, finalInstantAmplifier, false, false, true), splashSource);
                                     } else {
-                                        player.addPotionEffect(potionEffect);
+                                        StatusEffectApplier.applyPotionEffect(player, potionEffect, splashSource);
                                     }
                                 }
                                 return;
@@ -1276,11 +1278,11 @@ public class Events implements Listener {
                                     event.setIntensity(player,0);
                                     for (PotionEffect potionEffect : potionEffects) {
                                         if (potionEffect.getType() == PotionEffectType.INSTANT_HEALTH) {
-                                            player.addPotionEffect(new PotionEffect(PotionEffectType.INSTANT_DAMAGE, instantDuration, finalInstantAmplifier1, false, false, true));
+                                            StatusEffectApplier.applyPotionEffect(player, new PotionEffect(PotionEffectType.INSTANT_DAMAGE, instantDuration, finalInstantAmplifier1, false, false, true), splashSource);
                                         } else if (potionEffect.getType() == PotionEffectType.INSTANT_DAMAGE) {
-                                            player.addPotionEffect(new PotionEffect(PotionEffectType.INSTANT_HEALTH, instantDuration, finalInstantAmplifier1, false, false, true));
+                                            StatusEffectApplier.applyPotionEffect(player, new PotionEffect(PotionEffectType.INSTANT_HEALTH, instantDuration, finalInstantAmplifier1, false, false, true), splashSource);
                                         } else {
-                                            player.addPotionEffect(potionEffect);
+                                            StatusEffectApplier.applyPotionEffect(player, potionEffect, splashSource);
                                         }
                                     }
                                     return;
@@ -1325,6 +1327,7 @@ public class Events implements Listener {
                 if (instantDetected) {
                     PlayerInventory inventory = player.getInventory();
                     int finalInstantAmplifier = instantAmplifier;
+                    Entity aecSource = event.getEntity().getSource() instanceof Entity cloudEntity ? cloudEntity : player;
                     ItemManager.toActiveRPGItemByMeta(inventory.getItemInOffHand()).ifPresent(rpgItem -> {
                         for (Power power : rpgItem.getPowers()) {
                             if (power.getName().equals("undead")&&((Undead)power).getAllowOffHand()) {
@@ -1335,11 +1338,11 @@ public class Events implements Listener {
                                 event.getEntity().setDuration(event.getEntity().getDuration()-event.getEntity().getDurationOnUse());
                                 for (PotionEffect potionEffect : potionEffects) {
                                     if (potionEffect.getType() == PotionEffectType.INSTANT_HEALTH) {
-                                        player.addPotionEffect(new PotionEffect(PotionEffectType.INSTANT_DAMAGE, instantDuration, finalInstantAmplifier));
+                                        StatusEffectApplier.applyPotionEffect(player, new PotionEffect(PotionEffectType.INSTANT_DAMAGE, instantDuration, finalInstantAmplifier), aecSource);
                                     } else if (potionEffect.getType() == PotionEffectType.INSTANT_DAMAGE) {
-                                        player.addPotionEffect(new PotionEffect(PotionEffectType.INSTANT_HEALTH, instantDuration, finalInstantAmplifier));
+                                        StatusEffectApplier.applyPotionEffect(player, new PotionEffect(PotionEffectType.INSTANT_HEALTH, instantDuration, finalInstantAmplifier), aecSource);
                                     } else {
-                                        player.addPotionEffect(potionEffect);
+                                        StatusEffectApplier.applyPotionEffect(player, potionEffect, aecSource);
                                     }
                                 }
                             }
@@ -1355,11 +1358,11 @@ public class Events implements Listener {
                                 event.getEntity().setDuration(event.getEntity().getDuration()-event.getEntity().getDurationOnUse());
                                 for (PotionEffect potionEffect : potionEffects) {
                                     if (potionEffect.getType() == PotionEffectType.INSTANT_HEALTH) {
-                                        player.addPotionEffect(new PotionEffect(PotionEffectType.INSTANT_DAMAGE, instantDuration, finalInstantAmplifier));
+                                        StatusEffectApplier.applyPotionEffect(player, new PotionEffect(PotionEffectType.INSTANT_DAMAGE, instantDuration, finalInstantAmplifier), aecSource);
                                     } else if (potionEffect.getType() == PotionEffectType.INSTANT_DAMAGE) {
-                                        player.addPotionEffect(new PotionEffect(PotionEffectType.INSTANT_HEALTH, instantDuration, finalInstantAmplifier));
+                                        StatusEffectApplier.applyPotionEffect(player, new PotionEffect(PotionEffectType.INSTANT_HEALTH, instantDuration, finalInstantAmplifier), aecSource);
                                     } else {
-                                        player.addPotionEffect(potionEffect); // 保留其他效果
+                                        StatusEffectApplier.applyPotionEffect(player, potionEffect, aecSource); // 保留其他效果
                                     }
                                 }
                             }
@@ -1377,11 +1380,11 @@ public class Events implements Listener {
                                     event.getEntity().setDuration(event.getEntity().getDuration()-event.getEntity().getDurationOnUse());
                                     for (PotionEffect potionEffect : potionEffects) {
                                         if (potionEffect.getType() == PotionEffectType.INSTANT_HEALTH) {
-                                            player.addPotionEffect(new PotionEffect(PotionEffectType.INSTANT_DAMAGE, instantDuration, finalInstantAmplifier));
+                                            StatusEffectApplier.applyPotionEffect(player, new PotionEffect(PotionEffectType.INSTANT_DAMAGE, instantDuration, finalInstantAmplifier), aecSource);
                                         } else if (potionEffect.getType() == PotionEffectType.INSTANT_DAMAGE) {
-                                            player.addPotionEffect(new PotionEffect(PotionEffectType.INSTANT_HEALTH, instantDuration, finalInstantAmplifier));
+                                            StatusEffectApplier.applyPotionEffect(player, new PotionEffect(PotionEffectType.INSTANT_HEALTH, instantDuration, finalInstantAmplifier), aecSource);
                                         } else {
-                                            player.addPotionEffect(potionEffect); // 保留其他效果
+                                            StatusEffectApplier.applyPotionEffect(player, potionEffect, aecSource); // 保留其他效果
                                         }
                                     }
                                 }
