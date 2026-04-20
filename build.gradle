@@ -101,7 +101,7 @@ javadoc {
         //links 'https://hub.spigotmc.org/javadocs/spigot/'
         links 'https://guava.dev/releases/21.0/api/docs/'
         //links 'https://ci.nyaacat.com/javadocs/nyaacore-7.1.350/' //need update
-        links 'https://ci.md-5.net/job/BungeeCord/ws/chat/target/apidocs/'
+        //links 'https://ci.md-5.net/job/BungeeCord/ws/chat/target/apidocs/' // dead URL, redirects to 404
         links 'https://netty.io/4.1/api/'
 
         options.locale 'en_US'
