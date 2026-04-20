@@ -83,6 +83,9 @@ public class RPGItem {
     public static final NamespacedKey TAG_STACK_ID = new NamespacedKey(RPGItems.plugin, "stack_id");
     public static final NamespacedKey TAG_MODIFIER = new NamespacedKey(RPGItems.plugin, "property_modifier");
     public static final NamespacedKey TAG_VERSION = new NamespacedKey(RPGItems.plugin, "version");
+    public static final NamespacedKey TAG_ITEM_LEVEL = new NamespacedKey(RPGItems.plugin, "rgi_item_level");
+    public static final NamespacedKey TAG_SOCKETS = new NamespacedKey(RPGItems.plugin, "rgi_sockets");
+    public static final NamespacedKey TAG_INSTANCE_CACHE_KEY = new NamespacedKey(RPGItems.plugin, "rgi_instance_cache_key");
     public static final String DAMAGE_TYPE = "RGI_DAMAGE_TYPE";
     public static final String NBT_UID = "rpgitem_uid";
     public static final String NBT_ITEM_UUID = "rpgitem_item_uuid";
@@ -94,8 +97,8 @@ public class RPGItem {
     static RPGItems plugin;
     private boolean ignoreWorldGuard = false;
     private List<String> description = new ArrayList<>();
-    private boolean showPowerText = true;
-    private boolean showArmourLore = true;
+    private boolean showPowerText = false;
+    private boolean showArmourLore = false;
     private Map<Enchantment, Integer> enchantMap = null;
     private List<ItemFlag> itemFlags = new ArrayList<>();
     private boolean customItemModel = false;
@@ -161,6 +164,47 @@ public class RPGItem {
     private String quality;
     private String type = "item";
     private NamespacedKey itemModel;
+    private Set<String> socketAcceptTags = new LinkedHashSet<>();
+    private boolean socketContainer = false;
+    private int socketMaxWeight = 0;
+    private int socketInsertLine = 0;
+    private Set<String> socketTags = new LinkedHashSet<>();
+    private boolean socketItem = false;
+    private int socketWeight = 0;
+    private int socketMinLevel = 1;
+    private List<String> socketingDescription = new ArrayList<>();
+    private final NavigableMap<Integer, LevelDescriptionRule> levelDescriptionRules = new TreeMap<>();
+    private transient boolean runtimeComposite = false;
+
+    public enum LevelDescriptionOperation {
+        REPLACELINE,
+        REPLACEWHOLE;
+
+        static LevelDescriptionOperation parse(String operation) {
+            if (operation == null) {
+                return REPLACELINE;
+            }
+            return switch (operation.toLowerCase(Locale.ROOT)) {
+                case "replacewhole" -> REPLACEWHOLE;
+                case "replaceline" -> REPLACELINE;
+                default -> REPLACELINE;
+            };
+        }
+    }
+
+    public static class LevelDescriptionRule {
+        public final int level;
+        public final LevelDescriptionOperation operation;
+        public final int line;
+        public final List<String> newlines;
+
+        public LevelDescriptionRule(int level, LevelDescriptionOperation operation, int line, List<String> newlines) {
+            this.level = level;
+            this.operation = operation;
+            this.line = line;
+            this.newlines = List.copyOf(newlines);
+        }
+    }
 
     public RPGItem(String name, int uid, CommandSender author) {
         this.name = name;
@@ -197,7 +241,7 @@ public class RPGItem {
 
     public static void updateItemStack(ItemStack item, @Nullable Player player) {
         Optional<RPGItem> rItem = ItemManager.toRPGItem(item);
-        rItem.ifPresent(r -> r.updateItem(item, false, player));
+        rItem.ifPresent(r -> ItemManager.refreshStandaloneAware(r, item, player));
     }
 
     public static List<Modifier> getModifiers(ItemStack stack) {
@@ -300,6 +344,31 @@ public class RPGItem {
         List<String> desc = s.getStringList("description");
         desc.replaceAll(HexColorUtils::hexColored);
         setDescription(desc);
+        setSocketAcceptTags(normalizeTags(s.getStringList("socketAcceptTags")));
+        setSocketMaxWeight(s.getInt("socketMaxWeight", 0));
+        setSocketInsertLine(s.getInt("socketInsertLine", 0));
+        setSocketTags(normalizeTags(s.getStringList("socketTags")));
+        setSocketWeight(s.getInt("socketWeight", 0));
+        setSocketMinLevel(s.getInt("socketMinLevel", 1));
+        List<String> socketDescription = s.getStringList("socketingDescription");
+        socketDescription.replaceAll(HexColorUtils::hexColored);
+        setSocketingDescription(socketDescription);
+        setSocketContainer(s.getBoolean("socketContainer", false));
+        setSocketItem(s.getBoolean("socketItem", false));
+        levelDescriptionRules.clear();
+        ConfigurationSection levelDescriptionSection = s.getConfigurationSection("leveldescription");
+        if (levelDescriptionSection != null) {
+            for (String ruleKey : levelDescriptionSection.getKeys(false)) {
+                ConfigurationSection ruleSection = levelDescriptionSection.getConfigurationSection(ruleKey);
+                if (ruleSection == null) continue;
+                int level = Math.max(1, ruleSection.getInt("level", 1));
+                LevelDescriptionOperation operation = LevelDescriptionOperation.parse(ruleSection.getString("operation", "replaceline"));
+                int line = Math.max(0, ruleSection.getInt("line", 0));
+                List<String> newLines = ruleSection.getStringList("newlines");
+                newLines.replaceAll(HexColorUtils::hexColored);
+                levelDescriptionRules.put(level, new LevelDescriptionRule(level, operation, line, newLines));
+            }
+        }
         setDamageMin(s.getInt("damageMin"));
         setDamageMax(s.getInt("damageMax"));
         setArmour(s.getInt("armour", 0), false);
@@ -632,6 +701,28 @@ public class RPGItem {
         ArrayList<String> descriptionConv = new ArrayList<>(getDescription());
         descriptionConv.replaceAll(string -> string.replaceAll("§", "&"));
         s.set("description", descriptionConv);
+        s.set("socketAcceptTags", new ArrayList<>(getSocketAcceptTags()));
+        s.set("socketContainer", isSocketContainer());
+        s.set("socketMaxWeight", getSocketMaxWeight());
+        s.set("socketInsertLine", getSocketInsertLine());
+        s.set("socketTags", new ArrayList<>(getSocketTags()));
+        s.set("socketItem", isSocketItem());
+        s.set("socketWeight", getSocketWeight());
+        s.set("socketMinLevel", getSocketMinLevel());
+        ArrayList<String> socketDescriptionConv = new ArrayList<>(getSocketingDescription());
+        socketDescriptionConv.replaceAll(string -> string.replaceAll("§", "&"));
+        s.set("socketingDescription", socketDescriptionConv);
+        ConfigurationSection levelDescriptions = s.createSection("leveldescription");
+        int levelDescriptionIndex = 0;
+        for (LevelDescriptionRule rule : levelDescriptionRules.values()) {
+            ConfigurationSection ruleSection = levelDescriptions.createSection(String.valueOf(levelDescriptionIndex++));
+            ruleSection.set("level", rule.level);
+            ruleSection.set("operation", rule.operation == LevelDescriptionOperation.REPLACEWHOLE ? "replacewhole" : "replaceline");
+            ruleSection.set("line", rule.line);
+            ArrayList<String> newlines = new ArrayList<>(rule.newlines);
+            newlines.replaceAll(string -> string.replaceAll("§", "&"));
+            ruleSection.set("newlines", newlines);
+        }
         s.set("item", getItem().toString());
         s.set("ignoreWorldGuard", isIgnoreWorldGuard());
         s.set("canBeOwned", isCanBeOwned());
@@ -796,6 +887,13 @@ public class RPGItem {
     }
 
     public void updateItem(ItemStack item, boolean loreOnly, @Nullable Player player) {
+        if (!isRuntimeComposite()) {
+            Optional<RPGItem> runtime = ItemManager.toRuntimeRPGItem(item);
+            if (runtime.isPresent() && runtime.get() != this) {
+                runtime.get().updateItem(item, loreOnly, player);
+                return;
+            }
+        }
         if (getUpdateMode() == UpdateMode.LORE_ONLY) {
             loreOnly = true;
         }
@@ -1338,6 +1436,12 @@ public class RPGItem {
     }
 
     public <TEvent extends Event, TPower extends Pimpl, TResult, TReturn> TReturn power(Player player, ItemStack i, TEvent event, Trigger<TEvent, TPower, TResult, TReturn> trigger, Object context) {
+        if (!isRuntimeComposite()) {
+            Optional<RPGItem> runtime = ItemManager.toRuntimeRPGItem(i);
+            if (runtime.isPresent() && runtime.get() != this) {
+                return runtime.get().power(player, i, event, trigger, context);
+            }
+        }
         powerCustomTrigger(player, i, event, trigger, context);
 
         List<TPower> powers = this.getPower(trigger, player, i);
@@ -1481,6 +1585,137 @@ public class RPGItem {
         return output;
     }
 
+    static String normalizeTag(String tag) {
+        return tag == null ? "" : tag.trim().toUpperCase(Locale.ROOT);
+    }
+
+    static Set<String> normalizeTags(Collection<String> tags) {
+        return tags.stream()
+                .map(RPGItem::normalizeTag)
+                .filter(s -> !s.isEmpty())
+                .collect(Collectors.toCollection(LinkedHashSet::new));
+    }
+
+    private static NamespacedKey getSocketSlotKey(int index) {
+        return new NamespacedKey(RPGItems.plugin, "rgi_socket_" + index);
+    }
+
+    public boolean hasLevelDescriptionRules() {
+        return !levelDescriptionRules.isEmpty();
+    }
+
+    public List<String> getDescriptionForLevel(int level) {
+        List<String> baseDescription = new ArrayList<>(getDescription());
+        if (levelDescriptionRules.isEmpty()) {
+            return baseDescription;
+        }
+        Map.Entry<Integer, LevelDescriptionRule> selected = levelDescriptionRules.ceilingEntry(Math.max(1, level));
+        if (selected == null) {
+            return baseDescription;
+        }
+        LevelDescriptionRule rule = selected.getValue();
+        if (rule.operation == LevelDescriptionOperation.REPLACEWHOLE || baseDescription.isEmpty()) {
+            return new ArrayList<>(rule.newlines);
+        }
+        int line = Math.max(0, Math.min(rule.line, baseDescription.size() - 1));
+        baseDescription.remove(line);
+        baseDescription.addAll(line, rule.newlines);
+        return baseDescription;
+    }
+
+    public List<String> getDescriptionForInstance(int level, List<RPGItem> socketItems) {
+        List<String> resolved = getDescriptionForLevel(level);
+        List<String> socketDescription = socketItems.stream()
+                .flatMap(i -> i.getSocketingDescription().stream())
+                .toList();
+        if (socketDescription.isEmpty()) {
+            return resolved;
+        }
+        int insertLine = Math.max(0, Math.min(getSocketInsertLine(), resolved.size()));
+        resolved.addAll(insertLine, socketDescription);
+        return resolved;
+    }
+
+    public int getItemLevel(ItemStack itemStack) {
+        ItemMeta itemMeta = itemStack.getItemMeta();
+        if (itemMeta == null) {
+            return 1;
+        }
+        SubItemTagContainer tagContainer = makeTag(itemMeta, TAG_META);
+        int level = computeIfAbsent(tagContainer, TAG_ITEM_LEVEL, PersistentDataType.INTEGER, () -> 1);
+        if (level < 1) {
+            level = 1;
+            set(tagContainer, TAG_ITEM_LEVEL, level);
+        }
+        tagContainer.commit();
+        itemStack.setItemMeta(itemMeta);
+        return level;
+    }
+
+    public void setItemLevel(ItemStack itemStack, int level) {
+        int normalized = Math.max(1, level);
+        ItemMeta itemMeta = itemStack.getItemMeta();
+        if (itemMeta == null) return;
+        SubItemTagContainer tagContainer = makeTag(itemMeta, TAG_META);
+        set(tagContainer, TAG_ITEM_LEVEL, normalized);
+        tagContainer.commit();
+        itemStack.setItemMeta(itemMeta);
+    }
+
+    public List<Integer> getSocketedItemUids(ItemStack itemStack) {
+        ItemMeta itemMeta = itemStack.getItemMeta();
+        if (itemMeta == null) {
+            return new ArrayList<>();
+        }
+        SubItemTagContainer tagContainer = makeTag(itemMeta, TAG_META);
+        List<Integer> sockets = new ArrayList<>();
+        if (tagContainer.has(TAG_SOCKETS, PersistentDataType.TAG_CONTAINER)) {
+            PersistentDataContainer socketsContainer = getTag(tagContainer, TAG_SOCKETS);
+            for (int i = 0; i < 256; i++) {
+                NamespacedKey slotKey = getSocketSlotKey(i);
+                if (!socketsContainer.has(slotKey, PersistentDataType.INTEGER)) {
+                    break;
+                }
+                Integer uid = socketsContainer.get(slotKey, PersistentDataType.INTEGER);
+                if (uid != null) {
+                    sockets.add(uid);
+                }
+            }
+        }
+        tagContainer.commit();
+        itemStack.setItemMeta(itemMeta);
+        return sockets;
+    }
+
+    public void setSocketedItemUids(ItemStack itemStack, List<Integer> sockets) {
+        ItemMeta itemMeta = itemStack.getItemMeta();
+        if (itemMeta == null) return;
+        SubItemTagContainer tagContainer = makeTag(itemMeta, TAG_META);
+        tagContainer.remove(TAG_SOCKETS);
+        List<Integer> normalized = sockets.stream().filter(Objects::nonNull).toList();
+        if (!normalized.isEmpty()) {
+            SubItemTagContainer socketsContainer = makeTag(tagContainer, TAG_SOCKETS);
+            for (int i = 0; i < normalized.size(); i++) {
+                set(socketsContainer, getSocketSlotKey(i), normalized.get(i));
+            }
+            socketsContainer.commit();
+        }
+        tagContainer.commit();
+        itemStack.setItemMeta(itemMeta);
+    }
+
+    public String getOrCreateInstanceCacheKey(ItemStack itemStack) {
+        ItemMeta itemMeta = itemStack.getItemMeta();
+        if (itemMeta == null) {
+            return UUID.randomUUID().toString();
+        }
+        SubItemTagContainer tagContainer = makeTag(itemMeta, TAG_META);
+        String cacheKey = computeIfAbsent(tagContainer, TAG_INSTANCE_CACHE_KEY, PersistentDataType.STRING, () -> UUID.randomUUID().toString());
+        tagContainer.commit();
+        itemStack.setItemMeta(itemMeta);
+        return cacheKey;
+    }
+
     public ItemStack toItemStack() {
         ItemStack rStack = new ItemStack(getItem());
         ItemMeta meta = rStack.getItemMeta();
@@ -1494,7 +1729,7 @@ public class RPGItem {
         meta.displayName(MiniMessage.miniMessage().deserialize("<!i>" + I18n.replaceLegacyColorCodes(getDisplayName())));
         rStack.setItemMeta(meta);
 
-        updateItem(rStack, false, null);
+        ItemManager.refreshStandaloneAware(this, rStack, null);
         return rStack;
     }
 
@@ -2193,6 +2428,98 @@ public class RPGItem {
 
     public void setDescription(List<String> description) {
         this.description = description;
+    }
+
+    public Set<String> getSocketAcceptTags() {
+        return Collections.unmodifiableSet(socketAcceptTags);
+    }
+
+    public boolean isSocketContainer() {
+        return socketContainer;
+    }
+
+    public void setSocketContainer(boolean socketContainer) {
+        this.socketContainer = socketContainer;
+    }
+
+    public boolean isSocketContainerRoleEnabled() {
+        return socketContainer && !socketItem;
+    }
+
+    public void setSocketAcceptTags(Set<String> socketAcceptTags) {
+        this.socketAcceptTags = new LinkedHashSet<>(socketAcceptTags);
+    }
+
+    public int getSocketMaxWeight() {
+        return socketMaxWeight;
+    }
+
+    public void setSocketMaxWeight(int socketMaxWeight) {
+        this.socketMaxWeight = Math.max(0, socketMaxWeight);
+    }
+
+    public int getSocketInsertLine() {
+        return socketInsertLine;
+    }
+
+    public void setSocketInsertLine(int socketInsertLine) {
+        this.socketInsertLine = Math.max(0, socketInsertLine);
+    }
+
+    public Set<String> getSocketTags() {
+        return Collections.unmodifiableSet(socketTags);
+    }
+
+    public boolean isSocketItem() {
+        return socketItem;
+    }
+
+    public void setSocketItem(boolean socketItem) {
+        this.socketItem = socketItem;
+    }
+
+    public boolean isSocketItemRoleEnabled() {
+        return socketItem && !socketContainer;
+    }
+
+    public void setSocketTags(Set<String> socketTags) {
+        this.socketTags = new LinkedHashSet<>(socketTags);
+    }
+
+    public int getSocketWeight() {
+        return socketWeight;
+    }
+
+    public void setSocketWeight(int socketWeight) {
+        this.socketWeight = Math.max(0, socketWeight);
+    }
+
+    public int getSocketMinLevel() {
+        return socketMinLevel;
+    }
+
+    public void setSocketMinLevel(int socketMinLevel) {
+        this.socketMinLevel = Math.max(1, socketMinLevel);
+    }
+
+    public List<String> getSocketingDescription() {
+        return Collections.unmodifiableList(socketingDescription);
+    }
+
+    public void setSocketingDescription(List<String> socketingDescription) {
+        this.socketingDescription = new ArrayList<>(socketingDescription);
+    }
+
+    public NavigableMap<Integer, LevelDescriptionRule> getLevelDescriptionRules() {
+        return Collections.unmodifiableNavigableMap(levelDescriptionRules);
+    }
+
+    public boolean isRuntimeComposite() {
+        return runtimeComposite;
+    }
+
+    public void setRuntimeComposite(boolean runtimeComposite) {
+        this.runtimeComposite = runtimeComposite;
     }
 
     public String getDisplayName() {

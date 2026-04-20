@@ -68,7 +68,7 @@ public class PlayerRPGInventoryCache {
         ItemStack[] inventory = player.getInventory().getContents();
         for (int i = 0; i < inventory.length; i++) {
             ItemStack stack = inventory[i];
-            Optional<RPGItem> rpgItem = ItemManager.toRPGItem(stack);
+            Optional<RPGItem> rpgItem = ItemManager.toActiveRuntimeRPGItem(stack);
             if (rpgItem.isPresent()) {
                 RPGItem item = rpgItem.get();
                 if (hasAnyTrigger(item, BaseTriggers.TICK_INVENTORY, BaseTriggers.SNEAK)) {
@@ -86,7 +86,7 @@ public class PlayerRPGInventoryCache {
         ItemStack[] armor = player.getInventory().getArmorContents();
         for (int i = 0; i < armor.length; i++) {
             ItemStack stack = armor[i];
-            Optional<RPGItem> rpgItem = ItemManager.toRPGItem(stack);
+            Optional<RPGItem> rpgItem = ItemManager.toActiveRuntimeRPGItem(stack);
             if (rpgItem.isPresent()) {
                 RPGItem item = rpgItem.get();
                 if (hasAnyTrigger(item, BaseTriggers.TICK, BaseTriggers.SNEAKING)) {
@@ -102,7 +102,7 @@ public class PlayerRPGInventoryCache {
 
         // Cache mainhand with TICK or SNEAKING triggers
         ItemStack mainHand = player.getInventory().getItemInMainHand();
-        Optional<RPGItem> mainHandRPG = ItemManager.toRPGItem(mainHand);
+        Optional<RPGItem> mainHandRPG = ItemManager.toActiveRuntimeRPGItem(mainHand);
         if (mainHandRPG.isPresent()) {
             RPGItem item = mainHandRPG.get();
             if (hasAnyTrigger(item, BaseTriggers.TICK, BaseTriggers.SNEAKING)) {
@@ -117,7 +117,7 @@ public class PlayerRPGInventoryCache {
 
         // Cache offhand with TICK_OFFHAND or SNEAKING triggers
         ItemStack offHand = player.getInventory().getItemInOffHand();
-        Optional<RPGItem> offHandRPG = ItemManager.toRPGItem(offHand);
+        Optional<RPGItem> offHandRPG = ItemManager.toActiveRuntimeRPGItem(offHand);
         if (offHandRPG.isPresent()) {
             RPGItem item = offHandRPG.get();
             if (hasAnyTrigger(item, BaseTriggers.TICK_OFFHAND, BaseTriggers.SNEAKING)) {

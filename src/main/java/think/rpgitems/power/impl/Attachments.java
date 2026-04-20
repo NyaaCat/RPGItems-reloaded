@@ -160,7 +160,7 @@ public class Attachments extends BasePower {
         public boolean attach(Player player, ItemStack stack, Event event, ItemStack itemStack, Set<RPGItem> allow) {
             if (itemStack == null) return false;
             if (itemStack.equals(stack)) return false;
-            Optional<RPGItem> optItem = ItemManager.toRPGItem(itemStack);
+            Optional<RPGItem> optItem = ItemManager.toActiveRPGItem(itemStack);
             if (!optItem.isPresent()) return false;
             RPGItem item = optItem.get();
             if (allow != null && !allow.contains(item)) return false;

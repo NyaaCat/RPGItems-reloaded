@@ -102,7 +102,7 @@ public class EquipmentCondition extends BaseCondition<Void> {
         if (itemStack != null && !stack.isSimilar(itemStack)) {
             return false;
         }
-        Optional<RPGItem> stackItem = ItemManager.toRPGItem(stack);
+        Optional<RPGItem> stackItem = ItemManager.toActiveRPGItem(stack);
         if (rpgitem != null) {
             if (stackItem.isEmpty()) {
                 return false;

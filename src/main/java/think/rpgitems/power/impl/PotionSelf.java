@@ -25,6 +25,7 @@ import think.rpgitems.event.BeamHitBlockEvent;
 import think.rpgitems.event.BeamHitEntityEvent;
 import org.bukkit.Location;
 import think.rpgitems.utils.PotionEffectUtils;
+import think.rpgitems.utils.StatusEffectApplier;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -151,7 +152,7 @@ public class PotionSelf extends BasePower implements PowerPotion{
             List<ItemStack> items = new ArrayList<>(Arrays.asList(player.getInventory().getArmorContents()));
             items.add(player.getInventory().getItemInMainHand());
             for(ItemStack i : items){
-                ItemManager.toRPGItemByMeta(i).ifPresent(rpgItem -> {
+                ItemManager.toActiveRPGItemByMeta(i).ifPresent(rpgItem -> {
                     for (Power power : rpgItem.getPowers()){
                         if(power.getName().equals("potionself")) {
                             PotionSelf potionSelf = (PotionSelf) power;
@@ -171,7 +172,7 @@ public class PotionSelf extends BasePower implements PowerPotion{
             if (isClear()) {
                 player.removePotionEffect(getType());
             } else {
-                player.addPotionEffect(new PotionEffect(getType(), getDuration(), getAmplifier()+summing[0], isAmbient(), isShowParticles(), isShowIcon()));
+                StatusEffectApplier.applyPotionEffect(player, new PotionEffect(getType(), getDuration(), getAmplifier()+summing[0], isAmbient(), isShowParticles(), isShowIcon()), player);
             }
             return PowerResult.ok();
         }

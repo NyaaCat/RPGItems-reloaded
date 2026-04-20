@@ -54,7 +54,7 @@ public class SlotCondition extends BaseCondition<Void> {
     @Override
     public PowerResult<Void> check(Player player, ItemStack stack, Map<PropertyHolder, PowerResult<?>> context) {
 
-        Optional<RPGItem> rpgItem = ItemManager.toRPGItem(stack);
+        Optional<RPGItem> rpgItem = ItemManager.toActiveRPGItem(stack);
         if (!rpgItem.isPresent()) {
             Bukkit.getLogger().log(Level.FINER, "item is not a RGI, this shouldn't happen");
             return PowerResult.fail();
@@ -185,8 +185,8 @@ public class SlotCondition extends BaseCondition<Void> {
             if (itemStack != null && !stack.isSimilar(itemStack)) {
                 return false;
             }
-            Optional<RPGItem> itemUsed = ItemManager.toRPGItem(stack);
-            Optional<RPGItem> stackItem = ItemManager.toRPGItem(itemStack);
+            Optional<RPGItem> itemUsed = ItemManager.toActiveRPGItem(stack);
+            Optional<RPGItem> stackItem = ItemManager.toActiveRPGItem(itemStack);
             if (itemUsed.isPresent()) {
                 if (!stackItem.isPresent()) {
                     return false;

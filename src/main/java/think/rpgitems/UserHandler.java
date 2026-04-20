@@ -8,6 +8,7 @@ import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.persistence.PersistentDataContainer;
+import think.rpgitems.gui.SocketGuiService;
 import think.rpgitems.item.ItemManager;
 import think.rpgitems.item.RPGItem;
 import think.rpgitems.power.Completion;
@@ -57,6 +58,13 @@ public class UserHandler extends RPGCommandReceiver {
         item.toModel(itemStack);
         p.getInventory().setItemInMainHand(itemStack);
         msg(p, "message.model.to");
+    }
+
+    @SubCommand(value = "socketing", permission = "socketing")
+    @Completion("command")
+    public void socketing(CommandSender sender, Arguments args) {
+        Player p = asPlayer(sender);
+        SocketGuiService.open(p);
     }
 
     private RPGItem getItem(CommandSender sender) {

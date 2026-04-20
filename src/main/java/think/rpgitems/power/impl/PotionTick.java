@@ -16,6 +16,7 @@ import think.rpgitems.item.ItemManager;
 import think.rpgitems.power.*;
 import think.rpgitems.power.trigger.Trigger;
 import think.rpgitems.utils.PotionEffectUtils;
+import think.rpgitems.utils.StatusEffectApplier;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -166,7 +167,7 @@ public class PotionTick extends BasePower implements PowerPotion {
                 playerItems.add(player.getInventory().getItemInMainHand());
 
                 int additionalLevels = playerItems.stream()
-                        .flatMap(item -> ItemManager.toRPGItemByMeta(item).stream())
+                        .flatMap(item -> ItemManager.toActiveRPGItemByMeta(item).stream())
                         .flatMap(rpgItem -> rpgItem.getPowers().stream())
                         .filter(power -> power.getName().equals("potiontick"))
                         .map(power -> (PotionTick) power)
@@ -185,7 +186,7 @@ public class PotionTick extends BasePower implements PowerPotion {
                 }
             } else {
                 PotionEffect newEffect = new PotionEffect(getEffect(), getDuration(), totalAmplifier, isAmbient(), isShowParticles(), isShowIcon());
-                player.addPotionEffect(newEffect);
+                StatusEffectApplier.applyPotionEffect(player, newEffect, player);
             }
 
             // Reset cooldown if we bypassed it

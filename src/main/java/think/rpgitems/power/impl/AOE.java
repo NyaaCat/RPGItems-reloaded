@@ -21,6 +21,7 @@ import think.rpgitems.event.BeamHitEntityEvent;
 import think.rpgitems.event.PowerActivateEvent;
 import think.rpgitems.power.*;
 import think.rpgitems.utils.PotionEffectUtils;
+import think.rpgitems.utils.StatusEffectApplier;
 
 import javax.annotation.Nullable;
 import java.util.Collection;
@@ -225,13 +226,13 @@ public class AOE extends BasePower {
                     .forEach(ent -> {
                         if (player.equals(ent)) {
                             if (isSelfapplication()) {
-                                player.addPotionEffect(effect);
+                                StatusEffectApplier.applyPotionEffect(player, effect, player);
                                 hitCount.addAndGet(1);
                             }
                             return;
                         }
                         if (ent != null && !ent.hasMetadata("NPC") && Objects.equals(ent.getLocation().getWorld(), center.getWorld()) && ent.getLocation().distance(center) <= range) {
-                            ent.addPotionEffect(effect);
+                            StatusEffectApplier.applyPotionEffect(ent, effect, player);
                             hitCount.addAndGet(1);
                         }
                     });

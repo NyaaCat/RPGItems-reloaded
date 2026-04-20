@@ -421,6 +421,62 @@ message:
     set: Item model is set to %s
     unset: Item model reset
     invalid: Invalid namespaced key format，expected namespace:key or key(minecraft as namespace)
+  level:
+    get: Item '%s' level is %d
+    set: Item '%s' level set to %d
+    error:
+      invalid_level: Invalid level %d, minimum is 1
+      item_mismatch: "Target item '%s' does not match held item '%s'"
+  socket:
+    title: Socketing
+    hint:
+      put_container: Put an RPGItem in the center slot to start socketing
+    status:
+      title: Socket Status
+      level: 'Level: %d'
+      weight: 'Weight: %d/%d'
+      ok: All sockets are active
+    error:
+      single_item: Please place exactly one item
+      container_required: Center slot only accepts RPGItems as container
+      no_container: Put container item first
+      socket_required: This slot only accepts RPGItems as socket item
+      invalid_uid: 'Socket #%d is invalid (item not found)'
+      invalid_uid_short: Invalid socket #%d
+      tag_mismatch: "Socket '%s' tag mismatch"
+      level_low: "Socket '%s' requires item level %d"
+      weight_overflow: "Socket '%s' exceeds remaining weight (%d)"
+    config:
+      info_title: "Socket config of '%s':"
+      info_accept_tags: "  acceptTags: %s"
+      info_max_weight: "  maxWeight: %d"
+      info_insert_line: "  insertLine: %d"
+      info_socket_tags: "  socketTags: %s"
+      info_weight: "  socketWeight: %d"
+      info_min_level: "  socketMinLevel: %d"
+      info_lore_size: "  socketingDescription lines: %d"
+      info_lore_line: "    [%d] %s"
+      socket_item_enabled: "Item '%s' is now enabled as socket item"
+      socket_item_disabled: "Item '%s' socket item role disabled"
+      container_enabled: "Item '%s' is now enabled as socket container"
+      container_disabled: "Item '%s' socket container role disabled"
+      accept_tags_list: "Item '%s' acceptTags: %s"
+      accept_tags_set: "Item '%s' acceptTags updated: %s"
+      socket_tags_list: "Item '%s' socketTags: %s"
+      socket_tags_set: "Item '%s' socketTags updated: %s"
+      max_weight_set: "Item '%s' socket max weight set to %d"
+      insert_line_set: "Item '%s' socket insert line set to %d"
+      weight_set: "Item '%s' socket weight set to %d"
+      min_level_set: "Item '%s' socket min level set to %d"
+      lore_cleared: "Item '%s' socketingDescription cleared"
+      lore_added: "Item '%s' socketingDescription updated"
+      lore_changed: "Item '%s' socketingDescription line %d changed"
+      lore_removed: "Item '%s' socketingDescription line %d removed"
+      role_conflict_enable_socket_item: "Item '%s' is currently a socket container. Disable container role first."
+      role_conflict_enable_container: "Item '%s' is currently a socket item. Disable socket item role first."
+      role_conflict_accept_tags: "Item '%s' cannot set acceptTags while socket item role is enabled."
+      role_conflict_socket_tags: "Item '%s' cannot set socketTags while container role is enabled."
+      use_socketing: "Use /rpgitems socketing (or /rpgitem socketing) to open socket GUI."
   damage:
     get: Item '%s' damage is %d-%d
     set:
@@ -1086,6 +1142,11 @@ properties:
     durabilityMin: Durability should great than durabilityMin
     main_description: Condition that requires item's durability in a range
     main_name: Durability Condition
+  itemlevelcondition:
+    level: Target item level
+    operation: Compare operation, one of eq/gt/egt/lt/elt
+    main_description: Condition that checks the current item instance level
+    main_name: Item Level Condition
   economy:
     abortOnFailure: Abort on failure
     amountToPlayer: Amount of money will transfer to player (can be negative)

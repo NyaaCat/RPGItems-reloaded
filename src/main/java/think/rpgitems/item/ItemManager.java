@@ -4,10 +4,12 @@ import cat.nyaa.nyaacore.Message;
 import cat.nyaa.nyaacore.Pair;
 import com.google.common.cache.Cache;
 import com.google.common.cache.CacheBuilder;
+import com.google.common.collect.Multimap;
 import com.sun.nio.file.ExtendedOpenOption;
 import org.bukkit.Bukkit;
 import org.bukkit.Material;
 import org.bukkit.NamespacedKey;
+import org.bukkit.attribute.Attribute;
 import org.bukkit.command.CommandSender;
 import org.bukkit.command.ConsoleCommandSender;
 import org.bukkit.configuration.ConfigurationSection;
@@ -22,6 +24,12 @@ import org.bukkit.persistence.PersistentDataType;
 import think.rpgitems.AdminCommands;
 import think.rpgitems.I18n;
 import think.rpgitems.RPGItems;
+import think.rpgitems.power.Condition;
+import think.rpgitems.power.Marker;
+import think.rpgitems.power.PlaceholderHolder;
+import think.rpgitems.power.Power;
+import think.rpgitems.power.PowerManager;
+import think.rpgitems.power.PlayerRPGInventoryCache;
 import think.rpgitems.power.UnknownExtensionException;
 import think.rpgitems.power.UnknownPowerException;
 import think.rpgitems.support.WGSupport;
@@ -36,9 +44,11 @@ import java.nio.file.Path;
 import java.nio.file.StandardCopyOption;
 import java.nio.file.StandardOpenOption;
 import java.util.*;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ThreadLocalRandom;
 import java.util.concurrent.TimeUnit;
 import java.util.logging.Level;
+import java.util.stream.Collectors;
 
 import static think.rpgitems.item.RPGItem.*;
 import static think.rpgitems.power.Utils.rethrow;
@@ -61,6 +71,11 @@ public class ItemManager {
             .expireAfterAccess(10, TimeUnit.MINUTES)
             .initialCapacity(1024)
             .build();
+    private static final Map<String, RuntimeItemEntry> runtimeItemCache = new ConcurrentHashMap<>();
+    private static final LinkedHashSet<UUID> playerUpdateQueue = new LinkedHashSet<>();
+
+    private record RuntimeItemEntry(String signature, RPGItem item) {
+    }
 
     public static boolean hasName(String name) {
         return itemByName.containsKey(name) || groupByName.containsKey(name);
@@ -125,20 +140,85 @@ public class ItemManager {
         itemByName = new HashMap<>();
         groupById = new HashMap<>();
         groupByName = new HashMap<>();
+        runtimeItemCache.clear();
+        playerUpdateQueue.clear();
+        PlayerRPGInventoryCache.getInstance().clearAll();
         resetLock();
     }
 
     public static void refreshItem() {
         for (Player player : Bukkit.getOnlinePlayers()) {
-            for (ItemStack item : player.getInventory()) {
-                Optional<RPGItem> rpgItem = ItemManager.toRPGItemByMeta(item);
-                rpgItem.ifPresent(r -> r.updateItem(item,player));
-            }
-            for (ItemStack item : player.getInventory().getArmorContents()) {
-                Optional<RPGItem> rpgItem = ItemManager.toRPGItemByMeta(item);
-                rpgItem.ifPresent(r -> r.updateItem(item,player));
-            }
+            refreshPlayer(player);
         }
+    }
+
+    public static void enqueuePlayerUpdate(Player player) {
+        if (player == null) return;
+        enqueuePlayerUpdate(player.getUniqueId());
+    }
+
+    public static void enqueuePlayerUpdate(UUID playerId) {
+        if (playerId == null) return;
+        playerUpdateQueue.add(playerId);
+    }
+
+    public static void enqueueAllOnlinePlayers() {
+        Bukkit.getOnlinePlayers().forEach(player -> enqueuePlayerUpdate(player.getUniqueId()));
+    }
+
+    public static void processPlayerUpdateQueue() {
+        if (plugin == null) return;
+        int budget = Math.max(1, plugin.cfg.instanceUpdatePlayersPerTick);
+        Iterator<UUID> iterator = playerUpdateQueue.iterator();
+        int processed = 0;
+        while (iterator.hasNext() && processed < budget) {
+            UUID playerId = iterator.next();
+            iterator.remove();
+            Player player = Bukkit.getPlayer(playerId);
+            if (player == null || !player.isOnline()) continue;
+            refreshPlayer(player);
+            processed++;
+        }
+    }
+
+    public static void refreshPlayer(Player player) {
+        for (ItemStack item : player.getInventory()) {
+            Optional<RPGItem> rpgItem = ItemManager.toRPGItemByMeta(item);
+            rpgItem.ifPresent(r -> refreshStandaloneAware(r, item, player));
+        }
+        for (ItemStack item : player.getInventory().getArmorContents()) {
+            Optional<RPGItem> rpgItem = ItemManager.toRPGItemByMeta(item);
+            rpgItem.ifPresent(r -> refreshStandaloneAware(r, item, player));
+        }
+    }
+
+    public static void refreshStandaloneAware(RPGItem item, ItemStack stack, Player player) {
+        if (item == null || stack == null || stack.getType().isAir()) {
+            return;
+        }
+        if (shouldSkipStandaloneSocketEffects(item, stack)) {
+            item.updateItem(stack, true, player);
+            clearStandaloneSocketPassiveMeta(stack);
+            return;
+        }
+        item.updateItem(stack, false, player);
+    }
+
+    private static void clearStandaloneSocketPassiveMeta(ItemStack stack) {
+        ItemMeta itemMeta = stack.getItemMeta();
+        if (itemMeta == null) {
+            return;
+        }
+        itemMeta.setUnbreakable(false);
+        itemMeta.getEnchants().keySet().forEach(itemMeta::removeEnchant);
+        Multimap<Attribute, org.bukkit.attribute.AttributeModifier> modifiers = itemMeta.getAttributeModifiers();
+        if (modifiers != null && !modifiers.isEmpty()) {
+            modifiers.entries().stream()
+                    .filter(m -> m.getValue().getKey().getNamespace().equals("rpgitems"))
+                    .toList()
+                    .forEach(e -> itemMeta.removeAttributeModifier(e.getKey(), e.getValue()));
+        }
+        stack.setItemMeta(itemMeta);
     }
 
     public static void load(RPGItems pl) {
@@ -500,6 +580,22 @@ public class ItemManager {
     }
 
     public static Optional<RPGItem> toRPGItem(ItemStack item, boolean ignoreModel) {
+        return toBaseRPGItem(item, ignoreModel);
+    }
+
+    public static Optional<RPGItem> toActiveRPGItem(ItemStack item) {
+        return toActiveRPGItem(item, true);
+    }
+
+    public static Optional<RPGItem> toActiveRPGItem(ItemStack item, boolean ignoreModel) {
+        return filterStandaloneSocket(toRPGItem(item, ignoreModel), item);
+    }
+
+    public static Optional<RPGItem> toBaseRPGItem(ItemStack item) {
+        return toBaseRPGItem(item, true);
+    }
+
+    public static Optional<RPGItem> toBaseRPGItem(ItemStack item, boolean ignoreModel) {
         if (item == null || item.getType() == Material.AIR)
             return Optional.empty();
         if (!item.hasItemMeta())
@@ -521,11 +617,47 @@ public class ItemManager {
         return ItemManager.getItem(uid.get());
     }
 
+    public static Optional<RPGItem> toRuntimeRPGItem(ItemStack item) {
+        return toRuntimeRPGItem(item, true);
+    }
+
+    public static Optional<RPGItem> toRuntimeRPGItem(ItemStack item, boolean ignoreModel) {
+        Optional<RPGItem> base = toBaseRPGItem(item, ignoreModel);
+        if (base.isEmpty()) {
+            return Optional.empty();
+        }
+        return Optional.of(resolveRuntimeRPGItem(item, base.get()));
+    }
+
+    public static Optional<RPGItem> toActiveRuntimeRPGItem(ItemStack item) {
+        return toActiveRuntimeRPGItem(item, true);
+    }
+
+    public static Optional<RPGItem> toActiveRuntimeRPGItem(ItemStack item, boolean ignoreModel) {
+        return filterStandaloneSocket(toRuntimeRPGItem(item, ignoreModel), item);
+    }
+
     public static Optional<RPGItem> toRPGItemByMeta(ItemStack item) {
         return toRPGItemByMeta(item, true);
     }
 
     public static Optional<RPGItem> toRPGItemByMeta(ItemStack item, boolean ignoreModel) {
+        return toBaseRPGItemByMeta(item, ignoreModel);
+    }
+
+    public static Optional<RPGItem> toActiveRPGItemByMeta(ItemStack item) {
+        return toActiveRPGItemByMeta(item, true);
+    }
+
+    public static Optional<RPGItem> toActiveRPGItemByMeta(ItemStack item, boolean ignoreModel) {
+        return filterStandaloneSocket(toRPGItemByMeta(item, ignoreModel), item);
+    }
+
+    public static Optional<RPGItem> toBaseRPGItemByMeta(ItemStack item) {
+        return toBaseRPGItemByMeta(item, true);
+    }
+
+    public static Optional<RPGItem> toBaseRPGItemByMeta(ItemStack item, boolean ignoreModel) {
         if (item == null || item.getType() == Material.AIR)
             return Optional.empty();
         if (!item.hasItemMeta())
@@ -546,6 +678,155 @@ public class ItemManager {
             return ItemManager.getItem(uid);
         }
         return Optional.empty();
+    }
+
+    public static Optional<RPGItem> toRuntimeRPGItemByMeta(ItemStack item) {
+        return toRuntimeRPGItemByMeta(item, true);
+    }
+
+    public static Optional<RPGItem> toRuntimeRPGItemByMeta(ItemStack item, boolean ignoreModel) {
+        Optional<RPGItem> base = toBaseRPGItemByMeta(item, ignoreModel);
+        if (base.isEmpty()) {
+            return Optional.empty();
+        }
+        return Optional.of(resolveRuntimeRPGItem(item, base.get()));
+    }
+
+    public static Optional<RPGItem> toActiveRuntimeRPGItemByMeta(ItemStack item) {
+        return toActiveRuntimeRPGItemByMeta(item, true);
+    }
+
+    public static Optional<RPGItem> toActiveRuntimeRPGItemByMeta(ItemStack item, boolean ignoreModel) {
+        return filterStandaloneSocket(toRuntimeRPGItemByMeta(item, ignoreModel), item);
+    }
+
+    private static Optional<RPGItem> filterStandaloneSocket(Optional<RPGItem> candidate, ItemStack stack) {
+        if (candidate.isEmpty()) {
+            return candidate;
+        }
+        return shouldSkipStandaloneSocketEffects(candidate.get(), stack) ? Optional.empty() : candidate;
+    }
+
+    public static boolean shouldSkipStandaloneSocketEffects(RPGItem item, ItemStack stack) {
+        if (item == null || stack == null || stack.getType() == Material.AIR) {
+            return false;
+        }
+        if (!item.isSocketItem()) {
+            return false;
+        }
+        Optional<RPGItem> base = toBaseRPGItem(stack, false);
+        return base.isPresent() && base.get().getUid() == item.getUid();
+    }
+
+    public static void clearRuntimeCache() {
+        runtimeItemCache.clear();
+    }
+
+    private static RPGItem resolveRuntimeRPGItem(ItemStack itemStack, RPGItem base) {
+        if (base.isRuntimeComposite()) {
+            return base;
+        }
+
+        int level = base.getItemLevel(itemStack);
+        List<Integer> socketIds = base.isSocketContainerRoleEnabled() ? base.getSocketedItemUids(itemStack) : Collections.emptyList();
+        boolean requiresComposite = level > 1 || !socketIds.isEmpty() || base.hasLevelDescriptionRules();
+        if (!requiresComposite) {
+            return base;
+        }
+
+        String cacheKey = base.getOrCreateInstanceCacheKey(itemStack);
+        String signature = buildRuntimeSignature(base, level, socketIds);
+        RuntimeItemEntry cacheEntry = runtimeItemCache.get(cacheKey);
+        if (cacheEntry != null && cacheEntry.signature.equals(signature)) {
+            return cacheEntry.item;
+        }
+
+        RPGItem runtime = buildRuntimeComposite(base, level, socketIds);
+        runtimeItemCache.put(cacheKey, new RuntimeItemEntry(signature, runtime));
+        return runtime;
+    }
+
+    private static String buildRuntimeSignature(RPGItem base, int level, List<Integer> socketIds) {
+        return base.getUid() + "|" + level + "|" + socketIds.stream().map(String::valueOf).collect(Collectors.joining(",")) + "|" + RPGItems.getSerial();
+    }
+
+    private static RPGItem buildRuntimeComposite(RPGItem base, int level, List<Integer> socketIds) {
+        try {
+            ConfigurationSection section = new MemoryConfiguration();
+            base.save(section);
+            RPGItem runtime = new RPGItem(section, (File) null);
+            runtime.setRuntimeComposite(true);
+
+            List<RPGItem> activeSockets = new ArrayList<>();
+            int usedWeight = 0;
+            for (Integer socketId : socketIds) {
+                Optional<RPGItem> socketOpt = getItem(socketId);
+                if (socketOpt.isEmpty()) {
+                    continue;
+                }
+                RPGItem socket = socketOpt.get();
+                if (!canUseSocket(base, socket, level, usedWeight)) {
+                    continue;
+                }
+                usedWeight += socket.getSocketWeight();
+                activeSockets.add(socket);
+                appendSocketHolders(runtime, socket);
+            }
+
+            runtime.setDescription(base.getDescriptionForInstance(level, activeSockets));
+            runtime.rebuild();
+            return runtime;
+        } catch (Exception ex) {
+            plugin.getLogger().log(Level.WARNING, "Failed to build runtime composite item for " + base.getName(), ex);
+            return base;
+        }
+    }
+
+    private static void appendSocketHolders(RPGItem runtime, RPGItem socket) {
+        for (Power power : socket.getPowers()) {
+            Power cloned = clonePropertyHolder(power, runtime);
+            runtime.addPower(socket.getPropertyHolderKey(power), cloned);
+        }
+        for (Condition<?> condition : socket.getConditions()) {
+            Condition<?> cloned = clonePropertyHolder(condition, runtime);
+            runtime.addCondition(socket.getPropertyHolderKey(condition), cloned);
+        }
+        for (Marker marker : socket.getMarkers()) {
+            Marker cloned = clonePropertyHolder(marker, runtime);
+            runtime.addMarker(socket.getPropertyHolderKey(marker), cloned);
+        }
+    }
+
+    @SuppressWarnings("unchecked")
+    private static <T extends PlaceholderHolder> T clonePropertyHolder(T original, RPGItem owner) {
+        MemoryConfiguration cfg = new MemoryConfiguration();
+        original.save(cfg);
+        Class<? extends T> clazz = (Class<? extends T>) original.getClass();
+        T cloned = PowerManager.instantiate(clazz);
+        cloned.setItem(owner);
+        cloned.init(cfg);
+        return cloned;
+    }
+
+    public static boolean canUseSocket(RPGItem base, RPGItem socket, int itemLevel, int usedWeight) {
+        if (!base.isSocketContainerRoleEnabled() || !socket.isSocketItemRoleEnabled()) {
+            return false;
+        }
+        Set<String> acceptTags = base.getSocketAcceptTags();
+        Set<String> socketTags = socket.getSocketTags();
+        if (acceptTags.isEmpty() || socketTags.isEmpty()) {
+            return false;
+        }
+        boolean tagMatch = acceptTags.contains("ANY")
+                || socketTags.contains("ANY")
+                || socketTags.stream().anyMatch(acceptTags::contains);
+        if (!tagMatch) {
+            return false;
+        }
+        if (itemLevel < socket.getSocketMinLevel()) {
+            return false;
+        }
+        return usedWeight + socket.getSocketWeight() <= base.getSocketMaxWeight();
     }
 
     public static long hash(byte[] src) {

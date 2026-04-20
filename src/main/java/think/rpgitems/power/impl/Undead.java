@@ -12,6 +12,7 @@ import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.Damageable;
 import think.rpgitems.I18n;
 import think.rpgitems.power.*;
+import think.rpgitems.utils.StatusEffectApplier;
 
 @Meta(defaultTrigger = "TICK", implClass = Undead.Impl.class)
 public class Undead extends BasePower {
@@ -37,7 +38,7 @@ public class Undead extends BasePower {
                 player.setRemainingAir(player.getMaximumAir());
             }
             if(player.getFireTicks()<=140&& player.getInventory().getHelmet() instanceof Damageable &&!player.isInWaterOrRainOrBubbleColumn()&&!player.isInPowderedSnow()&&player.getWorld().getEnvironment()==World.Environment.NORMAL&&internalLight>=12&&skyLight==15){
-                player.setFireTicks(160);
+                StatusEffectApplier.applyFireTicks(player, 160, player);
                 return PowerResult.ok();
             }
             return PowerResult.noop();

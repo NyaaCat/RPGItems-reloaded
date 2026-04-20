@@ -26,6 +26,8 @@ class Attachment extends Trigger<Event, PowerAttachment, Void, Void> {
     public PowerResult<Void> run(PowerAttachment power, Player player, ItemStack i, Event event, Object data) {
         ItemStack originalItemstack = (ItemStack) ((Pair) data).getKey();
         Event originalEvent = (Event) ((Pair) data).getValue();
-        return power.attachment(player, i, ItemManager.toRPGItem(originalItemstack).orElseThrow(IllegalArgumentException::new), originalEvent, originalItemstack);
+        return ItemManager.toActiveRPGItem(originalItemstack)
+                .map(origin -> power.attachment(player, i, origin, originalEvent, originalItemstack))
+                .orElseGet(PowerResult::noop);
     }
 }
