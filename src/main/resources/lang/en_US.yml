@@ -857,6 +857,9 @@ power:
     cone: Launches multiple `%s` when right clicked (%.1fs cooldown)
     display: Launches a `%s` when right clicked (%.1fs cooldown)
     noFireball: Fireball can't be used with cone mechanism.
+  item_projectile:
+    cone: Launches multiple modeled `%s` when right clicked (%.1fs cooldown)
+    display: Launches a modeled `%s` when right clicked (%.1fs cooldown)
   pumpkin: 1/%d chance to make enemy put on a pumpkin
   rainbow: Shoots %d multicoloured wool (%.1fs cooldown)
   ranged: Can use as a ranged weapon
@@ -1397,6 +1400,25 @@ properties:
     castOff: Cast at player when triggering this power, instead of realtime (after delay, etc)
     firingRange: No use yet
     initialRotation: Initial rotation to calculate in polar coordinates
+  item_projectile:
+    main_description: Launches an invisible projectile with a following item display model
+    main_name: Item Projectile
+    itemMaterial: Material used by the item display model
+    customModelData: Custom model data for the item display model
+    itemModel: Item model namespaced key for the item display model
+    displayTransform: Item display transform
+    displayScale: Item display scale
+    displayOffsetX: Local X offset from the projectile carrier
+    displayOffsetY: Local Y offset from the projectile carrier
+    displayOffsetZ: Local Z offset from the projectile carrier
+    rotationReference: Direction source for display rotation, LAUNCH or VELOCITY
+    rotationMode: Rotation mode, FIXED or SPIN
+    rotationYaw: Local yaw offset in degrees
+    rotationPitch: Local pitch offset in degrees
+    rotationRoll: Local roll offset in degrees
+    spinAxis: Local spin axis
+    spinSpeed: Spin speed in degrees per tick
+    spinInitial: Initial spin angle in degrees
   pumpkin:
     chance: Chance of triggering this power, in percentage
     drop: Drop chance of the pumpkin, 0.0~1.0

@@ -844,6 +844,9 @@ power:
     cone: 右键发射一堆%s (%.1f秒冷却)
     display: 右键发射%s (%.1f秒冷却)
     noFireball: 火焰弹无法应用于圆锥机制。
+  item_projectile:
+    cone: 右键发射一堆带模型的%s (%.1f秒冷却)
+    display: 右键发射带模型的%s (%.1f秒冷却)
   pumpkin: 1/%d 几率使敌人戴上南瓜头
   rainbow: 发射 %d 个彩色羊毛 (%.1f 秒冷却)
   ranged: 可远程使用
@@ -1466,6 +1469,25 @@ properties:
     speed: 弹射物速度
     suppressArrow: 取消箭矢（仍然会消耗）
     yield: 爆炸物的爆炸半径
+  item_projectile:
+    main_description: 发射一个不可见弹射物，并使用跟随的物品展示实体作为模型
+    main_name: 物品模型弹射物
+    itemMaterial: 物品展示模型使用的材质
+    customModelData: 物品展示模型使用的自定义模型数据
+    itemModel: 物品展示模型使用的 item model 命名空间键
+    displayTransform: 物品展示实体的显示变换
+    displayScale: 物品展示实体的缩放
+    displayOffsetX: 相对弹射物载体的本地 X 偏移
+    displayOffsetY: 相对弹射物载体的本地 Y 偏移
+    displayOffsetZ: 相对弹射物载体的本地 Z 偏移
+    rotationReference: 显示旋转的方向来源，可为 LAUNCH 或 VELOCITY
+    rotationMode: 旋转模式，可为 FIXED 或 SPIN
+    rotationYaw: 本地 yaw 旋转偏移，单位为度
+    rotationPitch: 本地 pitch 旋转偏移，单位为度
+    rotationRoll: 本地 roll 旋转偏移，单位为度
+    spinAxis: 本地持续旋转轴
+    spinSpeed: 每 tick 持续旋转角速度，单位为度
+    spinInitial: 初始持续旋转角度，单位为度
   projectile_hit:
     main_description: 弹射物命中时触发
     main_name: Projectile Hit
