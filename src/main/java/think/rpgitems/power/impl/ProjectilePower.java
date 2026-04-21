@@ -541,9 +541,10 @@ public class ProjectilePower extends BasePower {
             }
             projectile.setShooter(player);
             handleProjectile(v, projectile);
+            afterProjectileLaunch(player, stack, v, projectile);
         }
 
-        private void handleProjectile(Vector v, org.bukkit.entity.Projectile projectile) {
+        protected void handleProjectile(Vector v, org.bukkit.entity.Projectile projectile) {
             projectile.setPersistent(false);
             projectile.setGravity(isGravity());
             // Store power info for NoImmutableTick tag checking
@@ -588,6 +589,9 @@ public class ProjectilePower extends BasePower {
                     }
                 }).runTaskLater(RPGItems.plugin, 80);
             }
+        }
+
+        protected void afterProjectileLaunch(Player player, ItemStack stack, Vector v, org.bukkit.entity.Projectile projectile) {
         }
 
         @Override
