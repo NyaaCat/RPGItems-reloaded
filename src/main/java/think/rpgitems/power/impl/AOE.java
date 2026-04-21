@@ -173,7 +173,7 @@ public class AOE extends BasePower {
         MOBS, PLAYERS, ALL
     }
 
-    public class Impl implements PowerRightClick, PowerLeftClick, PowerOffhandClick, PowerPlain, PowerHit, PowerBowShoot, PowerBeamHit, PowerProjectileHit, PowerLivingEntity, PowerLocation, PowerConsume {
+    public class Impl implements PowerRightClick, PowerLeftClick, PowerOffhandClick, PowerPlain, PowerTick, PowerHit, PowerBowShoot, PowerBeamHit, PowerProjectileHit, PowerLivingEntity, PowerLocation, PowerConsume {
         @Override
         public PowerResult<Void> rightClick(final Player player, ItemStack stack, PlayerInteractEvent event) {
             return fire(player, stack);
@@ -182,6 +182,11 @@ public class AOE extends BasePower {
         @Override
         public PowerResult<Void> fire(Player player, ItemStack stack) {
             return fire(player.getEyeLocation(), player, stack, getNearbyEntities(getPower(), player.getLocation(), player, getRange()));
+        }
+
+        @Override
+        public PowerResult<Void> tick(Player player, ItemStack stack) {
+            return fire(player, stack);
         }
 
         private PowerResult<Void> fire(Location center, Player player, ItemStack itemStack, Collection<Entity> entityList) {
