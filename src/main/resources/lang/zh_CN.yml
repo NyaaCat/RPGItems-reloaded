@@ -1488,6 +1488,9 @@ properties:
     spinAxis: 本地持续旋转轴
     spinSpeed: 每 tick 持续旋转角速度，单位为度
     spinInitial: 初始持续旋转角度，单位为度
+    maxRange: 弹射物被移除前的最大飞行距离，0 表示不限制
+    ttl: 弹射物被移除前的存在时间，单位为 tick，0 表示使用默认弹射物生命周期
+    damage: 自定义弹射物伤害，未设置或小于 0 时使用物品默认弹射物伤害
   projectile_hit:
     main_description: 弹射物命中时触发
     main_name: Projectile Hit

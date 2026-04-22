@@ -68,6 +68,7 @@ public class Events implements Listener {
     public static final String SUPPRESS_MELEE = "SuppressMelee";
     public static final String SUPPRESS_PROJECTILE = "SuppressProjectile";
     public static final String DAMAGE_SOURCE_ITEM = "DamageSourceItem";
+    public static final String PROJECTILE_DAMAGE = "RPGItemProjectileDamage";
 
     private static final HashSet<Integer> removeProjectiles = new HashSet<>();
     private static final HashMap<Integer, Integer> rpgProjectiles = new HashMap<>();
@@ -881,6 +882,9 @@ public class Events implements Listener {
 
         Boolean suppressProjectile = Context.instance().getBoolean(player.getUniqueId(), SUPPRESS_PROJECTILE);
         Double overridingDamage = Context.instance().getDouble(player.getUniqueId(), OVERRIDING_DAMAGE);
+        if (overridingDamage == null) {
+            overridingDamage = projectile.getPersistentDataContainer().get(new NamespacedKey(plugin, PROJECTILE_DAMAGE), PersistentDataType.DOUBLE);
+        }
 
         if (suppressProjectile != null && suppressProjectile) {
             if (overridingDamage != null) {

@@ -581,14 +581,19 @@ public class ProjectilePower extends BasePower {
             if (projectile instanceof ShulkerBullet) {
                 ((ShulkerBullet) projectile).setTarget(null);
             }
-            if (!isGravity()) {
+            int projectileTtl = getProjectileTtl();
+            if (projectileTtl > 0) {
                 (new BukkitRunnable() {
                     @Override
                     public void run() {
                         projectile.remove();
                     }
-                }).runTaskLater(RPGItems.plugin, 80);
+                }).runTaskLater(RPGItems.plugin, projectileTtl);
             }
+        }
+
+        protected int getProjectileTtl() {
+            return isGravity() ? 0 : 80;
         }
 
         protected void afterProjectileLaunch(Player player, ItemStack stack, Vector v, org.bukkit.entity.Projectile projectile) {

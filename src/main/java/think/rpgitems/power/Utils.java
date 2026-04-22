@@ -574,6 +574,15 @@ public class Utils {
                     }
                 } else if (field.getType().equals(CustomModelData.Builder.class)) {
                     CustomModelData.Builder builder = CustomModelData.customModelData();
+                    if (!value.contains(":")) {
+                        try {
+                            builder.addFloat(Float.parseFloat(value));
+                            field.set(power, builder);
+                            return;
+                        } catch (NumberFormatException e) {
+                            throw new BadCommandException("message.custom_model_data.invalid_float", value);
+                        }
+                    }
                     String[] sections = value.split(";");
                     for (String section : sections) {
                         String[] keyValue = section.split(":", 2);

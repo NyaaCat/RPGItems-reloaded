@@ -2,19 +2,23 @@ package think.rpgitems.power.impl;
 
 import io.papermc.paper.datacomponent.DataComponentTypes;
 import io.papermc.paper.datacomponent.item.CustomModelData;
+import org.bukkit.Location;
 import org.bukkit.Material;
 import org.bukkit.NamespacedKey;
+import org.bukkit.entity.AbstractArrow;
 import org.bukkit.entity.ItemDisplay;
 import org.bukkit.entity.Player;
 import org.bukkit.entity.Projectile;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.ItemMeta;
+import org.bukkit.persistence.PersistentDataType;
 import org.bukkit.scheduler.BukkitRunnable;
 import org.bukkit.util.Transformation;
 import org.bukkit.util.Vector;
 import org.joml.Quaternionf;
 import org.joml.Vector3f;
 import think.rpgitems.I18n;
+import think.rpgitems.Events;
 import think.rpgitems.RPGItems;
 import think.rpgitems.power.AcceptedValue;
 import think.rpgitems.power.Deserializer;
@@ -119,6 +123,15 @@ public class ItemProjectilePower extends ProjectilePower {
     @Property
     public double spinInitial = 0.0;
 
+    @Property
+    public double maxRange = 0.0;
+
+    @Property
+    public int ttl = 0;
+
+    @Property
+    public Double damage = null;
+
     @Override
     public String getName() {
         return "item_projectile";
@@ -196,6 +209,21 @@ public class ItemProjectilePower extends ProjectilePower {
         return spinInitial;
     }
 
+    public double getMaxRange() {
+        return Double.isFinite(maxRange) ? Math.max(maxRange, 0.0) : 0.0;
+    }
+
+    public int getTtl() {
+        return Math.max(ttl, 0);
+    }
+
+    public Double getDamage() {
+        if (damage == null || !Double.isFinite(damage) || damage < 0.0) {
+            return null;
+        }
+        return damage;
+    }
+
     public enum RotationReference {
         LAUNCH,
         VELOCITY
@@ -214,12 +242,27 @@ public class ItemProjectilePower extends ProjectilePower {
 
     public class Impl extends ProjectilePower.Impl {
         @Override
+        protected void handleProjectile(Vector v, Projectile projectile) {
+            super.handleProjectile(v, projectile);
+            Double customDamage = getDamage();
+            if (customDamage != null) {
+                projectile.getPersistentDataContainer().set(new NamespacedKey(RPGItems.plugin, Events.PROJECTILE_DAMAGE), PersistentDataType.DOUBLE, customDamage);
+            }
+        }
+
+        @Override
+        protected int getProjectileTtl() {
+            return getTtl() > 0 ? 0 : super.getProjectileTtl();
+        }
+
+        @Override
         protected void afterProjectileLaunch(Player player, ItemStack stack, Vector v, Projectile projectile) {
             projectile.setInvisible(true);
             projectile.setVisibleByDefault(false);
             projectile.addScoreboardTag("rgi_item_projectile_carrier");
 
             Vector launchDirection = normalizedOrDefault(v);
+            Location launchLocation = projectile.getLocation().clone();
             ItemDisplay display = projectile.getWorld().spawn(projectile.getLocation(), ItemDisplay.class, itemDisplay -> {
                 itemDisplay.setItemStack(createDisplayItem());
                 itemDisplay.setItemDisplayTransform(getDisplayTransform());
@@ -234,8 +277,10 @@ public class ItemProjectilePower extends ProjectilePower {
             updateDisplay(projectile, display, launchDirection, 0);
 
             new BukkitRunnable() {
-                private int tick = 1;
+                private int age = 1;
+                private int rotationTick = 1;
                 private Vector lastDirection = launchDirection.clone();
+                private boolean rotationStopped = false;
 
                 @Override
                 public void run() {
@@ -248,20 +293,29 @@ public class ItemProjectilePower extends ProjectilePower {
                         cancel();
                         return;
                     }
+                    if (shouldExpire(projectile, launchLocation, age)) {
+                        projectile.remove();
+                        display.remove();
+                        cancel();
+                        return;
+                    }
 
-                    Vector direction = getReferenceDirection(projectile, lastDirection);
-                    lastDirection = direction.clone();
-                    updateDisplay(projectile, display, direction, tick);
-                    tick++;
+                    if (!rotationStopped && shouldStopRotation(projectile)) {
+                        rotationStopped = true;
+                    }
+                    Vector direction = rotationStopped ? lastDirection.clone() : getReferenceDirection(projectile, lastDirection);
+                    updateDisplay(projectile, display, direction, rotationTick);
+                    if (!rotationStopped) {
+                        lastDirection = direction.clone();
+                        rotationTick++;
+                    }
+                    age++;
                 }
             }.runTaskTimer(RPGItems.plugin, 1, 1);
         }
 
         private ItemStack createDisplayItem() {
             ItemStack item = new ItemStack(getItemMaterial());
-            if (getCustomModelData() != null) {
-                item.setData(DataComponentTypes.CUSTOM_MODEL_DATA, getCustomModelData());
-            }
             NamespacedKey model = getParsedItemModel();
             if (model != null) {
                 ItemMeta meta = item.getItemMeta();
@@ -269,6 +323,9 @@ public class ItemProjectilePower extends ProjectilePower {
                     meta.setItemModel(model);
                     item.setItemMeta(meta);
                 }
+            }
+            if (getCustomModelData() != null) {
+                item.setData(DataComponentTypes.CUSTOM_MODEL_DATA, getCustomModelData().build());
             }
             return item;
         }
@@ -298,6 +355,29 @@ public class ItemProjectilePower extends ProjectilePower {
             return fallback.clone().normalize();
         }
 
+        private boolean shouldExpire(Projectile projectile, Location launchLocation, int age) {
+            int ttl = getTtl();
+            if (ttl > 0 && age >= ttl) {
+                return true;
+            }
+            double maxRange = getMaxRange();
+            if (maxRange <= 0.0) {
+                return false;
+            }
+            Location location = projectile.getLocation();
+            if (!location.getWorld().equals(launchLocation.getWorld())) {
+                return true;
+            }
+            return location.distanceSquared(launchLocation) >= maxRange * maxRange;
+        }
+
+        private boolean shouldStopRotation(Projectile projectile) {
+            if (projectile instanceof AbstractArrow arrow && arrow.isInBlock()) {
+                return true;
+            }
+            return projectile.isOnGround() && projectile.getVelocity().lengthSquared() <= MIN_DIRECTION_LENGTH_SQUARED;
+        }
+
         private void updateDisplay(Projectile projectile, ItemDisplay display, Vector direction, int tick) {
             Quaternionf directionRotation = directionRotation(direction);
             Vector3f offset = new Vector3f((float) getDisplayOffsetX(), (float) getDisplayOffsetY(), (float) getDisplayOffsetZ());
@@ -318,7 +398,9 @@ public class ItemProjectilePower extends ProjectilePower {
 
         private Quaternionf directionRotation(Vector direction) {
             Vector normalized = normalizedOrDefault(direction);
-            return new Quaternionf().rotationTo(0.0f, 0.0f, 1.0f, (float) normalized.getX(), (float) normalized.getY(), (float) normalized.getZ());
+            float yaw = (float) Math.atan2(normalized.getX(), normalized.getZ());
+            float pitch = (float) -Math.asin(Math.max(-1.0, Math.min(1.0, normalized.getY())));
+            return new Quaternionf().rotationYXZ(yaw, pitch, 0.0f);
         }
 
         private Quaternionf localRotation() {

@@ -1419,6 +1419,9 @@ properties:
     spinAxis: Local spin axis
     spinSpeed: Spin speed in degrees per tick
     spinInitial: Initial spin angle in degrees
+    maxRange: Maximum travel distance before the projectile is removed, 0 disables this limit
+    ttl: Time to live in ticks before the projectile is removed, 0 uses the default projectile lifetime
+    damage: Custom projectile damage, unset or negative values use normal item projectile damage
   pumpkin:
     chance: Chance of triggering this power, in percentage
     drop: Drop chance of the pumpkin, 0.0~1.0
