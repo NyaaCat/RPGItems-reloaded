@@ -670,9 +670,7 @@ public class Beam extends BasePower {
     private static class MovingTask extends BukkitRunnable implements ActiveBeam {
         final Vector yAxis = new Vector(0, 1, 0);
         final Vector xAxis = new Vector(1, 0, 0);
-        private final FiringLocation firingLocation;
         public Player player = null;
-        public double firingR = 0;
         double lengthPerSpawn;
         AtomicDouble lengthRemains = new AtomicDouble(0);
         AtomicDouble spawnedLength = new AtomicDouble(0);
@@ -760,7 +758,6 @@ public class Beam extends BasePower {
             this.homingTarget = config.homingTarget();
             this.homingRange = config.homingRange();
             this.effectOnly = config.effectOnly();
-            this.firingLocation = config.firingLocation();
             this.namespacedKey = config.namespacedKey();
             this.noImmutableTick = config.noImmutableTick();
             lengthPerSpawn = 1 / particleDensity;
@@ -824,20 +821,18 @@ public class Beam extends BasePower {
                                     nextLoc.getBlockY() != lastLocation.getBlockY() ||
                                     nextLoc.getBlockZ() != lastLocation.getBlockZ()
                     )) {
-                        if (!(firingLocation.equals(FiringLocation.TARGET) && spawnedLength.get() < (firingR - 1))) {
-                            Block block = nextLoc.getBlock();
-                            if (!transp.contains(block.getType())) {
-                                if (!this.effectOnly) {
-                                    BeamHitBlockEvent beamHitBlockEvent = new BeamHitBlockEvent(player, fromEntity, block, lastLocation, itemStack, triggerDepth);
-                                    Bukkit.getPluginManager().callEvent(beamHitBlockEvent);
-                                }
-                                if (bounce > 0) {
-                                    bounce--;
-                                    bounced = true;
-                                    makeBounce(nextLoc.getBlock(), towards, tempStep, lastLocation);
-                                } else {
-                                    return false; // Beam finished - hit wall
-                                }
+                        Block block = nextLoc.getBlock();
+                        if (!transp.contains(block.getType())) {
+                            if (!this.effectOnly) {
+                                BeamHitBlockEvent beamHitBlockEvent = new BeamHitBlockEvent(player, fromEntity, block, lastLocation, itemStack, triggerDepth);
+                                Bukkit.getPluginManager().callEvent(beamHitBlockEvent);
+                            }
+                            if (bounce > 0) {
+                                bounce--;
+                                bounced = true;
+                                makeBounce(nextLoc.getBlock(), towards, tempStep, lastLocation);
+                            } else {
+                                return false; // Beam finished - hit wall
                             }
                         }
                     }
@@ -1307,11 +1302,6 @@ public class Beam extends BasePower {
             return this;
         }
 
-        public MovingTaskBuilder firingR(double r) {
-            movingTask.firingR = r;
-            return this;
-        }
-
         public MovingTaskBuilder triggerDepth(int depth) {
             movingTask.triggerDepth = depth;
             return this;
@@ -1536,8 +1526,7 @@ public class Beam extends BasePower {
                 movingTaskBuilder.color(nextColor);
             }
             if (!config.firingLocation().equals(FiringLocation.SELF)) {
-                movingTaskBuilder.fromLocation(fromLocation)
-                        .firingR(poll.getR());
+                movingTaskBuilder.fromLocation(fromLocation);
             }
             MovingTask movingTask = movingTaskBuilder
                     .build();
@@ -1628,4 +1617,3 @@ public class Beam extends BasePower {
         }
     }
 }
-
