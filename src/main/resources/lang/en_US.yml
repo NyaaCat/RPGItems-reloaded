@@ -829,7 +829,7 @@ power:
   fire: Shoots fire (%.1fs cooldown)
   fireball: Shoots a fireball (%.1fs cooldown)
   flame: Burns target for %.1f seconds
-  food: Restore %d food point(s)
+  food: Restore %d food point(s) with %d items
   forcefield: Create a forcefield around you, radius %d, height %d, based %d blocks
     above, lasts for %.1fs
   glove: Catch an entity (%.1fs cooldown)
@@ -1205,6 +1205,9 @@ properties:
     main_name: Flame
   food:
     foodpoints: Food Points
+    consumeAmount: Amount of items to consume when restoring food points
+    requireEnoughAmount: Whether require enough items to restore food points or just consume all items and restore proportionally
+    cancelConsumeIfNotEnough: Whether to cancel the whole consume action if not enough items to restore food points
     main_description: Restore food points when eaten
     main_name: Food
   forcefield:

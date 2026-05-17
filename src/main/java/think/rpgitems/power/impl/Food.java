@@ -19,6 +19,7 @@ package think.rpgitems.power.impl;
 import org.bukkit.Bukkit;
 import org.bukkit.Material;
 import org.bukkit.entity.Player;
+import org.bukkit.event.Event;
 import org.bukkit.event.entity.FoodLevelChangeEvent;
 import org.bukkit.event.player.PlayerInteractEvent;
 import org.bukkit.event.player.PlayerItemConsumeEvent;
@@ -41,6 +42,12 @@ import java.util.HashMap;
 public class Food extends BasePower {
     @Property(order = 0, required = true)
     public int foodpoints;
+    @Property(order = 1)
+    public int consumeAmount;
+    @Property
+    public boolean requireEnoughAmount;
+    @Property
+    public boolean cancelConsumeIfNotEnough;
 
     @Override
     public String getName() {
@@ -49,7 +56,7 @@ public class Food extends BasePower {
 
     @Override
     public String displayText() {
-        return I18n.formatDefault("power.food", getFoodpoints());
+        return I18n.formatDefault("power.food", getFoodpoints(), getConsumeAmount());
     }
 
     /**
@@ -59,23 +66,42 @@ public class Food extends BasePower {
         return foodpoints;
     }
 
+    public int getConsumeAmount() {
+        return consumeAmount;
+    }
+
+    public boolean isRequireEnoughAmount() {
+        return requireEnoughAmount;
+    }
+
+    public boolean isCancelConsumeIfNotEnough() {
+        return cancelConsumeIfNotEnough;
+    }
+
     public class Impl implements PowerRightClick, PowerConsume {
-        public PowerResult<Void> fire(final Player player, ItemStack stack, int amount) {
-            PowerActivateEvent powerEvent = new PowerActivateEvent(player,stack,getPower());
-            if(!powerEvent.callEvent()) {
+        public PowerResult<Void> fire(final Player player, ItemStack stack, int amount, Event event) {
+            PowerActivateEvent powerEvent = new PowerActivateEvent(player, stack, getPower());
+            if (!powerEvent.callEvent()) {
                 return PowerResult.fail();
             }
-            ItemStack item = player.getInventory().getItemInMainHand();
-            int count = item.getAmount() - amount;
+            int count = stack.getAmount() - amount;
+            count += event instanceof PlayerItemConsumeEvent ? 1 : 0;
+            if(count < 0 && requireEnoughAmount) {
+                if(cancelConsumeIfNotEnough) {
+                    if(event instanceof PlayerItemConsumeEvent consumeEvent){
+                        consumeEvent.setCancelled(true);
+                    }
+                }
+                return PowerResult.fail();
+            }
             int newFoodPoint = player.getFoodLevel() + getFoodpoints();
             if (newFoodPoint > 20) newFoodPoint = 20;
-            FoodLevelChangeEvent foodEvent = new FoodLevelChangeEvent(player,newFoodPoint-player.getFoodLevel(), item);
-            item.setAmount(count);
-            if(foodEvent.callEvent()){
+            FoodLevelChangeEvent foodEvent = new FoodLevelChangeEvent(player, newFoodPoint - player.getFoodLevel(), stack);
+            stack.setAmount(count);
+            if (foodEvent.callEvent()) {
                 player.setFoodLevel(newFoodPoint);
                 return PowerResult.ok();
-            }
-            else{
+            } else {
                 return PowerResult.fail();
             }
         }
@@ -87,12 +113,12 @@ public class Food extends BasePower {
 
         @Override
         public PowerResult<Void> consume(Player player, ItemStack stack, PlayerItemConsumeEvent event) {
-            return fire(player,stack,1);
+            return fire(player, stack, getConsumeAmount(), event);
         }
 
         @Override
         public PowerResult<Void> rightClick(Player player, ItemStack stack, PlayerInteractEvent event) {
-            return fire(player, stack, 1);
+            return fire(player, stack, getConsumeAmount(), event);
         }
     }
 }

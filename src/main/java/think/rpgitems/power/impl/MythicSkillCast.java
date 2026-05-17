@@ -68,12 +68,13 @@ public class MythicSkillCast extends BasePower {
 
     @Override
     public String displayText() {
-        return I18n.formatDefault("power.mythicskillcast",getSkill(),(double) getCooldown() / 20d);
+        return I18n.formatDefault("power.mythicskillcast", getSkill(), (double) getCooldown() / 20d);
     }
 
     public boolean isSuppressArrow() {
         return suppressArrow;
     }
+
     public boolean isApplyForce() {
         return false;
     }
@@ -88,30 +89,29 @@ public class MythicSkillCast extends BasePower {
 
         @Override
         public PowerResult<Double> takeHit(Player target, ItemStack stack, double damage, EntityDamageEvent event) {
-                return fire(target, stack).with(damage);
+            return fire(target, stack).with(damage);
         }
 
 
         public PowerResult<Void> fire(Player player, ItemStack stack) {
-            if(!MythicMobsSupport.hasSupport()){
-                RPGItems.logger.log(Level.WARNING,player.getName()+" is trying to cast MythicMobs skill without MythicMobs installed on your server!");
+            if (!MythicMobsSupport.hasSupport()) {
+                RPGItems.logger.log(Level.WARNING, player.getName() + " is trying to cast MythicMobs skill without MythicMobs installed on your server!");
                 return PowerResult.fail();
             }
-            HashMap<String,Object> argsMap = new HashMap<>();
-            argsMap.put("skill",getSkill());
-            PowerActivateEvent powerEvent = new PowerActivateEvent(player,stack,getPower(),argsMap);
-            if(!powerEvent.callEvent()) {
+            HashMap<String, Object> argsMap = new HashMap<>();
+            argsMap.put("skill", getSkill());
+            PowerActivateEvent powerEvent = new PowerActivateEvent(player, stack, getPower(), argsMap);
+            if (!powerEvent.callEvent()) {
                 return PowerResult.fail();
             }
             if (!checkCooldown(getPower(), player, getCooldown(), showCooldownWarning(), true)) return PowerResult.cd();
             if (!getItem().consumeDurability(stack, getCost())) return PowerResult.cost();
             BukkitAPIHelper helper = MythicBukkit.inst().getAPIHelper();
-            if(helper!=null){
-                helper.castSkill(player,getSkill());
+            if (helper != null) {
+                helper.castSkill(player, getSkill());
                 return PowerResult.ok();
-            }
-            else{
-                RPGItems.logger.log(Level.SEVERE,"Error getting APIHelper in MythicMobs!");
+            } else {
+                RPGItems.logger.log(Level.SEVERE, "Error getting APIHelper in MythicMobs!");
                 return PowerResult.fail();
             }
         }
@@ -160,6 +160,7 @@ public class MythicSkillCast extends BasePower {
         public PowerResult<Void> swim(Player player, ItemStack stack, EntityToggleSwimEvent event) {
             return fire(player, stack);
         }
+
         @Override
         public PowerResult<Float> bowShoot(Player player, ItemStack itemStack, EntityShootBowEvent e) {
             if (isSuppressArrow()) {

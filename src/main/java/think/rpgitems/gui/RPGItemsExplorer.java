@@ -1,4 +1,4 @@
-package think.rpgitems.utils;
+package think.rpgitems.gui;
 
 import io.papermc.paper.datacomponent.DataComponentTypes;
 import io.papermc.paper.datacomponent.item.TooltipDisplay;
@@ -15,7 +15,6 @@ import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.ItemMeta;
 import org.bukkit.persistence.PersistentDataContainer;
 import org.bukkit.persistence.PersistentDataType;
-import think.rpgitems.AdminCommands;
 import think.rpgitems.I18n;
 import think.rpgitems.RPGItems;
 import think.rpgitems.item.ItemManager;
@@ -25,7 +24,7 @@ import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
 
-public class InventoryUtils {
+public class RPGItemsExplorer {
     private static final List<Integer> inventoryHashcodes = new ArrayList<>();
     private static final NamespacedKey fillerKey = new NamespacedKey(RPGItems.plugin, "RPGItemFiller");
     private static final NamespacedKey prevKey = new NamespacedKey(RPGItems.plugin, "RPGItemPrev");

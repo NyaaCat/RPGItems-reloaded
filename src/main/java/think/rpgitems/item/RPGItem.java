@@ -13,7 +13,7 @@ import io.papermc.paper.datacomponent.DataComponentTypes;
 import io.papermc.paper.datacomponent.item.*;
 import io.papermc.paper.registry.RegistryAccess;
 import io.papermc.paper.registry.RegistryKey;
-import io.papermc.paper.registry.tag.TagKey;
+import io.papermc.paper.registry.set.RegistryKeySet;
 import me.clip.placeholderapi.PlaceholderAPI;
 import net.kyori.adventure.key.Key;
 import net.kyori.adventure.text.Component;
@@ -87,7 +87,6 @@ public class RPGItem {
     public static final NamespacedKey TAG_SOCKETS = new NamespacedKey(RPGItems.plugin, "rgi_sockets");
     public static final NamespacedKey TAG_INSTANCE_CACHE_KEY = new NamespacedKey(RPGItems.plugin, "rgi_instance_cache_key");
     public static final String DAMAGE_TYPE = "RGI_DAMAGE_TYPE";
-    public static final String NBT_UID = "rpgitem_uid";
     public static final String NBT_ITEM_UUID = "rpgitem_item_uuid";
     public static final String NBT_IS_MODEL = "rpgitem_is_model";
 
@@ -101,7 +100,6 @@ public class RPGItem {
     private boolean showArmourLore = false;
     private Map<Enchantment, Integer> enchantMap = null;
     private List<ItemFlag> itemFlags = new ArrayList<>();
-    private boolean customItemModel = false;
     private EnchantMode enchantMode = EnchantMode.DISALLOW;
     //Data Components
     private List<Map<DataComponentType, Object>> components = new ArrayList<>();
@@ -299,7 +297,7 @@ public class RPGItem {
 
     public static List<Modifier> getModifiers(SubItemTagContainer tag, UUID key) {
         Optional<UUID> uuid = Optional.ofNullable(key);
-        if (!uuid.isPresent()) {
+        if (uuid.isEmpty()) {
             uuid = Optional.of(UUID.randomUUID());
         }
 
@@ -689,7 +687,7 @@ public class RPGItem {
 
         s.set("haspermission", isHasPermission());
         s.set("permission", getPermission());
-        s.set("display", getDisplayName().replaceAll("§", "&"));
+        s.set("display", getDisplayName().replace("§", "&"));
         s.set("damageMin", getDamageMin());
         s.set("damageMax", getDamageMax());
         s.set("armour", getArmour());
@@ -699,7 +697,7 @@ public class RPGItem {
         s.set("updatemode", updateMode.name());
         s.set("attributemode", attributeMode.name());
         ArrayList<String> descriptionConv = new ArrayList<>(getDescription());
-        descriptionConv.replaceAll(string -> string.replaceAll("§", "&"));
+        descriptionConv.replaceAll(string -> string.replace("§", "&"));
         s.set("description", descriptionConv);
         s.set("socketAcceptTags", new ArrayList<>(getSocketAcceptTags()));
         s.set("socketContainer", isSocketContainer());
@@ -808,7 +806,7 @@ public class RPGItem {
                         .map(color -> String.format("%d,%d,%d",
                                 color.getRed(),
                                 color.getGreen(), color.getBlue()))
-                        .collect(Collectors.toList());
+                        .toList();
                 s.set("customModelData.colors", colors);
             }
         } else {
@@ -1104,7 +1102,7 @@ public class RPGItem {
                         } else if (key == DataComponentTypes.PROFILE) {
                             item.setData(DataComponentTypes.PROFILE, (ResolvableProfile.Builder) value);
                         } else if (key == DataComponentTypes.PROVIDES_BANNER_PATTERNS) {
-                            item.setData(DataComponentTypes.PROVIDES_BANNER_PATTERNS, (TagKey<PatternType>) value);
+                            item.setData(DataComponentTypes.PROVIDES_BANNER_PATTERNS, (RegistryKeySet<PatternType>) value);
                         } else if (key == DataComponentTypes.PROVIDES_TRIM_MATERIAL) {
                             item.setData(DataComponentTypes.PROVIDES_TRIM_MATERIAL, (TrimMaterial) value);
                         } else if (key == DataComponentTypes.RARITY) {
@@ -1153,7 +1151,7 @@ public class RPGItem {
         List<SlotCondition> conditions = getConditions(SlotCondition.class);
 
         if (!markers.isEmpty()) {
-            Unique unique = markers.get(0);
+            Unique unique = markers.getFirst();
             if (unique.enabled) {
                 if (!meta.has(RGI_UNIQUE_MARK, PersistentDataType.BYTE)) {
                     meta.set(RGI_UNIQUE_MARK, PersistentDataType.BYTE, (byte) 0);
@@ -1203,7 +1201,7 @@ public class RPGItem {
         List<LoreFilter> patterns = getMarker(LoreFilter.class).stream()
                 .filter(p -> !Strings.isNullOrEmpty(p.regex))
                 .map(LoreFilter::compile)
-                .collect(Collectors.toList());
+                .toList();
         if (patterns.isEmpty() || !item.hasItemMeta() ||
                 !Objects.requireNonNull(item.getItemMeta()).hasLore()) {
             return Collections.emptyList();
@@ -1214,7 +1212,7 @@ public class RPGItem {
                     Matcher matcher = p.pattern().matcher(ChatColor.stripColor(str));
                     return p.find ? matcher.find() : matcher.matches();
                 }))
-                .collect(Collectors.toList());
+                .toList();
     }
 
     private ItemMeta refreshAttributeModifiers(ItemMeta itemMeta) {
@@ -1273,7 +1271,8 @@ public class RPGItem {
     public boolean canDoProjectileTo(ItemStack item, double distance, Entity entity) {
         List<Ranged> ranged = getMarker(Ranged.class, true);
         if (!ranged.isEmpty()) {
-            return !(ranged.get(0).rm > distance) && !(distance > ranged.get(0).r);
+            Ranged first = ranged.getFirst();
+            return !(first.rm > distance) && !(distance > first.r);
         }
         return true;
     }
@@ -1361,7 +1360,7 @@ public class RPGItem {
 
             //Apply force adjustments
             if (damager.hasMetadata("RPGItems.Force")) {
-                damage *= damager.getMetadata("RPGItems.Force").get(0).asFloat();
+                damage *= damager.getMetadata("RPGItems.Force").getFirst().asFloat();
             }
             if (getDamageMode().toString().contains("ADDITIONAL")) {
                 damage += originDamage;
@@ -1812,7 +1811,7 @@ public class RPGItem {
         if (!getItemFlags().isEmpty()) {
             StringBuilder str = new StringBuilder();
             for (ItemFlag flag : getItemFlags()) {
-                if (str.length() > 0) {
+                if (!str.isEmpty()) {
                     str.append(", ");
                 }
                 str.append(flag.name());
@@ -1962,27 +1961,27 @@ public class RPGItem {
     }
 
     public <T extends Marker> List<T> getMarker(Class<T> marker) {
-        return markers.stream().filter(p -> p.getClass().equals(marker)).map(marker::cast).collect(Collectors.toList());
+        return markers.stream().filter(p -> p.getClass().equals(marker)).map(marker::cast).toList();
     }
 
     public <T extends Condition<?>> List<T> getConditions(Class<T> condition) {
-        return conditions.stream().filter(p -> p.getClass().equals(condition)).map(condition::cast).collect(Collectors.toList());
+        return conditions.stream().filter(p -> p.getClass().equals(condition)).map(condition::cast).toList();
     }
 
     public <T extends Marker> List<T> getMarker(Class<T> marker, boolean subclass) {
-        return subclass ? markers.stream().filter(marker::isInstance).map(marker::cast).collect(Collectors.toList()) : getMarker(marker);
+        return subclass ? markers.stream().filter(marker::isInstance).map(marker::cast).toList() : getMarker(marker);
     }
 
     public <T extends Marker> List<T> getMarker(NamespacedKey key, Class<T> marker) {
-        return markers.stream().filter(p -> p.getClass().equals(marker) && getPropertyHolderKey(p).equals(key)).map(marker::cast).collect(Collectors.toList());
+        return markers.stream().filter(p -> p.getClass().equals(marker) && getPropertyHolderKey(p).equals(key)).map(marker::cast).toList();
     }
 
     public <T extends Power> List<T> getPower(NamespacedKey key, Class<T> power) {
-        return powers.stream().filter(p -> p.getClass().equals(power) && getPropertyHolderKey(p).equals(key)).map(power::cast).collect(Collectors.toList());
+        return powers.stream().filter(p -> p.getClass().equals(power) && getPropertyHolderKey(p).equals(key)).map(power::cast).toList();
     }
 
     public <T extends Condition<?>> List<T> getCondition(NamespacedKey key, Class<T> condition) {
-        return powers.stream().filter(p -> p.getClass().equals(condition) && getPropertyHolderKey(p).equals(key)).map(condition::cast).collect(Collectors.toList());
+        return powers.stream().filter(p -> p.getClass().equals(condition) && getPropertyHolderKey(p).equals(key)).map(condition::cast).toList();
     }
 
     public Condition<?> getCondition(String id) {
@@ -2139,7 +2138,7 @@ public class RPGItem {
                     return PowerManager.createImpl(cls, proxy);
                 })
                 .map(p -> p.cast(trigger.getPowerClass()))
-                .collect(Collectors.toList());
+                .toList();
     }
 
     public PlaceholderHolder getPlaceholderHolder(String placeholderId) {
@@ -2208,9 +2207,8 @@ public class RPGItem {
             String[] split = s.split(":");
             PlaceholderHolder power = getPlaceholderHolder(split[0]);
             String propName = split[1];
-            Object origVal = null;
             try {
-                origVal = getPropVal(power.getClass(), propName, power);
+                Object origVal = getPropVal(power.getClass(), propName, power);
                 List<String> strings = powerMap.computeIfAbsent(split[0], (str) -> new ArrayList<>());
                 strings.add(s);
                 valMap.put(s, origVal);

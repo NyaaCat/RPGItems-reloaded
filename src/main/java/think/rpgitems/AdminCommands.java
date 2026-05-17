@@ -6,28 +6,21 @@ import cat.nyaa.nyaacore.cmdreceiver.Arguments;
 import cat.nyaa.nyaacore.cmdreceiver.BadCommandException;
 import cat.nyaa.nyaacore.cmdreceiver.SubCommand;
 import cat.nyaa.nyaacore.utils.HexColorUtils;
-import cat.nyaa.nyaacore.utils.ItemStackUtils;
 import cat.nyaa.nyaacore.utils.OfflinePlayerUtils;
 import com.google.common.base.Strings;
 import com.udojava.evalex.Expression;
-import io.papermc.paper.datacomponent.DataComponentTypes;
 import io.papermc.paper.datacomponent.item.CustomModelData;
 import io.papermc.paper.registry.RegistryAccess;
 import io.papermc.paper.registry.RegistryKey;
 import me.clip.placeholderapi.PlaceholderAPI;
 import net.kyori.adventure.key.Key;
 import net.kyori.adventure.text.Component;
-import net.md_5.bungee.api.chat.ComponentBuilder;
-import net.md_5.bungee.api.chat.HoverEvent;
-import net.md_5.bungee.api.chat.TextComponent;
 import org.bukkit.*;
 import org.bukkit.command.CommandSender;
 import org.bukkit.configuration.InvalidConfigurationException;
 import org.bukkit.configuration.file.YamlConfiguration;
 import org.bukkit.enchantments.Enchantment;
 import org.bukkit.entity.Player;
-import org.bukkit.inventory.Inventory;
-import org.bukkit.inventory.InventoryView;
 import org.bukkit.inventory.ItemFlag;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.EnchantmentStorageMeta;
@@ -43,11 +36,10 @@ import think.rpgitems.item.RPGItem;
 import think.rpgitems.power.*;
 import think.rpgitems.support.PlaceholderAPISupport;
 import think.rpgitems.support.WGSupport;
-import think.rpgitems.utils.InventoryUtils;
+import think.rpgitems.gui.RPGItemsExplorer;
 import think.rpgitems.utils.MaterialUtils;
 import think.rpgitems.utils.NetworkUtils;
 
-import javax.xml.crypto.Data;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
@@ -587,7 +579,7 @@ public class AdminCommands extends RPGCommandReceiver {
         loreFilter = args.argString("l", args.argString("loreFilter",null));
         nameFilter = args.argString("n", args.argString("nameFilter",null));
 
-        InventoryUtils.openMenu(player, page, displayFilter, loreFilter, nameFilter);
+        RPGItemsExplorer.openMenu(player, page, displayFilter, loreFilter, nameFilter);
     }
 
     @SubCommand(value = "socket", permission = "rpgitem.socket", tabCompleter = "itemCompleter")

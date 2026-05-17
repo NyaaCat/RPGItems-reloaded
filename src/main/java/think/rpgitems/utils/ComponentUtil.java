@@ -13,20 +13,14 @@ import io.papermc.paper.datacomponent.item.consumable.ItemUseAnimation;
 import io.papermc.paper.registry.RegistryAccess;
 import io.papermc.paper.registry.RegistryKey;
 import io.papermc.paper.registry.TypedKey;
-import io.papermc.paper.registry.data.InstrumentRegistryEntry;
-import io.papermc.paper.registry.data.SoundEventRegistryEntry;
 import io.papermc.paper.registry.set.RegistryKeySet;
 import io.papermc.paper.registry.set.RegistrySet;
-import io.papermc.paper.registry.tag.TagKey;
 import net.kyori.adventure.key.Key;
-import net.kyori.adventure.sound.Sound;
 import net.kyori.adventure.text.Component;
-import net.kyori.adventure.text.format.TextDecoration;
 import net.kyori.adventure.text.minimessage.MiniMessage;
 import net.kyori.adventure.util.TriState;
 import org.bukkit.*;
 import org.bukkit.block.BlockType;
-import org.bukkit.block.Jukebox;
 import org.bukkit.block.banner.Pattern;
 import org.bukkit.block.banner.PatternType;
 import org.bukkit.configuration.ConfigurationSection;
@@ -45,7 +39,6 @@ import org.bukkit.potion.PotionEffectType;
 import org.bukkit.potion.PotionType;
 import org.intellij.lang.annotations.Subst;
 import org.jetbrains.annotations.NotNull;
-import think.rpgitems.I18n;
 import think.rpgitems.RPGItems;
 import think.rpgitems.item.ItemManager;
 import think.rpgitems.item.RPGItem;
@@ -56,7 +49,7 @@ import java.util.stream.StreamSupport;
 
 @SuppressWarnings({"PatternValidation", "NullableProblems"})
 public class ComponentUtil {
-    public static enum ComponentStatus {
+    public enum ComponentStatus {
         UNSET,
         NON_VALUED
     }
@@ -156,7 +149,20 @@ public class ComponentUtil {
                                 }
                                 String bypassedBy = blocksSection.getString("bypassed_by");
                                 if (bypassedBy != null) {
-                                    builder.bypassedBy(TagKey.create(RegistryKey.DAMAGE_TYPE, Key.key(bypassedBy)));
+                                    RegistryKeySet<DamageType> typeSet = RegistrySet.keySet(
+                                            RegistryKey.DAMAGE_TYPE,
+                                            TypedKey.create(RegistryKey.DAMAGE_TYPE, Key.key(bypassedBy))
+                                    );
+                                    builder.bypassedBy(typeSet);
+                                } else if (blocksSection.isList("bypassed_by")) {
+                                    List<String> types = blocksSection.getStringList("bypassed_by");
+                                    if (!types.isEmpty()) {
+                                        List<TypedKey<DamageType>> damageTypes = types.stream()
+                                                .map(type -> TypedKey.create(RegistryKey.DAMAGE_TYPE, Key.key(type)))
+                                                .toList();
+                                        RegistryKeySet<DamageType> typeSet = RegistrySet.keySet(RegistryKey.DAMAGE_TYPE, damageTypes);
+                                        builder.bypassedBy(typeSet);
+                                    }
                                 }
                                 ConfigurationSection reductionsSection = blocksSection.getConfigurationSection("damage_reductions");
                                 if (reductionsSection != null) {
@@ -355,10 +361,42 @@ public class ComponentUtil {
                         if (section != null) {
                             if (section.getBoolean("unset")) {
                                 componentMap.put(DataComponentTypes.DAMAGE_RESISTANT, ComponentStatus.UNSET);
-                            } else {
-                                if (s.getString(key) != null) {
-                                    componentMap.put(DataComponentTypes.DAMAGE_RESISTANT, DamageResistant.damageResistant(TagKey.create(RegistryKey.DAMAGE_TYPE, Key.key(section.getString(key)))));
+                            } else if (section.isString("types")) {
+                                String type = section.getString("types");
+                                if (type != null) {
+                                    RegistryKeySet<DamageType> typeSet = RegistrySet.keySet(
+                                            RegistryKey.DAMAGE_TYPE,
+                                            TypedKey.create(RegistryKey.DAMAGE_TYPE, Key.key(type))
+                                    );
+                                    componentMap.put(DataComponentTypes.DAMAGE_RESISTANT, DamageResistant.damageResistant(typeSet));
                                 }
+                            } else if (section.isList("types")) {
+                                List<String> types = section.getStringList("types");
+                                if (!types.isEmpty()) {
+                                    List<TypedKey<DamageType>> damageTypes = types.stream()
+                                            .map(type -> TypedKey.create(RegistryKey.DAMAGE_TYPE, Key.key(type)))
+                                            .toList();
+                                    RegistryKeySet<DamageType> typeSet = RegistrySet.keySet(RegistryKey.DAMAGE_TYPE, damageTypes);
+                                    componentMap.put(DataComponentTypes.DAMAGE_RESISTANT, DamageResistant.damageResistant(typeSet));
+                                }
+                            }
+                        } else if (s.isString(key)) {
+                            String type = s.getString(key);
+                            if (type != null) {
+                                RegistryKeySet<DamageType> typeSet = RegistrySet.keySet(
+                                        RegistryKey.DAMAGE_TYPE,
+                                        TypedKey.create(RegistryKey.DAMAGE_TYPE, Key.key(type))
+                                );
+                                componentMap.put(DataComponentTypes.DAMAGE_RESISTANT, DamageResistant.damageResistant(typeSet));
+                            }
+                        } else if (s.isList(key)) {
+                            List<String> types = s.getStringList(key);
+                            if (!types.isEmpty()) {
+                                List<TypedKey<DamageType>> damageTypes = types.stream()
+                                        .map(type -> TypedKey.create(RegistryKey.DAMAGE_TYPE, Key.key(type)))
+                                        .toList();
+                                RegistryKeySet<DamageType> typeSet = RegistrySet.keySet(RegistryKey.DAMAGE_TYPE, damageTypes);
+                                componentMap.put(DataComponentTypes.DAMAGE_RESISTANT, DamageResistant.damageResistant(typeSet));
                             }
                         }
                     }
@@ -911,10 +949,26 @@ public class ComponentUtil {
                         ConfigurationSection section = s.getConfigurationSection(key);
                         if (section != null) {
                             if (section.getBoolean("unset")) {
-                                componentMap.put(DataComponentTypes.BANNER_PATTERNS, ComponentStatus.UNSET);
+                                componentMap.put(DataComponentTypes.PROVIDES_BANNER_PATTERNS, ComponentStatus.UNSET);
                             }
                         } else if (s.isString(key)) {
-                            componentMap.put(DataComponentTypes.BANNER_PATTERNS, TagKey.create(RegistryKey.BANNER_PATTERN, Key.key(s.getString(key))));
+                            String pattern = s.getString(key);
+                            if (pattern != null) {
+                                RegistryKeySet<PatternType> keySet = RegistrySet.keySet(
+                                        RegistryKey.BANNER_PATTERN,
+                                        TypedKey.create(RegistryKey.BANNER_PATTERN, Key.key(pattern))
+                                );
+                                componentMap.put(DataComponentTypes.PROVIDES_BANNER_PATTERNS, keySet);
+                            }
+                        } else if (s.isList(key)) {
+                            List<String> patterns = s.getStringList(key);
+                            if (!patterns.isEmpty()) {
+                                List<TypedKey<PatternType>> typedKeys = patterns.stream()
+                                        .map(pattern -> TypedKey.create(RegistryKey.BANNER_PATTERN, Key.key(pattern)))
+                                        .toList();
+                                RegistryKeySet<PatternType> keySet = RegistrySet.keySet(RegistryKey.BANNER_PATTERN, typedKeys);
+                                componentMap.put(DataComponentTypes.PROVIDES_BANNER_PATTERNS, keySet);
+                            }
                         }
                     }
                     break;
@@ -1285,7 +1339,15 @@ public class ComponentUtil {
                         }
 
                         if (builder.bypassedBy() != null) {
-                            blocksSection.set("bypassed_by", builder.bypassedBy().key().value());
+                            RegistryKeySet<DamageType> bypassedBy = builder.bypassedBy();
+                            if (bypassedBy.size() == 1) {
+                                blocksSection.set("bypassed_by", bypassedBy.values().iterator().next().key().value());
+                            } else if (bypassedBy.size() > 1) {
+                                blocksSection.set(
+                                        "bypassed_by",
+                                        bypassedBy.values().stream().map(damageTypeKey -> damageTypeKey.key().value()).toList()
+                                );
+                            }
                         }
 
                         ConfigurationSection itemDamageSection = blocksSection.createSection("item_damage");
@@ -1394,7 +1456,15 @@ public class ComponentUtil {
                     if (value == ComponentStatus.UNSET) {
                         config.set("damage_resistance.unset", true);
                     } else if (value instanceof DamageResistant damageResistant) {
-                        config.set("damage_resistance", damageResistant.types().key().asString());
+                        RegistryKeySet<DamageType> damageTypes = damageResistant.types();
+                        if (damageTypes.size() == 1) {
+                            config.set("damage_resistance", damageTypes.values().iterator().next().key().asString());
+                        } else if (damageTypes.size() > 1) {
+                            config.set(
+                                    "damage_resistance",
+                                    damageTypes.values().stream().map(damageTypeKey -> damageTypeKey.key().asString()).toList()
+                            );
+                        }
                     }
                 } else if (type == DataComponentTypes.DEATH_PROTECTION) {
                     if (value == ComponentStatus.UNSET) {
@@ -1586,8 +1656,15 @@ public class ComponentUtil {
                     if (value instanceof ComponentStatus status && status == ComponentStatus.UNSET) {
                         config.set("provides_banner_patterns.unset", true);
                     } else {
-                        TagKey<PatternType> pattern = (TagKey<PatternType>) value;
-                        config.set("provides_banner_patterns", pattern.key().value());
+                        RegistryKeySet<PatternType> patterns = (RegistryKeySet<PatternType>) value;
+                        if (patterns.size() == 1) {
+                            config.set("provides_banner_patterns", patterns.values().iterator().next().key().asString());
+                        } else if (patterns.size() > 1) {
+                            config.set(
+                                    "provides_banner_patterns",
+                                    patterns.values().stream().map(pattern -> pattern.key().asString()).toList()
+                            );
+                        }
                     }
                 } else if (type == DataComponentTypes.PROVIDES_TRIM_MATERIAL) {
                     if (value instanceof ComponentStatus status && status == ComponentStatus.UNSET) {

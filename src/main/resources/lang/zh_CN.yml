@@ -817,7 +817,7 @@ power:
   fireball: 发射火球 (%.1f 秒冷却时间)
   flame: 点燃目标 %.1f 秒
   dash: 向 %s 冲刺 (%.1f 秒冷却时间)
-  food: 回复 %d 点饥饿值
+  food: 消耗 %2$d 个物品，恢复 %1$d 点饥饿值
   forcefield: 在你周围设置一个半径 %d，高度 %d，深度 %d 并持续 %.1f秒的力场
   glove: 捕获一个实体 (%.1fs 冷却)
   gunfu: 子弹会自动追踪敌人 (%.1fs cooldown)
@@ -1227,6 +1227,9 @@ properties:
     main_name: 火焰附加
   food:
     foodpoints: 饱食度
+    consumeAmount: 消耗物品量
+    requireEnoughAmount: 是否要求物品数量足够才能触发
+    cancelConsumeIfNotEnough: 配置了requireEnoughAmount时，如果数量不足，是否取消消耗
     main_description: 食用后回复饱食度
     main_name: 食用
   forcefield:

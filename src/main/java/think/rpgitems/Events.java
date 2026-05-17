@@ -47,7 +47,7 @@ import think.rpgitems.power.trigger.BaseTriggers;
 import think.rpgitems.power.trigger.Trigger;
 import think.rpgitems.support.WGHandler;
 import think.rpgitems.support.WGSupport;
-import think.rpgitems.utils.InventoryUtils;
+import think.rpgitems.gui.RPGItemsExplorer;
 import think.rpgitems.utils.LightContext;
 import think.rpgitems.utils.StatusEffectApplier;
 
@@ -576,12 +576,12 @@ public class Events implements Listener {
     }
     @EventHandler
     public void onMenuClick(InventoryClickEvent e) {
-        InventoryUtils.handelClickEvent(e);
+        RPGItemsExplorer.handelClickEvent(e);
         SocketGuiService.handleClick(e);
     }
     @EventHandler
     public void onMenuClose(InventoryCloseEvent e) {
-        InventoryUtils.handleCloseEvent(e);
+        RPGItemsExplorer.handleCloseEvent(e);
         SocketGuiService.handleClose(e);
     }
     @EventHandler
