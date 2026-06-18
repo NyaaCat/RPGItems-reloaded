@@ -89,7 +89,7 @@ javadoc {
     (options as StandardJavadocDocletOptions).with {
         links 'https://docs.oracle.com/en/java/javase/25/docs/api/'
         //links 'https://hub.spigotmc.org/javadocs/spigot/'
-        links 'https://guava.dev/releases/25.0/api/docs/'
+        links 'https://guava.dev/releases/33.5.0-jre/api/docs/'
         //links 'https://ci.nyaacat.com/javadocs/nyaacore-7.1.350/' //need update
         //links 'https://ci.md-5.net/job/BungeeCord/ws/chat/target/apidocs/' // dead URL, redirects to 404
         links 'https://netty.io/4.1/api/'
@@ -99,6 +99,7 @@ javadoc {
         options.docEncoding 'UTF-8'
         options.addBooleanOption('keywords', true)
         options.addStringOption('Xdoclint:none', '-quiet')
+        options.addStringOption('sourcepath', sourceSets.main.allJava.srcDirs.collect { it.absolutePath }.join(File.pathSeparator))
         if (JavaVersion.current() > JavaVersion.VERSION_1_9) {
             options.addBooleanOption('html5', true)
         }
