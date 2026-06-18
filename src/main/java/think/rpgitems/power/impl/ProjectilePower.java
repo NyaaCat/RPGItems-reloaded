@@ -501,6 +501,8 @@ public class ProjectilePower extends BasePower {
         private void fire(Player player, LivingEntity source, ItemStack stack, float speedFactor, CastUtils.CastLocation castLocation) {
 
             for (int i = 0; i < (isCone() ? getAmount() : 1); i++) {
+                LivingEntity originalSource = source;
+                LivingEntity launchSource = source;
                 RoundedConeInfo roundedConeInfo = generateConeInfo(isCone() ? getRange() : 0, getFiringR(), getFiringTheta(), getFiringPhi(), getInitialRotation());
                 if (getFiringLocation().equals(FiringLocation.TARGET) && castLocation != null) {
                     Location targetLocation = castLocation.getTargetLocation();
@@ -523,18 +525,19 @@ public class ProjectilePower extends BasePower {
                             spawn.remove();
                         }
                     }).runTaskLater(RPGItems.plugin, 1);
-                    source = spawn;
+                    launchSource = spawn;
                 }
-                fire(player, source, stack, roundedConeInfo, speedFactor);
+                fire(player, originalSource, launchSource, stack, roundedConeInfo, speedFactor);
             }
 
         }
 
-        private void fire(Player player, LivingEntity source, ItemStack stack, RoundedConeInfo roundedConeInfo, float speedFactor) {
-            Vector direction1 = source.getEyeLocation().getDirection();
-            Vector v = CastUtils.makeCone(source.getEyeLocation(), direction1, roundedConeInfo);
-            Events.registerRPGProjectile(getPower().getItem(), stack, player, source);
-            org.bukkit.entity.Projectile projectile = source.launchProjectile(getProjectileType(), v.clone().normalize().multiply(getSpeed() * speedFactor));
+        private void fire(Player player, LivingEntity originalSource, LivingEntity launchSource, ItemStack stack, RoundedConeInfo roundedConeInfo, float speedFactor) {
+            Vector direction1 = launchSource.getEyeLocation().getDirection();
+            Vector v = CastUtils.makeCone(launchSource.getEyeLocation(), direction1, roundedConeInfo);
+            Events.registerRPGProjectile(getPower().getItem(), stack, player, launchSource);
+            org.bukkit.entity.Projectile projectile = launchSource.launchProjectile(getProjectileType(), v.clone().normalize().multiply(getSpeed() * speedFactor));
+            projectile.getPersistentDataContainer().set(new NamespacedKey(RPGItems.plugin, "rpgitem_source_entity"), PersistentDataType.STRING, originalSource.getUniqueId().toString());
             if (projectile instanceof AbstractArrow) {
                 ((AbstractArrow) projectile).setPickupStatus(AbstractArrow.PickupStatus.DISALLOWED);
                 projectile.addScoreboardTag("rgi_projectile");
@@ -655,10 +658,10 @@ public class ProjectilePower extends BasePower {
                 castLocation = CastUtils.rayTrace(entity, entity.getEyeLocation(), entity.getEyeLocation().getDirection(), getFiringRange());
             }
             fire(player, entity, stack, 1, castLocation);
-            UUID uuid = player.getUniqueId();
+            UUID uuid = entity instanceof Player ? entity.getUniqueId() : UUID.randomUUID();
             if (getBurstCount() > 1) {
                 Integer prev = burstTask.getIfPresent(uuid);
-                if (prev != null) {
+                if (prev != null && entity instanceof Player) {
                     Bukkit.getScheduler().cancelTask(prev);
                 }
                 CastUtils.CastLocation finalCastLocation = castLocation;
@@ -667,14 +670,14 @@ public class ProjectilePower extends BasePower {
 
                     @Override
                     public void run() {
-                        if (player.getInventory().getItemInMainHand().equals(stack)) {
+                        if (player.isOnline() && !entity.isDead() && entity.isValid() && shouldContinueBurst(player, stack, entity)) {
                             CastUtils.CastLocation castLocation1 = finalCastLocation;
                             if (!isCastOff()) {
                                 castLocation1 = CastUtils.rayTrace(entity, entity.getEyeLocation(), entity.getEyeLocation().getDirection(), getFiringRange());
                             }
                             burstTask.put(uuid, this.getTaskId());
                             if (count-- > 0) {
-                                fire(player, entity, stack, 1, finalCastLocation);
+                                fire(player, entity, stack, 1, castLocation1);
                                 return;
                             }
                         }
@@ -685,6 +688,10 @@ public class ProjectilePower extends BasePower {
                 burstTask.put(uuid, bukkitTask.getTaskId());
             }
             return PowerResult.ok();
+        }
+
+        private boolean shouldContinueBurst(Player player, ItemStack stack, LivingEntity source) {
+            return !(source instanceof Player) || player.getInventory().getItemInMainHand().equals(stack);
         }
 
         @Override

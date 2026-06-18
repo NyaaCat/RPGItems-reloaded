@@ -16,6 +16,12 @@ ext {
 group = "cat.nyaa"
 version = "${MAJOR_VERSION}.${MINOR_VERSION}.${PATCH_VERSION}-$ext.buildNumber" as String
 
+java{
+    toolchain {
+        languageVersion = JavaLanguageVersion.of(25)
+    }
+}
+
 repositories {
     mavenCentral()
     maven { name 'paper'; url 'https://repo.papermc.io/repository/maven-public' }
