@@ -974,6 +974,11 @@ public class RPGItem {
                 }
             }
         }
+        Color leatherArmorColor = null;
+        if (meta instanceof LeatherArmorMeta leatherArmorMeta) {
+            leatherArmorColor = Color.fromRGB(getDataValue());
+            leatherArmorMeta.setColor(leatherArmorColor);
+        }
         checkAndMakeUnique(rpgitemsTagContainer);
         rpgitemsTagContainer.commit();
         item.setItemMeta(refreshAttributeModifiers(meta));
@@ -1000,8 +1005,8 @@ public class RPGItem {
         item.resetData(DataComponentTypes.DAMAGE_RESISTANT);
         item.resetData(DataComponentTypes.DEATH_PROTECTION);
         item.resetData(DataComponentTypes.DYED_COLOR);
-        if (meta instanceof LeatherArmorMeta) {
-            ((LeatherArmorMeta) meta).setColor(Color.fromRGB(getDataValue()));
+        if (leatherArmorColor != null) {
+            item.setData(DataComponentTypes.DYED_COLOR, DyedItemColor.dyedItemColor(leatherArmorColor));
         }
         item.resetData(DataComponentTypes.ENCHANTABLE);
         item.resetData(DataComponentTypes.ENCHANTMENT_GLINT_OVERRIDE);
