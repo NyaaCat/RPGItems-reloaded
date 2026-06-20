@@ -34,6 +34,18 @@ public class EvalDamage extends BasePower {
     @Property
     public String playerExpression = "";
 
+    @Property(order = 0)
+    public int cooldown = 0;
+
+    @Property
+    public int cost = 0;
+
+    @Property
+    public TriggerResult cooldownResult = TriggerResult.COOLDOWN;
+
+    @Property
+    public TriggerResult costResult = TriggerResult.COST;
+
     @Property
     public boolean setBaseDamage = false;
 
@@ -43,6 +55,22 @@ public class EvalDamage extends BasePower {
 
     public String getExpression() {
         return expression;
+    }
+
+    public int getCooldown() {
+        return cooldown;
+    }
+
+    public int getCost() {
+        return cost;
+    }
+
+    public TriggerResult getCooldownResult() {
+        return cooldownResult;
+    }
+
+    public TriggerResult getCostResult() {
+        return costResult;
     }
 
     @Override
@@ -61,6 +89,16 @@ public class EvalDamage extends BasePower {
 
     public boolean isSetBaseDamage() {
         return setBaseDamage;
+    }
+
+    private PowerResult<Double> checkCooldownAndCost(Player player, ItemStack stack) {
+        if (!Utils.checkCooldown(this, player, getCooldown(), showCooldownWarning(), true)) {
+            return PowerResult.of(getCooldownResult(), null);
+        }
+        if (!getItem().consumeDurability(stack, getCost())) {
+            return PowerResult.of(getCostResult(), null);
+        }
+        return null;
     }
 
     public class Impl implements PowerHit, PowerHitTaken {
@@ -120,8 +158,13 @@ public class EvalDamage extends BasePower {
                 if(!powerEvent.callEvent()) {
                     return PowerResult.fail();
                 }
+                PowerResult<Double> checkResult = checkCooldownAndCost(player, stack);
+                if (checkResult != null) {
+                    return checkResult;
+                }
                 if (isSetBaseDamage()) {
                     event.setDamage(ret);
+                    return PowerResult.ok(event.getDamage());
                 }
                 return PowerResult.ok(ret);
             } catch (Expression.ExpressionException ex) {
@@ -136,9 +179,12 @@ public class EvalDamage extends BasePower {
 
         @Override
         public PowerResult<Double> takeHit(Player player, ItemStack stack, double damage, EntityDamageEvent event) {
+            if (isSetBaseDamage() && isBlockedByNoDamageTicks(player, damage)) {
+                return PowerResult.noop();
+            }
             boolean byEntity = event instanceof EntityDamageByEntityEvent;
             String expr = getExpression();
-            boolean byPlayer = false;
+            Player damagerPlayer = null;
             if (byEntity) {
                 Entity damager = ((EntityDamageByEntityEvent) event).getDamager();
                 Entity ent = damager;
@@ -146,20 +192,25 @@ public class EvalDamage extends BasePower {
                     ProjectileSource shooter = ((Projectile) ent).getShooter();
                     if (shooter instanceof Entity) {
                         ent = (Entity) shooter;
-                        if(ent instanceof Player){
-                            byPlayer = true;
+                        if(ent instanceof Player playerDamager){
+                            damagerPlayer = playerDamager;
                             if (!getPlayerExpression().isEmpty()) {
                                 expr = getPlayerExpression();
                             }
                         }
                     }
+                } else if (ent instanceof Player playerDamager) {
+                    damagerPlayer = playerDamager;
+                    if (!getPlayerExpression().isEmpty()) {
+                        expr = getPlayerExpression();
+                    }
                 }
             }
             if(PlaceholderAPISupport.hasSupport()){
                 expr = PlaceholderAPI.setPlaceholders(player,expr);
-                if(byPlayer&&!getPlayerExpression().isEmpty()){
+                if(damagerPlayer != null && !getPlayerExpression().isEmpty()){
                     expr = expr.replaceAll("damager:","");
-                    expr = PlaceholderAPI.setPlaceholders((Player) ((EntityDamageByEntityEvent) event).getDamager(),expr);
+                    expr = PlaceholderAPI.setPlaceholders(damagerPlayer,expr);
                 }
             }
             try {
@@ -228,8 +279,13 @@ public class EvalDamage extends BasePower {
                 if(!powerEvent.callEvent()) {
                     return PowerResult.fail();
                 }
+                PowerResult<Double> checkResult = checkCooldownAndCost(player, stack);
+                if (checkResult != null) {
+                    return checkResult;
+                }
                 if (isSetBaseDamage()) {
                     event.setDamage(ret);
+                    return PowerResult.ok(event.getDamage());
                 }
                 return PowerResult.ok(result.doubleValue());
             } catch (Expression.ExpressionException ex) {
@@ -240,6 +296,11 @@ public class EvalDamage extends BasePower {
                 }
                 return PowerResult.fail();
             }
+        }
+
+        private boolean isBlockedByNoDamageTicks(Player player, double incomingDamage) {
+            return player.getNoDamageTicks() > player.getMaximumNoDamageTicks() / 2
+                    && incomingDamage <= player.getLastDamage();
         }
 
         @Override
