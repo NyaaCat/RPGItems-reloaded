@@ -1,7 +1,6 @@
 package think.rpgitems.power.impl;
 
 import com.destroystokyo.paper.event.player.PlayerJumpEvent;
-import net.kyori.adventure.text.Component;
 import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.entity.LivingEntity;
 import org.bukkit.entity.Player;
@@ -25,11 +24,9 @@ import think.rpgitems.event.BeamHitBlockEvent;
 import think.rpgitems.event.BeamHitEntityEvent;
 import org.bukkit.Location;
 import think.rpgitems.utils.PotionEffectUtils;
-import think.rpgitems.utils.StatusEffectApplier;
 
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.HashMap;
 import java.util.List;
 
 import static think.rpgitems.power.Utils.checkCooldown;
@@ -172,7 +169,7 @@ public class PotionSelf extends BasePower implements PowerPotion{
             if (isClear()) {
                 player.removePotionEffect(getType());
             } else {
-                StatusEffectApplier.applyPotionEffect(player, new PotionEffect(getType(), getDuration(), getAmplifier()+summing[0], isAmbient(), isShowParticles(), isShowIcon()), player);
+                player.addPotionEffect(new PotionEffect(getType(), getDuration(), getAmplifier()+summing[0], isAmbient(), isShowParticles(), isShowIcon()));
             }
             return PowerResult.ok();
         }

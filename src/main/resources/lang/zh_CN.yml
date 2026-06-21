@@ -807,6 +807,7 @@ power:
     backstab: 百分之 %.1f 的几率背刺 %.1f 倍
     both: 百分之 %.1f 的几率暴击 %.1f 倍，百分之 %.1f 的几率背刺 %.1f 倍
     critical: 百分之 %.1f 的几率暴击 %.1f 倍
+  dash: 向 %s 冲刺 (%.1f 秒冷却时间)
   deathcommand: 1/%d 几率杀死敌人然后 %s
   deflect: 反弹射来的箭与火球
   economy:
@@ -816,9 +817,11 @@ power:
   fire: 发射火焰 (%.1f 秒冷却时间)
   fireball: 发射火球 (%.1f 秒冷却时间)
   flame: 点燃目标 %.1f 秒
-  dash: 向 %s 冲刺 (%.1f 秒冷却时间)
   food: 消耗 %2$d 个物品，恢复 %1$d 点饥饿值
   forcefield: 在你周围设置一个半径 %d，高度 %d，深度 %d 并持续 %.1f秒的力场
+  freeze:
+    default: 冻结敌人 %.1f 秒
+    locked: 冻结敌人 %.1f 秒，且锁定其冻结时间
   glove: 捕获一个实体 (%.1fs 冷却)
   gunfu: 子弹会自动追踪敌人 (%.1fs cooldown)
   headshot: 爆头时造成 %.1f 倍伤害
@@ -851,7 +854,9 @@ power:
   rainbow: 发射 %d 个彩色羊毛 (%.1f 秒冷却)
   ranged: 可远程使用
   rangedonly: 仅远程使用
-  realdamage: 攻击后对敌人造成 %.1f 真实伤害.
+  realdamage:
+    default: 攻击后对敌人造成 %.1f 真实伤害，敌人至少会剩余 %.1f 生命值.
+    cankill: 攻击后对敌人造成 %.1f 真实伤害
   rescue:
     display: 当生命值低于 %.1f 颗心时施展拯救技能 (%.1f秒冷却)
     info: 你已被拯救。
@@ -1241,6 +1246,11 @@ properties:
     wallMaterial: 墙对应方块材质
     barrierMaterial: 屏障对应方块材质
     ttl: 护盾的持续时间
+  freeze:
+    main_description: 将目标的冻结时间设置为目标值（该值最大为140）
+    main_name: 冻结
+    ticks: 冻结的时间
+    lockTime: 是否锁定冻结时间，否则冻结时间会在细雪中增加，脱离后减少
   glove:
     main_description: 捕获一个实体
     main_name: 鬼手
@@ -1521,10 +1531,13 @@ properties:
     r: 最大距离
     rm: 最小距离
   realdamage:
-    main_description: 对目标造成真实伤害但不会杀死它
+    main_description: 对目标造成真实伤害
     main_name: 真实伤害
     minDamage: 触发该技能的最小伤害
     realDamage: 真实伤害量
+    canKill: 是否允许杀死目标
+    minHealth: 如果目标不能被杀死，则目标的血量扣除后不能低于该值
+    ignoreInvulnerability: 是否忽略目标的无敌时间和抗性提升效果
   repair:
     abortOnFailure: 修理失败时中止后续技能
     abortOnSuccess: 修理成功后中止后续技能

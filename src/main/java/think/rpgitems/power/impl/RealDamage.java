@@ -1,6 +1,8 @@
 package think.rpgitems.power.impl;
 
 import org.bukkit.attribute.Attribute;
+import org.bukkit.damage.DamageSource;
+import org.bukkit.damage.DamageType;
 import org.bukkit.entity.LivingEntity;
 import org.bukkit.entity.Player;
 import org.bukkit.event.entity.EntityDamageByEntityEvent;
@@ -37,6 +39,12 @@ public class RealDamage extends BasePower {
     public double realDamage = 0;
     @Property
     public double minDamage = 0;
+    @Property
+    public boolean canKill = false;
+    @Property
+    public double minHealth = 0.1;
+    @Property
+    public boolean ignoreInvulnerability = false;
 
     /**
      * Cooldown time of this power
@@ -50,6 +58,18 @@ public class RealDamage extends BasePower {
      */
     public int getCost() {
         return cost;
+    }
+
+    public boolean isCanKill() {
+        return canKill;
+    }
+
+    public boolean isIgnoreInvulnerability() {
+        return ignoreInvulnerability;
+    }
+
+    public double getMinHealth() {
+        return minHealth;
     }
 
     /**
@@ -66,7 +86,10 @@ public class RealDamage extends BasePower {
 
     @Override
     public String displayText() {
-        return I18n.formatDefault("power.realdamage", getRealDamage());
+        if(canKill) {
+            return I18n.formatDefault("power.realdamage.cankill", getRealDamage());
+        }
+        return I18n.formatDefault("power.realdamage.default", getRealDamage(), getMinHealth());
     }
 
     /**
@@ -80,27 +103,39 @@ public class RealDamage extends BasePower {
 
         @Override
         public PowerResult<Double> hit(Player player, ItemStack stack, LivingEntity entity, double damage, EntityDamageByEntityEvent event) {
-            HashMap<String,Object> argsMap = new HashMap<>();
-            argsMap.put("target",entity);
-            argsMap.put("damage",damage);
-            PowerActivateEvent powerEvent = new PowerActivateEvent(player,stack,getPower(),argsMap);
-            if(!powerEvent.callEvent()) {
+            HashMap<String, Object> argsMap = new HashMap<>();
+            argsMap.put("target", entity);
+            argsMap.put("damage", damage);
+            PowerActivateEvent powerEvent = new PowerActivateEvent(player, stack, getPower(), argsMap);
+            if (!powerEvent.callEvent()) {
                 return PowerResult.fail();
             }
             if (damage < getMinDamage()) return PowerResult.noop();
             if (!checkCooldown(getPower(), player, getCooldown(), showCooldownWarning(), true)) return PowerResult.cd();
             if (!getItem().consumeDurability(stack, getCost())) return PowerResult.cost();
-            if (entity.hasPotionEffect(PotionEffectType.RESISTANCE)) {
-                PotionEffect e = entity.getPotionEffect(PotionEffectType.RESISTANCE);
-                if (e.getAmplifier() >= 4) return PowerResult.noop();
+            if (!isIgnoreInvulnerability()) {
+                if (entity.isInvulnerable()) return PowerResult.noop();
+                if (entity.hasPotionEffect(PotionEffectType.RESISTANCE)) {
+                    PotionEffect e = entity.getPotionEffect(PotionEffectType.RESISTANCE);
+                    if (e.getAmplifier() >= 4) return PowerResult.noop();
+                }
             }
             Context.instance().putExpiringSeconds(player.getUniqueId(), "realdamage.target", entity, 3);
 
             double health = entity.getHealth();
-            double newHealth = health - getRealDamage();
-            newHealth = max(newHealth, 0.1);//Bug workaround
-            newHealth = min(newHealth, entity.getAttribute(Attribute.MAX_HEALTH).getValue());
-            entity.setHealth(newHealth);
+            double realDamage = Math.max(0, getRealDamage());
+            double newHealth = health - realDamage;
+            if (!canKill) {
+                if (health > realDamage && newHealth < minHealth) {
+                    newHealth = minHealth;
+                }
+            } else if (newHealth <= 0) {
+                entity.kill(DamageSource.builder(DamageType.PLAYER_ATTACK).withDirectEntity(player).withCausingEntity(player).build());
+                return PowerResult.ok(damage);
+            }
+            if (health != newHealth) {
+                entity.setHealth(newHealth);
+            }
             return PowerResult.ok(damage);
         }
 

@@ -7,10 +7,6 @@ import org.bukkit.inventory.ItemStack;
 import think.rpgitems.I18n;
 import think.rpgitems.event.PowerActivateEvent;
 import think.rpgitems.power.*;
-import think.rpgitems.utils.StatusEffectApplier;
-
-import java.util.HashMap;
-import java.util.MissingResourceException;
 
 /**
  * Power flame.
@@ -65,7 +61,7 @@ public class Flame extends BasePower {
                 return PowerResult.fail();
             }
             if (!getItem().consumeDurability(stack, getCost())) return PowerResult.cost();
-            StatusEffectApplier.applyFireTicks(entity, getBurntime(), player);
+            entity.setFireTicks(getBurntime());
             return PowerResult.ok();
         }
 

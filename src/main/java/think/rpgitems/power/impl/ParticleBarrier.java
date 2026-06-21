@@ -31,7 +31,6 @@ import think.rpgitems.RPGItems;
 import think.rpgitems.event.PowerActivateEvent;
 import think.rpgitems.power.*;
 import think.rpgitems.utils.PotionEffectUtils;
-import think.rpgitems.utils.StatusEffectApplier;
 
 import java.util.*;
 import java.util.concurrent.TimeUnit;
@@ -309,7 +308,7 @@ public class ParticleBarrier extends BasePower {
             double energy = pair.getValue() - (currentTimeMillis - pair.getKey()) * getEnergyDecay() / 1000;
             if (energy <= 0) return PowerResult.noop();
             int level = (int) (energy / getEnergyPerLevel());
-            StatusEffectApplier.applyPotionEffect(player, new PotionEffect(getEffect(), 5, level), player);
+            player.addPotionEffect(new PotionEffect(getEffect(), 5, level));
             return PowerResult.ok();
         }
     }

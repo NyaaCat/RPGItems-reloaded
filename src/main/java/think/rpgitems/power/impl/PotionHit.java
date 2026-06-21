@@ -15,7 +15,6 @@ import think.rpgitems.event.BeamHitBlockEvent;
 import think.rpgitems.event.BeamHitEntityEvent;
 import org.bukkit.Location;
 import think.rpgitems.utils.PotionEffectUtils;
-import think.rpgitems.utils.StatusEffectApplier;
 
 import java.util.*;
 
@@ -134,7 +133,7 @@ public class PotionHit extends BasePower implements PowerPotion {
                 return PowerResult.fail();
             }
             if (!getItem().consumeDurability(stack, getCost())) return PowerResult.cost();
-            StatusEffectApplier.applyPotionEffect(entity, new PotionEffect(getType(), getDuration(), getAmplifier()+summing[0], isAmbient(), isShowParticles(), isShowIcon()), player);
+            entity.addPotionEffect(new PotionEffect(getType(), getDuration(), getAmplifier()+summing[0], isAmbient(), isShowParticles(), isShowIcon()));
             return PowerResult.ok();
         }
 

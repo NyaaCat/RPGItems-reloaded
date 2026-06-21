@@ -49,7 +49,6 @@ import think.rpgitems.support.WGHandler;
 import think.rpgitems.support.WGSupport;
 import think.rpgitems.gui.RPGItemsExplorer;
 import think.rpgitems.utils.LightContext;
-import think.rpgitems.utils.StatusEffectApplier;
 
 import java.util.*;
 import java.util.concurrent.ThreadLocalRandom;
@@ -153,6 +152,7 @@ public class Events implements Listener {
                     }
                 });
     }
+
     @EventHandler(ignoreCancelled = true, priority = EventPriority.HIGH)
     public void onItemMend(PlayerItemMendEvent e) {
         Player p = e.getPlayer();
@@ -172,6 +172,7 @@ public class Events implements Listener {
                     }
                 });
     }
+
     @EventHandler
     public void onItemEnchant(EnchantItemEvent e) {
         Optional<RPGItem> opt = ItemManager.toActiveRPGItem(e.getItem());
@@ -417,26 +418,29 @@ public class Events implements Listener {
                 || itemStack.getType() == Material.ENDER_PEARL
                 || itemStack.getType() == Material.ENDER_EYE;
     }
+
     @EventHandler(ignoreCancelled = true, priority = EventPriority.HIGHEST)
     public void onItemConsume(PlayerItemConsumeEvent event) {
         ItemStack itemStack = event.getItem();
         Player player = event.getPlayer();
         RPGItem rpgItem = ItemManager.toActiveRPGItem(itemStack).orElse(null);
-        if(rpgItem == null) return;
-        if(!rpgItem.isCanUse()){
+        if (rpgItem == null) return;
+        if (!rpgItem.isCanUse()) {
             event.setCancelled(true);
         }
         rpgItem.power(player, itemStack, event, BaseTriggers.CONSUME);
     }
+
     @EventHandler(ignoreCancelled = true, priority = EventPriority.HIGHEST)
     public void onProjectileLaunch(PlayerLaunchProjectileEvent event) {
         ItemStack itemStack = event.getItemStack();
         RPGItem rpgItem = ItemManager.toActiveRPGItem(itemStack).orElse(null);
-        if(rpgItem == null) return;
-        if(!rpgItem.isCanUse()){
+        if (rpgItem == null) return;
+        if (!rpgItem.isCanUse()) {
             event.setCancelled(true);
         }
     }
+
     @EventHandler
     public void onPlayerAction(PlayerInteractEvent e) {
         Player player = e.getPlayer();
@@ -475,9 +479,12 @@ public class Events implements Listener {
     private boolean isTools(Material im) {
         return switch (im) {
             //<editor-fold>
-            case BOW, CROSSBOW, NETHERITE_AXE, DIAMOND_AXE, GOLDEN_AXE, IRON_AXE, STONE_AXE, WOODEN_AXE, NETHERITE_PICKAXE, DIAMOND_PICKAXE,
-                 GOLDEN_PICKAXE, IRON_PICKAXE, STONE_PICKAXE, WOODEN_PICKAXE, NETHERITE_HOE, DIAMOND_HOE, GOLDEN_HOE, IRON_HOE,
-                 STONE_HOE, WOODEN_HOE, NETHERITE_SHOVEL, DIAMOND_SHOVEL, GOLDEN_SHOVEL, IRON_SHOVEL, STONE_SHOVEL, WOODEN_SHOVEL,
+            case BOW, CROSSBOW, NETHERITE_AXE, DIAMOND_AXE, GOLDEN_AXE, IRON_AXE, STONE_AXE, WOODEN_AXE,
+                 NETHERITE_PICKAXE, DIAMOND_PICKAXE,
+                 GOLDEN_PICKAXE, IRON_PICKAXE, STONE_PICKAXE, WOODEN_PICKAXE, NETHERITE_HOE, DIAMOND_HOE, GOLDEN_HOE,
+                 IRON_HOE,
+                 STONE_HOE, WOODEN_HOE, NETHERITE_SHOVEL, DIAMOND_SHOVEL, GOLDEN_SHOVEL, IRON_SHOVEL, STONE_SHOVEL,
+                 WOODEN_SHOVEL,
                  FISHING_ROD, SHEARS, LEAD, FLINT_AND_STEEL ->
                 //</editor-fold>
                     true;
@@ -519,7 +526,7 @@ public class Events implements Listener {
 
     @EventHandler
     public void onPlayerSwim(EntityToggleSwimEvent e) {
-        if(!(e.getEntity() instanceof Player p)||!e.isSwimming()){
+        if (!(e.getEntity() instanceof Player p) || !e.isSwimming()) {
             return;
         }
         Trigger<EntityToggleSwimEvent, PowerSwim, Void, Void> swim = BaseTriggers.SWIM;
@@ -574,20 +581,24 @@ public class Events implements Listener {
             if (!cont) e.setCancelled(true);
         }
     }
+
     @EventHandler
     public void onMenuClick(InventoryClickEvent e) {
         RPGItemsExplorer.handelClickEvent(e);
         SocketGuiService.handleClick(e);
     }
+
     @EventHandler
     public void onMenuClose(InventoryCloseEvent e) {
         RPGItemsExplorer.handleCloseEvent(e);
         SocketGuiService.handleClose(e);
     }
+
     @EventHandler
     public void onSocketMenuDrag(InventoryDragEvent e) {
         SocketGuiService.handleDrag(e);
     }
+
     @EventHandler
     public void onOffhandInventoryClick(InventoryClickEvent e) {
         if (e.getInventory().getType() != InventoryType.CRAFTING || e.getSlotType() != InventoryType.SlotType.QUICKBAR || e.getSlot() != 40)
@@ -621,7 +632,7 @@ public class Events implements Listener {
             return;
 
         RPGItem rItem = ItemManager.toActiveRPGItem(item).orElse(null);
-        if (rItem == null){
+        if (rItem == null) {
             return;
         } else if (rItem.isCanPlace()) {
             return;
@@ -660,7 +671,7 @@ public class Events implements Listener {
                     e.setCancelled(true);
                     Bukkit.getScheduler().runTaskLater(plugin, () -> e.getArrow().remove(), 100L);
                 } else {
-                    RPGItem.updateItemStack(realItem,e.getPlayer());
+                    RPGItem.updateItemStack(realItem, e.getPlayer());
                     e.getItem().setItemStack(realItem);
                 }
             }
@@ -824,9 +835,9 @@ public class Events implements Listener {
         double originDamage = e.getDamage();
         double damage = originDamage;
         if (rItem != null && overridingDamage.isEmpty()) {
-            if(e.isCritical()){
+            if (e.isCritical()) {
                 damage = rItem.meleeDamage(player, originDamage, item, entity, 1.5);
-            }else{
+            } else {
                 damage = rItem.meleeDamage(player, originDamage, item, entity, player.getAttackCooldown());
             }
         } else if (overridingDamage.isPresent()) {
@@ -1069,6 +1080,7 @@ public class Events implements Listener {
 //            rpgItem.power(player, content, event, BaseTriggers.BEAM_HIT_ENTITY, null);
 //        }
     }
+
     @EventHandler(ignoreCancelled = true, priority = EventPriority.HIGH)
     public void onBeamEnd(BeamEndEvent event) {
         Player player = event.getPlayer();
@@ -1079,30 +1091,31 @@ public class Events implements Listener {
 
         rItem.power(player, event.getItemStack(), event, BaseTriggers.BEAM_END, null);
     }
+
     @EventHandler(ignoreCancelled = true, priority = EventPriority.HIGHEST)
     public void onEggHatch(ThrownEggHatchEvent event) {
         Egg egg = event.getEgg();
-        NamespacedKey hatchOrNot = new NamespacedKey(RPGItems.plugin,"RPGItemHatchOrNot");
-        NamespacedKey hacthNumber = new NamespacedKey(RPGItems.plugin,"RPGItemHatchNumber");
-        NamespacedKey hatchEntity = new NamespacedKey(RPGItems.plugin,"RPGItemHatchEntity");
-        if(egg.getPersistentDataContainer().has(hatchOrNot)){
+        NamespacedKey hatchOrNot = new NamespacedKey(RPGItems.plugin, "RPGItemHatchOrNot");
+        NamespacedKey hacthNumber = new NamespacedKey(RPGItems.plugin, "RPGItemHatchNumber");
+        NamespacedKey hatchEntity = new NamespacedKey(RPGItems.plugin, "RPGItemHatchEntity");
+        if (egg.getPersistentDataContainer().has(hatchOrNot)) {
             Boolean shouldHatch = egg.getPersistentDataContainer().get(hatchOrNot, PersistentDataType.BOOLEAN);
-            if(Boolean.FALSE.equals(shouldHatch)){
+            if (Boolean.FALSE.equals(shouldHatch)) {
                 event.setHatching(false);
                 return;
             }
         }
-        if(egg.getPersistentDataContainer().has(hacthNumber)){
+        if (egg.getPersistentDataContainer().has(hacthNumber)) {
             Integer hatchNumber = egg.getPersistentDataContainer().get(hacthNumber, PersistentDataType.INTEGER);
-            if(hatchNumber != null){
-                if(hatchNumber != -1){
+            if (hatchNumber != null) {
+                if (hatchNumber != -1) {
                     event.setNumHatches(hatchNumber.byteValue());
                 }
             }
         }
-        if(egg.getPersistentDataContainer().has(hatchEntity)){
+        if (egg.getPersistentDataContainer().has(hatchEntity)) {
             String entityType = egg.getPersistentDataContainer().get(hatchEntity, PersistentDataType.STRING);
-            if(entityType != null){
+            if (entityType != null) {
                 event.setHatchingType(EntityType.valueOf(entityType));
             }
         }
@@ -1113,7 +1126,7 @@ public class Events implements Listener {
         if (ev.getEntity() instanceof Player e) {
             ItemStack i = e.getInventory().getItemInMainHand();
             RPGItem rpi = ItemManager.toActiveRPGItem(i).orElse(null);
-            if(rpi != null){
+            if (rpi != null) {
                 rpi.power(e, i, ev, BaseTriggers.POTION_EFFECT);
             }
             for (ItemStack item : e.getInventory().getArmorContents()) {
@@ -1125,29 +1138,29 @@ public class Events implements Listener {
     }
 
     //For power Undead only
-    @EventHandler(ignoreCancelled = true,priority = EventPriority.HIGH)
-    public void onWitherAndUndeadTarget(EntityTargetEvent event){
-        if((event.getEntity() instanceof Wither || EntityTags.UNDEADS.isTagged(event.getEntityType()))&& event.getTarget() instanceof Player p){
+    @EventHandler(ignoreCancelled = true, priority = EventPriority.HIGH)
+    public void onWitherAndUndeadTarget(EntityTargetEvent event) {
+        if ((event.getEntity() instanceof Wither || EntityTags.UNDEADS.isTagged(event.getEntityType())) && event.getTarget() instanceof Player p) {
             PlayerInventory inventory = p.getInventory();
             ItemManager.toActiveRPGItemByMeta(inventory.getItemInOffHand()).ifPresent(rpgItem -> {
-                for (Power power : rpgItem.getPowers()){
-                    if(power.getName().equals("undead")){
+                for (Power power : rpgItem.getPowers()) {
+                    if (power.getName().equals("undead")) {
                         Undead undead = (Undead) power;
-                        if(undead.getAllowOffHand()){
+                        if (undead.getAllowOffHand()) {
                             event.setCancelled(true);
                         }
                     }
                 }
             });
             ItemManager.toActiveRPGItemByMeta(inventory.getItemInMainHand()).ifPresent(rpgItem -> {
-                for (Power power : rpgItem.getPowers()){
-                    if(power.getName().equals("undead")) event.setCancelled(true);
+                for (Power power : rpgItem.getPowers()) {
+                    if (power.getName().equals("undead")) event.setCancelled(true);
                 }
             });
-            for(ItemStack i : inventory.getArmorContents()){
+            for (ItemStack i : inventory.getArmorContents()) {
                 ItemManager.toActiveRPGItemByMeta(i).ifPresent(rpgItem -> {
-                    for (Power power : rpgItem.getPowers()){
-                        if(power.getName().equals("undead")) event.setCancelled(true);
+                    for (Power power : rpgItem.getPowers()) {
+                        if (power.getName().equals("undead")) event.setCancelled(true);
                     }
                 });
             }
@@ -1155,9 +1168,9 @@ public class Events implements Listener {
     }
 
     //For power Undead only
-    @EventHandler(ignoreCancelled = true,priority = EventPriority.HIGHEST)
-    public void onInstantPotion(EntityPotionEffectEvent event){
-        if(event.getEntity() instanceof Player p && event.getCause() != EntityPotionEffectEvent.Cause.PLUGIN && event.getAction()== EntityPotionEffectEvent.Action.ADDED && (event.getModifiedType()==PotionEffectType.INSTANT_HEALTH||event.getModifiedType()==PotionEffectType.INSTANT_DAMAGE)){
+    @EventHandler(ignoreCancelled = true, priority = EventPriority.HIGHEST)
+    public void onInstantPotion(EntityPotionEffectEvent event) {
+        if (event.getEntity() instanceof Player p && event.getCause() != EntityPotionEffectEvent.Cause.PLUGIN && event.getAction() == EntityPotionEffectEvent.Action.ADDED && (event.getModifiedType() == PotionEffectType.INSTANT_HEALTH || event.getModifiedType() == PotionEffectType.INSTANT_DAMAGE)) {
             PlayerInventory inventory = p.getInventory();
             int amplifier = event.getNewEffect().getAmplifier();
             int duration = event.getNewEffect().getDuration();
@@ -1165,50 +1178,47 @@ public class Events implements Listener {
             boolean particle = event.getNewEffect().hasParticles();
             boolean ambient = event.getNewEffect().isAmbient();
             ItemManager.toActiveRPGItemByMeta(inventory.getItemInOffHand()).ifPresent(rpgItem -> {
-                for (Power power : rpgItem.getPowers()){
-                    if(power.getName().equals("undead")){
+                for (Power power : rpgItem.getPowers()) {
+                    if (power.getName().equals("undead")) {
                         Undead undead = (Undead) power;
-                        if(undead.getAllowOffHand()){
+                        if (undead.getAllowOffHand()) {
                             event.setCancelled(true);
-                            if(event.getNewEffect().getType()== PotionEffectType.INSTANT_HEALTH){
-                                PotionEffect potion = new PotionEffect(PotionEffectType.INSTANT_DAMAGE,duration,amplifier,ambient,particle,icon);
-                                StatusEffectApplier.applyPotionEffect(p, potion, p);
-                            }
-                            else{
-                                PotionEffect potion = new PotionEffect(PotionEffectType.INSTANT_HEALTH,duration,amplifier,ambient,particle,icon);
-                                StatusEffectApplier.applyPotionEffect(p, potion, p);
+                            if (event.getNewEffect().getType() == PotionEffectType.INSTANT_HEALTH) {
+                                PotionEffect potion = new PotionEffect(PotionEffectType.INSTANT_DAMAGE, duration, amplifier, ambient, particle, icon);
+                                p.addPotionEffect(potion);
+                            } else {
+                                PotionEffect potion = new PotionEffect(PotionEffectType.INSTANT_HEALTH, duration, amplifier, ambient, particle, icon);
+                                p.addPotionEffect(potion);
                             }
                         }
                     }
                 }
             });
             ItemManager.toActiveRPGItemByMeta(inventory.getItemInMainHand()).ifPresent(rpgItem -> {
-                for (Power power : rpgItem.getPowers()){
-                    if(power.getName().equals("undead")){
+                for (Power power : rpgItem.getPowers()) {
+                    if (power.getName().equals("undead")) {
                         event.setCancelled(true);
-                        if(event.getNewEffect().getType()== PotionEffectType.INSTANT_HEALTH){
-                            PotionEffect potion = new PotionEffect(PotionEffectType.INSTANT_DAMAGE,duration,amplifier,ambient,particle,icon);
-                            StatusEffectApplier.applyPotionEffect(p, potion, p);
-                        }
-                        else{
-                            PotionEffect potion = new PotionEffect(PotionEffectType.INSTANT_HEALTH,duration,amplifier,ambient,particle,icon);
-                            StatusEffectApplier.applyPotionEffect(p, potion, p);
+                        if (event.getNewEffect().getType() == PotionEffectType.INSTANT_HEALTH) {
+                            PotionEffect potion = new PotionEffect(PotionEffectType.INSTANT_DAMAGE, duration, amplifier, ambient, particle, icon);
+                            p.addPotionEffect(potion);
+                        } else {
+                            PotionEffect potion = new PotionEffect(PotionEffectType.INSTANT_HEALTH, duration, amplifier, ambient, particle, icon);
+                            p.addPotionEffect(potion);
                         }
                     }
                 }
             });
-            for(ItemStack i : inventory.getArmorContents()){
+            for (ItemStack i : inventory.getArmorContents()) {
                 ItemManager.toActiveRPGItemByMeta(i).ifPresent(rpgItem -> {
-                    for (Power power : rpgItem.getPowers()){
-                        if(power.getName().equals("undead")){
+                    for (Power power : rpgItem.getPowers()) {
+                        if (power.getName().equals("undead")) {
                             event.setCancelled(true);
-                            if(event.getNewEffect().getType()== PotionEffectType.INSTANT_HEALTH){
-                                PotionEffect potion = new PotionEffect(PotionEffectType.INSTANT_DAMAGE,duration,amplifier,ambient,particle,icon);
-                                StatusEffectApplier.applyPotionEffect(p, potion, p);
-                            }
-                            else{
-                                PotionEffect potion = new PotionEffect(PotionEffectType.INSTANT_HEALTH,duration,amplifier,ambient,particle,icon);
-                                StatusEffectApplier.applyPotionEffect(p, potion, p);
+                            if (event.getNewEffect().getType() == PotionEffectType.INSTANT_HEALTH) {
+                                PotionEffect potion = new PotionEffect(PotionEffectType.INSTANT_DAMAGE, duration, amplifier, ambient, particle, icon);
+                                p.addPotionEffect(potion);
+                            } else {
+                                PotionEffect potion = new PotionEffect(PotionEffectType.INSTANT_HEALTH, duration, amplifier, ambient, particle, icon);
+                                p.addPotionEffect(potion);
                             }
                         }
                     }
@@ -1222,8 +1232,7 @@ public class Events implements Listener {
     public void onInstantSplashPotion(PotionSplashEvent event) {
         List<LivingEntity> affectedEntities = new ArrayList<>(event.getAffectedEntities());
 
-        for (int j = 0;j < affectedEntities.size();j++) {
-            Entity entity = affectedEntities.get(j);
+        for (Entity entity : affectedEntities) {
             if (entity instanceof Player player) {
                 boolean instantDetected = false;
                 Collection<PotionEffect> potionEffects = event.getPotion().getEffects();
@@ -1239,18 +1248,17 @@ public class Events implements Listener {
                 if (instantDetected) {
                     PlayerInventory inventory = player.getInventory();
                     int finalInstantAmplifier = instantAmplifier;
-                    Entity splashSource = event.getPotion().getShooter() instanceof Entity shooterEntity ? shooterEntity : player;
                     ItemManager.toActiveRPGItemByMeta(inventory.getItemInOffHand()).ifPresent(rpgItem -> {
-                        for (Power power : rpgItem.getPowers()){
-                            if(power.getName().equals("undead")&&((Undead)power).getAllowOffHand()){
-                                event.setIntensity(player,0);
+                        for (Power power : rpgItem.getPowers()) {
+                            if (power.getName().equals("undead") && ((Undead) power).getAllowOffHand()) {
+                                event.setIntensity(player, 0);
                                 for (PotionEffect potionEffect : potionEffects) {
                                     if (potionEffect.getType() == PotionEffectType.INSTANT_HEALTH) {
-                                        StatusEffectApplier.applyPotionEffect(player, new PotionEffect(PotionEffectType.INSTANT_DAMAGE, instantDuration, finalInstantAmplifier, false, false, true), splashSource);
+                                        player.addPotionEffect(new PotionEffect(PotionEffectType.INSTANT_DAMAGE, instantDuration, finalInstantAmplifier, false, false, true));
                                     } else if (potionEffect.getType() == PotionEffectType.INSTANT_DAMAGE) {
-                                        StatusEffectApplier.applyPotionEffect(player, new PotionEffect(PotionEffectType.INSTANT_HEALTH, instantDuration, finalInstantAmplifier, false, false, true), splashSource);
+                                        player.addPotionEffect(new PotionEffect(PotionEffectType.INSTANT_HEALTH, instantDuration, finalInstantAmplifier, false, false, true));
                                     } else {
-                                        StatusEffectApplier.applyPotionEffect(player, potionEffect, splashSource);
+                                        player.addPotionEffect(potionEffect);
                                     }
                                 }
                                 return;
@@ -1258,35 +1266,35 @@ public class Events implements Listener {
                         }
                     });
                     ItemManager.toActiveRPGItemByMeta(inventory.getItemInMainHand()).ifPresent(rpgItem -> {
-                        for (Power power : rpgItem.getPowers()){
-                            if(power.getName().equals("undead")){
-                                event.setIntensity(player,0);
+                        for (Power power : rpgItem.getPowers()) {
+                            if (power.getName().equals("undead")) {
+                                event.setIntensity(player, 0);
                                 for (PotionEffect potionEffect : potionEffects) {
                                     if (potionEffect.getType() == PotionEffectType.INSTANT_HEALTH) {
-                                        StatusEffectApplier.applyPotionEffect(player, new PotionEffect(PotionEffectType.INSTANT_DAMAGE, instantDuration, finalInstantAmplifier, false, false, true), splashSource);
+                                        player.addPotionEffect(new PotionEffect(PotionEffectType.INSTANT_DAMAGE, instantDuration, finalInstantAmplifier, false, false, true));
                                     } else if (potionEffect.getType() == PotionEffectType.INSTANT_DAMAGE) {
-                                        StatusEffectApplier.applyPotionEffect(player, new PotionEffect(PotionEffectType.INSTANT_HEALTH, instantDuration, finalInstantAmplifier, false, false, true), splashSource);
+                                        player.addPotionEffect(new PotionEffect(PotionEffectType.INSTANT_HEALTH, instantDuration, finalInstantAmplifier, false, false, true));
                                     } else {
-                                        StatusEffectApplier.applyPotionEffect(player, potionEffect, splashSource);
+                                        player.addPotionEffect(potionEffect);
                                     }
                                 }
                                 return;
                             }
                         }
                     });
-                    for(ItemStack i : inventory.getArmorContents()){
+                    for (ItemStack i : inventory.getArmorContents()) {
                         int finalInstantAmplifier1 = instantAmplifier;
                         ItemManager.toActiveRPGItemByMeta(i).ifPresent(rpgItem -> {
-                            for (Power power : rpgItem.getPowers()){
-                                if(power.getName().equals("undead")){
-                                    event.setIntensity(player,0);
+                            for (Power power : rpgItem.getPowers()) {
+                                if (power.getName().equals("undead")) {
+                                    event.setIntensity(player, 0);
                                     for (PotionEffect potionEffect : potionEffects) {
                                         if (potionEffect.getType() == PotionEffectType.INSTANT_HEALTH) {
-                                            StatusEffectApplier.applyPotionEffect(player, new PotionEffect(PotionEffectType.INSTANT_DAMAGE, instantDuration, finalInstantAmplifier1, false, false, true), splashSource);
+                                            player.addPotionEffect(new PotionEffect(PotionEffectType.INSTANT_DAMAGE, instantDuration, finalInstantAmplifier1, false, false, true));
                                         } else if (potionEffect.getType() == PotionEffectType.INSTANT_DAMAGE) {
-                                            StatusEffectApplier.applyPotionEffect(player, new PotionEffect(PotionEffectType.INSTANT_HEALTH, instantDuration, finalInstantAmplifier1, false, false, true), splashSource);
+                                            player.addPotionEffect(new PotionEffect(PotionEffectType.INSTANT_HEALTH, instantDuration, finalInstantAmplifier1, false, false, true));
                                         } else {
-                                            StatusEffectApplier.applyPotionEffect(player, potionEffect, splashSource);
+                                            player.addPotionEffect(potionEffect);
                                         }
                                     }
                                     return;
@@ -1304,19 +1312,19 @@ public class Events implements Listener {
     public void onAreaEffectCloud(AreaEffectCloudApplyEvent event) {
         List<LivingEntity> affectedEntities = new ArrayList<>(event.getAffectedEntities());
 
-        for (int j = 0;j < affectedEntities.size();j++) {
+        for (int j = 0; j < affectedEntities.size(); j++) {
             LivingEntity entity = affectedEntities.get(j);
             if (entity instanceof Player player) {
                 boolean instantDetected = false;
                 PotionType basePotionType = event.getEntity().getBasePotionType();
                 Collection<PotionEffect> potionEffects = new ArrayList<>(List.of());
-                if(basePotionType!=null){
+                if (basePotionType != null) {
                     potionEffects.addAll(basePotionType.getPotionEffects());
                 }
-                if(event.getEntity().hasCustomEffects()){
+                if (event.getEntity().hasCustomEffects()) {
                     potionEffects.addAll(event.getEntity().getCustomEffects());
                 }
-                if(potionEffects.isEmpty()) return;
+                if (potionEffects.isEmpty()) return;
                 int instantAmplifier = 0;
                 int instantDuration = 1;
 
@@ -1331,22 +1339,21 @@ public class Events implements Listener {
                 if (instantDetected) {
                     PlayerInventory inventory = player.getInventory();
                     int finalInstantAmplifier = instantAmplifier;
-                    Entity aecSource = event.getEntity().getSource() instanceof Entity cloudEntity ? cloudEntity : player;
                     ItemManager.toActiveRPGItemByMeta(inventory.getItemInOffHand()).ifPresent(rpgItem -> {
                         for (Power power : rpgItem.getPowers()) {
-                            if (power.getName().equals("undead")&&((Undead)power).getAllowOffHand()) {
+                            if (power.getName().equals("undead") && ((Undead) power).getAllowOffHand()) {
                                 affectedEntities.remove(player);
-                                event.getEntity().setDuration(event.getEntity().getDuration()-event.getEntity().getDurationOnUse());
+                                event.getEntity().setDuration(event.getEntity().getDuration() - event.getEntity().getDurationOnUse());
                                 event.getEntity().setReapplicationDelay(event.getEntity().getReapplicationDelay());
-                                event.getEntity().setRadius(event.getEntity().getRadius()-event.getEntity().getRadiusOnUse());
-                                event.getEntity().setDuration(event.getEntity().getDuration()-event.getEntity().getDurationOnUse());
+                                event.getEntity().setRadius(event.getEntity().getRadius() - event.getEntity().getRadiusOnUse());
+                                event.getEntity().setDuration(event.getEntity().getDuration() - event.getEntity().getDurationOnUse());
                                 for (PotionEffect potionEffect : potionEffects) {
                                     if (potionEffect.getType() == PotionEffectType.INSTANT_HEALTH) {
-                                        StatusEffectApplier.applyPotionEffect(player, new PotionEffect(PotionEffectType.INSTANT_DAMAGE, instantDuration, finalInstantAmplifier), aecSource);
+                                        player.addPotionEffect(new PotionEffect(PotionEffectType.INSTANT_DAMAGE, instantDuration, finalInstantAmplifier));
                                     } else if (potionEffect.getType() == PotionEffectType.INSTANT_DAMAGE) {
-                                        StatusEffectApplier.applyPotionEffect(player, new PotionEffect(PotionEffectType.INSTANT_HEALTH, instantDuration, finalInstantAmplifier), aecSource);
+                                        player.addPotionEffect(new PotionEffect(PotionEffectType.INSTANT_HEALTH, instantDuration, finalInstantAmplifier));
                                     } else {
-                                        StatusEffectApplier.applyPotionEffect(player, potionEffect, aecSource);
+                                        player.addPotionEffect(potionEffect);
                                     }
                                 }
                             }
@@ -1356,17 +1363,17 @@ public class Events implements Listener {
                         for (Power power : rpgItem.getPowers()) {
                             if (power.getName().equals("undead")) {
                                 affectedEntities.remove(player);
-                                event.getEntity().setDuration(event.getEntity().getDuration()-event.getEntity().getDurationOnUse());
+                                event.getEntity().setDuration(event.getEntity().getDuration() - event.getEntity().getDurationOnUse());
                                 event.getEntity().setReapplicationDelay(event.getEntity().getReapplicationDelay());
-                                event.getEntity().setRadius(event.getEntity().getRadius()-event.getEntity().getRadiusOnUse());
-                                event.getEntity().setDuration(event.getEntity().getDuration()-event.getEntity().getDurationOnUse());
+                                event.getEntity().setRadius(event.getEntity().getRadius() - event.getEntity().getRadiusOnUse());
+                                event.getEntity().setDuration(event.getEntity().getDuration() - event.getEntity().getDurationOnUse());
                                 for (PotionEffect potionEffect : potionEffects) {
                                     if (potionEffect.getType() == PotionEffectType.INSTANT_HEALTH) {
-                                        StatusEffectApplier.applyPotionEffect(player, new PotionEffect(PotionEffectType.INSTANT_DAMAGE, instantDuration, finalInstantAmplifier), aecSource);
+                                        player.addPotionEffect(new PotionEffect(PotionEffectType.INSTANT_DAMAGE, instantDuration, finalInstantAmplifier));
                                     } else if (potionEffect.getType() == PotionEffectType.INSTANT_DAMAGE) {
-                                        StatusEffectApplier.applyPotionEffect(player, new PotionEffect(PotionEffectType.INSTANT_HEALTH, instantDuration, finalInstantAmplifier), aecSource);
+                                        player.addPotionEffect(new PotionEffect(PotionEffectType.INSTANT_HEALTH, instantDuration, finalInstantAmplifier));
                                     } else {
-                                        StatusEffectApplier.applyPotionEffect(player, potionEffect, aecSource); // 保留其他效果
+                                        player.addPotionEffect(potionEffect); // 保留其他效果
                                     }
                                 }
                             }
@@ -1378,17 +1385,17 @@ public class Events implements Listener {
                             for (Power power : rpgItem.getPowers()) {
                                 if (power.getName().equals("undead")) {
                                     affectedEntities.remove(player);
-                                    event.getEntity().setDuration(event.getEntity().getDuration()-event.getEntity().getDurationOnUse());
+                                    event.getEntity().setDuration(event.getEntity().getDuration() - event.getEntity().getDurationOnUse());
                                     event.getEntity().setReapplicationDelay(event.getEntity().getReapplicationDelay());
-                                    event.getEntity().setRadius(event.getEntity().getRadius()-event.getEntity().getRadiusOnUse());
-                                    event.getEntity().setDuration(event.getEntity().getDuration()-event.getEntity().getDurationOnUse());
+                                    event.getEntity().setRadius(event.getEntity().getRadius() - event.getEntity().getRadiusOnUse());
+                                    event.getEntity().setDuration(event.getEntity().getDuration() - event.getEntity().getDurationOnUse());
                                     for (PotionEffect potionEffect : potionEffects) {
                                         if (potionEffect.getType() == PotionEffectType.INSTANT_HEALTH) {
-                                            StatusEffectApplier.applyPotionEffect(player, new PotionEffect(PotionEffectType.INSTANT_DAMAGE, instantDuration, finalInstantAmplifier), aecSource);
+                                            player.addPotionEffect(new PotionEffect(PotionEffectType.INSTANT_DAMAGE, instantDuration, finalInstantAmplifier));
                                         } else if (potionEffect.getType() == PotionEffectType.INSTANT_DAMAGE) {
-                                            StatusEffectApplier.applyPotionEffect(player, new PotionEffect(PotionEffectType.INSTANT_HEALTH, instantDuration, finalInstantAmplifier), aecSource);
+                                            player.addPotionEffect(new PotionEffect(PotionEffectType.INSTANT_HEALTH, instantDuration, finalInstantAmplifier));
                                         } else {
-                                            StatusEffectApplier.applyPotionEffect(player, potionEffect, aecSource); // 保留其他效果
+                                            player.addPotionEffect(potionEffect); // 保留其他效果
                                         }
                                     }
                                 }
@@ -1421,12 +1428,12 @@ public class Events implements Listener {
         }
         ItemManager.toActiveRPGItemByMeta(inventory.getItemInOffHand()).ifPresent(rpgItem -> {
             for (Power power : rpgItem.getPowers()) {
-                if (power.getName().equals("undead")&&((Undead)power).getAllowOffHand()) {
+                if (power.getName().equals("undead") && ((Undead) power).getAllowOffHand()) {
                     undead[0] = true;
                 }
             }
         });
-        if(!undead[0]) return;
+        if (!undead[0]) return;
         if (consumedItem.getType() == Material.POTION) {
             PotionMeta potionMeta = (PotionMeta) consumedItem.getItemMeta();
             if (potionMeta != null) {
@@ -1434,8 +1441,8 @@ public class Events implements Listener {
                 boolean instantDetected = false;
                 int instantAmplifier = 0;
                 int instantDuration = 1;
-                if(potionMeta.hasBasePotionType()){
-                    if(potionMeta.getBasePotionType()==PotionType.HARMING||potionMeta.getBasePotionType()==PotionType.STRONG_HARMING||potionMeta.getBasePotionType()==PotionType.HEALING||potionMeta.getBasePotionType()==PotionType.STRONG_HEALING){
+                if (potionMeta.hasBasePotionType()) {
+                    if (potionMeta.getBasePotionType() == PotionType.HARMING || potionMeta.getBasePotionType() == PotionType.STRONG_HARMING || potionMeta.getBasePotionType() == PotionType.HEALING || potionMeta.getBasePotionType() == PotionType.STRONG_HEALING) {
                         instantDetected = true;
                     }
                 }
@@ -1448,17 +1455,14 @@ public class Events implements Listener {
                 }
 
                 if (instantDetected) {
-                    if(potionMeta.hasBasePotionType()){
-                        if(potionMeta.getBasePotionType()==PotionType.HARMING){
+                    if (potionMeta.hasBasePotionType()) {
+                        if (potionMeta.getBasePotionType() == PotionType.HARMING) {
                             potionMeta.setBasePotionType(PotionType.HEALING);
-                        }
-                        else if(potionMeta.getBasePotionType()==PotionType.STRONG_HARMING){
+                        } else if (potionMeta.getBasePotionType() == PotionType.STRONG_HARMING) {
                             potionMeta.setBasePotionType(PotionType.STRONG_HEALING);
-                        }
-                        else if(potionMeta.getBasePotionType()==PotionType.HEALING){
+                        } else if (potionMeta.getBasePotionType() == PotionType.HEALING) {
                             potionMeta.setBasePotionType(PotionType.HARMING);
-                        }
-                        else if(potionMeta.getBasePotionType()==PotionType.STRONG_HEALING){
+                        } else if (potionMeta.getBasePotionType() == PotionType.STRONG_HEALING) {
                             potionMeta.setBasePotionType(PotionType.STRONG_HARMING);
                         }
                     }
@@ -1481,31 +1485,31 @@ public class Events implements Listener {
 
 
     //For power Undead only
-    @EventHandler(ignoreCancelled = true,priority = EventPriority.HIGHEST)
-    public void onRegenAndPoison(EntityPotionEffectEvent event){
-        if(event.getEntity() instanceof Player p && (event.getAction() == EntityPotionEffectEvent.Action.ADDED || event.getAction() == EntityPotionEffectEvent.Action.CHANGED) && (event.getModifiedType()==PotionEffectType.POISON || event.getModifiedType()==PotionEffectType.REGENERATION)){
+    @EventHandler(ignoreCancelled = true, priority = EventPriority.HIGHEST)
+    public void onRegenAndPoison(EntityPotionEffectEvent event) {
+        if (event.getEntity() instanceof Player p && (event.getAction() == EntityPotionEffectEvent.Action.ADDED || event.getAction() == EntityPotionEffectEvent.Action.CHANGED) && (event.getModifiedType() == PotionEffectType.POISON || event.getModifiedType() == PotionEffectType.REGENERATION)) {
             PlayerInventory inventory = p.getInventory();
             ItemManager.toActiveRPGItemByMeta(inventory.getItemInOffHand()).ifPresent(rpgItem -> {
-                for (Power power : rpgItem.getPowers()){
-                    if(power.getName().equals("undead")){
+                for (Power power : rpgItem.getPowers()) {
+                    if (power.getName().equals("undead")) {
                         Undead undead = (Undead) power;
-                        if(undead.getAllowOffHand()){
+                        if (undead.getAllowOffHand()) {
                             event.setCancelled(true);
                         }
                     }
                 }
             });
             ItemManager.toActiveRPGItemByMeta(inventory.getItemInMainHand()).ifPresent(rpgItem -> {
-                for (Power power : rpgItem.getPowers()){
-                    if(power.getName().equals("undead")){
+                for (Power power : rpgItem.getPowers()) {
+                    if (power.getName().equals("undead")) {
                         event.setCancelled(true);
                     }
                 }
             });
-            for(ItemStack i : inventory.getArmorContents()){
+            for (ItemStack i : inventory.getArmorContents()) {
                 ItemManager.toActiveRPGItemByMeta(i).ifPresent(rpgItem -> {
-                    for (Power power : rpgItem.getPowers()){
-                        if(power.getName().equals("undead")){
+                    for (Power power : rpgItem.getPowers()) {
+                        if (power.getName().equals("undead")) {
                             event.setCancelled(true);
                         }
                     }
@@ -1513,37 +1517,38 @@ public class Events implements Listener {
             }
         }
     }
+
     //For power Undead only now
-    @EventHandler(ignoreCancelled = true,priority = EventPriority.LOWEST)
-    public void onUndeadSmite(EntityDamageByEntityEvent event){
-        if(event.getEntity() instanceof Player p && event.getDamager() instanceof LivingEntity e){
+    @EventHandler(ignoreCancelled = true, priority = EventPriority.LOWEST)
+    public void onUndeadSmite(EntityDamageByEntityEvent event) {
+        if (event.getEntity() instanceof Player p && event.getDamager() instanceof LivingEntity e) {
             PlayerInventory inventory = p.getInventory();
-            ItemStack item = e.getEquipment()!=null ? e.getEquipment().getItemInMainHand() : null ;
-            if(item==null) return;
+            ItemStack item = e.getEquipment() != null ? e.getEquipment().getItemInMainHand() : null;
+            if (item == null) return;
             int level = item.getEnchantmentLevel(Enchantment.SMITE);
-            if(level==0) return;
+            if (level == 0) return;
             ItemManager.toActiveRPGItemByMeta(inventory.getItemInOffHand()).ifPresent(rpgItem -> {
-                for (Power power : rpgItem.getPowers()){
-                    if(power.getName().equals("undead")){
+                for (Power power : rpgItem.getPowers()) {
+                    if (power.getName().equals("undead")) {
                         Undead undead = (Undead) power;
-                        if(undead.getAllowOffHand()){
-                            event.setDamage(event.getFinalDamage()+2.5*level);
+                        if (undead.getAllowOffHand()) {
+                            event.setDamage(event.getFinalDamage() + 2.5 * level);
                         }
                     }
                 }
             });
             ItemManager.toActiveRPGItemByMeta(inventory.getItemInMainHand()).ifPresent(rpgItem -> {
-                for (Power power : rpgItem.getPowers()){
-                    if(power.getName().equals("undead")){
-                        event.setDamage(event.getFinalDamage()+2.5*level);
+                for (Power power : rpgItem.getPowers()) {
+                    if (power.getName().equals("undead")) {
+                        event.setDamage(event.getFinalDamage() + 2.5 * level);
                     }
                 }
             });
-            for(ItemStack i : inventory.getArmorContents()){
+            for (ItemStack i : inventory.getArmorContents()) {
                 ItemManager.toActiveRPGItemByMeta(i).ifPresent(rpgItem -> {
-                    for (Power power : rpgItem.getPowers()){
-                        if(power.getName().equals("undead")) {
-                            event.setDamage(event.getFinalDamage()+2.5*level);
+                    for (Power power : rpgItem.getPowers()) {
+                        if (power.getName().equals("undead")) {
+                            event.setDamage(event.getFinalDamage() + 2.5 * level);
                         }
                     }
                 });

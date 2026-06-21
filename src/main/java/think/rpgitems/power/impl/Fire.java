@@ -21,7 +21,6 @@ import org.bukkit.Location;
 import org.bukkit.Material;
 import org.bukkit.Sound;
 import org.bukkit.block.Block;
-import org.bukkit.entity.Damageable;
 import org.bukkit.entity.Entity;
 import org.bukkit.entity.FallingBlock;
 import org.bukkit.entity.Player;
@@ -35,10 +34,8 @@ import think.rpgitems.I18n;
 import think.rpgitems.RPGItems;
 import think.rpgitems.event.PowerActivateEvent;
 import think.rpgitems.power.*;
-import think.rpgitems.utils.StatusEffectApplier;
 
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Random;
 
@@ -187,7 +184,7 @@ public class Fire extends BasePower {
                         List<Entity> ents = getNearbyEntities(getPower(), block.getLocation(), player, 1, 0, 1, 0);
                         for (Entity ent : ents)
                             if (ent instanceof org.bukkit.entity.LivingEntity living)
-                                StatusEffectApplier.applyFireTicks(living, getBurnduration(), player);
+                                living.setFireTicks(getBurnduration());
                     }
 
                     if (finishedFire && blockDead)

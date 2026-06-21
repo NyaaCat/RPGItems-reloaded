@@ -1,9 +1,6 @@
 package think.rpgitems.power.impl;
 
-import net.kyori.adventure.text.Component;
-import org.bukkit.Bukkit;
 import org.bukkit.attribute.Attribute;
-import org.bukkit.entity.Item;
 import org.bukkit.entity.Player;
 import org.bukkit.event.entity.EntityPotionEffectEvent;
 import org.bukkit.inventory.ItemStack;
@@ -14,9 +11,7 @@ import think.rpgitems.data.Context;
 import think.rpgitems.event.PowerActivateEvent;
 import think.rpgitems.item.ItemManager;
 import think.rpgitems.power.*;
-import think.rpgitems.power.trigger.Trigger;
 import think.rpgitems.utils.PotionEffectUtils;
-import think.rpgitems.utils.StatusEffectApplier;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -186,7 +181,7 @@ public class PotionTick extends BasePower implements PowerPotion {
                 }
             } else {
                 PotionEffect newEffect = new PotionEffect(getEffect(), getDuration(), totalAmplifier, isAmbient(), isShowParticles(), isShowIcon());
-                StatusEffectApplier.applyPotionEffect(player, newEffect, player);
+                player.addPotionEffect(newEffect);
             }
 
             // Reset cooldown if we bypassed it

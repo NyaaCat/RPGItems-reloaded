@@ -1,8 +1,9 @@
-package think.rpgitems.power.impl;
+package think.rpgitems.power;
 
 import org.bukkit.scheduler.BukkitRunnable;
 import org.bukkit.scheduler.BukkitTask;
 import think.rpgitems.RPGItems;
+import think.rpgitems.power.impl.Tickable;
 
 import java.util.concurrent.CopyOnWriteArrayList;
 

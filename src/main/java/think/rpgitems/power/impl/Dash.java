@@ -11,10 +11,15 @@ import org.bukkit.event.player.PlayerInteractEvent;
 import org.bukkit.event.player.PlayerToggleSneakEvent;
 import org.bukkit.event.player.PlayerToggleSprintEvent;
 import org.bukkit.inventory.ItemStack;
+import org.bukkit.scheduler.BukkitRunnable;
+import org.bukkit.scheduler.BukkitTask;
 import org.bukkit.util.Vector;
 import think.rpgitems.I18n;
+import think.rpgitems.RPGItems;
 import think.rpgitems.event.PowerActivateEvent;
 import think.rpgitems.power.*;
+
+import java.util.ArrayList;
 
 import static think.rpgitems.power.Utils.checkCooldown;
 
@@ -210,4 +215,119 @@ public class Dash extends BasePower {
         }
     }
 
+    /**
+     * Represents an active dash effect managed by {@link DashManager}.
+     * Maintains the player's velocity for a specified duration.
+     *
+     * Optimizations:
+     * - Stores velocity as primitives (no Vector clone in constructor)
+     * - Reuses single Vector object for setVelocity calls (zero allocation per tick)
+     */
+    public static class ActiveDash implements Tickable {
+        private final Player player;
+        private final Vector velocity;  // Reused each tick
+        private int remainingTicks;
+        boolean markedForRemoval;
+
+        public ActiveDash(Player player, Vector velocity, int durationTicks) {
+            this.player = player;
+            // Store our own Vector with same values - reused each tick
+            this.velocity = new Vector(velocity.getX(), velocity.getY(), velocity.getZ());
+            this.remainingTicks = durationTicks;
+            this.markedForRemoval = false;
+        }
+
+        @Override
+        public boolean tick() {
+            if (markedForRemoval || !player.isOnline() || player.isDead()) {
+                return false;
+            }
+
+            if (--remainingTicks <= 0) {
+                return false;
+            }
+
+            player.setVelocity(velocity);
+            return true;
+        }
+
+        public Player getPlayer() {
+            return player;
+        }
+    }
+
+    /**
+     * High-performance manager for active dash effects.
+     *
+     * Optimizations over generic EffectManager:
+     * - Uses ArrayList with batch removal instead of CopyOnWriteArrayList
+     * - Avoids O(n) copy on each removal during iteration
+     * - Single scheduler task for all active dashes
+     * - Auto-stops when no dashes active
+     */
+    public static class DashManager {
+        private static final DashManager INSTANCE = new DashManager();
+
+        private final ArrayList<ActiveDash> activeDashes = new ArrayList<>();
+        private volatile BukkitTask tickTask;
+
+        private DashManager() {}
+
+        public static DashManager getInstance() {
+            return INSTANCE;
+        }
+
+        public void register(ActiveDash dash) {
+            synchronized (activeDashes) {
+                activeDashes.add(dash);
+                if (tickTask == null || tickTask.isCancelled()) {
+                    tickTask = new BukkitRunnable() {
+                        @Override
+                        public void run() {
+                            tickAll();
+                        }
+                    }.runTaskTimer(RPGItems.plugin, 1, 1);
+                }
+            }
+        }
+
+        private void tickAll() {
+            synchronized (activeDashes) {
+                // Iterate backwards for safe removal
+                for (int i = activeDashes.size() - 1; i >= 0; i--) {
+                    ActiveDash dash = activeDashes.get(i);
+                    if (!dash.tick()) {
+                        // Swap with last element and remove - O(1) removal
+                        int last = activeDashes.size() - 1;
+                        if (i != last) {
+                            activeDashes.set(i, activeDashes.get(last));
+                        }
+                        activeDashes.remove(last);
+                    }
+                }
+
+                if (activeDashes.isEmpty() && tickTask != null) {
+                    tickTask.cancel();
+                    tickTask = null;
+                }
+            }
+        }
+
+        public void clearAll() {
+            synchronized (activeDashes) {
+                for (ActiveDash dash : activeDashes) {
+                    dash.markedForRemoval = true;
+                }
+                activeDashes.clear();
+                if (tickTask != null) {
+                    tickTask.cancel();
+                    tickTask = null;
+                }
+            }
+        }
+
+        public int getActiveCount() {
+            return activeDashes.size();
+        }
+    }
 }

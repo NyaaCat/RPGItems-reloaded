@@ -3,7 +3,6 @@ package think.rpgitems.power.impl;
 import org.bukkit.entity.Entity;
 import org.bukkit.entity.LivingEntity;
 import org.bukkit.entity.Player;
-import org.bukkit.event.entity.EntityDamageByEntityEvent;
 import org.bukkit.event.entity.EntityDamageEvent;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.potion.PotionEffect;
@@ -13,7 +12,6 @@ import think.rpgitems.event.PowerActivateEvent;
 import think.rpgitems.item.ItemManager;
 import think.rpgitems.power.*;
 import think.rpgitems.utils.PotionEffectUtils;
-import think.rpgitems.utils.StatusEffectApplier;
 
 import java.util.*;
 
@@ -83,7 +81,7 @@ public class PotionHitTaken extends BasePower implements PowerPotion {
 
     @Override
     public String displayText() {
-        return I18n.formatDefault(effectDamager ? "power.potionhittaken.damager" : "power.potionhittaken.victim", (int) ((1d / (double) getChance()) * 100d), "<lang:effect.minecraft."+getType().key().value()+">", (getAmplifier()+1), (float)(getDuration()/20));
+        return I18n.formatDefault(effectDamager ? "power.potionhittaken.damager" : "power.potionhittaken.victim", (int) ((1d / (double) getChance()) * 100d), "<lang:effect.minecraft." + getType().key().value() + ">", (getAmplifier() + 1), (float) (getDuration() / 20));
     }
 
     /**
@@ -120,30 +118,30 @@ public class PotionHitTaken extends BasePower implements PowerPotion {
             final int[] summing = {0};
             List<ItemStack> items = new ArrayList<>(Arrays.asList(player.getInventory().getArmorContents()));
             items.add(player.getInventory().getItemInMainHand());
-            for(ItemStack i : items){
+            for (ItemStack i : items) {
                 ItemManager.toActiveRPGItemByMeta(i).ifPresent(rpgItem -> {
-                    for (Power power : rpgItem.getPowers()){
-                        if(power instanceof PotionHitTaken potionHitTaken) {
-                            if(potionHitTaken.getType()==getType()&&potionHitTaken.isSummingUp()){
+                    for (Power power : rpgItem.getPowers()) {
+                        if (power instanceof PotionHitTaken potionHitTaken) {
+                            if (potionHitTaken.getType() == getType() && potionHitTaken.isSummingUp()) {
                                 summing[0] += potionHitTaken.getAmplifier();
                             }
                         }
                     }
                 });
             }
-            HashMap<String,Object> argsMap = new HashMap<>();
+            HashMap<String, Object> argsMap = new HashMap<>();
             argsMap.put("damager", damager);
-            PowerActivateEvent powerEvent = new PowerActivateEvent(player,stack,getPower(),argsMap);
-            if(!powerEvent.callEvent()) {
+            PowerActivateEvent powerEvent = new PowerActivateEvent(player, stack, getPower(), argsMap);
+            if (!powerEvent.callEvent()) {
                 return PowerResult.fail();
             }
             if (!getItem().consumeDurability(stack, getCost())) return PowerResult.cost();
-            if(effectDamager) {
-                if(damager instanceof LivingEntity livingEntity){
-                    StatusEffectApplier.applyPotionEffect(livingEntity, new PotionEffect(getType(), getDuration(), getAmplifier()+summing[0], isAmbient(), isShowParticles(), isShowIcon()), player);
+            if (effectDamager) {
+                if (damager instanceof LivingEntity livingEntity) {
+                    livingEntity.addPotionEffect(new PotionEffect(getType(), getDuration(), getAmplifier() + summing[0], isAmbient(), isShowParticles(), isShowIcon()));
                 }
-            }else{
-                StatusEffectApplier.applyPotionEffect(player, new PotionEffect(getType(), getDuration(), getAmplifier()+summing[0], isAmbient(), isShowParticles(), isShowIcon()), player);
+            } else {
+                player.addPotionEffect(new PotionEffect(getType(), getDuration(), getAmplifier() + summing[0], isAmbient(), isShowParticles(), isShowIcon()));
             }
             return PowerResult.ok(damage);
         }
