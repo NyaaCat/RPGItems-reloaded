@@ -150,7 +150,7 @@ public class Torch extends BasePower {
                                 Location position = changedBlocks.keySet().toArray(new Location[0])[index];
                                 changedBlocks.remove(position);
                                 Block c = position.getBlock();
-                                position.getWorld().playEffect(position, Effect.STEP_SOUND, c.getType());
+                                position.getWorld().playEffect(position, Effect.DESTROY_BLOCK, c.getBlockData());
                                 c.removeMetadata("RPGItems.Torch", RPGItems.plugin);
                                 c.setType(material, false);
                                 c.setBlockData(data, false);

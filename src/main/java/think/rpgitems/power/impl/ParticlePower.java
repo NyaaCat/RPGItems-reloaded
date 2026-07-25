@@ -114,7 +114,7 @@ public class ParticlePower extends BasePower {
 
     void spawnParticle(Entity entity) {
         if (getParticle() == null) {
-            if (getEffect() == Effect.SMOKE) {
+            if (getEffect() == Effect.SMOKE_SHOOT) {
                 entity.getWorld().playEffect(entity.getLocation().add(0, 2, 0), getEffect(), 4);
             } else {
                 entity.getWorld().playEffect(entity.getLocation(), getEffect(), 0);
@@ -126,7 +126,7 @@ public class ParticlePower extends BasePower {
 
     void spawnParticle(World world, Location location) {
         if (getParticle() == null) {
-            if (getEffect() == Effect.SMOKE) {
+            if (getEffect() == Effect.SMOKE_SHOOT) {
                 world.playEffect(location.add(0, 2, 0), getEffect(), 4);
             } else {
                 world.playEffect(location, getEffect(), 0);

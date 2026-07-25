@@ -90,16 +90,15 @@ public class RPGItems extends JavaPlugin {
     public void onLoad() {
         plugin = this;
         logger = this.getLogger();
-
-        String versionDesc = getDescription().getVersion();
-        Pattern serialPattern = Pattern.compile("(\\d+)\\.(\\d+)\\.(\\d+)-mc([\\d.]+)");
+        String versionDesc = getPluginMeta().getVersion();
+        Pattern serialPattern = Pattern.compile("^(\\d+)\\.(\\d+)\\.(\\d+)");
         Matcher serialMatcher = serialPattern.matcher(versionDesc);
 
-        if (serialMatcher.matches()) {
+        if (serialMatcher.find()) {
             version = Integer.parseInt(serialMatcher.group(1)) * 100 + Integer.parseInt(serialMatcher.group(2));
             serial = Integer.parseInt(serialMatcher.group(3));
-            pluginMCVersion = serialMatcher.group(4);
         }
+        pluginMCVersion = getPluginMeta().getAPIVersion();
 
         String serverVersion = Bukkit.getVersion();
         Pattern mcVersionPattern = Pattern.compile("\\(MC:\\s+([\\d.]+)\\)");

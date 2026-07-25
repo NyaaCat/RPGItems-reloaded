@@ -18,6 +18,7 @@ import me.clip.placeholderapi.PlaceholderAPI;
 import net.kyori.adventure.key.Key;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.event.ClickEvent;
+import net.kyori.adventure.text.format.TextDecoration;
 import net.kyori.adventure.text.minimessage.MiniMessage;
 import org.bukkit.*;
 import org.bukkit.attribute.Attribute;
@@ -55,7 +56,9 @@ import think.rpgitems.power.proxy.Interceptor;
 import think.rpgitems.power.trigger.BaseTriggers;
 import think.rpgitems.power.trigger.Trigger;
 import think.rpgitems.support.PlaceholderAPISupport;
-import think.rpgitems.utils.ComponentUtil;
+import think.rpgitems.utils.component.ComponentRegistry;
+import think.rpgitems.utils.component.ComponentStatus;
+import think.rpgitems.utils.component.ComponentUtil;
 import think.rpgitems.utils.MaterialUtils;
 
 import javax.annotation.Nullable;
@@ -916,7 +919,7 @@ public class RPGItem {
         if (getUpdateMode() != UpdateMode.NO_UPDATE && getUpdateMode() != UpdateMode.NO_LORE && getUpdateMode() != UpdateMode.DISPLAY_ONLY && getUpdateMode() != UpdateMode.ENCHANT_ONLY) {
             List<Component> loreComponents = new ArrayList<>();
             for (String lore1 : lore) {
-                loreComponents.add(MiniMessage.miniMessage().deserialize("<!i>" + I18n.replaceLegacyColorCodes(lore1)));
+                loreComponents.add(deserializeNonItalic(lore1));
             }
             meta.lore(loreComponents);
         }
@@ -950,7 +953,7 @@ public class RPGItem {
             String metaDisplay = meta.hasDisplayName() ? meta.getDisplayName() : "";
 
             if (!metaDisplay.equals(finalDisplay)) {
-                meta.displayName(MiniMessage.miniMessage().deserialize("<!i>" + I18n.replaceLegacyColorCodes(finalDisplay)));
+                meta.displayName(deserializeNonItalic(finalDisplay));
             }
         }
 
@@ -995,152 +998,17 @@ public class RPGItem {
         if (getCustomModelData() != null) {
             item.setData(DataComponentTypes.CUSTOM_MODEL_DATA, getCustomModelData());
         }
-        item.resetData(DataComponentTypes.ATTACK_RANGE);
-        item.resetData(DataComponentTypes.BASE_COLOR);
-        item.resetData(DataComponentTypes.BANNER_PATTERNS);
-        item.resetData(DataComponentTypes.CAN_BREAK);
-        item.resetData(DataComponentTypes.CAN_PLACE_ON);
-        item.resetData(DataComponentTypes.CONSUMABLE);
-        item.resetData(DataComponentTypes.DAMAGE_TYPE);
-        item.resetData(DataComponentTypes.DAMAGE_RESISTANT);
-        item.resetData(DataComponentTypes.DEATH_PROTECTION);
-        item.resetData(DataComponentTypes.DYED_COLOR);
+
+        for (DataComponentType managedType : ComponentRegistry.allTypes()) {
+            item.resetData(managedType);
+        }
+
         if (leatherArmorColor != null) {
             item.setData(DataComponentTypes.DYED_COLOR, DyedItemColor.dyedItemColor(leatherArmorColor));
         }
-        item.resetData(DataComponentTypes.ENCHANTABLE);
-        item.resetData(DataComponentTypes.ENCHANTMENT_GLINT_OVERRIDE);
-        item.resetData(DataComponentTypes.EQUIPPABLE);
-        item.resetData(DataComponentTypes.PROFILE);
-        item.resetData(DataComponentTypes.FOOD);
-        item.resetData(DataComponentTypes.GLIDER);
-        item.resetData(DataComponentTypes.INSTRUMENT);
-        item.resetData(DataComponentTypes.JUKEBOX_PLAYABLE);
-        item.resetData(DataComponentTypes.KINETIC_WEAPON);
-        item.resetData(DataComponentTypes.LODESTONE_TRACKER);
-        item.resetData(DataComponentTypes.TOOLTIP_DISPLAY);
-        item.resetData(DataComponentTypes.MAX_DAMAGE);
-        item.resetData(DataComponentTypes.MAX_STACK_SIZE);
-        item.resetData(DataComponentTypes.MINIMUM_ATTACK_CHARGE);
-        item.resetData(DataComponentTypes.OMINOUS_BOTTLE_AMPLIFIER);
-        item.resetData(DataComponentTypes.PIERCING_WEAPON);
-        item.resetData(DataComponentTypes.PROVIDES_BANNER_PATTERNS);
-        item.resetData(DataComponentTypes.PROVIDES_TRIM_MATERIAL);
-        item.resetData(DataComponentTypes.POTION_CONTENTS);
-        item.resetData(DataComponentTypes.POTION_DURATION_SCALE);
-        item.resetData(DataComponentTypes.RARITY);
-        item.resetData(DataComponentTypes.REPAIRABLE);
-        item.resetData(DataComponentTypes.REPAIR_COST);
-        item.resetData(DataComponentTypes.STORED_ENCHANTMENTS);
-        item.resetData(DataComponentTypes.SWING_ANIMATION);
-        item.resetData(DataComponentTypes.TOOL);
-        item.resetData(DataComponentTypes.TOOLTIP_STYLE);
-        item.resetData(DataComponentTypes.TRIM);
-        item.resetData(DataComponentTypes.USE_COOLDOWN);
-        item.resetData(DataComponentTypes.USE_EFFECTS);
-        item.resetData(DataComponentTypes.USE_REMAINDER);
-        item.resetData(DataComponentTypes.WEAPON);
-        if (getComponents() != null) {
-            for (Map<DataComponentType, Object> component : getComponents()) {
-                for (Map.Entry<DataComponentType, Object> entry : component.entrySet()) {
-                    DataComponentType key = entry.getKey();
-                    Object value = entry.getValue();
-                    if (value == ComponentUtil.ComponentStatus.UNSET) {
-                        item.unsetData(key);
-                    } else if (value == ComponentUtil.ComponentStatus.NON_VALUED) {
-                        item.setData((DataComponentType.NonValued) key);
-                    } else {
-                        if(key == DataComponentTypes.ATTACK_RANGE){
-                            item.setData(DataComponentTypes.ATTACK_RANGE, (AttackRange.Builder) value);
-                        } else if (key == DataComponentTypes.BASE_COLOR) {
-                            item.setData(DataComponentTypes.BASE_COLOR, (DyeColor) value);
-                        } else if (key == DataComponentTypes.BANNER_PATTERNS) {
-                            item.setData(DataComponentTypes.BANNER_PATTERNS, (BannerPatternLayers.Builder) value);
-                        } else if (key == DataComponentTypes.BLOCKS_ATTACKS) {
-                            item.setData(DataComponentTypes.BLOCKS_ATTACKS, (BlocksAttacks.Builder) value);
-                        } else if (key == DataComponentTypes.BREAK_SOUND) {
-                            item.setData(DataComponentTypes.BREAK_SOUND, (Key) value);
-                        } else if (key == DataComponentTypes.CAN_BREAK) {
-                            item.setData(DataComponentTypes.CAN_BREAK, (ItemAdventurePredicate.Builder) value);
-                        } else if (key == DataComponentTypes.CAN_PLACE_ON) {
-                            item.setData(DataComponentTypes.CAN_PLACE_ON, (ItemAdventurePredicate.Builder) value);
-                        } else if (key == DataComponentTypes.CONSUMABLE) {
-                            item.setData(DataComponentTypes.CONSUMABLE, (Consumable.Builder) value);
-                        } else if (key == DataComponentTypes.DAMAGE_RESISTANT) {
-                            item.setData(DataComponentTypes.DAMAGE_RESISTANT, (DamageResistant) value);
-                        } else if (key == DataComponentTypes.DAMAGE_TYPE) {
-                            item.setData(DataComponentTypes.DAMAGE_TYPE, (DamageType) value);
-                        } else if (key == DataComponentTypes.DEATH_PROTECTION) {
-                            item.setData(DataComponentTypes.DEATH_PROTECTION, (DeathProtection.Builder) value);
-                        } else if (key == DataComponentTypes.DYED_COLOR) {
-                            item.setData(DataComponentTypes.DYED_COLOR, (DyedItemColor.Builder) value);
-                        } else if (key == DataComponentTypes.ENCHANTABLE) {
-                            item.setData(DataComponentTypes.ENCHANTABLE, (Enchantable) value);
-                        } else if (key == DataComponentTypes.ENCHANTMENT_GLINT_OVERRIDE) {
-                            item.setData(DataComponentTypes.ENCHANTMENT_GLINT_OVERRIDE, (boolean) value);
-                        } else if (key == DataComponentTypes.EQUIPPABLE) {
-                            item.setData(DataComponentTypes.EQUIPPABLE, (Equippable.Builder) value);
-                        } else if (key == DataComponentTypes.FOOD) {
-                            item.setData(DataComponentTypes.FOOD, (FoodProperties.Builder) value);
-                        } else if (key == DataComponentTypes.INSTRUMENT) {
-                            item.setData(DataComponentTypes.INSTRUMENT, (MusicInstrument) value);
-                        } else if (key == DataComponentTypes.JUKEBOX_PLAYABLE) {
-                            item.setData(DataComponentTypes.JUKEBOX_PLAYABLE, (JukeboxPlayable.Builder) value);
-                        } else if (key == DataComponentTypes.KINETIC_WEAPON) {
-                            item.setData(DataComponentTypes.KINETIC_WEAPON, (KineticWeapon.Builder) value);
-                        } else if (key == DataComponentTypes.LODESTONE_TRACKER) {
-                            item.setData(DataComponentTypes.LODESTONE_TRACKER, (LodestoneTracker.Builder) value);
-                        } else if (key == DataComponentTypes.MAX_DAMAGE) {
-                            item.setData(DataComponentTypes.MAX_DAMAGE, (int) value);
-                        } else if (key == DataComponentTypes.MAX_STACK_SIZE) {
-                            item.setData(DataComponentTypes.MAX_STACK_SIZE, (int) value);
-                        } else if (key == DataComponentTypes.MINIMUM_ATTACK_CHARGE) {
-                            item.setData(DataComponentTypes.MINIMUM_ATTACK_CHARGE, (float) value);
-                        } else if (key == DataComponentTypes.OMINOUS_BOTTLE_AMPLIFIER) {
-                            item.setData(DataComponentTypes.OMINOUS_BOTTLE_AMPLIFIER, (OminousBottleAmplifier) value);
-                        } else if (key == DataComponentTypes.PIERCING_WEAPON) {
-                            item.setData(DataComponentTypes.PIERCING_WEAPON, (PiercingWeapon.Builder) value);
-                        } else if (key == DataComponentTypes.POTION_CONTENTS) {
-                            item.setData(DataComponentTypes.POTION_CONTENTS, (PotionContents.Builder) value);
-                        } else if (key == DataComponentTypes.POTION_DURATION_SCALE) {
-                            item.setData(DataComponentTypes.POTION_DURATION_SCALE, (float) value);
-                        } else if (key == DataComponentTypes.PROFILE) {
-                            item.setData(DataComponentTypes.PROFILE, (ResolvableProfile.Builder) value);
-                        } else if (key == DataComponentTypes.PROVIDES_BANNER_PATTERNS) {
-                            item.setData(DataComponentTypes.PROVIDES_BANNER_PATTERNS, (RegistryKeySet<PatternType>) value);
-                        } else if (key == DataComponentTypes.PROVIDES_TRIM_MATERIAL) {
-                            item.setData(DataComponentTypes.PROVIDES_TRIM_MATERIAL, (TrimMaterial) value);
-                        } else if (key == DataComponentTypes.RARITY) {
-                            item.setData(DataComponentTypes.RARITY, (ItemRarity) value);
-                        } else if (key == DataComponentTypes.REPAIRABLE) {
-                            item.setData(DataComponentTypes.REPAIRABLE, (Repairable) value);
-                        } else if (key == DataComponentTypes.REPAIR_COST) {
-                            item.setData(DataComponentTypes.REPAIR_COST, (int) value);
-                        } else if (key == DataComponentTypes.STORED_ENCHANTMENTS) {
-                            item.setData(DataComponentTypes.STORED_ENCHANTMENTS, (ItemEnchantments.Builder) value);
-                        } else if (key == DataComponentTypes.SWING_ANIMATION) {
-                            item.setData(DataComponentTypes.SWING_ANIMATION, (SwingAnimation.Builder) value);
-                        } else if (key == DataComponentTypes.TOOL) {
-                            item.setData(DataComponentTypes.TOOL, (Tool.Builder) value);
-                        } else if (key == DataComponentTypes.TOOLTIP_DISPLAY) {
-                            item.setData(DataComponentTypes.TOOLTIP_DISPLAY, (TooltipDisplay.Builder) value);
-                        } else if (key == DataComponentTypes.TOOLTIP_STYLE) {
-                            item.setData(DataComponentTypes.TOOLTIP_STYLE, (Key) value);
-                        } else if (key == DataComponentTypes.TRIM) {
-                            item.setData(DataComponentTypes.TRIM, (ItemArmorTrim.Builder) value);
-                        } else if (key == DataComponentTypes.USE_COOLDOWN) {
-                            item.setData(DataComponentTypes.USE_COOLDOWN, (UseCooldown.Builder) value);
-                        } else if (key == DataComponentTypes.USE_EFFECTS) {
-                            item.setData(DataComponentTypes.USE_EFFECTS, (UseEffects.Builder) value);
-                        } else if (key == DataComponentTypes.USE_REMAINDER) {
-                            item.setData(DataComponentTypes.USE_REMAINDER, (UseRemainder) value);
-                        } else if (key == DataComponentTypes.WEAPON) {
-                            item.setData(DataComponentTypes.WEAPON, (Weapon.Builder) value);
-                        }
-                    }
-                }
-            }
-        }
+
+        ComponentUtil.applyComponents(item, getComponents());
+
         if (item.hasData(DataComponentTypes.MAX_DAMAGE) || item.getType().hasDefaultData(DataComponentTypes.MAX_DAMAGE)) {
             if (getMaxDurability() > 0) {
                 int damage = item.getData(DataComponentTypes.MAX_DAMAGE) - ((short) ((double) item.getData(DataComponentTypes.MAX_DAMAGE) * ((double) durability / (double) getMaxDurability())));
@@ -1533,7 +1401,6 @@ public class RPGItem {
         setLore(lines);
     }
 
-    @SuppressWarnings("deprecation")
     public List<String> getTooltipLines() {
         ArrayList<String> output = new ArrayList<>();
         output.add(getDisplayName());
@@ -1587,6 +1454,12 @@ public class RPGItem {
         }
 
         return output;
+    }
+
+    /** 解析 MiniMessage 文本（先转换旧版颜色码），并显式关闭斜体（原版 lore/名称默认斜体）。 */
+    private static Component deserializeNonItalic(String legacyText) {
+        return MiniMessage.miniMessage().deserialize(I18n.replaceLegacyColorCodes(legacyText))
+                .decorationIfAbsent(TextDecoration.ITALIC, TextDecoration.State.FALSE);
     }
 
     static String normalizeTag(String tag) {
@@ -1720,21 +1593,32 @@ public class RPGItem {
         return cacheKey;
     }
 
-    public ItemStack toItemStack() {
-        ItemStack rStack = new ItemStack(getItem());
-        ItemMeta meta = rStack.getItemMeta();
-        PersistentDataContainer itemTagContainer = Objects.requireNonNull(meta).getPersistentDataContainer();
-        SubItemTagContainer rpgitemsTagContainer = makeTag(itemTagContainer, TAG_META);
-        set(rpgitemsTagContainer, TAG_ITEM_UID, getUid());
-        if (isHasStackId()) {
-            set(rpgitemsTagContainer, TAG_STACK_ID, UUID.randomUUID());
-        }
-        rpgitemsTagContainer.commit();
-        meta.displayName(MiniMessage.miniMessage().deserialize("<!i>" + I18n.replaceLegacyColorCodes(getDisplayName())));
-        rStack.setItemMeta(meta);
+    private static final ThreadLocal<LinkedHashSet<String>> TO_ITEM_STACK_STACK = ThreadLocal.withInitial(LinkedHashSet::new);
 
-        ItemManager.refreshStandaloneAware(this, rStack, null);
-        return rStack;
+    public ItemStack toItemStack() {
+        LinkedHashSet<String> building = TO_ITEM_STACK_STACK.get();
+        if (!building.add(getName())) {
+            String chain = String.join(" -> ", building) + " -> " + getName();
+            throw new IllegalStateException("Circular item load detected: " + chain + ", items can't contain themselves or each other.");
+        }
+        try {
+            ItemStack rStack = new ItemStack(getItem());
+            ItemMeta meta = rStack.getItemMeta();
+            PersistentDataContainer itemTagContainer = Objects.requireNonNull(meta).getPersistentDataContainer();
+            SubItemTagContainer rpgitemsTagContainer = makeTag(itemTagContainer, TAG_META);
+            set(rpgitemsTagContainer, TAG_ITEM_UID, getUid());
+            if (isHasStackId()) {
+                set(rpgitemsTagContainer, TAG_STACK_ID, UUID.randomUUID());
+            }
+            rpgitemsTagContainer.commit();
+            meta.displayName(deserializeNonItalic(getDisplayName()));
+            rStack.setItemMeta(meta);
+
+            ItemManager.refreshStandaloneAware(this, rStack, null);
+            return rStack;
+        } finally {
+            building.remove(getName());
+        }
     }
 
     public void toModel(ItemStack itemStack) {
@@ -2130,7 +2014,7 @@ public class RPGItem {
 
     public Component getComponent(String locale) {
         Component msg = Component.text(getDisplayName());
-        msg = msg.clickEvent(ClickEvent.clickEvent(ClickEvent.Action.SUGGEST_COMMAND, "/rpgitem" + getName())).hoverEvent(toItemStack());
+        msg = msg.clickEvent(ClickEvent.suggestCommand("/rpgitem " + getName())).hoverEvent(toItemStack());
         return msg;
     }
 

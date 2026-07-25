@@ -122,7 +122,7 @@ public class Rainbow extends BasePower {
                         if (random.nextBoolean()) {
                             Block b = loc.getBlock();
                             if ((isFire() && b.getType() == Material.FIRE) || (!isFire() && Tag.WOOL.isTagged(b.getType()))) {
-                                loc.getWorld().playEffect(loc, Effect.STEP_SOUND, b.getType());
+                                loc.getWorld().playEffect(loc, Effect.DESTROY_BLOCK, b.getBlockData());
                                 b.setType(Material.AIR);
                             }
                             l.remove();

@@ -43,7 +43,7 @@ dependencies {
     //Residence integration, download the jar(also CMI) manually as the fucking Residence author is lazy
     implementation fileTree(dir: 'libs', includes: ['*.jar'])
     paperweight.paperDevBundle("$MINECRAFT_VERSION"+".build.+")
-    compileOnly 'io.lumine:Mythic-Dist:5.12.1-SNAPSHOT'
+    compileOnly 'io.lumine:Mythic-Dist:5.13.0-SNAPSHOT'
     compileOnly 'me.clip:placeholderapi:2.12.2'
     // other nyaa plugins
     compileOnly('cat.nyaa:nyaacore:9.10') { transitive = false }
@@ -51,10 +51,12 @@ dependencies {
     compileOnly 'net.bytebuddy:byte-buddy:1.18.8'
     compileOnly 'com.udojava:EvalEx:2.7'
 
-    implementation('com.sk89q.worldguard:worldguard-bukkit:7.0.16') {
+    implementation('com.sk89q.worldguard:worldguard-bukkit:7.0.18-SNAPSHOT') {
         exclude group: 'io.papermc', module: 'paperlib'
         exclude group: 'org.bstats', module: 'bstats-bukkit'
         exclude group: 'org.bukkit', module: 'bukkit'
+        exclude group: 'com.google.guava', module: 'guava'
+        exclude group: 'com.google.code.gson', module: 'gson'
     }
 
     implementation 'com.google.code.findbugs:jsr305:3.0.2'

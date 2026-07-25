@@ -144,7 +144,7 @@ public class Ice extends BasePower {
                                     Location position = changedBlocks.keySet().toArray(new Location[0])[index];
                                     changedBlocks.remove(position);
                                     Block c = position.getBlock();
-                                    position.getWorld().playEffect(position, Effect.STEP_SOUND, c.getType());
+                                    position.getWorld().playEffect(position, Effect.DESTROY_BLOCK, c.getBlockData());
                                     c.setBlockData(data);
                                 }
 

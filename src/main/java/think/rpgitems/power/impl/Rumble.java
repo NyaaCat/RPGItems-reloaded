@@ -185,7 +185,7 @@ public class Rumble extends BasePower {
                     temp.setX(x + location.getBlockX());
                     temp.setZ(z + location.getBlockZ());
                     Block block = temp.getBlock();
-                    temp.getWorld().playEffect(temp, Effect.STEP_SOUND, block.getType());
+                    temp.getWorld().playEffect(temp, Effect.DESTROY_BLOCK, block.getBlockData());
                 }
             }
 
