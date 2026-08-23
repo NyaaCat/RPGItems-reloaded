@@ -820,8 +820,12 @@ power:
   food: 消耗 %2$d 个物品，恢复 %1$d 点饥饿值
   forcefield: 在你周围设置一个半径 %d，高度 %d，深度 %d 并持续 %.1f秒的力场
   freeze:
-    default: 冻结敌人 %.1f 秒
-    locked: 冻结敌人 %.1f 秒，且锁定其冻结时间
+    default:
+      set: 冻结敌人 %.1f 秒
+      additive: 增加敌人冻结时间 %.1f 秒
+    locked:
+      set: 冻结敌人 %.1f 秒，且锁定其冻结时间
+      additive: 增加敌人冻结时间 %.1f 秒，且锁定其冻结时间
   glove: 捕获一个实体 (%.1fs 冷却)
   gunfu: 子弹会自动追踪敌人 (%.1fs cooldown)
   headshot: 爆头时造成 %.1f 倍伤害
@@ -1251,6 +1255,7 @@ properties:
     main_name: 冻结
     ticks: 冻结的时间
     lockTime: 是否锁定冻结时间，否则冻结时间会在细雪中增加，脱离后减少
+    additive: 是否增加冻结时间，否则会覆盖原有冻结时间
   glove:
     main_description: 捕获一个实体
     main_name: 鬼手

@@ -29,12 +29,18 @@ public class Freeze extends BasePower {
     public int cost = 0;
     @Property
     public boolean lockTime = false;
+    @Property
+    public boolean additive = false;
 
     /**
      * Cost of this power
      */
     public int getCost() {
         return cost;
+    }
+
+    public boolean isAdditive() {
+        return additive;
     }
 
     @Override
@@ -44,10 +50,17 @@ public class Freeze extends BasePower {
 
     @Override
     public String displayText() {
-        if(lockTime){
-            return I18n.formatDefault("power.freeze.locked", (double) getTicks() / 20d);
+        if(!additive){
+            if(lockTime){
+                return I18n.formatDefault("power.freeze.locked.set", (double) getTicks() / 20d);
+            }
+            return I18n.formatDefault("power.freeze.default.set", (double) getTicks() / 20d);
+        }else{
+            if(lockTime){
+                return I18n.formatDefault("power.freeze.locked.additive", (double) getTicks() / 20d);
+            }
+            return I18n.formatDefault("power.freeze.default.additive", (double) getTicks() / 20d);
         }
-        return I18n.formatDefault("power.freeze.default", (double) getTicks() / 20d);
     }
 
     public int getTicks() {
@@ -72,7 +85,7 @@ public class Freeze extends BasePower {
                 return PowerResult.fail();
             }
             if (!getItem().consumeDurability(stack, getCost())) return PowerResult.cost();
-            entity.setFreezeTicks(getTicks());
+            entity.setFreezeTicks(isAdditive() ? entity.getFreezeTicks() + getTicks() : getTicks());
             entity.lockFreezeTicks(isLockTime());
             return PowerResult.ok();
         }

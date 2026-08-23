@@ -833,8 +833,12 @@ power:
   forcefield: Create a forcefield around you, radius %d, height %d, based %d blocks
     above, lasts for %.1fs
   freeze:
-    default: Freeze target for %.1f seconds
-    locked: Freeze target for %.1f seconds and lock the freeze time
+    default:
+     set: Freeze target for %.1f seconds
+     additive: Add %.1f seconds to target's freeze time
+    locked:
+      set: Freeze target for %.1f seconds and lock the freeze time
+      additive: Add %.1f seconds to target's freeze time and lock the freeze time
   glove: Catch an entity (%.1fs cooldown)
   gunfu: Projectiles will track a enemy (%.1fs cooldown)
   headshot: Deal %.1f damage when headshot
@@ -1229,6 +1233,7 @@ properties:
     main_name: Freeze
     ticks: Duration of freeze, in ticks
     lockTime: Whether to lock the freeze time, otherwise the freeze time will increase in powder snow and decrease when leaving
+    additive: Whether to add the freeze time to the target's current freeze time, otherwise it will set the freeze time to this value
   glove:
     main_description: Catch an entity
     main_name: Glove
