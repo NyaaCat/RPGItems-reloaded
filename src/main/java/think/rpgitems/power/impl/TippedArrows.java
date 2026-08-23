@@ -109,7 +109,7 @@ public class TippedArrows extends BasePower {
                 arrow.setShooter(player);
             }
             arrow.addCustomEffect(new PotionEffect(getType(), getDuration(), getAmplifier()), true);
-            Events.autoRemoveProjectile(arrow.getEntityId());
+            Events.autoRemoveProjectile(arrow);
             return PowerResult.ok();
         }
 

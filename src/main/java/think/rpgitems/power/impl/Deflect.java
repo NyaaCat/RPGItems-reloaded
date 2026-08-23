@@ -171,7 +171,7 @@ public class Deflect extends BasePower {
                 event.setCancelled(true);
                 target.getLocation().getWorld().playSound(target.getLocation(), Sound.ITEM_SHIELD_BLOCK, 1.0f, 3.0f);
                 Projectile t = target.launchProjectile(p.getClass());
-                Events.registerRPGProjectile(t.getEntityId(), getItem().getUid());
+                Events.registerRPGProjectile(t, getItem().getUid());
                 if (p instanceof Arrow arrowP) {
                     Arrow arrowT = (Arrow) t;
                     arrowT.setDamage(arrowP.getDamage());
@@ -186,7 +186,7 @@ public class Deflect extends BasePower {
                 }
                 t.setGravity(p.hasGravity());
                 t.setShooter(target);
-                Events.autoRemoveProjectile(t.getEntityId());
+                Events.autoRemoveProjectile(t);
                 p.eject();
                 p.remove();
                 return PowerResult.ok(0.0);

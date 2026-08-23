@@ -26,7 +26,7 @@ public class Arrows extends BasePower {
     @Property
     public int cost = 0;
     @Property
-    public boolean setShooter = false;
+    public boolean setShooter = true;
 
     /**
      * Cost of this power
@@ -72,13 +72,15 @@ public class Arrows extends BasePower {
             if (!getItem().consumeDurability(stack, getCost())) return PowerResult.cost();
             player.playSound(player.getLocation(), Sound.ENTITY_ARROW_SHOOT, 1.0f, 1.0f);
             Events.registerRPGProjectile(getPower().getItem(), stack, player);
-            Arrow arrow = player.launchProjectile(org.bukkit.entity.Arrow.class);
-            if (isSetShooter()) {
-                arrow.setShooter(player);
-            }
-            arrow.setPickupStatus(org.bukkit.entity.Arrow.PickupStatus.DISALLOWED);
-            Events.autoRemoveProjectile(arrow.getEntityId());
-            arrow.setPersistent(false);
+            player.launchProjectile(org.bukkit.entity.Arrow.class, null, arrow->{
+                if (isSetShooter()) {
+                    arrow.setShooter(player);
+                }
+                arrow.setWeapon(stack);
+                arrow.setPickupStatus(org.bukkit.entity.Arrow.PickupStatus.DISALLOWED);
+                Events.autoRemoveProjectile(arrow);
+                arrow.setPersistent(false);
+            });
             return PowerResult.ok();
         }
 

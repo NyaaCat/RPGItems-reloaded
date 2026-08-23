@@ -498,11 +498,10 @@ public class ProjectilePower extends BasePower {
             return new RoundedConeInfo(theta, phi, r, rPhi, rTheta, initialRotation);
         }
 
-        private void fire(Player player, LivingEntity source, ItemStack stack, float speedFactor, CastUtils.CastLocation castLocation) {
+        private void fire(Player player, LivingEntity originalSource, ItemStack stack, float speedFactor, CastUtils.CastLocation castLocation) {
 
             for (int i = 0; i < (isCone() ? getAmount() : 1); i++) {
-                LivingEntity originalSource = source;
-                LivingEntity launchSource = source;
+                LivingEntity launchSource = originalSource;
                 RoundedConeInfo roundedConeInfo = generateConeInfo(isCone() ? getRange() : 0, getFiringR(), getFiringTheta(), getFiringPhi(), getInitialRotation());
                 if (getFiringLocation().equals(FiringLocation.TARGET) && castLocation != null) {
                     Location targetLocation = castLocation.getTargetLocation();
@@ -578,7 +577,7 @@ public class ProjectilePower extends BasePower {
                 ((Fireball) projectile).setDirection(v.clone().normalize().multiply(getSpeed()));
             }
             if (projectile instanceof Arrow arrow) {
-                Events.autoRemoveProjectile(projectile.getEntityId());
+                Events.autoRemoveProjectile(projectile);
                 arrow.setPickupStatus(Arrow.PickupStatus.DISALLOWED);
             }
             if (projectile instanceof ShulkerBullet) {

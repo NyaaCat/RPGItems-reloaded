@@ -10,6 +10,7 @@ import org.bukkit.event.entity.EntityDamageByEntityEvent;
 import org.bukkit.event.entity.EntityDamageEvent;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.projectiles.ProjectileSource;
+import think.rpgitems.Events;
 import think.rpgitems.RPGItems;
 import think.rpgitems.event.PowerActivateEvent;
 import think.rpgitems.power.*;
@@ -107,7 +108,7 @@ public class EvalDamage extends BasePower {
         public PowerResult<Double> hit(Player player, ItemStack stack, LivingEntity entity, double damage, EntityDamageByEntityEvent event) {
             String expr = getExpression();
             boolean toPlayer = false;
-            Entity damager = event.getDamager();
+            Entity finalDamager = event.getDamager();
             if(entity instanceof Player){
                 toPlayer = true;
                 if (!getPlayerExpression().isEmpty()) {
@@ -117,16 +118,15 @@ public class EvalDamage extends BasePower {
             if(PlaceholderAPISupport.hasSupport()){
                 expr = PlaceholderAPI.setPlaceholders(player,expr);
                 if(toPlayer&&!getPlayerExpression().isEmpty()){
-                    expr = expr.replaceAll("target:","");
+                    expr = expr.replace("target:","");
                     expr = PlaceholderAPI.setPlaceholders((Player) entity,expr);
                 }
             }
             try {
                 Expression ex = new Expression(expr);
-                boolean byProjectile = damager instanceof Projectile;
-                Entity finalDamager = damager;
+                boolean byProjectile = finalDamager instanceof Projectile;
                 ex
-                        .and("attackCooldown",BigDecimal.valueOf(player.getAttackCooldown()))
+                        .and("attackCooldown",BigDecimal.valueOf(Events.attackCooldown.getOrDefault(player,0f)))
                         .and("damage", BigDecimal.valueOf(damage))
                         .and("isDamageByProjectile", byProjectile ? BigDecimal.ONE : BigDecimal.ZERO)
                         .and("damagerTicksLived", Utils.lazyNumber(() -> (double) finalDamager.getTicksLived()))

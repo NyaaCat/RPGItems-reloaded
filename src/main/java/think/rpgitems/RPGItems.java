@@ -19,6 +19,7 @@ import think.rpgitems.power.trigger.BaseTriggers;
 import think.rpgitems.power.trigger.Trigger;
 import think.rpgitems.power.impl.Scoreboard;
 import think.rpgitems.support.*;
+import think.rpgitems.utils.TempBlockManager;
 
 import java.io.File;
 import java.lang.reflect.InvocationHandler;
@@ -161,10 +162,8 @@ public class RPGItems extends JavaPlugin {
             for (File file : files) {
                 try {
                     Plugin plugin = Bukkit.getPluginManager().loadPlugin(file);
-                    String message = null;
-                    if (plugin != null) {
-                        message = String.format("Loading %s", plugin.getDescription().getFullName());
-                    }
+                    if (plugin == null) return;
+                    String message = String.format("Loading %s", plugin.getPluginMeta().getDisplayName());
                     plugin.getLogger().info(message);
                     plugin.onLoad();
                     managedPlugins.add(plugin);
@@ -184,27 +183,27 @@ public class RPGItems extends JavaPlugin {
         plugin = this;
         ResidenceSupport.init(this);
         if (plugin.cfg.version.startsWith("0.") && Double.parseDouble(plugin.cfg.version) < 0.5) {
-            Bukkit.getConsoleSender().sendMessage(ChatColor.RED + "======================================");
-            Bukkit.getConsoleSender().sendMessage(ChatColor.RED + "You current version of RPGItems config is not supported.");
-            Bukkit.getConsoleSender().sendMessage(ChatColor.RED + "Please run your server with latest version of RPGItems 3.5 before update.");
-            Bukkit.getConsoleSender().sendMessage(ChatColor.RED + "======================================");
+            Bukkit.getConsoleSender().sendRichMessage("<red>======================================");
+            Bukkit.getConsoleSender().sendRichMessage("<red>You current version of RPGItems config is not supported.");
+            Bukkit.getConsoleSender().sendRichMessage("<red>Please run your server with latest version of RPGItems 3.5 before update.");
+            Bukkit.getConsoleSender().sendRichMessage("<red>======================================");
             throw new IllegalStateException();
         }
 
         String implementationVersion = Bukkit.class.getPackage().getImplementationVersion();
         //may null in test environment
         if (implementationVersion != null && implementationVersion.startsWith("git-Bukkit-")) {
-            Bukkit.getConsoleSender().sendMessage(ChatColor.RED + "======================================");
-            Bukkit.getConsoleSender().sendMessage(ChatColor.RED + "RPGItems plugin requires Paper API, Please make sure you are using Paper.");
-            Bukkit.getConsoleSender().sendMessage(ChatColor.RED + "======================================");
+            Bukkit.getConsoleSender().sendRichMessage("<red>======================================");
+            Bukkit.getConsoleSender().sendRichMessage("<red>RPGItems plugin requires Paper API, Please make sure you are using Paper.");
+            Bukkit.getConsoleSender().sendRichMessage("<red>======================================");
         }
         try {
             Class.forName("io.papermc.paper.ServerBuildInfo");
         } catch (Throwable e) {
-            getCommand("rpgitem").setExecutor((sender, command, label, args) -> {
-                sender.sendMessage(ChatColor.RED + "======================================");
-                sender.sendMessage(ChatColor.RED + "RPGItems plugin requires Paper API, Please make sure you are using Paper.");
-                sender.sendMessage(ChatColor.RED + "======================================");
+            getCommand("rpgitem").setExecutor((sender, _, _, _) -> {
+                sender.sendRichMessage("<red>======================================");
+                sender.sendRichMessage("<red>RPGItems plugin requires Paper API, Please make sure you are using Paper.");
+                sender.sendRichMessage("<red>======================================");
                 return true;
             });
         }
@@ -235,6 +234,7 @@ public class RPGItems extends JavaPlugin {
             HandlerList.unregisterAll(this);
             getServer().getPluginManager().registerEvents(new Events(), RPGItems.this);
             Scoreboard.initTagReverser();
+            TempBlockManager.cleanupLoadedChunks();
             if(MythicMobsSupport.hasSupport()){
                 getServer().getPluginManager().registerEvents(new MythicMobsEvents(), RPGItems.this);
             }

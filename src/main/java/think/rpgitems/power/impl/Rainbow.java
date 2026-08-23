@@ -13,9 +13,9 @@ import think.rpgitems.I18n;
 import think.rpgitems.RPGItems;
 import think.rpgitems.event.PowerActivateEvent;
 import think.rpgitems.power.*;
+import think.rpgitems.utils.TempBlockManager;
 
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Random;
 
@@ -101,9 +101,13 @@ public class Rainbow extends BasePower {
             for (int i = 0; i < getCount(); i++) {
                 FallingBlock block;
                 if (!isFire()) {
-                    block = player.getWorld().spawnFallingBlock(player.getLocation().add(0, 1.8, 0), Tag.WOOL.getValues().toArray(new Material[16])[random.nextInt(16)].createBlockData());
+                    block = player.getWorld().spawn(player.getLocation().add(0, 1.8, 0), FallingBlock.class, fallingBlock -> {
+                        fallingBlock.setBlockData(Tag.WOOL.getValues().toArray(new Material[16])[random.nextInt(16)].createBlockData());
+                    });
                 } else {
-                    block = player.getWorld().spawnFallingBlock(player.getLocation().add(0, 1.8, 0), Material.FIRE.createBlockData());
+                    block = player.getWorld().spawn(player.getLocation().add(0, 1.8, 0), FallingBlock.class, fallingBlock -> {
+                        fallingBlock.setBlockData(Material.FIRE.createBlockData());
+                    });
                 }
                 block.setVelocity(player.getLocation().getDirection().multiply(new Vector(random.nextDouble() * 2d + 0.5, random.nextDouble() * 2d + 0.5, random.nextDouble() * 2d + 0.5)));
                 block.setDropItem(false);
@@ -120,10 +124,9 @@ public class Rainbow extends BasePower {
                     while (l.hasNext()) {
                         Location loc = l.next();
                         if (random.nextBoolean()) {
-                            Block b = loc.getBlock();
-                            if ((isFire() && b.getType() == Material.FIRE) || (!isFire() && Tag.WOOL.isTagged(b.getType()))) {
-                                loc.getWorld().playEffect(loc, Effect.DESTROY_BLOCK, b.getBlockData());
-                                b.setType(Material.AIR);
+                            if (TempBlockManager.isTracked(loc)) {
+                                loc.getWorld().playEffect(loc, Effect.DESTROY_BLOCK, loc.getBlock().getBlockData());
+                                TempBlockManager.revert(loc);
                             }
                             l.remove();
                         }
@@ -136,7 +139,14 @@ public class Rainbow extends BasePower {
                     while (it.hasNext()) {
                         FallingBlock block = it.next();
                         if (block.isDead()) {
-                            fallLocs.add(block.getLocation());
+                            Block b = block.getLocation().getBlock();
+                            // The falling block only turns into a real block on landing (vanilla
+                            // FallingBlock conversion) if the spot was actually valid; skip tracking
+                            // (and reverting) it otherwise.
+                            if ((isFire() && b.getType() == Material.FIRE) || (!isFire() && Tag.WOOL.isTagged(b.getType()))) {
+                                TempBlockManager.track(b, Material.AIR.createBlockData());
+                                fallLocs.add(b.getLocation());
+                            }
                             it.remove();
                         }
                     }

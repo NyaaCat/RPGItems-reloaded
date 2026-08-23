@@ -6,7 +6,10 @@ import com.destroystokyo.paper.event.player.PlayerArmorChangeEvent;
 import com.destroystokyo.paper.event.player.PlayerJumpEvent;
 import com.destroystokyo.paper.event.player.PlayerLaunchProjectileEvent;
 import io.papermc.paper.datacomponent.DataComponentTypes;
+import io.papermc.paper.event.player.PrePlayerAttackEntityEvent;
 import io.papermc.paper.tag.EntityTags;
+import it.unimi.dsi.fastutil.objects.Object2FloatMap;
+import it.unimi.dsi.fastutil.objects.Object2FloatOpenHashMap;
 import org.bukkit.*;
 import org.bukkit.block.Block;
 import org.bukkit.enchantments.Enchantment;
@@ -14,18 +17,23 @@ import org.bukkit.entity.*;
 import org.bukkit.event.*;
 import org.bukkit.event.block.Action;
 import org.bukkit.event.block.BlockBreakEvent;
+import org.bukkit.event.block.BlockBurnEvent;
+import org.bukkit.event.block.BlockExplodeEvent;
 import org.bukkit.event.block.BlockPhysicsEvent;
+import org.bukkit.event.block.BlockPistonExtendEvent;
+import org.bukkit.event.block.BlockPistonRetractEvent;
 import org.bukkit.event.block.BlockPlaceEvent;
+import org.bukkit.event.block.BlockSpreadEvent;
 import org.bukkit.event.enchantment.EnchantItemEvent;
 import org.bukkit.event.entity.*;
 import org.bukkit.event.hanging.HangingBreakEvent;
 import org.bukkit.event.hanging.HangingBreakEvent.RemoveCause;
 import org.bukkit.event.inventory.*;
 import org.bukkit.event.player.*;
+import org.bukkit.event.world.ChunkLoadEvent;
 import org.bukkit.inventory.*;
 import org.bukkit.inventory.meta.ItemMeta;
 import org.bukkit.inventory.meta.PotionMeta;
-import org.bukkit.metadata.FixedMetadataValue;
 import org.bukkit.persistence.PersistentDataType;
 import org.bukkit.potion.PotionEffect;
 import org.bukkit.potion.PotionEffectType;
@@ -49,6 +57,7 @@ import think.rpgitems.support.WGHandler;
 import think.rpgitems.support.WGSupport;
 import think.rpgitems.gui.RPGItemsExplorer;
 import think.rpgitems.utils.LightContext;
+import think.rpgitems.utils.TempBlockManager;
 
 import java.util.*;
 import java.util.concurrent.ThreadLocalRandom;
@@ -68,10 +77,15 @@ public class Events implements Listener {
     public static final String SUPPRESS_PROJECTILE = "SuppressProjectile";
     public static final String DAMAGE_SOURCE_ITEM = "DamageSourceItem";
     public static final String PROJECTILE_DAMAGE = "RPGItemProjectileDamage";
+    public static final String PROJECTILE_ITEM_UID = "RPGItemProjectileUid";
+    public static final String PROJECTILE_AUTO_REMOVE = "RPGItemProjectileAutoRemove";
 
-    private static final HashSet<Integer> removeProjectiles = new HashSet<>();
-    private static final HashMap<Integer, Integer> rpgProjectiles = new HashMap<>();
+    public static final NamespacedKey ORIGINAL_FORCE = new NamespacedKey(plugin, "originalForce");
+    public static final NamespacedKey FORCE = new NamespacedKey(plugin, "force");
+    public static final NamespacedKey RUMBLE = new NamespacedKey(plugin, "rumble");
+
     private static final Map<UUID, ItemStack> localItemStacks = new HashMap<>();
+    public static final Object2FloatMap<Player> attackCooldown = new Object2FloatOpenHashMap<>();
 
     private static RPGItem projectileRpgItem;
     private static ItemStack projectileItemStack;
@@ -124,12 +138,16 @@ public class Events implements Listener {
         registerRPGProjectile(rpgItem, itemStack, player, player);
     }
 
-    public static void registerRPGProjectile(int entityId, int uid) {
-        rpgProjectiles.put(entityId, uid);
+    public static void registerRPGProjectile(Entity projectile, int uid) {
+        projectile.getPersistentDataContainer().set(new NamespacedKey(plugin, PROJECTILE_ITEM_UID), PersistentDataType.INTEGER, uid);
     }
 
-    public static void autoRemoveProjectile(int entityId) {
-        removeProjectiles.add(entityId);
+    public static Optional<Integer> getRegisteredProjectileUid(Entity projectile) {
+        return Optional.ofNullable(projectile.getPersistentDataContainer().get(new NamespacedKey(plugin, PROJECTILE_ITEM_UID), PersistentDataType.INTEGER));
+    }
+
+    public static void autoRemoveProjectile(Entity projectile) {
+        projectile.getPersistentDataContainer().set(new NamespacedKey(plugin, PROJECTILE_AUTO_REMOVE), PersistentDataType.BOOLEAN, true);
     }
 
     @EventHandler(ignoreCancelled = true, priority = EventPriority.HIGH)
@@ -177,37 +195,78 @@ public class Events implements Listener {
     public void onItemEnchant(EnchantItemEvent e) {
         Optional<RPGItem> opt = ItemManager.toActiveRPGItem(e.getItem());
         Player p = e.getEnchanter();
-        if (opt.isPresent()) {
-            RPGItem item = opt.get();
-            checkEnchantPerm(e, p, item);
-        }
+        opt.ifPresent(item -> checkEnchantPerm(e, p, item));
     }
 
     @EventHandler
     public void onHangingBreak(HangingBreakEvent e) {
         if (e.getCause().equals(RemoveCause.EXPLOSION))
-            if (e.getEntity().hasMetadata("RPGItems.Rumble")) {
-                e.getEntity().removeMetadata("RPGItems.Rumble", plugin); // Allow the entity to be broken again
+            if (e.getEntity().getPersistentDataContainer().has(RUMBLE, PersistentDataType.BOOLEAN)) {
+                e.getEntity().getPersistentDataContainer().remove(RUMBLE); // Allow the entity to be broken again
                 e.setCancelled(true);
             }
     }
 
     @EventHandler
-    public void onBreak(BlockPhysicsEvent e) { // Is not triggered when the block a torch is attached to is removed
-        if (e.getChangedType().equals(Material.TORCH))
-            if (e.getBlock().hasMetadata("RPGItems.Torch")) {
-                e.setCancelled(true); // Cancelling this does not work
-                e.getBlock().removeMetadata("RPGItems.Torch", plugin);
-                e.getBlock().setType(Material.AIR);
-            }
+    public void onChunkLoad(ChunkLoadEvent e) {
+        TempBlockManager.cleanupChunk(e.getChunk());
+    }
+
+    @EventHandler
+    public void onTempBlockPhysics(BlockPhysicsEvent e) {
+        if (TempBlockManager.isTracked(e.getBlock().getLocation())) {
+            // Cancelling alone doesn't reliably stop a torch from popping off and dropping an item once
+            // its support is gone, so just revert it ourselves instead.
+            e.setCancelled(true);
+            TempBlockManager.revert(e.getBlock().getLocation());
+        }
+    }
+
+    @EventHandler
+    public void onTempBlockBurn(BlockBurnEvent e) {
+        if (TempBlockManager.isTracked(e.getBlock().getLocation())) {
+            e.setCancelled(true);
+        }
+    }
+
+    @EventHandler
+    public void onTempBlockSpread(BlockSpreadEvent e) {
+        if (TempBlockManager.isTracked(e.getSource().getLocation())) {
+            e.setCancelled(true);
+        }
+    }
+
+    @EventHandler
+    public void onTempBlockPistonExtend(BlockPistonExtendEvent e) {
+        if (e.getBlocks().stream().anyMatch(b -> TempBlockManager.isTracked(b.getLocation()))) {
+            e.setCancelled(true);
+        }
+    }
+
+    @EventHandler
+    public void onTempBlockPistonRetract(BlockPistonRetractEvent e) {
+        if (e.getBlocks().stream().anyMatch(b -> TempBlockManager.isTracked(b.getLocation()))) {
+            e.setCancelled(true);
+        }
+    }
+
+    @EventHandler
+    public void onTempBlockEntityExplode(EntityExplodeEvent e) {
+        e.blockList().removeIf(b -> TempBlockManager.isTracked(b.getLocation()));
+    }
+
+    @EventHandler
+    public void onTempBlockExplode(BlockExplodeEvent e) {
+        e.blockList().removeIf(b -> TempBlockManager.isTracked(b.getLocation()));
     }
 
     @EventHandler(ignoreCancelled = true)
     public void onBlockBreak(BlockBreakEvent e) {
         Block block = e.getBlock();
-        if (block.getType().equals(Material.TORCH))
-            if (block.hasMetadata("RPGItems.Torch"))
-                e.setCancelled(true);
+        if (TempBlockManager.isTracked(block.getLocation())) {
+            e.setCancelled(true);
+            return;
+        }
 
         Player player = e.getPlayer();
         ItemStack item = player.getInventory().getItemInMainHand();
@@ -230,21 +289,21 @@ public class Events implements Listener {
     @EventHandler
     public void onProjectileHit(ProjectileHitEvent e) {
         final Projectile entity = e.getEntity();
-        if (removeProjectiles.contains(entity.getEntityId())) {
+        if (entity.getPersistentDataContainer().has(new NamespacedKey(plugin, PROJECTILE_AUTO_REMOVE), PersistentDataType.BOOLEAN)) {
             Bukkit.getScheduler().runTask(plugin, () -> {
                 if (e.getHitEntity() != null && e.getEntity() instanceof AbstractArrow && ((AbstractArrow) e.getEntity()).getPierceLevel() > 0) {
                     return;
                 }
-                removeProjectiles.remove(entity.getEntityId());
                 entity.remove();
             });
         }
-        if (rpgProjectiles.containsKey(entity.getEntityId())) {
+        Optional<Integer> projectileUid = getRegisteredProjectileUid(entity);
+        if (projectileUid.isPresent()) {
             try {
                 if (entity instanceof Trident && entity.getScoreboardTags().contains("rgi_projectile")) {
                     ((Trident) entity).setPickupStatus(AbstractArrow.PickupStatus.DISALLOWED);
                 }
-                RPGItem rItem = ItemManager.getItem(rpgProjectiles.get(entity.getEntityId())).orElse(null);
+                RPGItem rItem = ItemManager.getItem(projectileUid.get()).orElse(null);
 
                 if (rItem == null || !(entity.getShooter() instanceof Player player))
                     return;
@@ -293,7 +352,7 @@ public class Events implements Listener {
                     if (e.getHitEntity() != null && e.getEntity() instanceof AbstractArrow && ((AbstractArrow) e.getEntity()).getPierceLevel() > 0) {
                         return;
                     }
-                    rpgProjectiles.remove(entity.getEntityId());
+                    entity.getPersistentDataContainer().remove(new NamespacedKey(plugin, PROJECTILE_ITEM_UID));
                 });
             }
         }
@@ -307,11 +366,11 @@ public class Events implements Listener {
             ItemStack bow = e.getBow();
             Optional<RPGItem> rpgItem = ItemManager.toActiveRPGItem(bow);
             force = rpgItem.flatMap(rpgItem1 -> {
-                registerRPGProjectile(e.getProjectile().getEntityId(), rpgItem1.getUid());
+                registerRPGProjectile(e.getProjectile(), rpgItem1.getUid());
                 return rpgItem1.power(((Player) entity), bow, e, BaseTriggers.BOW_SHOOT);
             }).orElse(force);
             if (e.isCancelled()) {
-                autoRemoveProjectile(entity.getEntityId());
+                autoRemoveProjectile(e.getProjectile());
                 return;
             }
         }
@@ -320,9 +379,9 @@ public class Events implements Listener {
             return;
         }
         if (e.getForce() != 0) {
-            e.getProjectile().setMetadata("RPGItems.OriginalForce", new FixedMetadataValue(plugin, e.getForce()));
+            e.getProjectile().getPersistentDataContainer().set(ORIGINAL_FORCE, PersistentDataType.FLOAT, e.getForce());
         }
-        e.getProjectile().setMetadata("RPGItems.Force", new FixedMetadataValue(plugin, force));
+        e.getProjectile().getPersistentDataContainer().set(FORCE, PersistentDataType.FLOAT, force);
     }
 
     @EventHandler
@@ -351,7 +410,7 @@ public class Events implements Listener {
                 throw new IllegalStateException();
             }
             registerLocalItemStack(e.getEntity().getUniqueId(), projectileItemStack);
-            registerRPGProjectile(e.getEntity().getEntityId(), projectileRpgItem.getUid());
+            registerRPGProjectile(e.getEntity(), projectileRpgItem.getUid());
             projectileRpgItem.power(player, projectileItemStack, e, BaseTriggers.LAUNCH_PROJECTILE);
             projectileRpgItem = null;
             projectilePlayer = null;
@@ -399,7 +458,7 @@ public class Events implements Listener {
         if (ItemManager.canUse(player, rItem) == Event.Result.DENY) {
             return;
         }
-        registerRPGProjectile(e.getEntity().getEntityId(), rItem.getUid());
+        registerRPGProjectile(e.getEntity(), rItem.getUid());
         rItem.power(player, item, e, BaseTriggers.LAUNCH_PROJECTILE);
     }
 
@@ -658,7 +717,7 @@ public class Events implements Listener {
         }
         ItemStack tridentItem = e.getItem().getItemStack();
         ItemMeta itemMeta = tridentItem.getItemMeta();
-        if (!rpgProjectiles.containsKey(e.getArrow().getEntityId()) || !itemMeta.hasLore() || itemMeta.getLore().isEmpty()) {
+        if (getRegisteredProjectileUid(e.getArrow()).isEmpty() || !itemMeta.hasLore() || itemMeta.getLore().isEmpty()) {
             return;
         }
         try {
@@ -783,6 +842,11 @@ public class Events implements Listener {
         }
     }
 
+    @EventHandler(priority = EventPriority.HIGH, ignoreCancelled = true)
+    public void onPreDamage(PrePlayerAttackEntityEvent event){
+        attackCooldown.put(event.getPlayer(), event.getPlayer().getAttackCooldown());
+    }
+
     private void playerDamager(EntityDamageByEntityEvent e) {
         Player player = (Player) e.getDamager();
         Entity entity = e.getEntity();
@@ -838,7 +902,7 @@ public class Events implements Listener {
             if (e.isCritical()) {
                 damage = rItem.meleeDamage(player, originDamage, item, entity, 1.5);
             } else {
-                damage = rItem.meleeDamage(player, originDamage, item, entity, player.getAttackCooldown());
+                damage = rItem.meleeDamage(player, originDamage, item, entity, attackCooldown.getOrDefault(player, 0f));
             }
         } else if (overridingDamage.isPresent()) {
             damage = overridingDamage.get();
@@ -856,19 +920,20 @@ public class Events implements Listener {
         }
         ItemStack[] inventory = player.getInventory().getContents();
         runGlobalHitTrigger(e, player, damage, rItem == null ? "" : rItem.getDamageType(), inventory);
+        attackCooldown.removeFloat(player);
     }
 
     private void projectileDamager(EntityDamageByEntityEvent e) {
         Projectile projectile = (Projectile) e.getDamager();
-        Integer projectileID = rpgProjectiles.get(projectile.getEntityId());
-        if (projectileID == null) {
-            if (projectile.hasMetadata("RPGItems.OriginalForce")) {
-                double damage = e.getDamage() * projectile.getMetadata("RPGItems.Force").getFirst().asFloat() / projectile.getMetadata("RPGItems.OriginalForce").getFirst().asFloat();
+        Integer projectileUid = getRegisteredProjectileUid(projectile).orElse(null);
+        if (projectileUid == null) {
+            if (projectile.getPersistentDataContainer().has(ORIGINAL_FORCE)) {
+                double damage = e.getDamage() * projectile.getPersistentDataContainer().get(FORCE, PersistentDataType.FLOAT) / projectile.getPersistentDataContainer().get(ORIGINAL_FORCE, PersistentDataType.FLOAT);
                 e.setDamage(damage);
             }
             return;
         }
-        RPGItem rItem = ItemManager.getItem(projectileID).orElse(null);
+        RPGItem rItem = ItemManager.getItem(projectileUid).orElse(null);
         if (rItem == null || !(projectile.getShooter() instanceof Player player))
             return;
         if (!player.isOnline()) {
@@ -916,11 +981,10 @@ public class Events implements Listener {
             return;
         }
         e.setDamage(damage);
-        if (!(e.getEntity() instanceof LivingEntity)) return;
+        if (!(e.getEntity() instanceof LivingEntity target)) return;
         // Check for noImmutableTick flag on the projectile
         Boolean noImmutableTick = projectile.getPersistentDataContainer().get(new NamespacedKey(plugin, "RPGItemNoImmutableTick"), PersistentDataType.BOOLEAN);
         if (noImmutableTick != null && noImmutableTick) {
-            LivingEntity target = (LivingEntity) e.getEntity();
             new BukkitRunnable() {
                 @Override
                 public void run() {
@@ -941,6 +1005,7 @@ public class Events implements Listener {
         LightContext.removeTemp(player.getUniqueId(), DAMAGE_SOURCE);
         LightContext.removeTemp(player.getUniqueId(), DAMAGE_SOURCE_ITEM);
         runGlobalHitTrigger(e, player, damage, damageType, armorContents);
+        attackCooldown.removeFloat(player);
     }
 
     private void runGlobalHitTrigger(EntityDamageByEntityEvent e, Player player, double damage, String damageType, ItemStack[] itemStacks) {

@@ -10,12 +10,12 @@ import org.bukkit.entity.Player;
 import org.bukkit.event.entity.EntityShootBowEvent;
 import org.bukkit.event.player.PlayerInteractEvent;
 import org.bukkit.inventory.ItemStack;
-import org.bukkit.metadata.FixedMetadataValue;
 import org.bukkit.scheduler.BukkitRunnable;
 import think.rpgitems.I18n;
 import think.rpgitems.RPGItems;
 import think.rpgitems.event.PowerActivateEvent;
 import think.rpgitems.power.*;
+import think.rpgitems.utils.TempBlockManager;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -93,7 +93,9 @@ public class Torch extends BasePower {
             if (!checkCooldown(getPower(), player, getCooldown(), showCooldownWarning(), true)) return PowerResult.cd();
             if (!getItem().consumeDurability(stack, getCost())) return PowerResult.cost();
             player.playSound(player.getLocation(), Sound.ITEM_FLINTANDSTEEL_USE, 1.0f, 0.8f);
-            final FallingBlock block = player.getWorld().spawnFallingBlock(player.getLocation().add(0, 1.8, 0), Material.TORCH.createBlockData());
+            final FallingBlock block = player.getWorld().spawn(player.getLocation().add(0, 1.8, 0), FallingBlock.class, fallingBlock -> {
+                fallingBlock.setBlockData(Material.TORCH.createBlockData());
+            });
             block.setVelocity(player.getLocation().getDirection().multiply(2d));
             block.setDropItem(false);
             BukkitRunnable run = new BukkitRunnable() {
@@ -103,11 +105,14 @@ public class Torch extends BasePower {
                     final Random random = new Random();
                     if (block.isDead()) {
                         block.remove();
-                        if (block.getLocation().getBlock().getType().equals(Material.TORCH))
-                            block.setMetadata("RPGItems.Torch", new FixedMetadataValue(RPGItems.plugin, null));
+                        // The falling block placed a real torch on landing (vanilla FallingBlock
+                        // conversion); start tracking it so it reverts to air and is crash-safe, just
+                        // like the torches we place ourselves below.
+                        if (block.getLocation().getBlock().getType().equals(Material.TORCH)) {
+                            TempBlockManager.track(block.getLocation().getBlock(), Material.AIR.createBlockData());
+                        }
                         cancel();
                         final HashMap<Location, Material> changedBlocks = new HashMap<>();
-                        final HashMap<Location, BlockData> changedBlockData = new HashMap<>();
                         for (int x = -2; x <= 2; x++) {
                             for (int y = -2; y <= 3; y++) {
                                 for (int z = -2; z <= 2; z++) {
@@ -117,15 +122,12 @@ public class Torch extends BasePower {
                                         List<BlockFace> faces = getPossibleFaces(loc);
                                         if (faces.size() > 0) {
                                             changedBlocks.put(b.getLocation(), b.getType());
-                                            changedBlockData.put(b.getLocation(), b.getBlockData());
                                             BlockFace o = faces.get(random.nextInt(faces.size()));
-                                            b.setMetadata("RPGItems.Torch", new FixedMetadataValue(RPGItems.plugin, null));
-                                            b.setType(o == BlockFace.DOWN ? Material.TORCH : Material.WALL_TORCH, false);
+                                            BlockData data = (o == BlockFace.DOWN ? Material.TORCH : Material.WALL_TORCH).createBlockData();
                                             if (o != BlockFace.DOWN) {
-                                                Directional f = ((Directional) b.getBlockData());
-                                                f.setFacing(o);
-                                                b.setBlockData(f, false);
+                                                ((Directional) data).setFacing(o);
                                             }
+                                            TempBlockManager.place(b, data);
                                         }
                                     }
                                 }
@@ -137,24 +139,18 @@ public class Torch extends BasePower {
                             public void run() {
                                 if (changedBlocks.isEmpty()) {
                                     cancel();
-                                    block.removeMetadata("RPGItems.Torch", RPGItems.plugin);
-                                    if (block.getLocation().getBlock().getType() == Material.TORCH) {
-                                        block.getLocation().getBlock().setType(Material.AIR);
+                                    Location landing = block.getLocation();
+                                    if (TempBlockManager.isTracked(landing)) {
+                                        TempBlockManager.revert(landing);
                                     }
                                     return;
                                 }
                                 int index = random.nextInt(changedBlocks.size());
                                 Location loc = (Location) changedBlocks.keySet().toArray()[index];
-                                Material material = changedBlocks.get(loc);
-                                BlockData data = changedBlockData.get(loc);
-                                Location position = changedBlocks.keySet().toArray(new Location[0])[index];
-                                changedBlocks.remove(position);
-                                Block c = position.getBlock();
-                                position.getWorld().playEffect(position, Effect.DESTROY_BLOCK, c.getBlockData());
-                                c.removeMetadata("RPGItems.Torch", RPGItems.plugin);
-                                c.setType(material, false);
-                                c.setBlockData(data, false);
-
+                                changedBlocks.remove(loc);
+                                Block c = loc.getBlock();
+                                loc.getWorld().playEffect(loc, Effect.DESTROY_BLOCK, c.getBlockData());
+                                TempBlockManager.revert(loc);
                             }
                         }).runTaskTimer(RPGItems.plugin, 4 * 20 + new Random().nextInt(40), 3);
                     }

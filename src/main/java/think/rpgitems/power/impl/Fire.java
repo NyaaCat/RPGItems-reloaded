@@ -34,6 +34,7 @@ import think.rpgitems.I18n;
 import think.rpgitems.RPGItems;
 import think.rpgitems.event.PowerActivateEvent;
 import think.rpgitems.power.*;
+import think.rpgitems.utils.TempBlockManager;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -118,7 +119,9 @@ public class Fire extends BasePower {
             if (!getItem().consumeDurability(stack, getCost())) return PowerResult.cost();
             player.playSound(player.getLocation(), Sound.ITEM_FLINTANDSTEEL_USE, 1.0f, 1.2f);
             final List<Block> fireblocks = new ArrayList<>();
-            final FallingBlock block = player.getWorld().spawnFallingBlock(player.getLocation().add(0, 1.8, 0), Material.FIRE.createBlockData());
+            final FallingBlock block = player.getWorld().spawn(player.getLocation().add(0, 1.8, 0), FallingBlock.class, fallingBlock -> {
+                fallingBlock.setBlockData(Material.FIRE.createBlockData());
+            });
             block.setVelocity(player.getLocation().getDirection().multiply(2d));
             block.setDropItem(false);
 
@@ -145,7 +148,7 @@ public class Fire extends BasePower {
                                 temp.setZ(z + location.getBlockZ());
                                 Block block = temp.getBlock();
                                 if (block.getType().equals(Material.AIR) && !block.getRelative(0, -1, 0).getType().isBurnable()) {
-                                    block.setType(Material.FIRE);
+                                    TempBlockManager.place(block, Material.FIRE.createBlockData());
                                     fireblocks.add(block);
                                 }
                             }
@@ -164,9 +167,9 @@ public class Fire extends BasePower {
                                         cancel();
                                         return;
                                     }
-                                    Block fb = fireblocks.get(0);
+                                    Block fb = fireblocks.getFirst();
                                     fb.getWorld().playEffect(fb.getLocation(), Effect.EXTINGUISH, 1);
-                                    fb.setType(Material.AIR);
+                                    TempBlockManager.revert(fb.getLocation());
                                     fireblocks.remove(fb);
                                 }
                             }).runTaskTimer(RPGItems.plugin, 4 * 20 + new Random().nextInt(40), 3);

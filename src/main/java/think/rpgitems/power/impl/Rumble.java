@@ -9,10 +9,9 @@ import org.bukkit.event.player.PlayerInteractEvent;
 import org.bukkit.event.player.PlayerToggleSneakEvent;
 import org.bukkit.event.player.PlayerToggleSprintEvent;
 import org.bukkit.inventory.ItemStack;
-import org.bukkit.metadata.FixedMetadataValue;
+import org.bukkit.persistence.PersistentDataType;
 import org.bukkit.util.Vector;
 import think.rpgitems.I18n;
-import think.rpgitems.RPGItems;
 import think.rpgitems.data.Context;
 import think.rpgitems.event.PowerActivateEvent;
 import think.rpgitems.power.*;
@@ -24,6 +23,7 @@ import java.util.Random;
 
 import static think.rpgitems.Events.DAMAGE_SOURCE;
 import static think.rpgitems.Events.OVERRIDING_DAMAGE;
+import static think.rpgitems.Events.RUMBLE;
 import static think.rpgitems.power.Utils.checkCooldown;
 import static think.rpgitems.power.Utils.getNearbyEntities;
 
@@ -203,7 +203,7 @@ public class Rumble extends BasePower {
                 for (Entity e : near) {
                     if (e != player) {
                         if (e instanceof ItemFrame || e instanceof Painting || e.hasMetadata("NPC")) {
-                            e.setMetadata("RPGItems.Rumble", new FixedMetadataValue(RPGItems.plugin, null));
+                            e.getPersistentDataContainer().set(RUMBLE, PersistentDataType.BOOLEAN, true);
                             continue;
                         }
                         if (e.getLocation().distance(location) <= 2.5) {

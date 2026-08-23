@@ -3,7 +3,6 @@ package think.rpgitems.power.impl;
 import com.destroystokyo.paper.event.player.PlayerJumpEvent;
 import org.bukkit.*;
 import org.bukkit.block.Block;
-import org.bukkit.block.data.BlockData;
 import org.bukkit.entity.Entity;
 import org.bukkit.entity.FallingBlock;
 import org.bukkit.entity.Player;
@@ -19,8 +18,9 @@ import think.rpgitems.I18n;
 import think.rpgitems.RPGItems;
 import think.rpgitems.event.PowerActivateEvent;
 import think.rpgitems.power.*;
+import think.rpgitems.utils.TempBlockManager;
 
-import java.util.HashMap;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Random;
 
@@ -85,7 +85,9 @@ public class Ice extends BasePower {
             player.playSound(player.getLocation(), Sound.ENTITY_EGG_THROW, 1.0f, 0.1f);
 
             // launch an ice block
-            final FallingBlock block = player.getWorld().spawnFallingBlock(player.getLocation().add(0, 1.8, 0), Material.PACKED_ICE.createBlockData());
+            final FallingBlock block = player.getWorld().spawn(player.getLocation().add(0, 1.8, 0), FallingBlock.class, fallingBlock -> {
+                fallingBlock.setBlockData(Material.PACKED_ICE.createBlockData());
+            });
             block.setVelocity(player.getLocation().getDirection().multiply(2d));
             block.setDropItem(false);
 
@@ -113,7 +115,7 @@ public class Ice extends BasePower {
                             }
                         }
                         cancel();
-                        final HashMap<Location, BlockData> changedBlocks = new HashMap<>();
+                        final List<Location> changedBlocks = new ArrayList<>();
                         for (int x = -1; x < 2; x++) {
                             for (int y = -1; y < 3; y++) {
                                 for (int z = -1; z < 2; z++) {
@@ -121,8 +123,8 @@ public class Ice extends BasePower {
                                     Block b = world.getBlockAt(loc);
                                     if (!b.getType().isSolid() &&
                                             !(b.getType() == Material.PLAYER_HEAD || b.getType() == Material.PLAYER_WALL_HEAD)) {
-                                        changedBlocks.put(b.getLocation(), b.getBlockData());
-                                        b.setType(Material.PACKED_ICE);
+                                        TempBlockManager.place(b, Material.PACKED_ICE.createBlockData());
+                                        changedBlocks.add(b.getLocation());
                                     }
                                 }
                             }
@@ -140,12 +142,10 @@ public class Ice extends BasePower {
                                         return;
                                     }
                                     int index = random.nextInt(changedBlocks.size());
-                                    BlockData data = changedBlocks.values().toArray(new BlockData[0])[index];
-                                    Location position = changedBlocks.keySet().toArray(new Location[0])[index];
-                                    changedBlocks.remove(position);
+                                    Location position = changedBlocks.remove(index);
                                     Block c = position.getBlock();
                                     position.getWorld().playEffect(position, Effect.DESTROY_BLOCK, c.getBlockData());
-                                    c.setBlockData(data);
+                                    TempBlockManager.revert(position);
                                 }
 
                             }

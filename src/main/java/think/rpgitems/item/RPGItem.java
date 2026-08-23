@@ -1172,28 +1172,31 @@ public class RPGItem {
             damage = getDamageMin() != getDamageMax() ? (getDamageMin() + ThreadLocalRandom.current().nextInt(getDamageMax() - getDamageMin() + 1)) : getDamageMin();
 
 
-            if (getDamageMode().toString().contains("MULTIPLY")) {
+            if (getDamageMode() == DamageMode.MULTIPLY) {
                 damage *= originDamage;
             }
 
-            if (getDamageMode() == DamageMode.FIXED) {
-                Collection<PotionEffect> potionEffects = p.getActivePotionEffects();
-                double strength = 0, weak = 0;
-                for (PotionEffect pe : potionEffects) {
-                    if (pe.getType().equals(PotionEffectType.STRENGTH)) {
-                        strength = 3 * (pe.getAmplifier() + 1);
+            String string = getDamageMode().toString();
+            if (string.contains("FIXED")) {
+                if(!string.contains("WITHOUT_EFFECT")){
+                    Collection<PotionEffect> potionEffects = p.getActivePotionEffects();
+                    double strength = 0, weak = 0;
+                    for (PotionEffect pe : potionEffects) {
+                        if (pe.getType().equals(PotionEffectType.STRENGTH)) {
+                            strength = 3 * (pe.getAmplifier() + 1);
+                        }
+                        if (pe.getType().equals(PotionEffectType.WEAKNESS)) {
+                            weak = 4 * (pe.getAmplifier() + 1);
+                        }
                     }
-                    if (pe.getType().equals(PotionEffectType.WEAKNESS)) {
-                        weak = 4 * (pe.getAmplifier() + 1);
-                    }
+                    damage += strength - weak;
                 }
-                damage = damage + strength - weak;
             }
 
-            if (getDamageMode() == DamageMode.ADDITIONAL) {
+            if (string.contains("ADDITIONAL")) {
                 damage += originDamage;
             }
-            if (getDamageMode().toString().contains("RESPECT_VANILLA")) {
+            if (string.contains("RESPECT_VANILLA")) {
                 damage *= multiplier;
             }
             if (damage < 0) damage = 0;
@@ -1232,8 +1235,9 @@ public class RPGItem {
             }
 
             //Apply force adjustments
-            if (damager.hasMetadata("RPGItems.Force")) {
-                damage *= damager.getMetadata("RPGItems.Force").getFirst().asFloat();
+            Float force = damager.getPersistentDataContainer().get(think.rpgitems.Events.FORCE, PersistentDataType.FLOAT);
+            if (force != null) {
+                damage *= force;
             }
             if (getDamageMode().toString().contains("ADDITIONAL")) {
                 damage += originDamage;

@@ -1,9 +1,10 @@
 package think.rpgitems.utils;
 
 import org.bukkit.Location;
+import org.bukkit.NamespacedKey;
 import org.bukkit.entity.ArmorStand;
 import org.bukkit.entity.Entity;
-import org.bukkit.metadata.FixedMetadataValue;
+import org.bukkit.persistence.PersistentDataType;
 import org.bukkit.scheduler.BukkitRunnable;
 import think.rpgitems.RPGItems;
 
@@ -11,7 +12,7 @@ import java.util.LinkedHashMap;
 import java.util.Map;
 
 public class ArmorStandUtil {
-    private static final String META_KEY = "RPGItems.ArmorStand";
+    private static final NamespacedKey META_KEY = new NamespacedKey(RPGItems.plugin, "armorStand");
     private static final Map<Entity, ArmorStand> projectileSources = new LinkedHashMap<>();
 
     public static ArmorStand asProjectileSource(Entity player) {
@@ -42,7 +43,7 @@ public class ArmorStandUtil {
             e.setInvulnerable(true);
             e.setGravity(false);
             e.setCollidable(false);
-            e.setMetadata(META_KEY, new FixedMetadataValue(RPGItems.plugin, true));
+            e.getPersistentDataContainer().set(META_KEY, PersistentDataType.BOOLEAN, true);
         });
         return armorStand;
     }
