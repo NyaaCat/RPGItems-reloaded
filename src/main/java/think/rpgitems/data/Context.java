@@ -55,6 +55,11 @@ public class Context {
         return null;
     }
 
+    public <T> T getOrDefault(UUID context, String key, T defaultValue) {
+        Object value = get(context, key);
+        return value != null ? (T) value : defaultValue;
+    }
+
     public Location getLocation(UUID context, String key) {
         ExpiringMap<String, Object> local = storage.get(context);
         if (local == null) return null;
@@ -83,12 +88,12 @@ public class Context {
         storage.computeIfAbsent(context, uuid -> new ExpiringMap<>()).remove(key);
     }
 
-    public void put(UUID context, String key, Object obj, long expire) {
-        storage.computeIfAbsent(context, (ignored) -> new ExpiringMap<>()).put(key, obj, expire);
+    public void put(UUID context, String key, Object obj, long expireAt) {
+        storage.computeIfAbsent(context, (ignored) -> new ExpiringMap<>()).put(key, obj, expireAt);
     }
 
-    public void putExpiringSeconds(UUID context, String key, Object obj, int expiringSeconds) {
-        put(context, key, obj, getCurrentMillis() + expiringSeconds * 10);
+    public void putExpiringSeconds(UUID context, String key, Object obj, double expiringSeconds) {
+        put(context, key, obj, getCurrentMillis() + (long)(expiringSeconds * 1000L));
     }
 
     public void cleanTemp(UUID context) {
@@ -101,6 +106,7 @@ public class Context {
         for (ExpiringMap<String, Object> local : storage.values()) {
             local.cleanup(null, null, ExpiringMap.TICK);
         }
+        storage.values().removeIf(ExpiringMap::isEmptyWithoutCleanup);
     }
 
     public class ExpiringMap<K, V> implements Map<K, V> {
@@ -182,14 +188,18 @@ public class Context {
             return inner.isEmpty();
         }
 
+        public boolean isEmptyWithoutCleanup() {
+            return inner.isEmpty();
+        }
+
         @Override
         public boolean containsKey(Object key) {
-            return this.cleanup(key, null, null) == null;
+            return this.cleanup(key, null, null) != null;
         }
 
         @Override
         public boolean containsValue(Object value) {
-            return this.cleanup(null, value, null) == null;
+            return this.cleanup(null, value, null) != null;
         }
 
         @SuppressWarnings("unchecked")

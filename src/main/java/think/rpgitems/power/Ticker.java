@@ -3,6 +3,7 @@ package think.rpgitems.power;
 import org.bukkit.Bukkit;
 import org.bukkit.entity.Player;
 import org.bukkit.event.Event;
+import org.bukkit.inventory.ItemStack;
 import org.bukkit.scheduler.BukkitRunnable;
 import think.rpgitems.data.Context;
 import think.rpgitems.item.ItemManager;

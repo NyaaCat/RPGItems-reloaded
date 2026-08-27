@@ -12,6 +12,7 @@ import org.bukkit.inventory.ItemStack;
 import org.bukkit.projectiles.ProjectileSource;
 import think.rpgitems.Events;
 import think.rpgitems.RPGItems;
+import think.rpgitems.data.Context;
 import think.rpgitems.event.PowerActivateEvent;
 import think.rpgitems.power.*;
 import think.rpgitems.support.PlaceholderAPISupport;
@@ -126,7 +127,7 @@ public class EvalDamage extends BasePower {
                 Expression ex = new Expression(expr);
                 boolean byProjectile = finalDamager instanceof Projectile;
                 ex
-                        .and("attackCooldown",BigDecimal.valueOf(Events.attackCooldown.getOrDefault(player,0f)))
+                        .and("attackCooldown",BigDecimal.valueOf(Context.instance().getOrDefault(player.getUniqueId(), "attack_cooldown", 0f)))
                         .and("damage", BigDecimal.valueOf(damage))
                         .and("isDamageByProjectile", byProjectile ? BigDecimal.ONE : BigDecimal.ZERO)
                         .and("damagerTicksLived", Utils.lazyNumber(() -> (double) finalDamager.getTicksLived()))

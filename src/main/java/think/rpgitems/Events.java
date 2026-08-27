@@ -85,7 +85,6 @@ public class Events implements Listener {
     public static final NamespacedKey RUMBLE = new NamespacedKey(plugin, "rumble");
 
     private static final Map<UUID, ItemStack> localItemStacks = new HashMap<>();
-    public static final Object2FloatMap<Player> attackCooldown = new Object2FloatOpenHashMap<>();
 
     private static RPGItem projectileRpgItem;
     private static ItemStack projectileItemStack;
@@ -844,7 +843,7 @@ public class Events implements Listener {
 
     @EventHandler(priority = EventPriority.HIGH, ignoreCancelled = true)
     public void onPreDamage(PrePlayerAttackEntityEvent event){
-        attackCooldown.put(event.getPlayer(), event.getPlayer().getAttackCooldown());
+        Context.instance().putExpiringSeconds(event.getPlayer().getUniqueId(), "attack_cooldown", event.getPlayer().getAttackCooldown(), 0.1);
     }
 
     private void playerDamager(EntityDamageByEntityEvent e) {
@@ -902,7 +901,7 @@ public class Events implements Listener {
             if (e.isCritical()) {
                 damage = rItem.meleeDamage(player, originDamage, item, entity, 1.5);
             } else {
-                damage = rItem.meleeDamage(player, originDamage, item, entity, attackCooldown.getOrDefault(player, 0f));
+                damage = rItem.meleeDamage(player, originDamage, item, entity, Context.instance().getOrDefault(player.getUniqueId(), "attack_cooldown", 0f));
             }
         } else if (overridingDamage.isPresent()) {
             damage = overridingDamage.get();
@@ -920,7 +919,6 @@ public class Events implements Listener {
         }
         ItemStack[] inventory = player.getInventory().getContents();
         runGlobalHitTrigger(e, player, damage, rItem == null ? "" : rItem.getDamageType(), inventory);
-        attackCooldown.removeFloat(player);
     }
 
     private void projectileDamager(EntityDamageByEntityEvent e) {
@@ -1005,7 +1003,6 @@ public class Events implements Listener {
         LightContext.removeTemp(player.getUniqueId(), DAMAGE_SOURCE);
         LightContext.removeTemp(player.getUniqueId(), DAMAGE_SOURCE_ITEM);
         runGlobalHitTrigger(e, player, damage, damageType, armorContents);
-        attackCooldown.removeFloat(player);
     }
 
     private void runGlobalHitTrigger(EntityDamageByEntityEvent e, Player player, double damage, String damageType, ItemStack[] itemStacks) {
