@@ -839,11 +839,23 @@ power:
   noimmutabletick: 取消攻击后敌方的无敌时间
   particle: 右键时产生一些粒子
   particletick: 持有时产生一些粒子
-  potionhit: '%1$d%% 的几率在攻击时对目标触发 %4$.1f 秒 %2$s %3$d'
+  potionhit:
+    toself:
+      apply: '%1$d%% 的几率在攻击时对自己触发 %4$.1f 秒 %2$s %3$d'
+      clear: '%1$d%% 的几率在攻击时清除自身的 %2$s'
+    totarget:
+      apply: '%1$d%% 的几率在攻击时对目标触发 %4$.1f 秒 %2$s %3$d'
+      clear: '%1$d%% 的几率在攻击时清除目标的 %2$s'
   potionhittaken:
-    damager: '%1$d%% 的几率在受伤时对攻击者触发 %4$.1f 秒 %2$s %3$d'
-    victim: '%1$d%% 的几率在受伤时对受伤者触发 %4$.1f 秒 %2$s %3$d'
-  potionself: 获得%s %d，持续 %.1f 秒
+    damager:
+      apply: '%1$d%% 的几率在受伤时对攻击者触发 %4$.1f 秒 %2$s %3$d'
+      clear: '%1$d%% 的几率在受伤时清除攻击者的 %2$s'
+    victim:
+      apply: '%1$d%% 的几率在受伤时对受伤者触发 %4$.1f 秒 %2$s %3$d'
+      clear: '%1$d%% 的几率在受伤时清除受伤者的 %2$s'
+  potionself:
+    apply: '获得%s %d，持续 %.1f 秒'
+    clear: '清除%s'
   potiontick:
     clear: 持有/穿戴时清除%s效果
     display: 持有/穿戴时给予效果%s%d
@@ -1425,6 +1437,7 @@ properties:
     isAmbient: 药水效果是否为环境效果
     showParticles: 药水效果是否显示粒子效果
     showIcon: 药水效果是否在HUD上显示图标
+    clear: 清除此效果而非应用
   potionhittaken:
     amplifier: 效果倍率
     chance: 触发几率，1/n
@@ -1432,6 +1445,7 @@ properties:
     main_description: 击中后对目标施放状态效果
     main_name: 击中效果
     type: 状态效果
+    clear: 清除此效果而非应用
     summingUp: 是否堆叠相同类型的药水效果的等级
     effectDamager: 是否对伤害来源施放效果而非受伤玩家
     isAmbient: 药水效果是否为环境效果
@@ -1439,7 +1453,7 @@ properties:
     showIcon: 药水效果是否在HUD上显示图标
   potionself:
     amplifier: 效果倍率
-    clear: 免疫此效果而非应用
+    clear: 清除此效果而非应用
     duration: 持续时间，游戏刻
     main_description: 对自身施放状态效果
     main_name: 自身效果

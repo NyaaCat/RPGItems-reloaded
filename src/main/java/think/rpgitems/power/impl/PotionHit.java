@@ -43,6 +43,8 @@ public class PotionHit extends BasePower implements PowerPotion {
     public int cost = 0;
     @Property
     public boolean summingUp = false;
+    @Property
+    public boolean toSelf = false;
 
     private final Random rand = new Random();
 
@@ -71,6 +73,10 @@ public class PotionHit extends BasePower implements PowerPotion {
         return summingUp;
     }
 
+    public boolean isToSelf() {
+        return toSelf;
+    }
+
     @Override
     public String getName() {
         return "potionhit";
@@ -78,7 +84,8 @@ public class PotionHit extends BasePower implements PowerPotion {
 
     @Override
     public String displayText() {
-        return I18n.formatDefault("power.potionhit", (int) ((1d / (double) getChance()) * 100d), "<lang:effect.minecraft."+getType().key().value()+">", (getAmplifier()+1), (float)(getDuration()/20));
+        String key = "power.potionhit" + (isToSelf() ? ".toself" : ".totarget") + (isClear() ? ".clear" : ".apply");
+        return I18n.formatDefault(key, (int) ((1d / (double) getChance()) * 100d), "<lang:effect.minecraft." + getType().key().value() + ">", (getAmplifier() + 1), (float) (getDuration() / 20));
     }
 
     /**
@@ -111,29 +118,33 @@ public class PotionHit extends BasePower implements PowerPotion {
             if (getRand().nextInt(getChance()) != 0) {
                 return PowerResult.noop();
             }
+            LivingEntity target = isToSelf() ? player : entity;
+            HashMap<String, Object> argsMap = new HashMap<>();
+            argsMap.put("target", target);
+            PowerActivateEvent powerEvent = new PowerActivateEvent(player, stack, getPower(), argsMap);
+            if (!powerEvent.callEvent()) {
+                return PowerResult.fail();
+            }
+            if(isClear()){
+                target.removePotionEffect(getType());
+                return PowerResult.ok();
+            }
             final int[] summing = {0};
             List<ItemStack> items = new ArrayList<>(Arrays.asList(player.getInventory().getArmorContents()));
             items.add(player.getInventory().getItemInMainHand());
-            for(ItemStack i : items){
+            for (ItemStack i : items) {
                 ItemManager.toActiveRPGItemByMeta(i).ifPresent(rpgItem -> {
-                    for (Power power : rpgItem.getPowers()){
-                        if(power.getName().equals("potionhit")) {
-                            PotionHit potionHit = (PotionHit) power;
-                            if(potionHit.getType()==getType()&&potionHit.isSummingUp()){
+                    for (Power power : rpgItem.getPowers()) {
+                        if (power instanceof PotionHit potionHit) {
+                            if (potionHit.getType() == getType() && potionHit.isSummingUp()) {
                                 summing[0] += potionHit.getAmplifier();
                             }
                         }
                     }
                 });
             }
-            HashMap<String,Object> argsMap = new HashMap<>();
-            argsMap.put("target",entity);
-            PowerActivateEvent powerEvent = new PowerActivateEvent(player,stack,getPower(),argsMap);
-            if(!powerEvent.callEvent()) {
-                return PowerResult.fail();
-            }
             if (!getItem().consumeDurability(stack, getCost())) return PowerResult.cost();
-            entity.addPotionEffect(new PotionEffect(getType(), getDuration(), getAmplifier()+summing[0], isAmbient(), isShowParticles(), isShowIcon()));
+            target.addPotionEffect(new PotionEffect(getType(), getDuration(), getAmplifier() + summing[0], isAmbient(), isShowParticles(), isShowIcon()));
             return PowerResult.ok();
         }
 

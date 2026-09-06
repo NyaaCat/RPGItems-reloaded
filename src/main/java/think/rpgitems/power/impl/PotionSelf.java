@@ -56,8 +56,6 @@ public class PotionSelf extends BasePower implements PowerPotion{
     @AcceptedValue(preset = Preset.POTION_EFFECT_TYPE)
     public PotionEffectType type = PotionEffectType.INSTANT_HEALTH;
     @Property
-    public boolean clear = false;
-    @Property
     public boolean summingUp = false;
     @Property
     public boolean requireHurtByEntity = true;
@@ -99,7 +97,7 @@ public class PotionSelf extends BasePower implements PowerPotion{
 
     @Override
     public String displayText() {
-        return I18n.formatDefault("power.potionself", "<lang:effect.minecraft."+getType().key().value()+">", getAmplifier() + 1, ((double) getDuration()) / 20d);
+        return I18n.formatDefault(isClear() ? "power.potionself.clear" : "power.potionself.apply", "<lang:effect.minecraft."+getType().key().value()+">", getAmplifier() + 1, ((double) getDuration()) / 20d);
     }
 
     /**
@@ -121,13 +119,6 @@ public class PotionSelf extends BasePower implements PowerPotion{
      */
     public int getDuration() {
         return duration;
-    }
-
-    /**
-     * Whether to remove the effect instead of adding it.
-     */
-    public boolean isClear() {
-        return clear;
     }
 
     public boolean isRequireHurtByEntity() {

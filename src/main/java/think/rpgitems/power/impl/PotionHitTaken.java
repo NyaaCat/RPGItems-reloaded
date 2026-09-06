@@ -81,7 +81,8 @@ public class PotionHitTaken extends BasePower implements PowerPotion {
 
     @Override
     public String displayText() {
-        return I18n.formatDefault(effectDamager ? "power.potionhittaken.damager" : "power.potionhittaken.victim", (int) ((1d / (double) getChance()) * 100d), "<lang:effect.minecraft." + getType().key().value() + ">", (getAmplifier() + 1), (float) (getDuration() / 20));
+        String key = "power.potionhittaken." + (effectDamager ? "damager" : "victim") + (isClear() ? ".clear" : ".apply");
+        return I18n.formatDefault(key, (int) ((1d / (double) getChance()) * 100d), "<lang:effect.minecraft." + getType().key().value() + ">", (getAmplifier() + 1), (float) (getDuration() / 20));
     }
 
     /**
@@ -115,6 +116,19 @@ public class PotionHitTaken extends BasePower implements PowerPotion {
                 return PowerResult.noop();
             }
             Entity damager = event.getDamageSource().getCausingEntity();
+            HashMap<String, Object> argsMap = new HashMap<>();
+            argsMap.put("damager", damager);
+            PowerActivateEvent powerEvent = new PowerActivateEvent(player, stack, getPower(), argsMap);
+            if (!powerEvent.callEvent()) {
+                return PowerResult.fail();
+            }
+            if(isClear()){
+                if (effectDamager && damager instanceof LivingEntity livingEntity) {
+                    livingEntity.removePotionEffect(getType());
+                }
+                player.removePotionEffect(getType());
+                return PowerResult.ok(damage);
+            }
             final int[] summing = {0};
             List<ItemStack> items = new ArrayList<>(Arrays.asList(player.getInventory().getArmorContents()));
             items.add(player.getInventory().getItemInMainHand());
@@ -128,12 +142,6 @@ public class PotionHitTaken extends BasePower implements PowerPotion {
                         }
                     }
                 });
-            }
-            HashMap<String, Object> argsMap = new HashMap<>();
-            argsMap.put("damager", damager);
-            PowerActivateEvent powerEvent = new PowerActivateEvent(player, stack, getPower(), argsMap);
-            if (!powerEvent.callEvent()) {
-                return PowerResult.fail();
             }
             if (!getItem().consumeDurability(stack, getCost())) return PowerResult.cost();
             if (effectDamager) {

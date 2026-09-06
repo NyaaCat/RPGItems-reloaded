@@ -7,6 +7,8 @@ public interface PowerPotion {
     boolean showParticles = true;
     @Property
     boolean showIcon = true;
+    @Property
+    boolean clear = false;
 
     default boolean isAmbient() {
         return isAmbient;
@@ -18,5 +20,9 @@ public interface PowerPotion {
 
     default boolean isShowIcon(){
         return showIcon;
+    }
+
+    default boolean isClear(){
+        return clear;
     }
 }

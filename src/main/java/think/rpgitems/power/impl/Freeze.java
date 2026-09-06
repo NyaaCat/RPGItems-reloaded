@@ -50,13 +50,13 @@ public class Freeze extends BasePower {
 
     @Override
     public String displayText() {
-        if(!additive){
-            if(lockTime){
+        if (!additive) {
+            if (lockTime) {
                 return I18n.formatDefault("power.freeze.locked.set", (double) getTicks() / 20d);
             }
             return I18n.formatDefault("power.freeze.default.set", (double) getTicks() / 20d);
-        }else{
-            if(lockTime){
+        } else {
+            if (lockTime) {
                 return I18n.formatDefault("power.freeze.locked.additive", (double) getTicks() / 20d);
             }
             return I18n.formatDefault("power.freeze.default.additive", (double) getTicks() / 20d);
@@ -80,8 +80,8 @@ public class Freeze extends BasePower {
 
         @Override
         public PowerResult<Void> fire(Player player, ItemStack stack, LivingEntity entity, Double value) {
-            PowerActivateEvent powerEvent = new PowerActivateEvent(player,stack,getPower());
-            if(!powerEvent.callEvent()) {
+            PowerActivateEvent powerEvent = new PowerActivateEvent(player, stack, getPower());
+            if (!powerEvent.callEvent()) {
                 return PowerResult.fail();
             }
             if (!getItem().consumeDurability(stack, getCost())) return PowerResult.cost();
@@ -112,7 +112,7 @@ public class Freeze extends BasePower {
 
         @Override
         public PowerResult<Void> projectileHit(Player player, ItemStack stack, ProjectileHitEvent event) {
-            if(event.getHitEntity() instanceof LivingEntity livingEntity) {
+            if (event.getHitEntity() instanceof LivingEntity livingEntity) {
                 return fire(player, stack, livingEntity, 0.0);
             }
             return PowerResult.fail();

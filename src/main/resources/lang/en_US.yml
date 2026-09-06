@@ -852,11 +852,23 @@ power:
   noimmutabletick: Attack won't cause immutable tick on enemy
   particle: Spawn some particles when used
   particletick: Spawn some particles when held
-  potionhit: '%d%% chance to apply %s %d for %.1f seconds'
+  potionhit:
+    toself:
+      apply: '%d%% chance to apply %s %d for %.1f seconds to yourself'
+      clear: '%d%% chance to clear %s from yourself'
+    totarget:
+      apply: '%d%% chance to apply %s %d for %.1f seconds to target'
+      clear: '%d%% chance to clear %s from target'
   potionhittaken:
-    damager: '%d%% chance to apply %s %d for %.1f seconds to damager when taken hit'
-    victim: '%d%% chance to apply %s %d for %.1f seconds to yourself when taken hit'
-  potionself: Grants %s %d for %.1fs
+    damager:
+      apply: '%d%% chance to apply %s %d for %.1f seconds to damager when taken hit'
+      clear: '%d%% chance to clear %s from damager when taken hit'
+    victim:
+      apply: '%d%% chance to apply %s %d for %.1f seconds to yourself when taken hit'
+      clear: '%d%% chance to clear %s from yourself when taken hit'
+  potionself:
+    apply: 'Grants %s %d for %.1fs'
+    clear: 'Clear %s'
   potiontick:
     clear: Clear %s while in use
     display: Gives %s %d while in use
@@ -1356,6 +1368,7 @@ properties:
     isAmbient: Whether the effect is ambient effect
     showParticles: Whether to show particles of the potion effect
     showIcon: Whether to show icon of the potion effect
+    clear: Clear this effect instead of applying
   potionhittaken:
     amplifier: Amplifier of potion effect
     chance: Chance of triggering this power, 1/n
@@ -1368,6 +1381,7 @@ properties:
     isAmbient: Whether the effect is ambient effect
     showParticles: Whether to show particles of the potion effect
     showIcon: Whether to show icon of the potion effect
+    clear: Clear this effect instead of applying
   potionself:
     amplifier: Amplifier of potion effect
     duration: Time of potion effect, in ticks

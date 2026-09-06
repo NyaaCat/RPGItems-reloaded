@@ -44,8 +44,6 @@ public class PotionTick extends BasePower implements PowerPotion {
     @Property(order = 3)
     public int duration = 60;
     @Property
-    public boolean clear = false;
-    @Property
     public boolean summingUp = false;
 
     public boolean showCooldownWarning = false;
@@ -88,13 +86,6 @@ public class PotionTick extends BasePower implements PowerPotion {
     }
 
     /**
-     * Whether to remove the effect instead of adding it.
-     */
-    public boolean isClear() {
-        return clear;
-    }
-
-    /**
      * Type of potion effect
      */
     public PotionEffectType getEffect() {
@@ -132,7 +123,7 @@ public class PotionTick extends BasePower implements PowerPotion {
 
             // Determine if we should bypass cooldown due to external effect removal
             boolean bypassCooldown = false;
-            if (!isClear() && effectMissing && !cooldownReady && cooldownExpiry != null) {
+            if (!isClear() && effectMissing && !cooldownReady) {
                 // Effect is missing but cooldown not ready - check if it was removed externally
                 // Calculate when the effect should have naturally expired
                 long lastApplyTime = cooldownExpiry - getInterval() * 50L;
@@ -164,7 +155,7 @@ public class PotionTick extends BasePower implements PowerPotion {
                 int additionalLevels = playerItems.stream()
                         .flatMap(item -> ItemManager.toActiveRPGItemByMeta(item).stream())
                         .flatMap(rpgItem -> rpgItem.getPowers().stream())
-                        .filter(power -> power.getName().equals("potiontick"))
+                        .filter(power -> power instanceof PotionTick)
                         .map(power -> (PotionTick) power)
                         .filter(potionTick -> potionTick.getEffect() == getEffect() && potionTick.isSummingUp())
                         .mapToInt(PotionTick::getAmplifier)
