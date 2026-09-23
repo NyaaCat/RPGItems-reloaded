@@ -7,7 +7,10 @@ import io.papermc.paper.registry.RegistryAccess;
 import io.papermc.paper.registry.RegistryKey;
 import io.papermc.paper.registry.set.RegistryKeySet;
 import io.papermc.paper.registry.set.RegistrySet;
+import io.papermc.paper.registry.tag.TagKey;
 import net.kyori.adventure.key.Key;
+import org.bukkit.Registry;
+import org.bukkit.block.BlockType;
 import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.inventory.ItemType;
 import org.intellij.lang.annotations.Subst;
@@ -41,9 +44,38 @@ public class RepairableHandler implements ComponentHandler<Repairable> {
         if (items.isEmpty()) {
             return null;
         }
+        if (items.size() == 1
+                && items.getFirst().startsWith("#")) {
+
+            Registry<ItemType> registry =
+                    RegistryAccess.registryAccess()
+                            .getRegistry(RegistryKey.ITEM);
+
+            @Subst("minecraft:mineable/pickaxe")
+            String name = items.getFirst().substring(1);
+
+            TagKey<ItemType> tagKey =
+                    TagKey.create(
+                            RegistryKey.ITEM,
+                            Key.key(name)
+                    );
+
+            if (!registry.hasTag(tagKey)) {
+                throw new IllegalArgumentException(
+                        "Unknown item tag: " + items.getFirst()
+                );
+            }
+
+            return Repairable.repairable(registry.getTag(tagKey));
+        }
         List<ItemType> types = items.stream()
                 .map(i -> {
                     @Subst("air") String item = i;
+                    if(item.contains("#")){
+                        throw new IllegalArgumentException(
+                                "Item tag is not allowed in the list: " + item
+                        );
+                    }
                     return RegistryAccess.registryAccess().getRegistry(RegistryKey.ITEM).get(Key.key(item));
                 })
                 .filter(Objects::nonNull)

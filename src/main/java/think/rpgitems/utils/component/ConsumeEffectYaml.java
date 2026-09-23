@@ -6,7 +6,10 @@ import io.papermc.paper.registry.RegistryKey;
 import io.papermc.paper.registry.TypedKey;
 import io.papermc.paper.registry.set.RegistryKeySet;
 import io.papermc.paper.registry.set.RegistrySet;
+import io.papermc.paper.registry.tag.Tag;
+import io.papermc.paper.registry.tag.TagKey;
 import net.kyori.adventure.key.Key;
+import org.bukkit.Registry;
 import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.potion.PotionEffect;
 import org.bukkit.potion.PotionEffectType;
@@ -40,9 +43,6 @@ import java.util.Map;
 @SuppressWarnings("PatternValidation")
 public final class ConsumeEffectYaml {
 
-    private ConsumeEffectYaml() {
-    }
-
     /**
      * 从 owner 段的 path 处读取效果列表（getMapList）。
      *
@@ -50,7 +50,7 @@ public final class ConsumeEffectYaml {
      * @param path  "on_consume_effects" 或 "death_effects"
      * @return 解析出的效果列表，无配置时为空列表
      */
-    public static List<ConsumeEffect> parse(ConfigurationSection owner, String path) {
+    public static List<ConsumeEffect> parseEffects(ConfigurationSection owner, String path) {
         List<ConsumeEffect> result = new ArrayList<>();
         for (Map<?, ?> effectData : owner.getMapList(path)) {
             Object type = effectData.get("type");
@@ -91,11 +91,44 @@ public final class ConsumeEffectYaml {
                                 continue;
                             }
                             @Subst("speed") String effect = s;
+                            if(effect.contains("#")){
+                                throw new IllegalArgumentException("Tag is not allowed in the list: " + effect);
+                            }
                             PotionEffectType effectType = RegistryAccess.registryAccess()
                                     .getRegistry(RegistryKey.MOB_EFFECT).get(Key.key(effect));
                             if (effectType != null) {
                                 effectsList.add(effectType);
                             }
+                        }
+                    } else if (effectData.get("effects") instanceof String s) {
+                        @Subst("speed") String effect = s;
+                        if(effect.contains("#")){
+                            Registry<PotionEffectType> registry =
+                                    RegistryAccess.registryAccess()
+                                            .getRegistry(RegistryKey.MOB_EFFECT);
+
+                            @Subst("minecraft:mineable/pickaxe")
+                            String name = effect.substring(1);
+
+                            TagKey<PotionEffectType> tagKey =
+                                    TagKey.create(
+                                            RegistryKey.MOB_EFFECT,
+                                            Key.key(name)
+                                    );
+
+                            if (!registry.hasTag(tagKey)) {
+                                throw new IllegalArgumentException(
+                                        "Unknown effect tag: " + effect
+                                );
+                            }
+
+                            result.add(ConsumeEffect.removeEffects(registry.getTag(tagKey)));
+                            break;
+                        }
+                        PotionEffectType effectType = RegistryAccess.registryAccess()
+                                .getRegistry(RegistryKey.MOB_EFFECT).get(Key.key(effect));
+                        if (effectType != null) {
+                            effectsList.add(effectType);
                         }
                     }
                     if (!effectsList.isEmpty()) {
@@ -145,6 +178,13 @@ public final class ConsumeEffectYaml {
                 }
                 case ConsumeEffect.RemoveStatusEffects removeEffects -> {
                     map.put("type", "remove_effects");
+                    if (removeEffects.removeEffects() instanceof Tag<?> tag) {
+                        map.put(
+                                "effects",
+                                "#" + tag.tagKey().key().asString()
+                        );
+                        break;
+                    }
                     List<String> effectKeys = new ArrayList<>();
                     for (TypedKey<PotionEffectType> effectType : removeEffects.removeEffects()) {
                         effectKeys.add(effectType.key().asString());

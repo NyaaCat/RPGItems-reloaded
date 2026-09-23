@@ -33,7 +33,7 @@ public class DeathProtectionHandler implements ComponentHandler<DeathProtection>
             return null;
         }
         DeathProtection.Builder builder = DeathProtection.deathProtection();
-        builder.addEffects(ConsumeEffectYaml.parse(section, "death_effects"));
+        builder.addEffects(ConsumeEffectYaml.parseEffects(section, "death_effects"));
         return builder;
     }
 

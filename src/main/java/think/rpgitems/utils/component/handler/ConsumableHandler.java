@@ -42,7 +42,7 @@ public class ConsumableHandler implements ComponentHandler<Consumable> {
         @Subst("entity.generic.eat") String sound = section.getString("sound", "minecraft:entity.generic.eat");
         builder.sound(Key.key(sound));
 
-        builder.addEffects(ConsumeEffectYaml.parse(section, "on_consume_effects"));
+        builder.addEffects(ConsumeEffectYaml.parseEffects(section, "on_consume_effects"));
         return builder;
     }
 

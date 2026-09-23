@@ -7,7 +7,10 @@ import io.papermc.paper.registry.RegistryAccess;
 import io.papermc.paper.registry.RegistryKey;
 import io.papermc.paper.registry.set.RegistryKeySet;
 import io.papermc.paper.registry.set.RegistrySet;
+import io.papermc.paper.registry.tag.Tag;
+import io.papermc.paper.registry.tag.TagKey;
 import net.kyori.adventure.key.Key;
+import org.bukkit.Registry;
 import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.entity.EntityType;
 import org.bukkit.inventory.EquipmentSlot;
@@ -15,6 +18,8 @@ import org.intellij.lang.annotations.Subst;
 import org.jetbrains.annotations.Nullable;
 import think.rpgitems.item.RPGItem;
 import think.rpgitems.utils.component.ComponentHandler;
+import think.rpgitems.utils.component.ComponentUtil;
+import think.rpgitems.utils.component.ComponentYamlUtil;
 
 import java.util.List;
 import java.util.Objects;
@@ -51,20 +56,47 @@ public class EquippableHandler implements ComponentHandler<Equippable> {
         Equippable.Builder builder = Equippable.equippable(EquipmentSlot.valueOf(slot.toUpperCase()));
 
         if (section.contains("allowed_entities")) {
-            List<String> entities = section.getStringList("allowed_entities");
+            List<String> entities = ComponentYamlUtil.stringOrList(section, "allowed_entities");
             if (!entities.isEmpty()) {
-                List<EntityType> types = entities.stream()
-                        .map(e -> {
-                            @Subst("player") String entity = e;
-                            return RegistryAccess.registryAccess()
-                                    .getRegistry(RegistryKey.ENTITY_TYPE).get(Key.key(entity));
-                        })
-                        .filter(Objects::nonNull)
-                        .toList();
-                if (!types.isEmpty()) {
-                    RegistryKeySet<EntityType> allowedEntities =
-                            RegistrySet.keySetFromValues(RegistryKey.ENTITY_TYPE, types);
-                    builder.allowedEntities(allowedEntities);
+                if (entities.size() == 1
+                        && entities.getFirst().startsWith("#")) {
+
+                    Registry<EntityType> registry =
+                            RegistryAccess.registryAccess()
+                                    .getRegistry(RegistryKey.ENTITY_TYPE);
+
+                    @Subst("minecraft:mineable/pickaxe")
+                    String name = entities.getFirst().substring(1);
+
+                    TagKey<EntityType> tagKey =
+                            TagKey.create(
+                                    RegistryKey.ENTITY_TYPE,
+                                    Key.key(name)
+                            );
+
+                    if (!registry.hasTag(tagKey)) {
+                        throw new IllegalArgumentException(
+                                "Unknown entity tag: " + entities.getFirst()
+                        );
+                    }
+                    builder.allowedEntities(registry.getTag(tagKey));
+                } else {
+                    List<EntityType> types = entities.stream()
+                            .map(e -> {
+                                @Subst("player") String entity = e;
+                                if (entity.contains("#")) {
+                                    throw new IllegalArgumentException("Tag is not allowed in the list: " + entity);
+                                }
+                                return RegistryAccess.registryAccess()
+                                        .getRegistry(RegistryKey.ENTITY_TYPE).get(Key.key(entity));
+                            })
+                            .filter(Objects::nonNull)
+                            .toList();
+                    if (!types.isEmpty()) {
+                        RegistryKeySet<EntityType> allowedEntities =
+                                RegistrySet.keySetFromValues(RegistryKey.ENTITY_TYPE, types);
+                        builder.allowedEntities(allowedEntities);
+                    }
                 }
             }
         }
@@ -106,7 +138,9 @@ public class EquippableHandler implements ComponentHandler<Equippable> {
         section.set("slot", value.slot().name());
 
         RegistryKeySet<EntityType> allowedEntities = value.allowedEntities();
-        if (allowedEntities != null && !allowedEntities.values().isEmpty()) {
+        if(allowedEntities instanceof Tag<?> tag){
+            section.set("allowed_entities", tag.tagKey().key().asString());
+        } else if (allowedEntities != null && !allowedEntities.values().isEmpty()) {
             section.set("allowed_entities", allowedEntities.values().stream()
                     .map(e -> e.key().asString()).toList());
         }
