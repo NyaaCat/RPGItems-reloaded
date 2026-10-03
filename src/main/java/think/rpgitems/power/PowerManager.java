@@ -340,10 +340,15 @@ public class PowerManager {
 
     public static String getDescription(String locale, NamespacedKey power, String property) {
         Plugin plugin = extensions.get(power.getNamespace());
-        if (!PowerManager.descriptionResolvers.contains(plugin, locale.toLowerCase(Locale.ROOT))) {
-            return null;
+        String lang = locale.toLowerCase(Locale.ROOT);
+        if (!PowerManager.descriptionResolvers.contains(plugin, lang)) {
+            // e.g. a client in a language nobody translated: fall back to the server language
+            lang = RPGItems.plugin.cfg.language.toLowerCase(Locale.ROOT);
+            if (!PowerManager.descriptionResolvers.contains(plugin, lang)) {
+                return null;
+            }
         }
-        return PowerManager.descriptionResolvers.get(plugin, locale.toLowerCase(Locale.ROOT)).apply(power, property);
+        return PowerManager.descriptionResolvers.get(plugin, lang).apply(power, property);
     }
 
     public static String getDescription(NamespacedKey power, String property) {

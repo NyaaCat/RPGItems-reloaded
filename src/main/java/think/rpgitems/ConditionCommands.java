@@ -30,15 +30,24 @@ public class ConditionCommands extends RPGCommandReceiver {
     }
 
     private static Pair<NamespacedKey, Class<? extends Condition<?>>> getConditionClass(CommandSender sender, String conditionStr) {
+        return getConditionClass(sender, conditionStr, false);
+    }
+
+    private static Pair<NamespacedKey, Class<? extends Condition<?>>> getConditionClass(CommandSender sender, String conditionStr, boolean quiet) {
         try {
             NamespacedKey key = PowerManager.parseKey(conditionStr);
             Class<? extends Condition<?>> cls = PowerManager.getCondition(key);
-            if (cls == null) {
+            if (cls == null && !quiet) {
                 I18n.sendMessage(sender, "message.condition.unknown", conditionStr);
             }
             return Pair.of(key, cls);
         } catch (UnknownExtensionException e) {
-            I18n.sendMessage(sender, "message.error.unknown.extension", e.getName());
+            if (!quiet) {
+                I18n.sendMessage(sender, "message.error.unknown.extension", e.getName());
+            }
+            return null;
+        } catch (IllegalArgumentException e) {
+            if (!quiet) throw e;
             return null;
         }
     }
@@ -57,24 +66,27 @@ public class ConditionCommands extends RPGCommandReceiver {
 
     @Completion("")
     public List<String> addCompleter(CommandSender sender, Arguments arguments) {
-        List<String> completeStr = new ArrayList<>();
-        switch (arguments.remains()) {
-            case 1:
-                completeStr.addAll(ItemManager.itemNames());
-                break;
-            case 2:
-                completeStr.addAll(PowerManager.getConditions().keySet().stream().map(s -> PowerManager.hasExtension() ? s : s.getKey()).map(Object::toString).collect(Collectors.toList()));
-                break;
-            default:
-                RPGItem item = getItem(arguments.nextString(), sender);
-                String last = arguments.getRawArgs()[arguments.getRawArgs().length - 1];
-                String conditionKey = arguments.nextString();
-                Pair<NamespacedKey, Class<? extends Condition<?>>> keyClass = getConditionClass(sender, conditionKey);
-                if (keyClass != null) {
-                    return resolveProperties(sender, item, keyClass.getValue(), keyClass.getKey(), last, arguments, true);
-                }
-        }
-        return filtered(arguments, completeStr);
+        return quietly(() -> {
+            List<String> completeStr = new ArrayList<>();
+            switch (arguments.remains()) {
+                case 1:
+                    completeStr.addAll(ItemManager.itemNames());
+                    break;
+                case 2:
+                    arguments.next();
+                    return suggestKeys(PowerManager.getConditions().keySet(), arguments.nextString());
+                default:
+                    RPGItem item = getItem(arguments.nextString(), sender);
+                    String last = arguments.getRawArgs()[arguments.getRawArgs().length - 1];
+                    String conditionKey = arguments.nextString();
+                    Pair<NamespacedKey, Class<? extends Condition<?>>> keyClass = getConditionClass(sender, conditionKey, true);
+                    if (keyClass != null) {
+                        return resolveProperties(sender, item, keyClass.getValue(), keyClass.getKey(), last, arguments, true);
+                    }
+                    return completeStr;
+            }
+            return filtered(arguments, completeStr);
+        });
     }
 
     @SubCommand(value = "add", tabCompleter = "addCompleter")
@@ -109,24 +121,30 @@ public class ConditionCommands extends RPGCommandReceiver {
 
     @Completion("")
     public List<String> propCompleter(CommandSender sender, Arguments arguments) {
-        List<String> completeStr = new ArrayList<>();
-        switch (arguments.remains()) {
-            case 1:
-                completeStr.addAll(ItemManager.itemNames());
-                break;
-            case 2:
-                RPGItem item = getItem(arguments.nextString(), sender);
-                completeStr.addAll(IntStream.range(0, item.getConditions().size()).mapToObj(i -> i + "-" + item.getConditions().get(i).getNamespacedKey()).collect(Collectors.toList()));
-                break;
-            default:
-                item = getItem(arguments.nextString(), sender);
-                Condition<?> nextCondition = nextCondition(item, sender, arguments);
-                return resolveProperties(sender, item, nextCondition.getClass(), nextCondition.getNamespacedKey(), arguments.getRawArgs()[arguments.getRawArgs().length - 1], arguments, false);
-        }
-        return filtered(arguments, completeStr);
+        return quietly(() -> {
+            List<String> completeStr = new ArrayList<>();
+            switch (arguments.remains()) {
+                case 1:
+                    completeStr.addAll(ItemManager.itemNames());
+                    break;
+                case 2:
+                    RPGItem item = getItem(arguments.nextString(), sender);
+                    completeStr.addAll(IntStream.range(0, item.getConditions().size()).mapToObj(i -> i + "-" + item.getConditions().get(i).getNamespacedKey()).collect(Collectors.toList()));
+                    break;
+                default:
+                    item = getItem(arguments.nextString(), sender);
+                    Condition<?> nextCondition = nextCondition(item, sender, arguments, true);
+                    return resolveProperties(sender, item, nextCondition.getClass(), nextCondition.getNamespacedKey(), arguments.getRawArgs()[arguments.getRawArgs().length - 1], arguments, false);
+            }
+            return filtered(arguments, completeStr);
+        });
     }
 
     private Condition<?> nextCondition(RPGItem item, CommandSender sender, Arguments args) {
+        return nextCondition(item, sender, args, false);
+    }
+
+    private Condition<?> nextCondition(RPGItem item, CommandSender sender, Arguments args, boolean quiet) {
         String next = args.top();
         if (next.contains("-")) {
             next = args.nextString();
@@ -138,13 +156,13 @@ public class ConditionCommands extends RPGCommandReceiver {
                 if (condition == null) {
                     throw new BadCommandException("message.condition.unknown", nth);
                 }
-                Pair<NamespacedKey, Class<? extends Condition<?>>> keyClass = getConditionClass(sender, p2);
+                Pair<NamespacedKey, Class<? extends Condition<?>>> keyClass = getConditionClass(sender, p2, quiet);
                 if (keyClass == null || !condition.getNamespacedKey().equals(keyClass.getKey())) {
                     throw new BadCommandException("message.condition.unknown", p2);
                 }
                 return condition;
             } catch (NumberFormatException ignore) {
-                Pair<NamespacedKey, Class<? extends Condition<?>>> keyClass = getConditionClass(sender, p1);
+                Pair<NamespacedKey, Class<? extends Condition<?>>> keyClass = getConditionClass(sender, p1, quiet);
                 if (keyClass == null) {
                     throw new BadCommandException("message.condition.unknown", p1);
                 }
@@ -197,17 +215,19 @@ public class ConditionCommands extends RPGCommandReceiver {
 
     @Completion("")
     public List<String> removeCompleter(CommandSender sender, Arguments arguments) {
-        List<String> completeStr = new ArrayList<>();
-        switch (arguments.remains()) {
-            case 1:
-                completeStr.addAll(ItemManager.itemNames());
-                break;
-            case 2:
-                RPGItem item = getItem(arguments.nextString(), sender);
-                completeStr.addAll(IntStream.range(0, item.getConditions().size()).mapToObj(i -> i + "-" + item.getConditions().get(i).getNamespacedKey()).collect(Collectors.toList()));
-                break;
-        }
-        return filtered(arguments, completeStr);
+        return quietly(() -> {
+            List<String> completeStr = new ArrayList<>();
+            switch (arguments.remains()) {
+                case 1:
+                    completeStr.addAll(ItemManager.itemNames());
+                    break;
+                case 2:
+                    RPGItem item = getItem(arguments.nextString(), sender);
+                    completeStr.addAll(IntStream.range(0, item.getConditions().size()).mapToObj(i -> i + "-" + item.getConditions().get(i).getNamespacedKey()).collect(Collectors.toList()));
+                    break;
+            }
+            return filtered(arguments, completeStr);
+        });
     }
 
     @SubCommand(value = "remove", tabCompleter = "removeCompleter")
