@@ -11,6 +11,8 @@ import org.bukkit.NamespacedKey;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
 import think.rpgitems.I18n;
+import think.rpgitems.api.firing.FiringLocation;
+import think.rpgitems.api.firing.FiringLocations;
 import think.rpgitems.RPGItems;
 import think.rpgitems.item.RPGItem;
 import think.rpgitems.power.marker.Selector;
@@ -74,6 +76,9 @@ public abstract class RPGCommandReceiver extends CommandReceiver {
         }
         if (propertyField.getType().equals(boolean.class) || propertyField.getType().equals(Boolean.class)) {
             return Stream.of(true, false).map(s -> (hasNamePrefix ? propertyField.getName() + ":" : "") + s).filter(s -> s.startsWith(last)).collect(Collectors.toList());
+        }
+        if (propertyField.getType().equals(FiringLocation.class)) {
+            return FiringLocations.names().stream().map(s -> (hasNamePrefix ? propertyField.getName() + ":" : "") + s).filter(s -> s.startsWith(last)).collect(Collectors.toList());
         }
         if (propertyField.getType().isEnum()) {
             return Stream.of(propertyField.getType().getEnumConstants()).map(s -> (hasNamePrefix ? propertyField.getName() + ":" : "") + s.toString()).filter(s -> s.startsWith(last)).collect(Collectors.toList());

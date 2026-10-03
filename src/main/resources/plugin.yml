@@ -37,6 +37,12 @@ permissions:
     default: op
   rpgitem.level:
     default: op
+  rpgitem.givetarget.selector:
+    description: Allows target selectors (@a, @p, ...) as the target of /rpgitem give
+    default: op
+  rpgitem.givetarget.multiple:
+    description: Allows /rpgitem give to deliver to more than one player in one command
+    default: op
 
   rpgitems.tomodel:
     default: false

@@ -109,6 +109,10 @@ public class ItemManager {
         return itemByName.keySet();
     }
 
+    public static Set<String> groupNames() {
+        return groupByName.keySet();
+    }
+
     public static Set<RPGItem> getUnlockedItem() {
         return unlockedItem.keySet();
     }

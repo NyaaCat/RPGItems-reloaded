@@ -16,6 +16,11 @@ import org.bukkit.inventory.ItemStack;
 import org.bukkit.potion.PotionEffect;
 import org.bukkit.potion.PotionEffectType;
 import org.bukkit.scheduler.BukkitRunnable;
+import think.rpgitems.api.firing.FiringContext;
+import think.rpgitems.api.firing.FiringLocation;
+import think.rpgitems.api.firing.FiringLocationSerializer;
+import think.rpgitems.api.firing.FiringLocations;
+import think.rpgitems.api.firing.FiringPoint;
 import think.rpgitems.RPGItems;
 import think.rpgitems.data.Context;
 import think.rpgitems.event.BeamEndEvent;
@@ -27,6 +32,7 @@ import think.rpgitems.utils.LightContext;
 import think.rpgitems.utils.cast.CastUtils;
 
 import javax.annotation.Nullable;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.function.Supplier;
@@ -99,6 +105,8 @@ public class AOEDamage extends BasePower {
     public double firingRange = 64;
 
     @Property
+    @Serializer(FiringLocationSerializer.class)
+    @Deserializer(FiringLocationSerializer.class)
     public FiringLocation firingLocation = FiringLocation.SELF;
 
     @Property
@@ -227,10 +235,6 @@ public class AOEDamage extends BasePower {
         return getName() != null ? getName() : "Deal damage to nearby mobs";
     }
 
-    public enum FiringLocation {
-        SELF, TARGET
-    }
-
     public class Impl implements PowerOffhandClick, PowerPlain, PowerLeftClick, PowerRightClick, PowerHit, PowerSprint, PowerSneak, PowerHurt, PowerHitTaken, PowerTick, PowerBowShoot, PowerSneaking, PowerBeamHit, PowerProjectileHit, PowerLivingEntity, PowerLocation, PowerConsume {
 
         @Override
@@ -240,6 +244,9 @@ public class AOEDamage extends BasePower {
 
         @Override
         public PowerResult<Void> fire(Player player, ItemStack stack) {
+            if (getFiringLocation().isExtension()) {
+                return fireExtension(player, stack, player);
+            }
             Supplier<Location> traceResultSupplier = player::getEyeLocation;
             if (getFiringLocation().equals(FiringLocation.TARGET)) {
                 if (isCastOff()) {
@@ -267,6 +274,23 @@ public class AOEDamage extends BasePower {
                     ent = getLivingEntitiesInCone(nearbyEntities, player.getEyeLocation().toVector(), getAngle(), player.getEyeLocation().getDirection());
                 }
                 return ent;
+            });
+        }
+
+        private PowerResult<Void> fireExtension(Player player, ItemStack stack, LivingEntity source) {
+            FiringLocations.BoundFiring bound = FiringLocations.begin(getFiringLocation(), new FiringContext(player, source, stack, getPower())).orElse(null);
+            if (bound == null) return PowerResult.fail();
+            boolean frozen = isCastOff();
+            return fire(player, stack, () -> {
+                // Asked again when the targets are selected, which is after the delay with selectAfterDelay.
+                FiringPoint point = bound.next(frozen).orElse(null);
+                if (point == null) return new ArrayList<>();
+                Location center = point.location();
+                List<LivingEntity> nearbyEntities = getNearestLivingEntities(getPower(), center, player, getRange(), getMinrange());
+                if (point.kind() == FiringPoint.Kind.CAST) {
+                    return nearbyEntities;
+                }
+                return getLivingEntitiesInCone(nearbyEntities, center.toVector(), getAngle(), center.getDirection());
             });
         }
 
@@ -464,6 +488,9 @@ public class AOEDamage extends BasePower {
 
         @Override
         public PowerResult<Void> fire(Player player, ItemStack stack, LivingEntity entity, @Nullable Double value) {
+            if (getFiringLocation().isExtension()) {
+                return fireExtension(player, stack, entity);
+            }
             Supplier<Location> traceResultSupplier = entity::getEyeLocation;
             if (getFiringLocation().equals(FiringLocation.TARGET)) {
                 if (isCastOff()) {

@@ -189,7 +189,7 @@ manual:
     usage: /rpgitem gen-wiki
   give:
     description: 将物品给与施令者或特定玩家
-    usage: /rpgitem give {item} [player]
+    usage: /rpgitem give {item} [targets] [amount]  -  targets 为以逗号分隔的玩家名和/或选择器，例如 Alice,Bob 或 @a[distance=..10]
   giveperms:
     description: 切换 /rpgitem give 权限
     usage: /rpgitem giveperms
@@ -574,6 +574,18 @@ message:
     console: 无法在控制台使用此指令
     ok: 你被赠予 %s
     to: 把 %s 给 %s
+    to_multiple: '把 %s x%d 给了 %d 名玩家: %s'
+    error:
+      usage: '参数过多。用法: /rpgitem give {item} [targets] [amount]。未给予任何物品。'
+      usage_group: '参数过多。用法: /rpgitem give {group} [targets]。未给予任何物品。'
+      malformed: '%s 不是有效的目标列表。请使用以逗号分隔、不含空格的玩家名和/或选择器。未给予任何物品。'
+      selector: '%s 不是有效的目标选择器。未给予任何物品。'
+      no_match: '%s 没有匹配到任何玩家。未给予任何物品。'
+      not_player: '%s 匹配到了非玩家实体。请使用只匹配玩家的选择器，例如 @a 或 @e[type=player]。未给予任何物品。'
+      player_not_found: '玩家 %s 不在线。未给予任何物品。'
+      count: '%s 不是有效的数量，应为 1 到 %d 的整数。未给予任何物品。'
+      permission_selector: '使用目标选择器需要权限 %s。未给予任何物品。'
+      permission_multiple: '同时给予多名玩家需要权限 %s。未给予任何物品。'
   giveperms:
     canceled: 给予现在不需要权限
     required: 给予现在需要权限
@@ -955,7 +967,7 @@ properties:
     count: 应用的实体数量
     damage: 伤害值
     delay: 延迟 tick
-    firingLocation: 在 SELF 或 TARGET 为中心执行
+    firingLocation: 在 SELF 或 TARGET 为中心执行，也可使用扩展注册的发射位置
     firingRange: 未使用
     incluePlayers: 是否包含玩家
     main_description: 对一个范围的目标造成伤害
@@ -986,7 +998,7 @@ properties:
     attractingEntityTickCost: 吸引时每个实体每刻的耐久消耗。
     attractingTickCost: 吸引时每刻的耐久消耗。
     duration: 主动触发的持续时间。
-    firingLocation: 以 SELF 或 TARGET 为中心
+    firingLocation: 以 SELF 或 TARGET 为中心，也可使用扩展注册的发射位置
     firingRange: 尚未使用
     main_description: 吸引附近的怪物到玩家
     main_name: 吸引
@@ -1036,7 +1048,7 @@ properties:
     damage: 粒子束击中伤害。
     effectOnly: 仅展示效果，不触发任何事件
     extraData: 粒子的颜色参数（r,g,b,size），输入null可以置空。
-    firingLocation: 在 SELF 或 TARGET 为中心执行
+    firingLocation: 在 SELF 或 TARGET 为中心执行，也可使用扩展注册的发射位置
     firingPhi: 极坐标系参数
     firingR: 极坐标系参数
     firingRange: 未使用
@@ -1480,7 +1492,7 @@ properties:
     burstCount: 发射次数
     burstInterval: 每次发射之间的间隔
     castOff: 在玩家触发的原位置执行，而非玩家的实际位置
-    firingLocation: 在 SELF 或 TARGET 为中心执行
+    firingLocation: 在 SELF 或 TARGET 为中心执行，也可使用扩展注册的发射位置
     firingPhi: 极坐标系参数
     firingR: 极坐标系参数
     firingRange: 未使用

@@ -779,57 +779,83 @@ public class AdminCommands extends RPGCommandReceiver {
         RPGItems.plugin.cfg.save();
     }
 
-    @SubCommand(value = "give", tabCompleter = "itemCompleter")
+    @SubCommand(value = "give", tabCompleter = "giveCompleter")
     public void giveItem(CommandSender sender, Arguments args) {
         String str = args.nextString();
         Optional<RPGItem> optItem = ItemManager.getItem(str);
-        if (optItem.isPresent()) {
-            RPGItem item = optItem.get();
-            if ((plugin.cfg.givePerms || !sender.hasPermission("rpgitem")) && (!plugin.cfg.givePerms || !sender.hasPermission("rpgitem.give." + item.getName()))) {
-                I18n.sendMessage(sender, "message.error.permission", str);
-                return;
-            }
-            if (args.length() == 2) {
-                if (sender instanceof Player) {
-                    item.give((Player) sender, 1, false);
-                    I18n.sendMessage(sender, "message.give.ok", item.getDisplayName());
-                    refreshPlayer((Player) sender);
-                } else {
-                    I18n.sendMessage(sender, "message.give.console");
-                }
-            } else {
-                Player player = args.nextPlayer();
-                int count;
-                try {
-                    count = args.nextInt();
-                } catch (BadCommandException e) {
-                    count = 1;
-                }
-                item.give(player, count, false);
-                refreshPlayer(player);
-                I18n.sendMessage(sender, "message.give.to", item.getDisplayName() + ChatColor.AQUA, player.getName());
-                I18n.sendMessage(player, "message.give.ok", item.getDisplayName());
-            }
-        } else {
-            Optional<ItemGroup> optGroup = ItemManager.getGroup(str);
-            if (optGroup.isEmpty()) {
-                throw new BadCommandException("message.error.item", str);
-            }
-            ItemGroup group = optGroup.get();
-            if ((plugin.cfg.givePerms || !sender.hasPermission("rpgitem")) && (!plugin.cfg.givePerms || !sender.hasPermission("rpgitem.give.group." + group.getName()))) {
-                I18n.sendMessage(sender, "message.error.permission", str);
-                return;
-            }
-            if (sender instanceof Player) {
-                Player player = args.nextPlayerOrSender();
-                group.give(player, 1, true);
-                refreshPlayer(player);
-                I18n.sendMessage(sender, "message.give.ok", group.getName());
-            } else {
-                I18n.sendMessage(sender, "message.give.console");
-            }
+        Optional<ItemGroup> optGroup = optItem.isPresent() ? Optional.empty() : ItemManager.getGroup(str);
+        if (optItem.isEmpty() && optGroup.isEmpty()) {
+            throw new BadCommandException("message.error.item", str);
+        }
+        String permission = optItem.map(i -> "rpgitem.give." + i.getName()).orElseGet(() -> "rpgitem.give.group." + optGroup.get().getName());
+        if ((plugin.cfg.givePerms || !sender.hasPermission("rpgitem")) && (!plugin.cfg.givePerms || !sender.hasPermission(permission))) {
+            I18n.sendMessage(sender, "message.error.permission", str);
+            return;
         }
 
+        // Everything is parsed and resolved before the first item is handed out.
+        String targetSpec = args.next();
+        String countArg = optItem.isPresent() ? args.next() : null;
+        if (args.top() != null) {
+            throw new BadCommandException(optItem.isPresent() ? "message.give.error.usage" : "message.give.error.usage_group");
+        }
+        int count = GiveTargets.parseCount(countArg);
+        List<Player> targets;
+        if (targetSpec == null) {
+            if (!(sender instanceof Player)) {
+                I18n.sendMessage(sender, "message.give.console");
+                return;
+            }
+            targets = List.of((Player) sender);
+        } else {
+            targets = GiveTargets.resolve(sender, targetSpec, GiveTargets.BUKKIT, sender::hasPermission);
+        }
+
+        String displayName = optItem.map(RPGItem::getDisplayName).orElseGet(() -> optGroup.get().getName());
+        for (Player player : targets) {
+            if (optItem.isPresent()) {
+                optItem.get().give(player, count, false);
+            } else {
+                optGroup.get().give(player, 1, true);
+            }
+            refreshPlayer(player);
+            if (targetSpec != null && optItem.isPresent()) {
+                I18n.sendMessage(player, "message.give.ok", displayName);
+            }
+        }
+        if (targetSpec == null || (optGroup.isPresent() && targets.size() == 1)) {
+            I18n.sendMessage(sender, "message.give.ok", displayName);
+        } else if (targets.size() == 1) {
+            I18n.sendMessage(sender, "message.give.to", displayName + ChatColor.AQUA, targets.getFirst().getName());
+        } else {
+            String names = targets.stream().map(Player::getName).collect(Collectors.joining(", "));
+            I18n.sendMessage(sender, "message.give.to_multiple", displayName + ChatColor.AQUA, count, targets.size(), names);
+        }
+    }
+
+    public List<String> giveCompleter(CommandSender sender, Arguments arguments) {
+        String[] rawArgs = arguments.getRawArgs();
+        String typed = rawArgs[rawArgs.length - 1];
+        switch (arguments.remains()) {
+            case 1: {
+                List<String> names = new ArrayList<>(ItemManager.itemNames());
+                names.addAll(ItemManager.groupNames());
+                return filtered(arguments, names);
+            }
+            case 2: {
+                List<String> online = Bukkit.getOnlinePlayers().stream()
+                        .filter(p -> !(sender instanceof Player viewer) || viewer.canSee(p))
+                        .map(Player::getName).collect(Collectors.toList());
+                return GiveTargets.complete(typed, online, sender.hasPermission(GiveTargets.PERMISSION_SELECTOR));
+            }
+            case 3:
+                if (ItemManager.getItem(arguments.at(1)).isPresent()) {
+                    return filtered(arguments, List.of("1", "16", "64"));
+                }
+                return Collections.emptyList();
+            default:
+                return Collections.emptyList();
+        }
     }
 
     private void refreshPlayer(Player player) {

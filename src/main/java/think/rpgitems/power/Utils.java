@@ -31,6 +31,8 @@ import org.bukkit.projectiles.ProjectileSource;
 import org.bukkit.scoreboard.Objective;
 import org.bukkit.util.BoundingBox;
 import org.bukkit.util.Vector;
+import think.rpgitems.api.firing.FiringLocation;
+import think.rpgitems.api.firing.FiringLocations;
 import think.rpgitems.AdminCommands;
 import think.rpgitems.I18n;
 import think.rpgitems.RPGItems;
@@ -803,6 +805,18 @@ public class Utils {
                 if (values.stream().filter(s -> !s.isEmpty()).anyMatch(v -> !acc.contains(v))) {
                     throw new BadCommandException("message.error.invalid_option", value, field.getName(), String.join(", ", acc));
                 }
+            }
+        }
+        if (field.getType().equals(FiringLocation.class) && !value.equals("null")) {
+            // Items loaded from disk keep unknown names (the extension may be missing); commands do not.
+            boolean known;
+            try {
+                known = FiringLocations.isKnown(FiringLocation.of(value));
+            } catch (IllegalArgumentException e) {
+                known = false;
+            }
+            if (!known) {
+                throw new BadCommandException("message.error.invalid_option", value, field.getName(), String.join(", ", FiringLocations.names()));
             }
         }
         setPowerPropertyUnchecked(sender, power, field, value);

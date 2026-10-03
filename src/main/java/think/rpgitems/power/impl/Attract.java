@@ -12,6 +12,11 @@ import org.bukkit.event.player.PlayerInteractEvent;
 import org.bukkit.event.player.PlayerItemConsumeEvent;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.util.Vector;
+import think.rpgitems.api.firing.FiringContext;
+import think.rpgitems.api.firing.FiringLocation;
+import think.rpgitems.api.firing.FiringLocationSerializer;
+import think.rpgitems.api.firing.FiringLocations;
+import think.rpgitems.api.firing.FiringPoint;
 import think.rpgitems.I18n;
 import think.rpgitems.event.BeamEndEvent;
 import think.rpgitems.event.BeamHitBlockEvent;
@@ -75,6 +80,8 @@ public class Attract extends BasePower {
     public boolean requireHurtByEntity = true;
 
     @Property
+    @Serializer(FiringLocationSerializer.class)
+    @Deserializer(FiringLocationSerializer.class)
     public FiringLocation firingLocation = FiringLocation.SELF;
 
     @Property
@@ -158,10 +165,6 @@ public class Attract extends BasePower {
         return requireHurtByEntity;
     }
 
-    public enum FiringLocation {
-        SELF, TARGET
-    }
-
     public class Impl implements PowerTick, PowerLeftClick, PowerRightClick, PowerPlain, PowerSneaking, PowerHurt, PowerHitTaken, PowerBowShoot, PowerBeamHit, PowerProjectileHit, PowerLivingEntity, PowerLocation, PowerConsume {
 
         @Override
@@ -178,6 +181,10 @@ public class Attract extends BasePower {
             if (getFiringLocation().equals(FiringLocation.TARGET)) {
                 CastUtils.CastLocation result = CastUtils.rayTrace(player, player.getEyeLocation(), player.getEyeLocation().getDirection(), getFiringRange());
                 location = result.getTargetLocation();
+            } else if (getFiringLocation().isExtension()) {
+                FiringPoint point = FiringLocations.begin(getFiringLocation(), new FiringContext(player, player, stack, getPower())).map(FiringLocations.BoundFiring::first).orElse(null);
+                if (point == null) return PowerResult.fail();
+                location = point.location();
             }
             Location finalLocation = location;
             return fire(player, location, stack, () -> getNearbyEntities(getPower(), finalLocation, player, getRadius()));
@@ -294,6 +301,10 @@ public class Attract extends BasePower {
             if (getFiringLocation().equals(FiringLocation.TARGET)) {
                 CastUtils.CastLocation result = CastUtils.rayTrace(entity, entity.getEyeLocation(), entity.getEyeLocation().getDirection(), getFiringRange());
                 location = result.getTargetLocation();
+            } else if (getFiringLocation().isExtension()) {
+                FiringPoint point = FiringLocations.begin(getFiringLocation(), new FiringContext(player, entity, stack, getPower())).map(FiringLocations.BoundFiring::first).orElse(null);
+                if (point == null) return PowerResult.fail();
+                location = point.location();
             }
             Location finalLocation = location;
             return fire(player, location, stack, () -> getNearbyEntities(getPower(), finalLocation, player, getRadius()));

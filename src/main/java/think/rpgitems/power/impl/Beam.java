@@ -24,6 +24,11 @@ import org.bukkit.scheduler.BukkitTask;
 import org.bukkit.util.BoundingBox;
 import org.bukkit.util.RayTraceResult;
 import org.bukkit.util.Vector;
+import think.rpgitems.api.firing.FiringContext;
+import think.rpgitems.api.firing.FiringLocation;
+import think.rpgitems.api.firing.FiringLocationSerializer;
+import think.rpgitems.api.firing.FiringLocations;
+import think.rpgitems.api.firing.FiringPoint;
 import think.rpgitems.RPGItems;
 import think.rpgitems.event.BeamEndEvent;
 import think.rpgitems.event.BeamHitBlockEvent;
@@ -174,6 +179,8 @@ public class Beam extends BasePower {
     @Property
     public double initialRotation = 0;
     @Property
+    @Serializer(FiringLocationSerializer.class)
+    @Deserializer(FiringLocationSerializer.class)
     public FiringLocation firingLocation = FiringLocation.SELF;
     @Property
     public boolean effectOnly = false;
@@ -532,9 +539,6 @@ public class Beam extends BasePower {
 
     enum HomingMode {
         ONE_TARGET, MULTI_TARGET, MOUSE_TRACK
-    }
-    enum FiringLocation {
-        SELF, TARGET
     }
 
     /**
@@ -1393,9 +1397,14 @@ public class Beam extends BasePower {
 
         @Override
         public PowerResult<Void> fire(Player player, ItemStack stack) {
+            FiringLocations.BoundFiring bound = null;
+            if (getFiringLocation().isExtension()) {
+                bound = FiringLocations.begin(getFiringLocation(), new FiringContext(player, player, stack, getPower())).orElse(null);
+                if (bound == null) return PowerResult.fail();
+            }
             if (!checkCooldown(getPower(), player, getCooldown(), showCooldownWarning(), true)) return PowerResult.cd();
             if (!getItem().consumeDurability(stack, getCost())) return PowerResult.cost();
-            return beam(player, player, stack);
+            return bound == null ? beam(player, player, stack) : beam(player, player, stack, null, 0, BeamConfig.from(Beam.this), bound);
         }
 
         public PowerResult<Void> fire(Player player, ItemStack stack, Location castLocation, LivingEntity target, int depth) {
@@ -1433,6 +1442,13 @@ public class Beam extends BasePower {
         }
 
         private PowerResult<Void> beam(Player player, LivingEntity from, ItemStack stack, CastUtils.CastLocation castLocation, int depth, BeamConfig config) {
+            return beam(player, from, stack, castLocation, depth, config, null);
+        }
+
+        /**
+         * @param bound bound extension firing location, or null when {@code firingLocation} is SELF/TARGET
+         */
+        private PowerResult<Void> beam(Player player, LivingEntity from, ItemStack stack, CastUtils.CastLocation castLocation, int depth, BeamConfig config, FiringLocations.BoundFiring bound) {
             Location fromLocation = from.getEyeLocation().clone();
             Vector towards = from.getEyeLocation().getDirection().clone();
             Vector normal = yAxis.clone();
@@ -1464,7 +1480,7 @@ public class Beam extends BasePower {
                     @Override
                     public void run() {
                         for (int j = 0; j < currentBeamAmount; j++) {
-                            internalFireBeam(player, from, finalFromLocation, towards, finalNormal, stack, roundedConeInfo, finalTargets, depth, config);
+                            internalFireBeam(player, from, finalFromLocation, towards, finalNormal, stack, roundedConeInfo, finalTargets, depth, config, bound);
                         }
                         if (bursted.addAndGet(1) < currentBurstCount) {
                             new FireTask().runTaskLater(RPGItems.plugin, currentBurstInterval);
@@ -1474,16 +1490,19 @@ public class Beam extends BasePower {
                 new FireTask().runTask(RPGItems.plugin);
                 return PowerResult.ok();
             } else {
-                return internalFireBeam(player, from, stack, roundedConeInfo, targets, depth, config);
+                return internalFireBeam(player, from, from.getEyeLocation(), from.getEyeLocation().getDirection(), yAxis.clone(), stack, roundedConeInfo, targets, depth, config, bound);
             }
         }
 
 
         private PowerResult<Void> internalFireBeam(Player player, LivingEntity from, ItemStack stack, Queue<RoundedConeInfo> coneInfo, Deque<Entity> targets, int depth, BeamConfig config) {
-            return internalFireBeam(player, from, from.getEyeLocation(), from.getEyeLocation().getDirection(), yAxis.clone(), stack, coneInfo, targets, depth, config);
+            return internalFireBeam(player, from, from.getEyeLocation(), from.getEyeLocation().getDirection(), yAxis.clone(), stack, coneInfo, targets, depth, config, null);
         }
 
-        private PowerResult<Void> internalFireBeam(Player player, LivingEntity from, Location castLocation, Vector towards, Vector normalDir, ItemStack stack, Queue<RoundedConeInfo> coneInfo, Deque<Entity> targets, int depth, BeamConfig config) {
+        private PowerResult<Void> internalFireBeam(Player player, LivingEntity from, Location castLocation, Vector towards, Vector normalDir, ItemStack stack, Queue<RoundedConeInfo> coneInfo, Deque<Entity> targets, int depth, BeamConfig config, FiringLocations.BoundFiring bound) {
+            if (bound != null) {
+                return internalFireBeamFrom(player, from, stack, coneInfo, depth, config, bound);
+            }
             Location fromLocation = castLocation;
 
             if (!config.castOff()) {
@@ -1515,6 +1534,46 @@ public class Beam extends BasePower {
 
             towards = makeCone(fromLocation, towards, poll);
 
+            return launchBeam(player, from, fromLocation, towards, targets, stack, depth, config, !config.firingLocation().equals(FiringLocation.SELF));
+        }
+
+        /**
+         * Fires one beam from an extension firing location. The point is asked for again on every burst unless
+         * castOff freezes it; an anchor that is no longer valid skips the shot.
+         */
+        private PowerResult<Void> internalFireBeamFrom(Player player, LivingEntity from, ItemStack stack, Queue<RoundedConeInfo> coneInfo, int depth, BeamConfig config, FiringLocations.BoundFiring bound) {
+            FiringPoint point = bound.next(config.castOff()).orElse(null);
+            if (point == null) {
+                return PowerResult.fail();
+            }
+            RoundedConeInfo poll = coneInfo.poll();
+            if (poll == null) {
+                poll = internalCone(config);
+            }
+            Location fromLocation;
+            Vector towards;
+            if (point.kind() == FiringPoint.Kind.ORIGIN) {
+                fromLocation = point.location();
+                towards = fromLocation.getDirection();
+            } else {
+                Location castLocation = point.location();
+                Vector normalDir = config.behavior().contains(Behavior.CAST_LOCATION_ROTATED) ? point.normal() : yAxis.clone();
+                fromLocation = CastUtils.parseFiringLocation(castLocation, normalDir, from.getEyeLocation(), poll);
+                towards = castLocation.clone().subtract(fromLocation).toVector();
+            }
+            Deque<Entity> targets = null;
+            if (config.homing() > 0) {
+                targets = new LinkedList<>(getTargets(towards, fromLocation, from, config.homingRange(), config.homingAngle(), config.homingTarget()));
+                if (point.entity() != null) {
+                    targets.remove(point.entity());
+                    targets.addFirst(point.entity());
+                }
+            }
+            towards = makeCone(fromLocation, towards, poll);
+            return launchBeam(player, from, fromLocation, towards, targets, stack, depth, config, true);
+        }
+
+        private PowerResult<Void> launchBeam(Player player, LivingEntity from, Location fromLocation, Vector towards, Deque<Entity> targets, ItemStack stack, int depth, BeamConfig config, boolean explicitFromLocation) {
             // Config is already passed in - no need to create snapshot here
             MovingTaskBuilder movingTaskBuilder = new MovingTaskBuilder(config)
                     .player(player)
@@ -1527,7 +1586,7 @@ public class Beam extends BasePower {
                 Color nextColor = getNextColor();
                 movingTaskBuilder.color(nextColor);
             }
-            if (!config.firingLocation().equals(FiringLocation.SELF)) {
+            if (explicitFromLocation) {
                 movingTaskBuilder.fromLocation(fromLocation);
             }
             MovingTask movingTask = movingTaskBuilder
@@ -1608,9 +1667,14 @@ public class Beam extends BasePower {
 
         @Override
         public PowerResult<Void> fire(Player player, ItemStack stack, LivingEntity entity, @Nullable Double value) {
+            FiringLocations.BoundFiring bound = null;
+            if (getFiringLocation().isExtension()) {
+                bound = FiringLocations.begin(getFiringLocation(), new FiringContext(player, entity, stack, getPower())).orElse(null);
+                if (bound == null) return PowerResult.fail();
+            }
             if (!checkCooldown(getPower(), player, getCooldown(), showCooldownWarning(), true)) return PowerResult.cd();
             if (!getItem().consumeDurability(stack, getCost())) return PowerResult.cost();
-            return beam(player, entity, stack);
+            return bound == null ? beam(player, entity, stack) : beam(player, entity, stack, null, 0, BeamConfig.from(Beam.this), bound);
         }
 
         @Override

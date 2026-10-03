@@ -6,12 +6,14 @@ import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.HandlerList;
 import org.bukkit.event.Listener;
+import org.bukkit.event.server.PluginDisableEvent;
 import org.bukkit.event.server.ServerLoadEvent;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.plugin.InvalidDescriptionException;
 import org.bukkit.plugin.InvalidPluginException;
 import org.bukkit.plugin.Plugin;
 import org.bukkit.plugin.java.JavaPlugin;
+import think.rpgitems.api.firing.FiringLocations;
 import think.rpgitems.data.Font;
 import think.rpgitems.item.ItemManager;
 import think.rpgitems.power.*;
@@ -214,6 +216,7 @@ public class RPGItems extends JavaPlugin {
         getCommand("rpgitems").setExecutor(userCommandHandler);
         getCommand("rpgitems").setTabCompleter(userCommandHandler);
         getServer().getPluginManager().registerEvents(new ServerLoadListener(), this);
+        getServer().getPluginManager().registerEvents(new ExtensionCleanupListener(), this);
         managedPlugins.forEach(Bukkit.getPluginManager()::enablePlugin);
     }
 
@@ -226,6 +229,18 @@ public class RPGItems extends JavaPlugin {
         this.getServer().getScheduler().cancelTasks(plugin);
         ItemManager.unload();
         managedPlugins.forEach(Bukkit.getPluginManager()::disablePlugin);
+        FiringLocations.clear();
+    }
+
+    /**
+     * Drops what a plugin registered with the extension APIs once that plugin is disabled, so that nothing
+     * keeps calling into a disabled extension. Extensions re-register from their onEnable.
+     */
+    private static class ExtensionCleanupListener implements Listener {
+        @EventHandler
+        public void onPluginDisable(PluginDisableEvent event) {
+            FiringLocations.unregisterAll(event.getPlugin());
+        }
     }
 
     private class ServerLoadListener implements Listener {

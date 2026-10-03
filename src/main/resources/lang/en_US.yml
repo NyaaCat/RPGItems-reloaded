@@ -189,8 +189,8 @@ manual:
     description: Generate wiki files in plugin's directory.
     usage: /rpgitem gen-wiki
   give:
-    description: Gives the item to the user of the command or a player
-    usage: /rpgitem give {item} [player]
+    description: Gives the item or item group to the user of the command, or to one or more players
+    usage: /rpgitem give {item} [targets] [amount]  -  targets is a comma separated list of player names and/or selectors, e.g. Alice,Bob or @a[distance=..10]
   giveperms:
     description: Toggles give requiring permissions
     usage: /rpgitem giveperms
@@ -577,6 +577,18 @@ message:
     console: Cannot give console items
     ok: You were given %s
     to: Gave %s to %s
+    to_multiple: 'Gave %s x%d to %d players: %s'
+    error:
+      usage: 'Too many arguments. Usage: /rpgitem give {item} [targets] [amount]. Nothing was given.'
+      usage_group: 'Too many arguments. Usage: /rpgitem give {group} [targets]. Nothing was given.'
+      malformed: '%s is not a valid target list. Use player names and/or selectors separated by commas, without spaces. Nothing was given.'
+      selector: '%s is not a valid target selector. Nothing was given.'
+      no_match: '%s matched no player. Nothing was given.'
+      not_player: '%s matched entities that are not players. Use a selector that only matches players, e.g. @a or @e[type=player]. Nothing was given.'
+      player_not_found: 'Player %s is not online. Nothing was given.'
+      count: '%s is not a valid amount, expected a whole number from 1 to %d. Nothing was given.'
+      permission_selector: 'You need the permission %s to use target selectors. Nothing was given.'
+      permission_multiple: 'You need the permission %s to give to more than one player. Nothing was given.'
   giveperms:
     canceled: Give now does not require permissions
     required: Give now requires permissions
@@ -986,7 +998,7 @@ properties:
     main_name: Attract
     maxSpeed: Maximum speed when attracting.
     radius: Effective range in blocks.
-    firingLocation: Define location of AOE center, can be SELF or TARGET
+    firingLocation: Define location of AOE center, can be SELF, TARGET, or a firing location registered by an extension
     firingRange: No use yet
   attributemodifier:
     amount: Amount
@@ -1054,7 +1066,7 @@ properties:
     ticksBeforeHoming: Ticks before homing starts.
     ttl: Times to live (beam ends when either length or ttl reached)
     firingTheta: Polar coordinates parameter
-    firingLocation: Can be SELF or TARGET
+    firingLocation: Can be SELF, TARGET, or a firing location registered by an extension
     suppressMelee: Whether trigger HIT
     homingTarget: Can be MOBS / ENTITY / PLAYER
     effectOnly: Can be MOBS / ENTITY / PLAYER
@@ -1427,7 +1439,7 @@ properties:
     firingR: Polar coordinates parameter
     applyForce: Apply bow force to projectile speed
     suppressArrow: Bow will not shoot arrow (still consume it)
-    firingLocation: Can be SELF or TARGET
+    firingLocation: Can be SELF, TARGET, or a firing location registered by an extension
     firingTheta: Polar coordinates parameter
     castOff: Cast at player when triggering this power, instead of realtime (after delay, etc)
     firingRange: No use yet
@@ -1638,7 +1650,7 @@ properties:
     count: Number of entities to deal damage
     range: Radius of area effect
     castOff: Use player position when casting this power, not real time position
-    firingLocation: Use player or target as center
+    firingLocation: Use player (SELF) or target (TARGET) as center, or a firing location registered by an extension
     angle: Visible angle
     minrange: Minimum range to deal damage, closer entities will not be selected
     selectAfterDelay: If delay is set, check for entity to deal damage after the delay, otherwise check when casting the power

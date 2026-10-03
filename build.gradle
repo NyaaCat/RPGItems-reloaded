@@ -65,6 +65,8 @@ dependencies {
     //test
     testImplementation(platform('org.junit:junit-bom:5.9.0'))
     testImplementation('org.junit.jupiter:junit-jupiter:5.9.0')
+    testRuntimeOnly('org.junit.platform:junit-platform-launcher')
+    testImplementation('cat.nyaa:nyaacore:9.10') { transitive = false }
 
 }
 
@@ -170,7 +172,17 @@ publishing {
     }
 }
 
+// WorldGuard/WorldEdit pin fastutil with a strict constraint that conflicts with the Paper dev bundle, which
+// makes the test runtime classpath unresolvable. They are server-provided and no unit test touches them.
+configurations.testRuntimeClasspath {
+    exclude group: 'com.sk89q.worldguard'
+    exclude group: 'com.sk89q.worldedit'
+}
+
 test {
+    // The server classes on the test classpath write logs/latest.log into the working directory.
+    workingDir = layout.buildDirectory.dir('test-work').get().asFile
+    doFirst { workingDir.mkdirs() }
     useJUnitPlatform()
     testLogging {
         events "passed", "skipped", "failed"
