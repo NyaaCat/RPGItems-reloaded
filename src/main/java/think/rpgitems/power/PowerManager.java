@@ -11,6 +11,7 @@ import org.bukkit.plugin.Plugin;
 import think.rpgitems.AdminCommands;
 import think.rpgitems.RPGItems;
 import think.rpgitems.power.propertymodifier.Modifier;
+import think.rpgitems.power.trigger.Trigger;
 
 import javax.annotation.CheckForNull;
 import java.lang.reflect.Field;
@@ -36,6 +37,8 @@ public class PowerManager {
     private static final HashBasedTable<Plugin, String, BiFunction<NamespacedKey, String, String>> descriptionResolvers = HashBasedTable.create();
     private static final HashMap<NamespacedKey, NamespacedKey> overrides = new HashMap<>();
     private static final HashMap<String, NamespacedKey> keyCache = new HashMap<>();
+    /** item / power / trigger combinations already reported by {@link #castForTrigger} */
+    private static final Set<String> unadaptableReported = java.util.concurrent.ConcurrentHashMap.newKeySet();
     /**
      * Power by name, and name by power
      */
@@ -57,6 +60,7 @@ public class PowerManager {
         modifiers.clear();
         descriptionResolvers.clear();
         adapters.clear();
+        unadaptableReported.clear();
         overrides.clear();
         keyCache.clear();
     }
@@ -367,6 +371,13 @@ public class PowerManager {
         return metas.get(cls);
     }
 
+    /**
+     * Lets powers that implement {@code general} serve triggers whose power interface is {@code specified}.
+     * <p>
+     * Adapters are dropped by {@link #clear()}, which RPGItems runs on start-up and on every {@code /rpgitem reload},
+     * like every other registration here. Register them from {@code onEnable} and again on
+     * {@link think.rpgitems.event.RPGItemsReloadEvent}, not from a static initializer, which runs only once.
+     */
     public static <G extends Pimpl, S extends Pimpl> void registerAdapter(Class<G> general, Class<S> specified, Function<G, S> adapter) {
         adapters.put(general, specified, adapter);
     }
@@ -381,7 +392,32 @@ public class PowerManager {
                 return (T) adapters.get(general, specified).apply(pimpl);
             }
         }
-        throw new ClassCastException();
+        throw new UnadaptablePowerException("Power " + pimpl.getPower().getNamespacedKey() + " cannot be used as " + specified.getSimpleName()
+                + ": no adapter registered from " + preferences.stream().map(Class::getSimpleName).sorted().toList());
+    }
+
+    /**
+     * Casts the impls of an item's powers to the power interface of {@code trigger}, keeping their order.
+     * <p>
+     * An impl that cannot be adapted to the trigger is left out, so the other powers still run, and is reported
+     * once per item, power and trigger (again after a reload). Anything else, such as an adapter that throws,
+     * propagates.
+     */
+    public static <T extends Pimpl> List<T> castForTrigger(String itemName, List<? extends Pimpl> impls, Trigger<?, T, ?, ?> trigger) {
+        List<T> cast = new ArrayList<>(impls.size());
+        for (Pimpl impl : impls) {
+            try {
+                cast.add(impl.cast(trigger.getPowerClass()));
+            } catch (UnadaptablePowerException e) {
+                Power power = impl.getPower();
+                if (unadaptableReported.add(itemName + "\0" + power.getPlaceholderId() + "\0" + power.getNamespacedKey() + "\0" + trigger.name())) {
+                    RPGItems.logger.warning("Item " + itemName + ": power " + power.getNamespacedKey() + " (" + power.getPlaceholderId() + ") is skipped on trigger "
+                            + trigger.name() + ". " + e.getMessage() + ". If the trigger comes from an extension, that extension has to register its adapters again"
+                            + " after RPGItems reloads (RPGItemsReloadEvent). Reported once per item, power and trigger.");
+                }
+            }
+        }
+        return Collections.unmodifiableList(cast);
     }
 
     public static void registerOverride(NamespacedKey origin, NamespacedKey override) {

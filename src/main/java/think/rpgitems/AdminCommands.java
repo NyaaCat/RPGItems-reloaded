@@ -343,10 +343,7 @@ public class AdminCommands extends RPGCommandReceiver {
         plugin.cfg.enabledLanguages.forEach(lang -> new I18n(plugin, lang));
         plugin.loadPowers();
         WGSupport.reload();
-        plugin.managedPlugins.forEach(Bukkit.getPluginManager()::disablePlugin);
-        plugin.managedPlugins.clear();
-        plugin.loadExtensions();
-        plugin.managedPlugins.forEach(Bukkit.getPluginManager()::enablePlugin);
+        plugin.extensions.reload(plugin.extensionJars()).forEach(Bukkit.getPluginManager()::enablePlugin);
 
         // Fire event for standalone extensions to re-register their powers
         Bukkit.getPluginManager().callEvent(new RPGItemsReloadEvent());

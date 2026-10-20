@@ -9,9 +9,6 @@ import org.bukkit.event.Listener;
 import org.bukkit.event.server.PluginDisableEvent;
 import org.bukkit.event.server.ServerLoadEvent;
 import org.bukkit.inventory.ItemStack;
-import org.bukkit.plugin.InvalidDescriptionException;
-import org.bukkit.plugin.InvalidPluginException;
-import org.bukkit.plugin.Plugin;
 import org.bukkit.plugin.java.JavaPlugin;
 import think.rpgitems.api.firing.FiringLocations;
 import think.rpgitems.data.Font;
@@ -26,8 +23,6 @@ import think.rpgitems.utils.TempBlockManager;
 import java.io.File;
 import java.lang.reflect.InvocationHandler;
 import java.lang.reflect.Proxy;
-import java.util.ArrayList;
-import java.util.List;
 import java.util.UUID;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -44,7 +39,7 @@ public class RPGItems extends JavaPlugin {
     private static String pluginMCVersion;
     private static String serverMCVersion;
     public Configuration cfg;
-    List<Plugin> managedPlugins = new ArrayList<>();
+    final ExtensionLoader extensions = new ExtensionLoader(new BukkitExtensionHost());
 
     //constructors are used in tests.
     public RPGItems() {
@@ -117,22 +112,6 @@ public class RPGItems extends JavaPlugin {
         cfg.load();
         loadPowers();
         cfg.enabledLanguages.forEach(lang -> new I18n(this, lang));
-        cfg.enabledLanguages.forEach(lang -> PowerManager.addDescriptionResolver(RPGItems.plugin, lang, (power, property) -> {
-                    I18n i18n = I18n.getInstance(lang);
-                    if (property == null) {
-                        String powerKey = "properties." + power.getKey() + ".main_description";
-                        return i18n.getFormatted(powerKey);
-                    }
-                    String key = "properties." + power.getKey() + "." + property;
-                    if (i18n.hasKey(key)) {
-                        return i18n.getFormatted(key);
-                    }
-                    String baseKey = "properties.base." + property;
-                    if (i18n.hasKey(baseKey)) {
-                        return i18n.getFormatted(baseKey);
-                    }
-                    return null;
-        }));
         saveDefaultConfig();
         Font.load();
         PlaceholderAPISupport.init(this);
@@ -153,30 +132,41 @@ public class RPGItems extends JavaPlugin {
         PowerManager.registerPowers(RPGItems.plugin, Power.class.getPackage().getName() + ".impl");
         PowerManager.registerMarkers(RPGItems.plugin, Power.class.getPackage().getName() + ".marker");
         PowerManager.registerModifiers(RPGItems.plugin, Power.class.getPackage().getName() + ".propertymodifier");
+        // after the clear above, also on /rpgitem reload; the I18n instances are looked up when a description is asked for
+        cfg.enabledLanguages.forEach(lang -> PowerManager.addDescriptionResolver(RPGItems.plugin, lang, (power, property) -> {
+                    I18n i18n = I18n.getInstance(lang);
+                    if (property == null) {
+                        String powerKey = "properties." + power.getKey() + ".main_description";
+                        return i18n.getFormatted(powerKey);
+                    }
+                    String key = "properties." + power.getKey() + "." + property;
+                    if (i18n.hasKey(key)) {
+                        return i18n.getFormatted(key);
+                    }
+                    String baseKey = "properties.base." + property;
+                    if (i18n.hasKey(baseKey)) {
+                        return i18n.getFormatted(baseKey);
+                    }
+                    return null;
+        }));
         logger.log(Level.INFO, "Powers loaded.");
     }
 
-    public void loadExtensions() {
+    File extensionDirectory() {
         File extDir = new File(plugin.getDataFolder(), "ext");
-        if (extDir.isDirectory() || extDir.mkdirs()) {
-            File[] files = extDir.listFiles((d, n) -> n.endsWith(".jar"));
-            if (files == null) return;
-            for (File file : files) {
-                try {
-                    Plugin plugin = Bukkit.getPluginManager().loadPlugin(file);
-                    if (plugin == null) return;
-                    String message = String.format("Loading %s", plugin.getPluginMeta().getDisplayName());
-                    plugin.getLogger().info(message);
-                    plugin.onLoad();
-                    managedPlugins.add(plugin);
-                    logger.info("Loaded extension: " + plugin.getName());
-                } catch (InvalidPluginException | InvalidDescriptionException e) {
-                    logger.log(Level.SEVERE, "Error loading extension: " + file.getName(), e);
-                }
-            }
-        } else {
+        if (!extDir.isDirectory() && !extDir.mkdirs()) {
             logger.severe("Error creating extension directory ./ext");
         }
+        return extDir;
+    }
+
+    File[] extensionJars() {
+        File[] files = extensionDirectory().listFiles((d, n) -> n.endsWith(".jar"));
+        return files == null ? new File[0] : files;
+    }
+
+    public void loadExtensions() {
+        extensions.load(extensionJars());
     }
 
     @Override
@@ -217,7 +207,7 @@ public class RPGItems extends JavaPlugin {
         getCommand("rpgitems").setTabCompleter(userCommandHandler);
         getServer().getPluginManager().registerEvents(new ServerLoadListener(), this);
         getServer().getPluginManager().registerEvents(new ExtensionCleanupListener(), this);
-        managedPlugins.forEach(Bukkit.getPluginManager()::enablePlugin);
+        extensions.managed().forEach(Bukkit.getPluginManager()::enablePlugin);
     }
 
     @Override
@@ -228,7 +218,7 @@ public class RPGItems extends JavaPlugin {
         getCommand("rpgitem").setTabCompleter(null);
         this.getServer().getScheduler().cancelTasks(plugin);
         ItemManager.unload();
-        managedPlugins.forEach(Bukkit.getPluginManager()::disablePlugin);
+        extensions.disableAll();
         FiringLocations.clear();
     }
 

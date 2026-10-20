@@ -2023,15 +2023,15 @@ public class RPGItem {
     }
 
     private <TEvent extends Event, T extends Pimpl, TResult, TReturn> List<T> getPower(Trigger<TEvent, T, TResult, TReturn> trigger, Player player, ItemStack stack) {
-        return powers.stream()
+        List<Pimpl> impls = powers.stream()
                 .filter(p -> p.getTriggers().contains(trigger))
                 .map(p -> {
                     Class<? extends Power> cls = p.getClass();
                     Power proxy = Interceptor.create(p, player, stack, trigger);
                     return PowerManager.createImpl(cls, proxy);
                 })
-                .map(p -> p.cast(trigger.getPowerClass()))
                 .toList();
+        return PowerManager.castForTrigger(getName(), impls, trigger);
     }
 
     public PlaceholderHolder getPlaceholderHolder(String placeholderId) {

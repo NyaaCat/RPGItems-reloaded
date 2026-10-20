@@ -99,6 +99,39 @@ public class PotionTick extends BasePower implements PowerPotion {
         return amplifier;
     }
 
+    /**
+     * @return remaining ticks of {@code effect}, {@code null} when there is none, {@link Integer#MAX_VALUE} when infinite
+     */
+    static Integer remainingTicks(PotionEffect effect) {
+        if (effect == null) return null;
+        return effect.isInfinite() ? Integer.MAX_VALUE : effect.getDuration();
+    }
+
+    /**
+     * How far (in ticks) the effect may fall behind what the last application should have left before that counts
+     * as removed. The effect counts down in server ticks, the cooldown in wall-clock time; they drift apart when
+     * the server lags or catches up.
+     */
+    static final int REMOVAL_TOLERANCE_TICKS = 20;
+
+    /**
+     * Whether the effect applied when the current cooldown started was removed or cut short by something else
+     * (milk, death, /effect clear, another plugin) while it should still be running.
+     * <p>
+     * Our own effect running down is not a removal, even in its last ticks: with an interval longer than the
+     * duration that must end in a gap until the interval is over.
+     *
+     * @param now            {@link Context#getCurrentMillis()}
+     * @param cooldownExpiry when the current cooldown ends; it was set to last application + interval
+     * @param remainingTicks remaining ticks of the player's effect, {@code null} if none, {@link Integer#MAX_VALUE} if infinite
+     */
+    static boolean removedBeforeExpiry(long now, long cooldownExpiry, Integer remainingTicks, int interval, int duration) {
+        long lastApplyTime = cooldownExpiry - interval * 50L;
+        long expectedRemainingTicks = (lastApplyTime + duration * 50L - now) / 50L;
+        long remaining = remainingTicks == null ? 0 : remainingTicks;
+        return remaining + REMOVAL_TOLERANCE_TICKS < expectedRemainingTicks;
+    }
+
     public class Impl implements PowerTick, PowerSneaking, PowerPotionEffect {
         @Override
         public PowerResult<Void> tick(Player player, ItemStack stack) {
@@ -119,22 +152,10 @@ public class PotionTick extends BasePower implements PowerPotion {
             boolean cooldownReady = cooldownExpiry == null || cooldownExpiry <= now;
 
             PotionEffect existingEffect = player.getPotionEffect(getEffect());
-            boolean effectMissing = existingEffect == null || existingEffect.getDuration() <= 20;
 
-            // Determine if we should bypass cooldown due to external effect removal
-            boolean bypassCooldown = false;
-            if (!isClear() && effectMissing && !cooldownReady) {
-                // Effect is missing but cooldown not ready - check if it was removed externally
-                // Calculate when the effect should have naturally expired
-                long lastApplyTime = cooldownExpiry - getInterval() * 50L;
-                long expectedEffectExpiry = lastApplyTime + getDuration() * 50L;
-
-                if (now < expectedEffectExpiry) {
-                    // Effect disappeared before natural expiry → external removal (milk, death, etc.)
-                    bypassCooldown = true;
-                }
-                // else: effect naturally expired, respect the intentional interval gap
-            }
+            // Bypass the cooldown when our effect was taken away before it should have expired (milk, death, ...)
+            boolean bypassCooldown = !isClear() && !cooldownReady
+                    && removedBeforeExpiry(now, cooldownExpiry, remainingTicks(existingEffect), getInterval(), getDuration());
 
             if (!bypassCooldown) {
                 // Normal cooldown check
