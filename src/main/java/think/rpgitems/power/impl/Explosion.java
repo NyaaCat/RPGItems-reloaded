@@ -88,7 +88,7 @@ public class Explosion extends BasePower {
         return explosionPower;
     }
 
-    public class Impl implements PowerLeftClick, PowerRightClick, PowerPlain, PowerHit, PowerProjectileHit, PowerLocation, PowerBeamHit, PowerLivingEntity, PowerConsume, PowerJump, PowerSwim {
+    public class Impl implements PowerLeftClick, PowerRightClick, PowerRightClickAll, PowerPlain, PowerHit, PowerProjectileHit, PowerLocation, PowerBeamHit, PowerLivingEntity, PowerConsume, PowerJump, PowerSwim {
 
         @Override
         public PowerResult<Void> leftClick(Player player, ItemStack stack, PlayerInteractEvent event) {
@@ -192,5 +192,11 @@ public class Explosion extends BasePower {
         public PowerResult<Void> swim(Player player, ItemStack stack, EntityToggleSwimEvent event) {
             return fire(player, stack);
         }
-    }
+
+    
+        @Override
+        public PowerResult<Void> rightClickAll(Player player, ItemStack stack, PlayerInteractEvent event) {
+            return fire(player, stack);
+        }
+}
 }

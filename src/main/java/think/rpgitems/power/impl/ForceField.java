@@ -36,7 +36,7 @@ import static think.rpgitems.power.Utils.checkCooldown;
  * </p>
  */
 @SuppressWarnings("WeakerAccess")
-@Meta(defaultTrigger = "RIGHT_CLICK", generalInterface = PowerPlain.class, implClass = ForceField.Impl.class)
+@Meta(defaultTrigger = {"RIGHT_CLICK", "RIGHT_CLICK_ALL"}, generalInterface = PowerPlain.class, implClass = ForceField.Impl.class)
 public class ForceField extends BasePower {
     @Property(order = 0)
     public int cooldown = 200;
@@ -147,7 +147,7 @@ public class ForceField extends BasePower {
         return requireHurtByEntity;
     }
 
-    public class Impl implements PowerHitTaken, PowerLeftClick, PowerRightClick, PowerSneak, PowerSprint, PowerPlain, PowerHurt, PowerConsume, PowerJump, PowerSwim {
+    public class Impl implements PowerHitTaken, PowerLeftClick, PowerRightClick, PowerRightClickAll, PowerSneak, PowerSprint, PowerPlain, PowerHurt, PowerConsume, PowerJump, PowerSwim {
 
         @Override
         public PowerResult<Void> leftClick(Player player, ItemStack stack, PlayerInteractEvent event) {
@@ -233,7 +233,12 @@ public class ForceField extends BasePower {
         public PowerResult<Void> swim(Player player, ItemStack stack, EntityToggleSwimEvent event) {
             return fire(player, stack);
         }
-    }
+    
+        @Override
+        public PowerResult<Void> rightClickAll(Player player, ItemStack stack, PlayerInteractEvent event) {
+            return fire(player, stack);
+        }
+}
 
     /**
      * Centralized manager for all active force field effects.
@@ -358,5 +363,7 @@ public class ForceField extends BasePower {
                 }
             }, ttl);
         }
+
+
     }
 }

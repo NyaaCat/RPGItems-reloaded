@@ -41,7 +41,7 @@ import think.rpgitems.power.Property;
 import think.rpgitems.utils.MaterialUtils;
 
 @SuppressWarnings("WeakerAccess")
-@Meta(defaultTrigger = "RIGHT_CLICK", generalInterface = {
+@Meta(defaultTrigger = {"RIGHT_CLICK", "RIGHT_CLICK_ALL"}, generalInterface = {
         PowerLeftClick.class,
         PowerRightClick.class,
         PowerSwim.class,

@@ -33,7 +33,7 @@ import static think.rpgitems.power.Utils.checkCooldown;
  * When right clicked, spawn some particles around the user.
  * </p>
  */
-@Meta(defaultTrigger = "RIGHT_CLICK", generalInterface = {
+@Meta(defaultTrigger = {"RIGHT_CLICK", "RIGHT_CLICK_ALL"}, generalInterface = {
         PowerLeftClick.class,
         PowerRightClick.class,
         PowerPlain.class,
@@ -299,7 +299,7 @@ public class ParticlePower extends BasePower {
         }
     }
 
-    public class Impl implements PowerRightClick, PowerLeftClick, PowerPlain, PowerHit, PowerHitTaken, PowerHurt, PowerBowShoot, PowerBeamHit, PowerProjectileHit, PowerLivingEntity, PowerLocation, PowerConsume, PowerJump, PowerSwim {
+    public class Impl implements PowerRightClick, PowerRightClickAll, PowerLeftClick, PowerPlain, PowerHit, PowerHitTaken, PowerHurt, PowerBowShoot, PowerBeamHit, PowerProjectileHit, PowerLivingEntity, PowerLocation, PowerConsume, PowerJump, PowerSwim {
 
         @Override
         public PowerResult<Double> takeHit(Player target, ItemStack stack, double damage, EntityDamageEvent event) {
@@ -520,7 +520,12 @@ public class ParticlePower extends BasePower {
         public PowerResult<Void> swim(Player player, ItemStack stack, EntityToggleSwimEvent event) {
             return fire(player.getLocation());
         }
-    }
+    
+        @Override
+        public PowerResult<Void> rightClickAll(Player player, ItemStack stack, PlayerInteractEvent event) {
+            return fire(player, stack);
+        }
+}
 
     public class EffectSetter implements Getter<Effect>, Setter<Effect> {
 
@@ -562,5 +567,7 @@ public class ParticlePower extends BasePower {
             ParticlePower.this.particle = org.bukkit.Particle.valueOf(value);
             return Optional.empty();
         }
+
+
     }
 }

@@ -29,7 +29,7 @@ import static think.rpgitems.power.Utils.checkAndSetCooldown;
  * Spawn and throw an entity
  * </p>
  */
-@Meta(defaultTrigger = "RIGHT_CLICK", generalInterface = PowerPlain.class, implClass = Throw.Impl.class)
+@Meta(defaultTrigger = {"RIGHT_CLICK", "RIGHT_CLICK_ALL"}, generalInterface = PowerPlain.class, implClass = Throw.Impl.class)
 public class Throw extends BasePower {
     @Property(order = 5, required = true)
     public String entityData = "";
@@ -92,7 +92,7 @@ public class Throw extends BasePower {
         return requireHurtByEntity;
     }
 
-    public class Impl implements PowerRightClick, PowerLeftClick, PowerPlain, PowerBowShoot, PowerHurt, PowerHitTaken {
+    public class Impl implements PowerRightClick, PowerRightClickAll, PowerLeftClick, PowerPlain, PowerBowShoot, PowerHurt, PowerHitTaken {
 
         @Override
         public PowerResult<Double> takeHit(Player target, ItemStack stack, double damage, EntityDamageEvent event) {
@@ -147,6 +147,11 @@ public class Throw extends BasePower {
 
         @Override
         public PowerResult<Void> rightClick(Player player, ItemStack stack, PlayerInteractEvent event) {
+            return fire(player, stack);
+        }
+
+        @Override
+        public PowerResult<Void> rightClickAll(Player player, ItemStack stack, PlayerInteractEvent event) {
             return fire(player, stack);
         }
 

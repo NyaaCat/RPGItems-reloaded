@@ -39,7 +39,7 @@ import static think.rpgitems.power.Utils.checkCooldown;
  * </p>
  */
 @SuppressWarnings("WeakerAccess")
-@Meta(defaultTrigger = "RIGHT_CLICK", generalInterface = PowerPlain.class, implClass = PotionSelf.Impl.class)
+@Meta(defaultTrigger = {"RIGHT_CLICK", "RIGHT_CLICK_ALL"}, generalInterface = PowerPlain.class, implClass = PotionSelf.Impl.class)
 public class PotionSelf extends BasePower implements PowerPotion{
 
     @Property(order = 0)
@@ -125,7 +125,7 @@ public class PotionSelf extends BasePower implements PowerPotion{
         return requireHurtByEntity;
     }
 
-    public class Impl implements PowerRightClick, PowerLeftClick, PowerSneak, PowerSprint, PowerHit, PowerHitTaken, PowerPlain, PowerHurt, PowerBowShoot, PowerConsume, PowerJump, PowerSwim, PowerBeamHit {
+    public class Impl implements PowerRightClick, PowerRightClickAll, PowerLeftClick, PowerSneak, PowerSprint, PowerHit, PowerHitTaken, PowerPlain, PowerHurt, PowerBowShoot, PowerConsume, PowerJump, PowerSwim, PowerBeamHit {
         @Override
         public PowerResult<Double> takeHit(Player target, ItemStack stack, double damage, EntityDamageEvent event) {
             if (!isRequireHurtByEntity() || event instanceof EntityDamageByEntityEvent) {
@@ -237,5 +237,12 @@ public class PotionSelf extends BasePower implements PowerPotion{
         public PowerResult<Void> beamEnd(Player player, ItemStack stack, Location location, BeamEndEvent event) {
             return PowerResult.noop();
         }
-    }
+
+
+    
+        @Override
+        public PowerResult<Void> rightClickAll(Player player, ItemStack stack, PlayerInteractEvent event) {
+            return fire(player, stack);
+        }
+}
 }

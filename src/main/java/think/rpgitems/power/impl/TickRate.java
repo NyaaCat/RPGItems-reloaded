@@ -24,7 +24,7 @@ import java.util.Map;
 
 import static think.rpgitems.power.Utils.checkCooldown;
 
-@Meta(defaultTrigger = "RIGHT_CLICK", generalInterface = PowerPlain.class, implClass = TickRate.Impl.class)
+@Meta(defaultTrigger = {"RIGHT_CLICK", "RIGHT_CLICK_ALL"}, generalInterface = PowerPlain.class, implClass = TickRate.Impl.class)
 public class TickRate extends BasePower {
     @Property
     public int tickRate = 20;

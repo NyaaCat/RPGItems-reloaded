@@ -26,7 +26,7 @@ import static think.rpgitems.power.Utils.checkAndSetCooldown;
  * </p>
  */
 @SuppressWarnings("WeakerAccess")
-@Meta(defaultTrigger = "RIGHT_CLICK", generalInterface = PowerPlain.class, implClass = DelayedCommand.Impl.class)
+@Meta(defaultTrigger = {"RIGHT_CLICK", "RIGHT_CLICK_ALL"}, generalInterface = PowerPlain.class, implClass = DelayedCommand.Impl.class)
 public class DelayedCommand extends Command {
     @Property(order = 0)
     public int delay = 20;

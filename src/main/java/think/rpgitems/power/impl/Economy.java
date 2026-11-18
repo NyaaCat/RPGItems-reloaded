@@ -26,7 +26,7 @@ import java.util.logging.Level;
 
 import static think.rpgitems.power.Utils.checkCooldown;
 
-@Meta(defaultTrigger = "RIGHT_CLICK", generalInterface = {
+@Meta(defaultTrigger = {"RIGHT_CLICK", "RIGHT_CLICK_ALL"}, generalInterface = {
         PowerLeftClick.class,
         PowerRightClick.class,
         PowerPlain.class,
@@ -104,7 +104,7 @@ public class Economy extends BasePower {
         return showFailMessage;
     }
 
-    public class Impl implements PowerRightClick, PowerLeftClick, PowerPlain, PowerHit, PowerHurt, PowerHitTaken, PowerBowShoot, PowerConsume, PowerJump, PowerSwim {
+    public class Impl implements PowerRightClick, PowerRightClickAll, PowerLeftClick, PowerPlain, PowerHit, PowerHurt, PowerHitTaken, PowerBowShoot, PowerConsume, PowerJump, PowerSwim {
 
 
         @Override
@@ -185,5 +185,12 @@ public class Economy extends BasePower {
         public PowerResult<Void> swim(Player player, ItemStack stack, EntityToggleSwimEvent event) {
             return fire(player, stack);
         }
-    }
+
+
+    
+        @Override
+        public PowerResult<Void> rightClickAll(Player player, ItemStack stack, PlayerInteractEvent event) {
+            return fire(player, stack);
+        }
+}
 }

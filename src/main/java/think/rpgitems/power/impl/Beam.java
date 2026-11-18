@@ -62,7 +62,7 @@ import static think.rpgitems.utils.cast.CastUtils.makeCone;
  * if you have any issue, please send me email or @ReinWD in issues.
  * Accepted language: 中文, English.
  */
-@Meta(defaultTrigger = "RIGHT_CLICK", generalInterface = {
+@Meta(defaultTrigger = {"RIGHT_CLICK", "RIGHT_CLICK_ALL"}, generalInterface = {
         PowerLeftClick.class,
         PowerRightClick.class,
         PowerPlain.class,
@@ -1389,7 +1389,7 @@ public class Beam extends BasePower {
         }
     }
 
-    public class Impl implements PowerPlain, PowerRightClick, PowerLeftClick, PowerSneak, PowerSneaking, PowerSprint, PowerBowShoot, PowerHitTaken, PowerHit, PowerHurt, PowerTick, PowerBeamHit, PowerLivingEntity, PowerConsume {
+    public class Impl implements PowerPlain, PowerRightClick, PowerRightClickAll, PowerLeftClick, PowerSneak, PowerSneaking, PowerSprint, PowerBowShoot, PowerHitTaken, PowerHit, PowerHurt, PowerTick, PowerBeamHit, PowerLivingEntity, PowerConsume {
         @Override
         public PowerResult<Void> leftClick(Player player, ItemStack stack, PlayerInteractEvent event) {
             return fire(player, stack);
@@ -1681,7 +1681,12 @@ public class Beam extends BasePower {
         public PowerResult<Void> consume(Player player, ItemStack stack, PlayerItemConsumeEvent event) {
             return fire(player,stack);
         }
-    }
+    
+        @Override
+        public PowerResult<Void> rightClickAll(Player player, ItemStack stack, PlayerInteractEvent event) {
+            return fire(player, stack);
+        }
+}
 
     /**
      * Centralized manager for all active beams.
@@ -1767,5 +1772,7 @@ public class Beam extends BasePower {
                 }
             }
         }
+
+
     }
 }

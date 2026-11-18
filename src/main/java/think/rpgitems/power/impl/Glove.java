@@ -60,14 +60,14 @@ public class Glove extends BasePower {
         return throwSpeed;
     }
 
-    public class Impl implements PowerRightClick {
+    public class Impl implements PowerRightClick, PowerRightClickAll {
         @Override
         public PowerResult<Void> rightClick(Player player, ItemStack stack, PlayerInteractEvent event) {
             HashMap<String,Object> argsMap = new HashMap<>();
             if (!player.getPassengers().isEmpty()) {
-                Entity entity = player.getPassengers().get(0);
+                Entity entity = player.getPassengers().getFirst();
                 argsMap.put("status","UNMOUNT");
-                argsMap.put("passenger",player.getPassengers().get(0));
+                argsMap.put("passenger",player.getPassengers().getFirst());
                 PowerActivateEvent powerEvent = new PowerActivateEvent(player,stack,getPower(),argsMap);
                 if(!powerEvent.callEvent()) {
                     return PowerResult.fail();
@@ -117,8 +117,8 @@ public class Glove extends BasePower {
                                     if (finalListener != null) {
                                         HandlerList.unregisterAll(finalListener);
                                     }
-                                    if (!player.getPassengers().isEmpty() && player.getPassengers().get(0).getUniqueId().equals(entity.getUniqueId())) {
-                                        player.getPassengers().get(0).leaveVehicle();
+                                    if (!player.getPassengers().isEmpty() && player.getPassengers().getFirst().getUniqueId().equals(entity.getUniqueId())) {
+                                        player.getPassengers().getFirst().leaveVehicle();
                                     }
                                 }
                                 setTicks(getTicks() + 1);
@@ -144,5 +144,11 @@ public class Glove extends BasePower {
         public Power getPower() {
             return Glove.this;
         }
-    }
+
+    
+        @Override
+        public PowerResult<Void> rightClickAll(Player player, ItemStack stack, PlayerInteractEvent event) {
+            return rightClick(player, stack, event);
+        }
+}
 }

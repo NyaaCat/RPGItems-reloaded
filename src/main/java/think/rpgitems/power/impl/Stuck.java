@@ -76,6 +76,7 @@ public class Stuck extends BasePower {
         }
         if (allowAoe) {
             triggerTypes.add(BaseTriggers.RIGHT_CLICK);
+            triggerTypes.add(BaseTriggers.RIGHT_CLICK_ALL);
         }
         triggers = triggerTypes;
         super.init(s);
@@ -210,7 +211,7 @@ public class Stuck extends BasePower {
         return requireHurtByEntity;
     }
 
-    public class Impl implements PowerLeftClick, PowerRightClick, PowerPlain, PowerHit, PowerBowShoot, PowerHitTaken, PowerHurt {
+    public class Impl implements PowerLeftClick, PowerRightClick, PowerRightClickAll, PowerPlain, PowerHit, PowerBowShoot, PowerHitTaken, PowerHurt {
 
         @Override
         public PowerResult<Double> takeHit(Player target, ItemStack stack, double damage, EntityDamageEvent event) {
@@ -286,5 +287,12 @@ public class Stuck extends BasePower {
             }
             return PowerResult.noop();
         }
-    }
+
+
+    
+        @Override
+        public PowerResult<Void> rightClickAll(Player player, ItemStack stack, PlayerInteractEvent event) {
+            return fire(player, stack);
+        }
+}
 }

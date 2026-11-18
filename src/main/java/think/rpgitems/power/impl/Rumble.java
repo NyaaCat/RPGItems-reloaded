@@ -36,7 +36,7 @@ import static think.rpgitems.power.Utils.getNearbyEntities;
  * </p>
  */
 @SuppressWarnings("WeakerAccess")
-@Meta(defaultTrigger = "RIGHT_CLICK", withSelectors = true, generalInterface = PowerPlain.class, implClass = Rumble.Impl.class)
+@Meta(defaultTrigger = {"RIGHT_CLICK", "RIGHT_CLICK_ALL"}, withSelectors = true, generalInterface = PowerPlain.class, implClass = Rumble.Impl.class)
 public class Rumble extends BasePower {
 
     @Property(order = 0)
@@ -93,7 +93,7 @@ public class Rumble extends BasePower {
         return power;
     }
 
-    public class Impl implements PowerRightClick, PowerLeftClick, PowerSneak, PowerSprint, PowerPlain, PowerBowShoot, PowerLivingEntity {
+    public class Impl implements PowerRightClick, PowerRightClickAll, PowerLeftClick, PowerSneak, PowerSprint, PowerPlain, PowerBowShoot, PowerLivingEntity {
         @Override
         public PowerResult<Void> leftClick(Player player, ItemStack stack, PlayerInteractEvent event) {
             return fire(player, stack);
@@ -148,7 +148,12 @@ public class Rumble extends BasePower {
         public PowerResult<Void> fire(Player player, ItemStack stack, LivingEntity entity, @Nullable Double value) {
             return fire(player, entity.getLocation(), entity.getLocation().getDirection());
         }
-    }
+    
+        @Override
+        public PowerResult<Void> rightClickAll(Player player, ItemStack stack, PlayerInteractEvent event) {
+            return fire(player, stack);
+        }
+}
 
     /**
      * Represents an active rumble effect managed by {@link RumbleManager}.
@@ -235,5 +240,7 @@ public class Rumble extends BasePower {
 
             return count < power.getDistance();
         }
+
+
     }
 }

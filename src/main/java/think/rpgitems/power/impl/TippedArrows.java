@@ -93,7 +93,7 @@ public class TippedArrows extends BasePower {
         return cooldown;
     }
 
-    public class Impl implements PowerRightClick {
+    public class Impl implements PowerRightClick, PowerRightClickAll {
         @Override
         public PowerResult<Void> rightClick(Player player, ItemStack stack, PlayerInteractEvent event) {
             PowerActivateEvent powerEvent = new PowerActivateEvent(player,stack,getPower());
@@ -117,5 +117,11 @@ public class TippedArrows extends BasePower {
         public Power getPower() {
             return TippedArrows.this;
         }
-    }
+
+    
+        @Override
+        public PowerResult<Void> rightClickAll(Player player, ItemStack stack, PlayerInteractEvent event) {
+            return rightClick(player, stack, event);
+        }
+}
 }

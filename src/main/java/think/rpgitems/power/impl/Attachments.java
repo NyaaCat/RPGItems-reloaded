@@ -24,7 +24,7 @@ import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Collectors;
 
-@Meta(defaultTrigger = "RIGHT_CLICK", withSelectors = true, generalInterface = PowerPlain.class, implClass = Attachments.Impl.class)
+@Meta(defaultTrigger = {"RIGHT_CLICK", "RIGHT_CLICK_ALL"}, withSelectors = true, generalInterface = PowerPlain.class, implClass = Attachments.Impl.class)
 public class Attachments extends BasePower {
 
     @Property
@@ -75,7 +75,7 @@ public class Attachments extends BasePower {
         return requireHurtByEntity;
     }
 
-    public class Impl implements PowerTick, PowerRightClick, PowerLeftClick, PowerOffhandClick, PowerPlain, PowerHit, PowerSneaking, PowerHurt, PowerHitTaken, PowerBowShoot, PowerConsume {
+    public class Impl implements PowerTick, PowerRightClick, PowerRightClickAll, PowerLeftClick, PowerOffhandClick, PowerPlain, PowerHit, PowerSneaking, PowerHurt, PowerHitTaken, PowerBowShoot, PowerConsume {
 
         @Override
         public PowerResult<Void> tick(Player player, ItemStack stack) {
@@ -223,5 +223,12 @@ public class Attachments extends BasePower {
         public PowerResult<Void> consume(Player player, ItemStack stack, PlayerItemConsumeEvent event){
             return fire(player, stack, event);
         }
-    }
+
+
+    
+        @Override
+        public PowerResult<Void> rightClickAll(Player player, ItemStack stack, PlayerInteractEvent event) {
+            return fire(player, stack);
+        }
+}
 }

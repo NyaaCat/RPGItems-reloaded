@@ -33,7 +33,7 @@ import static think.rpgitems.power.Utils.*;
  * </p>
  */
 @SuppressWarnings("WeakerAccess")
-@Meta(defaultTrigger = "RIGHT_CLICK", withSelectors = true, implClass = AOECommand.Impl.class)
+@Meta(defaultTrigger = {"RIGHT_CLICK", "RIGHT_CLICK_ALL"}, withSelectors = true, implClass = AOECommand.Impl.class)
 public class AOECommand extends Command {
     @Property
     public boolean selfapplication = false;
@@ -114,7 +114,7 @@ public class AOECommand extends Command {
         return selfapplication;
     }
 
-    public class Impl implements PowerPlain, PowerRightClick, PowerLeftClick, PowerHit, PowerBeamHit, PowerProjectileHit, PowerSneak, PowerLivingEntity, PowerConsume {
+    public class Impl implements PowerPlain, PowerRightClick, PowerRightClickAll, PowerLeftClick, PowerHit, PowerBeamHit, PowerProjectileHit, PowerSneak, PowerLivingEntity, PowerConsume {
         @Override
         public PowerResult<Void> rightClick(Player player, ItemStack stack, PlayerInteractEvent event) {
             return fire(player, stack);
@@ -251,5 +251,11 @@ public class AOECommand extends Command {
         public PowerResult<Void> consume(Player player, ItemStack stack, PlayerItemConsumeEvent event) {
             return fire(player, stack);
         }
-    }
+
+    
+        @Override
+        public PowerResult<Void> rightClickAll(Player player, ItemStack stack, PlayerInteractEvent event) {
+            return fire(player, stack);
+        }
+}
 }

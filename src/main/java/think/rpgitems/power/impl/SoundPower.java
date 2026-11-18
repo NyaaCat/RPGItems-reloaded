@@ -32,7 +32,7 @@ import static think.rpgitems.power.Utils.checkCooldown;
  * Play a sound
  * </p>
  */
-@Meta(defaultTrigger = "RIGHT_CLICK", generalInterface = {
+@Meta(defaultTrigger = {"RIGHT_CLICK", "RIGHT_CLICK_ALL"}, generalInterface = {
         PowerLeftClick.class,
         PowerRightClick.class,
         PowerPlain.class,
@@ -136,7 +136,7 @@ public class SoundPower extends BasePower {
         return playLocation;
     }
 
-    public class Impl implements PowerLeftClick, PowerRightClick, PowerPlain, PowerHit, PowerBowShoot, PowerHitTaken, PowerHurt, PowerBeamHit, PowerProjectileHit, PowerTick, PowerSneaking, PowerLivingEntity, PowerLocation {
+    public class Impl implements PowerLeftClick, PowerRightClick, PowerRightClickAll, PowerPlain, PowerHit, PowerBowShoot, PowerHitTaken, PowerHurt, PowerBeamHit, PowerProjectileHit, PowerTick, PowerSneaking, PowerLivingEntity, PowerLocation {
 
         @Override
         public PowerResult<Void> leftClick(Player player, ItemStack stack, PlayerInteractEvent event) {
@@ -289,5 +289,12 @@ public class SoundPower extends BasePower {
             }
             return sound(player, stack, location);
         }
-    }
+
+
+    
+        @Override
+        public PowerResult<Void> rightClickAll(Player player, ItemStack stack, PlayerInteractEvent event) {
+            return fire(player, stack);
+        }
+}
 }

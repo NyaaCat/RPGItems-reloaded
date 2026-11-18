@@ -52,7 +52,7 @@ import static think.rpgitems.power.Utils.getNearbyEntities;
  * </p>
  */
 @SuppressWarnings("WeakerAccess")
-@Meta(defaultTrigger = "RIGHT_CLICK", withSelectors = true, generalInterface = PowerPlain.class, implClass = Fire.Impl.class)
+@Meta(defaultTrigger = {"RIGHT_CLICK", "RIGHT_CLICK_ALL"}, withSelectors = true, generalInterface = PowerPlain.class, implClass = Fire.Impl.class)
 public class Fire extends BasePower {
 
     @Property(order = 0)
@@ -102,7 +102,7 @@ public class Fire extends BasePower {
         return cooldown;
     }
 
-    public class Impl implements PowerRightClick, PowerLeftClick, PowerSneak, PowerSprint, PowerPlain {
+    public class Impl implements PowerRightClick, PowerRightClickAll, PowerLeftClick, PowerSneak, PowerSprint, PowerPlain {
 
         @Override
         public PowerResult<Void> rightClick(final Player player, ItemStack stack, PlayerInteractEvent event) {
@@ -217,5 +217,12 @@ public class Fire extends BasePower {
         public PowerResult<Void> sprint(Player player, ItemStack stack, PlayerToggleSprintEvent event) {
             return fire(player, stack);
         }
-    }
+
+
+    
+        @Override
+        public PowerResult<Void> rightClickAll(Player player, ItemStack stack, PlayerInteractEvent event) {
+            return fire(player, stack);
+        }
+}
 }

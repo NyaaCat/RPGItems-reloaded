@@ -21,6 +21,7 @@ import think.rpgitems.power.trigger.BaseTriggers;
 import think.rpgitems.support.PlaceholderAPISupport;
 
 import java.util.Collections;
+import java.util.Set;
 
 import static think.rpgitems.power.Utils.attachPermission;
 import static think.rpgitems.power.Utils.checkAndSetCooldown;
@@ -32,7 +33,7 @@ import static think.rpgitems.power.Utils.checkAndSetCooldown;
  * giving the permission {@link #permission} just for the use of the command.
  * </p>
  */
-@Meta(defaultTrigger = "RIGHT_CLICK", generalInterface = PowerPlain.class, implClass = Command.Impl.class)
+@Meta(defaultTrigger = {"RIGHT_CLICK", "RIGHT_CLICK_ALL"}, generalInterface = PowerPlain.class, implClass = Command.Impl.class)
 public class Command extends BasePower {
 
     @Property(order = 4, required = true)
@@ -68,7 +69,9 @@ public class Command extends BasePower {
     public void init(ConfigurationSection section) {
         if (section.isBoolean("isRight")) {
             boolean isRight = section.getBoolean("isRight", true);
-            triggers = Collections.singleton(isRight ? BaseTriggers.RIGHT_CLICK : BaseTriggers.LEFT_CLICK);
+            triggers = isRight
+                    ? Set.of(BaseTriggers.RIGHT_CLICK, BaseTriggers.RIGHT_CLICK_ALL)
+                    : Collections.singleton(BaseTriggers.LEFT_CLICK);
         }
         super.init(section);
     }
@@ -125,7 +128,7 @@ public class Command extends BasePower {
         return requireHurtByEntity;
     }
 
-    public class Impl implements PowerRightClick, PowerLeftClick, PowerSprint, PowerSneak, PowerHurt, PowerHitTaken, PowerPlain, PowerBowShoot, PowerConsume, PowerJump, PowerSwim, PowerTick {
+    public class Impl implements PowerRightClick, PowerRightClickAll, PowerLeftClick, PowerSprint, PowerSneak, PowerHurt, PowerHitTaken, PowerPlain, PowerBowShoot, PowerConsume, PowerJump, PowerSwim, PowerTick {
         @Override
         public PowerResult<Void> leftClick(Player player, ItemStack stack, PlayerInteractEvent event) {
             return fire(player, stack);
@@ -237,5 +240,12 @@ public class Command extends BasePower {
         public PowerResult<Void> tick(Player player, ItemStack stack) {
             return fire(player,stack);
         }
-    }
+
+
+    
+        @Override
+        public PowerResult<Void> rightClickAll(Player player, ItemStack stack, PlayerInteractEvent event) {
+            return fire(player, stack);
+        }
+}
 }

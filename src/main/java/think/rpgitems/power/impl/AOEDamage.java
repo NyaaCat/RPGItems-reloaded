@@ -52,7 +52,7 @@ import static think.rpgitems.power.Utils.*;
  * as well if not set via {@link #selfapplication selfapplication}.
  * </p>
  */
-@Meta(defaultTrigger = "RIGHT_CLICK", withSelectors = true, generalInterface = {
+@Meta(defaultTrigger = {"RIGHT_CLICK", "RIGHT_CLICK_ALL"}, withSelectors = true, generalInterface = {
         PowerLeftClick.class,
         PowerRightClick.class,
         PowerPlain.class,
@@ -235,7 +235,7 @@ public class AOEDamage extends BasePower {
         return getName() != null ? getName() : "Deal damage to nearby mobs";
     }
 
-    public class Impl implements PowerOffhandClick, PowerPlain, PowerLeftClick, PowerRightClick, PowerHit, PowerSprint, PowerSneak, PowerHurt, PowerHitTaken, PowerTick, PowerBowShoot, PowerSneaking, PowerBeamHit, PowerProjectileHit, PowerLivingEntity, PowerLocation, PowerConsume {
+    public class Impl implements PowerOffhandClick, PowerPlain, PowerLeftClick, PowerRightClick, PowerRightClickAll, PowerHit, PowerSprint, PowerSneak, PowerHurt, PowerHitTaken, PowerTick, PowerBowShoot, PowerSneaking, PowerBeamHit, PowerProjectileHit, PowerLivingEntity, PowerLocation, PowerConsume {
 
         @Override
         public PowerResult<Void> rightClick(final Player player, ItemStack stack, PlayerInteractEvent event) {
@@ -531,7 +531,14 @@ public class AOEDamage extends BasePower {
         public PowerResult<Void> consume(Player player, ItemStack stack, PlayerItemConsumeEvent event) {
             return fire(player, stack);
         }
-    }
+
+
+    
+        @Override
+        public PowerResult<Void> rightClickAll(Player player, ItemStack stack, PlayerInteractEvent event) {
+            return fire(player, stack);
+        }
+}
 
 
 }

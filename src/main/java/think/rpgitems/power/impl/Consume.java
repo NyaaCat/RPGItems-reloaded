@@ -35,6 +35,7 @@ import think.rpgitems.power.*;
 import think.rpgitems.power.trigger.BaseTriggers;
 
 import java.util.Collections;
+import java.util.Set;
 
 import static think.rpgitems.power.Utils.checkCooldown;
 
@@ -45,7 +46,7 @@ import static think.rpgitems.power.Utils.checkCooldown;
  * With {@link #cooldown cooldown} time (ticks).
  * </p>
  */
-@Meta(defaultTrigger = "RIGHT_CLICK", generalInterface = PowerPlain.class, implClass = Consume.Impl.class)
+@Meta(defaultTrigger = {"RIGHT_CLICK", "RIGHT_CLICK_ALL"}, generalInterface = PowerPlain.class, implClass = Consume.Impl.class)
 public class Consume extends BasePower {
     @Property(order = 1)
     public int cooldown = 0;
@@ -61,7 +62,9 @@ public class Consume extends BasePower {
     @Override
     public void init(ConfigurationSection section) {
         boolean isRight = section.getBoolean("isRight", true);
-        triggers = Collections.singleton(isRight ? BaseTriggers.RIGHT_CLICK : BaseTriggers.LEFT_CLICK);
+        triggers = isRight
+                ? Set.of(BaseTriggers.RIGHT_CLICK, BaseTriggers.RIGHT_CLICK_ALL)
+                : Collections.singleton(BaseTriggers.LEFT_CLICK);
         super.init(section);
     }
 
@@ -93,7 +96,7 @@ public class Consume extends BasePower {
         return requireHurtByEntity;
     }
 
-    public class Impl implements PowerPlain, PowerRightClick, PowerLeftClick, PowerSneak, PowerHitTaken, PowerHurt, PowerSprint, PowerAttachment, PowerSwim, PowerJump {
+    public class Impl implements PowerPlain, PowerRightClick, PowerRightClickAll, PowerLeftClick, PowerSneak, PowerHitTaken, PowerHurt, PowerSprint, PowerAttachment, PowerSwim, PowerJump {
         @Override
         public PowerResult<Void> rightClick(final Player player, ItemStack stack, PlayerInteractEvent event) {
             return fire(player, stack);
@@ -161,5 +164,12 @@ public class Consume extends BasePower {
         public PowerResult<Void> swim(Player player, ItemStack stack, EntityToggleSwimEvent event) {
             return fire(player, stack);
         }
-    }
+
+
+    
+        @Override
+        public PowerResult<Void> rightClickAll(Player player, ItemStack stack, PlayerInteractEvent event) {
+            return fire(player, stack);
+        }
+}
 }

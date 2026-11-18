@@ -78,7 +78,7 @@ public class Food extends BasePower {
         return cancelConsumeIfNotEnough;
     }
 
-    public class Impl implements PowerRightClick, PowerConsume {
+    public class Impl implements PowerRightClick, PowerRightClickAll, PowerConsume {
         public PowerResult<Void> fire(final Player player, ItemStack stack, int amount, Event event) {
             PowerActivateEvent powerEvent = new PowerActivateEvent(player, stack, getPower());
             if (!powerEvent.callEvent()) {
@@ -120,5 +120,11 @@ public class Food extends BasePower {
         public PowerResult<Void> rightClick(Player player, ItemStack stack, PlayerInteractEvent event) {
             return fire(player, stack, getConsumeAmount(), event);
         }
-    }
+
+    
+        @Override
+        public PowerResult<Void> rightClickAll(Player player, ItemStack stack, PlayerInteractEvent event) {
+            return fire(player, stack, getConsumeAmount(), event);
+        }
+}
 }

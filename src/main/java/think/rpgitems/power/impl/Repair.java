@@ -24,6 +24,7 @@ import think.rpgitems.power.*;
 import think.rpgitems.power.trigger.BaseTriggers;
 
 import java.util.Collections;
+import java.util.Set;
 import java.util.HashMap;
 
 import static think.rpgitems.power.Utils.checkCooldown;
@@ -34,7 +35,7 @@ import static think.rpgitems.power.Utils.checkCooldown;
  * Repair the item with some material
  * </p>
  */
-@Meta(defaultTrigger = "RIGHT_CLICK", generalInterface = PowerPlain.class, implClass = Repair.Impl.class)
+@Meta(defaultTrigger = {"RIGHT_CLICK", "RIGHT_CLICK_ALL"}, generalInterface = PowerPlain.class, implClass = Repair.Impl.class)
 public class Repair extends BasePower {
 
     @Property
@@ -79,7 +80,9 @@ public class Repair extends BasePower {
     @Override
     public void init(ConfigurationSection section) {
         if (section.isBoolean("isRight")) {
-            triggers = section.getBoolean("isRight", true) ? Collections.singleton(BaseTriggers.RIGHT_CLICK) : Collections.singleton(BaseTriggers.LEFT_CLICK);
+            triggers = section.getBoolean("isRight", true)
+                    ? Set.of(BaseTriggers.RIGHT_CLICK, BaseTriggers.RIGHT_CLICK_ALL)
+                    : Collections.singleton(BaseTriggers.LEFT_CLICK);
         }
         super.init(section);
     }
@@ -155,7 +158,7 @@ public class Repair extends BasePower {
         ALWAYS,
     }
 
-    public class Impl implements PowerRightClick, PowerLeftClick, PowerPlain, PowerHitTaken, PowerHurt, PowerBowShoot {
+    public class Impl implements PowerRightClick, PowerRightClickAll, PowerLeftClick, PowerPlain, PowerHitTaken, PowerHurt, PowerBowShoot {
 
         @Override
         public PowerResult<Double> takeHit(Player target, ItemStack stack, double damage, EntityDamageEvent event) {
@@ -265,5 +268,12 @@ public class Repair extends BasePower {
         public PowerResult<Float> bowShoot(Player player, ItemStack itemStack, EntityShootBowEvent e) {
             return fire(player, itemStack).with(e.getForce());
         }
-    }
+
+
+    
+        @Override
+        public PowerResult<Void> rightClickAll(Player player, ItemStack stack, PlayerInteractEvent event) {
+            return fire(player, stack);
+        }
+}
 }

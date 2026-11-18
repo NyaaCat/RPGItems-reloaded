@@ -45,7 +45,7 @@ import static think.rpgitems.power.Utils.checkCooldown;
  * </p>
  */
 @SuppressWarnings("WeakerAccess")
-@Meta(defaultTrigger = {"RIGHT_CLICK", "PROJECTILE_HIT"}, generalInterface = PowerPlain.class, implClass = Teleport.Impl.class)
+@Meta(defaultTrigger = {"RIGHT_CLICK", "RIGHT_CLICK_ALL", "PROJECTILE_HIT"}, generalInterface = PowerPlain.class, implClass = Teleport.Impl.class)
 public class Teleport extends BasePower {
 
     @Property(order = 1)
@@ -109,7 +109,7 @@ public class Teleport extends BasePower {
         RAY_TRACING
     }
 
-    public class Impl implements PowerSneak, PowerLeftClick, PowerSprint, PowerRightClick, PowerProjectileHit, PowerPlain, PowerBowShoot, PowerBeamHit, PowerConsume, PowerJump, PowerSwim {
+    public class Impl implements PowerSneak, PowerLeftClick, PowerSprint, PowerRightClick, PowerRightClickAll, PowerProjectileHit, PowerPlain, PowerBowShoot, PowerBeamHit, PowerConsume, PowerJump, PowerSwim {
 
         @Override
         public PowerResult<Void> rightClick(Player player, ItemStack stack, PlayerInteractEvent event) {
@@ -286,5 +286,12 @@ public class Teleport extends BasePower {
         public PowerResult<Void> swim(Player player, ItemStack stack, EntityToggleSwimEvent event) {
             return fire(player, stack);
         }
-    }
+
+
+    
+        @Override
+        public PowerResult<Void> rightClickAll(Player player, ItemStack stack, PlayerInteractEvent event) {
+            return fire(player, stack);
+        }
+}
 }

@@ -26,7 +26,7 @@ import static think.rpgitems.power.Utils.checkAndSetCooldown;
  * Won't do anything but give you fine control.
  * </p>
  */
-@Meta(defaultTrigger = "RIGHT_CLICK", generalInterface = {
+@Meta(defaultTrigger = {"RIGHT_CLICK", "RIGHT_CLICK_ALL"}, generalInterface = {
         PowerLeftClick.class,
         PowerRightClick.class,
         PowerPlain.class,
@@ -200,7 +200,7 @@ public class Dummy extends BasePower {
         return globalCooldown;
     }
 
-    public class Impl implements PowerHit, PowerHitTaken, PowerLeftClick, PowerRightClick, PowerOffhandClick, PowerProjectileHit, PowerSneak, PowerSneaking, PowerSprint, PowerOffhandItem, PowerMainhandItem, PowerTick, PowerPlain, PowerLivingEntity, PowerHurt, PowerBowShoot, PowerBeamHit, PowerConsume, PowerJump, PowerSwim {
+    public class Impl implements PowerHit, PowerHitTaken, PowerLeftClick, PowerRightClick, PowerRightClickAll, PowerOffhandClick, PowerProjectileHit, PowerSneak, PowerSneaking, PowerSprint, PowerOffhandItem, PowerMainhandItem, PowerTick, PowerPlain, PowerLivingEntity, PowerHurt, PowerBowShoot, PowerBeamHit, PowerConsume, PowerJump, PowerSwim {
 
         @Override
         public PowerResult<Void> leftClick(Player player, ItemStack stack, PlayerInteractEvent event) {
@@ -350,5 +350,12 @@ public class Dummy extends BasePower {
         public PowerResult<Void> swim(Player player, ItemStack stack, EntityToggleSwimEvent event) {
             return fire(player, stack);
         }
-    }
+
+
+    
+        @Override
+        public PowerResult<Void> rightClickAll(Player player, ItemStack stack, PlayerInteractEvent event) {
+            return fire(player, stack);
+        }
+}
 }

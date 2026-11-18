@@ -53,7 +53,7 @@ public class Mount extends BasePower {
         return cooldown;
     }
 
-    public class Impl implements PowerRightClick {
+    public class Impl implements PowerRightClick, PowerRightClickAll {
 
         @Override
         public PowerResult<Void> rightClick(Player player, ItemStack stack, PlayerInteractEvent event) {
@@ -112,5 +112,11 @@ public class Mount extends BasePower {
         public Power getPower() {
             return Mount.this;
         }
-    }
+
+    
+        @Override
+        public PowerResult<Void> rightClickAll(Player player, ItemStack stack, PlayerInteractEvent event) {
+            return rightClick(player, stack, event);
+        }
+}
 }

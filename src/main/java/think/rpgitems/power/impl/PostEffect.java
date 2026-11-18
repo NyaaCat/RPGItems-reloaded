@@ -22,7 +22,7 @@ import java.util.Map;
 
 import static think.rpgitems.power.Utils.checkCooldown;
 
-@Meta(defaultTrigger = "RIGHT_CLICK", generalInterface = PowerPlain.class, implClass = PostEffect.Impl.class)
+@Meta(defaultTrigger = {"RIGHT_CLICK", "RIGHT_CLICK_ALL"}, generalInterface = PowerPlain.class, implClass = PostEffect.Impl.class)
 public class PostEffect extends BasePower {
     @Property
     public String key = "minecraft:blur";
@@ -67,7 +67,7 @@ public class PostEffect extends BasePower {
         return I18n.formatDefault("power.posteffect", getKey(), getDuration() / 20.0, getCooldown() / 20.0);
     }
 
-    public class Impl implements PowerRightClick, PowerLeftClick, PowerPlain, PowerBowShoot, PowerHurt, PowerHitTaken, PowerConsume, PowerJump, PowerOffhandClick, PowerProjectileLaunch, PowerSneak, PowerTick {
+    public class Impl implements PowerRightClick, PowerRightClickAll, PowerLeftClick, PowerPlain, PowerBowShoot, PowerHurt, PowerHitTaken, PowerConsume, PowerJump, PowerOffhandClick, PowerProjectileLaunch, PowerSneak, PowerTick {
 
         @Override
         public PowerResult<Double> takeHit(Player target, ItemStack stack, double damage, EntityDamageEvent event) {
@@ -160,5 +160,12 @@ public class PostEffect extends BasePower {
         public PowerResult<Void> tick(Player player, ItemStack stack) {
             return fire(player, stack);
         }
-    }
+
+
+    
+        @Override
+        public PowerResult<Void> rightClickAll(Player player, ItemStack stack, PlayerInteractEvent event) {
+            return fire(player, stack);
+        }
+}
 }

@@ -30,7 +30,7 @@ import static think.rpgitems.power.Utils.checkCooldown;
  * The torch power will shoots torches to light up an area.
  * </p>
  */
-@Meta(defaultTrigger = "RIGHT_CLICK", generalInterface = PowerPlain.class, implClass = Torch.Impl.class)
+@Meta(defaultTrigger = {"RIGHT_CLICK", "RIGHT_CLICK_ALL"}, generalInterface = PowerPlain.class, implClass = Torch.Impl.class)
 public class Torch extends BasePower {
     @Property(order = 0)
     public int cooldown = 0;
@@ -76,7 +76,7 @@ public class Torch extends BasePower {
         return cooldown;
     }
 
-    public class Impl implements PowerPlain, PowerLeftClick, PowerRightClick, PowerBowShoot {
+    public class Impl implements PowerPlain, PowerLeftClick, PowerRightClick, PowerRightClickAll, PowerBowShoot {
 
 
         @Override
@@ -175,5 +175,12 @@ public class Torch extends BasePower {
         public PowerResult<Float> bowShoot(Player player, ItemStack stack, EntityShootBowEvent event) {
             return fire(player, stack).with(event.getForce());
         }
-    }
+
+
+    
+        @Override
+        public PowerResult<Void> rightClickAll(Player player, ItemStack stack, PlayerInteractEvent event) {
+            return fire(player, stack);
+        }
+}
 }

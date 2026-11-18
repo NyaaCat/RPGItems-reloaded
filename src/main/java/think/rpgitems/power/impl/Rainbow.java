@@ -29,7 +29,7 @@ import static think.rpgitems.power.Utils.checkCooldown;
  * </p>
  */
 @SuppressWarnings("WeakerAccess")
-@Meta(defaultTrigger = "RIGHT_CLICK", generalInterface = PowerPlain.class, implClass = Rainbow.Impl.class)
+@Meta(defaultTrigger = {"RIGHT_CLICK", "RIGHT_CLICK_ALL"}, generalInterface = PowerPlain.class, implClass = Rainbow.Impl.class)
 public class Rainbow extends BasePower {
 
     @Property(order = 0)
@@ -81,7 +81,7 @@ public class Rainbow extends BasePower {
         return isFire;
     }
 
-    public class Impl implements PowerRightClick, PowerPlain, PowerBowShoot {
+    public class Impl implements PowerRightClick, PowerRightClickAll, PowerPlain, PowerBowShoot {
 
         @Override
         public PowerResult<Void> rightClick(Player player, ItemStack stack, PlayerInteractEvent event) {
@@ -169,5 +169,12 @@ public class Rainbow extends BasePower {
         public PowerResult<Float> bowShoot(Player player, ItemStack stack, EntityShootBowEvent event) {
             return fire(player, stack).with(event.getForce());
         }
-    }
+
+
+    
+        @Override
+        public PowerResult<Void> rightClickAll(Player player, ItemStack stack, PlayerInteractEvent event) {
+            return fire(player, stack);
+        }
+}
 }

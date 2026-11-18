@@ -30,7 +30,7 @@ import static think.rpgitems.power.Utils.*;
  * </p>
  */
 @SuppressWarnings("WeakerAccess")
-@Meta(defaultTrigger = "RIGHT_CLICK", generalInterface = PowerPlain.class, implClass = Deflect.Impl.class)
+@Meta(defaultTrigger = {"RIGHT_CLICK", "RIGHT_CLICK_ALL"}, generalInterface = PowerPlain.class, implClass = Deflect.Impl.class)
 public class Deflect extends BasePower {
 
     private static final Map<UUID, Long> time = new HashMap<>();
@@ -64,7 +64,12 @@ public class Deflect extends BasePower {
             triggers.add(BaseTriggers.HIT_TAKEN);
         }
         if (initiative) {
-            triggers.add(isRight ? BaseTriggers.RIGHT_CLICK : BaseTriggers.LEFT_CLICK);
+            if (isRight) {
+                triggers.add(BaseTriggers.RIGHT_CLICK);
+                triggers.add(BaseTriggers.RIGHT_CLICK_ALL);
+            } else {
+                triggers.add(BaseTriggers.LEFT_CLICK);
+            }
         }
         super.init(section);
     }
@@ -135,7 +140,7 @@ public class Deflect extends BasePower {
         return cooldown;
     }
 
-    public class Impl implements PowerHitTaken, PowerRightClick, PowerLeftClick, PowerPlain, PowerBowShoot {
+    public class Impl implements PowerHitTaken, PowerRightClick, PowerRightClickAll, PowerLeftClick, PowerPlain, PowerBowShoot {
 
         @Override
         public PowerResult<Double> takeHit(Player target, ItemStack stack, double damage, EntityDamageEvent event) {
@@ -223,5 +228,12 @@ public class Deflect extends BasePower {
         public PowerResult<Float> bowShoot(Player player, ItemStack stack, EntityShootBowEvent event) {
             return fire(player, stack).with(event.getForce());
         }
-    }
+
+
+    
+        @Override
+        public PowerResult<Void> rightClickAll(Player player, ItemStack stack, PlayerInteractEvent event) {
+            return fire(player, stack);
+        }
+}
 }

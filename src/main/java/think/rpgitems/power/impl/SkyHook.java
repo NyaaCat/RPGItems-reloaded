@@ -34,7 +34,7 @@ import static think.rpgitems.power.Utils.checkCooldown;
  * </p>
  */
 @SuppressWarnings("WeakerAccess")
-@Meta(defaultTrigger = "RIGHT_CLICK", generalInterface = PowerPlain.class, implClass = SkyHook.Impl.class)
+@Meta(defaultTrigger = {"RIGHT_CLICK", "RIGHT_CLICK_ALL"}, generalInterface = PowerPlain.class, implClass = SkyHook.Impl.class)
 public class SkyHook extends BasePower {
 
     private static final Map<UUID, Boolean> hooking = new HashMap<>();
@@ -109,7 +109,7 @@ public class SkyHook extends BasePower {
         return I18n.formatDefault("power.skyhook");
     }
 
-    public class Impl implements PowerRightClick, PowerLeftClick, PowerSneak, PowerSprint, PowerPlain, PowerBowShoot {
+    public class Impl implements PowerRightClick, PowerRightClickAll, PowerLeftClick, PowerSneak, PowerSprint, PowerPlain, PowerBowShoot {
 
         @Override
         public PowerResult<Void> leftClick(Player player, ItemStack stack, PlayerInteractEvent event) {
@@ -213,5 +213,12 @@ public class SkyHook extends BasePower {
         public PowerResult<Float> bowShoot(Player player, ItemStack itemStack, EntityShootBowEvent e) {
             return fire(player, itemStack).with(e.getForce());
         }
-    }
+
+
+    
+        @Override
+        public PowerResult<Void> rightClickAll(Player player, ItemStack stack, PlayerInteractEvent event) {
+            return fire(player, stack);
+        }
+}
 }

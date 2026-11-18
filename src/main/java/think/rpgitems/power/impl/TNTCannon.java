@@ -54,7 +54,7 @@ public class TNTCannon extends BasePower {
         return cooldown;
     }
 
-    public class Impl implements PowerRightClick, PowerLivingEntity {
+    public class Impl implements PowerRightClick, PowerRightClickAll, PowerLivingEntity {
         @Override
         public PowerResult<Void> rightClick(Player player, ItemStack stack, PlayerInteractEvent event) {
             if (!checkCooldown(getPower(), player, getCooldown(), showCooldownWarning(), true)) return PowerResult.cd();
@@ -85,5 +85,11 @@ public class TNTCannon extends BasePower {
             tnt.setVelocity(entity.getLocation().getDirection().multiply(2d));
             return PowerResult.ok();
         }
-    }
+
+    
+        @Override
+        public PowerResult<Void> rightClickAll(Player player, ItemStack stack, PlayerInteractEvent event) {
+            return fire(player, stack, player, null);
+        }
+}
 }

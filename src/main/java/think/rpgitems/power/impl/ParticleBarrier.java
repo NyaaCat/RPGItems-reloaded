@@ -38,7 +38,7 @@ import java.util.concurrent.atomic.AtomicInteger;
 
 import static think.rpgitems.power.Utils.checkCooldown;
 
-@Meta(defaultTrigger = {"RIGHT_CLICK", "TICK", "HIT_GLOBAL"}, generalInterface = PowerPlain.class, implClass = ParticleBarrier.Impl.class)
+@Meta(defaultTrigger = {"RIGHT_CLICK", "RIGHT_CLICK_ALL", "TICK", "HIT_GLOBAL"}, generalInterface = PowerPlain.class, implClass = ParticleBarrier.Impl.class)
 public class ParticleBarrier extends BasePower {
 
     private static final Cache<UUID, Double> barriers = CacheBuilder.newBuilder()
@@ -182,7 +182,7 @@ public class ParticleBarrier extends BasePower {
         return projected;
     }
 
-    public class Impl implements PowerPlain, PowerRightClick, PowerLeftClick, PowerTick, PowerBowShoot, PowerHit {
+    public class Impl implements PowerPlain, PowerRightClick, PowerRightClickAll, PowerLeftClick, PowerTick, PowerBowShoot, PowerHit {
 
         @Override
         public PowerResult<Void> leftClick(Player player, ItemStack stack, PlayerInteractEvent event) {
@@ -311,5 +311,12 @@ public class ParticleBarrier extends BasePower {
             player.addPotionEffect(new PotionEffect(getEffect(), 5, level));
             return PowerResult.ok();
         }
-    }
+
+
+    
+        @Override
+        public PowerResult<Void> rightClickAll(Player player, ItemStack stack, PlayerInteractEvent event) {
+            return fire(player, stack);
+        }
+}
 }

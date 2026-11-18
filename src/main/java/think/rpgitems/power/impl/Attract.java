@@ -41,7 +41,7 @@ import static think.rpgitems.power.Utils.getNearbyEntities;
  * </p>
  */
 @SuppressWarnings("WeakerAccess")
-@Meta(defaultTrigger = "RIGHT_CLICK", withSelectors = true, generalInterface = {
+@Meta(defaultTrigger = {"RIGHT_CLICK", "RIGHT_CLICK_ALL"}, withSelectors = true, generalInterface = {
         PowerLeftClick.class,
         PowerRightClick.class,
         PowerPlain.class,
@@ -165,7 +165,7 @@ public class Attract extends BasePower {
         return requireHurtByEntity;
     }
 
-    public class Impl implements PowerTick, PowerLeftClick, PowerRightClick, PowerPlain, PowerSneaking, PowerHurt, PowerHitTaken, PowerBowShoot, PowerBeamHit, PowerProjectileHit, PowerLivingEntity, PowerLocation, PowerConsume {
+    public class Impl implements PowerTick, PowerLeftClick, PowerRightClick, PowerRightClickAll, PowerPlain, PowerSneaking, PowerHurt, PowerHitTaken, PowerBowShoot, PowerBeamHit, PowerProjectileHit, PowerLivingEntity, PowerLocation, PowerConsume {
 
         @Override
         public PowerResult<Double> takeHit(Player target, ItemStack stack, double damage, EntityDamageEvent event) {
@@ -319,7 +319,12 @@ public class Attract extends BasePower {
         public PowerResult<Void> consume(Player player, ItemStack stack, PlayerItemConsumeEvent event) {
             return fire(player, stack);
         }
-    }
+    
+        @Override
+        public PowerResult<Void> rightClickAll(Player player, ItemStack stack, PlayerInteractEvent event) {
+            return fire(player, stack);
+        }
+}
 
     /**
      * Represents an active attract effect managed by {@link AttractManager}.
@@ -401,5 +406,7 @@ public class Attract extends BasePower {
         public static AttractManager getInstance() {
             return INSTANCE;
         }
+
+
     }
 }

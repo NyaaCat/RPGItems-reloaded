@@ -26,7 +26,7 @@ import static think.rpgitems.power.Utils.checkCooldown;
 
 
 @SuppressWarnings("WeakerAccess")
-@Meta(defaultTrigger = "RIGHT_CLICK", generalInterface = {
+@Meta(defaultTrigger = {"RIGHT_CLICK", "RIGHT_CLICK_ALL"}, generalInterface = {
         PowerLeftClick.class,
         PowerRightClick.class,
         PowerSwim.class,
@@ -84,7 +84,7 @@ public class MythicSkillCast extends BasePower {
     }
 
 
-    public class Impl implements PowerJump, PowerSwim, PowerRightClick, PowerLeftClick, PowerSneak, PowerSprint, PowerHitTaken, PowerHit, PowerPlain, PowerBowShoot, PowerHurt, PowerConsume {
+    public class Impl implements PowerJump, PowerSwim, PowerRightClick, PowerRightClickAll, PowerLeftClick, PowerSneak, PowerSprint, PowerHitTaken, PowerHit, PowerPlain, PowerBowShoot, PowerHurt, PowerConsume {
 
 
         @Override
@@ -173,5 +173,12 @@ public class MythicSkillCast extends BasePower {
         public PowerResult<Void> consume(Player player, ItemStack stack, PlayerItemConsumeEvent event) {
             return fire(player, stack);
         }
-    }
+
+
+    
+        @Override
+        public PowerResult<Void> rightClickAll(Player player, ItemStack stack, PlayerInteractEvent event) {
+            return fire(player, stack);
+        }
+}
 }

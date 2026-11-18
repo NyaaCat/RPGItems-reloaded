@@ -29,7 +29,7 @@ import static think.rpgitems.power.Utils.*;
  * Target nearest entity
  * </p>
  */
-@Meta(defaultTrigger = "RIGHT_CLICK", withSelectors = true, generalInterface = PowerPlain.class, implClass = ShulkerBulletPower.Impl.class)
+@Meta(defaultTrigger = {"RIGHT_CLICK", "RIGHT_CLICK_ALL"}, withSelectors = true, generalInterface = PowerPlain.class, implClass = ShulkerBulletPower.Impl.class)
 public class ShulkerBulletPower extends BasePower {
 
     @Property(order = 0)
@@ -82,7 +82,7 @@ public class ShulkerBulletPower extends BasePower {
         return range;
     }
 
-    public class Impl implements PowerRightClick, PowerLeftClick, PowerSneak, PowerSprint, PowerPlain, PowerBowShoot, PowerConsume, PowerJump, PowerSwim {
+    public class Impl implements PowerRightClick, PowerRightClickAll, PowerLeftClick, PowerSneak, PowerSprint, PowerPlain, PowerBowShoot, PowerConsume, PowerJump, PowerSwim {
         @Override
         public PowerResult<Void> leftClick(Player player, ItemStack stack, PlayerInteractEvent event) {
             return fire(player, stack);
@@ -151,5 +151,12 @@ public class ShulkerBulletPower extends BasePower {
         public PowerResult<Void> swim(Player player, ItemStack stack, EntityToggleSwimEvent event) {
             return fire(player, stack);
         }
-    }
+
+
+    
+        @Override
+        public PowerResult<Void> rightClickAll(Player player, ItemStack stack, PlayerInteractEvent event) {
+            return fire(player, stack);
+        }
+}
 }

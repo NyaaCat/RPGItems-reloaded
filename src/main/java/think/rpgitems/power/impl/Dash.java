@@ -23,7 +23,7 @@ import java.util.ArrayList;
 
 import static think.rpgitems.power.Utils.checkCooldown;
 
-@Meta(defaultTrigger = "RIGHT_CLICK", implClass = Dash.Impl.class)
+@Meta(defaultTrigger = {"RIGHT_CLICK", "RIGHT_CLICK_ALL"}, implClass = Dash.Impl.class)
 public class Dash extends BasePower {
     public enum Direction {
         FORWARD,
@@ -86,7 +86,7 @@ public class Dash extends BasePower {
         return I18n.formatDefault("power.dash",getDirection(), (double) getCooldown() / 20d);
     }
 
-    public class Impl implements PowerRightClick, PowerPlain, PowerLeftClick, PowerSneak, PowerHurt, PowerHit, PowerHitTaken, PowerSwim, PowerJump, PowerBowShoot, PowerOffhandClick, PowerTick, PowerSprint {
+    public class Impl implements PowerRightClick, PowerRightClickAll, PowerPlain, PowerLeftClick, PowerSneak, PowerHurt, PowerHit, PowerHitTaken, PowerSwim, PowerJump, PowerBowShoot, PowerOffhandClick, PowerTick, PowerSprint {
 
         @Override
         public PowerResult<Void> rightClick(Player player, ItemStack stack, PlayerInteractEvent event) {
@@ -213,7 +213,12 @@ public class Dash extends BasePower {
         public PowerResult<Void> tick(Player player, ItemStack stack) {
             return fire(player, stack);
         }
-    }
+    
+        @Override
+        public PowerResult<Void> rightClickAll(Player player, ItemStack stack, PlayerInteractEvent event) {
+            return fire(player, stack);
+        }
+}
 
     /**
      * Represents an active dash effect managed by {@link DashManager}.
@@ -329,5 +334,7 @@ public class Dash extends BasePower {
         public int getActiveCount() {
             return activeDashes.size();
         }
+
+
     }
 }
