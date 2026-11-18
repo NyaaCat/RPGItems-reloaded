@@ -3,6 +3,7 @@ package think.rpgitems.utils.component.handler;
 import io.papermc.paper.datacomponent.DataComponentType;
 import io.papermc.paper.datacomponent.DataComponentTypes;
 import io.papermc.paper.datacomponent.item.DamageResistant;
+import io.papermc.paper.registry.RegistryKey;
 import io.papermc.paper.registry.set.RegistryKeySet;
 import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.damage.DamageType;
@@ -36,13 +37,13 @@ public class DamageResistanceHandler implements ComponentHandler<DamageResistant
         if (types.isEmpty()) {
             return null;
         }
-        return DamageResistant.damageResistant(ComponentYamlUtil.damageTypeSet(types));
+        return DamageResistant.damageResistant(ComponentYamlUtil.registryKeySet(RegistryKey.DAMAGE_TYPE, types));
     }
 
     @Override
     public void encode(DamageResistant value, ConfigurationSection config) {
         RegistryKeySet<DamageType> types = value.types();
-        Object v = ComponentYamlUtil.damageTypeSetToYaml(types);
+        Object v = ComponentYamlUtil.registryKeySetToYaml(types);
         if (v != null) {
             config.set(yamlKey(), v);
         }

@@ -878,6 +878,8 @@ power:
   item_projectile:
     cone: 右键发射一堆带模型的%s (%.1f秒冷却)
     display: 右键发射带模型的%s (%.1f秒冷却)
+  posteffect: 应用 %s 后处理效果 %.1f 秒 (%.1f秒冷却)
+  tickrate: 将时间速率调整为 %d 游戏刻，持续 %.1f 秒 (%.1f秒冷却)
   pumpkin: 1/%d 几率使敌人戴上南瓜头
   rainbow: 发射 %d 个彩色羊毛 (%.1f 秒冷却)
   ranged: 可远程使用
@@ -1410,6 +1412,11 @@ properties:
     main_description: 将受到的攻击转化为效果
     main_name: 粒子屏障
     projected: 是否为投射屏障
+  posteffect:
+    main_description: 为玩家应用后处理效果，类似于 /posteffect 命令
+    main_name: 后处理效果
+    key: 后处理效果的命名空间键，默认为 minecraft:blur
+    duration: 后处理效果的持续时间，单位为游戏刻
   particletick:
     delay: 延迟 ticks
     dustColor: 尘埃粒子效果的颜色
@@ -1701,6 +1708,12 @@ properties:
   tick_offhand:
     main_description: 每 tick 触发副手物品
     main_name: Tick Offhand
+  tickrate:
+    main_description: 更改玩家客户端的时间速率（必须大于 0），超过 20 的数值不会产生实际的视觉效果
+    main_name: 变速
+    tickRate: 要更改到的速率
+    duration: 此能力的持续时间，单位为游戏刻
+    freeze: 是否冻结玩家客户端的刻更新。如果为 true，则忽略 tickRate
   tippedarrow:
     amplifier: 效果倍率
     duration: 持续时间，游戏刻

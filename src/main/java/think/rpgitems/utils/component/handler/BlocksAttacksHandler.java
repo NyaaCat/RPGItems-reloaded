@@ -5,6 +5,7 @@ import io.papermc.paper.datacomponent.DataComponentTypes;
 import io.papermc.paper.datacomponent.item.BlocksAttacks;
 import io.papermc.paper.datacomponent.item.blocksattacks.DamageReduction;
 import io.papermc.paper.datacomponent.item.blocksattacks.ItemDamageFunction;
+import io.papermc.paper.registry.RegistryKey;
 import io.papermc.paper.registry.set.RegistryKeySet;
 import net.kyori.adventure.key.Key;
 import org.bukkit.configuration.ConfigurationSection;
@@ -82,7 +83,7 @@ public class BlocksAttacksHandler implements ComponentHandler<BlocksAttacks> {
 
         List<String> bypassedBy = ComponentYamlUtil.stringOrList(section, "bypassed_by");
         if (!bypassedBy.isEmpty()) {
-            builder.bypassedBy(ComponentYamlUtil.damageTypeSet(bypassedBy));
+            builder.bypassedBy(ComponentYamlUtil.registryKeySet(RegistryKey.DAMAGE_TYPE, bypassedBy));
         }
 
         List<DamageReduction> reductions = new ArrayList<>();
@@ -94,7 +95,7 @@ public class BlocksAttacksHandler implements ComponentHandler<BlocksAttacks> {
                             ComponentYamlUtil.mapFloat(reductionData, "horizontal_blocking_angle", 90));
             List<String> types = ComponentYamlUtil.mapStringOrList(reductionData, "type");
             if (!types.isEmpty()) {
-                reduction.type(ComponentYamlUtil.damageTypeSet(types));
+                reduction.type(ComponentYamlUtil.registryKeySet(RegistryKey.DAMAGE_TYPE, types));
             }
             reductions.add(reduction.build());
         }
@@ -119,7 +120,7 @@ public class BlocksAttacksHandler implements ComponentHandler<BlocksAttacks> {
 
         RegistryKeySet<DamageType> bypassedBy = value.bypassedBy();
         if (bypassedBy != null) {
-            ComponentYamlUtil.setDamageTypeSet(section, "bypassed_by", bypassedBy);
+            ComponentYamlUtil.setSetToYaml(section, "bypassed_by", bypassedBy);
         }
 
         ItemDamageFunction itemDamage = value.itemDamage();
@@ -138,7 +139,7 @@ public class BlocksAttacksHandler implements ComponentHandler<BlocksAttacks> {
                 map.put("horizontal_blocking_angle", reduction.horizontalBlockingAngle());
                 RegistryKeySet<DamageType> typeSet = reduction.type();
                 if (typeSet != null) {
-                    Object types = ComponentYamlUtil.damageTypeSetToYaml(typeSet);
+                    Object types = ComponentYamlUtil.registryKeySetToYaml(typeSet);
                     if (types != null) {
                         map.put("type", types);
                     }

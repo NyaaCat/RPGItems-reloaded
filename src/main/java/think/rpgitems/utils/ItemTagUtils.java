@@ -3,6 +3,7 @@ package think.rpgitems.utils;
 import com.google.common.base.FinalizablePhantomReference;
 import com.google.common.base.FinalizableReferenceQueue;
 import com.google.common.collect.Sets;
+import net.kyori.adventure.key.Key;
 import org.bukkit.Bukkit;
 import org.bukkit.NamespacedKey;
 import org.bukkit.OfflinePlayer;
@@ -12,6 +13,7 @@ import org.bukkit.persistence.PersistentDataAdapterContext;
 import org.bukkit.persistence.PersistentDataContainer;
 import org.bukkit.persistence.PersistentDataType;
 import org.jetbrains.annotations.NotNull;
+import org.jspecify.annotations.Nullable;
 import think.rpgitems.RPGItems;
 import think.rpgitems.power.PowerManager;
 import think.rpgitems.power.Utils;
@@ -358,6 +360,11 @@ public final class ItemTagUtils {
         @Override
         public <T, Z> Z getOrDefault(NamespacedKey key, PersistentDataType<T, Z> type, Z defaultValue) {
             return self.getOrDefault(key, type, defaultValue);
+        }
+
+        @Override
+        public @Nullable PersistentDataType<?, ?> getPrimitiveStorageType(Key key) {
+            return self.getPrimitiveStorageType(key);
         }
 
         @Override

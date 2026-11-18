@@ -9,11 +9,9 @@ import io.papermc.paper.registry.tag.Tag;
 import io.papermc.paper.registry.tag.TagKey;
 import net.kyori.adventure.key.Key;
 import org.bukkit.Color;
+import org.bukkit.Keyed;
 import org.bukkit.Registry;
 import org.bukkit.configuration.ConfigurationSection;
-import org.bukkit.damage.DamageType;
-import org.bukkit.entity.Entity;
-import org.intellij.lang.annotations.Subst;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -25,7 +23,7 @@ import java.util.Map;
  * <p>分两组：
  * <ul>
  *   <li>ConfigurationSection 读写：{@link #stringOrList}、{@link #setStringOrList}、
- *       {@link #setDamageTypeSet}</li>
+ *       {@link #setSetToYaml}</li>
  *   <li>getMapList 风格的原始 Map 读取：{@link #mapInt}、{@link #mapFloat}、
  *       {@link #mapString}、{@link #mapStringOrList}
  *       —— SnakeYAML 反序列化出的数值可能是 Integer / Double / Long，
@@ -99,50 +97,44 @@ public final class ComponentYamlUtil {
         return List.of();
     }
 
-    // ---------- DamageType 集合（含 #tag 支持）----------
+    public static <T extends Keyed> RegistryKeySet<T> registryKeySet(RegistryKey<T> registryKey, List<String> keys) {
+        Registry<T> registry = RegistryAccess.registryAccess().getRegistry(registryKey);
 
-    /**
-     * 由 key 字符串列表构建 DamageType 的 RegistryKeySet。
-     * 与原版语义一致：要么是单个 "#tag"，要么是纯 ID 列表，两者不允许混用。
-     */
-    public static RegistryKeySet<DamageType> damageTypeSet(List<String> keys) {
         if (keys.size() == 1 && keys.getFirst().startsWith("#")) {
-            Registry<DamageType> registry = RegistryAccess.registryAccess()
-                    .getRegistry(RegistryKey.DAMAGE_TYPE);
-            @Subst("is_projectile") String name = keys.getFirst().substring(1);
-            TagKey<DamageType> tagKey = TagKey.create(RegistryKey.DAMAGE_TYPE, Key.key(name));
+            String name = keys.getFirst().substring(1);
+            TagKey<T> tagKey = TagKey.create(registryKey, Key.key(name));
+
             if (!registry.hasTag(tagKey)) {
-                throw new IllegalArgumentException("Unknown damage type tag: " + keys.getFirst());
+                throw new IllegalArgumentException("Unknown registry tag: " + keys.getFirst());
             }
+
             return registry.getTag(tagKey);
         }
 
-        List<TypedKey<DamageType>> typedKeys = new ArrayList<>(keys.size());
-        for (String k : keys) {
-            if (k.startsWith("#")) {
+        List<TypedKey<T>> typedKeys = new ArrayList<>(keys.size());
+        for (String key : keys) {
+            if (key.startsWith("#")) {
                 throw new IllegalArgumentException(
-                        "Damage type tag cannot be mixed with plain damage types: " + k);
+                        "Registry tag cannot be mixed with plain keys: " + key);
             }
-            typedKeys.add(TypedKey.create(RegistryKey.DAMAGE_TYPE, Key.key(k)));
+
+            typedKeys.add(TypedKey.create(registryKey, Key.key(key)));
         }
-        return RegistrySet.keySet(RegistryKey.DAMAGE_TYPE, typedKeys);
+
+        return RegistrySet.keySet(registryKey, typedKeys);
     }
 
-    /**
-     * {@link #damageTypeSet} 的对称操作，返回可直接放进 YAML 的对象：
-     * Tag → "#key" 字符串；单元素 → 字符串；多元素 → 列表；空集 → null。
-     * 既可用于 config.set，也可用于 getMapList 风格的 Map value。
-     */
-    public static Object damageTypeSetToYaml(RegistryKeySet<DamageType> set) {
-        if (set instanceof Tag<DamageType> tag) {
+
+    public static <T extends Keyed> Object registryKeySetToYaml(RegistryKeySet<T> set) {
+        if (set instanceof Tag<T> tag) {
             return "#" + tag.tagKey().key().asString();
         }
         return singleOrList(set.values().stream().map(k -> k.key().asString()).toList());
     }
 
     /** 把 DamageType 集合写到 ConfigurationSection 的 path 处，空集不写。 */
-    public static void setDamageTypeSet(ConfigurationSection config, String path, RegistryKeySet<DamageType> set) {
-        Object v = damageTypeSetToYaml(set);
+    public static void setSetToYaml(ConfigurationSection config, String path, RegistryKeySet<?> set) {
+        Object v = registryKeySetToYaml(set);
         if (v != null) {
             config.set(path, v);
         }

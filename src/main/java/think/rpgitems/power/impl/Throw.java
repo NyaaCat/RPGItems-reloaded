@@ -1,8 +1,5 @@
 package think.rpgitems.power.impl;
 
-import cat.nyaa.nyaacore.utils.NmsUtils;
-import org.bukkit.Bukkit;
-import org.bukkit.ChatColor;
 import org.bukkit.Location;
 import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.entity.Entity;
@@ -15,13 +12,13 @@ import org.bukkit.event.entity.EntityDamageEvent;
 import org.bukkit.event.entity.EntityShootBowEvent;
 import org.bukkit.event.player.PlayerInteractEvent;
 import org.bukkit.inventory.ItemStack;
+import think.rpgitems.I18n;
 import think.rpgitems.event.PowerActivateEvent;
 import think.rpgitems.power.*;
 import think.rpgitems.power.trigger.BaseTriggers;
 
 import java.util.Collections;
 import java.util.HashMap;
-import java.util.UUID;
 import java.util.function.Consumer;
 
 import static think.rpgitems.power.Utils.checkAndSetCooldown;
@@ -42,8 +39,6 @@ public class Throw extends BasePower {
     public int cooldown = 0;
     @Property(order = 3)
     public double speed = 3;
-    @Property(order = 0)
-    public String display = "throw entity";
     @Property(order = 6)
     public boolean isPersistent;
     @Property
@@ -82,11 +77,7 @@ public class Throw extends BasePower {
 
     @Override
     public String displayText() {
-        return ChatColor.GREEN + getDisplay();
-    }
-
-    public String getDisplay() {
-        return display;
+        return I18n.formatDefault("power.throw");
     }
 
     public double getSpeed() {

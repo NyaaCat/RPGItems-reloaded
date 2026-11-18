@@ -6,6 +6,7 @@ import com.destroystokyo.paper.event.player.PlayerArmorChangeEvent;
 import com.destroystokyo.paper.event.player.PlayerJumpEvent;
 import com.destroystokyo.paper.event.player.PlayerLaunchProjectileEvent;
 import io.papermc.paper.datacomponent.DataComponentTypes;
+import io.papermc.paper.event.entity.EntityLandEvent;
 import io.papermc.paper.event.player.PrePlayerAttackEntityEvent;
 import io.papermc.paper.tag.EntityTags;
 import it.unimi.dsi.fastutil.objects.Object2FloatMap;
@@ -505,14 +506,17 @@ public class Events implements Listener {
         Action action = e.getAction();
         Material im = e.getMaterial();
         if (action == Action.PHYSICAL || im == Material.AIR) return;
-        if ((action == Action.RIGHT_CLICK_AIR || action == Action.RIGHT_CLICK_BLOCK) && (im == Material.BOW || im == Material.SNOWBALL || im == Material.EGG || im == Material.POTION || im == Material.TRIDENT))
-            return;
         RPGItem rItem = ItemManager.toActiveRPGItem(e.getItem()).orElse(null);
         if (rItem == null) return;
         Entity playerTarget = RayTraceUtils.getTargetEntity(player);
         if (!(playerTarget instanceof ItemFrame) && !rItem.isCanUse() && (im.hasDefaultData(DataComponentTypes.FOOD) || im.hasDefaultData(DataComponentTypes.POTION_CONTENTS) || im.hasDefaultData(DataComponentTypes.FIREWORKS) || im.hasDefaultData(DataComponentTypes.CONSUMABLE) || im == Material.ENDER_EYE || im.isRecord() || isPlacable(im) || isItemConsumer(e.getClickedBlock()))) {
             e.setCancelled(true);
         }
+        if (action.isRightClick()) {
+            rItem.power(player, e.getItem(), e, BaseTriggers.RIGHT_CLICK_ALL);
+        }
+        if (action.isRightClick() && (im == Material.BOW || im == Material.SNOWBALL || im == Material.EGG || im == Material.POTION || im == Material.TRIDENT))
+            return;
         if (e.getHand() == EquipmentSlot.OFF_HAND) {
             rItem.power(player, e.getItem(), e, BaseTriggers.OFFHAND_CLICK);
         } else if (action == Action.RIGHT_CLICK_AIR) {
@@ -842,7 +846,7 @@ public class Events implements Listener {
     }
 
     @EventHandler(priority = EventPriority.HIGH, ignoreCancelled = true)
-    public void onPreDamage(PrePlayerAttackEntityEvent event){
+    public void onPreDamage(PrePlayerAttackEntityEvent event) {
         Context.instance().putExpiringSeconds(event.getPlayer().getUniqueId(), "attack_cooldown", event.getPlayer().getAttackCooldown(), 0.1);
     }
 
@@ -1091,6 +1095,18 @@ public class Events implements Listener {
                 RPGItem ri = ItemManager.toActiveRPGItem(item).orElse(null);
                 if (ri == null) continue;
                 ri.power(e, item, ev, BaseTriggers.HURT);
+            }
+        }
+    }
+
+    @EventHandler(priority = EventPriority.MONITOR, ignoreCancelled = true)
+    private void onPlayerLand(EntityLandEvent ev) {
+        if (ev.getEntity() instanceof Player e) {
+            for (ItemStack item : e.getInventory().getContents()) {
+                if (item == null || item.getType().isAir()) continue;
+                RPGItem ri = ItemManager.toActiveRPGItem(item).orElse(null);
+                if (ri == null) continue;
+                ri.power(e, item, ev, BaseTriggers.LAND);
             }
         }
     }

@@ -1,6 +1,7 @@
 package think.rpgitems.power.trigger;
 
 import com.destroystokyo.paper.event.player.PlayerJumpEvent;
+import io.papermc.paper.event.entity.EntityLandEvent;
 import org.bukkit.event.Event;
 import org.bukkit.event.entity.*;
 import org.bukkit.event.inventory.InventoryClickEvent;
@@ -22,8 +23,10 @@ public final class BaseTriggers {
     public static final Trigger<EntityDamageEvent, PowerHitTaken, Double, Optional<Double>> HIT_TAKEN = new HitTaken();
     public static final Trigger<EntityDamageEvent, PowerHitTaken, Void, Optional<Void>> DYING = new Dying();
     public static final Trigger<EntityDamageEvent, PowerHurt, Void, Void> HURT = new Hurt();
+    public static final Trigger<EntityLandEvent, PowerLand, Void, Void> LAND = new Land();
     public static final Trigger<PlayerInteractEvent, PowerLeftClick, Void, Void> LEFT_CLICK = new LeftClick();
     public static final Trigger<PlayerInteractEvent, PowerRightClick, Void, Void> RIGHT_CLICK = new RightClick();
+    public static final Trigger<PlayerInteractEvent, PowerRightClickAll, Void, Void> RIGHT_CLICK_ALL = new RightClickAll();
     public static final Trigger<PlayerInteractEvent, PowerOffhandClick, Void, Void> OFFHAND_CLICK = new OffhandClick();
     public static final Trigger<PlayerItemConsumeEvent, PowerConsume, Void, Void> CONSUME = new Consume();
     public static final Trigger<PlayerToggleSneakEvent, PowerSneak, Void, Void> SNEAK = new Sneak();

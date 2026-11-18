@@ -1,7 +1,7 @@
 plugins {
     id 'java'
     id 'java-library'
-    id "io.papermc.paperweight.userdev" version "2.0.0-beta.21"
+    id "io.papermc.paperweight.userdev" version "2.0.0-beta.24"
     id 'maven-publish'
     id 'com.gradleup.shadow' version '9.2.2'
     id 'org.ajoberstar.grgit' version '5.2.2'
@@ -43,8 +43,8 @@ dependencies {
     //Residence integration, download the jar(also CMI) manually as the fucking Residence author is lazy
     implementation fileTree(dir: 'libs', includes: ['*.jar'])
     paperweight.paperDevBundle("$MINECRAFT_VERSION"+".build.+")
-    compileOnly 'io.lumine:Mythic-Dist:5.13.0-SNAPSHOT'
-    compileOnly 'me.clip:placeholderapi:2.12.2'
+    compileOnly 'io.lumine:Mythic-Dist:5.14.1-SNAPSHOT'
+    compileOnly 'me.clip:placeholderapi:2.12.3'
     // other nyaa plugins
     compileOnly('cat.nyaa:nyaacore:9.10') { transitive = false }
 

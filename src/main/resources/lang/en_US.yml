@@ -891,6 +891,8 @@ power:
   item_projectile:
     cone: Launches multiple modeled `%s` when right clicked (%.1fs cooldown)
     display: Launches a modeled `%s` when right clicked (%.1fs cooldown)
+  posteffect: Apply %s post effect for %.1f seconds (%.1fs cooldown)
+  tickrate: Change the time rate to %d ticks for %.1fs (%.1fs cooldown)
   pumpkin: 1/%d chance to make enemy put on a pumpkin
   rainbow: Shoots %d multicoloured wool (%.1fs cooldown)
   ranged: Can use as a ranged weapon
@@ -1369,6 +1371,11 @@ properties:
     firingRange: No use yet
     playLocation: Play particle at SELF or TARGET
     delay: Delay of execution
+  posteffect:
+    main_description: Apply post effect to player like the command /posteffect
+    main_name: Post Effect
+    key: The namespaced key of the post effect, minecraft:blur by default
+    duration: Duration of the post effect, in ticks
   potionhit:
     amplifier: Amplifier of potion effect
     chance: Chance of triggering this power, 1/n
@@ -1608,6 +1615,12 @@ properties:
     main_description: Spawn and throw a entity
     main_name: Throw
     speed: Speed of entity thrown
+  tickrate:
+    main_description: Change the tick rate(>0) of the player client, value above 20 don't actually make any visual effect
+    main_name: Tickrate
+    tickRate: Tick rate to change
+    duration: Duration of this power, in ticks
+    freeze: Whether to freeze the player client tick, if true, tickRate will be ignored
   tippedarrow:
     amplifier: Amplifier of potion effect
     duration: Duration of potion effect, in ticks

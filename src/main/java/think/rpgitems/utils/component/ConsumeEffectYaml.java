@@ -138,7 +138,7 @@ public final class ConsumeEffectYaml {
                     }
                 }
                 case "teleport_randomly" ->
-                        result.add(ConsumeEffect.teleportRandomlyEffect(ComponentYamlUtil.mapFloat(effectData, "diameter", 16.0f)));
+                        result.add(ConsumeEffect.teleportRandomlyEffect(ComponentYamlUtil.mapFloat(effectData, "diameter", 16.0f), ComponentYamlUtil.mapBoolean(effectData, "directional_particles", true)));
                 default -> {
                 }
             }
@@ -194,6 +194,7 @@ public final class ConsumeEffectYaml {
                 case ConsumeEffect.TeleportRandomly teleport -> {
                     map.put("type", "teleport_randomly");
                     map.put("diameter", teleport.diameter());
+                    map.put("directional_particles", teleport.directionalParticles());
                 }
                 default -> {
                 }
